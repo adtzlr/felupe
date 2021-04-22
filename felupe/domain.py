@@ -31,6 +31,7 @@ from numba import jit, prange
 
 from scipy.sparse import csr_matrix
 
+from .helpers import det, inv
 
 class Domain:
     def __init__(self, element, mesh, quadrature):
@@ -57,9 +58,9 @@ class Domain:
             self.element.dhdr.reshape(*self.element.dhdr.shape, 1), self.nelements
         )
         dXdr = np.einsum("eaI,aJge->IJge", mesh.nodes[mesh.connectivity], dhdr)
-        drdX = np.linalg.inv(dXdr.T).T
+        drdX = inv(dXdr)
 
-        self.J = np.linalg.det(dXdr.T).T
+        self.J = det(dXdr)
         self.w = self.quadrature.weights
 
         self.h = np.tile(
@@ -85,13 +86,23 @@ class Domain:
 
     def zeros(self, dim=None):
         if dim is None:
-            return np.zeros_like(self.mesh.nodes)
+            dim = self.ndim
+        elif isinstance(dim, tuple):
+            return np.zeros((self.mesh.nnodes, *dim))
         else:
             return np.zeros((self.mesh.nnodes, dim))
+    
+    def fill(self, value, dim=None):
+        if dim is None:
+            dim = self.ndim
+        elif isinstance(dim, tuple):
+            return np.ones((self.mesh.nnodes, *dim)) * value
+        else:
+            return np.ones((self.mesh.nnodes, dim)) * value
 
     def empty(self, dim=None):
         if dim is None:
-            return np.empty_like(self.mesh.nodes)
+            dim = self.ndim
         elif isinstance(dim, tuple):
             return np.empty((self.mesh.nnodes, *dim))
         else:

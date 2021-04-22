@@ -28,22 +28,23 @@ import pytest
 import numpy as np
 import felupe as fe
 
+
 def test_helpers():
-    H = (np.random.rand(3,3,8,200)-0.5)/10
+    H = (np.random.rand(3, 3, 8, 200) - 0.5) / 10
     F = fe.helpers.identity(H) + H
     C = fe.helpers.dot(fe.helpers.transpose(F), F)
-    A = np.random.rand(3,3,3,3,8,200)
-    
+    A = np.random.rand(3, 3, 3, 3, 8, 200)
+
     fe.helpers.dot(C, C)
     fe.helpers.dot(C, A)
     fe.helpers.dot(A, C)
     fe.helpers.dot(A, A)
-    
+
     fe.helpers.ddot(C, C)
     fe.helpers.ddot(C, A)
     fe.helpers.ddot(A, C)
     fe.helpers.ddot(A, A)
-    
+
     fe.helpers.inv(C)
     fe.helpers.det(C)
     fe.helpers.cof(C)
@@ -51,9 +52,10 @@ def test_helpers():
     fe.helpers.cdya_ik(F, F)
     fe.helpers.cdya_il(F, F)
     fe.helpers.cdya(F, F)
-    
+
     fe.helpers.tovoigt(C)
     fe.helpers.eigvals(C)
+
 
 if __name__ == "__main__":
     test_helpers()

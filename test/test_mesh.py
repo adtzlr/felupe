@@ -27,14 +27,16 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import pytest
 import felupe as fe
 
+
 def test_mesh():
     mr1 = fe.mesh.Rectangle()
-    mr2 = fe.mesh.Rectangle(a=(-1.2,-2), b=(2,3.1), n=(4,9))
+    mr2 = fe.mesh.Rectangle(a=(-1.2, -2), b=(2, 3.1), n=(4, 9))
     mr3 = fe.mesh.Rectangle(n=7)
-    
+
     mc1 = fe.mesh.Cube()
-    mc2 = fe.mesh.Cube(a=(-1,-2,-0.5), b=(2,3.1,1), n=(4,9,5))
+    mc2 = fe.mesh.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     mc3 = fe.mesh.Cube(n=7)
+
 
 if __name__ == "__main__":
     test_mesh()

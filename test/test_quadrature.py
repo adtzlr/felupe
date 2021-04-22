@@ -27,16 +27,18 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import pytest
 import felupe as fe
 
+
 def test_quadrature():
     q03 = fe.quadrature.Constant()
     q01 = fe.quadrature.Constant(dim=1)
     q02 = fe.quadrature.Constant(dim=2)
     q03 = fe.quadrature.Constant(dim=3)
-    
+
     q13 = fe.quadrature.Linear()
     q11 = fe.quadrature.Linear(dim=1)
     q12 = fe.quadrature.Linear(dim=2)
     q13 = fe.quadrature.Linear(dim=3)
+
 
 if __name__ == "__main__":
     test_quadrature()

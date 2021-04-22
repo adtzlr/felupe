@@ -28,8 +28,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-# from scipy.sparse.linalg import spsolve
-from pypardiso import spsolve
+from scipy.sparse.linalg import spsolve
+
+# from pypardiso import spsolve
 
 
 def partition(u, r, K, I, D):

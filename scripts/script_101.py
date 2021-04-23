@@ -8,7 +8,8 @@ Created on Tue Apr 20 08:45:35 2021
 import numpy as np
 
 import felupe as fe
-from felupe.helpers import identity, dya, det, cof, transpose, dot, eigvals
+from felupe.helpers import (identity, dya, det, cof, 
+                            transpose, dot, eigvals)
 
 tol = 1e-5
 

@@ -87,7 +87,7 @@ class Domain:
     def zeros(self, dim=None):
         if dim is None:
             dim = self.ndim
-        elif isinstance(dim, tuple):
+        if isinstance(dim, tuple):
             return np.zeros((self.mesh.nnodes, *dim))
         else:
             return np.zeros((self.mesh.nnodes, dim))
@@ -95,7 +95,7 @@ class Domain:
     def fill(self, value, dim=None):
         if dim is None:
             dim = self.ndim
-        elif isinstance(dim, tuple):
+        if isinstance(dim, tuple):
             return np.ones((self.mesh.nnodes, *dim)) * value
         else:
             return np.ones((self.mesh.nnodes, dim)) * value
@@ -103,7 +103,7 @@ class Domain:
     def empty(self, dim=None):
         if dim is None:
             dim = self.ndim
-        elif isinstance(dim, tuple):
+        if isinstance(dim, tuple):
             return np.empty((self.mesh.nnodes, *dim))
         else:
             return np.empty((self.mesh.nnodes, dim))

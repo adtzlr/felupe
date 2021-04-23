@@ -5,6 +5,12 @@ from . import quadrature
 from . import doftools
 from . import element
 from . import domain
+from . import constitution
+from . import solve
+
+from .domain import Domain
+from .doftools import Boundary
+
 
 __all__ = [
     "__version__",

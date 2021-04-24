@@ -29,12 +29,16 @@ from .helpers import ddot, transpose, inv, dya, cdya_ik, cdya_il, det, identity
 
 class NeoHooke:
     
-    def __init__(self):
-        self.P = self._P_nh
-        self.A = self._A_nh
-
-    def _P_nh(self, F, p, J, *args):
-        mu = args[0]
+    def __init__(self, mu, bulk=None):
+        self.mu = mu
+        if bulk is None:
+            self.bulk = 5000 * mu
+        else:
+            self.bulk = bulk
+            
+    
+    def P(self, F, p, J):
+        mu = self.mu
         iFT = transpose(inv(F))
         
         Pdev = mu * (F - ddot(F,F)/3*iFT) * J**(-2/3)
@@ -42,8 +46,8 @@ class NeoHooke:
         
         return Pdev + Pvol
     
-    def _A_nh(self, F, p, J, *args):
-        mu = args[0]
+    def A(self, F, p, J):
+        mu = self.mu
         
         detF = det(F)
         iFT = transpose(inv(F))
@@ -59,3 +63,9 @@ class NeoHooke:
         A4_vol = p * J * (dya(iFT,iFT) - cdya_il(iFT,iFT)) \
     
         return A4_dev + A4_vol
+    
+    def dUdJ(self, J):
+        return self.bulk * (J - 1)
+    
+    def d2UdJ2(self, J):
+        return self.bulk

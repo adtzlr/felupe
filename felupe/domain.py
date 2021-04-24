@@ -39,6 +39,9 @@ class Domain:
         self.mesh = mesh
         self.element = deepcopy(element)
         self.quadrature = quadrature
+        
+        # alias
+        self.tointegrationpoints = self.interpolate
 
         self.ndim = self.element.ndim
         self.nbasis = self.element.nbasis

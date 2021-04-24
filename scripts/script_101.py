@@ -38,7 +38,7 @@ f1 = lambda x: np.isclose(x, 1)
 symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
 symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
 symz = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
-movz = fe.Boundary(d.dof, m, "move", skip=(1, 1, 0), fz=f1, value=move)
+movz = fe.Boundary(d.dof, m, "movez", skip=(1, 1, 0), fz=f1, value=move)
 bounds = [symx, symy, symz, movz]
 
 # symx = Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)

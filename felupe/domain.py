@@ -122,6 +122,11 @@ class Domain:
             return np.ones((self.mesh.nnodes, *dim)) * value
         else:
             return np.ones((self.mesh.nnodes, dim)) * value
+    
+    def ones(self, dim=None):
+        """Fill dof values with custom value with default dimension 
+        identical to the mesh dimension."""
+        return self.fill(value=1, dim=dim)
 
     def empty(self, dim=None):
         """Init an empty array of dof values with default dimension 

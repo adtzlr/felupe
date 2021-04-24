@@ -160,7 +160,10 @@ class Domain:
 
     def volume(self, detF=1):
         "Calculate element volume for element 'e'."
-        return np.einsum("ge->e", detF * self.Jw)
+        return np.einsum("pe->e", detF * self.Jw)
+    
+    #def linearform(self, A):
+    #    np.einsum("a...ge,i...ge,ge->aie", self.dhdX, A, self.Jw)
 
     def integrate(self, A, parallel=True):
         if len(A.shape) == 4:
@@ -224,11 +227,11 @@ class Domain:
 
 
 def _integrate2(dhdX, P, Jw):
-    return np.einsum("aJge,iJge,ge->aie", dhdX, P, Jw)
+    return np.einsum("aJpe,iJpe,pe->aie", dhdX, P, Jw)
 
 
 def _integrate4(dhdX, A, Jw):
-    return np.einsum("aJge,bLge,iJkLge,ge->aibke", dhdX, dhdX, A, Jw)
+    return np.einsum("aJpe,bLpe,iJkLpe,pe->aibke", dhdX, dhdX, A, Jw)
 
 
 # remove in future releases

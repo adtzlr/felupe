@@ -72,13 +72,10 @@ class Domain:
                          self.element.dhdr)
         drdX = inv(dXdr)
 
-        # det(dXdr)_pe
+        # det(dXdr)_pe * w_p
         # determinant of geometric gradient evaluated at quadrature point "p"
-        # for every element "e"
-        self.J = det(dXdr)
-        
-        # quadrature weight for quadrature point "p"
-        self.w = self.quadrature.weights
+        # for every element "e" multiplied by corresponding quadrature weight 
+        self.Jw = det(dXdr)* self.quadrature.weights.reshape(-1,1)
         
         # dhdX_aJpe
         # ---------
@@ -89,10 +86,9 @@ class Domain:
 
         # indices for sparse matrices
         # ---------------------------
-        nd = self.ndim
         eai = np.stack(
             [
-                nd * np.tile(conn, (nd, 1)).T + np.arange(nd)
+                self.ndim * np.tile(conn, (self.ndim, 1)).T + np.arange(self.ndim)
                 for conn in self.mesh.connectivity
             ]
         )
@@ -144,15 +140,15 @@ class Domain:
 
     def volume(self, detF=1):
         "Calculate element volume for element 'e'."
-        return np.einsum("ge,g->e", detF * self.J, self.w)
+        return np.einsum("ge->e", detF * self.Jw)
 
     def integrate(self, A, parallel=True):
         if len(A.shape) == 4:
             itg2 = [_integrate2parallel, _integrate2]
-            return itg2[int(parallel)](self.dhdX, A, self.J, self.w)
+            return itg2[int(parallel)](self.dhdX, A, self.Jw)
         elif len(A.shape) == 6:
             itg4 = [_integrate4parallel, _integrate4]
-            return itg4[int(parallel)](self.dhdX, A, self.J, self.w)
+            return itg4[int(parallel)](self.dhdX, A, self.Jw)
 
     def asmatrix(self, A):
         if len(A.shape) == 3:
@@ -209,12 +205,12 @@ class Domain:
     #    return np.einsum("age,ijge->aijge", self.h, A)
 
 
-def _integrate2(dhdX, P, Jr, w):
-    return np.einsum("aJge,iJge,ge,g->aie", dhdX, P, Jr, w)
+def _integrate2(dhdX, P, Jw):
+    return np.einsum("aJge,iJge,ge->aie", dhdX, P, Jw)
 
 
-def _integrate4(dhdX, A, Jr, w):
-    return np.einsum("aJge,bLge,iJkLge,ge,g->aibke", dhdX, dhdX, A, Jr, w)
+def _integrate4(dhdX, A, Jw):
+    return np.einsum("aJge,bLge,iJkLge,ge->aibke", dhdX, dhdX, A, Jw)
 
 
 # remove in future releases
@@ -224,7 +220,7 @@ def _integrate4(dhdX, A, Jr, w):
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def _integrate2parallel(dhdX, P, Jr, w):
+def _integrate2parallel(dhdX, P, Jw):
 
     ndim, ngauss, nelems = P.shape[-3:]
 
@@ -236,14 +232,14 @@ def _integrate2parallel(dhdX, P, Jr, w):
                 for i in prange(ndim):  # first index "i"
                     for J in prange(ndim):  # second index "J"
                         out[a, i, e] += (
-                            dhdX[a, J, p, e] * P[i, J, p, e] * Jr[p, e] * w[p]
+                            dhdX[a, J, p, e] * P[i, J, p, e] * Jw[p, e]
                         )
 
     return out
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def _integrate4parallel(dhdX, A, Jr, w):
+def _integrate4parallel(dhdX, A, Jw):
 
     ndim, ngauss, nelems = A.shape[-3:]
 
@@ -260,8 +256,7 @@ def _integrate4parallel(dhdX, A, Jr, w):
                                         dhdX[a, J, p, e]
                                         * dhdX[b, L, p, e]
                                         * A[i, J, k, L, p, e]
-                                        * Jr[p, e]
-                                        * w[p]
+                                        * Jw[p, e]
                                     )
 
     return out

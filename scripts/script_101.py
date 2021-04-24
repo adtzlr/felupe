@@ -15,15 +15,11 @@ tol = 1e-5
 
 move = -0.1
 
-mu = 1.0
-bulk = 5000.0 * mu
-cargs = [mu, bulk]
-
 e = fe.element.Hex1()
-m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(10, 10, 5))
-# m.nodes[:,:2] = 0.8*m.nodes[:,:2] + 0.2*m.nodes[:,:2] * (m.nodes[:,2]**7).reshape(-1,1)
+m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
+#m.nodes[:,:2] = 0.8*m.nodes[:,:2] + 0.2*m.nodes[:,:2] * (m.nodes[:,2]**7).reshape(-1,1)
 q = fe.quadrature.Linear(dim=3)
-c = fe.constitution.NeoHooke()
+c = fe.constitution.NeoHooke(mu=1, bulk=5000)
 
 d = fe.Domain(e, m, q)
 
@@ -53,10 +49,10 @@ bounds = [symx, symy, symz, movz]
 # bounds = [symx, symy, fixb, fixt, movt]
 
 # dofs to "D"ismiss and to "I"ntegrate
-D, I = fe.doftools.partition(d.dof, bounds)
+dof0, dof1 = fe.doftools.partition(d.dof, bounds)
 
 # obtain external displacements for prescribed dofs
-uDext = fe.doftools.apply(u, d.dof, bounds, D)
+uDext = fe.doftools.apply(u, d.dof, bounds, dof0)
 
 n_ = []
 
@@ -67,34 +63,30 @@ for iteration in range(100):
     # deformed element volumes
     v = d.volume(det(F))
 
-    # p, J quantities
-    dUdJ = bulk * (J - 1)
-    d2UdJ2 = bulk
-
     # additional integral over shape function
     H = d.integrate(cof(F)) / V
 
     # residuals and tangent matrix
-    r1 = d.asmatrix(d.integrate(c.P(F, p, J, *cargs)))
-    r2 = d.asmatrix((v / V - J) * V * H)  # * d2UdJ2)
-    r3 = d.asmatrix((dUdJ - p) * V * H)
+    r1 = d.asmatrix(d.integrate(c.P(F, p, J)))
+    r2 = d.asmatrix((v / V - J) * V * H)  # * c.d2UdJ2(J)))
+    r3 = d.asmatrix((c.dUdJ(J) - p) * V * H)
 
     r = r1 + r2 + r3
-    K = d.asmatrix(d.integrate(c.A(F, p, J, *cargs)) + d2UdJ2 * V * dya(H, H))
+    K = d.asmatrix(d.integrate(c.A(F, p, J)) + c.d2UdJ2(J) * V * dya(H, H))
 
-    system = fe.solve.partition(u, r, K, I, D)
+    system = fe.solve.partition(u, r, K, dof1, dof0)
     du = fe.solve.solve(*system, uDext)
     dJ = np.einsum("aie,eai->e", H, du[m.connectivity])
-    dp = dJ * d2UdJ2
+    dp = dJ * c.d2UdJ2(J)
 
     if np.any(np.isnan(du)):
         break
     else:
-        rref = np.linalg.norm(r[D].toarray()[:, 0])
+        rref = np.linalg.norm(r[dof0].toarray()[:, 0])
         if rref == 0:
             norm_r = 1
         else:
-            norm_r = np.linalg.norm(r[I].toarray()[:, 0]) / rref
+            norm_r = np.linalg.norm(r[dof1].toarray()[:, 0]) / rref
         norm_du = np.linalg.norm(du)
         norm_dp = np.linalg.norm(dp)
         norm_dJ = np.linalg.norm(dJ)
@@ -117,7 +109,7 @@ F = identity(d.grad(u)) + d.grad(u)
 # p = bulk * (J - 1)
 
 # cauchy stress at integration points
-s = dot(c.P(F, p, J, *cargs), transpose(F)) / det(F)
+s = dot(c.P(F, p, J), transpose(F)) / det(F)
 sp = eigvals(s)
 
 # shift stresses to nodes and average nodal values

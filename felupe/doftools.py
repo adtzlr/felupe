@@ -26,42 +26,48 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from types import SimpleNamespace
 
-
-def dof0(dof, bounds):
+def get_dof0(dof, bounds):
     "Extract prescribed degrees of freedom."
     return np.unique(np.concatenate([b.dof for b in bounds]))
 
 
-def dof1(dof, bounds):
+def get_dof1(dof, bounds, dof0=None):
     "Extract active (non-prescribed) degrees of freedom."
-    keep = np.ones_like(dof.ravel(), dtype=bool)
-    dismiss = dof0(dof, bounds)
-    keep[dismiss] = False
-    return dof.ravel()[keep]
+    if dof0 is None:
+        dof0 = get_dof0(dof, bounds)
+    mask = np.ones_like(dof.ravel(), dtype=bool)
+    mask[dof0] = False
+    return dof.ravel()[mask]
+
+
+find = SimpleNamespace()
+find.dof0 = get_dof0
+find.dof1 = get_dof1
 
 
 def partition(dof, bounds):
     "Partition dof-list to prescribed and active parts."
-    D = dof0(dof, bounds)
-    I = dof1(dof, bounds)
-    return D, I
+    dof0 = get_dof0(dof, bounds)
+    dof1 = get_dof1(dof, bounds, dof0=dof0)
+    return dof0, dof1
 
 
-def apply(v, dof, bounds, D=None):
+def apply(v, dof, bounds, dof0=None):
     """Apply prescribed values for a list of boundaries
     and return all (default) or only the prescribed components
-    of the input array 'v' based on the keyword 'D'."""
+    of the input array 'v' based on the keyword 'dof0'."""
 
     u = v.copy()
 
     for b in bounds:
         u.ravel()[b.dof] = b.value
 
-    if D is None:
+    if dof0 is None:
         return u
     else:
-        return u.ravel()[D]
+        return u.ravel()[dof0]
 
 
 class Boundary:

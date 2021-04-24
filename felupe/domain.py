@@ -45,30 +45,66 @@ class Domain:
         self.nelements = self.mesh.nelements
         self.ndof = self.mesh.ndof
 
-        self.dof = np.arange(self.mesh.nodes.size).reshape(*self.mesh.nodes.shape)
+        # array with degrees of freedom
+        self.dof = np.arange(self.ndof).reshape(*self.mesh.nodes.shape)
 
+        # h_ap
+        # ----
+        # basis function "a" evaluated at quadrature point "p"
         self.element.h = np.array(
             [self.element.basis(p) for p in self.quadrature.points]
         ).T
+        
+        # dhdr_aJp
+        # --------
+        # partial derivative of basis function "a" 
+        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
         self.element.dhdr = np.array(
             [self.element.basisprime(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
 
+        # dhdr_aJpe
+        # ---------
+        # partial derivative of basis function "a" 
+        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
+        # for every element "e"
         dhdr = np.tile(
             self.element.dhdr.reshape(*self.element.dhdr.shape, 1), self.nelements
         )
-        dXdr = np.einsum("eaI,aJge->IJge", mesh.nodes[mesh.connectivity], dhdr)
+        
+        # dXdr_IJpe
+        # ---------
+        # geometric gradient as partial derivative of undeformed coordinate "I" 
+        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
+        # for every element "e"
+        dXdr = np.einsum("eaI,aJpe->IJpe", mesh.nodes[mesh.connectivity], dhdr)
         drdX = inv(dXdr)
 
+        # det(dXdr)_pe
+        # determinant of geometric gradient evaluated at quadrature point "p"
+        # for every element "e"
         self.J = det(dXdr)
+        
+        # quadrature weight for quadrature point "p"
         self.w = self.quadrature.weights
 
+        # h_ape
+        # -----
+        # basis function "a" evaluated at quadrature point "p"
+        # for every element "e"
         self.h = np.tile(
             self.element.h.reshape(*self.element.h.shape, 1), self.nelements
         )
-        self.dhdX = np.einsum("aIge,IJge->aJge", dhdr, drdX)
+        
+        # dhdX_aJpe
+        # ---------
+        # partial derivative of basis function "a" 
+        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
+        # for every element "e"
+        self.dhdX = np.einsum("aIpe,IJpe->aJpe", dhdr, drdX)
 
         # indices for sparse matrices
+        # ---------------------------
         nd = self.ndim
         eai = np.stack(
             [
@@ -79,12 +115,13 @@ class Domain:
         eaibj0 = np.stack([np.repeat(ai.ravel(), ai.size) for ai in eai])
         eaibj1 = np.stack([np.tile(ai.ravel(), ai.size) for ai in eai])
 
+        # export indices as (rows, cols)
         self.ai = (eai.ravel(), np.zeros_like(eai.ravel()))
         self.aibj = (eaibj0.ravel(), eaibj1.ravel())
 
-        self.dof = np.arange(self.ndof).reshape(self.mesh.nodes.shape)
-
     def zeros(self, dim=None):
+        """Fill dof values with zeros with default dimension 
+        identical to the mesh dimension."""
         if dim is None:
             dim = self.ndim
         if isinstance(dim, tuple):
@@ -93,6 +130,8 @@ class Domain:
             return np.zeros((self.mesh.nnodes, dim))
     
     def fill(self, value, dim=None):
+        """Fill dof values with custom value with default dimension 
+        identical to the mesh dimension."""
         if dim is None:
             dim = self.ndim
         if isinstance(dim, tuple):
@@ -101,6 +140,8 @@ class Domain:
             return np.ones((self.mesh.nnodes, dim)) * value
 
     def empty(self, dim=None):
+        """Init an empty array of dof values with default dimension 
+        identical to the mesh dimension."""
         if dim is None:
             dim = self.ndim
         if isinstance(dim, tuple):
@@ -109,19 +150,24 @@ class Domain:
             return np.empty((self.mesh.nnodes, dim))
 
     def grad(self, u, dhdX=None):
+        "gradient dudX_IJpe"
+        # gradient as partial derivative of given nodal values "aI" 
+        # w.r.t. undeformed coordiante "J" evaluated at quadrature point "p"
+        # for element "e"
         if dhdX is None:
             dhdX = self.dhdX
-        return np.einsum("ea...,aJge->...Jge", u[self.mesh.connectivity], dhdX)
+        return np.einsum("ea...,aJpe->...Jpe", u[self.mesh.connectivity], dhdX)
 
     def volume(self, detF=1):
+        "Calculate element volume for element 'e'."
         return np.einsum("ge,g->e", detF * self.J, self.w)
 
     def integrate(self, A, parallel=True):
         if len(A.shape) == 4:
-            itg2 = [_integrate2p, _integrate2]
+            itg2 = [_integrate2parallel, _integrate2]
             return itg2[int(parallel)](self.dhdX, A, self.J, self.w)
         elif len(A.shape) == 6:
-            itg4 = [_integrate4p, _integrate4]
+            itg4 = [_integrate4parallel, _integrate4]
             return itg4[int(parallel)](self.dhdX, A, self.J, self.w)
 
     def asmatrix(self, A):
@@ -187,49 +233,51 @@ def _integrate4(dhdX, A, Jr, w):
     return np.einsum("aJge,bLge,iJkLge,ge,g->aibke", dhdX, dhdX, A, Jr, w)
 
 
-# _integrate2p = _integrate2
-# _integrate4p = _integrate4
+# remove in future releases
+# -------------------------
+# _integrate2parallel = _integrate2
+# _integrate4parallel = _integrate4
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def _integrate2p(dhdX, P, Jr, w):
+def _integrate2parallel(dhdX, P, Jr, w):
 
     ndim, ngauss, nelems = P.shape[-3:]
 
     out = np.zeros((ngauss, ndim, nelems))
 
-    for a in prange(ngauss):  # basis function
-        for g in prange(ngauss):  # integration points
-            for e in prange(nelems):  # element
-                for i in prange(ndim):  # row index i
-                    for J in prange(ndim):  # column index J
+    for a in prange(ngauss):  # basis function "a"
+        for p in prange(ngauss):  # integration point "p"
+            for e in prange(nelems):  # element "e"
+                for i in prange(ndim):  # first index "i"
+                    for J in prange(ndim):  # second index "J"
                         out[a, i, e] += (
-                            dhdX[a, J, g, e] * P[i, J, g, e] * Jr[g, e] * w[g]
+                            dhdX[a, J, p, e] * P[i, J, p, e] * Jr[p, e] * w[p]
                         )
 
     return out
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def _integrate4p(dhdX, A, Jr, w):
+def _integrate4parallel(dhdX, A, Jr, w):
 
     ndim, ngauss, nelems = A.shape[-3:]
 
     out = np.zeros((ngauss, ndim, ngauss, ndim, nelems))
-    for a in prange(ngauss):
-        for b in prange(ngauss):
-            for g in prange(ngauss):
-                for e in prange(nelems):
-                    for i in prange(ndim):
-                        for J in prange(ndim):
-                            for k in prange(ndim):
-                                for L in prange(ndim):
+    for a in prange(ngauss):  # basis function "a"
+        for b in prange(ngauss):  # basis function "b"
+            for p in prange(ngauss):  # integration point "p"
+                for e in prange(nelems):  # element "e"
+                    for i in prange(ndim):  # first index "i"
+                        for J in prange(ndim):  # second index "J"
+                            for k in prange(ndim):  # third index "k"
+                                for L in prange(ndim):  # fourth index "L"
                                     out[a, i, b, k, e] += (
-                                        dhdX[a, J, g, e]
-                                        * dhdX[b, L, g, e]
-                                        * A[i, J, k, L, g, e]
-                                        * Jr[g, e]
-                                        * w[g]
+                                        dhdX[a, J, p, e]
+                                        * dhdX[b, L, p, e]
+                                        * A[i, J, k, L, p, e]
+                                        * Jr[p, e]
+                                        * w[p]
                                     )
 
     return out

@@ -25,6 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from copy import deepcopy
 
 import numpy as np
 from numba import jit, prange
@@ -36,7 +37,7 @@ from .helpers import det, inv
 class Domain:
     def __init__(self, element, mesh, quadrature):
         self.mesh = mesh
-        self.element = element
+        self.element = deepcopy(element)
         self.quadrature = quadrature
 
         self.ndim = self.element.ndim
@@ -128,6 +129,17 @@ class Domain:
             return np.empty((self.mesh.nnodes, *dim))
         else:
             return np.empty((self.mesh.nnodes, dim))
+        
+        
+    def interpolate(self, u, h=None):
+        "interpolated values u_Ipe"
+        # interpolated given nodal values "aI" 
+        # evaluated at quadrature point "p"
+        # for element "e"
+        if h is None:
+            h = self.element.h
+        return np.einsum("ea...,ap->...pe", u[self.mesh.connectivity], h)
+
 
     def grad(self, u, dhdX=None):
         "gradient dudX_IJpe"
@@ -201,8 +213,6 @@ class Domain:
 
         return out
 
-    # def interpolate(self, A):
-    #    return np.einsum("age,ijge->aijge", self.h, A)
 
 
 def _integrate2(dhdX, P, Jw):

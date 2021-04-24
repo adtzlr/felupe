@@ -62,22 +62,14 @@ class Domain:
         self.element.dhdr = np.array(
             [self.element.basisprime(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
-
-        # dhdr_aJpe
-        # ---------
-        # partial derivative of basis function "a" 
-        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
-        # for every element "e"
-        dhdr = np.tile(
-            self.element.dhdr.reshape(*self.element.dhdr.shape, 1), self.nelements
-        )
         
         # dXdr_IJpe
         # ---------
         # geometric gradient as partial derivative of undeformed coordinate "I" 
         # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
         # for every element "e"
-        dXdr = np.einsum("eaI,aJpe->IJpe", mesh.nodes[mesh.connectivity], dhdr)
+        dXdr = np.einsum("eaI,aJp->IJpe", mesh.nodes[mesh.connectivity], 
+                         self.element.dhdr)
         drdX = inv(dXdr)
 
         # det(dXdr)_pe
@@ -87,21 +79,13 @@ class Domain:
         
         # quadrature weight for quadrature point "p"
         self.w = self.quadrature.weights
-
-        # h_ape
-        # -----
-        # basis function "a" evaluated at quadrature point "p"
-        # for every element "e"
-        self.h = np.tile(
-            self.element.h.reshape(*self.element.h.shape, 1), self.nelements
-        )
         
         # dhdX_aJpe
         # ---------
         # partial derivative of basis function "a" 
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for every element "e"
-        self.dhdX = np.einsum("aIpe,IJpe->aJpe", dhdr, drdX)
+        self.dhdX = np.einsum("aIp,IJpe->aJpe", self.element.dhdr, drdX)
 
         # indices for sparse matrices
         # ---------------------------
@@ -235,8 +219,8 @@ def _integrate4(dhdX, A, Jr, w):
 
 # remove in future releases
 # -------------------------
-# _integrate2parallel = _integrate2
-# _integrate4parallel = _integrate4
+#_integrate2parallel = _integrate2
+#_integrate4parallel = _integrate4
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)

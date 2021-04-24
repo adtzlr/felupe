@@ -43,23 +43,23 @@ def test_helpers():
 
     bounds = [left, right]
 
-    D, I = fe.doftools.partition(dof, bounds)
+    dof0, dof1 = fe.doftools.partition(dof, bounds)
 
-    uext = fe.doftools.apply(u, dof, bounds, D=None)
-    uDext = fe.doftools.apply(u, dof, bounds, D=D)
+    uext = fe.doftools.apply(u, dof, bounds, dof0=None)
+    u0ext = fe.doftools.apply(u, dof, bounds, dof0=dof0)
 
-    DI = np.sort(np.append(D, I))
-    if not np.all(np.equal(dof.ravel(), DI)):
+    dof01 = np.sort(np.append(dof0, dof1))
+    if not np.all(np.equal(dof.ravel(), dof01)):
         raise ValueError("Partitioning of DOF failed.")
 
-    if not np.allclose(uext.ravel()[D], uDext):
+    if not np.allclose(uext.ravel()[dof0], u0ext):
         raise ValueError("Application of external values failed.")
 
     if not np.allclose(uext.ravel()[left.dof], v):
         raise ValueError("Application of external values failed.")
 
-    return mesh, dof, u, uext, left, right, D, I
+    return mesh, dof, u, uext, left, right, dof0, dof1
 
 
 if __name__ == "__main__":
-    mesh, dof, u, uext, left, right, D, I = test_helpers()
+    mesh, dof, u, uext, left, right, dof0, dof1 = test_helpers()

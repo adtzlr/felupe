@@ -12,7 +12,6 @@ from felupe.helpers import (identity, dya, det, cof,
                             transpose, dot, eigvals)
 
 tol = 1e-5
-
 move = -0.1
 
 e = fe.element.Hex1()
@@ -48,11 +47,11 @@ bounds = [symx, symy, symz, movz]
 # movt = Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
 # bounds = [symx, symy, fixb, fixt, movt]
 
-# dofs to "D"ismiss and to "I"ntegrate
+# dofs to dismiss and to keep
 dof0, dof1 = fe.doftools.partition(d.dof, bounds)
 
 # obtain external displacements for prescribed dofs
-uDext = fe.doftools.apply(u, d.dof, bounds, dof0)
+u0ext = fe.doftools.apply(u, d.dof, bounds, dof0)
 
 n_ = []
 
@@ -75,7 +74,7 @@ for iteration in range(100):
     K = d.asmatrix(d.integrate(c.A(F, p, J)) + c.d2UdJ2(J) * V * dya(H, H))
 
     system = fe.solve.partition(u, r, K, dof1, dof0)
-    du = fe.solve.solve(*system, uDext)
+    du = fe.solve.solve(*system, u0ext)
     dJ = np.einsum("aie,eai->e", H, du[m.connectivity])
     dp = dJ * c.d2UdJ2(J)
 
@@ -104,9 +103,6 @@ for iteration in range(100):
 
 # cauchy stress at integration points
 F = identity(d.grad(u)) + d.grad(u)
-# v = d.volume(det(F))
-# J = v/V
-# p = bulk * (J - 1)
 
 # cauchy stress at integration points
 s = dot(c.P(F, p, J), transpose(F)) / det(F)

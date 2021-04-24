@@ -68,7 +68,7 @@ for iteration in range(100):
 
     # residuals and tangent matrix
     r1 = d.asmatrix(d.integrate(c.P(F, p, J)))
-    r2 = d.asmatrix((v / V - J) * V * H)  # * c.d2UdJ2(J)))
+    r2 = d.asmatrix((v / V - J) * V * H * c.d2UdJ2(J))
     r3 = d.asmatrix((c.dUdJ(J) - p) * V * H)
 
     r = r1 + r2 + r3

@@ -11,11 +11,11 @@ import felupe as fe
 from felupe.helpers import (identity, dya, det, cof, 
                             transpose, dot, eigvals)
 
-tol = 1e-10
-move = -0.5
+tol = 1e-1
+move = 0.1
 
 e = fe.element.Hex1()
-m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
+m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(21, 21, 11))
 #m.nodes[:,:2] = 0.8*m.nodes[:,:2] + 0.2*m.nodes[:,:2] * (m.nodes[:,2]**7).reshape(-1,1)
 q = fe.quadrature.Linear(dim=3)
 c = fe.constitution.NeoHooke(mu=1, bulk=5000)
@@ -34,18 +34,18 @@ J = np.ones(d.nelements)
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
+# symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
+# symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
+# symz = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
+# movz = fe.Boundary(d.dof, m, "movez", skip=(1, 1, 0), fz=f1, value=move)
+# bounds = [symx, symy, symz, movz]
+
 symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
 symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
-symz = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
-movz = fe.Boundary(d.dof, m, "movez", skip=(1, 1, 0), fz=f1, value=move)
-bounds = [symx, symy, symz, movz]
-
-# symx = Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
-# symy = Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
-# fixb = Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
-# fixt = Boundary(d.dof, m, "fix-t", skip=(0, 0, 1), fz=f1)
-# movt = Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
-# bounds = [symx, symy, fixb, fixt, movt]
+fixb = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
+fixt = fe.Boundary(d.dof, m, "fix-t", skip=(0, 0, 1), fz=f1)
+movt = fe.Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
+bounds = [symx, symy, fixb, fixt, movt]
 
 # dofs to dismiss and to keep
 dof0, dof1 = fe.doftools.partition(d.dof, bounds)
@@ -74,10 +74,10 @@ for iteration in range(16):
     Ku = d.integrate(c.A(F, p, J))
     K2 = c.d2UdJ2(J) * V * dya(H, H)
     
-    G = d.integrate(c.A_vol(F, p, J))
-    K3 = c.d2UdJ2(J) * (v/V - J) * G
+    #G = d.integrate(c.A_vol(F, p, J))
+    #K3 = (c.d2UdJ2(J) * (v/V - J) + c.dUdJ(J) - p) * G
     
-    K = d.asmatrix(Ku + K2 + K3)
+    K = d.asmatrix(Ku + K2)# + K3)
 
     system = fe.solve.partition(u, r, K, dof1, dof0)
     du = fe.solve.solve(*system, u0ext)
@@ -97,7 +97,7 @@ for iteration in range(16):
         norm_dJ = np.linalg.norm(dJ)
         n_.append(norm_r * rref)
         print(
-            f"#{iteration+1:2d}: |f|={norm_r:1.3e} (|δu|={norm_du:1.3e} |δp|={norm_dp:1.3e} |δJ|={norm_dJ:1.3e})"
+            f"#{iteration+1:2d}: |f|={norm_r:1.1e} (|δu|={norm_du:1.1e} |δp|={norm_dp:1.1e} |δJ|={norm_dJ:1.1e})"
         )
 
     u += du
@@ -107,7 +107,7 @@ for iteration in range(16):
     if norm_r < tol:
         break
 
-# cauchy stress at integration points
+# deformation gradient at integration points
 F = identity(d.grad(u)) + d.grad(u)
 
 # cauchy stress at integration points

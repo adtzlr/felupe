@@ -11,8 +11,8 @@ import felupe as fe
 from felupe.helpers import (identity, dya, det, cof, 
                             transpose, dot, eigvals)
 
-tol = 1e-5
-move = -0.1
+tol = 1e-10
+move = -0.5
 
 e = fe.element.Hex1()
 m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
@@ -55,7 +55,7 @@ u0ext = fe.doftools.apply(u, d.dof, bounds, dof0)
 
 n_ = []
 
-for iteration in range(100):
+for iteration in range(16):
     # deformation gradient at integration points
     F = identity(d.grad(u)) + d.grad(u)
 
@@ -66,12 +66,18 @@ for iteration in range(100):
     H = d.integrate(cof(F)) / V
 
     # residuals and tangent matrix
-    r1 = d.asmatrix(d.integrate(c.P(F, p, J)))
-    r2 = d.asmatrix((v / V - J) * V * H * c.d2UdJ2(J))
-    r3 = d.asmatrix((c.dUdJ(J) - p) * V * H)
+    ru = d.asmatrix(d.integrate(c.P(F, p, J)))
+    rp = d.asmatrix((v / V - J) * V * H * c.dUdJ(J))
+    rJ = d.asmatrix((c.dUdJ(J) - p) * V * H)
 
-    r = r1 + r2 + r3
-    K = d.asmatrix(d.integrate(c.A(F, p, J)) + c.d2UdJ2(J) * V * dya(H, H))
+    r = ru + rp + rJ
+    Ku = d.integrate(c.A(F, p, J))
+    K2 = c.d2UdJ2(J) * V * dya(H, H)
+    
+    G = d.integrate(c.A_vol(F, p, J))
+    K3 = c.d2UdJ2(J) * (v/V - J) * G
+    
+    K = d.asmatrix(Ku + K2 + K3)
 
     system = fe.solve.partition(u, r, K, dof1, dof0)
     du = fe.solve.solve(*system, u0ext)

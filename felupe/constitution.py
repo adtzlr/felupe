@@ -35,14 +35,14 @@ class NeoHooke:
             self.bulk = 5000 * mu
         else:
             self.bulk = bulk
-            
     
     def P(self, F, p, J):
         mu = self.mu
         iFT = transpose(inv(F))
+        detF = det(F)
         
-        Pdev = mu * (F - ddot(F,F)/3*iFT) * J**(-2/3)
-        Pvol = p * J * iFT
+        Pdev = mu * (F - ddot(F,F)/3*iFT) * detF**(-2/3)
+        Pvol = p * detF * iFT
         
         return Pdev + Pvol
     
@@ -60,9 +60,34 @@ class NeoHooke:
                        + 1/3 * ddot(F, F) * cdya_il(iFT, iFT)
                        ) * detF**(-2/3)
     
-        A4_vol = p * J * (dya(iFT,iFT) - cdya_il(iFT,iFT)) \
+        A4_vol = p * detF * (dya(iFT,iFT) - cdya_il(iFT,iFT)) \
     
         return A4_dev + A4_vol
+    
+    def A_dev(self, F, p, J):
+        mu = self.mu
+        
+        detF = det(F)
+        iFT = transpose(inv(F))
+        eye = identity(F)
+    
+        A4_dev = mu * (cdya_ik(eye, eye)
+                       - 2/3 * dya(F, iFT)
+                       - 2/3 * dya(iFT, F)
+                       + 2/9 * ddot(F, F) * dya(iFT, iFT)
+                       + 1/3 * ddot(F, F) * cdya_il(iFT, iFT)
+                       ) * detF**(-2/3)
+    
+        return A4_dev
+    
+    def A_vol(self, F, p, J):
+        
+        detF = det(F)
+        iFT = transpose(inv(F))
+
+        A4_vol = detF * (dya(iFT,iFT) - cdya_il(iFT,iFT)) \
+    
+        return A4_vol
     
     def dUdJ(self, J):
         return self.bulk * (J - 1)

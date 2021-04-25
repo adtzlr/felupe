@@ -11,11 +11,11 @@ import felupe as fe
 from felupe.helpers import (identity, dya, det, cof, 
                             transpose, dot, eigvals)
 
-tol = 1e-1
-move = 0.1
+tol = 1e-8
+move = 0.05
 
 e = fe.element.Hex1()
-m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(21, 21, 11))
+m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
 #m.nodes[:,:2] = 0.8*m.nodes[:,:2] + 0.2*m.nodes[:,:2] * (m.nodes[:,2]**7).reshape(-1,1)
 q = fe.quadrature.Linear(dim=3)
 c = fe.constitution.NeoHooke(mu=1, bulk=5000)
@@ -69,6 +69,12 @@ for iteration in range(16):
     ru = d.asmatrix(d.integrate(c.P(F, p, J)))
     rp = d.asmatrix((v / V - J) * V * H * c.dUdJ(J))
     rJ = d.asmatrix((c.dUdJ(J) - p) * V * H)
+    
+    # reference force per dof
+    aru = d.asmatrix(abs(d.integrate(c.P(F, p, J))))
+    arp = d.asmatrix(abs((v / V - J) * V * H * c.dUdJ(J)))
+    arJ = d.asmatrix(abs((c.dUdJ(J) - p) * V * H))
+    ar = aru + arp + arJ
 
     r = ru + rp + rJ
     Ku = d.integrate(c.A(F, p, J))
@@ -87,15 +93,16 @@ for iteration in range(16):
     if np.any(np.isnan(du)):
         break
     else:
-        rref = np.linalg.norm(r[dof0].toarray()[:, 0])
-        if rref == 0:
-            norm_r = 1
-        else:
-            norm_r = np.linalg.norm(r[dof1].toarray()[:, 0]) / rref
+        #rref = np.linalg.norm(r[dof0].toarray()[:, 0])
+        #if rref == 0:
+        #    norm_r = 1
+        #else:
+        #    norm_r = np.linalg.norm(r[dof1].toarray()[:, 0]) / rref
+        norm_r = np.linalg.norm(r[dof1]/ar[dof1])
         norm_du = np.linalg.norm(du)
         norm_dp = np.linalg.norm(dp)
         norm_dJ = np.linalg.norm(dJ)
-        n_.append(norm_r * rref)
+        n_.append(norm_r)# * rref)
         print(
             f"#{iteration+1:2d}: |f|={norm_r:1.1e} (|δu|={norm_du:1.1e} |δp|={norm_dp:1.1e} |δJ|={norm_dJ:1.1e})"
         )

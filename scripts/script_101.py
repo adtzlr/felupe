@@ -11,8 +11,8 @@ import felupe as fe
 from felupe.helpers import (identity, dya, det, cof, 
                             transpose, dot, eigvals)
 
-tol = 1e-8
-move = 0.05
+tol = 5e-9
+move = 0.6
 
 e = fe.element.Hex1()
 m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
@@ -34,18 +34,18 @@ J = np.ones(d.nelements)
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
-# symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
-# symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
-# symz = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
-# movz = fe.Boundary(d.dof, m, "movez", skip=(1, 1, 0), fz=f1, value=move)
-# bounds = [symx, symy, symz, movz]
-
 symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
 symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
-fixb = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
-fixt = fe.Boundary(d.dof, m, "fix-t", skip=(0, 0, 1), fz=f1)
-movt = fe.Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
-bounds = [symx, symy, fixb, fixt, movt]
+symz = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
+movz = fe.Boundary(d.dof, m, "movez", skip=(1, 1, 0), fz=f1, value=move)
+bounds = [symx, symy, symz, movz]
+
+# symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
+# symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
+# fixb = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
+# fixt = fe.Boundary(d.dof, m, "fix-t", skip=(0, 0, 1), fz=f1)
+# movt = fe.Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
+# bounds = [symx, symy, fixb, fixt, movt]
 
 # dofs to dismiss and to keep
 dof0, dof1 = fe.doftools.partition(d.dof, bounds)
@@ -93,16 +93,12 @@ for iteration in range(16):
     if np.any(np.isnan(du)):
         break
     else:
-        #rref = np.linalg.norm(r[dof0].toarray()[:, 0])
-        #if rref == 0:
-        #    norm_r = 1
-        #else:
-        #    norm_r = np.linalg.norm(r[dof1].toarray()[:, 0]) / rref
-        norm_r = np.linalg.norm(r[dof1]/ar[dof1])
+        #norm_r = np.linalg.norm(r[dof1]/ar[dof1])
+        norm_r = np.max(r[dof1]/ar[dof1])
         norm_du = np.linalg.norm(du)
         norm_dp = np.linalg.norm(dp)
         norm_dJ = np.linalg.norm(dJ)
-        n_.append(norm_r)# * rref)
+        n_.append(norm_r)
         print(
             f"#{iteration+1:2d}: |f|={norm_r:1.1e} (|δu|={norm_du:1.1e} |δp|={norm_dp:1.1e} |δJ|={norm_dJ:1.1e})"
         )
@@ -115,7 +111,7 @@ for iteration in range(16):
         break
 
 # deformation gradient at integration points
-F = identity(d.grad(u)) + d.grad(u)
+#F = identity(d.grad(u)) + d.grad(u)
 
 # cauchy stress at integration points
 s = dot(c.P(F, p, J), transpose(F)) / det(F)

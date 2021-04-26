@@ -31,7 +31,7 @@ import felupe as fe
 from felupe.helpers import (identity, dya, det, cof, inv, ddot,
                             transpose, dot, eigvals, cdya_il, dya, cdya_ik)
 
-tol = 1e-12
+tol = 1e-8
 move = 0.5
 
 element = fe.element.Hex1()
@@ -67,7 +67,9 @@ dof0, dof1 = fe.doftools.partition(domain.dof, bounds)
 # obtain external displacements for prescribed dofs
 u0ext = fe.doftools.apply(u, domain.dof, bounds, dof0)
 
-n_ = []
+nrr_ = []
+nr_ = []
+nu_ = []
 
 mu = 1.0 
 bulk = 2.0
@@ -99,13 +101,13 @@ def A(F):
     return A_dev + A_vol 
 
 
-for iteration in range(16):
+for iteration in range(20):
     # deformation gradient at integration points
     F = identity(domain.grad(u)) + domain.grad(u)
 
     # residuals and tangent matrix
     r_aie = domain.integrate(P(F))
-    r = domain.asmatrix(r_aie)
+    r = domain.asmatrix(r_aie.copy())
     
     # reference force per dof
     rref = domain.asmatrix(abs(r_aie))
@@ -118,9 +120,18 @@ for iteration in range(16):
     if np.any(np.isnan(du)):
         break
     else:
-        norm_r = np.linalg.norm(r[dof1].todense())#/rref[dof1].todense())
+        rx = r.toarray().reshape(*mesh.nodes.shape)
+        ry = rref.toarray().reshape(*mesh.nodes.shape)
+        ry[ry == 0] = np.nan
+        rxy = rx/ry
+        rxy[mesh.elements_per_node == 1] = rx[mesh.elements_per_node == 1]
+        norm_rr = max(rxy.ravel()[dof1])
+        norm_r = np.linalg.norm(r.toarray()[dof1])
+        
         norm_du = np.linalg.norm(du)
-        n_.append(norm_r)
+        nrr_.append(norm_rr)
+        nr_.append(norm_r)
+        nu_.append(norm_du)
         print(f"#{iteration+1:2d}: |f|={norm_r:1.3e} (|δu|={norm_du:1.3e})")
 
     u += du
@@ -157,8 +168,12 @@ mesh.write("out.vtk")
 
 import matplotlib.pyplot as plt
 
-plt.semilogy(n_[1:], "o")
-plt.semilogy(np.logspace(-1, -10, 10),'k--')
+plt.semilogy(np.append(np.nan, nrr_[:]), "o", label="|r/r,ref|")
+plt.semilogy(np.append(np.nan, nr_[:]), "o", label="|r|")
+plt.semilogy(np.append(np.nan, nu_[:]), "o", label="|δu|")
+plt.semilogy(np.logspace(1, -10, 10),'k--')
+plt.xlim(1,8)
 plt.xlabel("Iterations")
 plt.ylabel("Norm of residuals")
+plot.legend()
 plt.savefig("convergence.png")

@@ -67,26 +67,28 @@ class Domain:
             [self.element.basisprime(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
         
-        # dXdr_IJpe
-        # ---------
-        # geometric gradient as partial derivative of undeformed coordinate "I" 
-        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
-        # for every element "e"
-        dXdr = np.einsum("eaI,aJp->IJpe", mesh.nodes[mesh.connectivity], 
-                         self.element.dhdr)
-        drdX = inv(dXdr)
-
-        # det(dXdr)_pe * w_p
-        # determinant of geometric gradient evaluated at quadrature point "p"
-        # for every element "e" multiplied by corresponding quadrature weight 
-        self.Jw = det(dXdr)* self.quadrature.weights.reshape(-1,1)
-        
-        # dhdX_aJpe
-        # ---------
-        # partial derivative of basis function "a" 
-        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-        # for every element "e"
-        self.dhdX = np.einsum("aIp,IJpe->aJpe", self.element.dhdr, drdX)
+        if self.nbasis > 1:
+            
+            # dXdr_IJpe
+            # ---------
+            # geometric gradient as partial derivative of undeformed coordinate "I" 
+            # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
+            # for every element "e"
+            dXdr = np.einsum("eaI,aJp->IJpe", mesh.nodes[mesh.connectivity], 
+                             self.element.dhdr)
+            drdX = inv(dXdr)
+    
+            # det(dXdr)_pe * w_p
+            # determinant of geometric gradient evaluated at quadrature point "p"
+            # for every element "e" multiplied by corresponding quadrature weight 
+            self.Jw = det(dXdr)* self.quadrature.weights.reshape(-1,1)
+            
+            # dhdX_aJpe
+            # ---------
+            # partial derivative of basis function "a" 
+            # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
+            # for every element "e"
+            self.dhdX = np.einsum("aIp,IJpe->aJpe", self.element.dhdr, drdX)
 
         # indices for sparse matrices
         # ---------------------------

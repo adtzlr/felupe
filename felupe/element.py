@@ -36,6 +36,21 @@ class Quad:
 class Hex:
     def __init__(self):
         self.ndim = 3
+        
+
+class Quad0(Quad):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 4
+        self.nbasis = 1
+
+    def basis(self, rst):
+        "linear quadrilateral basis functions"
+        return np.array([1])
+
+    def basisprime(self, rst):
+        "linear quadrilateral derivative of basis functions"
+        return np.array([[0, 0, 0]])
 
 
 class Quad1(Quad):

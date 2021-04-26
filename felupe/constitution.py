@@ -60,7 +60,7 @@ class NeoHooke:
                        + 1/3 * ddot(F, F) * cdya_il(iFT, iFT)
                        ) * detF**(-2/3)
     
-        A4_vol = p * detF * (dya(iFT,iFT) - cdya_il(iFT,iFT)) \
+        A4_vol = p * detF * (dya(iFT,iFT) - cdya_il(iFT,iFT))
     
         return A4_dev + A4_vol
     

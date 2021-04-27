@@ -106,13 +106,13 @@ for iteration in range(20):
     F = identity(domain.grad(u)) + domain.grad(u)
 
     # residuals and tangent matrix
-    r_aie = domain.integrate(P(F))
-    r = domain.asmatrix(r_aie)
+    r_components = domain.integrate(P(F))
+    r = domain.asm(r_components)
     
     # reference force per dof
-    rref = domain.asmatrix(abs(r_aie))
+    rref = domain.asm(abs(r_components))
 
-    K = domain.asmatrix(domain.integrate(A(F)))
+    K = domain.asm(domain.integrate(A(F)))
 
     system = fe.solve.partition(u, r, K, dof1, dof0)
     du = fe.solve.solve(*system, u0ext)

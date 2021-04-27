@@ -68,6 +68,48 @@ def apply(v, dof, bounds, dof0=None):
         return u
     else:
         return u.ravel()[dof0]
+    
+def symmetry(dof, mesh, axes=(True, True, True), x=0, y=0, z=0):
+    
+    axes = np.array(axes).astype(bool)[:mesh.ndim]
+    
+    fx = lambda v: np.isclose(v, x)
+    fy = lambda v: np.isclose(v, y)
+    fz = lambda v: np.isclose(v, z)
+    
+    bounds = []
+    skipax = ~np.eye(3).astype(bool)
+    kwarglist = [{"fx": fx, "skip": skipax[0][:mesh.ndim]}, 
+                 {"fy": fy, "skip": skipax[1][:mesh.ndim]}, 
+                 {"fz": fz, "skip": skipax[2][:mesh.ndim]}]
+    
+    for enforce_sym, kwargs in zip(axes, 
+                                   kwarglist[:mesh.ndim]):
+        if enforce_sym:
+            bounds.append(Boundary(dof, mesh, **kwargs))
+    
+    return bounds
+
+def symmetry(dof, mesh, axes=(True, True, True), x=0, y=0, z=0):
+    
+    axes = np.array(axes).astype(bool)[:mesh.ndim]
+    
+    fx = lambda v: np.isclose(v, x)
+    fy = lambda v: np.isclose(v, y)
+    fz = lambda v: np.isclose(v, z)
+    
+    bounds = []
+    skipax = ~np.eye(3).astype(bool)
+    kwarglist = [{"fx": fx, "skip": skipax[0][:mesh.ndim]}, 
+                 {"fy": fy, "skip": skipax[1][:mesh.ndim]}, 
+                 {"fz": fz, "skip": skipax[2][:mesh.ndim]}]
+    
+    for enforce_sym, kwargs in zip(axes, 
+                                   kwarglist[:mesh.ndim]):
+        if enforce_sym:
+            bounds.append(Boundary(dof, mesh, **kwargs))
+    
+    return bounds
 
 
 class Boundary:

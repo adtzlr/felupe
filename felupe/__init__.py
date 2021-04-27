@@ -7,6 +7,7 @@ from . import element
 from . import domain
 from . import constitution
 from . import solve
+from . import utils
 
 from .domain import Domain
 from .doftools import Boundary

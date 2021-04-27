@@ -41,11 +41,11 @@ class NeoHooke:
         iFT = transpose(inv(F))
         detF = det(F)
         
-        Pdev = mu * (F - ddot(F,F)/3*iFT) * detF**(-2/3)
-        Pvol = p * detF * iFT
-        
         if p is None:
             p = self.bulk * (detF - 1)
+        
+        Pdev = mu * (F - ddot(F,F)/3*iFT) * detF**(-2/3)
+        Pvol = p * detF * iFT
         
         return Pdev + Pvol
     

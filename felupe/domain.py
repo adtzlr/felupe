@@ -32,16 +32,20 @@ from numba import jit, prange
 
 from scipy.sparse import csr_matrix
 
-from .helpers import det, inv
+import meshio
+
+from .helpers import det, inv, dot, transpose, eigvals
 
 class Domain:
-    def __init__(self, element, mesh, quadrature):
+    def __init__(self, mesh, element, quadrature):
         self.mesh = mesh
         self.element = deepcopy(element)
         self.quadrature = quadrature
         
         # alias
         self.tointegrationpoints = self.interpolate
+        self.assembly = self.asmatrix
+        self.asm = self.assembly
 
         self.ndim = self.element.ndim
         self.nbasis = self.element.nbasis
@@ -225,6 +229,31 @@ class Domain:
             out = out / self.mesh.elements_per_node
 
         return out
+    
+
+    def save(self, u, F, P, A, r, K, filename="out.vtk"):
+        # cauchy stress at integration points
+        s = dot(P, transpose(F)) / det(F)
+        sp = eigvals(s)
+        
+        # shift stresses to nodes and average nodal values
+        cauchy = self.tonodes(s, sym=True)
+        cauchyprinc = [self.tonodes(sp_i, mode="scalar") for sp_i in sp]
+    
+        mesh = meshio.Mesh(
+            points=self.mesh.nodes,
+            cells={self.mesh.etype: self.mesh.connectivity},
+            # Optionally provide extra data on points, cells, etc.
+            point_data={
+                "Displacements": u,
+                "CauchyStress": cauchy,
+                "ReactionForce": r,
+                "MaxPrincipalCauchyStress": cauchyprinc[2],
+                "IntPrincipalCauchyStress": cauchyprinc[1],
+                "MinPrincipalCauchyStress": cauchyprinc[0],
+            },
+        )
+        mesh.write(filename)
 
 
 
@@ -238,48 +267,47 @@ def _integrate4(dhdX, A, Jw):
 
 # remove in future releases
 # -------------------------
-#_integrate2parallel = _integrate2
-#_integrate4parallel = _integrate4
+_integrate2parallel = _integrate2
+_integrate4parallel = _integrate4
 
 
-@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def _integrate2parallel(dhdX, P, Jw):
+# @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+# def _integrate2parallel(dhdX, P, Jw):
+#     ndim, ngauss, nelems = P.shape[-3:]
 
-    ndim, ngauss, nelems = P.shape[-3:]
+#     out = np.zeros((ngauss, ndim, nelems))
 
-    out = np.zeros((ngauss, ndim, nelems))
+#     for a in prange(ngauss):  # basis function "a"
+#         for p in prange(ngauss):  # integration point "p"
+#             for e in prange(nelems):  # element "e"
+#                 for i in prange(ndim):  # first index "i"
+#                     for J in prange(ndim):  # second index "J"
+#                         out[a, i, e] += (
+#                             dhdX[a, J, p, e] * P[i, J, p, e] * Jw[p, e]
+#                         )
 
-    for a in prange(ngauss):  # basis function "a"
-        for p in prange(ngauss):  # integration point "p"
-            for e in prange(nelems):  # element "e"
-                for i in prange(ndim):  # first index "i"
-                    for J in prange(ndim):  # second index "J"
-                        out[a, i, e] += (
-                            dhdX[a, J, p, e] * P[i, J, p, e] * Jw[p, e]
-                        )
-
-    return out
+#     return out
 
 
-@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def _integrate4parallel(dhdX, A, Jw):
+# @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+# def _integrate4parallel(dhdX, A, Jw):
 
-    ndim, ngauss, nelems = A.shape[-3:]
+#     ndim, ngauss, nelems = A.shape[-3:]
 
-    out = np.zeros((ngauss, ndim, ngauss, ndim, nelems))
-    for a in prange(ngauss):  # basis function "a"
-        for b in prange(ngauss):  # basis function "b"
-            for p in prange(ngauss):  # integration point "p"
-                for e in prange(nelems):  # element "e"
-                    for i in prange(ndim):  # first index "i"
-                        for J in prange(ndim):  # second index "J"
-                            for k in prange(ndim):  # third index "k"
-                                for L in prange(ndim):  # fourth index "L"
-                                    out[a, i, b, k, e] += (
-                                        dhdX[a, J, p, e]
-                                        * dhdX[b, L, p, e]
-                                        * A[i, J, k, L, p, e]
-                                        * Jw[p, e]
-                                    )
+#     out = np.zeros((ngauss, ndim, ngauss, ndim, nelems))
+#     for a in prange(ngauss):  # basis function "a"
+#         for b in prange(ngauss):  # basis function "b"
+#             for p in prange(ngauss):  # integration point "p"
+#                 for e in prange(nelems):  # element "e"
+#                     for i in prange(ndim):  # first index "i"
+#                         for J in prange(ndim):  # second index "J"
+#                             for k in prange(ndim):  # third index "k"
+#                                 for L in prange(ndim):  # fourth index "L"
+#                                     out[a, i, b, k, e] += (
+#                                         dhdX[a, J, p, e]
+#                                         * dhdX[b, L, p, e]
+#                                         * A[i, J, k, L, p, e]
+#                                         * Jw[p, e]
+#                                     )
 
-    return out
+#     return out

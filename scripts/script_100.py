@@ -107,7 +107,7 @@ for iteration in range(20):
 
     # residuals and tangent matrix
     r_aie = domain.integrate(P(F))
-    r = domain.asmatrix(r_aie.copy())
+    r = domain.asmatrix(r_aie)
     
     # reference force per dof
     rref = domain.asmatrix(abs(r_aie))

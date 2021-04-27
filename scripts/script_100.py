@@ -120,12 +120,8 @@ for iteration in range(20):
     if np.any(np.isnan(du)):
         break
     else:
-        rx = r.toarray().reshape(*mesh.nodes.shape)
-        ry = rref.toarray().reshape(*mesh.nodes.shape)
-        ry[ry == 0] = np.nan
-        rxy = rx/ry
-        rxy[mesh.elements_per_node == 1] = rx[mesh.elements_per_node == 1]
-        norm_rr = max(rxy.ravel()[dof1])
+        norm_rr = np.linalg.norm(fe.utils.dofresiduals(domain, r, rref, dof1))
+        
         norm_r = np.linalg.norm(r.toarray()[dof1])
         
         norm_du = np.linalg.norm(du)

@@ -28,8 +28,43 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import meshzoo
 
+class Mesh:
+    def __init__(self, nodes, connectivity, etype):
+        self.nodes = nodes
+        self.connectivity = connectivity
+        self.etype = etype
+        
+        self.nnodes, self.ndim = self.nodes.shape
+        self.ndof = self.nodes.size
+        self.nelements = self.connectivity.shape[0]
+        
+        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
 
-class Cube:
+
+class Cube(Mesh):
+    def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+        self.a = a
+        self.b = b
+        self.n = n
+
+        nodes, connectivity = meshzoo.cube_hexa(a, b, n)
+        etype = "hexahedron"
+        
+        super().__init__(nodes, connectivity, etype)
+        
+
+class Rectangle(Mesh):
+    def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
+        self.a = a
+        self.b = b
+        self.n = n
+
+        nodes, connectivity = meshzoo.rectangle_quad(a, b, n)
+        etype = "quad"
+        
+        super().__init__(nodes, connectivity, etype)
+
+class CubeOld:
     def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
         self.a = a
         self.b = b
@@ -39,11 +74,12 @@ class Cube:
         self.nnodes, self.ndim = self.nodes.shape
         self.ndof = self.nodes.size
         self.nelements = self.connectivity.shape[0]
+        self.etype = "hexahedron"
 
         _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
 
 
-class Rectangle:
+class RectangleOld:
     def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
         self.a = a
         self.b = b
@@ -53,5 +89,6 @@ class Rectangle:
         self.nnodes, self.ndim = self.nodes.shape
         self.ndof = self.nodes.size
         self.nelements = self.connectivity.shape[0]
+        self.etype = "quad"
 
         _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)

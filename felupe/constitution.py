@@ -36,7 +36,7 @@ class NeoHooke:
         else:
             self.bulk = bulk
     
-    def P(self, F, p, J):
+    def P(self, F, p=None, J=None):
         mu = self.mu
         iFT = transpose(inv(F))
         detF = det(F)
@@ -44,9 +44,12 @@ class NeoHooke:
         Pdev = mu * (F - ddot(F,F)/3*iFT) * detF**(-2/3)
         Pvol = p * detF * iFT
         
+        if p is None:
+            p = self.bulk * (detF - 1)
+        
         return Pdev + Pvol
     
-    def A(self, F, p, J):
+    def A(self, F, p=None, J=None):
         mu = self.mu
         
         detF = det(F)
@@ -59,12 +62,18 @@ class NeoHooke:
                        + 2/9 * ddot(F, F) * dya(iFT, iFT)
                        + 1/3 * ddot(F, F) * cdya_il(iFT, iFT)
                        ) * detF**(-2/3)
-    
-        A4_vol = p * detF * (dya(iFT,iFT) - cdya_il(iFT,iFT))
+        
+        if p is None:
+            p = self.dUdJ(detF)
+            q = p + self.d2UdJ2(detF) * detF
+        else:
+            q = p
+
+        A4_vol = detF * (q * dya(iFT,iFT) - p * cdya_il(iFT,iFT))
     
         return A4_dev + A4_vol
     
-    def A_dev(self, F, p, J):
+    def A_dev(self, F, p=None, J=None):
         mu = self.mu
         
         detF = det(F)
@@ -80,12 +89,18 @@ class NeoHooke:
     
         return A4_dev
     
-    def A_vol(self, F, p, J):
+    def A_vol(self, F, p=None, J=None):
         
         detF = det(F)
         iFT = transpose(inv(F))
 
-        A4_vol = detF * (dya(iFT,iFT) - cdya_il(iFT,iFT)) \
+        if p is None:
+            p = self.dUdJ(detF)
+            q = p + self.d2UdJ2(detF) * detF
+        else:
+            q = p
+
+        A4_vol = detF * (q * dya(iFT,iFT) - p * cdya_il(iFT,iFT))
     
         return A4_vol
     

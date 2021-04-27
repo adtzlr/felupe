@@ -32,10 +32,8 @@ import felupe as fe
 tol = 1e-8
 move = -np.arange(0.1, 0.8, 0.05)
 
-element = fe.element.Hex1()
-mesh = fe.mesh.Cube(n=8) 
-quadrature = fe.quadrature.Linear(dim=3)
-domain = fe.Domain(mesh, element, quadrature) 
+mesh = fe.mesh.Cube(n=8)
+domain = fe.Domain(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3)) 
 
 # u at nodes
 u = domain.zeros()

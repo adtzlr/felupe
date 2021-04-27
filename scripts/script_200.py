@@ -5,19 +5,24 @@ Created on Mon Apr 26 21:17:05 2021
 @author: adutz
 """
 
+import numpy as np
+
 import felupe as fe
+from felupe.helpers import det, identity
 
-e20 = fe.element.Quad0()
-m2 = fe.mesh.Rectangle(n=2) 
-q20 = fe.quadrature.Constant(dim=2)
-d2 = fe.Domain(e20,m2,q20) 
+e = fe.element.Quad1()
+m = fe.mesh.Rectangle(n=2) 
+q = fe.quadrature.Linear(dim=2)
+d = fe.Domain(e,m,q) 
 
-u2 = d2.zeros()
+u = d.zeros()
 
-e31 = fe.element.Hex1()
-m3 = fe.mesh.Cube(n=2) 
-q31 = fe.quadrature.Linear(dim=3)
-d3 = fe.Domain(e31,m3,q31) 
+H = d.grad(u)
+R = d.interpolate((m.nodes)[:,1])
+r = d.interpolate((m.nodes+u)[:,1])
+F = np.zeros((3,3,*H.shape[2:]))
+F[:2,:2] = identity(H) + H
+F[-1,-1] = r/R
 
-u3 = d3.zeros()
-H3 = d3.grad(u3)
+NH = fe.constitution.NeoHooke(mu=1)
+P = NH.P(F,p=NH.bulk*(det(F)-1),J=0)

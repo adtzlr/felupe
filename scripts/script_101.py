@@ -12,7 +12,7 @@ from felupe.helpers import (identity, dya, det, cof,
                             transpose, dot, eigvals)
 
 tol = 5e-9
-move = 0.6
+move = -0.39
 
 e = fe.element.Hex1()
 m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
@@ -20,7 +20,7 @@ m = fe.mesh.Cube(a=(0, 0, 0), b=(2, 2, 1), n=(11, 11, 6))
 q = fe.quadrature.Linear(dim=3)
 c = fe.constitution.NeoHooke(mu=1, bulk=5000)
 
-d = fe.Domain(e, m, q)
+d = fe.Domain(m, e, q)
 
 # undeformed element volumes
 V = d.volume()
@@ -40,12 +40,12 @@ symz = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
 movz = fe.Boundary(d.dof, m, "movez", skip=(1, 1, 0), fz=f1, value=move)
 bounds = [symx, symy, symz, movz]
 
-# symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
-# symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
-# fixb = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
-# fixt = fe.Boundary(d.dof, m, "fix-t", skip=(0, 0, 1), fz=f1)
-# movt = fe.Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
-# bounds = [symx, symy, fixb, fixt, movt]
+symx = fe.Boundary(d.dof, m, "sym-x", skip=(0, 1, 1), fx=f0)
+symy = fe.Boundary(d.dof, m, "sym-y", skip=(1, 0, 1), fy=f0)
+fixb = fe.Boundary(d.dof, m, "sym-z", skip=(1, 1, 0), fz=f0)
+fixt = fe.Boundary(d.dof, m, "fix-t", skip=(0, 0, 1), fz=f1)
+movt = fe.Boundary(d.dof, m, "mov-t", skip=(1, 1, 0), fz=f1, value = move)
+bounds = [symx, symy, fixb, fixt, movt]
 
 # dofs to dismiss and to keep
 dof0, dof1 = fe.doftools.partition(d.dof, bounds)

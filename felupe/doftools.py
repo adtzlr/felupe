@@ -248,3 +248,4 @@ class Boundary:
             self.mask[:, np.where(self.skip)[0]] = False
 
         self.dof = dof[self.mask]
+        self.nodes = np.arange(mesh.nnodes)[mask]

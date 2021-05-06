@@ -71,6 +71,8 @@ class Domain:
             [self.element.basisprime(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
         
+        self.h = np.einsum("ap,e->ape", self.element.h, np.ones(self.nelements))
+        
         if self.nbasis > 1:
             
             # dXdr_IJpe
@@ -92,6 +94,7 @@ class Domain:
             # partial derivative of basis function "a" 
             # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
             # for every element "e"
+
             self.dhdX = np.einsum("aIp,IJpe->aJpe", self.element.dhdr, drdX)
 
         # indices for sparse matrices
@@ -255,6 +258,9 @@ class Domain:
         )
         mesh.write(filename)
 
+
+def _integrate0(h, f, Jw):
+    return np.einsum("ape,ipe,pe->aie", h, f, Jw)
 
 
 def _integrate2(dhdX, P, Jw):

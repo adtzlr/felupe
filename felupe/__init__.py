@@ -1,15 +1,19 @@
 from .__about__ import __version__
-from . import helpers
+from . import math
 from . import mesh
 from . import quadrature
 from . import doftools
 from . import element
-from . import domain
+from . import field
+
+# from . import region
 from . import constitution
 from . import solve
 from . import utils
 
-from .domain import Domain
+from .region import Region, 
+from .forms import IntegralForm, IntegralFormMixed
+from .field import Field
 from .doftools import Boundary
 
 

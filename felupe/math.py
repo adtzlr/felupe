@@ -28,6 +28,25 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
+def values(fields):
+    if isinstance(fields, tuple):
+        return np.concatenate([field.values.ravel() for field in fields])
+    else:
+        return fields.values.ravel()
+
+
+def norms(arrays):
+    return [np.linalg.norm(arr) for arr in arrays]
+
+
+def interpolate(A):
+    return A.interpolate()
+
+
+def grad(A):
+    return A.grad()
+
+
 def identity(A):
     _, ndim, g, e = A.shape
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])

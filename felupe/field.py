@@ -67,7 +67,7 @@ class Field:
 
     def grad(self):
         "gradient dudX_IJpe"
-        # gradient as partial derivative of given nodal values "aI"
+        # gradient as partial derivative of field values "aI"
         # w.r.t. undeformed coordiante "J" evaluated at quadrature point "p"
         # for element "e"
         return np.einsum(
@@ -78,7 +78,7 @@ class Field:
 
     def interpolate(self):
         "interpolated values u_Ipe"
-        # interpolated given nodal values "aI"
+        # interpolated field values "aI"
         # evaluated at quadrature point "p"
         # for element "e"
         return np.einsum(

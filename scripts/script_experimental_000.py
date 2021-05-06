@@ -45,6 +45,7 @@ region0 = fe.Region(mesh, fe.element.Hex0(), fe.quadrature.Linear(dim=3))
 u = fe.Field(region, 3)
 p = fe.Field(region0, 1)
 J = fe.Field(region0, 1, values=1)
+fields = (u, p, J)
 
 # load constitutive material formulation
 mat = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
@@ -53,20 +54,20 @@ mat = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
 f0 = lambda x: np.isclose(x, -H / 2)
 f1 = lambda x: np.isclose(x, H / 2)
 bounds = fe.doftools.symmetry(u, (0, 1, 0))
-bounds["bot"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
+bounds["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
 bounds["top"] = fe.Boundary(u, skip=(0, 0, 1), fz=f1)
 bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1)
 
 bounds2 = fe.doftools.symmetry(u, (0, 1, 0))
-bounds2["bot"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
+bounds2["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
 bounds2["top"] = fe.Boundary(u, skip=(1, 0, 1), fz=f1)
 bounds2["fix"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
-bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1, value=b * move)
+bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
 
-results1 = fe.utils.incsolve((u, p, J), region, mat.f, mat.A, bounds, a * move, tol=tol)
+results1 = fe.utils.incsolve(fields, region, mat.f, mat.A, bounds, a * move, tol=tol)
 
 results2 = fe.utils.incsolve(
-    results1[-1].fields, region, mat.f, mat.A, bounds2, 5 * move, tol=tol
+    results1[-1].fields, region, mat.f, mat.A, bounds2, b * move, tol=tol
 )
 
 fe.utils.savehistory(region, [*results1, *results2])

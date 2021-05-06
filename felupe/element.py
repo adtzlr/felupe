@@ -97,11 +97,11 @@ class Hex0(Hex):
         self.nbasis = 1
 
     def basis(self, rst):
-        "linear hexahedron basis functions"
+        "constant hexahedron basis functions"
         return np.array([1])
 
     def basisprime(self, rst):
-        "linear hexahedron derivative of basis functions"
+        "constant hexahedron derivative of basis functions"
         return np.array([[0, 0, 0]])
 
 
@@ -157,7 +157,7 @@ class Hex2s(Hex):
         self.nbasis = 20
 
     def basis(self, rst):
-        "linear hexahedron basis functions"
+        "quadratic serendipity hexahedron basis functions"
         r, s, t = rst
         return np.array(
             [
@@ -189,7 +189,7 @@ class Hex2s(Hex):
         )
 
     def basisprime(self, rst):
-        "linear hexahedron derivative of basis functions"
+        "quadratic serendipity hexahedron derivative of basis functions"
         r, s, t = rst
         return (
             np.array(

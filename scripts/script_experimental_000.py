@@ -28,14 +28,17 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import felupe as fe
 
+import matplotlib.pyplot as plt
+
 tol = 1e-6
 
-move = np.linspace(0, 1, 3)
+move = np.linspace(0, 1, 10)
 a = -4
 b = 5
 
+H = 26
 mesh = fe.mesh.ScaledCube(
-    a=(-1, 0, -1), b=(1, 1, 1), n=(16, 16, 16), L=95, B=220, H=26, dL=10, dB=10
+    symmetry=(False, True, False), n=8, L=95, B=220, H=H, dL=10, dB=10
 )
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))
@@ -73,30 +76,29 @@ results2 = fe.utils.incsolve(
 fe.utils.savehistory(region, [*results1, *results2])
 
 # experimental reaction force calculation
-r = results1[-1].r
-ru = (np.split(r, r.unstack)[0]).reshape(-1,3)
-force_move = ru[bounds["move"].nodes].sum(axis=1)
+force_move = fe.utils.reactionforce(results1, bounds)
+force_move2 = fe.utils.reactionforce(results2, bounds)
 
 force_z = np.array([res.r[bounds["move"].dof].sum() for res in results1])
 force_x = np.array([res.r[bounds2["move"].dof].sum() for res in results2])
 
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
 
-f_z = interp1d(a * move[: len(force_z)], force_z, kind="quadratic")
-z = np.linspace(0, a * move[: len(force_z)][-1])
-plt.plot(a * move[: len(force_z)], 2 * force_z, "o")
-plt.plot(z, 2 * f_z(z), "C0--")
+xy1, xxyy1 = fe.utils.curve(a * move, 2 * force_move[:, 2])
+plt.plot(*xy1, "o")
+plt.plot(*xxyy1, "C0--")
 
-f_x = interp1d(b * move[: len(force_x)], force_x, kind="quadratic")
-x = np.linspace(0, b * move[: len(force_x)][-1])
+xy2, xxyy2 = fe.utils.curve(b * move, 2 * force_move2[:, 0])
 plt.figure()
-plt.plot(b * move[: len(force_x)], 2 * force_x, "o")
-plt.plot(x, 2 * f_x(x), "C0--")
+plt.plot(*xy2, "o")
+plt.plot(*xxyy2, "C0--")
 
-print("c_Z0 = ", (np.diff(2 * f_z(z)) / np.diff(z))[0])
-print("c_X0 = ", (np.diff(2 * f_x(x)) / np.diff(x))[0])
+print("")
+print("c_Z0 = ", (np.diff(xxyy1[1]) / np.diff(xxyy1[0]))[0])
+print("c_X0 = ", (np.diff(xxyy2[1]) / np.diff(xxyy2[0]))[0])
 
-print("c_Z = ", (np.diff(2 * f_z(z)) / np.diff(z))[-1])
-print("c_X = ", (np.diff(2 * f_x(x)) / np.diff(x))[-1])
+print("")
+print("c_Z = ", (np.diff(xxyy1[1]) / np.diff(xxyy1[0]))[-1])
+print("c_X = ", (np.diff(xxyy2[1]) / np.diff(xxyy2[0]))[-1])
+
+print("")
 print("V = ", region.volume().sum())

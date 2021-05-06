@@ -1,0 +1,324 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Apr 29 18:29:15 2021
+
+@author: adutz
+"""
+# -*- coding: utf-8 -*-
+"""
+ _______  _______  ___      __   __  _______  _______ 
+|       ||       ||   |    |  | |  ||       ||       |
+|    ___||    ___||   |    |  | |  ||    _  ||    ___|
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
+|    ___||    ___||   |___ |       ||    ___||    ___|
+|   |    |   |___ |       ||       ||   |    |   |___ 
+|___|    |_______||_______||_______||___|    |_______|
+
+This file is part of felupe.
+
+Felupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Felupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+import numpy as np
+from scipy.sparse import csr_matrix as sparsematrix
+from scipy.sparse import bmat, vstack
+import meshio
+
+from copy import deepcopy as copy
+
+from .math import det, inv, interpolate, dot, transpose, eigvals
+
+
+class Region:
+    def __init__(self, mesh, element, quadrature):
+        self.mesh = copy(mesh)
+        self.element = element
+        self.quadrature = quadrature
+
+        if element.nbasis > 1:
+            self.connectivity = self.mesh.connectivity[:, : element.nbasis]
+            self.mesh.update(self.connectivity)
+            self.nodes = self.mesh.nodes
+            self.nnodes = self.mesh.nnodes
+        else:
+            self.nodes = np.stack(
+                [
+                    np.mean(self.mesh.nodes[conn], axis=0)
+                    for conn in self.mesh.connectivity
+                ]
+            )
+            self.nnodes = self.nodes.shape[0]
+            self.connectivity = np.arange(self.mesh.nelements).reshape(-1, 1)
+            self.mesh.nodes = self.nodes
+            self.mesh.update(self.connectivity)
+
+        # array with degrees of freedom
+        # h_ap
+        # ----
+        # basis function "a" evaluated at quadrature point "p"
+        self.h = np.array([self.element.basis(p) for p in self.quadrature.points]).T
+
+        # dhdr_aJp
+        # --------
+        # partial derivative of basis function "a"
+        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
+        self.dhdr = np.array(
+            [self.element.basisprime(p) for p in self.quadrature.points]
+        ).transpose(1, 2, 0)
+
+        if self.element.nbasis > 1:
+
+            # dXdr_IJpe
+            # ---------
+            # geometric gradient as partial derivative of undeformed coordinate "I"
+            # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
+            # for every element "e"
+            dXdr = np.einsum(
+                "eaI,aJp->IJpe", self.mesh.nodes[self.connectivity], self.dhdr
+            )
+            drdX = inv(dXdr)
+
+            # det(dXdr)_pe * w_p
+            # determinant of geometric gradient evaluated at quadrature point "p"
+            # for every element "e" multiplied by corresponding quadrature weight
+            # denoted as "differential volume element"
+            self.dV = det(dXdr) * self.quadrature.weights.reshape(-1, 1)
+
+            # dhdX_aJpe
+            # ---------
+            # partial derivative of basis function "a"
+            # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
+            # for every element "e"
+            self.dhdX = np.einsum("aIp,IJpe->aJpe", self.dhdr, drdX)
+
+    def volume(self, detF=1):
+        "Calculate element volume for element 'e'."
+        return np.einsum("pe->e", detF * self.dV)
+
+
+class IntegralFormMixed:
+    def __init__(self, fun, fields, dV, grad=None):
+
+        self.fun = fun
+        self.fields = fields
+        self.nfields = len(fields)
+        self.dV = dV
+
+        if grad is None:
+            self.grad = np.zeros_like(fields, dtype=bool)
+            self.grad[0] = True
+        else:
+            self.grad = grad
+
+        self.forms = []
+
+        if len(fun) == self.nfields:
+            self.mode = 1
+            self.i = np.arange(self.nfields)
+            self.j = np.zeros_like(self.i)
+
+            for fun, field, grad_field in zip(self.fun, self.fields, self.grad):
+                f = IntegralForm(fun=fun, v=field, dV=self.dV, grad_v=grad_field)
+                self.forms.append(f)
+
+        elif len(fun) == np.sum(1 + np.arange(self.nfields)):
+            self.mode = 2
+            self.i, self.j = np.triu_indices(3)
+
+            for a, (i, j) in enumerate(zip(self.i, self.j)):
+                f = IntegralForm(
+                    self.fun[a],
+                    v=self.fields[i],
+                    dV=self.dV,
+                    u=self.fields[j],
+                    grad_v=self.grad[i],
+                    grad_u=self.grad[j],
+                )
+                self.forms.append(f)
+        else:
+            raise ValueError("Unknown input format.")
+
+    def assemble(self, values=None, dense=False, parallel=True, block=True):
+
+        out = []
+
+        if values is None:
+            values = [None] * len(self.forms)
+
+        for val, form in zip(values, self.forms):
+            out.append(form.assemble(val, dense, parallel))
+
+        if block and self.mode == 2:
+            K = np.zeros((self.nfields, self.nfields), dtype=object)
+            for a, (i, j) in enumerate(zip(self.i, self.j)):
+                K[i, j] = out[a]
+                if i != j:
+                    K[j, i] = out[a].T
+
+            return bmat(K).tocsr()
+
+        if block and self.mode == 1:
+            return vstack(out).tocsr()
+
+        else:
+            return out
+
+    def integrate(self, parallel=True):
+
+        out = []
+        for form in self.forms:
+            out.append(form.integrate(parallel))
+
+        return out
+
+
+class IntegralForm:
+    def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
+        self.fun = fun
+        self.dV = dV
+
+        self.v = v
+        self.grad_v = grad_v
+
+        self.u = u
+        self.grad_u = grad_u
+
+        if not self.u:
+            self.indices = self.v.indices.ai
+            self.shape = self.v.indices.shape
+
+        else:
+            eai = self.v.indices.eai
+            ebk = self.u.indices.eai
+
+            eaibk0 = np.stack(
+                [np.repeat(ai.ravel(), bk.size) for ai, bk in zip(eai, ebk)]
+            )
+            eaibk1 = np.stack(
+                [np.tile(bk.ravel(), ai.size) for ai, bk in zip(eai, ebk)]
+            )
+
+            self.indices = (eaibk0.ravel(), eaibk1.ravel())
+            self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
+
+    def assemble(self, values=None, dense=False, parallel=True):
+
+        if values is None:
+            values = self.integrate(parallel=parallel)
+
+        permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
+            int
+        )
+
+        out = sparsematrix(
+            (values.transpose(permute).ravel(), self.indices), shape=self.shape
+        )  # .reshape(self.v.dof.shape)
+
+        if dense:
+            out = out.toarray()[:, 0]
+
+        return out
+
+    def integrate(self, parallel=True):
+        grad_v, grad_u = self.grad_v, self.grad_u
+        v, u = self.v, self.u
+        dV = self.dV
+        fun = self.fun
+
+        if not grad_v:
+            vb = np.tile(
+                v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.nelements
+            )
+        else:
+            vb = v.region.dhdX
+
+        if u is not None:
+            if not grad_u:
+                ub = np.tile(
+                    u.region.h.reshape(*u.region.h.shape, 1), u.region.mesh.nelements
+                )
+            else:
+                ub = u.region.dhdX
+
+        if u is None:
+
+            if not grad_v:
+                return np.einsum("ape,ipe,pe->aie", vb, fun, dV)
+            else:
+                if parallel:
+                    return integrate2parallel(vb, fun, dV)
+                else:
+                    return np.einsum("aJpe,iJpe,pe->aie", vb, fun, dV)
+
+        else:
+
+            if not grad_v and not grad_u:
+                return np.einsum("ape,...pe,bpe,pe->a...be", vb, fun, ub, dV)
+            elif grad_v and not grad_u:
+                return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
+            elif not grad_v and grad_u:
+                return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
+            else:  # grad_v and grad_u
+                if parallel:
+                    return integrate4parallel(vb, fun, ub, dV)
+                else:
+                    return np.einsum("aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV)
+
+
+from numba import jit, prange
+
+
+@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+def integrate2parallel(v, fun, dV):
+
+    nnodes = v.shape[0]
+    ndim, ngauss, nelems = fun.shape[-3:]
+
+    out = np.zeros((nnodes, ndim, nelems))
+
+    for a in prange(nnodes):  # basis function "a"
+        for p in prange(ngauss):  # integration point "p"
+            for e in prange(nelems):  # element "e"
+                for i in prange(ndim):  # first index "i"
+                    for J in prange(ndim):  # second index "J"
+                        out[a, i, e] += v[a, J, p, e] * fun[i, J, p, e] * dV[p, e]
+
+    return out
+
+
+@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+def integrate4parallel(v, fun, u, dV):
+
+    nnodes_a = v.shape[0]
+    nnodes_b = u.shape[0]
+    ndim, ngauss, nelems = fun.shape[-3:]
+
+    out = np.zeros((nnodes_a, ndim, nnodes_b, ndim, nelems))
+    for a in prange(nnodes_a):  # basis function "a"
+        for b in prange(nnodes_b):  # basis function "b"
+            for p in prange(ngauss):  # integration point "p"
+                for e in prange(nelems):  # element "e"
+                    for i in prange(ndim):  # first index "i"
+                        for J in prange(ndim):  # second index "J"
+                            for k in prange(ndim):  # third index "k"
+                                for L in prange(ndim):  # fourth index "L"
+                                    out[a, i, b, k, e] += (
+                                        v[a, J, p, e]
+                                        * u[b, L, p, e]
+                                        * fun[i, J, k, L, p, e]
+                                        * dV[p, e]
+                                    )
+
+    return out

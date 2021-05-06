@@ -74,7 +74,7 @@ class IntegralFormMixed:
         else:
             raise ValueError("Unknown input format.")
 
-    def assemble(self, values=None, dense=False, parallel=True, block=True):
+    def assemble(self, values=None, parallel=True, block=True):
 
         out = []
 
@@ -82,7 +82,7 @@ class IntegralFormMixed:
             values = [None] * len(self.forms)
 
         for val, form in zip(values, self.forms):
-            out.append(form.assemble(val, dense, parallel))
+            out.append(form.assemble(val, parallel))
 
         if block and self.mode == 2:
             K = np.zeros((self.nfields, self.nfields), dtype=object)
@@ -137,7 +137,7 @@ class IntegralForm:
             self.indices = (eaibk0.ravel(), eaibk1.ravel())
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
-    def assemble(self, values=None, dense=False, parallel=True):
+    def assemble(self, values=None, parallel=True):
 
         if values is None:
             values = self.integrate(parallel=parallel)
@@ -148,10 +148,7 @@ class IntegralForm:
 
         out = sparsematrix(
             (values.transpose(permute).ravel(), self.indices), shape=self.shape
-        )  # .reshape(self.v.dof.shape)
-
-        if dense:
-            out = out.toarray()[:, 0]
+        )
 
         return out
 
@@ -182,7 +179,7 @@ class IntegralForm:
                 return np.einsum("ape,ipe,pe->aie", vb, fun, dV)
             else:
                 if parallel:
-                    return integrate2parallel(vb, fun, dV)
+                    return integrate_gradv(vb, fun, dV)
                 else:
                     return np.einsum("aJpe,iJpe,pe->aie", vb, fun, dV)
 
@@ -196,13 +193,13 @@ class IntegralForm:
                 return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
             else:  # grad_v and grad_u
                 if parallel:
-                    return integrate4parallel(vb, fun, ub, dV)
+                    return integrate_gradv_gradu(vb, fun, ub, dV)
                 else:
                     return np.einsum("aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV)
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def integrate2parallel(v, fun, dV):
+def integrate_gradv(v, fun, dV):
 
     nnodes = v.shape[0]
     ndim, ngauss, nelems = fun.shape[-3:]
@@ -220,7 +217,7 @@ def integrate2parallel(v, fun, dV):
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)
-def integrate4parallel(v, fun, u, dV):
+def integrate_gradv_gradu(v, fun, u, dV):
 
     nnodes_a = v.shape[0]
     nnodes_b = u.shape[0]

@@ -31,11 +31,11 @@ from types import SimpleNamespace
 
 def get_dof0(field, bounds):
     "Extract prescribed degrees of freedom."
-    
+
     # get mesh from field and obtain field-dimension
     mesh = field.region.mesh
     dim = field.dim
-    
+
     # check if there are nodes without connected elements in the mesh
     # and add them to the list of prescribed dofs
     # e.g. these are nodes [2,6,7]
@@ -46,30 +46,30 @@ def get_dof0(field, bounds):
     #
     # fixmissing = [6, 7, 8, 18, 19, 29, 21, 22, 23]
     fixmissing = dim * np.tile(mesh.nodes_without_elements, (dim, 1)).T + np.arange(dim)
-    
+
     # obtain prescribed dofs from boundaries
     dof0_bounds = np.concatenate([b.dof for b in bounds.values()])
-    
+
     # combine all prescribed dofs and remove repeated itmes if there are any
     return np.unique(np.append(fixmissing.ravel(), dof0_bounds))
 
 
 def get_dof1(field, bounds, dof0=None):
     "Extract active (non-prescribed) degrees of freedom."
-    
+
     # obtain all dofs from the field
     dof = field.indices.dof
-    
+
     # if function argument `dof0` is None call `get_dof0()`
     if dof0 is None:
         dof0 = get_dof0(field, bounds)
-    
+
     # init a mask for the selection of active dofs
     mask = np.ones_like(dof.ravel(), dtype=bool)
-    
+
     # set mask items for prescribed dofs (dof0) to False
     mask[dof0] = False
-    
+
     # make the dof list 1d and mask active dofs
     return dof.ravel()[mask]
 
@@ -79,9 +79,10 @@ find = SimpleNamespace()
 find.dof0 = get_dof0
 find.dof1 = get_dof1
 
+
 def partition(field, bounds):
     "Partition dof-list to prescribed and active parts."
-    
+
     # if a tuple is passed it is assumed that the first
     # field is associated to the boundaries
     if isinstance(field, tuple):
@@ -93,7 +94,7 @@ def partition(field, bounds):
 
     dof0 = get_dof0(f, bounds)
     dof1 = get_dof1(f, bounds, dof0=dof0)
-    
+
     # extend active dofs with dofs from additional fields
     if extend_dof1:
         dof0, dof1, offsets = extend(fields, dof0, dof1)
@@ -104,22 +105,22 @@ def partition(field, bounds):
 
 
 def extend(fields, dof0, dof1):
-    
+
     # get sizes of fields and calculate offsets
     fieldsizes = [f.indices.dof.size for f in fields]
     offsets = np.cumsum(fieldsizes)
-    
+
     # init extended dof0, dof1 arrays
     dof0_xt = dof0.copy()
     dof1_xt = dof1.copy()
-    
+
     # loop over fields starting from the second ones_like
     for field, offset, fieldsize in zip(fields[1:], offsets[:-1], fieldsizes[1:]):
-        
+
         # obtain the mesh and the dimension from the current field
         mesh = field.region.mesh
         dim = field.dim
-        
+
         # check if there are nodes without/with connected elements in the mesh
         # and add them to the list of prescribed/active dofs
         # e.g. these are mesh.nodes_without_elements = [2,6,7]
@@ -128,14 +129,20 @@ def extend(fields, dof0, dof1):
         # dof0_add = 3*(  [6,6,6], ) +  [0,1,2], =  [18,19,20],
         #              (  [7,7,7]] )    [0,1,2]]    [21,22,23]]
         #
-        dof0_add = offset + dim * np.tile(mesh.nodes_without_elements, 
-                                          (dim, 1)).T + np.arange(dim)
-        dof1_add = offset + dim * np.tile(mesh.nodes_with_elements, 
-                                          (dim, 1)).T + np.arange(dim)
-        
+        dof0_add = (
+            offset
+            + dim * np.tile(mesh.nodes_without_elements, (dim, 1)).T
+            + np.arange(dim)
+        )
+        dof1_add = (
+            offset
+            + dim * np.tile(mesh.nodes_with_elements, (dim, 1)).T
+            + np.arange(dim)
+        )
+
         dof0_xt = np.append(dof0_xt, dof0_add.ravel())
         dof1_xt = np.append(dof1_xt, dof1_add.ravel())
-        
+
     return dof0_xt, dof1_xt, offsets[:-1]
 
 
@@ -156,7 +163,7 @@ def apply(v, bounds, dof0=None):
         # this is the case for meshes with nodes that are
         # not connected to elements
         u0ext = u.ravel()[dof0[dof0 < u.size]]
-        
+
         # pad (=extend) u0ext to the full dimension of prescribed dofs
         # and fill padded values with zeros
         u0ext_padded = np.pad(u0ext, (0, len(dof0) - len(u0ext)))
@@ -165,7 +172,7 @@ def apply(v, bounds, dof0=None):
 
 def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds={}):
     "Create symmetry boundary conditions."
-    
+
     # obtain the mesh from the field
     mesh = field.region.mesh
 
@@ -189,7 +196,7 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds={}):
     ]
 
     labels = ["symx", "symy", "symz"]
-    
+
     # loop over symmetry conditions and add them to a new dict
     for a, (symaxis, kwargs) in enumerate(zip(enforce, kwarglist[: mesh.ndim])):
         if symaxis:

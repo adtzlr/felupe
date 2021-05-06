@@ -27,8 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-import quadpy
-
 class Constant:
     
     def __init__(self, dim=3):
@@ -134,6 +132,7 @@ class Quadratic:
 class _P2_D3:
     
     def __init__(self):
+        import quadpy
         # integration point weights and coordinates
         self.npoints = 3**3
 
@@ -145,6 +144,7 @@ class _P2_D3:
 class _P2_D2:
     
     def __init__(self):
+        import quadpy
         # integration point weights and coordinates
         self.npoints = 3**2
         
@@ -156,6 +156,7 @@ class _P2_D2:
 class _P2_D1:
     
     def __init__(self):
+        import quadpy
         # integration point weights and coordinates
         self.npoints = 3
 
@@ -181,6 +182,7 @@ class Cubic:
 class _P3_D3:
     
     def __init__(self):
+        import quadpy
         # integration point weights and coordinates
         self.npoints = 4**3
         
@@ -192,6 +194,7 @@ class _P3_D3:
 class _P3_D2:
     
     def __init__(self):
+        import quadpy
         # integration point weights and coordinates
         self.npoints = 4**2
         
@@ -203,6 +206,7 @@ class _P3_D2:
 class _P3_D1:
     
     def __init__(self):
+        import quadpy
         # integration point weights and coordinates
         self.npoints = 4
         

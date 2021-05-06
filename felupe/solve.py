@@ -32,8 +32,13 @@ try:
 except:
     from scipy.sparse.linalg import spsolve
 
+from .math import values
 
-def partition(u, r, K, dof1, dof0):
+
+def partition(v, r, K, dof1, dof0):
+
+    u = values(v)
+
     u0 = u.ravel()[dof0]
     r1 = r[dof1]
     K11 = K[dof1, :][:, dof1]

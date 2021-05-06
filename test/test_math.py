@@ -29,33 +29,33 @@ import numpy as np
 import felupe as fe
 
 
-def test_helpers():
+def test_math():
     H = (np.random.rand(3, 3, 8, 200) - 0.5) / 10
-    F = fe.helpers.identity(H) + H
-    C = fe.helpers.dot(fe.helpers.transpose(F), F)
+    F = fe.math.identity(H) + H
+    C = fe.math.dot(fe.math.transpose(F), F)
     A = np.random.rand(3, 3, 3, 3, 8, 200)
 
-    fe.helpers.dot(C, C)
-    fe.helpers.dot(C, A)
-    fe.helpers.dot(A, C)
-    fe.helpers.dot(A, A)
+    fe.math.dot(C, C)
+    fe.math.dot(C, A)
+    fe.math.dot(A, C)
+    fe.math.dot(A, A)
 
-    fe.helpers.ddot(C, C)
-    fe.helpers.ddot(C, A)
-    fe.helpers.ddot(A, C)
-    fe.helpers.ddot(A, A)
+    fe.math.ddot(C, C)
+    fe.math.ddot(C, A)
+    fe.math.ddot(A, C)
+    fe.math.ddot(A, A)
 
-    fe.helpers.inv(C)
-    fe.helpers.det(C)
-    fe.helpers.cof(C)
-    fe.helpers.dya(C, C)
-    fe.helpers.cdya_ik(F, F)
-    fe.helpers.cdya_il(F, F)
-    fe.helpers.cdya(F, F)
+    fe.math.inv(C)
+    fe.math.det(C)
+    fe.math.cof(C)
+    fe.math.dya(C, C)
+    fe.math.cdya_ik(F, F)
+    fe.math.cdya_il(F, F)
+    fe.math.cdya(F, F)
 
-    fe.helpers.tovoigt(C)
-    fe.helpers.eigvals(C)
+    fe.math.tovoigt(C)
+    fe.math.eigvals(C)
 
 
 if __name__ == "__main__":
-    test_helpers()
+    test_math()

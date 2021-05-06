@@ -72,6 +72,9 @@ results2 = fe.utils.incsolve(
 
 fe.utils.savehistory(region, [*results1, *results2])
 
+# experimental reaction force calculation
+force_move = results1[-1].r.reshape(-1,3)[bounds["move"].nodes].sum(axis=1)
+
 force_z = np.array([res.r[bounds["move"].dof].sum() for res in results1])
 force_x = np.array([res.r[bounds2["move"].dof].sum() for res in results2])
 

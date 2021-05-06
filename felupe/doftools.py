@@ -80,12 +80,12 @@ find.dof0 = get_dof0
 find.dof1 = get_dof1
 
 
-def partition(field, bounds):
+def partition(fields, bounds):
     "Partition dof-list to prescribed and active parts."
 
     # if a tuple is passed it is assumed that the first
     # field is associated to the boundaries
-    if isinstance(field, tuple):
+    if isinstance(fields, tuple):
         f = fields[0]
         extend_dof1 = True
     else:
@@ -170,7 +170,7 @@ def apply(v, bounds, dof0=None):
         return u0ext_padded
 
 
-def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds={}):
+def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     "Create symmetry boundary conditions."
 
     # obtain the mesh from the field
@@ -195,6 +195,8 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds={}):
         {"fz": fz, "skip": skipax[2][: mesh.ndim]},
     ]
 
+    if bounds is None:
+        bounds = {}
     labels = ["symx", "symy", "symz"]
 
     # loop over symmetry conditions and add them to a new dict

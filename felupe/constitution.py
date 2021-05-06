@@ -57,15 +57,27 @@ class NeoHooke:
 
     def f_u(self, F, p, J):
         """Variation of total potential w.r.t displacements
-        (1st Piola Kirchhoff stress)."""
+        (1st Piola Kirchhoff stress).
+        
+        δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
+        """
+        
         return self.P(F, p, J)
 
     def f_p(self, F, p, J):
-        """Variation of total potential energy w.r.t pressure."""
+        """Variation of total potential energy w.r.t pressure.
+        
+        δ_p(Π_int) = ∫_V (det(F) - J) δp dV
+        """
+        
         return det(F) - J
 
     def f_J(self, F, p, J):
-        """Variation of total potential energy w.r.t volume ratio."""
+        """Variation of total potential energy w.r.t volume ratio.
+        
+        δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
+        """
+        
         return self.dUdJ(J) - p
 
     def f(self, F, p, J):
@@ -76,8 +88,9 @@ class NeoHooke:
     def A(self, F, p, J):
         """List of linearized variations of total potential energy w.r.t
         displacements, pressure and volume ratio (these expressions are
-        symmetric; A_up = A_pu if derived from a potential). They are
-        arranged as a flattened list from the upper triangle blocks:
+        symmetric; A_up = A_pu if derived from a total potential energy
+        formulation). List entries have to be arranged as a flattened list
+        from the upper triangle blocks:
 
         [[0 1 2],
          [  3 4],
@@ -95,7 +108,11 @@ class NeoHooke:
 
     def A_uu(self, F, p=None, J=None):
         """Linearization w.r.t. displacements of variation of
-        total potential energy w.r.t displacements."""
+        total potential energy w.r.t displacements.
+        
+        Δ_u(δ_u(Π_int)) = ∫_V δF : (∂²ψ/(∂F∂F) + p ∂cof(F)/∂F) : ΔF dV
+        
+        """
 
         mu = self.mu
 
@@ -128,17 +145,29 @@ class NeoHooke:
 
     def A_pp(self, F, p, J):
         """Linearization w.r.t. pressure of variation of
-        total potential energy w.r.t pressure."""
+        total potential energy w.r.t pressure.
+        
+        Δ_p(δ_p(Π_int)) = ∫_V δp 0 Δp dV
+        
+        """
         return np.zeros_like(p)
 
     def A_JJ(self, F, p, J):
         """Linearization w.r.t. volume ratio of variation of
-        total potential energy w.r.t volume ratio."""
+        total potential energy w.r.t volume ratio.
+        
+        Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²U/(∂J∂J) ΔJ dV
+        
+        """
         return self.d2UdJ2(J)
 
     def A_up(self, F, p, J):
         """Linearization w.r.t. pressure of variation of
-        total potential energy w.r.t displacements (volumetric part only)."""
+        total potential energy w.r.t displacements.
+        
+        Δ_p(δ_u(Π_int)) = ∫_V δF : J cof(F) Δp dV
+        
+        """
         detF = det(F)
         iFT = transpose(inv(F))
 
@@ -146,12 +175,20 @@ class NeoHooke:
 
     def A_uJ(self, F, p, J):
         """Linearization w.r.t. volume ratio of variation of
-        total potential energy w.r.t displacements."""
+        total potential energy w.r.t displacements.
+        
+        Δ_J(δ_u(Π_int)) = ∫_V δF : 0 ΔJ dV
+        
+        """
         return np.zeros_like(F)
 
     def A_pJ(self, F, p, J):
         """Linearization w.r.t. volume ratio of variation of
-        total potential energy w.r.t pressure."""
+        total potential energy w.r.t pressure.
+        
+        Δ_J(δ_p(Π_int)) = ∫_V δp (-1) ΔJ dV
+        
+        """
         return -np.ones_like(J)
 
     def dUdJ(self, J):

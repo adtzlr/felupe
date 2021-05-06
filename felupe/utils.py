@@ -30,10 +30,11 @@ from copy import deepcopy as copy
 
 import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
+from scipy.interpolate import interp1d
 
 import meshio
 
-from .region import IntegralFormMixed
+from .forms import IntegralFormMixed
 from .solve import partition, solve
 from .math import identity, grad, dot, transpose, eigvals, det, interpolate, norms
 from .field import Field
@@ -74,7 +75,7 @@ def newtonrhapson(
     A = fun_A(F, *[interpolate(f) for f in fields[1:]])
 
     # assembly
-    r = IntegralFormMixed(f, fields, dV).assemble()
+    r = IntegralFormMixed(f, fields, dV).assemble().toarray()[:, 0]
     K = IntegralFormMixed(A, fields, dV).assemble()
 
     converged = False
@@ -144,8 +145,7 @@ def incsolve(
     res = []
 
     # dofs to dismiss and to keep
-    dof0, dof1 = dofpartition(fields[0], bounds)
-    dof0, dof1, unstack = dofextend(fields, dof0, dof1)
+    dof0, dof1, unstack = dofpartition(fields, bounds)
     # solve newton iterations and save result
     for increment, move_t in enumerate(move):
 
@@ -170,7 +170,7 @@ def incsolve(
             # save results and go to next increment
             res.append(Result)
             save(region, *Result, filename=filename)
-            save(region, *Result, filename=filename + f"_{increment+1:d}")
+            # save(region, *Result, filename=filename + f"_{increment+1:d}")
             print("SAVED TO FILE")
 
     savehistory(region, res, filename=filename)
@@ -319,3 +319,29 @@ def savehistory(region, results, filename="out"):
                 point_data["MinPrincipalCauchyStress"] = cauchyprinc[0]
 
             writer.write_data(inc, point_data=point_data)
+
+
+def reactionforce(results, bounds, boundary="move"):
+    return np.array(
+        [
+            (
+                ((np.split(res.r, res.unstack)[0]).reshape(-1, 3))[
+                    bounds[boundary].nodes
+                ]
+            ).sum(0)
+            for res in results
+        ]
+    )
+
+
+def curve(x, y):
+    if len(y) > 1:
+        kind = "linear"
+    if len(y) > 2:
+        kind = "quadratic"
+    if len(y) > 3:
+        kind = "cubic"
+
+    f = interp1d(x[: len(y)], y, kind=kind)
+    xx = np.linspace(x[0], x[: len(y)][-1])
+    return (x[: len(y)], y), (xx, f(xx))

@@ -107,26 +107,24 @@ class CubeQuadratic(Mesh):
 class ScaledCube(Cube):
     def __init__(
         self,
-        a=(-1, -1, -1),
-        b=(1, 1, 1),
         n=5,
         L=1,
         B=1,
         H=1,
         dL=0,
-        dB=1,
+        dB=0,
         exponent=4,
         symmetry=(False, False, False),
-        l=0,
-        b=0,
+        L0=0,
+        B0=0,
     ):
 
-        a = np.array(a)
-        a[symmetry] = 0
-        super().__init__(a, b, n)
+        a = -np.ones(3)
+        a[list(symmetry)] = 0
+        super().__init__(a, (1, 1, 1), n)
 
-        if l > 0 or b > 0:
-            mask = np.logical_or(self.nodes[:, 0] > l / 2, self.nodes[:, 1] > b / 2)
+        if L0 > 0 or B0 > 0:
+            mask = np.logical_or(self.nodes[:, 0] > L0 / 2, self.nodes[:, 1] > B0 / 2)
             keep = np.arange(self.nnodes)[mask]
             select = np.array(
                 [np.all(np.isin(conn, keep)) for conn in self.connectivity]
@@ -134,9 +132,9 @@ class ScaledCube(Cube):
             self.connectivity = self.connectivity[select]
 
         z = self.nodes.copy()
-        z[:, 2] *= H / 2
         z[:, 0] *= L / 2 * (1 + 2 * dL / L * self.nodes[:, 2] ** exponent)
         z[:, 1] *= B / 2 * (1 + 2 * dB / B * self.nodes[:, 2] ** exponent)
+        z[:, 2] *= H / 2
         self.nodes = z
         self.update(self.connectivity)
 

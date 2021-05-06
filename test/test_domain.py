@@ -33,24 +33,24 @@ def test_domain():
     element = fe.element.Hex1()
     mesh = fe.mesh.Cube(n=5)
     quadrature = fe.quadrature.Linear(dim=3)
-    
+
     domain = fe.domain.Domain(element, mesh, quadrature)
-    
+
     # elemental volumes and total domain volume
     Ve = domain.volume()
     Vd = Ve.sum()
-    
+
     if not np.isclose(Vd, 1):
         raise ValueError("Error in Domain Volume calculation.")
-        
+
     u = domain.zeros()
-    x = domain.zeros((1,7))
+    x = domain.zeros((1, 7))
     y = domain.fill(value=-12.3, dim=5)
-    z = domain.empty(dim=(6,3,7))
-    
+    z = domain.empty(dim=(6, 3, 7))
+
     if not x.shape == (domain.nnodes, 1, 7):
         raise ValueError("Error in domain.zeros() function.")
-    
+
     return domain
 
 

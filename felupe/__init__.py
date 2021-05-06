@@ -11,7 +11,7 @@ from . import constitution
 from . import solve
 from . import utils
 
-from .region import Region, 
+from .region import Region
 from .forms import IntegralForm, IntegralFormMixed
 from .field import Field
 from .doftools import Boundary

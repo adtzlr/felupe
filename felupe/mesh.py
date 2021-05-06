@@ -28,17 +28,34 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import meshzoo
 
+
 class Mesh:
     def __init__(self, nodes, connectivity, etype):
         self.nodes = nodes
         self.connectivity = connectivity
         self.etype = etype
-        
+
+        self.update(self.connectivity)
+
+    def update(self, connectivity):
         self.nnodes, self.ndim = self.nodes.shape
         self.ndof = self.nodes.size
         self.nelements = self.connectivity.shape[0]
-        
-        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
+
+        nodes_in_conn, self.elements_per_node = np.unique(
+            connectivity, return_counts=True
+        )
+
+        if self.nnodes != len(self.elements_per_node):
+            self.node_has_element = np.isin(np.arange(self.nnodes), nodes_in_conn)
+            epn = -np.ones(self.nnodes, dtype=int)
+            epn[nodes_in_conn] = self.elements_per_node
+            self.elements_per_node = epn
+            self.nodes_without_elements = np.arange(self.nnodes)[~self.node_has_element]
+            self.nodes_with_elements = np.arange(self.nnodes)[self.node_has_element]
+        else:
+            self.nodes_without_elements = np.array([], dtype=int)
+            self.nodes_with_elements = np.arange(self.nnodes)
 
 
 class Cube(Mesh):
@@ -49,9 +66,10 @@ class Cube(Mesh):
 
         nodes, connectivity = meshzoo.cube_hexa(a, b, n)
         etype = "hexahedron"
-        
+
         super().__init__(nodes, connectivity, etype)
-        
+        self.edgenodes = 8
+
 
 class Rectangle(Mesh):
     def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
@@ -61,34 +79,25 @@ class Rectangle(Mesh):
 
         nodes, connectivity = meshzoo.rectangle_quad(a, b, n)
         etype = "quad"
-        
+
         super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 4
 
-class CubeOld:
-    def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+
+class CubeQuadratic(Mesh):
+    def __init__(self, a=(0, 0, 0), b=(1, 1, 1)):
         self.a = a
         self.b = b
-        self.n = n
+        self.n = (3, 3, 3)
 
-        self.nodes, self.connectivity = meshzoo.cube_hexa(a, b, n)
-        self.nnodes, self.ndim = self.nodes.shape
-        self.ndof = self.nodes.size
-        self.nelements = self.connectivity.shape[0]
-        self.etype = "hexahedron"
+        nodes, connectivity = meshzoo.cube_hexa(a, b, n=self.n)
+        etype = "hexahedron"
 
-        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
+        super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 8
 
-
-class RectangleOld:
-    def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
-        self.a = a
-        self.b = b
-        self.n = n
-
-        self.nodes, self.connectivity = meshzoo.rectangle_quad(a, b, n)
-        self.nnodes, self.ndim = self.nodes.shape
-        self.ndof = self.nodes.size
-        self.nelements = self.connectivity.shape[0]
-        self.etype = "quad"
-
-        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
+        self.nodes = self.nodes[
+            [0, 2, 8, 6, 18, 20, 26, 24, 1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15]
+        ]
+        self.connectivity = np.arange(20).reshape(1, -1)
+        self.update(self.connectivity)

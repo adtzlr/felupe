@@ -47,6 +47,10 @@ def grad(A):
     return A.grad()
 
 
+def sym(A):
+    return A + transpose(A)
+
+
 def identity(A):
     _, ndim, g, e = A.shape
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
@@ -84,6 +88,10 @@ def eigvals(A, shear=False):
 
 def transpose(A):
     return A.transpose([1, 0, 2, 3])
+
+
+def trace(A):
+    return np.trace(A)
 
 
 def cdya_ik(A, B):

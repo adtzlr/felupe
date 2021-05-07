@@ -83,16 +83,16 @@ class Rectangle(Mesh):
 
         super().__init__(nodes, connectivity, etype)
         self.edgenodes = 4
-        
+
 
 class Line(Mesh):
     def __init__(self, a=0, b=1, n=2):
         self.a = a
         self.b = b
         self.n = n
-        
-        nodes = np.linspace(a,b,n)
-        connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1,2)
+
+        nodes = np.linspace(a, b, n)
+        connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
 
         etype = "line"
 

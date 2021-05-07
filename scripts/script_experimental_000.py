@@ -32,13 +32,13 @@ import matplotlib.pyplot as plt
 
 tol = 1e-6
 
-move = np.linspace(0, 1, 10)
+move = np.linspace(0, 1, 2)
 a = -4
 b = 5
 
 H = 26
 mesh = fe.mesh.ScaledCube(
-    symmetry=(False, True, False), n=8, L=95, B=220, H=H, dL=10, dB=10
+    symmetry=(False, True, False), n=(31,31,16), L=95, B=220, H=H, dL=10, dB=10
 )
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))

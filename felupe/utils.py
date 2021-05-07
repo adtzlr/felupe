@@ -277,7 +277,7 @@ def save(
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
     )
-    
+
     mesh.write(filename + ".vtk")
 
 

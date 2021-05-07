@@ -80,8 +80,8 @@ class Region:
 
         if self.element.nbasis > 1:
 
-            # dXdr_IJpe
-            # ---------
+            # dXdr_IJpe and its inverse drdX_IJpe
+            # -----------------------------------
             # geometric gradient as partial derivative of undeformed coordinate "I"
             # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
             # for every element "e"
@@ -90,7 +90,7 @@ class Region:
             )
             drdX = inv(dXdr)
 
-            # det(dXdr)_pe * w_p
+            # dV_pe = det(dXdr)_pe * w_p
             # determinant of geometric gradient evaluated at quadrature point "p"
             # for every element "e" multiplied by corresponding quadrature weight
             # denoted as "differential volume element"

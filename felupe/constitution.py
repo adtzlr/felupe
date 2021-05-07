@@ -27,7 +27,32 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .math import ddot, transpose, inv, dya, cdya_ik, cdya_il, det, identity
+from .math import (
+    ddot,
+    transpose,
+    inv,
+    dya,
+    cdya,
+    cdya_ik,
+    cdya_il,
+    det,
+    identity,
+    trace,
+)
+
+
+class LinearElastic:
+    def __init__(self, E, nu=0.3):
+        self.E = E
+        self.mu = E / (2 * (1 + nu))
+        self.gamma = E * nu / (1 + nu) * (1 - 2 * nu)
+
+    def stress(self, strain):
+        return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
+
+    def elasticity(self, strain):
+        I = identity(strain)
+        return self.mu * cdya(I, I) + self.gamma * dya(I, I)
 
 
 class NeoHooke:

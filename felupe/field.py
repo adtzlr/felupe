@@ -45,29 +45,32 @@ class Indices:
 
 
 class Field:
+    "n-dimensional field in region."
     def __init__(self, region, dim=1, values=0):
         self.region = region
         self.dim = dim
 
+        # init values
         self.values = np.ones((region.nnodes, dim)) * values
 
         eai, ai = self.indices_per_element(self.region.connectivity, dim)
-
         self.indices = Indices(eai, ai, region, dim)
 
     def indices_per_element(self, connectivity, dim):
-        "indices for sparse matrices"
+        "Pre-defined indices for sparse matrices."
+        
+        # index of element "e", node "a" and nodal-value component "i"
         eai = np.stack(
             [dim * np.tile(conn, (dim, 1)).T + np.arange(dim) for conn in connectivity]
         )
-        # store indices as (rows, cols)
+        # store indices as (rows, cols) (note: sparse-matrices are always 2d)
         ai = (eai.ravel(), np.zeros_like(eai.ravel()))
 
         return eai, ai
 
     def grad(self):
         "gradient dudX_IJpe"
-        # gradient as partial derivative of field values "aI"
+        # gradient as partial derivative of nodal field values "aI"
         # w.r.t. undeformed coordiante "J" evaluated at quadrature point "p"
         # for element "e"
         return np.einsum(
@@ -87,8 +90,68 @@ class Field:
 
     def copy(self):
         out = copy(self)
-        # out.values = deepcopy(self.values)
         return out
 
-    def add(self, newvalues):
-        self.values += newvalues.reshape(-1, self.dim)
+    def __add__(self, newvalues):
+        self.__iadd__(newvalues)
+    
+    def __sub__(self, newvalues):
+        self.__isub__(newvalues)
+    
+    def __mul__(self, newvalues):
+        self.__imul__(newvalues)
+    
+    def __truediv__(self, newvalues):
+        self.__itruediv__(newvalues)
+
+    def __iadd__(self, newvalues):
+        
+        if isinstance(newvalues, np.ndarray):
+            self.values += newvalues.reshape(-1, self.dim)
+            return self
+        
+        elif isinstance(newvalues, Field):
+            self.values += newvalues.values
+            return self
+
+        else:
+            raise TypeError("Unknown type.")
+    
+    def __isub__(self, newvalues):
+        
+        if isinstance(newvalues, np.ndarray):
+            self.values -= newvalues.reshape(-1, self.dim)
+            return self
+        
+        elif isinstance(newvalues, Field):
+            self.values -= newvalues.values
+            return self
+
+        else:
+            raise TypeError("Unknown type.")
+            
+    def __imul__(self, newvalues):
+        
+        if isinstance(newvalues, np.ndarray):
+            self.values *= newvalues.reshape(-1, self.dim)
+            return self
+        
+        elif isinstance(newvalues, Field):
+            self.values *= newvalues.values
+            return self
+
+        else:
+            raise TypeError("Unknown type.")
+    
+    def __itruediv__(self, newvalues):
+        
+        if isinstance(newvalues, np.ndarray):
+            self.values /= newvalues.reshape(-1, self.dim)
+            return self
+        
+        elif isinstance(newvalues, Field):
+            self.values /= newvalues.values
+            return self
+
+        else:
+            raise TypeError("Unknown type.")

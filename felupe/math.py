@@ -48,7 +48,7 @@ def grad(A):
 
 
 def sym(A):
-    return A + transpose(A)
+    return (A + transpose(A)) / 2
 
 
 def identity(A):

@@ -188,14 +188,64 @@ class IntegralForm:
             if not grad_v and not grad_u:
                 return np.einsum("ape,...pe,bpe,pe->a...be", vb, fun, ub, dV)
             elif grad_v and not grad_u:
-                return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
+                if parallel:
+                    return integrate_gradv_u(vb, fun, ub, dV)
+                    # return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
+                else:
+                    return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
             elif not grad_v and grad_u:
-                return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
+                if parallel:
+                    return integrate_v_gradu(vb, fun, ub, dV)
+                    # return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
+                else:
+                    return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
             else:  # grad_v and grad_u
                 if parallel:
                     return integrate_gradv_gradu(vb, fun, ub, dV)
                 else:
                     return np.einsum("aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV)
+
+
+@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+def integrate_gradv_u(v, fun, u, dV):
+
+    nnodes_a = v.shape[0]
+    nnodes_b = u.shape[0]
+    ndim, ngauss, nelems = fun.shape[-3:]
+
+    out = np.zeros((nnodes_a, ndim, nnodes_b, nelems))
+    for a in prange(nnodes_a):  # basis function "a"
+        for b in prange(nnodes_b):  # basis function "b"
+            for p in prange(ngauss):  # integration point "p"
+                for e in prange(nelems):  # element "e"
+                    for i in prange(ndim):  # first index "i"
+                        for J in prange(ndim):  # second index "J"
+                            out[a, i, b, e] += (
+                                v[a, J, p, e] * u[b, p, e] * fun[i, J, p, e] * dV[p, e]
+                            )
+
+    return out
+
+
+@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+def integrate_v_gradu(v, fun, u, dV):
+
+    nnodes_a = v.shape[0]
+    nnodes_b = u.shape[0]
+    ndim, ngauss, nelems = fun.shape[-3:]
+
+    out = np.zeros((nnodes_a, nnodes_b, ndim, nelems))
+    for a in prange(nnodes_a):  # basis function "a"
+        for b in prange(nnodes_b):  # basis function "b"
+            for p in prange(ngauss):  # integration point "p"
+                for e in prange(nelems):  # element "e"
+                    for k in prange(ndim):  # third index "k"
+                        for L in prange(ndim):  # fourth index "L"
+                            out[a, b, k, e] += (
+                                v[a, p, e] * u[b, L, p, e] * fun[k, L, p, e] * dV[p, e]
+                            )
+
+    return out
 
 
 @jit(nopython=True, nogil=True, fastmath=True, parallel=True)

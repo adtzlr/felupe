@@ -41,8 +41,8 @@ class Quad:
 class Hex:
     def __init__(self):
         self.ndim = 3
-        
-        
+
+
 class Line1(Line):
     def __init__(self):
         super().__init__()
@@ -51,29 +51,13 @@ class Line1(Line):
 
     def basis(self, rv):
         "linear line basis functions"
-        r, = rv
-        return (
-            np.array(
-                [
-                    (1 - r),
-                    (1 + r)
-                ]
-            )
-            * 0.5
-        )
+        (r,) = rv
+        return np.array([(1 - r), (1 + r)]) * 0.5
 
     def basisprime(self, rv):
         "linear line derivative of basis functions"
-        r, = rv
-        return (
-            np.array(
-                [
-                    [-1],
-                    [ 1]
-                ]
-            )
-            * 0.5
-        )
+        (r,) = rv
+        return np.array([[-1], [1]]) * 0.5
 
 
 class Quad0(Quad):

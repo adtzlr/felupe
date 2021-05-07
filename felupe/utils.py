@@ -242,11 +242,14 @@ def save(
 
     if unstack is not None:
         reactionforces = np.split(r, unstack)[0]
+        u = fields[0]
+        P = f[0]
     else:
         reactionforces = r
+        u = fields
+        P = f
 
     mesh = region.mesh
-    u = fields[0]
 
     point_data = {
         "Displacements": u.values,
@@ -255,7 +258,7 @@ def save(
 
     if f is not None:
         # cauchy stress at integration points
-        s = dot(f[0], transpose(F)) / det(F)
+        s = dot(P, transpose(F)) / det(F)
         sp = eigvals(s)
 
         # shift stresses to nodes and average nodal values
@@ -274,6 +277,7 @@ def save(
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
     )
+    
     mesh.write(filename + ".vtk")
 
 

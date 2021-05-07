@@ -39,15 +39,15 @@ from .math import (
     det,
     identity,
     trace,
-    sym
+    sym,
 )
 
 
 class LinearElastic:
     def __init__(self, E, nu=0.3):
         self.E = E
-        self.mu = E / (2 * (1 + nu))
-        self.gamma = E * nu / (1 + nu) / (1 - 2 * nu)
+        self.nu = nu
+        self.mu, self.gamma = self.lame(E, nu)
 
     def stress(self, strain):
         return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
@@ -55,40 +55,11 @@ class LinearElastic:
     def elasticity(self, strain):
         I = identity(strain)
         return self.mu * cdya(I, I) + self.gamma * dya(I, I)
-    
-    def f(self, dudX):
-        strain = sym(dudX)
-        return [self.stress(strain), ]
-    
-    def A(self, dudX, *args):
-        strain = sym(dudX)
-        return [self.elasticity(strain), ]
-    
 
-class SaintVenantKirchhoff:
-    def __init__(self, E, nu=0.3):
-        self.E = E
-        self.mu = E / (2 * (1 + nu))
-        self.gamma = E * nu / (1 + nu) / (1 - 2 * nu)
-
-    def stress(self, strain):
-        return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
-
-    def elasticity(self, strain):
-        I = identity(strain)
-        return self.mu * cdya(I, I) + self.gamma * dya(I, I)
-    
-    def P(self, F):
-        iF = inv(F)
-        dudx = identity(iF) - iF
-        strain = sym(dudx)
-        return dot(self.stress(strain), transpose(iF))
-    
-    def A(self, F):
-        iF = inv(F)
-        dudx = identity(iF) - iF
-        strain = sym(dudx)
-        return self.elasticity(strain)
+    def lame(E, nu):
+        mu = E / (2 * (1 + nu))
+        gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
+        return mu, gamma
 
 
 class NeoHooke:

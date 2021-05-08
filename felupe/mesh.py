@@ -27,6 +27,26 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+import meshzoo
+
+
+def convert(mesh, order=0, calc_nodes=False):
+    "Convert mesh to a given order (only order=0 supported)."
+
+    if order != 0:
+        raise NotImplementedError("Unsupported order conversion.")
+
+    if calc_nodes:
+        nodes = np.stack(
+            [np.mean(mesh.nodes[conn], axis=0) for conn in mesh.connectivity]
+        )
+    else:
+        nodes = np.zeros((mesh.nelements, mesh.ndim), dtype=int)
+
+    connectivity = np.arange(mesh.nelements).reshape(-1, 1)
+    etype = "None"
+    return Mesh(nodes, connectivity, etype)
+
 
 class Mesh:
     def __init__(self, nodes, connectivity, etype):
@@ -153,7 +173,7 @@ class ScaledCube(Cube):
         self.update(self.connectivity)
 
 
-class Cylinder(Cube):
+class CylinderOld(Cube):
     def __init__(
         self,
         a=(-1, -1, -1),
@@ -186,6 +206,30 @@ class Cylinder(Cube):
 
         self.nodes = z
         self.update(self.connectivity)
+
+
+class Cylinder(Mesh):
+    def __init__(self, D=1, H=1, n=(2, 2), dD=0, exponent=4):
+
+        p1, c1 = meshzoo.disk_quad(n[0])
+        p1 = np.pad(p1, (0, 1))[:-1]
+
+        nodes = np.vstack([p1 + np.array([0, 0, h]) for h in np.linspace(-1, 1, n[1])])
+        c = [c1 + len(p1) * a for a in np.arange(n[1])]
+
+        connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+
+        etype = "hexahedron"
+
+        nodes[:, 0] *= 2
+        nodes[:, 1] *= 2
+
+        nodes[:, 0] *= D / 2 * (1 + 2 * dD / D * nodes[:, 2] ** exponent)
+        nodes[:, 1] *= D / 2 * (1 + 2 * dD / D * nodes[:, 2] ** exponent)
+        nodes[:, 2] *= H / 2
+
+        super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 8
 
 
 def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):

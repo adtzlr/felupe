@@ -82,7 +82,7 @@ def newtonrhapson(
 
     for iteration in range(maxiter):
 
-        system = partition(fields, r, K, dof1, dof0)
+        system = partition(fields, K, dof1, dof0, r)
         dfields = np.split(solve(*system, u0ext), unstack)
 
         if np.any(np.isnan(dfields[0])):
@@ -230,7 +230,7 @@ def tonodes(values, region, sym=True, mode="tensor"):
 def save(
     region,
     fields,
-    r,
+    r=None,
     K=None,
     F=None,
     f=None,
@@ -241,22 +241,31 @@ def save(
 ):
 
     if unstack is not None:
-        reactionforces = np.split(r, unstack)[0]
         u = fields[0]
-        P = f[0]
     else:
-        reactionforces = r
         u = fields
-        P = f
 
     mesh = region.mesh
 
     point_data = {
         "Displacements": u.values,
-        "ReactionForce": reactionforces.reshape(*u.values.shape),
     }
 
+    if r is not None:
+        if unstack is not None:
+            reactionforces = np.split(r, unstack)[0]
+        else:
+            reactionforces = r
+
+        point_data["ReactionForce"] = reactionforces.reshape(*u.values.shape)
+
     if f is not None:
+        # 1st Piola Kirchhoff stress
+        if unstack is not None:
+            P = f[0]
+        else:
+            P = f
+
         # cauchy stress at integration points
         s = dot(P, transpose(F)) / det(F)
         sp = eigvals(s)

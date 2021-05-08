@@ -81,9 +81,8 @@ fe.utils.savehistory(region, [*results1, *results2])
 force_move = fe.utils.reactionforce(results1, bounds)
 force_move2 = fe.utils.reactionforce(results2, bounds)
 
-force_z = np.array([res.r[bounds["move"].dof].sum() for res in results1])
-force_x = np.array([res.r[bounds2["move"].dof].sum() for res in results2])
-
+#force_z = np.array([res.r[bounds["move"].dof].sum() for res in results1])
+#force_x = np.array([res.r[bounds2["move"].dof].sum() for res in results2])
 
 xy1, xxyy1 = fe.utils.curve(a * move, 2 * force_move[:, 2])
 plt.plot(*xy1, "o")

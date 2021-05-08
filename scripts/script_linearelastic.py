@@ -63,9 +63,9 @@ bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=-5)
 
 dof0, dof1, _ = fe.doftools.partition(u, bounds)
 u0ext = fe.doftools.apply(u, bounds, dof0)
-system = fe.solve.partition(u, r, K, dof1, dof0)
+system = fe.solve.partition(u, K, dof1, dof0)
 du = fe.solve.solve(*system, u0ext)
 
 u += du
 
-fe.utils.save(region, u, r, K)
+fe.utils.save(region, u)

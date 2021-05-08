@@ -24,24 +24,25 @@ pf = fe.Field(r0, 1, values=-1)
 Jf = fe.Field(r0, 1, values=1)
 fields = (uf, pf, Jf)
 
+
 def convert(fields):
-    u,p,J = fields
-    return (
-        u.grad() + fe.math.identity(u.grad()), 
-        p.interpolate(), 
-        J.interpolate()
-    )
+    u, p, J = fields
+    return (u.grad() + fe.math.identity(u.grad()), p.interpolate(), J.interpolate())
+
 
 F, p, J = convert(fields)
+
 
 def f(F, p, J):
     return p * fe.math.cof(F)
 
+
 def g(F, p, J):
-    return p * fe.math.dya(F,F)
+    return p * fe.math.dya(F, F)
 
-r = fe.IntegralForm(f(F,p,J), uf, dV,    grad_v=True).assemble()
-K = fe.IntegralForm(g(F,p,J), uf, dV, uf, grad_v=True, grad_u=True).assemble()
 
-y = fe.IntegralForm(f(F,p,J), pf, dV, uf, grad_u=True).assemble()
-z = fe.IntegralForm(f(F,p,J), uf, dV, pf, grad_v=True).assemble()
+r = fe.IntegralForm(f(F, p, J), uf, dV, grad_v=True).assemble()
+K = fe.IntegralForm(g(F, p, J), uf, dV, uf, grad_v=True, grad_u=True).assemble()
+
+y = fe.IntegralForm(f(F, p, J), pf, dV, uf, grad_u=True).assemble()
+z = fe.IntegralForm(f(F, p, J), uf, dV, pf, grad_v=True).assemble()

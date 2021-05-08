@@ -30,11 +30,9 @@ import felupe as fe
 
 from felupe.math import sym, grad
 
-import matplotlib.pyplot as plt
-
 H = 26
 mesh = fe.mesh.ScaledCube(
-    symmetry=(False, True, False), n=51, L=95, B=220, H=H, dL=10, dB=10
+    symmetry=(False, True, False), n=21, L=95, B=220, H=H, dL=10, dB=10
 )
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))
@@ -50,8 +48,10 @@ strain = sym(grad(u))
 stress = mat.stress(strain)
 elasticity = mat.elasticity(strain)
 
-r = fe.IntegralForm(stress, v=u, dV=region.dV, grad_v=True).assemble().toarray()[:,0]
-K = fe.IntegralForm(elasticity, v=u, u=u, dV=region.dV, grad_v=True, grad_u=True).assemble()
+r = fe.IntegralForm(stress, v=u, dV=region.dV, grad_v=True).assemble().toarray()[:, 0]
+K = fe.IntegralForm(
+    elasticity, v=u, u=u, dV=region.dV, grad_v=True, grad_u=True
+).assemble()
 
 # boundaries
 f0 = lambda x: np.isclose(x, -H / 2)
@@ -66,6 +66,6 @@ u0ext = fe.doftools.apply(u, bounds, dof0)
 system = fe.solve.partition(u, r, K, dof1, dof0)
 du = fe.solve.solve(*system, u0ext)
 
-u.add(du)
+u += du
 
 fe.utils.save(region, u, r, K)

@@ -89,7 +89,7 @@ def newtonrhapson(
             break
         else:
             for field, dfield in zip(fields, dfields):
-                field.add(dfield)
+                field += dfield
 
         # deformation gradient at integration points
         F = identity(grad(fields[0])) + grad(fields[0])

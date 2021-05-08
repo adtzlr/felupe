@@ -43,26 +43,13 @@ from .math import det, inv, interpolate, dot, transpose, eigvals
 
 class Region:
     def __init__(self, mesh, element, quadrature):
-        self.mesh = copy(mesh)
+        self.mesh = mesh
         self.element = element
         self.quadrature = quadrature
-
-        if element.nbasis > 1:
-            self.connectivity = self.mesh.connectivity[:, : element.nbasis]
-            self.mesh.update(self.connectivity)
-            self.nodes = self.mesh.nodes
-            self.nnodes = self.mesh.nnodes
-        else:
-            self.nodes = np.stack(
-                [
-                    np.mean(self.mesh.nodes[conn], axis=0)
-                    for conn in self.mesh.connectivity
-                ]
-            )
-            self.nnodes = self.nodes.shape[0]
-            self.connectivity = np.arange(self.mesh.nelements).reshape(-1, 1)
-            self.mesh.nodes = self.nodes
-            self.mesh.update(self.connectivity)
+        self.connectivity = mesh.connectivity
+        self.nodes = mesh.nodes
+        self.nnodes = mesh.nnodes
+        self.nelements = mesh.nelements
 
         # array with degrees of freedom
         # h_ap

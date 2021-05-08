@@ -26,7 +26,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-import meshzoo
 
 
 class Mesh:
@@ -65,7 +64,7 @@ class Cube(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = meshzoo.cube_hexa(a, b, n)
+        nodes, connectivity = cube_hexa(a, b, n)
         etype = "hexahedron"
 
         super().__init__(nodes, connectivity, etype)
@@ -78,7 +77,7 @@ class Rectangle(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = meshzoo.rectangle_quad(a, b, n)
+        nodes, connectivity = rectangle_quad(a, b, n)
         etype = "quad"
 
         super().__init__(nodes, connectivity, etype)
@@ -106,7 +105,7 @@ class CubeQuadratic(Mesh):
         self.b = b
         self.n = (3, 3, 3)
 
-        nodes, connectivity = meshzoo.cube_hexa(a, b, n=self.n)
+        nodes, connectivity = cube_hexa(a, b, n=self.n)
         etype = "hexahedron"
 
         super().__init__(nodes, connectivity, etype)
@@ -161,6 +160,7 @@ class Cylinder(Cube):
         b=(1, 1, 1),
         n=5,
         D=1,
+        H=1,
         dD=0,
         exponent=4,
         symmetry=(False, False, False),
@@ -173,16 +173,89 @@ class Cylinder(Cube):
 
         z = self.nodes.copy()
 
-        r = np.sqrt(mesh.nodes[:, 0] ** 2 + mesh.nodes[:, 1] ** 2)
+        r = np.sqrt(self.nodes[:, 0] ** 2 + self.nodes[:, 1] ** 2)
         mask = np.logical_or(
-            abs(mesh.nodes[:, 0]) > switch, abs(mesh.nodes[:, 1]) > switch
+            abs(self.nodes[:, 0]) > switch, abs(self.nodes[:, 1]) > switch
         )
         r[~mask] = (r[~mask] - 2 / 3) / r[~mask].max() * r[~mask] + 2 / 3
         z[:, 0] /= 0.05 + r
         z[:, 1] /= 0.05 + r
-        z[:, 0] *= D / 2 * (1 + 2 * dD / D * mesh.nodes[:, 2] ** exponent)
-        z[:, 1] *= D / 2 * (1 + 2 * dD / D * mesh.nodes[:, 2] ** exponent)
+        z[:, 0] *= D / 2 * (1 + 2 * dD / D * self.nodes[:, 2] ** exponent)
+        z[:, 1] *= D / 2 * (1 + 2 * dD / D * self.nodes[:, 2] ** exponent)
         z[:, 2] *= H / 2
 
         self.nodes = z
         self.update(self.connectivity)
+
+
+def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+
+    dim = 3
+    array_like = (tuple, list, np.ndarray)
+
+    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    if not isinstance(n, array_like):
+        n = np.full(dim, n, dtype=int)
+
+    # generate points for each axis
+    a = np.array(a)
+    b = np.array(b)
+    n = np.array(n)
+
+    X = [np.linspace(A, B, N) for A, B, N in zip(a[::-1], b[::-1], n[::-1])]
+
+    # make a grid
+    grid = np.meshgrid(*X, indexing="ij")[::-1]
+
+    # generate list of node coordinates
+    nodes = np.vstack([ax.ravel() for ax in grid]).T
+
+    # prepare element connectivity
+    a = []
+    for i in range(n[1]):
+        a.append(np.repeat(np.arange(i * n[0], (i + 1) * n[0]), 2)[1:-1].reshape(-1, 2))
+
+    b = []
+    for j in range(n[1] - 1):
+        d = np.hstack((a[j], a[j + 1][:, [1, 0]]))
+        b.append(np.hstack((d, d + n[0] * n[1])))
+
+    c = [np.vstack(b) + k * n[0] * n[1] for k in range(n[2] - 1)]
+
+    # generate element connectivity
+    connectivity = np.vstack(c)
+
+    return nodes, connectivity
+
+
+def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
+
+    dim = 2
+    array_like = (tuple, list, np.ndarray)
+
+    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    if not isinstance(n, array_like):
+        n = np.full(dim, n, dtype=int)
+
+    # generate points for each axis
+    X = [np.linspace(A, B, N) for A, B, N in zip(a, b, n)]
+
+    # make a grid
+    grid = np.meshgrid(*X)
+
+    # generate list of node coordinates
+    nodes = np.vstack([ax.ravel() for ax in grid]).T
+
+    # prepare element connectivity
+    a = []
+    for i in range(n[1]):
+        a.append(np.repeat(np.arange(i * n[0], (i + 1) * n[0]), 2)[1:-1].reshape(-1, 2))
+
+    b = []
+    for j in range(n[1] - 1):
+        b.append(np.hstack((a[j], a[j + 1][:, [1, 0]])))
+
+    # generate element connectivity
+    connectivity = np.vstack(b)
+
+    return nodes, connectivity

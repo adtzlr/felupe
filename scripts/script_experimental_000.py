@@ -32,17 +32,19 @@ import matplotlib.pyplot as plt
 
 tol = 1e-6
 
-move = np.linspace(0, 1, 2)
+move = np.linspace(0, 1, 5)
 a = -4
 b = 5
 
 H = 26
 mesh = fe.mesh.ScaledCube(
-    symmetry=(False, True, False), n=(6, 6, 6), L=95, B=220, H=H, dL=10, dB=10
+    symmetry=(False, True, False), n=(9, 9, 12), L=95, B=220, H=H, dL=10, dB=10
 )
+mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
+mesh0 = fe.mesh.convert(mesh, order=0)
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))
-region0 = fe.Region(mesh, fe.element.Hex0(), fe.quadrature.Linear(dim=3))
+region0 = fe.Region(mesh0, fe.element.Hex0(), fe.quadrature.Linear(dim=3))
 
 # u at nodes
 u = fe.Field(region, 3)

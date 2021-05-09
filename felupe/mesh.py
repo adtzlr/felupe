@@ -29,6 +29,8 @@ import numpy as np
 
 import meshzoo
 
+from copy import deepcopy
+
 
 def convert(mesh, order=0, calc_nodes=False):
     "Convert mesh to a given order (only order=0 supported)."
@@ -303,3 +305,41 @@ def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
     connectivity = np.vstack(b)
 
     return nodes, connectivity
+
+
+def expand(mesh, repetitions=10, depth=1):
+
+    etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
+
+    p = np.pad(mesh.nodes, (0, 1))[:-1]
+    nodes = np.vstack(
+        [p + np.array([0, 0, h]) for h in np.linspace(0, depth, repetitions)]
+    )
+
+    c = [mesh.connectivity + len(p) * a for a in np.arange(repetitions)]
+    connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+
+    return Mesh(nodes, connectivity, etypedict[mesh.etype])
+
+
+def rotate(mesh, repetitions=10, section=180):
+
+    etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
+
+    def R(alpha_deg):
+        a = np.deg2rad(alpha_deg)
+        r = np.array([np.cos(a), -np.sin(a), np.sin(a), np.cos(a)]).reshape(2, 2)
+        R = np.pad(r, (1, 0))
+        R[0, 0] = 1
+        return R
+
+    p = np.pad(mesh.nodes, (0, 1))[:-1]
+
+    nodes = np.vstack(
+        [(R(alpha) @ p.T).T for alpha in np.linspace(0, section, repetitions)]
+    )
+
+    c = [mesh.connectivity + len(p) * a for a in np.arange(repetitions)]
+    connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+
+    return Mesh(nodes, connectivity, etypedict[mesh.etype])

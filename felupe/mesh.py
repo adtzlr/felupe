@@ -27,6 +27,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+import meshio
+
 import meshzoo
 
 from copy import deepcopy
@@ -78,6 +80,11 @@ class Mesh:
         else:
             self.nodes_without_elements = np.array([], dtype=int)
             self.nodes_with_elements = np.arange(self.nnodes)
+
+    def save(self, filename="mesh.vtk"):
+        # two triangles and one quad
+        cells = {self.etype: self.connectivity}
+        mesh = meshio.Mesh(self.nodes, cells).write(filename)
 
 
 class Cube(Mesh):
@@ -322,7 +329,7 @@ def expand(mesh, repetitions=10, depth=1):
     return Mesh(nodes, connectivity, etypedict[mesh.etype])
 
 
-def rotate(mesh, repetitions=10, section=180):
+def revolve(mesh, repetitions=10, section=180):
 
     etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
 

@@ -48,6 +48,9 @@ class IntegralFormMixed:
 
         self.forms = []
 
+        if self.nfields == 1:
+            raise ValueError("IntegralFormMixed needs at least 2 fields.")
+
         if len(fun) == self.nfields:
             self.mode = 1
             self.i = np.arange(self.nfields)

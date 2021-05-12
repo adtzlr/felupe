@@ -33,14 +33,14 @@ import matplotlib.pyplot as plt
 tol = 1e-6
 
 move = np.linspace(0, 1, 5)
-a = -4
-b = 5
+a = -5
+b = 10
 
-H = 26
+H = 25
 mesh = fe.mesh.ScaledCube(
-    symmetry=(False, True, False), n=(9, 9, 12), L=95, B=220, H=H, dL=10, dB=10
+    symmetry=(True, False, False), n=(16, 61, 13), L=100, B=200, H=H, dL=0, dB=0
 )
-mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
+#mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
 mesh0 = fe.mesh.convert(mesh, order=0)
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))
@@ -58,46 +58,24 @@ mat = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
 # boundaries
 f0 = lambda x: np.isclose(x, -H / 2)
 f1 = lambda x: np.isclose(x, H / 2)
-bounds = fe.doftools.symmetry(u, (0, 1, 0))
+bounds = fe.doftools.symmetry(u, (1, 0, 0))
 bounds["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
-bounds["top"] = fe.Boundary(u, skip=(0, 0, 1), fz=f1)
+bounds["topx"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
+bounds["topy"] = fe.Boundary(u, skip=(1, 0, 1), fz=f1, value=0.1)
 bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1)
 
-bounds2 = fe.doftools.symmetry(u, (0, 1, 0))
-bounds2["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
-bounds2["top"] = fe.Boundary(u, skip=(1, 0, 1), fz=f1)
-bounds2["fix"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
-bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
+results = fe.utils.incsolve(fields, region, mat.f, mat.A, bounds, a * move, tol=tol)
 
-results1 = fe.utils.incsolve(fields, region, mat.f, mat.A, bounds, a * move, tol=tol)
-
-results2 = fe.utils.incsolve(
-    results1[-1].fields, region, mat.f, mat.A, bounds2, b * move, tol=tol
-)
-
-fe.utils.savehistory(region, [*results1, *results2])
+fe.utils.savehistory(region, results)
 
 # reaction force calculation
-force_move  = fe.utils.force( results1, bounds["move"])
-force_move2 = fe.utils.force( results2, bounds["move"])
-moment_move = fe.utils.moment(results2, bounds["move"], np.zeros(3))
+force_move = fe.utils.reactionforce(results, bounds)
 
 xy1, xxyy1 = fe.utils.curve(a * move, 2 * force_move[:, 2])
 plt.plot(*xy1, "o")
 plt.plot(*xxyy1, "C0--")
 
-xy2, xxyy2 = fe.utils.curve(b * move, 2 * force_move2[:, 0])
+xy2, xxyy2 = fe.utils.curve(a * move, 2 * force_move[:, 1])
 plt.figure()
 plt.plot(*xy2, "o")
 plt.plot(*xxyy2, "C0--")
-
-print("")
-print("c_Z0 = ", (np.diff(xxyy1[1]) / np.diff(xxyy1[0]))[0])
-print("c_X0 = ", (np.diff(xxyy2[1]) / np.diff(xxyy2[0]))[0])
-
-print("")
-print("c_Z = ", (np.diff(xxyy1[1]) / np.diff(xxyy1[0]))[-1])
-print("c_X = ", (np.diff(xxyy2[1]) / np.diff(xxyy2[0]))[-1])
-
-print("")
-print("V = ", region.volume().sum())

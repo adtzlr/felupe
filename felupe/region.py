@@ -32,13 +32,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from scipy.sparse import csr_matrix as sparsematrix
-from scipy.sparse import bmat, vstack
-import meshio
 
-from copy import deepcopy as copy
-
-from .math import det, inv, interpolate, dot, transpose, eigvals
+from .math import det, inv
 
 
 class Region:
@@ -93,3 +88,16 @@ class Region:
     def volume(self, detF=1):
         "Calculate element volume for element 'e'."
         return np.einsum("pe->e", detF * self.dV)
+
+
+# TODO
+# class AxiRegion(Region):
+
+#     def __init__(self, mesh, element, quadrature):
+#         super.__init__(mesh, element, quadrature)
+
+#         self.R = np.einsum("ea,ap->pe", self.nodes[:,[1,]][self.connectivity], self.h)
+#         zeros = np.zeros(self.dhdX.shape[-2:])
+#         h = np.tile(self.h.reshape(*self.h.shape,-1), self.nelements)
+#         self.dhdX = np.block([[self.dhdX, zeros],
+#                               [zeros.T, h/self.R]])

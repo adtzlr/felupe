@@ -334,17 +334,37 @@ def savehistory(region, results, filename="out"):
             writer.write_data(inc, point_data=point_data)
 
 
-def reactionforce(results, bounds, boundary="move"):
+def force(results, boundary):
     return np.array(
         [
-            (
-                ((np.split(res.r, res.unstack)[0]).reshape(-1, 3))[
-                    bounds[boundary].nodes
-                ]
-            ).sum(0)
+            (((np.split(res.r, res.unstack)[0]).reshape(-1, 3))[boundary.nodes]).sum(0)
             for res in results
         ]
     )
+
+
+def moment(results, boundary, point=np.zeros(3)):
+
+    nodes = results[0].fields[0].region.mesh.nodes
+    points = point.reshape(-1, 3)
+
+    indices = np.array([(1, 2), (2, 0), (0, 1)])
+
+    if points.shape[0] == 1:
+        points = np.tile(points, (len(results), 1))
+
+    moments = []
+
+    for pt, res in zip(points, results):
+        displacements = res.fields[0].values
+        d = ((nodes + displacements) - pt)[boundary.nodes]
+
+        force = (np.split(res.r, res.unstack)[0]).reshape(-1, 3)
+        f = force[boundary.nodes]
+
+        moments.append([(f[:, i] * d[:, i[::-1]]).sum() for i in indices])
+
+    return np.array(moments)
 
 
 def curve(x, y):

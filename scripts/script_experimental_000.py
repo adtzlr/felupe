@@ -65,9 +65,9 @@ bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1)
 
 bounds2 = fe.doftools.symmetry(u, (0, 1, 0))
 bounds2["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
-bounds2["top"] = fe.Boundary(u, skip=(1, 0, 1), fz=f1)
-bounds2["fix"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
-bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
+bounds2["top"]    = fe.Boundary(u, skip=(1, 0, 1), fz=f1)
+bounds2["fix"]    = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
+bounds2["move"]   = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
 
 results1 = fe.utils.incsolve(fields, region, mat.f, mat.A, bounds, a * move, tol=tol)
 

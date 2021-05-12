@@ -160,7 +160,7 @@ def incsolve(
             region, fields, u0ext, f, A, dof1, dof0, unstack, maxiter=maxiter, tol=tol
         )
 
-        fields = Result.fields
+        fields = copy(Result.fields)
 
         if not Result.converged:
             # reset counter for last converged increment and break
@@ -357,4 +357,4 @@ def curve(x, y):
 
     f = interp1d(x[: len(y)], y, kind=kind)
     xx = np.linspace(x[0], x[: len(y)][-1])
-    return (x[: len(y)], y), (xx, f(xx))
+    return np.array([x[: len(y)], y]), np.array([xx, f(xx)])

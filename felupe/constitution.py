@@ -87,7 +87,7 @@ class NeoHooke:
 
         return Pdev + Pvol
 
-    def f_u(self, F, p, J):
+    def f_u(self, F, p=None, J=None):
         """Variation of total potential w.r.t displacements
         (1st Piola Kirchhoff stress).
 

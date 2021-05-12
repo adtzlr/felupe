@@ -11,13 +11,15 @@ import felupe as fe
 m = fe.mesh.Cube(n=21)
 q = fe.quadrature.Linear(3)
 
+m0 = fe.mesh.convert(m)
+
 e1 = fe.element.Hex1()
 r1 = fe.region.Region(m, e1, q)
 
 dV = r1.dV
 
 e0 = fe.element.Hex0()
-r0 = fe.region.Region(m, e0, q)
+r0 = fe.region.Region(m0, e0, q)
 
 uf = fe.Field(r1, 3, values=10)
 pf = fe.Field(r0, 1, values=-1)

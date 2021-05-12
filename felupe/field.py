@@ -35,6 +35,22 @@ import numpy as np
 
 from copy import copy, deepcopy
 
+from .math import identity
+
+
+def extract(fields, fieldgrad=(True, False), add_identity=False):
+    grads = np.pad(fieldgrad, (0, len(fields)))
+    list_of_fields = []
+    for grad, field in zip(grads, fields):
+        if grad:
+            f = field.grad()
+            if add_identity:
+                f += identity(f)
+        else:
+            f = field.interpolate()
+        list_of_fields.append(f)
+    return list_of_fields
+
 
 class Indices:
     def __init__(self, eai, ai, region, dim):

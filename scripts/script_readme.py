@@ -55,7 +55,7 @@ K = bilinearform.assemble(parallel=True)
 
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
 du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
-displacement += du
+#displacement += du
 
 for iteration in range(8):
     dudX = grad(displacement)

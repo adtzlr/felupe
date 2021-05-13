@@ -9,7 +9,7 @@ FElupe is an open-source finite element package focussing on the formulation and
 Fenics is great but way too complicated to install on Windows. Scikit-fem is close to perfection but slow (too slow) for my problems of interest in combination with hyperelastic material formulations. In fact the utilities of FElupe could also be wrapped around the core code of scikit-fem but in the end I decided to create a code base which works the way I think it should.
 
 ## Installation
-Install Python, fire up a terminal an run `pip install felupe` then import FElupe in your script.
+Install Python, fire up a terminal an run `pip install felupe`; import FElupe as follows in your script.
 
 ```python
 import felupe as fe

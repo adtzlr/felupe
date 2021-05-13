@@ -97,7 +97,7 @@ bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True,
 An assembly of the forms lead to the (nodal) internal forces and the (sparse) stiffness matrix.
 
 ```python
-r = linearform.assemble(parallel=True)
+r = linearform.assemble(parallel=True).toarray()[:,0]
 K = bilinearform.assemble(parallel=True)
 ```
 

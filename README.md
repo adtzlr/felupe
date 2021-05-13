@@ -38,8 +38,8 @@ In a second step fields may be added to the Region. These may be either scalar o
 ```python
 displacement = fe.Field(region, dim=3)
 
-u_hat = displacement.values
-u = displacement.interpolate()
+u  = displacement.values
+ui = displacement.interpolate()
 ```
 
 Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every element in the region with the field method `grad()`. `interpolate` and `grad` methods are also callable from functions of the math module. The deformation gradient is obtained by a sum of the identity and the displacement gradient.
@@ -49,9 +49,10 @@ dudX = displacement.grad()
 
 # use math function for better readability
 from fe.math import grad, identity
+
 dudX = grad(displacement)
 
-F= identity(dudX) + dudX
+F = identity(dudX) + dudX
 ```
 
 ### Constitution
@@ -59,8 +60,9 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
 ```python
 umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
-P = umat.P(F)
-A = umat.A(F)
+
+P = umat.f_u(F)
+A = umat.A_uu(F)
 ```
 
 ### Boundary Conditions
@@ -71,9 +73,9 @@ f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
 boundaries = {}
-boundaries["left"] = fe.Boundary(displacement, fx=f0)
+boundaries["left"]  = fe.Boundary(displacement, fx=f0)
 boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1,0,0))
-boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
+boundaries["move"]  = fe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
 ```
 
 ### Partition of deegrees of freedom
@@ -81,7 +83,7 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 ```python
 dof0, dof1, _ = fe.doftools.partition(displacement, boundaries)
-u0ext = fe.doftools.apply(displacement, boundaries)
+u0ext = fe.doftools.apply(displacement, boundaries dof0)
 ```
 
 ### Integral forms of equilibrium equations
@@ -104,14 +106,14 @@ In order to solve the linearized equation system a partition to active and inact
 
 ```python
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
-du = fe.solve.solve(*system, u0ext).reshape(*u.values.shape)
+du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
 displacement += du
 ```
 
-A very simple newton-rhapson code looks like:
+A very simple newton-rhapson code looks like this:
 
 ```python
-for iteration in range(16):
+for iteration in range(8):
     F = identity(grad(u)) + grad(u)
     P = mat.f_u(F)
     A = mat.A_uu(F)
@@ -128,11 +130,11 @@ for iteration in range(16):
         break
     else:
         print(iteration, norm)
-        u += du
+        displacement += du
 ```
 
 ### Export of results
-Results can be exported to VTK or XDMF files using meshio.
+Results can be exported as VTK or XDMF files using meshio.
 
 ```python
 fe.utils.save(region, displacement, filename="result.vtk")

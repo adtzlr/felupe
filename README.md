@@ -35,6 +35,8 @@ dV = region.dV
 V = dV.sum()
 ```
 
+![FElupe](undeformed_mesh.png)
+
 ### Field
 In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method.
 

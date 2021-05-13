@@ -42,7 +42,7 @@ u_hat = displacement.values
 u = displacement.interpolate()
 ```
 
-Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every element in the region with the field method `grad()`. For `interpolate` and `grad` methods are also callable from functions of the math module. The deformation gradient is obtained by a sum of the identity and the displacement gradient.
+Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every element in the region with the field method `grad()`. `interpolate` and `grad` methods are also callable from functions of the math module. The deformation gradient is obtained by a sum of the identity and the displacement gradient.
 
 ```python
 dudX = displacement.grad()

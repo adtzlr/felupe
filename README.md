@@ -1,4 +1,4 @@
-# FElupe - Finite Elements Analysis
+# FElupe - Finite Element Analysis
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Made with love in Graz (Austria)](https://madewithlove.now.sh/at?heart=true&colorB=%231f744f&text=Graz+%28Austria%29) ![Codestyle black](https://img.shields.io/badge/code%20style-black-black)
 

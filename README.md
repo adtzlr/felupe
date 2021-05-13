@@ -117,7 +117,8 @@ A very simple newton-rhapson code looks like this:
 
 ```python
 for iteration in range(8):
-    F = identity(grad(u)) + grad(u)
+    dudX = grad(displacement)
+    F = identity(dudX) + dudX
     P = mat.f_u(F)
     A = mat.A_uu(F)
     

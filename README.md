@@ -141,7 +141,13 @@ fe.utils.save(region, displacement, filename="result.vtk")
 ```
 
 ## Utilities
-The above code snippets and explanations cover only the essential parts of FElupe. Several utilities are available - please have a look the scripts folder or the source code itself.
+The above code snippets and explanations cover only the essential parts of FElupe. Several utilities are available - please have a look at the scripts folder or the source code itself.
 
-+ Author: Andreas Dutzler, Graz, Austria. 
-+ Last updated: 2021/05/13
+## License
+FElupe - finite element analysis (C) 2021 Andreas Dutzler, Graz (Austria).
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.

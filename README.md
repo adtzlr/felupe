@@ -101,7 +101,7 @@ r = linearform.assemble(parallel=True)
 K = bilinearform.assemble(parallel=True)
 ```
 
-### Prepare (partition) the linearized equation system
+### Prepare (partition) and solve the linearized equation system
 In order to solve the linearized equation system a partition to active and inactive degrees of freedom has to be performed. This system may then be passed to the sparse direct solver. The solution is the first result of a newton-rhapson iterative solution procedure. These nodal values `du` are finally added to the displacement field.
 
 ```python

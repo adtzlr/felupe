@@ -51,7 +51,7 @@ Additionally, the displacement gradient w.r.t. the undeformed coordinates is cal
 dudX = displacement.grad()
 
 # use math function for better readability
-from fe.math import grad, identity
+from felupe.math import grad, identity
 
 dudX = grad(displacement)
 
@@ -72,6 +72,8 @@ A = umat.A_uu(F)
 Next we introduce boundary conditions on the displacement field. Boundary conditions are stored inside a dictionary of multiple boundary instances. First, we fix the left surface of the cube. Displacements on the right surface are fixed in directions y and z whereas displacements in direction x are prescribed with a value. A boundary instance hold useful attributes like `nodes` or `dof`.
 
 ```python
+import numpy as np
+
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
@@ -86,7 +88,7 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 ```python
 dof0, dof1, _ = fe.doftools.partition(displacement, boundaries)
-u0ext = fe.doftools.apply(displacement, boundaries dof0)
+u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 ```
 
 ### Integral forms of equilibrium equations
@@ -119,30 +121,39 @@ A very simple newton-rhapson code looks like this:
 for iteration in range(8):
     dudX = grad(displacement)
     F = identity(dudX) + dudX
-    P = mat.f_u(F)
-    A = mat.A_uu(F)
+    P = umat.f_u(F)
+    A = umat.A_uu(F)
     
-    r = fe.IntegralForm(P, u, dV, True).assemble().toarray()[:,0]
-    K = fe.IntegralForm(A, u, dV, u, True, True).assemble()
+    r = fe.IntegralForm(P, displacement, dV, grad_v=True).assemble().toarray()[:,0]
+    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble()
     
-    system = fe.solve.partition(u, K, dof1, dof0, r)
-    du = fe.solve.solve(*system, u0ext).reshape(*u.values.shape)
+    system = fe.solve.partition(displacement, K, dof1, dof0, r)
+    du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
     
     norm = np.linalg.norm(du)
+    print(iteration, norm)
+    displacement += du
 
-    if norm < 1e-8:
+    if norm < 1e-12:
         break
-    else:
-        print(iteration, norm)
-        displacement += du
+```
+
+```python
+>>> 0 0.2940958778404002
+>>> 1 0.02083230945148837
+>>> 2 0.00010289925344210932
+>>> 3 6.0171532522337204e-09
+>>> 4 5.490863535572125e-16
 ```
 
 ### Export of results
 Results can be exported as VTK or XDMF files using meshio.
 
 ```python
-fe.utils.save(region, displacement, filename="result.vtk")
+fe.utils.save(region, displacement, filename="result")
 ```
+
+![FElupe](deformed_mesh.png)
 
 ## Utilities
 The above code snippets and explanations cover only the essential parts of FElupe. Several utilities are available - please have a look at the scripts folder or the source code itself.

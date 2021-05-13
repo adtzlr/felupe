@@ -26,19 +26,65 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+
+import meshio
+
 import meshzoo
+
+from copy import deepcopy
+
+
+def convert(mesh, order=0, calc_nodes=False):
+    "Convert mesh to a given order (only order=0 supported)."
+
+    if order != 0:
+        raise NotImplementedError("Unsupported order conversion.")
+
+    if calc_nodes:
+        nodes = np.stack(
+            [np.mean(mesh.nodes[conn], axis=0) for conn in mesh.connectivity]
+        )
+    else:
+        nodes = np.zeros((mesh.nelements, mesh.ndim), dtype=int)
+
+    connectivity = np.arange(mesh.nelements).reshape(-1, 1)
+    etype = "None"
+    return Mesh(nodes, connectivity, etype)
+
 
 class Mesh:
     def __init__(self, nodes, connectivity, etype):
         self.nodes = nodes
         self.connectivity = connectivity
         self.etype = etype
-        
+
+        self.update(self.connectivity)
+
+    def update(self, connectivity):
+        self.connectivity = connectivity
         self.nnodes, self.ndim = self.nodes.shape
         self.ndof = self.nodes.size
         self.nelements = self.connectivity.shape[0]
-        
-        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
+
+        nodes_in_conn, self.elements_per_node = np.unique(
+            connectivity, return_counts=True
+        )
+
+        if self.nnodes != len(self.elements_per_node):
+            self.node_has_element = np.isin(np.arange(self.nnodes), nodes_in_conn)
+            epn = -np.ones(self.nnodes, dtype=int)
+            epn[nodes_in_conn] = self.elements_per_node
+            self.elements_per_node = epn
+            self.nodes_without_elements = np.arange(self.nnodes)[~self.node_has_element]
+            self.nodes_with_elements = np.arange(self.nnodes)[self.node_has_element]
+        else:
+            self.nodes_without_elements = np.array([], dtype=int)
+            self.nodes_with_elements = np.arange(self.nnodes)
+
+    def save(self, filename="mesh.vtk"):
+        # two triangles and one quad
+        cells = {self.etype: self.connectivity}
+        mesh = meshio.Mesh(self.nodes, cells).write(filename)
 
 
 class Cube(Mesh):
@@ -47,11 +93,12 @@ class Cube(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = meshzoo.cube_hexa(a, b, n)
+        nodes, connectivity = cube_hexa(a, b, n)
         etype = "hexahedron"
-        
+
         super().__init__(nodes, connectivity, etype)
-        
+        self.edgenodes = 8
+
 
 class Rectangle(Mesh):
     def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
@@ -59,36 +106,247 @@ class Rectangle(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = meshzoo.rectangle_quad(a, b, n)
+        nodes, connectivity = rectangle_quad(a, b, n)
         etype = "quad"
-        
+
         super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 4
 
-class CubeOld:
-    def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+
+class Line(Mesh):
+    def __init__(self, a=0, b=1, n=2):
         self.a = a
         self.b = b
         self.n = n
 
-        self.nodes, self.connectivity = meshzoo.cube_hexa(a, b, n)
-        self.nnodes, self.ndim = self.nodes.shape
-        self.ndof = self.nodes.size
-        self.nelements = self.connectivity.shape[0]
-        self.etype = "hexahedron"
+        nodes = np.linspace(a, b, n)
+        connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
 
-        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
+        etype = "line"
+
+        super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 2
 
 
-class RectangleOld:
-    def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
+class CubeQuadratic(Mesh):
+    def __init__(self, a=(0, 0, 0), b=(1, 1, 1)):
         self.a = a
         self.b = b
-        self.n = n
+        self.n = (3, 3, 3)
 
-        self.nodes, self.connectivity = meshzoo.rectangle_quad(a, b, n)
-        self.nnodes, self.ndim = self.nodes.shape
-        self.ndof = self.nodes.size
-        self.nelements = self.connectivity.shape[0]
-        self.etype = "quad"
+        nodes, connectivity = cube_hexa(a, b, n=self.n)
+        etype = "hexahedron"
 
-        _, self.elements_per_node = np.unique(self.connectivity, return_counts=True)
+        super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 8
+
+        self.nodes = self.nodes[
+            [0, 2, 8, 6, 18, 20, 26, 24, 1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15]
+        ]
+        self.connectivity = np.arange(20).reshape(1, -1)
+        self.update(self.connectivity)
+
+
+class ScaledCube(Cube):
+    def __init__(
+        self,
+        n=5,
+        L=1,
+        B=1,
+        H=1,
+        dL=0,
+        dB=0,
+        exponent=4,
+        symmetry=(False, False, False),
+        L0=0,
+        B0=0,
+    ):
+
+        a = -np.ones(3)
+        a[list(symmetry)] = 0
+        super().__init__(a, (1, 1, 1), n)
+
+        if L0 > 0 or B0 > 0:
+            mask = np.logical_or(self.nodes[:, 0] > L0 / 2, self.nodes[:, 1] > B0 / 2)
+            keep = np.arange(self.nnodes)[mask]
+            select = np.array(
+                [np.all(np.isin(conn, keep)) for conn in self.connectivity]
+            )
+            self.connectivity = self.connectivity[select]
+
+        z = self.nodes.copy()
+        z[:, 0] *= L / 2 * (1 + 2 * dL / L * self.nodes[:, 2] ** exponent)
+        z[:, 1] *= B / 2 * (1 + 2 * dB / B * self.nodes[:, 2] ** exponent)
+        z[:, 2] *= H / 2
+        self.nodes = z
+        self.update(self.connectivity)
+
+
+class CylinderOld(Cube):
+    def __init__(
+        self,
+        a=(-1, -1, -1),
+        b=(1, 1, 1),
+        n=5,
+        D=1,
+        H=1,
+        dD=0,
+        exponent=4,
+        symmetry=(False, False, False),
+        switch=0.5,
+    ):
+
+        a = np.array(a)
+        a[symmetry] = 0
+        super().__init__(a, b, n)
+
+        z = self.nodes.copy()
+
+        r = np.sqrt(self.nodes[:, 0] ** 2 + self.nodes[:, 1] ** 2)
+        mask = np.logical_or(
+            abs(self.nodes[:, 0]) > switch, abs(self.nodes[:, 1]) > switch
+        )
+        r[~mask] = (r[~mask] - 2 / 3) / r[~mask].max() * r[~mask] + 2 / 3
+        z[:, 0] /= 0.05 + r
+        z[:, 1] /= 0.05 + r
+        z[:, 0] *= D / 2 * (1 + 2 * dD / D * self.nodes[:, 2] ** exponent)
+        z[:, 1] *= D / 2 * (1 + 2 * dD / D * self.nodes[:, 2] ** exponent)
+        z[:, 2] *= H / 2
+
+        self.nodes = z
+        self.update(self.connectivity)
+
+
+class Cylinder(Mesh):
+    def __init__(self, D=1, H=1, n=(2, 2), dD=0, exponent=4):
+
+        p1, c1 = meshzoo.disk_quad(n[0])
+        p1 = np.pad(p1, (0, 1))[:-1]
+
+        nodes = np.vstack([p1 + np.array([0, 0, h]) for h in np.linspace(-1, 1, n[1])])
+        c = [c1 + len(p1) * a for a in np.arange(n[1])]
+
+        connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+
+        etype = "hexahedron"
+
+        nodes[:, 0] *= 2
+        nodes[:, 1] *= 2
+
+        nodes[:, 0] *= D / 2 * (1 + 2 * dD / D * nodes[:, 2] ** exponent)
+        nodes[:, 1] *= D / 2 * (1 + 2 * dD / D * nodes[:, 2] ** exponent)
+        nodes[:, 2] *= H / 2
+
+        super().__init__(nodes, connectivity, etype)
+        self.edgenodes = 8
+
+
+def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+
+    dim = 3
+    array_like = (tuple, list, np.ndarray)
+
+    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    if not isinstance(n, array_like):
+        n = np.full(dim, n, dtype=int)
+
+    # generate points for each axis
+    a = np.array(a)
+    b = np.array(b)
+    n = np.array(n)
+
+    X = [np.linspace(A, B, N) for A, B, N in zip(a[::-1], b[::-1], n[::-1])]
+
+    # make a grid
+    grid = np.meshgrid(*X, indexing="ij")[::-1]
+
+    # generate list of node coordinates
+    nodes = np.vstack([ax.ravel() for ax in grid]).T
+
+    # prepare element connectivity
+    a = []
+    for i in range(n[1]):
+        a.append(np.repeat(np.arange(i * n[0], (i + 1) * n[0]), 2)[1:-1].reshape(-1, 2))
+
+    b = []
+    for j in range(n[1] - 1):
+        d = np.hstack((a[j], a[j + 1][:, [1, 0]]))
+        b.append(np.hstack((d, d + n[0] * n[1])))
+
+    c = [np.vstack(b) + k * n[0] * n[1] for k in range(n[2] - 1)]
+
+    # generate element connectivity
+    connectivity = np.vstack(c)
+
+    return nodes, connectivity
+
+
+def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
+
+    dim = 2
+    array_like = (tuple, list, np.ndarray)
+
+    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    if not isinstance(n, array_like):
+        n = np.full(dim, n, dtype=int)
+
+    # generate points for each axis
+    X = [np.linspace(A, B, N) for A, B, N in zip(a, b, n)]
+
+    # make a grid
+    grid = np.meshgrid(*X)
+
+    # generate list of node coordinates
+    nodes = np.vstack([ax.ravel() for ax in grid]).T
+
+    # prepare element connectivity
+    a = []
+    for i in range(n[1]):
+        a.append(np.repeat(np.arange(i * n[0], (i + 1) * n[0]), 2)[1:-1].reshape(-1, 2))
+
+    b = []
+    for j in range(n[1] - 1):
+        b.append(np.hstack((a[j], a[j + 1][:, [1, 0]])))
+
+    # generate element connectivity
+    connectivity = np.vstack(b)
+
+    return nodes, connectivity
+
+
+def expand(mesh, repetitions=10, depth=1):
+
+    etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
+
+    p = np.pad(mesh.nodes, (0, 1))[:-1]
+    nodes = np.vstack(
+        [p + np.array([0, 0, h]) for h in np.linspace(0, depth, repetitions)]
+    )
+
+    c = [mesh.connectivity + len(p) * a for a in np.arange(repetitions)]
+    connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+
+    return Mesh(nodes, connectivity, etypedict[mesh.etype])
+
+
+def revolve(mesh, repetitions=10, section=180):
+
+    etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
+
+    def R(alpha_deg):
+        a = np.deg2rad(alpha_deg)
+        r = np.array([np.cos(a), -np.sin(a), np.sin(a), np.cos(a)]).reshape(2, 2)
+        R = np.pad(r, (1, 0))
+        R[0, 0] = 1
+        return R
+
+    p = np.pad(mesh.nodes, (0, 1))[:-1]
+
+    nodes = np.vstack(
+        [(R(alpha) @ p.T).T for alpha in np.linspace(0, section, repetitions)]
+    )
+
+    c = [mesh.connectivity + len(p) * a for a in np.arange(repetitions)]
+    connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+
+    return Mesh(nodes, connectivity, etypedict[mesh.etype])

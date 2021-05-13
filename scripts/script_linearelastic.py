@@ -26,25 +26,46 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-
 import felupe as fe
 
-tol = 1e-8
-move = -np.arange(0.1, 0.8, 0.05)
+from felupe.math import sym, grad
 
-mesh = fe.mesh.Cube(n=8)
-domain = fe.Domain(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3)) 
+H = 26
+mesh = fe.mesh.ScaledCube(
+    symmetry=(False, True, False), n=21, L=95, B=220, H=H, dL=10, dB=10
+)
+
+region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))
 
 # u at nodes
-u = domain.zeros()
+u = fe.Field(region, 3)
+fields = (u,)
 
 # load constitutive material formulation
-NH = fe.constitution.NeoHooke(mu=1.0, bulk=5.0)
+mat = fe.constitution.LinearElastic(E=210000, nu=0.48)
+
+strain = sym(grad(u))
+stress = mat.stress(strain)
+elasticity = mat.elasticity(strain)
+
+r = fe.IntegralForm(stress, v=u, dV=region.dV, grad_v=True).assemble().toarray()[:, 0]
+K = fe.IntegralForm(
+    elasticity, v=u, u=u, dV=region.dV, grad_v=True, grad_u=True
+).assemble()
 
 # boundaries
-fz = lambda x: np.isclose(x, 1)
-bounds = fe.doftools.symmetry(domain.dof, mesh)
-bounds.append(fe.Boundary(domain.dof, mesh, skip=(0,0,1), fz=fz))
-bounds.append(fe.Boundary(domain.dof, mesh, skip=(1,1,0), fz=fz))
+f0 = lambda x: np.isclose(x, -H / 2)
+f1 = lambda x: np.isclose(x, H / 2)
+bounds = fe.doftools.symmetry(u, (0, 1, 0))
+bounds["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
+bounds["top"] = fe.Boundary(u, skip=(0, 0, 1), fz=f1)
+bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=-5)
 
-result = fe.utils.incsolve(u, domain, bounds, move, NH.P, NH.A)
+dof0, dof1, _ = fe.doftools.partition(u, bounds)
+u0ext = fe.doftools.apply(u, bounds, dof0)
+system = fe.solve.partition(u, K, dof1, dof0)
+du = fe.solve.solve(*system, u0ext)
+
+u += du
+
+fe.utils.save(region, u)

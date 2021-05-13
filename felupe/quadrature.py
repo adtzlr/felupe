@@ -31,85 +31,106 @@ class Constant:
     
     def __init__(self, dim=3):
         # integration point weights and coordinates
+        self.dim = dim
+        self.npoints = 1
+        self.weights = np.ones(1)
         if dim == 3:
-            self.scheme = _P0_D3()
+            self.points = np.array([[ 0, 0, 0]])
         elif dim == 2:
-            self.scheme = _P0_D2()
+            self.points = np.array([[ 0, 0]])
         elif dim == 1:
-            self.scheme = _P0_D1()
-        self.npoints = self.scheme.npoints
-        self.weights = self.scheme.weights
-        self.points = self.scheme.points
-    
-class _P0_D3:
-    
-    def __init__(self):
-        # integration point weights and coordinates
-        self.npoints = 1
-        self.weights = np.ones(1)
-        self.points = np.array([[ 0, 0, 0]])
+            self.points = np.array([[ 0]])
 
-class _P0_D2:
-    
-    def __init__(self):
-        # integration point weights and coordinates
-        self.npoints = 1
-        self.weights = np.ones(1)
-        self.points = np.array([[ 0, 0]])
-
-class _P0_D1:
-    
-    def __init__(self):
-        # integration point weights and coordinates
-        self.npoints = 1
-        self.weights = np.ones(1)
-        self.points = np.array([[ 0]])
 
 class Linear:
     
     def __init__(self, dim=3):
         # integration point weights and coordinates
+        self.dim = dim
+        self.npoints = 2**dim
+        self.weights = np.ones(self.npoints)
         if dim == 3:
-            self.scheme = _P1_D3()
+            self.points = np.array([[-1,-1,-1],
+                                    [ 1,-1,-1],
+                                    [ 1, 1,-1],
+                                    [-1, 1,-1],
+                                    [-1,-1, 1],
+                                    [ 1,-1, 1],
+                                    [ 1, 1, 1],
+                                    [-1, 1, 1]]) * np.sqrt(1/3)
         elif dim == 2:
-            self.scheme = _P1_D2()
+            self.points = np.array([[-1,-1],
+                                    [ 1,-1],
+                                    [ 1, 1],
+                                    [-1, 1]]) * np.sqrt(1/3)
         elif dim == 1:
-            self.scheme = _P1_D1()
-        self.npoints = self.scheme.npoints
-        self.weights = self.scheme.weights
-        self.points = self.scheme.points
-    
-class _P1_D3:
-    
-    def __init__(self):
-        # integration point weights and coordinates
-        self.npoints = 8
-        self.weights = np.ones(8)
-        self.points = np.array([[-1,-1,-1],
-                                [ 1,-1,-1],
-                                [ 1, 1,-1],
-                                [-1, 1,-1],
-                                [-1,-1, 1],
-                                [ 1,-1, 1],
-                                [ 1, 1, 1],
-                                [-1, 1, 1]]) * np.sqrt(1/3)
+            self.points = np.array([[-1],
+                                    [ 1]]) * np.sqrt(1/3)
 
-class _P1_D2:
-    
-    def __init__(self):
-        # integration point weights and coordinates
-        self.npoints = 4
-        self.weights = np.ones(4)
-        self.points = np.array([[-1,-1],
-                                [ 1,-1],
-                                [ 1, 1],
-                                [-1, 1]]) * np.sqrt(1/3)
 
-class _P1_D1:
+class Quadratic:
     
-    def __init__(self):
+    def __init__(self, dim=3):
+        import quadpy
         # integration point weights and coordinates
-        self.npoints = 2
-        self.weights = np.ones(2)
-        self.points = np.array([[-1],
-                                [ 1]]) * np.sqrt(1/3)
+        self.dim = dim
+        self.npoints = 3**dim
+        if dim == 3:
+            scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(3))
+        elif dim == 2:
+            scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(3))
+        elif dim == 1:
+            scheme = quadpy.c1.gauss_legendre(3)
+        self.points = scheme.points.T
+        self.weights = scheme.weights
+
+        
+class Cubic:
+    
+    def __init__(self, dim=3):
+        import quadpy
+        # integration point weights and coordinates
+        self.dim = dim
+        self.npoints = 4**dim
+        if dim == 3:
+            scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(4))
+        elif dim == 2:
+            scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(4))
+        elif dim == 1:
+            scheme = quadpy.c1.gauss_legendre(4)
+        self.points = scheme.points.T
+        self.weights = scheme.weights
+
+
+class Quartic:
+    
+    def __init__(self, dim=3):
+        import quadpy
+        # integration point weights and coordinates
+        self.dim = dim
+        self.npoints = 5**dim
+        if dim == 3:
+            scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(5))
+        elif dim == 2:
+            scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(5))
+        elif dim == 1:
+            scheme = quadpy.c1.gauss_legendre(5)
+        self.points = scheme.points.T
+        self.weights = scheme.weights
+
+
+class Quintic:
+    
+    def __init__(self, dim=3):
+        import quadpy
+        # integration point weights and coordinates
+        self.dim = dim
+        self.npoints = 6**dim
+        if dim == 3:
+            scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(6))
+        elif dim == 2:
+            scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(6))
+        elif dim == 1:
+            scheme = quadpy.c1.gauss_legendre(6)
+        self.points = scheme.points.T
+        self.weights = scheme.weights

@@ -39,6 +39,16 @@ def test_quadrature():
     q12 = fe.quadrature.Linear(dim=2)
     q13 = fe.quadrature.Linear(dim=3)
 
+    q23 = fe.quadrature.Quadratic()
+    q21 = fe.quadrature.Quadratic(dim=1)
+    q22 = fe.quadrature.Quadratic(dim=2)
+    q23 = fe.quadrature.Quadratic(dim=3)
+
+    q33 = fe.quadrature.Cubic()
+    q31 = fe.quadrature.Cubic(dim=1)
+    q32 = fe.quadrature.Cubic(dim=2)
+    q33 = fe.quadrature.Cubic(dim=3)
+
 
 if __name__ == "__main__":
     test_quadrature()

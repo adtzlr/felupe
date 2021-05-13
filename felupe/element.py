@@ -28,6 +28,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
+class Line:
+    def __init__(self):
+        self.ndim = 1
+
+
 class Quad:
     def __init__(self):
         self.ndim = 2
@@ -36,7 +41,24 @@ class Quad:
 class Hex:
     def __init__(self):
         self.ndim = 3
-        
+
+
+class Line1(Line):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 2
+        self.nbasis = 2
+
+    def basis(self, rv):
+        "linear line basis functions"
+        (r,) = rv
+        return np.array([(1 - r), (1 + r)]) * 0.5
+
+    def basisprime(self, rv):
+        "linear line derivative of basis functions"
+        (r,) = rv
+        return np.array([[-1], [1]]) * 0.5
+
 
 class Quad0(Quad):
     def __init__(self):
@@ -60,7 +82,7 @@ class Quad1(Quad):
         self.nbasis = 4
 
     def basis(self, rs):
-        "linear hexahedron basis functions"
+        "linear quadrilateral basis functions"
         r, s = rs
         return (
             np.array(
@@ -75,7 +97,7 @@ class Quad1(Quad):
         )
 
     def basisprime(self, rs):
-        "linear hexahedron derivative of basis functions"
+        "linear quadrilateral derivative of basis functions"
         r, s = rs
         return (
             np.array(
@@ -97,11 +119,11 @@ class Hex0(Hex):
         self.nbasis = 1
 
     def basis(self, rst):
-        "linear hexahedron basis functions"
+        "constant hexahedron basis functions"
         return np.array([1])
 
     def basisprime(self, rst):
-        "linear hexahedron derivative of basis functions"
+        "constant hexahedron derivative of basis functions"
         return np.array([[0, 0, 0]])
 
 
@@ -150,5 +172,179 @@ class Hex1(Hex):
         )
 
 
-if __name__ == "__main__":
-    E = Hex1()
+class Hex2s(Hex):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 20
+        self.nbasis = 20
+
+    def basis(self, rst):
+        "quadratic serendipity hexahedron basis functions"
+        r, s, t = rst
+        return np.array(
+            [
+                -(1 - r) * (1 - s) * (1 - t) * (2 + r + s + t) * 0.125,
+                -(1 + r) * (1 - s) * (1 - t) * (2 - r + s + t) * 0.125,
+                -(1 + r) * (1 + s) * (1 - t) * (2 - r - s + t) * 0.125,
+                -(1 - r) * (1 + s) * (1 - t) * (2 + r - s + t) * 0.125,
+                #
+                -(1 - r) * (1 - s) * (1 + t) * (2 + r + s - t) * 0.125,
+                -(1 + r) * (1 - s) * (1 + t) * (2 - r + s - t) * 0.125,
+                -(1 + r) * (1 + s) * (1 + t) * (2 - r - s - t) * 0.125,
+                -(1 - r) * (1 + s) * (1 + t) * (2 + r - s - t) * 0.125,
+                #
+                (1 - r) * (1 + r) * (1 - s) * (1 - t) * 0.25,
+                (1 - s) * (1 + s) * (1 + r) * (1 - t) * 0.25,
+                (1 - r) * (1 + r) * (1 + s) * (1 - t) * 0.25,
+                (1 - s) * (1 + s) * (1 - r) * (1 - t) * 0.25,
+                #
+                (1 - r) * (1 + r) * (1 - s) * (1 + t) * 0.25,
+                (1 - s) * (1 + s) * (1 + r) * (1 + t) * 0.25,
+                (1 - r) * (1 + r) * (1 + s) * (1 + t) * 0.25,
+                (1 - s) * (1 + s) * (1 - r) * (1 + t) * 0.25,
+                #
+                (1 - t) * (1 + t) * (1 - r) * (1 - s) * 0.25,
+                (1 - t) * (1 + t) * (1 + r) * (1 - s) * 0.25,
+                (1 - t) * (1 + t) * (1 + r) * (1 + s) * 0.25,
+                (1 - t) * (1 + t) * (1 - r) * (1 + s) * 0.25,
+            ]
+        )
+
+    def basisprime(self, rst):
+        "quadratic serendipity hexahedron derivative of basis functions"
+        r, s, t = rst
+        return (
+            np.array(
+                [
+                    [
+                        (1 - s) * (1 - t) * (2 + r + s + t) * 0.125
+                        - (1 - r) * (1 - s) * (1 - t) * (2 + s + t) * 0.125,
+                        (1 - r) * (1 - t) * (2 + r + s + t) * 0.125
+                        - (1 - r) * (1 - s) * (1 - t) * (2 + r + t) * 0.125,
+                        (1 - r) * (1 - s) * (2 + r + s + t) * 0.125
+                        - (1 - r) * (1 - s) * (1 - t) * (2 + r + s) * 0.125,
+                    ],
+                    [
+                        -(1 - s) * (1 - t) * (2 - r + s + t) * 0.125
+                        + (1 + r) * (1 - s) * (1 - t) * (2 + s + t) * 0.125,
+                        (1 + r) * (1 - t) * (2 - r + s + t) * 0.125
+                        - (1 + r) * (1 - s) * (1 - t) * (2 - r + t) * 0.125,
+                        (1 + r) * (1 - s) * (2 - r + s + t) * 0.125
+                        - (1 + r) * (1 - s) * (1 - t) * (2 - r + s) * 0.125,
+                    ],
+                    [
+                        -(1 + s) * (1 - t) * (2 - r - s + t) * 0.125
+                        + (1 + r) * (1 + s) * (1 - t) * (2 - s + t) * 0.125,
+                        -(1 + r) * (1 - t) * (2 - r - s + t) * 0.125
+                        + (1 + r) * (1 + s) * (1 - t) * (2 - r + t) * 0.125,
+                        (1 + r) * (1 + s) * (2 - r - s + t) * 0.125
+                        - (1 + r) * (1 + s) * (1 - t) * (2 - r - s) * 0.125,
+                    ],
+                    [
+                        (1 + s) * (1 - t) * (2 + r - s + t) * 0.125
+                        - (1 - r) * (1 + s) * (1 - t) * (2 - s + t) * 0.125,
+                        -(1 - r) * (1 - t) * (2 + r - s + t) * 0.125
+                        + (1 - r) * (1 + s) * (1 - t) * (2 + r + t) * 0.125,
+                        (1 - r) * (1 + s) * (2 + r - s + t) * 0.125
+                        - (1 - r) * (1 + s) * (1 - t) * (2 + r - s) * 0.125,
+                    ],
+                    #
+                    [
+                        (1 - s) * (1 + t) * (2 + r + s - t) * 0.125
+                        - (1 - r) * (1 - s) * (1 + t) * (2 + s - t) * 0.125,
+                        (1 - r) * (1 + t) * (2 + r + s - t) * 0.125
+                        - (1 - r) * (1 - s) * (1 + t) * (2 + r - t) * 0.125,
+                        -(1 - r) * (1 - s) * (2 + r + s - t) * 0.125
+                        + (1 - r) * (1 - s) * (1 + t) * (2 + r + s) * 0.125,
+                    ],
+                    [
+                        -(1 - s) * (1 + t) * (2 - r + s - t) * 0.125
+                        + (1 + r) * (1 - s) * (1 + t) * (2 + s - t) * 0.125,
+                        (1 + r) * (1 + t) * (2 - r + s - t) * 0.125
+                        - (1 + r) * (1 - s) * (1 + t) * (2 - r - t) * 0.125,
+                        -(1 + r) * (1 - s) * (2 - r + s - t) * 0.125
+                        + (1 + r) * (1 - s) * (1 + t) * (2 - r + s) * 0.125,
+                    ],
+                    [
+                        -(1 + s) * (1 + t) * (2 - r - s - t) * 0.125
+                        + (1 + r) * (1 + s) * (1 + t) * (2 - s - t) * 0.125,
+                        -(1 + r) * (1 + t) * (2 - r - s - t) * 0.125
+                        + (1 + r) * (1 + s) * (1 + t) * (2 - r - t) * 0.125,
+                        -(1 + r) * (1 + s) * (2 - r - s - t) * 0.125
+                        + (1 + r) * (1 + s) * (1 + t) * (2 - r - s) * 0.125,
+                    ],
+                    [
+                        (1 + s) * (1 + t) * (2 + r - s - t) * 0.125
+                        - (1 - r) * (1 + s) * (1 + t) * (2 - s - t) * 0.125,
+                        -(1 - r) * (1 + t) * (2 + r - s - t) * 0.125
+                        + (1 - r) * (1 + s) * (1 + t) * (2 + r - t) * 0.125,
+                        -(1 - r) * (1 + s) * (2 + r - s - t) * 0.125
+                        + (1 - r) * (1 + s) * (1 + t) * (2 + r - s) * 0.125,
+                    ],
+                    #
+                    [
+                        -2 * r * (1 - s) * (1 - t) * 0.25,
+                        -(1 - r) * (1 + r) * (1 - t) * 0.25,
+                        -(1 - r) * (1 + r) * (1 - s) * 0.25,
+                    ],
+                    [
+                        (1 - s) * (1 + s) * (1 - t) * 0.25,
+                        -2 * s * (1 + r) * (1 - t) * 0.25,
+                        -(1 - s) * (1 + s) * (1 + r) * 0.25,
+                    ],
+                    [
+                        -2 * r * (1 + s) * (1 - t) * 0.25,
+                        (1 - r) * (1 + r) * (1 - t) * 0.25,
+                        -(1 - r) * (1 + r) * (1 + s) * 0.25,
+                    ],
+                    [
+                        -(1 - s) * (1 + s) * (1 - t) * 0.25,
+                        -2 * s * (1 - r) * (1 - t) * 0.25,
+                        -(1 - s) * (1 + s) * (1 - r) * 0.25,
+                    ],
+                    #
+                    [
+                        -2 * r * (1 - s) * (1 + t) * 0.25,
+                        -(1 - r) * (1 + r) * (1 + t) * 0.25,
+                        (1 - r) * (1 + r) * (1 - s) * 0.25,
+                    ],
+                    [
+                        (1 - s) * (1 + s) * (1 + t) * 0.25,
+                        -2 * s * (1 + r) * (1 + t) * 0.25,
+                        (1 - s) * (1 + s) * (1 + r) * 0.25,
+                    ],
+                    [
+                        -2 * r * (1 + s) * (1 + t) * 0.25,
+                        (1 - r) * (1 + r) * (1 + t) * 0.25,
+                        (1 - r) * (1 + r) * (1 + s) * 0.25,
+                    ],
+                    [
+                        -(1 - s) * (1 + s) * (1 + t) * 0.25,
+                        -2 * s * (1 - r) * (1 + t) * 0.25,
+                        (1 - s) * (1 + s) * (1 - r) * 0.25,
+                    ],
+                    #
+                    [
+                        -(1 - t) * (1 + t) * (1 - s) * 0.25,
+                        -(1 - t) * (1 + t) * (1 - r) * 0.25,
+                        -2 * t * (1 - r) * (1 - s) * 0.25,
+                    ],
+                    [
+                        (1 - t) * (1 + t) * (1 - s) * 0.25,
+                        -(1 - t) * (1 + t) * (1 + r) * 0.25,
+                        -2 * t * (1 + r) * (1 - s) * 0.25,
+                    ],
+                    [
+                        (1 - t) * (1 + t) * (1 + s) * 0.25,
+                        (1 - t) * (1 + t) * (1 + r) * 0.25,
+                        -2 * t * (1 + r) * (1 + s) * 0.25,
+                    ],
+                    [
+                        -(1 - t) * (1 + t) * (1 + s) * 0.25,
+                        (1 - t) * (1 + t) * (1 - r) * 0.25,
+                        -2 * t * (1 - r) * (1 + s) * 0.25,
+                    ],
+                ]
+            )
+            * 0.125
+        )

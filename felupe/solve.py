@@ -32,17 +32,33 @@ try:
 except:
     from scipy.sparse.linalg import spsolve
 
+from .math import values
 
-def partition(u, r, K, dof1, dof0):
+
+def partition(v, K, dof1, dof0, r=None):
+
+    u = values(v)
+    if r is None:
+        r1 = None
+    else:
+        r1 = r[dof1]
+
     u0 = u.ravel()[dof0]
-    r1 = r[dof1]
     K11 = K[dof1, :][:, dof1]
     K10 = K[dof1, :][:, dof0]
-    return u, r1, u0, K11, K10, dof1, dof0
+    return u, u0, K11, K10, dof1, dof0, r1
 
 
-def solve(u, r1, u0, K11, K10, dof1, dof0, u0ext):
-    dr0 = K10.dot(u0ext - u0)
+def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None):
+
+    if r1 is None:
+        r1 = np.zeros(len(dof1))
+
+    if u0ext is None:
+        dr0 = np.zeros(len(dof0))
+    else:
+        dr0 = K10.dot(u0ext - u0)
+
     du1 = spsolve(K11, -r1 - dr0.reshape(*r1.shape))
     du = np.empty(u.size)
     du[dof1] = du1

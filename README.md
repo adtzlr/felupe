@@ -114,7 +114,7 @@ In order to solve the linearized equation system a partition to active and inact
 ```python
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
 du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
-displacement += du
+# displacement += du
 ```
 
 A very simple newton-rhapson code looks like this:

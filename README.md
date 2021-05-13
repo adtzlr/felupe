@@ -98,6 +98,8 @@ u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 ### Integral forms of equilibrium equations
 The integral (or weak) forms of equilibrium equations are defined by the `IntegralForm` class. The function of interest has to be passed as the `fun` argument whereas the virtual field as the `v` argument. Setting `grad_v=True` FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if `u=None` (default) or create a bilinear form if a field is passed to the argument `u`.
 
+$$\int_V \boldsymbol{P} : \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{X}} dV$$
+
 ```python
 linearform = fe.IntegralForm(P, displacement, dV, grad_v=True)
 bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True, grad_u=True)

@@ -129,8 +129,7 @@ class Line(Mesh):
         self.b = b
         self.n = n
 
-        nodes = np.linspace(a, b, n)
-        connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
+        nodes, connectivity = line_line(a, b, n)
 
         etype = "line"
 
@@ -145,7 +144,7 @@ class CubeQuadratic(Mesh):
         self.n = (3, 3, 3)
 
         nodes, connectivity = cube_hexa(a, b, n=self.n)
-        etype = "hexahedron"
+        etype = "hexahedron20"
 
         super().__init__(nodes, connectivity, etype)
         self.edgenodes = 8
@@ -157,7 +156,7 @@ class CubeQuadratic(Mesh):
         self.update(self.connectivity)
 
 
-class ScaledCube(Cube):
+class CubeAdvanced(Cube):
     def __init__(
         self,
         n=5,
@@ -173,6 +172,7 @@ class ScaledCube(Cube):
     ):
 
         a = -np.ones(3)
+        symmetry = np.array(symmetry, dtype=bool)
         a[list(symmetry)] = 0
         super().__init__(a, (1, 1, 1), n)
 
@@ -192,81 +192,66 @@ class ScaledCube(Cube):
         self.update(self.connectivity)
 
 
-class CylinderOld(Cube):
+class CylinderAdvanced(Mesh):
     def __init__(
         self,
-        a=(-1, -1, -1),
-        b=(1, 1, 1),
-        n=5,
-        D=1,
+        D=10,
         H=1,
-        dD=0,
-        exponent=4,
-        symmetry=(False, False, False),
-        switch=0.5,
+        n=(13, 13, 9),
+        d=2,
+        phi=180,
+        dD=1,
+        dd=1,
+        k=4,
+        align=True,
+        symmetry=False,
     ):
-
-        a = np.array(a)
-        a[symmetry] = 0
-        super().__init__(a, b, n)
-
-        z = self.nodes.copy()
-
-        r = np.sqrt(self.nodes[:, 0] ** 2 + self.nodes[:, 1] ** 2)
-        mask = np.logical_or(
-            abs(self.nodes[:, 0]) > switch, abs(self.nodes[:, 1]) > switch
-        )
-        r[~mask] = (r[~mask] - 2 / 3) / r[~mask].max() * r[~mask] + 2 / 3
-        z[:, 0] /= 0.05 + r
-        z[:, 1] /= 0.05 + r
-        z[:, 0] *= D / 2 * (1 + 2 * dD / D * self.nodes[:, 2] ** exponent)
-        z[:, 1] *= D / 2 * (1 + 2 * dD / D * self.nodes[:, 2] ** exponent)
-        z[:, 2] *= H / 2
-
-        self.nodes = z
-        self.update(self.connectivity)
-
-
-class HollowCylinder(Mesh):
-    def __init__(self, D=10, H=1, n=(13, 13, 9), d=2, phi=180, dD=1, dd=1, k=4):
 
         R = D / 2
         r = d / 2
         # rm = (R + r) / 2
         dr = R - r
 
-        N, C = expand(line_line(a=-1, b=1, n=n[0]), n[2], z=2)
+        if symmetry:
+            a = 0
+        else:
+            a = -1
+
+        N, C = expand(line_line(a=a, b=1, n=n[2]), n[0], z=2)
         N[:, 1] -= 1
 
-        left = N[:, 0] < 0
-        right = N[:, 0] > 0
-        Nl = N[left]
-        Nr = N[right]
+        bottom = N[:, 1] < 0
+        top = N[:, 1] > 0
+        Nb = N[bottom]
+        Nt = N[top]
 
-        Nl[:, 0] *= 1 + dd / dr * Nl[:, 1] ** k
-        Nr[:, 0] *= 1 + dD / dr * Nr[:, 1] ** k
+        Nb[:, 1] *= 1 + dd / dr * Nb[:, 0] ** k
+        Nt[:, 1] *= 1 + dD / dr * Nt[:, 0] ** k
 
-        N[left] = Nl
-        N[right] = Nr
+        N[bottom] = Nb
+        N[top] = Nt
 
-        N[:, 0] += 1
-        N[:, 0] *= dr / 2
-        N[:, 0] += r
+        N[:, 1] += 1
+        N[:, 1] *= dr / 2
+        N[:, 1] += r
 
-        N[:, 1] *= H / 2
-        N[:, 1] += H / 2
+        N[:, 0] *= H / 2
+        N[:, 0] += H / 2
 
-        nodes, connectivity = revolve((N, C), n[1], -phi, axis=1)
+        nodes, connectivity = revolve((N, C), n[1], -phi, axis=0)
         etype = "hexahedron"
+
+        if align:
+            nodes, connectivity = rotate(rotate((nodes, connectivity), 90, 1), 90, 2)
 
         super().__init__(nodes, connectivity, etype)
         self.edgenodes = 8
 
 
-class Cylinder(HollowCylinder):
-    def __init__(self, D=2, H=1, n=(13, 25, 2), phi=360):
+class Cylinder(CylinderAdvanced):
+    def __init__(self, D=2, H=1, n=(3, 9, 3), phi=360):
 
-        super().__init__(D, H, n, d=0, phi=phi, dD=0, dd=0, k=4)
+        super().__init__(D, H, n, d=0, phi=phi, dD=0, dd=0, k=4, align=True)
 
 
 def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
@@ -345,6 +330,40 @@ def expand(mesh, n=11, z=1):
         return nodes, connectivity
 
 
+def rotation_matrix(alpha_deg, dim=3, axis=0):
+    a = np.deg2rad(alpha_deg)
+    rotation_matrix = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
+    if dim == 3:
+        # rotation_matrix = np.pad(rotation_matrix, (1, 0))
+        # rotation_matrix[0, 0] = 1
+        rotation_matrix = np.insert(rotation_matrix, [axis], np.zeros((1, 2)), axis=0)
+        rotation_matrix = np.insert(rotation_matrix, [axis], np.zeros((3, 1)), axis=1)
+        rotation_matrix[axis, axis] = 1
+
+    return rotation_matrix
+
+
+def rotate(mesh, angle_deg, axis):
+    "Revolve 2d quad to 3d hexahedron mesh."
+
+    if isinstance(mesh, Mesh):
+        Nodes = mesh.nodes
+        Connectivity = mesh.connectivity
+        Etype = mesh.etype
+        return_mesh = True
+    else:
+        Nodes, Connectivity = mesh
+        return_mesh = False
+
+    dim = Nodes.shape[1]
+    nodes = (rotation_matrix(angle_deg, dim, axis) @ Nodes.T).T
+
+    if return_mesh:
+        return Mesh(nodes, Connectivity, Etype)
+    else:
+        return nodes, Connectivity
+
+
 def revolve(mesh, n=11, phi=180, axis=0):
     "Revolve 2d quad to 3d hexahedron mesh."
 
@@ -369,23 +388,8 @@ def revolve(mesh, n=11, phi=180, axis=0):
     if abs(phi) > 360:
         raise ValueError("phi must be within |phi| <= 360 degree.")
 
-    def R(alpha_deg, dim=3):
-        a = np.deg2rad(alpha_deg)
-        rotation_matrix = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
-        if dim == 3:
-            # rotation_matrix = np.pad(rotation_matrix, (1, 0))
-            # rotation_matrix[0, 0] = 1
-            rotation_matrix = np.insert(
-                rotation_matrix, [axis], np.zeros((1, 2)), axis=0
-            )
-            rotation_matrix = np.insert(
-                rotation_matrix, [axis], np.zeros((3, 1)), axis=1
-            )
-            rotation_matrix[axis, axis] = 1
-
-        return rotation_matrix
-
     p = np.pad(Nodes, (0, 1))[:-1]
+    R = rotation_matrix
 
     nodes = np.vstack(
         [(R(alpha_deg, Dim + 1) @ p.T).T for alpha_deg in np.linspace(0, phi, n)]
@@ -393,9 +397,9 @@ def revolve(mesh, n=11, phi=180, axis=0):
 
     c = [Connectivity + len(p) * a for a in np.arange(n)]
 
-    if abs(phi) == 360:
-        nodes = nodes[: -len(p)]
-        c[-1] = Connectivity
+    # if abs(phi) == 360:
+    #    nodes = nodes[: -len(p)]
+    #    c[-1] = Connectivity
 
     connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 

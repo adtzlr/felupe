@@ -53,7 +53,7 @@ def convert(mesh, order=0, calc_nodes=False):
 
 
 class Mesh:
-    def __init__(self, nodes, connectivity, etype):
+    def __init__(self, nodes, connectivity, etype=None):
         self.nodes = nodes
         self.connectivity = connectivity
         self.etype = etype
@@ -62,19 +62,25 @@ class Mesh:
 
     def update(self, connectivity):
         self.connectivity = connectivity
+
+        # obtain dimensions
         self.nnodes, self.ndim = self.nodes.shape
         self.ndof = self.nodes.size
         self.nelements = self.connectivity.shape[0]
 
+        # get number of elements per node
         nodes_in_conn, self.elements_per_node = np.unique(
             connectivity, return_counts=True
         )
 
+        # check if there are nodes without element connectivity
         if self.nnodes != len(self.elements_per_node):
             self.node_has_element = np.isin(np.arange(self.nnodes), nodes_in_conn)
+            # update "epn" ... elements per node
             epn = -np.ones(self.nnodes, dtype=int)
             epn[nodes_in_conn] = self.elements_per_node
             self.elements_per_node = epn
+
             self.nodes_without_elements = np.arange(self.nnodes)[~self.node_has_element]
             self.nodes_with_elements = np.arange(self.nnodes)[self.node_has_element]
         else:
@@ -82,9 +88,13 @@ class Mesh:
             self.nodes_with_elements = np.arange(self.nnodes)
 
     def save(self, filename="mesh.vtk"):
-        # two triangles and one quad
+        "Export mesh as VTK file."
+
+        if self.etype is None:
+            raise TypeError("Element type missing.")
+
         cells = {self.etype: self.connectivity}
-        mesh = meshio.Mesh(self.nodes, cells).write(filename)
+        meshio.Mesh(self.nodes, cells).write(filename)
 
 
 class Cube(Mesh):
@@ -217,28 +227,46 @@ class CylinderOld(Cube):
         self.update(self.connectivity)
 
 
-class Cylinder(Mesh):
-    def __init__(self, D=1, H=1, n=(2, 2), dD=0, exponent=4):
+class HollowCylinder:
+    def __init__(self, D=10, H=1, n=(13, 13, 9), d=2, phi=180, dD=1, dd=1, k=4):
 
-        p1, c1 = meshzoo.disk_quad(n[0])
-        p1 = np.pad(p1, (0, 1))[:-1]
+        R = D / 2
+        r = d / 2
+        # rm = (R + r) / 2
+        dr = R - r
 
-        nodes = np.vstack([p1 + np.array([0, 0, h]) for h in np.linspace(-1, 1, n[1])])
-        c = [c1 + len(p1) * a for a in np.arange(n[1])]
+        N, C = expand(line_line(a=-1, b=1, n=n[0]), n[2], z=2)
+        N[:, 1] -= 1
 
-        connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+        left = N[:, 0] < 0
+        right = N[:, 0] > 0
+        Nl = N[left]
+        Nr = N[right]
 
+        Nl[:, 0] *= 1 + dd / dr * Nl[:, 1] ** k
+        Nr[:, 0] *= 1 + dD / dr * Nr[:, 1] ** k
+
+        N[left] = Nl
+        N[right] = Nr
+
+        N[:, 0] += 1
+        N[:, 0] *= dr / 2
+        N[:, 0] += r
+
+        N[:, 1] *= H / 2
+        N[:, 1] += H / 2
+
+        nodes, connectivity = revolve((N, C), n[1], -phi, axis=1)
         etype = "hexahedron"
-
-        nodes[:, 0] *= 2
-        nodes[:, 1] *= 2
-
-        nodes[:, 0] *= D / 2 * (1 + 2 * dD / D * nodes[:, 2] ** exponent)
-        nodes[:, 1] *= D / 2 * (1 + 2 * dD / D * nodes[:, 2] ** exponent)
-        nodes[:, 2] *= H / 2
 
         super().__init__(nodes, connectivity, etype)
         self.edgenodes = 8
+
+
+class Cylinder(HollowCylinder):
+    def __init__(self, D=2, H=1, n=(13, 25, 2), phi=360):
+
+        super.__init__(D, H, n, d=0, phi=phi, dD=0, dd=0, k=4)
 
 
 def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
@@ -250,33 +278,10 @@ def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
     if not isinstance(n, array_like):
         n = np.full(dim, n, dtype=int)
 
-    # generate points for each axis
-    a = np.array(a)
-    b = np.array(b)
-    n = np.array(n)
+    rectangle = rectangle_quad(a[:-1], b[:-1], n[:-1])
 
-    X = [np.linspace(A, B, N) for A, B, N in zip(a[::-1], b[::-1], n[::-1])]
-
-    # make a grid
-    grid = np.meshgrid(*X, indexing="ij")[::-1]
-
-    # generate list of node coordinates
-    nodes = np.vstack([ax.ravel() for ax in grid]).T
-
-    # prepare element connectivity
-    a = []
-    for i in range(n[1]):
-        a.append(np.repeat(np.arange(i * n[0], (i + 1) * n[0]), 2)[1:-1].reshape(-1, 2))
-
-    b = []
-    for j in range(n[1] - 1):
-        d = np.hstack((a[j], a[j + 1][:, [1, 0]]))
-        b.append(np.hstack((d, d + n[0] * n[1])))
-
-    c = [np.vstack(b) + k * n[0] * n[1] for k in range(n[2] - 1)]
-
-    # generate element connectivity
-    connectivity = np.vstack(c)
+    nodes, connectivity = expand(rectangle, n[-1], b[-1] - a[-1])
+    nodes[:, -1] += a[-1]
 
     return nodes, connectivity
 
@@ -290,63 +295,135 @@ def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
     if not isinstance(n, array_like):
         n = np.full(dim, n, dtype=int)
 
-    # generate points for each axis
-    X = [np.linspace(A, B, N) for A, B, N in zip(a, b, n)]
+    line = line_line(a[0], b[0], n[0])
 
-    # make a grid
-    grid = np.meshgrid(*X)
-
-    # generate list of node coordinates
-    nodes = np.vstack([ax.ravel() for ax in grid]).T
-
-    # prepare element connectivity
-    a = []
-    for i in range(n[1]):
-        a.append(np.repeat(np.arange(i * n[0], (i + 1) * n[0]), 2)[1:-1].reshape(-1, 2))
-
-    b = []
-    for j in range(n[1] - 1):
-        b.append(np.hstack((a[j], a[j + 1][:, [1, 0]])))
-
-    # generate element connectivity
-    connectivity = np.vstack(b)
+    nodes, connectivity = expand(line, n[-1], b[-1] - a[-1])
+    nodes[:, -1] += a[-1]
 
     return nodes, connectivity
 
 
-def expand(mesh, repetitions=10, depth=1):
+def line_line(a=0, b=1, n=2):
 
-    etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
+    nodes = np.linspace(a, b, n).reshape(-1, 1)
+    connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
 
-    p = np.pad(mesh.nodes, (0, 1))[:-1]
-    nodes = np.vstack(
-        [p + np.array([0, 0, h]) for h in np.linspace(0, depth, repetitions)]
-    )
-
-    c = [mesh.connectivity + len(p) * a for a in np.arange(repetitions)]
-    connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
-
-    return Mesh(nodes, connectivity, etypedict[mesh.etype])
+    return nodes, connectivity
 
 
-def revolve(mesh, repetitions=10, section=180):
+def expand(mesh, n=11, z=1):
+    "Expand 2d quad to 3d hexahedron mesh."
 
-    etypedict = {"quad": "hexahedron", "tri": "tetrahedron"}
+    if isinstance(mesh, Mesh):
+        Nodes = mesh.nodes
+        Connectivity = mesh.connectivity
+        return_mesh = True
+    else:
+        Nodes, Connectivity = mesh
+        return_mesh = False
 
-    def R(alpha_deg):
+    Dim = Nodes.shape[1]
+    if Dim == 1:
+        sl = slice(None, None, -1)
+        etype = "quad"
+    elif Dim == 2:
+        sl = slice(None, None, None)
+        etype = "hexahedron"
+    else:
+        raise ValueError("Expansion of a 3d mesh is not supported.")
+
+    p = np.pad(Nodes, (0, 1))[:-1]
+    zeros = np.zeros(Dim)
+    nodes = np.vstack([p + np.array([*zeros, h]) for h in np.linspace(0, z, n)])
+
+    c = [Connectivity + len(p) * a for a in np.arange(n)]
+    connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+
+    if return_mesh:
+        return Mesh(nodes, connectivity, etype)
+    else:
+        return nodes, connectivity
+
+
+def revolve(mesh, n=11, phi=180, axis=0):
+    "Revolve 2d quad to 3d hexahedron mesh."
+
+    if isinstance(mesh, Mesh):
+        Nodes = mesh.nodes
+        Connectivity = mesh.connectivity
+        return_mesh = True
+    else:
+        Nodes, Connectivity = mesh
+        return_mesh = False
+
+    Dim = Nodes.shape[1]
+    if Dim == 1:
+        sl = slice(None, None, -1)
+        etype = "quad"
+    elif Dim == 2:
+        sl = slice(None, None, None)
+        etype = "hexahedron"
+    else:
+        raise ValueError("Revolution of a 3d mesh is not supported.")
+
+    if abs(phi) > 360:
+        raise ValueError("phi must be within |phi| <= 360 degree.")
+
+    def R(alpha_deg, dim=3):
         a = np.deg2rad(alpha_deg)
-        r = np.array([np.cos(a), -np.sin(a), np.sin(a), np.cos(a)]).reshape(2, 2)
-        R = np.pad(r, (1, 0))
-        R[0, 0] = 1
-        return R
+        rotation_matrix = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
+        if dim == 3:
+            # rotation_matrix = np.pad(rotation_matrix, (1, 0))
+            # rotation_matrix[0, 0] = 1
+            rotation_matrix = np.insert(
+                rotation_matrix, [axis], np.zeros((1, 2)), axis=0
+            )
+            rotation_matrix = np.insert(
+                rotation_matrix, [axis], np.zeros((3, 1)), axis=1
+            )
+            rotation_matrix[axis, axis] = 1
 
-    p = np.pad(mesh.nodes, (0, 1))[:-1]
+        return rotation_matrix
+
+    p = np.pad(Nodes, (0, 1))[:-1]
 
     nodes = np.vstack(
-        [(R(alpha) @ p.T).T for alpha in np.linspace(0, section, repetitions)]
+        [(R(alpha_deg, Dim + 1) @ p.T).T for alpha_deg in np.linspace(0, phi, n)]
     )
 
-    c = [mesh.connectivity + len(p) * a for a in np.arange(repetitions)]
-    connectivity = np.vstack([np.hstack((a, b)) for a, b in zip(c[:-1], c[1:])])
+    c = [Connectivity + len(p) * a for a in np.arange(n)]
 
-    return Mesh(nodes, connectivity, etypedict[mesh.etype])
+    if abs(phi) == 360:
+        nodes = nodes[: -len(p)]
+        c[-1] = Connectivity
+
+    connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+
+    if return_mesh:
+        return Mesh(nodes, connectivity, etype)
+    else:
+        return nodes, connectivity
+
+
+# WIP
+# def sweep(mesh):
+
+#     if isinstance(mesh, Mesh):
+#         Nodes = mesh.nodes
+#         Connectivity = mesh.connectivity
+#         etype = mesh.etype
+#         return_mesh = True
+#     else:
+#         Nodes, Connectivity = mesh
+#         return_mesh = False
+
+#     unique, index, counts = np.unique(np.ones((2,3)), return_index=True, return_counts=True, axis=0)
+#     doubled_nodes = unique[counts > 1]
+
+#     for node in doubled_nodes:
+#         i = np.arange(Nodes.shape[0])[np.logical_and(*(Nodes == node).T)]
+
+#     if return_mesh:
+#         return Mesh(nodes, connectivity, etype)
+#     else:
+#         return nodes, connectivity

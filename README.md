@@ -2,7 +2,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Made with love in Graz (Austria)](https://madewithlove.now.sh/at?heart=true&colorB=%231f744f&text=Graz+%28Austria%29) ![Codestyle black](https://img.shields.io/badge/code%20style-black-black) [![purple-pi](https://img.shields.io/badge/Rendered%20with-Purple%20Pi-bd00ff?style=flat-square)](https://github.com/nschloe/purple-pi?activate)
 
-![FElupe](images/felupe_logo.svg)
+![FElupe](docs/images/felupe_logo.svg)
 
 FElupe is an open-source finite element package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy (and optional Numba). No complicated installation, just pure Python. Another key feature is the easy and straightforward definition of mixed field formulations for nearly incompressible material behavior. Several useful utilities are available, i.e. an incremental approach for the application of boundary conditions and subsequent solution of the nonlinear equilibrium equations or the calculation of forces and moments on boundaries. Finally, results are ready to be exported to VTK or XDMF files using meshio.
 
@@ -19,7 +19,7 @@ import felupe as fe
 ## Getting started
 Start setting up a problem in FElupe by the creation of a Region with a geometry (Mesh), a finite Element and a Quadrature rule. 
 
-![FElupe](images/numeric_region.svg)
+![FElupe](docs/images/numeric_region.svg)
 
 ### Region
 A region essentially pre-calculates basis functions and derivatives evaluated at every quadrature point of every element. An array containing products of quadrature weights multiplied by the geometrical jacobians is stored as the differential volume.
@@ -35,7 +35,7 @@ dV = region.dV
 V = dV.sum()
 ```
 
-![FElupe](images/undeformed_mesh.png)
+![FElupe](docs/images/undeformed_mesh.png)
 
 ### Field
 In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method.
@@ -160,7 +160,7 @@ Results can be exported as VTK or XDMF files using meshio.
 fe.utils.save(region, displacement, filename="result")
 ```
 
-![FElupe](images/deformed_mesh.png)
+![FElupe](docs/images/deformed_mesh.png)
 
 ## Utilities
 The above code snippets and explanations cover only the essential parts of FElupe. Several utilities are available - please have a look at the scripts folder or the source code itself.

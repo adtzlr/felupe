@@ -227,7 +227,7 @@ class CylinderOld(Cube):
         self.update(self.connectivity)
 
 
-class HollowCylinder:
+class HollowCylinder(Mesh):
     def __init__(self, D=10, H=1, n=(13, 13, 9), d=2, phi=180, dD=1, dd=1, k=4):
 
         R = D / 2
@@ -266,7 +266,7 @@ class HollowCylinder:
 class Cylinder(HollowCylinder):
     def __init__(self, D=2, H=1, n=(13, 25, 2), phi=360):
 
-        super.__init__(D, H, n, d=0, phi=phi, dD=0, dd=0, k=4)
+        super().__init__(D, H, n, d=0, phi=phi, dD=0, dd=0, k=4)
 
 
 def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
@@ -399,31 +399,41 @@ def revolve(mesh, n=11, phi=180, axis=0):
 
     connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
+    nodes, connectivity = sweep((nodes, connectivity), decimals=6)
+
     if return_mesh:
         return Mesh(nodes, connectivity, etype)
     else:
         return nodes, connectivity
 
 
-# WIP
-# def sweep(mesh):
+def sweep(mesh, decimals=6):
 
-#     if isinstance(mesh, Mesh):
-#         Nodes = mesh.nodes
-#         Connectivity = mesh.connectivity
-#         etype = mesh.etype
-#         return_mesh = True
-#     else:
-#         Nodes, Connectivity = mesh
-#         return_mesh = False
+    if isinstance(mesh, Mesh):
+        Nodes = mesh.nodes
+        Connectivity = mesh.connectivity
+        etype = mesh.etype
+        return_mesh = True
+    else:
+        Nodes, Connectivity = mesh
+        return_mesh = False
 
-#     unique, index, counts = np.unique(np.ones((2,3)), return_index=True, return_counts=True, axis=0)
-#     doubled_nodes = unique[counts > 1]
+    nodes, index, inverse, counts = np.unique(
+        np.round(Nodes, decimals), True, True, True, axis=0
+    )
 
-#     for node in doubled_nodes:
-#         i = np.arange(Nodes.shape[0])[np.logical_and(*(Nodes == node).T)]
+    original = np.arange(len(Nodes))
 
-#     if return_mesh:
-#         return Mesh(nodes, connectivity, etype)
-#     else:
-#         return nodes, connectivity
+    mask = inverse != original
+    find = original[mask]
+    replace = inverse[mask]
+
+    connectivity = Connectivity.copy()
+
+    for i, j in zip(find, replace):
+        connectivity[Connectivity == i] = j
+
+    if return_mesh:
+        return Mesh(nodes, connectivity, etype)
+    else:
+        return nodes, connectivity

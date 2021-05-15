@@ -101,7 +101,7 @@ The integral (or weak) forms of equilibrium equations are defined by the `Integr
 $\int_V P_i^{\ J} : \frac{\partial \delta u^i}{\partial X^J} \ dV \qquad$ and $\qquad \int_V \frac{\partial \delta u^i}{\partial X^J} : \mathbb{A}_{i\ k\ }^{\ J\ L} : \frac{\partial u^k}{\partial X^L} \ dV$
 
 ```python
-linearform = fe.IntegralForm(P, displacement, dV, grad_v=True)
+linearform   = fe.IntegralForm(P, displacement, dV, grad_v=True)
 bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True, grad_u=True)
 ```
 

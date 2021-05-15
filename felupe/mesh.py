@@ -29,28 +29,6 @@ import numpy as np
 
 import meshio
 
-import meshzoo
-
-from copy import deepcopy
-
-
-def convert(mesh, order=0, calc_nodes=False):
-    "Convert mesh to a given order (only order=0 supported)."
-
-    if order != 0:
-        raise NotImplementedError("Unsupported order conversion.")
-
-    if calc_nodes:
-        nodes = np.stack(
-            [np.mean(mesh.nodes[conn], axis=0) for conn in mesh.connectivity]
-        )
-    else:
-        nodes = np.zeros((mesh.nelements, mesh.ndim), dtype=int)
-
-    connectivity = np.arange(mesh.nelements).reshape(-1, 1)
-    etype = "None"
-    return Mesh(nodes, connectivity, etype)
-
 
 class Mesh:
     def __init__(self, nodes, connectivity, etype=None):
@@ -254,25 +232,20 @@ class Cylinder(CylinderAdvanced):
         super().__init__(D, H, n, d=0, phi=phi, dD=0, dd=0, k=4, align=True)
 
 
-def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+# line, rectangle (based on line) and cube (based on rectangle) generators
+# ------------------------------------------------------------------------
 
-    dim = 3
-    array_like = (tuple, list, np.ndarray)
 
-    # check if number "n" is scalar or no. of nodes per axis (array-like)
-    if not isinstance(n, array_like):
-        n = np.full(dim, n, dtype=int)
-
-    rectangle = rectangle_quad(a[:-1], b[:-1], n[:-1])
-
-    nodes, connectivity = expand(rectangle, n[-1], b[-1] - a[-1])
-    nodes[:, -1] += a[-1]
+def line_line(a=0, b=1, n=2):
+    "Line generator."
+    nodes = np.linspace(a, b, n).reshape(-1, 1)
+    connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
 
     return nodes, connectivity
 
 
 def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
-
+    "Rectangle generator."
     dim = 2
     array_like = (tuple, list, np.ndarray)
 
@@ -288,16 +261,25 @@ def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
     return nodes, connectivity
 
 
-def line_line(a=0, b=1, n=2):
+def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+    "Cube generator."
+    dim = 3
+    array_like = (tuple, list, np.ndarray)
 
-    nodes = np.linspace(a, b, n).reshape(-1, 1)
-    connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
+    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    if not isinstance(n, array_like):
+        n = np.full(dim, n, dtype=int)
+
+    rectangle = rectangle_quad(a[:-1], b[:-1], n[:-1])
+
+    nodes, connectivity = expand(rectangle, n[-1], b[-1] - a[-1])
+    nodes[:, -1] += a[-1]
 
     return nodes, connectivity
 
 
 def expand(mesh, n=11, z=1):
-    "Expand 2d quad to 3d hexahedron mesh."
+    "Expand 1d line to 2d quad or 2d quad to 3d hexahedron mesh."
 
     if isinstance(mesh, Mesh):
         Nodes = mesh.nodes
@@ -331,6 +313,7 @@ def expand(mesh, n=11, z=1):
 
 
 def rotation_matrix(alpha_deg, dim=3, axis=0):
+    "2d or 3d rotation matrix around specified axis."
     a = np.deg2rad(alpha_deg)
     rotation_matrix = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
     if dim == 3:
@@ -344,7 +327,7 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
 
 
 def rotate(mesh, angle_deg, axis):
-    "Revolve 2d quad to 3d hexahedron mesh."
+    "Rotate mesh."
 
     if isinstance(mesh, Mesh):
         Nodes = mesh.nodes
@@ -412,6 +395,7 @@ def revolve(mesh, n=11, phi=180, axis=0):
 
 
 def sweep(mesh, decimals=6):
+    "Sweep duplicated nodes and update connectivity."
 
     if isinstance(mesh, Mesh):
         Nodes = mesh.nodes
@@ -441,3 +425,21 @@ def sweep(mesh, decimals=6):
         return Mesh(nodes, connectivity, etype)
     else:
         return nodes, connectivity
+
+
+def convert(mesh, order=0, calc_nodes=False):
+    "Convert mesh to a given order (currently only order=0 supported)."
+
+    if order != 0:
+        raise NotImplementedError("Unsupported order conversion.")
+
+    if calc_nodes:
+        nodes = np.stack(
+            [np.mean(mesh.nodes[conn], axis=0) for conn in mesh.connectivity]
+        )
+    else:
+        nodes = np.zeros((mesh.nelements, mesh.ndim), dtype=int)
+
+    connectivity = np.arange(mesh.nelements).reshape(-1, 1)
+    etype = "None"
+    return Mesh(nodes, connectivity, etype)

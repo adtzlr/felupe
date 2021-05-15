@@ -121,7 +121,9 @@ $\boldsymbol{g}_1(\boldsymbol{u} + d\boldsymbol{u}) \approx -\boldsymbol{r}_1 + 
 
 $d\boldsymbol{u}_0 = \boldsymbol{u}_0^{(ext)} - \boldsymbol{u}_0$
 
-$\boldsymbol{K}_{11}$ $ \ d\boldsymbol{u}_{1} = \boldsymbol{g}_{1} - \boldsymbol{K}_{10} \ d\boldsymbol{u}_0$
+$\boldsymbol{K}_{11}$ 
+
+$ \ d\boldsymbol{u}_{1} = \boldsymbol{g}_{1} - \boldsymbol{K}_{10} \ d\boldsymbol{u}_0$
 
 $\boldsymbol{u} += d\boldsymbol{u}$
 

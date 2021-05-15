@@ -19,7 +19,7 @@ import felupe as fe
 ## Getting started
 Start setting up a problem in FElupe by the creation of a Region with a geometry (Mesh), a finite Element and a Quadrature rule. 
 
-![FElupe](docs/images/numeric_region.svg)
+![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.svg)
 
 ### Region
 A region essentially pre-calculates basis functions and derivatives evaluated at every quadrature point of every element. An array containing products of quadrature weights multiplied by the geometrical jacobians is stored as the differential volume.

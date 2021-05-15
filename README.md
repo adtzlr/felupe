@@ -123,7 +123,7 @@ $d\boldsymbol{u}_0 = \boldsymbol{u}_0^{(ext)} - \boldsymbol{u}_0$
 
 $\boldsymbol{K}_{11} \ d\boldsymbol{u}_1 = \boldsymbol{g}_1 - \boldsymbol{K}_{10}$ 
 
-$ \ d\boldsymbol{u}_{0}$ 
+$\boldsymbol{K}_{10} \ d\boldsymbol{u}_{0}$ 
 
 $\boldsymbol{u} += d\boldsymbol{u}$
 

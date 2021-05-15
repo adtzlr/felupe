@@ -121,9 +121,10 @@ $\boldsymbol{g}_1(\boldsymbol{u} + d\boldsymbol{u}) \approx -\boldsymbol{r}_1 + 
 
 $d\boldsymbol{u}_0 = \boldsymbol{u}_0^{(ext)} - \boldsymbol{u}_0$
 
-$\boldsymbol{K}_{11}\ d\boldsymbol{u}_1=\boldsymbol{g}_1-\boldsymbol{K}_{10}\ d\boldsymbol{u}_{0}$
+solve $\boldsymbol{K}_{11}\ d\boldsymbol{u}_1=\boldsymbol{g}_1-\boldsymbol{K}_{10}\ d\boldsymbol{u}_{0}$
 
-$\boldsymbol{u} += d\boldsymbol{u}$
+$\boldsymbol{u}_0 += d\boldsymbol{u}_0$
+$\boldsymbol{u}_1 += d\boldsymbol{u}_1$
 
 ```python
 system = fe.solve.partition(displacement, K, dof1, dof0, r)

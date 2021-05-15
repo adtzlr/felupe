@@ -4,7 +4,7 @@
 
 > Finite Element Analysis
 
-- 100% pure Python utilizing the power of [NumPy](https://numpy.org/), [SciPy](https://scipy.org/), [Numba](https://numba.pydata.org/) and [meshio](https://github.com/nschloe/meshio)
+- 100% pure Python utilizing the power of [NumPy](https://numpy.org/), [SciPy](https://scipy.org/), [Numba](https://numba.pydata.org/) & [meshio](https://github.com/nschloe/meshio)
 - easy installation and intuitive usage
 - define and solve nonlinear problems of solid mechanics
 - constitutive library w/ templates for Neo-Hookean solids & linear elasticity

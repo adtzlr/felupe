@@ -113,7 +113,7 @@ K = bilinearform.assemble(parallel=True)
 ```
 
 ### Prepare (partition) and solve the linearized equation system
-In order to solve the linearized equation system a partition into active and inactive degrees of freedom has to be performed. This system may then be passed to the sparse direct solver. This (linear) solution is the first result of a newton-rhapson iterative solution procedure. The resulting nodal values `du` are finally added to the displacement field. Given a set of nonlinear equilibrium equations $\boldsymbol{g}$ the unknowns $\boldsymbol{u}$ are found by linearization and an iterative solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns.
+In order to solve the linearized equation system a partition into active and inactive degrees of freedom has to be performed. This system may then be passed to the sparse direct solver. Given a set of nonlinear equilibrium equations $\boldsymbol{g}$ the unknowns $\boldsymbol{u}$ are found by linearization at a valid starting point and an iterative Newton-Rhapson solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns. The (linear) solution is equal to the first result of a Newton-Rhapson iterative solution procedure. The resulting nodal values `du` are finally added to the displacement field. 
 
 $\boldsymbol{g}_1(\boldsymbol{u}) = -\boldsymbol{r}_1(\boldsymbol{u}) + \boldsymbol{f}_1$
 
@@ -121,9 +121,10 @@ $\boldsymbol{g}_1(\boldsymbol{u} + d\boldsymbol{u}) \approx -\boldsymbol{r}_1 + 
 
 $d\boldsymbol{u}_0 = \boldsymbol{u}_0^{(ext)} - \boldsymbol{u}_0$
 
-solve $\boldsymbol{K}_{11}\ d\boldsymbol{u}_1=\boldsymbol{g}_1-\boldsymbol{K}_{10}\ d\boldsymbol{u}_{0}$
+solve $\boldsymbol{K}_{11}\ d\boldsymbol{u}_1 = \boldsymbol{g}_1 - \boldsymbol{K}_{10}\ d\boldsymbol{u}_{0}$
 
 $\boldsymbol{u}_0 += d\boldsymbol{u}_0$
+
 $\boldsymbol{u}_1 += d\boldsymbol{u}_1$
 
 ```python

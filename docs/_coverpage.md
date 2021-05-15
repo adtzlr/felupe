@@ -1,6 +1,6 @@
 ![logo](images/felupe_logo.svg)
 
-# felupe <small>3.5</small>
+# felupe <small>alpha</small>
 
 > Finite Element Analysis
 

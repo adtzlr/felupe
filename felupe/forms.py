@@ -29,7 +29,9 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
-from numba import jit, prange
+from numba import prange
+
+jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
 
 class IntegralFormMixed:
@@ -161,6 +163,9 @@ class IntegralForm:
         dV = self.dV
         fun = self.fun
 
+        # if parallel:
+        #    from numba import jit
+
         if not grad_v:
             vb = np.tile(
                 v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.nelements
@@ -179,37 +184,48 @@ class IntegralForm:
         if u is None:
 
             if not grad_v:
-                return np.einsum("ape,ipe,pe->aie", vb, fun, dV)
+                return np.einsum("ape,ipe,pe->aie", vb, fun, dV, optimize=True)
             else:
                 if parallel:
                     return integrate_gradv(vb, fun, dV)
                 else:
-                    return np.einsum("aJpe,iJpe,pe->aie", vb, fun, dV)
+                    return np.einsum("aJpe,iJpe,pe->aie", vb, fun, dV, optimize=True)
 
         else:
 
             if not grad_v and not grad_u:
-                return np.einsum("ape,...pe,bpe,pe->a...be", vb, fun, ub, dV)
+                return np.einsum(
+                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
+                )
             elif grad_v and not grad_u:
                 if parallel:
                     return integrate_gradv_u(vb, fun, ub, dV)
                     # return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
                 else:
-                    return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
+                    return np.einsum(
+                        "aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV, optimize=True
+                    )
             elif not grad_v and grad_u:
                 if parallel:
                     return integrate_v_gradu(vb, fun, ub, dV)
                     # return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
                 else:
-                    return np.einsum("ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV)
+                    return np.einsum(
+                        "ape,kLpe,bLpe,pe->abke", vb, fun, ub, dV, optimize=True
+                    )
             else:  # grad_v and grad_u
                 if parallel:
                     return integrate_gradv_gradu(vb, fun, ub, dV)
                 else:
-                    return np.einsum("aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV)
+                    return np.einsum(
+                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
+                    )
 
 
-@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+from numba import jit
+
+
+@jit(**jitargs)
 def integrate_gradv_u(v, fun, u, dV):
 
     nnodes_a = v.shape[0]
@@ -230,7 +246,7 @@ def integrate_gradv_u(v, fun, u, dV):
     return out
 
 
-@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+@jit(**jitargs)
 def integrate_v_gradu(v, fun, u, dV):
 
     nnodes_a = v.shape[0]
@@ -251,7 +267,7 @@ def integrate_v_gradu(v, fun, u, dV):
     return out
 
 
-@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+@jit(**jitargs)
 def integrate_gradv(v, fun, dV):
 
     nnodes = v.shape[0]
@@ -269,7 +285,7 @@ def integrate_gradv(v, fun, dV):
     return out
 
 
-@jit(nopython=True, nogil=True, fastmath=True, parallel=True)
+@jit(**jitargs)
 def integrate_gradv_gradu(v, fun, u, dV):
 
     nnodes_a = v.shape[0]

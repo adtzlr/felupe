@@ -31,6 +31,7 @@ from .math import (
     ddot,
     dot,
     transpose,
+    majortranspose,
     inv,
     dya,
     cdya,
@@ -231,3 +232,159 @@ class NeoHooke:
         """Linearization of constitutive material formulation
         for volumetric behaviour."""
         return self.bulk * np.ones_like(J)
+
+
+class GeneralizedMixedField:
+    def __init__(self, P, A, param):
+        self.param = param
+        self.fun_P = P
+        self.fun_A = A
+
+    def f_u(self, F, p, J):
+        """Variation of total potential w.r.t displacements
+        (1st Piola Kirchhoff stress).
+
+        δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
+        """
+        iFT = transpose(inv(F))
+        detF = det(F)
+
+        Fb = (J / detF) ** (1 / 3) * F
+        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
+
+        return Pbb - ddot(Pbb, F) / 3 * iFT + p * detF * iFT
+
+    def f_p(self, F, p, J):
+        """Variation of total potential energy w.r.t pressure.
+
+        δ_p(Π_int) = ∫_V (det(F) - J) δp dV
+        """
+
+        return det(F) - J
+
+    def f_J(self, F, p, J):
+        """Variation of total potential energy w.r.t volume ratio.
+
+        δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
+        """
+        detF = det(F)
+
+        Fb = (J / detF) ** (1 / 3) * F
+        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
+
+        return ddot(Pbb, F) / (3 * J) - p
+
+    def f(self, F, p, J):
+        """List of variations of total potential energy w.r.t
+        displacements, pressure and volume ratio."""
+        return [self.f_u(F, p, J), self.f_p(F, p, J), self.f_J(F, p, J)]
+
+    def A(self, F, p, J):
+        """List of linearized variations of total potential energy w.r.t
+        displacements, pressure and volume ratio (these expressions are
+        symmetric; A_up = A_pu if derived from a total potential energy
+        formulation). List entries have to be arranged as a flattened list
+        from the upper triangle blocks:
+
+        [[0 1 2],
+         [  3 4],
+         [    5]] --> [0 1 2 3 4 5]
+
+        """
+        return [
+            self.A_uu(F, p, J),
+            self.A_up(F, p, J),
+            self.A_uJ(F, p, J),
+            self.A_pp(F, p, J),
+            self.A_pJ(F, p, J),
+            self.A_JJ(F, p, J),
+        ]
+
+    def A_uu(self, F, p=None, J=None):
+        """Linearization w.r.t. displacements of variation of
+        total potential energy w.r.t displacements.
+
+        Δ_u(δ_u(Π_int)) = ∫_V δF : (∂²ψ/(∂F∂F) + p ∂cof(F)/∂F) : ΔF dV
+
+        """
+
+        iFT = transpose(inv(F))
+        detF = det(F)
+        eye = identity(F)
+
+        Fb = (J / detF) ** (1 / 3) * F
+        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
+
+        P4 = cdya_ik(eye, eye) - 1 / 3 * dya(iFT, F)
+        A4bb = (J / detF) ** (2 / 3) * self.fun_A(Fb, self.param)
+
+        A4 = (
+            ddot(ddot(P4, A4bb), majortranspose(P4))
+            - (dya(Pbb, iFT) + dya(iFT, Pbb)) / 3
+            + ddot(Pbb, F) / 3 * (cdya_il(iFT, iFT) + dya(iFT, iFT) / 3)
+            + p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
+        )
+
+        return A4
+
+    def A_pp(self, F, p, J):
+        """Linearization w.r.t. pressure of variation of
+        total potential energy w.r.t pressure.
+
+        Δ_p(δ_p(Π_int)) = ∫_V δp 0 Δp dV
+
+        """
+        return np.zeros_like(p)
+
+    def A_JJ(self, F, p, J):
+        """Linearization w.r.t. volume ratio of variation of
+        total potential energy w.r.t volume ratio.
+
+        Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²U/(∂J∂J) ΔJ dV
+
+        """
+        detF = det(F)
+
+        Fb = (J / detF) ** (1 / 3) * F
+        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
+        A4bb = (J / detF) ** (2 / 3) * self.fun_A(Fb, self.param)
+
+        return (ddot(ddot(F, A4bb), F) - 2 * ddot(Pbb, F)) / (9 * J ** 2)
+
+    def A_up(self, F, p, J):
+        """Linearization w.r.t. pressure of variation of
+        total potential energy w.r.t displacements.
+
+        Δ_p(δ_u(Π_int)) = ∫_V δF : J cof(F) Δp dV
+
+        """
+        detF = det(F)
+        iFT = transpose(inv(F))
+
+        return detF * iFT
+
+    def A_uJ(self, F, p, J):
+        """Linearization w.r.t. volume ratio of variation of
+        total potential energy w.r.t displacements.
+
+        Δ_J(δ_u(Π_int)) = ∫_V δF : 0 ΔJ dV
+
+        """
+        iFT = transpose(inv(F))
+        detF = det(F)
+
+        Fb = (J / detF) ** (1 / 3) * F
+        A4bb = (J / detF) ** (2 / 3) * self.fun_A(Fb, self.param)
+
+        FA4bbF = ddot(ddot(F, A4bb), F)
+        P = self.f_u(F, 0 * p, J)
+        return (-FA4bbF / 3 * iFT + P + ddot(F, A4bb)) / (3 * J)
+
+    def A_pJ(self, F, p, J):
+        """Linearization w.r.t. volume ratio of variation of
+        total potential energy w.r.t pressure.
+
+        Δ_J(δ_p(Π_int)) = ∫_V δp (-1) ΔJ dV
+
+        """
+        return -np.ones_like(J)

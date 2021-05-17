@@ -60,7 +60,17 @@ def dofresiduals(region, r, rref, dof1=None):
 
 
 def newtonrhapson(
-    region, fields, u0ext, fun_f, fun_A, dof1, dof0, unstack, maxiter=20, tol=1e-6
+    region,
+    fields,
+    u0ext,
+    fun_f,
+    fun_A,
+    dof1,
+    dof0,
+    unstack,
+    maxiter=20,
+    tol=1e-6,
+    parallel=True,
 ):
 
     # extract fields
@@ -75,8 +85,8 @@ def newtonrhapson(
     A = fun_A(F, *[interpolate(f) for f in fields[1:]])
 
     # assembly
-    r = IntegralFormMixed(f, fields, dV).assemble().toarray()[:, 0]
-    K = IntegralFormMixed(A, fields, dV).assemble()
+    r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
+    K = IntegralFormMixed(A, fields, dV).assemble(parallel=parallel)
 
     converged = False
 
@@ -98,7 +108,7 @@ def newtonrhapson(
         f = fun_f(F, *[interpolate(f) for f in fields[1:]])
 
         # residuals and stiffness matrix components
-        r = IntegralFormMixed(f, fields, dV).assemble().toarray()[:, 0]
+        r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
 
         rref = np.linalg.norm(r[dof0])
         if rref == 0:
@@ -119,7 +129,7 @@ def newtonrhapson(
             A = fun_A(F, *[interpolate(f) for f in fields[1:]])
 
             # assembly of stiffness matrix components
-            K = IntegralFormMixed(A, fields, dV).assemble()
+            K = IntegralFormMixed(A, fields, dV).assemble(parallel=parallel)
 
     Result = namedtuple(
         "Result", ["fields", "r", "K", "F", "f", "A", "unstack", "converged"]

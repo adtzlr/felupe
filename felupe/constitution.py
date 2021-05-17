@@ -273,8 +273,7 @@ class GeneralizedMixedField:
         self.Fb = (J / self.detF) ** (1 / 3) * F
         self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb, self.param)
         self.PbbF = ddot(self.Pbb, F)
-        
-        
+
         return [self.f_u(F, p, J), self.f_p(F, p, J), self.f_J(F, p, J)]
 
     def A(self, F, p, J):
@@ -293,14 +292,14 @@ class GeneralizedMixedField:
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
         self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb, self.param)
-        
+
         self.eye = identity(F)
         self.P4 = cdya_ik(self.eye, self.eye) - 1 / 3 * dya(F, self.iFT)
         self.A4bb = (J / self.detF) ** (2 / 3) * self.fun_A(self.Fb, self.param)
-        
+
         self.PbbF = ddot(self.Pbb, F)
         self.FA4bbF = ddot(ddot(F, self.A4bb), F)
-        
+
         return [
             self.A_uu(F, p, J),
             self.A_up(F, p, J),
@@ -319,9 +318,14 @@ class GeneralizedMixedField:
         """
 
         A4 = (
-            ddot(ddot(majortranspose(self.P4), self.A4bb), self.P4)
+            self.A4bb
+            + self.FA4bbF * dya(self.iFT, self.iFT) / 9
+            - (dya(ddot(self.A4bb, F), self.iFT) + dya(self.iFT, ddot(F, self.A4bb)))
+            / 3
             - (dya(self.Pbb, self.iFT) + dya(self.iFT, self.Pbb)) / 3
-            + self.PbbF / 3 * (cdya_il(self.iFT, self.iFT) + dya(self.iFT, self.iFT) / 3)
+            + self.PbbF
+            / 3
+            * (cdya_il(self.iFT, self.iFT) + dya(self.iFT, self.iFT) / 3)
             + p * self.detF * (dya(self.iFT, self.iFT) - cdya_il(self.iFT, self.iFT))
         )
 
@@ -340,7 +344,7 @@ class GeneralizedMixedField:
         """Linearization w.r.t. volume ratio of variation of
         total potential energy w.r.t volume ratio.
 
-        Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²U/(∂J∂J) ΔJ dV
+        Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²ψ/(∂J∂J) ΔJ dV
 
         """
 
@@ -360,7 +364,7 @@ class GeneralizedMixedField:
         """Linearization w.r.t. volume ratio of variation of
         total potential energy w.r.t displacements.
 
-        Δ_J(δ_u(Π_int)) = ∫_V δF : 0 ΔJ dV
+        Δ_J(δ_u(Π_int)) = ∫_V δF :  ∂²ψ/(∂F∂J) ΔJ dV
 
         """
 

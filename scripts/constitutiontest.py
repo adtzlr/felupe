@@ -16,13 +16,13 @@ d = fe.Region(m, e, q)
 dV = d.dV
 
 e0 = fe.element.Hex0()
-d0 = fe.Region(fe.mesh.convert(m,order=0), e0, q)
+d0 = fe.Region(fe.mesh.convert(m, order=0), e0, q)
 
 u = fe.Field(d, 3)
-p = fe.Field(d0,1)
-J = fe.Field(d0,1, values=1)
+p = fe.Field(d0, 1)
+J = fe.Field(d0, 1, values=1)
 
-fields = (u,p,J)
+fields = (u, p, J)
 
 F = u.grad() + fe.math.identity(u.grad())
 

@@ -19,7 +19,7 @@ V = dV.sum()
 
 displacement = fe.Field(region, dim=3)
 
-u  = displacement.values
+u = displacement.values
 ui = displacement.interpolate()
 
 dudX = displacement.grad()
@@ -40,40 +40,48 @@ f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
 boundaries = {}
-boundaries["left"]  = fe.Boundary(displacement, fx=f0)
-boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1,0,0))
-boundaries["move"]  = fe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
+boundaries["left"] = fe.Boundary(displacement, fx=f0)
+boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
+boundaries["move"] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 
 dof0, dof1, _ = fe.doftools.partition(displacement, boundaries)
 u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 
 linearform = fe.IntegralForm(P, displacement, dV, grad_v=True)
-bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True, grad_u=True)
+bilinearform = fe.IntegralForm(
+    A, displacement, dV, displacement, grad_v=True, grad_u=True
+)
 
-r = linearform.assemble(parallel=False).toarray()[:,0]
+r = linearform.assemble(parallel=False).toarray()[:, 0]
 K = bilinearform.assemble(parallel=False)
 
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
 du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
-#displacement += du
+# displacement += du
 
 for iteration in range(8):
     dudX = grad(displacement)
     F = identity(dudX) + dudX
     P = umat.f_u(F)
     A = umat.A_uu(F)
-    
-    r = fe.IntegralForm(P, displacement, dV, grad_v=True).assemble(parallel=False).toarray()[:,0]
-    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble(parallel=False)
-    
+
+    r = (
+        fe.IntegralForm(P, displacement, dV, grad_v=True)
+        .assemble(parallel=False)
+        .toarray()[:, 0]
+    )
+    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble(
+        parallel=False
+    )
+
     system = fe.solve.partition(displacement, K, dof1, dof0, r)
     du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
-    
+
     norm = np.linalg.norm(du)
     print(iteration, norm)
     displacement += du
 
     if norm < 1e-12:
         break
-        
+
 fe.utils.save(region, displacement, filename="result")

@@ -40,7 +40,7 @@ H = 25
 mesh = fe.mesh.ScaledCube(
     symmetry=(True, False, False), n=(31, 31, 13), L=200, B=100, H=H, dL=0, dB=0
 )
-#mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
+# mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
 mesh0 = fe.mesh.convert(mesh, order=0)
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))
@@ -81,8 +81,8 @@ fe.utils.savehistory(region, [*results1, *results2])
 force_move = fe.utils.reactionforce(results1, bounds)
 force_move2 = fe.utils.reactionforce(results2, bounds)
 
-#force_z = np.array([res.r[bounds["move"].dof].sum() for res in results1])
-#force_x = np.array([res.r[bounds2["move"].dof].sum() for res in results2])
+# force_z = np.array([res.r[bounds["move"].dof].sum() for res in results1])
+# force_x = np.array([res.r[bounds2["move"].dof].sum() for res in results2])
 
 xy1, xxyy1 = fe.utils.curve(a * move, 2 * force_move[:, 2])
 plt.plot(*xy1, "o")

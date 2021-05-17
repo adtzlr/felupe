@@ -33,13 +33,14 @@ import matplotlib.pyplot as plt
 tol = 1e-6
 
 move = np.linspace(0, 1, 5)
-a = -4
+a = 1
 b = 5
 
 H = 26
 mesh = fe.mesh.CubeAdvanced(
-    symmetry=(False, True, False), n=(3, 3, 3), L=95, B=220, H=H, dL=10, dB=10
+    symmetry=(False, True, False), n=(16, 9, 12), L=95, B=220, H=H, dL=10, dB=10
 )
+# mesh = fe.mesh.Cube(a=(-13,0,-13),b=(13,26,13),n=5)
 
 # mesh = fe.mesh.CylinderAdvanced(D=120, H=26, n=(16, 10, 10), dD=10)
 mesh0 = fe.mesh.convert(mesh, order=0)
@@ -53,11 +54,52 @@ p = fe.Field(region0, 1)
 J = fe.Field(region0, 1, values=1)
 fields = (u, p, J)
 
-# load constitutive material formulation
-mat = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
+from felupe.math import det, transpose, inv, identity, cdya_ik, dya, cdya_il, ddot
 
-nh = fe.constitution.NeoHooke(mu=1, bulk=2)
-mat = fe.constitution.GeneralizedMixedField(nh.f_u, nh.A_uu, None)
+
+def P(F, param):
+    mu, bulk = param
+
+    detF = det(F)
+    iFT = transpose(inv(F))
+
+    p = bulk * (detF - 1)
+
+    Pdev = mu * (F - ddot(F, F) / 3 * iFT) * detF ** (-2 / 3)
+    Pvol = p * detF * iFT
+
+    return Pdev + Pvol
+
+
+def A(F, param):
+    mu, bulk = param
+
+    detF = det(F)
+    iFT = transpose(inv(F))
+    eye = identity(F)
+
+    A4_dev = (
+        mu
+        * (
+            cdya_ik(eye, eye)
+            - 2 / 3 * dya(F, iFT)
+            - 2 / 3 * dya(iFT, F)
+            + 2 / 9 * ddot(F, F) * dya(iFT, iFT)
+            + 1 / 3 * ddot(F, F) * cdya_il(iFT, iFT)
+        )
+        * detF ** (-2 / 3)
+    )
+
+    p = bulk * (detF - 1)
+    q = p + bulk * detF
+
+    A4_vol = detF * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
+
+    return A4_dev + A4_vol
+
+
+nh = fe.constitution.NeoHooke(1.0, 5000.0)
+mat = fe.constitution.GeneralizedMixedField(P, A, (1.0, 5000.0))
 
 # boundaries
 f0 = lambda x: np.isclose(x, -H / 2)
@@ -74,36 +116,22 @@ bounds2["fix"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
 bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
 
 results1 = fe.utils.incsolve(
-    fields, region, mat.f, mat.A, bounds, a * move, tol=tol, parallel=False
+    fields, region, mat.f, mat.A, bounds, a * move, tol=tol, parallel=True
 )
 
-# results2 = fe.utils.incsolve(
-#     results1[-1].fields, region, mat.f, mat.A, bounds2, b * move, tol=tol
-# )
+# u.values = (np.random.rand(*u.values.shape)-1) * 0.1
+# F = u.grad() + identity(u.grad())
+# pp = p.interpolate()
+# JJ = J.interpolate()
 
-# fe.utils.savehistory(region, [*results1, *results2])
+# f1 = nh.f(F,pp,JJ)
+# f2 = mat.f(F,pp,JJ)
 
-# # reaction force calculation
-# force_move  = fe.utils.force( results1, bounds["move"])
-# force_move2 = fe.utils.force( results2, bounds["move"])
-# moment_move = fe.utils.moment(results2, bounds["move"], np.zeros(3))
+# for i in range(len(f1)):
+#     print(np.allclose(f1[i], f2[i]))
 
-# xy1, xxyy1 = fe.utils.curve(a * move, 2 * force_move[:, 2])
-# plt.plot(*xy1, "o")
-# plt.plot(*xxyy1, "C0--")
+# A1 = nh.A(F,pp,JJ)
+# A2 = mat.A(F,pp,JJ)
 
-# xy2, xxyy2 = fe.utils.curve(b * move, 2 * force_move2[:, 0])
-# plt.figure()
-# plt.plot(*xy2, "o")
-# plt.plot(*xxyy2, "C0--")
-
-# print("")
-# print("c_Z0 = ", (np.diff(xxyy1[1]) / np.diff(xxyy1[0]))[0])
-# print("c_X0 = ", (np.diff(xxyy2[1]) / np.diff(xxyy2[0]))[0])
-
-# print("")
-# print("c_Z = ", (np.diff(xxyy1[1]) / np.diff(xxyy1[0]))[-1])
-# print("c_X = ", (np.diff(xxyy2[1]) / np.diff(xxyy2[0]))[-1])
-
-# print("")
-# print("V = ", region.volume().sum())
+# for i in range(len(A1)):
+#     print(np.allclose(A1[i], A2[i]))

@@ -28,11 +28,14 @@ fields = (uf, pf, Jf)
 
 F, p, J = fe.field.extract(fields, add_identity=True)
 
+
 def f(F, p, J):
     return p * fe.math.cof(F)
 
+
 def g(F, p, J):
     return p * fe.math.dya(F, F)
+
 
 r = fe.IntegralForm(f(F, p, J), uf, dV, grad_v=True).assemble()
 K = fe.IntegralForm(g(F, p, J), uf, dV, uf, grad_v=True, grad_u=True).assemble()

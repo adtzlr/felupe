@@ -40,7 +40,7 @@ H = 25
 mesh = fe.mesh.ScaledCube(
     symmetry=(True, False, False), n=(16, 61, 13), L=100, B=200, H=H, dL=0, dB=0
 )
-#mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
+# mesh = fe.mesh.Cylinder(D=120, H=26, n=(16, 10), dD=10)
 mesh0 = fe.mesh.convert(mesh, order=0)
 
 region = fe.Region(mesh, fe.element.Hex1(), fe.quadrature.Linear(dim=3))

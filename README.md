@@ -10,7 +10,7 @@ FElupe is an open-source finite element package focussing on the formulation and
 Fenics is great but way too complicated to install on Windows. Scikit-fem is close to perfection but slow (too slow) for my problems of interest in combination with hyperelastic material formulations. In fact the utilities of FElupe could also be wrapped around the core code of scikit-fem but in the end I decided to create a code base which works the way I think it should.
 
 ## Installation
-Install Python, fire up a terminal an run `pip install felupe`; import FElupe as follows in your script.
+Install Python, fire up a terminal and run `pip install felupe`; import FElupe as follows in your script.
 
 ```python
 import felupe as fe
@@ -63,8 +63,6 @@ F = identity(dudX) + dudX
 ### Constitution
 The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a constitution library which contains a definition for the Neo-Hookean material model and the associated fourth-order elasticity tensor.
 
-$$\boldsymbol{P} = \mu J^{-2/3} \left(\boldsymbol{F} - \frac{\boldsymbol{F} : \boldsymbol{F}}{3} \boldsymbol{F}^{-T} \right) + K (J-1) J \boldsymbol{F}^{-T} $$
-
 ```python
 umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
@@ -98,8 +96,6 @@ u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 ### Integral forms of equilibrium equations
 The integral (or weak) forms of equilibrium equations are defined by the `IntegralForm` class. The function of interest has to be passed as the `fun` argument whereas the virtual field as the `v` argument. Setting `grad_v=True` FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if `u=None` (default) or create a bilinear form if a field is passed to the argument `u`.
 
-$\int_V P_i^{\ J} : \frac{\partial \delta u^i}{\partial X^J} \ dV \qquad$ and $\qquad \int_V \frac{\partial \delta u^i}{\partial X^J} : \mathbb{A}_{i\ k\ }^{\ J\ L} : \frac{\partial u^k}{\partial X^L} \ dV$
-
 ```python
 linearform   = fe.IntegralForm(P, displacement, dV, grad_v=True)
 bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True, grad_u=True)
@@ -114,18 +110,6 @@ K = bilinearform.assemble(parallel=True)
 
 ### Prepare (partition) and solve the linearized equation system
 In order to solve the linearized equation system a partition into active and inactive degrees of freedom has to be performed. This system may then be passed to the sparse direct solver. Given a set of nonlinear equilibrium equations $\boldsymbol{g}$ the unknowns $\boldsymbol{u}$ are found by linearization at a valid starting point and an iterative Newton-Rhapson solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns. The (linear) solution is equal to the first result of a Newton-Rhapson iterative solution procedure. The resulting nodal values `du` are finally added to the displacement field. 
-
-$\boldsymbol{g}_1(\boldsymbol{u}) = -\boldsymbol{r}_1(\boldsymbol{u}) + \boldsymbol{f}_1$
-
-$\boldsymbol{g}_1(\boldsymbol{u} + d\boldsymbol{u}) \approx -\boldsymbol{r}_1 + \boldsymbol{f}_1 - \frac{\partial \boldsymbol{r}_1}{\partial \boldsymbol{u}_1} \ d\boldsymbol{u}_1 - \frac{\partial \boldsymbol{r}_1}{\partial \boldsymbol{u}_0} \ d\boldsymbol{u}_0 = \boldsymbol{0}$
-
-$d\boldsymbol{u}_0 = \boldsymbol{u}_0^{(ext)} - \boldsymbol{u}_0$
-
-solve $\boldsymbol{K}_{11}\ d\boldsymbol{u}_1 = \boldsymbol{g}_1 - \boldsymbol{K}_{10}\ d\boldsymbol{u}_{0}$
-
-$\boldsymbol{u}_0 += d\boldsymbol{u}_0$
-
-$\boldsymbol{u}_1 += d\boldsymbol{u}_1$
 
 ```python
 system = fe.solve.partition(displacement, K, dof1, dof0, r)

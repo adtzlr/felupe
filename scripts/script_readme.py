@@ -8,7 +8,7 @@ Created on Thu May 13 21:41:27 2021
 import numpy as np
 import felupe as fe
 
-mesh = fe.mesh.Cube(n=9)
+mesh = fe.mesh.Cube(n=25)
 element = fe.element.Hex1()
 quadrature = fe.quadrature.Linear(dim=3)
 
@@ -50,8 +50,8 @@ u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 linearform = fe.IntegralForm(P, displacement, dV, grad_v=True)
 bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True, grad_u=True)
 
-r = linearform.assemble(parallel=True).toarray()[:,0]
-K = bilinearform.assemble(parallel=True)
+r = linearform.assemble(parallel=False).toarray()[:,0]
+K = bilinearform.assemble(parallel=False)
 
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
 du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
@@ -63,8 +63,8 @@ for iteration in range(8):
     P = umat.f_u(F)
     A = umat.A_uu(F)
     
-    r = fe.IntegralForm(P, displacement, dV, grad_v=True).assemble().toarray()[:,0]
-    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble()
+    r = fe.IntegralForm(P, displacement, dV, grad_v=True).assemble(parallel=False).toarray()[:,0]
+    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble(parallel=False)
     
     system = fe.solve.partition(displacement, K, dof1, dof0, r)
     du = fe.solve.solve(*system, u0ext).reshape(*u.shape)

@@ -40,8 +40,8 @@ for iteration in range(16):
     P = mat.f_u(F)
     A = mat.A_uu(F)
     
-    r = fe.IntegralForm(P[:2,:2], u, dV, grad_v=True).assemble().toarray()[:,0]
-    K = fe.IntegralForm(A[:2,:2,:2,:2], u, dV, u, True, True).assemble()
+    r = fe.IntegralForm(P[:2,:2], u, dV, grad_v=True).assemble(parallel=False).toarray()[:,0]
+    K = fe.IntegralForm(A[:2,:2,:2,:2], u, dV, u, True, True).assemble(parallel=False)
     
     u0ext = fe.doftools.apply(u, b, dof0)
     system = fe.solve.partition(u, K, dof1, dof0, r)

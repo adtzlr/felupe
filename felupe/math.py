@@ -90,6 +90,10 @@ def transpose(A):
     return A.transpose([1, 0, 2, 3])
 
 
+def majortranspose(A):
+    return np.einsum("ijkl...->klij...", A)
+
+
 def trace(A):
     return np.trace(A)
 

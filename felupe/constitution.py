@@ -246,13 +246,8 @@ class GeneralizedMixedField:
 
         δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
         """
-        iFT = transpose(inv(F))
-        detF = det(F)
 
-        Fb = (J / detF) ** (1 / 3) * F
-        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
-
-        return Pbb - ddot(Pbb, F) / 3 * iFT + p * detF * iFT
+        return self.Pbb - self.PbbF / 3 * self.iFT + p * self.detF * self.iFT
 
     def f_p(self, F, p, J):
         """Variation of total potential energy w.r.t pressure.
@@ -260,23 +255,26 @@ class GeneralizedMixedField:
         δ_p(Π_int) = ∫_V (det(F) - J) δp dV
         """
 
-        return det(F) - J
+        return self.detF - J
 
     def f_J(self, F, p, J):
         """Variation of total potential energy w.r.t volume ratio.
 
         δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
         """
-        detF = det(F)
 
-        Fb = (J / detF) ** (1 / 3) * F
-        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
-
-        return ddot(Pbb, F) / (3 * J) - p
+        return ddot(self.Pbb, F) / (3 * J) - p
 
     def f(self, F, p, J):
         """List of variations of total potential energy w.r.t
         displacements, pressure and volume ratio."""
+        self.detF = det(F)
+        self.iFT = transpose(inv(F))
+        self.Fb = (J / self.detF) ** (1 / 3) * F
+        self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb, self.param)
+        self.PbbF = ddot(self.Pbb, F)
+        
+        
         return [self.f_u(F, p, J), self.f_p(F, p, J), self.f_J(F, p, J)]
 
     def A(self, F, p, J):
@@ -291,6 +289,18 @@ class GeneralizedMixedField:
          [    5]] --> [0 1 2 3 4 5]
 
         """
+        self.detF = det(F)
+        self.iFT = transpose(inv(F))
+        self.Fb = (J / self.detF) ** (1 / 3) * F
+        self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb, self.param)
+        
+        self.eye = identity(F)
+        self.P4 = cdya_ik(self.eye, self.eye) - 1 / 3 * dya(F, self.iFT)
+        self.A4bb = (J / self.detF) ** (2 / 3) * self.fun_A(self.Fb, self.param)
+        
+        self.PbbF = ddot(self.Pbb, F)
+        self.FA4bbF = ddot(ddot(F, self.A4bb), F)
+        
         return [
             self.A_uu(F, p, J),
             self.A_up(F, p, J),
@@ -308,21 +318,11 @@ class GeneralizedMixedField:
 
         """
 
-        iFT = transpose(inv(F))
-        detF = det(F)
-        eye = identity(F)
-
-        Fb = (J / detF) ** (1 / 3) * F
-        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
-
-        P4 = cdya_ik(eye, eye) - 1 / 3 * dya(iFT, F)
-        A4bb = (J / detF) ** (2 / 3) * self.fun_A(Fb, self.param)
-
         A4 = (
-            ddot(ddot(P4, A4bb), majortranspose(P4))
-            - (dya(Pbb, iFT) + dya(iFT, Pbb)) / 3
-            + ddot(Pbb, F) / 3 * (cdya_il(iFT, iFT) + dya(iFT, iFT) / 3)
-            + p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
+            ddot(ddot(majortranspose(self.P4), self.A4bb), self.P4)
+            - (dya(self.Pbb, self.iFT) + dya(self.iFT, self.Pbb)) / 3
+            + self.PbbF / 3 * (cdya_il(self.iFT, self.iFT) + dya(self.iFT, self.iFT) / 3)
+            + p * self.detF * (dya(self.iFT, self.iFT) - cdya_il(self.iFT, self.iFT))
         )
 
         return A4
@@ -343,13 +343,8 @@ class GeneralizedMixedField:
         Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²U/(∂J∂J) ΔJ dV
 
         """
-        detF = det(F)
 
-        Fb = (J / detF) ** (1 / 3) * F
-        Pbb = (J / detF) ** (1 / 3) * self.fun_P(Fb, self.param)
-        A4bb = (J / detF) ** (2 / 3) * self.fun_A(Fb, self.param)
-
-        return (ddot(ddot(F, A4bb), F) - 2 * ddot(Pbb, F)) / (9 * J ** 2)
+        return (self.FA4bbF - 2 * self.PbbF) / (9 * J ** 2)
 
     def A_up(self, F, p, J):
         """Linearization w.r.t. pressure of variation of
@@ -358,10 +353,8 @@ class GeneralizedMixedField:
         Δ_p(δ_u(Π_int)) = ∫_V δF : J cof(F) Δp dV
 
         """
-        detF = det(F)
-        iFT = transpose(inv(F))
 
-        return detF * iFT
+        return self.detF * self.iFT
 
     def A_uJ(self, F, p, J):
         """Linearization w.r.t. volume ratio of variation of
@@ -370,15 +363,9 @@ class GeneralizedMixedField:
         Δ_J(δ_u(Π_int)) = ∫_V δF : 0 ΔJ dV
 
         """
-        iFT = transpose(inv(F))
-        detF = det(F)
 
-        Fb = (J / detF) ** (1 / 3) * F
-        A4bb = (J / detF) ** (2 / 3) * self.fun_A(Fb, self.param)
-
-        FA4bbF = ddot(ddot(F, A4bb), F)
         P = self.f_u(F, 0 * p, J)
-        return (-FA4bbF / 3 * iFT + P + ddot(F, A4bb)) / (3 * J)
+        return (-self.FA4bbF / 3 * self.iFT + P + ddot(F, self.A4bb)) / (3 * J)
 
     def A_pJ(self, F, p, J):
         """Linearization w.r.t. volume ratio of variation of

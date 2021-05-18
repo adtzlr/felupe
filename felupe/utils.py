@@ -116,7 +116,7 @@ def newtonrhapson(
             rref = 1
         if uref == 0:
             uref = 1
-        norm_r = np.linalg.norm(r[dof1]) / rref
+        norm_r = np.linalg.norm(r[dof1[dof1 < len(dfields[0])]]) / rref
 
         norm_u = np.linalg.norm(dfields[0][dof1[dof1 < len(dfields[0])]]) / uref
         norm_dfields = norms(dfields[1:])

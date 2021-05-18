@@ -30,15 +30,16 @@ import felupe as fe
 
 import matplotlib.pyplot as plt
 
-tol = 1e-6
+tol = 1e-2
 
-move = np.linspace(0, 1, 5)
-a = 1
+move = np.linspace(0, 1, 17)
+move = np.array([0,5,7,8,9,9.5,10,10.5])
+a = -1
 b = 5
 
 H = 26
 mesh = fe.mesh.CubeAdvanced(
-    symmetry=(False, True, False), n=(16, 9, 12), L=95, B=220, H=H, dL=10, dB=10
+    symmetry=(False, True, False), n=(61, 61, 26), L=100, B=200, H=H, dL=10, dB=10
 )
 # mesh = fe.mesh.Cube(a=(-13,0,-13),b=(13,26,13),n=5)
 
@@ -82,8 +83,7 @@ def A(F, param):
         mu
         * (
             cdya_ik(eye, eye)
-            - 2 / 3 * dya(F, iFT)
-            - 2 / 3 * dya(iFT, F)
+            - 2 / 3 * (dya(F, iFT) + dya(iFT, F))
             + 2 / 9 * ddot(F, F) * dya(iFT, iFT)
             + 1 / 3 * ddot(F, F) * cdya_il(iFT, iFT)
         )
@@ -98,7 +98,7 @@ def A(F, param):
     return A4_dev + A4_vol
 
 
-nh = fe.constitution.NeoHooke(1.0, 5000.0)
+#mat = fe.constitution.NeoHooke(1.0, 5000.0)
 mat = fe.constitution.GeneralizedMixedField(P, A, (1.0, 5000.0))
 
 # boundaries
@@ -116,7 +116,8 @@ bounds2["fix"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
 bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
 
 results1 = fe.utils.incsolve(
-    fields, region, mat.f, mat.A, bounds, a * move, tol=tol, parallel=True
+    fields, region, mat.f, mat.A, bounds, a * move, tol=tol, 
+    maxiter=12, parallel=True
 )
 
 # u.values = (np.random.rand(*u.values.shape)-1) * 0.1

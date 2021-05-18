@@ -113,9 +113,9 @@ def cdya(A, B):
 def dot(A, B):
     if len(A.shape) == len(B.shape):
         return np.einsum("ik...,kj...->ij...", A, B)
-    elif len(A.shape)+2 == len(B.shape):
+    elif len(A.shape) + 2 == len(B.shape):
         return np.einsum("ik...,kj...->ij...", A, B)
-    elif len(A.shape) == len(B.shape)+2:
+    elif len(A.shape) == len(B.shape) + 2:
         return np.einsum("ijkm...,ml...->ijkl...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")
@@ -124,9 +124,9 @@ def dot(A, B):
 def ddot(A, B):
     if len(A.shape) == len(B.shape):
         return np.einsum("ij...,ij...->...", A, B)
-    elif len(A.shape)+2 == len(B.shape):
+    elif len(A.shape) + 2 == len(B.shape):
         return np.einsum("ij...,ijkl...->kl...", A, B)
-    elif len(A.shape) == len(B.shape)+2:
+    elif len(A.shape) == len(B.shape) + 2:
         return np.einsum("ijkl...,kl...->ij...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")

@@ -111,13 +111,18 @@ def newtonrhapson(
         r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
 
         rref = np.linalg.norm(r[dof0])
+        uref = np.linalg.norm(fields[0].values.ravel()[dof0])
         if rref == 0:
             rref = 1
+        if uref == 0:
+            uref = 1
         norm_r = np.linalg.norm(r[dof1]) / rref
-        norm_dfields = norms(dfields)
 
-        info_r = f"#{iteration+1:2d}: |r|={norm_r:1.3e}"
-        info_f = [f"(|δ{1+i}|={norm_f:1.3e})" for i, norm_f in enumerate(norm_dfields)]
+        norm_u = np.linalg.norm(dfields[0][dof1[dof1 < len(dfields[0])]]) / uref
+        norm_dfields = norms(dfields[1:])
+
+        info_r = f"#{iteration+1:2d}: |r|={norm_r:1.3e} |u|={norm_u:1.3e}"
+        info_f = [f"(|δ{2+i}|={norm_f:1.3e})" for i, norm_f in enumerate(norm_dfields)]
 
         print(" ".join([info_r, *info_f]))
 

@@ -42,7 +42,7 @@ class Constant:
             self.points = np.array([[ 0]])
 
 
-class Linear:
+class LinearDeprecated:
     
     def __init__(self, dim=3):
         # integration point weights and coordinates
@@ -66,6 +66,23 @@ class Linear:
         elif dim == 1:
             self.points = np.array([[-1],
                                     [ 1]]) * np.sqrt(1/3)
+
+
+class Linear:
+    
+    def __init__(self, dim=3):
+        import quadpy
+        # integration point weights and coordinates
+        self.dim = dim
+        self.npoints = 2**dim
+        if dim == 3:
+            scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(2))
+        elif dim == 2:
+            scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(2))
+        elif dim == 1:
+            scheme = quadpy.c1.gauss_legendre(2)
+        self.points = scheme.points.T
+        self.weights = scheme.weights
 
 
 class Quadratic:

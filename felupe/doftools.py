@@ -174,10 +174,10 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     "Create symmetry boundary conditions."
 
     # obtain the mesh from the field
-    mesh = field.region.mesh
+    # mesh = field.region.mesh
 
     # convert axes to array and slice by mesh dimension
-    enforce = np.array(axes).astype(bool)[: mesh.ndim]
+    enforce = np.array(axes).astype(bool)[: field.dim]
 
     # create search functions for x,y,z - axes
     fx = lambda v: np.isclose(v, x)
@@ -190,9 +190,9 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     # in-plane displacements active)
     skipax = ~np.eye(3).astype(bool)
     kwarglist = [
-        {"fx": fx, "skip": skipax[0][: mesh.ndim]},
-        {"fy": fy, "skip": skipax[1][: mesh.ndim]},
-        {"fz": fz, "skip": skipax[2][: mesh.ndim]},
+        {"fx": fx, "skip": skipax[0][: field.dim]},
+        {"fy": fy, "skip": skipax[1][: field.dim]},
+        {"fz": fz, "skip": skipax[2][: field.dim]},
     ]
 
     if bounds is None:
@@ -200,7 +200,7 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     labels = ["symx", "symy", "symz"]
 
     # loop over symmetry conditions and add them to a new dict
-    for a, (symaxis, kwargs) in enumerate(zip(enforce, kwarglist[: mesh.ndim])):
+    for a, (symaxis, kwargs) in enumerate(zip(enforce, kwarglist[: field.dim])):
         if symaxis:
             bounds[labels[a]] = Boundary(field, **kwargs)
 
@@ -222,7 +222,7 @@ class Boundary:
         mesh = field.region.mesh
         dof = field.indices.dof
 
-        self.ndim = mesh.ndim
+        self.ndim = field.dim  # mesh.ndim
         self.name = name
         self.value = value
         self.skip = np.array(skip).astype(int)[: self.ndim]
@@ -234,7 +234,7 @@ class Boundary:
 
         # combine the masks with logical or
         tmp = np.logical_or(mask[0], mask[1])
-        if self.ndim == 3:
+        if self.ndim == 3 and mesh.nodes.shape[1] == 3:
             mask = np.logical_or(tmp, mask[2])
         else:
             mask = tmp

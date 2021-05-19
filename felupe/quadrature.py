@@ -82,7 +82,7 @@ class Linear:
         elif dim == 1:
             scheme = quadpy.c1.gauss_legendre(2)
         self.points = scheme.points.T
-        self.weights = scheme.weights
+        self.weights = np.ones(self.npoints)
 
 
 class Quadratic:

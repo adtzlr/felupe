@@ -32,14 +32,15 @@ import matplotlib.pyplot as plt
 
 tol = 1e-2
 
-move = np.linspace(0, 1, 17)
-move = np.array([0,5,7,8,9,9.5,10,10.5])
-a = -1
+move = np.linspace(0, 1, 11)
+#move = np.array([0,5,7,8,9,9.5,10,10.5])/2
+a = -5
 b = 5
 
 H = 26
 mesh = fe.mesh.CubeAdvanced(
-    symmetry=(False, True, False), n=(61, 61, 26), L=100, B=200, H=H, dL=10, dB=10
+    symmetry=(True, True, True), n=(16, 31, 7), L=100, B=200, H=H, 
+    dL=10, dB=10, exponent=4
 )
 # mesh = fe.mesh.Cube(a=(-13,0,-13),b=(13,26,13),n=5)
 
@@ -104,35 +105,12 @@ mat = fe.constitution.GeneralizedMixedField(P, A, (1.0, 5000.0))
 # boundaries
 f0 = lambda x: np.isclose(x, -H / 2)
 f1 = lambda x: np.isclose(x, H / 2)
-bounds = fe.doftools.symmetry(u, (0, 1, 0))
-bounds["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
+bounds = fe.doftools.symmetry(u, (1, 1, 1))
+#bounds["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
 bounds["top"] = fe.Boundary(u, skip=(0, 0, 1), fz=f1)
 bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1)
 
-bounds2 = fe.doftools.symmetry(u, (0, 1, 0))
-bounds2["bottom"] = fe.Boundary(u, skip=(0, 0, 0), fz=f0)
-bounds2["top"] = fe.Boundary(u, skip=(1, 0, 1), fz=f1)
-bounds2["fix"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1, value=a * move[-1])
-bounds2["move"] = fe.Boundary(u, skip=(0, 1, 1), fz=f1)
-
-results1 = fe.utils.incsolve(
+results = fe.utils.incsolve(
     fields, region, mat.f, mat.A, bounds, a * move, tol=tol, 
-    maxiter=12, parallel=True
+    maxiter=12, parallel=False
 )
-
-# u.values = (np.random.rand(*u.values.shape)-1) * 0.1
-# F = u.grad() + identity(u.grad())
-# pp = p.interpolate()
-# JJ = J.interpolate()
-
-# f1 = nh.f(F,pp,JJ)
-# f2 = mat.f(F,pp,JJ)
-
-# for i in range(len(f1)):
-#     print(np.allclose(f1[i], f2[i]))
-
-# A1 = nh.A(F,pp,JJ)
-# A2 = mat.A(F,pp,JJ)
-
-# for i in range(len(A1)):
-#     print(np.allclose(A1[i], A2[i]))

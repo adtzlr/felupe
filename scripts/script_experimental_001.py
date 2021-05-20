@@ -30,11 +30,11 @@ import felupe as fe
 
 import matplotlib.pyplot as plt
 
-tol = 1e-2
+tol = 1e-1
 
-move = np.linspace(0, 1, 11)
+move = np.linspace(0, 1, 81)
 #move = np.array([0,5,7,8,9,9.5,10,10.5])/2
-a = -5
+a = -10
 b = 5
 
 H = 26
@@ -100,6 +100,10 @@ def A(F, param):
 
 
 #mat = fe.constitution.NeoHooke(1.0, 5000.0)
+m = fe.constitution.NeoHookeCompressible(1.0, 500.0)
+#m = fe.constitution.SaintVenantKirchhoff(1.0, 5000.0)
+P = m.P
+A = m.A
 mat = fe.constitution.GeneralizedMixedField(P, A, (1.0, 5000.0))
 
 # boundaries
@@ -112,5 +116,5 @@ bounds["move"] = fe.Boundary(u, skip=(1, 1, 0), fz=f1)
 
 results = fe.utils.incsolve(
     fields, region, mat.f, mat.A, bounds, a * move, tol=tol, 
-    maxiter=12, parallel=False
+    maxiter=8, parallel=True
 )

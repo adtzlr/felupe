@@ -172,7 +172,8 @@ def incsolve(
         u0ext = apply(fields[0], bounds, dof0)
 
         Result = newtonrhapson(
-            region, fields, u0ext, f, A, dof1, dof0, unstack, maxiter=maxiter, tol=tol
+            region, fields, u0ext, f, A, dof1, dof0, unstack, 
+            maxiter=maxiter, tol=tol, parallel=parallel
         )
 
         fields = copy(Result.fields)

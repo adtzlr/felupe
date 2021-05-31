@@ -56,8 +56,13 @@ def identity(A):
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 
-def dya(A, B):
-    return np.einsum("ij...,kl...->ijkl...", A, B)
+def dya(A, B, mode=2):
+    if mode == 2:
+        return np.einsum("ij...,kl...->ijkl...", A, B)
+    elif mode == 1:
+        return np.einsum("i...,j...->ij...", A, B)
+    else:
+        raise ValueError("unknown mode. (1 or 2)", mode)
 
 
 def inv(A):
@@ -70,6 +75,11 @@ def det(A):
 
 def cof(A):
     return det(A) * transpose(inv(A))
+
+
+def eigh(A):
+    wA, vA = np.linalg.eigh(A.transpose([2, 3, 0, 1]))
+    return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
 
 
 def eigvals(A, shear=False):

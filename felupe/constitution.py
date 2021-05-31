@@ -33,6 +33,7 @@ from .math import (
     transpose,
     majortranspose,
     inv,
+    eigh,
     dya,
     cdya,
     cdya_ik,
@@ -61,8 +62,8 @@ class LinearElastic:
         mu = E / (2 * (1 + nu))
         gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
         return mu, gamma
-    
-    
+
+
 class SaintVenantKirchhoff:
     def __init__(self, mu, gamma):
         self.mu = mu
@@ -74,23 +75,118 @@ class SaintVenantKirchhoff:
         E = (dot(transpose(F), F) - eye) / 2
         S = 2 * self.mu * E + self.gamma * trace(E) * eye
         return dot(F, S)
-    
+
     def A(self, F, *args, **kwargs):
         """1st Piola Kirchhoff elasticity"""
-        #iF = inv(F)
-        #iFT = transpose(iF)
-        #iC = dot(iF, iFT)
+        # iF = inv(F)
+        # iFT = transpose(iF)
+        # iC = dot(iF, iFT)
         eye = identity(F)
-        
-        #E = (dot(transpose(F), F) - eye) / 2
-        #S = 2 * self.mu * E + 10*self.mu * trace(E) * eye
-        
+
+        # E = (dot(transpose(F), F) - eye) / 2
+        # S = 2 * self.mu * E + 10*self.mu * trace(E) * eye
+
         C4 = 2 * self.mu * cdya(eye, eye) + self.gamma * dya(eye, eye)
-        #C4 += (cdya(iC, S) + cdya(S, iC)) / 2
-        
+        # C4 += (cdya(iC, S) + cdya(S, iC)) / 2
+
         A4 = np.einsum("iIpe,kKpe,IJKLpe->iJkLpe", F, F, C4, optimize=True)
 
         return A4 + cdya_ik(eye, self.P(F))
+
+
+class SaintVenantKirchhoffSethHill:
+    def __init__(self, mu, gamma, k):
+        self.mu = mu
+        self.gamma = gamma
+        self.k = k
+
+    def P(self, F, *args, **kwargs):
+        """1st Piola Kirchhoff stress"""
+        C = dot(transpose(F), F)
+        wC, vC = eigh(C)
+
+        k = self.k
+        m = 2 * self.k
+
+        mu = self.mu
+        gamma = self.gamma
+
+        Ck = np.sum(
+            [wCa ** (k / 2) * dya(Na, Na, 1) for wCa, Na in zip(wC, transpose(vC))], 0
+        )
+        Cm = np.sum(
+            [wCa ** (m / 2) * dya(Na, Na, 1) for wCa, Na in zip(wC, transpose(vC))], 0
+        )
+
+        if k != 0:
+            tr_Ek = 1 / k * (trace(Ck) - 3)
+        else:
+            tr_Ek = np.sum([np.log(wCa) / 2 for wCa in wC], 0)
+
+        kW1 = gamma * tr_Ek
+
+        if mu != 0:
+            mW1 = mu / k ** 2 * m
+            kW1 -= 2 * mu / k
+        else:
+            mW1 = 0
+
+        S = kW1 * dot(Ck, inv(C)) + mW1 * dot(Cm, inv(C))
+
+        return dot(F, S)
+
+    def A(self, F, *args, **kwargs):
+        """1st Piola Kirchhoff elasticity"""
+        C = dot(transpose(F), F)
+        wC, vC = eigh(C)
+
+        k = self.k
+        m = 2 * self.k
+
+        mu = self.mu
+        gamma = self.gamma
+
+        Ck = np.sum(
+            [wCa ** (k / 2) * dya(Na, Na, 1) for wCa, Na in zip(wC, transpose(vC))], 0
+        )
+        Cm = np.sum(
+            [wCa ** (m / 2) * dya(Na, Na, 1) for wCa, Na in zip(wC, transpose(vC))], 0
+        )
+
+        Ci = inv(C)
+        CkCi = dot(Ck, Ci)
+        CmCi = dot(Cm, Ci)
+
+        if k != 0:
+            tr_Ek = 1 / k * (trace(Ck) - 3)
+        else:
+            tr_Ek = np.sum([np.log(wCa) / 2 for wCa in wC], 0)
+
+        kW1 = gamma * tr_Ek
+
+        if mu != 0:
+            mW1 = mu / k ** 2 * m
+            kW1 -= 2 * mu / k
+        else:
+            mW1 = 0
+
+        k2W11 = gamma
+        m2W11 = 0
+
+        S = kW1 * dot(Ck, inv(C)) + mW1 * dot(Cm, inv(C))
+
+        C4 = (
+            k2W11 * dya(CkCi, CkCi)
+            + m2W11 * dya(CmCi, CmCi)
+            + (k / 2 - 1) * kW1 * (cdya(CkCi, Ci) + cdya(Ci, CkCi))
+            + (m / 2 - 1) * mW1 * (cdya(CmCi, Ci) + cdya(Ci, CmCi))
+        )
+
+        C4 += cdya_ik(Ci, S)
+
+        A4 = np.einsum("iIpe,kKpe,IJKLpe->iJkLpe", F, F, C4, optimize=True)
+
+        return A4
 
 
 class NeoHookeCompressible:
@@ -108,7 +204,7 @@ class NeoHookeCompressible:
         else:
             lnJ = np.log(detF)
         return self.mu * (F - iFT) + self.bulk * lnJ * iFT
-    
+
     def A(self, F, *args, **kwargs):
         """1st Piola Kirchhoff elasticity"""
         iFT = transpose(inv(F))
@@ -119,10 +215,12 @@ class NeoHookeCompressible:
             lnJ = np.log(detF).real
         else:
             lnJ = np.log(detF)
-        return (self.mu * cdya_ik(eye, eye) + cdya_il(iFT, iFT)
-               + self.bulk * dya(iFT, iFT) 
-               - self.bulk * lnJ * cdya_il(iFT, iFT)
-               )
+        return (
+            self.mu * cdya_ik(eye, eye)
+            + cdya_il(iFT, iFT)
+            + self.bulk * dya(iFT, iFT)
+            - self.bulk * lnJ * cdya_il(iFT, iFT)
+        )
 
 
 class NeoHooke:
@@ -443,8 +541,8 @@ class GeneralizedMixedField:
 
         """
         return -np.ones_like(J)
-    
-    
+
+
 class GeneralizedMixedFieldComplex:
     def __init__(self, P, A, param):
         self.param = param
@@ -485,7 +583,7 @@ class GeneralizedMixedFieldComplex:
         self.Pb = self.fun_P(self.Fb, self.param)
         self.Pbb = ((J / self.detF) ** (1 / 3)).real * self.Pb
         self.PbbF = ddot(self.Pbb, F)
-        
+
         self.detF = self.detF.real
 
         return [self.f_u(F, p, J), self.f_p(F, p, J), self.f_J(F, p, J)]
@@ -514,7 +612,7 @@ class GeneralizedMixedFieldComplex:
 
         self.PbbF = ddot(self.Pbb, F)
         self.FA4bbF = ddot(ddot(F, self.A4bb), F)
-        
+
         self.detF = self.detF.real
 
         return [

@@ -27,8 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-import meshio
-
 
 class Mesh:
     def __init__(self, nodes, connectivity, etype=None):
@@ -70,6 +68,8 @@ class Mesh:
 
         if self.etype is None:
             raise TypeError("Element type missing.")
+        else:
+            import meshio
 
         cells = {self.etype: self.connectivity}
         meshio.Mesh(self.nodes, cells).write(filename)

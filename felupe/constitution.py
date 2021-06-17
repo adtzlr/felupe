@@ -83,10 +83,10 @@ class NeoHooke:
         bulk = self.bulk
 
         iFT = transpose(inv(F))
-        detF = det(F)
+        J = det(F)
 
-        Pdev = mu * (F - ddot(F, F) / 3 * iFT) * detF ** (-2 / 3)
-        Pvol = bulk * (J - 1) * detF * iFT
+        Pdev = mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
+        Pvol = bulk * (J - 1) * J * iFT
 
         return Pdev + Pvol
 
@@ -101,7 +101,7 @@ class NeoHooke:
         mu = self.mu
         bulk = self.bulk
 
-        detF = det(F)
+        J = det(F)
         iFT = transpose(inv(F))
         eye = identity(F)
 
@@ -114,12 +114,12 @@ class NeoHooke:
                 + 2 / 9 * ddot(F, F) * dya(iFT, iFT)
                 + 1 / 3 * ddot(F, F) * cdya_il(iFT, iFT)
             )
-            * detF ** (-2 / 3)
+            * J ** (-2 / 3)
         )
 
         p = bulk * (J - 1)
-        q = p + bulk * detF
+        q = p + bulk * J
 
-        A4_vol = detF * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
+        A4_vol = J * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
 
         return A4_dev + A4_vol

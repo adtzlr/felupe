@@ -70,8 +70,8 @@ $$\boldsymbol{P} = \mu J^{-2/3} \left(\boldsymbol{F} - \frac{\boldsymbol{F} : \b
 ```python
 umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
-P = umat.f_u(F)
-A = umat.A_uu(F)
+P = umat.P
+A = umat.A
 ```
 
 ### Boundary Conditions
@@ -103,15 +103,15 @@ The integral (or weak) forms of equilibrium equations are defined by the `Integr
 $\int_V P_i^{\ J} : \frac{\partial \delta u^i}{\partial X^J} \ dV \qquad$ and $\qquad \int_V \frac{\partial \delta u^i}{\partial X^J} : \mathbb{A}_{i\ k\ }^{\ J\ L} : \frac{\partial u^k}{\partial X^L} \ dV$
 
 ```python
-linearform   = fe.IntegralForm(P, displacement, dV, grad_v=True)
-bilinearform = fe.IntegralForm(A, displacement, dV, displacement, grad_v = True, grad_u=True)
+linearform   = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
+bilinearform = fe.IntegralForm(A(F), displacement, dV, displacement, grad_v = True, grad_u=True)
 ```
 
 An assembly of the forms lead to the (nodal) internal forces and the (sparse) stiffness matrix.
 
 ```python
-r = linearform.assemble(parallel=True).toarray()[:,0]
-K = bilinearform.assemble(parallel=True)
+r = linearform.assemble().toarray()[:,0]
+K = bilinearform.assemble()
 ```
 
 ### Prepare (partition) and solve the linearized equation system
@@ -141,11 +141,14 @@ A very simple newton-rhapson code looks like this:
 for iteration in range(8):
     dudX = grad(displacement)
     F = identity(dudX) + dudX
-    P = umat.f_u(F)
-    A = umat.A_uu(F)
-    
-    r = fe.IntegralForm(P, displacement, dV, grad_v=True).assemble().toarray()[:,0]
-    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble()
+	
+    linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
+    bilinearform = fe.IntegralForm(
+        A(F), displacement, dV, displacement, grad_v=True, grad_u=True
+    )
+
+    r = linearform.assemble().toarray()[:, 0]
+    K = bilinearform.assemble()
     
     system = fe.solve.partition(displacement, K, dof1, dof0, r)
     du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
@@ -159,19 +162,19 @@ for iteration in range(8):
 ```
 
 ```python
-0 8.174180680860697
+0 8.174180680860701
 1 0.2940958778404002
-2 0.02083230945148837
-3 0.00010289925344210932
-4 6.0171532522337204e-09
-5 5.490863535572125e-16
+2 0.020832309451488434
+3 0.00010289925344214927
+4 6.017153149383381e-09
+5 5.278947140238654e-16
 ```
 
 ### Export of results
 Results can be exported as VTK or XDMF files using meshio.
 
 ```python
-fe.utils.save(region, displacement, filename="result")
+fe.utils.save(region, displacement, filename="result.vtk")
 ```
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/deformed_mesh.png)

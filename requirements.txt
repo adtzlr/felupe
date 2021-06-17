@@ -2,4 +2,3 @@ numpy
 scipy
 numba
 meshio
-quadpy

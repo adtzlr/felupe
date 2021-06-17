@@ -79,7 +79,7 @@ class IntegralFormMixed:
         else:
             raise ValueError("Unknown input format.")
 
-    def assemble(self, values=None, parallel=True, block=True):
+    def assemble(self, values=None, parallel=False, block=True):
 
         out = []
 
@@ -104,7 +104,7 @@ class IntegralFormMixed:
         else:
             return out
 
-    def integrate(self, parallel=True):
+    def integrate(self, parallel=False):
 
         out = []
         for form in self.forms:
@@ -142,7 +142,7 @@ class IntegralForm:
             self.indices = (eaibk0.ravel(), eaibk1.ravel())
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
-    def assemble(self, values=None, parallel=True):
+    def assemble(self, values=None, parallel=False):
 
         if values is None:
             values = self.integrate(parallel=parallel)
@@ -157,7 +157,7 @@ class IntegralForm:
 
         return out
 
-    def integrate(self, parallel=True):
+    def integrate(self, parallel=False):
         grad_v, grad_u = self.grad_v, self.grad_u
         v, u = self.v, self.u
         dV = self.dV

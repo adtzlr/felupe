@@ -1,6 +1,6 @@
 # FElupe - Finite Element Analysis
 
-[![PyPI version shields.io](https://img.shields.io/pypi/v/felupe.svg)](https://pypi.python.org/pypi/felupe/) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Made with love in Graz (Austria)](https://camo.githubusercontent.com/a544d346292339f9c32365b654a582020955e8b33cb0ed2ac3b7390c49b283f0/68747470733a2f2f6d616465776974686c6f76652e6e6f772e73682f61743f68656172743d7472756526636f6c6f72423d25323331663734346626746578743d4772617a2b25323841757374726961253239) ![Codestyle black](https://img.shields.io/badge/code%20style-black-black) [![purple-pi](https://img.shields.io/badge/Rendered%20with-Purple%20Pi-bd00ff?style=flat-square)](https://github.com/nschloe/purple-pi?activate)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/felupe.svg)](https://pypi.python.org/pypi/felupe/) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![Made with love in Graz (Austria)](https://camo.githubusercontent.com/a544d346292339f9c32365b654a582020955e8b33cb0ed2ac3b7390c49b283f0/68747470733a2f2f6d616465776974686c6f76652e6e6f772e73682f61743f68656172743d7472756526636f6c6f72423d25323331663734346626746578743d4772617a2b25323841757374726961253239) ![Codestyle black](https://img.shields.io/badge/code%20style-black-black)
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/felupe_logo.svg)
 

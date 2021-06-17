@@ -95,7 +95,7 @@ boundaries["move"]  = fe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
 The separation of active and inactive degrees of freedom is performed by a so-called partition. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
 
 ```python
-dof0, dof1, _ = fe.doftools.partition(displacement, boundaries)
+dof0, dof1 = fe.doftools.partition(displacement, boundaries)
 u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 ```
 

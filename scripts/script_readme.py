@@ -44,7 +44,7 @@ boundaries["left"] = fe.Boundary(displacement, fx=f0)
 boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
 boundaries["move"] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 
-dof0, dof1, _ = fe.doftools.partition(displacement, boundaries)
+dof0, dof1 = fe.doftools.partition(displacement, boundaries)
 u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 
 linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)

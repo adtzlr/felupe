@@ -8,7 +8,7 @@ Created on Thu May 13 21:41:27 2021
 import numpy as np
 import felupe as fe
 
-mesh = fe.mesh.Cube(n=25)
+mesh = fe.mesh.Cube(n=9)
 element = fe.element.Hex1()
 quadrature = fe.quadrature.Linear(dim=3)
 
@@ -33,8 +33,8 @@ F = identity(dudX) + dudX
 
 umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
-P = umat.f_u(F)
-A = umat.A_uu(F)
+P = umat.P
+A = umat.A
 
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
@@ -47,13 +47,13 @@ boundaries["move"] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 dof0, dof1, _ = fe.doftools.partition(displacement, boundaries)
 u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 
-linearform = fe.IntegralForm(P, displacement, dV, grad_v=True)
+linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
 bilinearform = fe.IntegralForm(
-    A, displacement, dV, displacement, grad_v=True, grad_u=True
+    A(F), displacement, dV, displacement, grad_v=True, grad_u=True
 )
 
-r = linearform.assemble(parallel=False).toarray()[:, 0]
-K = bilinearform.assemble(parallel=False)
+r = linearform.assemble().toarray()[:, 0]
+K = bilinearform.assemble()
 
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
 du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
@@ -62,18 +62,15 @@ du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
 for iteration in range(8):
     dudX = grad(displacement)
     F = identity(dudX) + dudX
-    P = umat.f_u(F)
-    A = umat.A_uu(F)
-
-    r = (
-        fe.IntegralForm(P, displacement, dV, grad_v=True)
-        .assemble(parallel=False)
-        .toarray()[:, 0]
-    )
-    K = fe.IntegralForm(A, displacement, dV, displacement, True, True).assemble(
-        parallel=False
+    
+    linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
+    bilinearform = fe.IntegralForm(
+        A(F), displacement, dV, displacement, grad_v=True, grad_u=True
     )
 
+    r = linearform.assemble().toarray()[:, 0]
+    K = bilinearform.assemble()
+    
     system = fe.solve.partition(displacement, K, dof1, dof0, r)
     du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
 
@@ -84,4 +81,4 @@ for iteration in range(8):
     if norm < 1e-12:
         break
 
-fe.utils.save(region, displacement, filename="result")
+fe.utils.save(region, displacement, filename="result.vtk")

@@ -65,6 +65,8 @@ F = identity(dudX) + dudX
 ### Constitution
 The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a constitution library which contains a definition for the Neo-Hookean material model and the associated fourth-order elasticity tensor.
 
+$$\psi = \frac{\mu}{2} \left( J^{-2/3} \boldsymbol{F} : \boldsymbol{F} - 3 \right) + \frac{K}{2} \left( J - 1 \right)^2$$
+
 $$\boldsymbol{P} = \mu J^{-2/3} \left(\boldsymbol{F} - \frac{\boldsymbol{F} : \boldsymbol{F}}{3} \boldsymbol{F}^{-T} \right) + K (J-1) J \boldsymbol{F}^{-T} $$
 
 ```python

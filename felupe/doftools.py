@@ -98,10 +98,9 @@ def partition(fields, bounds):
     # extend active dofs with dofs from additional fields
     if extend_dof1:
         dof0, dof1, offsets = extend(fields, dof0, dof1)
+        return dof0, dof1, offsets
     else:
-        offsets = None
-
-    return dof0, dof1, offsets
+        return dof0, dof1
 
 
 def extend(fields, dof0, dof1):

@@ -262,7 +262,7 @@ def save(
     A=None,
     unstack=None,
     converged=True,
-    filename="out",
+    filename="result.vtk",
 ):
 
     if unstack is not None:
@@ -312,16 +312,16 @@ def save(
         point_data=point_data,
     )
 
-    mesh.write(filename + ".vtk")
+    mesh.write(filename)
 
 
-def savehistory(region, results, filename="out"):
+def savehistory(region, results, filename="result_history.xdmf"):
 
     mesh = region.mesh
     points = mesh.nodes
     cells = {mesh.etype: mesh.connectivity[:, : mesh.edgenodes]}
 
-    with meshio.xdmf.TimeSeriesWriter(filename + ".xdmf") as writer:
+    with meshio.xdmf.TimeSeriesWriter(filename) as writer:
         writer.write_points_cells(points, cells)
 
         for inc, result in enumerate(results):

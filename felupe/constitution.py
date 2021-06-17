@@ -80,13 +80,13 @@ class NeoHooke:
         """
 
         mu = self.mu
+        bulk = self.bulk
+
         iFT = transpose(inv(F))
         detF = det(F)
 
-        p = self.dUdJ(detF)
-
         Pdev = mu * (F - ddot(F, F) / 3 * iFT) * detF ** (-2 / 3)
-        Pvol = p * detF * iFT
+        Pvol = bulk * (J - 1) * detF * iFT
 
         return Pdev + Pvol
 
@@ -99,6 +99,7 @@ class NeoHooke:
         """
 
         mu = self.mu
+        bulk = self.bulk
 
         detF = det(F)
         iFT = transpose(inv(F))
@@ -116,18 +117,9 @@ class NeoHooke:
             * detF ** (-2 / 3)
         )
 
-        p = self.dUdJ(detF)
-        q = p + self.d2UdJ2(detF) * detF
+        p = bulk * (J - 1)
+        q = p + bulk * detF
 
         A4_vol = detF * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
 
         return A4_dev + A4_vol
-
-    def dUdJ(self, J):
-        """Constitutive material formulation for volumetric behaviour."""
-        return self.bulk * (J - 1)
-
-    def d2UdJ2(self, J):
-        """Linearization of constitutive material formulation
-        for volumetric behaviour."""
-        return self.bulk * np.ones_like(J)

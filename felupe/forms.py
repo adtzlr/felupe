@@ -29,10 +29,6 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
-from numba import prange
-
-jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
-
 
 class IntegralFormMixed:
     def __init__(self, fun, fields, dV, grad=None):
@@ -222,90 +218,99 @@ class IntegralForm:
                     )
 
 
-from numba import jit
+try:
+    from numba import jit, prange
 
+    jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
-@jit(**jitargs)
-def integrate_gradv_u(v, fun, u, dV):
+    @jit(**jitargs)
+    def integrate_gradv_u(v, fun, u, dV):
 
-    nnodes_a = v.shape[0]
-    nnodes_b = u.shape[0]
-    ndim, ngauss, nelems = fun.shape[-3:]
+        nnodes_a = v.shape[0]
+        nnodes_b = u.shape[0]
+        ndim, ngauss, nelems = fun.shape[-3:]
 
-    out = np.zeros((nnodes_a, ndim, nnodes_b, nelems))
-    for a in prange(nnodes_a):  # basis function "a"
-        for b in prange(nnodes_b):  # basis function "b"
+        out = np.zeros((nnodes_a, ndim, nnodes_b, nelems))
+        for a in prange(nnodes_a):  # basis function "a"
+            for b in prange(nnodes_b):  # basis function "b"
+                for p in prange(ngauss):  # integration point "p"
+                    for e in prange(nelems):  # element "e"
+                        for i in prange(ndim):  # first index "i"
+                            for J in prange(ndim):  # second index "J"
+                                out[a, i, b, e] += (
+                                    v[a, J, p, e]
+                                    * u[b, p, e]
+                                    * fun[i, J, p, e]
+                                    * dV[p, e]
+                                )
+
+        return out
+
+    @jit(**jitargs)
+    def integrate_v_gradu(v, fun, u, dV):
+
+        nnodes_a = v.shape[0]
+        nnodes_b = u.shape[0]
+        ndim, ngauss, nelems = fun.shape[-3:]
+
+        out = np.zeros((nnodes_a, nnodes_b, ndim, nelems))
+        for a in prange(nnodes_a):  # basis function "a"
+            for b in prange(nnodes_b):  # basis function "b"
+                for p in prange(ngauss):  # integration point "p"
+                    for e in prange(nelems):  # element "e"
+                        for k in prange(ndim):  # third index "k"
+                            for L in prange(ndim):  # fourth index "L"
+                                out[a, b, k, e] += (
+                                    v[a, p, e]
+                                    * u[b, L, p, e]
+                                    * fun[k, L, p, e]
+                                    * dV[p, e]
+                                )
+
+        return out
+
+    @jit(**jitargs)
+    def integrate_gradv(v, fun, dV):
+
+        nnodes = v.shape[0]
+        ndim, ngauss, nelems = fun.shape[-3:]
+
+        out = np.zeros((nnodes, ndim, nelems))
+
+        for a in prange(nnodes):  # basis function "a"
             for p in prange(ngauss):  # integration point "p"
                 for e in prange(nelems):  # element "e"
                     for i in prange(ndim):  # first index "i"
                         for J in prange(ndim):  # second index "J"
-                            out[a, i, b, e] += (
-                                v[a, J, p, e] * u[b, p, e] * fun[i, J, p, e] * dV[p, e]
-                            )
+                            out[a, i, e] += v[a, J, p, e] * fun[i, J, p, e] * dV[p, e]
 
-    return out
+        return out
 
+    @jit(**jitargs)
+    def integrate_gradv_gradu(v, fun, u, dV):
 
-@jit(**jitargs)
-def integrate_v_gradu(v, fun, u, dV):
+        nnodes_a = v.shape[0]
+        nnodes_b = u.shape[0]
+        ndim, ngauss, nelems = fun.shape[-3:]
 
-    nnodes_a = v.shape[0]
-    nnodes_b = u.shape[0]
-    ndim, ngauss, nelems = fun.shape[-3:]
+        out = np.zeros((nnodes_a, ndim, nnodes_b, ndim, nelems))
+        for a in prange(nnodes_a):  # basis function "a"
+            for b in prange(nnodes_b):  # basis function "b"
+                for p in prange(ngauss):  # integration point "p"
+                    for e in prange(nelems):  # element "e"
+                        for i in prange(ndim):  # first index "i"
+                            for J in prange(ndim):  # second index "J"
+                                for k in prange(ndim):  # third index "k"
+                                    for L in prange(ndim):  # fourth index "L"
+                                        out[a, i, b, k, e] += (
+                                            v[a, J, p, e]
+                                            * u[b, L, p, e]
+                                            * fun[i, J, k, L, p, e]
+                                            * dV[p, e]
+                                        )
 
-    out = np.zeros((nnodes_a, nnodes_b, ndim, nelems))
-    for a in prange(nnodes_a):  # basis function "a"
-        for b in prange(nnodes_b):  # basis function "b"
-            for p in prange(ngauss):  # integration point "p"
-                for e in prange(nelems):  # element "e"
-                    for k in prange(ndim):  # third index "k"
-                        for L in prange(ndim):  # fourth index "L"
-                            out[a, b, k, e] += (
-                                v[a, p, e] * u[b, L, p, e] * fun[k, L, p, e] * dV[p, e]
-                            )
-
-    return out
-
-
-@jit(**jitargs)
-def integrate_gradv(v, fun, dV):
-
-    nnodes = v.shape[0]
-    ndim, ngauss, nelems = fun.shape[-3:]
-
-    out = np.zeros((nnodes, ndim, nelems))
-
-    for a in prange(nnodes):  # basis function "a"
-        for p in prange(ngauss):  # integration point "p"
-            for e in prange(nelems):  # element "e"
-                for i in prange(ndim):  # first index "i"
-                    for J in prange(ndim):  # second index "J"
-                        out[a, i, e] += v[a, J, p, e] * fun[i, J, p, e] * dV[p, e]
-
-    return out
+        return out
 
 
-@jit(**jitargs)
-def integrate_gradv_gradu(v, fun, u, dV):
-
-    nnodes_a = v.shape[0]
-    nnodes_b = u.shape[0]
-    ndim, ngauss, nelems = fun.shape[-3:]
-
-    out = np.zeros((nnodes_a, ndim, nnodes_b, ndim, nelems))
-    for a in prange(nnodes_a):  # basis function "a"
-        for b in prange(nnodes_b):  # basis function "b"
-            for p in prange(ngauss):  # integration point "p"
-                for e in prange(nelems):  # element "e"
-                    for i in prange(ndim):  # first index "i"
-                        for J in prange(ndim):  # second index "J"
-                            for k in prange(ndim):  # third index "k"
-                                for L in prange(ndim):  # fourth index "L"
-                                    out[a, i, b, k, e] += (
-                                        v[a, J, p, e]
-                                        * u[b, L, p, e]
-                                        * fun[i, J, k, L, p, e]
-                                        * dV[p, e]
-                                    )
-
-    return out
+except:
+    pass

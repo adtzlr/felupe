@@ -85,7 +85,7 @@ class Cube(Mesh):
         etype = "hexahedron"
 
         super().__init__(nodes, connectivity, etype)
-        #self.edgenodes = 8
+        # self.edgenodes = 8
 
 
 class Rectangle(Mesh):
@@ -98,7 +98,7 @@ class Rectangle(Mesh):
         etype = "quad"
 
         super().__init__(nodes, connectivity, etype)
-        #self.edgenodes = 4
+        # self.edgenodes = 4
 
 
 class Line(Mesh):
@@ -112,7 +112,7 @@ class Line(Mesh):
         etype = "line"
 
         super().__init__(nodes, connectivity, etype)
-        #self.edgenodes = 2
+        # self.edgenodes = 2
 
 
 class CubeQuadratic(Mesh):
@@ -125,7 +125,7 @@ class CubeQuadratic(Mesh):
         etype = "hexahedron20"
 
         super().__init__(nodes, connectivity, etype)
-        #self.edgenodes = 8
+        # self.edgenodes = 8
 
         self.nodes = self.nodes[
             [0, 2, 8, 6, 18, 20, 26, 24, 1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15]
@@ -223,7 +223,7 @@ class CylinderAdvanced(Mesh):
             nodes, connectivity = rotate(rotate((nodes, connectivity), 90, 1), 90, 2)
 
         super().__init__(nodes, connectivity, etype)
-        #self.edgenodes = 8
+        # self.edgenodes = 8
 
 
 class Cylinder(CylinderAdvanced):

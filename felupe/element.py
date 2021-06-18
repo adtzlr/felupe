@@ -26,6 +26,71 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from scipy.special import factorial
+from string import ascii_lowercase as alphabet
+from copy import deepcopy as copy
+
+
+class ArbitraryOrderLagrange:
+    def __init__(self, order, ndim):
+        self.ndim = ndim
+        self.order = order
+        self.nnodes = (order + 1) ** ndim
+        self.nbasis = self.nnodes
+
+        self._nbasis = order + 1
+
+        # init curve-parameter matrix
+        n = self._nbasis
+        self._AT = np.linalg.inv(
+            np.array([self._polynomial(p, n) for p in self._points(n)])
+        ).T
+
+        # indices for outer product in einstein notation
+        # idx = ["a", "b", "c", ...][:dim]
+        # subscripts = "a,b,c -> abc"
+        self._idx = [letter for letter in alphabet][: self.ndim]
+        self._subscripts = ",".join(self._idx) + "->" + "".join(self._idx)
+
+    def basis(self, r):
+        "Basis function vector at coordinate vector r."
+        n = self._nbasis
+
+        # 1d - basis function vectors per axis
+        h = [self._AT @ self._polynomial(ra, n) for ra in r]
+
+        return np.einsum(self._subscripts, *h).ravel("F")
+
+    def basisprime(self, r):
+        "Basis function derivative vector at coordinate vector r."
+        n = self._nbasis
+
+        # 1d - basis function vectors per axis
+        h = [self._AT @ self._polynomial(ra, n) for ra in r]
+
+        # shifted 1d - basis function vectors per axis
+        k = [self._AT @ np.append(0, self._polynomial(ra, n)[:-1]) for ra in r]
+
+        # init output
+        dhdr = np.zeros((n ** self.ndim, self.ndim))
+
+        # loop over columns
+        for i in range(self.ndim):
+            g = copy(h)
+            g[i] = k[i]
+            dhdr[:, i] = np.einsum(self._subscripts, *g).ravel("F")
+
+        return dhdr
+
+    def _points(self, n):
+        "Equidistant n points in interval [-1, 1]."
+        i = np.arange(n)
+        return 2 * i / (n - 1) - 1
+
+    def _polynomial(self, r, n):
+        "Lagrange-Polynomial of order n evaluated at coordinate r."
+        m = np.arange(n)
+        return r ** m / factorial(m)
 
 
 class Line:

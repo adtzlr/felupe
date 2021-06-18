@@ -45,3 +45,18 @@ class GaussLegendre:
 
         self.points = scheme.points.T
         self.weights = scheme.weights * 2 ** dim
+
+
+class Constant(GaussLegendre):
+    def __init__(self, dim):
+        super().__init__(order=0, dim=dim)
+
+
+class Linear(GaussLegendre):
+    def __init__(self, dim):
+        super().__init__(order=1, dim=dim)
+
+
+class Quadratic(GaussLegendre):
+    def __init__(self, dim):
+        super().__init__(order=2, dim=dim)

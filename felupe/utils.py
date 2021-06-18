@@ -307,7 +307,7 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.nodes,
-        cells={mesh.etype: mesh.connectivity},#[:, : mesh.edgenodes]},
+        cells={mesh.etype: mesh.connectivity},  # [:, : mesh.edgenodes]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
     )
@@ -319,7 +319,7 @@ def savehistory(region, results, filename="result_history.xdmf"):
 
     mesh = region.mesh
     points = mesh.nodes
-    cells = {mesh.etype: mesh.connectivity}#[:, : mesh.edgenodes]}
+    cells = {mesh.etype: mesh.connectivity}  # [:, : mesh.edgenodes]}
 
     with meshio.xdmf.TimeSeriesWriter(filename) as writer:
         writer.write_points_cells(points, cells)

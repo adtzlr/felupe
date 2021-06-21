@@ -8,7 +8,7 @@
 
 - :100: Python :arrow_right: easy installation and intuitive usage :ok_hand:
 - define and solve nonlinear problems of solid mechanics
-- constitutive library w/ templates for Neo-Hookean solids & linear elasticity
+- constitutive library w/ templates for linear elasticity & Neo-Hookean solids
 
 [GitHub](https://github.com/adtzlr/felupe)
 [Get Started](#felupe)

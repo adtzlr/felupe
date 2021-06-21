@@ -27,10 +27,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-try:
-    from pypardiso import spsolve
-except:
-    from scipy.sparse.linalg import spsolve
+from pypardiso import spsolve
+
+# from scipy.sparse.linalg import spsolve
 
 from .math import values
 

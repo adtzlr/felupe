@@ -52,7 +52,7 @@ class LinearElastic:
 
     def elasticity(self, strain):
         I = identity(strain)
-        return self.mu * cdya(I, I) + self.gamma * dya(I, I)
+        return 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
 
     def lame(self, E, nu):
         mu = E / (2 * (1 + nu))

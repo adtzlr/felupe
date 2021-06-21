@@ -28,7 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def inv(A, detA=None):
+def inv(A, detA=None, full_output=False):
     invA = np.zeros_like(A)
 
     if detA is None:
@@ -55,7 +55,10 @@ def inv(A, detA=None):
         invA[1, 0] = -A[0, 1]
         invA[1, 1] = A[0, 0]
 
-    return invA / detA
+    if full_output:
+        return invA / detA, detA
+    else:
+        return invA / detA
 
 
 def det(A):

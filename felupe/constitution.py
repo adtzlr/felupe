@@ -29,11 +29,8 @@ import numpy as np
 
 from .math import (
     ddot,
-    dot,
     transpose,
-    majortranspose,
     inv,
-    eig,
     dya,
     cdya,
     cdya_ik,
@@ -41,7 +38,6 @@ from .math import (
     det,
     identity,
     trace,
-    sym,
 )
 
 

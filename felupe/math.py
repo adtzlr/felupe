@@ -65,25 +65,66 @@ def dya(A, B, mode=2):
         raise ValueError("unknown mode. (1 or 2)", mode)
 
 
-def inv(A):
+def _linalginv(A):
     return np.linalg.inv(A.T).T
 
 
-def det(A):
+def inv(A, detA=None):
+    invA = np.zeros_like(A)
+
+    if detA is None:
+        detA = det(A)
+
+    if A.shape[0] == 3:
+        invA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
+        invA[1, 0] = A[1, 2] * A[2, 0] - A[1, 0] * A[2, 2]
+        invA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
+        invA[0, 1] = A[0, 2] * A[2, 1] - A[0, 1] * A[2, 2]
+        invA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
+        invA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
+        invA[0, 2] = -A[0, 2] * A[1, 1] + A[0, 1] * A[1, 2]
+        invA[1, 2] = A[0, 2] * A[1, 0] - A[0, 0] * A[1, 2]
+        invA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
+
+    elif A.shape[0] == 2:
+        invA[0, 0] = A[1, 1]
+        invA[0, 1] = -A[0, 1]
+        invA[1, 0] = -A[1, 0]
+        invA[1, 1] = A[0, 0]
+
+    return invA / detA
+
+
+def _linalgdet(A):
     return np.linalg.det(A.T).T
 
 
+def det(A):
+    if A.shape[0] == 3:
+        detA = (
+            A[0, 0] * A[1, 1] * A[2, 2]
+            + A[0, 1] * A[1, 2] * A[2, 0]
+            + A[0, 2] * A[1, 0] * A[2, 1]
+            - A[2, 0] * A[1, 1] * A[0, 2]
+            - A[2, 1] * A[1, 2] * A[0, 0]
+            - A[2, 2] * A[1, 0] * A[0, 1]
+        )
+    elif A.shape[0] == 2:
+        detA = A[0, 0] * A[1, 1] - A[0, 1] * A[1, 0]
+    return detA
+
+
 def cof(A):
-    return det(A) * transpose(inv(A))
+    return transpose(inv(A), detA=1.0)
 
 
-def eigh(A):
-    wA, vA = np.linalg.eigh(A.transpose([2, 3, 0, 1]))
+def eig(A):
+    wA, vA = np.linalg.eig(A.transpose([2, 3, 0, 1]))
     return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
 
 
 def eigvals(A, shear=False):
-    wA = np.linalg.eigh(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
+    wA = np.linalg.eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
     if shear:
         ndim = wA.shape[0]
         if ndim == 3:

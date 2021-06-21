@@ -33,7 +33,7 @@ from .math import (
     transpose,
     majortranspose,
     inv,
-    eigh,
+    eig,
     dya,
     cdya,
     cdya_ik,
@@ -82,8 +82,8 @@ class NeoHooke:
         mu = self.mu
         bulk = self.bulk
 
-        iFT = transpose(inv(F))
         J = det(F)
+        iFT = transpose(inv(F, J))
 
         Pdev = mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
         Pvol = bulk * (J - 1) * J * iFT
@@ -102,7 +102,7 @@ class NeoHooke:
         bulk = self.bulk
 
         J = det(F)
-        iFT = transpose(inv(F))
+        iFT = transpose(inv(F, J))
         eye = identity(F)
 
         A4_dev = (

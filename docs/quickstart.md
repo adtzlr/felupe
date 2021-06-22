@@ -163,3 +163,5 @@ Results can be exported as VTK or XDMF files using meshio.
 ```python
 fe.utils.save(region, displacement, filename="result.vtk")
 ```
+
+![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/deformed_mesh.png)

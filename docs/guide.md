@@ -30,10 +30,17 @@ $$\bm{A}^T = \bm{R}^{-1}$$
 ### Interpolation and partial derivatives
 The approximation of nodal unknowns $\hat{\bm{u}}$ as a function of the parameter $r$ is evaluated as
 
-$$\bm{u}(r) \approx \hat{\bm{u}}^T \bm{h}(r)$$.
+$$\bm{u}(r) \approx \hat{\bm{u}}^T \bm{h}(r)$$
 
-For the calculation of the partial derivative of the interpolation field w.r.t. the parameter $r$ a simple shift of the entries of the parameter vector is enough.
+For the calculation of the partial derivative of the interpolation field w.r.t. the parameter $r$ a simple shift of the entries of the parameter vector is enough. This shifted parameter vector is denoted as $\bm{r}^-$. A minus superscript indices the negative shift of the vector entries by $-1$.
 
-$$\frac{\partial \bm{u}(r)}{\partial r} = \hat{\bm{u}}^T \frac{\partial \bm{h}(r)}{\partial r}$$
+$$\frac{\partial \bm{u}(r)}{\partial r} \approx \hat{\bm{u}}^T \frac{\partial \bm{h}(r)}{\partial r}$$
 
-$$\frac{\partial \bm{h}(r)}{\partial r} = \bm{A}^T \bm{r}^-(r) \qquad \text{with} \qquad r_0^- = 0 \qquad \text{and} \qquad r_i^- = \frac{r^{(i-1)}}{(i-1)!} \qquad \text{for} \qquad  i=(1 \dots p)$$.
+$$\frac{\partial \bm{h}(r)}{\partial r} = \bm{A}^T \bm{r}^-(r) \qquad \text{with} \qquad r_0^- = 0 \qquad \text{and} \qquad r_i^- = \frac{r^{(i-1)}}{(i-1)!} \qquad \text{for} \qquad  i=(1 \dots p)$$
+
+### n-dimensional basis functions
+Multi-dimensional basis function matrices $\bm{H}_{2D}, \bm{H}_{3D}$ are simply evaluated as dyadic (outer) vector products of one-dimensional basis function vectors. The multi-dimensional basis function vector is a one-dimensional representation (flattened version) of the multi-dimensional basis function matrix.
+
+$$ \bm{H}_{2D}(r,s) = \bm{h}(r) \otimes \bm{h}(s)$$
+
+$$ \bm{H}_{3D}(r,s,t) = \bm{h}(r) \otimes \bm{h}(s) \otimes \bm{h}(t)$$

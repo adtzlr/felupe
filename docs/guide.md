@@ -44,3 +44,23 @@ Multi-dimensional basis function matrices $\bm{H}_{2D}, \bm{H}_{3D}$ are simply 
 $$ \bm{H}_{2D}(r,s) = \bm{h}(r) \otimes \bm{h}(s)$$
 
 $$ \bm{H}_{3D}(r,s,t) = \bm{h}(r) \otimes \bm{h}(s) \otimes \bm{h}(t)$$
+
+### Node numbering
+A linear hexahedron has nodes arranged in a way that the connectivity starts at `[-1,-1,-1]` where nodes are connected counterclockwise at`z=-1` in a first step. Finally the same applies for `z=1`. For arbitrary order elements the first axis goes from `-1` to `1`, then the second axis  from `-1` to `1` and finally the third axis  from `-1` to `1`.
+
+```python
+# Linear hexahedron with eight nodes
+
+nodes = np.array([
+    [-1,-1,-1], #0
+    [ 1,-1,-1], #1
+    [ 1, 1,-1], #2
+    [-1, 1,-1], #3
+    [-1,-1, 1], #4
+    [ 1,-1, 1], #5
+    [ 1, 1, 1], #6
+    [-1, 1, 1], #7
+])
+
+connectivity = np.array([[0,1,2,3,4,5,6,7]])
+```

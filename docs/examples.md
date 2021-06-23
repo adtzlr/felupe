@@ -17,7 +17,14 @@ region = fe.Region(mesh, element, quadrature)
 
 ![poisson mesh](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_mesh.png)
 
-In the next step we create a 2d-field for our 2d-region and calculate the gradient of the unknowns w.r.t. to the undeformed coordinates. Both the laplace equation and the right-hand-side of the poisson problem are transformed from the local differential into the (weak) integral form as follows. We start with the local differential form.
+In the next step we create a 2d-field for our 2d-region and calculate the gradient of the unknowns w.r.t. to the undeformed coordinates. 
+
+```python
+field = fe.Field(region, dim=2, values=0)
+dudX = field.grad()
+```
+
+Both the laplace equation and the right-hand-side of the poisson problem are transformed from the local differential into the (weak) integral form as follows. We start with the local differential form.
 
 $$\Delta \bm{u} + \bm{f} = 0$$
 
@@ -38,9 +45,6 @@ and the right-hand-side at hand.
 $$-\int_\Omega \bm{f} \cdot \delta \bm{u} \ d\Omega$$
 
 ```python
-field = fe.Field(region, dim=2, values=0)
-dudX = field.grad()
-
 eye = fe.math.identity(dudX)
 poisson = fe.math.cdya_ik(eye, eye)
 rhs = -np.ones_like(field.interpolate())

@@ -1,13 +1,7 @@
 # Examples
 
-## Example 1 - Poisson equation
-The poisson problem is solved with fixed nodes at the boundaries and a unit load.
-
-![poisson mesh](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_mesh.png)
-
-![poisson solution](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_solution.png)
-
-![poisson plot](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson.svg)
+## Example 1 - 2d Poisson equation
+The 2d poisson problem is solved with fixed nodes at the boundaries and a unit load.
 
 ```python
 import numpy as np
@@ -19,7 +13,11 @@ element = fe.element.Quad1()
 quadrature = fe.quadrature.Linear(2)
 
 region = fe.Region(mesh, element, quadrature)
+```
 
+![poisson mesh](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_mesh.png)
+
+```python
 field = fe.Field(region, dim=2, values=0)
 dudX = field.grad()
 
@@ -63,3 +61,9 @@ plt.gcf().colorbar(cf, ax=plt.gca(), shrink=0.9)
 
 plt.savefig("poisson.svg")
 ```
+
+![poisson plot](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson.svg)
+
+The solution may also be visualized by Paraview.
+
+![poisson solution](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_solution.png)

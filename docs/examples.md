@@ -1,7 +1,7 @@
 # Examples
 
 ## Example 1 - 2d Poisson equation
-The 2d poisson problem is solved with fixed nodes at the boundaries and a unit load.
+The 2d poisson problem $\Delta \bm{u} = - \bm{f}$ is solved with fixed nodes at the boundaries and a unit load. In a first step, we create a rectangular mesh, initialize an instance of a linear quad element and the appropriate quadrature. A numeric region is created with all three objects.
 
 ```python
 import numpy as np
@@ -16,6 +16,12 @@ region = fe.Region(mesh, element, quadrature)
 ```
 
 ![poisson mesh](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_mesh.png)
+
+We create a 2d-field for our 2d-region and calculate the gradient of the unknowns w.r.t. to the undeformed coordinates. Both the laplace equation and the right-hand-side of the poisson problem are defined in integral form as follows:
+
+$\int_\Omega \frac{\partial \delta \bm{u}}{\partial \bm{X}} : \frac{\partial \bm{u}}{\partial \bm{X}} \ d\Omega = \int_\Omega \frac{\partial \delta \bm{u}}{\partial \bm{X}} : \bm{I} \overset{ik}{\odot} \bm{I} : \frac{\partial \bm{u}}{\partial \bm{X}}  \ d\Omega$
+
+$-\int_\Omega \bm{f} \cdot \delta \bm{u} \ d\Omega$
 
 ```python
 field = fe.Field(region, dim=2, values=0)
@@ -49,6 +55,15 @@ d_unknowns = fe.solve.solve(*system, unknowns0_ext)
 field += d_unknowns
 
 fe.utils.save(region, field, filename="poisson.vtk")
+```
+
+The solution is first visualized with the VTK output by Paraview.
+
+![poisson solution](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_solution.png)
+
+Another possibility would be a plot with matplotlib.
+
+```python
 
 import matplotlib.pyplot as plt
 cf = plt.contourf(
@@ -63,7 +78,3 @@ plt.savefig("poisson.svg")
 ```
 
 ![poisson plot](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson.svg)
-
-The solution may also be visualized by Paraview.
-
-![poisson solution](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_solution.png)

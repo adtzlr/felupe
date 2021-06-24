@@ -156,7 +156,7 @@ $$f_{\overline{J}} =  \frac{1}{3 \overline{J}} \left( \overline{\overline{\bm{P}
 
 A linearization of the above formulas gives six equations (only results are given here).
 
-$$\mathbb{A}_{\bm{u},\bm{u}} =  \mathbb{P} : \overline{\overline{\mathbb{A}}} : \mathbb{P}^T - \frac{1}{3} \left( \bm{F}^{-T} \otimes \overline{\overline{\bm{P}}} + \overline{\overline{\bm{P}}} \otimes \bm{F}^{-T} \right) + p J \left( \bm{F}^{-T} \otimes \bm{F}^{-T} - \bm{F}^{-T} \overset{il}{\odot} \bm{F}^{-T} \right) $$
+$$\mathbb{A}_{\bm{u},\bm{u}} =  \overline{\overline{\mathbb{A}}} + \frac{1}{9} \left(  \bm{F} : \overline{\overline{\mathbb{A}}} : \bm{F} \right) \bm{F}^{-T} \otimes \bm{F}^{-T} - \frac{1}{3} \left( \bm{F}^{-T} \otimes \left( \overline{\overline{\bm{P}}} + \bm{F} : \overline{\overline{\mathbb{A}}} \right) + \left( \overline{\overline{\bm{P}}} + \overline{\overline{\mathbb{A}}} : \bm{F} \right) \otimes \bm{F}^{-T} \right) + \left( p J + \frac{1}{9} \overline{\overline{\bm{P}}} : \bm{F} \right) \bm{F}^{-T} \otimes \bm{F}^{-T} - \left( p J - \frac{1}{3} \overline{\overline{\bm{P}}} : \bm{F} \right) \bm{F}^{-T} \overset{il}{\odot} \bm{F}^{-T} $$
 
 $$\bm{A}_{\bm{u},p} = J \bm{F}^{-T} $$
 

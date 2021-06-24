@@ -29,8 +29,6 @@ import numpy as np
 
 from pypardiso import spsolve
 
-# from scipy.sparse.linalg import spsolve
-
 from .math import values
 
 
@@ -48,7 +46,7 @@ def partition(v, K, dof1, dof0, r=None):
     return u, u0, K11, K10, dof1, dof0, r1
 
 
-def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None):
+def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
 
     if r1 is None:
         r1 = np.zeros(len(dof1))
@@ -58,7 +56,7 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None):
     else:
         dr0 = K10.dot(u0ext - u0)
 
-    du1 = spsolve(K11, -r1 - dr0.reshape(*r1.shape))
+    du1 = solver(K11, -r1 - dr0.reshape(*r1.shape))
     du = np.empty(u.size)
     du[dof1] = du1
     du[dof0] = u0ext - u0

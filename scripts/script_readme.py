@@ -62,7 +62,7 @@ du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
 for iteration in range(8):
     dudX = grad(displacement)
     F = identity(dudX) + dudX
-    
+
     linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
     bilinearform = fe.IntegralForm(
         A(F), displacement, dV, displacement, grad_v=True, grad_u=True
@@ -70,7 +70,7 @@ for iteration in range(8):
 
     r = linearform.assemble().toarray()[:, 0]
     K = bilinearform.assemble()
-    
+
     system = fe.solve.partition(displacement, K, dof1, dof0, r)
     du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
 

@@ -142,8 +142,12 @@ class IsochoricProjection:
 
         Sb = I3 ** (-1 / 3) * self.fun_S(C)
 
-        C4b = I3 ** (-2 / 3) * self.fun_C4(C)
-        PC4bP = ddot44(ddot(P4, C4b), majortranspose(P4))
+        C4u = self.fun_C4(C)
+        if np.allclose(C4b, 0):
+            PC4bP = C4u
+        else:
+            C4b = I3 ** (-2 / 3) * C4u
+            PC4bP = ddot44(ddot(P4, C4b), majortranspose(P4))
 
         SbC = ddot(Sb, C)
 
@@ -153,6 +157,26 @@ class IsochoricProjection:
             + 2 / 9 * SbC * dya(iC, iC)
             + 2 / 3 * SbC * cdya(iC, iC)
         )
+
+
+class TotalLagrangeMaterial:
+    def __init__(self, S, C4):
+        self.fun_S = S
+        self.fun_C4 = C4
+
+    def P(self, F):
+        C = dot(transpose(F), F)
+        S = self.fun_S(C)
+        C4 = self.fun_C4(C)
+
+        return dot(F, S)
+
+    def A(self, F):
+        C = dot(transpose(F), F)
+        iC = inv(C)
+        S = self.fun_S(C)
+        C4 = self.fun_C4(C) + cdya_ik(iC, S)
+        return np.einsum("iI...,kK...,IJKL...-iJkL...", F, F, C4)
 
 
 class GeneralizedMixedField:

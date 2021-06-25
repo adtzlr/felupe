@@ -117,6 +117,11 @@ def det(A):
     return detA
 
 
+def dev(A):
+    dim = A.shape[0]
+    return A - trace(A) / dim * identity(A)
+
+
 def cof(A):
     return transpose(inv(A), detA=1.0)
 
@@ -184,6 +189,10 @@ def ddot(A, B):
         return np.einsum("ijkl...,kl...->ij...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")
+
+
+def ddot44(A, B):
+    return np.einsum("ijkl...,klmn...->ijmn...", A, B, optimize=True)
 
 
 def tovoigt(A):

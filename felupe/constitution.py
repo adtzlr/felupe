@@ -64,20 +64,6 @@ class LinearElastic:
         return mu, gamma
 
 
-class NeoHookeIsochoric:
-    "Nearly-incompressible Neo-Hooke material."
-
-    def __init__(self, mu):
-        self.mu = mu
-    
-    def S(self, C):
-        return self.mu * identity(C)
-    
-    def C4(self, C):
-        i, j = C.shape[:2]
-        return np.zeros((i, j, i, j, *C.shape[2:]))
-
-
 class NeoHooke:
     "Nearly-incompressible Neo-Hooke material."
 
@@ -139,84 +125,102 @@ class NeoHooke:
         return A4_dev + A4_vol
 
 
-class AddHydrostaticMaterial:
-    def __init__(self, S, C4, bulk=5000):
-        self.fun_S = S
-        self.fun_C4 = C4
+class AddHydrostatic:
+    def __init__(self, material_deviatoric, bulk=5000):
+        self.deviatoric = material_deviatoric
         self.bulk = bulk
-    
-    def S(self, C):
-        J = np.sqrt(det(C))
+
+    def S(self, F, J, C, invC):
         p = self.bulk * (J - 1)
-        return self.fun_S(C) + p * J * inv(C)
-    
-    def C4(self, C):
-        J = np.sqrt(det(C))
-        iC = inv(C)
-        
+        return self.deviatoric.S(F, J, C, invC) + p * J * invC
+
+    def C4(self, F, J, C, invC):
+
         p = self.bulk * (J - 1)
         dpdJ = self.bulk
-        
+
         q = p + dpdJ * J
-        return self.fun_C4(C) + J * (q * (dya(iC, iC) - p * cdya(iC, iC)))
+        return self.deviatoric.C4(F, J, C, invC) + J * (
+            q * dya(invC, invC) - 2 * p * cdya(invC, invC)
+        )
 
-class IsochoricMaterial:
-    def __init__(self, S, C4):
-        self.fun_S = S
-        self.fun_C4 = C4
 
-    def S(self, C):
-        I3 = det(C)
-        Cu = I3 ** (-1 / 3) * C
-        Sb = I3 ** (-1 / 3) * self.fun_S(Cu)
-        return dot(dev(dot(Sb, C)), inv(C))
+class AsIsochoric:
+    def __init__(self, material_isochoric):
+        self.isochoric = material_isochoric
 
-    def C4(self, C):
-        I3 = det(C)
+    def S(self, F, J, C, invC):
+        Cu = J ** (-2 / 3) * C
+        Sb = J ** (-2 / 3) * self.isochoric.S(Cu)
+        return Sb - ddot(Sb, C) / 3 * invC
+
+    def C4(self, F, J, C, invC):
         eye = identity(C)
-        I4 = cdya(eye, eye)
-        iC = inv(C)
-        P4 = I3 ** (-1 / 3) * (I4 - dya(iC, C))
-        
-        Cu = I3 ** (-1 / 3) * C
-        Sb = I3 ** (-1 / 3) * self.fun_S(Cu)
+        P4 = cdya(eye, eye) - dya(invC, C) / 3
 
-        C4u = self.fun_C4(Cu)
-        if np.allclose(C4u, 0):
+        Cu = J ** (-2 / 3) * C
+        Sb = J ** (-2 / 3) * self.isochoric.S(Cu)
+
+        C4u = self.isochoric.C4(Cu)
+        if np.all(C4u == 0):
             PC4bP = C4u
         else:
-            C4b = I3 ** (-2 / 3) * C4u
+            C4b = J ** (-4 / 3) * C4u
             PC4bP = ddot44(ddot44(P4, C4b), majortranspose(P4))
 
         SbC = ddot(Sb, C)
 
         return (
             PC4bP
-            - 2 / 3 * (dya(Sb, iC) + dya(iC, Sb))
-            + 2 / 9 * SbC * dya(iC, iC)
-            + 2 / 3 * SbC * cdya(iC, iC)
+            - 2 / 3 * (dya(Sb, invC) + dya(invC, Sb))
+            + 2 / 9 * SbC * dya(invC, invC)
+            + 2 / 3 * SbC * cdya(invC, invC)
         )
 
 
-class TotalLagrangeMaterial:
+class Material:
     def __init__(self, S, C4):
-        self.fun_S = S
-        self.fun_C4 = C4
+        self.S = S
+        self.C4 = C4
+
+
+class FromTotalLagrange:
+    def __init__(self, material_totallagrange):
+        self.totallagrange = material_totallagrange
+        self.F = 0
+
+    def update(self, F):
+        if np.all(F == self.F):
+            pass
+        else:
+            F = F
+            J = det(F)
+            C = dot(transpose(F), F)
+            invC = inv(C, J ** 2)
+
+            S = self.totallagrange.S(F, J, C, invC)
+
+            return F, J, C, invC, S
 
     def P(self, F):
-        C = dot(transpose(F), F)
-        S = self.fun_S(C)
-        return dot(F, S)
+        kinematics = self.update(F)
+        if kinematics is not None:
+            self.F, self.J, self.C, self.invC, self.S = kinematics
+
+        return dot(F, self.S)
 
     def A(self, F):
-        C = dot(transpose(F), F)
-        iC = inv(C)
-        S = self.fun_S(C)
-        C4 = self.fun_C4(C) + cdya_ik(iC, S)
-        return np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C4)
+        kinematics = self.update(F)
+        if kinematics is not None:
+            self.F, self.J, self.C, self.invC, self.S = kinematics
+
+        C4 = self.totallagrange.C4(self.F, self.J, self.C, self.invC) + cdya_ik(
+            self.invC, self.S
+        )
+        return np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C4, optimize=True)
 
 
-class GeneralizedMixedField:
+class MixedFieldIncompressible:
     def __init__(self, P, A):
         self.fun_P = P
         self.fun_A = A

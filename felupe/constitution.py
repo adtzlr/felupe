@@ -29,6 +29,7 @@ import numpy as np
 
 from .math import (
     ddot,
+    ddot44,
     transpose,
     inv,
     dya,
@@ -38,11 +39,12 @@ from .math import (
     det,
     identity,
     trace,
+    dev,
 )
 
 
 class LinearElastic:
-    def __init__(self, E, nu=0.3):
+    def __init__(self, E, nu):
         self.E = E
         self.nu = nu
         self.mu, self.gamma = self.lame(E, nu)
@@ -119,6 +121,38 @@ class NeoHooke:
         A4_vol = J * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
 
         return A4_dev + A4_vol
+
+
+class IsochoricProjection:
+    def __init__(self, S, C4):
+        self.fun_S = S
+        self.fun_C4 = C4
+
+    def S(self, C):
+        I3 = det(C)
+        Sb = I3 ** (-1 / 3) * self.fun_S(C)
+        return dot(dev(dot(Sb, C)), inv(C))
+
+    def C4(self, C):
+        I3 = det(C)
+        eye = identity(C)
+        I4 = cdya(eye, eye)
+        iC = inv(C)
+        P4 = I3 ** (-1 / 3) * (I4 - dya(iC, C))
+
+        Sb = I3 ** (-1 / 3) * self.fun_S(C)
+
+        C4b = I3 ** (-2 / 3) * self.fun_C4(C)
+        PC4bP = ddot44(ddot(P4, C4b), majortranspose(P4))
+
+        SbC = ddot(Sb, C)
+
+        return (
+            PC4P
+            - 2 / 3 * (dya(Sb, iC) + dya(iC, Sb))
+            + 2 / 9 * SbC * dya(iC, iC)
+            + 2 / 3 * SbC * cdya(iC, iC)
+        )
 
 
 class GeneralizedMixedField:

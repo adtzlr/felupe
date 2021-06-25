@@ -28,9 +28,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from .math import (
+    dot,
     ddot,
     ddot44,
     transpose,
+    majortranspose,
     inv,
     dya,
     cdya,
@@ -60,6 +62,20 @@ class LinearElastic:
         mu = E / (2 * (1 + nu))
         gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
         return mu, gamma
+
+
+class NeoHookeIsochoric:
+    "Nearly-incompressible Neo-Hooke material."
+
+    def __init__(self, mu):
+        self.mu = mu
+    
+    def S(self, C):
+        return self.mu * identity(C)
+    
+    def C4(self, C):
+        i, j = C.shape[:2]
+        return np.zeros((i, j, i, j, *C.shape[2:]))
 
 
 class NeoHooke:
@@ -123,14 +139,36 @@ class NeoHooke:
         return A4_dev + A4_vol
 
 
-class IsochoricProjection:
+class AddHydrostaticMaterial:
+    def __init__(self, S, C4, bulk=5000):
+        self.fun_S = S
+        self.fun_C4 = C4
+        self.bulk = bulk
+    
+    def S(self, C):
+        J = np.sqrt(det(C))
+        p = self.bulk * (J - 1)
+        return self.fun_S(C) + p * J * inv(C)
+    
+    def C4(self, C):
+        J = np.sqrt(det(C))
+        iC = inv(C)
+        
+        p = self.bulk * (J - 1)
+        dpdJ = self.bulk
+        
+        q = p + dpdJ * J
+        return self.fun_C4(C) + J * (q * (dya(iC, iC) - p * cdya(iC, iC)))
+
+class IsochoricMaterial:
     def __init__(self, S, C4):
         self.fun_S = S
         self.fun_C4 = C4
 
     def S(self, C):
         I3 = det(C)
-        Sb = I3 ** (-1 / 3) * self.fun_S(C)
+        Cu = I3 ** (-1 / 3) * C
+        Sb = I3 ** (-1 / 3) * self.fun_S(Cu)
         return dot(dev(dot(Sb, C)), inv(C))
 
     def C4(self, C):
@@ -139,20 +177,21 @@ class IsochoricProjection:
         I4 = cdya(eye, eye)
         iC = inv(C)
         P4 = I3 ** (-1 / 3) * (I4 - dya(iC, C))
+        
+        Cu = I3 ** (-1 / 3) * C
+        Sb = I3 ** (-1 / 3) * self.fun_S(Cu)
 
-        Sb = I3 ** (-1 / 3) * self.fun_S(C)
-
-        C4u = self.fun_C4(C)
-        if np.allclose(C4b, 0):
+        C4u = self.fun_C4(Cu)
+        if np.allclose(C4u, 0):
             PC4bP = C4u
         else:
             C4b = I3 ** (-2 / 3) * C4u
-            PC4bP = ddot44(ddot(P4, C4b), majortranspose(P4))
+            PC4bP = ddot44(ddot44(P4, C4b), majortranspose(P4))
 
         SbC = ddot(Sb, C)
 
         return (
-            PC4P
+            PC4bP
             - 2 / 3 * (dya(Sb, iC) + dya(iC, Sb))
             + 2 / 9 * SbC * dya(iC, iC)
             + 2 / 3 * SbC * cdya(iC, iC)
@@ -167,8 +206,6 @@ class TotalLagrangeMaterial:
     def P(self, F):
         C = dot(transpose(F), F)
         S = self.fun_S(C)
-        C4 = self.fun_C4(C)
-
         return dot(F, S)
 
     def A(self, F):
@@ -176,7 +213,7 @@ class TotalLagrangeMaterial:
         iC = inv(C)
         S = self.fun_S(C)
         C4 = self.fun_C4(C) + cdya_ik(iC, S)
-        return np.einsum("iI...,kK...,IJKL...-iJkL...", F, F, C4)
+        return np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C4)
 
 
 class GeneralizedMixedField:

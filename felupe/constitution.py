@@ -141,7 +141,7 @@ class FromTotalLagrange:
         return np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C4, optimize=True)
 
 
-class MixedFieldIncompressible:
+class ThreeFieldVariation:
     def __init__(self, P, A):
         self.fun_P = P
         self.fun_A = A

@@ -119,11 +119,11 @@ plt.savefig("poisson.svg")
 Felupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient.
 
 ### FElupe implementation
-We take the [Getting Started](quickstart.md) example and modify it accordingly. FElupe provides the equations described [here](guide.md ) via `GeneralizedMixedField`. We take the built-in Neo-Hookean material model and use it for FElupe's `GeneralizedMixedField` constitutive material class.
+We take the [Getting Started](quickstart.md) example and modify it accordingly. We take the built-in Neo-Hookean material model and use it for FElupe's `ThreeFieldVariation` constitutive material class as described [here](guide.md).
 
 ```python
 neohooke = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
-umat = fe.constitution.GeneralizedMixedField(neohooke.P, neohooke.A)
+umat = fe.constitution.ThreeFieldVariation(neohooke.P, neohooke.A)
 ```
 
 We create a meshed cube and a converted version for the elementwise constant fields. Two element definitions are necessary: one for the displacements and one for the pressure and volume ratio. Both elements use the same quadrature rule. Two regions are created, which will be further used by the creation of the fields.

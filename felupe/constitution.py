@@ -45,84 +45,11 @@ from .math import (
 )
 
 
-class LinearElastic:
-    def __init__(self, E, nu):
-        self.E = E
-        self.nu = nu
-        self.mu, self.gamma = self.lame(E, nu)
-
-    def stress(self, strain):
-        return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
-
-    def elasticity(self, strain):
-        I = identity(strain)
-        return 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
-
-    def lame(self, E, nu):
-        mu = E / (2 * (1 + nu))
-        gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
-        return mu, gamma
-
-
-class NeoHooke:
-    "Nearly-incompressible Neo-Hooke material."
-
-    def __init__(self, mu, bulk):
-        self.mu = mu
-        self.bulk = bulk
-
-    def P(self, F):
-        """Variation of total potential w.r.t displacements
-        (1st Piola Kirchhoff stress).
-
-        δ_u(Π_int) = ∫_V ∂ψ/∂F : δF dV
-
-        """
-
-        mu = self.mu
-        bulk = self.bulk
-
-        J = det(F)
-        iFT = transpose(inv(F, J))
-
-        Pdev = mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
-        Pvol = bulk * (J - 1) * J * iFT
-
-        return Pdev + Pvol
-
-    def A(self, F):
-        """Linearization w.r.t. displacements of variation of
-        total potential energy w.r.t displacements.
-
-        Δ_u(δ_u(Π_int)) = ∫_V δF : ∂²ψ/(∂F∂F) : ΔF dV
-
-        """
-
-        mu = self.mu
-        bulk = self.bulk
-
-        J = det(F)
-        iFT = transpose(inv(F, J))
-        eye = identity(F)
-
-        A4_dev = (
-            mu
-            * (
-                cdya_ik(eye, eye)
-                - 2 / 3 * dya(F, iFT)
-                - 2 / 3 * dya(iFT, F)
-                + 2 / 9 * ddot(F, F) * dya(iFT, iFT)
-                + 1 / 3 * ddot(F, F) * cdya_il(iFT, iFT)
-            )
-            * J ** (-2 / 3)
-        )
-
-        p = bulk * (J - 1)
-        q = p + bulk * J
-
-        A4_vol = J * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
-
-        return A4_dev + A4_vol
+class MaterialTotalLagrange:
+    def __init__(self, S, C4):
+        self.S = S
+        self.C4 = C4
+        self.kind = "total-lagrange"
 
 
 class AddHydrostatic:
@@ -176,12 +103,6 @@ class AsIsochoric:
             + 2 / 9 * SbC * dya(invC, invC)
             + 2 / 3 * SbC * cdya(invC, invC)
         )
-
-
-class Material:
-    def __init__(self, S, C4):
-        self.S = S
-        self.C4 = C4
 
 
 class FromTotalLagrange:
@@ -370,3 +291,87 @@ class MixedFieldIncompressible:
 
         """
         return -np.ones_like(J)
+
+
+# ------------------------------------------------------------------
+# hard-coded reference materials
+
+
+class LinearElastic:
+    def __init__(self, E, nu):
+        self.E = E
+        self.nu = nu
+        self.mu, self.gamma = self.lame(E, nu)
+
+    def stress(self, strain):
+        return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
+
+    def elasticity(self, strain):
+        I = identity(strain)
+        return 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
+
+    def lame(self, E, nu):
+        mu = E / (2 * (1 + nu))
+        gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
+        return mu, gamma
+
+
+class NeoHooke:
+    "Nearly-incompressible Neo-Hooke material."
+
+    def __init__(self, mu, bulk):
+        self.mu = mu
+        self.bulk = bulk
+
+    def P(self, F):
+        """Variation of total potential w.r.t displacements
+        (1st Piola Kirchhoff stress).
+
+        δ_u(Π_int) = ∫_V ∂ψ/∂F : δF dV
+
+        """
+
+        mu = self.mu
+        bulk = self.bulk
+
+        J = det(F)
+        iFT = transpose(inv(F, J))
+
+        Pdev = mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
+        Pvol = bulk * (J - 1) * J * iFT
+
+        return Pdev + Pvol
+
+    def A(self, F):
+        """Linearization w.r.t. displacements of variation of
+        total potential energy w.r.t displacements.
+
+        Δ_u(δ_u(Π_int)) = ∫_V δF : ∂²ψ/(∂F∂F) : ΔF dV
+
+        """
+
+        mu = self.mu
+        bulk = self.bulk
+
+        J = det(F)
+        iFT = transpose(inv(F, J))
+        eye = identity(F)
+
+        A4_dev = (
+            mu
+            * (
+                cdya_ik(eye, eye)
+                - 2 / 3 * dya(F, iFT)
+                - 2 / 3 * dya(iFT, F)
+                + 2 / 9 * ddot(F, F) * dya(iFT, iFT)
+                + 1 / 3 * ddot(F, F) * cdya_il(iFT, iFT)
+            )
+            * J ** (-2 / 3)
+        )
+
+        p = bulk * (J - 1)
+        q = p + bulk * J
+
+        A4_vol = J * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
+
+        return A4_dev + A4_vol

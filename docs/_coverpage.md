@@ -8,7 +8,7 @@
 
 - :100: Python :arrow_right: easy installation and intuitive usage :ok_hand:
 - define and solve nonlinear problems of solid mechanics
-- template classes for isochoric, volumetric & total lagrange materials
+- template classes for total lagrange materials
 - (u,p,J) three-field variation for incompressible materials
 
 [GitHub](https://github.com/adtzlr/felupe)

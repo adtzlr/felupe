@@ -45,30 +45,31 @@ from .math import (
 )
 
 
-class MaterialTotalLagrange:
-    def __init__(self, stress, elasticity):
-    
-        if type(stress) == np.ndarray:
-            self.stress = (stress, )
-        elif type(stress) == tuple:
-            self.stress = stress
-        else:
-            raise TypeError("Unknown stress argument. Must be one of: tuple, ndarray".)
-        
-        if type(elasticity) == np.ndarray:
-            self.elasticity = (elasticity, )
-        elif type(elasticity) == tuple:
-            self.elasticity = elasticity
-        else:
-            raise TypeError("Unknown elasticity argument. Must be one of: tuple, ndarray".)
+class CompositeTotalLagrange:
+    def __init__(self, *args):
 
+        self.materials = args
         self.kind = "total-lagrange"
     
-    def S(F, J, C, invC):
-        return np.sum([s(F, J, C, invC) for s in self.stress], 0)
+    def S(self, *args, **kwargs):
+        return np.sum([m.S(*args) for m in self.materials], 0)
     
-    def C4(F, J, C, invC):
-        return np.sum([c4(F, J, C, invC) for c4 in self.elasticity], 0)
+    def C4(self, *args, **kwargs):
+        return np.sum([m.C4(*args, **kwargs) for m in self.materials], 0)
+
+
+class MaterialTotalLagrange:
+    def __init__(self, stress, elasticity):
+
+        self.stress = stress
+        self.elasticity = elasticity
+        self.kind = "total-lagrange"
+    
+    def S(self, *args, **kwargs):
+        return self.stress(*args, **kwargs)
+    
+    def C4(self, *args, **kwargs):
+        return self.elasticity(*args, **kwargs)
 
 
 class HydrostaticTotalLagrange:
@@ -76,10 +77,10 @@ class HydrostaticTotalLagrange:
         self.bulk = bulk
         self.kind = "total-lagrange"
     
-    def dUdJ(J):
+    def dUdJ(self, J):
         return self.bulk * (J - 1)
     
-    def d2UdJdJ(J):
+    def d2UdJdJ(self, J):
         return self.bulk
 
     def S(self, F, J, C, invC):

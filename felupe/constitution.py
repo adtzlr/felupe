@@ -46,35 +46,57 @@ from .math import (
 
 
 class MaterialTotalLagrange:
-    def __init__(self, S, C4):
-        self.S = S
-        self.C4 = C4
+    def __init__(self, stress, elasticity):
+    
+        if type(stress) == np.ndarray:
+            self.stress = (stress, )
+        elif type(stress) == tuple:
+            self.stress = stress
+        else:
+            raise TypeError("Unknown stress argument. Must be one of: tuple, ndarray".)
+        
+        if type(elasticity) == np.ndarray:
+            self.elasticity = (elasticity, )
+        elif type(elasticity) == tuple:
+            self.elasticity = elasticity
+        else:
+            raise TypeError("Unknown elasticity argument. Must be one of: tuple, ndarray".)
+
         self.kind = "total-lagrange"
+    
+    def S(F, J, C, invC):
+        return np.sum([s(F, J, C, invC) for s in self.stress], 0)
+    
+    def C4(F, J, C, invC):
+        return np.sum([c4(F, J, C, invC) for c4 in self.elasticity], 0)
 
 
-class AddHydrostatic:
-    def __init__(self, material_deviatoric, bulk=5000):
-        self.deviatoric = material_deviatoric
+class HydrostaticTotalLagrange:
+    def __init__(self, bulk):
         self.bulk = bulk
+        self.kind = "total-lagrange"
+    
+    def dUdJ(J):
+        return self.bulk * (J - 1)
+    
+    def d2UdJdJ(J):
+        return self.bulk
 
     def S(self, F, J, C, invC):
-        p = self.bulk * (J - 1)
-        return self.deviatoric.S(F, J, C, invC) + p * J * invC
+        return self.dUdJ(J) * J * invC
 
     def C4(self, F, J, C, invC):
-
-        p = self.bulk * (J - 1)
-        dpdJ = self.bulk
-
-        q = p + dpdJ * J
-        return self.deviatoric.C4(F, J, C, invC) + J * (
+        p = self.dUdJ(J)
+        q = p + self.d2UdJdJ(J) * J
+        return J * (
             q * dya(invC, invC) - 2 * p * cdya(invC, invC)
         )
 
 
-class AsIsochoric:
+class AsIsochoricTotalLagrange:
     def __init__(self, material_isochoric):
         self.isochoric = material_isochoric
+        self.kind = "total-lagrange"
 
     def S(self, F, J, C, invC):
         Cu = J ** (-2 / 3) * C

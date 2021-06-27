@@ -50,10 +50,10 @@ class CompositeTotalLagrange:
 
         self.materials = args
         self.kind = "total-lagrange"
-    
+
     def S(self, *args, **kwargs):
         return np.sum([m.S(*args) for m in self.materials], 0)
-    
+
     def C4(self, *args, **kwargs):
         return np.sum([m.C4(*args, **kwargs) for m in self.materials], 0)
 
@@ -64,10 +64,10 @@ class MaterialTotalLagrange:
         self.stress = stress
         self.elasticity = elasticity
         self.kind = "total-lagrange"
-    
+
     def S(self, *args, **kwargs):
         return self.stress(*args, **kwargs)
-    
+
     def C4(self, *args, **kwargs):
         return self.elasticity(*args, **kwargs)
 
@@ -76,10 +76,10 @@ class HydrostaticTotalLagrange:
     def __init__(self, bulk):
         self.bulk = bulk
         self.kind = "total-lagrange"
-    
+
     def dUdJ(self, J):
         return self.bulk * (J - 1)
-    
+
     def d2UdJdJ(self, J):
         return self.bulk
 
@@ -89,9 +89,7 @@ class HydrostaticTotalLagrange:
     def C4(self, F, J, C, invC):
         p = self.dUdJ(J)
         q = p + self.d2UdJdJ(J) * J
-        return J * (
-            q * dya(invC, invC) - 2 * p * cdya(invC, invC)
-        )
+        return J * (q * dya(invC, invC) - 2 * p * cdya(invC, invC))
 
 
 class AsIsochoricTotalLagrange:
@@ -129,9 +127,10 @@ class AsIsochoricTotalLagrange:
 
 
 class FromTotalLagrange:
-    def __init__(self, material_totallagrange):
+    def __init__(self, material_totallagrange, parallel=True):
         self.totallagrange = material_totallagrange
         self.F = 0
+        self.parallel = parallel
 
     def update(self, F):
         if np.all(F == self.F):
@@ -161,7 +160,45 @@ class FromTotalLagrange:
         C4 = self.totallagrange.C4(self.F, self.J, self.C, self.invC) + cdya_ik(
             self.invC, self.S
         )
-        return np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C4, optimize=True)
+        if self.parallel:
+            return pushforward13(F, F, C4)
+        else:
+            return np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C4, optimize=True)
+
+
+try:
+    from numba import jit, prange
+
+    jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
+
+    @jit(**jitargs)
+    def pushforward13(F, G, C4):
+
+        ndim, ngauss, nelems = C4.shape[-3:]
+
+        out = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
+
+        for i in prange(ndim):
+            for I in prange(ndim):
+                for J in prange(ndim):
+                    for k in prange(ndim):
+                        for K in prange(ndim):
+                            for L in prange(ndim):
+                                for p in prange(ngauss):
+                                    for e in prange(nelems):
+                                        out[i, J, k, L, p, e] += (
+                                            F[i, I, p, e]
+                                            * G[k, K, p, e]
+                                            * C4[I, J, K, L, p, e]
+                                        )
+
+        return out
+
+
+except:
+
+    def pushforward13(F, G, C4):
+        return np.einsum("iI...,kK...,IJKL...->iJkL...", F, G, C4, optimize=True)
 
 
 class ThreeFieldVariation:

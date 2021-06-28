@@ -12,7 +12,7 @@ This is visualized in the following two Figures - one for total lagrange...
 
 ![constitution ul](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_ul.svg)
 
-For example we define a simple Neo-Hookean solid with a invariant-based `umat` function.
+For example we define a simple Neo-Hookean solid with an invariant-based `umat_invariants` function.
 
 ```python
 import numpy as np
@@ -49,7 +49,7 @@ neohooke     = fe.constitution.df0da0.Composite(neohooke_dev, neohooke_vol)
 
 mat = fe.constitution.df_da0.MaterialFrom(neohooke)
 # use `mat` as
-# matP(F) and # mat.A(F)
+# mat.P(F) and # mat.A(F)
 
 # three-field-variation
 #mat_upJ = fe.constitution.variation.upJ(mat.P, mat.A)

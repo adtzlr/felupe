@@ -184,11 +184,8 @@ class PrincipalStretchBased:
 
     def stress(self, C):
         self.update(C)
-
-        return np.sum(
-            [Wa / la * Ma for Wa, la, Ma in zip(self.W_a, self.stretches, self.bases)],
-            0,
-        )
+        self.stresses = self.W_a / self.stretches
+        return np.sum([Sa * Ma for Sa, Ma in zip(self.stresses, self.bases)], 0)
 
     def elasticity(self, C):
         self.update(C)
@@ -217,6 +214,63 @@ class PrincipalStretchBased:
                     C4 += (Wa / la - Wb / lb) / (la ** 2 - lb ** 2) * Gab
 
         return C4
+
+
+class StrainInvariantBased(PrincipalStretchBased):
+    def __init__(
+        self,
+        umat_straininvariants,
+        strain=lambda stretch, k: 1 / k * (stretch ** k - 1),
+        dstraindstretch=lambda stretch, k: stretch ** (k - 1),
+        d2straindstretch2=lambda stretch, k: (k - 1) * stretch ** (k - 2),
+        k=2,
+        tol=np.finfo(float).eps,
+    ):
+
+        self.umat_straininvariants = umat_straininvariants
+        self.strain = strain
+        self.dstraindstretch = dstraindstretch
+        self.d2straindstretch2 = d2straindstretch2
+        self.k = k
+
+        super().__init__(self.umat_stretch, tol=tol)
+
+    def umat_stretch(self, stretches):
+        E_k = self.strain(stretches, self.k)
+
+        I1 = np.sum(E_k, 0)
+        I2 = np.sum(E_k ** 2, 0)
+
+        straininvariants = I1, I2
+
+        w_i, w_ij = self.umat_straininvariants(straininvariants)
+
+        dEdl = self.dstraindstretch(stretches, self.k)
+        d2Edl2 = self.d2straindstretch2(stretches, self.k)
+
+        dIdE = np.array([np.ones_like(E_k), 2 * E_k])
+        d2IdE2 = np.array([np.zeros_like(E_k), 2 * np.ones_like(E_k)])
+
+        ndim, ngauss, nelems = stretches.shape
+
+        W_a = np.zeros((ndim, ngauss, nelems))
+        W_ab = np.zeros((ndim, ndim, ngauss, nelems))
+
+        for i in range(2):
+
+            for a in range(ndim):
+                W_a[a] += w_i[i] * dIdE[i, a] * dEdl[a]
+                W_ab[a, a] += (
+                    w_i[i] * dIdE[i, a] * d2Edl2[a] + w_i[i] * dEdl[a] * d2IdE2[i, a]
+                )
+
+                for j in range(2):
+                    for b in range(ndim):
+                        W_ab[a, b] += (
+                            dEdl[a] * dIdE[i, a] * w_ij[i, j] * dIdE[j, b] * dEdl[b]
+                        )
+
+        return W_a, W_ab
 
 
 class Hydrostatic:
@@ -271,3 +325,15 @@ class AsIsochoric:
             + 2 / 9 * SbC * dya(invC, invC)
             + 2 / 3 * SbC * cdya(invC, invC)
         )
+
+
+class AsFull:
+    def __init__(self, material):
+        self.material = material
+        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
+
+    def stress(self, F, J, C, invC):
+        return self.material.stress(C)
+
+    def elasticity(self, F, J, C, invC):
+        return self.material.elasticity(C)

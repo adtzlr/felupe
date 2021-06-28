@@ -52,7 +52,7 @@ def sym(A):
 
 
 def identity(A):
-    _, ndim, g, e = A.shape
+    ndim, g, e = A.shape[-3:]
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 
@@ -69,22 +69,35 @@ def _linalginv(A):
     return np.linalg.inv(A.T).T
 
 
-def inv(A, detA=None, full_output=False):
+def inv(A, determinant=None, full_output=False, sym=False):
     invA = np.zeros_like(A)
 
-    if detA is None:
+    # if sym is None:
+    #    sym = np.all(A == transpose(A))
+
+    if determinant is None:
         detA = det(A)
+    else:
+        detA = determinant
 
     if A.shape[0] == 3:
+
         invA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
-        invA[1, 0] = A[1, 2] * A[2, 0] - A[1, 0] * A[2, 2]
-        invA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
-        invA[0, 1] = A[0, 2] * A[2, 1] - A[0, 1] * A[2, 2]
         invA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
-        invA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
+        invA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
+
+        invA[0, 1] = A[0, 2] * A[2, 1] - A[0, 1] * A[2, 2]
         invA[0, 2] = -A[0, 2] * A[1, 1] + A[0, 1] * A[1, 2]
         invA[1, 2] = A[0, 2] * A[1, 0] - A[0, 0] * A[1, 2]
-        invA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
+
+        if sym:
+            invA[1, 0] = invA[0, 1]
+            invA[2, 0] = invA[0, 2]
+            invA[2, 1] = invA[1, 2]
+        else:
+            invA[1, 0] = A[1, 2] * A[2, 0] - A[1, 0] * A[2, 2]
+            invA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
+            invA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
 
     elif A.shape[0] == 2:
         invA[0, 0] = A[1, 1]
@@ -131,6 +144,11 @@ def eig(A):
     return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
 
 
+def eigh(A):
+    wA, vA = np.linalg.eigh(A.transpose([2, 3, 0, 1]))
+    return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
+
+
 def eigvals(A, shear=False):
     wA = np.linalg.eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
     if shear:
@@ -165,8 +183,11 @@ def cdya_il(A, B):
     return np.einsum("ij...,kl...->ilkj...", A, B)
 
 
-def cdya(A, B):
-    return (cdya_ik(A, B) + cdya_il(A, B)) * 0.5
+def cdya(A, B, parallel=True):
+    if parallel:
+        return cdya_parallel(A, B)
+    else:
+        return (cdya_ik(A, B) + cdya_il(A, B)) * 0.5
 
 
 def dot(A, B):
@@ -195,6 +216,13 @@ def ddot44(A, B):
     return np.einsum("ijkl...,klmn...->ijmn...", A, B, optimize=True)
 
 
+def ddot444(A, B, C, parallel=True):
+    if parallel:
+        return ddot444_parallel(A, B, C)
+    else:
+        return np.einsum("ijkl...,klmn...,mnpq...->ijpq...", A, B, C, optimize=True)
+
+
 def tovoigt(A):
     B = np.zeros((6, *A.shape[-2:]))
     ij = [(0, 0), (1, 1), (2, 2), (0, 0), (1, 2), (0, 2)]
@@ -209,3 +237,58 @@ def tovoigt2(A):
     for i6, (i, j) in enumerate(ij):
         B[:, i6] = A[:, i, j]
     return B
+
+
+try:
+    from numba import jit, prange
+
+    jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
+
+    @jit(**jitargs)
+    def cdya_parallel(A, B):
+
+        ndim, ngauss, nelems = A.shape[-3:]
+
+        out = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
+
+        for i in prange(ndim):
+            for j in prange(ndim):
+                for k in prange(ndim):
+                    for l in prange(ndim):
+                        for p in prange(ngauss):
+                            for e in prange(nelems):
+                                out[i, j, k, l, p, e] += (
+                                    A[i, k, p, e] * B[j, l, p, e]
+                                    + A[i, l, p, e] * B[k, j, p, e]
+                                ) / 2
+
+        return out
+
+    @jit(**jitargs)
+    def ddot444_parallel(A, B, C):
+
+        ndim, ngauss, nelems = A.shape[-3:]
+
+        out = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
+
+        for i in prange(ndim):
+            for j in prange(ndim):
+                for k in prange(ndim):
+                    for l in prange(ndim):
+                        for m in prange(ndim):
+                            for n in prange(ndim):
+                                for r in prange(ndim):
+                                    for s in prange(ndim):
+                                        for p in prange(ngauss):
+                                            for e in prange(nelems):
+                                                out[i, j, r, s, p, e] += (
+                                                    A[i, j, k, l, p, e]
+                                                    * B[k, l, m, n, p, e]
+                                                    * C[m, n, r, s, p, e]
+                                                )
+
+        return out
+
+
+except:
+    pass

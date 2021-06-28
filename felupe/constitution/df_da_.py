@@ -68,7 +68,6 @@ class Material:
         stress = Kirchhoff stress tau = J sigma
         elasticity = associated 4th-order elasticity tensor J c4
         """
-
         self.stress = stress
         self.elasticity = elasticity
         self.kind = SimpleNamespace(**{"df": None, "da": None})
@@ -90,7 +89,7 @@ class InvariantBased:
             )
             self.W_a, self.W_ab = self.umat(self.invariants)
 
-    def stress(self, b):
+    def stress(self, b, F, J):
         self.update(b)
 
         tau = np.zeros_like(b)
@@ -110,7 +109,7 @@ class InvariantBased:
 
         return tau
 
-    def elasticity(self, b):
+    def elasticity(self, b, F, J):
         self.update(b)
 
         ndim, ngauss, nelems = b.shape[-3:]
@@ -181,12 +180,12 @@ class PrincipalStretchBased:
 
             self.W_a, self.W_ab = self.umat(self.stretches)
 
-    def stress(self, b):
+    def stress(self, b, F, J):
         self.update(b)
         self.stresses = self.W_a * self.stretches
         return np.sum([ta * Ma for ta, Ma in zip(self.stresses, self.bases)], 0)
 
-    def elasticity(self, b):
+    def elasticity(self, b, F, J):
         self.update(b)
 
         ndim, ngauss, nelems = b.shape[-3:]
@@ -210,18 +209,40 @@ class PrincipalStretchBased:
                 if b != a:
                     la[abs(la - lb) < self.tol] += self.tol
                     Gab = cdya(Ma, Mb) + cdya(Mb, Ma)
-                    Jc4 += (Wa * la - Wb * lb) / (la ** 2 - lb ** 2) * Gab
+                    values = (Wa * la - Wb * lb) / (la ** 2 - lb ** 2)
+                    Jc4 += values * Gab
 
         return Jc4
+
+
+def strain(stretch, k):
+    if k != 0:
+        return 1 / k * (stretch ** k - 1)
+    else:
+        return np.log(stretch)
+
+
+def dstraindstretch(stretch, k):
+    if k != 0:
+        return stretch ** (k - 1)
+    else:
+        return 1 / stretch
+
+
+def d2straindstretch2(stretch, k):
+    if k != 0:
+        return (k - 1) * stretch ** (k - 2)
+    else:
+        return -1 / stretch ** 2
 
 
 class StrainInvariantBased(PrincipalStretchBased):
     def __init__(
         self,
         umat_straininvariants,
-        strain=lambda stretch, k: 1 / k * (stretch ** k - 1),
-        dstraindstretch=lambda stretch, k: stretch ** (k - 1),
-        d2straindstretch2=lambda stretch, k: (k - 1) * stretch ** (k - 2),
+        strain=strain,
+        dstraindstretch=dstraindstretch,
+        d2straindstretch2=d2straindstretch2,
         k=2,
         tol=np.finfo(float).eps,
     ):
@@ -283,10 +304,10 @@ class Hydrostatic:
     def d2UdJdJ(self, J):
         return self.bulk
 
-    def stress(self, F, J, b, invb):
+    def stress(self, b, F, J):
         return self.dUdJ(J) * J * identity(b)
 
-    def elasticity(self, F, J, b, invb):
+    def elasticity(self, b, F, J):
         eye = identity(b)
         p = self.dUdJ(J)
         q = p + self.d2UdJdJ(J) * J
@@ -298,12 +319,12 @@ class AsIsochoric:
         self.isochoric = material_isochoric
         self.kind = SimpleNamespace(**{"df": None, "da": None})
 
-    def stress(self, F, J, b, invb):
+    def stress(self, b, F, J):
         bu = J ** (-2 / 3) * b
         tb = self.isochoric.stress(bu)
         return dev(tb)
 
-    def elasticity(self, F, J, b, invb):
+    def elasticity(self, b, F, J):
         eye = identity(b)
         p4 = cdya(eye, eye) - dya(eye, eye) / 3
 
@@ -322,15 +343,3 @@ class AsIsochoric:
             + 2 / 9 * trace(tb) * dya(eye, eye)
             + 2 / 3 * trace(tb) * cdya(eye, eye)
         )
-
-
-class AsFull:
-    def __init__(self, material):
-        self.material = material
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
-
-    def stress(self, F, J, b, invb):
-        return self.material.stress(b)
-
-    def elasticity(self, F, J, b, invb):
-        return self.material.elasticity(b)

@@ -65,14 +65,14 @@ class MaterialFrom:
                 self.C = dot(transpose(F), F)
                 self.invC = inv(self.C, determinant=self.J ** 2, sym=True)
 
-                self.S = self.material.stress(self.F, self.J, self.C, self.invC)
+                self.S = self.material.stress(self.C, self.F, self.J)
 
             elif self.material.kind.df == None and self.material.kind.da == None:
                 self.b = dot(self.F, transpose(self.F))
-                self.invb = inv(self.b, determinant=self.J ** 2, sym=True)
+                # self.invb = inv(self.b, determinant=self.J ** 2, sym=True)
                 self.iFT = transpose(inv(self.F, determinant=self.J))
 
-                self.tau = self.material.stress(self.F, self.J, self.b, self.invb)
+                self.tau = self.material.stress(self.b, self.F, self.J)
 
             else:
                 raise ValueError("Unknown material")
@@ -90,7 +90,7 @@ class MaterialFrom:
         self.update(F)
 
         if self.material.kind.df == 0 and self.material.kind.da == 0:
-            C4 = self.material.elasticity(self.F, self.J, self.C, self.invC) + cdya_ik(
+            C4 = self.material.elasticity(self.C, self.F, self.J) + cdya_ik(
                 self.invC, self.S
             )
             if self.parallel:
@@ -101,7 +101,7 @@ class MaterialFrom:
                 )
 
         if self.material.kind.df == None and self.material.kind.da == None:
-            Jc4 = self.material.elasticity(self.F, self.J, self.b, self.invb) + cdya_ik(
+            Jc4 = self.material.elasticity(self.b, self.F, self.J) + cdya_ik(
                 identity(self.b), self.tau
             )
             if self.parallel:

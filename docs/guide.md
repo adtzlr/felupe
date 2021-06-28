@@ -2,13 +2,13 @@
 This section gives an overview of some selected topics of the theory behing felupe.
 
 ## Constitution
-Stresses are calculated by a constitutive material law which is a function of the stress - work-conjugate deformation quantity. Felupe provides several template classes which may be used for user-defined materials. E.g. `InvariantBased`- and `PrincipalStretchBased` classes (both available within the total lagrange or updated lagrange frameworks) are built on top of a user material function (`umat`). This `umat` is a function which takes a list of invariants as input and provides first and second partial derivatives of the strain energy density function w.r.t. the invariants as output for the case of `InvariantBased` materials. These materials may be optionally wrapped in an `AsIsochoric` class. An additional hydrostatic volumetric material behavior is provided by a `Hydrostatic` material class which takes the bulk modulus as an argument. A list of materials may be combined by a `Composite` material, e.g. the isochoric and volumetric parts of a material. Finally the material has to be converted to the work-conjugate pair of the first Piola-Kirchhoff stress and the virtual deformation gradient with `MaterialFrom`. If one wishes to use a mixed-field formulation for nearly-incompressible materials (see section below), the resulting stress and elasticity functions have to be provided to the `fe.constitution.variation.upJ` class.
+Stresses are calculated by a constitutive material law which is a function of the stress - work-conjugate deformation quantity. Felupe provides several template classes which may be used for user-defined materials. E.g. `InvariantBased`- and `PrincipalStretchBased` classes (both available within the total lagrange or updated lagrange frameworks) are built on top of a user material function (`umat`) for isotropic hyperelastic material formulations. This `umat` - function takes a list of invariants as input and provides first and second partial derivatives of the strain energy density function w.r.t. the invariants as output for the case of `InvariantBased` materials. These materials may be optionally wrapped in an `AsIsochoric` class. An additional hydrostatic volumetric material behavior ($p = K (J-1)$) is provided by a `Hydrostatic` material class which takes the bulk modulus as its only argument. A list of materials may be combined by a `Composite` material, e.g. the isochoric and volumetric parts of a material or parallel contributions from a single formula architecture with different sets of material parameters. Finally the resulting material has to be converted to the work-conjugate pair of the first Piola-Kirchhoff stress tensor and the (virtual) deformation gradient by hand or with the template class `MaterialFrom`. If one wishes to use a mixed-field formulation for nearly-incompressible materials (see section below), the resulting stress and elasticity functions have to be provided to the `fe.constitution.variation.upJ` class.
 
-This is visualized in the following two Figures - one for total lagrange...
+The described classes are visualized in the following two Figures. The first one shows the total lagrange...
 
 ![constitution tl](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_tl.svg)
 
-...and aother one for updated lagrange materials.
+...whereas the second figure shows the updated lagrange framework.
 
 ![constitution ul](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_ul.svg)
 
@@ -18,17 +18,17 @@ For example we define a simple Neo-Hookean solid with an invariant-based `umat_i
 import numpy as np
 
 def umat_invariants(invariants):
-	"""Calculate first and second partial derivatives of the 
-	strain energy density function w.r.t. the invariants."""
-	
-	# header section (don't change)
-	# --------------------------------
+    """Calculate first (W_a) and second (W_ab) partial derivatives 
+    of the strain energy density function w.r.t. the invariants."""
+    
+    # header section (don't change)
+    # --------------------------------
     I1, I2, I3 = invariants
 
     W_a  = np.zeros((3, *I1.shape))
     W_ab = np.zeros((3, 3, *I1.shape))
-	# --------------------------------
-	
+    # --------------------------------
+    
     # user code
     # --------------------------------
     mu = 1.0
@@ -37,17 +37,17 @@ def umat_invariants(invariants):
     return W_a, W_ab
 ```
 
-This umat is passed as described above to an instance of an `InvariantBased` material. Total-lagrange materials defined on the undeformed configuration in terms of the right Cauchy-Green deformation tensor are located in `fe.constitution.df0da0` whereas updated-lagrange materials defined on the deformed configuration in terms of the left Cauchy-Green deformation tensor are located in `fe.constitution.df_da_`. `df` referes to the differential force element described in the `0` (undeformed) or `_` (deformed) configuration. The same applies for the differential area element `da`.
+This umat is passed as described above to an instance of an `InvariantBased` material. Total-lagrange materials defined on the undeformed configuration in terms of the right Cauchy-Green deformation tensor are located in `fe.constitution.df0da0` whereas updated-lagrange materials defined on the deformed configuration in terms of the left Cauchy-Green deformation tensor are located in `fe.constitution.df_da_`. `df` referes to the differential force element described in the `0` (undeformed) or `_` (deformed) configuration. The same applies for the differential area element `da`. All materials located in `fe.constitution` refer to the total lagrange framework.
 
 ```python
 import felupe as fe
 
-neohooke_iso = fe.constitution.df0da0.InvariantBased(umat_invariants)
-neohooke_dev = fe.constitution.df0da0.AsIsochoric(neohooke_iso)
-neohooke_vol = fe.constitution.df0da0.Hydrostatic(bulk=20.0)
-neohooke     = fe.constitution.df0da0.Composite(neohooke_dev, neohooke_vol)
+neohooke_iso = fe.constitution.InvariantBased(umat_invariants)
+neohooke_dev = fe.constitution.AsIsochoric(neohooke_iso)
+neohooke_vol = fe.constitution.Hydrostatic(bulk=20.0)
+neohooke     = fe.constitution.Composite(neohooke_dev, neohooke_vol)
 
-mat = fe.constitution.df_da0.MaterialFrom(neohooke)
+mat = fe.constitution.MaterialFrom(neohooke)
 # use `mat` as
 # mat.P(F) and # mat.A(F)
 
@@ -58,24 +58,25 @@ mat = fe.constitution.df_da0.MaterialFrom(neohooke)
 # mat_upJ.f(F, p, J) and # mat_upJ.A(F, p, J)
 ```
 
-A template function for principal stretch based materials is defnied in a similar way.
+A template function for principal stretch based materials is defined in a similar way.
 
 ```python
 import numpy as np
 
 def umat_stretches(stretches):
-    """Calculate first and second partial derivatives of the 
-	strain energy density function w.r.t. the principal stretches."""
-	
-	# header section (don't change)
-	# -------------------------------------------
+    """Calculate first (W_a) and second (W_ab) partial 
+    derivatives of the strain energy density function 
+    w.r.t. the principal stretches."""
+
+    # header section (don't change)
+    # -------------------------------------------
     # get shape
     ndim, ngauss, nelems = stretches.shape
     diag = np.arange(ndim), np.arange(ndim)
 
     W_a  = np.zeros((ndim, ngauss, nelems))
     W_ab = np.zeros((ndim, ndim, ngauss, nelems))
-	# -------------------------------------------
+    # -------------------------------------------
     
     # user code
     # -------------------------------------------
@@ -91,18 +92,19 @@ def umat_stretches(stretches):
 ```python
 import felupe as fe
 
-ogden_iso = fe.constitution.df0da0.PrincipalStretchBased(umat_stretches)
-ogden_dev = fe.constitution.df0da0.AsIsochoric(ogden_iso)
-ogden_vol = fe.constitution.df0da0.Hydrostatic(bulk=20.0)
-ogden     = fe.constitution.df0da0.Composite(ogden_dev, ogden_vol)
+ogden_iso = fe.constitution.PrincipalStretchBased(umat_stretches)
+ogden_dev = fe.constitution.AsIsochoric(ogden_iso)
+ogden_vol = fe.constitution.Hydrostatic(bulk=20.0)
+ogden     = fe.constitution.Composite(ogden_dev, ogden_vol)
 
 mat = fe.constitution.df_da0.MaterialFrom(ogden)
 ```
 
 ### Mixed-field formulations
-Felupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient.
+Felupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient. Pressure and Volume ratio fields should be kept one order lower than the interpolation order of the displacement field, i.e. linear displacement fields should be paired with elementwise-constant (mean) values of pressure and volume ratio.
 
 ### Total potential energy: variation and linearization
+The total potential energy of internal forces is defined with a strain energy density function in terms of a determinant-modified deformation gradient and an additional control equation.
 
 $$\Pi = \Pi_{int} + \Pi_{ext}$$
 
@@ -110,7 +112,7 @@ $$\Pi_{int} = \int_V \psi(\bm{F}) \ dV \qquad \rightarrow \qquad \Pi_{int}(\bm{u
 
 $$\overline{\bm{F}} = \left(\frac{\overline{J}}{J}\right)^{1/3} \bm{F}$$
 
-The variations of the total potential energy w.r.t. $(\bm{u},p,J)$ lead to the following expressions.
+The variations of the total potential energy w.r.t. $(\bm{u},p,J)$ lead to the following expressions. We denote first partial derivatives as $\bm{f}_{(\bullet)}$ and second partial derivatives as $\bm{A}_{(\bullet,\bullet)}$.
 
 $$\delta_{\bm{u}} \Pi_{int} = \int_V \bm{f}_{\bm{u}} : \delta \bm{F} \ dV = \int_V \left( \frac{\partial \psi}{\partial \overline{\bm{F}}} : \frac{\partial \overline{\bm{F}}}{\partial \bm{F}} + p J \bm{F}^{-T} \right) : \delta \bm{F} \ dV$$
 

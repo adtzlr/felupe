@@ -66,7 +66,7 @@ class MaterialFrom:
                 self.invC = inv(self.C, determinant=self.J ** 2, sym=True)
 
                 self.S = self.material.stress(self.F, self.J, self.C, self.invC)
-            
+
             elif self.material.kind.df == None and self.material.kind.da == None:
                 self.b = dot(self.F, transpose(self.F))
                 self.invb = inv(self.b, determinant=self.J ** 2, sym=True)
@@ -82,7 +82,7 @@ class MaterialFrom:
 
         if self.material.kind.df == 0 and self.material.kind.da == 0:
             return dot(self.F, self.S)
-        
+
         if self.material.kind.df == None and self.material.kind.da == None:
             return dot(self.tau, self.iFT)
 
@@ -99,7 +99,7 @@ class MaterialFrom:
                 return np.einsum(
                     "iI...,kK...,IJKL...->iJkL...", self.F, self.F, C4, optimize=True
                 )
-        
+
         if self.material.kind.df == None and self.material.kind.da == None:
             Jc4 = self.material.elasticity(self.F, self.J, self.b, self.invb) + cdya_ik(
                 identity(self.b), self.tau
@@ -108,7 +108,11 @@ class MaterialFrom:
                 return transform24(self.iFT, self.iFT, Jc4)
             else:
                 return np.einsum(
-                    "jJ...,lL...,ijkl...->iJkL...", self.iFT, self.iFT, Jc4, optimize=True
+                    "jJ...,lL...,ijkl...->iJkL...",
+                    self.iFT,
+                    self.iFT,
+                    Jc4,
+                    optimize=True,
                 )
 
 
@@ -139,7 +143,7 @@ try:
                                         )
 
         return out
-    
+
     @jit(**jitargs)
     def transform24(F, G, C4):
 

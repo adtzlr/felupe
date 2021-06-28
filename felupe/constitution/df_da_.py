@@ -63,6 +63,10 @@ class Composite:
 
 class Material:
     def __init__(self, stress, elasticity):
+        """Updated-Lagrange / Eulerian Material class:
+        stress = Kirchhoff stress tau = J sigma
+        elasticity = associated 4th-order elasticity tensor J c4
+        """
 
         self.stress = stress
         self.elasticity = elasticity

@@ -63,6 +63,10 @@ class Composite:
 
 class Material:
     def __init__(self, stress, elasticity):
+        """Total-Lagrange Material class:
+        stress = 2nd Piola-Kirchhoff stress S
+        elasticity = associated 4th-order elasticity tensor C4 = dS/dE
+        """
 
         self.stress = stress
         self.elasticity = elasticity

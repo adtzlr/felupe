@@ -46,9 +46,13 @@ from ..math import (
 
 
 class upJ:
-    def __init__(self, P, A):
-        self.fun_P = P
-        self.fun_A = A
+    def __init__(self, stress, elasticity):
+        """Three-Field variation for nearly-incompressible materials:
+        stress = 1st Piola-Kirchhoff stress P
+        elasticity = associated (total) elasticity tensor A4 = dP/dF
+        """
+        self.fun_P = stress
+        self.fun_A = elasticity
 
     def f_u(self, F, p, J):
         """Variation of total potential w.r.t displacements

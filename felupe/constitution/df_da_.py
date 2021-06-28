@@ -52,7 +52,7 @@ class Composite:
     def __init__(self, *args):
 
         self.materials = args
-        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
+        self.kind = SimpleNamespace(**{"df": None, "da": None})
 
     def stress(self, *args, **kwargs):
         return np.sum([m.stress(*args) for m in self.materials], 0)
@@ -66,13 +66,13 @@ class Material:
 
         self.stress = stress
         self.elasticity = elasticity
-        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
+        self.kind = SimpleNamespace(**{"df": None, "da": None})
 
 
 class Hydrostatic:
     def __init__(self, bulk):
         self.bulk = bulk
-        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
+        self.kind = SimpleNamespace(**{"df": None, "da": None})
 
     def dUdJ(self, J):
         return self.bulk * (J - 1)
@@ -80,44 +80,42 @@ class Hydrostatic:
     def d2UdJdJ(self, J):
         return self.bulk
 
-    def stress(self, F, J, C, invC):
-        return self.dUdJ(J) * J * invC
+    def stress(self, F, J, b, invb):
+        return self.dUdJ(J) * J * identity(b)
 
-    def elasticity(self, F, J, C, invC):
+    def elasticity(self, F, J, b, invb):
+        eye = identity(b)
         p = self.dUdJ(J)
         q = p + self.d2UdJdJ(J) * J
-        return J * (q * dya(invC, invC) - 2 * p * cdya(invC, invC))
+        return J * (q * dya(eye, eye) - 2 * p * cdya(eye, eye))
 
 
 class AsIsochoric:
     def __init__(self, material_isochoric):
         self.isochoric = material_isochoric
-        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
+        self.kind = SimpleNamespace(**{"df": None, "da": None})
 
-    def stress(self, F, J, C, invC):
-        Cu = J ** (-2 / 3) * C
-        Sb = J ** (-2 / 3) * self.isochoric.stress(Cu)
-        return Sb - ddot(Sb, C) / 3 * invC
+    def stress(self, F, J, b, invb):
+        bu = J ** (-2 / 3) * b
+        tb = self.isochoric.stress(bu)
+        return dev(tb)
 
-    def elasticity(self, F, J, C, invC):
-        eye = identity(C)
-        P4 = cdya(eye, eye) - dya(invC, C) / 3
+    def elasticity(self, F, J, b, invb):
+        eye = identity(b)
+        p4 = cdya(eye, eye) - dya(eye, eye) / 3
 
-        Cu = J ** (-2 / 3) * C
-        Sb = J ** (-2 / 3) * self.isochoric.stress(Cu)
+        bu = J ** (-2 / 3) * b
+        tb = self.isochoric.stress(bu)
 
-        C4u = self.isochoric.elasticity(Cu)
-        if np.all(C4u == 0):
-            PC4bP = C4u
+        Jc4b = self.isochoric.elasticity(bu)
+        if np.all(Jc4b == 0):
+            PJc4bP = Jc4b
         else:
-            C4b = J ** (-4 / 3) * C4u
-            PC4bP = ddot444(P4, C4b, majortranspose(P4))
-
-        SbC = ddot(Sb, C)
+            PJc4bP = ddot444(p4, Jc4b, p4)
 
         return (
-            PC4bP
-            - 2 / 3 * (dya(Sb, invC) + dya(invC, Sb))
-            + 2 / 9 * SbC * dya(invC, invC)
-            + 2 / 3 * SbC * cdya(invC, invC)
+            PJc4bP
+            - 2 / 3 * (dya(tb, eye) + dya(eye, tb))
+            + 2 / 9 * trace(tb) * dya(eye, eye)
+            + 2 / 3 * trace(tb) * cdya(eye, eye)
         )

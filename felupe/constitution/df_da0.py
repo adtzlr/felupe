@@ -58,43 +58,57 @@ class MaterialFrom:
         if np.all(F == self.F):
             pass
         else:
-            F = F
-            J = det(F)
+            self.F = F
+            self.J = det(F)
 
             if self.material.kind.df == 0 and self.material.kind.da == 0:
-                C = dot(transpose(F), F)
-                invC = inv(C, determinant=J ** 2, sym=True)
+                self.C = dot(transpose(F), F)
+                self.invC = inv(self.C, determinant=self.J ** 2, sym=True)
 
-                S = self.material.stress(F, J, C, invC)
+                self.S = self.material.stress(self.F, self.J, self.C, self.invC)
+            
+            elif self.material.kind.df == None and self.material.kind.da == None:
+                self.b = dot(self.F, transpose(self.F))
+                self.invb = inv(self.b, determinant=self.J ** 2, sym=True)
+                self.iFT = transpose(inv(self.F, determinant=self.J))
 
-                return F, J, C, invC, S
+                self.tau = self.material.stress(self.F, self.J, self.b, self.invb)
 
             else:
                 raise ValueError("Unknown material")
 
     def P(self, F):
-        update = self.update(F)
-        if update is not None:
-            self.F, self.J, self.C, self.invC, self.S = update
+        self.update(F)
 
         if self.material.kind.df == 0 and self.material.kind.da == 0:
             return dot(self.F, self.S)
+        
+        if self.material.kind.df == None and self.material.kind.da == None:
+            return dot(self.tau, self.iFT)
 
     def A(self, F):
-        update = self.update(F)
-        if update is not None:
-            self.F, self.J, self.C, self.invC, self.S = update
-
-        C4 = self.material.elasticity(self.F, self.J, self.C, self.invC) + cdya_ik(
-            self.invC, self.S
-        )
+        self.update(F)
 
         if self.material.kind.df == 0 and self.material.kind.da == 0:
+            C4 = self.material.elasticity(self.F, self.J, self.C, self.invC) + cdya_ik(
+                self.invC, self.S
+            )
             if self.parallel:
-                return pushforward13(F, F, C4)
+                return transform13(self.F, self.F, C4)
             else:
                 return np.einsum(
-                    "iI...,kK...,IJKL...->iJkL...", F, F, C4, optimize=True
+                    "iI...,kK...,IJKL...->iJkL...", self.F, self.F, C4, optimize=True
+                )
+        
+        if self.material.kind.df == None and self.material.kind.da == None:
+            Jc4 = self.material.elasticity(self.F, self.J, self.b, self.invb) + cdya_ik(
+                identity(self.b), self.tau
+            )
+            if self.parallel:
+                return transform24(self.iFT, self.iFT, Jc4)
+            else:
+                return np.einsum(
+                    "jJ...,lL...,ijkl...->iJkL...", self.iFT, self.iFT, Jc4, optimize=True
                 )
 
 
@@ -104,7 +118,7 @@ try:
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
     @jit(**jitargs)
-    def pushforward13(F, G, C4):
+    def transform13(F, G, C4):
 
         ndim, ngauss, nelems = C4.shape[-3:]
 
@@ -122,6 +136,29 @@ try:
                                             F[i, I, p, e]
                                             * G[k, K, p, e]
                                             * C4[I, J, K, L, p, e]
+                                        )
+
+        return out
+    
+    @jit(**jitargs)
+    def transform24(F, G, C4):
+
+        ndim, ngauss, nelems = C4.shape[-3:]
+
+        out = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
+
+        for i in prange(ndim):
+            for j in prange(ndim):
+                for J in prange(ndim):
+                    for k in prange(ndim):
+                        for l in prange(ndim):
+                            for L in prange(ndim):
+                                for p in prange(ngauss):
+                                    for e in prange(nelems):
+                                        out[i, J, k, L, p, e] += (
+                                            F[j, J, p, e]
+                                            * G[l, L, p, e]
+                                            * C4[i, j, k, l, p, e]
                                         )
 
         return out

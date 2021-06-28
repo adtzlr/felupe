@@ -136,7 +136,7 @@ def dev(A):
 
 
 def cof(A):
-    return transpose(inv(A), detA=1.0)
+    return transpose(inv(A), determinant=1.0)
 
 
 def eig(A):

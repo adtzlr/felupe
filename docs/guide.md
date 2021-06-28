@@ -4,9 +4,11 @@ This section gives an overview of some selected topics of the theory behing felu
 ## Constitution
 Stresses are calculated by a constitutive material law which is a function of the stress - work-conjugate deformation quantity. Felupe provides several template classes which may be used for user-defined materials. E.g. `InvariantBased`- and `PrincipalStretchBased` classes (both available within the total lagrange or updated lagrange frameworks) are built on top of a user material function (`umat`). This `umat` is a function which takes a list of invariants as input and provides first and second partial derivatives of the strain energy density function w.r.t. the invariants as output for the case of `InvariantBased` materials. These materials may be optionally wrapped in an `AsIsochoric` class. An additional hydrostatic volumetric material behavior is provided by a `Hydrostatic` material class which takes the bulk modulus as an argument. A list of materials may be combined by a `Composite` material, e.g. the isochoric and volumetric parts of a material. Finally the material has to be converted to the work-conjugate pair of the first Piola-Kirchhoff stress and the virtual deformation gradient with `MaterialFrom`. If one wishes to use a mixed-field formulation for nearly-incompressible materials (see section below), the resulting stress and elasticity functions have to be provided to the `fe.constitution.variation.upJ` class.
 
-This is visualized in the following two Figures - one for total lagrange and the other one for updated lagrange materials.
+This is visualized in the following two Figures - one for total lagrange...
 
 ![constitution tl](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_tl.svg)
+
+...and aother one for updated lagrange materials.
 
 ![constitution ul](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_ul.svg)
 

@@ -27,6 +27,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from types import SimpleNamespace
+
 from ..math import (
     dot,
     ddot,
@@ -49,13 +51,13 @@ class Composite:
     def __init__(self, *args):
 
         self.materials = args
-        self.kind = "total-lagrange"
+        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
 
-    def S(self, *args, **kwargs):
-        return np.sum([m.S(*args) for m in self.materials], 0)
+    def stress(self, *args, **kwargs):
+        return np.sum([m.stress(*args) for m in self.materials], 0)
 
-    def C4(self, *args, **kwargs):
-        return np.sum([m.C4(*args, **kwargs) for m in self.materials], 0)
+    def elasticity(self, *args, **kwargs):
+        return np.sum([m.elasticity(*args, **kwargs) for m in self.materials], 0)
 
 
 class Material:
@@ -63,19 +65,13 @@ class Material:
 
         self.stress = stress
         self.elasticity = elasticity
-        self.kind = "total-lagrange"
-
-    def S(self, *args, **kwargs):
-        return self.stress(*args, **kwargs)
-
-    def C4(self, *args, **kwargs):
-        return self.elasticity(*args, **kwargs)
+        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
 
 
 class Hydrostatic:
     def __init__(self, bulk):
         self.bulk = bulk
-        self.kind = "total-lagrange"
+        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
 
     def dUdJ(self, J):
         return self.bulk * (J - 1)
@@ -83,10 +79,10 @@ class Hydrostatic:
     def d2UdJdJ(self, J):
         return self.bulk
 
-    def S(self, F, J, C, invC):
+    def stress(self, F, J, C, invC):
         return self.dUdJ(J) * J * invC
 
-    def C4(self, F, J, C, invC):
+    def elasticity(self, F, J, C, invC):
         p = self.dUdJ(J)
         q = p + self.d2UdJdJ(J) * J
         return J * (q * dya(invC, invC) - 2 * p * cdya(invC, invC))
@@ -95,26 +91,26 @@ class Hydrostatic:
 class AsIsochoric:
     def __init__(self, material_isochoric):
         self.isochoric = material_isochoric
-        self.kind = "total-lagrange"
+        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
 
-    def S(self, F, J, C, invC):
+    def stress(self, F, J, C, invC):
         Cu = J ** (-2 / 3) * C
-        Sb = J ** (-2 / 3) * self.isochoric.S(Cu)
+        Sb = J ** (-2 / 3) * self.isochoric.stress(Cu)
         return Sb - ddot(Sb, C) / 3 * invC
 
-    def C4(self, F, J, C, invC):
+    def elasticity(self, F, J, C, invC):
         eye = identity(C)
         P4 = cdya(eye, eye) - dya(invC, C) / 3
 
         Cu = J ** (-2 / 3) * C
-        Sb = J ** (-2 / 3) * self.isochoric.S(Cu)
+        Sb = J ** (-2 / 3) * self.isochoric.stress(Cu)
 
-        C4u = self.isochoric.C4(Cu)
+        C4u = self.isochoric.elasticity(Cu)
         if np.all(C4u == 0):
             PC4bP = C4u
         else:
             C4b = J ** (-4 / 3) * C4u
-            PC4bP = ddot44(ddot44(P4, C4b), majortranspose(P4))
+            PC4bP = ddot444(P4, C4b, majortranspose(P4))
 
         SbC = ddot(Sb, C)
 

@@ -1,9 +1,101 @@
 # Theory Guide
-
-## Kinematics
-...
+This section gives an overview of some selected topics of the theory behing felupe.
 
 ## Constitution
+Stresses are calculated by a constitutive material law which is a function of the stress - work-conjugate deformation quantity. Felupe provides several template classes which may be used for user-defined materials. E.g. `InvariantBased`- and `PrincipalStretchBased` classes (both available within the total lagrange or updated lagrange frameworks) are built on top of a user material function (`umat`). This `umat` is a function which takes a list of invariants as input and provides first and second partial derivatives of the strain energy density function w.r.t. the invariants as output for the case of `InvariantBased` materials. These materials may be optionally wrapped in an `AsIsochoric` class. An additional hydrostatic volumetric material behavior is provided by a `Hydrostatic` material class which takes the bulk modulus as an argument. A list of materials may be combined by a `Composite` material, e.g. the isochoric and volumetric parts of a material. Finally the material has to be converted to the work-conjugate pair of the first Piola-Kirchhoff stress and the virtual deformation gradient with `MaterialFrom`. If one wishes to use a mixed-field formulation for nearly-incompressible materials (see section below), the resulting stress and elasticity functions have to be provided to the `fe.constitution.variation.upJ` class.
+
+This is visualized in the following two Figures - one for total lagrange and the other one for updated lagrange materials.
+
+![constitution tl](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_tl.svg)
+
+![constitution ul](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_ul.svg)
+
+For example we define a simple Neo-Hookean solid with a invariant-based `umat` function.
+
+```python
+import numpy as np
+
+def umat_invariants(invariants):
+	"""Calculate first and second partial derivatives of the 
+	strain energy density function w.r.t. the invariants."""
+	
+	# header section (don't change)
+	# --------------------------------
+    I1, I2, I3 = invariants
+
+    W_a  = np.zeros((3, *I1.shape))
+    W_ab = np.zeros((3, 3, *I1.shape))
+	# --------------------------------
+	
+    # user code
+    # --------------------------------
+    mu = 1.0
+    W_a[0] = mu
+
+    return W_a, W_ab
+```
+
+This umat is passed as described above to an instance of an `InvariantBased` material. Total-lagrange materials defined on the undeformed configuration in terms of the right Cauchy-Green deformation tensor are located in `fe.constitution.df0da0` whereas updated-lagrange materials defined on the deformed configuration in terms of the left Cauchy-Green deformation tensor are located in `fe.constitution.df_da_`. `df` referes to the differential force element described in the `0` (undeformed) or `_` (deformed) configuration. The same applies for the differential area element `da`.
+
+```python
+import felupe as fe
+
+neohooke_iso = fe.constitution.df0da0.InvariantBased(umat_invariants)
+neohooke_dev = fe.constitution.df0da0.AsIsochoric(neohooke_iso)
+neohooke_vol = fe.constitution.df0da0.Hydrostatic(bulk=20.0)
+neohooke     = fe.constitution.df0da0.Composite(neohooke_dev, neohooke_vol)
+
+mat = fe.constitution.df_da0.MaterialFrom(neohooke)
+# use `mat` as
+# matP(F) and # mat.A(F)
+
+# three-field-variation
+#mat_upJ = fe.constitution.variation.upJ(mat.P, mat.A)
+
+# use `mat_upJ` as
+# mat_upJ.f(F, p, J) and # mat_upJ.A(F, p, J)
+```
+
+A template function for principal stretch based materials is defnied in a similar way.
+
+```python
+import numpy as np
+
+def umat_stretches(stretches):
+    """Calculate first and second partial derivatives of the 
+	strain energy density function w.r.t. the principal stretches."""
+	
+	# header section (don't change)
+	# -------------------------------------------
+    # get shape
+    ndim, ngauss, nelems = stretches.shape
+    diag = np.arange(ndim), np.arange(ndim)
+
+    W_a  = np.zeros((ndim, ngauss, nelems))
+    W_ab = np.zeros((ndim, ndim, ngauss, nelems))
+	# -------------------------------------------
+    
+    # user code
+    # -------------------------------------------
+    mu = 1.0
+    k = 0.7
+    
+    W_a = mu * stretches ** (k - 1)
+    W_ab[diag] = mu * (k - 1) * stretches ** (k - 2)
+
+    return W_a, W_ab
+```
+
+```python
+import felupe as fe
+
+ogden_iso = fe.constitution.df0da0.PrincipalStretchBased(umat_stretches)
+ogden_dev = fe.constitution.df0da0.AsIsochoric(ogden_iso)
+ogden_vol = fe.constitution.df0da0.Hydrostatic(bulk=20.0)
+ogden     = fe.constitution.df0da0.Composite(ogden_dev, ogden_vol)
+
+mat = fe.constitution.df_da0.MaterialFrom(ogden)
+```
 
 ### Mixed-field formulations
 Felupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient.
@@ -65,9 +157,6 @@ with $$ \overline{\overline{\mathbb{A}}} = \left(\frac{\overline{J}}{J}\right)^{
 as well as
 
 $$\bm{P}' = \bm{P} - p J \bm{F}^{-T}$$
-
-## Kinetics
-...
 
 ## Supported Finite Elements
 FElupe supports lagrangian line, quad and hexaeder elements with arbitrary order polynomial basis functions. However, FElupe's mesh generation module is designed for linear and constant order elements only. For simulations with arbitrary order elements a user-defined mesh has to be provided.

@@ -108,6 +108,16 @@ class Hex:
         self.ndim = 3
 
 
+class Tri:
+    def __init__(self):
+        self.ndim = 2
+
+
+class Tet:
+    def __init__(self):
+        self.ndim = 3
+
+
 class Line1(Line):
     def __init__(self):
         super().__init__()
@@ -413,3 +423,122 @@ class Hex2s(Hex):
             )
             * 0.125
         )
+
+
+class Tri1(Tri):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 3
+        self.nbasis = 3
+
+    def basis(self, rs):
+        "linear triangle basis functions"
+        r, s = rs
+        return np.array([1 - r - s, r, s])
+
+    def basisprime(self, rs):
+        "linear triangle derivative of basis functions"
+        r, s = rs
+        return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
+
+
+class Tet1(Tet):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 4
+        self.nbasis = 4
+
+    def basis(self, rst):
+        "linear tetrahedral basis functions"
+        r, s, t = rst
+        return np.array([1 - r - s - t, r, s, t])
+
+    def basisprime(self, rst):
+        "linear tetrahedral derivative of basis functions"
+        r, s, t = rst
+        return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+
+
+class Tri2(Tri):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 6
+        self.nbasis = 6
+
+    def basis(self, rs):
+        "linear triangle basis functions"
+        r, s = rs
+        h = np.array(
+            [1 - r - s, r, s, 4 * r * (1 - r - s), 4 * r * s, 4 * s * (1 - r - s)]
+        )
+        h[0] += -h[3] / 2 - h[5] / 2
+        h[1] += -h[3] / 2 - h[4] / 2
+        h[2] += -h[4] / 2 - h[5] / 2
+        return h
+
+    def basisprime(self, rs):
+        "linear triangle derivative of basis functions"
+        r, s = rs
+        dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]])
+        dhdr_b = np.array(
+            [
+                [4 * (1 - r - s) - 4 * r, -4 * r],
+                [4 * s, 4 * r],
+                [-4 * s, 4 * (1 - r - s) - 4 * s],
+            ]
+        )
+        dhdr = np.vstack((dhdr_a, dhdr_b))
+        dhdr[0] += -dhdr[3] / 2 - dhdr[5] / 2
+        dhdr[1] += -dhdr[3] / 2 - dhdr[4] / 2
+        dhdr[2] += -dhdr[4] / 2 - dhdr[5] / 2
+        return dhdr
+
+
+class Tet2(Tet):
+    def __init__(self):
+        super().__init__()
+        self.nnodes = 10
+        self.nbasis = 10
+
+    def basis(self, rst):
+        "linear tetrahedral basis functions"
+        r, s, t = rst
+        h = np.array(
+            [
+                1 - r - s - t,
+                r,
+                s,
+                t,
+                4 * r * (1 - r - s - t),
+                4 * r * s,
+                4 * s * (1 - r - s - t),
+                4 * r * t,
+                4 * s * t,
+                4 * t * (1 - r - s - t),
+            ]
+        )
+        h[0] += -h[4] / 2 - h[6] / 2 - h[9] / 2
+        h[1] += -h[4] / 2 - h[5] / 2 - h[7] / 2
+        h[2] += -h[5] / 2 - h[6] / 2 - h[8] / 2
+        h[3] += -h[7] / 2 - h[8] / 2 - h[9] / 2
+
+    def basisprime(self, rst):
+        "linear tetrahedral derivative of basis functions"
+        r, s, t = rst
+        dhdr_a = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        dhdr_b = np.array(
+            [
+                [4 * (1 - r - s - t) - 4 * r, -4 * r, -4 * r],
+                [4 * s, 4 * r, 0],
+                [-4 * s, 4 * (1 - r - s - t) - 4 * s, -4 * s],
+                [4 * t, 0, 4 * r],
+                [0, 4 * t, 4 * s],
+                [-4 * t, -4 * t, 4 * (1 - r - s - t) - 4 * t],
+            ]
+        )
+        dhdr = np.vstack((dhdr_a, dhdr_b))
+        dhdr[0] += -dhdr[4] / 2 - dhdr[6] / 2 - dhdr[9] / 2
+        dhdr[1] += -dhdr[4] / 2 - dhdr[5] / 2 - dhdr[7] / 2
+        dhdr[2] += -dhdr[5] / 2 - dhdr[6] / 2 - dhdr[8] / 2
+        dhdr[3] += -dhdr[7] / 2 - dhdr[8] / 2 - dhdr[9] / 2
+        return dhdr

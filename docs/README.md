@@ -44,6 +44,8 @@ Another [more practical performance benchmark](https://github.com/adtzlr/felupe/
 |  206763 |  10.4 s  |    42.5 s    |
 |  499125 |  28.1 s  |   313.1 s    |
 
+And now the big thing. Another hyperelastic problem with a Neo-Hookean solid in combination with a mixed-field-formulation and a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes ~12 seconds per Newton-Rhapson iteration (or ~8 seconds in parallel with 8 threads) in scikit-fem whereas felupe does the same thing in whooping 0.3s! Actually that was the reason why I created felupe.
+
 ## License
 FElupe - finite element analysis (C) 2021 Andreas Dutzler, Graz (Austria).
 

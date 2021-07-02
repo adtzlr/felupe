@@ -60,3 +60,15 @@ class Linear(GaussLegendre):
 class Quadratic(GaussLegendre):
     def __init__(self, dim):
         super().__init__(order=2, dim=dim)
+
+
+class Scheme:
+    def __init__(self, points, weights):
+        self.points = points
+        self.weights = weights
+        self.npoints, self.dim = self.points.shape
+
+
+class QuadPyScheme(Scheme):
+    def __init__(self, scheme):
+        super().__init__(scheme.points.T, scheme.weights)

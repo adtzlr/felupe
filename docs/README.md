@@ -44,7 +44,7 @@ Another [more practical performance benchmark](https://github.com/adtzlr/felupe/
 |  206763 |  10.4 s  |    42.5 s    |
 |  499125 |  28.1 s  |   313.1 s    |
 
-And now the big thing. Given a hyperelastic problem with a Neo-Hookean solid in combination with a $(\ìbm{u},p,J)$ mixed-field-formulation applied on a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes about 12 seconds per Newton-Rhapson iteration in scikit-fem whereas felupe does the same thing in whooping 0.3s! See the table below:
+And now the big thing. Given a hyperelastic problem with a Neo-Hookean solid in combination with a $(\bm{u},p,J)$ mixed-field-formulation applied on a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes about 12 seconds per Newton-Rhapson iteration in scikit-fem whereas felupe does the same thing in whooping 0.3s! See the table below:
 
 |   Nodes per axis (total) | displacement - DOF | felupe | scikit-fem |
 | ------------------------ | ------------------ | ------ | ---------- |

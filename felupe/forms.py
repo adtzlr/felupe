@@ -30,6 +30,69 @@ from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
 
+class IntegralFormAxisymmetric:
+    def __init__(self, fun, fields, dA):
+        v, vt = fields
+        R = vt.interpolate()
+
+        if len(fun.shape) - 2 == 2:
+
+            self.mode = 1
+
+            fun_2d = fun[:2, :2]
+            fun_t = fun[(2,), (2,)]
+
+            form_2d = IntegralForm(fun_2d, v, R * dA, grad_v=True)
+            form_t = IntegralForm(fun_t / R, vt, R * dA)
+
+            self.forms = [form_2d, form_t]
+
+        elif len(fun.shape) - 2 == 4:
+
+            self.mode = 2
+
+            fun_2d2d = fun[:2, :2, :2, :2]
+            fun_2dt = fun[:2, :2, 2, 2]
+            fun_t2d = fun[2, 2, :2, :2]
+            fun_tt = fun[2, 2, 2, 2]
+
+            form_2d2d = IntegralForm(fun_2d2d, v, R * dA, v, True, True)
+            form_tt = IntegralForm(fun_tt / R ** 2, vt, R * dA, vt, False, False)
+            form_t2d = IntegralForm(fun_t2d / R, vt, R * dA, v, False, True)
+            form_2dt = IntegralForm(fun_2dt / R, v, R * dA, vt, True, False)
+
+            self.forms = [form_2d2d, form_tt, form_t2d, form_2dt]
+
+    def integrate(self, parallel=False):
+        values = [form.integrate(parallel=parallel) for form in self.forms]
+
+        if self.mode == 1:
+            values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))
+
+        elif self.mode == 2:
+            a, b, e = values[1].shape
+            values[1] = values[1].reshape(a, 1, b, 1, e)
+            values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
+
+            a, b, i, e = values[2].shape
+            values[2] = values[2].reshape(a, 1, b, i, e)
+            values[2] = np.pad(values[2], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+
+            a, i, b, e = values[3].shape
+            values[3] = values[3].reshape(a, i, b, 1, e)
+            values[3] = np.pad(values[3], ((0, 0), (0, 0), (0, 0), (1, 0), (0, 0)))
+
+            for i in range(1, len(values)):
+                values[0] += values[i]
+
+        return values[0]
+
+    def assemble(self, values=None, parallel=False):
+        if values is None:
+            values = self.integrate(parallel=parallel)
+        return 2 * np.pi * self.forms[0].assemble(values)
+
+
 class IntegralFormMixed:
     def __init__(self, fun, fields, dV, grad=None):
 

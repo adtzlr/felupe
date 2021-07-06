@@ -292,7 +292,7 @@ def save(
 
         # cauchy stress at integration points
         s = dot(P, transpose(F)) / det(F)
-        sp = eigvals(s)
+        sp = np.sort(eigvals(s), axis=0)
 
         # shift stresses to nodes and average nodal values
         cauchy = tonodes(s, region=region, sym=True)
@@ -303,6 +303,8 @@ def save(
         point_data["MaxPrincipalCauchyStress"] = cauchyprinc[2]
         point_data["IntPrincipalCauchyStress"] = cauchyprinc[1]
         point_data["MinPrincipalCauchyStress"] = cauchyprinc[0]
+
+        point_data["MaxPrincipalShearCauchyStress"] = cauchyprinc[2] - cauchyprinc[0]
 
     mesh = meshio.Mesh(
         points=mesh.nodes,

@@ -208,9 +208,8 @@ def tonodes(values, region, sym=True, mode="tensor"):
     rows = region.mesh.connectivity.T.ravel()
     cols = np.zeros_like(rows)
 
-    ndim = region.mesh.ndim
-
     if mode == "tensor":
+        ndim = values.shape[0]
         if sym:
             if ndim == 3:
                 ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]

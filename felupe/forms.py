@@ -190,13 +190,9 @@ class IntegralForm:
         else:
 
             if not grad_v and not grad_u:
-                values = np.einsum(
+                return np.einsum(
                     "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
                 )
-                if len(values.shape) > 3:
-                    a, i, b, e = values.shape
-                    values = values.reshape(a, i, b, i, e)
-                return values
             elif grad_v and not grad_u:
                 if parallel:
                     return integrate_gradv_u(vb, fun, ub, dV)

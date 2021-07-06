@@ -96,13 +96,15 @@ class Field:
             self.region.dhdX,
         )
 
-    def interpolate(self):
+    def interpolate(self, values=None):
         "interpolated values u_Ipe"
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
         # for element "e"
+        if values is None:
+            values = self.values
         return np.einsum(
-            "ea...,ap->...pe", self.values[self.region.connectivity], self.region.h
+            "ea...,ap->...pe", values[self.region.connectivity], self.region.h
         )
 
     def copy(self):

@@ -47,6 +47,12 @@ def grad(A):
     return A.grad()
 
 
+def grad_axisymmetric(A, At):
+    H = np.pad(A.grad(), ((0, 1), (0, 1), (0, 0), (0, 0)))
+    H[-1, -1] = A.interpolate()[1] / At.interpolate()
+    return H
+
+
 def sym(A):
     return (A + transpose(A)) / 2
 

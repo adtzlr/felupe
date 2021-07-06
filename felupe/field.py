@@ -68,7 +68,10 @@ class Field:
         self.dim = dim
 
         # init values
-        self.values = np.ones((region.nnodes, dim)) * values
+        if type(values) == np.ndarray:
+            self.values = values
+        else:
+            self.values = np.ones((region.nnodes, dim)) * values
 
         eai, ai = self.indices_per_element(self.region.connectivity, dim)
         self.indices = Indices(eai, ai, region, dim)

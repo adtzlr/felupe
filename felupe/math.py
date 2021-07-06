@@ -51,8 +51,10 @@ def sym(A):
     return (A + transpose(A)) / 2
 
 
-def identity(A):
-    ndim, g, e = A.shape[-3:]
+def identity(A, ndim=None):
+    ndimA, g, e = A.shape[-3:]
+    if ndim is None:
+        ndim = ndimA
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 

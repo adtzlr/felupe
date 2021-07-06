@@ -12,7 +12,7 @@ from . import solve
 from . import utils
 
 from .region import Region
-from .forms import IntegralForm, IntegralFormMixed
+from .forms import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
 from .field import Field
 from .doftools import Boundary
 

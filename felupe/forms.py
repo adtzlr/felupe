@@ -43,7 +43,7 @@ class IntegralFormAxisymmetric:
             fun_t = fun[(2,), (2,)]
 
             form_2d = IntegralForm(fun_2d, v, R * dA, grad_v=True)
-            form_t = IntegralForm(fun_t / R, vt, R * dA)
+            form_t = IntegralForm(fun_t, vt, dA)
 
             self.forms = [form_2d, form_t]
 
@@ -57,9 +57,9 @@ class IntegralFormAxisymmetric:
             fun_tt = fun[2, 2, 2, 2]
 
             form_2d2d = IntegralForm(fun_2d2d, v, R * dA, v, True, True)
-            form_tt = IntegralForm(fun_tt / R ** 2, vt, R * dA, vt, False, False)
-            form_t2d = IntegralForm(fun_t2d / R, vt, R * dA, v, False, True)
-            form_2dt = IntegralForm(fun_2dt / R, v, R * dA, vt, True, False)
+            form_tt = IntegralForm(fun_tt / R, vt, dA, vt, False, False)
+            form_t2d = IntegralForm(fun_t2d, vt, dA, v, False, True)
+            form_2dt = IntegralForm(fun_2dt, v, dA, vt, True, False)
 
             self.forms = [form_2d2d, form_tt, form_t2d, form_2dt]
 

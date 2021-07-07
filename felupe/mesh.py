@@ -542,6 +542,7 @@ def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=True, sweep_decimals=6):
 
     connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
+    # WARNING: np.unique sorts the output!
     if sweep_nodes:
         nodes, connectivity = sweep((nodes, connectivity), decimals=sweep_decimals)
 

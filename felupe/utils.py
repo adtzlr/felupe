@@ -39,6 +39,11 @@ from .solve import partition, solve
 from .math import identity, grad, dot, transpose, eigvals, det, interpolate, norms
 from .field import Field
 
+from .mesh import revolve
+from .element import Quad1, Hex1
+from .region import Region
+from .quadrature import GaussLegendre
+
 from .doftools import apply, partition as dofpartition, extend as dofextend
 
 
@@ -404,3 +409,29 @@ def curve(x, y):
     f = interp1d(x[: len(y)], y, kind=kind)
     xx = np.linspace(x[0], x[: len(y)][-1])
     return np.array([x[: len(y)], y]), np.array([xx, f(xx)])
+
+
+def axito3d(
+    mesh_axi, element_axi, quadrature_axi, region_axi, field_axi, n=11, phi=180
+):
+    """Axisymmetric -> 3D expansion
+    ===============================
+
+    Restrictions
+    ------------
+    * only Quad1-Elements are supported
+    * no mixed-field support
+    * quadrature must be GaussLegendre based
+    """
+
+    mesh_3d = revolve(mesh_axi, n=n, phi=phi)
+    values_3d = revolve((field_axi.values, mesh_axi.connectivity), n=n, phi=phi)[0]
+
+    edict = {Quad1: Hex1}
+
+    element_3d = edict[type(element_axi)]()
+    quadrature_3d = GaussLegendre(order=quadrature_axi.order, dim=3)
+    region_3d = Region(mesh_3d, element_3d, quadrature_3d)
+    field_3d = Field(region_3d, dim=3, values=values_3d)
+
+    return mesh_3d, element_3d, quadrature_3d, region_3d, field_3d

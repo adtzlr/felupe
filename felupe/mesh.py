@@ -572,7 +572,6 @@ def sweep(mesh, decimals=None):
     nodes, index, inverse, counts = np.unique(
         Nodes_rounded, True, True, True, axis=0
     )
-    print(np.all(counts==1))
 
     original = np.arange(len(Nodes))
 

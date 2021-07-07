@@ -49,7 +49,7 @@ def grad(A):
 
 def grad_axisymmetric(A, At):
     H = np.pad(A.grad(), ((0, 1), (0, 1), (0, 0), (0, 0)))
-    H[-1, -1] = A.interpolate()[1] / At.interpolate()
+    H[-1, -1] = A.interpolate()[1] / At.interpolate(At.region.mesh.nodes[:, 1])
     return H
 
 

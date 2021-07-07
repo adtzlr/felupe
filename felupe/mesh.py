@@ -475,7 +475,7 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
     return rotation_matrix
 
 
-def rotate(mesh, angle_deg, axis):
+def rotate(mesh, angle_deg, axis, center=None):
     "Rotate mesh."
 
     if isinstance(mesh, Mesh):
@@ -488,7 +488,14 @@ def rotate(mesh, angle_deg, axis):
         return_mesh = False
 
     dim = Nodes.shape[1]
-    nodes = (rotation_matrix(angle_deg, dim, axis) @ Nodes.T).T
+
+    if center is None:
+        center = np.zeros(dim)
+    else:
+        center = np.array(center)
+    center = center.reshape(1, -1)
+
+    nodes = (rotation_matrix(angle_deg, dim, axis) @ (Nodes - center).T).T + center
 
     if return_mesh:
         return Mesh(nodes, Connectivity, Etype)

@@ -162,6 +162,66 @@ as well as
 
 $$\bm{P}' = \bm{P} - p J \bm{F}^{-T}$$
 
+## Axisymmetric Analysis
+Axisymmetric scenarios are modeled with a 2D-mesh and 2D element formulations. The rotation axis is chosen along the global X-axis. The 3x3 deformation gradient consists of an in-plane 2x2 sub-matrix and one additional entry for the out-of-plane stretch.
+
+$$\bm{F} = \begin{bmatrix} \bm{F}_{(2D)} & \bm{0} \\ \bm{0}^T & \frac{r}{R} \end{bmatrix}$$
+
+The variation of the deformation gradient consists of both in- and out-of-plane contributions.
+
+$$\delta \bm{F}_{(2D)} = \delta \frac{\partial \bm{u}}{\partial \bm{X}} \qquad \text{and} \qquad \delta \left(\frac{r}{R}\right) = \frac{\delta u_r}{R}$$
+
+Again, the internal virtual work leads to two seperate terms.
+$$-\delta W_{int} = \int_V \bm{P} : \delta \bm{F} \ dV = \int_V \bm{P}_{(2D)} : \delta \bm{F}_{(2D)} \ dV + \int_V \frac{P_{33}}{R} : \delta u_r \ dV$$
+
+The differential volume is further expressed as a product of the differential in-plane area and the differential arc length. The arc length integral is finally pre-evaluated.
+
+$$\int_V dV = \int_{\varphi=0}^{2\pi} \int_A R\ dA\ d\varphi = 2\pi \int_A R\ dA $$
+
+Inserting the differential volume integral into the expression of internal virtual work, this leads to:
+
+$$-\delta W_{int} = 2\pi \int_A \bm{P}_{(2D)} : \delta \bm{F}_{(2D)} \ R \ dA + 2\pi \int_A P_{33} : \delta u_r \ dA$$
+
+### Felupe implementation
+For axisymmetric analyses two `Fields` have to be created: one vector-valued field of `dim=2` for the in-plane displacements and one additional (dummy) scalar-valued field for the out-of-plane displacements.
+
+```python
+import felupe as fe
+
+mesh = fe.mesh.Rectangle(n=3)
+element = fe.element.Quad1()
+quadrature = fe.quadrature.GaussLegendre(order=1, dim=2)
+
+region  = fe.Region(mesh, element, quadrature)
+dA = region.dV
+```
+
+```python
+u  = fe.Field(region, dim=2)
+ut = fe.Field(region)
+```
+
+The 3x3 deformation gradient is obtained with an adopted `grad` function:
+
+```python
+H = fe.math.grad_axisymmetric(u, ut)
+F = fe.math.identity(H) + H
+```
+
+Let's assume a Neo-Hookean material.
+
+```python
+umat = fe.constitution.NeoHooke(mu=1, bulk=5)
+```
+
+Felupe provides an adopted Integral Form class for the integration and the sparse matrix assemblage.
+
+```python
+
+r = fe.IntegralFormAxisymmetric(umat.P(F), (u, ut), dA).assemble()
+K = fe.IntegralFormAxisymmetric(umat.A(F), (u, ut), dA).assemble()
+```
+
 ## Supported Finite Elements
 FElupe supports lagrangian line, quad and hexaeder elements with arbitrary order polynomial basis functions. However, FElupe's mesh generation module is designed for linear and constant order elements only. For simulations with arbitrary order elements a user-defined mesh has to be provided.
 

@@ -29,10 +29,13 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
+from .field import Field
+
 
 class IntegralFormAxisymmetric:
-    def __init__(self, fun, fields, dA):
-        v, vt = fields
+    def __init__(self, fun, field, dA):
+        v = field
+        vt = Field(v.region)
         R = vt.interpolate(vt.region.mesh.nodes[:, 1])
 
         if len(fun.shape) - 2 == 2:

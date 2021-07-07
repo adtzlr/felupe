@@ -503,7 +503,7 @@ def rotate(mesh, angle_deg, axis, center=None):
         return nodes, Connectivity
 
 
-def revolve(mesh, n=11, phi=180, axis=0):
+def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=True, sweep_decimals=6):
     "Revolve 2d quad to 3d hexahedron mesh."
 
     if isinstance(mesh, Mesh):
@@ -527,7 +527,7 @@ def revolve(mesh, n=11, phi=180, axis=0):
     if abs(phi) > 360:
         raise ValueError("phi must be within |phi| <= 360 degree.")
 
-    p = np.pad(Nodes, (0, 1))[:-1]
+    p = np.pad(Nodes, ((0,0),(0, 1)))
     R = rotation_matrix
 
     nodes = np.vstack(
@@ -542,7 +542,9 @@ def revolve(mesh, n=11, phi=180, axis=0):
 
     connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
-    nodes, connectivity = sweep((nodes, connectivity), decimals=6)
+    if sweep_nodes:
+        nodes, connectivity = sweep((nodes, connectivity), 
+                                    decimals=sweep_decimals)
 
     if return_mesh:
         return Mesh(nodes, connectivity, etype)
@@ -550,7 +552,7 @@ def revolve(mesh, n=11, phi=180, axis=0):
         return nodes, connectivity
 
 
-def sweep(mesh, decimals=6):
+def sweep(mesh, decimals=None):
     "Sweep duplicated nodes and update connectivity."
 
     if isinstance(mesh, Mesh):
@@ -561,10 +563,16 @@ def sweep(mesh, decimals=6):
     else:
         Nodes, Connectivity = mesh
         return_mesh = False
+    
+    if decimals is None:
+        Nodes_rounded = Nodes
+    else:
+        Nodes_rounded = np.round(Nodes, decimals)
 
     nodes, index, inverse, counts = np.unique(
-        np.round(Nodes, decimals), True, True, True, axis=0
+        Nodes_rounded, True, True, True, axis=0
     )
+    print(np.all(counts==1))
 
     original = np.arange(len(Nodes))
 

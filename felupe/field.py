@@ -35,12 +35,7 @@ import numpy as np
 
 from copy import copy, deepcopy
 
-
-def identity(A, ndim=None):
-    ndimA, g, e = A.shape[-3:]
-    if ndim is None:
-        ndim = ndimA
-    return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
+from .math import identity
 
 
 def extract(fields, fieldgrad=(True, False), add_identity=False):
@@ -188,3 +183,26 @@ class Field:
 
         else:
             raise TypeError("Unknown type.")
+
+
+class FieldAxisymmetric(Field):
+    def __init__(self, region, dim=2, values=0):
+        super().__init__(region, dim=dim, values=values)
+        self.scalar = Field(region)
+        self.radius = self.scalar.interpolate(region.mesh.nodes[:, 1])
+
+    def _grad_2d(self):
+        "gradient dudX_IJpe"
+        # gradient as partial derivative of nodal field values "aI"
+        # w.r.t. undeformed coordiante "J" evaluated at quadrature point "p"
+        # for element "e"
+        return np.einsum(
+            "ea...,aJpe->...Jpe",
+            self.values[self.region.connectivity],
+            self.region.dhdX,
+        )
+
+    def grad(self):
+        g = np.pad(self._grad_2d(), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        g[-1, -1] = self.interpolate()[1] / self.radius
+        return g

@@ -29,14 +29,10 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
-from .field import Field
-
 
 class IntegralFormAxisymmetric:
     def __init__(self, fun, field, dA):
-        v = field
-        vt = Field(v.region)
-        R = vt.interpolate(vt.region.mesh.nodes[:, 1])
+        R = field.radius
 
         if len(fun.shape) - 2 == 2:
 
@@ -45,8 +41,8 @@ class IntegralFormAxisymmetric:
             fun_2d = fun[:2, :2]
             fun_t = fun[(2,), (2,)]
 
-            form_2d = IntegralForm(fun_2d, v, R * dA, grad_v=True)
-            form_t = IntegralForm(fun_t, vt, dA)
+            form_2d = IntegralForm(fun_2d, field, R * dA, grad_v=True)
+            form_t = IntegralForm(fun_t, field.scalar, dA)
 
             self.forms = [form_2d, form_t]
 
@@ -59,10 +55,14 @@ class IntegralFormAxisymmetric:
             fun_t2d = fun[2, 2, :2, :2]
             fun_tt = fun[2, 2, 2, 2]
 
-            form_2d2d = IntegralForm(fun_2d2d, v, R * dA, v, True, True)
-            form_tt = IntegralForm(fun_tt / R, vt, dA, vt, False, False)
-            form_t2d = IntegralForm(fun_t2d, vt, dA, v, False, True)
-            form_2dt = IntegralForm(fun_2dt, v, dA, vt, True, False)
+            form_2d2d = IntegralForm(fun_2d2d, field, R * dA, field, True, True)
+            form_tt = IntegralForm(
+                fun_tt / R, field.scalar, dA, field.scalar, False, False
+            )
+            form_t2d = IntegralForm(
+                fun_t2d, field.scalar, dA, field.scalar, False, True
+            )
+            form_2dt = IntegralForm(fun_2dt, field, dA, field.scalar, True, False)
 
             self.forms = [form_2d2d, form_tt, form_t2d, form_2dt]
 

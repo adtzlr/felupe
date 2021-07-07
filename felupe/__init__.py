@@ -13,7 +13,7 @@ from . import utils
 
 from .region import Region
 from .forms import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
-from .field import Field
+from .field import Field, FieldAxisymmetric
 from .doftools import Boundary
 
 

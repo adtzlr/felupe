@@ -26,7 +26,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from .field import Field
 
 
 def values(fields):
@@ -46,13 +45,6 @@ def interpolate(A):
 
 def grad(A):
     return A.grad()
-
-
-def grad_axisymmetric(u):
-    ut = Field(u.region)
-    H = np.pad(u.grad(), ((0, 1), (0, 1), (0, 0), (0, 0)))
-    H[-1, -1] = u.interpolate()[1] / ut.interpolate(ut.region.mesh.nodes[:, 1])
-    return H
 
 
 def sym(A):

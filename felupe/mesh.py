@@ -527,7 +527,7 @@ def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=True, sweep_decimals=6):
     if abs(phi) > 360:
         raise ValueError("phi must be within |phi| <= 360 degree.")
 
-    p = np.pad(Nodes, ((0,0),(0, 1)))
+    p = np.pad(Nodes, ((0, 0), (0, 1)))
     R = rotation_matrix
 
     nodes = np.vstack(
@@ -543,8 +543,7 @@ def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=True, sweep_decimals=6):
     connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
     if sweep_nodes:
-        nodes, connectivity = sweep((nodes, connectivity), 
-                                    decimals=sweep_decimals)
+        nodes, connectivity = sweep((nodes, connectivity), decimals=sweep_decimals)
 
     if return_mesh:
         return Mesh(nodes, connectivity, etype)
@@ -563,15 +562,13 @@ def sweep(mesh, decimals=None):
     else:
         Nodes, Connectivity = mesh
         return_mesh = False
-    
+
     if decimals is None:
         Nodes_rounded = Nodes
     else:
         Nodes_rounded = np.round(Nodes, decimals)
 
-    nodes, index, inverse, counts = np.unique(
-        Nodes_rounded, True, True, True, axis=0
-    )
+    nodes, index, inverse, counts = np.unique(Nodes_rounded, True, True, True, axis=0)
 
     original = np.arange(len(Nodes))
 

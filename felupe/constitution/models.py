@@ -123,3 +123,43 @@ class NeoHooke:
         A4_vol = J * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
 
         return A4_dev + A4_vol
+
+
+class NeoHookeCompressible:
+    "Compressible Neo-Hooke material."
+
+    def __init__(self, mu, bulk):
+        self.mu = mu
+        self.bulk = bulk
+
+    def P(self, F):
+        """Variation of total potential w.r.t displacements
+        (1st Piola Kirchhoff stress).
+
+        δ_u(Π_int) = ∫_V ∂ψ/∂F : δF dV
+
+        """
+        J = det(F)
+        iFT = transpose(inv(F, J))
+
+        # return self.mu * (F - iFT) + self.bulk * np.log(J) * iFT
+        return self.mu * (F - iFT) + self.bulk * (J - 1) * J * iFT
+
+    def A(self, F):
+        """Linearization w.r.t. displacements of variation of
+        total potential energy w.r.t displacements.
+
+        Δ_u(δ_u(Π_int)) = ∫_V δF : ∂²ψ/(∂F∂F) : ΔF dV
+
+        """
+
+        J = det(F)
+        iFT = transpose(inv(F, J))
+        eye = identity(F)
+
+        A4_mu = cdya_ik(eye, eye) + cdya_il(eye, eye)
+        # A4_bulk = (dya(iFT, iFT) - np.log(J) * cdya_il(iFT, iFT))
+
+        A4_bulk = (2 * J - 1) * J * dya(iFT, iFT) - (J - 1) * J * cdya_il(iFT, iFT)
+
+        return self.mu * A4_mu + self.bulk * A4_bulk

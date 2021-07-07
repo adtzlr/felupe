@@ -216,7 +216,14 @@ class CylinderAdvanced(Mesh):
         N[:, 0] *= H / 2
         N[:, 0] += H / 2
 
-        nodes, connectivity = revolve((N, C), n[1], -phi, axis=0)
+        if phi == 360:
+            sweep_nodes = True
+        else:
+            sweep_nodes = False
+
+        nodes, connectivity = revolve(
+            (N, C), n[1], -phi, axis=0, sweep_nodes=sweep_nodes
+        )
         etype = "hexahedron"
 
         if align:
@@ -503,7 +510,7 @@ def rotate(mesh, angle_deg, axis, center=None):
         return nodes, Connectivity
 
 
-def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=True, sweep_decimals=6):
+def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=False, sweep_decimals=6):
     "Revolve 2d quad to 3d hexahedron mesh."
 
     if isinstance(mesh, Mesh):

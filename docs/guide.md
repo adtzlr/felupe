@@ -206,7 +206,7 @@ A_3333 = A[ 2, 2, 2, 2]
 ```
 
 ### Felupe implementation
-For axisymmetric analyses a vector-valued field of `dim=2` hase to be created for the in-plane displacements.
+For axisymmetric analyses an axisymmetric vector-valued field has to be created for the in-plane displacements.
 
 ```python
 import felupe as fe
@@ -220,13 +220,13 @@ dA = region.dV
 ```
 
 ```python
-u  = fe.Field(region, dim=2)
+u  = fe.FieldAxisymmetric(region)
 ```
 
-Now it gets important: The 3x3 deformation gradient for axisymmetric problems is obtained with the so-called `grad_axisymmetric` function.
+Now it gets important: The 3x3 deformation gradient for axisymmetric problems is obtained with the default `grad` method. For instances of `FieldAxisymmetric` this returns the full 3x3 gradient as described above.
 
 ```python
-H = fe.math.grad_axisymmetric(u)
+H = fe.math.grad(u)
 F = fe.math.identity(H) + H
 ```
 
@@ -236,13 +236,15 @@ For simplicity, let's assume a (built-in) Neo-Hookean material.
 umat = fe.constitution.NeoHooke(mu=1, bulk=5)
 ```
 
-Felupe provides an adopted Integral Form class for the integration and the sparse matrix assemblage of axisymmetric problems.
+Felupe provides an adopted IntegralForm class for the integration and the sparse matrix assemblage of axisymmetric problems. It uses the additional information (e.g. radial coordinates at integration points) stored in `FieldAxisymmetric` to provide a consistent interface in comparison to classic IntegralForms.
 
 ```python
 
 r = fe.IntegralFormAxisymmetric(umat.P(F), u, dA).assemble()
 K = fe.IntegralFormAxisymmetric(umat.A(F), u, dA).assemble()
 ```
+
+To sum up, for axisymmetric problems use `FieldAxisymmetric` in conjunction with `IntegralFormAxisymmetric`.
 
 ## Supported Finite Elements
 FElupe supports lagrangian line, quad and hexaeder elements with arbitrary order polynomial basis functions. However, FElupe's mesh generation module is designed for linear and constant order elements only. For simulations with arbitrary order elements a user-defined mesh has to be provided.

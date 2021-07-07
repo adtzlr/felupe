@@ -37,7 +37,7 @@ def umat_invariants(invariants):
     return W_a, W_ab
 ```
 
-This umat is passed as described above to an instance of an `InvariantBased` material. Total-lagrange materials defined on the undeformed configuration in terms of the right Cauchy-Green deformation tensor are located in `fe.constitution.df0da0` whereas updated-lagrange materials defined on the deformed configuration in terms of the left Cauchy-Green deformation tensor are located in `fe.constitution.df_da_`. `df` referes to the differential force element described in the `0` (undeformed) or `_` (deformed) configuration. The same applies for the differential area element `da`. All materials located in `fe.constitution` refer to the total lagrange framework.
+This umat is passed as described above to an instance of an `InvariantBased` material. Total-lagrange materials defined on the undeformed configuration in terms of the right Cauchy-Green deformation tensor are located in `fe.constitution` and `fe.constitution.df0da0` whereas updated-lagrange materials defined on the deformed configuration in terms of the left Cauchy-Green deformation tensor are located in `fe.constitution.df_da_`. `df` referes to the differential force element described in the `0` (undeformed) or `_` (no index, deformed) configuration. The same applies for the differential area element `da`. **Reminder**: all materials located in `fe.constitution` refer to the total lagrange framework.
 
 ```python
 import felupe as fe
@@ -163,7 +163,7 @@ as well as
 $$\bm{P}' = \bm{P} - p J \bm{F}^{-T}$$
 
 ## Axisymmetric Analysis
-Axisymmetric scenarios are modeled with a 2D-mesh and 2D element formulations. The rotation axis is chosen along the global X-axis. The 3x3 deformation gradient consists of an in-plane 2x2 sub-matrix and one additional entry for the out-of-plane stretch.
+Axisymmetric scenarios are modeled with a 2D-mesh and a 2D element formulation. The rotation axis is chosen along the global X-axis $(X,Y,Z) \widehat{=} (Z,R,\varphi)$. The 3x3 deformation gradient consists of an in-plane 2x2 sub-matrix and one additional entry for the out-of-plane stretch which is equal to the ratio of deformed and undeformed radius.
 
 $$\bm{F} = \begin{bmatrix} \bm{F}_{(2D)} & \bm{0} \\ \bm{0}^T & \frac{r}{R} \end{bmatrix}$$
 
@@ -182,8 +182,31 @@ Inserting the differential volume integral into the expression of internal virtu
 
 $$-\delta W_{int} = 2\pi \int_A \bm{P}_{(2D)} : \delta \bm{F}_{(2D)} \ R \ dA + 2\pi \int_A P_{33} : \delta u_r \ dA$$
 
+A Linearization of the internal virtual work expression gives four terms.
+
+$$-\Delta \delta W_{int} = \Delta_{(2D)} \delta_{(2D)} W_{int} + \Delta_{33} \delta_{(2D)} W_{int} + \Delta_{(2D)} \delta_{33} W_{int} + \Delta_{33} \delta_{33} W_{int}$$
+
+$$-\Delta_{(2D)} \delta_{(2D)} W_{int} = 2\pi \int_A \delta \bm{F}_{(2D)} : \mathbb{A}_{(2D),(2D)} : \Delta \bm{F}_{(2D)} \ R \ dA$$
+
+$$-\Delta_{33} \delta_{(2D)} W_{int} = 2\pi \int_A \delta \bm{F}_{(2D)} : \mathbb{A}_{(2D),33} : \Delta u_r \ dA$$
+
+$$-\Delta_{(2D)} \delta_{33} W_{int} = 2\pi \int_A \delta u_r : \mathbb{A}_{33,(2D)} : \Delta \bm{F}_{(2D)} \ dA$$
+
+$$-\Delta_{33} \delta_{33} W_{int} = 2\pi \int_A \delta u_r : \frac{\mathbb{A}_{33,33}}{R} : \Delta u_r \ dA$$
+
+whith $\mathbb{A}_{(2D),(2D)} = \frac{\partial \psi}{\partial \bm{F}_{(2D)} \partial \bm{F}_{(2D)}}$, $\mathbb{A}_{(2D),33} = \mathbb{A}_{33,(2D)} = \frac{\partial \psi}{\partial \bm{F}_{(2D)} \partial F^3_{\hphantom{3}3}}$ and $\mathbb{A}_{33,33} = \frac{\partial \psi}{F^3_{\hphantom{3}3} \partial F^3_{\hphantom{3}3}}$ or in Python code notation:
+
+```python
+# python is zero-indexed `i = (0,1,2)`
+# `:2` represents a slice of the first two components `(0,1)`
+A_2d2d = A[:2,:2,:2,:2]
+A_2d33 = A[:2,:2, 2, 2]
+A_332d = A[ 2, 2,:2,:2]
+A_3333 = A[ 2, 2, 2, 2]
+```
+
 ### Felupe implementation
-For axisymmetric analyses two `Fields` have to be created: one vector-valued field of `dim=2` for the in-plane displacements and one additional (dummy) scalar-valued field for the out-of-plane displacements.
+For axisymmetric analyses a vector-valued field of `dim=2` hase to be created for the in-plane displacements.
 
 ```python
 import felupe as fe
@@ -198,28 +221,27 @@ dA = region.dV
 
 ```python
 u  = fe.Field(region, dim=2)
-ut = fe.Field(region)
 ```
 
-The 3x3 deformation gradient is obtained with an adopted `grad` function:
+Now it gets important: The 3x3 deformation gradient for axisymmetric problems is obtained with the so-called `grad_axisymmetric` function.
 
 ```python
-H = fe.math.grad_axisymmetric(u, ut)
+H = fe.math.grad_axisymmetric(u)
 F = fe.math.identity(H) + H
 ```
 
-Let's assume a Neo-Hookean material.
+For simplicity, let's assume a (built-in) Neo-Hookean material.
 
 ```python
 umat = fe.constitution.NeoHooke(mu=1, bulk=5)
 ```
 
-Felupe provides an adopted Integral Form class for the integration and the sparse matrix assemblage.
+Felupe provides an adopted Integral Form class for the integration and the sparse matrix assemblage of axisymmetric problems.
 
 ```python
 
-r = fe.IntegralFormAxisymmetric(umat.P(F), (u, ut), dA).assemble()
-K = fe.IntegralFormAxisymmetric(umat.A(F), (u, ut), dA).assemble()
+r = fe.IntegralFormAxisymmetric(umat.P(F), u, dA).assemble()
+K = fe.IntegralFormAxisymmetric(umat.A(F), u, dA).assemble()
 ```
 
 ## Supported Finite Elements

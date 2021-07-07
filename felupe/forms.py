@@ -33,6 +33,7 @@ from scipy.sparse import bmat, vstack
 class IntegralFormAxisymmetric:
     def __init__(self, fun, field, dA):
         R = field.radius
+        self.dA = 2 * np.pi * dA
 
         if len(fun.shape) - 2 == 2:
 
@@ -41,8 +42,8 @@ class IntegralFormAxisymmetric:
             fun_2d = fun[:2, :2]
             fun_t = fun[(2,), (2,)]
 
-            form_2d = IntegralForm(fun_2d, field, R * dA, grad_v=True)
-            form_t = IntegralForm(fun_t, field.scalar, dA)
+            form_2d = IntegralForm(fun_2d, field, R * self.dA, grad_v=True)
+            form_t = IntegralForm(fun_t, field.scalar, self.dA)
 
             self.forms = [form_2d, form_t]
 
@@ -55,14 +56,14 @@ class IntegralFormAxisymmetric:
             fun_t2d = fun[2, 2, :2, :2]
             fun_tt = fun[2, 2, 2, 2]
 
-            form_2d2d = IntegralForm(fun_2d2d, field, R * dA, field, True, True)
+            form_2d2d = IntegralForm(fun_2d2d, field, R * self.dA, field, True, True)
             form_tt = IntegralForm(
-                fun_tt / R, field.scalar, dA, field.scalar, False, False
+                fun_tt / R, field.scalar, self.dA, field.scalar, False, False
             )
             form_t2d = IntegralForm(
-                fun_t2d, field.scalar, dA, field.scalar, False, True
+                fun_t2d, field.scalar, self.dA, field.scalar, False, True
             )
-            form_2dt = IntegralForm(fun_2dt, field, dA, field.scalar, True, False)
+            form_2dt = IntegralForm(fun_2dt, field, self.dA, field.scalar, True, False)
 
             self.forms = [form_2d2d, form_tt, form_t2d, form_2dt]
 
@@ -93,7 +94,7 @@ class IntegralFormAxisymmetric:
     def assemble(self, values=None, parallel=False):
         if values is None:
             values = self.integrate(parallel=parallel)
-        return 2 * np.pi * self.forms[0].assemble(values)
+        return self.forms[0].assemble(values)
 
 
 class IntegralFormMixed:

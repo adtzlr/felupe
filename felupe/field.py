@@ -35,7 +35,12 @@ import numpy as np
 
 from copy import copy, deepcopy
 
-from .math import identity
+
+def identity(A, ndim=None):
+    ndimA, g, e = A.shape[-3:]
+    if ndim is None:
+        ndim = ndimA
+    return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 
 def extract(fields, fieldgrad=(True, False), add_identity=False):

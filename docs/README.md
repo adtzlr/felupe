@@ -18,42 +18,6 @@ Install Python, fire up a terminal and run `pip install felupe`; import FElupe a
 import felupe as fe
 ```
 
-## Performance
-The 2d poisson problem from [here](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_poisson.py) is solved with 4-noded quadrilaterals (linear basis) on a AMD Ryzen 5 2400G / 16GB RAM. The table below contains time spent on both assembly and linear solve as a function of the degrees of freedom. Assembly times do not contain numba JIT (just-in-time) compilation times.
-
-|   DOF   | Assembly | Linear solve |
-| ------- | -------- | ------------ |
-|    5000 |   0.1 s  |     0.2 s    |
-|   10082 |   0.2 s  |     0.1 s    |
-|   20000 |   0.4 s  |     0.1 s    |
-|   49928 |   0.9 s  |     0.3 s    |
-|  100352 |   1.9 s  |     0.6 s    |
-|  199712 |   3.9 s  |     1.3 s    |
-|  500000 |   9.0 s  |     3.5 s    |
-|  999698 |  18.3 s  |     8.6 s    |
-
-Another [more practical performance benchmark](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_neohooke.py) is shown for a quarter model of a rubber block under uniaxial compression. The material is described with an isotropic hyperelastic Neo-Hooke material in its so-called nearly-incompressible formulation. Eight-noded hexahedrons are used in combination with a displacement field only. The time for linear solve represents the time spent for the first Newton-Rhapson iteration. While the assembly process is still acceptable up to 200000 DOF, linear solve time rapidly increases for >100000 DOF. However, this could also be due to the nearly 100% RAM load on the local machine for 500000 DOF.
-
-|   DOF   | Assembly | Linear solve |
-| ------- | -------- | ------------ |
-|    5184 |   0.2 s  |     0.5 s    |
-|   10125 |   0.5 s  |     0.2 s    |
-|   20577 |   0.9 s  |     0.6 s    |
-|   52728 |   2.3 s  |     3.2 s    |
-|   98304 |   4.8 s  |    10.0 s    |
-|  206763 |  10.4 s  |    42.5 s    |
-|  499125 |  28.1 s  |   313.1 s    |
-
-And now the big news. Given a hyperelastic problem with a Neo-Hookean solid in combination with a $(\bm{u},p,J)$ mixed-field-formulation applied on a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes about 12 seconds per Newton-Rhapson iteration in scikit-fem. Felupe does the same thing in whooping 0.3s which is a 400x speedup in comparison to scikit-fem. Again, please note that felupe timings are without Numba JIT (just-in-time) compilation times and the whole Newton-Rhapson iteration contains the time spent on linear solve. For a detailed comparison see the table below:
-
-|   Nodes per axis (total) | displacement - DOF | felupe | scikit-fem |
-| ------------------------ | ------------------ | ------ | ---------- |
-|         3    (27)        |         81         |  0.02s |    0.3s    |
-|         5   (125)        |        375         |  0.05s |    0.7s    |
-|         9   (729)        |       2187         |   0.3s |     12s    |
-|        17  (4913)        |      14739         |     2s |    108s    |
-|        33 (35937)        |     107811         |    37s |            |
-
 ## License
 FElupe - finite element analysis (C) 2021 Andreas Dutzler, Graz (Austria).
 

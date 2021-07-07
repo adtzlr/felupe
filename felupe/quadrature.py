@@ -32,6 +32,7 @@ class GaussLegendre:
     def __init__(self, order, dim):
         # integration point weights and coordinates
         self.dim = dim
+        self.order = order
         self.npoints = (order + 1) ** dim
 
         if dim == 3:

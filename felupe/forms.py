@@ -33,7 +33,7 @@ from scipy.sparse import bmat, vstack
 class IntegralFormAxisymmetric:
     def __init__(self, fun, fields, dA):
         v, vt = fields
-        R = vt.interpolate()
+        R = vt.interpolate(vt.region.mesh.nodes[:, 1])
 
         if len(fun.shape) - 2 == 2:
 

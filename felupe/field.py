@@ -66,6 +66,7 @@ class Field:
     def __init__(self, region, dim=1, values=0):
         self.region = region
         self.dim = dim
+        self.kind = "default"
 
         # init values
         if type(values) == np.ndarray:
@@ -190,6 +191,7 @@ class FieldAxisymmetric(Field):
         super().__init__(region, dim=dim, values=values)
         self.scalar = Field(region)
         self.radius = self.scalar.interpolate(region.mesh.nodes[:, 1])
+        self.kind = "axisymmetric"
 
     def _grad_2d(self):
         "gradient dudX_IJpe"

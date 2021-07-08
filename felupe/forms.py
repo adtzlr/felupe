@@ -29,14 +29,24 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
+from .field import Field, FieldAxisymmetric
+
 
 class IntegralFormMixed:
     def __init__(self, fun, fields, dV, grad=None):
 
         self.fun = fun
-        self.fields = fields
+        self.fields = list(fields)
         self.nfields = len(fields)
         self.dV = dV
+
+        IntForm = {Field: IntegralForm, FieldAxisymmetric: IntegralFormAxisymmetric}[
+            type(fields[0])
+        ]
+
+        if isinstance(fields[0], FieldAxisymmetric):
+            for i in range(1, self.nfields):
+                self.fields[i].radius = self.fields[0].radius
 
         if grad is None:
             self.grad = np.zeros_like(fields, dtype=bool)
@@ -55,7 +65,7 @@ class IntegralFormMixed:
             self.j = np.zeros_like(self.i)
 
             for fun, field, grad_field in zip(self.fun, self.fields, self.grad):
-                f = IntegralForm(fun=fun, v=field, dV=self.dV, grad_v=grad_field)
+                f = IntForm(fun=fun, v=field, dV=self.dV, grad_v=grad_field)
                 self.forms.append(f)
 
         elif len(fun) == np.sum(1 + np.arange(self.nfields)):
@@ -63,7 +73,7 @@ class IntegralFormMixed:
             self.i, self.j = np.triu_indices(3)
 
             for a, (i, j) in enumerate(zip(self.i, self.j)):
-                f = IntegralForm(
+                f = IntForm(
                     self.fun[a],
                     v=self.fields[i],
                     dV=self.dV,
@@ -219,47 +229,102 @@ class IntegralForm:
 
 
 class IntegralFormAxisymmetric(IntegralForm):
-    def __init__(self, fun, v, dA, u=None, grad_v=True, grad_u=True):
-
-        if not grad_v or not grad_u:
-            raise NotImplementedError(
-                "Axisymmetric Form is only implemented as v.grad()."
-            )
+    def __init__(self, fun, v, dV, u=None, grad_v=True, grad_u=True):
 
         R = v.radius
-        self.dV = 2 * np.pi * R * dA
+        self.dV = 2 * np.pi * R * dV
 
         if u is None:
 
-            self.mode = 1
+            if isinstance(v, FieldAxisymmetric):
 
-            form_a = IntegralForm(fun[:-1, :-1], v, self.dV, grad_v=True)
-            form_b = IntegralForm(fun[(2,), (2,)] / R, v.scalar, self.dV)
+                self.mode = 1
 
-            self.forms = [form_a, form_b]
+                form_a = IntegralForm(fun[:-1, :-1], v, self.dV, grad_v=True)
+                form_b = IntegralForm(fun[(-1,), (-1,)] / R, v.scalar, self.dV)
+
+                self.forms = [form_a, form_b]
+
+            else:
+
+                self.mode = 10
+
+                form_a = IntegralForm(fun, v, self.dV, grad_v=False)
+                self.forms = [
+                    form_a,
+                ]
 
         else:
 
-            self.mode = 2
+            if isinstance(v, FieldAxisymmetric) and isinstance(u, FieldAxisymmetric):
 
-            form_aa = IntegralForm(fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True)
-            form_bb = IntegralForm(
-                fun[-1, -1, -1, -1] / R ** 2, v.scalar, self.dV, u.scalar, False, False
-            )
-            form_ba = IntegralForm(
-                fun[-1, -1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
-            )
-            form_ab = IntegralForm(
-                fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
-            )
+                self.mode = 2
 
-            self.forms = [form_aa, form_bb, form_ba, form_ab]
+                form_aa = IntegralForm(
+                    fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
+                )
+                form_bb = IntegralForm(
+                    fun[-1, -1, -1, -1] / R ** 2,
+                    v.scalar,
+                    self.dV,
+                    u.scalar,
+                    False,
+                    False,
+                )
+                form_ba = IntegralForm(
+                    fun[-1, -1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
+                )
+                form_ab = IntegralForm(
+                    fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
+                )
+
+                self.forms = [form_aa, form_bb, form_ba, form_ab]
+
+            # elif isinstance(v, Field) and isinstance(u, FieldAxisymmetric):
+
+            #     self.mode = 20
+
+            #     form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, False, True)
+            #     form_b = IntegralForm(
+            #         fun[-1, -1] / R, v, self.dV, u.scalar, False, False
+            #     )
+
+            #     self.forms = [form_a, form_b]
+
+            elif isinstance(v, FieldAxisymmetric) and isinstance(u, Field):
+
+                self.mode = 30
+
+                form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, True, False)
+                form_b = IntegralForm(
+                    fun[-1, -1] / R, v.scalar, self.dV, u, False, False
+                )
+
+                self.forms = [form_a, form_b]
+
+            elif isinstance(v, Field) and isinstance(u, Field):
+
+                self.mode = 40
+
+                form_a = IntegralForm(fun, v, self.dV, u, False, False)
+
+                self.forms = [
+                    form_a,
+                ]
 
     def integrate(self, parallel=False):
         values = [form.integrate(parallel=parallel) for form in self.forms]
 
         if self.mode == 1:
             values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))
+            val = values[0]
+
+        if self.mode == 30:
+            a, b, e = values[1].shape
+            values[1] = values[1].reshape(a, 1, b, e)
+
+            values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0), (0, 0)))
+            val = values[0]
 
         elif self.mode == 2:
             a, b, e = values[1].shape
@@ -277,7 +342,12 @@ class IntegralFormAxisymmetric(IntegralForm):
             for i in range(1, len(values)):
                 values[0] += values[i]
 
-        return values[0]
+            val = values[0]
+
+        elif self.mode == 10 or self.mode == 40:
+            val = values[0]
+
+        return val
 
     def assemble(self, values=None, parallel=False):
         if values is None:

@@ -216,14 +216,7 @@ class CylinderAdvanced(Mesh):
         N[:, 0] *= H / 2
         N[:, 0] += H / 2
 
-        if phi == 360:
-            sweep_nodes = True
-        else:
-            sweep_nodes = False
-
-        nodes, connectivity = revolve(
-            (N, C), n[1], -phi, axis=0, sweep_nodes=sweep_nodes
-        )
+        nodes, connectivity = revolve((N, C), n[1], -phi, axis=0)
         etype = "hexahedron"
 
         if align:
@@ -543,12 +536,11 @@ def revolve(mesh, n=11, phi=180, axis=0):
 
     c = [Connectivity + len(p) * a for a in np.arange(n)]
 
-    connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+    if phi == 360:
+        c[-1] = c[0]
 
-    # if phi == 360:
-    #    nnodes_2d = len(Nodes)
-    #    connectivity[connectivity >= len(nodes) - nnodes_2d] -= nnodes_2d
-    #    nodes = nodes[:len(nodes) - nnodes_2d]
+    connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+    nodes = nodes[: len(nodes) - len(Nodes)]
 
     if return_mesh:
         return Mesh(nodes, connectivity, etype)

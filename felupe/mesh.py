@@ -216,14 +216,7 @@ class CylinderAdvanced(Mesh):
         N[:, 0] *= H / 2
         N[:, 0] += H / 2
 
-        if phi == 360:
-            sweep_nodes = True
-        else:
-            sweep_nodes = False
-
-        nodes, connectivity = revolve(
-            (N, C), n[1], -phi, axis=0, sweep_nodes=sweep_nodes
-        )
+        nodes, connectivity = revolve((N, C), n[1], -phi, axis=0)
         etype = "hexahedron"
 
         if align:
@@ -510,7 +503,7 @@ def rotate(mesh, angle_deg, axis, center=None):
         return nodes, Connectivity
 
 
-def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=False, sweep_decimals=6):
+def revolve(mesh, n=11, phi=180, axis=0):
     "Revolve 2d quad to 3d hexahedron mesh."
 
     if isinstance(mesh, Mesh):
@@ -543,15 +536,11 @@ def revolve(mesh, n=11, phi=180, axis=0, sweep_nodes=False, sweep_decimals=6):
 
     c = [Connectivity + len(p) * a for a in np.arange(n)]
 
-    # if abs(phi) == 360:
-    #    nodes = nodes[: -len(p)]
-    #    c[-1] = Connectivity
+    if phi == 360:
+        c[-1] = c[0]
 
     connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
-
-    # WARNING: np.unique sorts the output!
-    if sweep_nodes:
-        nodes, connectivity = sweep((nodes, connectivity), decimals=sweep_decimals)
+    nodes = nodes[: len(nodes) - len(Nodes)]
 
     if return_mesh:
         return Mesh(nodes, connectivity, etype)

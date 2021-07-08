@@ -63,9 +63,13 @@ class Indices:
 class Field:
     "n-dimensional field in region."
 
-    def __init__(self, region, dim=1, values=0):
+    def __init__(self, region, dim=1, values=0, **kwargs):
         self.region = region
         self.dim = dim
+
+        # set optional user-defined attributes
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
         # init values
         if type(values) == np.ndarray:

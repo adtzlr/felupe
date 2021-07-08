@@ -29,81 +29,24 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse import bmat, vstack
 
-
-class IntegralFormAxisymmetric:
-    def __init__(self, fun, field, dA):
-        R = field.radius
-        self.dA = 2 * np.pi * dA
-
-        if len(fun.shape) - 2 == 2:
-
-            self.mode = 1
-
-            fun_2d = fun[:2, :2]
-            fun_t = fun[(2,), (2,)]
-
-            form_2d = IntegralForm(fun_2d, field, R * self.dA, grad_v=True)
-            form_t = IntegralForm(fun_t, field.scalar, self.dA)
-
-            self.forms = [form_2d, form_t]
-
-        elif len(fun.shape) - 2 == 4:
-
-            self.mode = 2
-
-            fun_2d2d = fun[:2, :2, :2, :2]
-            fun_2dt = fun[:2, :2, 2, 2]
-            fun_t2d = fun[2, 2, :2, :2]
-            fun_tt = fun[2, 2, 2, 2]
-
-            form_2d2d = IntegralForm(fun_2d2d, field, R * self.dA, field, True, True)
-            form_tt = IntegralForm(
-                fun_tt / R, field.scalar, self.dA, field.scalar, False, False
-            )
-            form_t2d = IntegralForm(
-                fun_t2d, field.scalar, self.dA, field.scalar, False, True
-            )
-            form_2dt = IntegralForm(fun_2dt, field, self.dA, field.scalar, True, False)
-
-            self.forms = [form_2d2d, form_tt, form_t2d, form_2dt]
-
-    def integrate(self, parallel=False):
-        values = [form.integrate(parallel=parallel) for form in self.forms]
-
-        if self.mode == 1:
-            values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))
-
-        elif self.mode == 2:
-            a, b, e = values[1].shape
-            values[1] = values[1].reshape(a, 1, b, 1, e)
-            values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
-
-            a, b, i, e = values[2].shape
-            values[2] = values[2].reshape(a, 1, b, i, e)
-            values[2] = np.pad(values[2], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
-
-            a, i, b, e = values[3].shape
-            values[3] = values[3].reshape(a, i, b, 1, e)
-            values[3] = np.pad(values[3], ((0, 0), (0, 0), (0, 0), (1, 0), (0, 0)))
-
-            for i in range(1, len(values)):
-                values[0] += values[i]
-
-        return values[0]
-
-    def assemble(self, values=None, parallel=False):
-        if values is None:
-            values = self.integrate(parallel=parallel)
-        return self.forms[0].assemble(values)
+from .field import Field, FieldAxisymmetric
 
 
 class IntegralFormMixed:
     def __init__(self, fun, fields, dV, grad=None):
 
         self.fun = fun
-        self.fields = fields
+        self.fields = list(fields)
         self.nfields = len(fields)
         self.dV = dV
+
+        IntForm = {Field: IntegralForm, FieldAxisymmetric: IntegralFormAxisymmetric}[
+            type(fields[0])
+        ]
+
+        if isinstance(fields[0], FieldAxisymmetric):
+            for i in range(1, self.nfields):
+                self.fields[i].radius = self.fields[0].radius
 
         if grad is None:
             self.grad = np.zeros_like(fields, dtype=bool)
@@ -122,7 +65,7 @@ class IntegralFormMixed:
             self.j = np.zeros_like(self.i)
 
             for fun, field, grad_field in zip(self.fun, self.fields, self.grad):
-                f = IntegralForm(fun=fun, v=field, dV=self.dV, grad_v=grad_field)
+                f = IntForm(fun=fun, v=field, dV=self.dV, grad_v=grad_field)
                 self.forms.append(f)
 
         elif len(fun) == np.sum(1 + np.arange(self.nfields)):
@@ -130,7 +73,7 @@ class IntegralFormMixed:
             self.i, self.j = np.triu_indices(3)
 
             for a, (i, j) in enumerate(zip(self.i, self.j)):
-                f = IntegralForm(
+                f = IntForm(
                     self.fun[a],
                     v=self.fields[i],
                     dV=self.dV,
@@ -283,6 +226,133 @@ class IntegralForm:
                     return np.einsum(
                         "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
                     )
+
+
+class IntegralFormAxisymmetric(IntegralForm):
+    def __init__(self, fun, v, dV, u=None, grad_v=True, grad_u=True):
+
+        R = v.radius
+        self.dV = 2 * np.pi * R * dV
+
+        if u is None:
+
+            if isinstance(v, FieldAxisymmetric):
+
+                self.mode = 1
+
+                form_a = IntegralForm(fun[:-1, :-1], v, self.dV, grad_v=True)
+                form_b = IntegralForm(fun[(-1,), (-1,)] / R, v.scalar, self.dV)
+
+                self.forms = [form_a, form_b]
+
+            else:
+
+                self.mode = 10
+
+                form_a = IntegralForm(fun, v, self.dV, grad_v=False)
+                self.forms = [
+                    form_a,
+                ]
+
+        else:
+
+            if isinstance(v, FieldAxisymmetric) and isinstance(u, FieldAxisymmetric):
+
+                self.mode = 2
+
+                form_aa = IntegralForm(
+                    fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
+                )
+                form_bb = IntegralForm(
+                    fun[-1, -1, -1, -1] / R ** 2,
+                    v.scalar,
+                    self.dV,
+                    u.scalar,
+                    False,
+                    False,
+                )
+                form_ba = IntegralForm(
+                    fun[-1, -1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
+                )
+                form_ab = IntegralForm(
+                    fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
+                )
+
+                self.forms = [form_aa, form_bb, form_ba, form_ab]
+
+            # elif isinstance(v, Field) and isinstance(u, FieldAxisymmetric):
+
+            #     self.mode = 20
+
+            #     form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, False, True)
+            #     form_b = IntegralForm(
+            #         fun[-1, -1] / R, v, self.dV, u.scalar, False, False
+            #     )
+
+            #     self.forms = [form_a, form_b]
+
+            elif isinstance(v, FieldAxisymmetric) and isinstance(u, Field):
+
+                self.mode = 30
+
+                form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, True, False)
+                form_b = IntegralForm(
+                    fun[-1, -1] / R, v.scalar, self.dV, u, False, False
+                )
+
+                self.forms = [form_a, form_b]
+
+            elif isinstance(v, Field) and isinstance(u, Field):
+
+                self.mode = 40
+
+                form_a = IntegralForm(fun, v, self.dV, u, False, False)
+
+                self.forms = [
+                    form_a,
+                ]
+
+    def integrate(self, parallel=False):
+        values = [form.integrate(parallel=parallel) for form in self.forms]
+
+        if self.mode == 1:
+            values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))
+            val = values[0]
+
+        if self.mode == 30:
+            a, b, e = values[1].shape
+            values[1] = values[1].reshape(a, 1, b, e)
+
+            values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0), (0, 0)))
+            val = values[0]
+
+        elif self.mode == 2:
+            a, b, e = values[1].shape
+            values[1] = values[1].reshape(a, 1, b, 1, e)
+            values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
+
+            a, b, i, e = values[2].shape
+            values[2] = values[2].reshape(a, 1, b, i, e)
+            values[2] = np.pad(values[2], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+
+            a, i, b, e = values[3].shape
+            values[3] = values[3].reshape(a, i, b, 1, e)
+            values[3] = np.pad(values[3], ((0, 0), (0, 0), (0, 0), (1, 0), (0, 0)))
+
+            for i in range(1, len(values)):
+                values[0] += values[i]
+
+            val = values[0]
+
+        elif self.mode == 10 or self.mode == 40:
+            val = values[0]
+
+        return val
+
+    def assemble(self, values=None, parallel=False):
+        if values is None:
+            values = self.integrate(parallel=parallel)
+        return self.forms[0].assemble(values)
 
 
 try:

@@ -611,3 +611,35 @@ def convert(mesh, order=0, calc_nodes=False):
     connectivity = np.arange(mesh.nelements).reshape(-1, 1)
     etype = "None"
     return Mesh(nodes, connectivity, etype)
+
+
+def fix(mesh):
+    "Fixes connectivities of triangle and tetrahedral cells (V > 0)."
+
+    if isinstance(mesh, Mesh):
+        nodes = mesh.nodes
+        connectivity = mesh.connectivity
+        etype = mesh.etype
+        return_mesh = True
+    else:
+        nodes, connectivity = mesh
+        return_mesh = False
+
+    dim = nodes.shape[1]
+
+    xx = nodes[connectivity][:, 1] - nodes[connectivity][:, 0]
+    yy = nodes[connectivity][:, 2] - nodes[connectivity][:, 0]
+
+    if dim == 3:
+        zz = nodes[connectivity][:, 3] - nodes[connectivity][:, 0]
+        volumes = np.diag(np.dot(zz, np.cross(xx, yy).T)) / 6
+    elif dim == 2:
+        volumes = np.cross(xx, yy) / 2
+
+    permute = [0, 2, 1, 3][: 1 + dim]
+    connectivity[volumes < 0] = connectivity[volumes < 0][:, permute]
+
+    if return_mesh:
+        return Mesh(nodes, connectivity, etype)
+    else:
+        return nodes, connectivity

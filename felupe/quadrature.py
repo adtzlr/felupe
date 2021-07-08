@@ -25,6 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
 import quadpy
 
 
@@ -68,6 +69,36 @@ class Scheme:
         self.points = points
         self.weights = weights
         self.npoints, self.dim = self.points.shape
+
+
+class LinearTriangle(Scheme):
+    def __init__(self):
+        points = np.ones((1, 2)) / 3
+        weights = np.array([0.5])
+        super().__init__(points, weights)
+
+
+class LinearTetrahedron(Scheme):
+    def __init__(self):
+        points = np.ones((1, 3)) / 3
+        weights = np.array([1 / 6])
+        super().__init__(points, weights)
+
+
+class QuadraticTriangle(Scheme):
+    def __init__(self):
+        scheme = quadpy.t2.schemes["hammer_marlowe_stroud_2"]()
+        triangle = np.array([[0, 0], [1, 0], [0, 1]])
+        points = quadpy.t2.transform(scheme.points, triangle.T)
+        super().__init__(points.T, scheme.weights / 2)
+
+
+class QuadraticTetrahedron(Scheme):
+    def __init__(self):
+        scheme = quadpy.t3.schemes["hammer_marlowe_stroud_1"]()
+        tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        points = quadpy.tn.transform(scheme.points, tetra.T)
+        super().__init__(points.T, scheme.weights / 6)
 
 
 class QuadPyScheme(Scheme):

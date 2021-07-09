@@ -29,50 +29,50 @@ import numpy as np
 
 
 class Mesh:
-    def __init__(self, nodes, connectivity, etype=None):
-        self.nodes = nodes
-        self.connectivity = connectivity
-        self.etype = etype
+    def __init__(self, points, cells, cell_type=None):
+        self.points = points
+        self.cells = cells
+        self.cell_type = cell_type
 
-        self.update(self.connectivity)
+        self.update(self.cells)
 
-    def update(self, connectivity):
-        self.connectivity = connectivity
+    def update(self, cells):
+        self.cells = cells
 
         # obtain dimensions
-        self.nnodes, self.ndim = self.nodes.shape
-        self.ndof = self.nodes.size
-        self.nelements = self.connectivity.shape[0]
+        self.npoints, self.ndim = self.points.shape
+        self.ndof = self.points.size
+        self.ncells = self.cells.shape[0]
 
-        # get number of elements per node
-        nodes_in_conn, self.elements_per_node = np.unique(
-            connectivity, return_counts=True
+        # get number of cells per point
+        points_in_cell, self.cells_per_point = np.unique(
+            cells, return_counts=True
         )
 
-        # check if there are nodes without element connectivity
-        if self.nnodes != len(self.elements_per_node):
-            self.node_has_element = np.isin(np.arange(self.nnodes), nodes_in_conn)
-            # update "epn" ... elements per node
-            epn = -np.ones(self.nnodes, dtype=int)
-            epn[nodes_in_conn] = self.elements_per_node
-            self.elements_per_node = epn
+        # check if there are points without cells
+        if self.npoints != len(self.cells_per_point):
+            self.point_has_cell = np.isin(np.arange(self.npoints), points_in_cell)
+            # update "cells_per_point" ... cells per point
+            cells_per_point = -np.ones(self.npoints, dtype=int)
+            cells_per_point[points_in_cell] = self.cells_per_point
+            self.cells_per_point = cells_per_point
 
-            self.nodes_without_elements = np.arange(self.nnodes)[~self.node_has_element]
-            self.nodes_with_elements = np.arange(self.nnodes)[self.node_has_element]
+            self.points_without_cells = np.arange(self.npoints)[~self.point_has_cell]
+            self.points_with_cells = np.arange(self.npoints)[self.point_has_cell]
         else:
-            self.nodes_without_elements = np.array([], dtype=int)
-            self.nodes_with_elements = np.arange(self.nnodes)
+            self.points_without_cells = np.array([], dtype=int)
+            self.points_with_cells = np.arange(self.npoints)
 
     def save(self, filename="mesh.vtk"):
         "Export mesh as VTK file."
 
-        if self.etype is None:
-            raise TypeError("Element type missing.")
+        if self.cell_type is None:
+            raise TypeError("Cell type missing.")
         else:
             import meshio
 
-        cells = {self.etype: self.connectivity}
-        meshio.Mesh(self.nodes, cells).write(filename)
+        cells = {self.cell_type: self.cells}
+        meshio.Mesh(self.points, cells).write(filename)
 
 
 class Cube(Mesh):
@@ -81,11 +81,10 @@ class Cube(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = cube_hexa(a, b, n)
-        etype = "hexahedron"
+        points, cells = cube_hexa(a, b, n)
+        cell_type = "hexahedron"
 
-        super().__init__(nodes, connectivity, etype)
-        # self.edgenodes = 8
+        super().__init__(points, cells, cell_type)
 
 
 class Rectangle(Mesh):
@@ -94,11 +93,10 @@ class Rectangle(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = rectangle_quad(a, b, n)
-        etype = "quad"
+        points, cells = rectangle_quad(a, b, n)
+        cell_type = "quad"
 
-        super().__init__(nodes, connectivity, etype)
-        # self.edgenodes = 4
+        super().__init__(points, cells, cell_type)
 
 
 class Line(Mesh):
@@ -107,31 +105,11 @@ class Line(Mesh):
         self.b = b
         self.n = n
 
-        nodes, connectivity = line_line(a, b, n)
+        points, cells = line_line(a, b, n)
 
-        etype = "line"
+        cell_type = "line"
 
-        super().__init__(nodes, connectivity, etype)
-        # self.edgenodes = 2
-
-
-class CubeQuadratic(Mesh):
-    def __init__(self, a=(0, 0, 0), b=(1, 1, 1)):
-        self.a = a
-        self.b = b
-        self.n = (3, 3, 3)
-
-        nodes, connectivity = cube_hexa(a, b, n=self.n)
-        etype = "hexahedron20"
-
-        super().__init__(nodes, connectivity, etype)
-        # self.edgenodes = 8
-
-        self.nodes = self.nodes[
-            [0, 2, 8, 6, 18, 20, 26, 24, 1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15]
-        ]
-        self.connectivity = np.arange(20).reshape(1, -1)
-        self.update(self.connectivity)
+        super().__init__(points, cells, cell_type)
 
 
 class CubeAdvanced(Cube):
@@ -155,19 +133,19 @@ class CubeAdvanced(Cube):
         super().__init__(a, (1, 1, 1), n)
 
         if L0 > 0 or B0 > 0:
-            mask = np.logical_or(self.nodes[:, 0] > L0 / 2, self.nodes[:, 1] > B0 / 2)
-            keep = np.arange(self.nnodes)[mask]
+            mask = np.logical_or(self.points[:, 0] > L0 / 2, self.points[:, 1] > B0 / 2)
+            keep = np.arange(self.npoints)[mask]
             select = np.array(
-                [np.all(np.isin(conn, keep)) for conn in self.connectivity]
+                [np.all(np.isin(cell, keep)) for cell in self.cells]
             )
-            self.connectivity = self.connectivity[select]
+            self.cells = self.cells[select]
 
-        z = self.nodes.copy()
-        z[:, 0] *= L / 2 * (1 + 2 * dL / L * self.nodes[:, 2] ** exponent)
-        z[:, 1] *= B / 2 * (1 + 2 * dB / B * self.nodes[:, 2] ** exponent)
+        z = self.points.copy()
+        z[:, 0] *= L / 2 * (1 + 2 * dL / L * self.points[:, 2] ** exponent)
+        z[:, 1] *= B / 2 * (1 + 2 * dB / B * self.points[:, 2] ** exponent)
         z[:, 2] *= H / 2
-        self.nodes = z
-        self.update(self.connectivity)
+        self.points = z
+        self.update(self.cells)
 
 
 class CylinderAdvanced(Mesh):
@@ -216,14 +194,13 @@ class CylinderAdvanced(Mesh):
         N[:, 0] *= H / 2
         N[:, 0] += H / 2
 
-        nodes, connectivity = revolve((N, C), n[1], -phi, axis=0)
-        etype = "hexahedron"
+        points, cells = revolve((N, C), n[1], -phi, axis=0)
+        cell_type = "hexahedron"
 
         if align:
-            nodes, connectivity = rotate(rotate((nodes, connectivity), 90, 1), 90, 2)
+            points, cells = rotate(rotate((points, cells), 90, 1), 90, 2)
 
-        super().__init__(nodes, connectivity, etype)
-        # self.edgenodes = 8
+        super().__init__(points, cells, cell_type)
 
 
 class Cylinder(CylinderAdvanced):
@@ -317,9 +294,9 @@ class CubeArbitraryOderHexahedron(Mesh):
         mask3[np.hstack((vertices, edges, faces))] = 0
         volume = np.arange(len(points))[mask3]
 
-        connectivity = np.hstack((vertices, edges, faces, volume)).reshape(1, -1)
+        cells = np.hstack((vertices, edges, faces, volume)).reshape(1, -1)
 
-        super().__init__(points, connectivity, etype="VTK_LAGRANGE_HEXAHEDRON")
+        super().__init__(points, cells, cell_type="VTK_LAGRANGE_HEXAHEDRON")
 
 
 class RectangleArbitraryOderQuad(Mesh):
@@ -376,9 +353,9 @@ class RectangleArbitraryOderQuad(Mesh):
 
         face = np.arange(len(points))[mask2]
 
-        connectivity = np.hstack((vertices, edges, face)).reshape(1, -1)
+        cells = np.hstack((vertices, edges, face)).reshape(1, -1)
 
-        super().__init__(points, connectivity, etype="VTK_LAGRANGE_QUADRILATERAL")
+        super().__init__(points, cells, cell_type="VTK_LAGRANGE_QUADRILATERAL")
 
 
 # line, rectangle (based on line) and cube (based on rectangle) generators
@@ -387,10 +364,10 @@ class RectangleArbitraryOderQuad(Mesh):
 
 def line_line(a=0, b=1, n=2):
     "Line generator."
-    nodes = np.linspace(a, b, n).reshape(-1, 1)
-    connectivity = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
+    points = np.linspace(a, b, n).reshape(-1, 1)
+    cells = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
 
-    return nodes, connectivity
+    return points, cells
 
 
 def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
@@ -398,16 +375,16 @@ def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
     dim = 2
     array_like = (tuple, list, np.ndarray)
 
-    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    # check if number "n" is scalar or no. of points per axis (array-like)
     if not isinstance(n, array_like):
         n = np.full(dim, n, dtype=int)
 
     line = line_line(a[0], b[0], n[0])
 
-    nodes, connectivity = expand(line, n[-1], b[-1] - a[-1])
-    nodes[:, -1] += a[-1]
+    points, cells = expand(line, n[-1], b[-1] - a[-1])
+    points[:, -1] += a[-1]
 
-    return nodes, connectivity
+    return points, cells
 
 
 def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
@@ -415,50 +392,50 @@ def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
     dim = 3
     array_like = (tuple, list, np.ndarray)
 
-    # check if number "n" is scalar or no. of nodes per axis (array-like)
+    # check if number "n" is scalar or no. of points per axis (array-like)
     if not isinstance(n, array_like):
         n = np.full(dim, n, dtype=int)
 
     rectangle = rectangle_quad(a[:-1], b[:-1], n[:-1])
 
-    nodes, connectivity = expand(rectangle, n[-1], b[-1] - a[-1])
-    nodes[:, -1] += a[-1]
+    points, cells = expand(rectangle, n[-1], b[-1] - a[-1])
+    points[:, -1] += a[-1]
 
-    return nodes, connectivity
+    return points, cells
 
 
 def expand(mesh, n=11, z=1):
     "Expand 1d line to 2d quad or 2d quad to 3d hexahedron mesh."
 
     if isinstance(mesh, Mesh):
-        Nodes = mesh.nodes
-        Connectivity = mesh.connectivity
+        points = mesh.points
+        cells = mesh.cells
         return_mesh = True
     else:
-        Nodes, Connectivity = mesh
+        points, cells = mesh
         return_mesh = False
 
-    Dim = Nodes.shape[1]
-    if Dim == 1:
+    dim = points.shape[1]
+    if dim == 1:
         sl = slice(None, None, -1)
-        etype = "quad"
-    elif Dim == 2:
+        cell_type = "quad"
+    elif dim == 2:
         sl = slice(None, None, None)
-        etype = "hexahedron"
+        cell_type = "hexahedron"
     else:
         raise ValueError("Expansion of a 3d mesh is not supported.")
 
-    p = np.pad(Nodes, (0, 1))[:-1]
-    zeros = np.zeros(Dim)
-    nodes = np.vstack([p + np.array([*zeros, h]) for h in np.linspace(0, z, n)])
+    p = np.pad(points, (0, 1))[:-1]
+    zeros = np.zeros(dim)
+    points_new = np.vstack([p + np.array([*zeros, h]) for h in np.linspace(0, z, n)])
 
-    c = [Connectivity + len(p) * a for a in np.arange(n)]
-    connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+    c = [cells + len(p) * a for a in np.arange(n)]
+    cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
     if return_mesh:
-        return Mesh(nodes, connectivity, etype)
+        return Mesh(points_new, cells_new, cell_type)
     else:
-        return nodes, connectivity
+        return points_new, cells_new
 
 
 def rotation_matrix(alpha_deg, dim=3, axis=0):
@@ -479,15 +456,15 @@ def rotate(mesh, angle_deg, axis, center=None):
     "Rotate mesh."
 
     if isinstance(mesh, Mesh):
-        Nodes = mesh.nodes
-        Connectivity = mesh.connectivity
-        Etype = mesh.etype
+        points = mesh.points
+        cells = mesh.cells
+        cell_type = mesh.cell_type
         return_mesh = True
     else:
-        Nodes, Connectivity = mesh
+        points, cells = mesh
         return_mesh = False
 
-    dim = Nodes.shape[1]
+    dim = points.shape[1]
 
     if center is None:
         center = np.zeros(dim)
@@ -495,111 +472,112 @@ def rotate(mesh, angle_deg, axis, center=None):
         center = np.array(center)
     center = center.reshape(1, -1)
 
-    nodes = (rotation_matrix(angle_deg, dim, axis) @ (Nodes - center).T).T + center
+    points_new = (rotation_matrix(angle_deg, dim, axis) @ (points - center).T).T + center
 
     if return_mesh:
-        return Mesh(nodes, Connectivity, Etype)
+        return Mesh(points_new, cells, cell_type)
     else:
-        return nodes, Connectivity
+        return points_new, cells
 
 
 def revolve(mesh, n=11, phi=180, axis=0):
     "Revolve 2d quad to 3d hexahedron mesh."
 
     if isinstance(mesh, Mesh):
-        Nodes = mesh.nodes
-        Connectivity = mesh.connectivity
+        points = mesh.points
+        cells = mesh.cells
         return_mesh = True
     else:
-        Nodes, Connectivity = mesh
+        points, cells = mesh
         return_mesh = False
 
-    Dim = Nodes.shape[1]
-    if Dim == 1:
+    dim = points.shape[1]
+    if dim == 1:
         sl = slice(None, None, -1)
-        etype = "quad"
-    elif Dim == 2:
+        cell_type = "quad"
+    elif dim == 2:
         sl = slice(None, None, None)
-        etype = "hexahedron"
+        cell_type = "hexahedron"
     else:
         raise ValueError("Revolution of a 3d mesh is not supported.")
 
     if abs(phi) > 360:
         raise ValueError("phi must be within |phi| <= 360 degree.")
 
-    p = np.pad(Nodes, ((0, 0), (0, 1)))
+    p = np.pad(points, ((0, 0), (0, 1)))
     R = rotation_matrix
 
-    nodes = np.vstack(
+    points_new = np.vstack(
         [(R(alpha_deg, Dim + 1) @ p.T).T for alpha_deg in np.linspace(0, phi, n)]
     )
 
-    c = [Connectivity + len(p) * a for a in np.arange(n)]
+    c = [cells + len(p) * a for a in np.arange(n)]
 
     if phi == 360:
         c[-1] = c[0]
 
-    connectivity = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
-    nodes = nodes[: len(nodes) - len(Nodes)]
+    cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+    points_new = points_new[: len(points_new) - len(points)]
 
     if return_mesh:
-        return Mesh(nodes, connectivity, etype)
+        return Mesh(points_new, cells_new, cell_type)
     else:
-        return nodes, connectivity
+        return points_new, cells_new
 
 
 def sweep(mesh, decimals=None):
-    "Sweep duplicated nodes and update connectivity."
+    """Sweep duplicated points and update cells.
+    WARNING: This function sorts points!!!"""
 
     if isinstance(mesh, Mesh):
-        Nodes = mesh.nodes
-        Connectivity = mesh.connectivity
-        etype = mesh.etype
+        points = mesh.points
+        cells = mesh.cells
+        cell_type = mesh.cell_type
         return_mesh = True
     else:
-        Nodes, Connectivity = mesh
+        points, cells = mesh
         return_mesh = False
 
     if decimals is None:
-        Nodes_rounded = Nodes
+        points_rounded = points
     else:
-        Nodes_rounded = np.round(Nodes, decimals)
+        points_rounded = np.round(points, decimals)
 
-    nodes, index, inverse, counts = np.unique(Nodes_rounded, True, True, True, axis=0)
+    points_new, index, inverse, counts = np.unique(points_rounded, True, True, True, axis=0)
 
-    original = np.arange(len(Nodes))
+    original = np.arange(len(points))
 
     mask = inverse != original
     find = original[mask]
     replace = inverse[mask]
 
-    connectivity = Connectivity.copy()
+    cells_new = cells.copy()
 
     for i, j in zip(find, replace):
-        connectivity[Connectivity == i] = j
+        cells_new[cells == i] = j
 
     if return_mesh:
-        return Mesh(nodes, connectivity, etype)
+        return Mesh(points_new, cells_new, cell_type)
     else:
-        return nodes, connectivity
+        return points_new, cells_new
 
 
-def convert(mesh, order=0, calc_nodes=False):
+def convert(mesh, order=0, calc_points=False):
     "Convert mesh to a given order (currently only order=0 supported)."
 
     if order != 0:
         raise NotImplementedError("Unsupported order conversion.")
 
-    if calc_nodes:
-        nodes = np.stack(
-            [np.mean(mesh.nodes[conn], axis=0) for conn in mesh.connectivity]
+    if calc_points:
+        points = np.stack(
+            [np.mean(mesh.points[cell], axis=0) for cell in mesh.cells]
         )
     else:
-        nodes = np.zeros((mesh.nelements, mesh.ndim), dtype=int)
+        points = np.zeros((mesh.ncells, mesh.ndim), dtype=int)
 
-    connectivity = np.arange(mesh.nelements).reshape(-1, 1)
-    etype = "None"
-    return Mesh(nodes, connectivity, etype)
+    cells = np.arange(mesh.ncells).reshape(-1, 1)
+    cell_type = "None"
+    return Mesh(points, cells, cell_type)
 
 
 def fix(points, cells, cell_type):

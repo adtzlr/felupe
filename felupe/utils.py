@@ -56,7 +56,7 @@ def dofresiduals(region, r, rref, dof1=None):
 
     rxy = rx / ry
 
-    rxy[region.mesh.elements_per_node == 1] = rx[region.mesh.elements_per_node == 1]
+    rxy[region.mesh.cells_per_point == 1] = rx[region.mesh.cells_per_point == 1]
 
     if dof1 is None:
         return rxy
@@ -208,9 +208,9 @@ def incsolve(
     return res
 
 
-def tonodes(values, region, sym=True, mode="tensor"):
+def topoints(values, region, sym=True, mode="tensor"):
 
-    rows = region.mesh.connectivity.T.ravel()
+    rows = region.mesh.cells.T.ravel()
     cols = np.zeros_like(rows)
 
     if mode == "tensor":
@@ -242,16 +242,16 @@ def tonodes(values, region, sym=True, mode="tensor"):
             out[:, a] = (
                 sparsematrix(
                     (values.reshape(ndim, ndim, -1)[i, j], (rows, cols)),
-                    shape=(region.mesh.nnodes, 1),
+                    shape=(region.mesh.npoints, 1),
                 ).toarray()[:, 0]
-                / region.mesh.elements_per_node
+                / region.mesh.cells_per_point
             )
 
     elif mode == "scalar":
         out = sparsematrix(
-            (values.ravel(), (rows, cols)), shape=(region.mesh.nnodes, 1)
+            (values.ravel(), (rows, cols)), shape=(region.mesh.npoints, 1)
         ).toarray()[:, 0]
-        out = out / region.mesh.elements_per_node
+        out = out / region.mesh.cells_per_point
 
     return out
 
@@ -299,9 +299,9 @@ def save(
         s = dot(P, transpose(F)) / det(F)
         sp = np.sort(eigvals(s), axis=0)
 
-        # shift stresses to nodes and average nodal values
-        cauchy = tonodes(s, region=region, sym=True)
-        cauchyprinc = [tonodes(sp_i, region=region, mode="scalar") for sp_i in sp]
+        # shift stresses to points and average nodal values
+        cauchy = topoints(s, region=region, sym=True)
+        cauchyprinc = [topoints(sp_i, region=region, mode="scalar") for sp_i in sp]
 
         point_data["CauchyStress"] = cauchy
 
@@ -312,8 +312,8 @@ def save(
         point_data["MaxPrincipalShearCauchyStress"] = cauchyprinc[2] - cauchyprinc[0]
 
     mesh = meshio.Mesh(
-        points=mesh.nodes,
-        cells={mesh.etype: mesh.connectivity},  # [:, : mesh.edgenodes]},
+        points=mesh.points,
+        cells={mesh.cell_type: mesh.cells},  # [:, : mesh.edgepoints]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
     )
@@ -324,8 +324,8 @@ def save(
 def savehistory(region, results, filename="result_history.xdmf"):
 
     mesh = region.mesh
-    points = mesh.nodes
-    cells = {mesh.etype: mesh.connectivity}  # [:, : mesh.edgenodes]}
+    points = mesh.points
+    cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
 
     with meshio.xdmf.TimeSeriesWriter(filename) as writer:
         writer.write_points_cells(points, cells)
@@ -350,10 +350,10 @@ def savehistory(region, results, filename="result_history.xdmf"):
                 s = dot(f[0], transpose(F)) / det(F)
                 sp = eigvals(s)
 
-                # shift stresses to nodes and average nodal values
-                cauchy = tonodes(s, region=region, sym=True)
+                # shift stresses to points and average nodal values
+                cauchy = topoints(s, region=region, sym=True)
                 cauchyprinc = [
-                    tonodes(sp_i, region=region, mode="scalar") for sp_i in sp
+                    topoints(sp_i, region=region, mode="scalar") for sp_i in sp
                 ]
 
                 point_data["CauchyStress"] = cauchy
@@ -368,7 +368,7 @@ def savehistory(region, results, filename="result_history.xdmf"):
 def force(results, boundary):
     return np.array(
         [
-            (((np.split(res.r, res.unstack)[0]).reshape(-1, 3))[boundary.nodes]).sum(0)
+            (((np.split(res.r, res.unstack)[0]).reshape(-1, 3))[boundary.points]).sum(0)
             for res in results
         ]
     )
@@ -376,7 +376,7 @@ def force(results, boundary):
 
 def moment(results, boundary, point=np.zeros(3)):
 
-    nodes = results[0].fields[0].region.mesh.nodes
+    points = results[0].fields[0].region.mesh.points
     points = point.reshape(-1, 3)
 
     indices = np.array([(1, 2), (2, 0), (0, 1)])
@@ -388,10 +388,10 @@ def moment(results, boundary, point=np.zeros(3)):
 
     for pt, res in zip(points, results):
         displacements = res.fields[0].values
-        d = ((nodes + displacements) - pt)[boundary.nodes]
+        d = ((points + displacements) - pt)[boundary.points]
 
         force = (np.split(res.r, res.unstack)[0]).reshape(-1, 3)
-        f = force[boundary.nodes]
+        f = force[boundary.points]
 
         moments.append([(f[:, i] * d[:, i[::-1]]).sum() for i in indices])
 
@@ -425,7 +425,7 @@ def axito3d(
     """
 
     mesh_3d = revolve(mesh_axi, n=n, phi=phi)
-    values_3d = revolve((field_axi.values, mesh_axi.connectivity), n=n, phi=phi)[0]
+    values_3d = revolve((field_axi.values, mesh_axi.cells), n=n, phi=phi)[0]
 
     edict = {Quad1: Hex1}
 

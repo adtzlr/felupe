@@ -174,7 +174,7 @@ class IntegralForm:
 
         if not grad_v:
             vb = np.tile(
-                v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.nelements
+                v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells
             )
         else:
             vb = v.region.dhdX
@@ -182,7 +182,7 @@ class IntegralForm:
         if u is not None:
             if not grad_u:
                 ub = np.tile(
-                    u.region.h.reshape(*u.region.h.shape, 1), u.region.mesh.nelements
+                    u.region.h.reshape(*u.region.h.shape, 1), u.region.mesh.ncells
                 )
             else:
                 ub = u.region.dhdX
@@ -363,15 +363,15 @@ try:
     @jit(**jitargs)
     def integrate_gradv_u(v, fun, u, dV):
 
-        nnodes_a = v.shape[0]
-        nnodes_b = u.shape[0]
+        npoints_a = v.shape[0]
+        npoints_b = u.shape[0]
         ndim, ngauss, nelems = fun.shape[-3:]
 
-        out = np.zeros((nnodes_a, ndim, nnodes_b, nelems))
-        for a in prange(nnodes_a):  # basis function "a"
-            for b in prange(nnodes_b):  # basis function "b"
+        out = np.zeros((npoints_a, ndim, npoints_b, nelems))
+        for a in prange(npoints_a):  # basis function "a"
+            for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
-                    for e in prange(nelems):  # element "e"
+                    for e in prange(nelems):  # cell "e"
                         for i in prange(ndim):  # first index "i"
                             for J in prange(ndim):  # second index "J"
                                 out[a, i, b, e] += (
@@ -386,15 +386,15 @@ try:
     @jit(**jitargs)
     def integrate_v_gradu(v, fun, u, dV):
 
-        nnodes_a = v.shape[0]
-        nnodes_b = u.shape[0]
+        npoints_a = v.shape[0]
+        npoints_b = u.shape[0]
         ndim, ngauss, nelems = fun.shape[-3:]
 
-        out = np.zeros((nnodes_a, nnodes_b, ndim, nelems))
-        for a in prange(nnodes_a):  # basis function "a"
-            for b in prange(nnodes_b):  # basis function "b"
+        out = np.zeros((npoints_a, npoints_b, ndim, nelems))
+        for a in prange(npoints_a):  # basis function "a"
+            for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
-                    for e in prange(nelems):  # element "e"
+                    for e in prange(nelems):  # cell "e"
                         for k in prange(ndim):  # third index "k"
                             for L in prange(ndim):  # fourth index "L"
                                 out[a, b, k, e] += (
@@ -409,14 +409,14 @@ try:
     @jit(**jitargs)
     def integrate_gradv(v, fun, dV):
 
-        nnodes = v.shape[0]
+        npoints = v.shape[0]
         ndim, ngauss, nelems = fun.shape[-3:]
 
-        out = np.zeros((nnodes, ndim, nelems))
+        out = np.zeros((npoints, ndim, nelems))
 
-        for a in prange(nnodes):  # basis function "a"
+        for a in prange(npoints):  # basis function "a"
             for p in prange(ngauss):  # integration point "p"
-                for e in prange(nelems):  # element "e"
+                for e in prange(nelems):  # cell "e"
                     for i in prange(ndim):  # first index "i"
                         for J in prange(ndim):  # second index "J"
                             out[a, i, e] += v[a, J, p, e] * fun[i, J, p, e] * dV[p, e]
@@ -426,15 +426,15 @@ try:
     @jit(**jitargs)
     def integrate_gradv_gradu(v, fun, u, dV):
 
-        nnodes_a = v.shape[0]
-        nnodes_b = u.shape[0]
+        npoints_a = v.shape[0]
+        npoints_b = u.shape[0]
         ndim, ngauss, nelems = fun.shape[-3:]
 
-        out = np.zeros((nnodes_a, ndim, nnodes_b, ndim, nelems))
-        for a in prange(nnodes_a):  # basis function "a"
-            for b in prange(nnodes_b):  # basis function "b"
+        out = np.zeros((npoints_a, ndim, npoints_b, ndim, nelems))
+        for a in prange(npoints_a):  # basis function "a"
+            for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
-                    for e in prange(nelems):  # element "e"
+                    for e in prange(nelems):  # cell "e"
                         for i in prange(ndim):  # first index "i"
                             for J in prange(ndim):  # second index "J"
                                 for k in prange(ndim):  # third index "k"

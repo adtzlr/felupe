@@ -91,7 +91,7 @@ class QuadraticTriangle(Scheme):
         triangle = np.array([[0, 0], [1, 0], [0, 1]])
 
         points = np.dot(triangle.T, scheme.points)
-        super().__init__(points.T, scheme.weights)
+        super().__init__(points.T, scheme.weights / 2)
 
 
 class QuadraticTetrahedron(Scheme):
@@ -100,7 +100,7 @@ class QuadraticTetrahedron(Scheme):
         tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
         points = np.dot(tetra.T, scheme.points)
-        super().__init__(points.T, scheme.weights)
+        super().__init__(points.T, scheme.weights / 6)
 
 
 class QuadPyScheme(Scheme):

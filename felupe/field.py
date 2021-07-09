@@ -56,8 +56,8 @@ class Indices:
     def __init__(self, eai, ai, region, dim):
         self.eai = eai
         self.ai = ai
-        self.dof = np.arange(region.nnodes * dim).reshape(-1, dim)
-        self.shape = (region.nnodes * dim, 1)
+        self.dof = np.arange(region.npoints * dim).reshape(-1, dim)
+        self.shape = (region.npoints * dim, 1)
 
 
 class Field:
@@ -75,17 +75,17 @@ class Field:
         if type(values) == np.ndarray:
             self.values = values
         else:
-            self.values = np.ones((region.nnodes, dim)) * values
+            self.values = np.ones((region.npoints, dim)) * values
 
-        eai, ai = self.indices_per_element(self.region.connectivity, dim)
+        eai, ai = self.indices_per_cell(self.region.cells, dim)
         self.indices = Indices(eai, ai, region, dim)
 
-    def indices_per_element(self, connectivity, dim):
+    def indices_per_cell(self, cells, dim):
         "Pre-defined indices for sparse matrices."
 
-        # index of element "e", node "a" and nodal-value component "i"
+        # index of cell "e", point "a" and nodal-value component "i"
         eai = np.stack(
-            [dim * np.tile(conn, (dim, 1)).T + np.arange(dim) for conn in connectivity]
+            [dim * np.tile(conn, (dim, 1)).T + np.arange(dim) for conn in cells]
         )
         # store indices as (rows, cols) (note: sparse-matrices are always 2d)
         ai = (eai.ravel(), np.zeros_like(eai.ravel()))
@@ -95,11 +95,11 @@ class Field:
     def grad(self):
         "gradient dudX_IJpe"
         # gradient as partial derivative of nodal field values "aI"
-        # w.r.t. undeformed coordiante "J" evaluated at quadrature point "p"
-        # for element "e"
+        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
+        # for cell "e"
         return np.einsum(
             "ea...,aJpe->...Jpe",
-            self.values[self.region.connectivity],
+            self.values[self.region.cells],
             self.region.dhdX,
         )
 
@@ -107,11 +107,11 @@ class Field:
         "interpolated values u_Ipe"
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
-        # for element "e"
+        # for cell "e"
         if values is None:
             values = self.values
         return np.einsum(
-            "ea...,ap->...pe", values[self.region.connectivity], self.region.h
+            "ea...,ap->...pe", values[self.region.cells], self.region.h
         )
 
     def copy(self):
@@ -193,16 +193,16 @@ class FieldAxisymmetric(Field):
     def __init__(self, region, dim=2, values=0):
         super().__init__(region, dim=dim, values=values)
         self.scalar = Field(region)
-        self.radius = self.scalar.interpolate(region.mesh.nodes[:, 1])
+        self.radius = self.scalar.interpolate(region.mesh.points[:, 1])
 
     def _grad_2d(self):
         "gradient dudX_IJpe"
         # gradient as partial derivative of nodal field values "aI"
-        # w.r.t. undeformed coordiante "J" evaluated at quadrature point "p"
-        # for element "e"
+        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
+        # for cell "e"
         return np.einsum(
             "ea...,aJpe->...Jpe",
-            self.values[self.region.connectivity],
+            self.values[self.region.cells],
             self.region.dhdX,
         )
 

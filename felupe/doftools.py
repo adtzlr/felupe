@@ -36,16 +36,16 @@ def get_dof0(field, bounds):
     mesh = field.region.mesh
     dim = field.dim
 
-    # check if there are nodes without connected elements in the mesh
+    # check if there are points without connected cells in the mesh
     # and add them to the list of prescribed dofs
-    # e.g. these are nodes [2,6,7]
+    # e.g. these are points [2,6,7]
     #
     #   ( [[2,2,2], )   [[0,1,2],   [[ 6, 7, 8],
     # 3*(  [6,6,6], ) +  [0,1,2], =  [18,19,20],
     #   (  [7,7,7]] )    [0,1,2]]    [21,22,23]]
     #
     # fixmissing = [6, 7, 8, 18, 19, 29, 21, 22, 23]
-    fixmissing = dim * np.tile(mesh.nodes_without_elements, (dim, 1)).T + np.arange(dim)
+    fixmissing = dim * np.tile(mesh.points_without_cells, (dim, 1)).T + np.arange(dim)
 
     # obtain prescribed dofs from boundaries
     dof0_bounds = np.concatenate([b.dof for b in bounds.values()])
@@ -120,9 +120,9 @@ def extend(fields, dof0, dof1):
         mesh = field.region.mesh
         dim = field.dim
 
-        # check if there are nodes without/with connected elements in the mesh
+        # check if there are points without/with connected cells in the mesh
         # and add them to the list of prescribed/active dofs
-        # e.g. these are mesh.nodes_without_elements = [2,6,7]
+        # e.g. these are mesh.points_without_cells = [2,6,7]
         #
         #              ( [[2,2,2], )   [[0,1,2],   [[ 6, 7, 8],
         # dof0_add = 3*(  [6,6,6], ) +  [0,1,2], =  [18,19,20],
@@ -130,13 +130,11 @@ def extend(fields, dof0, dof1):
         #
         dof0_add = (
             offset
-            + dim * np.tile(mesh.nodes_without_elements, (dim, 1)).T
+            + dim * np.tile(mesh.points_without_cells, (dim, 1)).T
             + np.arange(dim)
         )
         dof1_add = (
-            offset
-            + dim * np.tile(mesh.nodes_with_elements, (dim, 1)).T
-            + np.arange(dim)
+            offset + dim * np.tile(mesh.points_with_cells, (dim, 1)).T + np.arange(dim)
         )
 
         dof0_xt = np.append(dof0_xt, dof0_add.ravel())
@@ -159,8 +157,8 @@ def apply(v, bounds, dof0=None):
         return u
     else:
         # check if dof0 has entries beyond the size of u
-        # this is the case for meshes with nodes that are
-        # not connected to elements
+        # this is the case for meshes with points that are
+        # not connected to cells
         u0ext = u.ravel()[dof0[dof0 < u.size]]
 
         # pad (=extend) u0ext to the full dimension of prescribed dofs
@@ -227,13 +225,13 @@ class Boundary:
         self.skip = np.array(skip).astype(int)[: self.ndim]
         self.fun = [fx, fy, fz][: self.ndim]
 
-        # apply functions on the nodes per coordinate
+        # apply functions on the points per coordinate
         # fx(x), fy(y), fz(z) and create a mask for each coordinate
-        mask = [f(x) for f, x in zip(self.fun, mesh.nodes.T)]
+        mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
 
         # combine the masks with logical or
         tmp = np.logical_or(mask[0], mask[1])
-        if self.ndim == 3 and mesh.nodes.shape[1] == 3:
+        if self.ndim == 3 and mesh.points.shape[1] == 3:
             mask = np.logical_or(tmp, mask[2])
         else:
             mask = tmp
@@ -249,4 +247,4 @@ class Boundary:
             self.mask[:, np.where(self.skip)[0]] = False
 
         self.dof = dof[self.mask]
-        self.nodes = np.arange(mesh.nnodes)[mask]
+        self.points = np.arange(mesh.npoints)[mask]

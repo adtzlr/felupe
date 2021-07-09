@@ -35,8 +35,8 @@ class ArbitraryOrderLagrange:
     def __init__(self, order, ndim):
         self.ndim = ndim
         self.order = order
-        self.nnodes = (order + 1) ** ndim
-        self.nbasis = self.nnodes
+        self.npoints = (order + 1) ** ndim
+        self.nbasis = self.npoints
 
         self._nbasis = order + 1
 
@@ -121,7 +121,7 @@ class Tet:
 class Line1(Line):
     def __init__(self):
         super().__init__()
-        self.nnodes = 2
+        self.npoints = 2
         self.nbasis = 2
 
     def basis(self, rv):
@@ -138,7 +138,7 @@ class Line1(Line):
 class Quad0(Quad):
     def __init__(self):
         super().__init__()
-        self.nnodes = 4
+        self.npoints = 4
         self.nbasis = 1
 
     def basis(self, rst):
@@ -153,7 +153,7 @@ class Quad0(Quad):
 class Quad1(Quad):
     def __init__(self):
         super().__init__()
-        self.nnodes = 4
+        self.npoints = 4
         self.nbasis = 4
 
     def basis(self, rs):
@@ -190,7 +190,7 @@ class Quad1(Quad):
 class Hex0(Hex):
     def __init__(self):
         super().__init__()
-        self.nnodes = 8
+        self.npoints = 8
         self.nbasis = 1
 
     def basis(self, rst):
@@ -205,7 +205,7 @@ class Hex0(Hex):
 class Hex1(Hex):
     def __init__(self):
         super().__init__()
-        self.nnodes = 8
+        self.npoints = 8
         self.nbasis = 8
 
     def basis(self, rst):
@@ -250,7 +250,7 @@ class Hex1(Hex):
 class Hex2s(Hex):
     def __init__(self):
         super().__init__()
-        self.nnodes = 20
+        self.npoints = 20
         self.nbasis = 20
 
     def basis(self, rst):
@@ -427,7 +427,7 @@ class Hex2s(Hex):
 class Tri1(Tri):
     def __init__(self):
         super().__init__()
-        self.nnodes = 3
+        self.npoints = 3
         self.nbasis = 3
 
     def basis(self, rs):
@@ -444,7 +444,7 @@ class Tri1(Tri):
 class Tet1(Tet):
     def __init__(self):
         super().__init__()
-        self.nnodes = 4
+        self.npoints = 4
         self.nbasis = 4
 
     def basis(self, rst):
@@ -461,7 +461,7 @@ class Tet1(Tet):
 class Tri2(Tri):
     def __init__(self):
         super().__init__()
-        self.nnodes = 6
+        self.npoints = 6
         self.nbasis = 6
 
     def basis(self, rs):
@@ -496,7 +496,7 @@ class Tri2(Tri):
 class Tet2(Tet):
     def __init__(self):
         super().__init__()
-        self.nnodes = 10
+        self.npoints = 10
         self.nbasis = 10
 
     def basis(self, rst):

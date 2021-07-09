@@ -522,6 +522,8 @@ class Tet2(Tet):
         h[2] += -h[5] / 2 - h[6] / 2 - h[8] / 2
         h[3] += -h[7] / 2 - h[8] / 2 - h[9] / 2
 
+        return h
+
     def basisprime(self, rst):
         "linear tetrahedral derivative of basis functions"
         r, s, t = rst
@@ -541,4 +543,5 @@ class Tet2(Tet):
         dhdr[1] += -dhdr[4] / 2 - dhdr[5] / 2 - dhdr[7] / 2
         dhdr[2] += -dhdr[5] / 2 - dhdr[6] / 2 - dhdr[8] / 2
         dhdr[3] += -dhdr[7] / 2 - dhdr[8] / 2 - dhdr[9] / 2
+
         return dhdr

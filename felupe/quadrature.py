@@ -88,17 +88,24 @@ class LinearTetrahedron(Scheme):
 class QuadraticTriangle(Scheme):
     def __init__(self):
         scheme = quadpy.t2.schemes["hammer_marlowe_stroud_2"]()
-        triangle = np.array([[0, 0], [1, 0], [0, 1]])
-        points = quadpy.t2.transform(scheme.points, triangle.T)
-        super().__init__(points.T, scheme.weights / 2)
+        triangle = np.array([[0, 0], 
+                             [1, 0], 
+                             [0, 1]])
+        
+        points = np.dot(triangle.T, scheme.points)
+        super().__init__(points.T, scheme.weights)
 
 
 class QuadraticTetrahedron(Scheme):
     def __init__(self):
         scheme = quadpy.t3.schemes["hammer_marlowe_stroud_1"]()
-        tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        points = quadpy.tn.transform(scheme.points, tetra.T)
-        super().__init__(points.T, scheme.weights / 6)
+        tetra = np.array([[0, 0, 0], 
+                          [1, 0, 0], 
+                          [0, 1, 0], 
+                          [0, 0, 1]])
+        
+        points = np.dot(tetra.T, scheme.points)
+        super().__init__(points.T, scheme.weights)
 
 
 class QuadPyScheme(Scheme):

@@ -503,42 +503,53 @@ class Tet2(Tet):
     def basis(self, rst):
         "linear tetrahedral basis functions"
         r, s, t = rst
+
+        t1 = 1 - r - s - t
+        t2 = r
+        t3 = s
+        t4 = t
+
         h = np.array(
             [
-                1 - r - s - t,
-                r,
-                s,
-                t,
-                4 * r * (1 - r - s - t),
-                4 * r * s,
-                4 * s * (1 - r - s - t),
-                4 * r * t,
-                4 * s * t,
-                4 * t * (1 - r - s - t),
+                t1 * (2 * t1 - 1),
+                t2 * (2 * t2 - 1),
+                t3 * (2 * t3 - 1),
+                t4 * (2 * t4 - 1),
+                4 * t1 * t2,
+                4 * t2 * t3,
+                4 * t3 * t1,
+                4 * t1 * t4,
+                4 * t2 * t4,
+                4 * t3 * t4,
             ]
         )
-        h[0] += -h[4] / 2 - h[6] / 2 - h[9] / 2
-        h[1] += -h[4] / 2 - h[5] / 2 - h[7] / 2
-        h[2] += -h[5] / 2 - h[6] / 2 - h[8] / 2
-        h[3] += -h[7] / 2 - h[8] / 2 - h[9] / 2
+
+        return h
 
     def basisprime(self, rst):
         "linear tetrahedral derivative of basis functions"
         r, s, t = rst
-        dhdr_a = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        dhdr_b = np.array(
+
+        t1 = 1 - r - s - t
+        t2 = r
+        t3 = s
+        t4 = t
+
+        dhdt = np.array(
             [
-                [4 * (1 - r - s - t) - 4 * r, -4 * r, -4 * r],
-                [4 * s, 4 * r, 0],
-                [-4 * s, 4 * (1 - r - s - t) - 4 * s, -4 * s],
-                [4 * t, 0, 4 * r],
-                [0, 4 * t, 4 * s],
-                [-4 * t, -4 * t, 4 * (1 - r - s - t) - 4 * t],
+                [4 * t1 - 1, 0, 0, 0],
+                [0, 4 * t2 - 1, 0, 0],
+                [0, 0, 4 * t3 - 1, 0],
+                [0, 0, 0, 4 * t4 - 1],
+                [4 * t2, 4 * t1, 0, 0],
+                [0, 4 * t3, 4 * t2, 0],
+                [4 * t3, 0, 4 * t1, 0],
+                [4 * t4, 0, 0, 4 * t1],
+                [0, 4 * t4, 0, 4 * t2],
+                [0, 0, 4 * t4, 4 * t3],
             ]
         )
-        dhdr = np.vstack((dhdr_a, dhdr_b))
-        dhdr[0] += -dhdr[4] / 2 - dhdr[6] / 2 - dhdr[9] / 2
-        dhdr[1] += -dhdr[4] / 2 - dhdr[5] / 2 - dhdr[7] / 2
-        dhdr[2] += -dhdr[5] / 2 - dhdr[6] / 2 - dhdr[8] / 2
-        dhdr[3] += -dhdr[7] / 2 - dhdr[8] / 2 - dhdr[9] / 2
-        return dhdr
+
+        dtdr = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+        return np.dot(dhdt, dtdr)

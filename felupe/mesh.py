@@ -602,33 +602,89 @@ def convert(mesh, order=0, calc_nodes=False):
     return Mesh(nodes, connectivity, etype)
 
 
-def fix(mesh):
-    "Fixes connectivities of triangle and tetrahedral cells (V > 0)."
+def fix(points, cells, cell_type):
+    "Fixes cells array of tetrahedrals to ensure cell volume > 0."
 
-    if isinstance(mesh, Mesh):
-        nodes = mesh.nodes
-        connectivity = mesh.connectivity
-        etype = mesh.etype
-        return_mesh = True
-    else:
-        nodes, connectivity = mesh
-        return_mesh = False
+    if cell_type == "tetra":
 
-    dim = nodes.shape[1]
+        # extract point 0 of all cells and reshape and repeat
+        p0 = points[cells][:, 0].reshape(len(cells), 1, 3)
 
-    xx = nodes[connectivity][:, 1] - nodes[connectivity][:, 0]
-    yy = nodes[connectivity][:, 2] - nodes[connectivity][:, 0]
+        # calculate vertice "i" as v[:, i]
+        v = points[cells] - np.repeat(p0, 4, axis=1)
 
-    if dim == 3:
-        zz = nodes[connectivity][:, 3] - nodes[connectivity][:, 0]
-        volumes = np.diag(np.dot(zz, np.cross(xx, yy).T)) / 6
-    elif dim == 2:
-        volumes = np.cross(xx, yy) / 2
+        # calculate volume by the triple product
+        volume = np.einsum("...i,...i->...", v[:, 3], np.cross(v[:, 1], v[:, 2]))
 
-    permute = [0, 2, 1, 3][: 1 + dim]
-    connectivity[volumes < 0] = connectivity[volumes < 0][:, permute]
+        # permute point entries for cells with volume < 0
+        cells[volume < 0] = cells[volume < 0][:, [0, 2, 1, 3]]
 
-    if return_mesh:
-        return Mesh(nodes, connectivity, etype)
-    else:
-        return nodes, connectivity
+    return points, cells
+
+
+def collect_edges(points, cells, cell_type):
+    """ "Collect all unique edges (of triangles or tetrahedrons),
+    calculate and return midpoints on edges as well as the additional
+    cells array."""
+
+    supported_cell_types = ["triangle", "tetra", "quad", "hexahedron"]
+
+    if cell_type not in supported_cell_types:
+        raise TypeError("Cell type not implemented.")
+
+    number_of_edges = {"triangle": 3, "tetra": 6, "quad": 4, "hexahedron": 12}
+
+    if cell_type in ["triangle", "tetra"]:
+        # k-th edge is (i[k], j[k])
+        i = [0, 1, 2, 3, 3, 3][: number_of_edges[cell_type]]
+        j = [1, 2, 0, 0, 1, 2][: number_of_edges[cell_type]]
+
+    elif cell_type in ["quad", "hexahedron"]:
+        # k-th edge is (i[k], j[k])
+        i = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3][: number_of_edges[cell_type]]
+        j = [1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7][: number_of_edges[cell_type]]
+
+    edges_to_stack = cells[:, i], cells[:, j]
+
+    # sort points of edges
+    edges = np.sort(np.dstack(edges_to_stack).reshape(-1, 2), axis=1)
+
+    # obtain unique edges and inverse mapping
+    edges_unique, inverse = np.unique(edges, False, True, False, 0)
+
+    # calculate midpoints on edges as mean
+    points_edges = np.mean(points[edges_unique.T], axis=0)
+
+    # create the additionals cells array
+    cells_edges = inverse.reshape(len(cells), -1)
+
+    return points_edges, cells_edges
+
+
+def add_midpoints_edges(points, cells, cell_type):
+    """ "Add midpoints on edges for given points and cells
+    and update cell_type accordingly."""
+
+    cell_types_new = {
+        "triangle": "triangle6",
+        "tetra": "tetra10",
+        "quad": "quad8",
+        "hexahedron": "hexahedron20",
+    }
+
+    # collect edges
+    points_edges, cells_edges = collect_edges(
+        points,
+        cells,
+        cell_type,
+    )
+
+    # add offset to point index for edge-midpoints
+    # in additional cells array
+    cells_edges += len(points)
+
+    # vertical stack of points and horizontal stack of edges
+    points_new = np.vstack((points, points_edges))
+    cells_new = np.hstack((cells, cells_edges))
+
+    return points_new, cells_new, cell_types_new[cell_type]

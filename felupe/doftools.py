@@ -134,9 +134,7 @@ def extend(fields, dof0, dof1):
             + np.arange(dim)
         )
         dof1_add = (
-            offset
-            + dim * np.tile(mesh.points_with_cells, (dim, 1)).T
-            + np.arange(dim)
+            offset + dim * np.tile(mesh.points_with_cells, (dim, 1)).T + np.arange(dim)
         )
 
         dof0_xt = np.append(dof0_xt, dof0_add.ravel())

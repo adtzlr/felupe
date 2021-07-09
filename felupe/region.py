@@ -67,9 +67,7 @@ class Region:
             # geometric gradient as partial derivative of undeformed coordinate "I"
             # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
             # for every cell "e"
-            dXdr = np.einsum(
-                "eaI,aJp->IJpe", self.mesh.points[self.cells], self.dhdr
-            )
+            dXdr = np.einsum("eaI,aJp->IJpe", self.mesh.points[self.cells], self.dhdr)
             drdX = inv(dXdr)
 
             # dV_pe = det(dXdr)_pe * w_p

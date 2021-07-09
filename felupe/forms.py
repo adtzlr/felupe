@@ -173,9 +173,7 @@ class IntegralForm:
         #    from numba import jit
 
         if not grad_v:
-            vb = np.tile(
-                v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells
-            )
+            vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)
         else:
             vb = v.region.dhdX
 

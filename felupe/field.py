@@ -110,9 +110,7 @@ class Field:
         # for cell "e"
         if values is None:
             values = self.values
-        return np.einsum(
-            "ea...,ap->...pe", values[self.region.cells], self.region.h
-        )
+        return np.einsum("ea...,ap->...pe", values[self.region.cells], self.region.h)
 
     def copy(self):
         out = copy(self)

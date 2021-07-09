@@ -45,9 +45,7 @@ class Mesh:
         self.ncells = self.cells.shape[0]
 
         # get number of cells per point
-        points_in_cell, self.cells_per_point = np.unique(
-            cells, return_counts=True
-        )
+        points_in_cell, self.cells_per_point = np.unique(cells, return_counts=True)
 
         # check if there are points without cells
         if self.npoints != len(self.cells_per_point):
@@ -135,9 +133,7 @@ class CubeAdvanced(Cube):
         if L0 > 0 or B0 > 0:
             mask = np.logical_or(self.points[:, 0] > L0 / 2, self.points[:, 1] > B0 / 2)
             keep = np.arange(self.npoints)[mask]
-            select = np.array(
-                [np.all(np.isin(cell, keep)) for cell in self.cells]
-            )
+            select = np.array([np.all(np.isin(cell, keep)) for cell in self.cells])
             self.cells = self.cells[select]
 
         z = self.points.copy()
@@ -472,7 +468,9 @@ def rotate(mesh, angle_deg, axis, center=None):
         center = np.array(center)
     center = center.reshape(1, -1)
 
-    points_new = (rotation_matrix(angle_deg, dim, axis) @ (points - center).T).T + center
+    points_new = (
+        rotation_matrix(angle_deg, dim, axis) @ (points - center).T
+    ).T + center
 
     if return_mesh:
         return Mesh(points_new, cells, cell_type)
@@ -543,7 +541,9 @@ def sweep(mesh, decimals=None):
     else:
         points_rounded = np.round(points, decimals)
 
-    points_new, index, inverse, counts = np.unique(points_rounded, True, True, True, axis=0)
+    points_new, index, inverse, counts = np.unique(
+        points_rounded, True, True, True, axis=0
+    )
 
     original = np.arange(len(points))
 
@@ -569,9 +569,7 @@ def convert(mesh, order=0, calc_points=False):
         raise NotImplementedError("Unsupported order conversion.")
 
     if calc_points:
-        points = np.stack(
-            [np.mean(mesh.points[cell], axis=0) for cell in mesh.cells]
-        )
+        points = np.stack([np.mean(mesh.points[cell], axis=0) for cell in mesh.cells])
     else:
         points = np.zeros((mesh.ncells, mesh.ndim), dtype=int)
 

@@ -56,8 +56,8 @@ class Indices:
     def __init__(self, eai, ai, region, dim):
         self.eai = eai
         self.ai = ai
-        self.dof = np.arange(region.npoints * dim).reshape(-1, dim)
-        self.shape = (region.npoints * dim, 1)
+        self.dof = np.arange(region.mesh.npoints * dim).reshape(-1, dim)
+        self.shape = (region.mesh.npoints * dim, 1)
 
 
 class Field:
@@ -75,9 +75,9 @@ class Field:
         if type(values) == np.ndarray:
             self.values = values
         else:
-            self.values = np.ones((region.npoints, dim)) * values
+            self.values = np.ones((region.mesh.npoints, dim)) * values
 
-        eai, ai = self.indices_per_cell(self.region.cells, dim)
+        eai, ai = self.indices_per_cell(self.region.mesh.cells, dim)
         self.indices = Indices(eai, ai, region, dim)
 
     def indices_per_cell(self, cells, dim):
@@ -99,7 +99,7 @@ class Field:
         # for cell "e"
         return np.einsum(
             "ea...,aJpe->...Jpe",
-            self.values[self.region.cells],
+            self.values[self.region.mesh.cells],
             self.region.dhdX,
         )
 
@@ -110,7 +110,9 @@ class Field:
         # for cell "e"
         if values is None:
             values = self.values
-        return np.einsum("ea...,ap->...pe", values[self.region.cells], self.region.h)
+        return np.einsum(
+            "ea...,ap->...pe", values[self.region.mesh.cells], self.region.h
+        )
 
     def copy(self):
         out = copy(self)

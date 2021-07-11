@@ -261,15 +261,6 @@ def tovoigt(A):
     return B
 
 
-def tovoigt2(A):
-    "Deprecated."
-    B = np.zeros((A.shape[0], 6))
-    ij = [(0, 0), (1, 1), (2, 2), (0, 0), (1, 2), (0, 2)]
-    for i6, (i, j) in enumerate(ij):
-        B[:, i6] = A[:, i, j]
-    return B
-
-
 try:
     from numba import jit, prange
 

@@ -363,20 +363,20 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim, ngauss, nelems = fun.shape[-3:]
+        ndim, ngauss, ncells = fun.shape[-3:]
 
-        out = np.zeros((npoints_a, ndim, npoints_b, nelems))
+        out = np.zeros((npoints_a, ndim, npoints_b, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
-                    for e in prange(nelems):  # cell "e"
+                    for c in prange(ncells):  # cell "c"
                         for i in prange(ndim):  # first index "i"
                             for J in prange(ndim):  # second index "J"
-                                out[a, i, b, e] += (
-                                    v[a, J, p, e]
-                                    * u[b, p, e]
-                                    * fun[i, J, p, e]
-                                    * dV[p, e]
+                                out[a, i, b, c] += (
+                                    v[a, J, p, c]
+                                    * u[b, p, c]
+                                    * fun[i, J, p, c]
+                                    * dV[p, c]
                                 )
 
         return out
@@ -386,20 +386,20 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim, ngauss, nelems = fun.shape[-3:]
+        ndim, ngauss, ncells = fun.shape[-3:]
 
-        out = np.zeros((npoints_a, npoints_b, ndim, nelems))
+        out = np.zeros((npoints_a, npoints_b, ndim, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
-                    for e in prange(nelems):  # cell "e"
+                    for c in prange(ncells):  # cell "c"
                         for k in prange(ndim):  # third index "k"
                             for L in prange(ndim):  # fourth index "L"
-                                out[a, b, k, e] += (
-                                    v[a, p, e]
-                                    * u[b, L, p, e]
-                                    * fun[k, L, p, e]
-                                    * dV[p, e]
+                                out[a, b, k, c] += (
+                                    v[a, p, c]
+                                    * u[b, L, p, c]
+                                    * fun[k, L, p, c]
+                                    * dV[p, c]
                                 )
 
         return out
@@ -408,16 +408,16 @@ try:
     def integrate_gradv(v, fun, dV):
 
         npoints = v.shape[0]
-        ndim, ngauss, nelems = fun.shape[-3:]
+        ndim, ngauss, ncells = fun.shape[-3:]
 
-        out = np.zeros((npoints, ndim, nelems))
+        out = np.zeros((npoints, ndim, ncells))
 
         for a in prange(npoints):  # basis function "a"
             for p in prange(ngauss):  # integration point "p"
-                for e in prange(nelems):  # cell "e"
+                for c in prange(ncells):  # cell "c"
                     for i in prange(ndim):  # first index "i"
                         for J in prange(ndim):  # second index "J"
-                            out[a, i, e] += v[a, J, p, e] * fun[i, J, p, e] * dV[p, e]
+                            out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
 
         return out
 
@@ -426,22 +426,22 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim, ngauss, nelems = fun.shape[-3:]
+        ndim, ngauss, ncells = fun.shape[-3:]
 
-        out = np.zeros((npoints_a, ndim, npoints_b, ndim, nelems))
+        out = np.zeros((npoints_a, ndim, npoints_b, ndim, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
-                    for e in prange(nelems):  # cell "e"
+                    for c in prange(ncells):  # cell "c"
                         for i in prange(ndim):  # first index "i"
                             for J in prange(ndim):  # second index "J"
                                 for k in prange(ndim):  # third index "k"
                                     for L in prange(ndim):  # fourth index "L"
-                                        out[a, i, b, k, e] += (
-                                            v[a, J, p, e]
-                                            * u[b, L, p, e]
-                                            * fun[i, J, k, L, p, e]
-                                            * dV[p, e]
+                                        out[a, i, b, k, c] += (
+                                            v[a, J, p, c]
+                                            * u[b, L, p, c]
+                                            * fun[i, J, k, L, p, c]
+                                            * dV[p, c]
                                         )
 
         return out

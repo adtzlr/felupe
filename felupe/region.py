@@ -37,24 +37,25 @@ from .math import det, inv
 
 
 class Region:
+    """A numeric region."""
+
     def __init__(self, mesh, element, quadrature):
+        """A numeric region, created by a combination of a mesh,
+        an element and a numeric integration scheme (quadrature).
+        """
         self.mesh = mesh
         self.element = element
         self.quadrature = quadrature
-        self.cells = mesh.cells
-        self.points = mesh.points
-        self.npoints = mesh.npoints
-        self.ncells = mesh.ncells
 
         # array with degrees of freedom
-        # h_ap
+        # h_bp
         # ----
-        # basis function "a" evaluated at quadrature point "p"
+        # basis function "b" evaluated at quadrature point "p"
         self.h = np.array([self.element.basis(p) for p in self.quadrature.points]).T
 
-        # dhdr_aJp
+        # dhdr_bJp
         # --------
-        # partial derivative of basis function "a"
+        # partial derivative of basis function "b"
         # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
         self.dhdr = np.array(
             [self.element.basisprime(p) for p in self.quadrature.points]
@@ -66,23 +67,25 @@ class Region:
             # -----------------------------------
             # geometric gradient as partial derivative of undeformed coordinate "I"
             # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
-            # for every cell "e"
-            dXdr = np.einsum("eaI,aJp->IJpe", self.mesh.points[self.cells], self.dhdr)
+            # for every cell "c"
+            dXdr = np.einsum(
+                "cbI,bJp->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
+            )
             drdX = inv(dXdr)
 
-            # dV_pe = det(dXdr)_pe * w_p
+            # dV_pe = det(dXdr)_pc * w_p
             # determinant of geometric gradient evaluated at quadrature point "p"
-            # for every cell "e" multiplied by corresponding quadrature weight
+            # for every cell "c" multiplied by corresponding quadrature weight
             # denoted as "differential volume element"
             self.dV = det(dXdr) * self.quadrature.weights.reshape(-1, 1)
 
-            # dhdX_aJpe
+            # dhdX_bJpc
             # ---------
-            # partial derivative of basis function "a"
+            # partial derivative of basis function "b"
             # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-            # for every cell "e"
-            self.dhdX = np.einsum("aIp,IJpe->aJpe", self.dhdr, drdX)
+            # for every cell "c"
+            self.dhdX = np.einsum("bIp,IJpc->bJpc", self.dhdr, drdX)
 
     def volume(self, detF=1):
-        "Calculate cell volume for cell 'e'."
-        return np.einsum("pe->e", detF * self.dV)
+        "Calculate cell volume for cell 'c'."
+        return np.einsum("pc->c", detF * self.dV)

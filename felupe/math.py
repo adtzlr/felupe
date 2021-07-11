@@ -29,6 +29,7 @@ import numpy as np
 
 
 def values(fields):
+    "Return values of a field or a tuple of fields."
     if isinstance(fields, tuple):
         return np.concatenate([field.values.ravel() for field in fields])
     else:
@@ -36,22 +37,27 @@ def values(fields):
 
 
 def norms(arrays):
+    "Calculate norms of a list of arrays."
     return [np.linalg.norm(arr) for arr in arrays]
 
 
 def interpolate(A):
+    "Interpolate method of field A."
     return A.interpolate()
 
 
 def grad(A):
+    "Gradient method of field A."
     return A.grad()
 
 
 def sym(A):
+    "Symmetric part of matrix A."
     return (A + transpose(A)) / 2
 
 
 def identity(A, ndim=None):
+    "identity according to matrix A with optional specified dim."
     ndimA, g, e = A.shape[-3:]
     if ndim is None:
         ndim = ndimA
@@ -59,6 +65,7 @@ def identity(A, ndim=None):
 
 
 def dya(A, B, mode=2):
+    "Dyadic (outer or kronecker) product of two tensors."
     if mode == 2:
         return np.einsum("ij...,kl...->ijkl...", A, B)
     elif mode == 1:
@@ -67,12 +74,12 @@ def dya(A, B, mode=2):
         raise ValueError("unknown mode. (1 or 2)", mode)
 
 
-def _linalginv(A):
-    return np.linalg.inv(A.T).T
-
-
 def inv(A, determinant=None, full_output=False, sym=False):
-    invA = np.zeros_like(A)
+    """ "Inverse of A with optionally pre-calculated determinant,
+    optional additional output of the calculated determinant or
+    a simplified calculation of the inverse for sym. matrices."""
+
+    detAinvA = np.zeros_like(A)
 
     # if sym is None:
     #    sym = np.all(A == transpose(A))
@@ -84,40 +91,37 @@ def inv(A, determinant=None, full_output=False, sym=False):
 
     if A.shape[0] == 3:
 
-        invA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
-        invA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
-        invA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
+        detAinvA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
+        detAinvA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
+        detAinvA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
 
-        invA[0, 1] = A[0, 2] * A[2, 1] - A[0, 1] * A[2, 2]
-        invA[0, 2] = -A[0, 2] * A[1, 1] + A[0, 1] * A[1, 2]
-        invA[1, 2] = A[0, 2] * A[1, 0] - A[0, 0] * A[1, 2]
+        detAinvA[0, 1] = A[0, 2] * A[2, 1] - A[0, 1] * A[2, 2]
+        detAinvA[0, 2] = -A[0, 2] * A[1, 1] + A[0, 1] * A[1, 2]
+        detAinvA[1, 2] = A[0, 2] * A[1, 0] - A[0, 0] * A[1, 2]
 
         if sym:
-            invA[1, 0] = invA[0, 1]
-            invA[2, 0] = invA[0, 2]
-            invA[2, 1] = invA[1, 2]
+            detAinvA[1, 0] = detAinvA[0, 1]
+            detAinvA[2, 0] = detAinvA[0, 2]
+            detAinvA[2, 1] = detAinvA[1, 2]
         else:
-            invA[1, 0] = A[1, 2] * A[2, 0] - A[1, 0] * A[2, 2]
-            invA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
-            invA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
+            detAinvA[1, 0] = A[1, 2] * A[2, 0] - A[1, 0] * A[2, 2]
+            detAinvA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
+            detAinvA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
 
     elif A.shape[0] == 2:
-        invA[0, 0] = A[1, 1]
-        invA[0, 1] = -A[0, 1]
-        invA[1, 0] = -A[1, 0]
-        invA[1, 1] = A[0, 0]
+        detAinvA[0, 0] = A[1, 1]
+        detAinvA[0, 1] = -A[0, 1]
+        detAinvA[1, 0] = -A[1, 0]
+        detAinvA[1, 1] = A[0, 0]
 
     if full_output:
-        return invA / detA, detA
+        return detAinvA / detA, detA
     else:
-        return invA / detA
-
-
-def _linalgdet(A):
-    return np.linalg.det(A.T).T
+        return detAinvA / detA
 
 
 def det(A):
+    "Determinant of matrix A."
     if A.shape[0] == 3:
         detA = (
             A[0, 0] * A[1, 1] * A[2, 2]
@@ -133,26 +137,30 @@ def det(A):
 
 
 def dev(A):
+    "Deviator of matrix A."
     dim = A.shape[0]
     return A - trace(A) / dim * identity(A)
 
 
 def cof(A):
+    "Cofactor matrix of A (as a wrapper for the inverse of A)."
     return transpose(inv(A), determinant=1.0)
 
 
-def eig(A):
-    wA, vA = np.linalg.eig(A.transpose([2, 3, 0, 1]))
+def eig(A, eig=np.linalg.eig):
+    "Eigenvalues and -vectors of matrix A."
+    wA, vA = eig(A.transpose([2, 3, 0, 1]))
     return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
 
 
 def eigh(A):
-    wA, vA = np.linalg.eigh(A.transpose([2, 3, 0, 1]))
-    return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
+    "Eigenvalues and -vectors of a symmetric matrix A."
+    return eig(A, eig=np.linalg.eigh)
 
 
-def eigvals(A, shear=False):
-    wA = np.linalg.eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
+def eigvals(A, shear=False, eig=np.linalg.eig):
+    "Eigenvalues (and optional principal shear values) of a matrix A."
+    wA = eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
     if shear:
         ndim = wA.shape[0]
         if ndim == 3:
@@ -165,27 +173,42 @@ def eigvals(A, shear=False):
         return wA
 
 
-def transpose(A):
-    return A.transpose([1, 0, 2, 3])
+def eigvalsh(A, shear=False):
+    "Eigenvalues (and optional principal shear values) of a symmetric matrix A."
+    return eigvals(A, shear=shear, eig=np.linalg.eigh)
+
+
+def transpose(A, mode=1):
+    "Transpose (mode=1) or major-transpose (mode=2) of matrix A."
+    if mode == 1:
+        return A.transpose([1, 0, 2, 3])
+    elif mode == 2:
+        return np.einsum("ijkl...->klij...", A, optimize=True)
+    else:
+        raise ValueError("Unknown value of mode.")
 
 
 def majortranspose(A):
-    return np.einsum("ijkl...->klij...", A)
+    return transpose(A, mode=2)
 
 
 def trace(A):
+    "The sum of the diagonal elements of A."
     return np.trace(A)
 
 
 def cdya_ik(A, B):
-    return np.einsum("ij...,kl...->ikjl...", A, B)
+    "ik - crossed dyadic-product of A and B."
+    return np.einsum("ij...,kl...->ikjl...", A, B, optimize=True)
 
 
 def cdya_il(A, B):
-    return np.einsum("ij...,kl...->ilkj...", A, B)
+    "il - crossed dyadic-product of A and B."
+    return np.einsum("ij...,kl...->ilkj...", A, B, optimize=True)
 
 
 def cdya(A, B, parallel=True):
+    "symmetric - crossed dyadic-product of A and B."
     if parallel:
         return cdya_parallel(A, B)
     else:
@@ -193,6 +216,7 @@ def cdya(A, B, parallel=True):
 
 
 def dot(A, B):
+    "Dot-product of A and B."
     if len(A.shape) == len(B.shape):
         return np.einsum("ik...,kj...->ij...", A, B)
     elif len(A.shape) + 2 == len(B.shape):
@@ -204,6 +228,7 @@ def dot(A, B):
 
 
 def ddot(A, B):
+    "Double-Dot-product of A and B."
     if len(A.shape) == len(B.shape):
         return np.einsum("ij...,ij...->...", A, B)
     elif len(A.shape) + 2 == len(B.shape):
@@ -215,10 +240,12 @@ def ddot(A, B):
 
 
 def ddot44(A, B):
+    "Double-Dot-product of A and B where A and B being two fourth-order tensors."
     return np.einsum("ijkl...,klmn...->ijmn...", A, B, optimize=True)
 
 
 def ddot444(A, B, C, parallel=True):
+    "Double-Dot-product of A, B and C where A, B and C being three fourth-order tensors."
     if parallel:
         return ddot444_parallel(A, B, C)
     else:
@@ -226,6 +253,7 @@ def ddot444(A, B, C, parallel=True):
 
 
 def tovoigt(A):
+    "Convert tensor to voigt notation."
     B = np.zeros((6, *A.shape[-2:]))
     ij = [(0, 0), (1, 1), (2, 2), (0, 0), (1, 2), (0, 2)]
     for i6, (i, j) in enumerate(ij):
@@ -234,6 +262,7 @@ def tovoigt(A):
 
 
 def tovoigt2(A):
+    "Deprecated."
     B = np.zeros((A.shape[0], 6))
     ij = [(0, 0), (1, 1), (2, 2), (0, 0), (1, 2), (0, 2)]
     for i6, (i, j) in enumerate(ij):

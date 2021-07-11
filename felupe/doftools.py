@@ -81,7 +81,7 @@ find.dof1 = get_dof1
 
 
 def partition(fields, bounds):
-    "Partition dof-list to prescribed and active parts."
+    "Partition dof-list into prescribed (dof0) and active (dof1) parts."
 
     # if a tuple is passed it is assumed that the first
     # field is associated to the boundaries
@@ -104,6 +104,7 @@ def partition(fields, bounds):
 
 
 def extend(fields, dof0, dof1):
+    "Extend partitioned dof-lists dof0 and dof1."
 
     # get sizes of fields and calculate offsets
     fieldsizes = [f.indices.dof.size for f in fields]
@@ -113,7 +114,7 @@ def extend(fields, dof0, dof1):
     dof0_xt = dof0.copy()
     dof1_xt = dof1.copy()
 
-    # loop over fields starting from the second ones_like
+    # loop over fields starting from the second one
     for field, offset, fieldsize in zip(fields[1:], offsets[:-1], fieldsizes[1:]):
 
         # obtain the mesh and the dimension from the current field
@@ -205,6 +206,8 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
 
 
 class Boundary:
+    "A Boundary as a collection of prescribed dofs (coordinate components of a field at points of a mesh)."
+
     def __init__(
         self,
         field,

@@ -32,6 +32,8 @@ from copy import deepcopy as copy
 
 
 class ArbitraryOrderLagrange:
+    "Lagrange quad/hexahdron finite element of arbitrary order."
+
     def __init__(self, order, ndim):
         self.ndim = ndim
         self.order = order

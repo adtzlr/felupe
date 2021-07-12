@@ -188,6 +188,11 @@ class Field:
         else:
             raise TypeError("Unknown type.")
 
+    def __getitem__(self, dof):
+        "Allow slice-based access to flattened array with values."
+
+        return self.values.ravel()[dof]
+
 
 class FieldAxisymmetric(Field):
     def __init__(self, region, dim=2, values=0):

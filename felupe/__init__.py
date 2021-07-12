@@ -5,6 +5,7 @@ from . import quadrature
 from . import doftools
 from . import element
 from . import field
+from . import tools
 
 # from . import region
 from . import constitution

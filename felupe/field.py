@@ -125,16 +125,16 @@ class Field:
         self.full(a)
 
     def __add__(self, newvalues):
-        self.__iadd__(newvalues)
+        return self.__iadd__(newvalues)
 
     def __sub__(self, newvalues):
-        self.__isub__(newvalues)
+        return self.__isub__(newvalues)
 
     def __mul__(self, newvalues):
-        self.__imul__(newvalues)
+        return self.__imul__(newvalues)
 
     def __truediv__(self, newvalues):
-        self.__itruediv__(newvalues)
+        return self.__itruediv__(newvalues)
 
     def __iadd__(self, newvalues):
 

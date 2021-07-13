@@ -25,30 +25,80 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from copy import deepcopy
+
 from numpy.linalg import norm
 import numpy as np
 
-from .math import grad, identity
+from .math import grad, identity, interpolate
+from . import solve as solvetools
 
 
-def defgrad(displacement):
+def defgrad_upJ(fields):
+    """Calculate the deformation gradient of a given list of fields
+    and evaluate all other field values at integration points."""
+    dudX = grad(fields[0])
+    F = identity(dudX) + dudX
+    return F, *[interpolate(f) for f in fields[1:]]
+
+
+def defgrad(field):
     "Calculate the deformation gradient of a given displacement field."
-    dudX = grad(displacement)
+    dudX = grad(field)
     return identity(dudX) + dudX
 
 
+def update(x, dx):
+    "Update field values."
+
+    if isinstance(x, tuple) or isinstance(x, list):
+        for x, dx in zip(x, dx):
+            x += dx
+    else:
+        x += dx
+
+    return x
+
+
+def solve(K, f, field, dof0, dof1, ext):
+    "Solve linear equation system K dx = b"
+    system = solvetools.partition(field, K, dof1, dof0, -f)
+    dx = solvetools.solve(*system, ext)
+    return dx
+
+
+def solve_mixed(K, f, fields, dof0, dof1, ext, unstack):
+    "Solve linear equation system K dx = b"
+    system = solvetools.partition(fields, K, dof1, dof0, -f)
+    dfields = np.split(solvetools.solve(*system, ext), unstack)
+    return dfields
+
+
+def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3):
+    "Check if solution dx is valid."
+
+    # get reference values of "f" and "x"
+    ref_f = 1 if np.linalg.norm(f[dof0]) == 0 else np.linalg.norm(f[dof0])
+    ref_x = 1 if np.linalg.norm(x[dof0]) == 0 else np.linalg.norm(x[dof0])
+
+    norm_f = np.linalg.norm(f[dof1]) / ref_f
+    norm_x = np.linalg.norm(dx.ravel()[dof1]) / ref_x
+
+    if norm_f < tol_f and norm_x < tol_x:
+        success = True
+    else:
+        success = False
+
+    return success
+
+
 class Result:
-    def __init__(
-        self, x, f=None, K=None, converged=None, iterations=None, ref_x=None, ref_f=None
-    ):
+    def __init__(self, x, fun=None, success=None, iterations=None):
         "Result class."
         self.x = x
-        self.f = f
-        self.K = K
-        self.converged = converged
+        self.fun = fun
+        self.success = success
         self.iterations = iterations
-        self.ref_f = ref_f
-        self.ref_x = ref_x
 
 
 def newtonrhapson(
@@ -57,62 +107,63 @@ def newtonrhapson(
     jac,
     solve=np.linalg.solve,
     maxiter=8,
-    norm=norm,
-    tol_f=np.inf,
-    tol_x=1e-2,
-    dof0=slice(None, None, None),
-    dof1=slice(None, None, None),
     pre=lambda x: x,
-    post=lambda x: x,
+    update=lambda x, dx: x + dx,
+    check=lambda dx, x, f: norm(dx) < np.finfo(float).eps,
     args=(),
     kwargs={},
+    kwargs_solve={},
+    kwargs_check={},
 ):
-    "General-purpose Newton-Rhapson algorithm."
+    """
+    General-purpose Newton-Rhapson algorithm
+    ========================================
 
-    # get pre-processed initial unknowns "y" from "x0"
-    y = pre(x, *args, **kwargs)
+    (Nonlinear) equilibrium equations `f`, as a function `f(x)` of the
+    unknowns `x`, are solved by linearization of `f` at given unknowns `x0`.
 
-    # evaluate function and jacobian at initial state "y"
-    f = fun(y, *args, **kwargs)
-    K = jac(y, *args, **kwargs)
+        f(x0) = 0                                          (1)
 
-    # init converged flag
-    converged = False
+        f(x0 + dx)     =  f(x0) + (df/dx)(x0) dx (= 0)     (2)
+        (df/dx)(x0) dx = -f(x0)
+
+        dx = solve(df/dx(x0), -f(x0))                      (3)
+
+         x = x0 + dx                                       (4)
+
+    Repeated evaluations of Eq.(3) and Eq.(4) lead to an incrementally updated
+    solution of `x` which is shown in equation (4). Herein `xn` refer to the
+    inital unknowns whereas `x` to the updated unknowns (the subscript `n+1`
+    is dropped for readability).
+
+        dx = solve(df/dx(xn), -f(xn))                      (5)
+
+         x = xn + dx                                       (6)
+
+    Eq.(5) and Eq.(6) are repeated until `check(dx, x, f)` returns `True`.
+
+    """
+
+    # pre-evaluate function at given unknowns "x"
+    f = fun(pre(x), *args, **kwargs)
 
     # iteration loop
     for iteration in range(maxiter):
 
+        # evaluate jacobian at unknowns "x"
+        K = jac(pre(x), *args, **kwargs)
+
         # solve linear system and update solution
-        dx = solve(K, -f)
-        x += dx
+        result = solve(K, -f, **kwargs_solve)
+        x = update(x, result)
 
-        # get pre-processed updated unknowns "y" from "x"
-        y = pre(x, *args, **kwargs)
+        # evaluate function at unknowns "x"
+        f = fun(pre(x), *args, **kwargs)
 
-        # evaluate function and jacobian at updated state "y"
-        f = fun(y, *args, **kwargs)
+        # check success of solution
+        success = check(result, x, f, **kwargs_check)
 
-        # postprocess function "f" to "g"
-        g = post(f, *args, **kwargs)
-
-        # get reference values of "f" and "x"
-        ref_f = norm(f[dof0])
-        ref_x = norm(x[dof0])
-
-        if ref_f == 0:
-            ref_f = 1
-
-        if ref_x == 0:
-            ref_x = 1
-
-        norm_f = norm(f[dof1]) / ref_f
-        norm_x = norm(dx.ravel()[dof1]) / ref_x
-
-        if norm_f < tol_f and norm_x < tol_x:
-            converged = True
+        if success:
             break
 
-        else:
-            K = jac(y, *args, **kwargs)
-
-    return Result(x, g, K, converged, 1 + iteration, ref_x, ref_f)
+    return Result(deepcopy(x), f, success, 1 + iteration)

@@ -492,10 +492,10 @@ def revolve(mesh, n=11, phi=180, axis=0):
     dim = points.shape[1]
     if dim == 1:
         sl = slice(None, None, -1)
-        cell_type = "quad"
+        cell_type_new = "quad"
     elif dim == 2:
         sl = slice(None, None, None)
-        cell_type = "hexahedron"
+        cell_type_new = "hexahedron"
     else:
         raise ValueError("Revolution of a 3d mesh is not supported.")
 
@@ -506,19 +506,19 @@ def revolve(mesh, n=11, phi=180, axis=0):
     R = rotation_matrix
 
     points_new = np.vstack(
-        [(R(alpha_deg, Dim + 1) @ p.T).T for alpha_deg in np.linspace(0, phi, n)]
+        [(R(angle, dim + 1) @ p.T).T for angle in np.linspace(0, phi, n)]
     )
 
     c = [cells + len(p) * a for a in np.arange(n)]
 
     if phi == 360:
         c[-1] = c[0]
+        points_new = points_new[: len(points_new) - len(points)]
 
     cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
-    points_new = points_new[: len(points_new) - len(points)]
 
     if return_mesh:
-        return Mesh(points_new, cells_new, cell_type)
+        return Mesh(points_new, cells_new, cell_type_new)
     else:
         return points_new, cells_new
 

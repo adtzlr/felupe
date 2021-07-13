@@ -265,14 +265,13 @@ def incsolve(
         # obtain external displacements for prescribed dofs
         u0ext = apply(fields[0], bounds, dof0)
 
-        fun = (
-            lambda x: IntegralFormMixed(f(*x), fields, region.dV)
-            .assemble(parallel=parallel)
-            .toarray()[:, 0]
-        )
-        jac = lambda x: IntegralFormMixed(A(*x), fields, region.dV).assemble(
-            parallel=parallel
-        )
+        def fun(x):
+            linearform = IntegralFormMixed(f(*x), fields, region.dV)
+            return linearform.assemble(parallel=parallel).toarray()[:, 0]
+
+        def jac(x):
+            bilinearform = IntegralFormMixed(A(*x), fields, region.dV)
+            return bilinearform.assemble(parallel=parallel)
 
         Result = newtonrhapson(
             fun,

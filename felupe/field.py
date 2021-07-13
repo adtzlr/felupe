@@ -207,7 +207,7 @@ class FieldAxisymmetric(Field):
         # for cell "e"
         return np.einsum(
             "ea...,aJpe->...Jpe",
-            self.values[self.region.cells],
+            self.values[self.region.mesh.cells],
             self.region.dhdX,
         )
 

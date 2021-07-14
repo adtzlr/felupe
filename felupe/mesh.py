@@ -562,19 +562,32 @@ def sweep(mesh, decimals=None):
         return points_new, cells_new
 
 
-def convert(mesh, order=0, calc_points=False):
+def convert(mesh, order=0, calc_points=False, calc_midfaces=False, calc_midvolumes=False):
     "Convert mesh to a given order (currently only order=0 supported)."
 
-    if order != 0:
+    if order == 0:
+        
+        if calc_points:
+            points = np.stack([np.mean(mesh.points[cell], axis=0) for cell in mesh.cells])
+        else:
+            points = np.zeros((mesh.ncells, mesh.ndim), dtype=int)
+        
+        cells = np.arange(mesh.ncells).reshape(-1, 1)
+        cell_type = mesh.cell_type
+            
+    elif order == 2:
+        
+        points, cells, cell_type = add_midpoints_edges(mesh.points, mesh.cells, mesh.cell_type)
+        
+        if calc_midfaces:
+            points, cells, cell_type = add_midpoints_faces(mesh.points, mesh.cells, mesh.cell_type)
+        
+        if calc_midvolumes:
+            points, cells, cell_type = add_midpoints_volumes(mesh.points, mesh.cells, mesh.cell_type)
+        
+    else:
         raise NotImplementedError("Unsupported order conversion.")
 
-    if calc_points:
-        points = np.stack([np.mean(mesh.points[cell], axis=0) for cell in mesh.cells])
-    else:
-        points = np.zeros((mesh.ncells, mesh.ndim), dtype=int)
-
-    cells = np.arange(mesh.ncells).reshape(-1, 1)
-    cell_type = "None"
     return Mesh(points, cells, cell_type)
 
 

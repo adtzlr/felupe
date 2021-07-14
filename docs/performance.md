@@ -1,16 +1,32 @@
 # Benchmark 1 - Poisson problem
 The 2d poisson problem from [here](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_poisson.py) is solved with 4-noded quadrilaterals (linear basis) on a AMD Ryzen 5 2400G / 16GB RAM. The table below contains time spent on both assembly and linear solve as a function of the degrees of freedom. Assembly times do not contain numba JIT (just-in-time) compilation times.
 
+Performance without Numba (`b.assemble()`, `A.assemble()`)
+
 |   DOF   | Assembly | Linear solve |
 | ------- | -------- | ------------ |
-|    5000 |   0.1 s  |     0.2 s    |
-|   10082 |   0.2 s  |     0.1 s    |
-|   20000 |   0.4 s  |     0.1 s    |
-|   49928 |   0.9 s  |     0.3 s    |
-|  100352 |   1.9 s  |     0.6 s    |
-|  199712 |   3.9 s  |     1.3 s    |
-|  500000 |   9.0 s  |     3.5 s    |
-|  999698 |  18.3 s  |     8.6 s    |
+|    5041 |   0.1 s  |     0.0 s    |
+|   10000 |   0.3 s  |     0.0 s    |
+|   19881 |   0.5 s  |     0.1 s    |
+|   50176 |   1.3 s  |     0.2 s    |
+|   99856 |   2.6 s  |     0.5 s    |
+|  199809 |   5.3 s  |     1.0 s    |
+|  499849 |  13.5 s  |     3.1 s    |
+| 1000000 |  26.9 s  |     7.1 s    |
+
+
+and performance with Numba (`b.assemble(parallel=True)`, `A.assemble(parallel=True)`):
+
+|   DOF   | Assembly | Linear solve |
+| ------- | -------- | ------------ |
+|    5041 |   0.1 s  |     0.1 s    |
+|   10000 |   0.3 s  |     0.0 s    |
+|   19881 |   0.5 s  |     0.1 s    |
+|   50176 |   1.2 s  |     0.2 s    |
+|   99856 |   2.4 s  |     0.5 s    |
+|  199809 |   5.0 s  |     1.0 s    |
+|  499849 |  12.3 s  |     3.1 s    |
+| 1000000 |  25.9 s  |     7.3 s    |
 
 # Benchmark 2 - Hyperelasticity
 

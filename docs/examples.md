@@ -1,65 +1,55 @@
 # Examples
 
 ## Example 1 - 2d Poisson equation
-The poisson problem $\Delta u = - f$ is solved with fixed nodes at the boundaries and a unit load. In a first step, we create a rectangular mesh, initialize an instance of a linear quad element and the appropriate quadrature. A numeric region is created with all three objects.
+The poisson problem $-\nabla u = f$ is solved with fixed boundaries and a unit load. In a first step, we create a rectangular mesh, initialize an instance of a linear quad element and the appropriate quadrature. A numeric region is created with all three objects.
 
 ```python
 import numpy as np
 import felupe as fe
 
 n = 51
-mesh = fe.mesh.Rectangle(n=(n, n))
+mesh = fe.mesh.Rectangle(n=n)
 element = fe.element.Quad1()
-quadrature = fe.quadrature.Linear(2)
+quadrature = fe.quadrature.GaussLegendre(order=1, dim=2)
 
 region = fe.Region(mesh, element, quadrature)
 ```
 
 ![poisson mesh](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_mesh.png)
 
-In the next step we create a 2d-field for our 2d-region and calculate the gradient of the unknowns w.r.t. to the undeformed coordinates. 
+In the next step we create a one-dimensional (scalar) field for our 2d-region. 
 
 ```python
-field = fe.Field(region, dim=2, values=0)
-dudX = field.grad()
+field = fe.Field(region)
 ```
 
 Both the laplace equation and the right-hand-side of the poisson problem are transformed from the local differential into the (weak) integral form as follows. We start with the local differential form.
 
-$$\Delta \bm{u} + \bm{f} = 0$$
+$$-\nabla^2 u = f$$
 
-Multiplying the above equation with $\delta \bm{u}$ and integrate it in the region $\Omega$.
+Multiplying the above equation with $\delta u$ and integrate it in the region $\Omega$.
 
-$$\int_\Omega \Delta \bm{u} \cdot \delta \bm{u} \ d\Omega + \int_\Omega \bm{f} \cdot \delta \bm{u} \ d\Omega = 0$$
+$$-\int_\Omega \nabla^2 u \cdot \delta u \ d\Omega = \int_\Omega f \cdot \delta u \ d\Omega$$
 
-Next we do integration by parts to obtain the (weak) integral form. Note: We don't care about the boundary terms as they are all zero in this example.
+Next we do integration by parts to obtain the (weak) integral form. Note: We don't care about the boundary terms as they are all zero in this example. We now have the integral form of the laplace equation and and the right-hand-side **at hand**.
 
-$$-\int_\Omega \frac{\partial \delta \bm{u}}{\partial \bm{X}} : \frac{\partial \bm{u}}{\partial \bm{X}} \ d\Omega + \int_\Omega \bm{f} \cdot \delta \bm{u} \ d\Omega = 0$$
-
-We now have the integral form of the laplace equation
-
-$$\int_\Omega \frac{\partial \delta \bm{u}}{\partial \bm{X}} : \frac{\partial \bm{u}}{\partial \bm{X}} \ d\Omega = \int_\Omega \frac{\partial \delta \bm{u}}{\partial \bm{X}} : \bm{I} \overset{ik}{\odot} \bm{I} : \frac{\partial \bm{u}}{\partial \bm{X}}  \ d\Omega$$
-
-and the right-hand-side at hand.
-
-$$-\int_\Omega \bm{f} \cdot \delta \bm{u} \ d\Omega$$
+$$\int_\Omega \nabla \delta u \cdot \nabla u\ \ d\Omega = \int_\Omega f \cdot \delta u \ d\Omega$$
 
 ```python
-eye = fe.math.identity(dudX)
-poisson = fe.math.cdya_ik(eye, eye)
-rhs = -np.ones_like(field.interpolate())
+unit_load = np.ones_like(field.interpolate())
 
-bilinearform = fe.IntegralForm(poisson, field, region.dV, field, 
-                               grad_v=True, grad_u=True)
+bilinearform = fe.IntegralForm(
+    fun=fe.math.laplace(field), v=field, dV=region.dV, u=field, grad_v=True, grad_u=True
+)
 
-linearform = fe.IntegralForm(rhs, field, region.dV)
+linearform = fe.IntegralForm(fun=unit_load, v=field, dV=region.dV)
 ```
 
-The assembly of the two forms give the stiffness matrix $\bm{K}$ and the right-hand-side $\bm{r}$.
+The assembly of the two forms give the "stiffness" matrix $\bm{A}$ and the right-hand-side $\bm{b}$.
 
 ```python
-K = bilinearform.assemble()
-r = linearform.assemble()
+A = bilinearform.assemble()
+b = linearform.assemble()
 ```
 
 As already mentioned all boundary nodes are fixed.
@@ -74,26 +64,17 @@ boundaries["bottom"] = fe.Boundary(field, fy=f0)
 boundaries["top"   ] = fe.Boundary(field, fy=f1)
 
 dof0, dof1 = fe.doftools.partition(field, boundaries)
-unknowns0_ext = fe.doftools.apply(field, boundaries, dof0)
 ```
 
-We are now able to solve our system. Recall from the [Getting Started](quickstart.md) section that FElupe needs the assembled stiffness matrix and nodal residuals from a linearization of nonlinear equilibrium equations $\bm{r}(\bm{u})$.
-
-$$\bm{r}(\bm{u}) = \bm{0}$$
-
-$$\bm{r} + \bm{K} d \bm{u} = \bm{0} \qquad \text{with} \qquad \bm{K} = \frac{\partial \bm{r}}{\partial \bm{u}}$$
-
-$$\bm{K} d \bm{u} = -\bm{r}$$
-
 ```python
-system = fe.solve.partition(field, K, dof1, dof0, r)
-d_unknowns = fe.solve.solve(*system, unknowns0_ext)
-field += d_unknowns
+system = fe.solve.partition(field, A, dof1, dof0, -b)
+dfield = fe.solve.solve(*system)
+field += dfield
 
 fe.utils.save(region, field, filename="poisson.vtk")
 ```
 
-The solution of the first component of the nodal unknowns is first visualized by the VTK output with the help of Paraview.
+The solution of the unknowns is first visualized by the VTK output with the help of Paraview.
 
 ![poisson solution](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/poisson_solution.png)
 
@@ -103,8 +84,8 @@ Another possibility would be a plot with matplotlib.
 
 import matplotlib.pyplot as plt
 cf = plt.contourf(
-    mesh.nodes[:,0].reshape(n, n), 
-    mesh.nodes[:,1].reshape(n, n), 
+    mesh.points[:,0].reshape(n, n), 
+    mesh.points[:,1].reshape(n, n), 
     field.values[:,0].reshape(n, n),
 )
 plt.gca().set_aspect("equal")
@@ -175,7 +156,7 @@ for iteration in range(8):
     linearform   = fe.IntegralFormMixed(umat.f(F, p, J), fields, dV)
     bilinearform = fe.IntegralFormMixed(umat.A(F, p, J), fields, dV)
 
-    r =   linearform.assemble().toarray()[:, 0]
+    r = linearform.assemble().toarray()[:, 0]
     K = bilinearform.assemble()
     
     system = fe.solve.partition(fields, K, dof1, dof0, r)

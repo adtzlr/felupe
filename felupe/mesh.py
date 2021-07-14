@@ -562,29 +562,45 @@ def sweep(mesh, decimals=None):
         return points_new, cells_new
 
 
-def convert(mesh, order=0, calc_points=False, calc_midfaces=False, calc_midvolumes=False):
-    "Convert mesh to a given order (currently only order=0 supported)."
+def convert(
+    mesh, order=0, calc_points=False, calc_midfaces=False, calc_midvolumes=False
+):
+    """Convert mesh to a given order (currently only order=0 and order=2
+    from order=1 are supported)."""
+
+    if mesh.cell_type not in ["triangle", "tetra", "quad", "hexahedron"]:
+        raise NotImplementedError("Cell type not supported for conversion.")
 
     if order == 0:
-        
+
         if calc_points:
-            points = np.stack([np.mean(mesh.points[cell], axis=0) for cell in mesh.cells])
+            points = np.stack(
+                [np.mean(mesh.points[cell], axis=0) for cell in mesh.cells]
+            )
         else:
             points = np.zeros((mesh.ncells, mesh.ndim), dtype=int)
-        
+
         cells = np.arange(mesh.ncells).reshape(-1, 1)
         cell_type = mesh.cell_type
-            
+
+    elif order == 1:
+
+        points = mesh.points
+        cells = mesh.cells
+        cell_type = mesh.cell_type
+
     elif order == 2:
-        
-        points, cells, cell_type = add_midpoints_edges(mesh.points, mesh.cells, mesh.cell_type)
-        
+
+        points, cells, cell_type = add_midpoints_edges(
+            mesh.points, mesh.cells, mesh.cell_type
+        )
+
         if calc_midfaces:
-            points, cells, cell_type = add_midpoints_faces(mesh.points, mesh.cells, mesh.cell_type)
-        
+            points, cells, cell_type = add_midpoints_faces(points, cells, cell_type)
+
         if calc_midvolumes:
-            points, cells, cell_type = add_midpoints_volumes(mesh.points, mesh.cells, mesh.cell_type)
-        
+            points, cells, cell_type = add_midpoints_volumes(points, cells, cell_type)
+
     else:
         raise NotImplementedError("Unsupported order conversion.")
 
@@ -655,16 +671,31 @@ def collect_faces(points, cells, cell_type):
     calculate and return midpoints on faces as well as the additional
     cells array."""
 
-    supported_cell_types = ["triangle", "tetra", "quad", "hexahedron"]
+    supported_cell_types = [
+        "triangle",
+        "triangle6",
+        "tetra",
+        "tetra10",
+        "quad",
+        "quad8",
+        "hexahedron",
+        "hexahedron20",
+    ]
 
     if cell_type not in supported_cell_types:
         raise TypeError("Cell type not implemented.")
 
     if "triangle" in cell_type:
         # k-th face is (i[k], j[k], k[k])
-        i = [0, ]
-        j = [1, ]
-        k = [2, ]
+        i = [
+            0,
+        ]
+        j = [
+            1,
+        ]
+        k = [
+            2,
+        ]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
 
@@ -679,24 +710,32 @@ def collect_faces(points, cells, cell_type):
 
     elif "quad" in cell_type:
         # k-th edge is (i[k], j[k], k[k], l[k])
-        i = [0, ]
-        j = [1, ]
-        k = [2, ]
-        l = [3, ]
+        i = [
+            0,
+        ]
+        j = [
+            1,
+        ]
+        k = [
+            2,
+        ]
+        l = [
+            3,
+        ]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
 
-    elif cell_type == "hexahedron":
+    elif "hexahedron" in cell_type:
         # k-th edge is (i[k], j[k], k[k], l[k])
         i = [0, 1, 1, 2, 0, 4]
         j = [3, 2, 0, 3, 1, 5]
         k = [7, 6, 4, 7, 2, 6]
-        l = [4, 5, 5, 4, 3, 7]
+        l = [4, 5, 5, 6, 3, 7]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
 
     # sort points of edges
-    faces = np.sort(np.dstack(faces_to_stack).reshape(-1, 2), axis=1)
+    faces = np.sort(np.dstack(faces_to_stack).reshape(-1, len(faces_to_stack)), axis=1)
 
     # obtain unique edges and inverse mapping
     faces_unique, inverse = np.unique(faces, False, True, False, 0)

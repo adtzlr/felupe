@@ -647,54 +647,38 @@ def collect_faces(points, cells, cell_type):
     if cell_type not in supported_cell_types:
         raise TypeError("Cell type not implemented.")
 
-    number_of_faces = {"triangle": 1, "tetra": 4, "quad": 1, "hexahedron": 6}
-
-    if cell_type == "triangle":
+    if "triangle" in cell_type:
         # k-th face is (i[k], j[k], k[k])
-        i = [
-            0,
-        ][: number_of_faces[cell_type]]
-        j = [
-            1,
-        ][: number_of_faces[cell_type]]
-        k = [
-            2,
-        ][: number_of_faces[cell_type]]
+        i = [0, ]
+        j = [1, ]
+        k = [2, ]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
 
-    if cell_type == "tetra":
+    if "tetra" in cell_type:
         # k-th face is (i[k], j[k], k[k])
         # ordering?
-        i = [0, 0, 0, 1][: number_of_faces[cell_type]]
-        j = [1, 1, 2, 2][: number_of_faces[cell_type]]
-        k = [2, 3, 3, 3][: number_of_faces[cell_type]]
+        i = [0, 0, 0, 1]
+        j = [1, 1, 2, 2]
+        k = [2, 3, 3, 3]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
 
-    elif cell_type == "quad":
+    elif "quad" in cell_type:
         # k-th edge is (i[k], j[k], k[k], l[k])
-        i = [
-            0,
-        ][: number_of_faces[cell_type]]
-        j = [
-            1,
-        ][: number_of_faces[cell_type]]
-        k = [
-            2,
-        ][: number_of_faces[cell_type]]
-        l = [
-            3,
-        ][: number_of_faces[cell_type]]
+        i = [0, ]
+        j = [1, ]
+        k = [2, ]
+        l = [3, ]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
 
     elif cell_type == "hexahedron":
-        # k-th edge is (i[k], j[k])
-        i = [0, 1, 1, 2, 0, 4][: number_of_faces[cell_type]]
-        j = [3, 2, 0, 3, 1, 5][: number_of_faces[cell_type]]
-        k = [7, 6, 4, 7, 2, 6][: number_of_faces[cell_type]]
-        l = [4, 5, 5, 4, 3, 7][: number_of_faces[cell_type]]
+        # k-th edge is (i[k], j[k], k[k], l[k])
+        i = [0, 1, 1, 2, 0, 4]
+        j = [3, 2, 0, 3, 1, 5]
+        k = [7, 6, 4, 7, 2, 6]
+        l = [4, 5, 5, 4, 3, 7]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
 

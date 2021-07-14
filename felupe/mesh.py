@@ -599,7 +599,7 @@ def fix(points, cells, cell_type):
 
 
 def collect_edges(points, cells, cell_type):
-    """ "Collect all unique edges (of triangles or tetrahedrons),
+    """ "Collect all unique edges,
     calculate and return midpoints on edges as well as the additional
     cells array."""
 
@@ -637,6 +637,113 @@ def collect_edges(points, cells, cell_type):
     return points_edges, cells_edges
 
 
+def collect_faces(points, cells, cell_type):
+    """ "Collect all unique faces,
+    calculate and return midpoints on faces as well as the additional
+    cells array."""
+
+    supported_cell_types = ["triangle", "tetra", "quad", "hexahedron"]
+
+    if cell_type not in supported_cell_types:
+        raise TypeError("Cell type not implemented.")
+
+    number_of_faces = {"triangle": 1, "tetra": 4, "quad": 1, "hexahedron": 6}
+
+    if cell_type == "triangle":
+        # k-th face is (i[k], j[k], k[k])
+        i = [
+            0,
+        ][: number_of_faces[cell_type]]
+        j = [
+            1,
+        ][: number_of_faces[cell_type]]
+        k = [
+            2,
+        ][: number_of_faces[cell_type]]
+
+        faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
+
+    if cell_type == "tetra":
+        # k-th face is (i[k], j[k], k[k])
+        # ordering?
+        i = [0, 0, 0, 1][: number_of_faces[cell_type]]
+        j = [1, 1, 2, 2][: number_of_faces[cell_type]]
+        k = [2, 3, 3, 3][: number_of_faces[cell_type]]
+
+        faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
+
+    elif cell_type == "quad":
+        # k-th edge is (i[k], j[k], k[k], l[k])
+        i = [
+            0,
+        ][: number_of_faces[cell_type]]
+        j = [
+            1,
+        ][: number_of_faces[cell_type]]
+        k = [
+            2,
+        ][: number_of_faces[cell_type]]
+        l = [
+            3,
+        ][: number_of_faces[cell_type]]
+
+        faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
+
+    elif cell_type == "hexahedron":
+        # k-th edge is (i[k], j[k])
+        i = [0, 1, 1, 2, 0, 4][: number_of_faces[cell_type]]
+        j = [3, 2, 0, 3, 1, 5][: number_of_faces[cell_type]]
+        k = [7, 6, 4, 7, 2, 6][: number_of_faces[cell_type]]
+        l = [4, 5, 5, 4, 3, 7][: number_of_faces[cell_type]]
+
+        faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
+
+    # sort points of edges
+    faces = np.sort(np.dstack(faces_to_stack).reshape(-1, 2), axis=1)
+
+    # obtain unique edges and inverse mapping
+    faces_unique, inverse = np.unique(faces, False, True, False, 0)
+
+    # calculate midpoints on edges as mean
+    points_faces = np.mean(points[faces_unique.T], axis=0)
+
+    # create the additionals cells array
+    cells_faces = inverse.reshape(len(cells), -1)
+
+    return points_faces, cells_faces
+
+
+def collect_volumes(points, cells, cell_type):
+    """ "Collect all volumes,
+    calculate and return midpoints on volumes as well as the additional
+    cells array."""
+
+    supported_cell_types = [
+        "tetra",
+        "tetra10",
+        "tetra14",
+        "hexahedron",
+        "hexahedron20",
+        "hexahedron26",
+    ]
+
+    if cell_type not in supported_cell_types:
+        raise TypeError("Cell type not implemented.")
+
+    if "tetra" in cell_type:
+        number_of_vertices = 3
+
+    elif "hexahedron" in cell_type:
+        number_of_vertices = 8
+
+    if cell_type in supported_cell_types:
+
+        points_volumes = np.mean(points[cells][:, :number_of_vertices, :], axis=1)
+        cells_volumes = np.arange(cells.shape[0]).reshape(-1, 1)
+
+    return points_volumes, cells_volumes
+
+
 def add_midpoints_edges(points, cells, cell_type):
     """ "Add midpoints on edges for given points and cells
     and update cell_type accordingly."""
@@ -662,5 +769,70 @@ def add_midpoints_edges(points, cells, cell_type):
     # vertical stack of points and horizontal stack of edges
     points_new = np.vstack((points, points_edges))
     cells_new = np.hstack((cells, cells_edges))
+
+    return points_new, cells_new, cell_types_new[cell_type]
+
+
+def add_midpoints_faces(points, cells, cell_type):
+    """ "Add midpoints on faces for given points and cells
+    and update cell_type accordingly."""
+
+    cell_types_new = {
+        None: None,
+        "triangle": None,
+        "triangle6": "triangle7",
+        "tetra10": "tetra14",
+        "quad": None,
+        "quad8": "quad9",
+        "hexahedron": None,
+        "hexahedron20": "hexahedron26",
+    }
+
+    # collect faces
+    points_faces, cells_faces = collect_faces(
+        points,
+        cells,
+        cell_type,
+    )
+
+    # add offset to point index for faces-midpoints
+    # in additional cells array
+    cells_faces += len(points)
+
+    # vertical stack of points and horizontal stack of edges
+    points_new = np.vstack((points, points_faces))
+    cells_new = np.hstack((cells, cells_faces))
+
+    return points_new, cells_new, cell_types_new[cell_type]
+
+
+def add_midpoints_volumes(points, cells, cell_type):
+    """ "Add midpoints on volumes for given points and cells
+    and update cell_type accordingly."""
+
+    cell_types_new = {
+        None: None,
+        "tetra": None,
+        "tetra10": None,
+        "tetra14": "tetra15",
+        "hexahedron": None,
+        "hexahedron20": None,
+        "hexahedron26": "hexahedron27",
+    }
+
+    # collect volumes
+    points_volumes, cells_volumes = collect_volumes(
+        points,
+        cells,
+        cell_type,
+    )
+
+    # add offset to point index for volumes-midpoints
+    # in additional cells array
+    cells_volumes += len(points)
+
+    # vertical stack of points and horizontal stack of edges
+    points_new = np.vstack((points, points_volumes))
+    cells_new = np.hstack((cells, cells_volumes))
 
     return points_new, cells_new, cell_types_new[cell_type]

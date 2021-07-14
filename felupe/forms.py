@@ -363,15 +363,15 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim, ngauss, ncells = fun.shape[-3:]
+        ndim1, ndim2, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints_a, ndim, npoints_b, ncells))
+        out = np.zeros((npoints_a, ndim1, npoints_b, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
                     for c in prange(ncells):  # cell "c"
-                        for i in prange(ndim):  # first index "i"
-                            for J in prange(ndim):  # second index "J"
+                        for i in prange(ndim1):  # first index "i"
+                            for J in prange(ndim2):  # second index "J"
                                 out[a, i, b, c] += (
                                     v[a, J, p, c]
                                     * u[b, p, c]
@@ -386,15 +386,15 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim, ngauss, ncells = fun.shape[-3:]
+        ndim1, ndim2, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints_a, npoints_b, ndim, ncells))
+        out = np.zeros((npoints_a, npoints_b, ndim1, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
                     for c in prange(ncells):  # cell "c"
-                        for k in prange(ndim):  # third index "k"
-                            for L in prange(ndim):  # fourth index "L"
+                        for k in prange(ndim1):  # third index "k"
+                            for L in prange(ndim2):  # fourth index "L"
                                 out[a, b, k, c] += (
                                     v[a, p, c]
                                     * u[b, L, p, c]
@@ -408,15 +408,15 @@ try:
     def integrate_gradv(v, fun, dV):
 
         npoints = v.shape[0]
-        ndim, ngauss, ncells = fun.shape[-3:]
+        ndim1, ndim2, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints, ndim, ncells))
+        out = np.zeros((npoints, ndim1, ncells))
 
         for a in prange(npoints):  # basis function "a"
             for p in prange(ngauss):  # integration point "p"
                 for c in prange(ncells):  # cell "c"
-                    for i in prange(ndim):  # first index "i"
-                        for J in prange(ndim):  # second index "J"
+                    for i in prange(ndim1):  # first index "i"
+                        for J in prange(ndim2):  # second index "J"
                             out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
 
         return out
@@ -426,17 +426,17 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim, ngauss, ncells = fun.shape[-3:]
+        ndim1, ndim2, ndim3, ndim4, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints_a, ndim, npoints_b, ndim, ncells))
+        out = np.zeros((npoints_a, ndim1, npoints_b, ndim3, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
                     for c in prange(ncells):  # cell "c"
-                        for i in prange(ndim):  # first index "i"
-                            for J in prange(ndim):  # second index "J"
-                                for k in prange(ndim):  # third index "k"
-                                    for L in prange(ndim):  # fourth index "L"
+                        for i in prange(ndim1):  # first index "i"
+                            for J in prange(ndim2):  # second index "J"
+                                for k in prange(ndim3):  # third index "k"
+                                    for L in prange(ndim4):  # fourth index "L"
                                         out[a, i, b, k, c] += (
                                             v[a, J, p, c]
                                             * u[b, L, p, c]

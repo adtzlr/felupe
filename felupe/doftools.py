@@ -225,19 +225,23 @@ class Boundary:
         self.ndim = field.dim  # mesh.ndim
         self.name = name
         self.value = value
-        self.skip = np.array(skip).astype(int)[: self.ndim]
-        self.fun = [fx, fy, fz][: self.ndim]
+        self.skip = np.array(skip).astype(int)[: mesh.ndim]  # self.ndim
+        self.fun = [fx, fy, fz][: mesh.ndim]
 
         # apply functions on the points per coordinate
         # fx(x), fy(y), fz(z) and create a mask for each coordinate
         mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
 
-        # combine the masks with logical or
-        tmp = np.logical_or(mask[0], mask[1])
-        if self.ndim == 3 and mesh.points.shape[1] == 3:
+        # combine the masks with "logical_or" if ndim > 1
+        if mesh.ndim == 1:
+            mask = mask[0]
+
+        elif mesh.ndim == 2:
+            mask = np.logical_or(mask[0], mask[1])
+
+        elif mesh.ndim == 3:  # and mesh.points.shape[1] == 3:
+            tmp = np.logical_or(mask[0], mask[1])
             mask = np.logical_or(tmp, mask[2])
-        else:
-            mask = tmp
 
         # tile the mask
         self.mask = np.tile(mask.reshape(-1, 1), self.ndim)

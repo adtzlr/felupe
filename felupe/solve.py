@@ -52,7 +52,8 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
         r1 = np.zeros(len(dof1))
 
     if u0ext is None:
-        dr0 = np.zeros(len(dof0))
+        u0ext = 0
+        dr0 = np.zeros(len(dof1))
     else:
         dr0 = K10.dot(u0ext - u0)
 

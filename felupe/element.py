@@ -95,32 +95,32 @@ class ArbitraryOrderLagrange:
         return r ** m / factorial(m)
 
 
-class Line:
+class LineElement:
     def __init__(self):
         self.ndim = 1
 
 
-class Quad:
+class QuadElement:
     def __init__(self):
         self.ndim = 2
 
 
-class Hex:
+class HexahedronElement:
     def __init__(self):
         self.ndim = 3
 
 
-class Tri:
+class TriangleElement:
     def __init__(self):
         self.ndim = 2
 
 
-class Tet:
+class TetraElement:
     def __init__(self):
         self.ndim = 3
 
 
-class Line1(Line):
+class Line(LineElement):
     def __init__(self):
         super().__init__()
         self.npoints = 2
@@ -137,7 +137,7 @@ class Line1(Line):
         return np.array([[-1], [1]]) * 0.5
 
 
-class Quad0(Quad):
+class ConstantQuad(QuadElement):
     def __init__(self):
         super().__init__()
         self.npoints = 4
@@ -152,7 +152,7 @@ class Quad0(Quad):
         return np.array([[0, 0, 0]])
 
 
-class Quad1(Quad):
+class Quad(QuadElement):
     def __init__(self):
         super().__init__()
         self.npoints = 4
@@ -189,7 +189,7 @@ class Quad1(Quad):
         )
 
 
-class Hex0(Hex):
+class ConstantHexahedron(HexahedronElement):
     def __init__(self):
         super().__init__()
         self.npoints = 8
@@ -204,7 +204,7 @@ class Hex0(Hex):
         return np.array([[0, 0, 0]])
 
 
-class Hex1(Hex):
+class Hexahedron(HexahedronElement):
     def __init__(self):
         super().__init__()
         self.npoints = 8
@@ -249,7 +249,7 @@ class Hex1(Hex):
         )
 
 
-class Hex2s(Hex):
+class QuadraticHexahedron(HexahedronElement):
     def __init__(self):
         super().__init__()
         self.npoints = 20
@@ -424,7 +424,52 @@ class Hex2s(Hex):
         )
 
 
-class Tri1(Tri):
+class TriQuadraticHexahedron(Hexahedron):
+    def __init__(self):
+        super().__init__()
+        self.npoints = 27
+        self.nbasis = 27
+        self.lagrange = ArbitraryOrderLagrange(order=2, ndim=3)
+        self.permute = np.array(
+            [
+                0,
+                2,
+                8,
+                6,
+                18,
+                20,
+                26,
+                24,  # vertices
+                1,
+                5,
+                7,
+                3,
+                19,
+                23,
+                25,
+                21,
+                9,
+                11,
+                17,
+                15,  # edges
+                12,
+                14,
+                10,
+                16,
+                4,
+                22,  # faces
+                13,  # volume
+            ]
+        )
+
+    def basis(self, rst):
+        return self.lagrange.basis(rst)[self.permute]
+
+    def basisprime(self, rst):
+        return self.lagrange.basisprime(rst)[self.permute, :]
+
+
+class Triangle(TriangleElement):
     def __init__(self):
         super().__init__()
         self.npoints = 3
@@ -441,7 +486,7 @@ class Tri1(Tri):
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
 
-class Tet1(Tet):
+class Tetra(TetraElement):
     def __init__(self):
         super().__init__()
         self.npoints = 4
@@ -458,7 +503,7 @@ class Tet1(Tet):
         return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
 
 
-class Tri2(Tri):
+class QuadraticTriangle(TriangleElement):
     def __init__(self):
         super().__init__()
         self.npoints = 6
@@ -493,7 +538,7 @@ class Tri2(Tri):
         return dhdr
 
 
-class Tet2(Tet):
+class QuadraticTetra(TetraElement):
     def __init__(self):
         super().__init__()
         self.npoints = 10

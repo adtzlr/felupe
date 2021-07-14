@@ -9,7 +9,7 @@ import felupe as fe
 
 n = 51
 mesh = fe.mesh.Rectangle(n=n)
-element = fe.element.Quad1()
+element = fe.element.Quad()
 quadrature = fe.quadrature.GaussLegendre(order=1, dim=2)
 
 region = fe.Region(mesh, element, quadrature)
@@ -52,7 +52,7 @@ A = bilinearform.assemble()
 b = linearform.assemble()
 ```
 
-As already mentioned all boundary nodes are fixed.
+As already mentioned all boundary points are fixed.
 
 ```python
 f0, f1 = lambda x: np.isclose(x, 0), lambda x: np.isclose(x, 1)
@@ -104,19 +104,19 @@ We take the [Getting Started](quickstart.md) example and modify it accordingly. 
 
 ```python
 neohooke = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
-umat = fe.constitution.ThreeFieldVariation(neohooke.P, neohooke.A)
+umat = fe.constitution.variation.upJ(neohooke.P, neohooke.A)
 ```
 
-We create a meshed cube and a converted version for the elementwise constant fields. Two element definitions are necessary: one for the displacements and one for the pressure and volume ratio. Both elements use the same quadrature rule. Two regions are created, which will be further used by the creation of the fields.
+We create a meshed cube and a converted version for the piecewise constant fields per cell. Two element definitions are necessary: one for the displacements and one for the pressure and volume ratio. Both elements use the same quadrature rule. Two regions are created, which will be further used by the creation of the fields.
 
 
 ```python
 mesh  = fe.mesh.Cube(n=6)
-mesh0 = fe.mesh.convert(mesh)
+mesh0 = fe.mesh.convert(mesh, order=0)
 
-element0 = fe.element.Hex0()
-element1 = fe.element.Hex1()
-quadrature = fe.quadrature.Linear(dim=3)
+element0 = fe.element.ConstantHexahedron()
+element1 = fe.element.Hexahedron()
+quadrature = fe.quadrature.GaussLegendre(order=1, dim=3)
 
 region0 = fe.Region(mesh0, element0, quadrature)
 region  = fe.Region(mesh,  element1, quadrature)

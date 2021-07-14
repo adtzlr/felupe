@@ -40,7 +40,6 @@ from .math import identity, grad, dot, transpose, eigvals, det, interpolate, nor
 from .field import Field
 
 from .mesh import revolve
-from .element import Quad1, Hex1
 from .region import Region
 from .quadrature import GaussLegendre
 

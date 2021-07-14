@@ -13,12 +13,12 @@ from timeit import timeit
 n = 151
 
 m = fe.mesh.Rectangle(n=n)
-e = fe.element.Quad1()
+e = fe.element.Quad()
 q = fe.quadrature.GaussLegendre(order=1, dim=2)
 
 def pre(n):
     m = fe.mesh.Rectangle(n=n)
-    e = fe.element.Quad1()
+    e = fe.element.Quad()
     q = fe.quadrature.GaussLegendre(order=1, dim=2)
     return m, e, q
 

@@ -13,13 +13,13 @@ from timeit import timeit
 n = 2
 
 m = mesh  = fe.mesh.Cube(n=n)
-e = fe.element.Hex1()
-q = fe.quadrature.Linear(3)
+e = fe.element.Hexahedron()
+q = fe.quadrature.GaussLegendre(order=1, dim=3)
 
 def pre(n):
     m = fe.mesh.Cube(n=n)
-    e = fe.element.Hex1()
-    q = fe.quadrature.Linear(3)
+    e = fe.element.Hexahedron()
+    q = fe.quadrature.GaussLegendre(order=1, dim=3)
     return m, e, q
 
 print('|   DOF   | Assembly | Linear solve |')

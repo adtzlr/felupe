@@ -8,8 +8,8 @@ Start setting up a problem in FElupe by the creation of a numeric **Region** wit
 import felupe as fe
 
 mesh = fe.mesh.Cube(n=9)
-element = fe.element.Hex1()
-quadrature = fe.quadrature.Linear(dim=3)
+element = fe.element.Hexahedron()
+quadrature = fe.quadrature.GaussLegendre(order=1, dim=3)
 ```
 
 ## Region

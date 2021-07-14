@@ -261,6 +261,15 @@ def tovoigt(A):
     return B
 
 
+def laplace(field):
+    n = field.dim
+    m = field.region.mesh.ndim
+    p = field.region.quadrature.npoints
+    e = field.region.mesh.ncells
+
+    return identity(grad(field)).reshape(n, m, n, m, p, e)
+
+
 try:
     from numba import jit, prange
 

@@ -486,6 +486,26 @@ class Triangle(TriangleElement):
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
 
+class TriangleMINI(TriangleElement):
+    def __init__(self):
+        super().__init__()
+        self.npoints = 4
+        self.nbasis = 3
+
+    def basis(self, rs):
+        "linear triangle basis functions"
+        r, s = rs
+        return np.array([1 - r - s, r, s, 27 * r * s * (1 - r - s)])
+
+    def basisprime(self, rs):
+        "linear triangle derivative of basis functions"
+        r, s = rs
+        return np.array([[-1, -1], 
+                         [ 1,  0], 
+                         [ 0,  1], 
+                         [27 * (s * (1 - r - s) - r * s),
+                          27 * (r * (1 - r - s) - r * s)]], dtype=float)
+
 class Tetra(TetraElement):
     def __init__(self):
         super().__init__()
@@ -501,6 +521,26 @@ class Tetra(TetraElement):
         "linear tetrahedral derivative of basis functions"
         r, s, t = rst
         return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
+
+
+class TetraMINI(TetraElement):
+    def __init__(self):
+        super().__init__()
+        self.npoints = 5
+        self.nbasis = 4
+
+    def basis(self, rst):
+        "linear tetrahedral basis functions"
+        r, s, t = rst
+        return np.array([1 - r - s - t, r, s, t, 256 * r * s * t * (1 - r - s -t)])
+
+    def basisprime(self, rst):
+        "linear tetrahedral derivative of basis functions"
+        r, s, t = rst
+        return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1],
+                         [256 * (s * t * (1 - r - s - t) - r * s * t),
+                          256 * (r * t * (1 - r - s - t) - r * s * t),
+                          256 * (r * s * (1 - r - s - t) - r * s * t)]], dtype=float)
 
 
 class QuadraticTriangle(TriangleElement):

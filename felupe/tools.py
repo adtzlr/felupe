@@ -48,6 +48,26 @@ def defgrad(field):
     return identity(dudX) + dudX
 
 
+def strain(field):
+    "Calculate strains of a given displacement field."
+    dudX = grad(field)
+    dim = dudX.shape[1]
+
+    eps_normal = np.array([dudX[i, i] for i in range(dim)])
+
+    if dim > 1:
+        eps_shear = [dudX[0, 1] + dudX[1, 0]]
+    if dim > 2:
+        eps_shear.append(dudX[1, 2] + dudX[2, 1])
+        eps_shear.append(dudX[2, 0] + dudX[0, 2])
+
+    if dim > 1:
+        return np.concatenate((eps_normal, eps_shear), axis=0)
+
+    else:
+        return eps_normal
+
+
 def update(x, dx):
     "Update field values."
 

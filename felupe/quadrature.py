@@ -103,6 +103,15 @@ class QuadraticTetrahedron(Scheme):
         super().__init__(points.T, scheme.weights / 6)
 
 
+class CubicTetrahedron(Scheme):
+    def __init__(self):
+        scheme = quadpy.t3.schemes["hammer_marlowe_stroud_2"]()
+        tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+        points = np.dot(tetra.T, scheme.points)
+        super().__init__(points.T, scheme.weights / 6)
+
+
 class QuadPyScheme(Scheme):
     def __init__(self, scheme):
         super().__init__(scheme.points.T, scheme.weights)

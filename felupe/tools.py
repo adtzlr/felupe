@@ -30,11 +30,16 @@ from copy import deepcopy
 from numpy.linalg import norm
 import numpy as np
 
-from .math import grad, identity, interpolate
+import meshio
+
+from .math import grad, identity, interpolate, norms, dot, transpose, det, eigvals
 from . import solve as solvetools
+from .doftools import partition as dofpartition, apply
+from .forms import IntegralFormMixed
+from . import utils
 
 
-def defgrad_upJ(fields):
+def FpJ(fields):
     """Calculate the deformation gradient of a given list of fields
     and evaluate all other field values at integration points."""
     dudX = grad(fields[0])
@@ -72,8 +77,8 @@ def update(x, dx):
     "Update field values."
 
     if isinstance(x, tuple) or isinstance(x, list):
-        for x, dx in zip(x, dx):
-            x += dx
+        for field, dfield in zip(x, dx):
+            field += dfield
     else:
         x += dx
 
@@ -94,7 +99,7 @@ def solve_mixed(K, f, fields, dof0, dof1, ext, unstack):
     return dfields
 
 
-def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3):
+def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
     "Check if solution dx is valid."
 
     # get reference values of "f" and "x"
@@ -103,6 +108,39 @@ def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3):
 
     norm_f = np.linalg.norm(f[dof1]) / ref_f
     norm_x = np.linalg.norm(dx.ravel()[dof1]) / ref_x
+
+    if verbose:
+        info_r = f"|r|={norm_f:1.3e} |u|={norm_x:1.3e}"
+        print(info_r)
+
+    if norm_f < tol_f and norm_x < tol_x:
+        success = True
+    else:
+        success = False
+
+    return success
+
+
+def check_mixed(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+    "Check if solution dx is valid."
+
+    x = fields[0]
+    dx = dfields[0]
+
+    # get reference values of "f" and "x"
+    ref_f = 1 if np.linalg.norm(f[dof0]) == 0 else np.linalg.norm(f[dof0])
+    ref_x = 1 if np.linalg.norm(x[dof0]) == 0 else np.linalg.norm(x[dof0])
+
+    norm_f = np.linalg.norm(f[dof1[dof1 < len(dx)]]) / ref_f
+    norm_x = np.linalg.norm(dx.ravel()[dof1[dof1 < len(dx)]]) / ref_x
+
+    norm_dfields = norms(dfields[1:])
+
+    if verbose:
+        info_r = f"|r|={norm_f:1.3e} |u|={norm_x:1.3e}"
+        info_f = [f"(|δ{2+i}|={norm_f:1.3e})" for i, norm_f in enumerate(norm_dfields)]
+
+        print(" ".join([info_r, *info_f]))
 
     if norm_f < tol_f and norm_x < tol_x:
         success = True
@@ -113,10 +151,12 @@ def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3):
 
 
 class Result:
-    def __init__(self, x, fun=None, success=None, iterations=None):
+    def __init__(self, x, y=None, fun=None, jac=None, success=None, iterations=None):
         "Result class."
         self.x = x
+        self.y = y
         self.fun = fun
+        self.jac = jac
         self.success = success
         self.iterations = iterations
 
@@ -134,6 +174,7 @@ def newtonrhapson(
     kwargs={},
     kwargs_solve={},
     kwargs_check={},
+    export_jac=False,
 ):
     """
     General-purpose Newton-Rhapson algorithm
@@ -186,4 +227,146 @@ def newtonrhapson(
         if success:
             break
 
-    return Result(deepcopy(x), f, success, 1 + iteration)
+    Res = Result(
+        x=deepcopy(x), y=pre(x), fun=f, success=success, iterations=1 + iteration
+    )
+
+    if export_jac:
+        Res.jac = K
+
+    return Res
+
+
+def incsolve(
+    fields,
+    region,
+    f,
+    A,
+    bounds,
+    move,
+    boundary="move",
+    filename="out",
+    maxiter=8,
+    tol=1e-6,
+    parallel=True,
+):
+
+    res = []
+
+    # dofs to dismiss and to keep
+    dof0, dof1, unstack = dofpartition(fields, bounds)
+    # solve newton iterations and save result
+    for increment, move_t in enumerate(move):
+
+        print(f"\nINCREMENT {increment+1:2d}   (move={move_t:1.3g})")
+        # set new value on boundary
+        bounds[boundary].value = move_t
+
+        # obtain external displacements for prescribed dofs
+        u0ext = apply(fields[0], bounds, dof0)
+
+        def fun(x):
+            linearform = IntegralFormMixed(f(*x), fields, region.dV)
+            return linearform.assemble(parallel=parallel).toarray()[:, 0]
+
+        def jac(x):
+            bilinearform = IntegralFormMixed(A(*x), fields, region.dV)
+            return bilinearform.assemble(parallel=parallel)
+
+        Result = newtonrhapson(
+            fun,
+            fields,
+            jac,
+            solve=solve_mixed,
+            pre=FpJ,
+            update=update,
+            check=check_mixed,
+            kwargs_solve={
+                "fields": fields,
+                "ext": u0ext,
+                "dof0": dof0,
+                "dof1": dof1,
+                "unstack": unstack,
+            },
+            kwargs_check={"tol_f": tol, "tol_x": tol, "dof0": dof0, "dof1": dof1},
+        )
+
+        Result.F = Result.y[0]
+        Result.f = f(*Result.y)
+        Result.unstack = unstack
+
+        fields = deepcopy(Result.x)
+
+        if not Result.success:
+            # reset counter for last converged increment and break
+            increment = increment - 1
+            break
+        else:
+            # save results and go to next increment
+            res.append(Result)
+            utils.save(
+                region,
+                fields,
+                Result.fun,
+                Result.jac,
+                Result.F,
+                Result.f,
+                None,
+                unstack,
+                Result.success,
+                filename=filename + ".vtk",
+            )
+            # save(region, *Result, filename=filename + f"_{increment+1:d}")
+            print("SAVED TO FILE")
+
+    savehistory(region, res, filename=filename)
+
+    return res
+
+
+def savehistory(region, results, filename="result_history.xdmf"):
+
+    mesh = region.mesh
+    points = mesh.points
+    cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
+
+    with meshio.xdmf.TimeSeriesWriter(filename) as writer:
+        writer.write_points_cells(points, cells)
+
+        for inc, result in enumerate(results):
+            fields = result.x
+            r = result.fun
+            F = result.F
+            f = result.f
+            unstack = result.unstack
+
+            if unstack is not None:
+                reactionforces = np.split(r, unstack)[0]
+            else:
+                reactionforces = r
+
+            u = fields[0]
+
+            point_data = {
+                "Displacements": u.values,
+                "ReactionForce": reactionforces.reshape(*u.values.shape),
+            }
+
+            if f is not None:
+                # cauchy stress at integration points
+                s = dot(f[0], transpose(F)) / det(F)
+                sp = eigvals(s)
+
+                # shift stresses to points and average nodal values
+                cauchy = utils.topoints(s, region=region, sym=True)
+                cauchyprinc = [
+                    utils.topoints(sp_i, region=region, mode="scalar") for sp_i in sp
+                ]
+
+                point_data["CauchyStress"] = cauchy
+
+                point_data["MaxPrincipalCauchyStress"] = cauchyprinc[2]
+                point_data["IntPrincipalCauchyStress"] = cauchyprinc[1]
+                point_data["MinPrincipalCauchyStress"] = cauchyprinc[0]
+
+            writer.write_data(inc, point_data=point_data)

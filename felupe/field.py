@@ -66,6 +66,7 @@ class Field:
     def __init__(self, region, dim=1, values=0, **kwargs):
         self.region = region
         self.dim = dim
+        self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
 
         # set optional user-defined attributes
         for key, value in kwargs.items():

@@ -56,11 +56,14 @@ def sym(A):
     return (A + transpose(A)) / 2
 
 
-def identity(A, ndim=None):
+def identity(A=None, ndim=None, shape=None):
     "identity according to matrix A with optional specified dim."
-    ndimA, g, e = A.shape[-3:]
-    if ndim is None:
-        ndim = ndimA
+    if A is not None:
+        ndimA, g, e = A.shape[-3:]
+        if ndim is None:
+            ndim = ndimA
+    else:
+        g, e = shape
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 

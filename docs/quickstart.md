@@ -1,12 +1,16 @@
 ## Problem Definition
 
-Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule. 
+As with every module, first import felupe. It is recommended to shorten the imported name for better readability.
+
+```python
+import felupe as fe
+```
+
+Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons.
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.svg)
 
 ```python
-import felupe as fe
-
 mesh = fe.mesh.Cube(n=9)
 element = fe.element.Hexahedron()
 quadrature = fe.quadrature.GaussLegendre(order=1, dim=3)

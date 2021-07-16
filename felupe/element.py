@@ -34,11 +34,12 @@ from copy import deepcopy as copy
 class ArbitraryOrderLagrange:
     "Lagrange quad/hexahdron finite element of arbitrary order."
 
-    def __init__(self, order, ndim):
+    def __init__(self, order, ndim, interval=(-1, 1)):
         self.ndim = ndim
         self.order = order
         self.npoints = (order + 1) ** ndim
         self.nbasis = self.npoints
+        self.interval = interval
 
         self._nbasis = order + 1
 
@@ -87,7 +88,8 @@ class ArbitraryOrderLagrange:
     def _points(self, n):
         "Equidistant n points in interval [-1, 1]."
         i = np.arange(n)
-        return 2 * i / (n - 1) - 1
+        #return 2 * i / (n - 1) - 1
+        return np.linspace(*self.interval, n)
 
     def _polynomial(self, r, n):
         "Lagrange-Polynomial of order n evaluated at coordinate r."
@@ -430,37 +432,12 @@ class TriQuadraticHexahedron(Hexahedron):
         self.npoints = 27
         self.nbasis = 27
         self.lagrange = ArbitraryOrderLagrange(order=2, ndim=3)
-        self.permute = np.array(
-            [
-                0,
-                2,
-                8,
-                6,
-                18,
-                20,
-                26,
-                24,  # vertices
-                1,
-                5,
-                7,
-                3,
-                19,
-                23,
-                25,
-                21,
-                9,
-                11,
-                17,
-                15,  # edges
-                12,
-                14,
-                10,
-                16,
-                4,
-                22,  # faces
-                13,  # volume
-            ]
-        )
+        self.vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
+        self.edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
+        self.faces = np.array([12, 14, 10, 16, 4, 22])
+        self.volume = np.array([13])
+        self.permute = np.concatenate((self.vertices, self.edges,
+                                       self.faces, self.volume))
 
     def basis(self, rst):
         return self.lagrange.basis(rst)[self.permute]

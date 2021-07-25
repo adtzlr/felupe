@@ -41,14 +41,24 @@ def test_gausslegendre():
     q13 = fe.quadrature.GaussLegendre(order=1, dim=3)
     assert q13.points.shape == (8, 3)
     assert q13.weights.sum() == 8
-    
+
     with pytest.raises(ValueError):
         fe.quadrature.GaussLegendre(order=1, dim=4)
 
 
 def test_triangle():
-    qp1 = fe.quadrature.LinearTriangle()
+    q = fe.quadrature.Triangle(order=1)
+    assert q.points.shape == (1, 2)
+    assert q.weights.sum() == 1 / 2
+
+
+def test_tetra():
+    q = fe.quadrature.Tetrahedron(order=1)
+    assert q.points.shape == (1, 3)
+    assert q.weights.sum() == 1 / 6
 
 
 if __name__ == "__main__":
     test_gausslegendre()
+    test_triangle()
+    test_tetra()

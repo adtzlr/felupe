@@ -29,12 +29,16 @@ import numpy as np
 import quadpy
 
 
-class GaussLegendre:
-    def __init__(self, order, dim):
+class Scheme:
+    def __init__(self, points, weights):
+        self.points = points
+        self.weights = weights
+        self.npoints, self.dim = self.points.shape
+
+
+class GaussLegendre(Scheme):
+    def __init__(self, order: int, dim: int):
         # integration point weights and coordinates
-        self.dim = dim
-        self.order = order
-        self.npoints = (order + 1) ** dim
 
         if dim == 3:
             scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(order + 1))
@@ -42,33 +46,16 @@ class GaussLegendre:
             scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(order + 1))
         elif dim == 1:
             scheme = quadpy.c1.gauss_legendre(order + 1)
+            scheme.points = scheme.points.reshape(-1, 1)
         else:
             raise ValueError("Wrong dimension.")
-
-        self.points = scheme.points.T
-        self.weights = scheme.weights * 2 ** dim
-
-
-class Constant(GaussLegendre):
-    def __init__(self, dim):
-        super().__init__(order=0, dim=dim)
-
-
-class Linear(GaussLegendre):
-    def __init__(self, dim):
-        super().__init__(order=1, dim=dim)
-
-
-class Quadratic(GaussLegendre):
-    def __init__(self, dim):
-        super().__init__(order=2, dim=dim)
-
-
-class Scheme:
-    def __init__(self, points, weights):
-        self.points = points
-        self.weights = weights
-        self.npoints, self.dim = self.points.shape
+        
+        if dim > 1:
+            weights = scheme.weights * 2 ** dim
+        else:
+            weights = scheme.weights
+        
+        super().__init__(scheme.points.T, weights)
 
 
 class LinearTriangle(Scheme):

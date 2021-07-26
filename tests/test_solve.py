@@ -37,7 +37,7 @@ def test_solve():
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
 
-    nh = fe.constitution.NeoHooke(1, 3)
+    nh = fe.constitution.models.NeoHooke(1, 3)
 
     F = fe.tools.defgrad(u)
     P = nh.P(F)

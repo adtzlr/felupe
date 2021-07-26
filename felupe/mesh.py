@@ -30,8 +30,8 @@ import numpy as np
 
 class Mesh:
     def __init__(self, points, cells, cell_type=None):
-        self.points = points
-        self.cells = cells
+        self.points = np.array(points)
+        self.cells = np.array(cells)
         self.cell_type = cell_type
 
         self.update(self.cells)

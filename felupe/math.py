@@ -136,6 +136,8 @@ def det(A):
         )
     elif A.shape[0] == 2:
         detA = A[0, 0] * A[1, 1] - A[0, 1] * A[1, 0]
+    elif A.shape[0] == 1:
+        detA = A[0, 0]
     return detA
 
 

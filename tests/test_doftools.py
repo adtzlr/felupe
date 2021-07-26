@@ -29,37 +29,67 @@ import numpy as np
 import felupe as fe
 
 
-def test_helpers():
-    mesh = fe.mesh.Cube()
-    dof = np.arange(mesh.ndof).reshape(mesh.nodes.shape)
+def test_dof():
 
-    u = np.zeros_like(mesh.nodes)
+    mesh = fe.mesh.Cube(n=3)
+    element = fe.element.Hexahedron()
+    quadrature = fe.quadrature.GaussLegendre(1, 3)
+
+    region = fe.Region(mesh, element, quadrature)
+    field = fe.Field(region, dim=3)
+
+    dof = np.arange(mesh.ndof)
 
     f0 = lambda x: x == 0
     f1 = lambda x: x == 1
+
     v = 13.2
-    left = fe.doftools.Boundary(dof, mesh, fx=f0, skip=(0, 0, 1), value=v)
-    right = fe.doftools.Boundary(dof, mesh, fx=f1, skip=(0, 1, 1))
 
-    bounds = [left, right]
+    bounds = fe.doftools.symmetry(field, axes=(0, 1, 0))
+    bounds["left"] = fe.doftools.Boundary(field, fx=f0, skip=(0, 0, 1), value=v)
+    bounds["right"] = fe.doftools.Boundary(field, fx=f1, skip=(0, 1, 1))
 
-    dof0, dof1 = fe.doftools.partition(dof, bounds)
+    dof0, dof1 = fe.doftools.partition(field, bounds)
 
-    uext = fe.doftools.apply(u, dof, bounds, dof0=None)
-    u0ext = fe.doftools.apply(u, dof, bounds, dof0=dof0)
+    uext = fe.doftools.apply(field, bounds, dof0=None)
+    u0ext = fe.doftools.apply(field, bounds, dof0=dof0)
 
     dof01 = np.sort(np.append(dof0, dof1))
-    if not np.all(np.equal(dof.ravel(), dof01)):
-        raise ValueError("Partitioning of DOF failed.")
 
-    if not np.allclose(uext.ravel()[dof0], u0ext):
-        raise ValueError("Application of external values failed.")
+    assert np.all(np.equal(dof, dof01))
+    assert np.allclose(uext.ravel()[dof0], u0ext)
+    assert np.allclose(uext.ravel()[bounds["left"].dof], v)
 
-    if not np.allclose(uext.ravel()[left.dof], v):
-        raise ValueError("Application of external values failed.")
 
-    return mesh, dof, u, uext, left, right, dof0, dof1
+def test_dof_extend():
+
+    mesh = fe.mesh.Cube(n=3)
+    element = fe.element.Hexahedron()
+    quadrature = fe.quadrature.GaussLegendre(1, 3)
+
+    mesh0 = fe.mesh.convert(mesh, order=0)
+    element0 = fe.element.ConstantHexahedron()
+
+    region = fe.Region(mesh, element, quadrature)
+    region0 = fe.Region(mesh0, element0, quadrature)
+
+    field = fe.Field(region, dim=3)
+    field0 = fe.Field(region0, dim=1)
+
+    fields = (field, field0)
+
+    f0 = lambda x: x == 0
+    f1 = lambda x: x == 1
+
+    v = 13.2
+
+    bounds = fe.doftools.symmetry(field, axes=(0, 1, 0))
+    bounds["left"] = fe.doftools.Boundary(field, fx=f0, skip=(0, 0, 1), value=v)
+    bounds["right"] = fe.doftools.Boundary(field, fx=f1, skip=(0, 1, 1))
+
+    dof0, dof1, unstack = fe.doftools.partition(fields, bounds)
 
 
 if __name__ == "__main__":
-    mesh, dof, u, uext, left, right, dof0, dof1 = test_helpers()
+    test_dof()
+    test_dof_extend()

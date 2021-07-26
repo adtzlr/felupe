@@ -554,12 +554,17 @@ class QuadraticTriangle(TriangleElement):
     def basisprime(self, rs):
         "linear triangle derivative of basis functions"
         r, s = rs
-        dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]])
+
+        t1 = 1 - r - s
+        t2 = r
+        t3 = s
+
+        dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
         dhdr_b = np.array(
             [
-                [4 * (1 - r - s) - 4 * r, -4 * r],
-                [4 * s, 4 * r],
-                [-4 * s, 4 * (1 - r - s) - 4 * s],
+                [4 * (t1 - t2), -4 * t2],
+                [4 * t3, 4 * t2],
+                [-4 * t3, 4 * (t1 - t2)],
             ]
         )
         dhdr = np.vstack((dhdr_a, dhdr_b))
@@ -625,6 +630,6 @@ class QuadraticTetra(TetraElement):
             ]
         )
 
-        dtdr = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        dtdr = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
 
         return np.dot(dhdt, dtdr)

@@ -28,4 +28,3 @@ jobs:
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ./coverage/reports/

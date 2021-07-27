@@ -25,6 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import pytest
+import numpy as np
 import felupe as fe
 
 
@@ -51,8 +52,14 @@ def test_meshes():
 
     fe.mesh.CylinderAdvanced()
     fe.mesh.CubeAdvanced()
+    fe.mesh.CubeAdvanced(L0=0.1)
     fe.mesh.CubeArbitraryOderHexahedron()
     fe.mesh.RectangleArbitraryOderQuad()
+
+    m = fe.mesh.Rectangle(n=5)
+    m.points = np.vstack((m.points, [10, 10]))
+    assert m.points.shape == (26, 2)
+    assert m.cells.shape == (16, 4)
 
 
 if __name__ == "__main__":

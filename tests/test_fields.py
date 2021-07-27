@@ -87,16 +87,26 @@ def test_3d_mixed():
     J.fill(1.0)
     J.full(1.0)
 
+    u + u.values
+    u - u.values
+    u * u.values
     J / J.values
 
+    u + u
+    u - u
+    u * u
+    J / J
+
     J /= J.values
+    J /= J
+
     J *= J.values
     J += J.values
     J -= J.values
 
-    u + u.values
-    u - u.values
-    u * u.values
+    J *= J
+    J += J
+    J -= J
 
     dof = [0, 1]
     u[dof]

@@ -151,6 +151,21 @@ def test_update():
     fe.tools.update(fields, dx)
 
 
+def test_newton():
+    def fun(x):
+        return (x - 3) ** 2
+
+    def jac(x):
+        return np.array([2 * (x - 3)])
+
+    x0 = np.array([3.1])
+
+    res = fe.tools.newtonrhapson(fun, x0, jac)
+
+    assert abs(res.fun) < 1e-6
+    assert np.isclose(res.x, 3, rtol=1e-2)
+
+
 if __name__ == "__main__":
     test_extract()
     test_defgrad()
@@ -158,3 +173,4 @@ if __name__ == "__main__":
     test_update()
     test_solve_check()
     test_solve_mixed_check()
+    test_newton()

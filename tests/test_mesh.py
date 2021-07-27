@@ -38,6 +38,9 @@ def test_meshes():
     assert m.points.shape == (4 * 9, 2)
     assert m.cells.shape == (3 * 8, 4)
 
+    fe.mesh.convert(m, order=0)
+    fe.mesh.convert(m, order=2)
+
     m = fe.mesh.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
     assert m.cells.shape == (3 * 8 * 4, 8)
@@ -45,6 +48,11 @@ def test_meshes():
     m = fe.mesh.Cylinder(n=(3, 9, 3), phi=180)
     assert m.points.shape == (3 * 9 * 3, 3)
     assert m.cells.shape == (2 * 8 * 2, 8)
+
+    fe.mesh.CylinderAdvanced()
+    fe.mesh.CubeAdvanced()
+    fe.mesh.CubeArbitraryOderHexahedron()
+    fe.mesh.RectangleArbitraryOderQuad()
 
 
 if __name__ == "__main__":

@@ -149,7 +149,7 @@ def dev(A):
 
 def cof(A):
     "Cofactor matrix of A (as a wrapper for the inverse of A)."
-    return transpose(inv(A), determinant=1.0)
+    return transpose(inv(A, determinant=1.0))
 
 
 def eig(A, eig=np.linalg.eig):
@@ -225,7 +225,7 @@ def dot(A, B):
     if len(A.shape) == len(B.shape):
         return np.einsum("ik...,kj...->ij...", A, B)
     elif len(A.shape) + 2 == len(B.shape):
-        return np.einsum("ik...,kj...->ij...", A, B)
+        return np.einsum("im...,mjkl...->ijkl...", A, B)
     elif len(A.shape) == len(B.shape) + 2:
         return np.einsum("ijkm...,ml...->ijkl...", A, B)
     else:

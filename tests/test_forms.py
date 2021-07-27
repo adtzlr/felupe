@@ -65,6 +65,27 @@ def pre_axi():
     return r, u, P, A
 
 
+def pre_mixed():
+
+    m = fe.mesh.Cube(n=3)
+    e = fe.element.Hexahedron()
+    q = fe.quadrature.GaussLegendre(1, 3)
+    r = fe.Region(m, e, q)
+
+    u = fe.Field(r, dim=3)
+    p = fe.Field(r)
+    J = fe.Field(r, values=1)
+
+    nh = fe.constitution.models.NeoHooke(1, 3)
+    umat = fe.constitution.variation.upJ(nh.P, nh.A)
+
+    FpJ = fe.tools.FpJ((u, p, J))
+    f = umat.f(*FpJ)
+    A = umat.A(*FpJ)
+
+    return r, u, p, J, f, A
+
+
 def test_axi():
 
     r, u, P, A = pre_axi()
@@ -132,7 +153,31 @@ def test_bilinearform():
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
 
+def test_mixed():
+
+    r, u, p, J, f, A = pre_mixed()
+    v = (u, p, J)
+
+    for parallel in [False, True]:
+
+        a = fe.IntegralFormMixed(A, v, r.dV)
+        y = a.integrate(parallel=parallel)
+        K = a.assemble(y, parallel=parallel).toarray()
+        K = a.assemble(parallel=parallel).toarray()
+
+        z = r.mesh.ndof + 2 * r.mesh.npoints
+        assert K.shape == (z, z)
+
+        L = fe.IntegralFormMixed(f, v, r.dV)
+        x = L.integrate(parallel=parallel)
+        b = L.assemble(x, parallel=parallel).toarray()
+        b = L.assemble(parallel=parallel).toarray()
+
+        assert b.shape == (z, 1)
+
+
 if __name__ == "__main__":
     test_linearform()
     test_bilinearform()
     test_axi()
+    test_mixed()

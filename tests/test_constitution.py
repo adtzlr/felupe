@@ -181,7 +181,8 @@ def test_stretch():
     mat_K = fe.constitution.df0da0.Hydrostatic(bulk=200.0)
     mat = fe.constitution.df0da0.Composite(mat_U, mat_K)
 
-    umat = fe.constitution.MaterialFrom(mat)
+    umat = fe.constitution.MaterialFrom(mat, parallel=True)
+    umat = fe.constitution.MaterialFrom(mat, parallel=False)
     umat.P(F), umat.A(F)
 
     mat_S = fe.constitution.df_da_.PrincipalStretchBased(mat_invariants)
@@ -189,7 +190,8 @@ def test_stretch():
     mat_K = fe.constitution.df_da_.Hydrostatic(bulk=200.0)
     mat = fe.constitution.df_da_.Composite(mat_U, mat_K)
 
-    umat = fe.constitution.MaterialFrom(mat)
+    umat = fe.constitution.MaterialFrom(mat, parallel=True)
+    umat = fe.constitution.MaterialFrom(mat, parallel=False)
     umat.P(F), umat.A(F)
 
 

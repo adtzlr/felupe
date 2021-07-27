@@ -14,11 +14,10 @@ jobs:
       with:
         python-version: '3.7'
         architecture: 'x64'
-    - name: Generate coverage report
+    - name: Test with tox
       run: |
-        pip install pytest
-        pip install pytest-cov
-        pytest --cov=./ --cov-report=xml
+        pip install tox
+        tox -- --cov meshzoo --cov-report xml --cov-report term
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:

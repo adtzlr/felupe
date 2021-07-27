@@ -122,7 +122,7 @@ try:
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
     @jit(**jitargs)
-    def transform13(F, G, C4): # pragma: no cover
+    def transform13(F, G, C4):  # pragma: no cover
 
         ndim, ngauss, nelems = C4.shape[-3:]
 
@@ -145,7 +145,7 @@ try:
         return out
 
     @jit(**jitargs)
-    def transform24(F, G, C4): # pragma: no cover
+    def transform24(F, G, C4):  # pragma: no cover
 
         ndim, ngauss, nelems = C4.shape[-3:]
 
@@ -170,5 +170,5 @@ try:
 
 except:
 
-    def pushforward13(F, G, C4): # pragma: no cover
+    def pushforward13(F, G, C4):  # pragma: no cover
         return np.einsum("iI...,kK...,IJKL...->iJkL...", F, G, C4, optimize=True)

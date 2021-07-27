@@ -281,7 +281,7 @@ try:
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
     @jit(**jitargs)
-    def cdya_parallel(A, B): # pragma: no cover
+    def cdya_parallel(A, B):  # pragma: no cover
 
         ndim, ngauss, nelems = A.shape[-3:]
 
@@ -301,7 +301,7 @@ try:
         return out
 
     @jit(**jitargs)
-    def ddot444_parallel(A, B, C): # pragma: no cover
+    def ddot444_parallel(A, B, C):  # pragma: no cover
 
         ndim, ngauss, nelems = A.shape[-3:]
 

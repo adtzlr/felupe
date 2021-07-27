@@ -234,7 +234,7 @@ def test_straininvariant():
     umat.P(F), umat.A(F)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     test_basic()
     test_invariants()
     test_straininvariant()

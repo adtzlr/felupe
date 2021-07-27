@@ -52,6 +52,11 @@ class Region:
         # ----
         # basis function "b" evaluated at quadrature point "p"
         self.h = np.array([self.element.basis(p) for p in self.quadrature.points]).T
+        
+        # hinv_bp
+        # ----
+        # inverse basis function "b" evaluated at 1 / quadrature point "p"
+        self.hinv = np.array([self.element.basis(p) for p in 1 / self.quadrature.points]).T
 
         # dhdr_bJp
         # --------

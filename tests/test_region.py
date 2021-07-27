@@ -24,35 +24,41 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import pytest
+
 import numpy as np
 import felupe as fe
 
 
-def test_domain():
-    element = fe.element.Hex1()
-    mesh = fe.mesh.Cube(n=5)
-    quadrature = fe.quadrature.Linear(dim=3)
+def test_region_cube_hex():
 
-    domain = fe.domain.Domain(element, mesh, quadrature)
+    m = fe.mesh.Cube(n=4)
+    e = fe.element.Hexahedron()
+    q = fe.quadrature.GaussLegendre(1, 3)
 
-    # elemental volumes and total domain volume
-    Ve = domain.volume()
-    Vd = Ve.sum()
+    r = fe.Region(m, e, q)
 
-    if not np.isclose(Vd, 1):
-        raise ValueError("Error in Domain Volume calculation.")
+    assert np.isclose(r.dV.sum(), 1)
+    assert np.isclose(r.volume().sum(), 1)
+    assert r.dhdX.shape == (e.nbasis, m.ndim, q.npoints, m.ncells)
+    assert r.h.shape == (e.nbasis, q.npoints)
 
-    u = domain.zeros()
-    x = domain.zeros((1, 7))
-    y = domain.fill(value=-12.3, dim=5)
-    z = domain.empty(dim=(6, 3, 7))
 
-    if not x.shape == (domain.nnodes, 1, 7):
-        raise ValueError("Error in domain.zeros() function.")
+def test_region_cube_aol():
 
-    return domain
+    order = 1
+
+    m = fe.mesh.CubeArbitraryOderHexahedron(order=order)
+    e = fe.element.ArbitraryOrderLagrange(order, ndim=3)
+    q = fe.quadrature.GaussLegendre(order, 3)
+
+    r = fe.Region(m, e, q)
+
+    # assert np.isclose(r.dV.sum(), 1)
+    # assert np.isclose(r.volume().sum(), 1)
+    assert r.dhdX.shape == (e.nbasis, m.ndim, q.npoints, m.ncells)
+    assert r.h.shape == (e.nbasis, q.npoints)
 
 
 if __name__ == "__main__":
-    domain = test_domain()
+    test_region_cube_hex()
+    test_region_cube_aol()

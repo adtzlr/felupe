@@ -87,8 +87,6 @@ class ArbitraryOrderLagrange:
 
     def _points(self, n):
         "Equidistant n points in interval [-1, 1]."
-        i = np.arange(n)
-        #return 2 * i / (n - 1) - 1
         return np.linspace(*self.interval, n)
 
     def _polynomial(self, r, n):
@@ -436,8 +434,9 @@ class TriQuadraticHexahedron(Hexahedron):
         self.edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
         self.faces = np.array([12, 14, 10, 16, 4, 22])
         self.volume = np.array([13])
-        self.permute = np.concatenate((self.vertices, self.edges,
-                                       self.faces, self.volume))
+        self.permute = np.concatenate(
+            (self.vertices, self.edges, self.faces, self.volume)
+        )
 
     def basis(self, rst):
         return self.lagrange.basis(rst)[self.permute]
@@ -477,11 +476,16 @@ class TriangleMINI(TriangleElement):
     def basisprime(self, rs):
         "linear triangle derivative of basis functions"
         r, s = rs
-        return np.array([[-1, -1], 
-                         [ 1,  0], 
-                         [ 0,  1], 
-                         [27 * (s * (1 - r - s) - r * s),
-                          27 * (r * (1 - r - s) - r * s)]], dtype=float)
+        return np.array(
+            [
+                [-1, -1],
+                [1, 0],
+                [0, 1],
+                [27 * (s * (1 - r - s) - r * s), 27 * (r * (1 - r - s) - r * s)],
+            ],
+            dtype=float,
+        )
+
 
 class Tetra(TetraElement):
     def __init__(self):
@@ -509,15 +513,25 @@ class TetraMINI(TetraElement):
     def basis(self, rst):
         "linear tetrahedral basis functions"
         r, s, t = rst
-        return np.array([1 - r - s - t, r, s, t, 256 * r * s * t * (1 - r - s -t)])
+        return np.array([1 - r - s - t, r, s, t, 256 * r * s * t * (1 - r - s - t)])
 
     def basisprime(self, rst):
         "linear tetrahedral derivative of basis functions"
         r, s, t = rst
-        return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1],
-                         [256 * (s * t * (1 - r - s - t) - r * s * t),
-                          256 * (r * t * (1 - r - s - t) - r * s * t),
-                          256 * (r * s * (1 - r - s - t) - r * s * t)]], dtype=float)
+        return np.array(
+            [
+                [-1, -1, -1],
+                [1, 0, 0],
+                [0, 1, 0],
+                [0, 0, 1],
+                [
+                    256 * (s * t * (1 - r - s - t) - r * s * t),
+                    256 * (r * t * (1 - r - s - t) - r * s * t),
+                    256 * (r * s * (1 - r - s - t) - r * s * t),
+                ],
+            ],
+            dtype=float,
+        )
 
 
 class QuadraticTriangle(TriangleElement):
@@ -540,12 +554,17 @@ class QuadraticTriangle(TriangleElement):
     def basisprime(self, rs):
         "linear triangle derivative of basis functions"
         r, s = rs
-        dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]])
+
+        t1 = 1 - r - s
+        t2 = r
+        t3 = s
+
+        dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
         dhdr_b = np.array(
             [
-                [4 * (1 - r - s) - 4 * r, -4 * r],
-                [4 * s, 4 * r],
-                [-4 * s, 4 * (1 - r - s) - 4 * s],
+                [4 * (t1 - t2), -4 * t2],
+                [4 * t3, 4 * t2],
+                [-4 * t3, 4 * (t1 - t2)],
             ]
         )
         dhdr = np.vstack((dhdr_a, dhdr_b))
@@ -611,6 +630,6 @@ class QuadraticTetra(TetraElement):
             ]
         )
 
-        dtdr = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        dtdr = np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
 
         return np.dot(dhdt, dtdr)

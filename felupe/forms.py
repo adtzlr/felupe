@@ -359,7 +359,7 @@ try:
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
     @jit(**jitargs)
-    def integrate_gradv_u(v, fun, u, dV):
+    def integrate_gradv_u(v, fun, u, dV):  # pragma: no cover
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
@@ -382,7 +382,7 @@ try:
         return out
 
     @jit(**jitargs)
-    def integrate_v_gradu(v, fun, u, dV):
+    def integrate_v_gradu(v, fun, u, dV):  # pragma: no cover
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
@@ -405,7 +405,7 @@ try:
         return out
 
     @jit(**jitargs)
-    def integrate_gradv(v, fun, dV):
+    def integrate_gradv(v, fun, dV):  # pragma: no cover
 
         npoints = v.shape[0]
         ndim1, ndim2, ngauss, ncells = fun.shape
@@ -422,7 +422,7 @@ try:
         return out
 
     @jit(**jitargs)
-    def integrate_gradv_gradu(v, fun, u, dV):
+    def integrate_gradv_gradu(v, fun, u, dV):  # pragma: no cover
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]

@@ -2,4 +2,4 @@ numpy
 scipy
 meshio
 quadpy
-pypardiso
+numba

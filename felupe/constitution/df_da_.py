@@ -320,18 +320,22 @@ class AsIsochoric:
         self.kind = SimpleNamespace(**{"df": None, "da": None})
 
     def stress(self, b, F, J):
+        Ju = np.ones_like(J)
+        Fu = J ** (-1 / 3) * F
         bu = J ** (-2 / 3) * b
-        tb = self.isochoric.stress(bu)
+        tb = self.isochoric.stress(bu, Fu, Ju)
         return dev(tb)
 
     def elasticity(self, b, F, J):
         eye = identity(b)
         p4 = cdya(eye, eye) - dya(eye, eye) / 3
 
+        Ju = np.ones_like(J)
+        Fu = J ** (-1 / 3) * F
         bu = J ** (-2 / 3) * b
-        tb = self.isochoric.stress(bu)
+        tb = self.isochoric.stress(bu, Fu, Ju)
 
-        Jc4b = self.isochoric.elasticity(bu)
+        Jc4b = self.isochoric.elasticity(bu, Fu, Ju)
         if np.all(Jc4b == 0):
             PJc4bP = Jc4b
         else:

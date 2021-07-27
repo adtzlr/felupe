@@ -136,6 +136,8 @@ def det(A):
         )
     elif A.shape[0] == 2:
         detA = A[0, 0] * A[1, 1] - A[0, 1] * A[1, 0]
+    elif A.shape[0] == 1:
+        detA = A[0, 0]
     return detA
 
 
@@ -147,7 +149,7 @@ def dev(A):
 
 def cof(A):
     "Cofactor matrix of A (as a wrapper for the inverse of A)."
-    return transpose(inv(A), determinant=1.0)
+    return transpose(inv(A, determinant=1.0))
 
 
 def eig(A, eig=np.linalg.eig):
@@ -223,7 +225,7 @@ def dot(A, B):
     if len(A.shape) == len(B.shape):
         return np.einsum("ik...,kj...->ij...", A, B)
     elif len(A.shape) + 2 == len(B.shape):
-        return np.einsum("ik...,kj...->ij...", A, B)
+        return np.einsum("im...,mjkl...->ijkl...", A, B)
     elif len(A.shape) == len(B.shape) + 2:
         return np.einsum("ijkm...,ml...->ijkl...", A, B)
     else:
@@ -279,7 +281,7 @@ try:
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
     @jit(**jitargs)
-    def cdya_parallel(A, B):
+    def cdya_parallel(A, B):  # pragma: no cover
 
         ndim, ngauss, nelems = A.shape[-3:]
 
@@ -299,7 +301,7 @@ try:
         return out
 
     @jit(**jitargs)
-    def ddot444_parallel(A, B, C):
+    def ddot444_parallel(A, B, C):  # pragma: no cover
 
         ndim, ngauss, nelems = A.shape[-3:]
 

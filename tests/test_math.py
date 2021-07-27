@@ -35,17 +35,16 @@ def test_math_field():
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    
+
     fe.math.values(u)
     fe.math.values((u, u))
-    
+
     fe.math.norms([u.values, u.values])
     fe.math.interpolate(u)
     fe.math.grad(u)
-    
+
     v = fe.Field(r, dim=1)
     fe.math.laplace(v)
-    
 
 
 def test_math():
@@ -54,36 +53,36 @@ def test_math():
     C = fe.math.dot(fe.math.transpose(F), F)
     A = np.random.rand(3, 3, 3, 3, 8, 200)
     B = np.random.rand(3, 3, 3, 8, 200)
-    
+
     fe.math.sym(H)
 
     fe.math.dot(C, C)
     fe.math.dot(C, A)
     fe.math.dot(A, C)
-    
+
     with pytest.raises(TypeError):
         fe.math.dot(C, B)
-    
+
     with pytest.raises(TypeError):
         fe.math.dot(B, C)
 
     fe.math.ddot(C, C)
     fe.math.ddot(C, A)
     fe.math.ddot(A, C)
-    
+
     fe.math.ddot44(A, A)
     fe.math.ddot444(A, A, A, parallel=False)
     fe.math.ddot444(A, A, A, parallel=True)
-    
+
     detC = fe.math.det(C)
     fe.math.det(C[:2, :2])
     fe.math.det(C[:1, :1])
-    
+
     fe.math.inv(C)
     fe.math.inv(C, determinant=detC)
     fe.math.inv(C, full_output=True)
     fe.math.inv(C, sym=True)
-    
+
     fe.math.dev(C)
     fe.math.cof(C)
     fe.math.dya(C, C)
@@ -97,7 +96,7 @@ def test_math():
     fe.math.eigvalsh(C)
     fe.math.eigh(C)
     fe.math.eig(C)
-    
+
     fe.math.majortranspose(A)
     fe.math.trace(C)
 

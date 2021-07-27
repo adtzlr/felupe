@@ -40,11 +40,15 @@ def test_meshes():
     assert m.cells.shape == (3 * 8, 4)
 
     fe.mesh.convert(m, order=0)
+    fe.mesh.convert(m, order=0, calc_points=True)
     fe.mesh.convert(m, order=2)
+    fe.mesh.convert(m, order=2, calc_midfaces=True)
 
     m = fe.mesh.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
     assert m.cells.shape == (3 * 8 * 4, 8)
+
+    fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
 
     m = fe.mesh.Cylinder(n=(3, 9, 3), phi=180)
     assert m.points.shape == (3 * 9 * 3, 3)
@@ -60,6 +64,8 @@ def test_meshes():
     m.points = np.vstack((m.points, [10, 10]))
     assert m.points.shape == (26, 2)
     assert m.cells.shape == (16, 4)
+
+    fe.mesh.sweep(m)
 
 
 if __name__ == "__main__":

@@ -120,7 +120,7 @@ class Field:
         return out
 
     def full(self, a):
-        self.values = np.full(self.values.shape, a, dtype=np.float)
+        self.values = np.full(self.values.shape, a, dtype=float)
 
     def fill(self, a):
         self.full(a)

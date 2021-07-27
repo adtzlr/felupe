@@ -17,7 +17,7 @@ jobs:
     - name: Test with tox
       run: |
         pip install tox
-        tox -- --cov meshzoo --cov-report xml --cov-report term
+        tox -- --cov felupe --cov-report xml --cov-report term
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:

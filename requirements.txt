@@ -2,3 +2,4 @@ numpy
 scipy
 meshio
 quadpy
+numba

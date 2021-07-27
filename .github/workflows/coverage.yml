@@ -1,20 +1,19 @@
-name: workflow for Codecov
-on: [pull_request]
+name: Codecov
+
+on: pull_request
+
 jobs:
   run:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    env:
-      OS: ${{ matrix.os }}
-      PYTHON: '3.7'
+    name: Upload coverage report to codecov.io
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - name: Setup Python
-      uses: actions/setup-python@master
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.7
+        python-version: '3.7'
+        architecture: 'x64'
     - name: Generate coverage report
       run: |
         pip install pytest
@@ -25,7 +24,6 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./coverage/reports/
-        env_vars: OS,PYTHON
         fail_ci_if_error: true
         path_to_write_report: ./coverage/codecov_report.txt
         verbose: true

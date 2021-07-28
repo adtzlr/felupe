@@ -61,7 +61,7 @@ def test_hex8_nh_nr():
         },
     )
 
-    displacement.values = res.x
+    displacement = res.x
 
     fe.utils.save(region, displacement, filename=None)
 

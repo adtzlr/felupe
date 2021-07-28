@@ -163,7 +163,7 @@ class Result:
 
 def newtonrhapson(
     fun,
-    x,
+    x0,
     jac,
     solve=np.linalg.solve,
     maxiter=8,
@@ -205,6 +205,9 @@ def newtonrhapson(
 
     """
 
+    # copy x0
+    x = deepcopy(x0)
+
     # pre-evaluate function at given unknowns "x"
     f = fun(pre(x), *args, **kwargs)
 
@@ -227,9 +230,7 @@ def newtonrhapson(
         if success:
             break
 
-    Res = Result(
-        x=deepcopy(x), y=pre(x), fun=f, success=success, iterations=1 + iteration
-    )
+    Res = Result(x=x, y=pre(x), fun=f, success=success, iterations=1 + iteration)
 
     if export_jac:
         Res.jac = K

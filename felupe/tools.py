@@ -250,6 +250,7 @@ def incsolve(
     maxiter=8,
     tol=1e-6,
     parallel=True,
+    verbose=1,
 ):
 
     res = []
@@ -259,7 +260,9 @@ def incsolve(
     # solve newton iterations and save result
     for increment, move_t in enumerate(move):
 
-        print(f"\nINCREMENT {increment+1:2d}   (move={move_t:1.3g})")
+        if verbose > 0:
+            print(f"\nINCREMENT {increment+1:2d}   (move={move_t:1.3g})")
+
         # set new value on boundary
         bounds[boundary].value = move_t
 
@@ -289,7 +292,13 @@ def incsolve(
                 "dof1": dof1,
                 "unstack": unstack,
             },
-            kwargs_check={"tol_f": tol, "tol_x": tol, "dof0": dof0, "dof1": dof1},
+            kwargs_check={
+                "tol_f": tol,
+                "tol_x": tol,
+                "dof0": dof0,
+                "dof1": dof1,
+                "verbose": verbose,
+            },
         )
 
         Result.F = Result.y[0]
@@ -318,7 +327,8 @@ def incsolve(
                 filename=filename + ".vtk",
             )
             # save(region, *Result, filename=filename + f"_{increment+1:d}")
-            print("SAVED TO FILE")
+            if verbose > 0:
+                print("SAVED TO FILE")
 
     savehistory(region, res, filename=filename)
 

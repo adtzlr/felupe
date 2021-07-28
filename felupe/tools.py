@@ -339,7 +339,10 @@ def savehistory(region, results, filename="result_history.xdmf"):
 
     mesh = region.mesh
     points = mesh.points
-    cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
+    # cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
+    cells = [
+        (mesh.cell_type, mesh.cells),
+    ]
 
     with meshio.xdmf.TimeSeriesWriter(filename) as writer:
         writer.write_points_cells(points, cells)

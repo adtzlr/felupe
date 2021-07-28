@@ -198,11 +198,11 @@ def incsolve(
         else:
             # save results and go to next increment
             res.append(Result)
-            save(region, *Result, filename=filename)
+            save(region, *Result, filename=filename + ".vtk")
             # save(region, *Result, filename=filename + f"_{increment+1:d}")
             print("SAVED TO FILE")
 
-    savehistory(region, res, filename=filename)
+    savehistory(region, res, filename=filename + ".xdmf")
 
     return res
 
@@ -312,19 +312,24 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.points,
-        cells={mesh.cell_type: mesh.cells},  # [:, : mesh.edgepoints]},
+        cells=[
+            (mesh.cell_type, mesh.cells),
+        ],  # [:, : mesh.edgepoints]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
     )
 
-    mesh.write(filename)
+    if filename is not None:
+        mesh.write(filename)
 
 
 def savehistory(region, results, filename="result_history.xdmf"):
 
     mesh = region.mesh
     points = mesh.points
-    cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
+    cells = [
+        (mesh.cell_type, mesh.cells),
+    ]  # [:, : mesh.edgepoints]}
 
     with meshio.xdmf.TimeSeriesWriter(filename) as writer:
         writer.write_points_cells(points, cells)

@@ -163,7 +163,7 @@ class Result:
 
 def newtonrhapson(
     fun,
-    x,
+    x0,
     jac,
     solve=np.linalg.solve,
     maxiter=8,
@@ -205,6 +205,9 @@ def newtonrhapson(
 
     """
 
+    # copy x0
+    x = deepcopy(x0)
+
     # pre-evaluate function at given unknowns "x"
     f = fun(pre(x), *args, **kwargs)
 
@@ -227,9 +230,7 @@ def newtonrhapson(
         if success:
             break
 
-    Res = Result(
-        x=deepcopy(x), y=pre(x), fun=f, success=success, iterations=1 + iteration
-    )
+    Res = Result(x=x, y=pre(x), fun=f, success=success, iterations=1 + iteration)
 
     if export_jac:
         Res.jac = K
@@ -249,6 +250,7 @@ def incsolve(
     maxiter=8,
     tol=1e-6,
     parallel=True,
+    verbose=1,
 ):
 
     res = []
@@ -258,7 +260,9 @@ def incsolve(
     # solve newton iterations and save result
     for increment, move_t in enumerate(move):
 
-        print(f"\nINCREMENT {increment+1:2d}   (move={move_t:1.3g})")
+        if verbose > 0:
+            print(f"\nINCREMENT {increment+1:2d}   (move={move_t:1.3g})")
+
         # set new value on boundary
         bounds[boundary].value = move_t
 
@@ -288,7 +292,13 @@ def incsolve(
                 "dof1": dof1,
                 "unstack": unstack,
             },
-            kwargs_check={"tol_f": tol, "tol_x": tol, "dof0": dof0, "dof1": dof1},
+            kwargs_check={
+                "tol_f": tol,
+                "tol_x": tol,
+                "dof0": dof0,
+                "dof1": dof1,
+                "verbose": verbose,
+            },
         )
 
         Result.F = Result.y[0]
@@ -317,9 +327,10 @@ def incsolve(
                 filename=filename + ".vtk",
             )
             # save(region, *Result, filename=filename + f"_{increment+1:d}")
-            print("SAVED TO FILE")
+            if verbose > 0:
+                print("SAVED TO FILE")
 
-    savehistory(region, res, filename=filename)
+    savehistory(region, res, filename=filename + ".xdmf")
 
     return res
 
@@ -328,7 +339,10 @@ def savehistory(region, results, filename="result_history.xdmf"):
 
     mesh = region.mesh
     points = mesh.points
-    cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
+    # cells = {mesh.cell_type: mesh.cells}  # [:, : mesh.edgepoints]}
+    cells = [
+        (mesh.cell_type, mesh.cells),
+    ]
 
     with meshio.xdmf.TimeSeriesWriter(filename) as writer:
         writer.write_points_cells(points, cells)

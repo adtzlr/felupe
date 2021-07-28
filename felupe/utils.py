@@ -198,11 +198,11 @@ def incsolve(
         else:
             # save results and go to next increment
             res.append(Result)
-            save(region, *Result, filename=filename)
+            save(region, *Result, filename=filename + ".vtk")
             # save(region, *Result, filename=filename + f"_{increment+1:d}")
             print("SAVED TO FILE")
 
-    savehistory(region, res, filename=filename)
+    savehistory(region, res, filename=filename + ".xdmf")
 
     return res
 

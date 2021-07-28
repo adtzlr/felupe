@@ -330,7 +330,7 @@ def incsolve(
             if verbose > 0:
                 print("SAVED TO FILE")
 
-    savehistory(region, res, filename=filename)
+    savehistory(region, res, filename=filename + ".xdmf")
 
     return res
 

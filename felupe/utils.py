@@ -317,7 +317,8 @@ def save(
         point_data=point_data,
     )
 
-    mesh.write(filename)
+    if filename is not None:
+        mesh.write(filename)
 
 
 def savehistory(region, results, filename="result_history.xdmf"):

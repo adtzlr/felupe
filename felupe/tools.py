@@ -32,7 +32,7 @@ import numpy as np
 
 import meshio
 
-from .math import grad, identity, interpolate, norms, dot, transpose, det, eigvals
+from .math import grad, sym, identity, interpolate, norms, dot, transpose, det, eigvals
 from . import solve as solvetools
 from .doftools import partition as dofpartition, apply
 from .forms import IntegralFormMixed
@@ -55,6 +55,11 @@ def defgrad(field):
 
 def strain(field):
     "Calculate strains of a given displacement field."
+    return sym(grad(field))
+
+
+def strain_voigt(field):
+    "Calculate strains in voigt notation of a given displacement field."
     dudX = grad(field)
     dim = dudX.shape[1]
 

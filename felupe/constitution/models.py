@@ -54,9 +54,17 @@ class LinearElastic:
     def stress(self, strain):
         return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
 
-    def elasticity(self, strain):
+    def elasticity(self, strain, stress=None):
         I = identity(strain)
-        return 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
+
+        elast = 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
+
+        if stress is not None:
+            elast_stress = cdya_ik(stress, I)
+        else:
+            elast_stress = 0
+
+        return elast + elast_stress
 
     def lame(self, E, nu):
         mu = E / (2 * (1 + nu))

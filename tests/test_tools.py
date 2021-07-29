@@ -63,12 +63,20 @@ def test_defgrad():
 
 def test_strain():
 
+    r, fields = pre()
+    eps = fe.tools.strain(fields[0])
+
+    assert eps.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
+
+
+def test_strain_voigt():
+
     m = fe.mesh.Line(n=3)
     e = fe.element.Line()
     q = fe.quadrature.GaussLegendre(1, 1)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=1)
-    strain = fe.tools.strain(u)
+    strain = fe.tools.strain_voigt(u)
     assert strain.shape == (1, r.quadrature.npoints, r.mesh.ncells)
 
     m = fe.mesh.Rectangle(n=3)
@@ -76,7 +84,7 @@ def test_strain():
     q = fe.quadrature.GaussLegendre(1, 2)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=2)
-    strain = fe.tools.strain(u)
+    strain = fe.tools.strain_voigt(u)
     assert strain.shape == (3, r.quadrature.npoints, r.mesh.ncells)
 
     m = fe.mesh.Cube(n=3)
@@ -84,7 +92,7 @@ def test_strain():
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    strain = fe.tools.strain(u)
+    strain = fe.tools.strain_voigt(u)
     assert strain.shape == (6, r.quadrature.npoints, r.mesh.ncells)
 
 
@@ -170,6 +178,7 @@ if __name__ == "__main__":
     test_extract()
     test_defgrad()
     test_strain()
+    test_strain_voigt()
     test_update()
     test_solve_check()
     test_solve_mixed_check()

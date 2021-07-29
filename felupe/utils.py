@@ -42,6 +42,7 @@ from .field import Field
 from .mesh import revolve
 from .region import Region
 from .quadrature import GaussLegendre
+from .element import Quad, Hexahedron
 
 from .doftools import apply, partition as dofpartition, extend as dofextend
 
@@ -431,10 +432,12 @@ def axito3d(
     mesh_3d = revolve(mesh_axi, n=n, phi=phi)
     values_3d = revolve((field_axi.values, mesh_axi.cells), n=n, phi=phi)[0]
 
-    edict = {Quad1: Hex1}
+    edict = {Quad: Hexahedron}
 
     element_3d = edict[type(element_axi)]()
-    quadrature_3d = GaussLegendre(order=quadrature_axi.order, dim=3)
+
+    order = int((quadrature_axi.npoints / 2 - 1) ** 3)
+    quadrature_3d = GaussLegendre(order=order, dim=3)
     region_3d = Region(mesh_3d, element_3d, quadrature_3d)
     field_3d = Field(region_3d, dim=3, values=values_3d)
 

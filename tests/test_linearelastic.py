@@ -52,7 +52,7 @@ def test_linearelastic():
         )
         return bilinearform.assemble()
 
-    fe.tools.newtonrhapson(
+    res = fe.tools.newtonrhapson(
         fun,
         displacement,
         jac,
@@ -70,7 +70,7 @@ def test_linearelastic():
         },
     )
 
-    fe.utils.save(region, displacement, filename="result.vtk")
+    fe.utils.save(region, res.x, filename="result.vtk")
 
 
 if __name__ == "__main__":

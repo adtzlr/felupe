@@ -255,3 +255,21 @@ class Boundary:
 
         self.dof = dof[self.mask]
         self.points = np.arange(mesh.npoints)[mask]
+
+
+def uniaxial(field, right=1, move=0.2, clamped=True):
+    "Define boundaries for uniaxial loading."
+
+    f1 = lambda x: np.isclose(x, right)
+
+    bounds = symmetry(field)
+
+    if clamped:
+        bounds["right"] = Boundary(field, fx=f1, skip=(1, 0, 0))
+
+    bounds["move"] = Boundary(field, fx=f1, skip=(0, 1, 1), value=move)
+
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
+
+    return bounds, dof0, dof1, ext0

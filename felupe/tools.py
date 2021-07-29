@@ -211,7 +211,8 @@ def newtonrhapson(
     """
 
     # copy x0
-    x = deepcopy(x0)
+    x = x0
+    # x = deepcopy(x0)
 
     # pre-evaluate function at given unknowns "x"
     f = fun(pre(x), *args, **kwargs)

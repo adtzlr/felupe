@@ -1,5 +1,5 @@
 # Benchmark 1 - Poisson problem
-The 2d poisson problem from [here](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_poisson.py) is solved with 4-noded quadrilaterals (linear basis) on a AMD Ryzen 5 2400G / 16GB RAM. The table below contains time spent on both assembly and linear solve as a function of the degrees of freedom. Assembly times do not contain numba JIT (just-in-time) compilation times.
+The 2d poisson problem from [here](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_poisson.py) is solved with 4-noded quadrilaterals (linear basis) on a AMD Ryzen 5 2400G / 16GB RAM. The table below contains time spent on both assembly and linear solve as a function of the degrees of freedom. Assembly times do not contain numba JIT (just-in-time) compilation times. PyPardiso was used as a linear solvers in these examples. The default solver taken from SciPy (SuperLU) may be slower.
 
 Performance without Numba (`b.assemble()`, `A.assemble()`)
 
@@ -30,7 +30,7 @@ and performance with Numba (`b.assemble(parallel=True)`, `A.assemble(parallel=Tr
 
 # Benchmark 2 - Hyperelasticity
 
-Another [more practical performance benchmark](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_neohooke.py) is shown for a quarter model of a rubber block under uniaxial compression. The material is described with an isotropic hyperelastic Neo-Hooke material in its so-called nearly-incompressible formulation. Eight-noded hexahedrons are used in combination with a displacement field only. The time for linear solve represents the time spent for the first Newton-Rhapson iteration. While the assembly process is still acceptable up to 200000 DOF, linear solve time rapidly increases for >100000 DOF. However, this could also be due to the nearly 100% RAM load on the local machine for 500000 DOF.
+Another [more practical performance benchmark](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_neohooke.py) is shown for a quarter model of a rubber block under uniaxial compression. The material is described with an isotropic hyperelastic Neo-Hooke material in its so-called nearly-incompressible formulation. Eight-noded hexahedrons are used in combination with a displacement field only. The time for linear solve (PyPardiso) represents the time spent for the first Newton-Rhapson iteration. While the assembly process is still acceptable up to 200000 DOF, linear solve time rapidly increases for >100000 DOF. However, this could also be due to the nearly 100% RAM load on the local machine for 500000 DOF.
 
 |   DOF   | Assembly | Linear solve |
 | ------- | -------- | ------------ |
@@ -44,7 +44,7 @@ Another [more practical performance benchmark](https://github.com/adtzlr/felupe/
 
 # Benchmark 3 - Mixed-Field Hyperelasticity
 
-And now the big news. Given a hyperelastic problem with a Neo-Hookean solid in combination with a $(\bm{u},p,J)$ mixed-field-formulation applied on a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes about 12 seconds per Newton-Rhapson iteration in scikit-fem. Felupe does the same thing in whooping 0.3s which is a 400x speedup in comparison to scikit-fem. Again, please note that felupe timings are without Numba JIT (just-in-time) compilation times and the whole Newton-Rhapson iteration contains the time spent on linear solve. For a detailed comparison see the table below:
+And now the big news. Given a hyperelastic problem with a Neo-Hookean solid in combination with a $(\bm{u},p,J)$ mixed-field-formulation applied on a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes about 0.3s in felupe. Again, please note that felupe timings are without Numba JIT (just-in-time) compilation times and the whole Newton-Rhapson iteration contains the time spent on linear solve (PyPardiso was used in these examples). For a detailed comparison see the table below:
 
 |   Nodes per axis (total) | displacement - DOF | felupe | scikit-fem |
 | ------------------------ | ------------------ | ------ | ---------- |

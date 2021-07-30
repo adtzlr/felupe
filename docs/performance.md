@@ -1,5 +1,5 @@
 # Benchmark 1 - Poisson problem
-The 2d poisson problem from [here](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_poisson.py) is solved with 4-noded quadrilaterals (linear basis) on a AMD Ryzen 5 2400G / 16GB RAM. The table below contains time spent on both assembly and linear solve as a function of the degrees of freedom. Assembly times do not contain numba JIT (just-in-time) compilation times. PyPardiso was used as a linear solvers in these examples. The default solver taken from SciPy (SuperLU) may be slower.
+The 2d poisson problem from [here](https://github.com/adtzlr/felupe/blob/main/scripts/script_performance_poisson.py) is solved with 4-noded quadrilaterals (linear basis) on a AMD Ryzen 5 2400G / 16GB RAM. The table below contains time spent on both assembly and linear solve (PyPardiso) as a function of the degrees of freedom. Assembly times do not contain numba JIT (just-in-time) compilation times. Note that felupe's default solver taken from SciPy (SuperLU) may be slower.
 
 Performance without Numba (`b.assemble()`, `A.assemble()`)
 
@@ -46,10 +46,10 @@ Another [more practical performance benchmark](https://github.com/adtzlr/felupe/
 
 And now the big news. Given a hyperelastic problem with a Neo-Hookean solid in combination with a $(\bm{u},p,J)$ mixed-field-formulation applied on a meshed unit cube out of eight-noded hexahedrons with 9x9x9=729 nodes (=2187 DOF) for nearly-incompressibility takes about 0.3s in felupe. Again, please note that felupe timings are without Numba JIT (just-in-time) compilation times and the whole Newton-Rhapson iteration contains the time spent on linear solve (PyPardiso was used in these examples). For a detailed comparison see the table below:
 
-|   Nodes per axis (total) | displacement - DOF | felupe | scikit-fem |
-| ------------------------ | ------------------ | ------ | ---------- |
-|         3    (27)        |         81         |  0.02s |    0.3s    |
-|         5   (125)        |        375         |  0.05s |    0.7s    |
-|         9   (729)        |       2187         |   0.3s |     12s    |
-|        17  (4913)        |      14739         |     2s |    108s    |
-|        33 (35937)        |     107811         |    37s |            |
+|   Nodes per axis (total) | displacement - DOF | felupe |
+| ------------------------ | ------------------ | ------ |
+|         3    (27)        |         81         |  0.02s |
+|         5   (125)        |        375         |  0.05s |
+|         9   (729)        |       2187         |   0.3s |
+|        17  (4913)        |      14739         |     2s |
+|        33 (35937)        |     107811         |    37s |

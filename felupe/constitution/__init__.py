@@ -13,3 +13,4 @@ from . import df_da0
 from .df_da0 import MaterialFrom
 from .models import LinearElastic, NeoHooke
 from . import variation
+from . import ad

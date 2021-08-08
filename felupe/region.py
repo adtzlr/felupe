@@ -61,7 +61,7 @@ class Region:
             [self.element.basisprime(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
 
-        if self.element.nbasis > 1:
+        if self.element.nbasis > 1 and self.mesh.ndim == self.element.ndim:
 
             # dXdr_IJpe and its inverse drdX_IJpe
             # -----------------------------------

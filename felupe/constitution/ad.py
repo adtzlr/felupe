@@ -67,12 +67,24 @@ class Material:
         self._f_P = ca.Function("P", [F], [dWdF])
         self._f_A = ca.Function("A", [F], [d2WdFdF])
 
+        self.P = self.f
+
+    def _modify(self, F, eps=1e-5):
+        G = F.copy()
+        G[0, 0] += eps
+        G[1, 1] -= eps
+        return G
+
     # functions for stress P and elasticity A
-    def f(self, F):
+    def f(self, F, modify=True):
+        if modify:
+            F = self._modify(F)
         fF = apply([F], fun=self._f_P, fun_shape=(3, 3))
         return fF
 
-    def A(self, F):
+    def A(self, F, modify=True):
+        if modify:
+            F = self._modify(F)
         AFF = apply([F], fun=self._f_A, fun_shape=(3, 3, 3, 3))
         return AFF
 
@@ -101,13 +113,23 @@ class Materialup:
         self._f_App = ca.Function("App", [F, p], [d2Wdp2])
         self._f_AFp = ca.Function("AFp", [F, p], [d2WdFdp])
 
+    def _modify(self, F, eps=1e-5):
+        G = F.copy()
+        G[0, 0] += eps
+        G[1, 1] -= eps
+        return G
+
     # functions for stress P and elasticity A
-    def f(self, F, p):
+    def f(self, F, p, modify=True):
+        if modify:
+            F = self._modify(F)
         fF = apply([F, p], fun=self._f_PF, fun_shape=(3, 3))
         fp = apply([F, p], fun=self._f_Pp, fun_shape=())
         return [fF, fp]
 
-    def A(self, F, p):
+    def A(self, F, p, modify=True):
+        if modify:
+            F = self._modify(F)
         AFF = apply([F, p], fun=self._f_AFF, fun_shape=(3, 3, 3, 3))
         App = apply([F, p], fun=self._f_App, fun_shape=(1,))
         AFp = apply([F, p], fun=self._f_AFp, fun_shape=(3, 3))
@@ -146,14 +168,24 @@ class MaterialupJ:
         self._f_AFJ = ca.Function("AFp", [F, p, J], [d2WdFdJ])
         self._f_ApJ = ca.Function("ApJ", [F, p, J], [d2WdpdJ])
 
+    def _modify(self, F, eps=1e-5):
+        G = F.copy()
+        G[0, 0] += eps
+        G[1, 1] -= eps
+        return G
+
     # functions for stress P and elasticity A
-    def f(self, F, p, J):
+    def f(self, F, p, J, modify=True):
+        if modify:
+            F = self._modify(F)
         fF = apply([F, p, J], fun=self._f_PF, fun_shape=(3, 3))
         fp = apply([F, p, J], fun=self._f_Pp, fun_shape=(1,))
         fJ = apply([F, p, J], fun=self._f_PJ, fun_shape=(1,))
         return [fF, fp, fJ]
 
-    def A(self, F, p, J):
+    def A(self, F, p, J, modify=True):
+        if modify:
+            F = self._modify(F)
         AFF = apply([F, p, J], fun=self._f_AFF, fun_shape=(3, 3, 3, 3))
         App = apply([F, p, J], fun=self._f_App, fun_shape=(1,))
         AJJ = apply([F, p, J], fun=self._f_AJJ, fun_shape=(1,))

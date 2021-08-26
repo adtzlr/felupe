@@ -160,7 +160,7 @@ def test_mixed():
 
     for parallel in [False, True]:
 
-        a = fe.IntegralFormMixed(A, v, r.dV)
+        a = fe.IntegralFormMixed(A, v, r.dV, v)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         K = a.assemble(parallel=parallel).toarray()

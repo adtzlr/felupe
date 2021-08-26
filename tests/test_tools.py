@@ -139,7 +139,7 @@ def test_solve_mixed_check():
     u0ext = fe.doftools.apply(u, b, dof0)
 
     L = fe.IntegralFormMixed(nh.f(F, p, J), fields, r.dV)
-    a = fe.IntegralFormMixed(nh.A(F, p, J), fields, r.dV)
+    a = fe.IntegralFormMixed(nh.A(F, p, J), fields, r.dV, fields)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()

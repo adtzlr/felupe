@@ -280,7 +280,7 @@ def incsolve(
             return linearform.assemble(parallel=parallel).toarray()[:, 0]
 
         def jac(x):
-            bilinearform = IntegralFormMixed(A(*x), fields, region.dV)
+            bilinearform = IntegralFormMixed(A(*x), fields, region.dV, fields)
             return bilinearform.assemble(parallel=parallel)
 
         Result = newtonrhapson(

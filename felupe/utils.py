@@ -91,7 +91,7 @@ def newtonrhapson(
 
     # assembly
     r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
-    K = IntegralFormMixed(A, fields, dV).assemble(parallel=parallel)
+    K = IntegralFormMixed(A, fields, dV, fields).assemble(parallel=parallel)
 
     converged = False
 
@@ -139,7 +139,7 @@ def newtonrhapson(
             A = fun_A(F, *[interpolate(f) for f in fields[1:]])
 
             # assembly of stiffness matrix components
-            K = IntegralFormMixed(A, fields, dV).assemble(parallel=parallel)
+            K = IntegralFormMixed(A, fields, dV, fields).assemble(parallel=parallel)
 
     Result = namedtuple(
         "Result", ["fields", "r", "K", "F", "f", "A", "unstack", "converged"]

@@ -33,53 +33,65 @@ from .field import Field, FieldAxisymmetric
 
 
 class IntegralFormMixed:
-    def __init__(self, fun, fields, dV, grad=None):
+    def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):
 
         self.fun = fun
-        self.fields = list(fields)
-        self.nfields = len(fields)
+        self.v = list(v)
+        self.nv = len(self.v)
         self.dV = dV
 
+        if u is not None:
+            self.u = list(u)
+            self.nu = len(self.u)
+
         IntForm = {Field: IntegralForm, FieldAxisymmetric: IntegralFormAxisymmetric}[
-            type(fields[0])
+            type(v[0])
         ]
 
-        if isinstance(fields[0], FieldAxisymmetric):
-            for i in range(1, self.nfields):
-                self.fields[i].radius = self.fields[0].radius
+        if isinstance(v[0], FieldAxisymmetric):
+            for i in range(1, len(self.v)):
+                self.v[i].radius = self.v[0].radius
 
-        if grad is None:
-            self.grad = np.zeros_like(fields, dtype=bool)
-            self.grad[0] = True
+        if grad_v is None:
+            self.grad_v = np.zeros_like(v, dtype=bool)
+            self.grad_v[0] = True
         else:
-            self.grad = grad
+            self.grad_v = grad_v
+
+        if grad_u is None and u is not None:
+            self.grad_u = np.zeros_like(u, dtype=bool)
+            self.grad_u[0] = True
+        else:
+            self.grad_u = grad_u
 
         self.forms = []
 
-        if self.nfields == 1:
+        if self.nv == 1:
             raise ValueError("IntegralFormMixed needs at least 2 fields.")
 
-        if len(fun) == self.nfields:
+        if len(fun) == self.nv and u is None:
+            # LinearForm
             self.mode = 1
-            self.i = np.arange(self.nfields)
+            self.i = np.arange(self.nv)
             self.j = np.zeros_like(self.i)
 
-            for fun, field, grad_field in zip(self.fun, self.fields, self.grad):
-                f = IntForm(fun=fun, v=field, dV=self.dV, grad_v=grad_field)
+            for fun, v, grad_v in zip(self.fun, self.v, self.grad_v):
+                f = IntForm(fun=fun, v=v, dV=self.dV, grad_v=grad_v)
                 self.forms.append(f)
 
-        elif len(fun) == np.sum(1 + np.arange(self.nfields)):
+        elif len(fun) == np.sum(1 + np.arange(self.nv)) and u is not None:
+            # BilinearForm
             self.mode = 2
             self.i, self.j = np.triu_indices(3)
 
             for a, (i, j) in enumerate(zip(self.i, self.j)):
                 f = IntForm(
                     self.fun[a],
-                    v=self.fields[i],
+                    v=self.v[i],
                     dV=self.dV,
-                    u=self.fields[j],
-                    grad_v=self.grad[i],
-                    grad_u=self.grad[j],
+                    u=self.u[j],
+                    grad_v=self.grad_v[i],
+                    grad_u=self.grad_u[j],
                 )
                 self.forms.append(f)
         else:
@@ -96,7 +108,7 @@ class IntegralFormMixed:
             out.append(form.assemble(val, parallel))
 
         if block and self.mode == 2:
-            K = np.zeros((self.nfields, self.nfields), dtype=object)
+            K = np.zeros((self.nv, self.nv), dtype=object)
             for a, (i, j) in enumerate(zip(self.i, self.j)):
                 K[i, j] = out[a]
                 if i != j:
@@ -277,17 +289,6 @@ class IntegralFormAxisymmetric(IntegralForm):
                 )
 
                 self.forms = [form_aa, form_bb, form_ba, form_ab]
-
-            # elif isinstance(v, Field) and isinstance(u, FieldAxisymmetric):
-
-            #     self.mode = 20
-
-            #     form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, False, True)
-            #     form_b = IntegralForm(
-            #         fun[-1, -1] / R, v, self.dV, u.scalar, False, False
-            #     )
-
-            #     self.forms = [form_a, form_b]
 
             elif isinstance(v, FieldAxisymmetric) and isinstance(u, Field):
 

@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from types import SimpleNamespace
+import sparse
 
 
 def get_dof0(field, bounds):
@@ -273,3 +274,45 @@ def uniaxial(field, right=1, move=0.2, clamped=True):
     ext0 = apply(field, bounds, dof0)
 
     return bounds, dof0, dof1, ext0
+
+
+class MultiPointConstraint:
+    def __init__(self, mesh, points, centerpoint, multiplier=1e3):
+        "RBE2 Multi-point-constraint."
+        self.mesh = mesh
+        self.points = points
+        self.centerpoint = centerpoint
+        self.multiplier = multiplier
+
+    def stiffness(self):
+        "Calculate stiffness with RBE2 contributions."
+        L = sparse.DOK(
+            shape=(self.mesh.npoints, self.mesh.ndim, self.mesh.npoints, self.mesh.ndim)
+        )
+        for t in self.points:
+            for d in range(self.mesh.ndim):
+                L[t, d, t, d] = self.multiplier
+                L[t, d, self.centerpoint, d] = -self.multiplier
+                L[self.centerpoint, d, t, d] = -self.multiplier
+        for d in range(self.mesh.ndim):
+            L[self.centerpoint, d, self.centerpoint, d] = self.multiplier * len(
+                self.points
+            )
+        return (
+            sparse.COO(L)
+            .reshape(
+                (self.mesh.npoints * self.mesh.ndim, self.mesh.npoints * self.mesh.ndim)
+            )
+            .tocsr()
+        )
+
+    def residuals(self, field):
+        "Calculate vector of residuals with RBE2 contributions."
+        r = np.zeros((self.mesh.npoints, self.mesh.ndim))
+        r[self.points] -= self.multiplier * (
+            -field.values[self.points] + field.values[self.centerpoint]
+        )
+        r[self.centerpoint] += self.multiplier * (
+            -field.values[self.points].sum(axis=0) + field.values[self.centerpoint]
+        )
+        return sparse.COO(r.reshape(-1, 1)).tocsr()

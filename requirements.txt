@@ -5,3 +5,4 @@ meshio
 quadpy
 numba
 casadi
+sparse

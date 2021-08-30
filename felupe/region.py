@@ -68,23 +68,23 @@ class Region:
             # geometric gradient as partial derivative of undeformed coordinate "I"
             # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
             # for every cell "c"
-            dXdr = np.einsum(
+            self.dXdr = np.einsum(
                 "cbI,bJp->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
             )
-            drdX = inv(dXdr)
+            self.drdX = inv(self.dXdr)
 
             # dV_pe = det(dXdr)_pc * w_p
             # determinant of geometric gradient evaluated at quadrature point "p"
             # for every cell "c" multiplied by corresponding quadrature weight
             # denoted as "differential volume element"
-            self.dV = det(dXdr) * self.quadrature.weights.reshape(-1, 1)
+            self.dV = det(self.dXdr) * self.quadrature.weights.reshape(-1, 1)
 
             # dhdX_bJpc
             # ---------
             # partial derivative of basis function "b"
             # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
             # for every cell "c"
-            self.dhdX = np.einsum("bIp,IJpc->bJpc", self.dhdr, drdX)
+            self.dhdX = np.einsum("bIp,IJpc->bJpc", self.dhdr, self.drdX)
 
     def volume(self, detF=1):
         "Calculate cell volume for cell 'c'."

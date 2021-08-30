@@ -214,13 +214,9 @@ class IntegralForm:
                     "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
                 )
             elif grad_v and not grad_u:
-                if parallel:
-                    return integrate_gradv_u(vb, fun, ub, dV)
-                    # return np.einsum("aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV)
-                else:
-                    return np.einsum(
-                        "aJpe,iJpe,bpe,pe->aibe", vb, fun, ub, dV, optimize=True
-                    )
+                return np.einsum(
+                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
+                )
             elif not grad_v and grad_u:
                 return np.einsum(
                     "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True

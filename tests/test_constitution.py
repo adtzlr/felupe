@@ -120,6 +120,15 @@ def test_basic():
     umat = fe.constitution.models.NeoHookeCompressible(1, 3)
     umat.P(F), umat.A(F)
 
+    umat = fe.constitution.models.LineChange()
+    umat.fun(F), umat.grad(F)
+
+    umat = fe.constitution.models.AreaChange()
+    umat.fun(F), umat.grad(F)
+
+    umat = fe.constitution.models.VolumeChange()
+    umat.fun(F), umat.grad(F), umat.hessian(F)
+
     strain = fe.tools.strain(u)
     umat = fe.constitution.models.LinearElastic(E=3, nu=0.3)
     umat.elasticity(strain)

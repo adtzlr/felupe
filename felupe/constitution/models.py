@@ -72,6 +72,49 @@ class LinearElastic:
         return mu, gamma
 
 
+class LineChange:
+    def __init__(self):
+        pass
+
+    def fun(self, F):
+        return F
+
+    def grad(self, F):
+        Eye = identity(F)
+        return cdya_ik(Eye, Eye)
+
+
+class AreaChange:
+    def __init__(self):
+        pass
+
+    def fun(self, F):
+        J = det(F)
+        return J * transpose(inv(F, J))
+
+    def grad(self, F):
+        J = det(F)
+        dJdF = self.fun(F)
+        return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
+
+
+class VolumeChange:
+    def __init__(self):
+        pass
+
+    def fun(self, F):
+        return det(F)
+
+    def grad(self, F):
+        J = self.fun(F)
+        return J * transpose(inv(F, J))
+
+    def hessian(self, F):
+        J = self.fun(F)
+        dJdF = self.grad(F)
+        return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
+
+
 class NeoHooke:
     "Nearly-incompressible Neo-Hooke material."
 

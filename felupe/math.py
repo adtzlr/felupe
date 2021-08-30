@@ -220,6 +220,13 @@ def cdya(A, B, parallel=True):
         return (cdya_ik(A, B) + cdya_il(A, B)) * 0.5
 
 
+def cross(a, b):
+    "Cross product of two vectors a and b."
+    return np.einsum(
+        "...i->i...", np.cross(np.einsum("i...->...i", a), np.einsum("i...->...i", b))
+    )
+
+
 def dot(A, B):
     "Dot-product of A and B."
     if len(A.shape) == len(B.shape):

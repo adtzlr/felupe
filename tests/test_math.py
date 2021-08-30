@@ -54,6 +54,10 @@ def test_math():
     A = np.random.rand(3, 3, 3, 3, 8, 200)
     B = np.random.rand(3, 3, 3, 8, 200)
 
+    a = np.random.rand(3, 8, 200)
+
+    fe.math.cross(a, a)
+
     fe.math.sym(H)
 
     fe.math.dot(C, C)

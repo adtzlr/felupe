@@ -82,7 +82,7 @@ class IntegralFormMixed:
         elif len(fun) == np.sum(1 + np.arange(self.nv)) and u is not None:
             # BilinearForm
             self.mode = 2
-            self.i, self.j = np.triu_indices(3)
+            self.i, self.j = np.triu_indices(self.nv)
 
             for a, (i, j) in enumerate(zip(self.i, self.j)):
                 f = IntForm(

@@ -260,7 +260,7 @@ class Boundary:
 
 def uniaxial(fields, right=1, move=0.2, clamped=True):
     "Define boundaries for uniaxial loading."
-    
+
     # if a tuple is passed it is assumed that the first
     # field is associated to the boundaries
     if isinstance(fields, tuple):

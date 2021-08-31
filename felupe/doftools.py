@@ -258,22 +258,29 @@ class Boundary:
         self.points = np.arange(mesh.npoints)[mask]
 
 
-def uniaxial(field, right=1, move=0.2, clamped=True):
+def uniaxial(fields, right=1, move=0.2, clamped=True):
     "Define boundaries for uniaxial loading."
+
+    # if a tuple is passed it is assumed that the first
+    # field is associated to the boundaries
+    if isinstance(fields, tuple):
+        f = fields[0]
+    else:
+        f = fields
 
     f1 = lambda x: np.isclose(x, right)
 
-    bounds = symmetry(field)
+    bounds = symmetry(f)
 
     if clamped:
-        bounds["right"] = Boundary(field, fx=f1, skip=(1, 0, 0))
+        bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
 
-    bounds["move"] = Boundary(field, fx=f1, skip=(0, 1, 1), value=move)
+    bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
 
-    dof0, dof1 = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0)
+    part = partition(fields, bounds)
+    ext0 = apply(f, bounds, part[0])
 
-    return bounds, dof0, dof1, ext0
+    return bounds, *part, ext0
 
 
 class MultiPointConstraint:

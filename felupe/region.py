@@ -39,7 +39,7 @@ from .math import det, inv
 class Region:
     """A numeric region."""
 
-    def __init__(self, mesh, element, quadrature):
+    def __init__(self, mesh, element, quadrature, grad=True):
         """A numeric region, created by a combination of a mesh,
         an element and a numeric integration scheme (quadrature).
         """
@@ -61,7 +61,7 @@ class Region:
             [self.element.basisprime(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
 
-        if self.element.nbasis > 1 and self.mesh.ndim == self.element.ndim:
+        if self.element.nbasis > 1 and self.mesh.ndim == self.element.ndim and grad:
 
             # dXdr_IJpe and its inverse drdX_IJpe
             # -----------------------------------

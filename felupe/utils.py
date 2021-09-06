@@ -267,6 +267,8 @@ def save(
     unstack=None,
     converged=True,
     filename="result.vtk",
+    cell_data=None,
+    point_data=None,
 ):
 
     if unstack is not None:
@@ -276,9 +278,10 @@ def save(
 
     mesh = region.mesh
 
-    point_data = {
-        "Displacements": u.values,
-    }
+    if point_data is None:
+        point_data = {}
+
+    point_data["Displacements"] = u.values
 
     if r is not None:
         if unstack is not None:
@@ -313,11 +316,10 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.points,
-        cells=[
-            (mesh.cell_type, mesh.cells),
-        ],  # [:, : mesh.edgepoints]},
+        cells=[(mesh.cell_type, mesh.cells),],  # [:, : mesh.edgepoints]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
+        cell_data=cell_data,
     )
 
     if filename is not None:

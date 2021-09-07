@@ -99,9 +99,7 @@ class Field:
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
         return np.einsum(
-            "ea...,aJpe->...Jpe",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
+            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
 
     def interpolate(self, values=None):
@@ -207,9 +205,7 @@ class FieldAxisymmetric(Field):
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
         return np.einsum(
-            "ea...,aJpe->...Jpe",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
+            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
 
     def grad(self):

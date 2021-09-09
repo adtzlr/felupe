@@ -200,7 +200,7 @@ class IntegralForm:
         if u is None:
 
             if not grad_v:
-                return np.einsum("ape,i...pe,pe->ai...e", vb, fun, dV, optimize=True)
+                return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
             else:
                 if parallel:
                     return integrate_gradv(vb, fun, dV)

@@ -508,16 +508,18 @@ class TetraMINI(TetraElement):
     def __init__(self):
         super().__init__()
         self.npoints = 5
-        self.nbasis = 4
+        self.nbasis = 5
 
     def basis(self, rst):
         "linear tetrahedral basis functions"
         r, s, t = rst
-        return np.array([1 - r - s - t, r, s, t, 256 * r * s * t * (1 - r - s - t)])
+        a = 256
+        return np.array([1 - r - s - t, r, s, t, a * r * s * t * (1 - r - s - t)])
 
     def basisprime(self, rst):
         "linear tetrahedral derivative of basis functions"
         r, s, t = rst
+        a = 1
         return np.array(
             [
                 [-1, -1, -1],
@@ -525,9 +527,9 @@ class TetraMINI(TetraElement):
                 [0, 1, 0],
                 [0, 0, 1],
                 [
-                    256 * (s * t * (1 - r - s - t) - r * s * t),
-                    256 * (r * t * (1 - r - s - t) - r * s * t),
-                    256 * (r * s * (1 - r - s - t) - r * s * t),
+                    a * (s * t * (1 - r - s - t) - r * s * t),
+                    a * (r * t * (1 - r - s - t) - r * s * t),
+                    a * (r * s * (1 - r - s - t) - r * s * t),
                 ],
             ],
             dtype=float,

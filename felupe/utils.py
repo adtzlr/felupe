@@ -316,7 +316,9 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.points,
-        cells=[(mesh.cell_type, mesh.cells),],  # [:, : mesh.edgepoints]},
+        cells=[
+            (mesh.cell_type, mesh.cells),
+        ],  # [:, : mesh.edgepoints]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
         cell_data=cell_data,

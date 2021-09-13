@@ -32,6 +32,107 @@ from scipy.sparse import bmat, vstack
 from .field import Field, FieldAxisymmetric
 
 
+class IntegralForm:
+    def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
+        self.fun = fun
+        self.dV = dV
+
+        self.v = v
+        self.grad_v = grad_v
+
+        self.u = u
+        self.grad_u = grad_u
+
+        if not self.u:
+            self.indices = self.v.indices.ai
+            self.shape = self.v.indices.shape
+
+        else:
+            eai = self.v.indices.eai
+            ebk = self.u.indices.eai
+
+            eaibk0 = np.stack(
+                [np.repeat(ai.ravel(), bk.size) for ai, bk in zip(eai, ebk)]
+            )
+            eaibk1 = np.stack(
+                [np.tile(bk.ravel(), ai.size) for ai, bk in zip(eai, ebk)]
+            )
+
+            self.indices = (eaibk0.ravel(), eaibk1.ravel())
+            self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
+
+    def assemble(self, values=None, parallel=False):
+
+        if values is None:
+            values = self.integrate(parallel=parallel)
+
+        permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
+            int
+        )
+
+        out = sparsematrix(
+            (values.transpose(permute).ravel(), self.indices), shape=self.shape
+        )
+
+        return out
+
+    def integrate(self, parallel=False):
+        grad_v, grad_u = self.grad_v, self.grad_u
+        v, u = self.v, self.u
+        dV = self.dV
+        fun = self.fun
+
+        # if parallel:
+        #    from numba import jit
+
+        if not grad_v:
+            vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)
+        else:
+            vb = v.region.dhdX
+
+        if u is not None:
+            if not grad_u:
+                ub = np.tile(
+                    u.region.h.reshape(*u.region.h.shape, 1), u.region.mesh.ncells
+                )
+            else:
+                ub = u.region.dhdX
+
+        if u is None:
+
+            if not grad_v:
+                return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
+            else:
+                if parallel:
+                    return integrate_gradv(vb, fun, dV)
+                else:
+                    return np.einsum(
+                        "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
+                    )
+
+        else:
+
+            if not grad_v and not grad_u:
+                return np.einsum(
+                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
+                )
+            elif grad_v and not grad_u:
+                return np.einsum(
+                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
+                )
+            elif not grad_v and grad_u:
+                return np.einsum(
+                    "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
+                )
+            else:  # grad_v and grad_u
+                if parallel:
+                    return integrate_gradv_gradu(vb, fun, ub, dV)
+                else:
+                    return np.einsum(
+                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
+                    )
+
+
 class IntegralFormMixed:
     def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):
 
@@ -129,105 +230,6 @@ class IntegralFormMixed:
             out.append(form.integrate(parallel))
 
         return out
-
-
-class IntegralForm:
-    def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
-        self.fun = fun
-        self.dV = dV
-
-        self.v = v
-        self.grad_v = grad_v
-
-        self.u = u
-        self.grad_u = grad_u
-
-        if not self.u:
-            self.indices = self.v.indices.ai
-            self.shape = self.v.indices.shape
-
-        else:
-            eai = self.v.indices.eai
-            ebk = self.u.indices.eai
-
-            eaibk0 = np.stack(
-                [np.repeat(ai.ravel(), bk.size) for ai, bk in zip(eai, ebk)]
-            )
-            eaibk1 = np.stack(
-                [np.tile(bk.ravel(), ai.size) for ai, bk in zip(eai, ebk)]
-            )
-
-            self.indices = (eaibk0.ravel(), eaibk1.ravel())
-            self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
-
-    def assemble(self, values=None, parallel=False):
-
-        if values is None:
-            values = self.integrate(parallel=parallel)
-
-        permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
-            int
-        )
-
-        out = sparsematrix(
-            (values.transpose(permute).ravel(), self.indices), shape=self.shape
-        )
-
-        return out
-
-    def integrate(self, parallel=False):
-        grad_v, grad_u = self.grad_v, self.grad_u
-        v, u = self.v, self.u
-        dV = self.dV
-        fun = self.fun
-
-        # if parallel:
-        #    from numba import jit
-
-        if not grad_v:
-            vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)
-        else:
-            vb = v.region.dhdX
-
-        if u is not None:
-            if not grad_u:
-                ub = np.tile(
-                    u.region.h.reshape(*u.region.h.shape, 1), u.region.mesh.ncells
-                )
-            else:
-                ub = u.region.dhdX
-
-        if u is None:
-
-            if not grad_v:
-                return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
-            else:
-                if parallel:
-                    return integrate_gradv(vb, fun, dV)
-                else:
-                    return np.einsum("aJpe,iJpe,pe->aie", vb, fun, dV, optimize=True)
-
-        else:
-
-            if not grad_v and not grad_u:
-                return np.einsum(
-                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
-                )
-            elif grad_v and not grad_u:
-                return np.einsum(
-                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
-                )
-            elif not grad_v and grad_u:
-                return np.einsum(
-                    "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
-                )
-            else:  # grad_v and grad_u
-                if parallel:
-                    return integrate_gradv_gradu(vb, fun, ub, dV)
-                else:
-                    return np.einsum(
-                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
-                    )
 
 
 class IntegralFormAxisymmetric(IntegralForm):

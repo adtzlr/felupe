@@ -39,11 +39,27 @@ from .forms import IntegralFormMixed
 from . import utils
 
 
-def FpJ(fields):
+def extract(fields, add_identity=True):
+    """Extract field values: Deformation Gradient with optional interpolated
+    values of trailing fields."""
+    if isinstance(fields, tuple) or isinstance(fields, list):
+        return FpJ(fields, add_identity)
+    else:
+        field = fields
+        if add_identity:
+            return defgrad(field)
+        else:
+            return grad(field)
+
+
+def FpJ(fields, add_identity=True):
     """Calculate the deformation gradient of a given list of fields
     and evaluate all other field values at integration points."""
     dudX = grad(fields[0])
-    F = identity(dudX) + dudX
+    if add_identity:
+        F = identity(dudX) + dudX
+    else:
+        F = dudX
     return F, *[interpolate(f) for f in fields[1:]]
 
 
@@ -78,8 +94,10 @@ def strain_voigt(field):
         return eps_normal
 
 
-def update(x, dx):
+def update(y, dx):
     "Update field values."
+
+    x = deepcopy(y)
 
     if isinstance(x, tuple) or isinstance(x, list):
         for field, dfield in zip(x, dx):
@@ -90,21 +108,44 @@ def update(x, dx):
     return x
 
 
-def solve(K, f, field, dof0, dof1, ext):
+def solve(K, f, fields, dof0, dof1, ext, unstack=None):
+    "Solve linear equation system K dx = b"
+
+    if isinstance(fields, tuple) or isinstance(fields, list):
+        return _solve_mixed(K, f, fields, dof0, dof1, ext, unstack)
+
+    else:
+        field = fields
+        return _solve_single(K, f, field, dof0, dof1, ext)
+
+
+def _solve_single(K, f, field, dof0, dof1, ext):
     "Solve linear equation system K dx = b"
     system = solvetools.partition(field, K, dof1, dof0, -f)
     dx = solvetools.solve(*system, ext)
     return dx
 
 
-def solve_mixed(K, f, fields, dof0, dof1, ext, unstack):
+def _solve_mixed(K, f, fields, dof0, dof1, ext, unstack):
     "Solve linear equation system K dx = b"
     system = solvetools.partition(fields, K, dof1, dof0, -f)
     dfields = np.split(solvetools.solve(*system, ext), unstack)
     return dfields
 
 
-def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+def check(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+    "Check if solution dfields is valid."
+
+    if isinstance(fields, tuple) or isinstance(fields, list):
+        return _check_mixed(dfields, fields, f, dof1, dof0, tol_f, tol_x, verbose)
+
+    else:
+        x = fields
+        dx = dfields
+        return _check_single(dx, x, f, dof1, dof0, tol_f, tol_x, verbose)
+
+
+def _check_single(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
     "Check if solution dx is valid."
 
     # get reference values of "f" and "x"
@@ -126,8 +167,8 @@ def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
     return success
 
 
-def check_mixed(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
-    "Check if solution dx is valid."
+def _check_mixed(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+    "Check if solution dfields is valid."
 
     x = fields[0]
     dx = dfields[0]
@@ -287,10 +328,10 @@ def incsolve(
             fun,
             fields,
             jac,
-            solve=solve_mixed,
+            solve=solve,
             pre=FpJ,
             update=update,
-            check=check_mixed,
+            check=check,
             kwargs_solve={
                 "fields": fields,
                 "ext": u0ext,

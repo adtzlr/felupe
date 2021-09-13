@@ -57,22 +57,71 @@ class GaussLegendre(Scheme):
 
         super().__init__(scheme.points.T, weights)
 
+from types import SimpleNamespace
 
 class Triangle(Scheme):
     def __init__(self, order: int):
-        scheme = quadpy.t2.get_good_scheme(order)
-        triangle = np.array([[0, 0], [1, 0], [0, 1]])
+        scheme = SimpleNamespace()
         area = 1 / 2
-
+        
+        if order == 1:
+            scheme.points = np.ones((1, 3)).T / 3
+            scheme.weights = np.ones(1)
+            
+        elif order == 2:
+            a = 2 / 3
+            b = 1 / 6
+            scheme.points = np.array([[a, b, b],
+                                      [b, a, b],
+                                      [b, b, a]])
+            scheme.weights = np.ones(3) / 3
+            
+        elif order == 3:
+            a = 0.6
+            b = 0.2
+            c = 1 / 3
+            scheme.points = np.array([[c, c, c],
+                                      [b, a, a],
+                                      [a, b, a],
+                                      [a, a, b]])
+            scheme.weights = np.array([-27/48, 25/48, 25/48, 25/48])
+            
+        triangle = np.array([[0, 0], [1, 0], [0, 1]])
         points = np.dot(triangle.T, scheme.points).T
+        
         super().__init__(points, scheme.weights * area)
 
 
 class Tetrahedron(Scheme):
     def __init__(self, order: int):
-        scheme = quadpy.t3.get_good_scheme(order)
-        tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        scheme = SimpleNamespace()
         area = 1 / 6
+        
+        if order == 1:
+            scheme.points = np.ones((1, 4)).T / 4
+            scheme.weights = np.ones(1)
+            
+        elif order == 2:
+            a = 0.58541020
+            b = 0.13819660
+            scheme.points = np.array([[a, b, b, b],
+                                      [b, a, b, b],
+                                      [b, b, a, b],
+                                      [b, b, b, a]])
+            scheme.weights = np.ones(4) / 4
+            
+        elif order == 3:
+            a = 1 / 6
+            b = 1 / 2
+            c = 1 / 4
+            scheme.points = np.array([[c, c, c, c],
+                                      [b, a, a, a],
+                                      [a, b, a, a],
+                                      [a, a, b, a],
+                                      [a, a, a, b]])
+            scheme.weights = np.array([-4/5, 9/20, 9/20, 9/20, 9/20])
+            
+        tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
         points = np.dot(tetra.T, scheme.points).T
         super().__init__(points, scheme.weights * area)

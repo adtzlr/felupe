@@ -32,36 +32,13 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-
-from copy import copy, deepcopy
-
+from copy import deepcopy
 from .math import identity
-
-
-def extract(fields, fieldgrad=(True, False), add_identity=False):
-    grads = np.pad(fieldgrad, (0, len(fields)))
-    list_of_fields = []
-    for grad, field in zip(grads, fields):
-        if grad:
-            f = field.grad()
-            if add_identity:
-                f += identity(f)
-        else:
-            f = field.interpolate()
-        list_of_fields.append(f)
-    return list_of_fields
-
-
-class Indices:
-    def __init__(self, eai, ai, region, dim):
-        self.eai = eai
-        self.ai = ai
-        self.dof = np.arange(region.mesh.npoints * dim).reshape(-1, dim)
-        self.shape = (region.mesh.npoints * dim, 1)
+from .indices import Indices
 
 
 class Field:
-    "n-dimensional field in region."
+    "n-dimensional continous field in region."
 
     def __init__(self, region, dim=1, values=0, **kwargs):
         self.region = region
@@ -73,9 +50,13 @@ class Field:
             setattr(self, key, value)
 
         # init values
-        if type(values) == np.ndarray:
-            self.values = values
-        else:
+        if isinstance(values, np.ndarray):
+            if len(values) == region.mesh.npoints:
+                self.values = values
+            else:
+                raise ValueError("Wrong shape of values.")
+                
+        else: # scalar value
             self.values = np.ones((region.mesh.npoints, dim)) * values
 
         eai, ai = self.indices_per_cell(self.region.mesh.cells, dim)
@@ -84,9 +65,9 @@ class Field:
     def indices_per_cell(self, cells, dim):
         "Pre-defined indices for sparse matrices."
 
-        # index of cell "e", point "a" and nodal-value component "i"
+        # index of cell "e", point "a" and component "i"
         eai = np.stack(
-            [dim * np.tile(conn, (dim, 1)).T + np.arange(dim) for conn in cells]
+            [dim * np.tile(cell, (dim, 1)).T + np.arange(dim) for cell in cells]
         )
         # store indices as (rows, cols) (note: sparse-matrices are always 2d)
         ai = (eai.ravel(), np.zeros_like(eai.ravel()))
@@ -95,7 +76,7 @@ class Field:
 
     def grad(self):
         "gradient dudX_IJpe"
-        # gradient as partial derivative of nodal field values "aI"
+        # gradient as partial derivative of field values at points "aI"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
         return np.einsum(
@@ -104,20 +85,17 @@ class Field:
             self.region.dhdX,
         )
 
-    def interpolate(self, values=None):
+    def interpolate(self):
         "interpolated values u_Ipe"
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
         # for cell "e"
-        if values is None:
-            values = self.values
         return np.einsum(
-            "ea...,ap->...pe", values[self.region.mesh.cells], self.region.h
+            "ea...,ap->...pe", self.values[self.region.mesh.cells], self.region.h
         )
 
     def copy(self):
-        out = copy(self)
-        return out
+        return deepcopy(self)
 
     def full(self, a):
         self.values = np.full(self.values.shape, a, dtype=float)
@@ -126,16 +104,64 @@ class Field:
         self.full(a)
 
     def __add__(self, newvalues):
-        return self.__iadd__(newvalues)
+
+        if isinstance(newvalues, np.ndarray):
+            field = copy(self)
+            field.values += newvalues.reshape(-1, field.dim)
+            return field
+
+        elif isinstance(newvalues, Field):
+            field = copy(self)
+            field.values += newvalues.values
+            return field
+
+        else:
+            raise TypeError("Unknown type.")
 
     def __sub__(self, newvalues):
-        return self.__isub__(newvalues)
+
+        if isinstance(newvalues, np.ndarray):
+            field = copy(self)
+            field.values -= newvalues.reshape(-1, field.dim)
+            return field
+
+        elif isinstance(newvalues, Field):
+            field = copy(self)
+            field.values -= newvalues.values
+            return field
+
+        else:
+            raise TypeError("Unknown type.")
 
     def __mul__(self, newvalues):
-        return self.__imul__(newvalues)
+
+        if isinstance(newvalues, np.ndarray):
+            field = copy(self)
+            field.values *= newvalues.reshape(-1, field.dim)
+            return field
+
+        elif isinstance(newvalues, Field):
+            field = copy(self)
+            field.values *= newvalues.values
+            return field
+
+        else:
+            raise TypeError("Unknown type.")
 
     def __truediv__(self, newvalues):
-        return self.__itruediv__(newvalues)
+
+        if isinstance(newvalues, np.ndarray):
+            field = copy(self)
+            field.values /= newvalues.reshape(-1, field.dim)
+            return field
+
+        elif isinstance(newvalues, Field):
+            field = copy(self)
+            field.values /= newvalues.values
+            return field
+
+        else:
+            raise TypeError("Unknown type.")
 
     def __iadd__(self, newvalues):
 
@@ -190,29 +216,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __getitem__(self, dof):
-        "Allow slice-based access to flattened array with values."
+        "Slice-based access to flattened values by list of dof's."
 
         return self.values.ravel()[dof]
-
-
-class FieldAxisymmetric(Field):
-    def __init__(self, region, dim=2, values=0):
-        super().__init__(region, dim=dim, values=values)
-        self.scalar = Field(region)
-        self.radius = self.scalar.interpolate(region.mesh.points[:, 1])
-
-    def _grad_2d(self):
-        "gradient dudX_IJpe"
-        # gradient as partial derivative of nodal field values "aI"
-        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-        # for cell "e"
-        return np.einsum(
-            "ea...,aJpe->...Jpe",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
-        )
-
-    def grad(self):
-        g = np.pad(self._grad_2d(), ((0, 1), (0, 1), (0, 0), (0, 0)))
-        g[-1, -1] = self.interpolate()[1] / self.radius
-        return g

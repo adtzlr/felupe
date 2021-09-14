@@ -29,23 +29,10 @@ import numpy as np
 
 from ..math import (
     dot,
-    ddot,
-    ddot44,
-    transpose,
-    majortranspose,
     inv,
-    dya,
-    cdya,
     cdya_ik,
-    cdya_il,
     det,
-    identity,
-    trace,
-    dev,
 )
-
-
-from .models import NeoHooke
 
 
 class MaterialFrom:
@@ -61,59 +48,26 @@ class MaterialFrom:
             self.F = F
             self.J = det(F)
 
-            if self.material.kind.df == 0 and self.material.kind.da == 0:
-                self.C = dot(transpose(F), F)
-                self.invC = inv(self.C, determinant=self.J ** 2, sym=True)
+            self.C = dot(transpose(F), F)
+            self.invC = inv(self.C, determinant=self.J ** 2, sym=True)
 
-                self.S = self.material.stress(self.C, self.F, self.J)
-
-            elif self.material.kind.df == None and self.material.kind.da == None:
-                self.b = dot(self.F, transpose(self.F))
-                # self.invb = inv(self.b, determinant=self.J ** 2, sym=True)
-                self.iFT = transpose(inv(self.F, determinant=self.J))
-
-                self.tau = self.material.stress(self.b, self.F, self.J)
-
-            else:
-                raise ValueError("Unknown material")
+            self.S = self.material.stress(self.C, self.F, self.J)
 
     def P(self, F):
         self.update(F)
-
-        if self.material.kind.df == 0 and self.material.kind.da == 0:
-            return dot(self.F, self.S)
-
-        if self.material.kind.df == None and self.material.kind.da == None:
-            return dot(self.tau, self.iFT)
+        return dot(self.F, self.S)
 
     def A(self, F):
         self.update(F)
-
-        if self.material.kind.df == 0 and self.material.kind.da == 0:
-            C4 = self.material.elasticity(self.C, self.F, self.J) + cdya_ik(
-                self.invC, self.S
+        C4 = self.material.elasticity(self.C, self.F, self.J) + cdya_ik(
+            self.invC, self.S
+        )
+        if self.parallel:
+            return transform13(self.F, self.F, C4)
+        else:
+            return np.einsum(
+                "iI...,kK...,IJKL...->iJkL...", self.F, self.F, C4, optimize=True
             )
-            if self.parallel:
-                return transform13(self.F, self.F, C4)
-            else:
-                return np.einsum(
-                    "iI...,kK...,IJKL...->iJkL...", self.F, self.F, C4, optimize=True
-                )
-
-        if self.material.kind.df == None and self.material.kind.da == None:
-            Jc4 = self.material.elasticity(self.b, self.F, self.J) + cdya_ik(
-                identity(self.b), self.tau
-            )
-            if self.parallel:
-                return transform24(self.iFT, self.iFT, Jc4)
-            else:
-                return np.einsum(
-                    "jJ...,lL...,ijkl...->iJkL...",
-                    self.iFT,
-                    self.iFT,
-                    Jc4,
-                    optimize=True,
-                )
 
 
 try:
@@ -169,6 +123,4 @@ try:
 
 
 except:
-
-    def pushforward13(F, G, C4):  # pragma: no cover
-        return np.einsum("iI...,kK...,IJKL...->iJkL...", F, G, C4, optimize=True)
+    pass

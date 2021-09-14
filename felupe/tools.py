@@ -94,10 +94,13 @@ def strain_voigt(field):
         return eps_normal
 
 
-def update(y, dx):
+def update(y, dx, inplace=True):
     "Update field values."
-
-    x = deepcopy(y)
+    
+    if inplace:
+        x = y
+    else:
+        x = deepcopy(y)
 
     if isinstance(x, tuple) or isinstance(x, list):
         for field, dfield in zip(x, dx):

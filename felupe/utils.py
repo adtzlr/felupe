@@ -34,7 +34,7 @@ from scipy.interpolate import interp1d
 
 import meshio
 
-from .forms import IntegralFormMixed
+from .form import IntegralFormMixed
 from .solve import partition, solve
 from .math import identity, grad, dot, transpose, eigvals, det, interpolate, norms
 from .field import Field
@@ -174,7 +174,7 @@ def incsolve(
         bounds[boundary].value = move_t
 
         # obtain external displacements for prescribed dofs
-        u0ext = apply(fields[0], bounds, dof0)
+        u0ext = apply(fields.fields[0], bounds, dof0)
 
         Result = newtonrhapson(
             region,
@@ -272,6 +272,8 @@ def save(
 ):
 
     if unstack is not None:
+        if "mixed" in str(type(fields)):
+            fields = fields.fields
         u = fields[0]
     else:
         u = fields
@@ -316,9 +318,7 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.points,
-        cells=[
-            (mesh.cell_type, mesh.cells),
-        ],  # [:, : mesh.edgepoints]},
+        cells=[(mesh.cell_type, mesh.cells),],  # [:, : mesh.edgepoints]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
         cell_data=cell_data,
@@ -346,6 +346,9 @@ def savehistory(region, results, filename="result_history.xdmf"):
                 reactionforces = np.split(r, unstack)[0]
             else:
                 reactionforces = r
+
+            if "mixed" in str(type(fields)):
+                fields = fields.fields
 
             u = fields[0]
 

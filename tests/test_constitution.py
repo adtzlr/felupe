@@ -57,9 +57,36 @@ def mat_W3(F, p, J):
 
     detF = ca.det(F)
     C = ca.transpose(F) @ F
-    Cu = J ** (-2 / 3) * C
+    Cu = detF ** (-2 / 3) * C
 
     return mu / 2 * (ca.trace(Cu) - 3) + bulk / 2 * (J - 1) ** 2 + p * (detF - J)
+
+
+def mat_W2T(F, P):
+    mu, gamma = 1, 5000
+
+    P = ca.reshape(P, (3, 3))
+
+    C = ca.transpose(F) @ F
+    E = (C - ca.DM.eye(3)) / 2
+    I1 = ca.trace(E)
+    I2 = ca.trace(E @ E)
+
+    return mu * I2 + gamma * I1 ** 2 / 2 - ca.trace(ca.transpose(P) @ F)
+
+
+def mat_W3T(dxdX, P, F):
+    mu, gamma = 1, 5000
+
+    P = ca.reshape(P, (3, 3))
+    F = ca.reshape(F, (3, 3))
+
+    C = ca.transpose(F) @ F
+    E = (C - ca.DM.eye(3)) / 2
+    I1 = ca.trace(E)
+    I2 = ca.trace(E @ E)
+
+    return mu * I2 + gamma * I1 ** 2 / 2 + ca.trace(ca.transpose(P) @ (dxdX - F))
 
 
 def mat_straininvariants(invariants):
@@ -140,6 +167,20 @@ def pre():
     F = u.extract(grad=True, add_identity=True)
 
     return F, u, p, J
+
+
+def preT():
+    m = fe.mesh.Cube()
+    e = fe.element.Hexahedron()
+    q = fe.quadrature.GaussLegendre(1, 3)
+    r = fe.Region(m, e, q)
+    u = fe.Field(r, dim=3)
+    P = fe.Field(r, dim=9)
+    F = fe.Field(r, dim=9)
+
+    dxdX = u.extract(grad=True, add_identity=True)
+
+    return dxdX, u, P, F
 
 
 def test_basic():
@@ -239,6 +280,17 @@ def test_ad():
 
     umat = fe.constitution.StrainEnergyDensityThreeField(mat_W3)
     umat.f(F, p, J), umat.A(F, p, J)
+
+    dxdX, u, P, F = preT()
+
+    fields = fe.FieldMixed((u, P, F))
+    dxdX, P, F = fields.extract()
+
+    umat = fe.constitution.StrainEnergyDensityTwoFieldTensor(mat_W2T)
+    umat.f(dxdX, P), umat.A(dxdX, P)
+
+    umat = fe.constitution.StrainEnergyDensityThreeFieldTensor(mat_W3T)
+    umat.f(dxdX, P, F), umat.A(dxdX, P, F)
 
 
 if __name__ == "__main__":  # pragma: no cover

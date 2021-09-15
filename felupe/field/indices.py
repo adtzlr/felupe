@@ -48,5 +48,7 @@ class IndicesDiscontinous:
         # cell "e", point "a" and component "i"
         self.eai = eai
         self.ai = ai
-        self.dof = np.arange(region.mesh.ncells * region.element.nbasis * dim).reshape(-1, dim)
+        self.dof = np.arange(region.mesh.ncells * region.element.nbasis * dim).reshape(
+            -1, dim
+        )
         self.shape = (region.mesh.ncells * region.element.nbasis * dim, 1)

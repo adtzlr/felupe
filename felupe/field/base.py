@@ -33,7 +33,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from copy import deepcopy
-from .math import identity
+from ..math import identity, sym as symmetric
 from .indices import Indices
 
 
@@ -55,8 +55,8 @@ class Field:
                 self.values = values
             else:
                 raise ValueError("Wrong shape of values.")
-                
-        else: # scalar value
+
+        else:  # scalar value
             self.values = np.ones((region.mesh.npoints, dim)) * values
 
         eai, ai = self.indices_per_cell(self.region.mesh.cells, dim)
@@ -74,16 +74,18 @@ class Field:
 
         return eai, ai
 
-    def grad(self):
+    def grad(self, sym=False):
         "gradient dudX_IJpe"
         # gradient as partial derivative of field values at points "aI"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
-        return np.einsum(
-            "ea...,aJpe->...Jpe",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
+        g = np.einsum(
+            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
+        if sym:
+            return symmetric(g)
+        else:
+            return g
 
     def interpolate(self):
         "interpolated values u_Ipe"
@@ -94,24 +96,37 @@ class Field:
             "ea...,ap->...pe", self.values[self.region.mesh.cells], self.region.h
         )
 
+    def extract(self, grad=True, sym=False, add_identity=True):
+        "Extract gradient or interpolated field values at quadrature points."
+
+        if grad:
+            gr = self.grad()
+
+            if sym:
+                gr = sym(gr)
+
+            if add_identity:
+                gr = identity(gr) + gr
+
+            return gr
+        else:
+            return self.interpolate()
+
     def copy(self):
         return deepcopy(self)
 
-    def full(self, a):
-        self.values = np.full(self.values.shape, a, dtype=float)
-
     def fill(self, a):
-        self.full(a)
+        self.values.fill(a)
 
     def __add__(self, newvalues):
 
         if isinstance(newvalues, np.ndarray):
-            field = copy(self)
+            field = deepcopy(self)
             field.values += newvalues.reshape(-1, field.dim)
             return field
 
         elif isinstance(newvalues, Field):
-            field = copy(self)
+            field = deepcopy(self)
             field.values += newvalues.values
             return field
 
@@ -121,12 +136,12 @@ class Field:
     def __sub__(self, newvalues):
 
         if isinstance(newvalues, np.ndarray):
-            field = copy(self)
+            field = deepcopy(self)
             field.values -= newvalues.reshape(-1, field.dim)
             return field
 
         elif isinstance(newvalues, Field):
-            field = copy(self)
+            field = deepcopy(self)
             field.values -= newvalues.values
             return field
 
@@ -136,12 +151,12 @@ class Field:
     def __mul__(self, newvalues):
 
         if isinstance(newvalues, np.ndarray):
-            field = copy(self)
+            field = deepcopy(self)
             field.values *= newvalues.reshape(-1, field.dim)
             return field
 
         elif isinstance(newvalues, Field):
-            field = copy(self)
+            field = deepcopy(self)
             field.values *= newvalues.values
             return field
 
@@ -151,12 +166,12 @@ class Field:
     def __truediv__(self, newvalues):
 
         if isinstance(newvalues, np.ndarray):
-            field = copy(self)
+            field = deepcopy(self)
             field.values /= newvalues.reshape(-1, field.dim)
             return field
 
         elif isinstance(newvalues, Field):
-            field = copy(self)
+            field = deepcopy(self)
             field.values /= newvalues.values
             return field
 

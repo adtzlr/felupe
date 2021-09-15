@@ -32,18 +32,20 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from ..math import identity
 
 
-def extract(fields, fieldgrad=(True, False), add_identity=False):
-    grads = np.pad(fieldgrad, (0, len(fields)))
-    list_of_field_extracts = []
-    for grad, field in zip(grads, fields):
-        if grad:
-            f = field.grad()
-            if add_identity:
-                f += identity(f)
-        else:
-            f = field.interpolate()
-        list_of_field_extracts.append(f)
-    return list_of_field_extracts
+class FieldMixed:
+    def __init__(self, fields):
+        self.fields = fields
+        self.values = tuple(f.values for f in self.fields)
+
+    def extract(self, grad=True, sym=False, add_identity=True):
+        "extract gradient or interpolated field values at quadrature points."
+
+        if isinstance(grad, bool):
+            grad = (grad,)
+
+        grads = np.pad(grad, (0, len(self.fields) - 1))
+        return tuple(
+            f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
+        )

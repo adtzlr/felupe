@@ -40,10 +40,16 @@ def test_math_field():
     fe.math.values((u, u))
 
     fe.math.norms([u.values, u.values])
+    fe.math.norm(u.values)
     fe.math.interpolate(u)
     fe.math.grad(u)
+    fe.math.grad(u, sym=True)
+    fe.math.tovoigt(fe.math.strain(u))
     fe.math.strain(u)
     fe.math.extract(u)
+    fe.math.extract(u, grad=False)
+    fe.math.extract(u, sym=True)
+    fe.math.extract(u, grad=True, sym=False, add_identity=False)
 
     v = fe.Field(r, dim=1)
     fe.math.laplace(v)

@@ -99,7 +99,9 @@ def test_solve_mixed_check():
     r, fields = pre()
     u = fields[0]
 
-    F, p, J = fe.FieldMixed(fields).extract()
+    f = fe.FieldMixed(fields)
+
+    F, p, J = f.extract()
 
     NH = fe.constitution.NeoHooke(1, 3)
     nh = fe.constitution.GeneralizedThreeField(NH.P, NH.A)
@@ -107,17 +109,17 @@ def test_solve_mixed_check():
     F = fe.math.defgrad(u)
 
     b = fe.doftools.symmetry(u)
-    dof0, dof1, unstack = fe.doftools.partition(fields, b)
+    dof0, dof1, unstack = fe.doftools.partition(f, b)
 
     u0ext = fe.doftools.apply(u, b, dof0)
 
-    L = fe.IntegralFormMixed(nh.f(F, p, J), fields, r.dV)
-    a = fe.IntegralFormMixed(nh.A(F, p, J), fields, r.dV, fields)
+    L = fe.IntegralFormMixed(nh.f(F, p, J), f, r.dV)
+    a = fe.IntegralFormMixed(nh.A(F, p, J), f, r.dV, f)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
 
-    dx = fe.tools.solve(A, b, fields, dof0, dof1, u0ext, unstack)
+    dx = fe.tools.solve(A, b, f, dof0, dof1, u0ext, unstack)
     assert dx[0].shape == u.values.ravel().shape
     assert dx[1].shape == fields[1].values.ravel().shape
     assert dx[2].shape == fields[2].values.ravel().shape

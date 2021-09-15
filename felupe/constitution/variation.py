@@ -45,7 +45,7 @@ from ..math import (
 )
 
 
-class upJ:
+class GeneralizedThreeField:
     def __init__(self, stress, elasticity):
         """Three-Field variation for nearly-incompressible materials:
         stress = 1st Piola-Kirchhoff stress P

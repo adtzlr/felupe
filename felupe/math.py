@@ -28,12 +28,27 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def values(fields):
+def defgrad(field):
+    return field.extract(grad=True, sym=False, add_identity=True)
+
+
+def strain(field):
+    return field.grad(sym=True)
+
+
+def extract(field):
+    "Extract gradient or interpolated field values at quadrature points."
+    return field.extract()
+
+
+def values(field):
     "Return values of a field or a tuple of fields."
-    if isinstance(fields, tuple):
-        return np.concatenate([field.values.ravel() for field in fields])
+    if isinstance(field, tuple) or isinstance(field, list):
+        return np.concatenate([f.values.ravel() for f in field])
+    if "mixed" in str(type(field)).lower():
+        return np.concatenate([f.values.ravel() for f in field.fields])
     else:
-        return fields.values.ravel()
+        return field.values.ravel()
 
 
 def norms(arrays):

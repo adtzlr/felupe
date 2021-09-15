@@ -75,9 +75,9 @@ def test_hex8_nh_rbe2_mixed():
     pressure = fe.Field(region0)
     volumeratio = fe.Field(region0, values=1)
 
-    fields = (displacement, pressure, volumeratio)
+    fields = fe.FieldMixed((displacement, pressure, volumeratio))
 
-    F, p, J = fe.FieldMixed(fields).extract()
+    F, p, J = fields.extract()
 
     nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
     umat = fe.constitution.GeneralizedThreeField(nh.P, nh.A)

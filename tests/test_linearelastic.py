@@ -56,7 +56,7 @@ def test_linearelastic():
         fun,
         displacement,
         jac,
-        pre=fe.tools.strain,
+        pre=fe.math.strain,
         solve=fe.tools.solve,
         update=fe.tools.update,
         check=fe.tools.check,

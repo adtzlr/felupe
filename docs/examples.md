@@ -126,7 +126,7 @@ dV = region.dV
 displacement = fe.Field(region,  dim=3)
 pressure     = fe.Field(region0, dim=1)
 volumeratio  = fe.Field(region0, dim=1, values=1)
-fields = (displacement, pressure, volumeratio)
+fields = fe.FieldMixed((displacement, pressure, volumeratio))
 ```
 
 Boundary conditions are enforced in the same way as in [Getting Started](quickstart.md).
@@ -162,7 +162,7 @@ for iteration in range(8):
     system = fe.solve.partition(fields, K, dof1, dof0, r)
     dfields = np.split(fe.solve.solve(*system, u0ext), unstack)
     
-    for field, dfield in zip(fields, dfields):
+    for field, dfield in zip(fields.fields, dfields):
         field += dfield
 
     norm = np.linalg.norm(dfields[0])

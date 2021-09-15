@@ -34,7 +34,7 @@ from scipy.interpolate import interp1d
 
 import meshio
 
-from .forms import IntegralFormMixed
+from .form import IntegralFormMixed
 from .solve import partition, solve
 from .math import identity, grad, dot, transpose, eigvals, det, interpolate, norms
 from .field import Field
@@ -83,11 +83,11 @@ def newtonrhapson(
     dV = region.dV
 
     # deformation gradient at integration points
-    F = identity(grad(fields[0])) + grad(fields[0])
+    F = identity(grad(fields.fields[0])) + grad(fields.fields[0])
 
     # PK1 stress and elasticity matrix
-    f = fun_f(F, *[interpolate(f) for f in fields[1:]])
-    A = fun_A(F, *[interpolate(f) for f in fields[1:]])
+    f = fun_f(F, *[interpolate(f) for f in fields.fields[1:]])
+    A = fun_A(F, *[interpolate(f) for f in fields.fields[1:]])
 
     # assembly
     r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
@@ -103,20 +103,20 @@ def newtonrhapson(
         if np.any(np.isnan(dfields[0])):
             break
         else:
-            for field, dfield in zip(fields, dfields):
+            for field, dfield in zip(fields.fields, dfields):
                 field += dfield
 
         # deformation gradient at integration points
-        F = identity(grad(fields[0])) + grad(fields[0])
+        F = identity(grad(fields.fields[0])) + grad(fields.fields[0])
 
         # PK1 stress and elasticity matrix
-        f = fun_f(F, *[interpolate(f) for f in fields[1:]])
+        f = fun_f(F, *[interpolate(f) for f in fields.fields[1:]])
 
         # residuals and stiffness matrix components
         r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
 
         rref = np.linalg.norm(r[dof0])
-        uref = np.linalg.norm(fields[0].values.ravel()[dof0])
+        uref = np.linalg.norm(fields.fields[0].values.ravel()[dof0])
         if rref == 0:
             rref = 1
         if uref == 0:
@@ -136,7 +136,7 @@ def newtonrhapson(
             break
         else:
             # elasticity matrix
-            A = fun_A(F, *[interpolate(f) for f in fields[1:]])
+            A = fun_A(F, *[interpolate(f) for f in fields.fields[1:]])
 
             # assembly of stiffness matrix components
             K = IntegralFormMixed(A, fields, dV, fields).assemble(parallel=parallel)
@@ -174,7 +174,7 @@ def incsolve(
         bounds[boundary].value = move_t
 
         # obtain external displacements for prescribed dofs
-        u0ext = apply(fields[0], bounds, dof0)
+        u0ext = apply(fields.fields[0], bounds, dof0)
 
         Result = newtonrhapson(
             region,
@@ -267,18 +267,23 @@ def save(
     unstack=None,
     converged=True,
     filename="result.vtk",
+    cell_data=None,
+    point_data=None,
 ):
 
     if unstack is not None:
+        if "mixed" in str(type(fields)):
+            fields = fields.fields
         u = fields[0]
     else:
         u = fields
 
     mesh = region.mesh
 
-    point_data = {
-        "Displacements": u.values,
-    }
+    if point_data is None:
+        point_data = {}
+
+    point_data["Displacements"] = u.values
 
     if r is not None:
         if unstack is not None:
@@ -313,11 +318,10 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.points,
-        cells=[
-            (mesh.cell_type, mesh.cells),
-        ],  # [:, : mesh.edgepoints]},
+        cells=[(mesh.cell_type, mesh.cells),],  # [:, : mesh.edgepoints]},
         # Optionally provide extra data on points, cells, etc.
         point_data=point_data,
+        cell_data=cell_data,
     )
 
     if filename is not None:
@@ -342,6 +346,9 @@ def savehistory(region, results, filename="result_history.xdmf"):
                 reactionforces = np.split(r, unstack)[0]
             else:
                 reactionforces = r
+
+            if "mixed" in str(type(fields)):
+                fields = fields.fields
 
             u = fields[0]
 

@@ -2,15 +2,11 @@
 This section gives an overview of some selected topics of the theory behing felupe.
 
 ## Constitution
-Stresses are calculated by a constitutive material law which is a function of the stress - work-conjugate deformation quantity. Felupe provides several template classes which may be used for user-defined materials. E.g. `InvariantBased`- and `PrincipalStretchBased` classes (both available within the total lagrange or updated lagrange frameworks) are built on top of a user material function (`umat`) for isotropic hyperelastic material formulations. This `umat` - function takes a list of invariants as input and provides first and second partial derivatives of the strain energy density function w.r.t. the invariants as output for the case of `InvariantBased` materials. These materials may be optionally wrapped in an `AsIsochoric` class. An additional hydrostatic volumetric material behavior ($p = K (J-1)$) is provided by a `Hydrostatic` material class which takes the bulk modulus as its only argument. A list of materials may be combined by a `Composite` material, e.g. the isochoric and volumetric parts of a material or parallel contributions from a single formula architecture with different sets of material parameters. Finally the resulting material has to be converted to the work-conjugate pair of the first Piola-Kirchhoff stress tensor and the (virtual) deformation gradient by hand or with the template class `MaterialFrom`. If one wishes to use a mixed-field formulation for nearly-incompressible materials (see section below), the resulting stress and elasticity functions have to be provided to the `fe.constitution.variation.upJ` class.
+Stresses are calculated by a constitutive material law which is a function of the stress - work-conjugate deformation quantity. Felupe provides several template classes which may be used for user-defined materials. E.g. `InvariantBased`- and `PrincipalStretchBased` classes (both available within the total lagrange or updated lagrange frameworks) are built on top of a user material function (`umat`) for isotropic hyperelastic material formulations. This `umat` - function takes a list of invariants as input and provides first and second partial derivatives of the strain energy density function w.r.t. the invariants as output for the case of `InvariantBased` materials. These materials may be optionally wrapped in an `AsIsochoric` class. An additional hydrostatic volumetric material behavior ($p = K (J-1)$) is provided by a `Hydrostatic` material class which takes the bulk modulus as its only argument. A list of materials may be combined by a `Composite` material, e.g. the isochoric and volumetric parts of a material or parallel contributions from a single formula architecture with different sets of material parameters. Finally the resulting material has to be converted to the work-conjugate pair of the first Piola-Kirchhoff stress tensor and the (virtual) deformation gradient by hand or with the template class `Material`. If one wishes to use a mixed-field formulation for nearly-incompressible materials (see section below), the resulting stress and elasticity functions have to be provided to the `fe.constitution.GeneralizedThreeField` class.
 
-The described classes are visualized in the following two Figures. The first one shows the total lagrange...
+The described classes (*Total Lagrange*) are visualized in the following Figure.
 
-![constitution tl](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_tl.svg)
-
-...whereas the second figure shows the updated lagrange framework.
-
-![constitution ul](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_ul.svg)
+![constitution tl](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/constitution_tl.png)
 
 For example we define a simple Neo-Hookean solid with an invariant-based `umat_invariants` function.
 
@@ -37,7 +33,7 @@ def umat_invariants(invariants):
     return W_a, W_ab
 ```
 
-This umat is passed as described above to an instance of an `InvariantBased` material. Total-lagrange materials defined on the undeformed configuration in terms of the right Cauchy-Green deformation tensor are located in `fe.constitution` and `fe.constitution.df0da0` whereas updated-lagrange materials defined on the deformed configuration in terms of the left Cauchy-Green deformation tensor are located in `fe.constitution.df_da_`. `df` referes to the differential force element described in the `0` (undeformed) or `_` (no index, deformed) configuration. The same applies for the differential area element `da`. **Reminder**: all materials located in `fe.constitution` refer to the total lagrange framework.
+This umat is passed as described above to an instance of an `InvariantBased` (*Total Lagrange*) material.
 
 ```python
 import felupe as fe
@@ -47,7 +43,7 @@ neohooke_dev = fe.constitution.AsIsochoric(neohooke_iso)
 neohooke_vol = fe.constitution.Hydrostatic(bulk=20.0)
 neohooke     = fe.constitution.Composite(neohooke_dev, neohooke_vol)
 
-mat = fe.constitution.MaterialFrom(neohooke)
+mat = fe.constitution.Material(neohooke)
 # use `mat` as
 # mat.P(F) and # mat.A(F)
 
@@ -97,11 +93,11 @@ ogden_dev = fe.constitution.AsIsochoric(ogden_iso)
 ogden_vol = fe.constitution.Hydrostatic(bulk=20.0)
 ogden     = fe.constitution.Composite(ogden_dev, ogden_vol)
 
-mat = fe.constitution.df_da0.MaterialFrom(ogden)
+mat = fe.constitution.Material(ogden)
 ```
 
 ### Mixed-field formulations
-Felupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient. Pressure and Volume ratio fields should be kept one order lower than the interpolation order of the displacement field, i.e. linear displacement fields should be paired with elementwise-constant (mean) values of pressure and volume ratio.
+FElupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient. Pressure and Volume ratio fields should be kept one order lower than the interpolation order of the displacement field, i.e. linear displacement fields should be paired with elementwise-constant (mean) values of pressure and volume ratio.
 
 ### Total potential energy: variation and linearization
 The total potential energy of internal forces is defined with a strain energy density function in terms of a determinant-modified deformation gradient and an additional control equation.
@@ -291,7 +287,7 @@ $$ \bm{H}_{2D}(r,s) = \bm{h}(r) \otimes \bm{h}(s)$$
 
 $$ \bm{H}_{3D}(r,s,t) = \bm{h}(r) \otimes \bm{h}(s) \otimes \bm{h}(t)$$
 
-### Point numbering
+## Point numbering of linear hexahedrons
 A linear hexahedron has points arranged in a way that the connectivity starts at `[-1,-1,-1]` where nodes are connected counterclockwise at`z=-1` in a first step. Finally the same applies for `z=1`. For arbitrary order elements the first axis goes from `-1` to `1`, then the second axis  from `-1` to `1` and finally the third axis  from `-1` to `1`. This is due to VTK compatibility.
 
 ```python

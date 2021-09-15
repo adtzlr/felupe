@@ -43,14 +43,12 @@ mesh_cylinder  = fe.mesh.Cylinder(D=2, H=1, n=(3, 9, 3), phi=360) # phi in degre
 ```
 
 ## Generate a cube with tetrahedrons
-Currently felupe does not support the creation of meshes consisting of triangles or tetrahedrons. It is recommended to use `meshzoo` (install with `pip install meshzoo`) meanwhile. Please note that tetrahedrons must have positive volumes. This is ensured by applying `fe.mesh.fix((nodes, connectivity))`.
+Currently felupe does not support the creation of meshes consisting of triangles or tetrahedrons. It is recommended to use `meshzoo` (install with `pip install meshzoo`).
 
 ```python
 import felupe as fe
 import meshzoo
 
-nodes, connectivity = meshzoo.cube_tetra((0,0,0), (1,1,1), n=11))
-nodes, connectivity_fixed = fe.mesh.fix((nodes, connectivity))
-
-mesh = fe.mesh.Mesh(nodes, connectivity_fixed, etype="tetra")
+cube = meshzoo.cube_tetra((0,0,0), (1,1,1), n=11))
+mesh = fe.mesh.Mesh(*cube, etype="tetra")
 ```

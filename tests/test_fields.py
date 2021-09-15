@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import felupe as fe
+import numpy as np
 
 
 def pre():
@@ -63,7 +64,12 @@ def pre_mixed():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    return r, u, p, J
+    f = fe.FieldMixed((u, p, J))
+
+    u.values[0] = np.ones(3)
+    assert np.all(f.values[0][0] == 1)
+
+    return r, f, u, p, J
 
 
 def test_axi():
@@ -80,12 +86,13 @@ def test_3d():
 
 def test_3d_mixed():
 
-    r, u, p, J = pre_mixed()
+    r, f, u, p, J = pre_mixed()
 
-    fe.field.extract((u, p, J), fieldgrad=(True, False, False), add_identity=True)
+    f.extract()
+    f.extract(grad=(False,))
+    f.extract(add_identity=False)
 
     J.fill(1.0)
-    J.full(1.0)
 
     u + u.values
     u - u.values

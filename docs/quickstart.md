@@ -29,26 +29,20 @@ V = dV.sum()
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/undeformed_mesh.png)
 
 ## Field
-In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method.
+In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every element in the region with the field method `grad()`. 
 
 ```python
 displacement = fe.Field(region, dim=3)
 
-u  = displacement.values
-ui = displacement.interpolate()
+u    = displacement.values
+ui   = displacement.interpolate()
+dudX = displacement.grad()
 ```
 
-Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every element in the region with the field method `grad()`. `interpolate` and `grad` methods are also callable from functions of the math module. The deformation gradient is obtained by a sum of the identity and the displacement gradient.
+The deformation gradient is obtained by a sum of the identity and the displacement gradient.
 
 ```python
-dudX = displacement.grad()
-
-# use math function for better readability
-from felupe.math import grad, identity
-
-dudX = grad(displacement)
-
-F = identity(dudX) + dudX
+F = fe.math.identity(dudX) + dudX
 ```
 
 ## Constitution
@@ -66,7 +60,7 @@ A = umat.A
 ```
 
 ## Boundary Conditions
-Next we introduce boundary conditions on the displacement field. Boundary conditions are stored inside a dictionary of multiple boundary instances. First, we fix the left surface of the cube. Displacements on the right surface are fixed in directions y and z whereas displacements in direction x are prescribed with a value. A boundary instance hold useful attributes like `nodes` or `dof`.
+Next we introduce boundary conditions on the displacement field. Boundary conditions are stored inside a dictionary of multiple boundary instances. First, we fix the left surface of the cube. Displacements on the right surface are fixed in directions y and z whereas displacements in direction x are prescribed with a value. A boundary instance hold useful attributes like `points` or `dof`.
 
 ```python
 import numpy as np

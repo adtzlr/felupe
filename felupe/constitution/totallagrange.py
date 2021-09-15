@@ -26,8 +26,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-
 from types import SimpleNamespace
+from functools import partial
 
 from ..math import (
     dot,
@@ -49,73 +49,72 @@ from ..math import (
 )
 
 
+class TotalLagrange:
+    def __init__(self, stress, elasticity):
+        """Total-Lagrange Material class:
+        stress = 2nd Piola-Kirchhoff stress S(C, F, J)
+        elasticity = associated 4th-order elasticity tensor C4 = (dS/dE)(C, F, J)
+        """
+        self.stress = stress
+        self.elasticity = elasticity
+
+
 class Composite:
     def __init__(self, *args):
 
         self.materials = args
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
 
     def stress(self, *args, **kwargs):
-        return np.sum([m.stress(*args) for m in self.materials], 0)
+        return np.sum([m.stress(*args, **kwargs) for m in self.materials], 0)
 
     def elasticity(self, *args, **kwargs):
         return np.sum([m.elasticity(*args, **kwargs) for m in self.materials], 0)
 
 
-class Material:
-    def __init__(self, stress, elasticity):
-        """Updated-Lagrange / Eulerian Material class:
-        stress = Kirchhoff stress tau = J sigma
-        elasticity = associated 4th-order elasticity tensor J c4
-        """
-        self.stress = stress
-        self.elasticity = elasticity
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
-
-
 class InvariantBased:
     def __init__(self, umat, tol=np.finfo(float).eps):
         self.umat = umat
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
-        self.b = 0
+        self.C = 0
 
-    def update(self, b):
+    def update(self, C):
 
-        if np.all(b == self.b):
+        if np.all(C == self.C):
             pass
         else:
             self.invariants = np.array(
-                [trace(b), (trace(b) ** 2 - trace(dot(b, b))) / 2, det(b)]
+                [trace(C), (trace(C) ** 2 - trace(dot(C, C))) / 2, det(C)]
             )
             self.W_a, self.W_ab = self.umat(self.invariants)
 
-    def stress(self, b, F, J):
-        self.update(b)
+    def stress(self, C, F, J):
+        self.update(C)
 
-        tau = np.zeros_like(b)
+        S = np.zeros_like(C)
 
         I1, I2, I3 = self.invariants
         W1, W2, W3 = self.W_a
 
         if not np.all(W1 == 0):
-            tau += 2 * W1 * b
+            eye = identity(C)
+            S += 2 * W1 * eye
 
         if not np.all(W2 == 0):
-            tau += 2 * W2 * (I1 * b - dot(b, b))
+            eye = identity(C)
+            S += 2 * W2 * (I1 * eye - C)
 
         if not np.all(W3 == 0):
-            eye = identity(b)
-            tau += 2 * W3 * I3 * eye
+            S += 2 * W3 * I3 * inv(C)
 
-        return tau
+        return S
 
-    def elasticity(self, b, F, J):
-        self.update(b)
+    def elasticity(self, C, F, J):
+        self.update(C)
 
-        ndim, ngauss, nelems = b.shape[-3:]
-        Jc4 = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
+        ndim, ngauss, nelems = C.shape[-3:]
+        C4 = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
 
-        I = identity(b)
+        I = identity(C)
+        invC = inv(C)
 
         I1, I2, I3 = self.invariants
         W1, W2, W3 = self.W_a
@@ -136,83 +135,92 @@ class InvariantBased:
         b22 = W3 * I3
 
         if not np.all(a00 == 0):
-            Jc4 += 4 * a00 * dya(b, b)
+            C4 += 4 * a00 * dya(I, I)
 
         if not np.all(a11 == 0):
-            Jc4 += 4 * a11 * dya(dot(b, b), dot(b, b))
+            C4 += 4 * a11 * dya(C, C)
 
         if not np.all(a22 == 0):
-            Jc4 += 4 * a22 * dya(I, I)
+            C4 += 4 * a22 * dya(invC, invC)
 
         if not np.all(a01 == 0):
-            Jc4 += 4 * a01 * (dya(b, dot(b, b)) + dya(dot(b, b), b))
+            C4 += 4 * a01 * (dya(I, C) + dya(C, I))
 
         if not np.all(a02 == 0):
-            Jc4 += 4 * a02 * (dya(b, I) + dya(I, b))
+            C4 += 4 * a02 * (dya(I, invC) + dya(invC, I))
 
         if not np.all(a12 == 0):
-            Jc4 += 4 * a12 * (dya(dot(b, b), I) + dya(I, dot(b, b)))
+            C4 += 4 * a12 * (dya(C, invC) + dya(invC, C))
 
         if not np.all(b00 == 0):
-            Jc4 += 4 * b00 * cdya(b, b)
+            C4 += 4 * b00 * cdya(I, I)
 
         if not np.all(b22 == 0):
-            Jc4 += 4 * b22 * cdya(I, I)
+            C4 += 4 * b22 * cdya(invC, invC)
 
-        return Jc4
+        return C4
 
 
 class PrincipalStretchBased:
     def __init__(self, umat, tol=np.finfo(float).eps):
         self.umat = umat
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
-        self.b = 0
+        self.C = 0
         self.tol = tol
 
-    def update(self, b):
-        if np.all(b == self.b):
+    def update(self, C):
+        if np.all(C == self.C):
             pass
         else:
-            wb, vb = eigh(b)
+            wC, vC = eigh(C)
 
-            self.stretches = np.sqrt(wb)
-            self.bases = np.array([dya(N, N, mode=1) for N in transpose(vb)])
+            self.stretches = np.sqrt(wC)
+            self.bases = np.array([dya(N, N, mode=1) for N in transpose(vC)])
 
             self.W_a, self.W_ab = self.umat(self.stretches)
 
-    def stress(self, b, F, J):
-        self.update(b)
-        self.stresses = self.W_a * self.stretches
-        return np.sum([ta * Ma for ta, Ma in zip(self.stresses, self.bases)], 0)
+    def stress(self, C, F, J):
+        self.update(C)
+        self.stresses = self.W_a / self.stretches
+        return np.sum([Sa * Ma for Sa, Ma in zip(self.stresses, self.bases)], 0)
 
-    def elasticity(self, b, F, J):
-        self.update(b)
+    def elasticity(self, C, F, J):
+        self.update(C)
 
-        ndim, ngauss, nelems = b.shape[-3:]
-        Jc4 = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
+        ndim, ngauss, nelems = C.shape[-3:]
+        C4 = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
 
         for a in range(3):
             Wa = self.W_a[a]
+            # Waa = self.W_ab[a, a]
             Ma = self.bases[a]
             la = self.stretches[a]
 
-            Jc4 -= Wa / la * dya(Ma, Ma)
+            C4 -= Wa / la ** 3 * dya(Ma, Ma)
 
             for b in range(3):
                 Wb = self.W_a[b]
                 Wab = self.W_ab[a, b]
+                # Wbb = self.W_ab[b, b]
                 Mb = self.bases[b]
                 lb = self.stretches[b]
 
-                Jc4 += Wab * dya(Ma, Mb)
+                C4 += Wab / la / lb * dya(Ma, Mb)
 
                 if b != a:
                     la[abs(la - lb) < self.tol] += self.tol
-                    Gab = cdya(Ma, Mb) + cdya(Mb, Ma)
-                    values = (Wa * la - Wb * lb) / (la ** 2 - lb ** 2)
-                    Jc4 += values * Gab
 
-        return Jc4
+                    Gab = cdya(Ma, Mb) + cdya(Mb, Ma)
+                    values = (Wa / la - Wb / lb) / (la ** 2 - lb ** 2)
+
+                    # okay = abs(la - lb) >= self.tol
+                    # mask = abs(la - lb) < self.tol
+                    # values = np.empty(Wa.shape)
+                    # values[okay] = (Wa / la - Wb / lb)[okay] / (la ** 2 - lb ** 2)[okay]
+                    # values[mask] = ((Waa - Wa / la) / la ** 2 - (Wbb - Wb / lb) / lb **2)[mask]
+
+                    C4 += values * Gab
+
+        return C4
 
 
 def strain(stretch, k):
@@ -294,56 +302,55 @@ class StrainInvariantBased(PrincipalStretchBased):
 
 
 class Hydrostatic:
-    def __init__(self, bulk):
+    def __init__(
+        self, bulk, dUdJ=lambda J, bulk: bulk * (J - 1), d2UdJdJ=lambda J, bulk: bulk
+    ):
         self.bulk = bulk
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
+        self.dUdJ = partial(dUdJ, bulk=self.bulk)
+        self.d2UdJdJ = partial(d2UdJdJ, bulk=self.bulk)
 
-    def dUdJ(self, J):
-        return self.bulk * (J - 1)
+    def stress(self, C, F, J):
+        return self.dUdJ(J) * J * inv(C)
 
-    def d2UdJdJ(self, J):
-        return self.bulk
-
-    def stress(self, b, F, J):
-        return self.dUdJ(J) * J * identity(b)
-
-    def elasticity(self, b, F, J):
-        eye = identity(b)
+    def elasticity(self, C, F, J):
         p = self.dUdJ(J)
         q = p + self.d2UdJdJ(J) * J
-        return J * (q * dya(eye, eye) - 2 * p * cdya(eye, eye))
+        return J * (q * dya(inv(C), inv(C)) - 2 * p * cdya(inv(C), inv(C)))
 
 
 class AsIsochoric:
     def __init__(self, material_isochoric):
         self.isochoric = material_isochoric
-        self.kind = SimpleNamespace(**{"df": None, "da": None})
+        self.kind = SimpleNamespace(**{"df": 0, "da": 0})
 
-    def stress(self, b, F, J):
+    def stress(self, C, F, J):
         Ju = np.ones_like(J)
         Fu = J ** (-1 / 3) * F
-        bu = J ** (-2 / 3) * b
-        tb = self.isochoric.stress(bu, Fu, Ju)
-        return dev(tb)
+        Cu = J ** (-2 / 3) * C
+        Sb = J ** (-2 / 3) * self.isochoric.stress(Cu, Fu, Ju)
+        return Sb - ddot(Sb, C) / 3 * inv(C)
 
-    def elasticity(self, b, F, J):
-        eye = identity(b)
-        p4 = cdya(eye, eye) - dya(eye, eye) / 3
+    def elasticity(self, C, F, J):
+        eye = identity(C)
+        P4 = cdya(eye, eye) - dya(inv(C), C) / 3
 
         Ju = np.ones_like(J)
         Fu = J ** (-1 / 3) * F
-        bu = J ** (-2 / 3) * b
-        tb = self.isochoric.stress(bu, Fu, Ju)
+        Cu = J ** (-2 / 3) * C
+        Sb = J ** (-2 / 3) * self.isochoric.stress(Cu, Fu, Ju)
 
-        Jc4b = self.isochoric.elasticity(bu, Fu, Ju)
-        if np.all(Jc4b == 0):
-            PJc4bP = Jc4b
+        C4u = self.isochoric.elasticity(Cu, Fu, Ju)
+        if np.all(C4u == 0):
+            PC4bP = C4u
         else:
-            PJc4bP = ddot444(p4, Jc4b, p4)
+            C4b = J ** (-4 / 3) * C4u
+            PC4bP = ddot444(P4, C4b, majortranspose(P4))
+
+        SbC = ddot(Sb, C)
 
         return (
-            PJc4bP
-            - 2 / 3 * (dya(tb, eye) + dya(eye, tb))
-            + 2 / 9 * trace(tb) * dya(eye, eye)
-            + 2 / 3 * trace(tb) * cdya(eye, eye)
+            PC4bP
+            - 2 / 3 * (dya(Sb, inv(C)) + dya(inv(C), Sb))
+            + 2 / 9 * SbC * dya(inv(C), inv(C))
+            + 2 / 3 * SbC * cdya(inv(C), inv(C))
         )

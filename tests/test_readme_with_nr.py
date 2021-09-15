@@ -49,7 +49,7 @@ def test_hex8_nh_nr():
         displacement,
         jac,
         solve=fe.tools.solve,
-        pre=fe.tools.defgrad,
+        pre=fe.math.defgrad,
         update=fe.tools.update,
         check=fe.tools.check,
         kwargs_solve={"field": displacement, "ext": u0ext, "dof0": dof0, "dof1": dof1},
@@ -86,7 +86,7 @@ def test_hex8_nh_nr_ad():
         I_C = ca.trace(C)
         return mu / 2 * (I_C * J ** (-2 / 3) - 3) + bulk / 2 * (J - 1) ** 2
 
-    umat = fe.constitution.ad.Material(W, mu=1.0, bulk=2.0)
+    umat = fe.constitution.StrainEnergyDensity(W, mu=1.0, bulk=2.0)
 
     f0 = lambda x: np.isclose(x, 0)
     f1 = lambda x: np.isclose(x, 1)
@@ -114,7 +114,7 @@ def test_hex8_nh_nr_ad():
         displacement,
         jac,
         solve=fe.tools.solve,
-        pre=fe.tools.defgrad,
+        pre=fe.math.defgrad,
         update=fe.tools.update,
         check=fe.tools.check,
         kwargs_solve={"field": displacement, "ext": u0ext, "dof0": dof0, "dof1": dof1},

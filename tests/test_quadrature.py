@@ -51,10 +51,26 @@ def test_triangle():
     assert q.points.shape == (1, 2)
     assert q.weights.sum() == 1 / 2
 
+    q = fe.quadrature.Triangle(order=2)
+    assert q.points.shape == (3, 2)
+    assert q.weights.sum() == 1 / 2
+
+    q = fe.quadrature.Triangle(order=3)
+    assert q.points.shape == (4, 2)
+    assert q.weights.sum() == 1 / 2
+
 
 def test_tetra():
     q = fe.quadrature.Tetrahedron(order=1)
     assert q.points.shape == (1, 3)
+    assert q.weights.sum() == 1 / 6
+
+    q = fe.quadrature.Tetrahedron(order=2)
+    assert q.points.shape == (4, 3)
+    assert q.weights.sum() == 1 / 6
+
+    q = fe.quadrature.Tetrahedron(order=3)
+    assert q.points.shape == (5, 3)
     assert q.weights.sum() == 1 / 6
 
 

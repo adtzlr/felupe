@@ -32,57 +32,26 @@ import numpy as np
 
 import meshio
 
-from .math import grad, sym, identity, interpolate, norms, dot, transpose, det, eigvals
+from .math import norms, dot, transpose, det, eigvals, extract
 from . import solve as solvetools
 from .doftools import partition as dofpartition, apply
-from .forms import IntegralFormMixed
+from .form import IntegralFormMixed
 from . import utils
 
 
-def FpJ(fields):
-    """Calculate the deformation gradient of a given list of fields
-    and evaluate all other field values at integration points."""
-    dudX = grad(fields[0])
-    F = identity(dudX) + dudX
-    return F, *[interpolate(f) for f in fields[1:]]
-
-
-def defgrad(field):
-    "Calculate the deformation gradient of a given displacement field."
-    dudX = grad(field)
-    return identity(dudX) + dudX
-
-
-def strain(field):
-    "Calculate strains of a given displacement field."
-    return sym(grad(field))
-
-
-def strain_voigt(field):
-    "Calculate strains in voigt notation of a given displacement field."
-    dudX = grad(field)
-    dim = dudX.shape[1]
-
-    eps_normal = np.array([dudX[i, i] for i in range(dim)])
-
-    if dim > 1:
-        eps_shear = [dudX[0, 1] + dudX[1, 0]]
-    if dim > 2:
-        eps_shear.append(dudX[1, 2] + dudX[2, 1])
-        eps_shear.append(dudX[2, 0] + dudX[0, 2])
-
-    if dim > 1:
-        return np.concatenate((eps_normal, eps_shear), axis=0)
-
-    else:
-        return eps_normal
-
-
-def update(x, dx):
+def update(y, dx, inplace=True):
     "Update field values."
+
+    if inplace:
+        x = y
+    else:
+        x = deepcopy(y)
 
     if isinstance(x, tuple) or isinstance(x, list):
         for field, dfield in zip(x, dx):
+            field += dfield
+    elif "mixed" in str(type(x)):
+        for field, dfield in zip(x.fields, dx):
             field += dfield
     else:
         x += dx
@@ -90,21 +59,50 @@ def update(x, dx):
     return x
 
 
-def solve(K, f, field, dof0, dof1, ext):
+def solve(K, f, field, dof0, dof1, ext, unstack=None):
+    "Solve linear equation system K dx = b"
+
+    if isinstance(field, tuple) or isinstance(field, list):
+        return _solve_mixed(K, f, field, dof0, dof1, ext, unstack)
+
+    elif "mixed" in str(type(field)):
+        return _solve_mixed(K, f, field, dof0, dof1, ext, unstack)
+
+    else:
+        return _solve_single(K, f, field, dof0, dof1, ext)
+
+
+def _solve_single(K, f, field, dof0, dof1, ext):
     "Solve linear equation system K dx = b"
     system = solvetools.partition(field, K, dof1, dof0, -f)
     dx = solvetools.solve(*system, ext)
     return dx
 
 
-def solve_mixed(K, f, fields, dof0, dof1, ext, unstack):
+def _solve_mixed(K, f, field, dof0, dof1, ext, unstack):
     "Solve linear equation system K dx = b"
-    system = solvetools.partition(fields, K, dof1, dof0, -f)
+    system = solvetools.partition(field, K, dof1, dof0, -f)
     dfields = np.split(solvetools.solve(*system, ext), unstack)
     return dfields
 
 
-def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+def check(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+    "Check if solution dfields is valid."
+
+    if (
+        isinstance(fields, tuple)
+        or isinstance(fields, list)
+        or "mixed" in str(type(fields))
+    ):
+        return _check_mixed(dfields, fields, f, dof1, dof0, tol_f, tol_x, verbose)
+
+    else:
+        x = fields
+        dx = dfields
+        return _check_single(dx, x, f, dof1, dof0, tol_f, tol_x, verbose)
+
+
+def _check_single(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
     "Check if solution dx is valid."
 
     # get reference values of "f" and "x"
@@ -126,8 +124,11 @@ def check(dx, x, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
     return success
 
 
-def check_mixed(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
-    "Check if solution dx is valid."
+def _check_mixed(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
+    "Check if solution dfields is valid."
+
+    if "mixed" in str(type(fields)):
+        fields = fields.fields
 
     x = fields[0]
     dx = dfields[0]
@@ -245,7 +246,7 @@ def newtonrhapson(
 
 
 def incsolve(
-    fields,
+    field,
     region,
     f,
     A,
@@ -262,7 +263,7 @@ def incsolve(
     res = []
 
     # dofs to dismiss and to keep
-    dof0, dof1, unstack = dofpartition(fields, bounds)
+    dof0, dof1, unstack = dofpartition(field, bounds)
     # solve newton iterations and save result
     for increment, move_t in enumerate(move):
 
@@ -273,26 +274,26 @@ def incsolve(
         bounds[boundary].value = move_t
 
         # obtain external displacements for prescribed dofs
-        u0ext = apply(fields[0], bounds, dof0)
+        u0ext = apply(field.fields[0], bounds, dof0)
 
         def fun(x):
-            linearform = IntegralFormMixed(f(*x), fields, region.dV)
+            linearform = IntegralFormMixed(f(*x), field, region.dV)
             return linearform.assemble(parallel=parallel).toarray()[:, 0]
 
         def jac(x):
-            bilinearform = IntegralFormMixed(A(*x), fields, region.dV, fields)
+            bilinearform = IntegralFormMixed(A(*x), field, region.dV, field)
             return bilinearform.assemble(parallel=parallel)
 
         Result = newtonrhapson(
             fun,
-            fields,
+            field,
             jac,
-            solve=solve_mixed,
-            pre=FpJ,
+            solve=solve,
+            pre=extract,
             update=update,
-            check=check_mixed,
+            check=check,
             kwargs_solve={
-                "fields": fields,
+                "field": field,
                 "ext": u0ext,
                 "dof0": dof0,
                 "dof1": dof1,
@@ -322,7 +323,7 @@ def incsolve(
             res.append(Result)
             utils.save(
                 region,
-                fields,
+                fields.fields,
                 Result.fun,
                 Result.jac,
                 Result.F,
@@ -365,7 +366,12 @@ def savehistory(region, results, filename="result_history.xdmf"):
             else:
                 reactionforces = r
 
-            u = fields[0]
+            if isinstance(fields, tuple) or isinstance(fields, list):
+                u = fields[0]
+            elif "mixed" in str(type(fields)):
+                u = fields.fields[0]
+            else:
+                u = fields
 
             point_data = {
                 "Displacements": u.values,

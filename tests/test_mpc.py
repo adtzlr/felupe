@@ -23,7 +23,7 @@ def test_hex8_nh_rbe2():
     dV = region.dV
 
     displacement = fe.Field(region, dim=3)
-    F = fe.tools.defgrad(displacement)
+    F = fe.math.defgrad(displacement)
 
     umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
@@ -51,6 +51,9 @@ def test_hex8_nh_rbe2():
     )
     K = bilinearform.assemble() + K_RBE2
 
+    assert r.shape == (84, 1)
+    assert K.shape == (84, 84)
+
 
 def test_hex8_nh_rbe2_mixed():
 
@@ -72,12 +75,12 @@ def test_hex8_nh_rbe2_mixed():
     pressure = fe.Field(region0)
     volumeratio = fe.Field(region0, values=1)
 
-    fields = (displacement, pressure, volumeratio)
+    fields = fe.FieldMixed((displacement, pressure, volumeratio))
 
-    F, p, J = fe.tools.FpJ(fields)
+    F, p, J = fields.extract()
 
     nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
-    umat = fe.constitution.variation.upJ(nh.P, nh.A)
+    umat = fe.constitution.GeneralizedThreeField(nh.P, nh.A)
 
     f0 = lambda x: np.isclose(x, 0)
     f1 = lambda x: np.isclose(x, 1)
@@ -92,8 +95,15 @@ def test_hex8_nh_rbe2_mixed():
     cpoint = mesh.npoints - 1
 
     RBE2 = fe.doftools.MultiPointConstraint(mesh, points=mpc, centerpoint=cpoint)
+    CONT = fe.doftools.MultiPointContact(mesh, points=mpc, centerpoint=cpoint)
     K_RBE2 = RBE2.stiffness()
     r_RBE2 = RBE2.residuals(displacement)
+
+    K_CONT = CONT.stiffness(displacement)
+    r_CONT = CONT.residuals(displacement)
+
+    assert K_RBE2.shape == K_CONT.shape
+    assert r_RBE2.shape == r_CONT.shape
 
     linearform = fe.IntegralFormMixed(umat.f(F, p, J), fields, dV)
     r = linearform.assemble()

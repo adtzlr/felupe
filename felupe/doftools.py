@@ -29,6 +29,8 @@ import numpy as np
 from types import SimpleNamespace
 import sparse
 
+from .field import FieldMixed
+
 
 def get_dof0(field, bounds):
     "Extract prescribed degrees of freedom."
@@ -81,16 +83,16 @@ find.dof0 = get_dof0
 find.dof1 = get_dof1
 
 
-def partition(fields, bounds):
+def partition(field, bounds):
     "Partition dof-list into prescribed (dof0) and active (dof1) parts."
 
     # if a tuple is passed it is assumed that the first
     # field is associated to the boundaries
-    if isinstance(fields, tuple):
-        f = fields[0]
+    if isinstance(field, FieldMixed):
+        f = field.fields[0]
         extend_dof1 = True
     else:
-        f = fields
+        f = field
         extend_dof1 = False
 
     dof0 = get_dof0(f, bounds)
@@ -98,17 +100,17 @@ def partition(fields, bounds):
 
     # extend active dofs with dofs from additional fields
     if extend_dof1:
-        dof0, dof1, offsets = extend(fields, dof0, dof1)
+        dof0, dof1, offsets = extend(field, dof0, dof1)
         return dof0, dof1, offsets
     else:
         return dof0, dof1
 
 
-def extend(fields, dof0, dof1):
+def extend(field, dof0, dof1):
     "Extend partitioned dof-lists dof0 and dof1."
 
     # get sizes of fields and calculate offsets
-    fieldsizes = [f.indices.dof.size for f in fields]
+    fieldsizes = [f.indices.dof.size for f in field.fields]
     offsets = np.cumsum(fieldsizes)
 
     # init extended dof0, dof1 arrays
@@ -116,11 +118,11 @@ def extend(fields, dof0, dof1):
     dof1_xt = dof1.copy()
 
     # loop over fields starting from the second one
-    for field, offset, fieldsize in zip(fields[1:], offsets[:-1], fieldsizes[1:]):
+    for fld, offset, fieldsize in zip(field.fields[1:], offsets[:-1], fieldsizes[1:]):
 
         # obtain the mesh and the dimension from the current field
-        mesh = field.region.mesh
-        dim = field.dim
+        mesh = fld.region.mesh
+        dim = fld.dim
 
         # check if there are points without/with connected cells in the mesh
         # and add them to the list of prescribed/active dofs
@@ -258,15 +260,15 @@ class Boundary:
         self.points = np.arange(mesh.npoints)[mask]
 
 
-def uniaxial(fields, right=1, move=0.2, clamped=True):
+def uniaxial(field, right=1, move=0.2, clamped=True):
     "Define boundaries for uniaxial loading."
 
     # if a tuple is passed it is assumed that the first
     # field is associated to the boundaries
-    if isinstance(fields, tuple):
-        f = fields[0]
+    if isinstance(field, FieldMixed):
+        f = field.fields[0]
     else:
-        f = fields
+        f = field
 
     f1 = lambda x: np.isclose(x, right)
 
@@ -277,34 +279,38 @@ def uniaxial(fields, right=1, move=0.2, clamped=True):
 
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
 
-    part = partition(fields, bounds)
+    part = partition(field, bounds)
     ext0 = apply(f, bounds, part[0])
 
-    return bounds, *part, ext0
+    out = bounds, *part, ext0
+
+    return out
 
 
 class MultiPointConstraint:
-    def __init__(self, mesh, points, centerpoint, multiplier=1e3):
+    def __init__(
+        self, mesh, points, centerpoint, skip=(False, False, False), multiplier=1e3
+    ):
         "RBE2 Multi-point-constraint."
         self.mesh = mesh
         self.points = points
         self.centerpoint = centerpoint
+        self.mask = ~np.array(skip, dtype=bool)[: mesh.ndim]
+        self.axes = np.arange(mesh.ndim)[self.mask]
         self.multiplier = multiplier
 
-    def stiffness(self):
+    def stiffness(self, field=None):
         "Calculate stiffness with RBE2 contributions."
         L = sparse.DOK(
             shape=(self.mesh.npoints, self.mesh.ndim, self.mesh.npoints, self.mesh.ndim)
         )
+        c = self.centerpoint
         for t in self.points:
-            for d in range(self.mesh.ndim):
+            for d in self.axes:
                 L[t, d, t, d] = self.multiplier
-                L[t, d, self.centerpoint, d] = -self.multiplier
-                L[self.centerpoint, d, t, d] = -self.multiplier
-        for d in range(self.mesh.ndim):
-            L[self.centerpoint, d, self.centerpoint, d] = self.multiplier * len(
-                self.points
-            )
+                L[t, d, c, d] = -self.multiplier
+                L[c, d, t, d] = -self.multiplier
+                L[c, d, c, d] += self.multiplier
         return (
             sparse.COO(L)
             .reshape(
@@ -315,11 +321,67 @@ class MultiPointConstraint:
 
     def residuals(self, field):
         "Calculate vector of residuals with RBE2 contributions."
-        r = np.zeros((self.mesh.npoints, self.mesh.ndim))
-        r[self.points] -= self.multiplier * (
-            -field.values[self.points] + field.values[self.centerpoint]
+        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.ndim))
+        c = self.centerpoint
+        for t in self.points:
+            for d in self.axes:
+                N = self.multiplier * (-field.values[t, d] + field.values[c, d])
+                r[t, d] = -N
+                r[c, d] += N
+        return sparse.COO(r).reshape((-1, 1)).tocsr()
+
+
+class MultiPointContact:
+    def __init__(
+        self, mesh, points, centerpoint, skip=(False, False, False), multiplier=1e6
+    ):
+        "RBE2 Multi-point-bolt-constraint."
+        self.mesh = mesh
+        self.points = points
+        self.centerpoint = centerpoint
+        self.mask = ~np.array(skip, dtype=bool)[: mesh.ndim]
+        self.axes = np.arange(mesh.ndim)[self.mask]
+        self.multiplier = multiplier
+
+    def stiffness(self, field):
+        "Calculate stiffness with RBE2 contributions."
+        L = sparse.DOK(
+            shape=(self.mesh.npoints, self.mesh.ndim, self.mesh.npoints, self.mesh.ndim)
         )
-        r[self.centerpoint] += self.multiplier * (
-            -field.values[self.points].sum(axis=0) + field.values[self.centerpoint]
+        c = self.centerpoint
+        for t in self.points:
+            for d in self.axes:
+                Xc = self.mesh.points[c, d]
+                Xt = self.mesh.points[t, d]
+                xc = field.values[c, d] + Xc
+                xt = field.values[t, d] + Xt
+                # n = 0
+                if np.sign(-Xt + Xc) != np.sign(-xt + xc):
+                    # n = -xt + xc
+                    L[t, d, t, d] = self.multiplier
+                    L[t, d, c, d] = -self.multiplier
+                    L[c, d, t, d] = -self.multiplier
+                    L[c, d, c, d] += self.multiplier
+        return (
+            sparse.COO(L)
+            .reshape(
+                (self.mesh.npoints * self.mesh.ndim, self.mesh.npoints * self.mesh.ndim)
+            )
+            .tocsr()
         )
-        return sparse.COO(r.reshape(-1, 1)).tocsr()
+
+    def residuals(self, field):
+        "Calculate vector of residuals with RBE2 contributions."
+        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.ndim))
+        c = self.centerpoint
+        for t in self.points:
+            for d in self.axes:
+                Xc = self.mesh.points[c, d]
+                Xt = self.mesh.points[t, d]
+                xc = field.values[c, d] + Xc
+                xt = field.values[t, d] + Xt
+                if np.sign(-Xt + Xc) != np.sign(-xt + xc):
+                    n = -xt + xc
+                    r[t, d] = -self.multiplier * n
+                    r[c, d] += self.multiplier * n
+        return sparse.COO(r).reshape((-1, 1)).tocsr()

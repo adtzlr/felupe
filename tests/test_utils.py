@@ -45,11 +45,11 @@ def test_utils():
     u = fe.Field(region, 3)
     p = fe.Field(region0, 1)
     J = fe.Field(region0, 1, values=1)
-    fields = (u, p, J)
+    fields = fe.FieldMixed((u, p, J))
 
     # load constitutive material formulation
     nh = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
-    mat = fe.constitution.variation.upJ(nh.P, nh.A)
+    mat = fe.constitution.GeneralizedThreeField(nh.P, nh.A)
 
     # boundaries
     f0 = lambda x: np.isclose(x, 0)

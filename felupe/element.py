@@ -463,25 +463,28 @@ class Triangle(TriangleElement):
 
 
 class TriangleMINI(TriangleElement):
-    def __init__(self):
+    def __init__(self, bubble_multiplier=1.0):
         super().__init__()
         self.npoints = 4
-        self.nbasis = 3
+        self.nbasis = 4
+        self.bubble_multiplier = bubble_multiplier
 
     def basis(self, rs):
         "linear triangle basis functions"
         r, s = rs
-        return np.array([1 - r - s, r, s, 27 * r * s * (1 - r - s)])
+        a = self.bubble_multiplier
+        return np.array([1 - r - s, r, s, a * r * s * (1 - r - s)])
 
     def basisprime(self, rs):
         "linear triangle derivative of basis functions"
         r, s = rs
+        a = self.bubble_multiplier
         return np.array(
             [
                 [-1, -1],
                 [1, 0],
                 [0, 1],
-                [27 * (s * (1 - r - s) - r * s), 27 * (r * (1 - r - s) - r * s)],
+                [a * (s * (1 - r - s) - r * s), a * (r * (1 - r - s) - r * s)],
             ],
             dtype=float,
         )
@@ -505,19 +508,22 @@ class Tetra(TetraElement):
 
 
 class TetraMINI(TetraElement):
-    def __init__(self):
+    def __init__(self, bubble_multiplier=1.0):
         super().__init__()
         self.npoints = 5
-        self.nbasis = 4
+        self.nbasis = 5
+        self.bubble_multiplier = bubble_multiplier
 
     def basis(self, rst):
         "linear tetrahedral basis functions"
         r, s, t = rst
-        return np.array([1 - r - s - t, r, s, t, 256 * r * s * t * (1 - r - s - t)])
+        a = self.bubble_multiplier
+        return np.array([1 - r - s - t, r, s, t, a * r * s * t * (1 - r - s - t)])
 
     def basisprime(self, rst):
         "linear tetrahedral derivative of basis functions"
         r, s, t = rst
+        a = self.bubble_multiplier
         return np.array(
             [
                 [-1, -1, -1],
@@ -525,9 +531,9 @@ class TetraMINI(TetraElement):
                 [0, 1, 0],
                 [0, 0, 1],
                 [
-                    256 * (s * t * (1 - r - s - t) - r * s * t),
-                    256 * (r * t * (1 - r - s - t) - r * s * t),
-                    256 * (r * s * (1 - r - s - t) - r * s * t),
+                    a * (s * t * (1 - r - s - t) - r * s * t),
+                    a * (r * t * (1 - r - s - t) - r * s * t),
+                    a * (r * s * (1 - r - s - t) - r * s * t),
                 ],
             ],
             dtype=float,
@@ -561,11 +567,7 @@ class QuadraticTriangle(TriangleElement):
 
         dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
         dhdr_b = np.array(
-            [
-                [4 * (t1 - t2), -4 * t2],
-                [4 * t3, 4 * t2],
-                [-4 * t3, 4 * (t1 - t2)],
-            ]
+            [[4 * (t1 - t2), -4 * t2], [4 * t3, 4 * t2], [-4 * t3, 4 * (t1 - t2)],]
         )
         dhdr = np.vstack((dhdr_a, dhdr_b))
         dhdr[0] += -dhdr[3] / 2 - dhdr[5] / 2

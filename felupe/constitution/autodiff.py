@@ -51,7 +51,7 @@ def apply(x, fun, fun_shape, trailing_axes=2):
     return out.reshape(*fun_shape, *ax, order="F")
 
 
-class Material:
+class StrainEnergyDensity:
     def __init__(self, W, *args, **kwargs):
         "Material class (u) with Automatic Differentiation."
 
@@ -89,7 +89,7 @@ class Material:
         return AFF
 
 
-class Materialup:
+class StrainEnergyDensityTwoField:
     def __init__(self, W, *args, **kwargs):
         "Material class (u,p) with Automatic Differentiation."
 
@@ -136,7 +136,7 @@ class Materialup:
         return [AFF, AFp, App]
 
 
-class MaterialupJ:
+class StrainEnergyDensityThreeField:
     def __init__(self, W, *args, **kwargs):
         "Material class (u,p,J) with Automatic Differentiation."
 
@@ -165,7 +165,7 @@ class MaterialupJ:
         self._f_App = ca.Function("App", [F, p, J], [d2Wdp2])
         self._f_AJJ = ca.Function("AJJ", [F, p, J], [d2WdJ2])
         self._f_AFp = ca.Function("AFp", [F, p, J], [d2WdFdp])
-        self._f_AFJ = ca.Function("AFp", [F, p, J], [d2WdFdJ])
+        self._f_AFJ = ca.Function("AFJ", [F, p, J], [d2WdFdJ])
         self._f_ApJ = ca.Function("ApJ", [F, p, J], [d2WdpdJ])
 
     def _modify(self, F, eps=1e-5):
@@ -193,3 +193,109 @@ class MaterialupJ:
         AFJ = apply([F, p, J], fun=self._f_AFJ, fun_shape=(3, 3))
         ApJ = apply([F, p, J], fun=self._f_ApJ, fun_shape=(1,))
         return [AFF, AFp, AFJ, App, ApJ, AJJ]
+
+
+class StrainEnergyDensityTwoFieldTensor:
+    def __init__(self, W, *args, **kwargs):
+        "Material class (u,P) with Automatic Differentiation."
+
+        # init deformation gradient
+        F = ca.SX.sym("F", 3, 3)
+        P = ca.SX.sym("P", 9)
+
+        # gradient and hessian of strain ernergy function W
+        w = W(F, P, *args, **kwargs)
+
+        d2WdF2, dWdF = ca.hessian(w, F)
+        d2WdP2, dWdP = ca.hessian(w, P)
+
+        d2WdFdP = ca.jacobian(dWdF, P)
+
+        # generate casadi function objects
+        self._f_PF = ca.Function("PF", [F, P], [dWdF])
+        self._f_PP = ca.Function("PP", [F, P], [dWdP])
+
+        self._f_AFF = ca.Function("AFF", [F, P], [d2WdF2])
+        self._f_APP = ca.Function("APP", [F, P], [d2WdP2])
+        self._f_AFP = ca.Function("AFP", [F, P], [d2WdFdP])
+
+    def _modify(self, F, eps=1e-5):
+        G = F.copy()
+        G[0, 0] += eps
+        G[1, 1] -= eps
+        return G
+
+    # functions for stress P and elasticity A
+    def f(self, F, P, modify=True):
+        if modify:
+            F = self._modify(F)
+        fF = apply([F, P], fun=self._f_PF, fun_shape=(3, 3))
+        fP = apply([F, P], fun=self._f_PP, fun_shape=(9,))
+        return [fF, fP]
+
+    def A(self, F, P, modify=True):
+        if modify:
+            F = self._modify(F)
+        AFF = apply([F, P], fun=self._f_AFF, fun_shape=(3, 3, 3, 3))
+        APP = apply([F, P], fun=self._f_APP, fun_shape=(9, 9))
+        AFP = apply([F, P], fun=self._f_AFP, fun_shape=(3, 3, 9))
+        return [AFF, AFP, APP]
+
+
+class StrainEnergyDensityThreeFieldTensor:
+    def __init__(self, W, *args, **kwargs):
+        "Material class (u,P,F) with Automatic Differentiation."
+
+        # init deformation gradient
+        dxdX = ca.SX.sym("dxdX", 3, 3)
+        P = ca.SX.sym("P", 9)
+        F = ca.SX.sym("F", 9)
+
+        # gradient and hessian of strain ernergy function W
+        w = W(dxdX, P, F, *args, **kwargs)
+
+        d2WdX2, dWdX = ca.hessian(w, dxdX)
+        d2WdP2, dWdP = ca.hessian(w, P)
+        d2WdF2, dWdF = ca.hessian(w, F)
+
+        d2WdXdP = ca.jacobian(dWdX, P)
+        d2WdXdF = ca.jacobian(dWdX, F)
+        d2WdPdF = ca.jacobian(dWdP, F)
+
+        # generate casadi function objects
+        self._f_PX = ca.Function("PX", [dxdX, P, F], [dWdX])
+        self._f_PP = ca.Function("PP", [dxdX, P, F], [dWdP])
+        self._f_PF = ca.Function("PF", [dxdX, P, F], [dWdF])
+
+        self._f_AXX = ca.Function("AXX", [dxdX, P, F], [d2WdX2])
+        self._f_APP = ca.Function("APP", [dxdX, P, F], [d2WdP2])
+        self._f_AFF = ca.Function("AFF", [dxdX, P, F], [d2WdF2])
+        self._f_AXP = ca.Function("AXP", [dxdX, P, F], [d2WdXdP])
+        self._f_AXF = ca.Function("AXF", [dxdX, P, F], [d2WdXdF])
+        self._f_APF = ca.Function("APF", [dxdX, P, F], [d2WdPdF])
+
+    def _modify(self, F, eps=1e-5):
+        G = F.copy()
+        G[0, 0] += eps
+        G[1, 1] -= eps
+        return G
+
+    # functions for stress P and elasticity A
+    def f(self, dxdX, P, F, modify=True):
+        if modify:
+            dxdX = self._modify(dxdX)
+        fX = apply([dxdX, P, F], fun=self._f_PX, fun_shape=(3, 3))
+        fP = apply([dxdX, P, F], fun=self._f_PP, fun_shape=(9,))
+        fF = apply([dxdX, P, F], fun=self._f_PF, fun_shape=(9,))
+        return [fX, fP, fF]
+
+    def A(self, dxdX, P, F, modify=True):
+        if modify:
+            dxdX = self._modify(dxdX)
+        AXX = apply([dxdX, P, F], fun=self._f_AXX, fun_shape=(3, 3, 3, 3))
+        APP = apply([dxdX, P, F], fun=self._f_APP, fun_shape=(9, 9))
+        AFF = apply([dxdX, P, F], fun=self._f_AFF, fun_shape=(9, 9))
+        AXP = apply([dxdX, P, F], fun=self._f_AXP, fun_shape=(3, 3, 9))
+        AXF = apply([dxdX, P, F], fun=self._f_AXF, fun_shape=(3, 3, 9))
+        APF = apply([dxdX, P, F], fun=self._f_APF, fun_shape=(9, 9))
+        return [AXX, AXP, AXF, APP, APF, AFF]

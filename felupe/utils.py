@@ -83,11 +83,11 @@ def newtonrhapson(
     dV = region.dV
 
     # deformation gradient at integration points
-    F = identity(grad(fields[0])) + grad(fields[0])
+    F = identity(grad(fields.fields[0])) + grad(fields.fields[0])
 
     # PK1 stress and elasticity matrix
-    f = fun_f(F, *[interpolate(f) for f in fields[1:]])
-    A = fun_A(F, *[interpolate(f) for f in fields[1:]])
+    f = fun_f(F, *[interpolate(f) for f in fields.fields[1:]])
+    A = fun_A(F, *[interpolate(f) for f in fields.fields[1:]])
 
     # assembly
     r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
@@ -103,20 +103,20 @@ def newtonrhapson(
         if np.any(np.isnan(dfields[0])):
             break
         else:
-            for field, dfield in zip(fields, dfields):
+            for field, dfield in zip(fields.fields, dfields):
                 field += dfield
 
         # deformation gradient at integration points
-        F = identity(grad(fields[0])) + grad(fields[0])
+        F = identity(grad(fields.fields[0])) + grad(fields.fields[0])
 
         # PK1 stress and elasticity matrix
-        f = fun_f(F, *[interpolate(f) for f in fields[1:]])
+        f = fun_f(F, *[interpolate(f) for f in fields.fields[1:]])
 
         # residuals and stiffness matrix components
         r = IntegralFormMixed(f, fields, dV).assemble(parallel=parallel).toarray()[:, 0]
 
         rref = np.linalg.norm(r[dof0])
-        uref = np.linalg.norm(fields[0].values.ravel()[dof0])
+        uref = np.linalg.norm(fields.fields[0].values.ravel()[dof0])
         if rref == 0:
             rref = 1
         if uref == 0:
@@ -136,7 +136,7 @@ def newtonrhapson(
             break
         else:
             # elasticity matrix
-            A = fun_A(F, *[interpolate(f) for f in fields[1:]])
+            A = fun_A(F, *[interpolate(f) for f in fields.fields[1:]])
 
             # assembly of stiffness matrix components
             K = IntegralFormMixed(A, fields, dV, fields).assemble(parallel=parallel)

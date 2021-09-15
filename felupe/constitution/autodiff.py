@@ -204,7 +204,7 @@ class StrainEnergyDensityTwoFieldTensor:
         P = ca.SX.sym("P", 9)
 
         # gradient and hessian of strain ernergy function W
-        w = W(F, P * args, **kwargs)
+        w = W(F, P, *args, **kwargs)
 
         d2WdF2, dWdF = ca.hessian(w, F)
         d2WdP2, dWdP = ca.hessian(w, P)
@@ -228,14 +228,14 @@ class StrainEnergyDensityTwoFieldTensor:
     # functions for stress P and elasticity A
     def f(self, F, P, modify=True):
         if modify:
-            dxdX = self._modify(dxdX)
+            F = self._modify(F)
         fF = apply([F, P], fun=self._f_PF, fun_shape=(3, 3))
         fP = apply([F, P], fun=self._f_PP, fun_shape=(9,))
         return [fF, fP]
 
     def A(self, F, P, modify=True):
         if modify:
-            dxdX = self._modify(dxdX)
+            F = self._modify(F)
         AFF = apply([F, P], fun=self._f_AFF, fun_shape=(3, 3, 3, 3))
         APP = apply([F, P], fun=self._f_APP, fun_shape=(9, 9))
         AFP = apply([F, P], fun=self._f_AFP, fun_shape=(3, 3, 9))

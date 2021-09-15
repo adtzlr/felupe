@@ -98,10 +98,10 @@ def test_hex8_nh_rbe2_mixed():
     CONT = fe.doftools.MultiPointContact(mesh, points=mpc, centerpoint=cpoint)
     K_RBE2 = RBE2.stiffness()
     r_RBE2 = RBE2.residuals(displacement)
-    
+
     K_CONT = CONT.stiffness(displacement)
     r_CONT = CONT.residuals(displacement)
-    
+
     assert K_RBE2.shape == K_CONT.shape
     assert r_RBE2.shape == r_CONT.shape
 

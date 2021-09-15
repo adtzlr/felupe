@@ -49,3 +49,8 @@ class FieldMixed:
         return tuple(
             f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
         )
+
+    def __getitem__(self, id):
+        "Slice-based access to field."
+
+        return self.fields[id]

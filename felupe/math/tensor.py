@@ -28,49 +28,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def defgrad(field):
-    return field.extract(grad=True, sym=False, add_identity=True)
-
-
-def strain(field):
-    return field.grad(sym=True)
-
-
-def extract(field):
-    "Extract gradient or interpolated field values at quadrature points."
-    return field.extract()
-
-
-def values(field):
-    "Return values of a field or a tuple of fields."
-    if isinstance(field, tuple) or isinstance(field, list):
-        return np.concatenate([f.values.ravel() for f in field])
-    if "mixed" in str(type(field)).lower():
-        return np.concatenate([f.values.ravel() for f in field.fields])
-    else:
-        return field.values.ravel()
-
-
-def norms(arrays):
-    "Calculate norms of a list of arrays."
-    return [np.linalg.norm(arr) for arr in arrays]
-
-
-def interpolate(A):
-    "Interpolate method of field A."
-    return A.interpolate()
-
-
-def grad(A):
-    "Gradient method of field A."
-    return A.grad()
-
-
-def sym(A):
-    "Symmetric part of matrix A."
-    return (A + transpose(A)) / 2
-
-
 def identity(A=None, ndim=None, shape=None):
     "identity according to matrix A with optional specified dim."
     if A is not None:
@@ -286,15 +243,6 @@ def tovoigt(A):
     for i6, (i, j) in enumerate(ij):
         B[i6, :, :] = A[i, j, :, :]
     return B
-
-
-def laplace(field):
-    n = field.dim
-    m = field.region.mesh.ndim
-    p = field.region.quadrature.npoints
-    e = field.region.mesh.ncells
-
-    return identity(grad(field)).reshape(n, m, n, m, p, e)
 
 
 try:

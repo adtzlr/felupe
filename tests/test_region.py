@@ -35,6 +35,7 @@ def test_region_cube_hex():
     e = fe.element.Hexahedron()
     q = fe.quadrature.GaussLegendre(1, 3)
 
+    r = fe.Region(m, e, q, grad=False)
     r = fe.Region(m, e, q)
 
     assert np.isclose(r.dV.sum(), 1)

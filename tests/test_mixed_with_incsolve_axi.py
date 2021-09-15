@@ -25,7 +25,7 @@ def test_mixed_with_incsolve_axi():
     displacement = fe.FieldAxisymmetric(region, dim=2)
     pressure = fe.Field(region0, dim=1)
     volumeratio = fe.Field(region0, dim=1, values=1)
-    fields = (displacement, pressure, volumeratio)
+    fields = fe.FieldMixed((displacement, pressure, volumeratio))
 
     f1 = lambda x: np.isclose(x, 1)
 
@@ -35,8 +35,8 @@ def test_mixed_with_incsolve_axi():
 
     dof0, dof1, unstack = fe.doftools.partition(fields, boundaries)
 
-    neohooke = fe.constitution.models.NeoHooke(mu=1.0, bulk=500.0)
-    umat = fe.constitution.variation.upJ(neohooke.P, neohooke.A)
+    neohooke = fe.constitution.NeoHooke(mu=1.0, bulk=500.0)
+    umat = fe.constitution.GeneralizedThreeField(neohooke.P, neohooke.A)
 
     fe.tools.incsolve(
         fields, region, umat.f, umat.A, boundaries, [-0.1, -0.2], verbose=0

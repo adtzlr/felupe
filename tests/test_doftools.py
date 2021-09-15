@@ -76,7 +76,7 @@ def test_dof_extend():
     field = fe.Field(region, dim=3)
     field0 = fe.Field(region0, dim=1)
 
-    fields = (field, field0)
+    fields = fe.FieldMixed((field, field0))
 
     f0 = lambda x: x == 0
     f1 = lambda x: x == 1

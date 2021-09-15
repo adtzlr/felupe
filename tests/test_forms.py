@@ -40,7 +40,7 @@ def pre():
 
     nh = fe.constitution.models.NeoHooke(1, 3)
 
-    F = fe.tools.defgrad(u)
+    F = fe.math.defgrad(u)
     P = nh.P(F)
     A = nh.A(F)
 
@@ -56,9 +56,9 @@ def pre_axi():
 
     u = fe.FieldAxisymmetric(r)
 
-    nh = fe.constitution.models.NeoHooke(1, 3)
+    nh = fe.constitution.NeoHooke(1, 3)
 
-    F = fe.tools.defgrad(u)
+    F = fe.math.defgrad(u)
     P = nh.P(F)
     A = nh.A(F)
 
@@ -75,11 +75,12 @@ def pre_mixed():
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
     J = fe.Field(r, values=1)
+    f = fe.FieldMixed((u, p, J))
 
-    nh = fe.constitution.models.NeoHooke(1, 3)
-    umat = fe.constitution.variation.upJ(nh.P, nh.A)
+    nh = fe.constitution.NeoHooke(1, 3)
+    umat = fe.constitution.GeneralizedThreeField(nh.P, nh.A)
 
-    FpJ = fe.tools.FpJ((u, p, J))
+    FpJ = f.extract()
     f = umat.f(*FpJ)
     A = umat.A(*FpJ)
 
@@ -156,7 +157,7 @@ def test_bilinearform():
 def test_mixed():
 
     r, u, p, J, f, A = pre_mixed()
-    v = (u, p, J)
+    v = fe.FieldMixed((u, p, J))
 
     for parallel in [False, True]:
 

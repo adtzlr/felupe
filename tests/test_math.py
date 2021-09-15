@@ -42,6 +42,8 @@ def test_math_field():
     fe.math.norms([u.values, u.values])
     fe.math.interpolate(u)
     fe.math.grad(u)
+    fe.math.strain(u)
+    fe.math.extract(u)
 
     v = fe.Field(r, dim=1)
     fe.math.laplace(v)

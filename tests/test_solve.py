@@ -39,7 +39,7 @@ def test_solve():
 
     nh = fe.constitution.models.NeoHooke(1, 3)
 
-    F = fe.tools.defgrad(u)
+    F = fe.math.defgrad(u)
     P = nh.P(F)
     A = nh.A(F)
 

@@ -27,8 +27,39 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import pytest
 import numpy as np
 import felupe as fe
+import casadi as ca
 
 import numpy as np
+
+
+def mat_W1(F):
+    mu, bulk = 1, 5000
+
+    J = ca.det(F)
+    C = ca.transpose(F) @ F
+    Cu = J ** (-2 / 3) * C
+
+    return mu / 2 * (ca.trace(Cu) - 3) + bulk / 2 * (J - 1) ** 2
+
+
+def mat_W2(F, p):
+    mu, bulk = 1, 5000
+
+    J = ca.det(F)
+    C = ca.transpose(F) @ F
+    Cu = J ** (-2 / 3) * C
+
+    return mu / 2 * (ca.trace(Cu) - 3) + p * (J - 1) - 1 / (2 * bulk) * p ** 2
+
+
+def mat_W3(F, p, J):
+    mu, bulk = 1, 5000
+
+    detF = ca.det(F)
+    C = ca.transpose(F) @ F
+    Cu = J ** (-2 / 3) * C
+
+    return mu / 2 * (ca.trace(Cu) - 3) + bulk / 2 * (J - 1) ** 2 + p * (detF - J)
 
 
 def mat_straininvariants(invariants):
@@ -106,7 +137,7 @@ def pre():
     p = fe.Field(r, dim=1)
     J = fe.Field(r, dim=1, values=1)
 
-    F = fe.tools.defgrad(u)
+    F = u.extract(grad=True, add_identity=True)
 
     return F, u, p, J
 
@@ -114,22 +145,22 @@ def pre():
 def test_basic():
     F, u, p, J = pre()
 
-    umat = fe.constitution.models.NeoHooke(1, 3)
+    umat = fe.constitution.NeoHooke(1, 3)
     umat.P(F), umat.A(F)
 
-    umat = fe.constitution.models.NeoHookeCompressible(1, 3)
+    umat = fe.constitution.NeoHookeCompressible(1, 3)
     umat.P(F), umat.A(F)
 
-    umat = fe.constitution.models.LineChange()
+    umat = fe.constitution.LineChange()
     umat.fun(F), umat.grad(F)
 
-    umat = fe.constitution.models.AreaChange()
+    umat = fe.constitution.AreaChange()
     umat.fun(F), umat.grad(F)
 
-    umat = fe.constitution.models.VolumeChange()
+    umat = fe.constitution.VolumeChange()
     umat.fun(F), umat.grad(F), umat.hessian(F)
 
-    strain = fe.tools.strain(u)
+    strain = u.grad(sym=True)
     umat = fe.constitution.models.LinearElastic(E=3, nu=0.3)
     umat.elasticity(strain)
     umat.stress(strain)
@@ -138,14 +169,14 @@ def test_basic():
 def test_invariants():
     F, u, p, J = pre()
 
-    umat = fe.constitution.models.NeoHooke(1, 3)
+    umat = fe.constitution.NeoHooke(1, 3)
     umat.P(F), umat.A(F)
 
-    umat = fe.constitution.models.NeoHookeCompressible(1, 3)
+    umat = fe.constitution.NeoHookeCompressible(1, 3)
     umat.P(F), umat.A(F)
 
-    strain = fe.tools.strain(u)
-    umat = fe.constitution.models.LinearElastic(E=3, nu=0.3)
+    strain = u.grad(sym=True)
+    umat = fe.constitution.LinearElastic(E=3, nu=0.3)
     umat.elasticity(strain)
     umat.stress(strain)
 
@@ -154,23 +185,7 @@ def test_invariants():
     mat_K = fe.constitution.Hydrostatic(bulk=200.0)
     mat = fe.constitution.Composite(mat_U, mat_K)
 
-    umat = fe.constitution.MaterialFrom(mat)
-    umat.P(F), umat.A(F)
-
-    mat_I = fe.constitution.df0da0.InvariantBased(mat_invariants)
-    mat_U = fe.constitution.df0da0.AsIsochoric(mat_I)
-    mat_K = fe.constitution.df0da0.Hydrostatic(bulk=200.0)
-    mat = fe.constitution.df0da0.Composite(mat_U, mat_K)
-
-    umat = fe.constitution.MaterialFrom(mat)
-    umat.P(F), umat.A(F)
-
-    mat_I = fe.constitution.df_da_.InvariantBased(mat_invariants)
-    mat_U = fe.constitution.df_da_.AsIsochoric(mat_I)
-    mat_K = fe.constitution.df_da_.Hydrostatic(bulk=200.0)
-    mat = fe.constitution.df_da_.Composite(mat_U, mat_K)
-
-    umat = fe.constitution.MaterialFrom(mat)
+    umat = fe.constitution.Material(mat)
     umat.P(F), umat.A(F)
 
 
@@ -182,37 +197,20 @@ def test_stretch():
     mat_K = fe.constitution.Hydrostatic(bulk=200.0)
     mat = fe.constitution.Composite(mat_U, mat_K)
 
-    umat = fe.constitution.MaterialFrom(mat)
-    umat.P(F), umat.A(F)
-
-    mat_S = fe.constitution.df0da0.PrincipalStretchBased(mat_invariants)
-    mat_U = fe.constitution.df0da0.AsIsochoric(mat_S)
-    mat_K = fe.constitution.df0da0.Hydrostatic(bulk=200.0)
-    mat = fe.constitution.df0da0.Composite(mat_U, mat_K)
-
-    umat = fe.constitution.MaterialFrom(mat, parallel=True)
-    umat = fe.constitution.MaterialFrom(mat, parallel=False)
-    umat.P(F), umat.A(F)
-
-    mat_S = fe.constitution.df_da_.PrincipalStretchBased(mat_invariants)
-    mat_U = fe.constitution.df_da_.AsIsochoric(mat_S)
-    mat_K = fe.constitution.df_da_.Hydrostatic(bulk=200.0)
-    mat = fe.constitution.df_da_.Composite(mat_U, mat_K)
-
-    umat = fe.constitution.MaterialFrom(mat, parallel=True)
-    umat = fe.constitution.MaterialFrom(mat, parallel=False)
+    umat = fe.constitution.Material(mat)
     umat.P(F), umat.A(F)
 
 
 def test_threefield():
     F, u, p, J = pre()
 
-    umat = fe.constitution.models.NeoHooke(1, 3)
+    nh = fe.constitution.models.NeoHooke(1, 3)
 
-    F, p, J = fe.tools.FpJ((u, p, J))
+    fields = fe.FieldMixed((u, p, J))
+    F, p, J = fields.extract()
 
-    vmat = fe.constitution.variation.upJ(umat.P, umat.A)
-    vmat.f(F, p, J), vmat.A(F, p, J)
+    umat = fe.constitution.GeneralizedThreeField(nh.P, nh.A)
+    umat.f(F, p, J), umat.A(F, p, J)
 
 
 def test_straininvariant():
@@ -223,24 +221,24 @@ def test_straininvariant():
     mat_K = fe.constitution.Hydrostatic(bulk=200.0)
     mat = fe.constitution.Composite(mat_U, mat_K)
 
-    umat = fe.constitution.MaterialFrom(mat)
+    umat = fe.constitution.Material(mat)
     umat.P(F), umat.A(F)
 
-    mat_E = fe.constitution.df0da0.StrainInvariantBased(mat_straininvariants)
-    mat_U = fe.constitution.df0da0.AsIsochoric(mat_E)
-    mat_K = fe.constitution.df0da0.Hydrostatic(bulk=200.0)
-    mat = fe.constitution.df0da0.Composite(mat_U, mat_K)
 
-    umat = fe.constitution.MaterialFrom(mat)
-    umat.P(F), umat.A(F)
+def test_ad():
+    F, u, p, J = pre()
 
-    mat_E = fe.constitution.df_da_.StrainInvariantBased(mat_straininvariants)
-    mat_U = fe.constitution.df_da_.AsIsochoric(mat_E)
-    mat_K = fe.constitution.df_da_.Hydrostatic(bulk=200.0)
-    mat = fe.constitution.df_da_.Composite(mat_U, mat_K)
+    fields = fe.FieldMixed((u, p, J))
+    F, p, J = fields.extract()
 
-    umat = fe.constitution.MaterialFrom(mat)
-    umat.P(F), umat.A(F)
+    umat = fe.constitution.StrainEnergyDensity(mat_W1)
+    umat.f(F), umat.A(F)
+
+    umat = fe.constitution.StrainEnergyDensityTwoField(mat_W2)
+    umat.f(F, p), umat.A(F, p)
+
+    umat = fe.constitution.StrainEnergyDensityThreeField(mat_W3)
+    umat.f(F, p, J), umat.A(F, p, J)
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -249,3 +247,4 @@ if __name__ == "__main__":  # pragma: no cover
     test_straininvariant()
     test_stretch()
     test_threefield()
+    test_ad()

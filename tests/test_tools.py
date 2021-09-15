@@ -46,7 +46,7 @@ def pre():
 def test_extract():
 
     r, fields = pre()
-    F, p, J = fe.tools.FpJ(fields)
+    F, p, J = fe.FieldMixed(fields).extract()
 
     assert F.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
     assert p.shape == (1, r.quadrature.npoints, r.mesh.ncells)
@@ -56,7 +56,7 @@ def test_extract():
 def test_defgrad():
 
     r, fields = pre()
-    F = fe.tools.defgrad(fields[0])
+    F = fe.math.defgrad(fields[0])
 
     assert F.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
 
@@ -64,45 +64,18 @@ def test_defgrad():
 def test_strain():
 
     r, fields = pre()
-    eps = fe.tools.strain(fields[0])
+    eps = fe.math.strain(fields[0])
 
     assert eps.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
-
-
-def test_strain_voigt():
-
-    m = fe.mesh.Line(n=3)
-    e = fe.element.Line()
-    q = fe.quadrature.GaussLegendre(1, 1)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=1)
-    strain = fe.tools.strain_voigt(u)
-    assert strain.shape == (1, r.quadrature.npoints, r.mesh.ncells)
-
-    m = fe.mesh.Rectangle(n=3)
-    e = fe.element.Quad()
-    q = fe.quadrature.GaussLegendre(1, 2)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=2)
-    strain = fe.tools.strain_voigt(u)
-    assert strain.shape == (3, r.quadrature.npoints, r.mesh.ncells)
-
-    m = fe.mesh.Cube(n=3)
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=3)
-    strain = fe.tools.strain_voigt(u)
-    assert strain.shape == (6, r.quadrature.npoints, r.mesh.ncells)
 
 
 def test_solve_check():
 
     r, (u, p, J) = pre()
 
-    nh = fe.constitution.models.NeoHooke(1, 3)
+    nh = fe.constitution.NeoHooke(1, 3)
 
-    F = fe.tools.defgrad(u)
+    F = fe.math.defgrad(u)
 
     b = fe.doftools.symmetry(u)
     dof0, dof1 = fe.doftools.partition(u, b)
@@ -126,12 +99,12 @@ def test_solve_mixed_check():
     r, fields = pre()
     u = fields[0]
 
-    F, p, J = fe.tools.FpJ(fields)
+    F, p, J = fe.FieldMixed(fields).extract()
 
-    NH = fe.constitution.models.NeoHooke(1, 3)
-    nh = fe.constitution.variation.upJ(NH.P, NH.A)
+    NH = fe.constitution.NeoHooke(1, 3)
+    nh = fe.constitution.GeneralizedThreeField(NH.P, NH.A)
 
-    F = fe.tools.defgrad(u)
+    F = fe.math.defgrad(u)
 
     b = fe.doftools.symmetry(u)
     dof0, dof1, unstack = fe.doftools.partition(fields, b)
@@ -144,12 +117,12 @@ def test_solve_mixed_check():
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
 
-    dx = fe.tools.solve_mixed(A, b, fields, dof0, dof1, u0ext, unstack)
+    dx = fe.tools.solve(A, b, fields, dof0, dof1, u0ext, unstack)
     assert dx[0].shape == u.values.ravel().shape
     assert dx[1].shape == fields[1].values.ravel().shape
     assert dx[2].shape == fields[2].values.ravel().shape
 
-    fe.tools.check_mixed(dx, fields, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, fields, b, dof1, dof0, verbose=0)
 
 
 def test_update():
@@ -178,7 +151,6 @@ if __name__ == "__main__":
     test_extract()
     test_defgrad()
     test_strain()
-    test_strain_voigt()
     test_update()
     test_solve_check()
     test_solve_mixed_check()

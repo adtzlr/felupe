@@ -23,7 +23,7 @@ def test_hex8_nh_rbe2():
     dV = region.dV
 
     displacement = fe.Field(region, dim=3)
-    F = fe.tools.defgrad(displacement)
+    F = fe.math.defgrad(displacement)
 
     umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
@@ -51,6 +51,9 @@ def test_hex8_nh_rbe2():
     )
     K = bilinearform.assemble() + K_RBE2
 
+    assert r.shape == (84, 1)
+    assert K.shape == (84, 84)
+
 
 def test_hex8_nh_rbe2_mixed():
 
@@ -74,10 +77,10 @@ def test_hex8_nh_rbe2_mixed():
 
     fields = (displacement, pressure, volumeratio)
 
-    F, p, J = fe.tools.FpJ(fields)
+    F, p, J = fe.FieldMixed(fields).extract()
 
     nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
-    umat = fe.constitution.variation.upJ(nh.P, nh.A)
+    umat = fe.constitution.GeneralizedThreeField(nh.P, nh.A)
 
     f0 = lambda x: np.isclose(x, 0)
     f1 = lambda x: np.isclose(x, 1)

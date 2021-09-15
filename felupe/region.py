@@ -87,5 +87,5 @@ class Region:
             self.dhdX = np.einsum("bIp,IJpc->bJpc", self.dhdr, self.drdX)
 
     def volume(self, detF=1):
-        "Calculate cell volume for cell 'c'."
+        "Calculate cell volumes for cell 'c'."
         return np.einsum("pc->c", detF * self.dV)

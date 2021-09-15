@@ -567,11 +567,7 @@ class QuadraticTriangle(TriangleElement):
 
         dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
         dhdr_b = np.array(
-            [
-                [4 * (t1 - t2), -4 * t2],
-                [4 * t3, 4 * t2],
-                [-4 * t3, 4 * (t1 - t2)],
-            ]
+            [[4 * (t1 - t2), -4 * t2], [4 * t3, 4 * t2], [-4 * t3, 4 * (t1 - t2)],]
         )
         dhdr = np.vstack((dhdr_a, dhdr_b))
         dhdr[0] += -dhdr[3] / 2 - dhdr[5] / 2

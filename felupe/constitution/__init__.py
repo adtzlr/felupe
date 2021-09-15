@@ -1,5 +1,5 @@
-from .df0da0 import (
-    Material,
+from .totallagrange import (
+    TotalLagrange,
     Composite,
     InvariantBased,
     PrincipalStretchBased,
@@ -7,7 +7,24 @@ from .df0da0 import (
     Hydrostatic,
     AsIsochoric,
 )
-from .df_da0 import MaterialFrom
-from .models import LinearElastic, NeoHooke
-from . import variation
-from . import ad
+
+from .base import Material
+
+from .models import (
+    LinearElastic,
+    NeoHooke,
+    NeoHookeCompressible,
+    LineChange,
+    AreaChange,
+    VolumeChange,
+)
+
+from .variation import GeneralizedThreeField
+
+from .autodiff import (
+    StrainEnergyDensity,
+    StrainEnergyDensityTwoField,
+    StrainEnergyDensityThreeField,
+    StrainEnergyDensityTwoFieldTensor,
+    StrainEnergyDensityThreeFieldTensor,
+)

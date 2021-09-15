@@ -66,7 +66,7 @@ class Triangle(Scheme):
         area = 1 / 2
 
         if order == 1:
-            scheme.points = np.ones((1, 3)).T / 3
+            scheme.points = np.ones((1, 3)) / 3
             scheme.weights = np.ones(1)
 
         elif order == 2:
@@ -86,7 +86,7 @@ class Triangle(Scheme):
             raise NotImplementedError("order must be either 1, 2 or 3.")
 
         triangle = np.array([[0, 0], [1, 0], [0, 1]])
-        points = np.dot(triangle.T, scheme.points).T
+        points = np.dot(triangle.T, scheme.points.T).T
 
         super().__init__(points, scheme.weights * area)
 
@@ -97,7 +97,7 @@ class Tetrahedron(Scheme):
         volume = 1 / 6
 
         if order == 1:
-            scheme.points = np.ones((1, 4)).T / 4
+            scheme.points = np.ones((1, 4)) / 4
             scheme.weights = np.ones(1)
 
         elif order == 2:
@@ -122,5 +122,5 @@ class Tetrahedron(Scheme):
 
         tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-        points = np.dot(tetra.T, scheme.points).T
+        points = np.dot(tetra.T, scheme.points.T).T
         super().__init__(points, scheme.weights * volume)

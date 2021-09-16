@@ -3,4 +3,3 @@
 * [Theory Guide](guide.md)
 * [Examples](examples.md)
 * [Mesh Generation](mesh.md)
-* [Performance](performance.md)

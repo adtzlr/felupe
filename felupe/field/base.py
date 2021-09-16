@@ -103,7 +103,7 @@ class Field:
             gr = self.grad()
 
             if sym:
-                gr = sym(gr)
+                gr = symmetric(gr)
 
             if add_identity:
                 gr = identity(gr) + gr

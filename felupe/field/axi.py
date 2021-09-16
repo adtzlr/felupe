@@ -33,6 +33,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from .base import Field
+from ..math import sym as symmetric
 
 
 class FieldAxisymmetric(Field):
@@ -57,17 +58,21 @@ class FieldAxisymmetric(Field):
         self.scalar = Field(region, dim=1, values=region.mesh.points[:, 1])
         self.radius = self.scalar.interpolate()
 
-    def _grad_2d(self):
+    def _grad_2d(self, sym=False):
         "In-plane 2d-gradient dudX_IJpe."
         # gradient as partial derivative of point values "aI"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
-        return np.einsum(
+        g = np.einsum(
             "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
+        if sym:
+            return symmetric(g)
+        else:
+            return g
 
-    def grad(self):
+    def grad(self, sym=False):
         "Full 3d-gradient dudX_IJpe."
-        g = np.pad(self._grad_2d(), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        g = np.pad(self._grad_2d(sym=sym), ((0, 1), (0, 1), (0, 0), (0, 0)))
         g[-1, -1] = self.interpolate()[1] / self.radius
         return g

@@ -33,7 +33,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from .base import Field
-from .math import sym as symmetric
+from ..math import sym as symmetric
 
 
 class FieldAxisymmetric(Field):

@@ -19,19 +19,25 @@ V = dV.sum()
 
 displacement = fe.Field(region, dim=3)
 
-u = displacement.values
-ui = displacement.interpolate()
-
+u    = displacement.values
+ui   = displacement.interpolate()
 dudX = displacement.grad()
 
-# use math function for better readability
-from felupe.math import grad, identity
-
-dudX = grad(displacement)
+from felupe.math import identity
 
 F = identity(dudX) + dudX
 
-umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
+from casadi import det, transpose, trace
+
+def W(F, mu, bulk):
+    "Neo-Hooke"
+
+    J = det(F)
+    C = transpose(F) @ F
+
+    return mu/2 * (J**(-2/3)*trace(C) - 3) + bulk/2 * (J - 1)**2
+
+umat = fe.constitution.StrainEnergyDensity(W, mu=1.0, bulk=2.0)
 
 P = umat.P
 A = umat.A
@@ -49,7 +55,7 @@ u0ext = fe.doftools.apply(displacement, boundaries, dof0)
 
 linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
 bilinearform = fe.IntegralForm(
-    A(F), displacement, dV, displacement, grad_v=True, grad_u=True
+    A(F), displacement, dV, u=displacement, grad_v=True, grad_u=True
 )
 
 r = linearform.assemble().toarray()[:, 0]
@@ -60,12 +66,12 @@ du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
 # displacement += du
 
 for iteration in range(8):
-    dudX = grad(displacement)
+    dudX = displacement.grad()
     F = identity(dudX) + dudX
 
     linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
     bilinearform = fe.IntegralForm(
-        A(F), displacement, dV, displacement, grad_v=True, grad_u=True
+        A(F), displacement, dV, u=displacement, grad_v=True, grad_u=True
     )
 
     r = linearform.assemble().toarray()[:, 0]
@@ -80,5 +86,7 @@ for iteration in range(8):
 
     if norm < 1e-12:
         break
+
+F[:,:,0,0]
 
 fe.utils.save(region, displacement, filename="result.vtk")

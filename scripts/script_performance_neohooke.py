@@ -2,7 +2,7 @@
 """
 Created on Wed Jun 23 10:13:15 2021
 
-@author: Andreas
+@author: adtzlr
 """
 
 import numpy as np
@@ -37,7 +37,7 @@ for n in np.round((dof/3)**(1/3)).astype(int):
     dudX = field.grad()
     F = fe.math.identity(dudX) + dudX
     
-    nh = fe.constitution.models.NeoHooke(mu=1.0, bulk=3.0)
+    nh = fe.constitution.NeoHooke(mu=1.0, bulk=3.0)
     
     bilinearform = fe.IntegralForm(nh.A(F), field, region.dV, field, 
                                    grad_v=True, grad_u=True)

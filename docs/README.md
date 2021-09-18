@@ -15,6 +15,9 @@ Install Python, fire up a terminal and run `pip install felupe`; import FElupe a
 import felupe as fe
 ```
 
+## Get Started
+Explore the power of FElupe with a [simple hyperelastic example](quickstart.md). Other examples are located in the [examples](examples.md) section and in the [scripts](https://github.com/adtzlr/felupe/tree/main/scripts) folder.
+
 ## License
 FElupe - finite element analysis (C) 2021 Andreas Dutzler, Graz (Austria).
 

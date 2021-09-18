@@ -1,6 +1,6 @@
 ## Problem Definition
 
-As with every module, first import felupe. It is recommended to shorten the imported name for better readability.
+As with every module: first install FElupe with `pip install felupe`, then import FElupe in your script as shown below. It is recommended to shorten the imported name for better readability.
 
 ```python
 import felupe as fe
@@ -17,7 +17,7 @@ quadrature = fe.quadrature.GaussLegendre(order=1, dim=3)
 ```
 
 ## Region
-A region essentially pre-calculates basis functions and derivatives evaluated at every quadrature point of every element. An array containing products of quadrature weights multiplied by the geometrical jacobians is stored as the differential volume.
+A region essentially pre-calculates basis functions and derivatives evaluated at every quadrature point of every cell. An array containing products of quadrature weights multiplied by the geometrical jacobians is stored as the differential volume.
 
 ```python
 region = fe.Region(mesh, element, quadrature)
@@ -29,7 +29,7 @@ V = dV.sum()
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/undeformed_mesh.png)
 
 ## Field
-In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every element in the region with the field method `grad()`. 
+In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method `grad()`. 
 
 ```python
 displacement = fe.Field(region, dim=3)
@@ -165,7 +165,7 @@ for iteration in range(8):
 5 5.345117354172557e-16
 ```
 
-All 3x3 components of the deformation gradient of integration point 1 of element 1 are obtained with
+All 3x3 components of the deformation gradient of integration point 1 of cell 1 are obtained with
 
 ```python
 F[:,:,0,0]

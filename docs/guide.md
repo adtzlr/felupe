@@ -47,8 +47,8 @@ mat = fe.constitution.Material(neohooke)
 # use `mat` as
 # mat.P(F) and # mat.A(F)
 
-# three-field-variation
-#mat_upJ = fe.constitution.variation.upJ(mat.P, mat.A)
+# three-field-variation (u,p,J)
+#mat_upJ = fe.constitution.GeneralizedThreeField(mat.P, mat.A)
 
 # use `mat_upJ` as
 # mat_upJ.f(F, p, J) and # mat_upJ.A(F, p, J)

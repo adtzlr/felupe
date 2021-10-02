@@ -95,31 +95,6 @@ class ArbitraryOrderLagrange:
         return r ** m / factorial(m)
 
 
-class LineElement:
-    def __init__(self):
-        self.ndim = 1
-
-
-class QuadElement:
-    def __init__(self):
-        self.ndim = 2
-
-
-class HexahedronElement:
-    def __init__(self):
-        self.ndim = 3
-
-
-class TriangleElement:
-    def __init__(self):
-        self.ndim = 2
-
-
-class TetraElement:
-    def __init__(self):
-        self.ndim = 3
-
-
 class Line(LineElement):
     def __init__(self):
         super().__init__()

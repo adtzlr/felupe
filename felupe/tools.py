@@ -29,9 +29,14 @@ from copy import deepcopy
 
 from numpy.linalg import norm
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.sparse import csr_matrix as sparsematrix
 
-from .math import norms
+import meshio
+
+from .math import norms, dot, transpose, det, eigvalsh
 from . import solve as solvetools
+from . import Field
 
 
 def update(y, dx, inplace=True):
@@ -238,3 +243,145 @@ def newtonrhapson(
         Res.jac = K
 
     return Res
+
+
+def topoints(values, region, sym=True, mode="tensor"):
+
+    rows = region.mesh.cells.T.ravel()
+    cols = np.zeros_like(rows)
+
+    if mode == "tensor":
+        ndim = values.shape[0]
+        if sym:
+            if ndim == 3:
+                ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
+            elif ndim == 2:
+                ij = [(0, 0), (1, 1), (0, 1)]
+        else:
+            if ndim == 3:
+                ij = [
+                    (0, 0),
+                    (0, 1),
+                    (0, 2),
+                    (1, 0),
+                    (1, 1),
+                    (1, 2),
+                    (2, 0),
+                    (2, 1),
+                    (2, 2),
+                ]
+            elif ndim == 2:
+                ij = [(0, 0), (0, 1), (1, 0), (1, 1)]
+
+        out = Field(region, dim=len(ij)).values
+
+        for a, (i, j) in enumerate(ij):
+            out[:, a] = (
+                sparsematrix(
+                    (values.reshape(ndim, ndim, -1)[i, j], (rows, cols)),
+                    shape=(region.mesh.npoints, 1),
+                ).toarray()[:, 0]
+                / region.mesh.cells_per_point
+            )
+
+    elif mode == "scalar":
+        out = sparsematrix(
+            (values.ravel(), (rows, cols)), shape=(region.mesh.npoints, 1)
+        ).toarray()[:, 0]
+        out = out / region.mesh.cells_per_point
+
+    return out
+
+
+def save(
+    region,
+    fields,
+    r=None,
+    F=None,
+    gradient=None,
+    unstack=None,
+    converged=True,
+    filename="result.vtk",
+    cell_data=None,
+    point_data=None,
+):
+
+    if unstack is not None:
+        if "mixed" in str(type(fields)):
+            fields = fields.fields
+        u = fields[0]
+    else:
+        u = fields
+
+    mesh = region.mesh
+
+    if point_data is None:
+        point_data = {}
+
+    point_data["Displacements"] = u.values
+
+    if r is not None:
+        if unstack is not None:
+            reactionforces = np.split(r, unstack)[0]
+        else:
+            reactionforces = r
+
+        point_data["ReactionForce"] = reactionforces.reshape(*u.values.shape)
+
+    if gradient is not None:
+        # 1st Piola Kirchhoff stress
+        if unstack is not None:
+            P = gradient[0]
+        else:
+            P = gradient
+
+        # cauchy stress at integration points
+        s = dot(P, transpose(F)) / det(F)
+        sp = np.sort(eigvalsh(s), axis=0)
+
+        # shift stresses to points and average nodal values
+        cauchy = topoints(s, region=region, sym=True)
+        cauchyprinc = [topoints(sp_i, region=region, mode="scalar") for sp_i in sp]
+
+        point_data["CauchyStress"] = cauchy
+
+        point_data["MaxPrincipalCauchyStress"] = cauchyprinc[2]
+        point_data["IntPrincipalCauchyStress"] = cauchyprinc[1]
+        point_data["MinPrincipalCauchyStress"] = cauchyprinc[0]
+
+        point_data["MaxPrincipalShearCauchyStress"] = cauchyprinc[2] - cauchyprinc[0]
+
+    mesh = meshio.Mesh(
+        points=mesh.points,
+        cells=[(mesh.cell_type, mesh.cells),],
+        point_data=point_data,
+        cell_data=cell_data,
+    )
+
+    mesh.write(filename)
+
+
+def force(field, r, unstack, boundary):
+    return (((np.split(r, unstack)[0]).reshape(-1, 3))[boundary.points]).sum(0)
+
+
+def moment(field, r, unstack, boundary, point=np.zeros(3)):
+
+    point = point.reshape(1, 3)
+
+    indices = np.array([(1, 2), (2, 0), (0, 1)])
+
+    displacements = field.values
+    d = ((point + displacements) - point)[boundary.points]
+
+    force = (np.split(r, unstack)[0]).reshape(-1, 3)
+    f = force[boundary.points]
+
+    return np.array([(f[:, i] * d[:, i[::-1]]).sum() for i in indices])
+
+
+def curve(x, y):
+    kind = [None, "linear", "quadratic", "cubic"][min(len(y), 4) - 1]
+    f = interp1d(x[: len(y)], y, kind=kind)
+    xx = np.linspace(x[0], x[: len(y)][-1])
+    return np.array([x[: len(y)], y]), np.array([xx, f(xx)])

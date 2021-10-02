@@ -11,7 +11,7 @@ from . import utils
 
 from ._region import Region
 from ._form import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
-from .field import Field, FieldAxisymmetric, FieldMixed
+from ._field import Field, FieldAxisymmetric, FieldMixed
 from .dof import Boundary
 
 

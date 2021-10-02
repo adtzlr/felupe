@@ -34,21 +34,23 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-class Indices:
-    def __init__(self, eai, ai, region, dim):
-        # cell "e", point "a" and component "i"
-        self.eai = eai
-        self.ai = ai
-        self.dof = np.arange(region.mesh.npoints * dim).reshape(-1, dim)
-        self.shape = (region.mesh.npoints * dim, 1)
+class FieldMixed:
+    def __init__(self, fields):
+        self.fields = fields
+        self.values = tuple(f.values for f in self.fields)
 
+    def extract(self, grad=True, sym=False, add_identity=True):
+        "Extract gradients or interpolated values of fields at quadrature points."
 
-class IndicesDiscontinous:
-    def __init__(self, eai, ai, region, dim):
-        # cell "e", point "a" and component "i"
-        self.eai = eai
-        self.ai = ai
-        self.dof = np.arange(region.mesh.ncells * region.element.nbasis * dim).reshape(
-            -1, dim
+        if isinstance(grad, bool):
+            grad = (grad,)
+
+        grads = np.pad(grad, (0, len(self.fields) - 1))
+        return tuple(
+            f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
         )
-        self.shape = (region.mesh.ncells * region.element.nbasis * dim, 1)
+
+    def __getitem__(self, id):
+        "Slice-based access to field."
+
+        return self.fields[id]

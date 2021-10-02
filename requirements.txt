@@ -1,8 +1,0 @@
-numpy
-scipy
-h5py
-meshio
-quadpy
-numba
-casadi
-sparse

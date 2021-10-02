@@ -29,7 +29,7 @@ import numpy as np
 
 
 def identity(A=None, ndim=None, shape=None):
-    "identity according to matrix A with optional specified dim."
+    "Identity according to matrix A with optional specified dim."
     if A is not None:
         ndimA, g, e = A.shape[-3:]
         if ndim is None:
@@ -184,12 +184,9 @@ def cdya_il(A, B):
     return np.einsum("ij...,kl...->ilkj...", A, B, optimize=True)
 
 
-def cdya(A, B, parallel=True):
+def cdya(A, B):
     "symmetric - crossed dyadic-product of A and B."
-    if parallel:
-        return cdya_parallel(A, B)
-    else:
-        return (cdya_ik(A, B) + cdya_il(A, B)) * 0.5
+    return (cdya_ik(A, B) + cdya_il(A, B)) * 0.5
 
 
 def cross(a, b):
@@ -199,102 +196,34 @@ def cross(a, b):
     )
 
 
-def dot(A, B):
-    "Dot-product of A and B."
-    if len(A.shape) == len(B.shape):
+def dot(A, B, n=2):
+    "Dot-product of A and B with inputs of n trailing axes.."
+    if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
         return np.einsum("ik...,kj...->ij...", A, B)
-    elif len(A.shape) + 2 == len(B.shape):
+    elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:
         return np.einsum("im...,mjkl...->ijkl...", A, B)
-    elif len(A.shape) == len(B.shape) + 2:
+    elif len(A.shape) == 4 + n and len(B.shape) == 2 + n:
         return np.einsum("ijkm...,ml...->ijkl...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")
 
 
-def ddot(A, B):
-    "Double-Dot-product of A and B."
-    if len(A.shape) == len(B.shape):
+def ddot(A, B, n=2):
+    "Double-Dot-product of A and B with inputs of n trailing axes."
+    if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
         return np.einsum("ij...,ij...->...", A, B)
-    elif len(A.shape) + 2 == len(B.shape):
+    elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:
         return np.einsum("ij...,ijkl...->kl...", A, B)
-    elif len(A.shape) == len(B.shape) + 2:
+    elif len(A.shape) == 4 + n and len(B.shape) == 2 + n:
         return np.einsum("ijkl...,kl...->ij...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")
 
 
-def ddot44(A, B):
-    "Double-Dot-product of A and B where A and B being two fourth-order tensors."
-    return np.einsum("ijkl...,klmn...->ijmn...", A, B, optimize=True)
-
-
-def ddot444(A, B, C, parallel=True):
-    "Double-Dot-product of A, B and C where A, B and C being three fourth-order tensors."
-    if parallel:
-        return ddot444_parallel(A, B, C)
-    else:
-        return np.einsum("ijkl...,klmn...,mnpq...->ijpq...", A, B, C, optimize=True)
-
-
 def tovoigt(A):
-    "Convert tensor to voigt notation."
+    "Convert (3, 3) tensor to (6, ) voigt notation."
     B = np.zeros((6, *A.shape[-2:]))
     ij = [(0, 0), (1, 1), (2, 2), (0, 0), (1, 2), (0, 2)]
     for i6, (i, j) in enumerate(ij):
         B[i6, :, :] = A[i, j, :, :]
     return B
-
-
-try:
-    from numba import jit, prange
-
-    jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
-
-    @jit(**jitargs)
-    def cdya_parallel(A, B):  # pragma: no cover
-
-        ndim, ngauss, nelems = A.shape[-3:]
-
-        out = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
-
-        for i in prange(ndim):
-            for j in prange(ndim):
-                for k in prange(ndim):
-                    for l in prange(ndim):
-                        for p in prange(ngauss):
-                            for e in prange(nelems):
-                                out[i, j, k, l, p, e] += (
-                                    A[i, k, p, e] * B[j, l, p, e]
-                                    + A[i, l, p, e] * B[k, j, p, e]
-                                ) / 2
-
-        return out
-
-    @jit(**jitargs)
-    def ddot444_parallel(A, B, C):  # pragma: no cover
-
-        ndim, ngauss, nelems = A.shape[-3:]
-
-        out = np.zeros((ndim, ndim, ndim, ndim, ngauss, nelems))
-
-        for i in prange(ndim):
-            for j in prange(ndim):
-                for k in prange(ndim):
-                    for l in prange(ndim):
-                        for m in prange(ndim):
-                            for n in prange(ndim):
-                                for r in prange(ndim):
-                                    for s in prange(ndim):
-                                        for p in prange(ngauss):
-                                            for e in prange(nelems):
-                                                out[i, j, r, s, p, e] += (
-                                                    A[i, j, k, l, p, e]
-                                                    * B[k, l, m, n, p, e]
-                                                    * C[m, n, r, s, p, e]
-                                                )
-
-        return out
-
-
-except:
-    pass

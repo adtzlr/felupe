@@ -1,3 +1,3 @@
-from .base import Field
-from .axi import FieldAxisymmetric
-from .mixed import FieldMixed
+from ._base import Field
+from ._axi import FieldAxisymmetric
+from ._mixed import FieldMixed

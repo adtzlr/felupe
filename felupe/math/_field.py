@@ -56,14 +56,11 @@ def values(field):
 
 
 def norm(array):
-    "Calculate the norm of an array."
-    return np.linalg.norm(array)
-
-
-def norms(arrays):
-    "Calculate norms of a list of arrays."
-    return np.array([np.linalg.norm(arr) for arr in arrays])
-
+    "Calculate the norm of an array or the norms of a list of arrays."
+    if type(array, list):
+        return np.array([np.linalg.norm(arr) for arr in arrays])
+    else:
+        return np.linalg.norm(array)
 
 def interpolate(field):
     "Interpolate method of field A."
@@ -78,12 +75,3 @@ def grad(field, sym=False):
 def sym(A):
     "Symmetric part of matrix A."
     return (A + transpose(A)) / 2
-
-
-def laplace(field):
-    n = field.dim
-    m = field.region.mesh.ndim
-    p = field.region.quadrature.npoints
-    e = field.region.mesh.ncells
-
-    return identity(field.grad()).reshape(n, m, n, m, p, e)

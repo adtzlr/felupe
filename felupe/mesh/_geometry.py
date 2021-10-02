@@ -67,7 +67,7 @@ class Cube(Mesh):
         super().__init__(points, cells, cell_type)
 
 
-class RectangleArbitraryOderQuad(Mesh):
+class RectangleArbitraryOrderQuad(Mesh):
     def __init__(self, a=(0, 0), b=(1, 1), order=2):
         yv, xv = np.meshgrid(
             np.linspace(a[1], b[1], order + 1),
@@ -126,7 +126,7 @@ class RectangleArbitraryOderQuad(Mesh):
         super().__init__(points, cells, cell_type="VTK_LAGRANGE_QUADRILATERAL")
 
 
-class CubeArbitraryOderHexahedron(Mesh):
+class CubeArbitraryOrderHexahedron(Mesh):
     def __init__(self, a=(0, 0, 0), b=(1, 1, 1), order=2):
         zv, yv, xv = np.meshgrid(
             np.linspace(a[2], b[2], order + 1),

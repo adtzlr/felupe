@@ -28,9 +28,10 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from scipy.sparse import bmat, vstack
 
-from ..field import Field, FieldAxisymmetric
-from .base import IntegralForm
-from .axi import IntegralFormAxisymmetric
+from .._field._base import Field
+from .._field._axi import FieldAxisymmetric
+from ._base import IntegralForm
+from ._axi import IntegralFormAxisymmetric
 
 
 class IntegralFormMixed:

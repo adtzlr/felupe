@@ -26,7 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from .tensor import identity, transpose
+from ._tensor import identity, transpose
 
 
 def defgrad(field):
@@ -58,7 +58,7 @@ def values(field):
 def norm(array):
     "Calculate the norm of an array or the norms of a list of arrays."
     if type(array, list):
-        return np.array([np.linalg.norm(arr) for arr in arrays])
+        return np.array([np.linalg.norm(arr) for arr in array])
     else:
         return np.linalg.norm(array)
 

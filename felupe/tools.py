@@ -27,16 +27,15 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from copy import deepcopy
 
-from numpy.linalg import norm
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.sparse import csr_matrix as sparsematrix
 
 import meshio
 
-from .math import norms, dot, transpose, det, eigvalsh
+from .math import norm, dot, transpose, det, eigvalsh
 from . import solve as solvetools
-from . import Field
+from ._field._base import Field
 
 
 def update(y, dx, inplace=True):
@@ -140,7 +139,7 @@ def _check_mixed(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose
     norm_f = np.linalg.norm(f[dof1[dof1 < len(dx)]]) / ref_f
     norm_x = np.linalg.norm(dx.ravel()[dof1[dof1 < len(dx)]]) / ref_x
 
-    norm_dfields = norms(dfields[1:])
+    norm_dfields = norm(dfields[1:])
 
     if verbose:
         info_r = f"|r|={norm_f:1.3e} |u|={norm_x:1.3e}"

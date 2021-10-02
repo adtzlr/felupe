@@ -30,7 +30,6 @@ import numpy as np
 from ..math import (
     dot,
     ddot,
-    ddot44,
     transpose,
     majortranspose,
     inv,

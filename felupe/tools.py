@@ -353,7 +353,9 @@ def save(
 
     mesh = meshio.Mesh(
         points=mesh.points,
-        cells=[(mesh.cell_type, mesh.cells),],
+        cells=[
+            (mesh.cell_type, mesh.cells),
+        ],
         point_data=point_data,
         cell_data=cell_data,
     )

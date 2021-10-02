@@ -28,6 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from ._tools import expand
 
+
 def line_line(a=0, b=1, n=2):
     "Line generator."
     points = np.linspace(a, b, n).reshape(-1, 1)

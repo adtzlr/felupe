@@ -12,17 +12,17 @@ from ._tools import (
     collect_volumes,
     add_midpoints_edges,
     add_midpoints_faces,
-    add_midpoints_volumes
+    add_midpoints_volumes,
 )
 from ._geometry import (
     Line,
     Rectangle,
     Cube,
     RectangleArbitraryOrderQuad,
-    CubeArbitraryOrderHexahedron
+    CubeArbitraryOrderHexahedron,
 )
 from ._base import (
     line_line as _line_line,
     rectangle_quad as _rectangle_quad,
-    cube_hexa as _cube_hexa
+    cube_hexa as _cube_hexa,
 )

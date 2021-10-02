@@ -40,7 +40,7 @@ def partition(v, K, dof1, dof0, r=None):
 
     # extract values
     u = values(v)
-    
+
     # check if residuals vector is passed
     if r is None:
         r1 = None
@@ -50,20 +50,20 @@ def partition(v, K, dof1, dof0, r=None):
 
     # prescribed dofs of unknowns
     u0 = u.ravel()[dof0]
-    
+
     # partition (stiffness) matrix
     K11 = K[dof1, :][:, dof1]
     K10 = K[dof1, :][:, dof0]
-    
+
     return u, u0, K11, K10, dof1, dof0, r1
 
 
 def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
-    """Linear solution of equation system with optional 
+    """Linear solution of equation system with optional
     given values of unknowns at prescribed deegrees of freedom.
-    
+
         K_11 du_1 = -r1 - K10 (u0_ext - u0)
-    
+
     """
 
     # init active residuals
@@ -81,11 +81,11 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
 
     # solve linear system (active dofs)
     du1 = solver(K11, -r1 - dr0.reshape(*r1.shape))
-    
+
     # full solution
     du = np.empty(u.size)
     du[dof1] = du1
     du[dof0] = u0ext - u0
-    
+
     # reshape solution to shape of input
     return du.reshape(*u.shape)

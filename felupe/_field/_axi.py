@@ -40,17 +40,17 @@ class FieldAxisymmetric(Field):
     """Axisymmetric field with
     * component 1 ...  axial component
     * component 2 ... radial component
-    
+
     This is a modified Field class in which the radial coordinates
     are evaluated at the quadrature points. The `grad`-function is
     modified in such a way that it does not only contain the in-plane
-    2d-gradient but also the circumferential stretch 
+    2d-gradient but also the circumferential stretch
     as shown in Eq.(1).
-    
+
                   |  dudX(2d) :   0   |
       dudX(axi) = | ..................|                  (1)
                   |     0     : u_r/R |
-                  
+
     """
 
     def __init__(self, region, dim=2, values=0):
@@ -64,7 +64,9 @@ class FieldAxisymmetric(Field):
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
         g = np.einsum(
-            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
+            "ea...,aJpe->...Jpe",
+            self.values[self.region.mesh.cells],
+            self.region.dhdX,
         )
         if sym:
             return symmetric(g)

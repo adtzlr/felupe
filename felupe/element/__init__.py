@@ -5,15 +5,7 @@ from ._hexahedron import (
     ConstantHexahedron,
     Hexahedron,
     QuadraticHexahedron,
-    TriQuadraticHexahedron
+    TriQuadraticHexahedron,
 )
-from ._triangle import (
-    Triangle,
-    TriangleMINI,
-    QuadraticTriangle
-)
-from ._tetra import (
-    Tetra,
-    TetraMINI,
-    QuadraticTetra
-)
+from ._triangle import Triangle, TriangleMINI, QuadraticTriangle
+from ._tetra import Tetra, TetraMINI, QuadraticTetra

@@ -44,7 +44,7 @@ def extract(field, grad=True, sym=False, add_identity=True):
 
 def values(field):
     "Return values of a field or a tuple of fields."
-    
+
     if "mixed" in str(type(field)).lower():
         field = field.fields
 
@@ -61,6 +61,7 @@ def norm(array):
         return np.array([np.linalg.norm(arr) for arr in arrays])
     else:
         return np.linalg.norm(array)
+
 
 def interpolate(field):
     "Interpolate method of field A."

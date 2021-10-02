@@ -7,7 +7,6 @@ from . import element
 from . import tools
 from . import constitution
 from . import solve
-from . import utils
 
 from ._region import Region
 from ._form import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric

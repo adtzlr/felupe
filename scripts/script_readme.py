@@ -19,8 +19,8 @@ V = dV.sum()
 
 displacement = fe.Field(region, dim=3)
 
-u    = displacement.values
-ui   = displacement.interpolate()
+u = displacement.values
+ui = displacement.interpolate()
 dudX = displacement.grad()
 
 from felupe.math import identity
@@ -29,13 +29,15 @@ F = identity(dudX) + dudX
 
 from casadi import det, transpose, trace
 
+
 def W(F, mu, bulk):
     "Neo-Hooke"
 
     J = det(F)
     C = transpose(F) @ F
 
-    return mu/2 * (J**(-2/3)*trace(C) - 3) + bulk/2 * (J - 1)**2
+    return mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk / 2 * (J - 1) ** 2
+
 
 umat = fe.constitution.StrainEnergyDensity(W, mu=1.0, bulk=2.0)
 
@@ -87,6 +89,6 @@ for iteration in range(8):
     if norm < 1e-12:
         break
 
-F[:,:,0,0]
+F[:, :, 0, 0]
 
 fe.utils.save(region, displacement, filename="result.vtk")

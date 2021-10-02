@@ -29,6 +29,7 @@ import numpy as np
 
 from ._base import LineElement
 
+
 class Line(LineElement):
     def __init__(self):
         super().__init__()

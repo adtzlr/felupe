@@ -49,7 +49,7 @@ def test_meshes():
     assert m.cells.shape == (3 * 8 * 4, 8)
 
     fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
-    
+
     fe.mesh.CubeArbitraryOrderHexahedron()
     fe.mesh.RectangleArbitraryOrderQuad()
 

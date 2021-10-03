@@ -90,13 +90,6 @@ class RectangleArbitraryOrderQuad(Mesh):
         def search_edge(p, a, x):
             return np.where(p[:, a] == x)[0][1:-1]
 
-        def search_face(p, a, x, vertices, edges):
-            face = np.where(points[:, a] == x)[0]
-            mask = np.zeros_like(p[:, 0], dtype=bool)
-            mask[face] = 1
-            mask[np.hstack((vertices, edges))] = 0
-            return np.arange(len(p[:, 0]))[mask]
-
         v1 = search_vertice(points, xmin, ymin)
         v2 = search_vertice(points, xmax, ymin)
         v3 = search_vertice(points, xmax, ymax)

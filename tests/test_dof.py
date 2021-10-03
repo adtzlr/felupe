@@ -149,7 +149,7 @@ def pre_mpc_mixed(point, values):
     displacement = fe.Field(region, dim=3)
     pressure = fe.Field(region0)
     volumeratio = fe.Field(region0, values=1)
-    
+
     displacement.values[-1] = values
 
     fields = fe.FieldMixed((displacement, pressure, volumeratio))

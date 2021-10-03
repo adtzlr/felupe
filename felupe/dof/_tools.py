@@ -56,15 +56,11 @@ def get_dof0(field, bounds):
     return np.unique(np.append(fixmissing.ravel(), dof0_bounds))
 
 
-def get_dof1(field, bounds, dof0=None):
+def get_dof1(field, bounds, dof0):
     "Extract active (non-prescribed) degrees of freedom."
 
     # obtain all dofs from the field
     dof = field.indices.dof
-
-    # if function argument `dof0` is None call `get_dof0()`
-    if dof0 is None:
-        dof0 = get_dof0(field, bounds)
 
     # init a mask for the selection of active dofs
     mask = np.ones_like(dof.ravel(), dtype=bool)

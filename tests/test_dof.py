@@ -56,6 +56,15 @@ def pre3d():
     return u
 
 
+def test_boundary():
+
+    u = pre3d()
+    bounds = {"boundary-label": fe.Boundary(u)}
+    
+    v = fe.dof.apply(u, bounds, dof0=None)
+    assert np.allclose(u.values, v)
+
+
 def test_loadcase():
 
     for u in [pre1d(), pre2d(), pre3d()]:
@@ -185,6 +194,7 @@ def test_mpc_mixed():
 
 
 if __name__ == "__main__":
+    test_boundary()
     test_loadcase()
     test_mpc()
     test_mpc_mixed()

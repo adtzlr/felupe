@@ -57,34 +57,6 @@ def test_quad4():
     assert quad4.nbasis, quad4.ndim == dhdr.shape
 
 
-# def test_quad8():
-#     quad8 = fe.element.QuadraticQuad()
-
-#     r = [-1,-1]
-
-#     h = quad8.basis(r)
-#     dhdr = quad8.basisprime(r)
-
-#     assert h[0] == 1
-#     assert np.all(dhdr[0] == __VALUE__)
-
-#     assert quad8.nbasis, quad8.ndim == dhdr.shape
-
-
-# def test_quad9():
-#     quad9 = fe.element.BiQuadraticQuad()
-
-#     r = [-1,-1]
-
-#     h = quad9.basis(r)
-#     dhdr = quad9.basisprime(r)
-
-#     assert h[0] == 1
-#     assert np.all(dhdr[0] == __VALUE__)
-
-#     assert quad9.nbasis, quad9.ndim == dhdr.shape
-
-
 def test_hex0():
     hex0 = fe.element.ConstantHexahedron()
 
@@ -236,8 +208,6 @@ def test_aol():
 if __name__ == "__main__":
     test_quad0()
     test_quad4()
-    # test_quad8()
-    # test_quad9()
 
     test_hex0()
     test_hex8()

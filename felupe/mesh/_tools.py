@@ -58,7 +58,7 @@ def expand(mesh, n=11, z=1):
     cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
     if return_mesh:
-        return type(mesh)(points_new, cells_new, cell_type)
+        return Mesh(points_new, cells_new, cell_type)
     else:
         return points_new, cells_new
 
@@ -102,7 +102,7 @@ def rotate(mesh, angle_deg, axis, center=None):
     ).T + center
 
     if return_mesh:
-        return type(mesh)(points_new, cells, cell_type)
+        return Mesh(points_new, cells, cell_type)
     else:
         return points_new, cells
 
@@ -211,7 +211,6 @@ def convert(
 
         cells = np.arange(mesh.ncells).reshape(-1, 1)
         cell_type = mesh.cell_type
-
 
     elif order == 2:
 

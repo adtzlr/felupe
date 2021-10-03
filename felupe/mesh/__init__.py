@@ -6,7 +6,6 @@ from ._tools import (
     revolve,
     sweep,
     convert,
-    fix,
     collect_edges,
     collect_faces,
     collect_volumes,

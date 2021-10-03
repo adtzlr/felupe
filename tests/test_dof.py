@@ -130,13 +130,13 @@ def test_mpc():
     assert K.shape == (84, 84)
 
 
-def test_mpc_mixed():
+def pre_mpc_mixed(point):
 
     mesh = fe.mesh.Cube(n=3)
     element = fe.element.Hexahedron()
     quadrature = fe.quadrature.GaussLegendre(order=1, dim=3)
 
-    mesh.points = np.vstack((mesh.points, [2, 0, 0]))
+    mesh.points = np.vstack((mesh.points, point))
     mesh.update(mesh.cells)
 
     region = fe.Region(mesh, element, quadrature)
@@ -191,7 +191,12 @@ def test_mpc_mixed():
 
     K_RBE2.resize(*K.shape)
     K = K + K_RBE2
+    
 
+def test_mpc_mixed():
+    pre_mpc_mixed(point=[2, 0, 0])
+    pre_mpc_mixed(point=[-2, 0, 0])
+    
 
 if __name__ == "__main__":
     test_boundary()

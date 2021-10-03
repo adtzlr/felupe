@@ -62,12 +62,22 @@ def test_math():
     a = np.random.rand(3, 8, 200)
 
     fe.math.cross(a, a)
+    fe.math.dya(a, a, mode=1)
+    
+    with pytest.raises(ValueError):
+        fe.math.dya(a, a, mode=3)
 
     fe.math.sym(H)
 
     fe.math.dot(C, C)
     fe.math.dot(C, A)
     fe.math.dot(A, C)
+    
+    fe.math.transpose(F, mode=1)
+    fe.math.transpose(A, mode=2)
+    
+    with pytest.raises(ValueError):
+        fe.math.transpose(F, mode=3)
 
     with pytest.raises(TypeError):
         fe.math.dot(C, B)
@@ -80,12 +90,18 @@ def test_math():
     fe.math.ddot(A, C)
 
     fe.math.ddot(A, A)
+    
+    with pytest.raises(TypeError):
+        fe.math.ddot(A, B)
+        fe.math.ddot(B, B)
+        fe.math.ddot(C, B)
 
     detC = fe.math.det(C)
     fe.math.det(C[:2, :2])
     fe.math.det(C[:1, :1])
 
     fe.math.inv(C)
+    fe.math.inv(C[:2,:2])
     fe.math.inv(C, determinant=detC)
     fe.math.inv(C, full_output=True)
     fe.math.inv(C, sym=True)
@@ -99,6 +115,7 @@ def test_math():
 
     fe.math.tovoigt(C)
     fe.math.eigvals(C)
+    fe.math.eigvals(C, shear=True)
     fe.math.eigvalsh(C)
     fe.math.eigh(C)
     fe.math.eig(C)

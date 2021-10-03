@@ -29,48 +29,6 @@ import numpy as np
 from ._mesh import Mesh
 
 
-def line_line(a=0, b=1, n=2):
-    "Line generator."
-    points = np.linspace(a, b, n).reshape(-1, 1)
-    cells = np.repeat(np.arange(n), 2)[1:-1].reshape(-1, 2)
-
-    return points, cells
-
-
-def rectangle_quad(a=(0, 0), b=(1, 1), n=(2, 2)):
-    "Rectangle generator."
-    dim = 2
-    array_like = (tuple, list, np.ndarray)
-
-    # check if number "n" is scalar or no. of points per axis (array-like)
-    if not isinstance(n, array_like):
-        n = np.full(dim, n, dtype=int)
-
-    line = line_line(a[0], b[0], n[0])
-
-    points, cells = expand(line, n[-1], b[-1] - a[-1])
-    points[:, -1] += a[-1]
-
-    return points, cells
-
-
-def cube_hexa(a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
-    "Cube generator."
-    dim = 3
-    array_like = (tuple, list, np.ndarray)
-
-    # check if number "n" is scalar or no. of points per axis (array-like)
-    if not isinstance(n, array_like):
-        n = np.full(dim, n, dtype=int)
-
-    rectangle = rectangle_quad(a[:-1], b[:-1], n[:-1])
-
-    points, cells = expand(rectangle, n[-1], b[-1] - a[-1])
-    points[:, -1] += a[-1]
-
-    return points, cells
-
-
 def expand(mesh, n=11, z=1):
     "Expand 1d line to 2d quad or 2d quad to 3d hexahedron mesh."
 

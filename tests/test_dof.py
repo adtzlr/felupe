@@ -28,8 +28,15 @@ import pytest
 import numpy as np
 import felupe as fe
 
+def pre1d():
+    m = fe.mesh.Line()
+    e = fe.element.Line()
+    q = fe.quadrature.GaussLegendre(1, 1)
+    r = fe.Region(m, e, q)
+    u = fe.Field(r)
+    return u
 
-def pre():
+def pre2d():
     m = fe.mesh.Rectangle()
     e = fe.element.Quad()
     q = fe.quadrature.GaussLegendre(1, 2)
@@ -38,20 +45,30 @@ def pre():
     return u
 
 
+def pre3d():
+    m = fe.mesh.Cube()
+    e = fe.element.Hexahedron()
+    q = fe.quadrature.GaussLegendre(1, 3)
+    r = fe.Region(m, e, q)
+    u = fe.Field(r, dim=3)
+    return u
+
+
 def test_loadcase():
-    u = pre()
-    v = fe.FieldMixed((u, u))
-
-    ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
-    assert len(ux) == 4
-
-    ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True)
-    assert len(ux) == 4
-    assert "right" in ux[0]
-
-    ux = fe.dof.uniaxial(v, right=1.0, move=0.2, clamped=True)
-    assert len(ux) == 5
-    assert "right" in ux[0]
+    
+    for u in [pre1d(), pre2d(), pre3d()]:
+        v = fe.FieldMixed((u, u))
+    
+        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
+        assert len(ux) == 4
+    
+        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True)
+        assert len(ux) == 4
+        assert "right" in ux[0]
+    
+        ux = fe.dof.uniaxial(v, right=1.0, move=0.2, clamped=True)
+        assert len(ux) == 5
+        assert "right" in ux[0]
 
 
 if __name__ == "__main__":

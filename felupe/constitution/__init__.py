@@ -8,3 +8,5 @@ from ._kinematics import (
     AreaChange,
     VolumeChange,
 )
+
+from ._mixed import Mixed

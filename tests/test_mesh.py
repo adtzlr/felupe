@@ -48,6 +48,7 @@ def test_meshes():
         fe.mesh.convert(m, order=1)
 
     fe.mesh.revolve(m, n=11, phi=180, axis=0)
+    fe.mesh.revolve((m.points, m.cells), n=11, phi=180, axis=0)
 
     m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
@@ -56,6 +57,7 @@ def test_meshes():
     fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
 
     fe.mesh.rotate(m, angle_deg=10, axis=0, center=None)
+    fe.mesh.rotate((m.points, m.cells), angle_deg=10, axis=0, center=None)
     fe.mesh.rotate(m, angle_deg=10, axis=1, center=[0, 0, 0])
 
     fe.mesh.CubeArbitraryOrderHexahedron()
@@ -67,6 +69,7 @@ def test_meshes():
     assert m.cells.shape == (16, 4)
 
     fe.mesh.sweep(m)
+    fe.mesh.sweep((m.points, m.cells))
 
     m.save()
 

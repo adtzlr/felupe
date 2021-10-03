@@ -95,7 +95,7 @@ class AreaChange:
 
     def gradient(self, F):
         J = det(F)
-        dJdF = self.fun(F)
+        dJdF = self.function(F)
         return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
 
 
@@ -107,12 +107,12 @@ class VolumeChange:
         return det(F)
 
     def gradient(self, F):
-        J = self.fun(F)
+        J = self.function(F)
         return J * transpose(inv(F, J))
 
     def hessian(self, F):
-        J = self.fun(F)
-        dJdF = self.grad(F)
+        J = self.function(F)
+        dJdF = self.gradient(F)
         return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
 
 

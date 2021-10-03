@@ -122,6 +122,7 @@ def test_math():
     fe.math.eigvals(C)
     fe.math.eigvals(C[:2, :2])
     fe.math.eigvals(C, shear=True)
+    fe.math.eigvals(C[:2, :2], shear=True)
     fe.math.eigvalsh(C)
     fe.math.eigh(C)
     fe.math.eig(C)

@@ -42,7 +42,7 @@ dependencies = [
   "h5py",
   "meshio",
   "quadpy",
-  "sparse,
+  "sparse",
 ]
 
 [project.optional-dependencies]

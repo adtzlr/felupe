@@ -58,6 +58,9 @@ def test_triangle():
     q = fe.TriangleQuadrature(order=3)
     assert q.points.shape == (4, 2)
     assert q.weights.sum() == 1 / 2
+    
+    with pytest.raises(NotImplementedError):
+        fe.TriangleQuadrature(order=4)
 
 
 def test_tetra():
@@ -72,6 +75,9 @@ def test_tetra():
     q = fe.TetrahedronQuadrature(order=3)
     assert q.points.shape == (5, 3)
     assert q.weights.sum() == 1 / 6
+    
+    with pytest.raises(NotImplementedError):
+        fe.TetrahedronQuadrature(order=4)
 
 
 if __name__ == "__main__":

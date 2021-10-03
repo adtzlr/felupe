@@ -194,7 +194,7 @@ def sweep(mesh, decimals=None):
 def convert(
     mesh, order=0, calc_points=False, calc_midfaces=False, calc_midvolumes=False
 ):
-    """Convert mesh to a given order (currently only order=0 and order=2
+    """Convert mesh to a given order (only order=0 and order=2
     from order=1 are supported)."""
 
     if mesh.cell_type not in ["triangle", "tetra", "quad", "hexahedron"]:
@@ -212,11 +212,6 @@ def convert(
         cells = np.arange(mesh.ncells).reshape(-1, 1)
         cell_type = mesh.cell_type
 
-    elif order == 1:
-
-        points = mesh.points
-        cells = mesh.cells
-        cell_type = mesh.cell_type
 
     elif order == 2:
 
@@ -234,26 +229,6 @@ def convert(
         raise NotImplementedError("Unsupported order conversion.")
 
     return Mesh(points, cells, cell_type)
-
-
-def fix(points, cells, cell_type):
-    "Fixes cells array of tetrahedrals to ensure cell volume > 0."
-
-    if cell_type == "tetra":
-
-        # extract point 0 of all cells and reshape and repeat
-        p0 = points[cells][:, 0].reshape(len(cells), 1, 3)
-
-        # calculate vertice "i" as v[:, i]
-        v = points[cells] - np.repeat(p0, 4, axis=1)
-
-        # calculate volume by the triple product
-        volume = np.einsum("...i,...i->...", v[:, 3], np.cross(v[:, 1], v[:, 2]))
-
-        # permute point entries for cells with volume < 0
-        cells[volume < 0] = cells[volume < 0][:, [0, 2, 1, 3]]
-
-    return points, cells
 
 
 def collect_edges(points, cells, cell_type):

@@ -43,6 +43,9 @@ def test_meshes():
     fe.mesh.convert(m, order=0, calc_points=True)
     fe.mesh.convert(m, order=2)
     fe.mesh.convert(m, order=2, calc_midfaces=True)
+    
+    with pytest.raises(NotImplementedError):
+        fe.mesh.convert(m, order=1)
 
     m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)

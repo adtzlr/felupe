@@ -49,11 +49,13 @@ class LinearElastic:
         self.E = E
         self.nu = nu
         self.mu, self.gamma = self.lame(E, nu)
+        self.stress = self.gradient
+        self.elasticity = self.hessian
 
-    def stress(self, strain):
+    def gradient(self, strain):
         return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
 
-    def elasticity(self, strain, stress=None):
+    def hessian(self, strain, stress=None):
         I = identity(strain)
 
         elast = 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
@@ -121,7 +123,7 @@ class NeoHooke:
         self.mu = mu
         self.bulk = bulk
 
-    def P(self, F):
+    def gradient(self, F):
         """Variation of total potential w.r.t displacements
         (1st Piola Kirchhoff stress).
 
@@ -140,7 +142,7 @@ class NeoHooke:
 
         return Pdev + Pvol
 
-    def A(self, F):
+    def hessian(self, F):
         """Linearization w.r.t. displacements of variation of
         total potential energy w.r.t displacements.
 

@@ -39,7 +39,7 @@ def test_math_field():
     fe.math.values(u)
     fe.math.values((u, u))
 
-    fe.math.norms([u.values, u.values])
+    fe.math.norm([u.values, u.values])
     fe.math.norm(u.values)
     fe.math.interpolate(u)
     fe.math.grad(u)
@@ -50,9 +50,6 @@ def test_math_field():
     fe.math.extract(u, grad=False)
     fe.math.extract(u, sym=True)
     fe.math.extract(u, grad=True, sym=False, add_identity=False)
-
-    v = fe.Field(r, dim=1)
-    fe.math.laplace(v)
 
 
 def test_math():
@@ -98,8 +95,7 @@ def test_math():
     fe.math.dya(C, C)
     fe.math.cdya_ik(F, F)
     fe.math.cdya_il(F, F)
-    fe.math.cdya(F, F, parallel=False)
-    fe.math.cdya(F, F, parallel=True)
+    fe.math.cdya(F, F)
 
     fe.math.tovoigt(C)
     fe.math.eigvals(C)

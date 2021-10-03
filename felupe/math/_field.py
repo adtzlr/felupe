@@ -57,7 +57,7 @@ def values(field):
 
 def norm(array):
     "Calculate the norm of an array or the norms of a list of arrays."
-    if type(array, list):
+    if isinstance(array, list):
         return np.array([np.linalg.norm(arr) for arr in array])
     else:
         return np.linalg.norm(array)

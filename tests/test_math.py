@@ -82,9 +82,7 @@ def test_math():
     fe.math.ddot(C, A)
     fe.math.ddot(A, C)
 
-    fe.math.ddot44(A, A)
-    fe.math.ddot444(A, A, A, parallel=False)
-    fe.math.ddot444(A, A, A, parallel=True)
+    fe.math.ddot(A, A)
 
     detC = fe.math.det(C)
     fe.math.det(C[:2, :2])

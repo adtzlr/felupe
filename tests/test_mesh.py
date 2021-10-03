@@ -50,9 +50,15 @@ def test_meshes():
     fe.mesh.revolve(m, n=11, phi=180, axis=0)
     fe.mesh.revolve((m.points, m.cells), n=11, phi=180, axis=0)
 
+    fe.mesh.expand((m.points, m.cells))
+    fe.mesh.expand(m)
+
     m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
     assert m.cells.shape == (3 * 8 * 4, 8)
+
+    with pytest.raises(ValueError):
+        fe.mesh.expand((m.points, m.cells))
 
     fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
 
@@ -69,7 +75,7 @@ def test_meshes():
     assert m.cells.shape == (16, 4)
 
     fe.mesh.sweep(m)
-    fe.mesh.sweep((m.points, m.cells))
+    fe.mesh.sweep((m.points, m.cells), decimals=4)
 
     m.save()
 

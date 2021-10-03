@@ -35,9 +35,7 @@ def pre(sym, add_identity):
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    F = u.extract(grad=True, sym=sym, add_identity=add_identity)
-
-    return F
+    return u.extract(grad=True, sym=sym, add_identity=add_identity)
 
 
 def test_nh():

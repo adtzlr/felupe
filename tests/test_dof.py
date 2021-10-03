@@ -65,6 +65,10 @@ def test_loadcase():
         ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True)
         assert len(ux) == 4
         assert "right" in ux[0]
+        
+        ux = fe.dof.uniaxial(u, right=2.0, move=0.2, clamped=True)
+        assert len(ux) == 4
+        assert "right" in ux[0]
     
         ux = fe.dof.uniaxial(v, right=1.0, move=0.2, clamped=True)
         assert len(ux) == 5

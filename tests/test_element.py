@@ -198,6 +198,21 @@ def test_tet10():
     assert tet10.nbasis, tet10.ndim == dhdr.shape
 
 
+def test_tet_mini():
+    tetm = fe.element.TetraMINI()
+
+    r = [0, 0, 0]
+
+    h = tetm.basis(r)
+    dhdr = tetm.basisprime(r)
+
+    assert h[0] == 1
+    assert h[-1] == 0  # check bubble
+    assert np.all(dhdr[0] == -1)
+
+    assert tetm.nbasis, tetm.ndim == dhdr.shape
+
+
 def test_aol():
     aol32 = fe.element.ArbitraryOrderLagrange(order=3, ndim=2)
     aol23 = fe.element.ArbitraryOrderLagrange(order=2, ndim=3)
@@ -234,6 +249,7 @@ if __name__ == "__main__":
     test_tri6()
 
     test_tri_mini()
+    test_tet_mini()
 
     test_tet4()
     test_tet10()

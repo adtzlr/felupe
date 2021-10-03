@@ -69,6 +69,37 @@ def test_linear():
     assert np.allclose(stress, 0)
 
 
+def test_kinematics():
+    F = pre(sym=False, add_identity=True)
+
+    lc = fe.constitution.LineChange()
+    ac = fe.constitution.AreaChange()
+    vc = fe.constitution.VolumeChange()
+
+    xf = lc.function(F)
+    xg = lc.gradient(F)
+
+    yf = ac.function(F)
+    yg = ac.gradient(F)
+
+    zf = vc.function(F)
+    zg = vc.gradient(F)
+    zh = vc.hessian(F)
+
+    assert np.allclose(xf, F)
+
+    assert xf.shape == (3, 3, *F.shape[-2:])
+    assert xg.shape == (3, 3, 3, 3, *F.shape[-2:])
+
+    assert yf.shape == (3, 3, *F.shape[-2:])
+    assert yg.shape == (3, 3, 3, 3, *F.shape[-2:])
+
+    assert zf.shape == F.shape[-2:]
+    assert zg.shape == (3, 3, *F.shape[-2:])
+    assert zh.shape == (3, 3, 3, 3, *F.shape[-2:])
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
+    test_kinematics()

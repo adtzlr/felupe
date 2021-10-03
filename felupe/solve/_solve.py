@@ -29,7 +29,7 @@ import numpy as np
 
 from scipy.sparse.linalg import spsolve
 
-from .math import values
+from ..math import values
 
 
 def partition(v, K, dof1, dof0, r=None):

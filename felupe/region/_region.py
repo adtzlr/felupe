@@ -33,7 +33,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .math import det, inv
+from ..math import det, inv
 
 
 class Region:
@@ -85,7 +85,3 @@ class Region:
             # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
             # for every cell "c"
             self.dhdX = np.einsum("bIp,IJpc->bJpc", self.dhdr, self.drdX)
-
-    def volume(self, detF=1):
-        "Calculate cell volumes for cell 'c'."
-        return np.einsum("pc->c", detF * self.dV)

@@ -60,6 +60,12 @@ def test_meshes():
 
     fe.mesh.sweep(m)
 
+    m.save()
+
+    m.cell_type = None
+    with pytest.raises(TypeError):
+        m.save()
+
 
 if __name__ == "__main__":
     test_meshes()

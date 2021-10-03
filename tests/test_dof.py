@@ -60,7 +60,7 @@ def test_boundary():
 
     u = pre3d()
     bounds = {"boundary-label": fe.Boundary(u)}
-    
+
     v = fe.dof.apply(u, bounds, dof0=None)
     assert np.allclose(u.values, v)
 
@@ -191,12 +191,12 @@ def pre_mpc_mixed(point):
 
     K_RBE2.resize(*K.shape)
     K = K + K_RBE2
-    
+
 
 def test_mpc_mixed():
     pre_mpc_mixed(point=[2, 0, 0])
     pre_mpc_mixed(point=[-2, 0, 0])
-    
+
 
 if __name__ == "__main__":
     test_boundary()

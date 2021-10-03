@@ -236,7 +236,7 @@ def test_aol():
 
 if __name__ == "__main__":
     test_line2()
-    
+
     test_quad0()
     test_quad4()
 

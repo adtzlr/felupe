@@ -35,9 +35,12 @@ def test_math_field():
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
+    v = fe.FieldMixed((u, u))
 
     fe.math.values(u)
-    fe.math.values((u, u))
+    fe.math.values(v)
+
+    fe.math.defgrad(u)
 
     fe.math.norm([u.values, u.values])
     fe.math.norm(u.values)
@@ -61,9 +64,11 @@ def test_math():
 
     a = np.random.rand(3, 8, 200)
 
+    fe.math.identity(A=None, ndim=3, shape=(8, 20))
+
     fe.math.cross(a, a)
     fe.math.dya(a, a, mode=1)
-    
+
     with pytest.raises(ValueError):
         fe.math.dya(a, a, mode=3)
 
@@ -72,10 +77,10 @@ def test_math():
     fe.math.dot(C, C)
     fe.math.dot(C, A)
     fe.math.dot(A, C)
-    
+
     fe.math.transpose(F, mode=1)
     fe.math.transpose(A, mode=2)
-    
+
     with pytest.raises(ValueError):
         fe.math.transpose(F, mode=3)
 
@@ -90,7 +95,7 @@ def test_math():
     fe.math.ddot(A, C)
 
     fe.math.ddot(A, A)
-    
+
     with pytest.raises(TypeError):
         fe.math.ddot(A, B)
         fe.math.ddot(B, B)
@@ -101,7 +106,7 @@ def test_math():
     fe.math.det(C[:1, :1])
 
     fe.math.inv(C)
-    fe.math.inv(C[:2,:2])
+    fe.math.inv(C[:2, :2])
     fe.math.inv(C, determinant=detC)
     fe.math.inv(C, full_output=True)
     fe.math.inv(C, sym=True)
@@ -115,6 +120,7 @@ def test_math():
 
     fe.math.tovoigt(C)
     fe.math.eigvals(C)
+    fe.math.eigvals(C[:2, :2])
     fe.math.eigvals(C, shear=True)
     fe.math.eigvalsh(C)
     fe.math.eigh(C)

@@ -29,6 +29,20 @@ import numpy as np
 import felupe as fe
 
 
+def test_line2():
+    line2 = fe.element.Line()
+
+    r = [-1]
+
+    h = line2.basis(r)
+    dhdr = line2.basisprime(r)
+
+    assert h[0] == 1
+    assert np.all(dhdr[0] == -0.5)
+
+    assert line2.nbasis, line2.ndim == dhdr.shape
+
+
 def test_quad0():
     quad0 = fe.element.ConstantQuad()
 
@@ -206,6 +220,8 @@ def test_aol():
 
 
 if __name__ == "__main__":
+    test_line2()
+    
     test_quad0()
     test_quad4()
 

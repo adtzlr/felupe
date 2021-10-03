@@ -10,3 +10,7 @@ from ._loadcase import (
     symmetry,
     uniaxial,
 )
+from ._multipoint import (
+    MultiPointConstraint,
+    MultiPointContact,
+)

@@ -30,11 +30,11 @@ import felupe as fe
 
 
 def pre():
-    m = fe.mesh.Cube()
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
+    m = fe.mesh.Rectangle()
+    e = fe.element.Quad()
+    q = fe.quadrature.GaussLegendre(1, 2)
     r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=3)
+    u = fe.Field(r, dim=2)
     return u
 
 

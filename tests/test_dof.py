@@ -130,7 +130,7 @@ def test_mpc():
     assert K.shape == (84, 84)
 
 
-def pre_mpc_mixed(point):
+def pre_mpc_mixed(point, values):
 
     mesh = fe.mesh.Cube(n=3)
     element = fe.element.Hexahedron()
@@ -149,6 +149,8 @@ def pre_mpc_mixed(point):
     displacement = fe.Field(region, dim=3)
     pressure = fe.Field(region0)
     volumeratio = fe.Field(region0, values=1)
+    
+    displacement.values[-1] = values
 
     fields = fe.FieldMixed((displacement, pressure, volumeratio))
 
@@ -194,8 +196,8 @@ def pre_mpc_mixed(point):
 
 
 def test_mpc_mixed():
-    pre_mpc_mixed(point=[2, 0, 0])
-    pre_mpc_mixed(point=[-2, 0, 0])
+    pre_mpc_mixed(point=[2, 0, 0], values=[0, 0, 0])
+    pre_mpc_mixed(point=[2, 0, 0], values=[-5, 0, 0])
 
 
 if __name__ == "__main__":

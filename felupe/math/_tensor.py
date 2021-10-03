@@ -216,6 +216,8 @@ def ddot(A, B, n=2):
         return np.einsum("ij...,ijkl...->kl...", A, B)
     elif len(A.shape) == 4 + n and len(B.shape) == 2 + n:
         return np.einsum("ijkl...,kl...->ij...", A, B)
+    elif len(A.shape) == 4 + n and len(B.shape) == 4 + n:
+        return np.einsum("ijkl...,klmn...->ijmn...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")
 

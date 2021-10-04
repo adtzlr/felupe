@@ -33,10 +33,7 @@ from .. import solve as solvetools
 def solve(K, f, field, dof0, dof1, ext, unstack=None):
     "Solve linear equation system K dx = b"
 
-    if isinstance(field, tuple) or isinstance(field, list):
-        return _solve_mixed(K, f, field, dof0, dof1, ext, unstack)
-
-    elif "mixed" in str(type(field)):
+    if "mixed" in str(type(field)):
         return _solve_mixed(K, f, field, dof0, dof1, ext, unstack)
 
     else:

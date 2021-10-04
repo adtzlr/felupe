@@ -33,11 +33,7 @@ from ..math import norm
 def check(dfields, fields, f, dof1, dof0, tol_f=1e-3, tol_x=1e-3, verbose=1):
     "Check if solution dfields is valid."
 
-    if (
-        isinstance(fields, tuple)
-        or isinstance(fields, list)
-        or "mixed" in str(type(fields))
-    ):
+    if "mixed" in str(type(fields)):
         return _check_mixed(dfields, fields, f, dof1, dof0, tol_f, tol_x, verbose)
 
     else:

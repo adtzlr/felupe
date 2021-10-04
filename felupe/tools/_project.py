@@ -29,6 +29,8 @@ import numpy as np
 
 from scipy.sparse import csr_matrix as sparsematrix
 
+from .._field import Field
+
 
 def topoints(values, region, sym=True, mode="tensor"):
 

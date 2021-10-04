@@ -11,9 +11,9 @@ Start setting up a problem in FElupe by the creation of a numeric **Region** wit
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.png)
 
 ```python
-mesh = fe.mesh.Cube(n=9)
-element = fe.element.Hexahedron()
-quadrature = fe.quadrature.GaussLegendre(order=1, dim=3)
+mesh = fe.Cube(n=9)
+element = fe.Hexahedron()
+quadrature = fe.GaussLegendre(order=1, dim=3)
 ```
 
 ## Region
@@ -42,18 +42,17 @@ dudX = displacement.grad()
 The deformation gradient is obtained by a sum of the identity and the displacement gradient.
 
 ```python
-from felupe.math import identity
-
-F = identity(dudX) + dudX
+F = displacement.extract(grad=True, sym=False, add_identity=True)
 ```
 
 ## Constitution
-The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a constitutive library which contains a definition for the Neo-Hookean material model and the associated fourth-order elasticity tensor. Alternatively, an isotropic material formulation is defined by a strain energy density function - both variation (stress) and linearization (elasticity) are carried out by automatic differentiation. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model.
+The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a very basic constitutive library (Neo-Hooke, linear elasticity and a Hu-Washizu (u,p,J) three field variation). Alternatively, an isotropic material formulation is defined by a strain energy density function - both variation (stress) and linearization (elasticity) are carried out by automatic differentiation using [matadi](https://github.com/adtzlr/matadi). The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model.
 
 $$\psi = \frac{\mu}{2} \left( J^{-2/3} \text{tr}\boldsymbol{C} - 3 \right) + \frac{K}{2} \left( J - 1 \right)^2$$
 
 ```python
-from casadi import det, transpose, trace
+import matadi
+from matadi.math import det, transpose, trace
 
 def W(F, mu, bulk):
     "Neo-Hooke"
@@ -63,10 +62,10 @@ def W(F, mu, bulk):
 
     return mu/2 * (J**(-2/3)*trace(C) - 3) + bulk/2 * (J - 1)**2
 
-umat = fe.constitution.StrainEnergyDensity(W, mu=1.0, bulk=2.0)
+umat = matadi.MaterialHyperelastic(W, mu=1.0, bulk=2.0)
 
-P = umat.P
-A = umat.A
+P = umat.gradient
+A = umat.hessian
 ```
 
 ## Boundary Conditions
@@ -88,8 +87,8 @@ boundaries["move"]  = fe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
 The separation of active and inactive degrees of freedom is performed by a so-called partition. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
 
 ```python
-dof0, dof1 = fe.doftools.partition(displacement, boundaries)
-u0ext = fe.doftools.apply(displacement, boundaries, dof0)
+dof0, dof1 = fe.dof.partition(displacement, boundaries)
+u0ext = fe.dof.apply(displacement, boundaries, dof0)
 ```
 
 ## Integral forms of equilibrium equations
@@ -98,8 +97,8 @@ The integral (or weak) forms of equilibrium equations are defined by the `Integr
 $\int_V P_i^{\ J} : \frac{\partial \delta u^i}{\partial X^J} \ dV \qquad$ and $\qquad \int_V \frac{\partial \delta u^i}{\partial X^J} : \mathbb{A}_{i\ k\ }^{\ J\ L} : \frac{\partial u^k}{\partial X^L} \ dV$
 
 ```python
-linearform   = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
-bilinearform = fe.IntegralForm(A(F), displacement, dV, u=displacement, grad_v=True, grad_u=True)
+linearform   = fe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
+bilinearform = fe.IntegralForm(A([F])[0], displacement, dV, u=displacement, grad_v=True, grad_u=True)
 ```
 
 Assembly of both forms lead to the (point-based) internal forces and the (sparse) stiffness matrix.
@@ -134,12 +133,11 @@ A very simple newton-rhapson code looks like this:
 
 ```python
 for iteration in range(8):
-    dudX = displacement.grad()
-    F = identity(dudX) + dudX
+    F = displacement.extract(grad=True, sym=False, add_identity=True)
 
-    linearform = fe.IntegralForm(P(F), displacement, dV, grad_v=True)
+    linearform = fe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
     bilinearform = fe.IntegralForm(
-        A(F), displacement, dV, displacement, grad_v=True, grad_u=True
+        A([F])[0], displacement, dV, displacement, grad_v=True, grad_u=True
     )
 
     r = linearform.assemble().toarray()[:, 0]
@@ -157,12 +155,12 @@ for iteration in range(8):
 ```
 
 ```shell
-0 8.174171563674951
-1 0.29407692748950903
-2 0.02082985120923449
-3 0.00010287527746122543
-4 6.014241696552864e-09
-5 5.345117354172557e-16
+0 8.174180680860706
+1 0.2940958778404007
+2 0.02083230945148839
+3 0.0001028992534421267
+4 6.017153213511068e-09
+5 5.675484825228616e-16
 ```
 
 All 3x3 components of the deformation gradient of integration point 1 of cell 1 are obtained with
@@ -172,16 +170,16 @@ F[:,:,0,0]
 ```
 
 ```shell
-array([[ 1.21739987e+00, -2.08931457e-02, -2.08944754e-02],
-       [ 2.45510875e-01,  8.26331927e-01,  4.79381040e-04],
-       [ 2.45526598e-01,  4.79183377e-04,  8.26337960e-01]])
+array([[ 1.49186831e+00, -1.17603278e-02, -1.17603278e-02],
+       [ 3.09611695e-01,  9.73138551e-01,  8.43648336e-04],
+       [ 3.09611695e-01,  8.43648336e-04,  9.73138551e-01]])
 ```
 
 ## Export of results
-Results can be exported as VTK or XDMF files using meshio.
+Results are exported as VTK or XDMF files using meshio.
 
 ```python
-fe.utils.save(region, displacement, filename="result.vtk")
+fe.tools.save(region, displacement, filename="result.vtk")
 ```
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/deformed_mesh.png)

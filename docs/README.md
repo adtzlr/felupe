@@ -6,17 +6,28 @@
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/felupe_logo.png)
 
-FElupe is an open-source finite element module focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy and Numba. No complicated installation, just pure Python. Another key feature is the easy and straightforward definition of mixed field formulations for nearly incompressible material behavior. For isotropic hyperelastic materials the definition of a strain energy density function is enough - gradient (stress) and hessian (elasticity tensor) are evaluated with automatic differentiation. Several useful utilities are available, i.e. an incremental approach for the application of boundary conditions and subsequent solution of the nonlinear equilibrium equations or the calculation of forces and moments on boundaries. Finally, results are ready to be exported to VTK or XDMF files using meshio.
+FElupe is an open-source finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy and (optional) Numba. No complicated installation, just pure Python. Another key feature is the easy and straightforward definition of mixed field formulations for the treatment of nearly incompressible material behavior. In combination with [matadi](https://github.com/adtzlr/matadi) isotropic hyperelastic material formulations are defined in terms of their strain energy density function - gradient (stress) and hessian (elasticity tensor) are evaluated with automatic differentiation. Several useful utilities are available, i.e. the calculation of reaction forces and moments on given boundaries. Finally, results are ready to be exported to VTK or XDMF files using [meshio](https://github.com/nschloe/meshio).
 
 ## Installation
-Install Python, fire up a terminal and run `pip install felupe`; import FElupe as follows in your script.
+Install Python, fire up a terminal and run `pip install felupe`. To enable parallel assembly also install [Numba](http://numba.pydata.org/) by `pip install numba`. For constitutive material definitions using Automatic Differentation please also install [matadi](https://github.com/adtzlr/matadi).
+
+```shell
+pip install felupe
+```
+
+*optional:*
+```shell
+pip install numba matadi
+```
+
+Now import FElupe as follows in your Python script:
 
 ```python
 import felupe as fe
 ```
 
 ## Get Started
-Explore the power of FElupe with a [simple hyperelastic example](quickstart.md). Other examples are located in the [examples](examples.md) section and in the [scripts](https://github.com/adtzlr/felupe/tree/main/scripts) folder.
+Explore the power of FElupe with a [simple hyperelastic example](quickstart.md). Other examples are located in the [examples](examples.md) section.
 
 ## License
 FElupe - finite element analysis (C) 2021 Andreas Dutzler, Graz (Austria).

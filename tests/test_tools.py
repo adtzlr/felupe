@@ -66,6 +66,7 @@ def test_solve_check():
     assert dx.shape == u.values.ravel().shape
 
     fe.tools.check(dx, u, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, u, b, dof1, dof0, verbose=1)
 
     fe.tools.save(r, u)
     fe.tools.save(r, u, r=b)
@@ -111,7 +112,8 @@ def test_solve_mixed_check():
     assert dx[1].shape == fields[1].values.ravel().shape
     assert dx[2].shape == fields[2].values.ravel().shape
 
-    fe.tools.check(dx, fields, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
     fe.tools.save(r, f, unstack=unstack)
     fe.tools.save(r, f, r=b, unstack=unstack)

@@ -20,7 +20,7 @@ authors = [
 ]
 
 classifiers = [
-  "Development Status :: 2 - Beta",
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",

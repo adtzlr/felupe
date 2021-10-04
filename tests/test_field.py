@@ -25,19 +25,18 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import pytest
 import felupe as fe
 import numpy as np
 
 
-def pre():
+def pre(values=0):
 
     m = fe.Cube(n=3)
     e = fe.Hexahedron()
     q = fe.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
-
-    u = fe.Field(r, dim=3)
-
+    u = fe.Field(r, dim=3, values=values)
     return r, u
 
 
@@ -98,11 +97,19 @@ def test_axi():
 
     r, f, u, p, J = pre_axi_mixed()
 
+    u.extract()
+    u.extract(grad=False)
+    u.extract(grad=True, sym=True)
+    u.extract(grad=True, add_identity=False)
+
 
 def test_3d():
 
     r, u = pre()
     u += u.values
+
+    with pytest.raises(ValueError):
+        r, u = pre(values=np.ones(2))
 
 
 def test_3d_mixed():
@@ -110,8 +117,15 @@ def test_3d_mixed():
     r, f, u, p, J = pre_mixed()
 
     f.extract()
+    f.extract(grad=False)
     f.extract(grad=(False,))
-    f.extract(add_identity=False)
+    f.extract(grad=True, sym=True)
+    f.extract(grad=True, add_identity=False)
+
+    u.extract()
+    u.extract(grad=False)
+    u.extract(grad=True, sym=True)
+    u.extract(grad=True, add_identity=False)
 
     J.fill(1.0)
 

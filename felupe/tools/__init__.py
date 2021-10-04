@@ -6,6 +6,5 @@ from ._post import (
     curve,
 )
 from ._newton import newtonrhapson
-from ._field import update
 from ._project import topoints
 from ._save import save

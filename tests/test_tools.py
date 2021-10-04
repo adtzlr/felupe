@@ -47,7 +47,7 @@ def test_solve_check():
 
     r, (u, p, J) = pre()
 
-    nh = fe.constitution.NeoHooke(1, 3)
+    W = fe.constitution.NeoHooke(1, 3)
 
     F = u.extract()
 
@@ -56,8 +56,8 @@ def test_solve_check():
 
     u0ext = fe.dof.apply(u, b, dof0)
 
-    L = fe.IntegralForm(nh.gradient(F), u, r.dV, grad_v=True)
-    a = fe.IntegralForm(nh.hessian(F), u, r.dV, u, True, True)
+    L = fe.IntegralForm(W.gradient(F), u, r.dV, grad_v=True)
+    a = fe.IntegralForm(W.hessian(F), u, r.dV, u, True, True)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
@@ -66,6 +66,12 @@ def test_solve_check():
     assert dx.shape == u.values.ravel().shape
 
     fe.tools.check(dx, u, b, dof1, dof0, verbose=0)
+
+    fe.tools.save(r, u)
+    fe.tools.save(r, u, r=b)
+    fe.tools.save(
+        r, u, r=b, F=F, gradient=W.gradient(F),
+    )
 
 
 def test_solve_mixed_check():
@@ -101,8 +107,11 @@ def test_solve_mixed_check():
 
     fe.tools.check(dx, fields, b, dof1, dof0, verbose=0)
 
-    fe.tools.save(r, u)
     fe.tools.save(r, f, unstack=unstack)
+    fe.tools.save(r, f, r=b, unstack=unstack)
+    fe.tools.save(
+        r, f, r=b, unstack=unstack, F=F, gradient=W_mixed.gradient(F, p, J),
+    )
 
 
 def test_newton():

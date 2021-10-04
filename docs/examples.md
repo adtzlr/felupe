@@ -1,5 +1,3 @@
-# Examples
-
 ## Example 1 - (u,p,J) - Mixed-field formulation for nearly-incompressible hyperelasticity
 FElupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient. We take the [Getting Started](quickstart.md) example and modify it accordingly. We take the built-in Neo-Hookean material model and use it for FElupe's `Mixed` constitutive material class as described [here](guide.md).
 

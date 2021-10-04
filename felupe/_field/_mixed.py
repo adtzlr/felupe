@@ -31,6 +31,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from copy import deepcopy
+
 import numpy as np
 
 
@@ -50,7 +52,59 @@ class FieldMixed:
             f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
         )
 
-    def __getitem__(self, id):
+    def __add__(self, newvalues):
+        fields = deepcopy(self)
+
+        for field, dfield in zip(fields, newvalues):
+            field += dfield
+
+        return fields
+
+    def __sub__(self, newvalues):
+        fields = deepcopy(self)
+
+        for field, dfield in zip(fields, newvalues):
+            field -= dfield
+
+        return fields
+
+    def __mul__(self, newvalues):
+        fields = deepcopy(self)
+
+        for field, dfield in zip(fields, newvalues):
+            field *= dfield
+
+        return fields
+
+    def __truediv__(self, newvalues):
+        fields = deepcopy(self)
+
+        for field, dfield in zip(fields, newvalues):
+            field /= dfield
+
+        return fields
+
+    def __iadd__(self, newvalues):
+        for field, dfield in zip(self.fields, newvalues):
+            field += dfield
+        return self
+
+    def __isub__(self, newvalues):
+        for field, dfield in zip(self.fields, newvalues):
+            field -= dfield
+        return self
+
+    def __imul__(self, newvalues):
+        for field, dfield in zip(self.fields, newvalues):
+            field *= dfield
+        return self
+
+    def __itruediv__(self, newvalues):
+        for field, dfield in zip(self.fields, newvalues):
+            field /= dfield
+        return self
+
+    def __getitem__(self, idx):
         "Slice-based access to field."
 
-        return self.fields[id]
+        return self.fields[idx]

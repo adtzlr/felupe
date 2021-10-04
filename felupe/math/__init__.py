@@ -1,4 +1,4 @@
-from .tensor import (
+from ._tensor import (
     identity,
     det,
     inv,
@@ -18,20 +18,16 @@ from .tensor import (
     cross,
     dot,
     ddot,
-    ddot44,
-    ddot444,
     tovoigt,
 )
 
-from .field import (
+from ._field import (
     defgrad,
     strain,
     extract,
     values,
     norm,
-    norms,
     interpolate,
     grad,
     sym,
-    laplace,
 )

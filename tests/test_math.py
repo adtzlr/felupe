@@ -35,11 +35,14 @@ def test_math_field():
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
+    v = fe.FieldMixed((u, u))
 
     fe.math.values(u)
-    fe.math.values((u, u))
+    fe.math.values(v)
 
-    fe.math.norms([u.values, u.values])
+    fe.math.defgrad(u)
+
+    fe.math.norm([u.values, u.values])
     fe.math.norm(u.values)
     fe.math.interpolate(u)
     fe.math.grad(u)
@@ -51,9 +54,6 @@ def test_math_field():
     fe.math.extract(u, sym=True)
     fe.math.extract(u, grad=True, sym=False, add_identity=False)
 
-    v = fe.Field(r, dim=1)
-    fe.math.laplace(v)
-
 
 def test_math():
     H = (np.random.rand(3, 3, 8, 200) - 0.5) / 10
@@ -64,13 +64,25 @@ def test_math():
 
     a = np.random.rand(3, 8, 200)
 
+    fe.math.identity(A=None, ndim=3, shape=(8, 20))
+
     fe.math.cross(a, a)
+    fe.math.dya(a, a, mode=1)
+
+    with pytest.raises(ValueError):
+        fe.math.dya(a, a, mode=3)
 
     fe.math.sym(H)
 
     fe.math.dot(C, C)
     fe.math.dot(C, A)
     fe.math.dot(A, C)
+
+    fe.math.transpose(F, mode=1)
+    fe.math.transpose(A, mode=2)
+
+    with pytest.raises(ValueError):
+        fe.math.transpose(F, mode=3)
 
     with pytest.raises(TypeError):
         fe.math.dot(C, B)
@@ -82,15 +94,19 @@ def test_math():
     fe.math.ddot(C, A)
     fe.math.ddot(A, C)
 
-    fe.math.ddot44(A, A)
-    fe.math.ddot444(A, A, A, parallel=False)
-    fe.math.ddot444(A, A, A, parallel=True)
+    fe.math.ddot(A, A)
+
+    with pytest.raises(TypeError):
+        fe.math.ddot(A, B)
+        fe.math.ddot(B, B)
+        fe.math.ddot(C, B)
 
     detC = fe.math.det(C)
     fe.math.det(C[:2, :2])
     fe.math.det(C[:1, :1])
 
     fe.math.inv(C)
+    fe.math.inv(C[:2, :2])
     fe.math.inv(C, determinant=detC)
     fe.math.inv(C, full_output=True)
     fe.math.inv(C, sym=True)
@@ -100,11 +116,13 @@ def test_math():
     fe.math.dya(C, C)
     fe.math.cdya_ik(F, F)
     fe.math.cdya_il(F, F)
-    fe.math.cdya(F, F, parallel=False)
-    fe.math.cdya(F, F, parallel=True)
+    fe.math.cdya(F, F)
 
     fe.math.tovoigt(C)
     fe.math.eigvals(C)
+    fe.math.eigvals(C[:2, :2])
+    fe.math.eigvals(C, shear=True)
+    fe.math.eigvals(C[:2, :2], shear=True)
     fe.math.eigvalsh(C)
     fe.math.eigh(C)
     fe.math.eig(C)

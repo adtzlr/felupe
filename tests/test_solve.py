@@ -31,22 +31,22 @@ import felupe as fe
 
 def test_solve():
 
-    m = fe.mesh.Cube(n=3)
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
+    m = fe.Cube(n=3)
+    e = fe.Hexahedron()
+    q = fe.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
 
-    nh = fe.constitution.models.NeoHooke(1, 3)
+    W = fe.constitution.NeoHooke(1, 3)
 
-    F = fe.math.defgrad(u)
-    P = nh.P(F)
-    A = nh.A(F)
+    F = u.extract()
+    P = W.gradient(F)
+    A = W.hessian(F)
 
-    b = fe.doftools.symmetry(u)
-    dof0, dof1 = fe.doftools.partition(u, b)
+    b = fe.dof.symmetry(u)
+    dof0, dof1 = fe.dof.partition(u, b)
 
-    u0ext = fe.doftools.apply(u, b, dof0)
+    u0ext = fe.dof.apply(u, b, dof0)
 
     L = fe.IntegralForm(P, u, r.dV, grad_v=True)
     a = fe.IntegralForm(A, u, r.dV, u, True, True)

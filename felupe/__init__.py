@@ -2,22 +2,56 @@ from .__about__ import __version__
 from . import math
 from . import mesh
 from . import quadrature
-from . import doftools
+from . import dof
 from . import element
-
-# from . import field
 from . import tools
-
-# from . import region
 from . import constitution
 from . import solve
-from . import utils
+from . import region
 
 from .region import Region
-from .form import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
-from .field import Field, FieldAxisymmetric, FieldMixed
-from .doftools import Boundary
-
+from ._form import (
+    IntegralForm,
+    IntegralFormMixed,
+    IntegralFormAxisymmetric,
+)
+from ._field import (
+    Field,
+    FieldAxisymmetric,
+    FieldMixed,
+)
+from .dof import Boundary, MultiPointConstraint, MultiPointContact
+from .element import (
+    Line,
+    #
+    Quad,
+    ConstantQuad,
+    #
+    ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement,
+    #
+    Hexahedron,
+    ConstantHexahedron,
+    QuadraticHexahedron,
+    TriQuadraticHexahedron,
+    #
+    Triangle,
+    TriangleMINI,
+    QuadraticTriangle,
+    #
+    Tetra,
+    TetraMINI,
+    QuadraticTetra,
+)
+from .quadrature import (
+    GaussLegendre,
+    Triangle as TriangleQuadrature,
+    Tetrahedron as TetrahedronQuadrature,
+)
+from .mesh import (
+    Mesh,
+    Rectangle,
+    Cube,
+)
 
 __all__ = [
     "__version__",

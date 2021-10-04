@@ -25,6 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import pytest
+from copy import deepcopy
 import numpy as np
 import felupe as fe
 
@@ -35,7 +36,7 @@ def test_meshes():
     assert m.points.shape == (5, 1)
     assert m.cells.shape == (4, 2)
 
-    m = fe.mesh.Rectangle(a=(-1.2, -2), b=(2, 3.1), n=(4, 9))
+    m = fe.Rectangle(a=(-1.2, -2), b=(2, 3.1), n=(4, 9))
     assert m.points.shape == (4 * 9, 2)
     assert m.cells.shape == (3 * 8, 4)
 
@@ -44,28 +45,59 @@ def test_meshes():
     fe.mesh.convert(m, order=2)
     fe.mesh.convert(m, order=2, calc_midfaces=True)
 
-    m = fe.mesh.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
+    mm = deepcopy(m)
+    mm.cell_type = "fancy"
+
+    with pytest.raises(NotImplementedError):
+        fe.mesh.convert(mm, order=2)
+
+    with pytest.raises(NotImplementedError):
+        fe.mesh.convert(m, order=1)
+
+    fe.mesh.revolve(m, n=11, phi=180, axis=0)
+    fe.mesh.revolve((m.points, m.cells), n=11, phi=180, axis=0)
+    fe.mesh.revolve((m.points, m.cells), n=11, phi=360, axis=0)
+
+    with pytest.raises(ValueError):
+        fe.mesh.revolve((m.points, m.cells), n=11, phi=361, axis=0)
+
+    fe.mesh.expand((m.points, m.cells))
+    fe.mesh.expand(m)
+
+    m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
     assert m.cells.shape == (3 * 8 * 4, 8)
 
     fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
 
-    m = fe.mesh.Cylinder(n=(3, 9, 3), phi=180)
-    assert m.points.shape == (3 * 9 * 3, 3)
-    assert m.cells.shape == (2 * 8 * 2, 8)
+    with pytest.raises(ValueError):
+        fe.mesh.expand((m.points, m.cells))
 
-    fe.mesh.CylinderAdvanced()
-    fe.mesh.CubeAdvanced()
-    fe.mesh.CubeAdvanced(L0=0.1)
-    fe.mesh.CubeArbitraryOderHexahedron()
-    fe.mesh.RectangleArbitraryOderQuad()
+    with pytest.raises(ValueError):
+        fe.mesh.revolve((m.points, m.cells))
 
-    m = fe.mesh.Rectangle(n=5)
+    fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
+
+    fe.mesh.rotate(m, angle_deg=10, axis=0, center=None)
+    fe.mesh.rotate((m.points, m.cells), angle_deg=10, axis=0, center=None)
+    fe.mesh.rotate(m, angle_deg=10, axis=1, center=[0, 0, 0])
+
+    fe.mesh.CubeArbitraryOrderHexahedron()
+    fe.mesh.RectangleArbitraryOrderQuad()
+
+    m = fe.Rectangle(n=5)
     m.points = np.vstack((m.points, [10, 10]))
     assert m.points.shape == (26, 2)
     assert m.cells.shape == (16, 4)
 
     fe.mesh.sweep(m)
+    fe.mesh.sweep((m.points, m.cells), decimals=4)
+
+    m.save()
+
+    m.cell_type = None
+    with pytest.raises(TypeError):
+        m.save()
 
 
 if __name__ == "__main__":

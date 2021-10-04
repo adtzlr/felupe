@@ -29,6 +29,20 @@ import numpy as np
 import felupe as fe
 
 
+def test_line2():
+    line2 = fe.element.Line()
+
+    r = [-1]
+
+    h = line2.basis(r)
+    dhdr = line2.basisprime(r)
+
+    assert h[0] == 1
+    assert np.all(dhdr[0] == -0.5)
+
+    assert line2.nbasis, line2.ndim == dhdr.shape
+
+
 def test_quad0():
     quad0 = fe.element.ConstantQuad()
 
@@ -55,34 +69,6 @@ def test_quad4():
     assert np.all(dhdr[0] == -0.5)
 
     assert quad4.nbasis, quad4.ndim == dhdr.shape
-
-
-# def test_quad8():
-#     quad8 = fe.element.QuadraticQuad()
-
-#     r = [-1,-1]
-
-#     h = quad8.basis(r)
-#     dhdr = quad8.basisprime(r)
-
-#     assert h[0] == 1
-#     assert np.all(dhdr[0] == __VALUE__)
-
-#     assert quad8.nbasis, quad8.ndim == dhdr.shape
-
-
-# def test_quad9():
-#     quad9 = fe.element.BiQuadraticQuad()
-
-#     r = [-1,-1]
-
-#     h = quad9.basis(r)
-#     dhdr = quad9.basisprime(r)
-
-#     assert h[0] == 1
-#     assert np.all(dhdr[0] == __VALUE__)
-
-#     assert quad9.nbasis, quad9.ndim == dhdr.shape
 
 
 def test_hex0():
@@ -212,6 +198,21 @@ def test_tet10():
     assert tet10.nbasis, tet10.ndim == dhdr.shape
 
 
+def test_tet_mini():
+    tetm = fe.element.TetraMINI()
+
+    r = [0, 0, 0]
+
+    h = tetm.basis(r)
+    dhdr = tetm.basisprime(r)
+
+    assert h[0] == 1
+    assert h[-1] == 0  # check bubble
+    assert np.all(dhdr[0] == -1)
+
+    assert tetm.nbasis, tetm.ndim == dhdr.shape
+
+
 def test_aol():
     aol32 = fe.element.ArbitraryOrderLagrange(order=3, ndim=2)
     aol23 = fe.element.ArbitraryOrderLagrange(order=2, ndim=3)
@@ -234,10 +235,10 @@ def test_aol():
 
 
 if __name__ == "__main__":
+    test_line2()
+
     test_quad0()
     test_quad4()
-    # test_quad8()
-    # test_quad9()
 
     test_hex0()
     test_hex8()
@@ -248,6 +249,7 @@ if __name__ == "__main__":
     test_tri6()
 
     test_tri_mini()
+    test_tet_mini()
 
     test_tet4()
     test_tet10()

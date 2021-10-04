@@ -4,7 +4,7 @@
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/felupe_logo.png)
 
-FElupe is an open-source finite element package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood.
+FElupe is an open-source finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood.
 
 ## Installation
 Install Python, fire up a terminal and run `pip install felupe`; import FElupe as follows in your script.

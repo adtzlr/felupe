@@ -31,9 +31,9 @@ import felupe as fe
 
 def pre():
 
-    m = fe.mesh.Cube(n=3)
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
+    m = fe.Cube(n=3)
+    e = fe.Hexahedron()
+    q = fe.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
 
     u = fe.Field(r, dim=3)
@@ -43,47 +43,21 @@ def pre():
     return r, (u, p, J)
 
 
-def test_extract():
-
-    r, fields = pre()
-    F, p, J = fe.FieldMixed(fields).extract()
-
-    assert F.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
-    assert p.shape == (1, r.quadrature.npoints, r.mesh.ncells)
-    assert J.shape == (1, r.quadrature.npoints, r.mesh.ncells)
-
-
-def test_defgrad():
-
-    r, fields = pre()
-    F = fe.math.defgrad(fields[0])
-
-    assert F.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
-
-
-def test_strain():
-
-    r, fields = pre()
-    eps = fe.math.strain(fields[0])
-
-    assert eps.shape == (3, 3, r.quadrature.npoints, r.mesh.ncells)
-
-
 def test_solve_check():
 
     r, (u, p, J) = pre()
 
-    nh = fe.constitution.NeoHooke(1, 3)
+    W = fe.constitution.NeoHooke(1, 3)
 
-    F = fe.math.defgrad(u)
+    F = u.extract()
 
-    b = fe.doftools.symmetry(u)
-    dof0, dof1 = fe.doftools.partition(u, b)
+    bounds = fe.dof.symmetry(u)
+    dof0, dof1 = fe.dof.partition(u, bounds)
 
-    u0ext = fe.doftools.apply(u, b, dof0)
+    u0ext = fe.dof.apply(u, bounds, dof0)
 
-    L = fe.IntegralForm(nh.P(F), u, r.dV, grad_v=True)
-    a = fe.IntegralForm(nh.A(F), u, r.dV, u, True, True)
+    L = fe.IntegralForm(W.gradient(F), u, r.dV, grad_v=True)
+    a = fe.IntegralForm(W.hessian(F), u, r.dV, u, True, True)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
@@ -92,6 +66,19 @@ def test_solve_check():
     assert dx.shape == u.values.ravel().shape
 
     fe.tools.check(dx, u, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, u, b, dof1, dof0, verbose=1)
+
+    fe.tools.save(r, u)
+    fe.tools.save(r, u, r=b)
+    fe.tools.save(
+        r, u, r=b, F=F, gradient=W.gradient(F),
+    )
+
+    force = fe.tools.force(u, b, bounds["symx"])
+    moment = fe.tools.moment(u, b, bounds["symx"])
+
+    for a in [2, 3, 4, 5]:
+        curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
 
 def test_solve_mixed_check():
@@ -103,35 +90,42 @@ def test_solve_mixed_check():
 
     F, p, J = f.extract()
 
-    NH = fe.constitution.NeoHooke(1, 3)
-    nh = fe.constitution.GeneralizedThreeField(NH.P, NH.A)
+    W = fe.constitution.NeoHooke(1, 3)
+    W_mixed = fe.constitution.Mixed(W.gradient, W.hessian)
 
-    F = fe.math.defgrad(u)
+    F = u.extract()
 
-    b = fe.doftools.symmetry(u)
-    dof0, dof1, unstack = fe.doftools.partition(f, b)
+    bounds = fe.dof.symmetry(u)
+    dof0, dof1, unstack = fe.dof.partition(f, bounds)
 
-    u0ext = fe.doftools.apply(u, b, dof0)
+    u0ext = fe.dof.apply(u, bounds, dof0)
 
-    L = fe.IntegralFormMixed(nh.f(F, p, J), f, r.dV)
-    a = fe.IntegralFormMixed(nh.A(F, p, J), f, r.dV, f)
+    L = fe.IntegralFormMixed(W_mixed.gradient(F, p, J), f, r.dV)
+    a = fe.IntegralFormMixed(W_mixed.hessian(F, p, J), f, r.dV, f)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
 
     dx = fe.tools.solve(A, b, f, dof0, dof1, u0ext, unstack)
+
     assert dx[0].shape == u.values.ravel().shape
     assert dx[1].shape == fields[1].values.ravel().shape
     assert dx[2].shape == fields[2].values.ravel().shape
 
-    fe.tools.check(dx, fields, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
+    fe.tools.save(r, f, unstack=unstack)
+    fe.tools.save(r, f, r=b, unstack=unstack)
+    fe.tools.save(
+        r, f, r=b, unstack=unstack, F=F, gradient=W_mixed.gradient(F, p, J),
+    )
 
-def test_update():
+    force = fe.tools.force(u, b, bounds["symx"], unstack=unstack)
+    moment = fe.tools.moment(u, b, bounds["symx"], unstack=unstack)
 
-    r, fields = pre()
-    dx = [f.values for f in fields]
-    fe.tools.update(fields, dx)
+    for a in [2, 3, 4, 5]:
+        curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
 
 def test_newton():
@@ -150,10 +144,6 @@ def test_newton():
 
 
 if __name__ == "__main__":
-    test_extract()
-    test_defgrad()
-    test_strain()
-    test_update()
     test_solve_check()
     test_solve_mixed_check()
     test_newton()

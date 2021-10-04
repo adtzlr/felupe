@@ -64,9 +64,7 @@ class FieldAxisymmetric(Field):
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for cell "e"
         g = np.einsum(
-            "ea...,aJpe->...Jpe",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
+            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
         if sym:
             return symmetric(g)

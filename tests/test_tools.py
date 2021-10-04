@@ -51,10 +51,10 @@ def test_solve_check():
 
     F = u.extract()
 
-    b = fe.dof.symmetry(u)
-    dof0, dof1 = fe.dof.partition(u, b)
+    bounds = fe.dof.symmetry(u)
+    dof0, dof1 = fe.dof.partition(u, bounds)
 
-    u0ext = fe.dof.apply(u, b, dof0)
+    u0ext = fe.dof.apply(u, bounds, dof0)
 
     L = fe.IntegralForm(W.gradient(F), u, r.dV, grad_v=True)
     a = fe.IntegralForm(W.hessian(F), u, r.dV, u, True, True)
@@ -72,6 +72,12 @@ def test_solve_check():
     fe.tools.save(
         r, u, r=b, F=F, gradient=W.gradient(F),
     )
+
+    force = fe.tools.force(u, b, bounds["symx"])
+    moment = fe.tools.moment(u, b, bounds["symx"])
+
+    for a in [2, 3, 4, 5]:
+        curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
 
 def test_solve_mixed_check():
@@ -113,8 +119,8 @@ def test_solve_mixed_check():
         r, f, r=b, unstack=unstack, F=F, gradient=W_mixed.gradient(F, p, J),
     )
 
-    force = fe.tools.force(u, b, unstack, bounds["symx"])
-    moment = fe.tools.moment(u, b, unstack, bounds["symx"])
+    force = fe.tools.force(u, b, bounds["symx"], unstack=unstack)
+    moment = fe.tools.moment(u, b, bounds["symx"], unstack=unstack)
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])

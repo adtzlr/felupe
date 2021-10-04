@@ -52,6 +52,9 @@ class FieldMixed:
             f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
         )
 
+    def copy(self):
+        return deepcopy(self)
+
     def __add__(self, newvalues):
         fields = deepcopy(self)
 

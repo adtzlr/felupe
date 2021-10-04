@@ -138,6 +138,7 @@ def test_3d_mixed():
 
     dof = [0, 1]
     u[dof]
+    f[0][dof]
 
     u.values.fill(1)
     p.values.fill(1)

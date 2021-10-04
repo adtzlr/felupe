@@ -88,10 +88,10 @@ def test_solve_mixed_check():
 
     F = u.extract()
 
-    b = fe.dof.symmetry(u)
-    dof0, dof1, unstack = fe.dof.partition(f, b)
+    bounds = fe.dof.symmetry(u)
+    dof0, dof1, unstack = fe.dof.partition(f, bounds)
 
-    u0ext = fe.dof.apply(u, b, dof0)
+    u0ext = fe.dof.apply(u, bounds, dof0)
 
     L = fe.IntegralFormMixed(W_mixed.gradient(F, p, J), f, r.dV)
     a = fe.IntegralFormMixed(W_mixed.hessian(F, p, J), f, r.dV, f)
@@ -112,6 +112,12 @@ def test_solve_mixed_check():
     fe.tools.save(
         r, f, r=b, unstack=unstack, F=F, gradient=W_mixed.gradient(F, p, J),
     )
+
+    force = fe.tools.force(u, b, unstack, bounds["symx"])
+    moment = fe.tools.moment(u, b, unstack, bounds["symx"])
+
+    for a in [2, 3, 4, 5]:
+        curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
 
 def test_newton():

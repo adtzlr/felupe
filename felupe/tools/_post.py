@@ -29,11 +29,14 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-def force(field, r, unstack, boundary):
-    return (((np.split(r, unstack)[0]).reshape(-1, 3))[boundary.points]).sum(0)
+def force(field, r, boundary, unstack=None):
+    if unstack is None:
+        return ((r.reshape(-1, 3))[boundary.points]).sum(0)
+    else:
+        return (((np.split(r, unstack)[0]).reshape(-1, 3))[boundary.points]).sum(0)
 
 
-def moment(field, r, unstack, boundary, point=np.zeros(3)):
+def moment(field, r, boundary, point=np.zeros(3), unstack=None):
 
     point = point.reshape(1, 3)
 
@@ -42,7 +45,11 @@ def moment(field, r, unstack, boundary, point=np.zeros(3)):
     displacements = field.values
     d = ((point + displacements) - point)[boundary.points]
 
-    force = (np.split(r, unstack)[0]).reshape(-1, 3)
+    if unstack is None:
+        force = r.reshape(-1, 3)
+    else:
+        force = (np.split(r, unstack)[0]).reshape(-1, 3)
+
     f = force[boundary.points]
 
     return np.array([(f[:, i] * d[:, i[::-1]]).sum() for i in indices])

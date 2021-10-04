@@ -156,6 +156,12 @@ def test_3d_mixed():
     f *= df
     f /= df
 
+    v = u.copy()
+    g = f.copy()
+
+    assert np.allclose(v.values, u.values)
+    assert np.allclose(g[0].values, f[0].values)
+
 
 if __name__ == "__main__":
     test_axi()

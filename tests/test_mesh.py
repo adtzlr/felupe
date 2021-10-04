@@ -25,6 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import pytest
+from copy import deepcopy
 import numpy as np
 import felupe as fe
 
@@ -44,11 +45,21 @@ def test_meshes():
     fe.mesh.convert(m, order=2)
     fe.mesh.convert(m, order=2, calc_midfaces=True)
 
+    mm = deepcopy(m)
+    mm.cell_type = "fancy"
+
+    with pytest.raises(NotImplementedError):
+        fe.mesh.convert(mm, order=2)
+
     with pytest.raises(NotImplementedError):
         fe.mesh.convert(m, order=1)
 
     fe.mesh.revolve(m, n=11, phi=180, axis=0)
     fe.mesh.revolve((m.points, m.cells), n=11, phi=180, axis=0)
+    fe.mesh.revolve((m.points, m.cells), n=11, phi=360, axis=0)
+
+    with pytest.raises(ValueError):
+        fe.mesh.revolve((m.points, m.cells), n=11, phi=361, axis=0)
 
     fe.mesh.expand((m.points, m.cells))
     fe.mesh.expand(m)
@@ -57,8 +68,13 @@ def test_meshes():
     assert m.points.shape == (4 * 9 * 5, 3)
     assert m.cells.shape == (3 * 8 * 4, 8)
 
+    fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
+
     with pytest.raises(ValueError):
         fe.mesh.expand((m.points, m.cells))
+
+    with pytest.raises(ValueError):
+        fe.mesh.revolve((m.points, m.cells))
 
     fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
 

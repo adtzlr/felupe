@@ -38,9 +38,45 @@ from ._indices import Indices
 
 
 class Field:
-    "n-dimensional continous field in region."
 
     def __init__(self, region, dim=1, values=0, **kwargs):
+        """A n-dimensioal continous Field on points of a `region` with 
+        Dimension `dim` and initial point `values`. A slice of this Field 
+        directly accesses the field values as 1d-array.
+        
+        Attributes
+        ----------
+        region : felupe.Region
+            The region on which the Field will be created.
+        dim : int (default is 1)
+            The dimension of the Field.
+        values : float (default is 0.0) or array
+            A single value for all components of the field or an array of
+            proper shape (region.mesh.npoints, dim)`.
+        kwargs : dict, optional
+            Optional keyword arguments of the Field.
+        
+        Methods
+        -------
+        grad
+            Gradient as partial derivative of field values at points w.r.t. 
+            undeformed coordinates, evaluated at the integration points of
+            all cells in the region. Optionally, the symmetric part of
+            the gradient is evaluated.
+        interpolate
+            Interpolate field values at points and evaluate them at the
+            integration points of all cells in the region.
+        extract
+            Generalized extraction method which evaluates either the gradient 
+            or the field values at the integration points of all cells 
+            in the region. Optionally, the symmetric part of the gradient is 
+            evaluated and/or the identity matrix is added to the gradient.
+        copy
+            Deep-copies the Field.
+        fill
+            Fill all field values with a scalar value.
+        
+        """
         self.region = region
         self.dim = dim
         self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
@@ -59,10 +95,10 @@ class Field:
         else:  # scalar value
             self.values = np.ones((region.mesh.npoints, dim)) * values
 
-        eai, ai = self.indices_per_cell(self.region.mesh.cells, dim)
+        eai, ai = self._indices_per_cell(self.region.mesh.cells, dim)
         self.indices = Indices(eai, ai, region, dim)
 
-    def indices_per_cell(self, cells, dim):
+    def _indices_per_cell(self, cells, dim):
         "Pre-defined indices for sparse matrices."
 
         # index of cell "e", point "a" and component "i"

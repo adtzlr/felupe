@@ -40,21 +40,21 @@ from ._indices import Indices
 class Field:
 
     def __init__(self, region, dim=1, values=0, **kwargs):
-        """A n-dimensioal continous Field on points of a `region` with 
-        Dimension `dim` and initial point `values`. A slice of this Field 
-        directly accesses the field values as 1d-array.
+        """A continous Field on points of a `region` with dimension `dim`
+        and initial point `values`. A slice of this field directly 
+        accesses the field values as 1d-array.
         
         Attributes
         ----------
         region : felupe.Region
-            The region on which the Field will be created.
+            The region on which the field will be created.
         dim : int (default is 1)
-            The dimension of the Field.
+            The dimension of the field.
         values : float (default is 0.0) or array
             A single value for all components of the field or an array of
-            proper shape (region.mesh.npoints, dim)`.
+            shape (region.mesh.npoints, dim)`.
         kwargs : dict, optional
-            Optional keyword arguments of the Field.
+            Optional keyword arguments of the field.
         
         Methods
         -------
@@ -72,7 +72,7 @@ class Field:
             in the region. Optionally, the symmetric part of the gradient is 
             evaluated and/or the identity matrix is added to the gradient.
         copy
-            Deep-copies the Field.
+            Deep-copies the field.
         fill
             Fill all field values with a scalar value.
         
@@ -99,7 +99,7 @@ class Field:
         self.indices = Indices(eai, ai, region, dim)
 
     def _indices_per_cell(self, cells, dim):
-        "Pre-defined indices for sparse matrices."
+        "Calculate pre-defined indices for sparse matrices."
 
         # index of cell "e", point "a" and component "i"
         eai = np.stack(
@@ -111,20 +111,41 @@ class Field:
         return eai, ai
 
     def grad(self, sym=False):
-        "gradient dudX_IJpe"
-        # gradient as partial derivative of field values at points "aI"
-        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-        # for cell "e"
+        """Gradient as partial derivative of field values at points w.r.t. 
+        undeformed coordinates, evaluated at the integration points of
+        all cells in the region. Optionally, the symmetric part of
+        the gradient is evaluated.
+        
+        Arguments
+        ---------
+        sym : bool, optional (default is False)
+            Calculate the symmetric part of the gradient.
+        
+        Returns
+        -------
+        array
+            Gradient as partial derivative of field values at points w.r.t. 
+            undeformed coordinates, evaluated at the integration points of
+            all cells in the region.
+        """
+        
+        # gradient dudX_IJpe as partial derivative of field values at points "aI"
+        # w.r.t. undeformed coordinates "J" evaluated at quadrature point "p"
+        # for each cell "e"
         g = np.einsum(
             "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
+        
         if sym:
             return symmetric(g)
         else:
             return g
 
     def interpolate(self):
-        "interpolated values u_Ipe"
+        """Interpolate field values (located at mesh points)
+        and evaluate them at the integration points of each cell
+        in the region (u_Ipe)."""
+        
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
         # for cell "e"
@@ -133,7 +154,27 @@ class Field:
         )
 
     def extract(self, grad=True, sym=False, add_identity=True):
-        "Extract gradient or interpolated field values at quadrature points."
+        """Generalized extraction method which evaluates either the gradient 
+        or the field values at the integration points of all cells 
+        in the region. Optionally, the symmetric part of the gradient is 
+        evaluated and/or the identity matrix is added to the gradient.
+        
+        Arguments
+        ---------
+        grad : bool, optional (default is True)
+            Flag for gradient evaluation.
+        sym : bool, optional (default is False)
+            Flag for symmetric part if the gradient is evaluated.
+        add_identity : bool, optional (default is True)
+            Flag for the addition of the identity matrix 
+            if the gradient is evaluated.
+        
+        Returns
+        -------
+        array
+            (Symmetric) gradient or interpolated field values evaluated at
+            the integration points of each cell in the region.
+        """
 
         if grad:
             gr = self.grad()
@@ -149,9 +190,11 @@ class Field:
             return self.interpolate()
 
     def copy(self):
+        "Return a copy of the field."
         return deepcopy(self)
 
     def fill(self, a):
+        "Fill field values at points with a given scalar `a`."
         self.values.fill(a)
 
     def __add__(self, newvalues):
@@ -267,6 +310,7 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __getitem__(self, dof):
-        "Slice-based access to flattened values by list of dof's."
+        """Slice-based access to a 1d-representation of field values by
+        a list of degrees of freedom `dof`."""
 
         return self.values.ravel()[dof]

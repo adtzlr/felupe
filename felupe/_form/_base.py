@@ -30,7 +30,37 @@ from scipy.sparse import csr_matrix as sparsematrix
 
 
 class IntegralForm:
+    "Integral (weak) form."
+    
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
+        """Integral Form constructed by a function `fun`, a virtual field `v`,
+        differential volumes `dV` and optionally a field `u`. For both fields `v`
+        and `u` gradients can be passed by setting `grad_v` and `grad_u` to True
+        (default is False for both).
+        
+        Arguments
+        ---------
+        fun : array
+            The pre-evaluated function.
+        v : Field
+            The virtual field.
+        dV : array
+            The differential volumes.
+        u : Field, optional (default is None)
+            If a field is passed, a Bilinear-Form is created.
+        grad_v : bool, optional (default is False)
+            Flag to activate the gradient on field `v`.
+        grad_u : bool, optional (default is False)
+            Flag to activate the gradient on field `u`.
+        
+        Methods
+        -------
+        assemble
+            Assembly of sparse region matrices.
+        integrate
+            Not assembled evaluated integrals.
+        """
+        
         self.fun = fun
         self.dV = dV
 
@@ -40,10 +70,14 @@ class IntegralForm:
         self.u = u
         self.grad_u = grad_u
 
+        # init indices
+        
+        # # linear form
         if not self.u:
             self.indices = self.v.indices.ai
             self.shape = self.v.indices.shape
 
+        # # bilinear form
         else:
             eai = self.v.indices.eai
             ebk = self.u.indices.eai
@@ -78,9 +112,6 @@ class IntegralForm:
         v, u = self.v, self.u
         dV = self.dV
         fun = self.fun
-
-        # if parallel:
-        #    from numba import jit
 
         if not grad_v:
             vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)

@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 29 18:29:15 2021
-
-@author: adutz
-"""
-# -*- coding: utf-8 -*-
-"""
  _______  _______  ___      __   __  _______  _______ 
 |       ||       ||   |    |  | |  ||       ||       |
 |    ___||    ___||   |    |  | |  ||    _  ||    ___|
@@ -40,7 +34,7 @@ from ._indices import Indices
 class Field:
 
     def __init__(self, region, dim=1, values=0, **kwargs):
-        """A continous Field on points of a `region` with dimension `dim`
+        """A Field on points of a `region` with dimension `dim`
         and initial point `values`. A slice of this field directly 
         accesses the field values as 1d-array.
         

@@ -98,20 +98,27 @@ class FieldAxisymmetric(Field):
         self.radius = self.scalar.interpolate()
 
     def _grad_2d(self, sym=False):
-        "In-plane 2d-gradient dudX_IJpe."
-        # gradient as partial derivative of point values "aI"
+        "Calculate the in-plane 2d-gradient dudX_IJpe."
+        
+        # gradient as partial derivative of field component "I" at point "a"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-        # for cell "e"
+        # for each cell "e"
         g = np.einsum(
-            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
+            "ca...,aJpc->...Jpc", self.values[self.region.mesh.cells], self.region.dhdX,
         )
+        
         if sym:
             return symmetric(g)
         else:
             return g
 
     def grad(self, sym=False):
-        "Full 3d-gradient dudX_IJpe."
+        "Return the full 3d - (symmetric) gradient dudX_IJpe."
+        
+        # extend dimension of in-plane 2d-gradient
         g = np.pad(self._grad_2d(sym=sym), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        
+        # set dudX_33 = u_r / R
         g[-1, -1] = self.interpolate()[1] / self.radius
+        
         return g

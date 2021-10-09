@@ -36,7 +36,8 @@ import numpy as np
 
 class Indices:
     def __init__(self, eai, ai, region, dim):
-        # cell "e", point "a" and component "i"
+        """Indices for cell "e", point "a" and component "i"."""
+        
         self.eai = eai
         self.ai = ai
         self.dof = np.arange(region.mesh.npoints * dim).reshape(-1, dim)

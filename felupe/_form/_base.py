@@ -33,10 +33,10 @@ class IntegralForm:
     "Integral (weak) form."
     
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
-        """Integral Form constructed by a function `fun`, a virtual field `v`,
-        differential volumes `dV` and optionally a field `u`. For both fields `v`
-        and `u` gradients may be passed by setting `grad_v` and `grad_u` to True
-        (default is False for both).
+        """Integral Form constructed by a function result `fun`, 
+        a virtual field `v`, differential volumes `dV` and optionally a 
+        field `u`. For both fields `v` and `u` gradients may be passed by
+        setting `grad_v` and `grad_u` to True (default is False for both).
         
         Arguments
         ---------
@@ -56,9 +56,9 @@ class IntegralForm:
         Methods
         -------
         assemble
-            Assembly of sparse region matrices.
+            Assembly of sparse region vectors or matrices.
         integrate
-            Not assembled evaluated integrals.
+            Evaluated (but not assembled) integrals.
         """
         
         self.fun = fun

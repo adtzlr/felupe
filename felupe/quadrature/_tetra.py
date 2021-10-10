@@ -34,10 +34,10 @@ from . import Scheme
 
 class Tetrahedron(Scheme):
     "An integration scheme for Tetrahedrons."
-    
+
     def __init__(self, order: int):
         "Integration scheme for Tetrahedrons of `order` 1, 2 or 3."
-        
+
         scheme = SimpleNamespace()
         volume = 1 / 6
 

@@ -43,9 +43,29 @@ def test_nh():
 
     nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
+    W = nh.function(F)
     P = nh.gradient(F)
     A = nh.hessian(F)
 
+    Wx = nh.energy(F)
+    Px = nh.stress(F)
+    Ax = nh.elasticity(F)
+
+    assert np.allclose(W, Wx)
+    assert np.allclose(P, Px)
+    assert np.allclose(A, Ax)
+
+    assert W.shape == F.shape[-2:]
+    assert P.shape == (3, 3, *F.shape[-2:])
+    assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
+
+    nh = fe.constitution.NeoHooke(mu=None, bulk=2.0)
+
+    W = nh.function(F, mu=2.0)
+    P = nh.gradient(F, mu=2.0)
+    A = nh.hessian(F, mu=2.0)
+
+    assert W.shape == F.shape[-2:]
     assert P.shape == (3, 3, *F.shape[-2:])
     assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
 
@@ -60,6 +80,12 @@ def test_linear():
     stress = le.gradient(strain)
     dsde = le.hessian(strain)
     dsde = le.hessian(strain, stress=stress)
+
+    le = fe.constitution.LinearElastic(E=None, nu=0.3)
+    stress = le.gradient(strain, E=2.0)
+    stress = le.gradient(strain, E=0.5, nu=0.2)
+    dsde = le.hessian(strain, E=2.0)
+    dsde = le.hessian(strain, stress=stress, E=3.0)
 
     assert stress.shape == (3, 3, *strain.shape[-2:])
     assert dsde.shape == (3, 3, 3, 3, *strain.shape[-2:])

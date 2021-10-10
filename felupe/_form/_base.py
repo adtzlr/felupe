@@ -31,13 +31,13 @@ from scipy.sparse import csr_matrix as sparsematrix
 
 class IntegralForm:
     "Integral (weak) form."
-    
+
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
-        """Integral Form constructed by a function result `fun`, 
-        a virtual field `v`, differential volumes `dV` and optionally a 
+        """Integral Form constructed by a function result `fun`,
+        a virtual field `v`, differential volumes `dV` and optionally a
         field `u`. For both fields `v` and `u` gradients may be passed by
         setting `grad_v` and `grad_u` to True (default is False for both).
-        
+
         Arguments
         ---------
         fun : array
@@ -52,7 +52,7 @@ class IntegralForm:
             Flag to activate the gradient on field `v`.
         grad_u : bool, optional (default is False)
             Flag to activate the gradient on field `u`.
-        
+
         Methods
         -------
         assemble
@@ -60,7 +60,7 @@ class IntegralForm:
         integrate
             Evaluated (but not assembled) integrals.
         """
-        
+
         self.fun = fun
         self.dV = dV
 
@@ -71,7 +71,7 @@ class IntegralForm:
         self.grad_u = grad_u
 
         # init indices
-        
+
         # # linear form
         if not self.u:
             self.indices = self.v.indices.ai

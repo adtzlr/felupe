@@ -25,13 +25,10 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import numpy as np
-
 from ..math import (
     dot,
     ddot,
     transpose,
-    majortranspose,
     inv,
     dya,
     cdya,
@@ -40,25 +37,47 @@ from ..math import (
     det,
     identity,
     trace,
-    dev,
 )
 
 
 class LinearElastic:
-    def __init__(self, E, nu):
+    def __init__(self, E=None, nu=None):
+        "Linear elastic material with Young's modulus `E` and poisson ratio `nu`."
+
         self.E = E
         self.nu = nu
-        self.mu, self.gamma = self.lame(E, nu)
+
+        # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
 
-    def gradient(self, strain):
-        return 2 * self.mu * strain + self.gamma * trace(strain) * identity(strain)
+    def gradient(self, strain, E=None, nu=None):
 
-    def hessian(self, strain, stress=None):
+        if E is None:
+            E = self.E
+
+        if nu is None:
+            nu = self.nu
+
+        # convert to lame constants
+        mu, gamma = self._lame_converter(E, nu)
+
+        return 2 * mu * strain + gamma * trace(strain) * identity(strain)
+
+    def hessian(self, strain, stress=None, E=None, nu=None):
+
+        if E is None:
+            E = self.E
+
+        if nu is None:
+            nu = self.nu
+
+        # convert to lame constants
+        mu, gamma = self._lame_converter(E, nu)
+
         I = identity(strain)
 
-        elast = 2 * self.mu * cdya(I, I) + self.gamma * dya(I, I)
+        elast = 2 * mu * cdya(I, I) + gamma * dya(I, I)
 
         if stress is not None:
             elast_stress = cdya_ik(stress, I)
@@ -67,29 +86,63 @@ class LinearElastic:
 
         return elast + elast_stress
 
-    def lame(self, E, nu):
+    def _lame_converter(self, E, nu):
         mu = E / (2 * (1 + nu))
         gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
         return mu, gamma
 
 
 class NeoHooke:
-    "Nearly-incompressible Neo-Hooke material."
+    "Nearly-incompressible isotropic hyperelastic Neo-Hooke material formulation."
 
-    def __init__(self, mu, bulk):
+    def __init__(self, mu=None, bulk=None):
+        "Neo-Hookean material formulation with parameters `mu` and `bulk`."
+
         self.mu = mu
         self.bulk = bulk
 
-    def gradient(self, F):
-        """Variation of total potential w.r.t displacements
-        (1st Piola Kirchhoff stress).
+        # aliases for function, gradient and hessian
+        self.energy = self.function
+        self.stress = self.gradient
+        self.elasticity = self.hessian
 
-        δ_u(Π_int) = ∫_V ∂ψ/∂F : δF dV
+    def function(self, F, mu=None, bulk=None):
+        """Total potential energy
+
+        Π_int = ∫ ψ dV                                              (1)
+
+        --> W = ψ                                                   (2)
 
         """
 
-        mu = self.mu
-        bulk = self.bulk
+        if mu is None:
+            mu = self.mu
+
+        if bulk is None:
+            bulk = self.bulk
+
+        J = det(F)
+        C = dot(transpose(F), F)
+
+        W = mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk * (J - 1) ** 2 / 2
+
+        return W
+
+    def gradient(self, F, mu=None, bulk=None):
+        """Variation of total potential w.r.t displacements
+        (1st Piola Kirchhoff stress).
+
+            δ_u(Π_int) = ∫_V ∂ψ/∂F : δF dV                              (1)
+
+            --> P = ∂ψ/∂F                                               (2)
+
+        """
+
+        if mu is None:
+            mu = self.mu
+
+        if bulk is None:
+            bulk = self.bulk
 
         J = det(F)
         iFT = transpose(inv(F, J))
@@ -99,16 +152,21 @@ class NeoHooke:
 
         return Pdev + Pvol
 
-    def hessian(self, F):
+    def hessian(self, F, mu=None, bulk=None):
         """Linearization w.r.t. displacements of variation of
         total potential energy w.r.t displacements.
 
-        Δ_u(δ_u(Π_int)) = ∫_V δF : ∂²ψ/(∂F∂F) : ΔF dV
+            Δ_u(δ_u(Π_int)) = ∫_V δF : ∂²ψ/(∂F∂F) : ΔF dV               (1)
+
+            --> A = ∂²ψ/(∂F∂F)                                          (2)
 
         """
 
-        mu = self.mu
-        bulk = self.bulk
+        if mu is None:
+            mu = self.mu
+
+        if bulk is None:
+            bulk = self.bulk
 
         J = det(F)
         iFT = transpose(inv(F, J))

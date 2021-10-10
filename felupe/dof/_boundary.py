@@ -77,8 +77,10 @@ class Boundary:
         ----------
         mask : array
             Mask-array which contains prescribed degrees of freedom.
+            
         dof :array
             Array which contains prescribed degrees of freedom.
+            
         points : array
             Array which contains the points on which one or more degrees of 
             freedom are prescribed.

@@ -27,7 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._boundary import Boundary
 from .._field import FieldMixed
 
 

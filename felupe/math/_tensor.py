@@ -39,6 +39,11 @@ def identity(A=None, ndim=None, shape=None):
     return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 
+def sym(A):
+    "Symmetric part of matrix A."
+    return (A + transpose(A)) / 2
+
+
 def dya(A, B, mode=2):
     "Dyadic (outer or kronecker) product of two tensors."
     if mode == 2:
@@ -55,9 +60,6 @@ def inv(A, determinant=None, full_output=False, sym=False):
     a simplified calculation of the inverse for sym. matrices."""
 
     detAinvA = np.zeros_like(A)
-
-    # if sym is None:
-    #    sym = np.all(A == transpose(A))
 
     if determinant is None:
         detA = det(A)
@@ -209,7 +211,7 @@ def dot(A, B, n=2):
 
 
 def ddot(A, B, n=2):
-    "Double-Dot-product of A and B with inputs of n trailing axes."
+    "Double-Dot-product of A and B with inputs of `n` trailing axes."
     if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
         return np.einsum("ij...,ij...->...", A, B)
     elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:

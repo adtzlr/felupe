@@ -32,27 +32,25 @@ from ._base import QuadElement
 
 class ConstantQuad(QuadElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 1
+        super().__init__(self._fun, self._grad, 1)
+        self.points = 4
 
-    def basis(self, rst):
-        "linear quadrilateral basis functions"
+    def _fun(self, rst):
+        "linear quadrilateral shape functions"
         return np.array([1])
 
-    def basisprime(self, rst):
-        "linear quadrilateral derivative of basis functions"
+    def _grad(self, rst):
+        "linear quadrilateral gradient of shape functions"
         return np.array([[0, 0, 0]])
 
 
 class Quad(QuadElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 4
+        super().__init__(self._fun, self._grad, 4)
+        self.points = 4
 
-    def basis(self, rs):
-        "linear quadrilateral basis functions"
+    def _fun(self, rs):
+        "linear quadrilateral shape functions"
         r, s = rs
         return (
             np.array(
@@ -66,8 +64,8 @@ class Quad(QuadElement):
             * 0.25
         )
 
-    def basisprime(self, rs):
-        "linear quadrilateral derivative of basis functions"
+    def _grad(self, rs):
+        "linear quadrilateral gradient of shape functions"
         r, s = rs
         return (
             np.array(

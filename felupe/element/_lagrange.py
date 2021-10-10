@@ -30,6 +30,8 @@ from scipy.special import factorial
 from string import ascii_lowercase as alphabet
 from copy import deepcopy as copy
 
+from ._base import Shape
+
 
 class ArbitraryOrderLagrange:
     "Lagrange quad/hexahdron finite element of arbitrary order."
@@ -41,10 +43,10 @@ class ArbitraryOrderLagrange:
         self.nbasis = self.npoints
         self.interval = interval
 
-        self._nbasis = order + 1
+        self._nshape = order + 1
 
         # init curve-parameter matrix
-        n = self._nbasis
+        n = self._nshape
         self._AT = np.linalg.inv(
             np.array([self._polynomial(p, n) for p in self._points(n)])
         ).T
@@ -55,18 +57,20 @@ class ArbitraryOrderLagrange:
         self._idx = [letter for letter in alphabet][: self.ndim]
         self._subscripts = ",".join(self._idx) + "->" + "".join(self._idx)
 
-    def basis(self, r):
-        "Basis function vector at coordinate vector r."
-        n = self._nbasis
+        self.shape = Shape(self._fun, self._grad, self._nshape)
+
+    def _fun(self, r):
+        "Shape function vector at coordinate vector r."
+        n = self._nshape
 
         # 1d - basis function vectors per axis
         h = [self._AT @ self._polynomial(ra, n) for ra in r]
 
         return np.einsum(self._subscripts, *h).ravel("F")
 
-    def basisprime(self, r):
-        "Basis function derivative vector at coordinate vector r."
-        n = self._nbasis
+    def _grad(self, r):
+        "Gradient of shape function vector at coordinate vector r."
+        n = self._nshape
 
         # 1d - basis function vectors per axis
         h = [self._AT @ self._polynomial(ra, n) for ra in r]

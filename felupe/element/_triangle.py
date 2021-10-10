@@ -32,36 +32,34 @@ from ._base import TriangleElement
 
 class Triangle(TriangleElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 3
-        self.nbasis = 3
+        super().__init__(self._fun, self._grad, 3)
+        self.points = 3
 
-    def basis(self, rs):
-        "linear triangle basis functions"
+    def _fun(self, rs):
+        "linear triangle shape functions"
         r, s = rs
         return np.array([1 - r - s, r, s])
 
-    def basisprime(self, rs):
-        "linear triangle derivative of basis functions"
+    def _grad(self, rs):
+        "linear triangle gradient of shape functions"
         r, s = rs
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
 
 class TriangleMINI(TriangleElement):
     def __init__(self, bubble_multiplier=1.0):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 4
+        super().__init__(self._fun, self._grad, 4)
+        self.points = 4
         self.bubble_multiplier = bubble_multiplier
 
-    def basis(self, rs):
-        "linear triangle basis functions"
+    def _fun(self, rs):
+        "linear bubble-enriched triangle shape functions"
         r, s = rs
         a = self.bubble_multiplier
         return np.array([1 - r - s, r, s, a * r * s * (1 - r - s)])
 
-    def basisprime(self, rs):
-        "linear triangle derivative of basis functions"
+    def _grad(self, rs):
+        "linear bubble-enriched triangle gradient of shape functions"
         r, s = rs
         a = self.bubble_multiplier
         return np.array(
@@ -77,12 +75,11 @@ class TriangleMINI(TriangleElement):
 
 class QuadraticTriangle(TriangleElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 6
-        self.nbasis = 6
+        super().__init__(self._fun, self._grad, 6)
+        self.points = 6
 
-    def basis(self, rs):
-        "linear triangle basis functions"
+    def _fun(self, rs):
+        "quadratic triangle shape functions"
         r, s = rs
         h = np.array(
             [1 - r - s, r, s, 4 * r * (1 - r - s), 4 * r * s, 4 * s * (1 - r - s)]
@@ -90,10 +87,11 @@ class QuadraticTriangle(TriangleElement):
         h[0] += -h[3] / 2 - h[5] / 2
         h[1] += -h[3] / 2 - h[4] / 2
         h[2] += -h[4] / 2 - h[5] / 2
+
         return h
 
-    def basisprime(self, rs):
-        "linear triangle derivative of basis functions"
+    def _grad(self, rs):
+        "quadratic triangle gradient of shape functions"
         r, s = rs
 
         t1 = 1 - r - s
@@ -102,10 +100,15 @@ class QuadraticTriangle(TriangleElement):
 
         dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
         dhdr_b = np.array(
-            [[4 * (t1 - t2), -4 * t2], [4 * t3, 4 * t2], [-4 * t3, 4 * (t1 - t2)],]
+            [
+                [4 * (t1 - t2), -4 * t2],
+                [4 * t3, 4 * t2],
+                [-4 * t3, 4 * (t1 - t2)],
+            ]
         )
         dhdr = np.vstack((dhdr_a, dhdr_b))
         dhdr[0] += -dhdr[3] / 2 - dhdr[5] / 2
         dhdr[1] += -dhdr[3] / 2 - dhdr[4] / 2
         dhdr[2] += -dhdr[4] / 2 - dhdr[5] / 2
+
         return dhdr

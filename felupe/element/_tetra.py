@@ -32,36 +32,34 @@ from ._base import TetraElement
 
 class Tetra(TetraElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 4
+        super().__init__(self._fun, self._grad, 4)
+        self.points = 4
 
-    def basis(self, rst):
-        "linear tetrahedral basis functions"
+    def _fun(self, rst):
+        "linear tetrahedral shape functions"
         r, s, t = rst
         return np.array([1 - r - s - t, r, s, t])
 
-    def basisprime(self, rst):
-        "linear tetrahedral derivative of basis functions"
+    def _grad(self, rst):
+        "linear tetrahedral gradient of shape functions"
         r, s, t = rst
         return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
 
 
 class TetraMINI(TetraElement):
     def __init__(self, bubble_multiplier=1.0):
-        super().__init__()
-        self.npoints = 5
-        self.nbasis = 5
+        super().__init__(self._fun, self._grad, 5)
+        self.points = 5
         self.bubble_multiplier = bubble_multiplier
 
-    def basis(self, rst):
-        "linear tetrahedral basis functions"
+    def _fun(self, rst):
+        "linear bubble-enriched tetrahedral basis functions"
         r, s, t = rst
         a = self.bubble_multiplier
         return np.array([1 - r - s - t, r, s, t, a * r * s * t * (1 - r - s - t)])
 
-    def basisprime(self, rst):
-        "linear tetrahedral derivative of basis functions"
+    def _grad(self, rst):
+        "linear bubble-enriched tetrahedral derivative of basis functions"
         r, s, t = rst
         a = self.bubble_multiplier
         return np.array(
@@ -82,12 +80,11 @@ class TetraMINI(TetraElement):
 
 class QuadraticTetra(TetraElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 10
-        self.nbasis = 10
+        super().__init__(self._fun, self._grad, 10)
+        self.points = 10
 
-    def basis(self, rst):
-        "linear tetrahedral basis functions"
+    def _fun(self, rst):
+        "quadratic tetrahedral shape functions"
         r, s, t = rst
 
         t1 = 1 - r - s - t
@@ -112,8 +109,8 @@ class QuadraticTetra(TetraElement):
 
         return h
 
-    def basisprime(self, rst):
-        "linear tetrahedral derivative of basis functions"
+    def _grad(self, rst):
+        "quadratic tetrahedral gradient of shape functions"
         r, s, t = rst
 
         t1 = 1 - r - s - t

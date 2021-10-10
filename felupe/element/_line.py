@@ -32,16 +32,15 @@ from ._base import LineElement
 
 class Line(LineElement):
     def __init__(self):
-        super().__init__()
-        self.npoints = 2
-        self.nbasis = 2
+        super().__init__(self._fun, self._grad, 2)
+        self.points = 2
 
-    def basis(self, rv):
-        "linear line basis functions"
+    def _fun(self, rv):
+        "linear line shape functions"
         (r,) = rv
         return np.array([(1 - r), (1 + r)]) * 0.5
 
-    def basisprime(self, rv):
-        "linear line derivative of basis functions"
+    def _grad(self, rv):
+        "linear line gradient of shape functions"
         (r,) = rv
         return np.array([[-1], [1]]) * 0.5

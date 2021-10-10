@@ -41,50 +41,50 @@ class Boundary:
         value=0,
         skip=(False, False, False),
     ):
-        """A Boundary as a collection of prescribed degrees of freedom 
+        """A Boundary as a collection of prescribed degrees of freedom
         (numbered coordinate components of a field at points of a mesh).
-        
-        
+
+
         Arguments
         ---------
         field : Field
             Field on wich the boundary is created.
-            
+
         name : str, optional (default is "default")
             Name of the boundary.
-        
+
         fx : function, optional (default is `lambda v: v == np.nan`)
-            Mask-function for x-component of mesh-points which returns 
+            Mask-function for x-component of mesh-points which returns
             `True` at points on which the boundary will be applied.
-        
+
         fy : function, optional (default is `lambda v: v == np.nan`)
-            Mask-function for y-component of mesh-points which returns 
+            Mask-function for y-component of mesh-points which returns
             `True` at points on which the boundary will be applied.
-        
+
         fz : function, optional (default is `lambda v: v == np.nan`)
-            Mask-function for z-component of mesh-points which returns 
+            Mask-function for z-component of mesh-points which returns
             `True` at points on which the boundary will be applied.
-        
+
         value : int, optional (default is 0)
             Value of the selected (prescribed) degrees of freedom.
-        
+
         skip : tuple of bool, optional (default is `(False, False, False)`)
-            A tuple to define which axes of the selected points should be 
+            A tuple to define which axes of the selected points should be
             skipped (i.e. not prescribed).
-        
-        
+
+
         Attributes
         ----------
         mask : array
             Mask-array which contains prescribed degrees of freedom.
-            
+
         dof :array
             Array which contains prescribed degrees of freedom.
-            
+
         points : array
-            Array which contains the points on which one or more degrees of 
+            Array which contains the points on which one or more degrees of
             freedom are prescribed.
-            
+
         """
 
         mesh = field.region.mesh

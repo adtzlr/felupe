@@ -13,19 +13,22 @@ Next, let's create a meshed cube and a converted version for the piecewise const
 
 ```python
 mesh  = fe.Cube(n=6)
+mesh0 = fe.mesh.convert(mesh, order=0)
 
+element  = fe.Hexahedron()
 element0 = fe.ConstantHexahedron()
-element = fe.Hexahedron()
+
 quadrature = fe.GaussLegendre(order=1, dim=3)
 
-region0 = fe.Region(fe.mesh.convert(mesh, order=0), element0, quadrature)
-region  = fe.Region(mesh,  element, quadrature)
+region  = fe.Region(mesh,  element,  quadrature)
+region0 = fe.Region(mesh0, element0, quadrature, grad=False)
 
 dV = region.dV
 
 displacement = fe.Field(region,  dim=3)
 pressure     = fe.Field(region0, dim=1)
 volumeratio  = fe.Field(region0, dim=1, values=1)
+
 fields = fe.FieldMixed((displacement, pressure, volumeratio))
 ```
 

@@ -144,7 +144,7 @@ def pre_mpc_mixed(point, values):
 
     mesh0 = fe.mesh.convert(mesh, order=0)
     element0 = fe.element.ConstantHexahedron()
-    region0 = fe.Region(mesh0, element0, quadrature)
+    region0 = fe.Region(mesh0, element0, quadrature, grad=False)
 
     displacement = fe.Field(region, dim=3)
     pressure = fe.Field(region0)

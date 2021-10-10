@@ -38,18 +38,65 @@ class IntegralForm:
         field `u`. For both fields `v` and `u` gradients may be passed by
         setting `grad_v` and `grad_u` to True (default is False for both).
 
+
+        1) Linearform
+
+            a) without gradient of `v`
+
+                L(v) = ∫ fun v dV                                      (1)
+
+                   (or ∫ fun_i v_i dV)
+
+            b) with gradient of `v`
+
+                L(v) = ∫ fun grad(v) dV                                (2)
+
+                   (or ∫ fun_ij grad(v)_ij dV)
+
+
+        2) Bilinearform
+
+            a) without gradient of `v` and without gradient of `u`
+
+                b(v, u) = ∫ v fun u dV                                 (3)
+
+                      (or ∫ v_i fun_ij u_j dV)
+
+            b) with gradient of `v` and with gradient of `u`
+
+                b(v, u) = ∫ grad(v) fun grad(u) dV                     (4)
+
+                      (or ∫ grad(v)_ij fun_ijkl grad(u)_kl dV)
+
+            c) with gradient of `v` and without gradient of `u`
+
+                b(v, u) = ∫ grad(v) fun u dV                           (5)
+
+                      (or ∫ grad(v)_ij fun_ijk u_k dV)
+
+            d) without gradient of `v` and with gradient of `u`
+
+                b(v, u) = ∫ v fun grad(u) dV                           (6)
+
+                      (or ∫ v_i fun_ikl grad(u)_kl dV)
+
         Arguments
         ---------
         fun : array
             The pre-evaluated function.
+
         v : Field
             The virtual field.
+
         dV : array
             The differential volumes.
+
         u : Field, optional (default is None)
             If a field is passed, a Bilinear-Form is created.
+
         grad_v : bool, optional (default is False)
             Flag to activate the gradient on field `v`.
+
         grad_u : bool, optional (default is False)
             Flag to activate the gradient on field `u`.
 
@@ -57,6 +104,7 @@ class IntegralForm:
         -------
         assemble
             Assembly of sparse region vectors or matrices.
+
         integrate
             Evaluated (but not assembled) integrals.
         """

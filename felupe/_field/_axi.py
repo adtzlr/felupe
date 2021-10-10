@@ -59,9 +59,9 @@ class FieldAxisymmetric(Field):
 
     def __init__(self, region, dim=2, values=0):
         """A continous axisymmetric Field on points of a two-dimensional
-        `region` with dimension `dim` (default is 2) and initial point 
+        `region` with dimension `dim` (default is 2) and initial point
         `values` (default is 0).
-        
+
         Attributes
         ----------
         region : felupe.Region
@@ -71,36 +71,38 @@ class FieldAxisymmetric(Field):
         values : float (default is 0.0) or array
             A single value for all components of the field or an array of
             shape (region.mesh.npoints, dim)`.
-        
+
         Methods
         -------
         grad
-            Gradient as partial derivative of field values at points w.r.t. 
+            Gradient as partial derivative of field values at points w.r.t.
             undeformed coordinates, evaluated at the integration points of
             all cells in the region. Optionally, the symmetric part of
             the gradient is evaluated.
         """
-    
+
         # init base Field
         super().__init__(region, dim=dim, values=values)
-        
+
         # create scalar-valued field of radial point values
         self.scalar = Field(region, dim=1, values=region.mesh.points[:, 1])
-        
+
         # interpolate radial point values to integration points of each cell
         # in the region
         self.radius = self.scalar.interpolate()
 
     def _grad_2d(self, sym=False):
         "Calculate the in-plane 2d-gradient dudX_IJpe."
-        
+
         # gradient as partial derivative of field component "I" at point "a"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
         # for each cell "e"
         g = np.einsum(
-            "ca...,aJpc->...Jpc", self.values[self.region.mesh.cells], self.region.dhdX,
+            "ca...,aJpc->...Jpc",
+            self.values[self.region.mesh.cells],
+            self.region.dhdX,
         )
-        
+
         if sym:
             return symmetric(g)
         else:
@@ -108,11 +110,11 @@ class FieldAxisymmetric(Field):
 
     def grad(self, sym=False):
         "Return the full 3d - (symmetric) gradient dudX_IJpe."
-        
+
         # extend dimension of in-plane 2d-gradient
         g = np.pad(self._grad_2d(sym=sym), ((0, 1), (0, 1), (0, 0), (0, 0)))
-        
+
         # set dudX_33 = u_r / R
         g[-1, -1] = self.interpolate()[1] / self.radius
-        
+
         return g

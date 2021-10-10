@@ -32,12 +32,11 @@ from ._indices import Indices
 
 
 class Field:
-
     def __init__(self, region, dim=1, values=0, **kwargs):
         """A Field on points of a `region` with dimension `dim`
-        and initial point `values`. A slice of this field directly 
+        and initial point `values`. A slice of this field directly
         accesses the field values as 1d-array.
-        
+
         Attributes
         ----------
         region : felupe.Region
@@ -49,11 +48,11 @@ class Field:
             shape (region.mesh.npoints, dim)`.
         kwargs : dict, optional
             Optional keyword arguments of the field.
-        
+
         Methods
         -------
         grad
-            Gradient as partial derivative of field values at points w.r.t. 
+            Gradient as partial derivative of field values at points w.r.t.
             undeformed coordinates, evaluated at the integration points of
             all cells in the region. Optionally, the symmetric part of
             the gradient is evaluated.
@@ -61,15 +60,15 @@ class Field:
             Interpolate field values at points and evaluate them at the
             integration points of all cells in the region.
         extract
-            Generalized extraction method which evaluates either the gradient 
-            or the field values at the integration points of all cells 
-            in the region. Optionally, the symmetric part of the gradient is 
+            Generalized extraction method which evaluates either the gradient
+            or the field values at the integration points of all cells
+            in the region. Optionally, the symmetric part of the gradient is
             evaluated and/or the identity matrix is added to the gradient.
         copy
             Deep-copies the field.
         fill
             Fill all field values with a scalar value.
-        
+
         """
         self.region = region
         self.dim = dim
@@ -105,31 +104,33 @@ class Field:
         return eai, ai
 
     def grad(self, sym=False):
-        """Gradient as partial derivative of field values at points w.r.t. 
+        """Gradient as partial derivative of field values at points w.r.t.
         undeformed coordinates, evaluated at the integration points of
         all cells in the region. Optionally, the symmetric part of
         the gradient is evaluated.
-        
+
         Arguments
         ---------
         sym : bool, optional (default is False)
             Calculate the symmetric part of the gradient.
-        
+
         Returns
         -------
         array
-            Gradient as partial derivative of field values at points w.r.t. 
+            Gradient as partial derivative of field values at points w.r.t.
             undeformed coordinates, evaluated at the integration points of
             all cells in the region.
         """
-        
+
         # gradient dudX_IJpe as partial derivative of field values at points "aI"
         # w.r.t. undeformed coordinates "J" evaluated at quadrature point "p"
         # for each cell "e"
         g = np.einsum(
-            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
+            "ea...,aJpe->...Jpe",
+            self.values[self.region.mesh.cells],
+            self.region.dhdX,
         )
-        
+
         if sym:
             return symmetric(g)
         else:
@@ -139,7 +140,7 @@ class Field:
         """Interpolate field values (located at mesh points)
         and evaluate them at the integration points of each cell
         in the region (u_Ipe)."""
-        
+
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
         # for cell "e"
@@ -148,11 +149,11 @@ class Field:
         )
 
     def extract(self, grad=True, sym=False, add_identity=True):
-        """Generalized extraction method which evaluates either the gradient 
-        or the field values at the integration points of all cells 
-        in the region. Optionally, the symmetric part of the gradient is 
+        """Generalized extraction method which evaluates either the gradient
+        or the field values at the integration points of all cells
+        in the region. Optionally, the symmetric part of the gradient is
         evaluated and/or the identity matrix is added to the gradient.
-        
+
         Arguments
         ---------
         grad : bool, optional (default is True)
@@ -160,9 +161,9 @@ class Field:
         sym : bool, optional (default is False)
             Flag for symmetric part if the gradient is evaluated.
         add_identity : bool, optional (default is True)
-            Flag for the addition of the identity matrix 
+            Flag for the addition of the identity matrix
             if the gradient is evaluated.
-        
+
         Returns
         -------
         array

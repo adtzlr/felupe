@@ -39,18 +39,18 @@ import numpy as np
 class FieldMixed:
     def __init__(self, fields):
         "A mixed field based on a list of `fields`."
-        
+
         self.fields = fields
-        
+
         # get field values
         self.values = tuple(f.values for f in self.fields)
 
     def extract(self, grad=True, sym=False, add_identity=True):
-        """Generalized extraction method which evaluates either the gradient 
-        or the field values at the integration points of all cells 
-        in the region. Optionally, the symmetric part of the gradient is 
+        """Generalized extraction method which evaluates either the gradient
+        or the field values at the integration points of all cells
+        in the region. Optionally, the symmetric part of the gradient is
         evaluated and/or the identity matrix is added to the gradient.
-        
+
         Arguments
         ---------
         grad : bool, optional (default is True)
@@ -58,9 +58,9 @@ class FieldMixed:
         sym : bool, optional (default is False)
             Flag for symmetric part if the gradient is evaluated.
         add_identity : bool, optional (default is True)
-            Flag for the addition of the identity matrix 
+            Flag for the addition of the identity matrix
             if the gradient is evaluated.
-        
+
         Returns
         -------
         array

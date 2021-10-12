@@ -25,41 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from collections import namedtuple
-
-Shape = namedtuple("shape", "function gradient n")
-
 
 class Element:
-    def __init__(self, function, gradient, nshape):
-        self.shape = Shape(function, gradient, nshape)
-
-
-class LineElement(Element):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dim = 1
-
-
-class QuadElement(Element):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dim = 2
-
-
-class HexahedronElement(Element):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dim = 3
-
-
-class TriangleElement(Element):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dim = 2
-
-
-class TetraElement(Element):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dim = 3
+    def __init__(shape):
+        self.shape = shape
+        self.dim = self.shape[1]

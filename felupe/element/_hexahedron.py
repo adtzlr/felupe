@@ -27,30 +27,44 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import HexahedronElement
+from ._base import Element
 from ._lagrange import ArbitraryOrderLagrange
 
 
-class ConstantHexahedron(HexahedronElement):
+class ConstantHexahedron(Element):
     def __init__(self):
-        self.points = 8
-        super().__init__(self._fun, self._grad, 1)
+        self.points = np.array([[-1,-1,-1],
+                                [ 1,-1,-1],
+                                [ 1, 1,-1],
+                                [-1, 1,-1],
+                                [-1,-1, 1],
+                                [ 1,-1, 1],
+                                [ 1, 1, 1],
+                                [-1, 1, 1]])
+        super().__init__(shape=(1, 3))
 
-    def _fun(self, rst):
+    def function(self, rst):
         "constant hexahedron shape functions"
         return np.array([1])
 
-    def _grad(self, rst):
+    def gradient(self, rst):
         "constant hexahedron gradient of shape functions"
         return np.array([[0, 0, 0]])
 
 
-class Hexahedron(HexahedronElement):
+class Hexahedron(Element):
     def __init__(self):
-        self.points = 8
-        super().__init__(self._fun, self._grad, 8)
+        self.points = np.array([[-1,-1,-1],
+                                [ 1,-1,-1],
+                                [ 1, 1,-1],
+                                [-1, 1,-1],
+                                [-1,-1, 1],
+                                [ 1,-1, 1],
+                                [ 1, 1, 1],
+                                [-1, 1, 1]])
+        super().__init__(shape=(8, 3))
 
-    def _fun(self, rst):
+    def function(self, rst):
         "linear hexahedron shape functions"
         r, s, t = rst
         return (
@@ -69,7 +83,7 @@ class Hexahedron(HexahedronElement):
             * 0.125
         )
 
-    def _grad(self, rst):
+    def gradient(self, rst):
         "linear hexahedron gradient of shape functions"
         r, s, t = rst
         return (
@@ -91,10 +105,33 @@ class Hexahedron(HexahedronElement):
 
 class QuadraticHexahedron(HexahedronElement):
     def __init__(self):
-        self.points = 20
-        super().__init__(self._fun, self._grad, 20)
+        self.points = np.array([[-1,-1,-1],
+                                [ 1,-1,-1],
+                                [ 1, 1,-1],
+                                [-1, 1,-1],
+                                #
+                                [-1,-1, 1],
+                                [ 1,-1, 1],
+                                [ 1, 1, 1],
+                                [-1, 1, 1],
+                                #
+                                [ 0,-1,-1],
+                                [ 1, 0,-1],
+                                [ 0, 1,-1],
+                                [-1, 0,-1],
+                                #
+                                [ 0,-1, 1],
+                                [ 1, 0, 1],
+                                [ 0, 1, 1],
+                                [-1, 0, 1],
+                                #
+                                [ 0,-1, 0],
+                                [ 1, 0, 0],
+                                [ 0, 1, 0],
+                                [-1, 0, 0]])
+        super().__init__(shape=(20, 3))
 
-    def _fun(self, rst):
+    def function(self, rst):
         "quadratic serendipity hexahedron shape functions"
         r, s, t = rst
         return np.array(
@@ -126,7 +163,7 @@ class QuadraticHexahedron(HexahedronElement):
             ]
         )
 
-    def _grad(self, rst):
+    def gradient(self, rst):
         "quadratic serendipity hexahedron gradient of shape functions"
         r, s, t = rst
         return np.array(

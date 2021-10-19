@@ -49,7 +49,7 @@ dependencies = [
 all = [
     "matplotlib",
     "numba",
-	"sparse",
+    "sparse",
 ]
 
 [project.urls]

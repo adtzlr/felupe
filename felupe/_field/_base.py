@@ -95,9 +95,9 @@ class Field:
         "Calculate pre-defined indices for sparse matrices."
 
         # index of cell "e", point "a" and component "i"
-        eai = np.stack(
-            [dim * np.tile(cell, (dim, 1)).T + np.arange(dim) for cell in cells]
-        )
+        eai = (
+            dim * np.repeat(cells, dim) + np.tile(np.arange(dim), cells.size)
+        ).reshape(*cells.shape, dim)
         # store indices as (rows, cols) (note: sparse-matrices are always 2d)
         ai = (eai.ravel(), np.zeros_like(eai.ravel()))
 
@@ -126,9 +126,7 @@ class Field:
         # w.r.t. undeformed coordinates "J" evaluated at quadrature point "p"
         # for each cell "e"
         g = np.einsum(
-            "ea...,aJpe->...Jpe",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
+            "ea...,aJpe->...Jpe", self.values[self.region.mesh.cells], self.region.dhdX,
         )
 
         if sym:

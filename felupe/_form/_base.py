@@ -130,14 +130,10 @@ class IntegralForm:
             eai = self.v.indices.eai
             ebk = self.u.indices.eai
 
-            eaibk0 = np.stack(
-                [np.repeat(ai.ravel(), bk.size) for ai, bk in zip(eai, ebk)]
-            )
-            eaibk1 = np.stack(
-                [np.tile(bk.ravel(), ai.size) for ai, bk in zip(eai, ebk)]
-            )
+            eaibk0 = np.repeat(eai, ebk.shape[1] * self.u.dim)
+            eaibk1 = np.tile(ebk, (1, eai.shape[1] * self.v.dim, 1)).ravel()
 
-            self.indices = (eaibk0.ravel(), eaibk1.ravel())
+            self.indices = (eaibk0, eaibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
     def assemble(self, values=None, parallel=False):

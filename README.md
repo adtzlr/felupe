@@ -11,6 +11,7 @@ Install Python, fire up a terminal and run
 
 ```shell
 pip install felupe[all]
+```
 
 where `[all]` installs all optional dependencies. By default, FElupe does not require `numba` and `sparse`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. After installation, import FElupe as follows in your script.
 

@@ -27,6 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 
 class Element:
-    def __init__(shape):
+    def __init__(self, shape):
         self.shape = shape
         self.dim = self.shape[1]

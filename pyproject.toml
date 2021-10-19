@@ -40,16 +40,16 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
+  "quadpy",
   "h5py",
   "meshio",
-  "quadpy",
-  "sparse",
 ]
 
 [project.optional-dependencies]
 all = [
     "matplotlib",
     "numba",
+	"sparse",
 ]
 
 [project.urls]

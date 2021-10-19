@@ -34,13 +34,13 @@ def test_line2():
 
     r = [-1]
 
-    h = line2.shape.function(r)
-    dhdr = line2.shape.gradient(r)
+    h = line2.function(r)
+    dhdr = line2.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
 
-    assert line2.shape.n, line2.dim == dhdr.shape
+    assert line2.shape == dhdr.shape
 
 
 def test_quad0():
@@ -48,13 +48,13 @@ def test_quad0():
 
     r = [-1, -1]
 
-    h = quad0.shape.function(r)
-    dhdr = quad0.shape.gradient(r)
+    h = quad0.function(r)
+    dhdr = quad0.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == 0)
 
-    assert quad0.shape.n, quad0.dim == dhdr.shape
+    assert quad0.shape == dhdr.shape
 
 
 def test_quad4():
@@ -62,13 +62,13 @@ def test_quad4():
 
     r = [-1, -1]
 
-    h = quad4.shape.function(r)
-    dhdr = quad4.shape.gradient(r)
+    h = quad4.function(r)
+    dhdr = quad4.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
 
-    assert quad4.shape.n, quad4.dim == dhdr.shape
+    assert quad4.shape == dhdr.shape
 
 
 def test_hex0():
@@ -76,13 +76,13 @@ def test_hex0():
 
     r = [-1, -1, -1]
 
-    h = hex0.shape.function(r)
-    dhdr = hex0.shape.gradient(r)
+    h = hex0.function(r)
+    dhdr = hex0.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == 0)
 
-    assert hex0.shape.n, hex0.dim == dhdr.shape
+    assert hex0.shape == dhdr.shape
 
 
 def test_hex8():
@@ -90,13 +90,13 @@ def test_hex8():
 
     r = [-1, -1, -1]
 
-    h = hex8.shape.function(r)
-    dhdr = hex8.shape.gradient(r)
+    h = hex8.function(r)
+    dhdr = hex8.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
 
-    assert hex8.shape.n, hex8.dim == dhdr.shape
+    assert hex8.shape == dhdr.shape
 
 
 def test_hex20():
@@ -104,13 +104,13 @@ def test_hex20():
 
     r = [-1, -1, -1]
 
-    h = hex20.shape.function(r)
-    dhdr = hex20.shape.gradient(r)
+    h = hex20.function(r)
+    dhdr = hex20.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
 
-    assert hex20.shape.n, hex20.dim == dhdr.shape
+    assert hex20.shape == dhdr.shape
 
 
 def test_hex27():
@@ -118,13 +118,13 @@ def test_hex27():
 
     r = [-1, -1, -1]
 
-    h = hex27.shape.function(r)
-    dhdr = hex27.shape.gradient(r)
+    h = hex27.function(r)
+    dhdr = hex27.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
 
-    assert hex27.shape.n, hex27.dim == dhdr.shape
+    assert hex27.shape == dhdr.shape
 
 
 def test_tri3():
@@ -132,13 +132,13 @@ def test_tri3():
 
     r = [0, 0]
 
-    h = tri3.shape.function(r)
-    dhdr = tri3.shape.gradient(r)
+    h = tri3.function(r)
+    dhdr = tri3.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1)
 
-    assert tri3.shape.n, tri3.dim == dhdr.shape
+    assert tri3.shape == dhdr.shape
 
 
 def test_tri6():
@@ -146,13 +146,13 @@ def test_tri6():
 
     r = [0, 0]
 
-    h = tri6.shape.function(r)
-    dhdr = tri6.shape.gradient(r)
+    h = tri6.function(r)
+    dhdr = tri6.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -3)
 
-    assert tri6.shape.n, tri6.dim == dhdr.shape
+    assert tri6.shape == dhdr.shape
 
 
 def test_tri_mini():
@@ -160,14 +160,14 @@ def test_tri_mini():
 
     r = [0, 0]
 
-    h = trim.shape.function(r)
-    dhdr = trim.shape.gradient(r)
+    h = trim.function(r)
+    dhdr = trim.gradient(r)
 
     assert h[0] == 1
     assert h[-1] == 0  # check bubble
     assert np.all(dhdr[0] == -1)
 
-    assert trim.shape.n, trim.dim == dhdr.shape
+    assert trim.shape == dhdr.shape
 
 
 def test_tet4():
@@ -175,13 +175,13 @@ def test_tet4():
 
     r = [0, 0, 0]
 
-    h = tet4.shape.function(r)
-    dhdr = tet4.shape.gradient(r)
+    h = tet4.function(r)
+    dhdr = tet4.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1)
 
-    assert tet4.shape.n, tet4.dim == dhdr.shape
+    assert tet4.shape == dhdr.shape
 
 
 def test_tet10():
@@ -189,13 +189,13 @@ def test_tet10():
 
     r = [0, 0, 0]
 
-    h = tet10.shape.function(r)
-    dhdr = tet10.shape.gradient(r)
+    h = tet10.function(r)
+    dhdr = tet10.gradient(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -3)
 
-    assert tet10.shape.n, tet10.dim == dhdr.shape
+    assert tet10.shape == dhdr.shape
 
 
 def test_tet_mini():
@@ -203,35 +203,35 @@ def test_tet_mini():
 
     r = [0, 0, 0]
 
-    h = tetm.shape.function(r)
-    dhdr = tetm.shape.gradient(r)
+    h = tetm.function(r)
+    dhdr = tetm.gradient(r)
 
     assert h[0] == 1
     assert h[-1] == 0  # check bubble
     assert np.all(dhdr[0] == -1)
 
-    assert tetm.shape.n, tetm.dim == dhdr.shape
+    assert tetm.shape == dhdr.shape
 
 
 def test_aol():
-    aol32 = fe.element.ArbitraryOrderLagrange(order=3, ndim=2)
-    aol23 = fe.element.ArbitraryOrderLagrange(order=2, ndim=3)
+    aol32 = fe.element.ArbitraryOrderLagrange(order=3, dim=2)
+    aol23 = fe.element.ArbitraryOrderLagrange(order=2, dim=3)
 
     r = [-1, -1]
 
-    h = aol32.shape.function(r)
-    dhdr = aol32.shape.gradient(r)
+    h = aol32.function(r)
+    dhdr = aol32.gradient(r)
 
     assert h[0] == 1
-    assert aol32.shape.n, aol32.dim == dhdr.shape
+    assert aol32.shape == dhdr.shape
 
     r = [-1, -1, -1]
 
-    h = aol23.shape.function(r)
-    dhdr = aol23.shape.gradient(r)
+    h = aol23.function(r)
+    dhdr = aol23.gradient(r)
 
     assert h[0] == 1
-    assert aol23.shape.n, aol23.dim == dhdr.shape
+    assert aol23.shape == dhdr.shape
 
 
 if __name__ == "__main__":

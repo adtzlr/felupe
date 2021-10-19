@@ -19,6 +19,7 @@ from ._tensor import (
     dot,
     ddot,
     tovoigt,
+    sym,
 )
 
 from ._field import (
@@ -29,5 +30,4 @@ from ._field import (
     norm,
     interpolate,
     grad,
-    sym,
 )

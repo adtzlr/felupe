@@ -30,7 +30,85 @@ from scipy.sparse import csr_matrix as sparsematrix
 
 
 class IntegralForm:
+    "Integral (weak) form."
+
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
+        """Integral Form constructed by a function result `fun`,
+        a virtual field `v`, differential volumes `dV` and optionally a
+        field `u`. For both fields `v` and `u` gradients may be passed by
+        setting `grad_v` and `grad_u` to True (default is False for both).
+
+
+        1) Linearform
+
+            a) without gradient of `v`
+
+                L(v) = ∫ fun v dV                                      (1)
+
+                   (or ∫ fun_i v_i dV)
+
+            b) with gradient of `v`
+
+                L(v) = ∫ fun grad(v) dV                                (2)
+
+                   (or ∫ fun_ij grad(v)_ij dV)
+
+
+        2) Bilinearform
+
+            a) without gradient of `v` and without gradient of `u`
+
+                b(v, u) = ∫ v fun u dV                                 (3)
+
+                      (or ∫ v_i fun_ij u_j dV)
+
+            b) with gradient of `v` and with gradient of `u`
+
+                b(v, u) = ∫ grad(v) fun grad(u) dV                     (4)
+
+                      (or ∫ grad(v)_ij fun_ijkl grad(u)_kl dV)
+
+            c) with gradient of `v` and without gradient of `u`
+
+                b(v, u) = ∫ grad(v) fun u dV                           (5)
+
+                      (or ∫ grad(v)_ij fun_ijk u_k dV)
+
+            d) without gradient of `v` and with gradient of `u`
+
+                b(v, u) = ∫ v fun grad(u) dV                           (6)
+
+                      (or ∫ v_i fun_ikl grad(u)_kl dV)
+
+        Arguments
+        ---------
+        fun : array
+            The pre-evaluated function.
+
+        v : Field
+            The virtual field.
+
+        dV : array
+            The differential volumes.
+
+        u : Field, optional (default is None)
+            If a field is passed, a Bilinear-Form is created.
+
+        grad_v : bool, optional (default is False)
+            Flag to activate the gradient on field `v`.
+
+        grad_u : bool, optional (default is False)
+            Flag to activate the gradient on field `u`.
+
+        Methods
+        -------
+        assemble
+            Assembly of sparse region vectors or matrices.
+
+        integrate
+            Evaluated (but not assembled) integrals.
+        """
+
         self.fun = fun
         self.dV = dV
 
@@ -40,22 +118,22 @@ class IntegralForm:
         self.u = u
         self.grad_u = grad_u
 
+        # init indices
+
+        # # linear form
         if not self.u:
             self.indices = self.v.indices.ai
             self.shape = self.v.indices.shape
 
+        # # bilinear form
         else:
             eai = self.v.indices.eai
             ebk = self.u.indices.eai
 
-            eaibk0 = np.stack(
-                [np.repeat(ai.ravel(), bk.size) for ai, bk in zip(eai, ebk)]
-            )
-            eaibk1 = np.stack(
-                [np.tile(bk.ravel(), ai.size) for ai, bk in zip(eai, ebk)]
-            )
+            eaibk0 = np.repeat(eai, ebk.shape[1] * self.u.dim)
+            eaibk1 = np.tile(ebk, (1, eai.shape[1] * self.v.dim, 1)).ravel()
 
-            self.indices = (eaibk0.ravel(), eaibk1.ravel())
+            self.indices = (eaibk0, eaibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
     def assemble(self, values=None, parallel=False):
@@ -78,9 +156,6 @@ class IntegralForm:
         v, u = self.v, self.u
         dV = self.dV
         fun = self.fun
-
-        # if parallel:
-        #    from numba import jit
 
         if not grad_v:
             vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)
@@ -140,15 +215,15 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim1, ndim2, ngauss, ncells = fun.shape
+        dim1, dim2, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints_a, ndim1, npoints_b, ncells))
+        out = np.zeros((npoints_a, dim1, npoints_b, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
                     for c in prange(ncells):  # cell "c"
-                        for i in prange(ndim1):  # first index "i"
-                            for J in prange(ndim2):  # second index "J"
+                        for i in prange(dim1):  # first index "i"
+                            for J in prange(dim2):  # second index "J"
                                 out[a, i, b, c] += (
                                     v[a, J, p, c]
                                     * u[b, p, c]
@@ -163,15 +238,15 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim1, ndim2, ngauss, ncells = fun.shape
+        dim1, dim2, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints_a, npoints_b, ndim1, ncells))
+        out = np.zeros((npoints_a, npoints_b, dim1, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
                     for c in prange(ncells):  # cell "c"
-                        for k in prange(ndim1):  # third index "k"
-                            for L in prange(ndim2):  # fourth index "L"
+                        for k in prange(dim1):  # third index "k"
+                            for L in prange(dim2):  # fourth index "L"
                                 out[a, b, k, c] += (
                                     v[a, p, c]
                                     * u[b, L, p, c]
@@ -185,15 +260,15 @@ try:
     def integrate_gradv(v, fun, dV):  # pragma: no cover
 
         npoints = v.shape[0]
-        ndim1, ndim2, ngauss, ncells = fun.shape
+        dim1, dim2, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints, ndim1, ncells))
+        out = np.zeros((npoints, dim1, ncells))
 
         for a in prange(npoints):  # basis function "a"
             for p in prange(ngauss):  # integration point "p"
                 for c in prange(ncells):  # cell "c"
-                    for i in prange(ndim1):  # first index "i"
-                        for J in prange(ndim2):  # second index "J"
+                    for i in prange(dim1):  # first index "i"
+                        for J in prange(dim2):  # second index "J"
                             out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
 
         return out
@@ -203,17 +278,17 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        ndim1, ndim2, ndim3, ndim4, ngauss, ncells = fun.shape
+        dim1, dim2, dim3, dim4, ngauss, ncells = fun.shape
 
-        out = np.zeros((npoints_a, ndim1, npoints_b, ndim3, ncells))
+        out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
         for a in prange(npoints_a):  # basis function "a"
             for b in prange(npoints_b):  # basis function "b"
                 for p in prange(ngauss):  # integration point "p"
                     for c in prange(ncells):  # cell "c"
-                        for i in prange(ndim1):  # first index "i"
-                            for J in prange(ndim2):  # second index "J"
-                                for k in prange(ndim3):  # third index "k"
-                                    for L in prange(ndim4):  # fourth index "L"
+                        for i in prange(dim1):  # first index "i"
+                            for J in prange(dim2):  # second index "J"
+                                for k in prange(dim3):  # third index "k"
+                                    for L in prange(dim4):  # fourth index "L"
                                         out[a, i, b, k, c] += (
                                             v[a, J, p, c]
                                             * u[b, L, p, c]

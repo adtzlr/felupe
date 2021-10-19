@@ -26,7 +26,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from ._tensor import identity, transpose
 
 
 def defgrad(field):
@@ -71,8 +70,3 @@ def interpolate(field):
 def grad(field, sym=False):
     "Gradient method of field A."
     return field.grad(sym=sym)
-
-
-def sym(A):
-    "Symmetric part of matrix A."
-    return (A + transpose(A)) / 2

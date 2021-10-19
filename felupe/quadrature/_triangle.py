@@ -28,13 +28,16 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 from types import SimpleNamespace
 
 import numpy as np
-import quadpy
 
 from . import Scheme
 
 
 class Triangle(Scheme):
+    "An integration scheme for Triangles."
+
     def __init__(self, order: int):
+        "Integration scheme for Triangles of `order` 1, 2 or 3."
+
         scheme = SimpleNamespace()
         area = 1 / 2
 

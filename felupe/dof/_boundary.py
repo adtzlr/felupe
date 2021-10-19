@@ -29,7 +29,7 @@ import numpy as np
 
 
 class Boundary:
-    "A Boundary as a collection of prescribed dofs (coordinate components of a field at points of a mesh)."
+    "A Boundary as a collection of prescribed degrees of freedom."
 
     def __init__(
         self,
@@ -41,33 +41,78 @@ class Boundary:
         value=0,
         skip=(False, False, False),
     ):
+        """A Boundary as a collection of prescribed degrees of freedom
+        (numbered coordinate components of a field at points of a mesh).
+
+
+        Arguments
+        ---------
+        field : Field
+            Field on wich the boundary is created.
+
+        name : str, optional (default is "default")
+            Name of the boundary.
+
+        fx : function, optional (default is `lambda v: v == np.nan`)
+            Mask-function for x-component of mesh-points which returns
+            `True` at points on which the boundary will be applied.
+
+        fy : function, optional (default is `lambda v: v == np.nan`)
+            Mask-function for y-component of mesh-points which returns
+            `True` at points on which the boundary will be applied.
+
+        fz : function, optional (default is `lambda v: v == np.nan`)
+            Mask-function for z-component of mesh-points which returns
+            `True` at points on which the boundary will be applied.
+
+        value : int, optional (default is 0)
+            Value of the selected (prescribed) degrees of freedom.
+
+        skip : tuple of bool, optional (default is `(False, False, False)`)
+            A tuple to define which axes of the selected points should be
+            skipped (i.e. not prescribed).
+
+
+        Attributes
+        ----------
+        mask : array
+            Mask-array which contains prescribed degrees of freedom.
+
+        dof :array
+            Array which contains prescribed degrees of freedom.
+
+        points : array
+            Array which contains the points on which one or more degrees of
+            freedom are prescribed.
+
+        """
 
         mesh = field.region.mesh
         dof = field.indices.dof
 
-        self.ndim = field.dim  # mesh.ndim
+        self.dim = field.dim  # mesh.dim
         self.name = name
         self.value = value
-        self.skip = np.array(skip).astype(int)[: mesh.ndim]  # self.ndim
-        self.fun = [fx, fy, fz][: mesh.ndim]
+        self.skip = np.array(skip).astype(int)[: mesh.dim]  # self.dim
+        self.fun = [fx, fy, fz][: mesh.dim]
 
         # apply functions on the points per coordinate
         # fx(x), fy(y), fz(z) and create a mask for each coordinate
         mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
 
-        # combine the masks with "logical_or" if ndim > 1
-        if mesh.ndim == 1:
+        # combine the masks with "logical_or" if dim > 1
+        if mesh.dim == 1:
             mask = mask[0]
 
-        elif mesh.ndim == 2:
+        elif mesh.dim == 2:
             mask = np.logical_or(mask[0], mask[1])
 
-        elif mesh.ndim == 3:  # and mesh.points.shape[1] == 3:
+        elif mesh.dim == 3:  # and mesh.points.shape[1] == 3:
             tmp = np.logical_or(mask[0], mask[1])
             mask = np.logical_or(tmp, mask[2])
 
         # tile the mask
-        self.mask = np.tile(mask.reshape(-1, 1), self.ndim)
+        self.mask = np.tile(mask.reshape(-1, 1), self.dim)
 
         # check if some axes should be skipped
         if True not in skip:

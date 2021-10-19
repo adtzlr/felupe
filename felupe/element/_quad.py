@@ -27,32 +27,30 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import QuadElement
+from ._base import Element
 
 
-class ConstantQuad(QuadElement):
+class ConstantQuad(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 1
+        super().__init__(shape=(1, 2))
+        self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
-    def basis(self, rst):
-        "linear quadrilateral basis functions"
+    def function(self, rst):
+        "linear quadrilateral shape functions"
         return np.array([1])
 
-    def basisprime(self, rst):
-        "linear quadrilateral derivative of basis functions"
-        return np.array([[0, 0, 0]])
+    def gradient(self, rst):
+        "linear quadrilateral gradient of shape functions"
+        return np.array([[0, 0]])
 
 
-class Quad(QuadElement):
+class Quad(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 4
+        super().__init__(shape=(4, 2))
+        self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
-    def basis(self, rs):
-        "linear quadrilateral basis functions"
+    def function(self, rs):
+        "linear quadrilateral shape functions"
         r, s = rs
         return (
             np.array(
@@ -66,8 +64,8 @@ class Quad(QuadElement):
             * 0.25
         )
 
-    def basisprime(self, rs):
-        "linear quadrilateral derivative of basis functions"
+    def gradient(self, rs):
+        "linear quadrilateral gradient of shape functions"
         r, s = rs
         return (
             np.array(

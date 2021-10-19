@@ -26,26 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-class LineElement:
-    def __init__(self):
-        self.ndim = 1
-
-
-class QuadElement:
-    def __init__(self):
-        self.ndim = 2
-
-
-class HexahedronElement:
-    def __init__(self):
-        self.ndim = 3
-
-
-class TriangleElement:
-    def __init__(self):
-        self.ndim = 2
-
-
-class TetraElement:
-    def __init__(self):
-        self.ndim = 3
+class Element:
+    def __init__(self, shape):
+        self.shape = shape
+        self.dim = self.shape[1]

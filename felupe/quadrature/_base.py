@@ -27,7 +27,12 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 
 class Scheme:
+    "A quadrature scheme."
+
     def __init__(self, points, weights):
+        "Quadrature scheme with integration `points` and `weights`."
+
         self.points = points
         self.weights = weights
+
         self.npoints, self.dim = self.points.shape

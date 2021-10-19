@@ -10,7 +10,7 @@ from . import solve
 from . import region
 
 from .region import Region
-from ._form import (
+from ._assembly import (
     IntegralForm,
     IntegralFormMixed,
     IntegralFormAxisymmetric,

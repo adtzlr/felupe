@@ -25,22 +25,14 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import numpy as np
-
 from ..math import (
-    dot,
-    ddot,
     transpose,
-    majortranspose,
     inv,
     dya,
-    cdya,
     cdya_ik,
     cdya_il,
     det,
     identity,
-    trace,
-    dev,
 )
 
 
@@ -49,9 +41,11 @@ class LineChange:
         pass
 
     def function(self, F):
+        "line change dx = F dX"
         return F
 
     def gradient(self, F):
+        "gradient of line change"
         Eye = identity(F)
         return cdya_ik(Eye, Eye)
 
@@ -61,10 +55,12 @@ class AreaChange:
         pass
 
     def function(self, F):
+        "area change da = J F^(-T) dA"
         J = det(F)
         return J * transpose(inv(F, J))
 
     def gradient(self, F):
+        "gradient of area change"
         J = det(F)
         dJdF = self.function(F)
         return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
@@ -75,13 +71,16 @@ class VolumeChange:
         pass
 
     def function(self, F):
+        "volume change dv = J dV"
         return det(F)
 
     def gradient(self, F):
+        "gradient of volume change"
         J = self.function(F)
         return J * transpose(inv(F, J))
 
     def hessian(self, F):
+        "hessian of volume change"
         J = self.function(F)
         dJdF = self.gradient(F)
         return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J

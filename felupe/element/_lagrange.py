@@ -30,21 +30,24 @@ from scipy.special import factorial
 from string import ascii_lowercase as alphabet
 from copy import deepcopy as copy
 
+from ._base import Element
 
-class ArbitraryOrderLagrange:
+
+class ArbitraryOrderLagrange(Element):
     "Lagrange quad/hexahdron finite element of arbitrary order."
 
-    def __init__(self, order, ndim, interval=(-1, 1)):
-        self.ndim = ndim
-        self.order = order
-        self.npoints = (order + 1) ** ndim
-        self.nbasis = self.npoints
-        self.interval = interval
+    def __init__(self, order, dim, interval=(-1, 1)):
 
-        self._nbasis = order + 1
+        self._order = order
+        self._nshape = order + 1
+        self._npoints = self._nshape ** dim
+        self._nbasis = self._npoints
+        self._interval = interval
+
+        super().__init__(shape=(self._npoints, dim))
 
         # init curve-parameter matrix
-        n = self._nbasis
+        n = self._nshape
         self._AT = np.linalg.inv(
             np.array([self._polynomial(p, n) for p in self._points(n)])
         ).T
@@ -52,21 +55,21 @@ class ArbitraryOrderLagrange:
         # indices for outer product in einstein notation
         # idx = ["a", "b", "c", ...][:dim]
         # subscripts = "a,b,c -> abc"
-        self._idx = [letter for letter in alphabet][: self.ndim]
+        self._idx = [letter for letter in alphabet][: self.dim]
         self._subscripts = ",".join(self._idx) + "->" + "".join(self._idx)
 
-    def basis(self, r):
-        "Basis function vector at coordinate vector r."
-        n = self._nbasis
+    def function(self, r):
+        "Shape function vector at coordinate vector r."
+        n = self._nshape
 
         # 1d - basis function vectors per axis
         h = [self._AT @ self._polynomial(ra, n) for ra in r]
 
         return np.einsum(self._subscripts, *h).ravel("F")
 
-    def basisprime(self, r):
-        "Basis function derivative vector at coordinate vector r."
-        n = self._nbasis
+    def gradient(self, r):
+        "Gradient of shape function vector at coordinate vector r."
+        n = self._nshape
 
         # 1d - basis function vectors per axis
         h = [self._AT @ self._polynomial(ra, n) for ra in r]
@@ -75,10 +78,10 @@ class ArbitraryOrderLagrange:
         k = [self._AT @ np.append(0, self._polynomial(ra, n)[:-1]) for ra in r]
 
         # init output
-        dhdr = np.zeros((n ** self.ndim, self.ndim))
+        dhdr = np.zeros((n ** self.dim, self.dim))
 
         # loop over columns
-        for i in range(self.ndim):
+        for i in range(self.dim):
             g = copy(h)
             g[i] = k[i]
             dhdr[:, i] = np.einsum(self._subscripts, *g).ravel("F")
@@ -87,7 +90,7 @@ class ArbitraryOrderLagrange:
 
     def _points(self, n):
         "Equidistant n points in interval [-1, 1]."
-        return np.linspace(*self.interval, n)
+        return np.linspace(*self._interval, n)
 
     def _polynomial(self, r, n):
         "Lagrange-Polynomial of order n evaluated at coordinate r."

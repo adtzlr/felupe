@@ -64,7 +64,7 @@ def test_math():
 
     a = np.random.rand(3, 8, 200)
 
-    fe.math.identity(A=None, ndim=3, shape=(8, 20))
+    fe.math.identity(A=None, dim=3, shape=(8, 20))
 
     fe.math.cross(a, a)
     fe.math.dya(a, a, mode=1)

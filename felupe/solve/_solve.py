@@ -33,10 +33,9 @@ from ..math import values
 
 
 def partition(v, K, dof1, dof0, r=None):
-    """Perform partitioning of field values (unknowns),
-    (stiffness) matrix and (residuals) vector
-    with given lists of active (dof1) and p
-    rescribed degrees of freedom (dof0)."""
+    """Perform partitioning of field values (unknowns), (stiffness) matrix
+    and (residuals) vector with given lists of active (dof1) and
+    prescribed degrees of freedom (dof0)."""
 
     # extract values
     u = values(v)
@@ -59,8 +58,8 @@ def partition(v, K, dof1, dof0, r=None):
 
 
 def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
-    """Linear solution of equation system with optional
-    given values of unknowns at prescribed deegrees of freedom.
+    """Linear solution of equation system with optional given values of
+    unknowns at prescribed deegrees of freedom.
 
         K_11 du_1 = -r1 - K10 (u0_ext - u0)
 

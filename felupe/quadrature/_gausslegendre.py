@@ -31,21 +31,35 @@ from . import Scheme
 
 
 class GaussLegendre(Scheme):
+    "A n-dimensional Gauss-Legendre quadrature rule."
+
     def __init__(self, order: int, dim: int):
+        """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
+        on the interval [-1, 1] as approximation of
+
+            ∫ f(x) dx ≈ ∑ f(x_a) w_a                                    (1)
+
+        with `a` quadrature points `x_a` and corresponding weights `w_a`.
+
+        """
         # integration point weights and coordinates
 
         if dim == 3:
             scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(order + 1))
+
         elif dim == 2:
             scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(order + 1))
+
         elif dim == 1:
             scheme = quadpy.c1.gauss_legendre(order + 1)
             scheme.points = scheme.points.reshape(1, -1)
+
         else:
             raise ValueError("Wrong dimension.")
 
         if dim > 1:
             weights = scheme.weights * 2 ** dim
+
         else:
             weights = scheme.weights
 

@@ -28,15 +28,20 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def identity(A=None, ndim=None, shape=None):
+def identity(A=None, dim=None, shape=None):
     "Identity according to matrix A with optional specified dim."
     if A is not None:
-        ndimA, g, e = A.shape[-3:]
-        if ndim is None:
-            ndim = ndimA
+        dimA, g, e = A.shape[-3:]
+        if dim is None:
+            dim = dimA
     else:
         g, e = shape
-    return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
+    return np.tile(np.eye(dim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
+
+
+def sym(A):
+    "Symmetric part of matrix A."
+    return (A + transpose(A)) / 2
 
 
 def dya(A, B, mode=2):
@@ -55,9 +60,6 @@ def inv(A, determinant=None, full_output=False, sym=False):
     a simplified calculation of the inverse for sym. matrices."""
 
     detAinvA = np.zeros_like(A)
-
-    # if sym is None:
-    #    sym = np.all(A == transpose(A))
 
     if determinant is None:
         detA = det(A)
@@ -139,10 +141,10 @@ def eigvals(A, shear=False, eig=np.linalg.eig):
     "Eigenvalues (and optional principal shear values) of a matrix A."
     wA = eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
     if shear:
-        ndim = wA.shape[0]
-        if ndim == 3:
+        dim = wA.shape[0]
+        if dim == 3:
             ij = [(1, 0), (2, 0), (2, 1)]
-        elif ndim == 2:
+        elif dim == 2:
             ij = [(1, 0)]
         dwA = np.array([wA[i] - wA[j] for i, j in ij])
         return np.vstack((wA, dwA))
@@ -209,7 +211,7 @@ def dot(A, B, n=2):
 
 
 def ddot(A, B, n=2):
-    "Double-Dot-product of A and B with inputs of n trailing axes."
+    "Double-Dot-product of A and B with inputs of `n` trailing axes."
     if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
         return np.einsum("ij...,ij...->...", A, B)
     elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:

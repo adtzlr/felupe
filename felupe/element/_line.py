@@ -27,21 +27,20 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import LineElement
+from ._base import Element
 
 
-class Line(LineElement):
+class Line(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 2
-        self.nbasis = 2
+        super().__init__(shape=(2, 1))
+        self.points = np.array([-1, 1], dtype=float)
 
-    def basis(self, rv):
-        "linear line basis functions"
+    def function(self, rv):
+        "linear line shape functions"
         (r,) = rv
         return np.array([(1 - r), (1 + r)]) * 0.5
 
-    def basisprime(self, rv):
-        "linear line derivative of basis functions"
+    def gradient(self, rv):
+        "linear line gradient of shape functions"
         (r,) = rv
         return np.array([[-1], [1]]) * 0.5

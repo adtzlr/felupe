@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr 29 18:29:15 2021
-
-@author: adutz
-"""
-# -*- coding: utf-8 -*-
-"""
  _______  _______  ___      __   __  _______  _______ 
 |       ||       ||   |    |  | |  ||       ||       |
 |    ___||    ___||   |    |  | |  ||    _  ||    ___|
@@ -40,48 +34,56 @@ class Region:
     """A numeric region."""
 
     def __init__(self, mesh, element, quadrature, grad=True):
-        """A numeric region, created by a combination of a mesh,
-        an element and a numeric integration scheme (quadrature).
+        """A numeric region as a combination of a `mesh`,
+        an `element` and a numeric integration scheme (`quadrature`).
+        The gradients of the element shape functions are evaluated at
+        all integration points of each cell in the region if the
+        optional argument `grad` is True (default is True).
         """
+
         self.mesh = mesh
         self.element = element
         self.quadrature = quadrature
 
-        # array with degrees of freedom
-        # h_bp
-        # ----
-        # basis function "b" evaluated at quadrature point "p"
-        self.h = np.array([self.element.basis(p) for p in self.quadrature.points]).T
+        # element shape function "a" evaluated at quadrature point "p"
+        #
+        # h_ap
+        self.h = np.array([self.element.function(p) for p in self.quadrature.points]).T
 
-        # dhdr_bJp
-        # --------
-        # partial derivative of basis function "b"
-        # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
+        # partial derivative of element shape function "a"
+        # w.r.t. natural element coordinate "J" evaluated at quadrature point "p"
+        #
+        # dhdr_aJp
         self.dhdr = np.array(
-            [self.element.basisprime(p) for p in self.quadrature.points]
+            [self.element.gradient(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
 
-        if self.element.nbasis > 1 and self.mesh.ndim == self.element.ndim and grad:
+        if grad:
 
-            # dXdr_IJpe and its inverse drdX_IJpe
-            # -----------------------------------
             # geometric gradient as partial derivative of undeformed coordinate "I"
-            # w.r.t. natural coordinate "J" evaluated at quadrature point "p"
-            # for every cell "c"
+            # w.r.t. natural element coordinate "J" evaluated at quadrature point "p"
+            # for every cell "c" (geometric gradient or
+            # **Jacobian** transformation between "X" and "r")
+            #
+            # dXdr_IJpe
             self.dXdr = np.einsum(
-                "cbI,bJp->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
+                "caI,aJp->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
             )
+
+            # inverse of dXdr
             self.drdX = inv(self.dXdr)
 
-            # dV_pe = det(dXdr)_pc * w_p
-            # determinant of geometric gradient evaluated at quadrature point "p"
+            # Determinant of geometric gradient evaluated at quadrature point "p"
             # for every cell "c" multiplied by corresponding quadrature weight
-            # denoted as "differential volume element"
+            # according to integration point "p", denoted as
+            # "differential volume element"
+            #
+            # dV_pc = det(dXdr)_pc * w_p
             self.dV = det(self.dXdr) * self.quadrature.weights.reshape(-1, 1)
 
-            # dhdX_bJpc
-            # ---------
-            # partial derivative of basis function "b"
+            # Partial derivative of element shape function "a"
             # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
             # for every cell "c"
-            self.dhdX = np.einsum("bIp,IJpc->bJpc", self.dhdr, self.drdX)
+            #
+            # dhdX_aJpc
+            self.dhdX = np.einsum("aIp,IJpc->aJpc", self.dhdr, self.drdX)

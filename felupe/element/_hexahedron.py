@@ -27,33 +27,55 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import HexahedronElement
+from ._base import Element
 from ._lagrange import ArbitraryOrderLagrange
 
 
-class ConstantHexahedron(HexahedronElement):
+class ConstantHexahedron(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 8
-        self.nbasis = 1
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+            ],
+            dtype=float,
+        )
+        super().__init__(shape=(1, 3))
 
-    def basis(self, rst):
-        "constant hexahedron basis functions"
+    def function(self, rst):
+        "constant hexahedron shape functions"
         return np.array([1])
 
-    def basisprime(self, rst):
-        "constant hexahedron derivative of basis functions"
+    def gradient(self, rst):
+        "constant hexahedron gradient of shape functions"
         return np.array([[0, 0, 0]])
 
 
-class Hexahedron(HexahedronElement):
+class Hexahedron(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 8
-        self.nbasis = 8
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+            ],
+            dtype=float,
+        )
+        super().__init__(shape=(8, 3))
 
-    def basis(self, rst):
-        "linear hexahedron basis functions"
+    def function(self, rst):
+        "linear hexahedron shape functions"
         r, s, t = rst
         return (
             np.array(
@@ -71,8 +93,8 @@ class Hexahedron(HexahedronElement):
             * 0.125
         )
 
-    def basisprime(self, rst):
-        "linear hexahedron derivative of basis functions"
+    def gradient(self, rst):
+        "linear hexahedron gradient of shape functions"
         r, s, t = rst
         return (
             np.array(
@@ -91,14 +113,41 @@ class Hexahedron(HexahedronElement):
         )
 
 
-class QuadraticHexahedron(HexahedronElement):
+class QuadraticHexahedron(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 20
-        self.nbasis = 20
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                #
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+                #
+                [0, -1, -1],
+                [1, 0, -1],
+                [0, 1, -1],
+                [-1, 0, -1],
+                #
+                [0, -1, 1],
+                [1, 0, 1],
+                [0, 1, 1],
+                [-1, 0, 1],
+                #
+                [-1, -1, 0],
+                [1, -1, 0],
+                [1, 1, 0],
+                [-1, 1, 0],
+            ],
+            dtype=float,
+        )
+        super().__init__(shape=(20, 3))
 
-    def basis(self, rst):
-        "quadratic serendipity hexahedron basis functions"
+    def function(self, rst):
+        "quadratic serendipity hexahedron shape functions"
         r, s, t = rst
         return np.array(
             [
@@ -129,8 +178,8 @@ class QuadraticHexahedron(HexahedronElement):
             ]
         )
 
-    def basisprime(self, rst):
-        "quadratic serendipity hexahedron derivative of basis functions"
+    def gradient(self, rst):
+        "quadratic serendipity hexahedron gradient of shape functions"
         r, s, t = rst
         return np.array(
             [
@@ -266,22 +315,69 @@ class QuadraticHexahedron(HexahedronElement):
         )
 
 
-class TriQuadraticHexahedron(Hexahedron):
+class TriQuadraticHexahedron(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 27
-        self.nbasis = 27
-        self.lagrange = ArbitraryOrderLagrange(order=2, ndim=3)
-        self.vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
-        self.edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
-        self.faces = np.array([12, 14, 10, 16, 4, 22])
-        self.volume = np.array([13])
-        self.permute = np.concatenate(
-            (self.vertices, self.edges, self.faces, self.volume)
+        super().__init__(shape=(27, 3))
+
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                #
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+                #
+                [0, -1, -1],
+                [1, 0, -1],
+                [0, 1, -1],
+                [-1, 0, -1],
+                #
+                [0, -1, 1],
+                [1, 0, 1],
+                [0, 1, 1],
+                [-1, 0, 1],
+                #
+                [-1, -1, 0],
+                [1, 1, 0],
+                [1, 1, 0],
+                [-1, 1, 0],
+                #
+                [0, -1, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [-1, 0, 0],
+                #
+                [-1, 0, 0],
+                [1, 0, 0],
+                [0, -1, 0],
+                [0, 1, 0],
+                #
+                [0, 0, 0],
+            ],
+            dtype=float,
         )
 
-    def basis(self, rst):
-        return self.lagrange.basis(rst)[self.permute]
+        self._lagrange = ArbitraryOrderLagrange(order=2, dim=3)
 
-    def basisprime(self, rst):
-        return self.lagrange.basisprime(rst)[self.permute, :]
+        self._vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
+        self._edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
+        self._faces = np.array([12, 14, 10, 16, 4, 22])
+        self._volume = np.array([13])
+
+        self._permute = np.concatenate(
+            (self._vertices, self._edges, self._faces, self._volume)
+        )
+
+    def function(self, rst):
+        "quadratic hexahedron shape functions"
+
+        return self._lagrange.function(rst)[self._permute]
+
+    def gradient(self, rst):
+        "quadratic hexahedron gradient of shape functions"
+
+        return self._lagrange.gradient(rst)[self._permute, :]

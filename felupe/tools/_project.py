@@ -38,14 +38,14 @@ def topoints(values, region, sym=True, mode="tensor"):
     cols = np.zeros_like(rows)
 
     if mode == "tensor":
-        ndim = values.shape[0]
+        dim = values.shape[0]
         if sym:
-            if ndim == 3:
+            if dim == 3:
                 ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
-            elif ndim == 2:
+            elif dim == 2:
                 ij = [(0, 0), (1, 1), (0, 1)]
         else:
-            if ndim == 3:
+            if dim == 3:
                 ij = [
                     (0, 0),
                     (0, 1),
@@ -57,7 +57,7 @@ def topoints(values, region, sym=True, mode="tensor"):
                     (2, 1),
                     (2, 2),
                 ]
-            elif ndim == 2:
+            elif dim == 2:
                 ij = [(0, 0), (0, 1), (1, 0), (1, 1)]
 
         out = Field(region, dim=len(ij)).values
@@ -65,7 +65,7 @@ def topoints(values, region, sym=True, mode="tensor"):
         for a, (i, j) in enumerate(ij):
             out[:, a] = (
                 sparsematrix(
-                    (values.reshape(ndim, ndim, -1)[i, j], (rows, cols)),
+                    (values.reshape(dim, dim, -1)[i, j], (rows, cols)),
                     shape=(region.mesh.npoints, 1),
                 ).toarray()[:, 0]
                 / region.mesh.cells_per_point

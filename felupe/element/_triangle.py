@@ -27,41 +27,39 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import TriangleElement
+from ._base import Element
 
 
-class Triangle(TriangleElement):
+class Triangle(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 3
-        self.nbasis = 3
+        super().__init__(shape=(3, 2))
+        self.points = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
 
-    def basis(self, rs):
-        "linear triangle basis functions"
+    def function(self, rs):
+        "linear triangle shape functions"
         r, s = rs
         return np.array([1 - r - s, r, s])
 
-    def basisprime(self, rs):
-        "linear triangle derivative of basis functions"
+    def gradient(self, rs):
+        "linear triangle gradient of shape functions"
         r, s = rs
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
 
-class TriangleMINI(TriangleElement):
+class TriangleMINI(Element):
     def __init__(self, bubble_multiplier=1.0):
-        super().__init__()
-        self.npoints = 4
-        self.nbasis = 4
+        super().__init__(shape=(4, 2))
+        self.points = np.array([[0, 0], [1, 0], [0, 1], [1 / 3, 1 / 3]], dtype=float)
         self.bubble_multiplier = bubble_multiplier
 
-    def basis(self, rs):
-        "linear triangle basis functions"
+    def function(self, rs):
+        "linear bubble-enriched triangle shape functions"
         r, s = rs
         a = self.bubble_multiplier
         return np.array([1 - r - s, r, s, a * r * s * (1 - r - s)])
 
-    def basisprime(self, rs):
-        "linear triangle derivative of basis functions"
+    def gradient(self, rs):
+        "linear bubble-enriched triangle gradient of shape functions"
         r, s = rs
         a = self.bubble_multiplier
         return np.array(
@@ -75,14 +73,17 @@ class TriangleMINI(TriangleElement):
         )
 
 
-class QuadraticTriangle(TriangleElement):
+class QuadraticTriangle(Element):
     def __init__(self):
-        super().__init__()
-        self.npoints = 6
-        self.nbasis = 6
+        super().__init__(shape=(6, 2))
+        self.points = np.zeros(self.shape)
+        self.points[:3] = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
+        self.points[3] = np.mean(self.points[[0, 1]], axis=0)
+        self.points[4] = np.mean(self.points[[1, 2]], axis=0)
+        self.points[5] = np.mean(self.points[[2, 0]], axis=0)
 
-    def basis(self, rs):
-        "linear triangle basis functions"
+    def function(self, rs):
+        "quadratic triangle shape functions"
         r, s = rs
         h = np.array(
             [1 - r - s, r, s, 4 * r * (1 - r - s), 4 * r * s, 4 * s * (1 - r - s)]
@@ -90,10 +91,11 @@ class QuadraticTriangle(TriangleElement):
         h[0] += -h[3] / 2 - h[5] / 2
         h[1] += -h[3] / 2 - h[4] / 2
         h[2] += -h[4] / 2 - h[5] / 2
+
         return h
 
-    def basisprime(self, rs):
-        "linear triangle derivative of basis functions"
+    def gradient(self, rs):
+        "quadratic triangle gradient of shape functions"
         r, s = rs
 
         t1 = 1 - r - s
@@ -108,4 +110,5 @@ class QuadraticTriangle(TriangleElement):
         dhdr[0] += -dhdr[3] / 2 - dhdr[5] / 2
         dhdr[1] += -dhdr[3] / 2 - dhdr[4] / 2
         dhdr[2] += -dhdr[4] / 2 - dhdr[5] / 2
+
         return dhdr

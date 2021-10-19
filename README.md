@@ -19,16 +19,16 @@ The documentation is located [here](https://adtzlr.github.io/felupe).
 # Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
 ## [1.0.0] - 2021-10-19
+
 ### Added
 - Start using a Changelog.
 - Added docstrings for essential classes, methods and functions.
-- Add array with points for all elements.
+- Add array with point locations for all elements.
 
 ### Changed
 - Rename element methods (from `basis` to `function` and from `basisprime` to `gradient`).
@@ -40,8 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - Automatic check if the gradient of a region can be calculated based on the dimensions. The `grad` argument in `region(grad=False)` has to be set by the user.
-
-
 
 
 # License

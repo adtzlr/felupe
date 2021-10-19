@@ -7,7 +7,12 @@
 FElupe is a Python 3.6+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood.
 
 # Installation
-Install Python, fire up a terminal and run `pip install felupe`; import FElupe as follows in your script.
+Install Python, fire up a terminal and run
+
+```shell
+pip install felupe[all]
+
+where `[all]` installs all optional dependencies. By default, FElupe does not require `numba` and `sparse`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. After installation, import FElupe as follows in your script.
 
 ```python
 import felupe as fe

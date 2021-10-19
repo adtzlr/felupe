@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Rename element methods (from `basis` to `function` and from `basisprime` to `gradient`).
-- Make constitutive materials more flexible (allow material parameters to be passed at stress and elasticity evaluation).
+- Make constitutive materials more flexible (allow material parameters to be passed at stress and elasticity evaluation `umat.gradient(F, mu=1.0)`).
 - Rename `ndim` to `dim`.
 - Simplify element base classes.
 - Speed-up calculation of indices (rows, cols) for Fields and Forms (about 10x faster now).

@@ -48,16 +48,14 @@ class Region:
         # element shape function "a" evaluated at quadrature point "p"
         #
         # h_ap
-        self.h = np.array(
-            [self.element.shape.function(p) for p in self.quadrature.points]
-        ).T
+        self.h = np.array([self.element.function(p) for p in self.quadrature.points]).T
 
         # partial derivative of element shape function "a"
         # w.r.t. natural element coordinate "J" evaluated at quadrature point "p"
         #
         # dhdr_aJp
         self.dhdr = np.array(
-            [self.element.shape.gradient(p) for p in self.quadrature.points]
+            [self.element.gradient(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
 
         if grad:

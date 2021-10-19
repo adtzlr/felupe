@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file. The format 
 - Update `test_element.py` according to changes in element methods.
 
 ### Removed
-- Automatic check if the gradient of a region can be calculated based on the dimensions. The `grad` argument in `region(grad=False)` has to be set by the user.
+- Automatic check if the gradient of a region can be calculated based on the dimensions. The `grad` argument in `region(grad=False)` has to be enforced by the user.
 
 
 # License

@@ -38,14 +38,14 @@ class MultiPointConstraint:
         self.mesh = mesh
         self.points = points
         self.centerpoint = centerpoint
-        self.mask = ~np.array(skip, dtype=bool)[: mesh.ndim]
-        self.axes = np.arange(mesh.ndim)[self.mask]
+        self.mask = ~np.array(skip, dtype=bool)[: mesh.dim]
+        self.axes = np.arange(mesh.dim)[self.mask]
         self.multiplier = multiplier
 
     def stiffness(self, field=None):
         "Calculate stiffness with RBE2 contributions."
         L = sparse.DOK(
-            shape=(self.mesh.npoints, self.mesh.ndim, self.mesh.npoints, self.mesh.ndim)
+            shape=(self.mesh.npoints, self.mesh.dim, self.mesh.npoints, self.mesh.dim)
         )
         c = self.centerpoint
         for t in self.points:
@@ -57,14 +57,14 @@ class MultiPointConstraint:
         return (
             sparse.COO(L)
             .reshape(
-                (self.mesh.npoints * self.mesh.ndim, self.mesh.npoints * self.mesh.ndim)
+                (self.mesh.npoints * self.mesh.dim, self.mesh.npoints * self.mesh.dim)
             )
             .tocsr()
         )
 
     def residuals(self, field):
         "Calculate vector of residuals with RBE2 contributions."
-        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.ndim))
+        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
         c = self.centerpoint
         for t in self.points:
             for d in self.axes:
@@ -82,14 +82,14 @@ class MultiPointContact:
         self.mesh = mesh
         self.points = points
         self.centerpoint = centerpoint
-        self.mask = ~np.array(skip, dtype=bool)[: mesh.ndim]
-        self.axes = np.arange(mesh.ndim)[self.mask]
+        self.mask = ~np.array(skip, dtype=bool)[: mesh.dim]
+        self.axes = np.arange(mesh.dim)[self.mask]
         self.multiplier = multiplier
 
     def stiffness(self, field):
         "Calculate stiffness with RBE2 contributions."
         L = sparse.DOK(
-            shape=(self.mesh.npoints, self.mesh.ndim, self.mesh.npoints, self.mesh.ndim)
+            shape=(self.mesh.npoints, self.mesh.dim, self.mesh.npoints, self.mesh.dim)
         )
         c = self.centerpoint
         for t in self.points:
@@ -108,14 +108,14 @@ class MultiPointContact:
         return (
             sparse.COO(L)
             .reshape(
-                (self.mesh.npoints * self.mesh.ndim, self.mesh.npoints * self.mesh.ndim)
+                (self.mesh.npoints * self.mesh.dim, self.mesh.npoints * self.mesh.dim)
             )
             .tocsr()
         )
 
     def residuals(self, field):
         "Calculate vector of residuals with RBE2 contributions."
-        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.ndim))
+        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
         c = self.centerpoint
         for t in self.points:
             for d in self.axes:

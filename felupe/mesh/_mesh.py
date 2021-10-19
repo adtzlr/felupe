@@ -40,7 +40,7 @@ class Mesh:
         self.cells = cells
 
         # obtain dimensions
-        self.npoints, self.ndim = self.points.shape
+        self.npoints, self.dim = self.points.shape
         self.ndof = self.points.size
         self.ncells = self.cells.shape[0]
 

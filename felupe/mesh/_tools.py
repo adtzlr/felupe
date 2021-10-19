@@ -207,7 +207,7 @@ def convert(
                 [np.mean(mesh.points[cell], axis=0) for cell in mesh.cells]
             )
         else:
-            points = np.zeros((mesh.ncells, mesh.ndim), dtype=int)
+            points = np.zeros((mesh.ncells, mesh.dim), dtype=int)
 
         cells = np.arange(mesh.ncells).reshape(-1, 1)
         cell_type = mesh.cell_type

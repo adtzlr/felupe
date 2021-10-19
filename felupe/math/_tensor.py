@@ -28,15 +28,15 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def identity(A=None, ndim=None, shape=None):
+def identity(A=None, dim=None, shape=None):
     "Identity according to matrix A with optional specified dim."
     if A is not None:
-        ndimA, g, e = A.shape[-3:]
-        if ndim is None:
-            ndim = ndimA
+        dimA, g, e = A.shape[-3:]
+        if dim is None:
+            dim = dimA
     else:
         g, e = shape
-    return np.tile(np.eye(ndim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
+    return np.tile(np.eye(dim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
 
 
 def sym(A):
@@ -141,10 +141,10 @@ def eigvals(A, shear=False, eig=np.linalg.eig):
     "Eigenvalues (and optional principal shear values) of a matrix A."
     wA = eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
     if shear:
-        ndim = wA.shape[0]
-        if ndim == 3:
+        dim = wA.shape[0]
+        if dim == 3:
             ij = [(1, 0), (2, 0), (2, 1)]
-        elif ndim == 2:
+        elif dim == 2:
             ij = [(1, 0)]
         dwA = np.array([wA[i] - wA[j] for i, j in ij])
         return np.vstack((wA, dwA))

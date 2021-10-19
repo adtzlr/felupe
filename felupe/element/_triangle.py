@@ -27,38 +27,38 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import TriangleElement
+from ._base import Element
 
 
-class Triangle(TriangleElement):
+class Triangle(Element):
     def __init__(self):
-        super().__init__(self._fun, self._grad, 3)
-        self.points = 3
+        super().__init__(shape=(3, 2))
+        self.points = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
 
-    def _fun(self, rs):
+    def function(self, rs):
         "linear triangle shape functions"
         r, s = rs
         return np.array([1 - r - s, r, s])
 
-    def _grad(self, rs):
+    def gradient(self, rs):
         "linear triangle gradient of shape functions"
         r, s = rs
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
 
-class TriangleMINI(TriangleElement):
+class TriangleMINI(Element):
     def __init__(self, bubble_multiplier=1.0):
-        super().__init__(self._fun, self._grad, 4)
-        self.points = 4
+        super().__init__(shape=(4, 2))
+        self.points = np.array([[0, 0], [1, 0], [0, 1], [1 / 3, 1 / 3]], dtype=float)
         self.bubble_multiplier = bubble_multiplier
 
-    def _fun(self, rs):
+    def function(self, rs):
         "linear bubble-enriched triangle shape functions"
         r, s = rs
         a = self.bubble_multiplier
         return np.array([1 - r - s, r, s, a * r * s * (1 - r - s)])
 
-    def _grad(self, rs):
+    def gradient(self, rs):
         "linear bubble-enriched triangle gradient of shape functions"
         r, s = rs
         a = self.bubble_multiplier
@@ -73,12 +73,16 @@ class TriangleMINI(TriangleElement):
         )
 
 
-class QuadraticTriangle(TriangleElement):
+class QuadraticTriangle(Element):
     def __init__(self):
-        super().__init__(self._fun, self._grad, 6)
-        self.points = 6
+        super().__init__(shape=(6, 2))
+        self.points = np.zeros(self.shape)
+        self.points[:3] = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
+        self.points[3] = np.mean(self.points[[0, 1]], axis=0)
+        self.points[4] = np.mean(self.points[[1, 2]], axis=0)
+        self.points[5] = np.mean(self.points[[2, 0]], axis=0)
 
-    def _fun(self, rs):
+    def function(self, rs):
         "quadratic triangle shape functions"
         r, s = rs
         h = np.array(
@@ -90,7 +94,7 @@ class QuadraticTriangle(TriangleElement):
 
         return h
 
-    def _grad(self, rs):
+    def gradient(self, rs):
         "quadratic triangle gradient of shape functions"
         r, s = rs
 
@@ -100,11 +104,7 @@ class QuadraticTriangle(TriangleElement):
 
         dhdr_a = np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
         dhdr_b = np.array(
-            [
-                [4 * (t1 - t2), -4 * t2],
-                [4 * t3, 4 * t2],
-                [-4 * t3, 4 * (t1 - t2)],
-            ]
+            [[4 * (t1 - t2), -4 * t2], [4 * t3, 4 * t2], [-4 * t3, 4 * (t1 - t2)],]
         )
         dhdr = np.vstack((dhdr_a, dhdr_b))
         dhdr[0] += -dhdr[3] / 2 - dhdr[5] / 2

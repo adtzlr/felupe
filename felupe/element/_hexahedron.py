@@ -33,14 +33,19 @@ from ._lagrange import ArbitraryOrderLagrange
 
 class ConstantHexahedron(Element):
     def __init__(self):
-        self.points = np.array([[-1,-1,-1],
-                                [ 1,-1,-1],
-                                [ 1, 1,-1],
-                                [-1, 1,-1],
-                                [-1,-1, 1],
-                                [ 1,-1, 1],
-                                [ 1, 1, 1],
-                                [-1, 1, 1]])
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+            ],
+            dtype=float,
+        )
         super().__init__(shape=(1, 3))
 
     def function(self, rst):
@@ -54,14 +59,19 @@ class ConstantHexahedron(Element):
 
 class Hexahedron(Element):
     def __init__(self):
-        self.points = np.array([[-1,-1,-1],
-                                [ 1,-1,-1],
-                                [ 1, 1,-1],
-                                [-1, 1,-1],
-                                [-1,-1, 1],
-                                [ 1,-1, 1],
-                                [ 1, 1, 1],
-                                [-1, 1, 1]])
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+            ],
+            dtype=float,
+        )
         super().__init__(shape=(8, 3))
 
     def function(self, rst):
@@ -103,32 +113,37 @@ class Hexahedron(Element):
         )
 
 
-class QuadraticHexahedron(HexahedronElement):
+class QuadraticHexahedron(Element):
     def __init__(self):
-        self.points = np.array([[-1,-1,-1],
-                                [ 1,-1,-1],
-                                [ 1, 1,-1],
-                                [-1, 1,-1],
-                                #
-                                [-1,-1, 1],
-                                [ 1,-1, 1],
-                                [ 1, 1, 1],
-                                [-1, 1, 1],
-                                #
-                                [ 0,-1,-1],
-                                [ 1, 0,-1],
-                                [ 0, 1,-1],
-                                [-1, 0,-1],
-                                #
-                                [ 0,-1, 1],
-                                [ 1, 0, 1],
-                                [ 0, 1, 1],
-                                [-1, 0, 1],
-                                #
-                                [ 0,-1, 0],
-                                [ 1, 0, 0],
-                                [ 0, 1, 0],
-                                [-1, 0, 0]])
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                #
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+                #
+                [0, -1, -1],
+                [1, 0, -1],
+                [0, 1, -1],
+                [-1, 0, -1],
+                #
+                [0, -1, 1],
+                [1, 0, 1],
+                [0, 1, 1],
+                [-1, 0, 1],
+                #
+                [-1, -1, 0],
+                [1, -1, 0],
+                [1, 1, 0],
+                [-1, 1, 0],
+            ],
+            dtype=float,
+        )
         super().__init__(shape=(20, 3))
 
     def function(self, rst):
@@ -300,13 +315,53 @@ class QuadraticHexahedron(HexahedronElement):
         )
 
 
-class TriQuadraticHexahedron(HexahedronElement):
+class TriQuadraticHexahedron(Element):
     def __init__(self):
-        super().__init__(self._fun, self._grad, 27)
+        super().__init__(shape=(27, 3))
 
-        self.points = 27
+        self.points = np.array(
+            [
+                [-1, -1, -1],
+                [1, -1, -1],
+                [1, 1, -1],
+                [-1, 1, -1],
+                #
+                [-1, -1, 1],
+                [1, -1, 1],
+                [1, 1, 1],
+                [-1, 1, 1],
+                #
+                [0, -1, -1],
+                [1, 0, -1],
+                [0, 1, -1],
+                [-1, 0, -1],
+                #
+                [0, -1, 1],
+                [1, 0, 1],
+                [0, 1, 1],
+                [-1, 0, 1],
+                #
+                [-1, -1, 0],
+                [1, 1, 0],
+                [1, 1, 0],
+                [-1, 1, 0],
+                #
+                [0, -1, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [-1, 0, 0],
+                #
+                [-1, 0, 0],
+                [1, 0, 0],
+                [0, -1, 0],
+                [0, 1, 0],
+                #
+                [0, 0, 0],
+            ],
+            dtype=float,
+        )
 
-        self._lagrange = ArbitraryOrderLagrange(order=2, ndim=3)
+        self._lagrange = ArbitraryOrderLagrange(order=2, dim=3)
 
         self._vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
         self._edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
@@ -317,12 +372,12 @@ class TriQuadraticHexahedron(HexahedronElement):
             (self._vertices, self._edges, self._faces, self._volume)
         )
 
-    def _fun(self, rst):
+    def function(self, rst):
         "quadratic hexahedron shape functions"
 
-        return self._lagrange.shape.function(rst)[self._permute]
+        return self._lagrange.function(rst)[self._permute]
 
-    def _grad(self, rst):
+    def gradient(self, rst):
         "quadratic hexahedron gradient of shape functions"
 
-        return self._lagrange.shape.gradient(rst)[self._permute, :]
+        return self._lagrange.gradient(rst)[self._permute, :]

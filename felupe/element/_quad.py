@@ -27,29 +27,29 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import QuadElement
+from ._base import Element
 
 
-class ConstantQuad(QuadElement):
+class ConstantQuad(Element):
     def __init__(self):
-        super().__init__(self._fun, self._grad, 1)
-        self.points = 4
+        super().__init__(shape=(1, 2))
+        self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
-    def _fun(self, rst):
+    def function(self, rst):
         "linear quadrilateral shape functions"
         return np.array([1])
 
-    def _grad(self, rst):
+    def gradient(self, rst):
         "linear quadrilateral gradient of shape functions"
-        return np.array([[0, 0, 0]])
+        return np.array([[0, 0]])
 
 
-class Quad(QuadElement):
+class Quad(Element):
     def __init__(self):
-        super().__init__(self._fun, self._grad, 4)
-        self.points = 4
+        super().__init__(shape=(4, 2))
+        self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
-    def _fun(self, rs):
+    def function(self, rs):
         "linear quadrilateral shape functions"
         r, s = rs
         return (
@@ -64,7 +64,7 @@ class Quad(QuadElement):
             * 0.25
         )
 
-    def _grad(self, rs):
+    def gradient(self, rs):
         "linear quadrilateral gradient of shape functions"
         r, s = rs
         return (

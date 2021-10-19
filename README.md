@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.0.1] - 2021-10-19
+
 ### Fixed
 - Fix import of dof-module if `sparse` is not installed.
 

@@ -20,7 +20,14 @@ from ._field import (
     FieldAxisymmetric,
     FieldMixed,
 )
-from .dof import Boundary, MultiPointConstraint, MultiPointContact
+from .dof import Boundary
+try:
+    from .dof import (
+        MultiPointConstraint, 
+        MultiPointContact,
+    )
+except:
+    pass
 from .element import (
     Line,
     #

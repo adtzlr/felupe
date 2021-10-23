@@ -156,9 +156,6 @@ class IntegralForm:
         v, u = self.v, self.u
         dV = self.dV
         fun = self.fun
-        
-        if parallel:
-            from . import _parallel as integrate_parallel
 
         if not grad_v:
             vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)
@@ -176,33 +173,131 @@ class IntegralForm:
         if u is None:
 
             if not grad_v:
-                return np.einsum("ape,...pe,pe->a...e", vb, fun, dV)
+                return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
             else:
                 if parallel:
-                    return integrate_parallel.gradv(vb, fun, dV)
+                    return integrate_gradv(vb, fun, dV)
                 else:
                     return np.einsum(
-                        "aJpe,...Jpe,pe->a...e", vb, fun, dV
+                        "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
                     )
 
         else:
 
             if not grad_v and not grad_u:
                 return np.einsum(
-                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV
+                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
                 )
             elif grad_v and not grad_u:
                 return np.einsum(
-                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV
+                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
                 )
             elif not grad_v and grad_u:
                 return np.einsum(
-                    "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV
+                    "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
                 )
             else:  # grad_v and grad_u
                 if parallel:
-                    return integrate_parallel.gradv_gradu(vb, fun, ub, dV)
+                    return integrate_gradv_gradu(vb, fun, ub, dV)
                 else:
                     return np.einsum(
-                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV
+                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
                     )
+
+
+try:
+    from numba import jit, prange
+
+    jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
+
+    @jit(**jitargs)
+    def integrate_gradv_u(v, fun, u, dV):  # pragma: no cover
+
+        npoints_a = v.shape[0]
+        npoints_b = u.shape[0]
+        dim1, dim2, ngauss, ncells = fun.shape
+
+        out = np.zeros((npoints_a, dim1, npoints_b, ncells))
+        for a in prange(npoints_a):  # basis function "a"
+            for b in prange(npoints_b):  # basis function "b"
+                for p in prange(ngauss):  # integration point "p"
+                    for c in prange(ncells):  # cell "c"
+                        for i in prange(dim1):  # first index "i"
+                            for J in prange(dim2):  # second index "J"
+                                out[a, i, b, c] += (
+                                    v[a, J, p, c]
+                                    * u[b, p, c]
+                                    * fun[i, J, p, c]
+                                    * dV[p, c]
+                                )
+
+        return out
+
+    @jit(**jitargs)
+    def integrate_v_gradu(v, fun, u, dV):  # pragma: no cover
+
+        npoints_a = v.shape[0]
+        npoints_b = u.shape[0]
+        dim1, dim2, ngauss, ncells = fun.shape
+
+        out = np.zeros((npoints_a, npoints_b, dim1, ncells))
+        for a in prange(npoints_a):  # basis function "a"
+            for b in prange(npoints_b):  # basis function "b"
+                for p in prange(ngauss):  # integration point "p"
+                    for c in prange(ncells):  # cell "c"
+                        for k in prange(dim1):  # third index "k"
+                            for L in prange(dim2):  # fourth index "L"
+                                out[a, b, k, c] += (
+                                    v[a, p, c]
+                                    * u[b, L, p, c]
+                                    * fun[k, L, p, c]
+                                    * dV[p, c]
+                                )
+
+        return out
+
+    @jit(**jitargs)
+    def integrate_gradv(v, fun, dV):  # pragma: no cover
+
+        npoints = v.shape[0]
+        dim1, dim2, ngauss, ncells = fun.shape
+
+        out = np.zeros((npoints, dim1, ncells))
+
+        for a in prange(npoints):  # basis function "a"
+            for p in prange(ngauss):  # integration point "p"
+                for c in prange(ncells):  # cell "c"
+                    for i in prange(dim1):  # first index "i"
+                        for J in prange(dim2):  # second index "J"
+                            out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
+
+        return out
+
+    @jit(**jitargs)
+    def integrate_gradv_gradu(v, fun, u, dV):  # pragma: no cover
+
+        npoints_a = v.shape[0]
+        npoints_b = u.shape[0]
+        dim1, dim2, dim3, dim4, ngauss, ncells = fun.shape
+
+        out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
+        for a in prange(npoints_a):  # basis function "a"
+            for b in prange(npoints_b):  # basis function "b"
+                for p in prange(ngauss):  # integration point "p"
+                    for c in prange(ncells):  # cell "c"
+                        for i in prange(dim1):  # first index "i"
+                            for J in prange(dim2):  # second index "J"
+                                for k in prange(dim3):  # third index "k"
+                                    for L in prange(dim4):  # fourth index "L"
+                                        out[a, i, b, k, c] += (
+                                            v[a, J, p, c]
+                                            * u[b, L, p, c]
+                                            * fun[i, J, k, L, p, c]
+                                            * dV[p, c]
+                                        )
+
+        return out
+
+
+except:
+    pass

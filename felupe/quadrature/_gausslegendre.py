@@ -34,7 +34,7 @@ from . import Scheme
 class GaussLegendre(Scheme):
     "A n-dimensional Gauss-Legendre quadrature rule."
 
-    def __init__(self, order: int, dim: int):
+    def __init__(self, order: int, dim: int, permute: bool = True):
         """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
         on the interval [-1, 1] as approximation of
 
@@ -56,5 +56,13 @@ class GaussLegendre(Scheme):
 
         idx = list(ascii_lowercase)[:dim]
         weights = np.einsum(", ".join(idx), *([w] * dim)).ravel()
+
+        if permute and order == 1 and dim == 2:
+            points = points[[0, 1, 3, 2]]
+            weights = weights[[0, 1, 3, 2]]
+
+        if permute and order == 1 and dim == 3:
+            points = points[[0, 1, 3, 2, 4, 5, 7, 6]]
+            weights = weights[[0, 1, 3, 2, 4, 5, 7, 6]]
 
         super().__init__(points, weights)

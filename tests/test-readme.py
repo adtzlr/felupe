@@ -29,17 +29,6 @@ def test_readme():
 
     F = displacement.extract(grad=True, sym=False, add_identity=True)
 
-    import matadi
-    from matadi.math import det, transpose, trace
-
-    def W(F, mu, bulk):
-        "Neo-Hooke"
-
-        J = det(F)
-        C = transpose(F) @ F
-
-        return mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk / 2 * (J - 1) ** 2
-
     umat = felupe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
     P = umat.gradient

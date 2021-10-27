@@ -54,13 +54,15 @@ class GaussLegendre(Scheme):
             np.stack(np.meshgrid(*([x] * dim), indexing="ij"))[::-1].reshape(dim, -1).T
         )
 
+        idx = list(ascii_lowercase)[:dim]
+        weights = np.einsum(", ".join(idx), *([w] * dim)).ravel()
+
         if permute and order == 1 and dim == 2:
             points = points[[0, 1, 3, 2]]
+            weights = weights[[0, 1, 3, 2]]
 
         if permute and order == 1 and dim == 3:
             points = points[[0, 1, 3, 2, 4, 5, 7, 6]]
-
-        idx = list(ascii_lowercase)[:dim]
-        weights = np.einsum(", ".join(idx), *([w] * dim)).ravel()
+            weights = weights[[0, 1, 3, 2, 4, 5, 7, 6]]
 
         super().__init__(points, weights)

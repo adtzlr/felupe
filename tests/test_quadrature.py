@@ -34,13 +34,14 @@ def test_gausslegendre():
     assert q11.points.shape == (2, 1)
     assert q11.weights.sum() == 2
 
-    q12 = fe.GaussLegendre(order=1, dim=2)
-    assert q12.points.shape == (4, 2)
-    assert q12.weights.sum() == 4
+    for permute in [False, True]:
+        q12 = fe.GaussLegendre(order=1, dim=2, permute=permute)
+        assert q12.points.shape == (4, 2)
+        assert q12.weights.sum() == 4
 
-    q13 = fe.GaussLegendre(order=1, dim=3)
-    assert q13.points.shape == (8, 3)
-    assert q13.weights.sum() == 8
+        q13 = fe.GaussLegendre(order=1, dim=3, permute=permute)
+        assert q13.points.shape == (8, 3)
+        assert q13.weights.sum() == 8
 
     with pytest.raises(ValueError):
         fe.GaussLegendre(order=1, dim=4)

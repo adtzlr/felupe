@@ -71,7 +71,11 @@ def test_solve_check():
     fe.tools.save(r, u)
     fe.tools.save(r, u, r=b)
     fe.tools.save(
-        r, u, r=b, F=F, gradient=W.gradient(F),
+        r,
+        u,
+        r=b,
+        F=F,
+        gradient=W.gradient(F),
     )
 
     force = fe.tools.force(u, b, bounds["symx"])
@@ -118,7 +122,12 @@ def test_solve_mixed_check():
     fe.tools.save(r, f, unstack=unstack)
     fe.tools.save(r, f, r=b, unstack=unstack)
     fe.tools.save(
-        r, f, r=b, unstack=unstack, F=F, gradient=W_mixed.gradient(F, p, J),
+        r,
+        f,
+        r=b,
+        unstack=unstack,
+        F=F,
+        gradient=W_mixed.gradient(F, p, J),
     )
 
     force = fe.tools.force(u, b, bounds["symx"], unstack=unstack)

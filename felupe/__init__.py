@@ -21,9 +21,10 @@ from ._field import (
     FieldMixed,
 )
 from .dof import Boundary
+
 try:
     from .dof import (
-        MultiPointConstraint, 
+        MultiPointConstraint,
         MultiPointContact,
     )
 except:

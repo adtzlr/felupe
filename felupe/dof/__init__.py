@@ -10,6 +10,7 @@ from ._loadcase import (
     symmetry,
     uniaxial,
 )
+
 try:
     from ._multipoint import (
         MultiPointConstraint,

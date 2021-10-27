@@ -40,7 +40,6 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
-  "quadpy",
   "h5py",
   "meshio",
 ]

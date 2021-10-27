@@ -9,15 +9,15 @@
 FElupe is a Python 3.6+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting a little insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy and (optional) Numba. No complicated installation, just pure Python. Another key feature is the easy and straightforward definition of mixed field formulations for the treatment of nearly incompressible material behavior. In combination with [matadi](https://github.com/adtzlr/matadi) isotropic hyperelastic material formulations are defined in terms of their strain energy density function - gradient (stress) and hessian (elasticity tensor) are evaluated with automatic differentiation. Several useful utilities are available, i.e. the calculation of reaction forces and moments on given boundaries. Finally, results are ready to be exported to VTK or XDMF files using [meshio](https://github.com/nschloe/meshio).
 
 ## Installation
-Install Python, fire up a terminal and run `pip install felupe`. To enable parallel assembly also install [Numba](http://numba.pydata.org/) by `pip install numba`. For constitutive material definitions using Automatic Differentation please also install [matadi](https://github.com/adtzlr/matadi).
+Install Python, fire up a terminal and run `pip install felupe[all]`, where `[all]` installs all optional dependencies. By default, FElupe does not require `numba` and `sparse`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For constitutive material definitions using Automatic Differentation please also install [matadi](https://github.com/adtzlr/matadi).
 
 ```shell
-pip install felupe
+pip install felupe[all]
 ```
 
 *optional:*
 ```shell
-pip install numba matadi
+pip install matadi
 ```
 
 Now import FElupe as follows in your Python script:

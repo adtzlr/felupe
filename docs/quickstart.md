@@ -1,9 +1,7 @@
 ## Problem Definition
 
-As with every module: first install FElupe with `pip install felupe`, then import FElupe in your script as shown below. It is recommended to shorten the imported name for better readability.
-
 ```python
-import felupe as fe
+import felupe
 ```
 
 Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons.
@@ -11,16 +9,16 @@ Start setting up a problem in FElupe by the creation of a numeric **Region** wit
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.png)
 
 ```python
-mesh = fe.Cube(n=9)
-element = fe.Hexahedron()
-quadrature = fe.GaussLegendre(order=1, dim=3)
+mesh = felupe.Cube(n=9)
+element = felupe.Hexahedron()
+quadrature = felupe.GaussLegendre(order=1, dim=3)
 ```
 
 ## Region
-A region essentially pre-calculates basis functions and derivatives evaluated at every quadrature point of every cell. An array containing products of quadrature weights multiplied by the geometrical jacobians is stored as the differential volume.
+A region essentially pre-calculates element shape functions and derivatives evaluated at every quadrature point of every cell w.r.t. the undeformed coordinates (as attribute `dhdX`). An array containing products of quadrature weights multiplied by the determinants of the (geometric) jacobians is stored as the differential volume. The sum of all differential volumes gives the total (undeformed) volume of the region. The attributes of a region are used in a `Field`.
 
 ```python
-region = fe.Region(mesh, element, quadrature)
+region = felupe.Region(mesh, element, quadrature)
 
 dV = region.dV
 V = dV.sum()
@@ -29,10 +27,10 @@ V = dV.sum()
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/undeformed_mesh.png)
 
 ## Field
-In a second step fields may be added to the Region. These may be either scalar or vector-valued fields. The nodal values are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method `grad()`. 
+In a second step fields may be added to the Region which may be either scalar or vector fields. The values at mesh-points are obtained with the attribute `values`. Interpolated field values at quadrature points are calculated with the `interpolate()` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method `grad()`. A generalized extraction method `extract(grad=True, add_identity=True, sym=False)` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
 
 ```python
-displacement = fe.Field(region, dim=3)
+displacement = felupe.Field(region, dim=3)
 
 u    = displacement.values
 ui   = displacement.interpolate()
@@ -69,7 +67,7 @@ A = umat.hessian
 ```
 
 ## Boundary Conditions
-Next we introduce boundary conditions on the displacement field. Boundary conditions are stored inside a dictionary of multiple boundary instances. First, we fix the left end of the cube. Displacements on the right end are fixed in directions y and z whereas displacements in direction x are prescribed with a value. A boundary instance hold useful attributes like `points` or `dof`.
+Next we enforce boundary conditions on the displacement field. Boundary conditions are stored as a dictionary of multiple boundary instances. First, the left end of the cube is fixed. Displacements on the right end are fixed in directions y and z whereas displacements in direction x are prescribed with a user-defined value. A boundary instance hold useful attributes like `points` or `dof`.
 
 ```python
 import numpy as np
@@ -78,27 +76,27 @@ f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
 boundaries = {}
-boundaries["left"]  = fe.Boundary(displacement, fx=f0)
-boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1,0,0))
-boundaries["move"]  = fe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
+boundaries["left"]  = felupe.Boundary(displacement, fx=f0)
+boundaries["right"] = felupe.Boundary(displacement, fx=f1, skip=(1,0,0))
+boundaries["move"]  = felupe.Boundary(displacement, fx=f1, skip=(0,1,1), value=0.5)
 ```
 
 ## Partition of deegrees of freedom
-The separation of active and inactive degrees of freedom is performed by a so-called partition. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
+The separation of active and inactive degrees of freedom is performed by a so-called **partition**. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
 
 ```python
-dof0, dof1 = fe.dof.partition(displacement, boundaries)
-u0ext = fe.dof.apply(displacement, boundaries, dof0)
+dof0, dof1 = felupe.dof.partition(displacement, boundaries)
+u0ext = felupe.dof.apply(displacement, boundaries, dof0)
 ```
 
 ## Integral forms of equilibrium equations
-The integral (or weak) forms of equilibrium equations are defined by the `IntegralForm` class. The function of interest has to be passed as the `fun` argument whereas the virtual field as the `v` argument. Setting `grad_v=True` FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if `u=None` (default) or creates a bilinear form if a field is passed to the argument `u`.
+The integral (or weak) forms of equilibrium equations are defined by the `IntegralForm` class. The pre-evaluated function of interest has to be passed as the `fun` argument whereas the virtual field as the `v` argument. By setting `grad_v=True`, FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if `u=None` (default) or creates a bilinear form if a field is passed to the field argument `u`.
 
 $\int_V P_i^{\ J} : \frac{\partial \delta u^i}{\partial X^J} \ dV \qquad$ and $\qquad \int_V \frac{\partial \delta u^i}{\partial X^J} : \mathbb{A}_{i\ k\ }^{\ J\ L} : \frac{\partial u^k}{\partial X^L} \ dV$
 
 ```python
-linearform   = fe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
-bilinearform = fe.IntegralForm(A([F])[0], displacement, dV, u=displacement, grad_v=True, grad_u=True)
+linearform   = felupe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
+bilinearform = felupe.IntegralForm(A([F])[0], displacement, dV, u=displacement, grad_v=True, grad_u=True)
 ```
 
 Assembly of both forms lead to the (point-based) internal forces and the (sparse) stiffness matrix.
@@ -123,9 +121,15 @@ $\boldsymbol{u}_0 += d\boldsymbol{u}_0$
 
 $\boldsymbol{u}_1 += d\boldsymbol{u}_1$
 
+The default solver of FElupe is SuperLU provided by SciPy. A significantly faster alternative is [pypardiso](https://pypi.org/project/pypardiso/) which can be installed from PyPI with `pip install pypardiso` (not included with FElupe). The optional argument `solver` of `felupe.solve.solve` accepts a user-defined solver.
+
 ```python
-system = fe.solve.partition(displacement, K, dof1, dof0, r)
-du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
+from scipy.sparse.linalg import spsolve # default
+# from pypardiso import spsolve
+
+
+system = felupe.solve.partition(displacement, K, dof1, dof0, r)
+du = felupe.solve.solve(*system, u0ext, solver=spsolve).reshape(*u.shape)
 # displacement += du
 ```
 
@@ -135,16 +139,16 @@ A very simple newton-rhapson code looks like this:
 for iteration in range(8):
     F = displacement.extract(grad=True, sym=False, add_identity=True)
 
-    linearform = fe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
-    bilinearform = fe.IntegralForm(
+    linearform = felupe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
+    bilinearform = felupe.IntegralForm(
         A([F])[0], displacement, dV, displacement, grad_v=True, grad_u=True
     )
 
     r = linearform.assemble().toarray()[:, 0]
     K = bilinearform.assemble()
 
-    system = fe.solve.partition(displacement, K, dof1, dof0, r)
-    du = fe.solve.solve(*system, u0ext).reshape(*u.shape)
+    system = felupe.solve.partition(displacement, K, dof1, dof0, r)
+    du = felupe.solve.solve(*system, u0ext, solver=spsolve).reshape(*u.shape)
 
     norm = np.linalg.norm(du)
     print(iteration, norm)
@@ -163,7 +167,7 @@ for iteration in range(8):
 5 5.675484825228616e-16
 ```
 
-All 3x3 components of the deformation gradient of integration point 1 of cell 1 are obtained with
+All 3x3 components of the deformation gradient of integration point 1 of cell 1 (Python is 0-indexed) are obtained with
 
 ```python
 F[:,:,0,0]
@@ -176,10 +180,28 @@ array([[ 1.49186831e+00, -1.17603278e-02, -1.17603278e-02],
 ```
 
 ## Export of results
-Results are exported as VTK or XDMF files using meshio.
+Results are exported as VTK or XDMF files using [meshio](https://pypi.org/project/meshio/).
 
 ```python
-fe.tools.save(region, displacement, filename="result.vtk")
+felupe.tools.save(region, displacement, filename="result.vtk")
+```
+
+Any tensor at quadrature points shifted to and averaged at mesh-points is evaluated for `quad` and `hexahedron` cell types by `felupe.tools.topoints`. For example, the calculation of the cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the projection. The projected stress results are passed as a dictionary to the `point_data` argument.
+
+```python
+from felupe.math import dot, det, transpose
+
+
+s = dot(P([F])[0], transpose(F)) / det(F)
+cauchy = felupe.tools.topoints(s, region, sym=True, mode="tensor")
+
+felupe.tools.save(
+    region, 
+    displacement, 
+    filename="result_with_cauchy.vtk", 
+    point_data={"CauchyStress": cauchy}
+)
+
 ```
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/deformed_mesh.png)

@@ -20,12 +20,6 @@ pip install felupe[all]
 pip install matadi
 ```
 
-Now import FElupe as follows in your Python script:
-
-```python
-import felupe as fe
-```
-
 ## Get Started
 Explore the power of FElupe with a [simple hyperelastic example](quickstart.md). Other examples are located in the [examples](examples.md) section.
 

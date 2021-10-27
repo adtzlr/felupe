@@ -25,7 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import quadpy
+import numpy as np
+from string import ascii_lowercase
 
 from . import Scheme
 
@@ -44,23 +45,16 @@ class GaussLegendre(Scheme):
         """
         # integration point weights and coordinates
 
-        if dim == 3:
-            scheme = quadpy.c3.product(quadpy.c1.gauss_legendre(order + 1))
-
-        elif dim == 2:
-            scheme = quadpy.c2.product(quadpy.c1.gauss_legendre(order + 1))
-
-        elif dim == 1:
-            scheme = quadpy.c1.gauss_legendre(order + 1)
-            scheme.points = scheme.points.reshape(1, -1)
-
-        else:
+        if dim not in [1, 2, 3]:
             raise ValueError("Wrong dimension.")
 
-        if dim > 1:
-            weights = scheme.weights * 2 ** dim
+        x, w = np.polynomial.legendre.leggauss(1 + order)
 
-        else:
-            weights = scheme.weights
+        points = (
+            np.stack(np.meshgrid(*([x] * dim), indexing="ij"))[::-1].reshape(dim, -1).T
+        )
 
-        super().__init__(scheme.points.T, weights)
+        idx = list(ascii_lowercase)[:dim]
+        weights = np.einsum(", ".join(idx), *([w] * dim)).ravel()
+
+        super().__init__(points, weights)

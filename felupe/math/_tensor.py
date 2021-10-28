@@ -227,7 +227,7 @@ def ddot(A, B, n=2):
 def tovoigt(A):
     "Convert (3, 3) tensor to (6, ) voigt notation."
     B = np.zeros((6, *A.shape[-2:]))
-    ij = [(0, 0), (1, 1), (2, 2), (0, 0), (1, 2), (0, 2)]
+    ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
     for i6, (i, j) in enumerate(ij):
         B[i6, :, :] = A[i, j, :, :]
     return B

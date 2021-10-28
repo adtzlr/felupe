@@ -23,6 +23,17 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add inverse quadrature method `quadrature.inv()` for Gauss-Legendre schemes.
+- Add discontinous representation of a mesh as mesh method `mesh.as_discontinous()`.
+
+### Changed
+- Removed `quadpy` dependency and use built-in polynomials of `numpy` for Gauss-Legendre calculation.
+
+### Fixed
+- Fix typo in first shear component of `math.tovoigt()` function.
+- Fix wrong stress projection in `tools.topoints()` due to different quadrature and cell ordering.
+
 ## [1.0.1] - 2021-10-19
 
 ### Fixed

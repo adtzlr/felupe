@@ -66,3 +66,11 @@ class GaussLegendre(Scheme):
             weights = weights[[0, 1, 3, 2, 4, 5, 7, 6]]
 
         super().__init__(points, weights)
+
+    def inv(self):
+        "Return the inverse quadrature scheme."
+
+        points = self.points.copy()
+        points[self.points != 0] = 1 / points[self.points != 0]
+
+        return Scheme(points, self.weights)

@@ -90,6 +90,10 @@ def test_meshes():
     assert m.points.shape == (26, 2)
     assert m.cells.shape == (16, 4)
 
+    m_dg = m.as_discontinous()
+    assert m_dg.dim == m.dim
+    assert m_dg.npoints == m.cells.size
+
     fe.mesh.sweep(m)
     fe.mesh.sweep((m.points, m.cells), decimals=4)
 

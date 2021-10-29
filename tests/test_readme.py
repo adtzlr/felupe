@@ -89,7 +89,7 @@ def test_readme():
 
     F[:, :, 0, 0]
 
-    assert np.round(norm, 20) == 5.5713e-16
+    assert norm < 1e-15
 
     felupe.tools.save(region, displacement, filename="result.vtk")
 

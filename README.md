@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add inverse quadrature method `quadrature.inv()` for Gauss-Legendre schemes.
 - Add discontinous representation of a mesh as mesh method `mesh.as_discontinous()`.
+- Add `tools.project()` to project (and average) values at quadrature points to mesh points.
 
 ### Changed
 - Removed `quadpy` dependency and use built-in polynomials of `numpy` for Gauss-Legendre calculation.

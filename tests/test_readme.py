@@ -96,23 +96,19 @@ def test_readme():
     s = dot(P(F), transpose(F)) / det(F)
 
     # stress shifted and averaged to mesh-points
-    cauchy = felupe.tools.topoints(s, region, sym=True, mode="tensor")
-
-    felupe.tools.save(
-        region,
-        displacement,
-        filename="result_with_cauchy.vtk",
-        point_data={"CauchyStress": cauchy},
-    )
+    cauchy_shifted = felupe.tools.topoints(s, region, sym=True, mode="tensor")
 
     # stress projected and averaged to mesh-points
-    cauchy = felupe.tools.project(s, region)
+    cauchy_projected = felupe.tools.project(s, region)
 
     felupe.tools.save(
         region,
         displacement,
         filename="result_with_cauchy.vtk",
-        point_data={"CauchyStress": cauchy},
+        point_data={
+            "CauchyStressProjected": cauchy_projected,
+            "CauchyStressShifted": cauchy_shifted,
+        },
     )
 
 

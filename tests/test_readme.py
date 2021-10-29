@@ -89,11 +89,15 @@ def test_readme():
 
     F[:, :, 0, 0]
 
+    assert np.round(norm, 20) == 5.5713e-16
+
     felupe.tools.save(region, displacement, filename="result.vtk")
 
     from felupe.math import dot, det, transpose
 
     s = dot(P(F), transpose(F)) / det(F)
+
+    # stress shifted and averaged to mesh-points
     cauchy = felupe.tools.topoints(s, region, sym=True, mode="tensor")
 
     felupe.tools.save(
@@ -103,7 +107,15 @@ def test_readme():
         point_data={"CauchyStress": cauchy},
     )
 
-    assert np.round(norm, 20) == 5.5713e-16
+    # stress projected and averaged to mesh-points
+    cauchy = felupe.tools.project(s, region)
+
+    felupe.tools.save(
+        region,
+        displacement,
+        filename="result_with_cauchy.vtk",
+        point_data={"CauchyStress": cauchy},
+    )
 
 
 if __name__ == "__main__":

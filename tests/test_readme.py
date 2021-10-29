@@ -89,8 +89,6 @@ def test_readme():
 
     F[:, :, 0, 0]
 
-    assert norm < 1e-15
-
     felupe.tools.save(region, displacement, filename="result.vtk")
 
     from felupe.math import dot, det, transpose

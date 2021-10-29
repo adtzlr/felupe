@@ -30,6 +30,7 @@ import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 
 from .._field import Field
+from ..region import Region
 
 
 def topoints(values, region, sym=True, mode="tensor"):
@@ -78,3 +79,40 @@ def topoints(values, region, sym=True, mode="tensor"):
         out = out / region.mesh.cells_per_point
 
     return out
+
+
+def project(values, region, average=True):
+    """Projection (and optionally averaging) of scalar or vectorial values
+    at quadrature points to mesh-points.
+    """
+
+    # 1d-reshaped values
+    dim = int(np.product(values.shape[:-2]))
+    u = values.T.reshape(-1, dim)
+
+    # disconnected mesh
+    m = region.mesh.as_discontinous()
+
+    # region on disconnected mesh with inverse quadrature scheme
+    r = Region(m, region.element, region.quadrature.inv(), grad=False)
+
+    # field for values on disconnected mesh; project values to mesh-points
+    f = Field(r, dim=dim, values=u)
+    v = f.interpolate()
+
+    if average:
+
+        # create dummy field for values on original mesh
+        # (used for calculation of sparse-matrix indices)
+        g = Field(region, dim=dim)
+
+        # average values
+        w = sparsematrix(
+            (v.T.ravel(), g.indices.ai), shape=(dim * region.mesh.npoints, 1)
+        ).toarray().reshape(-1, dim) / region.mesh.cells_per_point.reshape(-1, 1)
+
+    else:
+
+        w = v.reshape(-1, dim)
+
+    return w

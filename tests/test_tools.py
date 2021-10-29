@@ -84,6 +84,14 @@ def test_solve_check():
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
+    s = fe.math.dot(W.gradient(F), fe.math.inv(fe.math.cof(F)))
+
+    cauchy = fe.tools.project(fe.math.tovoigt(s), region=r, average=True)
+    assert cauchy.shape == (r.mesh.npoints, 6)
+
+    cauchy = fe.tools.project(fe.math.tovoigt(s), region=r, average=False)
+    assert cauchy.shape == (r.mesh.cells.size, 6)
+
 
 def test_solve_mixed_check():
 

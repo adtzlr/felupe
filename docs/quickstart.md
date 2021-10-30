@@ -5,7 +5,7 @@ First, import FElupe.
 import felupe
 ```
 
-Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons.
+Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons. By using a template region like `RegionHexahedron` (see section **Region**), only the mesh has to be created.
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.png)
 
@@ -20,10 +20,12 @@ A region essentially pre-calculates element shape functions and derivatives eval
 
 ```python
 region = felupe.Region(mesh, element, quadrature)
+# region = felupe.RegionHexahedron(mesh)
 
 dV = region.dV
 V = dV.sum()
 ```
+
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/undeformed_mesh.png)
 

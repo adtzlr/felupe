@@ -5,7 +5,7 @@ First, import FElupe.
 import felupe
 ```
 
-Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons.
+Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons. By using a template region like `RegionHexahedron` (see section **Region**), only the mesh has to be created.
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.png)
 
@@ -20,10 +20,12 @@ A region essentially pre-calculates element shape functions and derivatives eval
 
 ```python
 region = felupe.Region(mesh, element, quadrature)
+# region = felupe.RegionHexahedron(mesh)
 
 dV = region.dV
 V = dV.sum()
 ```
+
 
 ![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/undeformed_mesh.png)
 
@@ -187,7 +189,7 @@ Results are exported as VTK or XDMF files using [meshio](https://pypi.org/projec
 felupe.tools.save(region, displacement, filename="result.vtk")
 ```
 
-Any tensor at quadrature points shifted or porjected to and averaged at mesh-points is evaluated for `quad` and `hexahedron` cell types by `felupe.tools.topoints`. For example, the calculation of the cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the shift or the projection. The stress results at mesh points are passed as a dictionary to the `point_data` argument.
+Any tensor at quadrature points shifted or projected to, both averaged at mesh-points is evaluated for `quad` and `hexahedron` cell types by `felupe.tools.topoints` or `felupe.tools.project`, respectively. For example, the calculation of the cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the shift or the projection. The stress results at mesh points are passed as a dictionary to the `point_data` argument.
 
 ```python
 from felupe.math import dot, det, transpose

@@ -9,7 +9,22 @@ from . import constitution
 from . import solve
 from . import region
 
-from .region import Region
+from .region import (
+    Region,
+    RegionQuad,
+    RegionHexahedron,
+    RegionConstantQuad,
+    RegionConstantHexahedron,
+    RegionQuadraticHexahedron,
+    RegionTriQuadraticHexahedron,
+    RegionTriangle,
+    RegionTetra,
+    RegionQuadraticTriangle,
+    RegionQuadraticTetra,
+    RegionTriangleMINI,
+    RegionTetraMINI,
+    RegionLagrange,
+)
 from ._assembly import (
     IntegralForm,
     IntegralFormMixed,

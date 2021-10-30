@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.1.0] - 2021-10-30
+
 ### Added
 - Add inverse quadrature method `quadrature.inv()` for Gauss-Legendre schemes.
 - Add discontinous representation of a mesh as mesh method `mesh.as_discontinous()`.

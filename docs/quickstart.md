@@ -187,20 +187,24 @@ Results are exported as VTK or XDMF files using [meshio](https://pypi.org/projec
 felupe.tools.save(region, displacement, filename="result.vtk")
 ```
 
-Any tensor at quadrature points shifted to and averaged at mesh-points is evaluated for `quad` and `hexahedron` cell types by `felupe.tools.topoints`. For example, the calculation of the cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the projection. The projected stress results are passed as a dictionary to the `point_data` argument.
+Any tensor at quadrature points shifted or porjected to and averaged at mesh-points is evaluated for `quad` and `hexahedron` cell types by `felupe.tools.topoints`. For example, the calculation of the cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the shift or the projection. The stress results at mesh points are passed as a dictionary to the `point_data` argument.
 
 ```python
 from felupe.math import dot, det, transpose
 
-
 s = dot(P([F])[0], transpose(F)) / det(F)
-cauchy = felupe.tools.topoints(s, region, sym=True, mode="tensor")
+
+cauchy_shifted = felupe.tools.topoints(s, region)
+cauchy_projected = felupe.tools.project(s, region)
 
 felupe.tools.save(
     region, 
     displacement, 
     filename="result_with_cauchy.vtk", 
-    point_data={"CauchyStress": cauchy}
+    point_data={
+        "CauchyStressShifted": cauchy_shifted,
+        "CauchyStressProjected": cauchy_projected,
+    }
 )
 
 ```

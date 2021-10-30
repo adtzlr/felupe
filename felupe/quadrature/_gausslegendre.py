@@ -65,6 +65,17 @@ class GaussLegendre(Scheme):
             points = points[[0, 1, 3, 2, 4, 5, 7, 6]]
             weights = weights[[0, 1, 3, 2, 4, 5, 7, 6]]
 
+        if permute and order == 2 and dim == 3:
+            vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
+            edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
+            faces = np.array([12, 14, 10, 16, 4, 22])
+            volume = np.array([13])
+
+            permute = np.concatenate((vertices, edges, faces, volume))
+
+            points = points[permute]
+            weights = weights[permute]
+
         super().__init__(points, weights)
 
     def inv(self):

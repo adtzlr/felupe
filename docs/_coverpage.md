@@ -1,6 +1,6 @@
-<img src="images/felupe_logo.png" width="250px"/>
+<img src="images/logo.svg" width="220px"/>
 
-# felupe <small>beta</small>
+# FElupe <small>beta</small>
 
 > Finite Element Analysis
 

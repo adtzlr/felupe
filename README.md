@@ -54,7 +54,7 @@ displacement += fe.solve.solve(*system, ext0)
 fe.tools.save(region, displacement, filename="result.vtk")
 ```
 
-<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png"/>
+<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="500px" />
 
 # Documentation
 The documentation is located [here](https://adtzlr.github.io/felupe).

@@ -9,6 +9,8 @@ from ._tools import (
 from ._loadcase import (
     symmetry,
     uniaxial,
+    biaxial,
+    planar,
 )
 
 try:

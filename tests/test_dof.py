@@ -85,6 +85,36 @@ def test_loadcase():
         assert len(ux) == 5
         assert "right" in ux[0]
 
+        bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=False)
+        assert len(bx) == 4
+
+        bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=True)
+        assert len(bx) == 4
+        assert "right" in bx[0]
+
+        bx = fe.dof.biaxial(u, right=2.0, move=0.2, clamped=True)
+        assert len(bx) == 4
+        assert "right" in bx[0]
+
+        bx = fe.dof.biaxial(v, right=1.0, move=0.2, clamped=True)
+        assert len(bx) == 5
+        assert "right" in bx[0]
+
+        ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=False)
+        assert len(ps) == 4
+
+        ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=True)
+        assert len(ps) == 4
+        assert "right" in ps[0]
+
+        ps = fe.dof.planar(u, right=2.0, move=0.2, clamped=True)
+        assert len(ps) == 4
+        assert "right" in ps[0]
+
+        ps = fe.dof.planar(v, right=1.0, move=0.2, clamped=True)
+        assert len(ps) == 5
+        assert "right" in ps[0]
+
 
 def test_mpc():
 

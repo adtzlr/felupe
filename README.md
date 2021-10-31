@@ -26,7 +26,7 @@ region = fe.RegionHexahedron(fe.Cube(n=11))
 
 # add a displacement field and apply a uniaxial elongation on the cube
 displacement = fe.Field(region, dim=3)
-boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, clamped=True)
+boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
 
 # deformation gradient
 F = displacement.extract(grad=True, sym=False, add_identity=True)
@@ -54,7 +54,7 @@ displacement += fe.solve.solve(*system, ext0)
 fe.tools.save(region, displacement, filename="result.vtk")
 ```
 
-<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="500px" />
+<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="800px" />
 
 # Documentation
 The documentation is located [here](https://adtzlr.github.io/felupe).

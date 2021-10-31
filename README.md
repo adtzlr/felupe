@@ -15,6 +15,62 @@ pip install felupe[all]
 
 where `[all]` installs all optional dependencies. By default, FElupe does not require `numba` and `sparse`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
 
+# Hello, FElupe!
+A quarter model of a solid cube with hyperelastic material behavior is subjected to a uniaxial elongation applied at a clamped end-face. This involves the creation of a mesh, a region and a displacement field. Furthermore, boundary conditions are created. The material behavior is defined through a Neo-Hookean material formulation. By assembling both linear and bilinear forms the force residual vector and the tangent stiffness matrix are evaluated. Finally, linear solution of the incremental displacements are calculated (the iterative Newton-Rhapson procedure is not shown here). For more details, have a look at the documentation.
+
+```python
+import felupe as fe
+
+# create a hexahedron-region on a solid unit cube
+mesh   = fe.Cube(n=11)
+region = fe.RegionHexahedron(mesh)
+
+# add a displacement field and apply a uniaxial loading on the unit cube
+displacement = fe.Field(region, dim=3)
+
+# add boundaries
+f1 = lambda x: x == 1
+
+bounds = fe.dof.symmetry(displacement, axes=(True, True, True))
+bounds["move"]  = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.2)
+bounds["fixed"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
+
+# partition deegrees of freedom and generate external displacements
+dof0, dof1 = fe.dof.partition(displacement, bounds)
+u0ext = fe.dof.apply(displacement, bounds, dof0=dof0)
+
+# deformation gradient
+F = displacement.extract(grad=True, sym=False, add_identity=True)
+
+# define constitutive material behavior
+umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
+    
+# force residuals from assembly of equilibrium (weak form)
+r = fe.IntegralForm(
+    fun=umat.gradient(F), v=displacement, dV=region.dV, grad_v=True
+).assemble().toarray()[:,0]
+    
+# tangent stiffness matrix from (parallel) assembly of linearized equilibrium
+K = fe.IntegralForm(
+    fun=umat.hessian(F), 
+    v=displacement, 
+    dV=region.dV, 
+    u=displacement, 
+    grad_v=True, 
+    grad_u=True
+).assemble(parallel=True)
+
+# solve: first partition, then solve linear system
+system = fe.solve.partition(displacement, K, dof1, dof0, r)
+du = fe.solve.solve(*system, u0ext)
+
+# update field
+displacement += du
+
+# export results
+fe.tools.save(region, displacement, filename="result.vtk")
+```
+
 # Documentation
 The documentation is located [here](https://adtzlr.github.io/felupe).
 

@@ -33,20 +33,17 @@ F = displacement.extract(grad=True, sym=False, add_identity=True)
 
 # define the constitutive material behavior
 umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
+P  = umat.gradient(F)
+A4 = umat.hessian(F)
     
 # force residuals from assembly of equilibrium (weak form)
 r = fe.IntegralForm(
-    fun=umat.gradient(F), v=displacement, dV=region.dV, grad_v=True
+    P, v=displacement, dV=region.dV, grad_v=True
 ).assemble().toarray()[:,0]
     
 # tangent stiffness matrix from (parallel) assembly of linearized equilibrium
 K = fe.IntegralForm(
-    fun=umat.hessian(F), 
-    v=displacement, 
-    dV=region.dV, 
-    u=displacement, 
-    grad_v=True, 
-    grad_u=True,
+    A4, v=displacement, dV=region.dV, u=displacement, grad_v=True, grad_u=True,
 ).assemble(parallel=True)
 
 # solution: partition, solve linear system and update field values

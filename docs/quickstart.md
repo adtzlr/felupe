@@ -7,7 +7,7 @@ import felupe
 
 Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons. By using a template region like `RegionHexahedron` (see section **Region**), only the mesh has to be created.
 
-![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/numeric_region.png)
+![FElupe](https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/region.svg)
 
 ```python
 mesh = felupe.Cube(n=9)

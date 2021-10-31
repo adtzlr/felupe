@@ -1,4 +1,4 @@
-# felupe
+# FElupe
 
 > Finite Element Analysis
 

@@ -21,28 +21,17 @@ A quarter model of a solid cube with hyperelastic material behavior is subjected
 ```python
 import felupe as fe
 
-# create a hexahedron-region on a solid unit cube
-mesh   = fe.Cube(n=11)
-region = fe.RegionHexahedron(mesh)
+# create a hexahedron-region on a cube
+region = fe.RegionHexahedron(fe.Cube(n=11))
 
-# add a displacement field and apply a uniaxial loading on the unit cube
+# add a displacement field and apply a uniaxial elongation on the cube
 displacement = fe.Field(region, dim=3)
-
-# add boundaries
-f1 = lambda x: x == 1
-
-bounds = fe.dof.symmetry(displacement, axes=(True, True, True))
-bounds["move"]  = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.2)
-bounds["fixed"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
-
-# partition deegrees of freedom and generate external displacements
-dof0, dof1 = fe.dof.partition(displacement, bounds)
-u0ext = fe.dof.apply(displacement, bounds, dof0=dof0)
+boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, clamped=True)
 
 # deformation gradient
 F = displacement.extract(grad=True, sym=False, add_identity=True)
 
-# define constitutive material behavior
+# define the constitutive material behavior
 umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
     
 # force residuals from assembly of equilibrium (weak form)
@@ -57,15 +46,12 @@ K = fe.IntegralForm(
     dV=region.dV, 
     u=displacement, 
     grad_v=True, 
-    grad_u=True
+    grad_u=True,
 ).assemble(parallel=True)
 
-# solve: first partition, then solve linear system
+# solution: partition, solve linear system and update field values
 system = fe.solve.partition(displacement, K, dof1, dof0, r)
-du = fe.solve.solve(*system, u0ext)
-
-# update field
-displacement += du
+displacement += fe.solve.solve(*system, ext0)
 
 # export results
 fe.tools.save(region, displacement, filename="result.vtk")

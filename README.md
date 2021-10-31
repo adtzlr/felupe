@@ -16,7 +16,7 @@ pip install felupe[all]
 where `[all]` installs all optional dependencies. By default, FElupe does not require `numba` and `sparse`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
 
 # Hello, FElupe!
-A quarter model of a solid cube with hyperelastic material behavior is subjected to a uniaxial elongation applied at a clamped end-face. This involves the creation of a mesh, a region and a displacement field. Furthermore, boundary conditions are created. The material behavior is defined through a Neo-Hookean material formulation. By assembling both linear and bilinear forms the force residual vector and the tangent stiffness matrix are evaluated. Finally, the linear solution of the incremental displacements are calculated (the iterative Newton-Rhapson procedure is not shown here). For more details, have a look at the documentation.
+A quarter model of a solid cube with hyperelastic material behavior is subjected to a uniaxial elongation applied at a clamped end-face. This involves the creation of a mesh, a region and a displacement field. Furthermore, the boundary conditions are created by a template for a uniaxial loadcase. The material behavior is defined through a Neo-Hookean material formulation. By assembling both linear and bilinear forms, the internal force vector and the tangent stiffness matrix are generated. Finally, the linear solution of the incremental displacements is calculated (the iterative Newton-Rhapson procedure is not shown here). For more details, have a look at the documentation.
 
 ```python
 import felupe as fe

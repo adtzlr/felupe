@@ -64,9 +64,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.2.0] - 2021-10-31
+
 ### Added
 - Add template regions, i.e. a region with a `Hexahedron()` element and a quadrature scheme `GaussLegendre(order=1, dim=3)` as `RegionHexahedron`, etc.
 - Add biaxial and planar loadcases (like uniaxial).
+- Add a minimal README-example (Hello FElupe!).
 
 ### Changed
 - Deactivate clamped boundary (`clamped=False`) as default option for uniaxial loading `dof.uniaxial`

@@ -65,8 +65,9 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     return bounds
 
 
-def uniaxial(field, right=1, move=0.2, clamped=True):
-    "Define boundaries for uniaxial loading."
+def uniaxial(field, right=1, move=0.2, clamped=False):
+    """Define boundaries for uniaxial loading on a quarter model (x > 0, y > 0,
+    z > 0) with symmetries at x=0, y=0 and z=0."""
 
     if "mixed" in str(type(field)).lower():
         f = field.fields[0]
@@ -81,6 +82,65 @@ def uniaxial(field, right=1, move=0.2, clamped=True):
         bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
 
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
+
+    part = partition(field, bounds)
+    ext0 = apply(f, bounds, part[0])
+
+    out = bounds, *part, ext0
+
+    return out
+
+
+def biaxial(field, right=1, move=0.2, clamped=False):
+    """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
+    z > 0) with symmetries at x=0, y=0 and z=0.
+
+    Note that `clamped=True` is not a valid loadcase for a cube. Use a cross-
+    like shape instead where the clamped faces at fx=1 and fy=1 do not share
+    mesh-points."""
+
+    if "mixed" in str(type(field)).lower():
+        f = field.fields[0]
+    else:
+        f = field
+
+    f1 = lambda x: np.isclose(x, right)
+
+    bounds = symmetry(f)
+
+    if clamped:
+        bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
+        bounds["top"] = Boundary(f, fy=f1, skip=(0, 1, 0))
+
+    bounds["move-x"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
+    bounds["move-y"] = Boundary(f, fy=f1, skip=(1, 0, 1), value=move)
+
+    part = partition(field, bounds)
+    ext0 = apply(f, bounds, part[0])
+
+    out = bounds, *part, ext0
+
+    return out
+
+
+def planar(field, right=1, move=0.2, clamped=False):
+    """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
+    z > 0) with symmetries at x=0, y=0 and z=0."""
+
+    if "mixed" in str(type(field)).lower():
+        f = field.fields[0]
+    else:
+        f = field
+
+    f1 = lambda x: np.isclose(x, right)
+
+    bounds = symmetry(f)
+
+    if clamped:
+        bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
+
+    bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
+    bounds["fix-y"] = Boundary(f, fy=f1, skip=(1, 0, 1))
 
     part = partition(field, bounds)
     ext0 = apply(f, bounds, part[0])

@@ -94,9 +94,14 @@ def jac(x, umat, parallel=False):
 def solve(A, b, x, dof1, dof0, ext0=None, solver=spsolve):
     "Solve partitioned system."
 
-    system = fesolve.partition(x, A, dof1, dof0, b)
+    system = fesolve.partition(x, A, dof1, dof0, -b)
 
     return fesolve.solve(*system, ext0, solver=solver)
+
+
+def check(dx, x, f, tol):
+    "Check result."
+    return np.all(norm(dx) < tol)
 
 
 def newtonrhapson(
@@ -104,13 +109,14 @@ def newtonrhapson(
     fun=fun,
     jac=jac,
     solve=solve,
-    maxiter=8,
+    maxiter=16,
     update=lambda x, dx: x + dx,
-    check=lambda dx, x, f: norm(dx) < np.sqrt(np.finfo(float).eps),
+    check=check,
     args=(),
     kwargs={},
     kwargs_solve={},
     kwargs_check={},
+    tol=np.sqrt(np.finfo(float).eps),
     umat=None,
     dof1=None,
     dof0=None,
@@ -167,19 +173,19 @@ def newtonrhapson(
         sig = inspect.signature(solve)
 
         for key, value in zip(
-            ["dof1", "dof0", "ext0", "solver"], [dof1, dof0, ext0, solver]
+            ["x", "dof1", "dof0", "ext0", "solver"], [x, dof1, dof0, ext0, solver]
         ):
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
-        dx = solve(K, f, x, **kwargs_solve)
+        dx = solve(K, -f, **kwargs_solve)
         x = update(x, dx)
 
         # evaluate function at unknowns "x"
         f = fun(x, *args, **kwargs)
 
         # check success of solution
-        success = check(dx, x, f, **kwargs_check)
+        success = check(dx, x, f, tol, **kwargs_check)
 
         if success:
             break

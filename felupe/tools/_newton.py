@@ -25,33 +25,97 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import inspect
+
 import numpy as np
+from scipy.sparse.linalg import spsolve
+
+from ..math import norm
+from .._assembly import IntegralForm, IntegralFormMixed
+from .. import solve as fesolve
 
 
 class Result:
-    def __init__(self, x, y=None, fun=None, jac=None, success=None, iterations=None):
+    def __init__(self, x, fun=None, jac=None, success=None, iterations=None):
         "Result class."
         self.x = x
-        self.y = y
         self.fun = fun
         self.jac = jac
         self.success = success
         self.iterations = iterations
 
 
+def fun(x, umat, parallel=False):
+    "Force residuals from assembly of equilibrium (weak form)."
+
+    if "mixed" in str(type(x)):
+
+        L = IntegralFormMixed(
+            fun=umat.gradient(x.extract()),
+            v=x,
+            dV=x[0].region.dV,
+        )
+
+    else:
+
+        L = IntegralForm(
+            fun=umat.gradient(x.extract()), v=x, dV=x.region.dV, grad_v=True
+        )
+
+    return L.assemble(parallel=parallel).toarray()[:, 0]
+
+
+def jac(x, umat, parallel=False):
+    "Tangent stiffness matrix from assembly of linearized equilibrium."
+
+    if "mixed" in str(type(x)):
+
+        a = IntegralFormMixed(
+            fun=umat.hessian(x.extract()),
+            v=x,
+            dV=x[0].region.dV,
+            u=x,
+        )
+
+    else:
+
+        a = IntegralForm(
+            fun=umat.hessian(x.extract()),
+            v=x,
+            dV=x.region.dV,
+            u=x,
+            grad_v=True,
+            grad_u=True,
+        )
+
+    return a.assemble(parallel=parallel)
+
+
+def solve(A, b, x, dof1, dof0, ext0=None, solver=spsolve):
+    "Solve partitioned system."
+
+    system = fesolve.partition(x, A, dof1, dof0, b)
+
+    return fesolve.solve(*system, ext0, solver=solver)
+
+
 def newtonrhapson(
-    fun,
     x0,
-    jac,
-    solve=np.linalg.solve,
+    fun=fun,
+    jac=jac,
+    solve=solve,
     maxiter=8,
-    pre=lambda x: x,
     update=lambda x, dx: x + dx,
-    check=lambda dx, x, f: np.linalg.norm(dx) < np.finfo(float).eps,
+    check=lambda dx, x, f: norm(dx) < np.sqrt(np.finfo(float).eps),
     args=(),
     kwargs={},
     kwargs_solve={},
     kwargs_check={},
+    umat=None,
+    dof1=None,
+    dof0=None,
+    ext0=None,
+    solver=spsolve,
     export_jac=False,
 ):
     """
@@ -87,29 +151,40 @@ def newtonrhapson(
     x = x0
     # x = deepcopy(x0)
 
+    if umat is not None:
+        kwargs["umat"] = umat
+
     # pre-evaluate function at given unknowns "x"
-    f = fun(pre(x), *args, **kwargs)
+    f = fun(x, *args, **kwargs)
 
     # iteration loop
     for iteration in range(maxiter):
 
         # evaluate jacobian at unknowns "x"
-        K = jac(pre(x), *args, **kwargs)
+        K = jac(x, *args, **kwargs)
 
         # solve linear system and update solution
-        result = solve(K, -f, **kwargs_solve)
-        x = update(x, result)
+        sig = inspect.signature(solve)
+
+        for key, value in zip(
+            ["dof1", "dof0", "ext0", "solver"], [dof1, dof0, ext0, solver]
+        ):
+            if key in sig.parameters:
+                kwargs_solve[key] = value
+
+        dx = solve(K, f, x, **kwargs_solve)
+        x = update(x, dx)
 
         # evaluate function at unknowns "x"
-        f = fun(pre(x), *args, **kwargs)
+        f = fun(x, *args, **kwargs)
 
         # check success of solution
-        success = check(result, x, f, **kwargs_check)
+        success = check(dx, x, f, **kwargs_check)
 
         if success:
             break
 
-    Res = Result(x=x, y=pre(x), fun=f, success=success, iterations=1 + iteration)
+    Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 
     if export_jac:
         Res.jac = K

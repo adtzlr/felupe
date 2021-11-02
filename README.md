@@ -72,7 +72,10 @@ All notable changes to this project will be documented in this file. The format 
 - Add a minimal README-example (Hello FElupe!).
 
 ### Changed
-- Deactivate clamped boundary (`clamped=False`) as default option for uniaxial loading `dof.uniaxial`
+- Deactivate clamped boundary (`clamped=False`) as default option for uniaxial loading `dof.uniaxial`.
+- Rename `mesh.as_discontinous()` to `mesh.disconnect()`.
+- Rename `constitution.Mixed` to `constitution.ThreeFieldVariation`.
+- Import tools (`newtonrhapson`, `project`, `save`) and constitution (`NeoHooke`, `LinearElastic` and `ThreeFieldVariation`) to FElupe's namespace.
 
 ## [1.1.0] - 2021-10-30
 

@@ -51,7 +51,7 @@ def fun(x, umat, parallel=False):
     if "mixed" in str(type(x)):
 
         L = IntegralFormMixed(
-            fun=umat.gradient(x.extract()),
+            fun=umat.gradient(*x.extract()),
             v=x,
             dV=x[0].region.dV,
         )
@@ -71,7 +71,7 @@ def jac(x, umat, parallel=False):
     if "mixed" in str(type(x)):
 
         a = IntegralFormMixed(
-            fun=umat.hessian(x.extract()),
+            fun=umat.hessian(*x.extract()),
             v=x,
             dV=x[0].region.dV,
             u=x,
@@ -91,12 +91,18 @@ def jac(x, umat, parallel=False):
     return a.assemble(parallel=parallel)
 
 
-def solve(A, b, x, dof1, dof0, ext0=None, solver=spsolve):
+def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
     "Solve partitioned system."
 
     system = fesolve.partition(x, A, dof1, dof0, -b)
 
-    return fesolve.solve(*system, ext0, solver=solver)
+    dx = fesolve.solve(*system, ext0, solver=solver)
+
+    if "mixed" in str(type(x)):
+        return np.split(dx, offsets)
+
+    else:
+        return dx
 
 
 def check(dx, x, f, tol):
@@ -120,6 +126,7 @@ def newtonrhapson(
     umat=None,
     dof1=None,
     dof0=None,
+    offsets=None,
     ext0=None,
     solver=spsolve,
     export_jac=False,
@@ -172,9 +179,11 @@ def newtonrhapson(
         # solve linear system and update solution
         sig = inspect.signature(solve)
 
-        for key, value in zip(
-            ["x", "dof1", "dof0", "ext0", "solver"], [x, dof1, dof0, ext0, solver]
-        ):
+        keys = ["x", "dof1", "dof0", "offsets", "ext0", "solver"]
+        values = [x, dof1, dof0, offsets, ext0, solver]
+
+        for key, value in zip(keys, values):
+
             if key in sig.parameters:
                 kwargs_solve[key] = value
 

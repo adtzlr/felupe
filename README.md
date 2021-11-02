@@ -48,6 +48,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Rename `mesh.as_discontinous()` to `mesh.disconnect()`.
+- Rename `constitution.Mixed` to `constitution.ThreeFieldVariation`.
+- Rename `unstack` to `offsets` as return of dof-partition and all subsequent references.
+- Import tools (`newtonrhapson`, `project`, `save`) and constitution (`NeoHooke`, `LinearElastic` and `ThreeFieldVariation`) to FElupe's namespace.
+- Change minimal README-example to a high-level code snippet and refer to docs for details.
+
 ## [1.2.0] - 2021-10-31
 
 ### Added
@@ -57,10 +64,6 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Deactivate clamped boundary (`clamped=False`) as default option for uniaxial loading `dof.uniaxial`.
-- Rename `mesh.as_discontinous()` to `mesh.disconnect()`.
-- Rename `constitution.Mixed` to `constitution.ThreeFieldVariation`.
-- Rename `unstack` to `offsets` as return of dof-partition and all subsequent references.
-- Import tools (`newtonrhapson`, `project`, `save`) and constitution (`NeoHooke`, `LinearElastic` and `ThreeFieldVariation`) to FElupe's namespace.
 
 ## [1.1.0] - 2021-10-30
 

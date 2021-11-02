@@ -31,21 +31,20 @@ import felupe as fe
 
 def pre():
 
-    m = fe.Cube(n=3)
-    e = fe.Hexahedron()
-    q = fe.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
+    r = fe.RegionHexahedron(fe.Cube(n=3))
 
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
     J = fe.Field(r, values=1)
+    
+    f = fe.FieldMixed((u, p, J))
 
-    return r, (u, p, J)
+    return r, f, (u, p, J)
 
 
 def test_solve_check():
 
-    r, (u, p, J) = pre()
+    r, f, (u, p, J) = pre()
 
     W = fe.constitution.NeoHooke(1, 3)
 
@@ -95,7 +94,7 @@ def test_solve_check():
 
 def test_solve_mixed_check():
 
-    r, fields = pre()
+    r, f, fields = pre()
     u = fields[0]
 
     f = fe.FieldMixed(fields)
@@ -145,7 +144,8 @@ def test_solve_mixed_check():
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
 
-def test_newton():
+def test_newton_simple():
+    
     def fun(x):
         return (x - 3) ** 2
 
@@ -160,7 +160,51 @@ def test_newton():
     assert np.isclose(res.x, 3, rtol=1e-2)
 
 
+def test_newton():
+    
+    # create a hexahedron-region on a cube
+    region = fe.RegionHexahedron(fe.Cube(n=3))
+    
+    # add a displacement field and apply a uniaxial elongation on the cube
+    displacement = fe.Field(region, dim=3)
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+    
+    # define the constitutive material behavior
+    umat = fe.NeoHooke(mu=1.0, bulk=2.0)
+    
+    # newton-rhapson procedure
+    res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    
+def test_newton_mixed():
+    
+    # create a hexahedron-region on a cube
+    mesh = fe.Cube(n=3)
+    region = fe.RegionHexahedron(mesh)
+    region0 = fe.RegionConstantHexahedron(fe.mesh.convert(mesh, 0))
+    
+    # add a displacement field and apply a uniaxial elongation on the cube
+    u = fe.Field(region, dim=3)
+    p = fe.Field(region0)
+    J = fe.Field(region0, values=1)
+    field = fe.FieldMixed((u, p, J))
+    
+    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
+    
+    # deformation gradient
+    F = field.extract(grad=True, sym=False, add_identity=True)
+    
+    # define the constitutive material behavior
+    nh = fe.NeoHooke(mu=1.0, bulk=2.0)
+    umat = fe.ThreeFieldVariation(nh)
+    
+    # newton-rhapson procedure
+    res = fe.newtonrhapson(
+        x0=field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
+    )
+
 if __name__ == "__main__":
     test_solve_check()
     test_solve_mixed_check()
+    test_newton_simple()
     test_newton()
+    test_newton_mixed()

@@ -38,14 +38,14 @@ def save(
     r=None,
     F=None,
     gradient=None,
-    unstack=None,
+    offsets=None,
     converged=True,
     filename="result.vtk",
     cell_data=None,
     point_data=None,
 ):
 
-    if unstack is not None:
+    if offsets is not None:
         if "mixed" in str(type(fields)):
             fields = fields.fields
         u = fields[0]
@@ -60,8 +60,8 @@ def save(
     point_data["Displacements"] = u.values
 
     if r is not None:
-        if unstack is not None:
-            reactionforces = np.split(r, unstack)[0]
+        if offsets is not None:
+            reactionforces = np.split(r, offsets)[0]
         else:
             reactionforces = r
 
@@ -69,7 +69,7 @@ def save(
 
     if gradient is not None:
         # 1st Piola Kirchhoff stress
-        if unstack is not None:
+        if offsets is not None:
             P = gradient[0]
         else:
             P = gradient

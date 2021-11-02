@@ -36,7 +36,7 @@ def pre():
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
     J = fe.Field(r, values=1)
-    
+
     f = fe.FieldMixed((u, p, J))
 
     return r, f, (u, p, J)
@@ -145,7 +145,6 @@ def test_solve_mixed_check():
 
 
 def test_newton_simple():
-    
     def fun(x):
         return (x - 3) ** 2
 
@@ -161,46 +160,50 @@ def test_newton_simple():
 
 
 def test_newton():
-    
+
     # create a hexahedron-region on a cube
     region = fe.RegionHexahedron(fe.Cube(n=3))
-    
+
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fe.Field(region, dim=3)
     boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
-    
+
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
-    
+
     # newton-rhapson procedure
     res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
-    
+
+
 def test_newton_mixed():
-    
+
     # create a hexahedron-region on a cube
     mesh = fe.Cube(n=3)
     region = fe.RegionHexahedron(mesh)
     region0 = fe.RegionConstantHexahedron(fe.mesh.convert(mesh, 0))
-    
+
     # add a displacement field and apply a uniaxial elongation on the cube
     u = fe.Field(region, dim=3)
     p = fe.Field(region0)
     J = fe.Field(region0, values=1)
     field = fe.FieldMixed((u, p, J))
-    
-    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
-    
+
+    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(
+        field, move=0.2, clamped=True
+    )
+
     # deformation gradient
     F = field.extract(grad=True, sym=False, add_identity=True)
-    
+
     # define the constitutive material behavior
     nh = fe.NeoHooke(mu=1.0, bulk=2.0)
     umat = fe.ThreeFieldVariation(nh)
-    
+
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         x0=field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
     )
+
 
 if __name__ == "__main__":
     test_solve_check()

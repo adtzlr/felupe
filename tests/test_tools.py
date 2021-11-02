@@ -102,13 +102,13 @@ def test_solve_mixed_check():
 
     F, p, J = f.extract()
 
-    W = fe.constitution.NeoHooke(1, 3)
-    W_mixed = fe.constitution.Mixed(W.gradient, W.hessian)
+    W = fe.NeoHooke(1, 3)
+    W_mixed = fe.ThreeFieldVariation(W)
 
     F = u.extract()
 
     bounds = fe.dof.symmetry(u)
-    dof0, dof1, unstack = fe.dof.partition(f, bounds)
+    dof0, dof1, offsets = fe.dof.partition(f, bounds)
 
     u0ext = fe.dof.apply(u, bounds, dof0)
 
@@ -118,7 +118,7 @@ def test_solve_mixed_check():
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
 
-    dx = fe.tools.solve(A, b, f, dof0, dof1, u0ext, unstack)
+    dx = fe.tools.solve(A, b, f, dof0, dof1, u0ext, offsets)
 
     assert dx[0].shape == u.values.ravel().shape
     assert dx[1].shape == fields[1].values.ravel().shape
@@ -127,19 +127,19 @@ def test_solve_mixed_check():
     fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
     fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
-    fe.tools.save(r, f, unstack=unstack)
-    fe.tools.save(r, f, r=b, unstack=unstack)
+    fe.tools.save(r, f, offsets=offsets)
+    fe.tools.save(r, f, r=b, offsets=offsets)
     fe.tools.save(
         r,
         f,
         r=b,
-        unstack=unstack,
+        offsets=offsets,
         F=F,
         gradient=W_mixed.gradient(F, p, J),
     )
 
-    force = fe.tools.force(u, b, bounds["symx"], unstack=unstack)
-    moment = fe.tools.moment(u, b, bounds["symx"], unstack=unstack)
+    force = fe.tools.force(u, b, bounds["symx"], offsets=offsets)
+    moment = fe.tools.moment(u, b, bounds["symx"], offsets=offsets)
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
@@ -154,7 +154,7 @@ def test_newton():
 
     x0 = np.array([3.1])
 
-    res = fe.tools.newtonrhapson(fun, x0, jac)
+    res = fe.tools.newtonrhapson(x0, fun, jac, solve=np.linalg.solve)
 
     assert abs(res.fun) < 1e-6
     assert np.isclose(res.x, 3, rtol=1e-2)

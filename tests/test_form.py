@@ -78,8 +78,8 @@ def pre_mixed():
 
     f = fe.FieldMixed((u, p, J))
 
-    nh = fe.constitution.NeoHooke(1, 3)
-    W = fe.constitution.Mixed(nh.gradient, nh.hessian)
+    nh = fe.NeoHooke(1, 3)
+    W = fe.ThreeFieldVariation(nh)
 
     return r, f, W.gradient(*f.extract()), W.hessian(*f.extract())
 
@@ -97,8 +97,8 @@ def pre_axi_mixed():
 
     f = fe.FieldMixed((u, p, J))
 
-    nh = fe.constitution.NeoHooke(1, 3)
-    W = fe.constitution.Mixed(nh.gradient, nh.hessian)
+    nh = fe.NeoHooke(1, 3)
+    W = fe.ThreeFieldVariation(nh)
 
     return r, f, W.gradient(*f.extract()), W.hessian(*f.extract())
 

@@ -80,7 +80,11 @@ from .constitution import (
     LinearElastic,
     ThreeFieldVariation,
 )
-from .tools import newtonrhapson, save
+from .tools import (
+    newtonrhapson,
+    save,
+    project,
+)
 
 __all__ = [
     "__version__",

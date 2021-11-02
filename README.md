@@ -48,6 +48,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.3.0] - 2021-11-02
+
 ### Changed
 - Rename `mesh.as_discontinous()` to `mesh.disconnect()`.
 - Rename `constitution.Mixed` to `constitution.ThreeFieldVariation`.

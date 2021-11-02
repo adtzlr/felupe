@@ -8,7 +8,7 @@ neohooke = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
 umat = fe.constitution.ThreeFieldVariation(neohooke)
 ```
 
-Next, let's create a meshed cube and a converted version for the piecewise constant fields per cell. Two element definitions are necessary: one for the displacements and one for the pressure and volume ratio. Both elements use the same quadrature rule. Two regions are created, which will be further used by the creation of the fields.
+Next, let's create a meshed cube. Two regions, one for the displacements and another one for the pressure and the volume ratio are created.
 
 
 ```python

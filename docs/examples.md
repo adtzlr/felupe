@@ -5,7 +5,7 @@ FElupe supports mixed-field formulations in a similar way it can handle (default
 import felupe as fe
 
 neohooke = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
-umat = fe.constitution.Mixed(neohooke.gradient, neohooke.hessian)
+umat = fe.constitution.ThreeFieldVariation(neohooke)
 ```
 
 Next, let's create a meshed cube and a converted version for the piecewise constant fields per cell. Two element definitions are necessary: one for the displacements and one for the pressure and volume ratio. Both elements use the same quadrature rule. Two regions are created, which will be further used by the creation of the fields.
@@ -13,15 +13,9 @@ Next, let's create a meshed cube and a converted version for the piecewise const
 
 ```python
 mesh  = fe.Cube(n=6)
-mesh0 = fe.mesh.convert(mesh, order=0)
 
-element  = fe.Hexahedron()
-element0 = fe.ConstantHexahedron()
-
-quadrature = fe.GaussLegendre(order=1, dim=3)
-
-region  = fe.Region(mesh,  element,  quadrature)
-region0 = fe.Region(mesh0, element0, quadrature, grad=False)
+region  = fe.RegionHexahedron(mesh)
+region0 = fe.RegionConstantHexahedron(mesh)
 
 dV = region.dV
 
@@ -43,7 +37,7 @@ boundaries = fe.doftools.symmetry(displacement)
 boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
 boundaries["move" ] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
 
-dof0, dof1, unstack = fe.dof.partition(fields, boundaries)
+dof0, dof1, offsets = fe.dof.partition(fields, boundaries)
 u0ext = fe.dof.apply(displacement, boundaries, dof0)
 ```
 
@@ -61,7 +55,7 @@ for iteration in range(8):
     K = bilinearform.assemble()
     
     system = fe.solve.partition(fields, K, dof1, dof0, r)
-    dfields = np.split(fe.solve.solve(*system, u0ext), unstack)
+    dfields = np.split(fe.solve.solve(*system, u0ext), offsets)
     
     fields += dfields
 
@@ -71,7 +65,7 @@ for iteration in range(8):
     if norm < 1e-12:
         break
 
-fe.tools.save(region, fields, unstack=unstack, filename="result.vtk")
+fe.tools.save(region, fields, offsets=offsets, filename="result.vtk")
 ```
 
 The deformed cube is visualized by the VTK output with the help of Paraview.

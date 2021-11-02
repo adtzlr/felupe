@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 from ._region import Region
 from ..element import (
     ConstantQuad,
@@ -46,6 +48,7 @@ from ..quadrature import (
     Triangle as TriangleQuadrature,
     Tetrahedron as TetraQuadrature,
 )
+from ..mesh import Mesh
 
 
 class RegionConstantQuad(Region):
@@ -56,7 +59,11 @@ class RegionConstantQuad(Region):
         element = ConstantQuad()
         quadrature = GaussLegendre(order=1, dim=2)
 
-        super().__init__(mesh, element, quadrature, grad=False)
+        points = np.zeros((mesh.ncells, mesh.dim), dtype=int)
+        cells = np.arange(mesh.ncells).reshape(-1, 1)
+        m = Mesh(points, cells, mesh.cell_type)
+
+        super().__init__(m, element, quadrature, grad=False)
 
 
 class RegionQuad(Region):
@@ -78,7 +85,11 @@ class RegionConstantHexahedron(Region):
         element = ConstantHexahedron()
         quadrature = GaussLegendre(order=1, dim=3)
 
-        super().__init__(mesh, element, quadrature, grad=False)
+        points = np.zeros((mesh.ncells, mesh.dim), dtype=int)
+        cells = np.arange(mesh.ncells).reshape(-1, 1)
+        m = Mesh(points, cells, mesh.cell_type)
+
+        super().__init__(m, element, quadrature, grad=False)
 
 
 class RegionHexahedron(Region):

@@ -28,7 +28,7 @@ line = fe.mesh._line_line(a=1, b=3, n=2)
 rect = fe.mesh.expand(line, n=2, z=5)
 hexa = fe.mesh.expand(rect, n=2, z=3)
 
-m = fe.mesh.Mesh(*hexa, cell_type="hexahedron")
+m = fe.Mesh(*hexa, cell_type="hexahedron")
 ```
 
 ## Generate lines, rectangles and cubes
@@ -41,12 +41,12 @@ mesh_cube      = fe.Cube(     a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2))
 ```
 
 ## Generate a cube with tetrahedrons
-FElupe does not support the creation of meshes consisting of triangles or tetrahedrons. It is recommended to use `meshzoo` instead (install with `pip install meshzoo`).
+FElupe does not provide the creation of meshes consisting of triangles or tetrahedrons. It is recommended to use `meshzoo` instead (install with `pip install meshzoo`).
 
 ```python
 import felupe as fe
 import meshzoo
 
 cube = meshzoo.cube_tetra((0,0,0), (1,1,1), n=11)
-mesh = fe.mesh.Mesh(*cube, cell_type="tetra")
+mesh = fe.Mesh(*cube, cell_type="tetra")
 ```

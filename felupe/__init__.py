@@ -75,6 +75,17 @@ from .mesh import (
     Rectangle,
     Cube,
 )
+from .constitution import (
+    NeoHooke,
+    LinearElastic,
+    ThreeFieldVariation,
+)
+from .tools import (
+    newtonrhapson,
+    save,
+    topoints,
+    project,
+)
 
 __all__ = [
     "__version__",

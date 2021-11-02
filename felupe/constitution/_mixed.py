@@ -39,14 +39,14 @@ from ..math import (
 )
 
 
-class Mixed:
-    def __init__(self, gradient, hessian):
+class ThreeFieldVariation:
+    def __init__(self, material):
         """Three-Field variation for nearly-incompressible materials:
         gradient = 1st Piola-Kirchhoff stress P
         hessian = associated (total) elasticity tensor A4 = dP/dF
         """
-        self.fun_P = gradient
-        self.fun_A = hessian
+        self.fun_P = material.gradient
+        self.fun_A = material.hessian
 
     def _gradient_u(self, F, p, J):
         """Variation of total potential w.r.t displacements

@@ -1,27 +1,21 @@
 ## Example 1 - (u,p,J) - Mixed-field formulation for nearly-incompressible hyperelasticity
-FElupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient. We take the [Getting Started](quickstart.md) example and modify it accordingly. We take the built-in Neo-Hookean material model and use it for FElupe's `Mixed` constitutive material class as described [here](guide.md).
+FElupe supports mixed-field formulations in a similar way it can handle (default) single-field variations. The definition of a mixed-field variation is shown for the hydrostatic-volumetric selective three-field-variation with independend fields for displacements $\bm{u}$, pressure $p$ and volume ratio $J$. The total potential energy for nearly-incompressible hyperelasticity is formulated with a determinant-modified deformation gradient. We take the [Getting Started](quickstart.md) example and modify it accordingly. We take the built-in Neo-Hookean material model and use it for FElupe's `ThreeFieldVariation` constitutive material class as described [here](guide.md).
 
 ```python
 import felupe as fe
 
 neohooke = fe.constitution.NeoHooke(mu=1.0, bulk=5000.0)
-umat = fe.constitution.Mixed(neohooke.gradient, neohooke.hessian)
+umat = fe.constitution.ThreeFieldVariation(neohooke)
 ```
 
-Next, let's create a meshed cube and a converted version for the piecewise constant fields per cell. Two element definitions are necessary: one for the displacements and one for the pressure and volume ratio. Both elements use the same quadrature rule. Two regions are created, which will be further used by the creation of the fields.
+Next, let's create a meshed cube. Two regions, one for the displacements and another one for the pressure and the volume ratio are created.
 
 
 ```python
 mesh  = fe.Cube(n=6)
-mesh0 = fe.mesh.convert(mesh, order=0)
 
-element  = fe.Hexahedron()
-element0 = fe.ConstantHexahedron()
-
-quadrature = fe.GaussLegendre(order=1, dim=3)
-
-region  = fe.Region(mesh,  element,  quadrature)
-region0 = fe.Region(mesh0, element0, quadrature, grad=False)
+region  = fe.RegionHexahedron(mesh)
+region0 = fe.RegionConstantHexahedron(mesh)
 
 dV = region.dV
 
@@ -43,11 +37,11 @@ boundaries = fe.doftools.symmetry(displacement)
 boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
 boundaries["move" ] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
 
-dof0, dof1, unstack = fe.dof.partition(fields, boundaries)
+dof0, dof1, offsets = fe.dof.partition(fields, boundaries)
 u0ext = fe.dof.apply(displacement, boundaries, dof0)
 ```
 
-The Newton-Rhapson iterations are coded quite similar to the one used in [Getting Started](quickstart.md). FElupe provides a Mixed-field version of it's `IntegralForm`, called `IntegralFormMixed`. It assumes that the first field operates on the gradient and all the others don't. Of course, the incremental solutions of the fields have to be splitted and updated seperately.
+The Newton-Rhapson iterations are coded quite similar to the one used in [Getting Started](quickstart.md). FElupe provides a Mixed-field version of it's `IntegralForm`, called `IntegralFormMixed`. It assumes that the first field operates on the gradient and all the others don't. The resulting system vector with incremental values of the fields has to be splitted at the field-offsets and updated.
 
 ```python
 for iteration in range(8):
@@ -61,7 +55,7 @@ for iteration in range(8):
     K = bilinearform.assemble()
     
     system = fe.solve.partition(fields, K, dof1, dof0, r)
-    dfields = np.split(fe.solve.solve(*system, u0ext), unstack)
+    dfields = np.split(fe.solve.solve(*system, u0ext), offsets)
     
     fields += dfields
 
@@ -71,7 +65,7 @@ for iteration in range(8):
     if norm < 1e-12:
         break
 
-fe.tools.save(region, fields, unstack=unstack, filename="result.vtk")
+fe.tools.save(region, fields, offsets=offsets, filename="result.vtk")
 ```
 
 The deformed cube is visualized by the VTK output with the help of Paraview.

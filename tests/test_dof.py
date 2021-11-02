@@ -186,8 +186,8 @@ def pre_mpc_mixed(point, values):
 
     F, p, J = fields.extract()
 
-    nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
-    umat = fe.constitution.Mixed(nh.gradient, nh.hessian)
+    nh = fe.NeoHooke(mu=1.0, bulk=2.0)
+    umat = fe.ThreeFieldVariation(nh)
 
     f0 = lambda x: np.isclose(x, 0)
     f1 = lambda x: np.isclose(x, 1)

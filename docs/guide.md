@@ -129,7 +129,7 @@ F = u.extract(grad=True, sym=False, add_identity=True)
 For simplicity, let's assume a (built-in) Neo-Hookean material.
 
 ```python
-umat = fe.constitution.NeoHooke(mu=1, bulk=5)
+umat = fe.NeoHooke(mu=1, bulk=5)
 ```
 
 Felupe provides an adopted IntegralForm class for the integration and the sparse matrix assemblage of axisymmetric problems. It uses the additional information (e.g. radial coordinates at integration points) stored in `FieldAxisymmetric` to provide a consistent interface in comparison to default IntegralForms.

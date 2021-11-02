@@ -9,4 +9,4 @@ from ._kinematics import (
     VolumeChange,
 )
 
-from ._mixed import Mixed
+from ._mixed import ThreeFieldVariation

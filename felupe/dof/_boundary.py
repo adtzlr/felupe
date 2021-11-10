@@ -40,6 +40,7 @@ class Boundary:
         fz=lambda v: v == np.nan,
         value=0,
         skip=(False, False, False),
+        mask=None,
     ):
         """A Boundary as a collection of prescribed degrees of freedom
         (numbered coordinate components of a field at points of a mesh).
@@ -96,20 +97,22 @@ class Boundary:
         self.skip = np.array(skip).astype(int)[: mesh.dim]  # self.dim
         self.fun = [fx, fy, fz][: mesh.dim]
 
-        # apply functions on the points per coordinate
-        # fx(x), fy(y), fz(z) and create a mask for each coordinate
-        mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
+        if mask is None:
 
-        # combine the masks with "logical_or" if dim > 1
-        if mesh.dim == 1:
-            mask = mask[0]
+            # apply functions on the points per coordinate
+            # fx(x), fy(y), fz(z) and create a mask for each coordinate
+            mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
 
-        elif mesh.dim == 2:
-            mask = np.logical_or(mask[0], mask[1])
+            # combine the masks with "logical_or" if dim > 1
+            if mesh.dim == 1:
+                mask = mask[0]
 
-        elif mesh.dim == 3:  # and mesh.points.shape[1] == 3:
-            tmp = np.logical_or(mask[0], mask[1])
-            mask = np.logical_or(tmp, mask[2])
+            elif mesh.dim == 2:
+                mask = np.logical_or(mask[0], mask[1])
+
+            elif mesh.dim == 3:  # and mesh.points.shape[1] == 3:
+                tmp = np.logical_or(mask[0], mask[1])
+                mask = np.logical_or(tmp, mask[2])
 
         # tile the mask
         self.mask = np.tile(mask.reshape(-1, 1), self.dim)

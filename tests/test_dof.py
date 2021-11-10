@@ -64,6 +64,12 @@ def test_boundary():
     v = fe.dof.apply(u, bounds, dof0=None)
     assert np.allclose(u.values, v)
 
+    mask = np.ones(u.region.mesh.npoints, dtype=bool)
+    bounds = {"boundary-label": fe.Boundary(u, mask=mask)}
+
+    v = fe.dof.apply(u, bounds, dof0=None)
+    assert np.allclose(u.values, v)
+
 
 def test_loadcase():
 

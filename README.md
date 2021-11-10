@@ -48,6 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `mask` argument to `Boundary` for the selection of user-defined points.
+
 ### Fixed
 - Obtain internal `dim` from Field in calculation of reaction force `tools.force`.
 

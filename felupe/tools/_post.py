@@ -31,9 +31,11 @@ from scipy.interpolate import interp1d
 
 def force(field, r, boundary, offsets=None):
     if offsets is None:
-        return ((r.reshape(-1, 3))[boundary.points]).sum(0)
+        return ((r.reshape(-1, field.dim))[boundary.points]).sum(0)
     else:
-        return (((np.split(r, offsets)[0]).reshape(-1, 3))[boundary.points]).sum(0)
+        return (
+            ((np.split(r, offsets)[0]).reshape(-1, field.dim))[boundary.points]
+        ).sum(0)
 
 
 def moment(field, r, boundary, point=np.zeros(3), offsets=None):

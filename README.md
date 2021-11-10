@@ -48,6 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Obtain internal `dim` from Field in calculation of reaction force `tools.force`.
+
 ## [1.3.0] - 2021-11-02
 
 ### Changed

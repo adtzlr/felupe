@@ -90,6 +90,13 @@ def test_math():
     with pytest.raises(TypeError):
         fe.math.dot(B, C)
 
+    fe.math.dot(C, a)
+    fe.math.dot(a, C)
+    fe.math.dot(a, a)
+
+    fe.math.dot(a, A)
+    fe.math.dot(A, a)
+
     fe.math.ddot(C, C)
     fe.math.ddot(C, A)
     fe.math.ddot(A, C)

@@ -200,12 +200,34 @@ def cross(a, b):
 
 def dot(A, B, n=2):
     "Dot-product of A and B with inputs of n trailing axes.."
+
     if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
         return np.einsum("ik...,kj...->ij...", A, B)
+
+    elif len(A.shape) == 1 + n and len(B.shape) == 1 + n:
+        return np.einsum("i...,j...->...", A, B)
+
+    elif len(A.shape) == 4 + n and len(B.shape) == 4 + n:
+        return np.einsum("ijkp...,plmn...->ijklmn...", A, B)
+
+    elif len(A.shape) == 2 + n and len(B.shape) == 1 + n:
+        return np.einsum("ij...,j...->i...", A, B)
+
+    elif len(A.shape) == 1 + n and len(B.shape) == 2 + n:
+        return np.einsum("i...,ij...->j...", A, B)
+
+    elif len(A.shape) == 4 + n and len(B.shape) == 1 + n:
+        return np.einsum("ijkl...,l...->ijk...", A, B)
+
+    elif len(A.shape) == 1 + n and len(B.shape) == 4 + n:
+        return np.einsum("i...,ijkl...->jkl...", A, B)
+
     elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:
         return np.einsum("im...,mjkl...->ijkl...", A, B)
+
     elif len(A.shape) == 4 + n and len(B.shape) == 2 + n:
         return np.einsum("ijkm...,ml...->ijkl...", A, B)
+
     else:
         raise TypeError("Unknown shape of A and B.")
 

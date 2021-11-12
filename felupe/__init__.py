@@ -79,6 +79,10 @@ from .constitution import (
     NeoHooke,
     LinearElastic,
     ThreeFieldVariation,
+    LineChange,
+    AreaChange,
+    VolumeChange,
+    MatadiMaterial,
 )
 from .tools import (
     newtonrhapson,

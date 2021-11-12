@@ -96,6 +96,7 @@ def test_math():
 
     fe.math.dot(a, A)
     fe.math.dot(A, a)
+    fe.math.dot(A, A)
 
     fe.math.ddot(C, C)
     fe.math.ddot(C, A)

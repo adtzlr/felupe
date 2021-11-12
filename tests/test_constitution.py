@@ -162,8 +162,7 @@ def test_wrappers():
             else:
                 return self.material.hessian(*x)
 
-    mat = AsMatadi(nh)
-    umat = fe.MatadiMaterial(mat)
+    umat = fe.MatadiMaterial(AsMatadi(nh))
 
     W = umat.function(F)
     P = umat.gradient(F)
@@ -175,9 +174,7 @@ def test_wrappers():
 
     FpJ = pre_mixed(sym=False, add_identity=True)
 
-    nh_upJ = fe.ThreeFieldVariation(nh)
-    mat = AsMatadi(nh_upJ)
-    umat = fe.MatadiMaterial(mat)
+    umat = fe.MatadiMaterial(AsMatadi(fe.ThreeFieldVariation(nh)))
 
     P = umat.gradient(*FpJ)
     A = umat.hessian(*FpJ)

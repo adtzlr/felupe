@@ -6,12 +6,7 @@ from ._tools import (
     extend,
     apply,
 )
-from ._loadcase import (
-    symmetry,
-    uniaxial,
-    biaxial,
-    planar,
-)
+from ._loadcase import symmetry, uniaxial, biaxial, planar, shear
 
 try:
     from ._multipoint import (

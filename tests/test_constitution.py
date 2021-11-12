@@ -145,13 +145,22 @@ def test_wrappers():
             self.material = material
 
         def function(self, x):
-            return self.material.function(*x)
+            if len(x) == 1:
+                return [self.material.function(*x)]
+            else:
+                return self.material.function(*x)
 
         def gradient(self, x):
-            return self.material.gradient(*x)
+            if len(x) == 1:
+                return [self.material.gradient(*x)]
+            else:
+                return self.material.gradient(*x)
 
         def hessian(self, x):
-            return self.material.hessian(*x)
+            if len(x) == 1:
+                return [self.material.hessian(*x)]
+            else:
+                return self.material.hessian(*x)
 
     mat = AsMatadi(nh)
     umat = fe.MatadiMaterial(mat)

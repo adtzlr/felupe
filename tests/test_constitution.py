@@ -38,6 +38,18 @@ def pre(sym, add_identity):
     return u.extract(grad=True, sym=sym, add_identity=add_identity)
 
 
+def pre_mixed(sym, add_identity):
+    m = fe.mesh.Cube()
+    e = fe.element.Hexahedron()
+    q = fe.quadrature.GaussLegendre(1, 3)
+    r = fe.Region(m, e, q)
+    u = fe.Field(r, dim=3)
+    v = fe.Field(r, dim=1)
+    z = fe.Field(r, dim=1, values=1)
+    w = fe.FieldMixed((u, v, z))
+    return w.extract(grad=True, sym=sym, add_identity=add_identity)
+
+
 def test_nh():
     F = pre(sym=False, add_identity=True)
 
@@ -123,7 +135,56 @@ def test_kinematics():
     assert zh.shape == (3, 3, 3, 3, *F.shape[-2:])
 
 
+def test_wrappers():
+    F = pre(sym=False, add_identity=True)
+
+    nh = fe.NeoHooke(mu=1.0, bulk=2.0)
+
+    class AsMatadi:
+        def __init__(self, material):
+            self.material = material
+
+        def function(self, x):
+            if len(x) == 1:
+                return [self.material.function(*x)]
+            else:
+                return self.material.function(*x)
+
+        def gradient(self, x):
+            if len(x) == 1:
+                return [self.material.gradient(*x)]
+            else:
+                return self.material.gradient(*x)
+
+        def hessian(self, x):
+            if len(x) == 1:
+                return [self.material.hessian(*x)]
+            else:
+                return self.material.hessian(*x)
+
+    umat = fe.MatadiMaterial(AsMatadi(nh))
+
+    W = umat.function(F)
+    P = umat.gradient(F)
+    A = umat.hessian(F)
+
+    assert W.shape == F.shape[-2:]
+    assert P.shape == (3, 3, *F.shape[-2:])
+    assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
+
+    FpJ = pre_mixed(sym=False, add_identity=True)
+
+    umat = fe.MatadiMaterial(AsMatadi(fe.ThreeFieldVariation(nh)))
+
+    P = umat.gradient(*FpJ)
+    A = umat.hessian(*FpJ)
+
+    assert P[0].shape == (3, 3, *FpJ[0].shape[-2:])
+    assert A[0].shape == (3, 3, 3, 3, *FpJ[0].shape[-2:])
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
     test_kinematics()
+    test_wrappers()

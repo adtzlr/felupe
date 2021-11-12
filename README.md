@@ -53,6 +53,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Obtain internal `dim` from Field in calculation of reaction force `tools.force`.
+- Fix `math.dot` for combinations of rank 1 (vectors), rank 2 (matrices) and rank 4 tensors.
 
 ## [1.3.0] - 2021-11-02
 

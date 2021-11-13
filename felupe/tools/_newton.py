@@ -107,7 +107,7 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
 
 def check(dx, x, f, tol):
     "Check result."
-    return np.all(norm(dx) < tol)
+    return np.sum(norm(dx)), np.all(norm(dx) < tol)
 
 
 def newtonrhapson(
@@ -130,6 +130,7 @@ def newtonrhapson(
     ext0=None,
     solver=spsolve,
     export_jac=False,
+    verbose=True,
 ):
     """
     General-purpose Newton-Rhapson algorithm
@@ -170,6 +171,13 @@ def newtonrhapson(
     # pre-evaluate function at given unknowns "x"
     f = fun(x, *args, **kwargs)
 
+    if verbose:
+        print("Newton-Rhapson solver")
+        print("=====================")
+        print()
+        print("| # |  norm(dx) |")
+        print("|---|-----------|")
+
     # iteration loop
     for iteration in range(maxiter):
 
@@ -194,10 +202,20 @@ def newtonrhapson(
         f = fun(x, *args, **kwargs)
 
         # check success of solution
-        success = check(dx, x, f, tol, **kwargs_check)
+        norm, success = check(dx, x, f, tol, **kwargs_check)
+
+        if verbose:
+            print("|%2d | %1.3e |" % (1 + iteration, norm))
 
         if success:
+            print("\nSolution converged.")
             break
+
+        if np.isnan(norm):
+            raise ValueError("Norm of unknowns is NaN.")
+
+    if 1 + iteration == maxiter and not success:
+        raise ValueError("Maximum number of iterations reached (not converged).")
 
     Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 

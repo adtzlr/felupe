@@ -28,6 +28,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import felupe as fe
 
+import pytest
+
 
 def pre():
 
@@ -153,10 +155,21 @@ def test_newton_simple():
 
     x0 = np.array([3.1])
 
-    res = fe.tools.newtonrhapson(x0, fun, jac, solve=np.linalg.solve)
+    res = fe.tools.newtonrhapson(
+        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True
+    )
 
     assert abs(res.fun) < 1e-6
     assert np.isclose(res.x, 3, rtol=1e-2)
+
+    with pytest.raises(ValueError):
+        res = fe.tools.newtonrhapson(
+            x0, fun, jac, solve=np.linalg.solve, maxiter=4, verbose=False
+        )
+
+    with pytest.raises(ValueError):
+        x0 = np.array([np.nan])
+        res = fe.tools.newtonrhapson(x0, fun, jac, solve=np.linalg.solve)
 
 
 def test_newton():

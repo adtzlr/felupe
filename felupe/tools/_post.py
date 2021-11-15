@@ -34,7 +34,7 @@ def force(field, r, boundary, offsets=None):
         return ((r.reshape(-1, field.dim))[boundary.points]).sum(0)
     else:
         return (
-            ((np.split(r, offsets)[0]).reshape(-1, field.dim))[boundary.points]
+            ((np.split(r, offsets)[0]).reshape(-1, field[0].dim))[boundary.points]
         ).sum(0)
 
 

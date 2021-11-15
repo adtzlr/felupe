@@ -48,6 +48,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.4.0] - 2021-11-15
+
 ### Added
 - Add `mask` argument to `Boundary` for the selection of user-defined points.
 - Add `shear` loadcase.

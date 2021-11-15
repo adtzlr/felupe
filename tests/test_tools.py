@@ -139,8 +139,8 @@ def test_solve_mixed_check():
         gradient=W_mixed.gradient(F, p, J),
     )
 
-    force = fe.tools.force(u, b, bounds["symx"], offsets=offsets)
-    moment = fe.tools.moment(u, b, bounds["symx"], offsets=offsets)
+    force = fe.tools.force(fields, b, bounds["symx"], offsets=offsets)
+    moment = fe.tools.moment(fields, b, bounds["symx"], offsets=offsets)
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])

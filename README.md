@@ -48,6 +48,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Set default number of `threads` in `MatadiMaterial` to `multiprocessing.cpu_count()`.
+
+### Fixed
+- Fix `dim` in calculation of reaction forces (`tools.force`) for `FieldMixed`.
+- Fix calculation of reaction moments (`tools.moment`) for `FieldMixed`.
+
 ## [1.4.0] - 2021-11-15
 
 ### Added

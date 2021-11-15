@@ -144,19 +144,19 @@ def test_wrappers():
         def __init__(self, material):
             self.material = material
 
-        def function(self, x):
+        def function(self, x, threads=1):
             if len(x) == 1:
                 return [self.material.function(*x)]
             else:
                 return self.material.function(*x)
 
-        def gradient(self, x):
+        def gradient(self, x, threads=1):
             if len(x) == 1:
                 return [self.material.gradient(*x)]
             else:
                 return self.material.gradient(*x)
 
-        def hessian(self, x):
+        def hessian(self, x, threads=1):
             if len(x) == 1:
                 return [self.material.hessian(*x)]
             else:

@@ -44,14 +44,14 @@ def moment(field, r, boundary, point=np.zeros(3), offsets=None):
 
     indices = np.array([(1, 2), (2, 0), (0, 1)])
 
-    displacements = field.values
-    d = ((point + displacements) - point)[boundary.points]
-
     if offsets is None:
+        displacements = field.values
         force = r.reshape(-1, 3)
     else:
+        displacements = field[0].values
         force = (np.split(r, offsets)[0]).reshape(-1, 3)
 
+    d = ((point + displacements) - point)[boundary.points]
     f = force[boundary.points]
 
     return np.array([(f[:, i] * d[:, i[::-1]]).sum() for i in indices])

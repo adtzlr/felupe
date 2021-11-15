@@ -152,7 +152,7 @@ def planar(field, right=1, move=0.2, clamped=False):
     return out
 
 
-def shear(field, bottom=0, top=1, move=0.2):
+def shear(field, bottom=0, top=1, move=0.2, sym=True):
     """Define boundaries for shear loading between two clamped plates. The
     bottom plate remains fixed while the shear is applied at the top plate."""
 
@@ -161,11 +161,14 @@ def shear(field, bottom=0, top=1, move=0.2):
     f0 = lambda x: np.isclose(x, bottom)
     f1 = lambda x: np.isclose(x, top)
 
-    bounds = {
-        "bottom": Boundary(f, fy=f0),
-        "top": Boundary(f, fy=f1, skip=(1, 0, 0)),
-        "move": Boundary(f, fy=f1, skip=(0, 1, 1), value=move),
-    }
+    if sym:
+        bounds = symmetry(f, axes=(False, False, True))
+    else:
+        bounds = {}
+
+    bounds["bottom"] = Boundary(f, fy=f0)
+    bounds["top"] = Boundary(f, fy=f1, skip=(1, 0, 0))
+    bounds["move"] = Boundary(f, fy=f1, skip=(0, 1, 1), value=move)
 
     part = partition(field, bounds)
     ext0 = apply(f, bounds, part[0])

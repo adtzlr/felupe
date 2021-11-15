@@ -121,11 +121,11 @@ def test_loadcase():
         assert len(ps) == 5
         assert "right" in ps[0]
 
-        sh = fe.dof.shear(u, bottom=0.0, top=1.0, move=0.2)
+        sh = fe.dof.shear(u, bottom=0.0, top=1.0, move=0.2, sym=True)
         assert len(sh) == 4
         assert "top" in sh[0]
 
-        sh = fe.dof.shear(v, bottom=0.0, top=1.0, move=0.2)
+        sh = fe.dof.shear(v, bottom=0.0, top=1.0, move=0.2, sym=False)
         assert len(sh) == 5
         assert "top" in sh[0]
 

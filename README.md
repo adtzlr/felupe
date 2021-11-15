@@ -52,7 +52,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `mask` argument to `Boundary` for the selection of user-defined points.
 - Add `shear` loadcase.
 - Add a wrapper for `matadi` materials as `MatadiMaterial`.
-- Add `verbose` argument to `newtonrhapson`.
+- Add `verbose` and `timing` arguments to `newtonrhapson`.
 
 ### Fixed
 - Obtain internal `dim` from Field in calculation of reaction force `tools.force`.

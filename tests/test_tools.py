@@ -156,7 +156,11 @@ def test_newton_simple():
     x0 = np.array([3.1])
 
     res = fe.tools.newtonrhapson(
-        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True
+        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True, timing=False
+    )
+
+    res = fe.tools.newtonrhapson(
+        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True, timing=True
     )
 
     assert abs(res.fun) < 1e-6
@@ -185,7 +189,15 @@ def test_newton():
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 
     # newton-rhapson procedure
-    res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = fe.newtonrhapson(
+        displacement,
+        umat=umat,
+        dof1=dof1,
+        dof0=dof0,
+        ext0=ext0,
+        timing=True,
+        verbose=True,
+    )
 
 
 def test_newton_mixed():

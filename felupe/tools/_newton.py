@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import inspect
+from time import perf_counter
 
 import numpy as np
 from scipy.sparse.linalg import spsolve
@@ -131,6 +132,7 @@ def newtonrhapson(
     solver=spsolve,
     export_jac=False,
     verbose=True,
+    timing=True,
 ):
     """
     General-purpose Newton-Rhapson algorithm
@@ -160,6 +162,9 @@ def newtonrhapson(
     Eq.(5) and Eq.(6) are repeated until `check(dx, x, f)` returns `True`.
 
     """
+
+    if timing:
+        time_start = perf_counter()
 
     # copy x0
     x = x0
@@ -208,7 +213,8 @@ def newtonrhapson(
             print("|%2d | %1.3e |" % (1 + iteration, norm))
 
         if success:
-            print("\nSolution converged.")
+            if not timing:
+                print("\nSolution converged in %d iterations." % (iteration + 1))
             break
 
         if np.isnan(norm):
@@ -221,5 +227,12 @@ def newtonrhapson(
 
     if export_jac:
         Res.jac = K
+
+    if timing:
+        time_finish = perf_counter()
+        print(
+            "\nSolution converged in %d iterations within %1.4g seconds."
+            % (iteration + 1, time_finish - time_start)
+        )
 
     return Res

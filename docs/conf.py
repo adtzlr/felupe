@@ -10,9 +10,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('../felupe/'))
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('../felupe/'))
 
 
 # -- Project information -----------------------------------------------------
@@ -29,8 +29,12 @@ author = 'Andreas Dutzler'
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "autoapi.extension",
     "sphinx.ext.napoleon",
 ]
+
+autoapi_type = "python"
+autoapi_dirs = ["../felupe/"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

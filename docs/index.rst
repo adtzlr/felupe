@@ -14,10 +14,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
-
-Overview of classes and functions
----------------------------------
-
-.. automodule:: felupe
-  :members:

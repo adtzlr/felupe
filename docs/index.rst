@@ -8,10 +8,16 @@ Welcome to FElupe's documentation!
    :caption: Contents:
 
 
-
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Overview of classes and functions
+---------------------------------
+
+.. automodule:: felupe
+  :members:

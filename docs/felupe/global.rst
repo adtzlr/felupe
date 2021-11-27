@@ -12,28 +12,12 @@ Mesh
 .. autoclass:: felupe.Rectangle
    :members:
    :undoc-members:
+   :show-inheritance:
 
 .. autoclass:: felupe.Cube
    :members:
    :undoc-members:
-
-Integral Forms
-~~~~~~~~~~~~~~
-
-.. autoclass:: felupe.IntegralForm
-   :members:
-   :undoc-members:
-   :inherited-members:
-
-.. autoclass:: felupe.IntegralFormMixed
-   :members:
-   :undoc-members:
-   :inherited-members:
-
-.. autoclass:: felupe.IntegralFormAxisymmetric
-   :members:
-   :undoc-members:
-   :inherited-members:
+   :show-inheritance:
 
 
 Fields
@@ -59,6 +43,25 @@ DOF
 ~~~
 
 .. autoclass:: felupe.Boundary
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+
+Integral Forms
+~~~~~~~~~~~~~~
+
+.. autoclass:: felupe.IntegralForm
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.IntegralFormMixed
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.IntegralFormAxisymmetric
    :members:
    :undoc-members:
    :inherited-members:

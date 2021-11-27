@@ -12,14 +12,10 @@ Mesh
 .. autoclass:: felupe.Rectangle
    :members:
    :undoc-members:
-   :inherited-members:
-   :show-inheritance:
 
 .. autoclass:: felupe.Cube
    :members:
    :undoc-members:
-   :inherited-members:
-   :show-inheritance:
 
 Integral Forms
 ~~~~~~~~~~~~~~

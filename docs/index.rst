@@ -11,6 +11,10 @@ FElupe
 
 .. image:: https://zenodo.org/badge/360657894.svg
    :target: https://zenodo.org/badge/latestdoi/360657894
+   
+
+.. image:: images/logo.svg
+   :width: 220px
 
 FElupe is a Python 3.6+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word Lupe (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy and (optional) Numba. 
 

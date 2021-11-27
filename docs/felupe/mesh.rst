@@ -1,5 +1,5 @@
-Mesh
-----
+felupe.mesh
+-----------
 
 .. autoclass:: felupe.mesh.Line
    :members:

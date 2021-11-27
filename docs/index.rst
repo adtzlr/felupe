@@ -1,5 +1,5 @@
-FElupe
-======
+Introduction
+============
 
 .. image:: https://img.shields.io/pypi/v/felupe.svg
    :target: https://pypi.python.org/pypi/felupe/
@@ -64,7 +64,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU General Public License along with this program. If not, see `<https://www.gnu.org/licenses/>`_.
 
 Indices and tables
-------------------
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`

@@ -90,7 +90,7 @@ def test_meshes():
     assert m.points.shape == (26, 2)
     assert m.cells.shape == (16, 4)
 
-    m_dg = m.as_discontinous()
+    m_dg = m.disconnect()
     assert m_dg.dim == m.dim
     assert m_dg.npoints == m.cells.size
 

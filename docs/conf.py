@@ -49,7 +49,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'furo'
 html_title = "FElupe"
-html_logo = "images/logo.svg"
+
+html_static_path = ["_static"]
+html_theme_options = {
+    "light_logo": "logo_light.svg",
+    "dark_logo": "logo_dark.svg",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

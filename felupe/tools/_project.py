@@ -91,7 +91,7 @@ def project(values, region, average=True):
     u = values.T.reshape(-1, dim)
 
     # disconnected mesh
-    m = region.mesh.as_discontinous()
+    m = region.mesh.disconnect()
 
     # region on disconnected mesh with inverse quadrature scheme
     r = Region(m, region.element, region.quadrature.inv(), grad=False)

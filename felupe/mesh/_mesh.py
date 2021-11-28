@@ -61,7 +61,7 @@ class Mesh:
             self.points_without_cells = np.array([], dtype=int)
             self.points_with_cells = np.arange(self.npoints)
 
-    def as_discontinous(self):
+    def disconnect(self):
         "Return a new instance of a Mesh with disconnected cells."
 
         points = self.points[self.cells].reshape(-1, self.dim)

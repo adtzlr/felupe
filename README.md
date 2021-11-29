@@ -42,7 +42,7 @@ fe.save(region, res.x, filename="result.vtk")
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="600px"/>
 
 # Documentation
-The documentation is located [here](https://adtzlr.github.io/felupe).
+The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).
 
 # Changelog
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

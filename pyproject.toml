@@ -40,13 +40,12 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
-  "h5py",
   "meshio",
 ]
 
 [project.optional-dependencies]
 all = [
-    "matplotlib",
+    "h5py",
     "numba",
     "sparse",
 ]

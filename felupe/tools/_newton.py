@@ -182,6 +182,7 @@ def newtonrhapson(
     f = fun(x, *args, **kwargs)
 
     if verbose:
+        print()
         print("Newton-Rhapson solver")
         print("=====================")
         print()
@@ -219,14 +220,14 @@ def newtonrhapson(
 
         if success:
             if not timing:
-                print("\nSolution converged in %d iterations." % (iteration + 1))
+                print("\nSolution converged in %d iterations.\n" % (iteration + 1))
             break
 
         if np.isnan(norm):
             raise ValueError("Norm of unknowns is NaN.")
 
     if 1 + iteration == maxiter and not success:
-        raise ValueError("Maximum number of iterations reached (not converged).")
+        raise ValueError("Maximum number of iterations reached (not converged).\n")
 
     Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 
@@ -236,7 +237,7 @@ def newtonrhapson(
     if timing:
         time_finish = perf_counter()
         print(
-            "\nSolution converged in %d iterations within %1.4g seconds."
+            "\nSolution converged in %d iterations within %1.4g seconds.\n"
             % (iteration + 1, time_finish - time_start)
         )
 

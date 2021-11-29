@@ -38,7 +38,7 @@ The double-dot products from the variations are now evaluated.
 
 ..  math::
 
-    \overline{\boldsymbol{P}} &= \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} = \overline{\overline{\boldsymbol{P}}} - \frac{1}{3} \left(  \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \qquad \text{with} \qquad \overline{\overline{\boldsymbol{P}}} = \left(\frac{\overline{J}}{J}\right)^{1/3} \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}}$$
+    \overline{\boldsymbol{P}} &= \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} = \overline{\overline{\boldsymbol{P}}} - \frac{1}{3} \left(  \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \qquad \text{with} \qquad \overline{\overline{\boldsymbol{P}}} = \left(\frac{\overline{J}}{J}\right)^{1/3} \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}}
 
     \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} : \frac{1}{3 \overline{J}} \overline{\boldsymbol{F}} &= \frac{1}{3 \overline{J}} \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F}
 

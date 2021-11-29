@@ -3,10 +3,10 @@ Tutorials
 
 This section is all about tutorials. Each tutorial focusses on a lesson to learn with straightforward and minimal code blocks (no detailed API descriptions here).
 
-Getting started
----------------
+Hello, FElupe!
+--------------
 
-.. admonition:: First steps with FElupe
+.. admonition:: Your very first steps with FElupe.
    :class: note
 
    * create a meshed cube with quad elements
@@ -67,8 +67,25 @@ Results are saved as VTK-files.
    :width: 600px
 
 
-Getting started (advanced)
---------------------------
+Getting started
+---------------
+
+.. admonition:: Have a look at the building blocks of FElupe.
+   :class: note
+
+   * create a meshed cube with hexahedron elements
+   
+   * setup your own numeric region with a mesh, an element and a quadrature
+   
+   * add a displacement field
+   
+   * define your own Neo-Hookean material formulation
+   
+   * apply your own boundary conditions
+   
+   * solve the problem (create your own Newton-Rhapson iteration loop)
+   
+   * export the displaced mesh along with cauchy stress projected to mesh-points
 
 Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons. By using a template region like `RegionHexahedron` (see section **Region**), only the mesh has to be created.
 

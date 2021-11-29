@@ -5,7 +5,12 @@ FElupe API
 
 .. toctree::
    :maxdepth: 3
-   :caption: API sections:
+   :caption: API of global namespace:
 
    felupe/global
-   felupe/mesh
+
+.. toctree::
+   :maxdepth: 3
+   :caption: API of submodules:
+
+   felupe/mesh/mesh

@@ -179,7 +179,7 @@ def test_newton_simple():
 def test_newton():
 
     # create a hexahedron-region on a cube
-    region = fe.RegionHexahedron(fe.Cube(n=3))
+    region = fe.RegionHexahedron(fe.Cube(n=6))
 
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fe.Field(region, dim=3)
@@ -197,13 +197,39 @@ def test_newton():
         ext0=ext0,
         timing=True,
         verbose=True,
+        kwargs={"parallel": True},
+    )
+
+
+def test_newton_linearelastic():
+
+    # create a hexahedron-region on a cube
+    region = fe.RegionHexahedron(fe.Cube(n=6))
+
+    # add a displacement field and apply a uniaxial elongation on the cube
+    displacement = fe.Field(region, dim=3)
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+
+    # define the constitutive material behavior
+    umat = fe.LinearElastic(E=1.0, nu=0.3)
+
+    # newton-rhapson procedure
+    res = fe.newtonrhapson(
+        displacement,
+        umat=umat,
+        dof1=dof1,
+        dof0=dof0,
+        ext0=ext0,
+        timing=True,
+        verbose=True,
+        kwargs={"grad": True, "sym": True, "add_identity": False},
     )
 
 
 def test_newton_mixed():
 
     # create a hexahedron-region on a cube
-    mesh = fe.Cube(n=3)
+    mesh = fe.Cube(n=6)
     region = fe.RegionHexahedron(mesh)
     region0 = fe.RegionConstantHexahedron(fe.mesh.convert(mesh, 0))
 
@@ -236,3 +262,4 @@ if __name__ == "__main__":
     test_newton_simple()
     test_newton()
     test_newton_mixed()
+    test_newton_linearelastic()

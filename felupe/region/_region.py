@@ -103,9 +103,6 @@ class Region:
             # numeric **differential volume element**
             self.dV = det(self.dXdr) * self.quadrature.weights.reshape(-1, 1)
 
-            # Partial derivative of element shape function "a"
-            # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-            # for every cell "c"
-            #
-            # dhdX_aJpc
+            # Partial derivative of element shape function
+            # w.r.t. undeformed coordinates
             self.dhdX = np.einsum("aIp,IJpc->aJpc", self.dhdr, self.drdX)

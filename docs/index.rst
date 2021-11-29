@@ -1,5 +1,5 @@
-Introduction
-============
+FElupe :sub:`beta`
+====================
 
 .. image:: _static/logo_dark.svg
    :align: right
@@ -15,10 +15,6 @@ Introduction
    :class: tip
 
    💯 Python ➡️ easy install and intuitive usage 👌🏻
-   
-   🚂 hyperelastic problems of solid mechanics 📃
-
-
 
 
 .. image:: https://img.shields.io/pypi/v/felupe.svg
@@ -32,16 +28,36 @@ Introduction
 .. image:: https://zenodo.org/badge/360657894.svg
    :target: https://zenodo.org/badge/latestdoi/360657894
 
+Introduction
+------------
+
 FElupe is a Python 3.6+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word Lupe (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy and (optional) Numba. 
 
 *No complicated installation, just pure Python.*
 
 Another key feature is the easy and straightforward definition of mixed field formulations for the treatment of nearly incompressible material behavior. In combination with matADi isotropic hyperelastic material formulations are defined in terms of their strain energy density function - gradients (stress) and hessians (elasticity tensor) are evaluated with the help of automatic differentiation. Several useful utilities are available, e.g. the calculation of reaction forces and moments on given boundaries. Finally, results are ready to be exported to VTK or XDMF files (using meshio).
 
+.. admonition:: Highlights
+   :class: admonition
+   
+   + basic high-level finite-element-analysis interface
+
+   + flexible building blocks for finite element assembly
+   
+   + fast assembly of hyperelastic integral (weak) forms
+   
+   + straight-forward definition of mixed-field problems
+   
+   + nearly-incompressible hyperelastic problems of solid mechanics
+   
+   
+   
+   
+
 Installation
 ------------
 
-Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe does not require ``numba`` and ``sparse``. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For constitutive material definitions using Automatic Differentation please also install `matADi <https://github.com/adtzlr/matadi>`_.
+Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe only depends on ``numpy``, ``scipy`` and ``meshio``. However, ``h5py``, ``numba`` and ``sparse`` are highly recommended. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For constitutive material definitions using Automatic Differentation please also install `matADi <https://github.com/adtzlr/matadi>`_.
 
 .. code-block:: shell
 

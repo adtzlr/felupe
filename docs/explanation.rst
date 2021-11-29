@@ -1,5 +1,5 @@
-Explanation
-===========
+Explanations
+============
 
 This section gives an overview of some selected topics of the theory behing FElupe.
 

@@ -1,3 +1,5 @@
+.. _theory-axi:
+
 Axisymmetric Analysis
 ---------------------
 

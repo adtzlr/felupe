@@ -1,6 +1,26 @@
 Introduction
 ============
 
+.. image:: _static/logo_dark.svg
+   :align: right
+   :class: only-dark
+   :width: 100px
+
+.. image:: _static/logo_light.svg
+   :align: right
+   :class: only-light
+   :width: 100px
+
+.. admonition:: FElupe - Finite Element Analysis
+   :class: tip
+
+   💯 Python ➡️ easy install and intuitive usage 👌🏻
+   
+   🚂 hyperelastic problems of solid mechanics 📃
+
+
+
+
 .. image:: https://img.shields.io/pypi/v/felupe.svg
    :target: https://pypi.python.org/pypi/felupe/
    

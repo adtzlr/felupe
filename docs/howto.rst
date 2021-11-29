@@ -5,5 +5,6 @@ How-To Guides
    :maxdepth: 1
    :caption: How-To:
    
-   howto/mixed
    howto/meshgen
+   howto/mixed
+   howto/axi

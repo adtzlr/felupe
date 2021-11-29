@@ -9,3 +9,4 @@ This section gives an overview of some selected topics of the theory behing FElu
    
    explanation/mixed
    explanation/axi
+   explanation/polynomial

@@ -49,6 +49,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.5.0] - 2021-11-29
+
 ### Added
 - Add kwargs of `field.extract()` to `fun` and `jac` of `newtonrhapson`.
 

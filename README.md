@@ -48,6 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add kwargs of `field.extract()` to `fun` and `jac` of `newtonrhapson`.
+
 ### Changed
 - Set default number of `threads` in `MatadiMaterial` to `multiprocessing.cpu_count()`.
 

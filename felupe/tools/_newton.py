@@ -46,13 +46,15 @@ class Result:
         self.iterations = iterations
 
 
-def fun(x, umat, parallel=False):
+def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     if "mixed" in str(type(x)):
 
         L = IntegralFormMixed(
-            fun=umat.gradient(*x.extract()),
+            fun=umat.gradient(
+                *x.extract(grad=grad, add_identity=add_identity, sym=sym)
+            ),
             v=x,
             dV=x[0].region.dV,
         )
@@ -60,19 +62,22 @@ def fun(x, umat, parallel=False):
     else:
 
         L = IntegralForm(
-            fun=umat.gradient(x.extract()), v=x, dV=x.region.dV, grad_v=True
+            fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
+            v=x,
+            dV=x.region.dV,
+            grad_v=True,
         )
 
     return L.assemble(parallel=parallel).toarray()[:, 0]
 
 
-def jac(x, umat, parallel=False):
+def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     if "mixed" in str(type(x)):
 
         a = IntegralFormMixed(
-            fun=umat.hessian(*x.extract()),
+            fun=umat.hessian(*x.extract(grad=grad, add_identity=add_identity, sym=sym)),
             v=x,
             dV=x[0].region.dV,
             u=x,
@@ -81,7 +86,7 @@ def jac(x, umat, parallel=False):
     else:
 
         a = IntegralForm(
-            fun=umat.hessian(x.extract()),
+            fun=umat.hessian(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
             v=x,
             dV=x.region.dV,
             u=x,
@@ -177,6 +182,7 @@ def newtonrhapson(
     f = fun(x, *args, **kwargs)
 
     if verbose:
+        print()
         print("Newton-Rhapson solver")
         print("=====================")
         print()
@@ -214,14 +220,14 @@ def newtonrhapson(
 
         if success:
             if not timing:
-                print("\nSolution converged in %d iterations." % (iteration + 1))
+                print("\nSolution converged in %d iterations.\n" % (iteration + 1))
             break
 
         if np.isnan(norm):
             raise ValueError("Norm of unknowns is NaN.")
 
     if 1 + iteration == maxiter and not success:
-        raise ValueError("Maximum number of iterations reached (not converged).")
+        raise ValueError("Maximum number of iterations reached (not converged).\n")
 
     Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 
@@ -231,7 +237,7 @@ def newtonrhapson(
     if timing:
         time_finish = perf_counter()
         print(
-            "\nSolution converged in %d iterations within %1.4g seconds."
+            "\nSolution converged in %d iterations within %1.4g seconds.\n"
             % (iteration + 1, time_finish - time_start)
         )
 

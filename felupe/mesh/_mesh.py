@@ -29,6 +29,41 @@ import numpy as np
 
 
 class Mesh:
+    """A mesh with points, cells and optional a specified cell type.
+    
+    Parameters
+    ----------
+    points : ndarray
+        Point coordinates.
+    cells : ndarray
+        Point-connectivity of cells.
+    cell_type : str or None, optional
+        An optional string in VTK-convention that specifies the cell type (default is None). Necessary when a mesh is saved to a file.
+    
+    Attributes
+    ----------
+    points : ndarray
+        Point coordinates.
+    cells : ndarray
+        Point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+    npoints : int
+        Amount of points.
+    dim : int
+        Dimension of mesh point coordinates.
+    ndof : int
+        Amount of degrees of freedom.
+    ncells : int
+        Amount of cells.
+    points_with_cells : array
+        Array with points connected to cells.
+    points_without_cells : array
+        Array with points not connected to cells.
+    cells_per_point : array
+        Array which counts connected cells per point. Used for averging results.
+    
+    """
     def __init__(self, points, cells, cell_type=None):
         self.points = np.array(points)
         self.cells = np.array(cells)
@@ -37,6 +72,7 @@ class Mesh:
         self.update(self.cells)
 
     def update(self, cells):
+        "Update the cell and dimension attributes with a given cell array."
         self.cells = cells
 
         # obtain dimensions
@@ -70,7 +106,14 @@ class Mesh:
         return Mesh(points, cells, cell_type=self.cell_type)
 
     def save(self, filename="mesh.vtk"):
-        "Export mesh as VTK file."
+        """Export the mesh as VTK file. For XDMF-export please ensure to have ``h5py`` (as an optional dependancy of ``meshio``) installed.
+        
+        Parameters
+        ----------
+        filename : str, optional
+            The filename of the mesh (default is ``mesh.vtk``).
+        
+        """
 
         if self.cell_type is None:
             raise TypeError("Cell type missing.")

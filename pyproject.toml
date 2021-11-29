@@ -1,6 +1,6 @@
 [project]
 name = "felupe"
-version = "1.4.0"
+version = "1.5.0"
 description = "Finite Element Analysis"
 readme = "README.md"
 requires-python = ">=3.6"
@@ -40,13 +40,12 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
-  "h5py",
   "meshio",
 ]
 
 [project.optional-dependencies]
 all = [
-    "matplotlib",
+    "h5py",
     "numba",
     "sparse",
 ]

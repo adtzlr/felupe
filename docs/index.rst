@@ -16,7 +16,7 @@ FElupe is a Python 3.6+ finite element analysis package focussing on the formula
 
 *No complicated installation, just pure Python.*
 
-Another key feature is the easy and straightforward definition of mixed field formulations for the treatment of nearly incompressible material behavior. In combination with matADi isotropic hyperelastic material formulations are defined in terms of their strain energy density function - gradients (stress) and hessians (elasticity tensor) are evaluated with the help of automatic differentiation. Several useful utilities are available, i.e. the calculation of reaction forces and moments on given boundaries. Finally, results are ready to be exported to VTK or XDMF files (using meshio).
+Another key feature is the easy and straightforward definition of mixed field formulations for the treatment of nearly incompressible material behavior. In combination with matADi isotropic hyperelastic material formulations are defined in terms of their strain energy density function - gradients (stress) and hessians (elasticity tensor) are evaluated with the help of automatic differentiation. Several useful utilities are available, e.g. the calculation of reaction forces and moments on given boundaries. Finally, results are ready to be exported to VTK or XDMF files (using meshio).
 
 Installation
 ------------
@@ -40,11 +40,10 @@ Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``
    tutorial
    howto
    explanation
-   reference
 
 .. toctree::
    :maxdepth: 2
-   :caption: API:
+   :caption: Reference:
    
    felupe
 

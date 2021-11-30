@@ -78,6 +78,8 @@ from .mesh import (
 from .constitution import (
     NeoHooke,
     LinearElastic,
+    LinearElasticPlaneStress,
+    LinearElasticPlaneStrain,
     ThreeFieldVariation,
     LineChange,
     AreaChange,

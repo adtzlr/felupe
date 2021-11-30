@@ -49,6 +49,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `LinearElasticPlaneStress` and `LinearElasticPlaneStrain` material formulations.
+
+### Changed
+- Re-formulate `LinearElastic` materials in terms of the deformation gradient.
+
 ## [1.5.0] - 2021-11-29
 
 ### Added

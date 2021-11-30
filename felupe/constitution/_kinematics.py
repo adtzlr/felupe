@@ -37,50 +37,174 @@ from ..math import (
 
 
 class LineChange:
+    r"""Line Change.
+
+    .. math::
+
+       d\boldsymbol{x} = \boldsymbol{F} d\boldsymbol{X}
+
+    Gradient:
+
+    .. math::
+
+       \frac{\partial \boldsymbol{F}}{\partial \boldsymbol{F}} = \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
+    """
+
     def __init__(self):
         pass
 
     def function(self, F):
-        "line change dx = F dX"
+        """Line change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        F : ndarray
+            Deformation gradient
+        """
         return F
 
     def gradient(self, F):
-        "gradient of line change"
+        """Gradient of line change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        ndarray
+            Gradient of line change
+        """
+
         Eye = identity(F)
         return cdya_ik(Eye, Eye)
 
 
 class AreaChange:
+    r"""Area Change.
+
+    .. math::
+
+       d\boldsymbol{a} = J \boldsymbol{F}^{-T} d\boldsymbol{A}
+
+    Gradient:
+
+    .. math::
+
+       \frac{\partial J \boldsymbol{F}^{-T}}{\partial \boldsymbol{F}} = J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
+
+    """
+
     def __init__(self):
         pass
 
     def function(self, F):
-        "area change da = J F^(-T) dA"
+        """Area change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        ndarray
+            Cofactor matrix of the deformation gradient
+        """
         J = det(F)
         return J * transpose(inv(F, J))
 
     def gradient(self, F):
-        "gradient of area change"
+        """Gradient of area change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        ndarray
+            Gradient of cofactor matrix of the deformation gradient
+        """
+
         J = det(F)
         dJdF = self.function(F)
         return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
 
 
 class VolumeChange:
+    r"""Volume Change.
+
+    .. math::
+
+       d\boldsymbol{v} = \text{det}(\boldsymbol{F}) d\boldsymbol{V}
+
+    Gradient and hessian (equivalent to gradient of area change):
+
+    .. math::
+
+       \frac{\partial J}{\partial \boldsymbol{F}} &= J \boldsymbol{F}^{-T}
+
+       \frac{\partial^2 J}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} &= J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
+
+    """
+
     def __init__(self):
         pass
 
     def function(self, F):
-        "volume change dv = J dV"
+        """Gradient of volume change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        J : ndarray
+            Determinant of the deformation gradient
+        """
         return det(F)
 
     def gradient(self, F):
-        "gradient of volume change"
+        """Gradient of volume change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        ndarray
+            Gradient of the determinant of the deformation gradient
+        """
+
         J = self.function(F)
         return J * transpose(inv(F, J))
 
     def hessian(self, F):
-        "hessian of volume change"
+        """Hessian of volume change.
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+
+        Returns
+        -------
+        ndarray
+            Hessian of the determinant of the deformation gradient
+        """
+
         J = self.function(F)
         dJdF = self.gradient(F)
         return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J

@@ -11,6 +11,16 @@ Constitution
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.LinearElasticPlaneStress
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.LinearElasticPlaneStrain
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.ThreeFieldVariation
    :members:
    :undoc-members:

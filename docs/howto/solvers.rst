@@ -50,7 +50,7 @@ FElupe uses SuperLU as direct sparse solver by default. Not because it is fact -
        # ...
        
        def solver(A, b):
-           "Wrapper function for Krylov-solvers".
+           "Wrapper function for Krylov-solvers."
            
            return krylov.minres(A, b)[0]
        

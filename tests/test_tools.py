@@ -201,6 +201,44 @@ def test_newton():
     )
 
 
+def test_newton_plane():
+
+    # create a quad-region on a rectangle
+    region = fe.RegionQuad(fe.Rectangle(n=6))
+
+    # add a displacement field and apply a uniaxial elongation on the rectangle
+    displacement = fe.Field(region, dim=2)
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+
+    # define the constitutive material behavior
+    umat = fe.LinearElasticPlaneStress(E=1.0, nu=0.3)
+
+    # newton-rhapson procedure
+    res = fe.newtonrhapson(
+        displacement,
+        umat=umat,
+        dof1=dof1,
+        dof0=dof0,
+        ext0=ext0,
+        timing=True,
+        verbose=True,
+    )
+
+    # define the constitutive material behavior
+    umat = fe.LinearElasticPlaneStrain(E=1.0, nu=0.3)
+
+    # newton-rhapson procedure
+    res = fe.newtonrhapson(
+        displacement,
+        umat=umat,
+        dof1=dof1,
+        dof0=dof0,
+        ext0=ext0,
+        timing=True,
+        verbose=True,
+    )
+
+
 def test_newton_linearelastic():
 
     # create a hexahedron-region on a cube
@@ -262,4 +300,5 @@ if __name__ == "__main__":
     test_newton_simple()
     test_newton()
     test_newton_mixed()
+    test_newton_plane()
     test_newton_linearelastic()

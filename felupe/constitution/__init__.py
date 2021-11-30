@@ -1,5 +1,7 @@
 from ._models import (
     LinearElastic,
+    LinearElasticPlaneStress,
+    LinearElasticPlaneStrain,
     NeoHooke,
 )
 

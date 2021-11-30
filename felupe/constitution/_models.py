@@ -464,10 +464,41 @@ class LinearElasticPlaneStress:
 
 
 class NeoHooke:
-    "Nearly-incompressible isotropic hyperelastic Neo-Hooke material formulation."
+    r"""Nearly-incompressible isotropic hyperelastic Neo-Hooke material formulation.
+    
+    The total potential energy is defined as the strain energy density 
+    per unit undeformed volume integrated over a volumetric region.
+    
+    .. math::
+       
+       \Pi_{int} = \int_V \psi \ dV
+    
+    The variation leads to the first Piola Kirchhoff stress tensor.
+    
+    .. math::
+    
+       \delta_u (\Pi_{int}) &= \int_V \frac{\partial \psi}{\partial \boldsymbol{F}} : \delta \boldsymbol{F} \ dV
+    
+       \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
+    
+    A further linearization of the above equation gives the corresponding elasticity tensor.
+    
+    .. math::
+    
+       \Delta_u (\delta_u (\Pi_{int})) &= \int_V \delta\boldsymbol{F} : \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} : \Delta\boldsymbol{F}  \ dV
+       
+       \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+    
+    Arguments
+    ---------
+    mu : float
+        Shear modulus
+    bulk : float
+        Bulk modulus
+    
+    """
 
     def __init__(self, mu=None, bulk=None):
-        "Neo-Hookean material formulation with parameters `mu` and `bulk`."
 
         self.mu = mu
         self.bulk = bulk
@@ -478,11 +509,11 @@ class NeoHooke:
         self.elasticity = self.hessian
 
     def function(self, F, mu=None, bulk=None):
-        """Total potential energy
+        """Total potential energy.
 
-        Π_int = ∫ ψ dV                                              (1)
+            Π_int = ∫ ψ dV                                              (1)
 
-        --> W = ψ                                                   (2)
+            --> W = ψ                                                   (2)
 
         """
 

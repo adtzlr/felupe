@@ -31,41 +31,68 @@ from ..math import det, inv
 
 
 class Region:
-    """A numeric region."""
+    r"""
+    A numeric region as a combination of a mesh, an element and a numeric integration scheme (quadrature). The gradients of the element shape functions are evaluated at all integration points of each cell in the region if the optional gradient argument is True.
+    
+    .. math::
+    
+       \frac{\partial X^I}{\partial r^J} &= X_a^I \frac{\partial h_a}{\partial r^J}
+    
+       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I} \frac{\partial r^I}{\partial X^J}
+       
+       dV &= \det\left(\frac{\partial X^I}{\partial r^J}\right) w
+    
+    
+    Parameters
+    ----------
+    mesh : Mesh
+        A mesh with points and cells.
+    element : Element
+        The finite element formulation to be applied on the cells.
+    quadrature: Quadrature
+        An element-compatible numeric integration scheme with points and weights.
+    grad : bool, optional
+        A flag to invoke gradient evaluation (default is True).
+    
+    Attributes
+    ----------
+    mesh : Mesh
+        A mesh with points and cells.
+    element : Finite element
+        The finite element formulation to be applied on the cells.
+    quadrature: Quadrature scheme
+        An element-compatible numeric integration scheme with points and weights.
+    h : ndarray
+        Element shape function array ``h_ap`` of shape function ``a`` evaluated at quadrature point ``p``.
+    dhdr : ndarray
+        Partial derivative of element shape function array ``dhdr_aJp`` with shape function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation between ``X`` and ``r``).
+    dXdr : ndarray
+        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation between ``X`` and ``r``).
+    drdX : ndarray
+        Inverse of dXdr.
+    dV : ndarray
+        Numeric *Differential volume element* as product of determinant of geometric gradient  ``dV_pc = det(dXdr)_pc w_p`` and quadrature weight ``w_p``, evaluated at quadrature point ``p`` for every cell ``c``.
+    dhdX : ndarray
+        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c``.
+    """
 
     def __init__(self, mesh, element, quadrature, grad=True):
-        """A numeric region as a combination of a `mesh`,
-        an `element` and a numeric integration scheme (`quadrature`).
-        The gradients of the element shape functions are evaluated at
-        all integration points of each cell in the region if the
-        optional argument `grad` is True (default is True).
-        """
 
         self.mesh = mesh
         self.element = element
         self.quadrature = quadrature
 
-        # element shape function "a" evaluated at quadrature point "p"
-        #
-        # h_ap
+        # element shape function
         self.h = np.array([self.element.function(p) for p in self.quadrature.points]).T
 
-        # partial derivative of element shape function "a"
-        # w.r.t. natural element coordinate "J" evaluated at quadrature point "p"
-        #
-        # dhdr_aJp
+        # partial derivative of element shape function
         self.dhdr = np.array(
             [self.element.gradient(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
 
         if grad:
 
-            # geometric gradient as partial derivative of undeformed coordinate "I"
-            # w.r.t. natural element coordinate "J" evaluated at quadrature point "p"
-            # for every cell "c" (geometric gradient or
-            # **Jacobian** transformation between "X" and "r")
-            #
-            # dXdr_IJpe
+            # geometric gradient
             self.dXdr = np.einsum(
                 "caI,aJp->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
             )
@@ -73,17 +100,9 @@ class Region:
             # inverse of dXdr
             self.drdX = inv(self.dXdr)
 
-            # Determinant of geometric gradient evaluated at quadrature point "p"
-            # for every cell "c" multiplied by corresponding quadrature weight
-            # according to integration point "p", denoted as
-            # "differential volume element"
-            #
-            # dV_pc = det(dXdr)_pc * w_p
+            # numeric **differential volume element**
             self.dV = det(self.dXdr) * self.quadrature.weights.reshape(-1, 1)
 
-            # Partial derivative of element shape function "a"
-            # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
-            # for every cell "c"
-            #
-            # dhdX_aJpc
+            # Partial derivative of element shape function
+            # w.r.t. undeformed coordinates
             self.dhdX = np.einsum("aIp,IJpc->aJpc", self.dhdr, self.drdX)

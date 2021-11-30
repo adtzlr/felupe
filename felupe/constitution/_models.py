@@ -194,7 +194,18 @@ class LinearElasticPlaneStrain:
             Effective Poisson ratio for plane strain formulation
 
         """
-        return E / (1 - nu ** 2), nu / (1 - nu)
+
+        if E is None or nu is None:
+            E_eff = None
+        else:
+            E_eff = E / (1 - nu ** 2)
+
+        if nu is None:
+            nu_eff = None
+        else:
+            nu_eff = nu / (1 - nu)
+
+        return E_eff, nu_eff
 
     def gradient(self, F, E=None, nu=None):
         """Evaluate the 2d-stress tensor from the deformation gradient.
@@ -250,24 +261,6 @@ class LinearElasticPlaneStrain:
 
         return self._umat.hessian(F, *self._convert(E, nu))
 
-
-class LinearElasticPlaneStress:
-    """Plane-stress isotropic linear-elastic material formulation.
-
-    Arguments
-    ---------
-    E : float
-        Young's modulus.
-    nu : float
-        Poisson ratio.
-
-    """
-
-    def __init__(self, E, nu):
-
-        self.E = E
-        self.nu = nu
-
     def strain(self, F, E=None, nu=None):
         """Evaluate the strain tensor from the deformation gradient.
 
@@ -286,19 +279,12 @@ class LinearElasticPlaneStress:
             Strain tensor (3x3)
         """
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
-
         e = np.zeros((3, 3, *F.shape[-2:]))
 
         for a in range(2):
             e[a, a] = F[a, a] - 1
 
         e[0, 1] = e[1, 0] = F[0, 1] + F[1, 0]
-        e[2, 2] = -nu / (1 - nu) * (F[0, 0] + F[1, 1])
 
         return e
 
@@ -320,7 +306,35 @@ class LinearElasticPlaneStress:
             Stress tensor (3x3)
 
         """
-        return np.pad(self.gradient(F, E=E, nu=nu), ((0, 1), (0, 1), (0, 0), (0, 0)))
+
+        if E is None:
+            E = self.E
+
+        if nu is None:
+            nu = self.nu
+
+        s = np.pad(self.gradient(F, E=E, nu=nu), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        s[2, 2] = nu * (s[0, 0] + s[1, 1])
+
+        return s
+
+
+class LinearElasticPlaneStress:
+    """Plane-stress isotropic linear-elastic material formulation.
+
+    Arguments
+    ---------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+
+    """
+
+    def __init__(self, E, nu):
+
+        self.E = E
+        self.nu = nu
 
     def gradient(self, F, E=None, nu=None):
         """Evaluate the 2d-stress tensor from the deformation gradient.
@@ -393,6 +407,60 @@ class LinearElasticPlaneStress:
         elast[1, 0, 1, 0] = elast[1, 0, 0, 1] = elast[0, 1, 1, 0] = elast[0, 1, 0, 1]
 
         return elast
+
+    def strain(self, F, E=None, nu=None):
+        """Evaluate the strain tensor from the deformation gradient.
+
+        Arguments
+        ---------
+        F : ndarray
+            In-plane components (2x2) of the deformation gradient
+        E : float, optional
+            Young's modulus (default is None)
+        nu : float, optional
+            Poisson ratio (default is None)
+
+        Returns
+        -------
+        e : ndarray
+            Strain tensor (3x3)
+        """
+
+        if E is None:
+            E = self.E
+
+        if nu is None:
+            nu = self.nu
+
+        e = np.zeros((3, 3, *F.shape[-2:]))
+
+        for a in range(2):
+            e[a, a] = F[a, a] - 1
+
+        e[0, 1] = e[1, 0] = F[0, 1] + F[1, 0]
+        e[2, 2] = -nu / (1 - nu) * (F[0, 0] + F[1, 1])
+
+        return e
+
+    def stress(self, F, E=None, nu=None):
+        """ "Evaluate the 3d-stress tensor from the deformation gradient.
+
+        Arguments
+        ---------
+        F : ndarray
+            In-plane components (2x2) of the deformation gradient
+        E : float, optional
+            Young's modulus (default is None)
+        nu : float, optional
+            Poisson ratio (default is None)
+
+        Returns
+        -------
+        ndarray
+            Stress tensor (3x3)
+
+        """
+        return np.pad(self.gradient(F, E=E, nu=nu), ((0, 1), (0, 1), (0, 0), (0, 0)))
 
 
 class NeoHooke:

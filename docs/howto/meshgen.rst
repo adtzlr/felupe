@@ -54,8 +54,28 @@ FElupe does not provide any tools for the creation of meshes consisting of trian
 
 ..  code-block:: python
 
-    import felupe as fe
     import meshzoo
 
     cube = meshzoo.cube_tetra((0,0,0), (1,1,1), n=11)
     mesh = fe.Mesh(*cube, cell_type="tetra")
+
+Meshes with midpoints
+*********************
+
+If a mesh with midpoints is required by a region, functions for edge, face and volume midpoint insertions are provided in :func:`felupe.mesh.add_midpoints_edges`, :func:`felupe.mesh.add_midpoints_faces` and :func:`felupe.mesh.add_midpoints_volumes`. A low-order mesh, e.g. a mesh with cell-type `quad`, can be converted to a quadratic mesh with :func:`felupe.mesh.convert`. By default, only midpoints on edges are inserted. Hence, the resulting cell-type is ``quad8``. If midpoints on faces are also calculated, the resulting cell-type is ``quad9``.
+
+..  code-block:: python
+    
+    rectangle_quad4 = fe.Rectangle(n=6)
+    rectangle_quad8 = fe.mesh.convert(rectangle, order=2)
+    rectangle_quad9 = fe.mesh.convert(rectangle, order=2, calc_midfaces=True)
+
+The same also applies on meshes with triangles. Meshzoo offers an equivalent midpoint insertion.
+
+..  code-block:: python
+
+    rectangle = meshzoo.rectangle_tri((0,0), (1,1), n=5)
+    rectangle_triangle6 = meshzoo.insert_midpoints_edges(*rectangle, "triangle")
+    
+    mesh = fe.Mesh(*rectangle_triangle6, cell_type="triangle6")
+    # mesh = fe.Mesh(*fe.mesh.add_midpoints_edges(*rectangle, "triangle"))

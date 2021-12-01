@@ -31,7 +31,24 @@ from ._base import Element
 
 
 class ConstantQuad(Element):
-    """Constant-Quadrilateral element with constant shape functions.
+    r"""Quadrilateral element with constant shape functions.
+
+    ..  code-block::
+
+                      ^ s
+         3 (-1/ 1)    |            2 ( 1/ 1)
+          o-----------|-----------o
+          |           |           |
+          |           |           |
+          |           |           |
+          |           |           |
+          |      -----|-----------|-----> r
+          |           |           |
+          |           |           |
+          |                       |
+          |                       |
+          o-----------------------o
+        0 (-1,-1)                  1 ( 1/-1)
 
     Attributes
     ----------
@@ -44,7 +61,13 @@ class ConstantQuad(Element):
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rst):
-        """Linear quadrilateral shape functions.
+        r"""Constant quadrilateral - shape functions.
+        
+        ..  math::
+            
+            \boldsymbol{h}(\boldsymbol{r}) = \begin{bmatrix}
+                1
+            \end{bmatrix}
 
         Arguments
         ---------
@@ -59,7 +82,14 @@ class ConstantQuad(Element):
         return np.array([1])
 
     def gradient(self, rst):
-        """Linear quadrilateral gradient of shape functions.
+        r"""Constant quadrilateral - gradient of shape functions.
+        
+        ..  math::
+            
+            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} = 
+            \begin{bmatrix}
+                0
+            \end{bmatrix}
 
         Arguments
         ---------
@@ -76,23 +106,23 @@ class ConstantQuad(Element):
 
 class Quad(Element):
     r"""Quadrilateral element with linear shape functions.
-
+    
     ..  code-block::
 
-                       ^ s
-         3             |             2
-          o------------|------------o
-          |            |            |
-          |            |            |
-          |            |            |
-          |            |            |
-          |       -----|------------|-----> r
-          |            |            |
-          |            |            |
-          |                         |
-          |                         |
-          o-------------------------o
-        0                            1
+                      ^ s
+         3 (-1/ 1)    |            2 ( 1/ 1)
+          o-----------|-----------o
+          |           |           |
+          |           |           |
+          |           |           |
+          |           |           |
+          |      -----|-----------|-----> r
+          |           |           |
+          |           |           |
+          |                       |
+          |                       |
+          o-----------------------o
+        0 (-1,-1)                  1 ( 1/-1)
 
 
     Attributes
@@ -106,7 +136,13 @@ class Quad(Element):
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rs):
-        """Linear quadrilateral shape functions.
+        r"""Linear quadrilateral - shape functions.
+        
+        ..  math::
+            
+            \boldsymbol{h}(\boldsymbol{r}) = \frac{1}{4} \begin{bmatrix}
+                (1-r)(1-s) \\ (1+r)(1-s) \\ (1+r)(1+s) \\ (1-r)(1+s)
+            \end{bmatrix}
 
         Arguments
         ---------
@@ -132,7 +168,17 @@ class Quad(Element):
         )
 
     def gradient(self, rs):
-        """Linear quadrilateral gradient of shape functions.
+        r"""Linear quadrilateral - gradient of shape functions.
+        
+        ..  math::
+            
+            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} = 
+            \frac{1}{4} \begin{bmatrix}
+                -(1-s) & -(1-r) \\ 
+                 (1-s) & -(1+r) \\ 
+                 (1+s) &  (1+r) \\ 
+                -(1+s) &  (1-r)
+            \end{bmatrix}
 
         Arguments
         ---------

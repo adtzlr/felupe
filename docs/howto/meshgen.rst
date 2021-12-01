@@ -54,9 +54,12 @@ FElupe does not provide any tools for the creation of meshes consisting of trian
 
 ..  code-block:: python
 
+    import numpy as np
     import meshzoo
 
-    cube = meshzoo.cube_tetra((0,0,0), (1,1,1), n=11)
+    cube = meshzoo.cube_tetra(
+        np.linspace(0,1,11), np.linspace(0,1,11), np.linspace(0,1,11)
+    )
     mesh = fe.Mesh(*cube, cell_type="tetra")
 
 Meshes with midpoints
@@ -74,7 +77,7 @@ The same also applies on meshes with triangles. Meshzoo offers an equivalent mid
 
 ..  code-block:: python
 
-    rectangle = meshzoo.rectangle_tri((0,0), (1,1), n=5)
+    rectangle = meshzoo.rectangle_tri(np.linspace(0,1,6), np.linspace(0,1,6))
     rectangle_triangle6 = meshzoo.insert_midpoints_edges(*rectangle, "triangle")
     
     mesh = fe.Mesh(*rectangle_triangle6, cell_type="triangle6")

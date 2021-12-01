@@ -6,6 +6,7 @@ How-To Guides
    :caption: How-To:
    
    howto/meshgen
+   howto/rbe2
    howto/mixed
    howto/axi
    howto/solvers

@@ -31,26 +31,75 @@ from ._base import Element
 
 
 class ConstantQuad(Element):
+    """Constant-Quadrilateral element with constant shape functions.
+
+    Attributes
+    ----------
+    points : ndarray
+        Array with point locations in natural coordinate system
+    """
+
     def __init__(self):
         super().__init__(shape=(1, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rst):
-        "linear quadrilateral shape functions"
+        """Linear quadrilateral shape functions.
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Shape functions evaluated at given location
+        """
         return np.array([1])
 
     def gradient(self, rst):
-        "linear quadrilateral gradient of shape functions"
+        """Linear quadrilateral gradient of shape functions.
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for gradient of shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Gradient of shape functions evaluated at given location
+        """
         return np.array([[0, 0]])
 
 
 class Quad(Element):
+    """Quadrilateral element with linear shape functions.
+
+    Attributes
+    ----------
+    points : ndarray
+        Array with point locations in natural coordinate system
+    """
+
     def __init__(self):
         super().__init__(shape=(4, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rs):
-        "linear quadrilateral shape functions"
+        """Linear quadrilateral shape functions.
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Shape functions evaluated at given location
+        """
         r, s = rs
         return (
             np.array(
@@ -65,7 +114,19 @@ class Quad(Element):
         )
 
     def gradient(self, rs):
-        "linear quadrilateral gradient of shape functions"
+        """Linear quadrilateral gradient of shape functions.
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for gradient of shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Gradient of shape functions evaluated at given location
+        """
+
         r, s = rs
         return (
             np.array(

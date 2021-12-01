@@ -128,7 +128,7 @@ However, the stress results are still located at the numeric integration points.
     vonmises_projected = fe.project(vonmises, region)
 
 
-Results are saved as VTK-files. Additional point-data like projected stresses are passed as ``point_data``. Let's normalize the stresses by the mean value of the stress at the right end-face.
+Results are saved as VTK-files, where additional point-data is passed within the ``point_data`` argument. Stresses are normalized by the mean value of the stress at the right end-face in order to visualize a normalized stress distribution over the plate.
     
 ..  code-block:: python
 
@@ -152,7 +152,7 @@ Results are saved as VTK-files. Additional point-data like projected stresses ar
 
 .. image:: images/platewithhole_stress.png
 
-The normal stress concentration over the hole is finally plotted with matplotlib.
+The normal stress distribution over the hole at :math:`x=0` is plotted with matplotlib.
 
 ..  code-block:: python
 

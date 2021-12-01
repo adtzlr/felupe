@@ -54,6 +54,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Re-formulate `LinearElastic` materials in terms of the deformation gradient.
+- Re-formulate `LinearElastic` material in matrix notation (Speed-up of ~10 for elasticity matrix compared to previous implementation.) 
+- Move previous `LinearElastic` to `constitution.LinearElasticTensorNotation`.
 
 ## [1.5.0] - 2021-11-29
 

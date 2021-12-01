@@ -1,2 +1,4 @@
 furo
 sphinx-autoapi
+sphinx-inline-tabs
+sphinx-copybutton

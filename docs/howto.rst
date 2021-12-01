@@ -8,3 +8,4 @@ How-To Guides
    howto/meshgen
    howto/mixed
    howto/axi
+   howto/solvers

@@ -14,3 +14,4 @@ FElupe API
    :caption: API of submodules:
 
    felupe/mesh/mesh
+   felupe/constitution/constitution

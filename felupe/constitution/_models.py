@@ -192,33 +192,22 @@ class LinearElastic:
 
         return E / (1 + nu) / (1 - 2 * nu) * elast
 
-    def _lame_converter(self, E, nu):
-        """Convert material parameters to first and second Lamé - constants.
-
-        Arguments
-        ---------
-        E : float
-            Young's modulus
-        nu : float
-            Poisson ratio
-
-        Returns
-        -------
-        mu : float
-            First Lamé - constant (shear modulus)
-        gamma : float
-            Second Lamé - constant
-
-        """
-
-        mu = E / (2 * (1 + nu))
-        gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
-
-        return mu, gamma
-
 
 class LinearElasticTensorNotation:
-    """Isotropic linear-elastic material formulation.
+    r"""Isotropic linear-elastic material formulation.
+
+    ..  math::
+
+        \boldsymbol{\sigma} &= 2 \mu \ \boldsymbol{\varepsilon} + \gamma \ \text{tr}(\boldsymbol{\varepsilon}) \ \boldsymbol{I}
+
+        \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} &= 2 \mu \ \boldsymbol{I} \odot \boldsymbol{I} + \gamma \ \boldsymbol{I} \otimes \boldsymbol{I}
+
+    with the strain tensor
+
+    ..  math::
+
+        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} \right)^T \right)
+
 
     Arguments
     ---------
@@ -238,8 +227,9 @@ class LinearElasticTensorNotation:
         self.stress = self.gradient
         self.elasticity = self.hessian
 
-    def gradient(self, F, E=None, nu=None):
-        """Evaluate the stress tensor from the deformation gradient.
+    def gradient(self, F=None, E=None, nu=None):
+        """Evaluate the stress tensor (as a function of the deformation
+        gradient).
 
         Arguments
         ---------
@@ -272,17 +262,20 @@ class LinearElasticTensorNotation:
 
         return 2 * mu * strain + gamma * trace(strain) * identity(strain)
 
-    def hessian(self, F, E=None, nu=None):
-        """Evaluate the elasticity tensor from the deformation gradient.
+    def hessian(self, F=None, E=None, nu=None, shape=(1, 1)):
+        """Evaluate the elasticity tensor. The Deformation gradient is only
+        used for the shape of the trailing axes.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient (3x3)
+        F : ndarray, optional
+            Deformation gradient (3x3) (default is None)
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
+        shape : (int, int)
+            Tuple with shape of the trailing axes
 
         Returns
         -------
@@ -297,11 +290,13 @@ class LinearElasticTensorNotation:
         if nu is None:
             nu = self.nu
 
+        if F is None:
+            I = identity(dim=3, shape=shape)
+        else:
+            I = identity(F)
+
         # convert to lame constants
         mu, gamma = self._lame_converter(E, nu)
-
-        # convert the deformation gradient to strain
-        I = identity(F)
 
         elast = 2 * mu * cdya(I, I) + gamma * dya(I, I)
 

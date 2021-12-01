@@ -1,7 +1,7 @@
 Use external solvers
 --------------------
 
-FElupe uses SuperLU as direct sparse solver by default. Not because it is fact - just because it is shipped with scipy. While it is definitely a good choice for small to mid-sized problems, faster alternatives are easy to use. This guide shows two possibilities, a) a fast direct solver from `PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``) and all iterative solvers from `Krylov <https://github.com/nschloe/krylov>`_ (``pip install krylov``).
+FElupe uses SuperLU as direct sparse solver by default. Not because it is super fast - just because it is shipped with SciPy (and SciPy is already a dependancy of FElupe). While it is definitely a good choice for small to mid-sized problems, faster alternatives are easy to install and use. This guide shows two possibilities, a) a fast direct solver from `PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``) and all iterative solvers from `Krylov <https://github.com/nschloe/krylov>`_ (``pip install krylov``). Be aware to check the solution (residuals) for iterative solvers.
 
 .. tab:: SuperLU (default)
 

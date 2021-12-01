@@ -76,7 +76,7 @@ The material behavior is defined through a built-in isotropic linear-elastic mat
     F = displacement.extract()
     
 
-The weak form of linear elasticity is assembled into the stiffness matrix, where to constitutive elasticity matrix is generated with :func:`umat.hessian`. Please note that although the elasticitiy tensor does not depend on the deformation gradient for linear elasticity, FElupe extracts the shape of the deformation gradient in :func:`umat.hessian`.
+The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian`. Please note that although the elasticity tensor does not depend on the deformation gradient for linear elasticity, FElupe extracts the shape of the deformation gradient in :func:`umat.hessian`.
 
 .. math::
 

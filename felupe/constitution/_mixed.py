@@ -120,6 +120,7 @@ class ThreeFieldVariation:
 
         A_{p,\overline{J}} &= A_{\overline{J}, p} = -1
 
+
     with
 
     ..  math::

@@ -40,11 +40,126 @@ from ..math import (
 
 
 class ThreeFieldVariation:
+    r"""Hu-Washizu hydrostatic-volumetric selective
+    :math:`(\boldsymbol{u},p,J)` - three-field variation for nearly-
+    incompressible material formulations. The total potential energy
+    for nearly-incompressible hyperelasticity is formulated with a
+    determinant-modified deformation gradient. Pressure and volume ratio fields
+    should be kept one order lower than the interpolation order of the
+    displacement field, e.g. linear displacement fields should be paired with
+    element-constant (mean) values of pressure and volume ratio.
+
+    The total potential energy of internal forces is defined with a strain
+    energy density function in terms of a determinant-modified deformation
+    gradient and an additional control equation.
+
+    ..  math::
+
+        \Pi &= \Pi_{int} + \Pi_{ext}
+
+        \Pi_{int} &= \int_V \psi(\boldsymbol{F}) \ dV \qquad \rightarrow \qquad \Pi_{int}(\boldsymbol{u},p,J) = \int_V \psi(\overline{\boldsymbol{F}}) \ dV + \int_V p (J-\overline{J}) \ dV
+
+        \overline{\boldsymbol{F}} &= \left(\frac{\overline{J}}{J}\right)^{1/3} \boldsymbol{F}
+
+    The variations of the total potential energy w.r.t.
+    :math:`(\boldsymbol{u},p,J)` lead to the following expressions. We denote
+    first partial derivatives as :math:`\boldsymbol{f}_{(\bullet)}` and second
+    partial derivatives as :math:`\boldsymbol{A}_{(\bullet,\bullet)}`.
+
+    ..  math::
+
+        \delta_{\boldsymbol{u}} \Pi_{int} &= \int_V \boldsymbol{f}_{\boldsymbol{u}} : \delta \boldsymbol{F} \ dV = \int_V \left( \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} : \frac{\partial \overline{\boldsymbol{F}}}{\partial \boldsymbol{F}} + p J \boldsymbol{F}^{-T} \right) : \delta \boldsymbol{F} \ dV
+
+        \delta_{p} \Pi_{int} &= \int_V f_{p} \ \delta p \ dV = \int_V (J - \overline{J}) \ \delta p \ dV
+
+        \delta_{\overline{J}} \Pi_{int} &= \int_V f_{\overline{J}} \ \delta \overline{J} \ dV = \int_V \left( \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} : \frac{\partial \overline{\boldsymbol{F}}}{\partial \overline{J}} - p \right) : \delta \overline{J} \ dV
+
+    The projection tensors from the variations lead the following results.
+
+    ..  math::
+
+        \frac{\partial \overline{\boldsymbol{F}}}{\partial \boldsymbol{F}} &= \left(\frac{\overline{J}}{J}\right)^{1/3} \left( \boldsymbol{I} \overset{ik}{\odot} \boldsymbol{I} - \frac{1}{3} \boldsymbol{F} \otimes \boldsymbol{F}^{-T} \right)
+
+        \frac{\partial \overline{\boldsymbol{F}}}{\partial \overline{J}} &= \frac{1}{3 \overline{J}} \overline{\boldsymbol{F}}
+
+    The double-dot products from the variations are now evaluated.
+
+    ..  math::
+
+        \overline{\boldsymbol{P}} &= \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} = \overline{\overline{\boldsymbol{P}}} - \frac{1}{3} \left(  \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \qquad \text{with} \qquad \overline{\overline{\boldsymbol{P}}} = \left(\frac{\overline{J}}{J}\right)^{1/3} \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}}
+
+        \frac{\partial \psi}{\partial \overline{\boldsymbol{F}}} : \frac{1}{3 \overline{J}} \overline{\boldsymbol{F}} &= \frac{1}{3 \overline{J}} \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F}
+
+    We now have three formulas; one for the first Piola Kirchhoff stress and
+    two additional control equations.
+
+    ..  math::
+
+        \boldsymbol{f}_{\boldsymbol{u}} (= \boldsymbol{P}) &= \overline{\overline{\boldsymbol{P}}} - \frac{1}{3} \left(  \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T}
+
+        f_p &= J - \overline{J}
+
+        f_{\overline{J}} &=  \frac{1}{3 \overline{J}} \left( \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) - p
+
+    A linearization of the above formulas gives six equations (only results are
+    given here).
+
+    ..  math::
+
+        \mathbb{A}_{\boldsymbol{u},\boldsymbol{u}} &=  \overline{\overline{\mathbb{A}}} + \frac{1}{9} \left(  \boldsymbol{F} : \overline{\overline{\mathbb{A}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - \frac{1}{3} \left( \boldsymbol{F}^{-T} \otimes \left( \overline{\overline{\boldsymbol{P}}} + \boldsymbol{F} : \overline{\overline{\mathbb{A}}} \right) + \left( \overline{\overline{\boldsymbol{P}}} + \overline{\overline{\mathbb{A}}} : \boldsymbol{F} \right) \otimes \boldsymbol{F}^{-T} \right)
+
+        &+\left( p J + \frac{1}{9} \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - \left( p J - \frac{1}{3} \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \overset{il}{\odot} \boldsymbol{F}^{-T}
+
+        A_{p,p} &= 0
+
+        A_{\overline{J},\overline{J}} &= \frac{1}{9 \overline{J}^2} \left( \boldsymbol{F} : \overline{\overline{\mathbb{A}}} : \boldsymbol{F} \right) - 2 \left( \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right)
+
+        \boldsymbol{A}_{\boldsymbol{u},p} &= \boldsymbol{A}_{p, \boldsymbol{u}} = J \boldsymbol{F}^{-T}
+
+        \boldsymbol{A}_{\boldsymbol{u},\overline{J}} &= \boldsymbol{A}_{\overline{J}, \boldsymbol{u}} = \frac{1}{3 \overline{J}} \left( \boldsymbol{P}' + \boldsymbol{F} : \overline{\overline{\mathbb{A}}} - \frac{1}{3} \left( \boldsymbol{F} : \overline{\overline{\mathbb{A}}} : \boldsymbol{F} \right) \boldsymbol{F}^{-T} \right)
+
+        A_{p,\overline{J}} &= A_{\overline{J}, p} = -1
+
+    with
+
+    ..  math::
+
+        \overline{\overline{\mathbb{A}}} = \left(\frac{\overline{J}}{J}\right)^{1/3} \frac{\partial^2 \psi}{\partial \overline{\boldsymbol{F}} \partial \overline{\boldsymbol{F}}} \left(\frac{\overline{J}}{J}\right)^{1/3}
+
+    as well as
+
+    ..  math::
+
+        \boldsymbol{P}' = \boldsymbol{P} - p J \boldsymbol{F}^{-T}
+
+    Arguments
+    ---------
+    material : Material
+        A material definition with ``gradient`` and ``hessian`` methods.
+
+    Attributes
+    ----------
+    fun_P : function
+        Method for gradient evaluation
+    fun_A : function
+        Method for hessian evaluation
+    detF : ndarray
+        Determinant of deformation gradient
+    iFT : ndarray
+        Transpose of inverse of the deformation gradient
+    Fb : ndarray
+        Determinant-modified deformation gradient
+    Pb : ndarray
+        First Piola-Kirchhoff stress tensor (in determinant-modified framework)
+    Pbb : ndarray
+        Determinant-modification multiplied by ``Pb``
+    PbbF : ndarray
+        Double-dot product of ``Pb`` and the deformation gradient
+
+    """
+
     def __init__(self, material):
-        """Three-Field variation for nearly-incompressible materials:
-        gradient = 1st Piola-Kirchhoff stress P
-        hessian = associated (total) elasticity tensor A4 = dP/dF
-        """
+
         self.fun_P = material.gradient
         self.fun_A = material.hessian
 
@@ -52,7 +167,24 @@ class ThreeFieldVariation:
         """Variation of total potential w.r.t displacements
         (1st Piola Kirchhoff stress).
 
-        δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
+        ..  code-block::
+
+            δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            Gradient w.r.t. the deformation gradient
+
         """
 
         return self.Pbb - self.PbbF / 3 * self.iFT + p * self.detF * self.iFT
@@ -60,7 +192,24 @@ class ThreeFieldVariation:
     def _gradient_p(self, F, p, J):
         """Variation of total potential energy w.r.t pressure.
 
-        δ_p(Π_int) = ∫_V (det(F) - J) δp dV
+        ..  code-block::
+
+            δ_p(Π_int) = ∫_V (det(F) - J) δp dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            Gradient w.r.t. the pressure
+
         """
 
         return self.detF - J
@@ -68,14 +217,53 @@ class ThreeFieldVariation:
     def _gradient_J(self, F, p, J):
         """Variation of total potential energy w.r.t volume ratio.
 
-        δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
+        ..  code-block::
+
+            δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            Gradient w.r.t. the volume ratio
+
         """
 
         return self.PbbF / (3 * J) - p
 
     def gradient(self, F, p, J):
-        """List of variations of total potential energy w.r.t
-        displacements, pressure and volume ratio."""
+        r"""List of variations of total potential energy w.r.t
+        displacements, pressure and volume ratio.
+
+        ..  code-block::
+
+            δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
+            δ_p(Π_int) = ∫_V (det(F) - J) δp dV
+            δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        list of ndarrays
+            List of gradients w.r.t. the input variables F, p and J
+
+        """
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
@@ -90,15 +278,39 @@ class ThreeFieldVariation:
         ]
 
     def hessian(self, F, p, J):
-        """List of linearized variations of total potential energy w.r.t
+        r"""List of linearized variations of total potential energy w.r.t
         displacements, pressure and volume ratio (these expressions are
-        symmetric; A_up = A_pu if derived from a total potential energy
+        symmetric; ``A_up = A_pu`` if derived from a total potential energy
         formulation). List entries have to be arranged as a flattened list
         from the upper triangle blocks:
 
-        [[0 1 2],
-         [  3 4],
-         [    5]] --> [0 1 2 3 4 5]
+        ..  code-block::
+
+            Δ_u(δ_u(Π_int)) = ∫_V δF : (∂²ψ/(∂F∂F) + p ∂cof(F)/∂F) : ΔF dV
+            Δ_p(δ_u(Π_int)) = ∫_V δF : J cof(F) Δp dV
+            Δ_J(δ_u(Π_int)) = ∫_V δF :  ∂²ψ/(∂F∂J) ΔJ dV
+            Δ_p(δ_p(Π_int)) = ∫_V δp 0 Δp dV
+            Δ_J(δ_p(Π_int)) = ∫_V δp (-1) ΔJ dV
+            Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²ψ/(∂J∂J) ΔJ dV
+
+            [[0 1 2],
+             [  3 4],
+             [    5]] --> [0 1 2 3 4 5]
+
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        list of ndarrays
+            List of hessians in upper triangle order
 
         """
         self.detF = det(F)
@@ -129,8 +341,23 @@ class ThreeFieldVariation:
         """Linearization w.r.t. displacements of variation of
         total potential energy w.r.t displacements.
 
-        Δ_u(δ_u(Π_int)) = ∫_V δF : (∂²ψ/(∂F∂F) + p ∂cof(F)/∂F) : ΔF dV
+        ..  code-block::
 
+            Δ_u(δ_u(Π_int)) = ∫_V δF : (∂²ψ/(∂F∂F) + p ∂cof(F)/∂F) : ΔF dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            u,u - part of hessian
         """
 
         PbbA4bbF = self.Pbb + self.A4bbF
@@ -153,8 +380,23 @@ class ThreeFieldVariation:
         """Linearization w.r.t. pressure of variation of
         total potential energy w.r.t pressure.
 
-        Δ_p(δ_p(Π_int)) = ∫_V δp 0 Δp dV
+        ..  code-block::
 
+            Δ_p(δ_p(Π_int)) = ∫_V δp 0 Δp dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            p,p - part of hessian
         """
         return np.zeros_like(p)
 
@@ -162,8 +404,23 @@ class ThreeFieldVariation:
         """Linearization w.r.t. volume ratio of variation of
         total potential energy w.r.t volume ratio.
 
-        Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²ψ/(∂J∂J) ΔJ dV
+        ..  code-block::
 
+            Δ_J(δ_J(Π_int)) = ∫_V δJ ∂²ψ/(∂J∂J) ΔJ dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            J,J - part of hessian
         """
 
         return (self.FA4bbF - 2 * self.PbbF) / (9 * J ** 2)
@@ -172,8 +429,23 @@ class ThreeFieldVariation:
         """Linearization w.r.t. pressure of variation of
         total potential energy w.r.t displacements.
 
-        Δ_p(δ_u(Π_int)) = ∫_V δF : J cof(F) Δp dV
+        ..  code-block::
 
+            Δ_p(δ_u(Π_int)) = ∫_V δF : J cof(F) Δp dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            u,p - part of hessian
         """
 
         return self.detF * self.iFT
@@ -182,8 +454,23 @@ class ThreeFieldVariation:
         """Linearization w.r.t. volume ratio of variation of
         total potential energy w.r.t displacements.
 
-        Δ_J(δ_u(Π_int)) = ∫_V δF :  ∂²ψ/(∂F∂J) ΔJ dV
+        ..  code-block::
 
+            Δ_J(δ_u(Π_int)) = ∫_V δF :  ∂²ψ/(∂F∂J) ΔJ dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            u,J - part of hessian
         """
 
         Ps = self._gradient_u(F, 0 * p, J)
@@ -193,7 +480,22 @@ class ThreeFieldVariation:
         """Linearization w.r.t. volume ratio of variation of
         total potential energy w.r.t pressure.
 
-        Δ_J(δ_p(Π_int)) = ∫_V δp (-1) ΔJ dV
+        ..  code-block::
 
+            Δ_J(δ_p(Π_int)) = ∫_V δp (-1) ΔJ dV
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient
+        p : ndarray
+            Hydrostatic pressure
+        J : ndarray
+            Volume ratio
+
+        Returns
+        -------
+        ndarray
+            p,J - part of hessian
         """
         return -np.ones_like(J)

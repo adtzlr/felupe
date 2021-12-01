@@ -1,10 +1,5 @@
 felupe.constitution
 -------------------
-   
-.. autoclass:: felupe.constitution.NeoHooke
-   :members:
-   :undoc-members:
-   :inherited-members:
 
 .. autoclass:: felupe.constitution.LinearElastic
    :members:
@@ -22,6 +17,11 @@ felupe.constitution
    :inherited-members:
 
 .. autoclass:: felupe.constitution.LinearElasticPlaneStrain
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.constitution.NeoHooke
    :members:
    :undoc-members:
    :inherited-members:

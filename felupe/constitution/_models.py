@@ -642,7 +642,7 @@ class NeoHooke:
     In a nearly-incompressible constitutive framework the strain energy
     density is an additive composition of an isochoric and a volumetric
     part. While the isochoric part is defined on the distortional part of
-    the deformation gradient whereas the volumetric part of the strain
+    the deformation gradient, the volumetric part of the strain
     energy function is defined on the determinant of the deformation
     gradient.
 

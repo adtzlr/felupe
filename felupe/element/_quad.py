@@ -75,7 +75,25 @@ class ConstantQuad(Element):
 
 
 class Quad(Element):
-    """Quadrilateral element with linear shape functions.
+    r"""Quadrilateral element with linear shape functions.
+
+    ..  code-block::
+
+                       ^ s
+         3             |             2
+          o------------|------------o
+          |            |            |
+          |            |            |
+          |            |            |
+          |            |            |
+          |       -----|------------|-----> r
+          |            |            |
+          |            |            |
+          |                         |
+          |                         |
+          o-------------------------o
+        0                            1
+
 
     Attributes
     ----------

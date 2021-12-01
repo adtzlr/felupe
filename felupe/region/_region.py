@@ -33,16 +33,16 @@ from ..math import det, inv
 class Region:
     r"""
     A numeric region as a combination of a mesh, an element and a numeric integration scheme (quadrature). The gradients of the element shape functions are evaluated at all integration points of each cell in the region if the optional gradient argument is True.
-    
+
     .. math::
-    
+
        \frac{\partial X^I}{\partial r^J} &= X_a^I \frac{\partial h_a}{\partial r^J}
-    
+
        \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I} \frac{\partial r^I}{\partial X^J}
-       
+
        dV &= \det\left(\frac{\partial X^I}{\partial r^J}\right) w
-    
-    
+
+
     Parameters
     ----------
     mesh : Mesh
@@ -53,7 +53,7 @@ class Region:
         An element-compatible numeric integration scheme with points and weights.
     grad : bool, optional
         A flag to invoke gradient evaluation (default is True).
-    
+
     Attributes
     ----------
     mesh : Mesh

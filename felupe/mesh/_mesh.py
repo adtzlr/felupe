@@ -30,7 +30,7 @@ import numpy as np
 
 class Mesh:
     """A mesh with points, cells and optional a specified cell type.
-    
+
     Parameters
     ----------
     points : ndarray
@@ -39,7 +39,7 @@ class Mesh:
         Point-connectivity of cells.
     cell_type : str or None, optional
         An optional string in VTK-convention that specifies the cell type (default is None). Necessary when a mesh is saved to a file.
-    
+
     Attributes
     ----------
     points : ndarray
@@ -62,8 +62,9 @@ class Mesh:
         Array with points not connected to cells.
     cells_per_point : array
         Array which counts connected cells per point. Used for averging results.
-    
+
     """
+
     def __init__(self, points, cells, cell_type=None):
         self.points = np.array(points)
         self.cells = np.array(cells)
@@ -107,12 +108,12 @@ class Mesh:
 
     def save(self, filename="mesh.vtk"):
         """Export the mesh as VTK file. For XDMF-export please ensure to have ``h5py`` (as an optional dependancy of ``meshio``) installed.
-        
+
         Parameters
         ----------
         filename : str, optional
             The filename of the mesh (default is ``mesh.vtk``).
-        
+
         """
 
         if self.cell_type is None:

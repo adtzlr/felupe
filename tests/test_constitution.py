@@ -91,7 +91,9 @@ def test_linear():
 
     stress = le.gradient(F)
     dsde = le.hessian(F)
-    dsde = le.hessian(F)
+    dsde2 = le.hessian(shape=F.shape[-2:])
+    
+    assert dsde.shape == dsde2.shape
 
     le = fe.constitution.LinearElastic(E=None, nu=0.3)
     stress = le.gradient(F, E=2.0)

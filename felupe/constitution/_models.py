@@ -43,6 +43,181 @@ from ..math import (
 
 
 class LinearElastic:
+    r"""Isotropic linear-elastic material formulation.
+
+    ..  math::
+
+        \begin{bmatrix}
+            \sigma_{11} \\
+            \sigma_{22} \\
+            \sigma_{33} \\
+            \sigma_{12} \\
+            \sigma_{23} \\
+            \sigma_{31}
+        \end{bmatrix} = \frac{E}{(1+\nu)(1-2\nu)}\begin{bmatrix}
+            1-\nu & \nu & \nu & 0 & 0 & 0\\
+            \nu & 1-\nu & \nu & 0 & 0 & 0\\
+            \nu & \nu & 1-\nu & 0 & 0 & 0\\
+            0 & 0 & 0 & \frac{1-2\nu}{2} & 0 & 0 \\
+            0 & 0 & 0 & 0 & \frac{1-2\nu}{2} & 0 \\
+            0 & 0 & 0 & 0 & 0 & \frac{1-2\nu}{2}
+        \end{bmatrix} \cdot \begin{bmatrix}
+            \varepsilon_{11} \\
+            \varepsilon_{22} \\
+            \varepsilon_{33} \\
+            2 \varepsilon_{12} \\
+            2 \varepsilon_{23} \\
+            2 \varepsilon_{31}
+        \end{bmatrix}
+
+    with the strain tensor
+
+    ..  math::
+
+        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} \right)^T \right)
+
+
+    Arguments
+    ---------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+
+    """
+
+    def __init__(self, E=None, nu=None):
+
+        self.E = E
+        self.nu = nu
+
+        # aliases for gradient and hessian
+        self.stress = self.gradient
+        self.elasticity = self.hessian
+
+    def gradient(self, F, E=None, nu=None):
+        """Evaluate the stress tensor (as a function of the deformation
+        gradient).
+
+        Arguments
+        ---------
+        F : ndarray
+            Deformation gradient (3x3)
+        E : float, optional
+            Young's modulus (default is None)
+        nu : float, optional
+            Poisson ratio (default is None)
+
+        Returns
+        -------
+        ndarray
+            Stress tensor (3x3)
+
+        """
+
+        if E is None:
+            E = self.E
+
+        if nu is None:
+            nu = self.nu
+
+        # convert the deformation gradient to strain
+        H = F - identity(F)
+        strain = (H + transpose(H)) / 2
+
+        # init stress
+        stress = np.zeros_like(strain)
+
+        # normal stress components
+        for a, b, c in zip([0, 1, 2], [1, 2, 0], [2, 0, 1]):
+            stress[a, a] = (1 - nu) * strain[a, a] + nu * (strain[b, b] + strain[c, c])
+
+        # shear stress components
+        for a, b in zip([0, 0, 1], [1, 2, 2]):
+            stress[a, b] = stress[b, a] = (1 - 2 * nu) / 2 * 2 * strain[a, b]
+
+        return E / (1 + nu) / (1 - 2 * nu) * stress
+
+    def hessian(self, F=None, E=None, nu=None, shape=(1, 1)):
+        """Evaluate the elasticity tensor. The Deformation gradient is only
+        used for the shape of the trailing axes.
+
+        Arguments
+        ---------
+        F : ndarray, optional
+            Deformation gradient (3x3) (default is None)
+        E : float, optional
+            Young's modulus (default is None)
+        nu : float, optional
+            Poisson ratio (default is None)
+        shape : (int, int)
+            Tuple with shape of the trailing axes
+
+        Returns
+        -------
+        ndarray
+            elasticity tensor (3x3x3x3)
+
+        """
+
+        if F is None:
+            trailing_axes = shape
+        else:
+            trailing_axes = F.shape[-2:]
+
+        if E is None:
+            E = self.E
+
+        if nu is None:
+            nu = self.nu
+
+        elast = np.zeros((3, 3, 3, 3, *trailing_axes))
+
+        # diagonal normal components
+        for i in range(3):
+            elast[i, i, i, i] = 1 - nu
+
+            # off-diagonal normal components
+            for j in range(3):
+                if j != i:
+                    elast[i, i, j, j] = nu
+
+        # diagonal shear components (full-symmetric)
+        elast[
+            [0, 1, 0, 1, 0, 2, 0, 2, 1, 2, 1, 2],
+            [1, 0, 1, 0, 2, 0, 2, 0, 2, 1, 2, 1],
+            [0, 0, 1, 1, 0, 0, 2, 2, 1, 1, 2, 2],
+            [1, 1, 0, 0, 2, 2, 0, 0, 2, 2, 1, 1],
+        ] = (1 - 2 * nu) / 2
+
+        return E / (1 + nu) / (1 - 2 * nu) * elast
+
+    def _lame_converter(self, E, nu):
+        """Convert material parameters to first and second Lamé - constants.
+
+        Arguments
+        ---------
+        E : float
+            Young's modulus
+        nu : float
+            Poisson ratio
+
+        Returns
+        -------
+        mu : float
+            First Lamé - constant (shear modulus)
+        gamma : float
+            Second Lamé - constant
+
+        """
+
+        mu = E / (2 * (1 + nu))
+        gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
+
+        return mu, gamma
+
+
+class LinearElasticTensorNotation:
     """Isotropic linear-elastic material formulation.
 
     Arguments

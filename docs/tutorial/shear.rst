@@ -49,10 +49,10 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 
 A numeric quad-region created on the mesh in combination with a vector-valued 
 displacement field as well as scalar-valued fields for the hydrostatic pressure
-and the volume ratio represents the rubber numerically. A shear loadcase is applied on the 
-displacement field. This involves setting up a y-symmetry plane as well as the 
-absolute value of the prescribed shear movement in direction :math:`x` at the 
-MPC-centerpoint.
+and the volume ratio represents the rubber numerically. A shear loadcase is 
+applied on the displacement field. This involves setting up a y-symmetry plane 
+as well as the absolute value of the prescribed shear movement in direction 
+:math:`x` at the MPC-centerpoint.
 
 ..  code-block:: python
 

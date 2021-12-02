@@ -219,4 +219,4 @@ The shear force :math:`F_x` vs. the displacements :math:`u_x` and
     plt.savefig("shear_plot.svg")
 
 .. image:: images/shear_plot.svg
-   :width: 400px
+   :width: 600px

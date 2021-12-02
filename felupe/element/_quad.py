@@ -31,26 +31,129 @@ from ._base import Element
 
 
 class ConstantQuad(Element):
+    r"""Quadrilateral element with constant shape functions.
+
+    ..  code-block::
+
+                      ^ s
+         3 (-1/ 1)    |            2 ( 1/ 1)
+          o-----------|-----------o
+          |           |           |
+          |           |           |
+          |           |           |
+          |           |           |
+          |      -----|-----------|-----> r
+          |           |           |
+          |           |           |
+          |                       |
+          |                       |
+          o-----------------------o
+        0 (-1,-1)                  1 ( 1/-1)
+
+    Attributes
+    ----------
+    points : ndarray
+        Array with point locations in natural coordinate system
+    """
+
     def __init__(self):
         super().__init__(shape=(1, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rst):
-        "linear quadrilateral shape functions"
+        r"""Constant quadrilateral - shape functions.
+
+        ..  math::
+
+            \boldsymbol{h}(\boldsymbol{r}) = \begin{bmatrix}
+                1
+            \end{bmatrix}
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Shape functions evaluated at given location
+        """
         return np.array([1])
 
     def gradient(self, rst):
-        "linear quadrilateral gradient of shape functions"
+        r"""Constant quadrilateral - gradient of shape functions.
+
+        ..  math::
+
+            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} =
+            \begin{bmatrix}
+                0
+            \end{bmatrix}
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for gradient of shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Gradient of shape functions evaluated at given location
+        """
         return np.array([[0, 0]])
 
 
 class Quad(Element):
+    r"""Quadrilateral element with linear shape functions.
+
+    ..  code-block::
+
+                      ^ s
+         3 (-1/ 1)    |            2 ( 1/ 1)
+          o-----------|-----------o
+          |           |           |
+          |           |           |
+          |           |           |
+          |           |           |
+          |      -----|-----------|-----> r
+          |           |           |
+          |           |           |
+          |                       |
+          |                       |
+          o-----------------------o
+        0 (-1,-1)                  1 ( 1/-1)
+
+
+    Attributes
+    ----------
+    points : ndarray
+        Array with point locations in natural coordinate system
+    """
+
     def __init__(self):
         super().__init__(shape=(4, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rs):
-        "linear quadrilateral shape functions"
+        r"""Linear quadrilateral - shape functions.
+
+        ..  math::
+
+            \boldsymbol{h}(\boldsymbol{r}) = \frac{1}{4} \begin{bmatrix}
+                (1-r)(1-s) \\ (1+r)(1-s) \\ (1+r)(1+s) \\ (1-r)(1+s)
+            \end{bmatrix}
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Shape functions evaluated at given location
+        """
         r, s = rs
         return (
             np.array(
@@ -65,7 +168,29 @@ class Quad(Element):
         )
 
     def gradient(self, rs):
-        "linear quadrilateral gradient of shape functions"
+        r"""Linear quadrilateral - gradient of shape functions.
+
+        ..  math::
+
+            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} =
+            \frac{1}{4} \begin{bmatrix}
+                -(1-s) & -(1-r) \\
+                 (1-s) & -(1+r) \\
+                 (1+s) &  (1+r) \\
+                -(1+s) &  (1-r)
+            \end{bmatrix}
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for gradient of shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Gradient of shape functions evaluated at given location
+        """
+
         r, s = rs
         return (
             np.array(

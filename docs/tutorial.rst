@@ -10,3 +10,4 @@ This section is all about learning. Each tutorial focusses on a some lessons to 
    tutorial/hellofelupe
    tutorial/gettingstarted
    tutorial/platewithhole
+   tutorial/shear

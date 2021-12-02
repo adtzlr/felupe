@@ -68,15 +68,14 @@ A numeric quad-region created on the mesh in combination with a vector-valued di
     )
 
 
-The material behavior is defined through a built-in isotropic linear-elastic material formulation for plane stress problems. The deformation gradient is extracted from the displacement field. In the undeformed state it is filled with the identity matrix at every integration point of every cell in the mesh.
+The material behavior is defined through a built-in isotropic linear-elastic material formulation for plane stress problems.
 
 ..  code-block:: python
 
     umat = fe.LinearElasticPlaneStress(E=210000, nu=0.3)
-    F = displacement.extract()
     
 
-The weak form of linear elasticity is assembled into the stiffness matrix, where to constitutive elasticity matrix is generated with :func:`umat.hessian`. Please note that although the elasticitiy tensor does not depend on the deformation gradient for linear elasticity, FElupe extracts the shape of the deformation gradient in :func:`umat.hessian`.
+The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian`.
 
 .. math::
 
@@ -86,7 +85,7 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 ..  code-block:: python
 
     K = fe.IntegralForm(
-        fun=umat.hessian(F), 
+        fun=umat.hessian(region=region), 
         v=displacement, 
         dV=region.dV, 
         u=displacement, 
@@ -99,9 +98,9 @@ The linear equation system may now be solved. First, a partition into active and
 ..  code-block:: python
 
     system = fe.solve.partition(displacement, K, dof1, dof0)
-    displacement += fe.solve.solve(*system, u0ext=u0ext)
+    displacement += fe.solve.solve(*system, ext0)
 
-Once again, let's evaluate the deformation gradient and the stress. This process is also called *stress recovery*.
+Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
 
 ..  code-block:: python
 
@@ -133,7 +132,6 @@ Results are saved as VTK-files, where additional point-data is passed within the
 ..  code-block:: python
 
     right = mesh.points[:, 0] == L
-    bottom = mesh.points[:, 1] == 0
 
     fe.save(
         region, 
@@ -157,6 +155,8 @@ The normal stress distribution over the hole at :math:`x=0` is plotted with matp
 ..  code-block:: python
 
     import matplotlib.pyplot as plt
+	
+    left = mesh.points[:, 0] == 0
 
     plt.plot(
         mesh.points[:, 1][left] / h, 

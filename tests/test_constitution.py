@@ -35,7 +35,7 @@ def pre(sym, add_identity):
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    return u.extract(grad=True, sym=sym, add_identity=add_identity)
+    return r, u.extract(grad=True, sym=sym, add_identity=add_identity)
 
 
 def pre_mixed(sym, add_identity):
@@ -47,11 +47,11 @@ def pre_mixed(sym, add_identity):
     v = fe.Field(r, dim=1)
     z = fe.Field(r, dim=1, values=1)
     w = fe.FieldMixed((u, v, z))
-    return w.extract(grad=True, sym=sym, add_identity=add_identity)
+    return r, w.extract(grad=True, sym=sym, add_identity=add_identity)
 
 
 def test_nh():
-    F = pre(sym=False, add_identity=True)
+    r, F = pre(sym=False, add_identity=True)
 
     nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
@@ -85,7 +85,7 @@ def test_nh():
 
 
 def test_linear():
-    F = pre(sym=False, add_identity=True)
+    r, F = pre(sym=False, add_identity=True)
 
     check_stress = []
     check_dsde = []
@@ -100,9 +100,13 @@ def test_linear():
         stress = le.gradient(F)
         dsde = le.hessian(F)
         dsde2 = le.hessian(shape=F.shape[-2:])
+        dsde3 = le.hessian(region=r)
+
+        with pytest.raises(TypeError):
+            le.hessian()
 
         check_stress.append(stress)
-        check_dsde.append([dsde, dsde2])
+        check_dsde.append([dsde, dsde2, dsde3])
 
         assert dsde.shape == dsde2.shape
 
@@ -122,13 +126,23 @@ def test_linear():
 
 
 def test_linear_planestress():
-    F = pre(sym=False, add_identity=True)[:2][:, :2]
+    r, F = pre(sym=False, add_identity=True)
+    F = F[:2][:, :2]
 
     le = fe.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
     stress = le.gradient(F)
     dsde = le.hessian(F)
     dsde = le.hessian(F)
+    dsde2 = le.hessian(shape=F.shape[-2:])
+    dsde3 = le.hessian(region=r)
+
+    with pytest.raises(TypeError):
+        le.hessian()
+
+    check_dsde = [dsde, dsde2, dsde3]
+
+    assert np.allclose(*check_dsde)
 
     stress_full = le.stress(F)
     strain_full = le.strain(F)
@@ -149,7 +163,8 @@ def test_linear_planestress():
 
 
 def test_linear_planestrain():
-    F = pre(sym=False, add_identity=True)[:2][:, :2]
+    r, F = pre(sym=False, add_identity=True)
+    F = F[:2][:, :2]
 
     le = fe.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
@@ -177,7 +192,7 @@ def test_linear_planestrain():
 
 
 def test_kinematics():
-    F = pre(sym=False, add_identity=True)
+    r, F = pre(sym=False, add_identity=True)
 
     lc = fe.constitution.LineChange()
     ac = fe.constitution.AreaChange()
@@ -207,7 +222,7 @@ def test_kinematics():
 
 
 def test_wrappers():
-    F = pre(sym=False, add_identity=True)
+    r, F = pre(sym=False, add_identity=True)
 
     nh = fe.NeoHooke(mu=1.0, bulk=2.0)
 
@@ -243,7 +258,7 @@ def test_wrappers():
     assert P.shape == (3, 3, *F.shape[-2:])
     assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
 
-    FpJ = pre_mixed(sym=False, add_identity=True)
+    r, FpJ = pre_mixed(sym=False, add_identity=True)
 
     umat = fe.MatadiMaterial(AsMatadi(fe.ThreeFieldVariation(nh)))
 

@@ -156,7 +156,7 @@ The normal stress distribution over the hole at :math:`x=0` is plotted with matp
 
     import matplotlib.pyplot as plt
 	
-	left = mesh.points[:, 0] == 0
+    left = mesh.points[:, 0] == 0
 
     plt.plot(
         mesh.points[:, 1][left] / h, 

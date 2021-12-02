@@ -62,9 +62,9 @@ class ConstantQuad(Element):
 
     def function(self, rst):
         r"""Constant quadrilateral - shape functions.
-        
+
         ..  math::
-            
+
             \boldsymbol{h}(\boldsymbol{r}) = \begin{bmatrix}
                 1
             \end{bmatrix}
@@ -83,10 +83,10 @@ class ConstantQuad(Element):
 
     def gradient(self, rst):
         r"""Constant quadrilateral - gradient of shape functions.
-        
+
         ..  math::
-            
-            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} = 
+
+            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} =
             \begin{bmatrix}
                 0
             \end{bmatrix}
@@ -106,7 +106,7 @@ class ConstantQuad(Element):
 
 class Quad(Element):
     r"""Quadrilateral element with linear shape functions.
-    
+
     ..  code-block::
 
                       ^ s
@@ -137,9 +137,9 @@ class Quad(Element):
 
     def function(self, rs):
         r"""Linear quadrilateral - shape functions.
-        
+
         ..  math::
-            
+
             \boldsymbol{h}(\boldsymbol{r}) = \frac{1}{4} \begin{bmatrix}
                 (1-r)(1-s) \\ (1+r)(1-s) \\ (1+r)(1+s) \\ (1-r)(1+s)
             \end{bmatrix}
@@ -169,14 +169,14 @@ class Quad(Element):
 
     def gradient(self, rs):
         r"""Linear quadrilateral - gradient of shape functions.
-        
+
         ..  math::
-            
-            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} = 
+
+            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} =
             \frac{1}{4} \begin{bmatrix}
-                -(1-s) & -(1-r) \\ 
-                 (1-s) & -(1+r) \\ 
-                 (1+s) &  (1+r) \\ 
+                -(1-s) & -(1-r) \\
+                 (1-s) & -(1+r) \\
+                 (1+s) &  (1+r) \\
                 -(1+s) &  (1-r)
             \end{bmatrix}
 

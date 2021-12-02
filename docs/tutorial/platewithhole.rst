@@ -120,7 +120,7 @@ However, the stress results are still located at the numeric integration points.
     
     vonmises = np.sqrt(
         stress[0, 0] ** 2 + stress[1, 1] ** 2 + 3 * stress[0, 1] ** 2 +
-        stress[0, 0] * stress[0, 1]
+        stress[0, 0] * stress[1, 1]
     )
     
     stress_projected = fe.project(stress, region)

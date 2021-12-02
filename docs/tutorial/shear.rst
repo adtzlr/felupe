@@ -1,5 +1,5 @@
-Non-homogenous shear
---------------------
+Non-homogenous shear loadcase
+-----------------------------
 
 .. admonition:: Plane strain hyperelastic non-homogenous shear loadcase
    :class: note

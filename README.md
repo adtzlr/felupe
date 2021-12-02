@@ -49,6 +49,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [1.6.0] - 2021-12-02
+
 ### Added
 - Add `LinearElasticPlaneStress` and `LinearElasticPlaneStrain` material formulations.
 - Add `region` argument for `LinearElastic.hessian()`.

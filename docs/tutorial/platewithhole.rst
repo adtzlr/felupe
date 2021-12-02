@@ -132,7 +132,6 @@ Results are saved as VTK-files, where additional point-data is passed within the
 ..  code-block:: python
 
     right = mesh.points[:, 0] == L
-    bottom = mesh.points[:, 1] == 0
 
     fe.save(
         region, 
@@ -156,6 +155,8 @@ The normal stress distribution over the hole at :math:`x=0` is plotted with matp
 ..  code-block:: python
 
     import matplotlib.pyplot as plt
+	
+	left = mesh.points[:, 0] == 0
 
     plt.plot(
         mesh.points[:, 1][left] / h, 

@@ -1,5 +1,5 @@
-Non-homogenous shear
---------------------
+Non-homogenous shear loadcase
+-----------------------------
 
 .. admonition:: Plane strain hyperelastic non-homogenous shear loadcase
    :class: note
@@ -10,7 +10,9 @@ Non-homogenous shear
    
    * assign a micro-sphere material formulation
    
-   * export and plot principal stretches
+   * export and visualize principal stretches
+   
+   * plot force - displacement curves
 
 
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
@@ -30,6 +32,7 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 
 ..  code-block:: python
 
+    import numpy as np
     import felupe as fe
 
     H = 10
@@ -106,7 +109,6 @@ movement is prescribed. It also ensures a force-free top plate in direction
         mesh=mesh,
         points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
         centerpoint=mesh.npoints - 1,
-        multiplier=1e3,
     )
     
     K_MPC = MPC.stiffness()
@@ -157,7 +159,7 @@ of the top plate are saved.
             K += K_MPC
         
             system = fe.solve.partition(fields, K, dof1, dof0, r)
-            fields += np.split(fe.solve.solve(*system, ext0, solver=spsolve), offsets)
+            fields += np.split(fe.solve.solve(*system, ext0), offsets)
             
             if iteration > 0:
                 
@@ -218,4 +220,4 @@ The shear force :math:`F_x` vs. the displacements :math:`u_x` and
     plt.savefig("shear_plot.svg")
 
 .. image:: images/shear_plot.svg
-   :width: 400px
+   :width: 600px

@@ -51,6 +51,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add `LinearElasticPlaneStress` and `LinearElasticPlaneStrain` material formulations.
+- Add `region` argument for `LinearElastic.hessian()`.
 
 ### Changed
 - Re-formulate `LinearElastic` materials in terms of the deformation gradient.

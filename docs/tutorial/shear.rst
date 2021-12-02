@@ -32,6 +32,7 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 
 ..  code-block:: python
 
+    import numpy as np
     import felupe as fe
 
     H = 10
@@ -158,7 +159,7 @@ of the top plate are saved.
             K += K_MPC
         
             system = fe.solve.partition(fields, K, dof1, dof0, r)
-            fields += np.split(fe.solve.solve(*system, ext0, solver=spsolve), offsets)
+            fields += np.split(fe.solve.solve(*system, ext0), offsets)
             
             if iteration > 0:
                 

@@ -556,17 +556,21 @@ class LinearElasticPlaneStress:
 
         return stress
 
-    def hessian(self, F, E=None, nu=None):
+    def hessian(self, F=None, E=None, nu=None, shape=None, region=None):
         """Evaluate the elasticity tensor from the deformation gradient.
 
         Arguments
         ---------
-        F : ndarray
-            In-plane components (2x2) of the deformation gradient
+        F : ndarray, optional
+            In-plane components (2x2) of the deformation gradient (default is None)
         E : float, optional
             Young's  modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
+        shape : (int, int), optional
+            Tuple with shape of the trailing axes (default is None)
+        region : Region, optional
+            A numeric region for shape of the trailing axes (default is None)
 
         Returns
         -------
@@ -581,7 +585,18 @@ class LinearElasticPlaneStress:
         if nu is None:
             nu = self.nu
 
-        elast = np.zeros((2, 2, 2, 2, *F.shape[-2:]))
+        if F is None and shape is None and region is None:
+            raise TypeError(
+                "Either the deformation gradient, a tuple with shape or a Region has to be specified."
+            )
+
+        if F is None:
+            if region is not None:
+                shape = (len(region.quadrature.points), region.mesh.ncells)
+        else:
+            shape = F.shape[-2:]
+
+        elast = np.zeros((2, 2, 2, 2, *shape))
 
         for a in range(2):
             elast[a, a, a, a] = E / (1 - nu ** 2)

@@ -134,6 +134,15 @@ def test_linear_planestress():
     stress = le.gradient(F)
     dsde = le.hessian(F)
     dsde = le.hessian(F)
+    dsde2 = le.hessian(shape=F.shape[-2:])
+    dsde3 = le.hessian(region=r)
+
+    with pytest.raises(TypeError):
+        le.hessian()
+
+    check_dsde = [dsde, dsde2, dsde3]
+
+    assert np.allclose(*check_dsde)
 
     stress_full = le.stress(F)
     strain_full = le.strain(F)

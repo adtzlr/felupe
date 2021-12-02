@@ -10,7 +10,7 @@ Non-homogenous shear
    
    * assign a micro-sphere material formulation
    
-   * export and plot stress results
+   * export and plot principal stretches
 
 
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
@@ -24,29 +24,35 @@ shear stress as a function of ?
 
 
 Let's create the mesh. An additional center-point is created for a multi-point
-constraint.
+constraint (MPC). By default, FElupe stores points not connected to any cells in
+:attr:`Mesh.points_without_cells` and adds them to the list of inactive
+degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 
 ..  code-block:: python
 
     import felupe as fe
 
-    H = 1.0
-    L = 2.0
+    H = 10
+    L = 20
+    T = 10
     
-    a = min(L / 21, H / 21)
-
+    n = 21
+    a = min(L / n, H / n)
+    
     mesh = fe.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
     mesh.points = np.vstack((mesh.points, [0, 2 * H]))
     mesh.update(mesh.cells)
+    mesh.points_without_cells = np.array([], dtype=bool)
 
 .. image:: images/shear_mesh.png
    :width: 400px
 
 A numeric quad-region created on the mesh in combination with a vector-valued 
-displacement field represents the rubber. A uniaxial loadcase is applied on the 
-displacement field. This involves setting up symmetry planes as well as the 
-absolute value of the prescribed displacement in direction :math:`x` at the 
-mesh-points on the right-end face of the rectangle.
+displacement field as well as scalar-valued fields for the hydrostatic pressure
+and the volume ratio represents the rubber numerically. A shear loadcase is applied on the 
+displacement field. This involves setting up a y-symmetry plane as well as the 
+absolute value of the prescribed shear movement in direction :math:`x` at the 
+MPC-centerpoint.
 
 ..  code-block:: python
 
@@ -55,124 +61,161 @@ mesh-points on the right-end face of the rectangle.
     
     displacement = fe.Field(region, dim=2)
     pressure     = fe.Field(region)
-    volumeratio  = fe.Field(region, value=1)
-    fields       = fe.FieldMixed((displacement, pressure, fields))
-
-    f0 = lambda y: np.isclose(y, 0)
-    f2 = lambda y: np.isclose(y, 2 * L)
+    volumeratio  = fe.Field(region, values=1)
+    fields       = fe.FieldMixed((displacement, pressure, volumeratio))
     
-    boundaries = fe.dof.symmetry(displacement, axes=(True, False))
-    boundaries["shear"] = fe.Boundary(displacement, fy=f0, skip=(0, 1), value=0.1)
-    boundaries["top"] = fe.Boundary(displacement, fy=f2, skip=(0, 1))
+    f0 = lambda y: np.isclose(y, 0)
+    f2 = lambda y: np.isclose(y, 2* H)
+    
+    boundaries = {
+        "fixed": fe.Boundary(displacement, fy=f0),
+        "control": fe.Boundary(displacement, fy=f2, skip=(0, 1)),
+    }
     
     dof0, dof1, offsets = fe.dof.partition(fields, boundaries)
-    ext0 = fe.dof.apply(displacement, boundaries)
+    ext0 = fe.dof.apply(displacement, boundaries, dof0)
 
 
-The material behavior is defined through a built-in isotropic linear-elastic material formulation for plane stress problems. The deformation gradient is extracted from the displacement field. In the undeformed state it is filled with the identity matrix at every integration point of every cell in the mesh.
-
-..  code-block:: python
-
-    umat = fe.LinearElasticPlaneStrain(E=210000, nu=0.3)
-    F = displacement.extract()
-    
-
-The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian`. Please note that although the elasticity tensor does not depend on the deformation gradient for linear elasticity, FElupe extracts the shape of the deformation gradient in :func:`umat.hessian`.
-
-.. math::
-
-   \delta W_{int} = - \int_v \delta \boldsymbol{\varepsilon} : \mathbb{C} : \boldsymbol{\varepsilon} \ dv
-
+The micro-sphere material formulation is used for the rubber. It is defined
+as a hyperelastic material for plane strain in matADi (be sure to
+install matADi with ``pip install matadi`` first).
 
 ..  code-block:: python
 
-    K = fe.IntegralForm(
-        fun=umat.hessian(F), 
-        v=displacement, 
-        dV=region.dV, 
-        u=displacement, 
-        grad_v=True,
-        grad_u=True,
-    ).assemble()
+    import matadi as mat
 
-The linear equation system may now be solved. First, a partition into active and inactive degrees of freedom is performed. This partitioned system is then passed to the solver. The resulting displacements are directly added to the displacement field.
-
-..  code-block:: python
-
-    system = fe.solve.partition(displacement, K, dof1, dof0)
-    displacement += fe.solve.solve(*system, u0ext=u0ext)
-
-Once again, let's evaluate the deformation gradient and the stress. This process is also called *stress recovery*.
-
-..  code-block:: python
-
-    F = displacement.extract()
-    stress = umat.gradient(F)
-
-However, the stress results are still located at the numeric integration points. Let's project them to mesh points. Beside the stress tensor we are also interested in the equivalent stress von Mises. For the two-dimensional case is calculated as:
-
-.. math::
-
-   \sigma_{vM} = \sqrt{\sigma_{11}^2 + \sigma_{22}^2 + 3 \ \sigma_{12}^2 + \sigma_{11} \ \sigma_{22}}
-
-
-..  code-block:: python
-
-    import numpy as np
-    
-    vonmises = np.sqrt(
-        stress[0, 0] ** 2 + stress[1, 1] ** 2 + 3 * stress[0, 1] ** 2 +
-        stress[0, 0] * stress[0, 1]
-    )
-    
-    stress_projected = fe.project(stress, region)
-    vonmises_projected = fe.project(vonmises, region)
-
-
-Results are saved as VTK-files, where additional point-data is passed within the ``point_data`` argument. Stresses are normalized by the mean value of the stress at the right end-face in order to visualize a normalized stress distribution over the plate.
-    
-..  code-block:: python
-
-    right = mesh.points[:, 0] == L
-    bottom = mesh.points[:, 1] == 0
-
-    fe.save(
-        region, 
-        displacement, 
-        filename="plate_with_hole.vtk",
-        point_data={
-            "Stress": (stress_projected / 
-                stress_projected[right].mean(axis=0)
-            ),
-            "Stress-von-Mises": (vonmises_projected / 
-                vonmises_projected[right].mean(axis=0)
-            ),
-        },
+    umat = fe.MatadiMaterial(
+        mat.MaterialHyperelasticPlaneStrain(
+            mat.models.miehe_goektepe_lulei, 
+            mu=0.1475, 
+            N=3.273, 
+            p=9.31, 
+            U=9.94, 
+            q=0.567, 
+            bulk=5000.0,
+        )
     )
 
+At the centerpoint of a multi-point constraint (MPC) the external shear
+movement is prescribed. It also ensures a force-free top plate in direction 
+:math:`y`.
 
-.. image:: images/platewithhole_stress.png
+..  code-block:: python
 
-The normal stress distribution over the hole at :math:`x=0` is plotted with matplotlib.
+    MPC = fe.MultiPointConstraint(
+        mesh=mesh,
+        points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
+        centerpoint=mesh.npoints - 1,
+        multiplier=1e3,
+    )
+    
+    K_MPC = MPC.stiffness()
+
+
+The shear movement is applied in increments, which are each solved with an
+iterative newton-rhapson procedure. Inside an iteration, the force residual
+vector and the tangent stiffness matrix are assembled. The fields are updated
+with the solution of unknowns. The equilibrium is checked as ratio between the 
+norm of residual forces of the active vs. the norm of the residual forces of 
+the inactive degrees of freedom. If convergence is obtained, the iteration loop
+ends. Both :math:`y`-displacement and the reaction force in direction :math:`x`
+of the top plate are saved.
+
+..  code-block:: python
+
+    UX = np.linspace(0, 15, 16)
+    UY = [0]
+    FX = [0]
+    
+    for move in UX[1:]:
+        
+        boundaries["control"].value = move
+        ext0 = fe.dof.apply(displacement, boundaries, dof0)
+    
+        for iteration in range(8):
+        
+            r_int = fe.IntegralFormMixed(
+                fun=umat.gradient(*fields.extract()),
+                v=fields,
+                dV=region.dV,
+            ).assemble(parallel=True).toarray()
+            
+            r_MPC = MPC.residuals(fields[0])
+            r_MPC.resize(r_int.shape)
+            r_MPC = r_MPC.toarray()
+        
+            r = r_int + r_MPC
+            
+            K = fe.IntegralFormMixed(
+                fun=umat.hessian(*fields.extract()),
+                v=fields,
+                dV=region.dV,
+                u=fields,
+            ).assemble(parallel=True)
+            
+            K_MPC.resize(K.shape)
+            K += K_MPC
+        
+            system = fe.solve.partition(fields, K, dof1, dof0, r)
+            fields += np.split(fe.solve.solve(*system, ext0, solver=spsolve), offsets)
+            
+            if iteration > 0:
+                
+                ref = np.linalg.norm(r[dof0]) if np.linalg.norm(r[dof0]) != 0 else 1
+                norm = np.linalg.norm(r[dof1]) / ref
+                print(iteration, norm)
+            
+                if norm <= 1e-9:
+                    break
+                
+        UY.append(displacement.values[MPC.centerpoint, 1])
+        FX.append(r[2 * MPC.centerpoint] * T)
+        print("\nReaction Force FX(UX) =", move, FX[-1])
+
+For the maximum deformed model a VTK-file containing principal stretches
+projected to mesh points is exported.
+
+..  code-block:: python
+
+    from felupe.math import transpose, dot, eigh
+    
+    F = displacement.extract()
+    C = dot(transpose(F), F)
+    
+    stretches = fe.project(np.sqrt(eigh(C)[0]), region)
+    
+    fe.save(region, displacement, point_data={
+        "Maximum-principal-stretch": np.max(stretches, axis=1),
+        "Minimum-principal-stretch": np.min(stretches, axis=1),
+    })
+
+.. image:: images/shear_deformed.png
+   :width: 600px
+
+The shear force :math:`F_x` vs. the displacements :math:`u_x` and
+:math:`u_y`, all located at the top plate, are plotted.
 
 ..  code-block:: python
 
     import matplotlib.pyplot as plt
+    
+    fig, ax = plt.subplots(1, 2)
+    
+    ax[0].plot(UX, FX, 'o-')
+    ax[0].set_xlim(0, 15)
+    ax[0].set_ylim(0, 300)
+    ax[0].set_xlabel(r"$u_x$ in mm")
+    ax[0].set_ylabel(r"$F_x$ in N")
+    
+    ax[1].plot(UY, FX, 'o-')
+    ax[1].set_xlim(-1.2, 0.2)
+    ax[1].set_ylim(0, 300)
+    ax[1].set_xlabel(r"$u_y$ in mm")
+    ax[1].set_ylabel(r"$F_x$ in N")
+    
+    plt.tight_layout()
+    
+    plt.savefig("shear_plot.svg")
 
-    plt.plot(
-        mesh.points[:, 1][left] / h, 
-        (stress_projected / 
-            stress_projected[right].mean(axis=0)
-        )[:, 0][left],
-        "o-"
-    )
-    
-    plt.xlim(0, 1)
-    plt.ylim(0, 3)
-    
-    plt.grid()
-    
-    plt.xlabel(r"$y/h\ \longrightarrow$")
-    plt.ylabel(r"$\sigma_{11}(x=0, y)\ /\ \sigma_{11}(x=x_{max})$ $\longrightarrow$")
-
-.. image:: images/platewithhole_stressplot.png
+.. image:: images/shear_plot.svg
+   :width: 400px

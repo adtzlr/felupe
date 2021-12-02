@@ -10,7 +10,9 @@ Non-homogenous shear
    
    * assign a micro-sphere material formulation
    
-   * export and plot principal stretches
+   * export and visualize principal stretches
+   
+   * plot force - displacement curves
 
 
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
@@ -106,7 +108,6 @@ movement is prescribed. It also ensures a force-free top plate in direction
         mesh=mesh,
         points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
         centerpoint=mesh.npoints - 1,
-        multiplier=1e3,
     )
     
     K_MPC = MPC.stiffness()

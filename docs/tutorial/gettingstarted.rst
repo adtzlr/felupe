@@ -95,7 +95,8 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
         return mu/2 * (J**(-2/3)*trace(C) - 3) + bulk/2 * (J - 1)**2
 
-    umat = matadi.MaterialHyperelastic(W, mu=1.0, bulk=2.0)
+    nh = matadi.MaterialHyperelastic(W, mu=1.0, bulk=2.0)
+    umat = felupe.MatadiMaterial(nh)
 
     P = umat.gradient
     A = umat.hessian
@@ -141,8 +142,8 @@ The integral (or weak) forms of equilibrium equations are defined by the :class:
 
 ..  code-block:: python
 
-    linearform   = felupe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
-    bilinearform = felupe.IntegralForm(A([F])[0], displacement, dV, u=displacement, grad_v=True, grad_u=True)
+    linearform   = felupe.IntegralForm(P(F), displacement, dV, grad_v=True)
+    bilinearform = felupe.IntegralForm(A(F), displacement, dV, u=displacement, grad_v=True, grad_u=True)
 
 
 Assembly of both forms lead to the (point-based) internal forces and the (sparse) stiffness matrix.
@@ -192,9 +193,9 @@ A very simple newton-rhapson code looks like this:
     for iteration in range(8):
         F = displacement.extract(grad=True, sym=False, add_identity=True)
 
-        linearform = felupe.IntegralForm(P([F])[0], displacement, dV, grad_v=True)
+        linearform = felupe.IntegralForm(P(F)[0], displacement, dV, grad_v=True)
         bilinearform = felupe.IntegralForm(
-            A([F])[0], displacement, dV, displacement, grad_v=True, grad_u=True
+            A(F)[0], displacement, dV, displacement, grad_v=True, grad_u=True
         )
 
         r = linearform.assemble().toarray()[:, 0]
@@ -219,6 +220,13 @@ A very simple newton-rhapson code looks like this:
     3 0.0001028992534421267
     4 6.017153213511068e-09
     5 5.675484825228616e-16
+
+Alternatively, one may also use the Newton-Rhapson procedure as shown in :ref:`tutorial-hello-felupe`.
+
+..  code-block:: python
+
+    res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    displacement = res.x
 
 
 All 3x3 components of the deformation gradient of integration point 1 of cell 1 (Python is 0-indexed) are obtained with
@@ -250,12 +258,12 @@ Any tensor at quadrature points shifted or projected to, both averaged at mesh-p
 
 ..  code-block:: python
 
-    from felupe.math import dot, det, transpose
+    from felupe.math import dot, det, transpose, tovoigt
 
-    s = dot(P([F])[0], transpose(F)) / det(F)
+    s = dot(P(F), transpose(F)) / det(F)
 
-    cauchy_shifted = felupe.topoints(s, region)
-    cauchy_projected = felupe.project(s, region)
+    cauchy_shifted = felupe.topoints(tovoigt(s), region)
+    cauchy_projected = felupe.project(tovoigt(s), region)
 
     felupe.save(
         region, 

@@ -25,7 +25,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 import pytest
-from copy import deepcopy
 import numpy as np
 import felupe as fe
 
@@ -45,7 +44,7 @@ def test_meshes():
     fe.mesh.convert(m, order=2)
     fe.mesh.convert(m, order=2, calc_midfaces=True)
 
-    mm = deepcopy(m)
+    mm = m.copy()
     mm.cell_type = "fancy"
 
     with pytest.raises(NotImplementedError):

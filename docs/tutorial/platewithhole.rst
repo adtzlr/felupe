@@ -107,7 +107,7 @@ Let's evaluate the deformation gradient from the displacement field and calculat
     F = displacement.extract()
     stress = umat.gradient(F)
 
-However, the stress results are still located at the numeric integration points. Let's project them to mesh points. Beside the stress tensor we are also interested in the equivalent stress von Mises. For the two-dimensional case is calculated as:
+However, the stress results are still located at the numeric integration points. Let's project them to mesh points. Beside the stress tensor we are also interested in the equivalent stress von Mises. For the two-dimensional case it is calculated as:
 
 .. math::
 

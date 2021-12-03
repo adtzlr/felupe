@@ -49,6 +49,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add a new method to deepcopy a `Mesh` with `Mesh.copy()`
+
 ## [1.6.0] - 2021-12-02
 
 ### Added

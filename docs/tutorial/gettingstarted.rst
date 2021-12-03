@@ -193,9 +193,9 @@ A very simple newton-rhapson code looks like this:
     for iteration in range(8):
         F = displacement.extract(grad=True, sym=False, add_identity=True)
 
-        linearform = felupe.IntegralForm(P(F)[0], displacement, dV, grad_v=True)
+        linearform = felupe.IntegralForm(P(F), displacement, dV, grad_v=True)
         bilinearform = felupe.IntegralForm(
-            A(F)[0], displacement, dV, displacement, grad_v=True, grad_u=True
+            A(F), displacement, dV, displacement, grad_v=True, grad_u=True
         )
 
         r = linearform.assemble().toarray()[:, 0]

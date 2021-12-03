@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from copy import deepcopy
 
 
 class Mesh:
@@ -123,3 +124,15 @@ class Mesh:
 
         cells = {self.cell_type: self.cells}
         meshio.Mesh(self.points, cells).write(filename)
+
+    def copy(self):
+        """Return a deepcopy of the mesh.
+
+        Returns
+        -------
+        Mesh
+            A deepcopy of the mesh.
+
+        """
+
+        return deepcopy(self)

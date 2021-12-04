@@ -11,3 +11,4 @@ This section is all about learning. Each tutorial focusses on a some lessons to 
    tutorial/gettingstarted
    tutorial/platewithhole
    tutorial/shear
+   tutorial/numcont

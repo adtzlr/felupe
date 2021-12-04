@@ -711,13 +711,14 @@ class NeoHooke:
 
        \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
 
-    A chain rule application leads to the following expression for the stress tensor.
+    A chain rule application leads to the following expression for the stress tensor. 
+    It is formulated as a sum of the **physical**-deviatoric (not the mathematical deviator!) and the physical-hydrostatic stress tensors.
 
     .. math::
 
        \boldsymbol{P} &= \boldsymbol{P}' + \boldsymbol{P}_U
 
-       \boldsymbol{P}' &= \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}} : \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} = \bar{\boldsymbol{P}} - \frac{1}{3} (\bar{\boldsymbol{P}} : \boldsymbol{F}) \boldsymbol{F}^{-T} + U'(J) J \boldsymbol{F}^{-T}
+       \boldsymbol{P}' &= \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}} : \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} = \bar{\boldsymbol{P}} - \frac{1}{3} (\bar{\boldsymbol{P}} : \boldsymbol{F}) \boldsymbol{F}^{-T}
 
        \boldsymbol{P}_U &= \frac{\partial U(J)}{\partial J} \frac{\partial J}{\partial \boldsymbol{F}} = U'(J) J \boldsymbol{F}^{-T}
 
@@ -754,7 +755,8 @@ class NeoHooke:
 
        \bar{\mathbb{A}} = J^{-1/3} \frac{\partial^2 \hat\psi}{\partial \hat{\boldsymbol{F}}\ \partial \hat{\boldsymbol{F}}} J^{-1/3}
 
-    With the above partial derivatives the elasticity tensor associated
+    With the above partial derivatives the (physical-deviatoric and
+    -hydrostatic) parts of the elasticity tensor associated
     to the first Piola-Kirchhoff stress tensor of the Neo-Hookean
     material model takes the following form.
 

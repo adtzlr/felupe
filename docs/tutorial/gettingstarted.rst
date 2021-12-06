@@ -262,7 +262,7 @@ Any tensor at quadrature points shifted or projected to, both averaged at mesh-p
 
     s = dot(P(F), transpose(F)) / det(F)
 
-    cauchy_shifted = felupe.topoints(tovoigt(s), region)
+    cauchy_shifted = felupe.topoints(s, region)
     cauchy_projected = felupe.project(tovoigt(s), region)
 
     felupe.save(

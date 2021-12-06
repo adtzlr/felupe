@@ -10,3 +10,4 @@ How-To Guides
    howto/mixed
    howto/axi
    howto/solvers
+   howto/composite

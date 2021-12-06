@@ -86,7 +86,7 @@ An external normal force is applied at :math:`x=1` on quarter model of a cube wi
     # dof-number of p in active degrees of freedom `dof1`
     dofp = np.argwhere(dof1[np.isin(dof1, p)][0] == dof1)[0][0]
 
-The next step involves the problem definition for pacopy. For details have a look at the `pacopy's README <https://github.com/nschloe/pacopy>`_.
+The next step involves the problem definition for pacopy. For details have a look at `pacopy's README <https://github.com/nschloe/pacopy>`_.
 
 ..  code-block:: python
 

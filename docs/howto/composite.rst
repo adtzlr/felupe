@@ -71,7 +71,7 @@ The integral (weak) linear and bilinear forms are created with functions in orde
     jacs = [jac, jac]
 
 
-Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from both sub-regions.
+Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both sub-regions.
 
 ..  code-block:: python
 

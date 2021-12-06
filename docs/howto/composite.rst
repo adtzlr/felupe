@@ -1,7 +1,7 @@
 Composite regions
 -----------------
 
-This section demonstrates how to set up a problem with two regions, each associated to a seperated material model but of the same weak form formulation. First, a (total) region is created.
+This section demonstrates how to set up a problem with two regions, each associated to a seperated material model but with the same kind of weak form formulation (displacement-based). First, a (total) region is created.
 
 ..  code-block:: python
 

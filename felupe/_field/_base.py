@@ -55,7 +55,7 @@ class Field:
 
     Arguments
     ---------
-    region : felupe.Region
+    region : Region
         The region on which the field will be created.
     dim : int (default is 1)
         The dimension of the field.

@@ -31,29 +31,43 @@ from ..math import sym as symmetric
 
 
 class FieldAxisymmetric(Field):
-    """Axisymmetric field with
+    r"""A axisymmetric Field on points of a two-dimensional
+    `region` with dimension `dim` (default is 2) and initial point
+    `values` (default is 0).
     
-    * component 1 ...  axial component
-    * component 2 ... radial component
+    * component 1 =  axial component
+    * component 2 = radial component
     
+    ..  code-block::
+        
+         x_2 (radial direction)
+        
+          ^
+          |        _
+          |       / \
+        --|-----------------> x_1 (axial rotation axis)
+                  \_^
     
-     x_2 (radial direction)
-    
-      ^
-      |        _
-      |       / \
-    --|-----------------> x_1 (axial rotation axis)
-              \_^
-    
-    This is a modified Field class in which the radial coordinates
-    are evaluated at the quadrature points. The `grad`-function is
+    This is a modified :class:`Field` class in which the radial coordinates
+    are evaluated at the numeric integration points. The :meth:`grad`-method is
     modified in such a way that it does not only contain the in-plane
-    2d-gradient but also the circumferential stretch
-    as shown in Eq.(1).
+    2d-gradient but also the circumferential stretch as shown in Eq.(1).
+    
+    ..  code-block::
 
-                  |  dudX(2d) :   0   |
-      dudX(axi) = | ..................|                  (1)
-                  |     0     : u_r/R |
+                    |  dudX(2d) :   0   |
+        dudX(axi) = | ..................|                  (1)
+                    |     0     : u_r/R |
+
+    Attributes
+    ----------
+    region : Region
+        The region on which the field will be created.
+    dim : int (default is 2)
+        The dimension of the field.
+    values : float (default is 0.0) or array
+        A single value for all components of the field or an array of
+        shape (region.mesh.npoints, dim)`.
 
     """
 
@@ -64,21 +78,13 @@ class FieldAxisymmetric(Field):
 
         Attributes
         ----------
-        region : felupe.Region
+        region : Region
             The region on which the field will be created.
         dim : int (default is 2)
             The dimension of the field.
         values : float (default is 0.0) or array
             A single value for all components of the field or an array of
             shape (region.mesh.npoints, dim)`.
-
-        Methods
-        -------
-        grad
-            Gradient as partial derivative of field values at points w.r.t.
-            undeformed coordinates, evaluated at the integration points of
-            all cells in the region. Optionally, the symmetric part of
-            the gradient is evaluated.
         """
 
         # init base Field
@@ -92,7 +98,23 @@ class FieldAxisymmetric(Field):
         self.radius = self.scalar.interpolate()
 
     def _grad_2d(self, sym=False):
-        "Calculate the in-plane 2d-gradient dudX_IJpe."
+        """In-plane 2D gradient as partial derivative of field values at points
+        w.r.t. the undeformed coordinates, evaluated at the integration points 
+        of all cells in the region. Optionally, the symmetric part of the 
+        gradient is returned.
+        
+        Arguments
+        ---------
+        sym : bool, optional (default is False)
+            Calculate the symmetric part of the gradient.
+
+        Returns
+        -------
+        array
+            In-plane 2D-gradient as partial derivative of field values at points 
+            w.r.t. undeformed coordinates, evaluated at the integration points 
+            of all cells in the region.
+        """
 
         # gradient as partial derivative of field component "I" at point "a"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
@@ -109,7 +131,29 @@ class FieldAxisymmetric(Field):
             return g
 
     def grad(self, sym=False):
-        "Return the full 3d - (symmetric) gradient dudX_IJpe."
+        """3D-gradient as partial derivative of field values at points w.r.t. 
+        the undeformed coordinates, evaluated at the integration points of all 
+        cells in the region. Optionally, the symmetric part of the gradient is 
+        returned.
+        
+        ..  code-block::
+    
+                        |  dudX(2d) :   0   |
+            dudX(axi) = | ..................|
+                        |     0     : u_r/R |
+        
+        Arguments
+        ---------
+        sym : bool, optional (default is False)
+            Calculate the symmetric part of the gradient.
+
+        Returns
+        -------
+        array
+            Full 3D-gradient as partial derivative of field values at points 
+            w.r.t. undeformed coordinates, evaluated at the integration points 
+            of all cells in the region.
+        """
 
         # extend dimension of in-plane 2d-gradient
         g = np.pad(self._grad_2d(sym=sym), ((0, 1), (0, 1), (0, 0), (0, 0)))

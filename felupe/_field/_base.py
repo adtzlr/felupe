@@ -65,26 +65,6 @@ class Field:
     kwargs : dict, optional
         Optional keyword arguments of the field.
 
-    Methods
-    -------
-    grad
-        Gradient as partial derivative of field values at points w.r.t.
-        undeformed coordinates, evaluated at the integration points of
-        all cells in the region. Optionally, the symmetric part of
-        the gradient is evaluated.
-    interpolate
-        Interpolate field values at points and evaluate them at the
-        integration points of all cells in the region.
-    extract
-        Generalized extraction method which evaluates either the gradient
-        or the field values at the integration points of all cells
-        in the region. Optionally, the symmetric part of the gradient is
-        evaluated and/or the identity matrix is added to the gradient.
-    copy
-        Deep-copies the field.
-    fill
-        Fill all field values with a scalar value.
-
     """
     def __init__(self, region, dim=1, values=0, **kwargs):
         
@@ -155,9 +135,8 @@ class Field:
             return g
 
     def interpolate(self):
-        """Interpolate field values (located at mesh points)
-        and evaluate them at the integration points of each cell
-        in the region (u_Ipe)."""
+        """Interpolate field values at points and evaluate them at the
+        integration points of all cells in the region."""
 
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
@@ -207,7 +186,7 @@ class Field:
         return deepcopy(self)
 
     def fill(self, a):
-        "Fill field values at points with a given scalar `a`."
+        "Fill all field values with a scalar value."
         self.values.fill(a)
 
     def __add__(self, newvalues):

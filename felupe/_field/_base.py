@@ -32,44 +32,42 @@ from ._indices import Indices
 
 
 class Field:
+    r"""A Field on points of a `region` with dimension `dim`
+    and initial point `values`. A slice of this field directly
+    accesses the field values as 1d-array.
+    
+    The interpolation method returns the field values evaluated at the 
+    numeric integration points ``p`` of all cells ``c`` in the region.
+    
+    ..  math::
+        
+        u^i_{(pc)} = \hat{u}_a^i h_{a(pc)}
+    
+    The gradient method returns the gradient of the field values w.r.t. the
+    undeformed mesh point coordinates, evaluated at the integration points of
+    all cells in the region.
+    
+    ..  math::
+        
+        \left( \frac{\partial u^i}{\partial X^J} \right)_{(pc)} = 
+        \hat{u}^i_{a(pc)} 
+        \left( \frac{\partial h_a}{\partial X^J} \right)_{(pc)}
+
+    Arguments
+    ---------
+    region : Region
+        The region on which the field will be created.
+    dim : int (default is 1)
+        The dimension of the field.
+    values : float (default is 0.0) or array
+        A single value for all components of the field or an array of
+        shape (region.mesh.npoints, dim)`.
+    kwargs : dict, optional
+        Optional keyword arguments of the field.
+
+    """
     def __init__(self, region, dim=1, values=0, **kwargs):
-        """A Field on points of a `region` with dimension `dim`
-        and initial point `values`. A slice of this field directly
-        accesses the field values as 1d-array.
-
-        Attributes
-        ----------
-        region : felupe.Region
-            The region on which the field will be created.
-        dim : int (default is 1)
-            The dimension of the field.
-        values : float (default is 0.0) or array
-            A single value for all components of the field or an array of
-            shape (region.mesh.npoints, dim)`.
-        kwargs : dict, optional
-            Optional keyword arguments of the field.
-
-        Methods
-        -------
-        grad
-            Gradient as partial derivative of field values at points w.r.t.
-            undeformed coordinates, evaluated at the integration points of
-            all cells in the region. Optionally, the symmetric part of
-            the gradient is evaluated.
-        interpolate
-            Interpolate field values at points and evaluate them at the
-            integration points of all cells in the region.
-        extract
-            Generalized extraction method which evaluates either the gradient
-            or the field values at the integration points of all cells
-            in the region. Optionally, the symmetric part of the gradient is
-            evaluated and/or the identity matrix is added to the gradient.
-        copy
-            Deep-copies the field.
-        fill
-            Fill all field values with a scalar value.
-
-        """
+        
         self.region = region
         self.dim = dim
         self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
@@ -137,9 +135,8 @@ class Field:
             return g
 
     def interpolate(self):
-        """Interpolate field values (located at mesh points)
-        and evaluate them at the integration points of each cell
-        in the region (u_Ipe)."""
+        """Interpolate field values at points and evaluate them at the
+        integration points of all cells in the region."""
 
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
@@ -189,7 +186,7 @@ class Field:
         return deepcopy(self)
 
     def fill(self, a):
-        "Fill field values at points with a given scalar `a`."
+        "Fill all field values with a scalar value."
         self.values.fill(a)
 
     def __add__(self, newvalues):

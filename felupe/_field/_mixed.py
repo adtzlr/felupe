@@ -37,8 +37,9 @@ import numpy as np
 
 
 class FieldMixed:
+    r"A mixed field based on a list or tuple of :class:`Field` instances."
+    
     def __init__(self, fields):
-        "A mixed field based on a list of `fields`."
 
         self.fields = fields
 

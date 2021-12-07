@@ -30,85 +30,82 @@ from scipy.sparse import csr_matrix as sparsematrix
 
 
 class IntegralForm:
-    "Integral (weak) form."
+    r"""Integral Form constructed by a function result ``fun``,
+    a virtual field ``v``, differential volumes ``dV`` and optionally a
+    field ``u``. For both fields ``v`` and ``u`` gradients may be passed by
+    setting ``grad_v`` and ``grad_u`` to True (default is False for both).
+
+    **Linearform**
+    
+    without gradient of ``v``
+        
+    ..  code-block::
+
+        L(v) = ∫ fun v dV                                      (1)
+    
+           (or ∫ fun_i v_i dV)
+
+
+    with gradient of ``v``
+
+    ..  code-block::
+
+        L(v) = ∫ fun grad(v) dV                                (2)
+
+           (or ∫ fun_ij grad(v)_ij dV)
+
+
+    **Bilinearform**
+
+    without gradient of ``v`` and without gradient of ``u``
+    
+    ..  code-block::
+
+        b(v, u) = ∫ v fun u dV                                 (3)
+    
+              (or ∫ v_i fun_ij u_j dV)
+
+    with gradient of ``v`` and with gradient of ``u``
+    
+    ..  code-block::
+
+        b(v, u) = ∫ grad(v) fun grad(u) dV                     (4)
+
+              (or ∫ grad(v)_ij fun_ijkl grad(u)_kl dV)
+
+    with gradient of ``v`` and without gradient of ``u``
+    
+    ..  code-block::
+
+        b(v, u) = ∫ grad(v) fun u dV                           (5)
+
+              (or ∫ grad(v)_ij fun_ijk u_k dV)
+
+    without gradient of ``v`` and with gradient of ``u``
+    
+    ..  code-block::
+
+        b(v, u) = ∫ v fun grad(u) dV                           (6)
+
+              (or ∫ v_i fun_ikl grad(u)_kl dV)
+
+    Arguments
+    ---------
+    fun : array
+        The pre-evaluated function.
+    v : Field
+        The virtual Field.
+    dV : array
+        The differential volumes.
+    u : Field, optional (default is None)
+        If a Field is passed, a Bilinear-Form is created.
+    grad_v : bool, optional (default is False)
+        Flag to activate the gradient on Field ``v``.
+    grad_u : bool, optional (default is False)
+        Flag to activate the gradient on Field ``u``.
+    """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
-        """Integral Form constructed by a function result `fun`,
-        a virtual field `v`, differential volumes `dV` and optionally a
-        field `u`. For both fields `v` and `u` gradients may be passed by
-        setting `grad_v` and `grad_u` to True (default is False for both).
-
-
-        1) Linearform
-
-            a) without gradient of `v`
-
-                L(v) = ∫ fun v dV                                      (1)
-
-                   (or ∫ fun_i v_i dV)
-
-            b) with gradient of `v`
-
-                L(v) = ∫ fun grad(v) dV                                (2)
-
-                   (or ∫ fun_ij grad(v)_ij dV)
-
-
-        2) Bilinearform
-
-            a) without gradient of `v` and without gradient of `u`
-
-                b(v, u) = ∫ v fun u dV                                 (3)
-
-                      (or ∫ v_i fun_ij u_j dV)
-
-            b) with gradient of `v` and with gradient of `u`
-
-                b(v, u) = ∫ grad(v) fun grad(u) dV                     (4)
-
-                      (or ∫ grad(v)_ij fun_ijkl grad(u)_kl dV)
-
-            c) with gradient of `v` and without gradient of `u`
-
-                b(v, u) = ∫ grad(v) fun u dV                           (5)
-
-                      (or ∫ grad(v)_ij fun_ijk u_k dV)
-
-            d) without gradient of `v` and with gradient of `u`
-
-                b(v, u) = ∫ v fun grad(u) dV                           (6)
-
-                      (or ∫ v_i fun_ikl grad(u)_kl dV)
-
-        Arguments
-        ---------
-        fun : array
-            The pre-evaluated function.
-
-        v : Field
-            The virtual field.
-
-        dV : array
-            The differential volumes.
-
-        u : Field, optional (default is None)
-            If a field is passed, a Bilinear-Form is created.
-
-        grad_v : bool, optional (default is False)
-            Flag to activate the gradient on field `v`.
-
-        grad_u : bool, optional (default is False)
-            Flag to activate the gradient on field `u`.
-
-        Methods
-        -------
-        assemble
-            Assembly of sparse region vectors or matrices.
-
-        integrate
-            Evaluated (but not assembled) integrals.
-        """
-
         self.fun = fun
         self.dV = dV
 
@@ -137,6 +134,7 @@ class IntegralForm:
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
     def assemble(self, values=None, parallel=False):
+        "Assembly of sparse region vectors or matrices."
 
         if values is None:
             values = self.integrate(parallel=parallel)
@@ -152,6 +150,8 @@ class IntegralForm:
         return out
 
     def integrate(self, parallel=False):
+        "Return evaluated (but not assembled) integrals."
+        
         grad_v, grad_u = self.grad_v, self.grad_u
         v, u = self.v, self.u
         dV = self.dV

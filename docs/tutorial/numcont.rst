@@ -31,7 +31,7 @@ With the help of `pacopy <https://github.com/nschloe/pacopy>`_ (install with ``p
 
     import matplotlib.pyplot as plt
 
-First, setup a problem as usual (mesh, region, field, boundaries and umat). For the material definition we use matADi (``pip install madati``). We use matADi's lab-capability to visualize the unstable material behavior in uniaxial tension.
+First, setup a problem as usual (mesh, region, field, boundaries and umat). For the material definition we use matADi (``pip install madati``). We utilize matADi's lab-capability to visualize the unstable material behavior in uniaxial tension.
 
 ..  code-block:: python
 

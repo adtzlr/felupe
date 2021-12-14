@@ -1,7 +1,7 @@
 Cantilever beam under gravity
 -----------------------------
 
-.. admonition:: Assemble body force vector due to gravity.
+.. admonition:: Assemble a body force vector due to gravity.
    :class: note
 
    * define the body force vector

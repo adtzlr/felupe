@@ -18,6 +18,16 @@ In a second step, sub-sets for points and cells are created from which two sub-r
     
 ..  code-block:: python
 
+    points = np.arange(mesh.npoints)[np.logical_or.reduce((
+        mesh.points[:,0] == 0,
+        mesh.points[:,0] == 0 + 1/(n - 1),
+        mesh.points[:,0] == 0.5 - 1/(n - 1) / 2,
+        mesh.points[:,0] == 0.5 + 1/(n - 1) / 2,
+        mesh.points[:,0] == 1 - 1/(n - 1),
+        mesh.points[:,0] == 1,
+    ))]
+    cells = np.isin(mesh.cells, points).sum(1) == mesh.cells.shape[1]
+
     rubber = mesh.copy()
     rubber.update(rubber.cells[~cells])
 

@@ -69,7 +69,7 @@ First, setup a problem as usual (mesh, region, field, boundaries and umat). For 
 
 .. image:: images/lab.png
 
-An external normal force is applied at :math:`x=1` on quarter model of a cube with symmetry planes at :math:`x=y=z=0`. Therefore, we have to define an external load vector which will be scaled with the load-proportionality factor :math:`\lambda` during numeric continuation.
+An external normal force is applied at :math:`x=1` on a quarter model of a cube with symmetry planes at :math:`x=y=z=0`. Therefore, we have to define an external load vector which will be scaled with the load-proportionality factor :math:`\lambda` during numeric continuation.
 
 ..  code-block:: python
 

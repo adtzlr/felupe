@@ -35,7 +35,7 @@ Boundary conditions are enforced in the same way as in Getting Started.
 
     f1 = lambda x: np.isclose(x, 1)
 
-    boundaries = fe.doftools.symmetry(displacement)
+    boundaries = fe.dof.symmetry(displacement)
     boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
     boundaries["move" ] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
 

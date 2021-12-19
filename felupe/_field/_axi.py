@@ -99,10 +99,10 @@ class FieldAxisymmetric(Field):
 
     def _grad_2d(self, sym=False):
         """In-plane 2D gradient as partial derivative of field values at points
-        w.r.t. the undeformed coordinates, evaluated at the integration points 
-        of all cells in the region. Optionally, the symmetric part of the 
+        w.r.t. the undeformed coordinates, evaluated at the integration points
+        of all cells in the region. Optionally, the symmetric part of the
         gradient is returned.
-        
+
         Arguments
         ---------
         sym : bool, optional (default is False)
@@ -111,8 +111,8 @@ class FieldAxisymmetric(Field):
         Returns
         -------
         array
-            In-plane 2D-gradient as partial derivative of field values at points 
-            w.r.t. undeformed coordinates, evaluated at the integration points 
+            In-plane 2D-gradient as partial derivative of field values at points
+            w.r.t. undeformed coordinates, evaluated at the integration points
             of all cells in the region.
         """
 
@@ -131,17 +131,17 @@ class FieldAxisymmetric(Field):
             return g
 
     def grad(self, sym=False):
-        """3D-gradient as partial derivative of field values at points w.r.t. 
-        the undeformed coordinates, evaluated at the integration points of all 
-        cells in the region. Optionally, the symmetric part of the gradient is 
+        """3D-gradient as partial derivative of field values at points w.r.t.
+        the undeformed coordinates, evaluated at the integration points of all
+        cells in the region. Optionally, the symmetric part of the gradient is
         returned.
-        
+
         ..  code-block::
-    
+
                         |  dudX(2d) :   0   |
             dudX(axi) = | ..................|
                         |     0     : u_r/R |
-        
+
         Arguments
         ---------
         sym : bool, optional (default is False)
@@ -150,8 +150,8 @@ class FieldAxisymmetric(Field):
         Returns
         -------
         array
-            Full 3D-gradient as partial derivative of field values at points 
-            w.r.t. undeformed coordinates, evaluated at the integration points 
+            Full 3D-gradient as partial derivative of field values at points
+            w.r.t. undeformed coordinates, evaluated at the integration points
             of all cells in the region.
         """
 

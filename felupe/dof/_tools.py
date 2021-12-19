@@ -98,20 +98,18 @@ def partition(field, bounds):
 
     # get sizes of fields and calculate offsets
     fieldsizes = [f.indices.dof.size for f in fields]
-    offsets = np.cumsum(fieldsizes)
+    offsets = np.cumsum(fieldsizes)[:-1]
 
     # concatenate degrees of freedom
-    offsets_all = np.insert(offsets, 0, 0)
-
     dof0 = np.concatenate(
-        [dof0 + offset for dof0, offset in zip(dofs0, offsets_all[:-1])]
+        [dof0 + offset for dof0, offset in zip(dofs0, np.insert(offsets, 0, 0))]
     )
     dof1 = np.concatenate(
-        [dof1 + offset for dof1, offset in zip(dofs1, offsets_all[:-1])]
+        [dof1 + offset for dof1, offset in zip(dofs1, np.insert(offsets, 0, 0))]
     )
 
     # return offsets for mixed-field input
-    if len(offsets) > 1:
+    if len(offsets) > 0:
         return dof0, dof1, offsets
     else:
         return dof0, dof1
@@ -125,7 +123,7 @@ def apply(field, bounds, dof0=None, offsets=None):
     # check if a mixed-field is passed
     if isinstance(field, FieldMixed):
         u = np.concatenate([f.values.ravel() for f in field.fields])
-        offsets = np.insert(offsets, 0, 0)[:-1]
+        offsets = np.insert(offsets, 0, 0)
     else:
         u = field.values.copy()
 

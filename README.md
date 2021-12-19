@@ -51,6 +51,13 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add a new method to deepcopy a `Mesh` with `Mesh.copy()`
 
+### Changed
+- Enhance `Boundary` for the application of prescribed values of any user-defined `Field` which is part of `FieldMixed`.
+- The whole mixed-field has to be passt to `dof.apply()` along with the `offsets` returned from `dof.partition` for mixed-field formulations.
+
+### Removed
+- Remove `dof.extend` because `dof.partition` does not need it anymore.
+
 ## [1.6.0] - 2021-12-02
 
 ### Added
@@ -61,10 +68,6 @@ All notable changes to this project will be documented in this file. The format 
 - Re-formulate `LinearElastic` materials in terms of the deformation gradient.
 - Re-formulate `LinearElastic` material in matrix notation (Speed-up of ~10 for elasticity matrix compared to previous implementation.) 
 - Move previous `LinearElastic` to `constitution.LinearElasticTensorNotation`.
-- Enhance `Boundary` for the application of prescribed values of any user-defined `Field` which is part of `FieldMixed`.
-
-### Removed
-- Remove `dof.extend` because `dof.partition` does not need it anymore.
 
 ## [1.5.0] - 2021-11-29
 

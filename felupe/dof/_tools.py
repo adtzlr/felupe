@@ -119,7 +119,7 @@ def partition(field, bounds):
 def apply(field, bounds, dof0=None, offsets=None):
     """Apply prescribed values for a list of boundaries
     and return all (default) or only the prescribed components
-    of the input array 'v' based on the keyword 'dof0'."""
+    of the ``field`` based on the keyword ``dof0``."""
 
     # check if a mixed-field is passed
     if isinstance(field, FieldMixed):

@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._boundary import Boundary
 from .._field import FieldMixed
 
 
@@ -74,86 +75,71 @@ def get_dof1(field, bounds, dof0):
 def partition(field, bounds):
     "Partition dof-list into prescribed (dof0) and active (dof1) parts."
 
-    # if a tuple is passed it is assumed that the first
-    # field is associated to the boundaries
+    # check if a mixed-field is passed
     if isinstance(field, FieldMixed):
-        f = field.fields[0]
-        extend_dof1 = True
+        fields = field.fields
     else:
-        f = field
-        extend_dof1 = False
+        fields = [field]
 
-    dof0 = get_dof0(f, bounds)
-    dof1 = get_dof1(f, bounds, dof0=dof0)
+    # list of boundaries, partitioned by fields
+    boundaries = [
+        {key: value for key, value in bounds.items() if value.field == f}
+        for f in fields
+    ]
 
-    # extend active dofs with dofs from additional fields
-    if extend_dof1:
-        dof0, dof1, offsets = extend(field, dof0, dof1)
+    # fix fields without boundaries (need at least one boundary per field)
+    boundaries = [
+        {"__empty__": Boundary(f)} if not b else b for f, b in zip(fields, boundaries)
+    ]
+
+    # partition degrees of freedom for each field
+    dofs0 = [get_dof0(f, b) for f, b in zip(fields, boundaries)]
+    dofs1 = [get_dof1(f, b, dof0=i) for f, b, i in zip(fields, boundaries, dofs0)]
+
+    # get sizes of fields and calculate offsets
+    fieldsizes = [f.indices.dof.size for f in fields]
+    offsets = np.cumsum(fieldsizes)
+
+    # concatenate degrees of freedom
+    offsets_all = np.insert(offsets, 0, 0)
+    dof0 = np.concatenate(
+        [dof0 + offset for dof0, offset in zip(dofs0, offsets_all[:-1])]
+    )
+    dof1 = np.concatenate(
+        [dof1 + offset for dof1, offset in zip(dofs1, offsets_all[:-1])]
+    )
+
+    # return offsets for mixed-field input
+    if len(offsets) > 1:
         return dof0, dof1, offsets
     else:
         return dof0, dof1
 
 
-def extend(field, dof0, dof1):
-    "Extend partitioned dof-lists dof0 and dof1."
-
-    # get sizes of fields and calculate offsets
-    fieldsizes = [f.indices.dof.size for f in field.fields]
-    offsets = np.cumsum(fieldsizes)
-
-    # init extended dof0, dof1 arrays
-    dof0_xt = dof0.copy()
-    dof1_xt = dof1.copy()
-
-    # loop over fields starting from the second one
-    for fld, offset, fieldsize in zip(field.fields[1:], offsets[:-1], fieldsizes[1:]):
-
-        # obtain the mesh and the dimension from the current field
-        mesh = fld.region.mesh
-        dim = fld.dim
-
-        # check if there are points without/with connected cells in the mesh
-        # and add them to the list of prescribed/active dofs
-        # e.g. these are mesh.points_without_cells = [2,6,7]
-        #
-        #              ( [[2,2,2], )   [[0,1,2],   [[ 6, 7, 8],
-        # dof0_add = 3*(  [6,6,6], ) +  [0,1,2], =  [18,19,20],
-        #              (  [7,7,7]] )    [0,1,2]]    [21,22,23]]
-        #
-        dof0_add = (
-            offset
-            + dim * np.tile(mesh.points_without_cells, (dim, 1)).T
-            + np.arange(dim)
-        )
-        dof1_add = (
-            offset + dim * np.tile(mesh.points_with_cells, (dim, 1)).T + np.arange(dim)
-        )
-
-        dof0_xt = np.append(dof0_xt, dof0_add.ravel())
-        dof1_xt = np.append(dof1_xt, dof1_add.ravel())
-
-    return dof0_xt, dof1_xt, offsets[:-1]
-
-
-def apply(v, bounds, dof0=None):
+def apply(field, bounds, dof0=None, offsets=None):
     """Apply prescribed values for a list of boundaries
     and return all (default) or only the prescribed components
     of the input array 'v' based on the keyword 'dof0'."""
 
-    u = v.values.copy()
+    # check if a mixed-field is passed
+    if isinstance(field, FieldMixed):
+        u = np.concatenate([f.values.ravel() for f in field.fields])
+        offsets = np.insert(offsets, 0, 0)[:-1]
+    else:
+        u = field.values.copy()
 
     for b in bounds.values():
-        u.ravel()[b.dof] = b.value
+
+        # get offset for field-dof of current boundary
+        if isinstance(field, FieldMixed):
+            offset = offsets[[b.field == f for f in field.fields]]
+        else:
+            offset = 0
+
+        # set prescribed values
+        u.ravel()[b.dof + offset] = b.value
 
     if dof0 is None:
         return u
     else:
-        # check if dof0 has entries beyond the size of u
-        # this is the case for meshes with points that are
-        # not connected to cells
-        u0ext = u.ravel()[dof0[dof0 < u.size]]
-
-        # pad (=extend) u0ext to the full dimension of prescribed dofs
-        # and fill padded values with zeros
-        u0ext_padded = np.pad(u0ext, (0, len(dof0) - len(u0ext)))
-        return u0ext_padded
+        return u.ravel()[dof0]

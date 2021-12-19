@@ -711,7 +711,7 @@ class NeoHooke:
 
        \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
 
-    A chain rule application leads to the following expression for the stress tensor. 
+    A chain rule application leads to the following expression for the stress tensor.
     It is formulated as a sum of the **physical**-deviatoric (not the mathematical deviator!) and the physical-hydrostatic stress tensors.
 
     .. math::

@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import pytest
 import numpy as np
 import felupe as fe
+from copy import deepcopy
 
 
 def pre1d():
@@ -74,7 +75,7 @@ def test_boundary():
 def test_loadcase():
 
     for u in [pre1d(), pre2d(), pre3d()]:
-        v = fe.FieldMixed((u, u))
+        v = fe.FieldMixed((u, deepcopy(u)))
 
         ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
         assert len(ux) == 4

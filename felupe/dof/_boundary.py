@@ -91,6 +91,7 @@ class Boundary:
         mesh = field.region.mesh
         dof = field.indices.dof
 
+        self.field = field
         self.dim = field.dim  # mesh.dim
         self.name = name
         self.value = value

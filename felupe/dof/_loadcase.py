@@ -92,7 +92,9 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
 
     part = partition(field, bounds)
-    ext0 = apply(f, bounds, part[0])
+    dof0 = part[0]
+    offsets = part[2] if len(part) == 3 else None
+    ext0 = apply(field, bounds, dof0, offsets)
 
     out = bounds, *part, ext0
 
@@ -121,7 +123,9 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     bounds["move-y"] = Boundary(f, fy=f1, skip=(1, 0, 1), value=move)
 
     part = partition(field, bounds)
-    ext0 = apply(f, bounds, part[0])
+    dof0 = part[0]
+    offsets = part[2] if len(part) == 3 else None
+    ext0 = apply(field, bounds, dof0, offsets)
 
     out = bounds, *part, ext0
 
@@ -145,7 +149,9 @@ def planar(field, right=1, move=0.2, clamped=False):
     bounds["fix-y"] = Boundary(f, fy=f1, skip=(1, 0, 1))
 
     part = partition(field, bounds)
-    ext0 = apply(f, bounds, part[0])
+    dof0 = part[0]
+    offsets = part[2] if len(part) == 3 else None
+    ext0 = apply(field, bounds, dof0, offsets)
 
     out = bounds, *part, ext0
 
@@ -171,7 +177,9 @@ def shear(field, bottom=0, top=1, move=0.2, sym=True):
     bounds["move"] = Boundary(f, fy=f1, skip=(0, 1, 1), value=move)
 
     part = partition(field, bounds)
-    ext0 = apply(f, bounds, part[0])
+    dof0 = part[0]
+    offsets = part[2] if len(part) == 3 else None
+    ext0 = apply(field, bounds, dof0, offsets)
 
     out = bounds, *part, ext0
 

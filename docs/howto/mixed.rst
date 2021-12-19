@@ -40,7 +40,7 @@ Boundary conditions are enforced in the same way as in Getting Started.
     boundaries["move" ] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
 
     dof0, dof1, offsets = fe.dof.partition(fields, boundaries)
-    u0ext = fe.dof.apply(displacement, boundaries, dof0)
+    ext0 = fe.dof.apply(fields, boundaries, dof0, offsets)
 
 The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`tutorial-getting-started`. FElupe provides a Mixed-field version of it's :class:`felupe.IntegralForm`, called :class:`felupe.IntegralFormMixed`. It assumes that the first field operates on the gradient and all the others don't. The resulting system vector with incremental values of the fields has to be splitted at the field-offsets in order to update the fields.
 
@@ -57,7 +57,7 @@ The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`t
         K = bilinearform.assemble()
         
         system = fe.solve.partition(fields, K, dof1, dof0, r)
-        dfields = np.split(fe.solve.solve(*system, u0ext), offsets)
+        dfields = np.split(fe.solve.solve(*system, ext0), offsets)
         
         fields += dfields
 

@@ -35,22 +35,22 @@ class Field:
     r"""A Field on points of a `region` with dimension `dim`
     and initial point `values`. A slice of this field directly
     accesses the field values as 1d-array.
-    
-    The interpolation method returns the field values evaluated at the 
+
+    The interpolation method returns the field values evaluated at the
     numeric integration points ``p`` of all cells ``c`` in the region.
-    
+
     ..  math::
-        
+
         u^i_{(pc)} = \hat{u}_a^i h_{a(pc)}
-    
+
     The gradient method returns the gradient of the field values w.r.t. the
     undeformed mesh point coordinates, evaluated at the integration points of
     all cells in the region.
-    
+
     ..  math::
-        
-        \left( \frac{\partial u^i}{\partial X^J} \right)_{(pc)} = 
-        \hat{u}^i_{a(pc)} 
+
+        \left( \frac{\partial u^i}{\partial X^J} \right)_{(pc)} =
+        \hat{u}^i_{a(pc)}
         \left( \frac{\partial h_a}{\partial X^J} \right)_{(pc)}
 
     Arguments
@@ -66,8 +66,9 @@ class Field:
         Optional keyword arguments of the field.
 
     """
+
     def __init__(self, region, dim=1, values=0, **kwargs):
-        
+
         self.region = region
         self.dim = dim
         self.shape = self.region.quadrature.npoints, self.region.mesh.ncells

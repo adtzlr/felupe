@@ -36,13 +36,13 @@ class IntegralForm:
     setting ``grad_v`` and ``grad_u`` to True (default is False for both).
 
     **Linearform**
-    
+
     without gradient of ``v``
-        
+
     ..  code-block::
 
         L(v) = ∫ fun v dV                                      (1)
-    
+
            (or ∫ fun_i v_i dV)
 
 
@@ -58,15 +58,15 @@ class IntegralForm:
     **Bilinearform**
 
     without gradient of ``v`` and without gradient of ``u``
-    
+
     ..  code-block::
 
         b(v, u) = ∫ v fun u dV                                 (3)
-    
+
               (or ∫ v_i fun_ij u_j dV)
 
     with gradient of ``v`` and with gradient of ``u``
-    
+
     ..  code-block::
 
         b(v, u) = ∫ grad(v) fun grad(u) dV                     (4)
@@ -74,7 +74,7 @@ class IntegralForm:
               (or ∫ grad(v)_ij fun_ijkl grad(u)_kl dV)
 
     with gradient of ``v`` and without gradient of ``u``
-    
+
     ..  code-block::
 
         b(v, u) = ∫ grad(v) fun u dV                           (5)
@@ -82,7 +82,7 @@ class IntegralForm:
               (or ∫ grad(v)_ij fun_ijk u_k dV)
 
     without gradient of ``v`` and with gradient of ``u``
-    
+
     ..  code-block::
 
         b(v, u) = ∫ v fun grad(u) dV                           (6)
@@ -151,7 +151,7 @@ class IntegralForm:
 
     def integrate(self, parallel=False):
         "Return evaluated (but not assembled) integrals."
-        
+
         grad_v, grad_u = self.grad_v, self.grad_u
         v, u = self.v, self.u
         dV = self.dV

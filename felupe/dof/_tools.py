@@ -109,7 +109,7 @@ def partition(field, bounds):
     )
 
     # return offsets for mixed-field input
-    if len(offsets) > 1:
+    if len(offsets) > 0:
         return dof0, dof1, offsets
     else:
         return dof0, dof1

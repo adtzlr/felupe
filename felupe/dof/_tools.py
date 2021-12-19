@@ -102,6 +102,7 @@ def partition(field, bounds):
 
     # concatenate degrees of freedom
     offsets_all = np.insert(offsets, 0, 0)
+
     dof0 = np.concatenate(
         [dof0 + offset for dof0, offset in zip(dofs0, offsets_all[:-1])]
     )

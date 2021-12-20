@@ -9,7 +9,7 @@ For axisymmetric analyses an axisymmetric vector-valued field has to be created 
 
     mesh = fe.Rectangle(n=3)
     region = fe.RegionQuad(mesh)
-    u  = fe.FieldAxisymmetric(region, dim=2)
+    u = fe.FieldAxisymmetric(region, dim=2)
 
 Now it gets important: The 3x3 deformation gradient for an axisymmetric problem is obtained with :meth:`felupe.FieldAxisymmetric.grad` or :meth:`felupe.FieldAxisymmetric.extract` methods. For instances of :class:`felupe.FieldAxisymmetric` the gradient is modified to return a 3x3 gradient as described in :ref:`theory-axi`.
 

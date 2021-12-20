@@ -8,14 +8,7 @@ For axisymmetric analyses an axisymmetric vector-valued field has to be created 
     import felupe as fe
 
     mesh = fe.Rectangle(n=3)
-    element = fe.Quad()
-    quadrature = fe.GaussLegendre(order=1, dim=2)
-
-    region  = fe.Region(mesh, element, quadrature)
-    dA = region.dV
-
-..  code-block:: python
-
+    region = fe.RegionQuad(mesh)
     u  = fe.FieldAxisymmetric(region, dim=2)
 
 Now it gets important: The 3x3 deformation gradient for an axisymmetric problem is obtained with :meth:`felupe.FieldAxisymmetric.grad` or :meth:`felupe.FieldAxisymmetric.extract` methods. For instances of :class:`felupe.FieldAxisymmetric` the gradient is modified to return a 3x3 gradient as described in :ref:`theory-axi`.
@@ -38,7 +31,7 @@ For simplicity, let's assume a (built-in) Neo-Hookean material.
     umat = fe.NeoHooke(mu=1, bulk=5)
 
 
-Felupe provides an adopted :class:`felupe.IntegralFormAxisymmetric` class for the integration and the sparse matrix assemblage of axisymmetric problems. It uses the additional information (e.g. radial coordinates at integration points) stored in :class:`felupe.FieldAxisymmetric` to provide a consistent interface in comparison to default IntegralForms.
+FElupe provides an adopted :class:`felupe.IntegralFormAxisymmetric` class for the integration and the sparse matrix assemblage of axisymmetric problems. It uses the additional information (e.g. radial coordinates at integration points) stored in :class:`felupe.FieldAxisymmetric` to provide a consistent interface in comparison to default IntegralForms.
 
 ..  code-block:: python
 

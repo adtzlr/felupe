@@ -15,8 +15,7 @@ Now it gets important: The 3x3 deformation gradient for an axisymmetric problem 
 
 ..  code-block:: python
 
-    H = fe.math.grad(u)
-    F = fe.math.identity(H) + H
+    dudX = fe.math.grad(u)
 
 or
 
@@ -34,6 +33,8 @@ For simplicity, let's assume a (built-in) Neo-Hookean material.
 FElupe provides an adopted :class:`felupe.IntegralFormAxisymmetric` class for the integration and the sparse matrix assemblage of axisymmetric problems. It uses the additional information (e.g. radial coordinates at integration points) stored in :class:`felupe.FieldAxisymmetric` to provide a consistent interface in comparison to default IntegralForms.
 
 ..  code-block:: python
+
+    F = fe.math.identity(dudX) + dudX
 
     r = fe.IntegralFormAxisymmetric(umat.gradient(F), u, dA).assemble()
     K = fe.IntegralFormAxisymmetric(umat.hessian(F), u, dA).assemble()

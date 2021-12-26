@@ -90,19 +90,19 @@ def test_math():
     with pytest.raises(TypeError):
         fe.math.dot(B, C)
 
-    fe.math.dot(C, a)
-    fe.math.dot(a, C)
-    fe.math.dot(a, a)
+    assert fe.math.dot(C, a).shape == (3, 8, 200)
+    assert fe.math.dot(a, C).shape == (3, 8, 200)
+    assert fe.math.dot(a, a).shape == (8, 200)
 
-    fe.math.dot(a, A)
-    fe.math.dot(A, a)
-    fe.math.dot(A, A)
+    assert fe.math.dot(a, A).shape == (3, 3, 3, 8, 200)
+    assert fe.math.dot(A, a).shape == (3, 3, 3, 8, 200)
+    assert fe.math.dot(A, A).shape == (3, 3, 3, 3, 3, 3, 8, 200)
 
-    fe.math.ddot(C, C)
-    fe.math.ddot(C, A)
-    fe.math.ddot(A, C)
+    assert fe.math.ddot(C, C).shape == (8, 200)
+    assert fe.math.ddot(C, A).shape == (3, 3, 8, 200)
+    assert fe.math.ddot(A, C).shape == (3, 3, 8, 200)
 
-    fe.math.ddot(A, A)
+    assert fe.math.ddot(A, A).shape == (3, 3, 3, 3, 8, 200)
 
     with pytest.raises(TypeError):
         fe.math.ddot(A, B)

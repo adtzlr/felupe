@@ -205,7 +205,7 @@ def dot(A, B, n=2):
         return np.einsum("ik...,kj...->ij...", A, B)
 
     elif len(A.shape) == 1 + n and len(B.shape) == 1 + n:
-        return np.einsum("i...,j...->...", A, B)
+        return np.einsum("i...,i...->...", A, B)
 
     elif len(A.shape) == 4 + n and len(B.shape) == 4 + n:
         return np.einsum("ijkp...,plmn...->ijklmn...", A, B)

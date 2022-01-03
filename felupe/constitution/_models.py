@@ -352,6 +352,8 @@ class LinearElasticPlaneStrain:
         self.nu = nu
 
         self._umat = LinearElasticPlaneStress(*self._convert(self.E, self.nu))
+        
+        self.elasticity = self.hessian
 
     def _convert(self, E, nu):
         """Convert Lamé - constants to effective plane strain constants.
@@ -512,6 +514,8 @@ class LinearElasticPlaneStress:
 
         self.E = E
         self.nu = nu
+        
+        self.elasticity = self.hessian
 
     def gradient(self, F, E=None, nu=None):
         """Evaluate the 2d-stress tensor from the deformation gradient.

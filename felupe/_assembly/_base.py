@@ -215,21 +215,37 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        dim1, dim2, ngauss, ncells = fun.shape
+        ngauss, ncells = v.shape[-2:]
+        dim1, dim2 = fun.shape[:-2]
 
         out = np.zeros((npoints_a, dim1, npoints_b, ncells))
-        for a in prange(npoints_a):  # basis function "a"
-            for b in prange(npoints_b):  # basis function "b"
-                for p in prange(ngauss):  # integration point "p"
-                    for c in prange(ncells):  # cell "c"
-                        for i in prange(dim1):  # first index "i"
-                            for J in prange(dim2):  # second index "J"
-                                out[a, i, b, c] += (
-                                    v[a, J, p, c]
-                                    * u[b, p, c]
-                                    * fun[i, J, p, c]
-                                    * dV[p, c]
-                                )
+
+        if fun.shape[-2] == 1 and fun.shape[-1] == 1:
+            for a in prange(npoints_a):  # basis function "a"
+                for b in prange(npoints_b):  # basis function "b"
+                    for p in prange(ngauss):  # integration point "p"
+                        for c in prange(ncells):  # cell "c"
+                            for i in prange(dim1):  # first index "i"
+                                for J in prange(dim2):  # second index "J"
+                                    out[a, i, b, c] += (
+                                        v[a, J, p, c]
+                                        * u[b, p, c]
+                                        * fun[i, J, 0, 0]
+                                        * dV[p, c]
+                                    )
+        else:
+            for a in prange(npoints_a):  # basis function "a"
+                for b in prange(npoints_b):  # basis function "b"
+                    for p in prange(ngauss):  # integration point "p"
+                        for c in prange(ncells):  # cell "c"
+                            for i in prange(dim1):  # first index "i"
+                                for J in prange(dim2):  # second index "J"
+                                    out[a, i, b, c] += (
+                                        v[a, J, p, c]
+                                        * u[b, p, c]
+                                        * fun[i, J, p, c]
+                                        * dV[p, c]
+                                    )
 
         return out
 
@@ -238,21 +254,37 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        dim1, dim2, ngauss, ncells = fun.shape
+        ngauss, ncells = v.shape[-2:]
+        dim1, dim2 = fun.shape[:-2]
 
         out = np.zeros((npoints_a, npoints_b, dim1, ncells))
-        for a in prange(npoints_a):  # basis function "a"
-            for b in prange(npoints_b):  # basis function "b"
-                for p in prange(ngauss):  # integration point "p"
-                    for c in prange(ncells):  # cell "c"
-                        for k in prange(dim1):  # third index "k"
-                            for L in prange(dim2):  # fourth index "L"
-                                out[a, b, k, c] += (
-                                    v[a, p, c]
-                                    * u[b, L, p, c]
-                                    * fun[k, L, p, c]
-                                    * dV[p, c]
-                                )
+
+        if fun.shape[-2] == 1 and fun.shape[-1] == 1:
+            for a in prange(npoints_a):  # basis function "a"
+                for b in prange(npoints_b):  # basis function "b"
+                    for p in prange(ngauss):  # integration point "p"
+                        for c in prange(ncells):  # cell "c"
+                            for k in prange(dim1):  # third index "k"
+                                for L in prange(dim2):  # fourth index "L"
+                                    out[a, b, k, c] += (
+                                        v[a, p, c]
+                                        * u[b, L, p, c]
+                                        * fun[k, L, 0, 0]
+                                        * dV[p, c]
+                                    )
+        else:
+            for a in prange(npoints_a):  # basis function "a"
+                for b in prange(npoints_b):  # basis function "b"
+                    for p in prange(ngauss):  # integration point "p"
+                        for c in prange(ncells):  # cell "c"
+                            for k in prange(dim1):  # third index "k"
+                                for L in prange(dim2):  # fourth index "L"
+                                    out[a, b, k, c] += (
+                                        v[a, p, c]
+                                        * u[b, L, p, c]
+                                        * fun[k, L, p, c]
+                                        * dV[p, c]
+                                    )
 
         return out
 
@@ -260,16 +292,29 @@ try:
     def integrate_gradv(v, fun, dV):  # pragma: no cover
 
         npoints = v.shape[0]
-        dim1, dim2, ngauss, ncells = fun.shape
+        ngauss, ncells = v.shape[-2:]
+        dim1, dim2 = fun.shape[:-2]
 
         out = np.zeros((npoints, dim1, ncells))
 
-        for a in prange(npoints):  # basis function "a"
-            for p in prange(ngauss):  # integration point "p"
-                for c in prange(ncells):  # cell "c"
-                    for i in prange(dim1):  # first index "i"
-                        for J in prange(dim2):  # second index "J"
-                            out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
+        if fun.shape[-2] == 1 and fun.shape[-1] == 1:
+            for a in prange(npoints):  # basis function "a"
+                for p in prange(ngauss):  # integration point "p"
+                    for c in prange(ncells):  # cell "c"
+                        for i in prange(dim1):  # first index "i"
+                            for J in prange(dim2):  # second index "J"
+                                out[a, i, c] += (
+                                    v[a, J, p, c] * fun[i, J, 0, 0] * dV[p, c]
+                                )
+        else:
+            for a in prange(npoints):  # basis function "a"
+                for p in prange(ngauss):  # integration point "p"
+                    for c in prange(ncells):  # cell "c"
+                        for i in prange(dim1):  # first index "i"
+                            for J in prange(dim2):  # second index "J"
+                                out[a, i, c] += (
+                                    v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
+                                )
 
         return out
 
@@ -278,23 +323,42 @@ try:
 
         npoints_a = v.shape[0]
         npoints_b = u.shape[0]
-        dim1, dim2, dim3, dim4, ngauss, ncells = fun.shape
+        ngauss, ncells = v.shape[-2:]
+        dim1, dim2, dim3, dim4 = fun.shape[:-2]
 
         out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
-        for a in prange(npoints_a):  # basis function "a"
-            for b in prange(npoints_b):  # basis function "b"
-                for p in prange(ngauss):  # integration point "p"
-                    for c in prange(ncells):  # cell "c"
-                        for i in prange(dim1):  # first index "i"
-                            for J in prange(dim2):  # second index "J"
-                                for k in prange(dim3):  # third index "k"
-                                    for L in prange(dim4):  # fourth index "L"
-                                        out[a, i, b, k, c] += (
-                                            v[a, J, p, c]
-                                            * u[b, L, p, c]
-                                            * fun[i, J, k, L, p, c]
-                                            * dV[p, c]
-                                        )
+
+        if fun.shape[-2] == 1 and fun.shape[-1] == 1:
+            for p in prange(ngauss):  # integration point "p"
+                for c in prange(ncells):  # cell "c"
+                    for a in prange(npoints_a):  # basis function "a"
+                        for b in prange(npoints_b):  # basis function "b"
+                            for i in prange(dim1):  # first index "i"
+                                for J in prange(dim2):  # second index "J"
+                                    for k in prange(dim3):  # third index "k"
+                                        for L in prange(dim4):  # fourth index "L"
+                                            out[a, i, b, k, c] += (
+                                                v[a, J, p, c]
+                                                * u[b, L, p, c]
+                                                * fun[i, J, k, L, 0, 0]
+                                                * dV[p, c]
+                                            )
+
+        else:
+            for p in prange(ngauss):  # integration point "p"
+                for c in prange(ncells):  # cell "c"
+                    for a in prange(npoints_a):  # basis function "a"
+                        for b in prange(npoints_b):  # basis function "b"
+                            for i in prange(dim1):  # first index "i"
+                                for J in prange(dim2):  # second index "J"
+                                    for k in prange(dim3):  # third index "k"
+                                        for L in prange(dim4):  # fourth index "L"
+                                            out[a, i, b, k, c] += (
+                                                v[a, J, p, c]
+                                                * u[b, L, p, c]
+                                                * fun[i, J, k, L, p, c]
+                                                * dV[p, c]
+                                            )
 
         return out
 

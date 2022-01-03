@@ -75,7 +75,7 @@ The material behavior is defined through a built-in isotropic linear-elastic mat
     umat = fe.LinearElasticPlaneStress(E=210000, nu=0.3)
     
 
-The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian`.
+The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian` (or the alias :func:`umat.elasticity`).
 
 .. math::
 
@@ -85,7 +85,7 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 ..  code-block:: python
 
     K = fe.IntegralForm(
-        fun=umat.hessian(region=region), 
+        fun=umat.elasticity(), 
         v=displacement, 
         dV=region.dV, 
         u=displacement, 

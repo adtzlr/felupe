@@ -138,7 +138,7 @@ class LinearElastic:
 
         return E / (1 + nu) / (1 - 2 * nu) * stress
 
-    def hessian(self, F=None, E=None, nu=None, shape=None, region=None):
+    def hessian(self, F=None, E=None, nu=None, shape=(1, 1), region=None):
         """Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -150,7 +150,7 @@ class LinearElastic:
             Young's modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, int), optional
+        shape : (int, int), optional (default is (1, 1))
             Tuple with shape of the trailing axes (default is None)
         region : Region, optional
             A numeric region for shape of the trailing axes (default is None)
@@ -161,11 +161,6 @@ class LinearElastic:
             elasticity tensor (3x3x3x3)
 
         """
-
-        if F is None and shape is None and region is None:
-            raise TypeError(
-                "Either the deformation gradient, a tuple with shape or a Region has to be specified."
-            )
 
         if F is None:
             if region is not None:
@@ -270,7 +265,7 @@ class LinearElasticTensorNotation:
 
         return 2 * mu * strain + gamma * trace(strain) * identity(strain)
 
-    def hessian(self, F=None, E=None, nu=None, shape=None, region=None):
+    def hessian(self, F=None, E=None, nu=None, shape=(1, 1), region=None):
         """Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -282,7 +277,7 @@ class LinearElasticTensorNotation:
             Young's modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, int), optional
+        shape : (int, int), optional (default is (1, 1))
             Tuple with shape of the trailing axes (default is None)
         region : Region, optional
             A numeric region for shape of the trailing axes (default is None)
@@ -299,11 +294,6 @@ class LinearElasticTensorNotation:
 
         if nu is None:
             nu = self.nu
-
-        if F is None and shape is None and region is None:
-            raise TypeError(
-                "Either the deformation gradient, a tuple with shape or a Region has to be specified."
-            )
 
         if F is None:
             if region is not None:
@@ -362,6 +352,8 @@ class LinearElasticPlaneStrain:
         self.nu = nu
 
         self._umat = LinearElasticPlaneStress(*self._convert(self.E, self.nu))
+        
+        self.elasticity = self.hessian
 
     def _convert(self, E, nu):
         """Convert Lamé - constants to effective plane strain constants.
@@ -522,6 +514,8 @@ class LinearElasticPlaneStress:
 
         self.E = E
         self.nu = nu
+        
+        self.elasticity = self.hessian
 
     def gradient(self, F, E=None, nu=None):
         """Evaluate the 2d-stress tensor from the deformation gradient.
@@ -556,7 +550,7 @@ class LinearElasticPlaneStress:
 
         return stress
 
-    def hessian(self, F=None, E=None, nu=None, shape=None, region=None):
+    def hessian(self, F=None, E=None, nu=None, shape=(1, 1), region=None):
         """Evaluate the elasticity tensor from the deformation gradient.
 
         Arguments
@@ -567,7 +561,7 @@ class LinearElasticPlaneStress:
             Young's  modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, int), optional
+        shape : (int, int), optional (default is (1, 1))
             Tuple with shape of the trailing axes (default is None)
         region : Region, optional
             A numeric region for shape of the trailing axes (default is None)
@@ -584,11 +578,6 @@ class LinearElasticPlaneStress:
 
         if nu is None:
             nu = self.nu
-
-        if F is None and shape is None and region is None:
-            raise TypeError(
-                "Either the deformation gradient, a tuple with shape or a Region has to be specified."
-            )
 
         if F is None:
             if region is not None:

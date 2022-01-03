@@ -50,10 +50,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add a new method to deepcopy a `Mesh` with `Mesh.copy()`
+- Add [*broadcasting*](https://numpy.org/doc/stable/user/basics.broadcasting.html) capability for trailing axes inside the parallel form integrators.
 
 ### Changed
 - Enhance `Boundary` for the application of prescribed values of any user-defined `Field` which is part of `FieldMixed`.
 - The whole mixed-field has to be passed to `dof.apply()` along with the `offsets` returned from `dof.partition` for mixed-field formulations.
+- Set default value `shape=(1, 1)` for `hessian()` methods of linear elastic materials.
 
 ### Fixed
 - Fixed einstein summation of `math.dot()` for two vectors with trailing axes.

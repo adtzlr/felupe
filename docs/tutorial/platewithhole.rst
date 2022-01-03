@@ -85,7 +85,7 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 ..  code-block:: python
 
     K = fe.IntegralForm(
-        fun=umat.hessian(region=region), 
+        fun=umat.hessian(), 
         v=displacement, 
         dV=region.dV, 
         u=displacement, 

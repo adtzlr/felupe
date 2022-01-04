@@ -98,6 +98,7 @@ def test_linearform_mixed():
 
     F, p = field.extract()
     r = fe.LinearFormMixed(v=b).assemble((lformu, lformp), F=F, p=p)
+    r = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble((lformu, lformp), F=F, p=p)
     assert r.shape == (89, 1)
 
 

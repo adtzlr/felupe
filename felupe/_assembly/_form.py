@@ -48,7 +48,7 @@ class LinearForm:
     Parameters
     ----------
     v : Basis
-        An object with basis function (gradients) of a field.
+        An object with basis functions (gradients) of a field.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
 
@@ -122,7 +122,7 @@ class BilinearForm:
     Parameters
     ----------
     v : Basis
-        An object with basis function (gradients) of a field.
+        An object with basis functions (gradients) of a field.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
     u : Basis
@@ -210,7 +210,7 @@ class LinearFormMixed:
     Parameters
     ----------
     v : Basis
-        An object with basis function (gradients) of a field.
+        An object with basis functions (gradients) of a field.
     grad_v : tuple of bool, optional (default is None)
         Flag to use the gradient of ``v``.
 
@@ -266,6 +266,105 @@ class LinearFormMixed:
         -------
         values : csr_matrix
             The assembled vector.
+        """
+
+        values = self.integrate(weakform, *args, **kwargs)
+
+        return self._form.assemble(values)
+
+
+class BilinearFormMixed:
+    r"""A bilinear form object with methods for integration and assembly of
+    matrices where ``v`` is a tuple of fields.
+
+    ..  math::
+
+        a(v, u) = \int_\Omega v \cdot f \cdot u \ dx
+
+    Parameters
+    ----------
+    v : Basis
+        An object with basis function (gradients) of a field.
+    grad_v : bool, optional (default is False)
+        Flag to use the gradient of ``v``.
+    u : Basis
+        An object with basis function (gradients) of a field.
+    grad_u : bool, optional (default is False)
+        Flag to use the gradient of ``u``.
+
+    """
+
+    def __init__(self, v, u, grad_v=None, grad_u=None):
+        self.v = v
+        self.u = u
+        self.dx = self.v.field[0].region.dV
+
+        self.nv = len(v.field.fields)
+        self.i, self.j = np.triu_indices(self.nv)
+
+        def _set_first_grad_true(grad, fields):
+            if grad is None:
+                grad = np.zeros_like(fields, dtype=bool)
+                grad[0] = True
+            return grad
+
+        self.grad_v = _set_first_grad_true(grad_v, self.v.field.fields)
+        self.grad_u = _set_first_grad_true(grad_u, self.u.field.fields)
+
+        self._form = IntegralFormMixed(
+            fun=np.zeros(len(self.i)),
+            v=self.v.field,
+            dV=self.dx,
+            u=self.u.field,
+            grad_v=self.grad_v,
+            grad_u=self.grad_u,
+        )
+
+        self._bilinearform = []
+
+        for a, (i, j) in enumerate(zip(self.i, self.j)):
+
+            self._bilinearform.append(
+                BilinearForm(
+                    v=self.v[i],
+                    u=self.u[j],
+                    grad_v=self.grad_v[i],
+                    grad_u=self.grad_u[j],
+                    dx=self.dx,
+                )
+            )
+
+    def integrate(self, weakform, *args, **kwargs):
+        r"""Return evaluated (but not assembled) integrals.
+
+        Parameters
+        ----------
+        weakform : callable
+            A callable function ``weakform(v, *args, **kwargs)``.
+
+        Returns
+        -------
+        values : ndarray
+            Integrated (but not assembled) matrix values.
+        """
+
+        return [
+            form.integrate(fun, *args, **kwargs)
+            for form, fun in zip(self._bilinearform, weakform)
+        ]
+
+    def assemble(self, weakform, *args, **kwargs):
+        r"""Return the assembled integral as matrix.
+
+        Parameters
+        ----------
+        weakform : callable
+            A callable function ``weakform(v, *args, **kwargs)``.
+
+        Returns
+        -------
+        values : csr_matrix
+            The assembled matrix.
         """
 
         values = self.integrate(weakform, *args, **kwargs)

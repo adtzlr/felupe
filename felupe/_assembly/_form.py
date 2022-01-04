@@ -201,7 +201,7 @@ class BilinearForm:
 
 class LinearFormMixed:
     r"""A linear form object with methods for integration and assembly of
-    vectors where ``v`` is a tuple of fields.
+    vectors where ``v`` is a mixed-basis object on mixed-fields.
 
     ..  math::
 
@@ -209,10 +209,10 @@ class LinearFormMixed:
 
     Parameters
     ----------
-    v : Basis
+    v : BasisMixed
         An object with basis functions (gradients) of a field.
     grad_v : tuple of bool, optional (default is None)
-        Flag to use the gradient of ``v``.
+        Flag to use the gradients of ``v``.
 
 
     """
@@ -275,7 +275,7 @@ class LinearFormMixed:
 
 class BilinearFormMixed:
     r"""A bilinear form object with methods for integration and assembly of
-    matrices where ``v`` is a tuple of fields.
+    matrices where ``v`` is a mixed-basis object on mixed-fields.
 
     ..  math::
 
@@ -283,14 +283,14 @@ class BilinearFormMixed:
 
     Parameters
     ----------
-    v : Basis
-        An object with basis function (gradients) of a field.
-    grad_v : bool, optional (default is False)
-        Flag to use the gradient of ``v``.
+    v : BasisMixed
+        An object with basis functions (gradients) of a field.
+    grad_v : tuple of bool, optional (default is None)
+        Tuple of flags to use the gradients of ``v``.
     u : Basis
         An object with basis function (gradients) of a field.
-    grad_u : bool, optional (default is False)
-        Flag to use the gradient of ``u``.
+    grad_u : tuple of bool, optional (default is None)
+        Flag to use the gradients of ``u``.
 
     """
 

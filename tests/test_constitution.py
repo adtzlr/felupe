@@ -101,7 +101,7 @@ def test_linear():
         dsde = le.hessian(F)
         dsde2 = le.hessian(shape=F.shape[-2:])
         dsde3 = le.hessian(region=r)
-        
+
         assert le.elasticity().shape[-2:] == (1, 1)
 
         check_stress.append(stress)
@@ -135,7 +135,7 @@ def test_linear_planestress():
     dsde = le.hessian(F)
     dsde2 = le.hessian(shape=F.shape[-2:])
     dsde3 = le.hessian(region=r)
-    
+
     assert le.elasticity().shape[-2:] == (1, 1)
 
     check_dsde = [dsde, dsde2, dsde3]

@@ -63,7 +63,7 @@ class Basis:
 
         self.basis = np.einsum(
             "ij,ap,c->aijpc",
-            np.eye(self.field.region.element.dim),
+            np.eye(self.field.dim),
             self.field.region.h,
             np.ones(self.field.region.mesh.ncells),
         )
@@ -75,3 +75,31 @@ class Basis:
 
         else:
             self.grad = None
+
+
+class BasisMixed:
+    r"""A basis for mixed fields.
+
+    Parameters
+    ----------
+    field : FieldMixed
+        A mixed field on which the basis should be created.
+
+    Attributes
+    ----------
+    basis : ndarray
+        The evaluated basis functions at quadrature points.
+    grad : ndarray
+        The evaluated gradient of the basis (if provided by the region).
+
+    """
+
+    def __init__(self, field):
+
+        self.field = field
+        self.basis = [Basis(f) for f in self.field]
+
+    def __getitem__(self, idx):
+        "Slice-based access to underlying bases."
+
+        return self.basis[idx]

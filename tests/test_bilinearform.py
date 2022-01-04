@@ -40,6 +40,14 @@ def lform_grad(v, F):
     return ddot(F, v)
 
 
+def lformu(v, F, p):
+    return ddot(F, v)
+
+
+def lformp(q, F, p):
+    return dot(p, q)
+
+
 def bform(v, u, w):
     return dot(w, v) * dot(w, u)
 
@@ -56,6 +64,18 @@ def pre(dim):
     return r, u
 
 
+def pre_mixed(dim):
+
+    mesh = fe.Cube(n=3)
+    region = fe.RegionHexahedron(mesh)
+    region0 = fe.RegionConstantHexahedron(mesh)
+    u = fe.Field(region, dim=3)
+    p = fe.Field(region0)
+    up = fe.FieldMixed((u, p))
+
+    return up
+
+
 def test_linearform():
 
     region, field = pre(dim=3)
@@ -69,6 +89,16 @@ def test_linearform():
 
     assert r1.shape == (81, 1)
     assert r2.shape == (81, 1)
+
+
+def test_linearform_mixed():
+
+    field = pre_mixed(dim=3)
+    b = fe.BasisMixed(field)
+
+    F, p = field.extract()
+    r = fe.LinearFormMixed(v=b).assemble((lformu, lformp), F=F, p=p)
+    assert r.shape == (89, 1)
 
 
 def test_bilinearform():
@@ -89,3 +119,4 @@ def test_bilinearform():
 if __name__ == "__main__":
     test_linearform()
     test_bilinearform()
+    test_linearform_mixed()

@@ -15,3 +15,13 @@ Integral Form
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autoclass:: felupe.LinearForm
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.BilinearForm
+   :members:
+   :undoc-members:
+   :inherited-members:

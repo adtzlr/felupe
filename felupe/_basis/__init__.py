@@ -1,1 +1,1 @@
-from ._basis import Basis
+from ._basis import Basis, BasisMixed

@@ -51,6 +51,8 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add a new method to deepcopy a `Mesh` with `Mesh.copy()`
 - Add [*broadcasting*](https://numpy.org/doc/stable/user/basics.broadcasting.html) capability for trailing axes inside the parallel form integrators.
+- Add `Basis` on top of a field for virtual fields used in linear and bilinear forms.
+- Add `LinearForm` and `BilinearForm` for vector/matrix assembly out of weak form expressions.
 
 ### Changed
 - Enhance `Boundary` for the application of prescribed values of any user-defined `Field` which is part of `FieldMixed`.

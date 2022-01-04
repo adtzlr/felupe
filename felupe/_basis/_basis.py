@@ -29,50 +29,49 @@ import numpy as np
 
 
 class Basis:
-    r"""A basis and its gradient built on top of a scalar- or vector-valued 
+    r"""A basis and its gradient built on top of a scalar- or vector-valued
     field. *Basis* refers to the trial and test field, either values or
     gradients evaluated at quadrature points. The first two indices of a basis
-    are used for looping over the element shape functions ``a`` and its 
-    components ``i``. The third index represents the vector component ``k`` of 
-    the field. The two trailing axes ``(p, c)`` contain the evaluated element 
-    shape functions at quadrature points per cell. For gradients, the fourth 
+    are used for looping over the element shape functions ``a`` and its
+    components ``i``. The third index represents the vector component ``k`` of
+    the field. The two trailing axes ``(p, c)`` contain the evaluated element
+    shape functions at quadrature points per cell. For gradients, the fourth
     index is used for the vector component of the partial derivative ``k``.
-    
+
     ..  math::
-        
-        \text{grad}(b)_{aijkpe} = \delta_{ij} 
+
+        \text{grad}(b)_{aijkpe} = \delta_{ij}
             \left( \frac{\partial h_a}{\partial X_K} \right)_{pc}
-        
+
     Parameters
     ----------
     field : Field
         A field on which the basis should be created.
-    
+
     Attributes
     ----------
     basis : ndarray
         The evaluated basis functions at quadrature points.
     grad : ndarray
         The evaluated gradient of the basis (if provided by the region).
-    
+
     """
+
     def __init__(self, field):
-        
+
         self.field = field
-        
+
         self.basis = np.einsum(
-            "ij,ap,c->aijpc", 
-            np.eye(self.field.region.element.dim), 
-            self.field.region.h, 
-            np.ones(self.field.region.mesh.ncells)
+            "ij,ap,c->aijpc",
+            np.eye(self.field.region.element.dim),
+            self.field.region.h,
+            np.ones(self.field.region.mesh.ncells),
         )
-        
+
         if hasattr(self.field.region, "dhdX"):
             self.grad = np.einsum(
-                "ij,akpc->aijkpc", 
-                np.eye(self.field.dim), 
-                self.field.region.dhdX
+                "ij,akpc->aijkpc", np.eye(self.field.dim), self.field.region.dhdX
             )
-            
+
         else:
             self.grad = None

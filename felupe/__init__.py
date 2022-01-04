@@ -30,6 +30,9 @@ from ._assembly import (
     IntegralFormMixed,
     IntegralFormAxisymmetric,
 )
+from ._basis import (
+    Basis,
+)
 from ._field import (
     Field,
     FieldAxisymmetric,

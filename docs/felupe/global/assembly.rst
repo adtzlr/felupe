@@ -25,3 +25,13 @@ Integral Form
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autoclass:: felupe.LinearFormMixed
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.BilinearFormMixed
+   :members:
+   :undoc-members:
+   :inherited-members:

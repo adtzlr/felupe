@@ -34,6 +34,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._base import IntegralForm
+from ._mixed import IntegralFormMixed
 
 
 class LinearForm:
@@ -54,11 +55,15 @@ class LinearForm:
 
     """
 
-    def __init__(self, v, grad_v=False):
+    def __init__(self, v, grad_v=False, dx=None):
         self.v = v
         self.grad_v = grad_v
-        self.dx = v.field.region.dV
-        self._form = IntegralForm(None, v.field, self.dx, grad_v=grad_v)
+        if dx is None:
+            self.dx = v.field.region.dV
+        else:
+            self.dx = dx
+
+        self._form = IntegralForm(fun=None, v=v.field, dV=self.dx, grad_v=grad_v)
 
     def integrate(self, weakform, *args, **kwargs):
         r"""Return evaluated (but not assembled) integrals.
@@ -127,12 +132,16 @@ class BilinearForm:
 
     """
 
-    def __init__(self, v, u, grad_v=False, grad_u=False):
+    def __init__(self, v, u, grad_v=False, grad_u=False, dx=None):
         self.v = v
         self.grad_v = grad_v
         self.u = u
         self.grad_u = grad_u
-        self.dx = v.field.region.dV
+        if dx is None:
+            self.dx = v.field.region.dV
+        else:
+            self.dx = dx
+
         self._form = IntegralForm(None, v.field, self.dx, u.field, grad_v, grad_u)
 
     def integrate(self, weakform, sym=False, *args, **kwargs):
@@ -183,6 +192,80 @@ class BilinearForm:
         -------
         values : csr_matrix
             The assembled sparse matrix.
+        """
+
+        values = self.integrate(weakform, *args, **kwargs)
+
+        return self._form.assemble(values)
+
+
+class LinearFormMixed:
+    r"""A linear form object with methods for integration and assembly of
+    vectors where ``v`` is a tuple of fields.
+
+    ..  math::
+
+        L(v) = \int_\Omega f \cdot v \ dx
+
+    Parameters
+    ----------
+    v : Basis
+        An object with basis function (gradients) of a field.
+    grad_v : tuple of bool, optional (default is None)
+        Flag to use the gradient of ``v``.
+
+
+    """
+
+    def __init__(self, v, grad_v=None):
+        self.v = v
+        self.dx = self.v.field[0].region.dV
+        self._form = IntegralFormMixed(
+            np.zeros(len(v.field.fields)), self.v.field, self.dx, grad_v=grad_v
+        )
+
+        if grad_v is None:
+            self.grad_v = np.zeros_like(self.v.field.fields, dtype=bool)
+            self.grad_v[0] = True
+        else:
+            self.grad_v = grad_v
+
+        self._linearform = [
+            LinearForm(v=vi, grad_v=gvi, dx=self.dx)
+            for vi, gvi in zip(self.v, self.grad_v)
+        ]
+
+    def integrate(self, weakform, *args, **kwargs):
+        r"""Return evaluated (but not assembled) integrals.
+
+        Parameters
+        ----------
+        weakform : callable
+            A callable function ``weakform(v, *args, **kwargs)``.
+
+        Returns
+        -------
+        values : ndarray
+            Integrated (but not assembled) vector values.
+        """
+
+        return [
+            form.integrate(fun, *args, **kwargs)
+            for form, fun in zip(self._linearform, weakform)
+        ]
+
+    def assemble(self, weakform, *args, **kwargs):
+        r"""Return the assembled integral as vector.
+
+        Parameters
+        ----------
+        weakform : callable
+            A callable function ``weakform(v, *args, **kwargs)``.
+
+        Returns
+        -------
+        values : csr_matrix
+            The assembled vector.
         """
 
         values = self.integrate(weakform, *args, **kwargs)

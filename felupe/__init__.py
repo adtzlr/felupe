@@ -31,9 +31,11 @@ from ._assembly import (
     IntegralFormAxisymmetric,
     LinearForm,
     BilinearForm,
+    LinearFormMixed,
 )
 from ._basis import (
     Basis,
+    BasisMixed,
 )
 from ._field import (
     Field,

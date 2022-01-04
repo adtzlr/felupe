@@ -37,6 +37,7 @@ def pre(dim):
     u = fe.Field(r, dim=dim)
     return r, u
 
+
 def pre_constant(dim):
 
     m = fe.Cube(n=3)
@@ -44,28 +45,29 @@ def pre_constant(dim):
     u = fe.Field(r, dim=dim)
     return r, u
 
+
 def test_basis():
-    
+
     r, u = pre(dim=3)
     b = fe.Basis(u)
-    
+
     assert b.grad is not None
-    
+
     r, u = pre(dim=1)
     b = fe.Basis(u)
-    
+
     assert b.grad is not None
-    
+
     r, u = pre_constant(dim=3)
     b = fe.Basis(u)
-    
+
     assert b.grad is None
-    
+
     r, u = pre_constant(dim=1)
     b = fe.Basis(u)
-    
+
     assert b.grad is None
-    
-    
+
+
 if __name__ == "__main__":
     test_basis()

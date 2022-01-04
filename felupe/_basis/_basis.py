@@ -30,12 +30,13 @@ import numpy as np
 
 class Basis:
     r"""A basis and its gradient built on top of a scalar- or vector-valued 
-    field. The first two indices are used for looping over the element shape
-    functions ``a`` and its components ``i``. The third index represents the
-    vector component ``k`` of the field. The two trailing axes ``(p, c)`` 
-    contain the evaluated element shape functions at quadrature points per 
-    cell. For gradients, the fourth index is used for the vector component of
-    the partial derivative ``k``.
+    field. *Basis* refers to the trial and test field, either values or
+    gradients evaluated at quadrature points. The first two indices of a basis
+    are used for looping over the element shape functions ``a`` and its 
+    components ``i``. The third index represents the vector component ``k`` of 
+    the field. The two trailing axes ``(p, c)`` contain the evaluated element 
+    shape functions at quadrature points per cell. For gradients, the fourth 
+    index is used for the vector component of the partial derivative ``k``.
     
     ..  math::
         
@@ -50,9 +51,9 @@ class Basis:
     Attributes
     ----------
     basis : ndarray
-        The evaluated basis.
+        The evaluated basis functions at quadrature points.
     grad : ndarray
-        The evaluated gradient of the basis.
+        The evaluated gradient of the basis (if provided by the region).
     
     """
     def __init__(self, field):

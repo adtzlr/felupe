@@ -29,7 +29,7 @@ import pytest
 import felupe as fe
 import numpy as np
 
-from felupe.math import ddot, dot
+from felupe.math import ddot, dot, dya
 
 
 def lform(v, w):
@@ -54,6 +54,18 @@ def bform(v, u, w):
 
 def bform_grad(v, u, F):
     return ddot(F, v) * ddot(F, u)
+
+
+def a_uu(v, u, F, p):
+    return ddot(u, ddot(dya(F, F), v))
+
+
+def a_up(v, r, F, p):
+    return dot(p, r) * ddot(F, v)
+
+
+def a_pp(q, r, F, p):
+    return dot(p, q) * dot(r, p)
 
 
 def pre(dim):
@@ -91,17 +103,6 @@ def test_linearform():
     assert r2.shape == (81, 1)
 
 
-def test_linearform_mixed():
-
-    field = pre_mixed(dim=3)
-    b = fe.BasisMixed(field)
-
-    F, p = field.extract()
-    r = fe.LinearFormMixed(v=b).assemble((lformu, lformp), F=F, p=p)
-    r = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble((lformu, lformp), F=F, p=p)
-    assert r.shape == (89, 1)
-
-
 def test_bilinearform():
 
     region, field = pre(dim=3)
@@ -117,7 +118,34 @@ def test_bilinearform():
     assert K2.shape == (81, 81)
 
 
+def test_linearform_mixed():
+
+    field = pre_mixed(dim=3)
+    b = fe.BasisMixed(field)
+
+    F, p = field.extract()
+    r = fe.LinearFormMixed(v=b).assemble((lformu, lformp), F=F, p=p)
+    r = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble(
+        (lformu, lformp), F=F, p=p
+    )
+    assert r.shape == (89, 1)
+
+
+def test_bilinearform_mixed():
+
+    field = pre_mixed(dim=3)
+    b = fe.BasisMixed(field)
+
+    F, p = field.extract()
+    K = fe.BilinearFormMixed(v=b, u=b).assemble((a_uu, a_up, a_pp), F=F, p=p)
+    K = fe.BilinearFormMixed(
+        v=b, u=b, grad_v=(True, False), grad_u=(True, False)
+    ).assemble((a_uu, a_up, a_pp), F=F, p=p)
+    assert K.shape == (89, 89)
+
+
 if __name__ == "__main__":
     test_linearform()
     test_bilinearform()
     test_linearform_mixed()
+    test_bilinearform_mixed()

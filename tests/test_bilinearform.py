@@ -96,11 +96,13 @@ def test_linearform():
     w = field.extract(grad=False)
     F = field.extract(grad=True, sym=False, add_identity=True)
 
-    r1 = fe.LinearForm(v=b, grad_v=False).assemble(lform, w=w)
-    r2 = fe.LinearForm(v=b, grad_v=True).assemble(lform_grad, F=F)
+    r1 = fe.LinearForm(v=b, grad_v=False).assemble(lform, kwargs={"w": w})
+    r2 = fe.LinearForm(v=b, grad_v=True).assemble(lform_grad, args=(F,), parallel=False)
+    rp = fe.LinearForm(v=b, grad_v=True).assemble(lform_grad, args=(F,), parallel=True)
 
     assert r1.shape == (81, 1)
     assert r2.shape == (81, 1)
+    assert np.allclose(r2.toarray(), rp.toarray())
 
 
 def test_bilinearform():
@@ -111,11 +113,19 @@ def test_bilinearform():
     w = field.extract(grad=False)
     F = field.extract(grad=True, sym=False, add_identity=True)
 
-    K1 = fe.BilinearForm(v=b, grad_v=False, u=b, grad_u=False).assemble(bform, w=w)
-    K2 = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(bform_grad, F=F)
+    K1 = fe.BilinearForm(v=b, grad_v=False, u=b, grad_u=False).assemble(
+        bform, kwargs={"w": w}
+    )
+    K2 = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(
+        bform_grad, args=(F,), parallel=False
+    )
+    Kp = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(
+        bform_grad, args=(F,), parallel=True
+    )
 
     assert K1.shape == (81, 81)
     assert K2.shape == (81, 81)
+    assert np.allclose(K2.toarray(), Kp.toarray())
 
 
 def test_linearform_mixed():
@@ -124,11 +134,15 @@ def test_linearform_mixed():
     b = fe.BasisMixed(field)
 
     F, p = field.extract()
-    r = fe.LinearFormMixed(v=b).assemble((lformu, lformp), F=F, p=p)
+    r = fe.LinearFormMixed(v=b).assemble((lformu, lformp), args=(F, p))
     r = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble(
-        (lformu, lformp), F=F, p=p
+        (lformu, lformp), kwargs={"F": F, "p": p}, parallel=False
+    )
+    rp = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble(
+        (lformu, lformp), kwargs={"F": F, "p": p}, parallel=True
     )
     assert r.shape == (89, 1)
+    assert np.allclose(r.toarray(), rp.toarray())
 
 
 def test_bilinearform_mixed():
@@ -137,11 +151,16 @@ def test_bilinearform_mixed():
     b = fe.BasisMixed(field)
 
     F, p = field.extract()
-    K = fe.BilinearFormMixed(v=b, u=b).assemble((a_uu, a_up, a_pp), F=F, p=p)
+    K = fe.BilinearFormMixed(v=b, u=b).assemble((a_uu, a_up, a_pp), args=(F, p))
     K = fe.BilinearFormMixed(
         v=b, u=b, grad_v=(True, False), grad_u=(True, False)
-    ).assemble((a_uu, a_up, a_pp), F=F, p=p)
+    ).assemble((a_uu, a_up, a_pp), kwargs={"F": F, "p": p}, parallel=False)
+    Kp = fe.BilinearFormMixed(
+        v=b, u=b, grad_v=(True, False), grad_u=(True, False)
+    ).assemble((a_uu, a_up, a_pp), kwargs={"F": F, "p": p}, parallel=True)
+
     assert K.shape == (89, 89)
+    assert np.allclose(K.toarray(), Kp.toarray())
 
 
 if __name__ == "__main__":

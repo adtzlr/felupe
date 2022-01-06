@@ -32,6 +32,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from threading import Thread
 
 from ._base import IntegralForm
 from ._mixed import IntegralFormMixed
@@ -65,13 +66,19 @@ class LinearForm:
 
         self._form = IntegralForm(fun=None, v=v.field, dV=self.dx, grad_v=grad_v)
 
-    def integrate(self, weakform, *args, **kwargs):
+    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -86,19 +93,45 @@ class LinearForm:
 
         values = np.zeros((len(v), *v.shape[-3:]))
 
-        for a, vbasis in enumerate(v):
-            for i, vb in enumerate(vbasis):
-                values[a, i] = weakform(vb, *args, **kwargs) * self.dx
+        if not parallel:
+
+            for a, vbasis in enumerate(v):
+                for i, vb in enumerate(vbasis):
+                    values[a, i] = weakform(vb, *args, **kwargs) * self.dx
+
+        else:
+            idx_a, idx_i = np.indices(values.shape[:2])
+            ai = zip(idx_a.ravel(), idx_i.ravel())
+
+            def contribution(values, a, i, args, kwargs):
+                values[a, i] = weakform(v[a, i], *args, **kwargs) * self.dx
+
+            threads = [
+                Thread(target=contribution, args=(values, a, i, args, kwargs))
+                for a, i in ai
+            ]
+
+            for t in threads:
+                t.start()
+
+            for t in threads:
+                t.join()
 
         return values.sum(-2)
 
-    def assemble(self, weakform, *args, **kwargs):
+    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return the assembled integral as vector.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -106,7 +139,7 @@ class LinearForm:
             The assembled vector.
         """
 
-        values = self.integrate(weakform, *args, **kwargs)
+        values = self.integrate(weakform, args, kwargs, parallel=parallel)
 
         return self._form.assemble(values)
 
@@ -144,13 +177,19 @@ class BilinearForm:
 
         self._form = IntegralForm(None, v.field, self.dx, u.field, grad_v, grad_u)
 
-    def integrate(self, weakform, sym=False, *args, **kwargs):
+    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -170,23 +209,54 @@ class BilinearForm:
 
         values = np.zeros((len(v), v.shape[-3], len(u), *u.shape[-3:]))
 
-        for a, vbasis in enumerate(v):
-            for i, vb in enumerate(vbasis):
+        if not parallel:
 
-                for b, ubasis in enumerate(u):
-                    for j, ub in enumerate(ubasis):
+            for a, vbasis in enumerate(v):
+                for i, vb in enumerate(vbasis):
 
-                        values[a, i, b, j] = weakform(vb, ub, *args, **kwargs) * self.dx
+                    for b, ubasis in enumerate(u):
+                        for j, ub in enumerate(ubasis):
+
+                            values[a, i, b, j] = (
+                                weakform(vb, ub, *args, **kwargs) * self.dx
+                            )
+
+        else:
+
+            idx_a, idx_i, idx_b, idx_j = np.indices(values.shape[:4])
+            aibj = zip(idx_a.ravel(), idx_i.ravel(), idx_b.ravel(), idx_j.ravel())
+
+            def contribution(values, a, i, b, j, args, kwargs):
+                values[a, i, b, j] = (
+                    weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
+                )
+
+            threads = [
+                Thread(target=contribution, args=(values, a, i, b, j, args, kwargs))
+                for a, i, b, j in aibj
+            ]
+
+            for t in threads:
+                t.start()
+
+            for t in threads:
+                t.join()
 
         return values.sum(-2)
 
-    def assemble(self, weakform, *args, **kwargs):
+    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return the assembled integral as sparse matrix.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -194,7 +264,7 @@ class BilinearForm:
             The assembled sparse matrix.
         """
 
-        values = self.integrate(weakform, *args, **kwargs)
+        values = self.integrate(weakform, args, kwargs, parallel=parallel)
 
         return self._form.assemble(values)
 
@@ -235,13 +305,19 @@ class LinearFormMixed:
             for vi, gvi in zip(self.v, self.grad_v)
         ]
 
-    def integrate(self, weakform, *args, **kwargs):
+    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -250,17 +326,23 @@ class LinearFormMixed:
         """
 
         return [
-            form.integrate(fun, *args, **kwargs)
+            form.integrate(fun, args, kwargs, parallel=parallel)
             for form, fun in zip(self._linearform, weakform)
         ]
 
-    def assemble(self, weakform, *args, **kwargs):
+    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return the assembled integral as vector.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -268,7 +350,7 @@ class LinearFormMixed:
             The assembled vector.
         """
 
-        values = self.integrate(weakform, *args, **kwargs)
+        values = self.integrate(weakform, args, kwargs, parallel=parallel)
 
         return self._form.assemble(values)
 
@@ -334,13 +416,19 @@ class BilinearFormMixed:
                 )
             )
 
-    def integrate(self, weakform, *args, **kwargs):
+    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -349,17 +437,23 @@ class BilinearFormMixed:
         """
 
         return [
-            form.integrate(fun, *args, **kwargs)
+            form.integrate(fun, args, kwargs, parallel=parallel)
             for form, fun in zip(self._bilinearform, weakform)
         ]
 
-    def assemble(self, weakform, *args, **kwargs):
+    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return the assembled integral as matrix.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
+        args : tuple, optional
+            Optional arguments for callable weakform
+        kawargs : dict, optional
+            Optional named arguments for callable weakform
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
 
         Returns
         -------
@@ -367,6 +461,6 @@ class BilinearFormMixed:
             The assembled matrix.
         """
 
-        values = self.integrate(weakform, *args, **kwargs)
+        values = self.integrate(weakform, args, kwargs, parallel=parallel)
 
         return self._form.assemble(values)

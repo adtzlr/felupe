@@ -11,3 +11,4 @@ How-To Guides
    howto/axi
    howto/solvers
    howto/composite
+   howto/forms

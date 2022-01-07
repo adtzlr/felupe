@@ -10,6 +10,7 @@ felupe
    global/quadrature
    global/region
    global/field
+   global/basis
    global/dof
    global/constitution
    global/assembly

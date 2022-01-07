@@ -40,7 +40,7 @@ class Basis:
 
     ..  math::
 
-        \text{grad}(b)_{aijkpe} = \delta_{ij}
+        \text{grad}(b)_{aijkpc} = \delta_{ij}
             \left( \frac{\partial h_a}{\partial X_K} \right)_{pc}
 
     Parameters

@@ -48,6 +48,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [2.0.0] - 2022-01-10
+
 ### Added
 - Add a new method to deepcopy a `Mesh` with `Mesh.copy()`
 - Add [*broadcasting*](https://numpy.org/doc/stable/user/basics.broadcasting.html) capability for trailing axes inside the parallel form integrators.

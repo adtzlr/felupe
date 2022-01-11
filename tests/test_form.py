@@ -47,6 +47,25 @@ def pre():
     return r, u, p, P, A
 
 
+def pre_broadcast():
+
+    m = fe.Cube(n=3)
+    e = fe.Hexahedron()
+    q = fe.GaussLegendre(1, 3)
+    r = fe.Region(m, e, q)
+
+    u = fe.Field(r, dim=3)
+    p = fe.Field(r)
+
+    W = fe.constitution.LinearElastic(E=1.0, nu=0.3)
+
+    F = u.extract(grad=True, add_identity=True)
+    P = W.gradient(F)
+    A = W.hessian(F)
+
+    return r, u, p, P, A
+
+
 def pre_axi():
 
     m = fe.Rectangle(n=3)
@@ -149,9 +168,51 @@ def test_linearform():
         assert b.shape == (r.mesh.npoints, 1)
 
 
+def test_linearform_broadcast():
+
+    r, u, p, P, A = pre_broadcast()
+
+    for parallel in [False, True]:
+
+        L = fe.IntegralForm(P, u, r.dV, grad_v=True)
+        x = L.integrate(parallel=parallel)
+        b = L.assemble(x, parallel=parallel).toarray()
+        assert b.shape == (r.mesh.ndof, 1)
+        b = L.assemble(parallel=parallel).toarray()
+        assert b.shape == (r.mesh.ndof, 1)
+
+        L = fe.IntegralForm(p.interpolate(), p, r.dV)
+        x = L.integrate(parallel=parallel)
+        b = L.assemble(x, parallel=parallel).toarray()
+        assert b.shape == (r.mesh.npoints, 1)
+        b = L.assemble(parallel=parallel).toarray()
+        assert b.shape == (r.mesh.npoints, 1)
+
+
 def test_bilinearform():
 
     r, u, p, P, A = pre()
+
+    for parallel in [False, True]:
+
+        a = fe.IntegralForm(A, u, r.dV, u, True, True)
+        y = a.integrate(parallel=parallel)
+        K = a.assemble(y, parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+        K = a.assemble(parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+
+        a = fe.IntegralForm(P, u, r.dV, p, True, False)
+        y = a.integrate(parallel=parallel)
+        K = a.assemble(y, parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+        K = a.assemble(parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+
+
+def test_bilinearform_broadcast():
+
+    r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
 
@@ -213,6 +274,8 @@ def test_mixed():
 
 if __name__ == "__main__":
     test_linearform()
+    test_linearform_broadcast()
     test_bilinearform()
+    test_bilinearform_broadcast()
     test_axi()
     test_mixed()

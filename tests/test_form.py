@@ -228,7 +228,8 @@ def test_bilinearform_broadcast():
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
-        f = np.ones((1, 1, *P.shape[-2:]))
+        q = p.interpolate()
+        f = fe.math.dya(q, q, mode=1)
         a = fe.IntegralForm(f, p, r.dV, p, False, False)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()

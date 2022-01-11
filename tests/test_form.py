@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 import felupe as fe
 
 
@@ -60,8 +62,8 @@ def pre_broadcast():
     F = u.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian()
-    
-    return r, u, p, P[ :, :, 0, 0].reshape(3, 3, 1, 1), A
+
+    return r, u, p, P[:, :, 0, 0].reshape(3, 3, 1, 1), A
 
 
 def pre_axi():
@@ -76,7 +78,7 @@ def pre_axi():
     F = u.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian(F)
-    
+
     return r, u, P, A
 
 
@@ -225,6 +227,14 @@ def test_bilinearform_broadcast():
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+
+        f = np.ones((1, 1, *P.shape[-2:]))
+        a = fe.IntegralForm(f, p, r.dV, p, False, False)
+        y = a.integrate(parallel=parallel)
+        K = a.assemble(y, parallel=parallel).toarray()
+        assert K.shape == (r.mesh.npoints, r.mesh.npoints)
+        K = a.assemble(parallel=parallel).toarray()
+        assert K.shape == (r.mesh.npoints, r.mesh.npoints)
 
 
 def test_mixed():

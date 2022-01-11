@@ -31,9 +31,7 @@ import felupe as fe
 def pre():
 
     m = fe.Cube(n=3)
-    e = fe.Hexahedron()
-    q = fe.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
+    r = fe.RegionHexahedron(m)
 
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
@@ -69,9 +67,7 @@ def pre_broadcast():
 def pre_axi():
 
     m = fe.Rectangle(n=3)
-    e = fe.Quad()
-    q = fe.GaussLegendre(1, 2)
-    r = fe.Region(m, e, q)
+    r = fe.RegionQuad(m)
 
     u = fe.FieldAxisymmetric(r)
 

@@ -59,9 +59,9 @@ def pre_broadcast():
 
     F = u.extract(grad=True, add_identity=True)
     P = W.gradient(F)
-    A = W.hessian(F)
-
-    return r, u, p, P, A
+    A = W.hessian()
+    
+    return r, u, p, P[ :, :, 0, 0].reshape(3, 3, 1, 1), A
 
 
 def pre_axi():
@@ -76,7 +76,7 @@ def pre_axi():
     F = u.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian(F)
-
+    
     return r, u, P, A
 
 

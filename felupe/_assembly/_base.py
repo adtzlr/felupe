@@ -188,9 +188,13 @@ class IntegralForm:
         else:
 
             if not grad_v and not grad_u:
-                return np.einsum(
+                out = np.einsum(
                     "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
                 )
+                if len(out.shape) == 5:
+                    return np.einsum("aijbe->aibje", out)
+                else:
+                    return out
             elif grad_v and not grad_u:
                 return np.einsum(
                     "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
@@ -230,9 +234,7 @@ try:
                 for c in prange(ncells):  # cell "c"
                     for i in prange(dim1):  # first index "i"
                         for J in prange(dim2):  # second index "J"
-                            out[a, i, c] += (
-                                v[a, J, p, c] * fun[i, J, 0, 0] * dV[p, c]
-                            )
+                            out[a, i, c] += v[a, J, p, c] * fun[i, J, 0, 0] * dV[p, c]
 
         return out
 
@@ -250,9 +252,7 @@ try:
                 for c in prange(ncells):  # cell "c"
                     for i in prange(dim1):  # first index "i"
                         for J in prange(dim2):  # second index "J"
-                            out[a, i, c] += (
-                                v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
-                            )
+                            out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
 
         return out
 

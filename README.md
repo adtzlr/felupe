@@ -48,6 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `sym` argument to `Bilinearform.integrate()` and `Bilinearform.assemble()`.
+
 ## [2.0.1] - 2022-01-11
 
 ### Fixed

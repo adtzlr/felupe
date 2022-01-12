@@ -177,7 +177,7 @@ class BilinearForm:
 
         self._form = IntegralForm(None, v.field, self.dx, u.field, grad_v, grad_u)
 
-    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
+    def integrate(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
@@ -190,6 +190,8 @@ class BilinearForm:
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
+        sym : bool, optional (default is False)
+            Flag to active symmetric integration/assembly.
 
         Returns
         -------
@@ -217,22 +219,54 @@ class BilinearForm:
                     for b, ubasis in enumerate(u):
                         for j, ub in enumerate(ubasis):
 
-                            values[a, i, b, j] = (
-                                weakform(vb, ub, *args, **kwargs) * self.dx
-                            )
+                            if sym:
+
+                                if len(vbasis) * a + i <= len(ubasis) * b + j:
+
+                                    values[a, i, b, j] = values[b, j, a, i] = (
+                                        weakform(vb, ub, *args, **kwargs) * self.dx
+                                    )
+
+                            else:
+
+                                values[a, i, b, j] = (
+                                    weakform(vb, ub, *args, **kwargs) * self.dx
+                                )
 
         else:
 
             idx_a, idx_i, idx_b, idx_j = np.indices(values.shape[:4])
             aibj = zip(idx_a.ravel(), idx_i.ravel(), idx_b.ravel(), idx_j.ravel())
 
-            def contribution(values, a, i, b, j, args, kwargs):
-                values[a, i, b, j] = (
-                    weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
+            if sym:
+
+                len_vbasis = values.shape[1]
+                len_ubasis = values.shape[3]
+
+                mask = len_vbasis * idx_a + idx_i <= len_ubasis * idx_b + idx_j
+                idx_a, idx_i, idx_b, idx_j = (
+                    idx_a[mask],
+                    idx_i[mask],
+                    idx_b[mask],
+                    idx_j[mask],
                 )
 
+            def contribution(values, a, i, b, j, sym, args, kwargs):
+
+                if sym:
+                    values[a, i, b, j] = values[b, j, a, i] = (
+                        weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
+                    )
+
+                else:
+                    values[a, i, b, j] = (
+                        weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
+                    )
+
             threads = [
-                Thread(target=contribution, args=(values, a, i, b, j, args, kwargs))
+                Thread(
+                    target=contribution, args=(values, a, i, b, j, sym, args, kwargs)
+                )
                 for a, i, b, j in aibj
             ]
 
@@ -244,7 +278,7 @@ class BilinearForm:
 
         return values.sum(-2)
 
-    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
+    def assemble(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
         r"""Return the assembled integral as sparse matrix.
 
         Parameters
@@ -257,6 +291,8 @@ class BilinearForm:
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
+        sym : bool, optional (default is False)
+            Flag to active symmetric integration/assembly.
 
         Returns
         -------
@@ -264,7 +300,7 @@ class BilinearForm:
             The assembled sparse matrix.
         """
 
-        values = self.integrate(weakform, args, kwargs, parallel=parallel)
+        values = self.integrate(weakform, args, kwargs, parallel=parallel, sym=sym)
 
         return self._form.assemble(values)
 

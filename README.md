@@ -51,6 +51,9 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `sym` argument to `Bilinearform.integrate()` and `Bilinearform.assemble()`.
 
+### Changed
+- Improve evaluation times of both symmetric and non-symmetric crossed-dyadic products.
+
 ## [2.0.1] - 2022-01-11
 
 ### Fixed

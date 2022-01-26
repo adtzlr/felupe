@@ -178,17 +178,27 @@ def trace(A):
 
 def cdya_ik(A, B):
     "ik - crossed dyadic-product of A and B."
-    return np.einsum("ij...,kl...->ikjl...", A, B, optimize=True)
+    n = 4 + np.arange(len(A.shape[-2:]))
+
+    # np.einsum("ij...,kl...->ikjl...", A, B)
+    return dya(A, B).transpose([0, 2, 1, 3, *n])
 
 
 def cdya_il(A, B):
     "il - crossed dyadic-product of A and B."
-    return np.einsum("ij...,kl...->ilkj...", A, B, optimize=True)
+    n = 4 + np.arange(len(A.shape[-2:]))
+
+    # np.einsum("ij...,kl...->ilkj...", A, B)
+    return dya(A, B).transpose([0, 3, 2, 1, *n])
 
 
 def cdya(A, B):
     "symmetric - crossed dyadic-product of A and B."
-    return (cdya_ik(A, B) + cdya_il(A, B)) * 0.5
+    AB = dya(A / np.sqrt(2), B / np.sqrt(2))
+    n = 4 + np.arange(len(A.shape[-2:]))
+
+    # (cdya_ik(A, B) + cdya_il(A, B)) / 2
+    return AB.transpose([0, 2, 1, 3, *n]) + AB.transpose([0, 3, 2, 1, *n])
 
 
 def cross(a, b):

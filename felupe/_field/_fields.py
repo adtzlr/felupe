@@ -41,8 +41,9 @@ from ..region._templates import (
     RegionTetraMINI,
 )
 
+
 class FieldsMixed(FieldMixed):
-    r"""A mixed field based on a region and returns a :class:`FieldMixed` 
+    r"""A mixed field based on a region and returns a :class:`FieldMixed`
     instance."""
 
     def __init__(self, region, n=3, values=(0, 0, 1, 0)):
@@ -50,7 +51,7 @@ class FieldsMixed(FieldMixed):
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
         is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
         are generated and passed to :class:`FieldMixed` .
-        
+
         Arguments
         ---------
         region : Region
@@ -61,7 +62,7 @@ class FieldsMixed(FieldMixed):
         values : tuple, optional (default is (0, 0, 1, 0))
             Initial field values.
         """
-        
+
         regions = {
             RegionHexahedron: RegionConstantHexahedron,
             RegionQuad: RegionConstantQuad,
@@ -72,13 +73,12 @@ class FieldsMixed(FieldMixed):
             RegionTetraMINI: RegionTetra,
             RegionTriangleMINI: RegionTriangle,
         }
-        
+
         region0 = regions[type(region)](region.mesh)
-        
+
         fields = [Field(region, dim=region.mesh.dim, values=values[0])]
-        
+
         for a in range(1, n):
             fields.append(Field(region0, values=values[a]))
-        
+
         super().__init__(fields=tuple(fields))
-    

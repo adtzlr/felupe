@@ -49,7 +49,7 @@ class Result:
 def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
-    if "mixed" in str(type(x)):
+    if "mixed" in str(type(x)).lower():
 
         L = IntegralFormMixed(
             fun=umat.gradient(
@@ -74,7 +74,7 @@ def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
 def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
-    if "mixed" in str(type(x)):
+    if "mixed" in str(type(x)).lower():
 
         a = IntegralFormMixed(
             fun=umat.hessian(*x.extract(grad=grad, add_identity=add_identity, sym=sym)),
@@ -104,7 +104,7 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
 
     dx = fesolve.solve(*system, ext0, solver=solver)
 
-    if "mixed" in str(type(x)):
+    if "mixed" in str(type(x)).lower():
         return np.split(dx, offsets)
 
     else:

@@ -15,3 +15,8 @@ Field
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autoclass:: felupe.FieldsMixed
+   :members:
+   :undoc-members:
+   :inherited-members:

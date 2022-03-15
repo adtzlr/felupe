@@ -119,13 +119,21 @@ def test_bilinearform():
     K2 = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(
         bform_grad, args=(F,), parallel=False
     )
+    K2s = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(
+        bform_grad, args=(F,), parallel=False, sym=True
+    )
     Kp = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(
         bform_grad, args=(F,), parallel=True
+    )
+    Kps = fe.BilinearForm(v=b, grad_v=True, u=b, grad_u=True).assemble(
+        bform_grad, args=(F,), parallel=True, sym=True
     )
 
     assert K1.shape == (81, 81)
     assert K2.shape == (81, 81)
     assert np.allclose(K2.toarray(), Kp.toarray())
+    assert np.allclose(K2.toarray(), K2s.toarray())
+    assert np.allclose(Kp.toarray(), Kps.toarray())
 
 
 def test_linearform_mixed():

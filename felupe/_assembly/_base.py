@@ -230,10 +230,10 @@ try:
         out = np.zeros((npoints, dim1, ncells))
 
         for a in prange(npoints):  # basis function "a"
-            for p in prange(ngauss):  # integration point "p"
+            for p in range(ngauss):  # integration point "p"
                 for c in prange(ncells):  # cell "c"
                     for i in prange(dim1):  # first index "i"
-                        for J in prange(dim2):  # second index "J"
+                        for J in range(dim2):  # second index "J"
                             out[a, i, c] += v[a, J, p, c] * fun[i, J, 0, 0] * dV[p, c]
 
         return out
@@ -248,10 +248,10 @@ try:
         out = np.zeros((npoints, dim1, ncells))
 
         for a in prange(npoints):  # basis function "a"
-            for p in prange(ngauss):  # integration point "p"
+            for p in range(ngauss):  # integration point "p"
                 for c in prange(ncells):  # cell "c"
                     for i in prange(dim1):  # first index "i"
-                        for J in prange(dim2):  # second index "J"
+                        for J in range(dim2):  # second index "J"
                             out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
 
         return out
@@ -266,14 +266,14 @@ try:
 
         out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
 
-        for p in prange(ngauss):  # integration point "p"
+        for p in range(ngauss):  # integration point "p"
             for c in prange(ncells):  # cell "c"
                 for a in prange(npoints_a):  # basis function "a"
                     for b in prange(npoints_b):  # basis function "b"
                         for i in prange(dim1):  # first index "i"
-                            for J in prange(dim2):  # second index "J"
+                            for J in range(dim2):  # second index "J"
                                 for k in prange(dim3):  # third index "k"
-                                    for L in prange(dim4):  # fourth index "L"
+                                    for L in range(dim4):  # fourth index "L"
                                         out[a, i, b, k, c] += (
                                             v[a, J, p, c]
                                             * u[b, L, p, c]
@@ -293,14 +293,14 @@ try:
 
         out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
 
-        for p in prange(ngauss):  # integration point "p"
+        for p in range(ngauss):  # integration point "p"
             for c in prange(ncells):  # cell "c"
                 for a in prange(npoints_a):  # basis function "a"
                     for b in prange(npoints_b):  # basis function "b"
                         for i in prange(dim1):  # first index "i"
-                            for J in prange(dim2):  # second index "J"
+                            for J in range(dim2):  # second index "J"
                                 for k in prange(dim3):  # third index "k"
-                                    for L in prange(dim4):  # fourth index "L"
+                                    for L in range(dim4):  # fourth index "L"
                                         out[a, i, b, k, c] += (
                                             v[a, J, p, c]
                                             * u[b, L, p, c]
@@ -309,7 +309,6 @@ try:
                                         )
 
         return out
-
 
 except:
     pass

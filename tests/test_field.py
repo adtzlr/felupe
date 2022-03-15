@@ -64,9 +64,11 @@ def pre_mixed():
     J = fe.Field(r, values=1)
 
     f = fe.FieldMixed((u, p, J))
+    g = fe.FieldsMixed(fe.RegionHexahedron(m), n=3)
 
     u.values[0] = np.ones(3)
     assert np.all(f.values[0][0] == 1)
+    assert len(g.fields) == 3
 
     return r, f, u, p, J
 

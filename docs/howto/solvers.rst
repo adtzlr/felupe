@@ -27,7 +27,7 @@ Solvers from SciPy Sparse:
       # ...
       
       def solver(A, b):
-          return spla.spsolve_triangular(tril(A).tocsr(), b)
+          return spla.spsolve_triangular(tril(A).tocsr(), b).squeeze()
       
       system = fe.solve.partition(field, K, dof1, dof0)
       fe.solve.solve(*system)

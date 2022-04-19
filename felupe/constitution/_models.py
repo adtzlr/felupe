@@ -221,7 +221,9 @@ class LinearElasticTensorNotation:
 
     """
 
-    def __init__(self, E=None, nu=None):
+    def __init__(self, E=None, nu=None, parallel=False):
+        
+        self.parallel = parallel
 
         self.E = E
         self.nu = nu
@@ -305,7 +307,7 @@ class LinearElasticTensorNotation:
         # convert to lame constants
         mu, gamma = self._lame_converter(E, nu)
 
-        elast = 2 * mu * cdya(I, I) + gamma * dya(I, I)
+        elast = 2 * mu * cdya(I, I, parallel=self.parallel) + gamma * dya(I, I, parallel=self.parallel)
 
         return elast
 
@@ -767,7 +769,9 @@ class NeoHooke:
 
     """
 
-    def __init__(self, mu=None, bulk=None):
+    def __init__(self, mu=None, bulk=None, parallel=False):
+        
+        self.parallel = parallel
 
         self.mu = mu
         self.bulk = bulk
@@ -798,7 +802,7 @@ class NeoHooke:
             bulk = self.bulk
 
         J = det(F)
-        C = dot(transpose(F), F)
+        C = dot(transpose(F), F, parallel=self.parallel)
 
         W = mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 
@@ -827,7 +831,7 @@ class NeoHooke:
         J = det(F)
         iFT = transpose(inv(F, J))
 
-        Pdev = mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
+        Pdev = mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
         Pvol = bulk * (J - 1) * J * iFT
 
         return Pdev + Pvol
@@ -859,11 +863,11 @@ class NeoHooke:
         A4_dev = (
             mu
             * (
-                cdya_ik(eye, eye)
-                - 2 / 3 * dya(F, iFT)
-                - 2 / 3 * dya(iFT, F)
-                + 2 / 9 * ddot(F, F) * dya(iFT, iFT)
-                + 1 / 3 * ddot(F, F) * cdya_il(iFT, iFT)
+                cdya_ik(eye, eye, parallel=self.parallel)
+                - 2 / 3 * dya(F, iFT, parallel=self.parallel)
+                - 2 / 3 * dya(iFT, F, parallel=self.parallel)
+                + 2 / 9 * ddot(F, F, parallel=self.parallel) * dya(iFT, iFT, parallel=self.parallel)
+                + 1 / 3 * ddot(F, F, parallel=self.parallel) * cdya_il(iFT, iFT, parallel=self.parallel)
             )
             * J ** (-2 / 3)
         )
@@ -871,6 +875,6 @@ class NeoHooke:
         p = bulk * (J - 1)
         q = p + bulk * J
 
-        A4_vol = J * (q * dya(iFT, iFT) - p * cdya_il(iFT, iFT))
+        A4_vol = J * (q * dya(iFT, iFT, parallel=self.parallel) - p * cdya_il(iFT, iFT, parallel=self.parallel))
 
         return A4_dev + A4_vol

@@ -50,8 +50,8 @@ class LineChange:
        \frac{\partial \boldsymbol{F}}{\partial \boldsymbol{F}} = \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, parallel=False):
+        self.parallel = parallel
 
     def function(self, F):
         """Line change.
@@ -83,7 +83,7 @@ class LineChange:
         """
 
         Eye = identity(F)
-        return cdya_ik(Eye, Eye)
+        return cdya_ik(Eye, Eye, parallel=self.parallel)
 
 
 class AreaChange:
@@ -101,8 +101,8 @@ class AreaChange:
 
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, parallel=False):
+        self.parallel = parallel
 
     def function(self, F):
         """Area change.
@@ -136,7 +136,7 @@ class AreaChange:
 
         J = det(F)
         dJdF = self.function(F)
-        return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
+        return (dya(dJdF, dJdF, parallel=self.parallel) - cdya_il(dJdF, dJdF, parallel=self.parallel)) / J
 
 
 class VolumeChange:
@@ -156,8 +156,8 @@ class VolumeChange:
 
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, parallel=False):
+        self.parallel = parallel
 
     def function(self, F):
         """Gradient of volume change.
@@ -207,4 +207,4 @@ class VolumeChange:
 
         J = self.function(F)
         dJdF = self.gradient(F)
-        return (dya(dJdF, dJdF) - cdya_il(dJdF, dJdF)) / J
+        return (dya(dJdF, dJdF, parallel=self.parallel) - cdya_il(dJdF, dJdF, parallel=self.parallel)) / J

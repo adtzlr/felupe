@@ -51,6 +51,14 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `sym` argument to `Bilinearform.integrate()` and `Bilinearform.assemble()`.
 - Add `FieldsMixed` which creates a `FieldMixed` of length `n` based on a template region.
+- Add function to mirror a Mesh `mesh.tools.mirror()`.
+- Add a new `parallel` assembly that uses a threaded version of `np.einsum` instead ([einsumt](https://pypi.org/project/einsumt/)).
+- Add parallel versions of math helpers (`dya`, `cdya`, `dot`, `ddot`) using ([einsumt](https://pypi.org/project/einsumt/)).
+- Add `parallel` keyword to constitutive models (`NeoHooke`, `LinearElasticTensorNotation` and `ThreeFieldVariation`).
+
+### Changed
+- Enforce consistent arguments for functions inside `mesh.tools` (`points, cells, cell_data` or `Mesh`).
+- Rename Numba-`parallel` assembly to `jit`.
 
 ## [2.0.1] - 2022-01-11
 

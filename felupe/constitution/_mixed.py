@@ -159,10 +159,12 @@ class ThreeFieldVariation:
 
     """
 
-    def __init__(self, material):
+    def __init__(self, material, parallel=False):
 
         self.fun_P = material.gradient
         self.fun_A = material.hessian
+
+        self.parallel = parallel
 
     def _gradient_u(self, F, p, J):
         """Variation of total potential w.r.t displacements
@@ -270,7 +272,7 @@ class ThreeFieldVariation:
         self.Fb = (J / self.detF) ** (1 / 3) * F
         self.Pb = self.fun_P(self.Fb)
         self.Pbb = (J / self.detF) ** (1 / 3) * self.Pb
-        self.PbbF = ddot(self.Pbb, F)
+        self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
 
         return [
             self._gradient_u(F, p, J),
@@ -320,14 +322,16 @@ class ThreeFieldVariation:
         self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb)
 
         self.eye = identity(F)
-        self.P4 = cdya_ik(self.eye, self.eye) - 1 / 3 * dya(F, self.iFT)
+        self.P4 = cdya_ik(self.eye, self.eye, parallel=self.parallel) - 1 / 3 * dya(
+            F, self.iFT, parallel=self.parallel
+        )
         self.A4b = self.fun_A(self.Fb)
         self.A4bb = (J / self.detF) ** (2 / 3) * self.A4b
 
-        self.PbbF = ddot(self.Pbb, F)
-        self.FA4bb = ddot(F, self.A4bb)
-        self.A4bbF = ddot(self.A4bb, F)
-        self.FA4bbF = ddot(F, self.A4bbF)
+        self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
+        self.FA4bb = ddot(F, self.A4bb, parallel=self.parallel)
+        self.A4bbF = ddot(self.A4bb, F, parallel=self.parallel)
+        self.FA4bbF = ddot(F, self.A4bbF, parallel=self.parallel)
 
         return [
             self._hessian_uu(F, p, J),
@@ -369,10 +373,14 @@ class ThreeFieldVariation:
 
         A4 = (
             self.A4bb
-            + self.FA4bbF * dya(self.iFT, self.iFT) / 9
-            - (dya(PbbA4bbF, self.iFT) + dya(self.iFT, PbbFA4bb)) / 3
-            + pJ9 * dya(self.iFT, self.iFT)
-            - pJ3 * cdya_il(self.iFT, self.iFT)
+            + self.FA4bbF * dya(self.iFT, self.iFT, parallel=self.parallel) / 9
+            - (
+                dya(PbbA4bbF, self.iFT, parallel=self.parallel)
+                + dya(self.iFT, PbbFA4bb, parallel=self.parallel)
+            )
+            / 3
+            + pJ9 * dya(self.iFT, self.iFT, parallel=self.parallel)
+            - pJ3 * cdya_il(self.iFT, self.iFT, parallel=self.parallel)
         )
 
         return A4

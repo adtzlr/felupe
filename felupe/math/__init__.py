@@ -31,3 +31,7 @@ from ._field import (
     interpolate,
     grad,
 )
+
+from ._spatial import (
+    rotation_matrix,
+)

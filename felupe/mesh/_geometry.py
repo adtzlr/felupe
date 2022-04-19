@@ -36,9 +36,7 @@ class Line(Mesh):
         self.b = b
         self.n = n
 
-        points, cells = line_line(a, b, n)
-
-        cell_type = "line"
+        points, cells, cell_type = line_line(a, b, n)
 
         super().__init__(points, cells, cell_type)
 
@@ -49,8 +47,7 @@ class Rectangle(Mesh):
         self.b = b
         self.n = n
 
-        points, cells = rectangle_quad(a, b, n)
-        cell_type = "quad"
+        points, cells, cell_type = rectangle_quad(a, b, n)
 
         super().__init__(points, cells, cell_type)
 
@@ -61,8 +58,7 @@ class Cube(Mesh):
         self.b = b
         self.n = n
 
-        points, cells = cube_hexa(a, b, n)
-        cell_type = "hexahedron"
+        points, cells, cell_type = cube_hexa(a, b, n)
 
         super().__init__(points, cells, cell_type)
 

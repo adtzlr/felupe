@@ -1,10 +1,12 @@
 from ._mesh import Mesh
 from ._tools import (
     expand,
-    rotation_matrix,
     rotate,
     revolve,
     sweep,
+    mirror,
+)
+from ._convert import (
     convert,
     collect_edges,
     collect_faces,

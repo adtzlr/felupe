@@ -61,6 +61,9 @@ def test_meshes():
         fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=361, axis=0)
 
     fe.mesh.expand(m.points, m.cells, m.cell_type)
+    fe.mesh.expand(m.points, m.cells, cell_type=m.cell_type)
+    fe.mesh.expand(m.points, cells=m.cells, cell_type=m.cell_type)
+    fe.mesh.expand(points=m.points, cells=m.cells, cell_type=m.cell_type)
     fe.mesh.expand(m)
 
     m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))

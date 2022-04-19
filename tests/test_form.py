@@ -125,24 +125,26 @@ def test_axi():
     r, u, P, A = pre_axi()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        L = fe.IntegralFormAxisymmetric(P, u, r.dV)
-        x = L.integrate(parallel=parallel)
-
-        b = L.assemble(x, parallel=parallel).toarray()
-        assert b.shape == (r.mesh.ndof, 1)
-
-        b = L.assemble(parallel=parallel).toarray()
-        assert b.shape == (r.mesh.ndof, 1)
-
-        a = fe.IntegralFormAxisymmetric(A, u, r.dV, u)
-        y = a.integrate(parallel=parallel)
-
-        K = a.assemble(y, parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-
-        K = a.assemble(parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+            L = fe.IntegralFormAxisymmetric(P, u, r.dV)
+            x = L.integrate(parallel=parallel, jit=jit)
+    
+            b = L.assemble(x, parallel=parallel).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+    
+            b = L.assemble(parallel=parallel).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+    
+            a = fe.IntegralFormAxisymmetric(A, u, r.dV, u)
+            y = a.integrate(parallel=parallel, jit=jit)
+    
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+    
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
 
 def test_linearform():
@@ -150,20 +152,22 @@ def test_linearform():
     r, u, p, P, A = pre()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        L = fe.IntegralForm(P, u, r.dV, grad_v=True)
-        x = L.integrate(parallel=parallel)
-        b = L.assemble(x, parallel=parallel).toarray()
-        assert b.shape == (r.mesh.ndof, 1)
-        b = L.assemble(parallel=parallel).toarray()
-        assert b.shape == (r.mesh.ndof, 1)
-
-        L = fe.IntegralForm(p.interpolate(), p, r.dV)
-        x = L.integrate(parallel=parallel)
-        b = L.assemble(x, parallel=parallel).toarray()
-        assert b.shape == (r.mesh.npoints, 1)
-        b = L.assemble(parallel=parallel).toarray()
-        assert b.shape == (r.mesh.npoints, 1)
+            L = fe.IntegralForm(P, u, r.dV, grad_v=True)
+            x = L.integrate(parallel=parallel, jit=jit)
+            b = L.assemble(x, parallel=parallel).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+            b = L.assemble(parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+    
+            L = fe.IntegralForm(p.interpolate(), p, r.dV)
+            x = L.integrate(parallel=parallel, jit=jit)
+            b = L.assemble(x, parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.npoints, 1)
+            b = L.assemble(parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.npoints, 1)
 
 
 def test_linearform_broadcast():
@@ -171,20 +175,22 @@ def test_linearform_broadcast():
     r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        L = fe.IntegralForm(P, u, r.dV, grad_v=True)
-        x = L.integrate(parallel=parallel)
-        b = L.assemble(x, parallel=parallel).toarray()
-        assert b.shape == (r.mesh.ndof, 1)
-        b = L.assemble(parallel=parallel).toarray()
-        assert b.shape == (r.mesh.ndof, 1)
-
-        L = fe.IntegralForm(p.interpolate(), p, r.dV)
-        x = L.integrate(parallel=parallel)
-        b = L.assemble(x, parallel=parallel).toarray()
-        assert b.shape == (r.mesh.npoints, 1)
-        b = L.assemble(parallel=parallel).toarray()
-        assert b.shape == (r.mesh.npoints, 1)
+            L = fe.IntegralForm(P, u, r.dV, grad_v=True)
+            x = L.integrate(parallel=parallel, jit=jit)
+            b = L.assemble(x, parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+            b = L.assemble(parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+    
+            L = fe.IntegralForm(p.interpolate(), p, r.dV)
+            x = L.integrate(parallel=parallel, jit=jit)
+            b = L.assemble(x, parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.npoints, 1)
+            b = L.assemble(parallel=parallel, jit=jit).toarray()
+            assert b.shape == (r.mesh.npoints, 1)
 
 
 def test_bilinearform():
@@ -192,20 +198,22 @@ def test_bilinearform():
     r, u, p, P, A = pre()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        a = fe.IntegralForm(A, u, r.dV, u, True, True)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-        K = a.assemble(parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-
-        a = fe.IntegralForm(P, u, r.dV, p, True, False)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.npoints)
-        K = a.assemble(parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+            a = fe.IntegralForm(A, u, r.dV, u, True, True)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+    
+            a = fe.IntegralForm(P, u, r.dV, p, True, False)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
 
 def test_bilinearform_broadcast():
@@ -213,29 +221,31 @@ def test_bilinearform_broadcast():
     r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        a = fe.IntegralForm(A, u, r.dV, u, True, True)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-        K = a.assemble(parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-
-        a = fe.IntegralForm(P, u, r.dV, p, True, False)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.npoints)
-        K = a.assemble(parallel=parallel).toarray()
-        assert K.shape == (r.mesh.ndof, r.mesh.npoints)
-
-        q = p.interpolate()
-        f = fe.math.dya(q, q, mode=1)
-        a = fe.IntegralForm(f, p, r.dV, p, False, False)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        assert K.shape == (r.mesh.npoints, r.mesh.npoints)
-        K = a.assemble(parallel=parallel).toarray()
-        assert K.shape == (r.mesh.npoints, r.mesh.npoints)
+            a = fe.IntegralForm(A, u, r.dV, u, True, True)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+    
+            a = fe.IntegralForm(P, u, r.dV, p, True, False)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+    
+            q = p.interpolate()
+            f = fe.math.dya(q, q, mode=1)
+            a = fe.IntegralForm(f, p, r.dV, p, False, False)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.npoints, r.mesh.npoints)
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.npoints, r.mesh.npoints)
 
 
 def test_mixed():
@@ -243,40 +253,44 @@ def test_mixed():
     r, v, f, A = pre_mixed()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        a = fe.IntegralFormMixed(A, v, r.dV, v)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        K = a.assemble(parallel=parallel).toarray()
-
-        z = r.mesh.ndof + 2 * r.mesh.npoints
-        assert K.shape == (z, z)
-
-        L = fe.IntegralFormMixed(f, v, r.dV)
-        x = L.integrate(parallel=parallel)
-        b = L.assemble(x, parallel=parallel).toarray()
-        b = L.assemble(parallel=parallel).toarray()
-
-        assert b.shape == (z, 1)
+            a = fe.IntegralFormMixed(A, v, r.dV, v)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+    
+            z = r.mesh.ndof + 2 * r.mesh.npoints
+            assert K.shape == (z, z)
+    
+            L = fe.IntegralFormMixed(f, v, r.dV)
+            x = L.integrate(parallel=parallel, jit=jit)
+            b = L.assemble(x, parallel=parallel, jit=jit).toarray()
+            b = L.assemble(parallel=parallel, jit=jit).toarray()
+    
+            assert b.shape == (z, 1)
 
     r, v, f, A = pre_axi_mixed()
 
     for parallel in [False, True]:
+        
+        for jit in [False, True]:
 
-        a = fe.IntegralFormMixed(A, v, r.dV, v)
-        y = a.integrate(parallel=parallel)
-        K = a.assemble(y, parallel=parallel).toarray()
-        K = a.assemble(parallel=parallel).toarray()
-
-        z = r.mesh.ndof + 2 * r.mesh.npoints
-        assert K.shape == (z, z)
-
-        L = fe.IntegralFormMixed(f, v, r.dV)
-        x = L.integrate(parallel=parallel)
-        b = L.assemble(x, parallel=parallel).toarray()
-        b = L.assemble(parallel=parallel).toarray()
-
-        assert b.shape == (z, 1)
+            a = fe.IntegralFormMixed(A, v, r.dV, v)
+            y = a.integrate(parallel=parallel, jit=jit)
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+    
+            z = r.mesh.ndof + 2 * r.mesh.npoints
+            assert K.shape == (z, z)
+    
+            L = fe.IntegralFormMixed(f, v, r.dV)
+            x = L.integrate(parallel=parallel, jit=jit)
+            b = L.assemble(x, parallel=parallel, jit=jit).toarray()
+            b = L.assemble(parallel=parallel, jit=jit).toarray()
+    
+            assert b.shape == (z, 1)
 
 
 if __name__ == "__main__":

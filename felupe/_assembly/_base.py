@@ -26,6 +26,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+try:
+    from einsumt import einsumt
+except:
+    print("ImportWarning: Module `einsumt` not found. Fall back to `np.einsum()`.")
+    from numpy import einsum as einsumt
 from scipy.sparse import csr_matrix as sparsematrix
 
 
@@ -133,11 +138,11 @@ class IntegralForm:
             self.indices = (eaibk0, eaibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
-    def assemble(self, values=None, parallel=False):
+    def assemble(self, values=None, parallel=True, jit=False):
         "Assembly of sparse region vectors or matrices."
 
         if values is None:
-            values = self.integrate(parallel=parallel)
+            values = self.integrate(parallel=parallel, jit=jit)
 
         permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
             int
@@ -149,7 +154,7 @@ class IntegralForm:
 
         return out
 
-    def integrate(self, parallel=False):
+    def integrate(self, parallel=False, jit=False):
         "Return evaluated (but not assembled) integrals."
 
         grad_v, grad_u = self.grad_v, self.grad_u
@@ -173,13 +178,20 @@ class IntegralForm:
         if u is None:
 
             if not grad_v:
-                return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
-            else:
                 if parallel:
+                    return einsumt("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
+                else:
+                    return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
+            else:
+                if jit:
                     if fun.shape[-2:] == (1, 1):
                         return integrate_gradv_broadcast(vb, fun, dV)
                     else:
                         return integrate_gradv(vb, fun, dV)
+                elif parallel:
+                    return einsumt(
+                        "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
+                    )
                 else:
                     return np.einsum(
                         "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
@@ -188,27 +200,49 @@ class IntegralForm:
         else:
 
             if not grad_v and not grad_u:
-                out = np.einsum(
-                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
-                )
+                if parallel:
+                    out = einsumt(
+                        "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
+                    )
+                else:
+                    out = np.einsum(
+                        "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
+                    )
                 if len(out.shape) == 5:
-                    return np.einsum("aijbe->aibje", out)
+                    if parallel:
+                        return einsumt("aijbe->aibje", out)
+                    else:
+                        return np.einsum("aijbe->aibje", out)
                 else:
                     return out
             elif grad_v and not grad_u:
-                return np.einsum(
-                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
-                )
-            elif not grad_v and grad_u:
-                return np.einsum(
-                    "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
-                )
-            else:  # grad_v and grad_u
                 if parallel:
+                    return einsumt(
+                        "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
+                    )
+                else:
+                    return np.einsum(
+                        "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
+                    )
+            elif not grad_v and grad_u:
+                if parallel:
+                    return einsumt(
+                        "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
+                    )
+                else:
+                    return np.einsum(
+                        "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
+                    )
+            else:  # grad_v and grad_u
+                if jit:
                     if fun.shape[-2:] == (1, 1):
                         return integrate_gradv_gradu_broadcast(vb, fun, ub, dV)
                     else:
                         return integrate_gradv_gradu(vb, fun, ub, dV)
+                elif parallel:
+                    return einsumt(
+                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
+                    )
                 else:
                     return np.einsum(
                         "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
@@ -216,11 +250,11 @@ class IntegralForm:
 
 
 try:
-    from numba import jit, prange
+    from numba import jit as numba_jit, prange
 
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 
-    @jit(**jitargs)
+    @numba_jit(**jitargs)
     def integrate_gradv_broadcast(v, fun, dV):  # pragma: no cover
 
         npoints = v.shape[0]
@@ -238,7 +272,7 @@ try:
 
         return out
 
-    @jit(**jitargs)
+    @numba_jit(**jitargs)
     def integrate_gradv(v, fun, dV):  # pragma: no cover
 
         npoints = v.shape[0]
@@ -256,7 +290,7 @@ try:
 
         return out
 
-    @jit(**jitargs)
+    @numba_jit(**jitargs)
     def integrate_gradv_gradu_broadcast(v, fun, u, dV):  # pragma: no cover
 
         npoints_a = v.shape[0]
@@ -283,7 +317,7 @@ try:
 
         return out
 
-    @jit(**jitargs)
+    @numba_jit(**jitargs)
     def integrate_gradv_gradu(v, fun, u, dV):  # pragma: no cover
 
         npoints_a = v.shape[0]

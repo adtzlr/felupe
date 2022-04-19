@@ -163,7 +163,7 @@ class ThreeFieldVariation:
 
         self.fun_P = material.gradient
         self.fun_A = material.hessian
-        
+
         self.parallel = parallel
 
     def _gradient_u(self, F, p, J):
@@ -322,7 +322,9 @@ class ThreeFieldVariation:
         self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb)
 
         self.eye = identity(F)
-        self.P4 = cdya_ik(self.eye, self.eye, parallel=self.parallel) - 1 / 3 * dya(F, self.iFT, parallel=self.parallel)
+        self.P4 = cdya_ik(self.eye, self.eye, parallel=self.parallel) - 1 / 3 * dya(
+            F, self.iFT, parallel=self.parallel
+        )
         self.A4b = self.fun_A(self.Fb)
         self.A4bb = (J / self.detF) ** (2 / 3) * self.A4b
 
@@ -372,7 +374,11 @@ class ThreeFieldVariation:
         A4 = (
             self.A4bb
             + self.FA4bbF * dya(self.iFT, self.iFT, parallel=self.parallel) / 9
-            - (dya(PbbA4bbF, self.iFT, parallel=self.parallel) + dya(self.iFT, PbbFA4bb, parallel=self.parallel)) / 3
+            - (
+                dya(PbbA4bbF, self.iFT, parallel=self.parallel)
+                + dya(self.iFT, PbbFA4bb, parallel=self.parallel)
+            )
+            / 3
             + pJ9 * dya(self.iFT, self.iFT, parallel=self.parallel)
             - pJ3 * cdya_il(self.iFT, self.iFT, parallel=self.parallel)
         )

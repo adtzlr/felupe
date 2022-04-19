@@ -34,7 +34,7 @@ from ..math import rotation_matrix
 @mesh_or_data
 def expand(points, cells, cell_type, n=11, z=1):
     """Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.
-    
+
     Parameters
     ----------
     points : list or ndarray
@@ -47,7 +47,7 @@ def expand(points, cells, cell_type, n=11, z=1):
         Number of n-point repetitions or (n-1)-cell repetitions
     z : int, optional (default is 1)
         Total expand dimension (edge length in expand direction is z / n)
-    
+
     Returns
     -------
     points : ndarray
@@ -57,11 +57,11 @@ def expand(points, cells, cell_type, n=11, z=1):
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
     """
-    
+
     # ensure points, cells as ndarray
     points = np.array(points)
     cells = np.array(cells)
-    
+
     # get dimension of points array
     # init zero vector of input dimension
     dim = points.shape[1]
@@ -75,7 +75,7 @@ def expand(points, cells, cell_type, n=11, z=1):
 
     # init new padded points array
     p = np.pad(points, ((0, 0), (0, 1)))
-    
+
     # generate new points array for every thickness expansion ``h``
     points_new = np.vstack([p + np.array([*zeros, h]) for h in np.linspace(0, z, n)])
 
@@ -89,7 +89,7 @@ def expand(points, cells, cell_type, n=11, z=1):
 @mesh_or_data
 def rotate(points, cells, cell_type, angle_deg, axis, center=None):
     """Rotate a Mesh.
-    
+
     Parameters
     ----------
     points : list or ndarray
@@ -104,7 +104,7 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
         Rotation axis.
     center : list or ndarray or None, optional (default is None)
         Center point coordinates.
-    
+
     Returns
     -------
     points : ndarray
@@ -134,7 +134,7 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
 @mesh_or_data
 def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
     """Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
-    
+
     Parameters
     ----------
     points : list or ndarray
@@ -149,7 +149,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         Revolution angle in degree.
     axis : int, optional (default is 0)
         Revolution axis.
-    
+
     Returns
     -------
     points : ndarray
@@ -164,7 +164,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
     cells = np.array(cells)
 
     dim = points.shape[1]
-    
+
     # set new cell-type and the appropriate slice
     cell_type_new, sl = {
         # "line": ("quad", slice(None, None, -1)),
@@ -195,9 +195,9 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 @mesh_or_data
 def sweep(points, cells, cell_type, decimals=None):
     """Sweep duplicated points and update cells of a Mesh.
-    
+
     **WARNING**: This function sorts points.
-    
+
     Parameters
     ----------
     points : list or ndarray
@@ -208,7 +208,7 @@ def sweep(points, cells, cell_type, decimals=None):
         A string in VTK-convention that specifies the cell type.
     decimals : int or None, optional (default is None)
         Number of decimals for point coordinate comparison.
-    
+
     Returns
     -------
     points : ndarray
@@ -243,10 +243,12 @@ def sweep(points, cells, cell_type, decimals=None):
 
 
 @mesh_or_data
-def mirror(points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):
+def mirror(
+    points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None
+):
     """Mirror points by plane normal and ensure positive cell volumes for
     `tria`, `tetra`, `quad` and `hexahedron` cell types.
-    
+
     Parameters
     ----------
     points : list or ndarray
@@ -261,7 +263,7 @@ def mirror(points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], ax
         Center-point coordinates on the mirror plane.
     axis: int or None, optional (default is None)
         Mirror axis.
-    
+
     Returns
     -------
     points : ndarray
@@ -270,31 +272,30 @@ def mirror(points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], ax
         Modified point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
-    
+
     """
-    
+
     points = np.array(points)
     cells = np.array(cells)
-    
+
     dim = points.shape[1]
-    
+
     # create normal vector
     if axis is not None:
         normal = np.zeros(dim)
         normal[axis] = 1
     else:
         normal = np.array(normal, dtype=float)[:dim]
-        
+
         # ensure unit vector
         normal /= np.linalg.norm(normal)
-    
+
     centerpoint = np.array(centerpoint, dtype=float)[:dim]
-    
+
     points_new = points - np.einsum(
-        "i, k, ...k -> ...i", 
-        2 * normal, normal, (points - centerpoint)
+        "i, k, ...k -> ...i", 2 * normal, normal, (points - centerpoint)
     )
-    
+
     faces_to_flip = {
         "line": ([0, 1],),
         "tria": ([0, 1, 2],),
@@ -302,10 +303,10 @@ def mirror(points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], ax
         "quad": ([0, 1, 2, 3],),
         "hexahedron": ([0, 1, 2, 3], [4, 5, 6, 7]),
     }[cell_type]
-    
+
     cells_new = cells.copy()
-    
+
     for face in faces_to_flip:
         cells_new[:, face] = cells[:, face[::-1]]
-    
+
     return points_new, cells_new, cell_type

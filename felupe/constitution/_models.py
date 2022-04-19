@@ -222,7 +222,7 @@ class LinearElasticTensorNotation:
     """
 
     def __init__(self, E=None, nu=None, parallel=False):
-        
+
         self.parallel = parallel
 
         self.E = E
@@ -307,7 +307,9 @@ class LinearElasticTensorNotation:
         # convert to lame constants
         mu, gamma = self._lame_converter(E, nu)
 
-        elast = 2 * mu * cdya(I, I, parallel=self.parallel) + gamma * dya(I, I, parallel=self.parallel)
+        elast = 2 * mu * cdya(I, I, parallel=self.parallel) + gamma * dya(
+            I, I, parallel=self.parallel
+        )
 
         return elast
 
@@ -770,7 +772,7 @@ class NeoHooke:
     """
 
     def __init__(self, mu=None, bulk=None, parallel=False):
-        
+
         self.parallel = parallel
 
         self.mu = mu
@@ -866,8 +868,14 @@ class NeoHooke:
                 cdya_ik(eye, eye, parallel=self.parallel)
                 - 2 / 3 * dya(F, iFT, parallel=self.parallel)
                 - 2 / 3 * dya(iFT, F, parallel=self.parallel)
-                + 2 / 9 * ddot(F, F, parallel=self.parallel) * dya(iFT, iFT, parallel=self.parallel)
-                + 1 / 3 * ddot(F, F, parallel=self.parallel) * cdya_il(iFT, iFT, parallel=self.parallel)
+                + 2
+                / 9
+                * ddot(F, F, parallel=self.parallel)
+                * dya(iFT, iFT, parallel=self.parallel)
+                + 1
+                / 3
+                * ddot(F, F, parallel=self.parallel)
+                * cdya_il(iFT, iFT, parallel=self.parallel)
             )
             * J ** (-2 / 3)
         )
@@ -875,6 +883,9 @@ class NeoHooke:
         p = bulk * (J - 1)
         q = p + bulk * J
 
-        A4_vol = J * (q * dya(iFT, iFT, parallel=self.parallel) - p * cdya_il(iFT, iFT, parallel=self.parallel))
+        A4_vol = J * (
+            q * dya(iFT, iFT, parallel=self.parallel)
+            - p * cdya_il(iFT, iFT, parallel=self.parallel)
+        )
 
         return A4_dev + A4_vol

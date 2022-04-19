@@ -52,37 +52,37 @@ def pre_mixed(sym, add_identity):
 
 def test_nh():
     r, F = pre(sym=False, add_identity=True)
-    
+
     for parallel in [False, True]:
 
         nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
-    
+
         W = nh.function(F)
         P = nh.gradient(F)
         A = nh.hessian(F)
-    
+
         Wx = nh.energy(F)
         Px = nh.stress(F)
         Ax = nh.elasticity(F)
-    
+
         assert np.allclose(W, Wx)
         assert np.allclose(P, Px)
         assert np.allclose(A, Ax)
-    
+
         assert W.shape == F.shape[-2:]
         assert P.shape == (3, 3, *F.shape[-2:])
         assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
-    
+
         nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
-    
+
         W = nh.function(F, mu=2.0)
         P = nh.gradient(F, mu=2.0)
         A = nh.hessian(F, mu=2.0)
-    
+
         assert W.shape == F.shape[-2:]
         assert P.shape == (3, 3, *F.shape[-2:])
         assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
-    
+
         assert np.allclose(P, 0)
 
 
@@ -97,7 +97,7 @@ def test_linear():
         (fe.constitution.LinearElasticTensorNotation, dict(parallel=False)),
         (fe.constitution.LinearElasticTensorNotation, dict(parallel=True)),
     ]:
-        
+
         LinearElastic, kwargs = Material
 
         le = LinearElastic(E=1.0, nu=0.3, **kwargs)
@@ -196,31 +196,31 @@ def test_linear_planestrain():
 
 def test_kinematics():
     r, F = pre(sym=False, add_identity=True)
-    
+
     for parallel in [False, True]:
 
         lc = fe.constitution.LineChange(parallel=parallel)
         ac = fe.constitution.AreaChange(parallel=parallel)
         vc = fe.constitution.VolumeChange(parallel=parallel)
-    
+
         xf = lc.function(F)
         xg = lc.gradient(F)
-    
+
         yf = ac.function(F)
         yg = ac.gradient(F)
-    
+
         zf = vc.function(F)
         zg = vc.gradient(F)
         zh = vc.hessian(F)
-    
+
         assert np.allclose(xf, F)
-    
+
         assert xf.shape == (3, 3, *F.shape[-2:])
         assert xg.shape == (3, 3, 3, 3, *F.shape[-2:])
-    
+
         assert yf.shape == (3, 3, *F.shape[-2:])
         assert yg.shape == (3, 3, 3, 3, *F.shape[-2:])
-    
+
         assert zf.shape == F.shape[-2:]
         assert zg.shape == (3, 3, *F.shape[-2:])
         assert zh.shape == (3, 3, 3, 3, *F.shape[-2:])
@@ -228,50 +228,52 @@ def test_kinematics():
 
 def test_wrappers():
     r, F = pre(sym=False, add_identity=True)
-    
+
     for parallel in [False, True]:
 
         nh = fe.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
-    
+
         class AsMatadi:
             def __init__(self, material):
                 self.material = material
-    
+
             def function(self, x, threads=1):
                 if len(x) == 1:
                     return [self.material.function(*x)]
                 else:
                     return self.material.function(*x)
-    
+
             def gradient(self, x, threads=1):
                 if len(x) == 1:
                     return [self.material.gradient(*x)]
                 else:
                     return self.material.gradient(*x)
-    
+
             def hessian(self, x, threads=1):
                 if len(x) == 1:
                     return [self.material.hessian(*x)]
                 else:
                     return self.material.hessian(*x)
-    
+
         umat = fe.MatadiMaterial(AsMatadi(nh))
-    
+
         W = umat.function(F)
         P = umat.gradient(F)
         A = umat.hessian(F)
-    
+
         assert W.shape == F.shape[-2:]
         assert P.shape == (3, 3, *F.shape[-2:])
         assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
-    
+
         r, FpJ = pre_mixed(sym=False, add_identity=True)
-    
-        umat = fe.MatadiMaterial(AsMatadi(fe.ThreeFieldVariation(nh, parallel=parallel)))
-    
+
+        umat = fe.MatadiMaterial(
+            AsMatadi(fe.ThreeFieldVariation(nh, parallel=parallel))
+        )
+
         P = umat.gradient(*FpJ)
         A = umat.hessian(*FpJ)
-    
+
         assert P[0].shape == (3, 3, *FpJ[0].shape[-2:])
         assert A[0].shape == (3, 3, 3, 3, *FpJ[0].shape[-2:])
 

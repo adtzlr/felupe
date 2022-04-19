@@ -136,7 +136,10 @@ class AreaChange:
 
         J = det(F)
         dJdF = self.function(F)
-        return (dya(dJdF, dJdF, parallel=self.parallel) - cdya_il(dJdF, dJdF, parallel=self.parallel)) / J
+        return (
+            dya(dJdF, dJdF, parallel=self.parallel)
+            - cdya_il(dJdF, dJdF, parallel=self.parallel)
+        ) / J
 
 
 class VolumeChange:
@@ -207,4 +210,7 @@ class VolumeChange:
 
         J = self.function(F)
         dJdF = self.gradient(F)
-        return (dya(dJdF, dJdF, parallel=self.parallel) - cdya_il(dJdF, dJdF, parallel=self.parallel)) / J
+        return (
+            dya(dJdF, dJdF, parallel=self.parallel)
+            - cdya_il(dJdF, dJdF, parallel=self.parallel)
+        ) / J

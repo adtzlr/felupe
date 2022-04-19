@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+
 try:
     from einsumt import einsumt
 except:
@@ -51,12 +52,12 @@ def sym(A):
 
 def dya(A, B, mode=2, parallel=False):
     "Dyadic (outer or kronecker) product of two tensors."
-    
+
     if parallel:
         einsum = einsumt
     else:
         einsum = np.einsum
-        
+
     if mode == 2:
         return einsum("ij...,kl...->ijkl...", A, B)
     elif mode == 1:
@@ -219,7 +220,7 @@ def cross(a, b):
 
 def dot(A, B, n=2, parallel=False):
     "Dot-product of A and B with inputs of n trailing axes.."
-    
+
     if parallel:
         einsum = einsumt
     else:
@@ -258,12 +259,12 @@ def dot(A, B, n=2, parallel=False):
 
 def ddot(A, B, n=2, parallel=False):
     "Double-Dot-product of A and B with inputs of `n` trailing axes."
-    
+
     if parallel:
         einsum = einsumt
     else:
         einsum = np.einsum
-        
+
     if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
         return einsum("ij...,ij...->...", A, B)
     elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:

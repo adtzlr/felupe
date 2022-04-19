@@ -102,43 +102,46 @@ def test_meshes():
     with pytest.raises(TypeError):
         m.save()
 
+
 def test_mirror():
-    
+
     for kwargs in [
-            dict(axis=None, normal=[1, 0, 0]),
-            dict(axis=None, normal=[1, 1, 0]),
-            dict(axis=None, normal=[1, 1, 1]),
-            dict(axis=None, normal=[-1, 1, 0]),
-            dict(axis=None, normal=[1, -5, -3]),
-            dict(axis=0, normal=[]),
-            dict(axis=1, normal=[]),
-            dict(axis=2, normal=[]),
-        ]:
-        
+        dict(axis=None, normal=[1, 0, 0]),
+        dict(axis=None, normal=[1, 1, 0]),
+        dict(axis=None, normal=[1, 1, 1]),
+        dict(axis=None, normal=[-1, 1, 0]),
+        dict(axis=None, normal=[1, -5, -3]),
+        dict(axis=0, normal=[]),
+        dict(axis=1, normal=[]),
+        dict(axis=2, normal=[]),
+    ]:
+
         axis = kwargs["axis"]
-        
+
         if axis is None or axis < 1:
-    
+
             m = fe.mesh.Line()
             r = fe.Region(m, fe.Line(), fe.GaussLegendre(1, 1))
             n = fe.mesh.mirror(m, **kwargs)
             s = fe.Region(n, fe.Line(), fe.GaussLegendre(1, 1))
             assert np.isclose(r.dV.sum(), s.dV.sum())
-        
+
         if axis is None or axis < 2:
-            
+
             m = fe.Rectangle()
             r = fe.RegionQuad(m)
             n = fe.mesh.mirror(m, **kwargs)
             s = fe.RegionQuad(n)
             assert np.isclose(r.dV.sum(), s.dV.sum())
-            
+
             m = fe.Mesh(
-                points=np.array([
-                    [0, 0], 
-                    [1, 0], 
-                    [0, 1], 
-                ]),
+                points=np.array(
+                    [
+                        [0, 0],
+                        [1, 0],
+                        [0, 1],
+                    ]
+                ),
                 cells=np.array([[0, 1, 2]]),
                 cell_type="tria",
             )
@@ -146,7 +149,7 @@ def test_mirror():
             n = fe.mesh.mirror(m, **kwargs)
             s = fe.RegionTriangle(n)
             assert np.isclose(r.dV.sum(), s.dV.sum())
-        
+
         m = fe.Cube()
         r = fe.RegionHexahedron(m)
         n = fe.mesh.mirror(m, **kwargs)
@@ -154,12 +157,7 @@ def test_mirror():
         assert np.isclose(r.dV.sum(), s.dV.sum())
 
         m = fe.Mesh(
-            points=np.array([
-                [0, 0, 0], 
-                [1, 0, 0], 
-                [0, 1, 0], 
-                [0, 0, 1]
-            ]),
+            points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]]),
             cells=np.array([[0, 1, 2, 3]]),
             cell_type="tetra",
         )

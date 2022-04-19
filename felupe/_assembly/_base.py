@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+
 try:
     from einsumt import einsumt
 except:
@@ -189,9 +190,7 @@ class IntegralForm:
                     else:
                         return integrate_gradv(vb, fun, dV)
                 elif parallel:
-                    return einsumt(
-                        "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
-                    )
+                    return einsumt("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
                 else:
                     return np.einsum(
                         "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
@@ -227,11 +226,21 @@ class IntegralForm:
             elif not grad_v and grad_u:
                 if parallel:
                     return einsumt(
-                        "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
+                        "a...pe,...kLpe,bLpe,pe->a...bke",
+                        vb,
+                        fun,
+                        ub,
+                        dV,
+                        optimize=True,
                     )
                 else:
                     return np.einsum(
-                        "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True
+                        "a...pe,...kLpe,bLpe,pe->a...bke",
+                        vb,
+                        fun,
+                        ub,
+                        dV,
+                        optimize=True,
                     )
             else:  # grad_v and grad_u
                 if jit:

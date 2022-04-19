@@ -30,7 +30,7 @@ import numpy as np
 
 def rotation_matrix(alpha_deg, dim=3, axis=0):
     """Rotation matrix with given rotation axis and dimension (2d or 3d).
-    
+
     Parameters
     ----------
     alpha_deg : int
@@ -39,16 +39,16 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
         Dimension of the rotation matrix.
     axis : int, optional (default is 0)
         Rotation axis.
-    
+
     Returns
     -------
     rotation_matrix : ndarray
         Rotation matrix of dim 2 or 3 with given rotation axis.
     """
-    
+
     a = np.deg2rad(alpha_deg)
     rotation_matrix = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
-    
+
     if dim == 3:
         # rotation_matrix = np.pad(rotation_matrix, (1, 0))
         # rotation_matrix[0, 0] = 1

@@ -1,6 +1,6 @@
 [project]
 name = "felupe"
-version = "2.1.0"
+version = "3.0.0"
 description = "Finite Element Analysis"
 readme = "README.md"
 requires-python = ">=3.6"
@@ -48,6 +48,7 @@ all = [
     "h5py",
     "numba",
     "sparse",
+    "einsumt",
 ]
 
 [project.urls]

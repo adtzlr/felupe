@@ -298,7 +298,7 @@ def mirror(
 
     faces_to_flip = {
         "line": ([0, 1],),
-        "tria": ([0, 1, 2],),
+        "triangle": ([0, 1, 2],),
         "tetra": ([0, 1, 2],),
         "quad": ([0, 1, 2, 3],),
         "hexahedron": ([0, 1, 2, 3], [4, 5, 6, 7]),

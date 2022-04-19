@@ -46,7 +46,7 @@ class Result:
         self.iterations = iterations
 
 
-def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
+def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     if "mixed" in str(type(x)).lower():
@@ -68,10 +68,10 @@ def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
             grad_v=True,
         )
 
-    return L.assemble(parallel=parallel).toarray()[:, 0]
+    return L.assemble(parallel=parallel, jit=jit).toarray()[:, 0]
 
 
-def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
+def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     if "mixed" in str(type(x)).lower():
@@ -94,7 +94,7 @@ def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
             grad_u=True,
         )
 
-    return a.assemble(parallel=parallel)
+    return a.assemble(parallel=parallel, jit=jit)
 
 
 def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):

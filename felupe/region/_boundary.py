@@ -179,6 +179,7 @@ class RegionBoundary(Region):
         faces = faces.reshape(-1, faces.shape[-1])
         volumes = volumes.reshape(-1, volumes.shape[-1])
         self._faces = faces
+        self._volumes = volumes
 
         if self.only_surface:
             # sort faces, get indices of unique faces and counts
@@ -202,7 +203,7 @@ class RegionBoundary(Region):
 
         # get faces and volumes on boundary (unique faces with one count)
         volumes_boundary = volumes[self._selection]
-
+        
         # init region and faces
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -219,11 +220,12 @@ class RegionBoundary(Region):
             self.dhdr = self._reshape(self.dhdr)
             self.dhdX = self._reshape(self.dhdX)
             self.dXdr = self._reshape(self.dXdr)
-
+        
         ## create mesh on boundary
         mesh_boundary = mesh.copy()
         mesh_boundary.update(volumes_boundary)
         self.mesh = mesh_boundary
+
 
     def _reshape(self, A):
         "Reshape data."
@@ -235,6 +237,9 @@ class RegionBoundary(Region):
         a[-3:] = a[[-2, -3, -1]]
         C = B.transpose(a)
         D = C.reshape(*A.shape[:-2], -1, self.nfaces * A.shape[-1])
+        
+        # re-order data to face connectivity
+        D = D.T[self._volumes.ravel()].T
 
         # slice faces on boundary
         return D.T[self._selection].T
@@ -263,13 +268,22 @@ class RegionBoundary(Region):
             )
 
         dA = np.stack(dA_faces) * self.quadrature.weights.reshape(-1, 1)
+        
         nfaces, dim, nqpoints, ncells = dA.shape
         nqpoints_per_face = nqpoints // nfaces
+        
+        # move faces to front
         dA = dA.reshape(nfaces, dim, nfaces, nqpoints_per_face, ncells)
         dA = np.einsum("ijk...->ikj...", dA)
+        
+        # get diagonal
         dA = np.array([dA[a, a] for a in range(dA.shape[0])])
+        
+        # move vector to front
         dA = np.einsum("ijkl...->jikl...", dA)
         dA = dA.reshape(dim, nqpoints, ncells)
+        
+        # norm and unit normal vector
         dV = np.linalg.norm(dA, axis=0)
         normals = dA / dV
 

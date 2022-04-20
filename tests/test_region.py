@@ -45,6 +45,9 @@ def test_region():
     mesh = fe.Cube()
     r = fe.RegionHexahedron(mesh)
     r = fe.RegionHexahedronBoundary(mesh)
+    r = fe.RegionHexahedronBoundary(mesh, only_surface=False)
+    r = fe.RegionHexahedronBoundary(mesh, mask=[0, 3])
+    r = fe.RegionHexahedronBoundary(mesh, only_surface=False, mask=[0, 3])
     r = fe.RegionConstantHexahedron(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)

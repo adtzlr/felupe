@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new `parallel` assembly that uses a threaded version of `np.einsum` instead ([einsumt](https://pypi.org/project/einsumt/)).
 - Add parallel versions of math helpers (`dya`, `cdya`, `dot`, `ddot`) using [einsumt](https://pypi.org/project/einsumt/).
 - Add `parallel` keyword to constitutive models (`NeoHooke`, `LinearElasticTensorNotation` and `ThreeFieldVariation`).
+- Add `RegionBoundary` along with template regions for `Quad` and `Hexahedron` and `GaussLegendreBoundary`.
 
 ### Changed
 - Enforce consistent arguments for functions inside `mesh.tools` (`points, cells, cell_data` or `Mesh`).

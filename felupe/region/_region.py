@@ -32,7 +32,10 @@ from ..math import det, inv
 
 class Region:
     r"""
-    A numeric region as a combination of a mesh, an element and a numeric integration scheme (quadrature). The gradients of the element shape functions are evaluated at all integration points of each cell in the region if the optional gradient argument is True.
+    A numeric region as a combination of a mesh, an element and a numeric
+    integration scheme (quadrature). The gradients of the element shape
+    functions are evaluated at all integration points of each cell in the
+    region if the optional gradient argument is True.
 
     .. math::
 
@@ -83,7 +86,9 @@ class Region:
         self.quadrature = quadrature
 
         # element shape function
-        self.element.h = np.array([self.element.function(p) for p in self.quadrature.points]).T
+        self.element.h = np.array(
+            [self.element.function(p) for p in self.quadrature.points]
+        ).T
         self.h = np.tile(np.expand_dims(self.element.h, -1), self.mesh.ncells)
 
         # partial derivative of element shape function

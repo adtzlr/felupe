@@ -128,7 +128,7 @@ def test_axi():
 
         for jit in [False, True]:
 
-            L = fe.IntegralFormAxisymmetric(P, u, r.dV)
+            L = fe.IntegralFormAxisymmetric(P, u, r.dV, grad_v=True)
             x = L.integrate(parallel=parallel, jit=jit)
 
             b = L.assemble(x, parallel=parallel).toarray()
@@ -137,7 +137,25 @@ def test_axi():
             b = L.assemble(parallel=parallel).toarray()
             assert b.shape == (r.mesh.ndof, 1)
 
-            a = fe.IntegralFormAxisymmetric(A, u, r.dV, u)
+            a = fe.IntegralFormAxisymmetric(A, u, r.dV, u, grad_v=True, grad_u=True)
+            y = a.integrate(parallel=parallel, jit=jit)
+
+            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+
+            K = a.assemble(parallel=parallel, jit=jit).toarray()
+            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+
+            L = fe.IntegralFormAxisymmetric(P[0], u, r.dV, grad_v=False)
+            x = L.integrate(parallel=parallel, jit=jit)
+
+            b = L.assemble(x, parallel=parallel).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+
+            b = L.assemble(parallel=parallel).toarray()
+            assert b.shape == (r.mesh.ndof, 1)
+
+            a = fe.IntegralFormAxisymmetric(A[0], u, r.dV, u, grad_v=False, grad_u=True)
             y = a.integrate(parallel=parallel, jit=jit)
 
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()

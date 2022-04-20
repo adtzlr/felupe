@@ -211,6 +211,10 @@ class RegionBoundary(Region):
 
         if grad:
             self.dA, self.dV, self.normals = self._init_faces()
+            
+            self.dA = self._reshape(self.dA)
+            self.dV = self._reshape(self.dV)
+            self.normals = self._reshape(self.normals)
 
             self.dhdr = self._reshape(self.dhdr)
             self.dhdX = self._reshape(self.dhdX)
@@ -261,13 +265,11 @@ class RegionBoundary(Region):
         dA = np.stack(dA_faces) * self.quadrature.weights.reshape(-1, 1)
         nfaces, dim, nqpoints, ncells = dA.shape
         nqpoints_per_face = nqpoints // nfaces
-        dA = np.einsum(
-            "ijk...->ikj...", dA.reshape(nfaces, dim, nfaces, nqpoints_per_face, ncells)
-        )
-        dA = np.einsum("ijkl...->jilk...", [dA[a, a] for a in range(dA.shape[0])])
+        dA = dA.reshape(nfaces, dim, nfaces, nqpoints_per_face, ncells)
+        dA = np.einsum("ijk...->ikj...", dA)
+        dA = np.array([dA[a, a] for a in range(dA.shape[0])])
+        dA = np.einsum("ijkl...->jikl...", dA)
         dA = dA.reshape(dim, nqpoints, ncells)
-
-        dA = dA.reshape(dim, -1, nfaces * ncells).T[self._selection].T
         dV = np.linalg.norm(dA, axis=0)
         normals = dA / dV
 

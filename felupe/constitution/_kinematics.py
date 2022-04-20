@@ -25,8 +25,17 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
+try:
+    from einsumt import einsumt
+except:
+    print("ImportWarning: Module `einsumt` not found. Fall back to `np.einsum()`.")
+    from numpy import einsum as einsumt
+
 from ..math import (
     transpose,
+    dot,
     inv,
     dya,
     cdya_ik,
@@ -104,13 +113,15 @@ class AreaChange:
     def __init__(self, parallel=False):
         self.parallel = parallel
 
-    def function(self, F):
+    def function(self, F, N=None):
         """Area change.
 
         Arguments
         ---------
         F : ndarray
             Deformation gradient
+        N : ndarray or None, optional
+            Area normal vector (default is None)
 
         Returns
         -------
@@ -118,15 +129,23 @@ class AreaChange:
             Cofactor matrix of the deformation gradient
         """
         J = det(F)
-        return J * transpose(inv(F, J))
 
-    def gradient(self, F):
+        Fs = J * transpose(inv(F, J))
+
+        if N is None:
+            return Fs
+        else:
+            return dot(Fs, N, parallel=self.parallel)
+
+    def gradient(self, F, N=None):
         """Gradient of area change.
 
         Arguments
         ---------
         F : ndarray
             Deformation gradient
+        N : ndarray or None, optional
+            Area normal vector (default is None)
 
         Returns
         -------
@@ -135,11 +154,22 @@ class AreaChange:
         """
 
         J = det(F)
+
         dJdF = self.function(F)
-        return (
+        dFsdF = (
             dya(dJdF, dJdF, parallel=self.parallel)
             - cdya_il(dJdF, dJdF, parallel=self.parallel)
         ) / J
+
+        if self.parallel:
+            einsum = einsumt
+        else:
+            einsum = np.einsum
+
+        if N is None:
+            return dFsdF
+        else:
+            return einsum("ijkl...,j...->ikl...", dFsdF, N)
 
 
 class VolumeChange:

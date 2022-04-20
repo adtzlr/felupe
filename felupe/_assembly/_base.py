@@ -139,7 +139,7 @@ class IntegralForm:
             self.indices = (eaibk0, eaibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
-    def assemble(self, values=None, parallel=True, jit=False):
+    def assemble(self, values=None, parallel=False, jit=False):
         "Assembly of sparse region vectors or matrices."
 
         if values is None:
@@ -162,98 +162,67 @@ class IntegralForm:
         v, u = self.v, self.u
         dV = self.dV
         fun = self.fun
+        
+        if parallel:
+            einsum = einsumt
+        else:
+            einsum = np.einsum
 
         if not grad_v:
-            vb = np.tile(v.region.h.reshape(*v.region.h.shape, 1), v.region.mesh.ncells)
+            vb = v.region.h
         else:
             vb = v.region.dhdX
 
         if u is not None:
             if not grad_u:
-                ub = np.tile(
-                    u.region.h.reshape(*u.region.h.shape, 1), u.region.mesh.ncells
-                )
+                ub = u.region.h
             else:
                 ub = u.region.dhdX
 
         if u is None:
 
             if not grad_v:
-                if parallel:
-                    return einsumt("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
-                else:
-                    return np.einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
+                return einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
             else:
                 if jit:
                     if fun.shape[-2:] == (1, 1):
                         return integrate_gradv_broadcast(vb, fun, dV)
                     else:
                         return integrate_gradv(vb, fun, dV)
-                elif parallel:
-                    return einsumt("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
                 else:
-                    return np.einsum(
-                        "aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True
-                    )
+                    return einsum("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
 
         else:
 
             if not grad_v and not grad_u:
-                if parallel:
-                    out = einsumt(
-                        "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
-                    )
-                else:
-                    out = np.einsum(
-                        "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
-                    )
+                out = einsum(
+                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
+                )
                 if len(out.shape) == 5:
-                    if parallel:
-                        return einsumt("aijbe->aibje", out)
-                    else:
-                        return np.einsum("aijbe->aibje", out)
+                    return einsum("aijbe->aibje", out)
                 else:
                     return out
             elif grad_v and not grad_u:
-                if parallel:
-                    return einsumt(
-                        "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
-                    )
-                else:
-                    return np.einsum(
+                return einsum(
                         "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
                     )
             elif not grad_v and grad_u:
-                if parallel:
-                    return einsumt(
-                        "a...pe,...kLpe,bLpe,pe->a...bke",
-                        vb,
-                        fun,
-                        ub,
-                        dV,
-                        optimize=True,
-                    )
-                else:
-                    return np.einsum(
-                        "a...pe,...kLpe,bLpe,pe->a...bke",
-                        vb,
-                        fun,
-                        ub,
-                        dV,
-                        optimize=True,
-                    )
+                return einsum(
+                    "a...pe,...kLpe,bLpe,pe->a...bke",
+                    vb,
+                    fun,
+                    ub,
+                    dV,
+                    optimize=True,
+                )
             else:  # grad_v and grad_u
                 if jit:
                     if fun.shape[-2:] == (1, 1):
                         return integrate_gradv_gradu_broadcast(vb, fun, ub, dV)
                     else:
                         return integrate_gradv_gradu(vb, fun, ub, dV)
-                elif parallel:
-                    return einsumt(
-                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
-                    )
                 else:
-                    return np.einsum(
+                    return einsum(
                         "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
                     )
 

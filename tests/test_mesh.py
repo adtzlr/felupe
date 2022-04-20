@@ -30,7 +30,7 @@ import felupe as fe
 
 
 def test_meshes():
-    
+
     m = fe.Mesh(
         points=np.array(
             [
@@ -42,18 +42,18 @@ def test_meshes():
         cells=np.array([[0, 1, 2]]),
         cell_type="triangle",
     )
-    
+
     fe.mesh.convert(m, order=0)
     fe.mesh.convert(m, order=0, calc_points=True)
     fe.mesh.convert(m, order=2)
     fe.mesh.convert(m, order=2, calc_midfaces=True)
-    
+
     m = fe.Mesh(
         points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]]),
         cells=np.array([[0, 1, 2, 3]]),
         cell_type="tetra",
     )
-    
+
     fe.mesh.convert(m, order=0)
     fe.mesh.convert(m, order=0, calc_points=True)
     fe.mesh.convert(m, order=2)

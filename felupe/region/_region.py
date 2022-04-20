@@ -83,18 +83,20 @@ class Region:
         self.quadrature = quadrature
 
         # element shape function
-        self.h = np.array([self.element.function(p) for p in self.quadrature.points]).T
+        self.element.h = np.array([self.element.function(p) for p in self.quadrature.points]).T
+        self.h = np.tile(np.expand_dims(self.element.h, -1), self.mesh.ncells)
 
         # partial derivative of element shape function
-        self.dhdr = np.array(
+        self.element.dhdr = np.array(
             [self.element.gradient(p) for p in self.quadrature.points]
         ).transpose(1, 2, 0)
+        self.dhdr = np.tile(np.expand_dims(self.element.dhdr, -1), self.mesh.ncells)
 
         if grad:
 
             # geometric gradient
             self.dXdr = np.einsum(
-                "caI,aJp->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
+                "caI,aJpc->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
             )
 
             # inverse of dXdr
@@ -105,4 +107,4 @@ class Region:
 
             # Partial derivative of element shape function
             # w.r.t. undeformed coordinates
-            self.dhdX = np.einsum("aIp,IJpc->aJpc", self.dhdr, self.drdX)
+            self.dhdX = np.einsum("aIpc,IJpc->aJpc", self.dhdr, self.drdX)

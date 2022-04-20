@@ -62,7 +62,7 @@ class Basis:
         self.field = field
 
         self.basis = np.einsum(
-            "ij,ap,c->aijpc",
+            "ij,apc,c->aijpc",
             np.eye(self.field.dim),
             self.field.region.h,
             np.ones(self.field.region.mesh.ncells),

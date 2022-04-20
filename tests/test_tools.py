@@ -187,18 +187,20 @@ def test_newton():
 
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
+    
+    for kwargs in [{"parallel": True}, {"jit": True}]:
 
-    # newton-rhapson procedure
-    res = fe.newtonrhapson(
-        displacement,
-        umat=umat,
-        dof1=dof1,
-        dof0=dof0,
-        ext0=ext0,
-        timing=True,
-        verbose=True,
-        kwargs={"parallel": True},
-    )
+        # newton-rhapson procedure
+        res = fe.newtonrhapson(
+            displacement,
+            umat=umat,
+            dof1=dof1,
+            dof0=dof0,
+            ext0=ext0,
+            timing=True,
+            verbose=True,
+            kwargs=kwargs,
+        )
 
 
 def test_newton_plane():

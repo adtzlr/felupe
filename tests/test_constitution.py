@@ -197,6 +197,8 @@ def test_linear_planestrain():
 def test_kinematics():
     r, F = pre(sym=False, add_identity=True)
 
+    N = F[:, 0]
+
     for parallel in [False, True]:
 
         lc = fe.constitution.LineChange(parallel=parallel)
@@ -205,6 +207,9 @@ def test_kinematics():
 
         xf = lc.function(F)
         xg = lc.gradient(F)
+
+        Yf = ac.function(F, N)
+        Yg = ac.gradient(F, N)
 
         yf = ac.function(F)
         yg = ac.gradient(F)
@@ -220,6 +225,9 @@ def test_kinematics():
 
         assert yf.shape == (3, 3, *F.shape[-2:])
         assert yg.shape == (3, 3, 3, 3, *F.shape[-2:])
+
+        assert Yf.shape == (3, *F.shape[-2:])
+        assert Yg.shape == (3, 3, 3, *F.shape[-2:])
 
         assert zf.shape == F.shape[-2:]
         assert zg.shape == (3, 3, *F.shape[-2:])

@@ -211,7 +211,7 @@ class RegionBoundary(Region):
 
         if grad:
             self.dA, self.dV, self.normals = self._init_faces()
-            
+
             self.dA = self._reshape(self.dA)
             self.dV = self._reshape(self.dV)
             self.normals = self._reshape(self.normals)

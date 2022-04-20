@@ -28,6 +28,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import felupe as fe
 
+import pytest
+
 
 def test_region():
 
@@ -35,6 +37,10 @@ def test_region():
     r = fe.RegionQuad(mesh)
     r = fe.RegionQuadBoundary(mesh)
     r = fe.RegionConstantQuad(mesh)
+    
+    mesh.cell_type = "some_fancy_cell_type"
+    with pytest.raises(NotImplementedError):
+        r = fe.RegionBoundary(mesh, fe.Quad(), fe.GaussLegendreBoundary(order=1, dim=2))
 
     mesh = fe.Cube()
     r = fe.RegionHexahedron(mesh)

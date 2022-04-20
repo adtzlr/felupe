@@ -53,12 +53,14 @@ All notable changes to this project will be documented in this file. The format 
 - Add `FieldsMixed` which creates a `FieldMixed` of length `n` based on a template region.
 - Add function to mirror a Mesh `mesh.tools.mirror()`.
 - Add a new `parallel` assembly that uses a threaded version of `np.einsum` instead ([einsumt](https://pypi.org/project/einsumt/)).
-- Add parallel versions of math helpers (`dya`, `cdya`, `dot`, `ddot`) using ([einsumt](https://pypi.org/project/einsumt/)).
+- Add parallel versions of math helpers (`dya`, `cdya`, `dot`, `ddot`) using [einsumt](https://pypi.org/project/einsumt/).
 - Add `parallel` keyword to constitutive models (`NeoHooke`, `LinearElasticTensorNotation` and `ThreeFieldVariation`).
 
 ### Changed
 - Enforce consistent arguments for functions inside `mesh.tools` (`points, cells, cell_data` or `Mesh`).
 - Rename Numba-`parallel` assembly to `jit`.
+- Move single element shape functions and their derivatives from `region.h` to `region.element.h` and `region.dhdr` to `region.element.dhdr`.
+- [Repeat](https://numpy.org/doc/stable/reference/generated/numpy.tile.html) element shape functions and their derivatives for each cell (as preparation for an upcoming `RegionBoundary`).
 
 ## [2.0.1] - 2022-01-11
 

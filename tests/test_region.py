@@ -33,10 +33,12 @@ def test_region():
 
     mesh = fe.Rectangle()
     r = fe.RegionQuad(mesh)
+    r = fe.RegionQuadBoundary(mesh)
     r = fe.RegionConstantQuad(mesh)
 
     mesh = fe.Cube()
     r = fe.RegionHexahedron(mesh)
+    r = fe.RegionHexahedronBoundary(mesh)
     r = fe.RegionConstantHexahedron(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)

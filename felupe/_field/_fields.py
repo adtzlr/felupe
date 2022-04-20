@@ -25,6 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ._base import Field
+from ._axi import FieldAxisymmetric
 from ._mixed import FieldMixed
 from ..region._templates import (
     RegionQuad,
@@ -46,7 +47,7 @@ class FieldsMixed(FieldMixed):
     r"""A mixed field based on a region and returns a :class:`FieldMixed`
     instance."""
 
-    def __init__(self, region, n=3, values=(0, 0, 1, 0)):
+    def __init__(self, region, n=3, values=(0, 0, 1, 0), axisymmetric=False):
         r"""Create a mixed field based on a region. The dual region is chosen
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
         is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
@@ -61,6 +62,8 @@ class FieldsMixed(FieldMixed):
             dimension and the following fields are scalar-fields.
         values : tuple, optional (default is (0, 0, 1, 0))
             Initial field values.
+        axisymmetric : bool, optional
+            Flag to initiate a axisymmetric Field (default is False).
         """
 
         regions = {
@@ -75,8 +78,9 @@ class FieldsMixed(FieldMixed):
         }
 
         region0 = regions[type(region)](region.mesh)
-
-        fields = [Field(region, dim=region.mesh.dim, values=values[0])]
+        
+        F = [Field, FieldAxisymmetric][axisymmetric]
+        fields = [F(region, dim=region.mesh.dim, values=values[0])]
 
         for a in range(1, n):
             fields.append(Field(region0, values=values[a]))

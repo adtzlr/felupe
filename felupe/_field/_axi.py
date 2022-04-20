@@ -96,7 +96,7 @@ class FieldAxisymmetric(Field):
         # interpolate radial point values to integration points of each cell
         # in the region
         self.radius = self.scalar.interpolate()
-    
+
     def _interpolate_2d(self):
         """Interpolate 2D field values at points and evaluate them at the
         integration points of all cells in the region."""
@@ -107,7 +107,7 @@ class FieldAxisymmetric(Field):
         return np.einsum(
             "ca...,apc->...pc", self.values[self.region.mesh.cells], self.region.h
         )
-    
+
     def interpolate(self):
         # extend dimension of in-plane 2d-gradient
         return np.pad(self._interpolate_2d(), ((0, 1), (0, 0), (0, 0)))

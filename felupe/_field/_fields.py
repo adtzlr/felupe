@@ -78,7 +78,7 @@ class FieldsMixed(FieldMixed):
         }
 
         region0 = regions[type(region)](region.mesh)
-        
+
         F = [Field, FieldAxisymmetric][axisymmetric]
         fields = [F(region, dim=region.mesh.dim, values=values[0])]
 

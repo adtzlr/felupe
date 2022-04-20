@@ -61,6 +61,8 @@ class RegionBoundary(Region):
         A flag to use only the enclosing outline of the region (default is True).
     mask: ndarray or None, optional
         A boolean array to select a specific set of points (default is None).
+    ensure_3d : bool, optional
+        A flag to enforce 3d area normal vectors.
 
     Attributes
     ----------
@@ -89,11 +91,19 @@ class RegionBoundary(Region):
     """
 
     def __init__(
-        self, mesh, element, quadrature, grad=True, only_surface=True, mask=None
+        self,
+        mesh,
+        element,
+        quadrature,
+        grad=True,
+        only_surface=True,
+        mask=None,
+        ensure_3d=False,
     ):
 
         self.only_surface = only_surface
         self.mask = mask
+        self.ensure_3d = ensure_3d
 
         # number of faces
         self.nfaces = quadrature.nfaces
@@ -260,5 +270,11 @@ class RegionBoundary(Region):
         dA = dA.reshape(dim, -1, nfaces * ncells).T[self._selection].T
         dV = np.linalg.norm(dA, axis=0)
         normals = dA / dV
+
+        if self.ensure_3d:
+
+            if dA.shape[0] == 2:
+                dA = np.pad(dA, ((0, 1), (0, 0), (0, 0)))
+                normals = np.pad(normals, ((0, 1), (0, 0), (0, 0)))
 
         return dA, dV, normals

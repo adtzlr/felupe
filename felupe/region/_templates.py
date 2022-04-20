@@ -82,13 +82,18 @@ class RegionQuad(Region):
 class RegionQuadBoundary(RegionBoundary):
     "A region with a quad element."
 
-    def __init__(self, mesh, only_surface=True, mask=None):
+    def __init__(self, mesh, only_surface=True, mask=None, ensure_3d=False):
 
         element = Quad()
         quadrature = GaussLegendreBoundary(order=1, dim=2)
 
         super().__init__(
-            mesh, element, quadrature, only_surface=only_surface, mask=mask
+            mesh,
+            element,
+            quadrature,
+            only_surface=only_surface,
+            mask=mask,
+            ensure_3d=ensure_3d,
         )
 
 

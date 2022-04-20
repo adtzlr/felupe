@@ -11,8 +11,11 @@ from . import region
 
 from .region import (
     Region,
+    RegionBoundary,
     RegionQuad,
     RegionHexahedron,
+    RegionQuadBoundary,
+    RegionHexahedronBoundary,
     RegionConstantQuad,
     RegionConstantHexahedron,
     RegionQuadraticHexahedron,
@@ -76,6 +79,7 @@ from .element import (
 )
 from .quadrature import (
     GaussLegendre,
+    GaussLegendreBoundary,
     Triangle as TriangleQuadrature,
     Tetrahedron as TetrahedronQuadrature,
 )

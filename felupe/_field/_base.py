@@ -123,9 +123,9 @@ class Field:
 
         # gradient dudX_IJpe as partial derivative of field values at points "aI"
         # w.r.t. undeformed coordinates "J" evaluated at quadrature point "p"
-        # for each cell "e"
+        # for each cell "c"
         g = np.einsum(
-            "ea...,aJpe->...Jpe",
+            "ca...,aJpc->...Jpc",
             self.values[self.region.mesh.cells],
             self.region.dhdX,
         )
@@ -141,9 +141,9 @@ class Field:
 
         # interpolated field values "aI"
         # evaluated at quadrature point "p"
-        # for cell "e"
+        # for cell "c"
         return np.einsum(
-            "ea...,ap->...pe", self.values[self.region.mesh.cells], self.region.h
+            "ca...,apc->...pc", self.values[self.region.mesh.cells], self.region.h
         )
 
     def extract(self, grad=True, sym=False, add_identity=True):

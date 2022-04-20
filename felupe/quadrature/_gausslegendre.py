@@ -138,6 +138,9 @@ class GaussLegendreBoundary(GaussLegendre):
                 np.hstack((p, np.ones((len(p), 1)))),
             ]
 
+        else:
+            raise ValueError("Wrong dimension.")
+
         # stack quadrature points
         self.points = np.vstack(points_list)
         self.nfaces = len(points_list)

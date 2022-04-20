@@ -6,12 +6,27 @@ Region
    :undoc-members:
    :inherited-members:
    
+.. .. autoclass:: felupe.RegionBoundary
+   :members:
+   :undoc-members:
+   :inherited-members:
+   
 .. autoclass:: felupe.RegionQuad
    :members:
    :undoc-members:
    :show-inheritance:
+   
+.. autoclass:: felupe.RegionQuadBoundary
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. autoclass:: felupe.RegionHexahedron
+.. autoclass:: felupe.RegionHexahedronBoundary
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   
+   .. autoclass:: felupe.RegionHexahedron
    :members:
    :undoc-members:
    :show-inheritance:

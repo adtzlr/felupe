@@ -162,7 +162,7 @@ class IntegralForm:
         v, u = self.v, self.u
         dV = self.dV
         fun = self.fun
-        
+
         if parallel:
             einsum = einsumt
         else:
@@ -195,17 +195,15 @@ class IntegralForm:
         else:
 
             if not grad_v and not grad_u:
-                out = einsum(
-                    "ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True
-                )
+                out = einsum("ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True)
                 if len(out.shape) == 5:
                     return einsum("aijbe->aibje", out)
                 else:
                     return out
             elif grad_v and not grad_u:
                 return einsum(
-                        "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
-                    )
+                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
+                )
             elif not grad_v and grad_u:
                 return einsum(
                     "a...pe,...kLpe,bLpe,pe->a...bke",

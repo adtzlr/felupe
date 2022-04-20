@@ -86,7 +86,7 @@ Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``
 License
 -------
 
-FElupe - finite element analysis (C) 2021 Andreas Dutzler, Graz (Austria).
+FElupe - finite element analysis (C) 2022 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

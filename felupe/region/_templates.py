@@ -28,6 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._region import Region
+from ._boundary import RegionBoundary
 from ..element import (
     ConstantQuad,
     Quad,
@@ -45,6 +46,7 @@ from ..element import (
 )
 from ..quadrature import (
     GaussLegendre,
+    GaussLegendreBoundary,
     Triangle as TriangleQuadrature,
     Tetrahedron as TetraQuadrature,
 )
@@ -77,6 +79,19 @@ class RegionQuad(Region):
         super().__init__(mesh, element, quadrature)
 
 
+class RegionQuadBoundary(RegionBoundary):
+    "A region with a quad element."
+
+    def __init__(self, mesh, only_surface=True, mask=None):
+
+        element = Quad()
+        quadrature = GaussLegendreBoundary(order=1, dim=2)
+
+        super().__init__(
+            mesh, element, quadrature, only_surface=only_surface, mask=mask
+        )
+
+
 class RegionConstantHexahedron(Region):
     "A region with a constant hexahedron element."
 
@@ -101,6 +116,19 @@ class RegionHexahedron(Region):
         quadrature = GaussLegendre(order=1, dim=3)
 
         super().__init__(mesh, element, quadrature)
+
+
+class RegionHexahedronBoundary(RegionBoundary):
+    "A region with a hexahedron element."
+
+    def __init__(self, mesh, only_surface=True, mask=None):
+
+        element = Hexahedron()
+        quadrature = GaussLegendreBoundary(order=1, dim=3)
+
+        super().__init__(
+            mesh, element, quadrature, only_surface=only_surface, mask=mask
+        )
 
 
 class RegionQuadraticHexahedron(Region):

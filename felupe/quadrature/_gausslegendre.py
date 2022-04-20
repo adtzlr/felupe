@@ -85,3 +85,71 @@ class GaussLegendre(Scheme):
         points[self.points != 0] = 1 / points[self.points != 0]
 
         return Scheme(points, self.weights)
+
+
+class GaussLegendreBoundary(GaussLegendre):
+    "A n-dimensional Gauss-Legendre quadrature rule on boundaries."
+
+    def __init__(self, order: int, dim: int, permute: bool = True):
+        """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
+        on the interval [-1, 1] as approximation of
+
+            ∫ f(x) dx ≈ ∑ f(x_a) w_a                                    (1)
+
+        with `a` quadrature points `x_a` and corresponding weights `w_a`.
+
+        """
+
+        super().__init__(order=order, dim=dim - 1, permute=permute)
+        p = self.points
+
+        # reset dimension
+        self.dim = dim
+
+        if self.dim == 2:
+            # quadrature points projected onto four edges of a quad
+            points_list = [
+                np.hstack((-np.ones((len(p), 1)), p)),
+                np.hstack((np.ones((len(p), 1)), p)),
+                np.hstack((p, -np.ones((len(p), 1)))),
+                np.hstack((p, np.ones((len(p), 1)))),
+            ]
+
+        elif self.dim == 3:
+            # quadrature points projected onto six faces of a hexahedron
+            points_list = [
+                np.hstack((-np.ones((len(p), 1)), p)),
+                np.hstack((np.ones((len(p), 1)), p)),
+                np.hstack(
+                    (
+                        p[:, 0].reshape(-1, 1),
+                        -np.ones((len(p), 1)),
+                        p[:, 1].reshape(-1, 1),
+                    )
+                ),
+                np.hstack(
+                    (
+                        p[:, 0].reshape(-1, 1),
+                        np.ones((len(p), 1)),
+                        p[:, 1].reshape(-1, 1),
+                    )
+                ),
+                np.hstack((p, -np.ones((len(p), 1)))),
+                np.hstack((p, np.ones((len(p), 1)))),
+            ]
+
+        else:
+            raise ValueError("Wrong dimension.")
+
+        # stack quadrature points
+        self.points = np.vstack(points_list)
+        self.nfaces = len(points_list)
+
+        # adopt weights
+        self.weights = np.tile(
+            self.weights,
+            self.nfaces,
+        )
+
+        # update properties
+        self.npoints = len(self.points)

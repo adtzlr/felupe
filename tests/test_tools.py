@@ -187,7 +187,7 @@ def test_newton():
 
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
-    
+
     for kwargs in [{"parallel": True}, {"jit": True}]:
 
         # newton-rhapson procedure

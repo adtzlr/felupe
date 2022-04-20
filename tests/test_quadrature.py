@@ -56,6 +56,34 @@ def test_gausslegendre():
         fe.GaussLegendre(order=1, dim=4)
 
 
+def test_gausslegendre_boundary():
+
+    with pytest.raises(ValueError):
+        q11 = fe.GaussLegendreBoundary(order=1, dim=1)
+        assert q11.points.shape == (2, 1)
+        assert q11.weights.sum() == 2
+
+    for permute in [False, True]:
+        q12 = fe.GaussLegendreBoundary(order=1, dim=2, permute=permute)
+        assert q12.points.shape == (8, 2)
+        assert np.isclose(q12.weights.sum(), 8)
+
+        q13 = fe.GaussLegendreBoundary(order=1, dim=3, permute=permute)
+        assert q13.points.shape == (24, 3)
+        assert np.isclose(q13.weights.sum(), 24)
+
+        q23 = fe.GaussLegendreBoundary(order=2, dim=3, permute=permute)
+        assert q23.points.shape == (54, 3)
+        assert np.isclose(q23.weights.sum(), 24)
+
+    q23 = fe.GaussLegendreBoundary(order=2, dim=3)
+    assert q23.inv().points.shape == q23.points.shape
+    assert np.allclose(q23.weights, q23.inv().weights)
+
+    with pytest.raises(ValueError):
+        fe.GaussLegendreBoundary(order=1, dim=4)
+
+
 def test_triangle():
     q = fe.TriangleQuadrature(order=1)
     assert q.points.shape == (1, 2)
@@ -92,5 +120,6 @@ def test_tetra():
 
 if __name__ == "__main__":
     test_gausslegendre()
+    test_gausslegendre_boundary()
     test_triangle()
     test_tetra()

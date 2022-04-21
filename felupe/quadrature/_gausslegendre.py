@@ -101,55 +101,14 @@ class GaussLegendreBoundary(GaussLegendre):
         """
 
         super().__init__(order=order, dim=dim - 1, permute=permute)
-        p = self.points
 
         # reset dimension
         self.dim = dim
 
-        if self.dim == 2:
-            # quadrature points projected onto four edges of a quad
-            points_list = [
-                np.hstack((-np.ones((len(p), 1)), p)),
-                np.hstack((np.ones((len(p), 1)), p)),
-                np.hstack((p, -np.ones((len(p), 1)))),
-                np.hstack((p, np.ones((len(p), 1)))),
-            ]
-
-        elif self.dim == 3:
-            # quadrature points projected onto six faces of a hexahedron
-            points_list = [
-                np.hstack((-np.ones((len(p), 1)), p)),
-                np.hstack((np.ones((len(p), 1)), p)),
-                np.hstack(
-                    (
-                        p[:, 0].reshape(-1, 1),
-                        -np.ones((len(p), 1)),
-                        p[:, 1].reshape(-1, 1),
-                    )
-                ),
-                np.hstack(
-                    (
-                        p[:, 0].reshape(-1, 1),
-                        np.ones((len(p), 1)),
-                        p[:, 1].reshape(-1, 1),
-                    )
-                ),
-                np.hstack((p, -np.ones((len(p), 1)))),
-                np.hstack((p, np.ones((len(p), 1)))),
-            ]
+        if self.dim == 2 or self.dim == 3:
+            # quadrature points projected onto first edge of a quad
+            #                          or onto first face of a hexahedron
+            self.points = np.hstack((self.points, -np.ones((len(self.points), 1))))
 
         else:
             raise ValueError("Wrong dimension.")
-
-        # stack quadrature points
-        self.points = np.vstack(points_list)
-        self.nfaces = len(points_list)
-
-        # adopt weights
-        self.weights = np.tile(
-            self.weights,
-            self.nfaces,
-        )
-
-        # update properties
-        self.npoints = len(self.points)

@@ -210,7 +210,7 @@ def test_triangulate():
 
     for mode in [0, 3]:
         m = fe.Cube(n=3)
-        n = fe.mesh.triangulate(m)
+        n = fe.mesh.triangulate(m, mode=mode)
 
         rm = fe.RegionHexahedron(m)
         rn = fe.RegionTetra(n)

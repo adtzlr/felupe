@@ -57,6 +57,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `parallel` keyword to constitutive models (`NeoHooke`, `LinearElasticTensorNotation` and `ThreeFieldVariation`).
 - Add `RegionBoundary` along with template regions for `Quad` and `Hexahedron` and `GaussLegendreBoundary`.
 - Add optional normal vector argument for function and gradient methods of `AreaChange`.
+- Add a new Mesh-tool `triangulate()`, applicable on Quad and Hexahedron meshes.
 
 ### Changed
 - Enforce consistent arguments for functions inside `mesh.tools` (`points, cells, cell_data` or `Mesh`).

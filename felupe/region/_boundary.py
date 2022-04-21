@@ -105,29 +105,26 @@ class RegionBoundary(Region):
         self.mask = mask
         self.ensure_3d = ensure_3d
 
-        # number of faces
-        self.nfaces = quadrature.nfaces
-
         if mesh.cell_type == "quad":
 
-            # edges (generalized "faces") of a quad
+            # edges (boundary) of a quad
             i = [3, 1, 0, 2]
             j = [0, 2, 1, 3]
 
-            faces = np.dstack(
+            cells_faces = np.dstack(
                 (
                     mesh.cells[:, i],
                     mesh.cells[:, j],
                 )
             )
-            faces = faces.reshape(-1, faces.shape[-1])
 
-            # complementary edges for quad faces (generalized "volumes")
+            # complementary edges for the creation of "boundary" quads
+            # (rotated quads with 1st edge as n-th edge of one original quad)
             t = [1, 0, 3, 2]
             k = np.array(i)[t]
             l = np.array(j)[t]
 
-            volumes = np.dstack(
+            cells = np.dstack(
                 (
                     mesh.cells[:, i],
                     mesh.cells[:, j],
@@ -138,13 +135,13 @@ class RegionBoundary(Region):
 
         elif mesh.cell_type == "hexahedron":
 
-            # faces of hexahedron
+            # faces (boundary) of a hexahedron
             i = [0, 1, 1, 2, 0, 4]
             j = [3, 2, 0, 3, 1, 5]
             k = [7, 6, 4, 7, 2, 6]
             l = [4, 5, 5, 6, 3, 7]
 
-            faces = np.dstack(
+            cells_faces = np.dstack(
                 (
                     mesh.cells[:, i],
                     mesh.cells[:, j],
@@ -153,14 +150,16 @@ class RegionBoundary(Region):
                 )
             )
 
-            # complementary faces for hexahedron volumes
+            # complementary faces for the creation of "boundary" hexahedrons
+            # (6 rotated hexahedrons with 1st face as n-th face of
+            #  one original hexahedron)
             t = [1, 0, 3, 2, 5, 4]
             m = np.array(i)[t]
             n = np.array(j)[t]
             p = np.array(k)[t]
             q = np.array(l)[t]
 
-            volumes = np.dstack(
+            cells = np.dstack(
                 (
                     mesh.cells[:, i],
                     mesh.cells[:, j],
@@ -172,24 +171,28 @@ class RegionBoundary(Region):
                     mesh.cells[:, q],
                 )
             )
+            # ensure right-hand-side cell connectivity
+            for a in [1, 3, 5]:
+                cells[:, a, :4] = cells[:, a, :4].T[::-1].T
+                cells[:, a, 4:] = cells[:, a, 4:].T[::-1].T
 
         else:
             raise NotImplementedError("Cell type not supported.")
 
-        faces = faces.reshape(-1, faces.shape[-1])
-        volumes = volumes.reshape(-1, volumes.shape[-1])
-        self._faces = faces
-        self._volumes = volumes
+        cells_faces = cells_faces.reshape(-1, cells_faces.shape[-1])
+        cells = cells.reshape(-1, cells.shape[-1])
 
         if self.only_surface:
             # sort faces, get indices of unique faces and counts
-            faces_sorted = np.sort(faces, axis=1)
-            faces_unique, index, counts = np.unique(faces_sorted, True, False, True, 0)
+            cells_faces_sorted = np.sort(cells_faces, axis=1)
+            cells_faces_unique, index, counts = np.unique(
+                cells_faces_sorted, True, False, True, 0
+            )
 
             self._index = index
             self._mask = counts == 1
         else:
-            self._index = np.arange(len(faces))
+            self._index = np.arange(len(cells_faces))
             self._mask = np.ones_like(self._index, dtype=bool)
 
         self._selection = self._index[self._mask]
@@ -198,91 +201,37 @@ class RegionBoundary(Region):
         if mask is not None:
             point_selection = np.arange(len(mesh.points))[mask]
             self._selection = self._selection[
-                np.all(np.isin(self._faces[self._selection], point_selection), axis=1)
+                np.all(np.isin(cells_faces[self._selection], point_selection), axis=1)
             ]
 
-        # get faces and volumes on boundary (unique faces with one count)
-        volumes_boundary = volumes[self._selection]
-        
-        # init region and faces
-        super().__init__(mesh, element, quadrature, grad=grad)
+        # get cell-faces and cells on boundary (unique cell-faces with one count)
+        cells_on_boundary = cells[self._selection]
 
-        # reshape data
-        self.h = self._reshape(self.h)
+        ## create mesh on boundary
+        mesh_boundary = mesh.copy()
+        mesh_boundary.update(cells_on_boundary)
+        self.mesh = mesh_boundary
+        self.mesh.cells_faces = cells_faces
+
+        # init region and faces
+        super().__init__(mesh_boundary, element, quadrature, grad=grad)
 
         if grad:
             self.dA, self.dV, self.normals = self._init_faces()
-
-            self.dA = self._reshape(self.dA)
-            self.dV = self._reshape(self.dV)
-            self.normals = self._reshape(self.normals)
-
-            self.dhdr = self._reshape(self.dhdr)
-            self.dhdX = self._reshape(self.dhdX)
-            self.dXdr = self._reshape(self.dXdr)
-        
-        ## create mesh on boundary
-        mesh_boundary = mesh.copy()
-        mesh_boundary.update(volumes_boundary)
-        self.mesh = mesh_boundary
-
-
-    def _reshape(self, A):
-        "Reshape data."
-
-        # reshape functions for all boundary cells
-        B = A.reshape(*A.shape[:-2], self.nfaces, -1, A.shape[-1])
-        a = np.arange(len(B.shape))
-
-        a[-3:] = a[[-2, -3, -1]]
-        C = B.transpose(a)
-        D = C.reshape(*A.shape[:-2], -1, self.nfaces * A.shape[-1])
-        
-        # re-order data to face connectivity
-        D = D.T[self._volumes.ravel()].T
-
-        # slice faces on boundary
-        return D.T[self._selection].T
 
     def _init_faces(self):
         "Initialize (norm of) face normals of cells."
 
         if self.mesh.cell_type == "quad":
-            dA_1 = self.dXdr[:, 1][::-1]
-            dA_2 = self.dXdr[:, 0][::-1]
-            dA_faces = np.array([-dA_1, dA_1, -dA_2, dA_2])
+
+            dA_1 = self.dXdr[:, 0][::-1]
+            dA_1[0] = -dA_1[0]
 
         elif self.mesh.cell_type == "hexahedron":
-            dA_1 = cross(self.dXdr[:, 1], self.dXdr[:, 2])
-            dA_2 = cross(self.dXdr[:, 2], self.dXdr[:, 0])
-            dA_3 = cross(self.dXdr[:, 0], self.dXdr[:, 1])
-            dA_faces = np.array(
-                [
-                    -dA_1,
-                    dA_1,
-                    -dA_2,
-                    dA_2,
-                    -dA_3,
-                    dA_3,
-                ]
-            )
+            dA_1 = cross(self.dXdr[:, 0], self.dXdr[:, 1])
 
-        dA = np.stack(dA_faces) * self.quadrature.weights.reshape(-1, 1)
-        
-        nfaces, dim, nqpoints, ncells = dA.shape
-        nqpoints_per_face = nqpoints // nfaces
-        
-        # move faces to front
-        dA = dA.reshape(nfaces, dim, nfaces, nqpoints_per_face, ncells)
-        dA = np.einsum("ijk...->ikj...", dA)
-        
-        # get diagonal
-        dA = np.array([dA[a, a] for a in range(dA.shape[0])])
-        
-        # move vector to front
-        dA = np.einsum("ijkl...->jikl...", dA)
-        dA = dA.reshape(dim, nqpoints, ncells)
-        
+        dA = -dA_1 * self.quadrature.weights.reshape(-1, 1)
+
         # norm and unit normal vector
         dV = np.linalg.norm(dA, axis=0)
         normals = dA / dV

@@ -5,6 +5,7 @@ from ._tools import (
     revolve,
     sweep,
     mirror,
+    triangulate,
 )
 from ._convert import (
     convert,

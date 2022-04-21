@@ -198,6 +198,30 @@ def test_mirror():
         assert np.isclose(r.dV.sum(), s.dV.sum())
 
 
+def test_triangulate():
+
+    m = fe.Rectangle(n=3)
+    n = fe.mesh.triangulate(m)
+
+    rm = fe.RegionQuad(m)
+    rn = fe.RegionTriangle(n)
+
+    assert np.isclose(rm.dV.sum(), rn.dV.sum())
+
+    for mode in [0, 3]:
+        m = fe.Cube(n=3)
+        n = fe.mesh.triangulate(m)
+
+        rm = fe.RegionHexahedron(m)
+        rn = fe.RegionTetra(n)
+
+        assert np.isclose(rm.dV.sum(), rn.dV.sum())
+
+    with pytest.raises(NotImplementedError):
+        n = fe.mesh.triangulate(m, mode=-1)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
+    test_triangulate()

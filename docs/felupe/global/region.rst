@@ -6,7 +6,7 @@ Region
    :undoc-members:
    :inherited-members:
    
-.. .. autoclass:: felupe.RegionBoundary
+.. autoclass:: felupe.RegionBoundary
    :members:
    :undoc-members:
    :inherited-members:

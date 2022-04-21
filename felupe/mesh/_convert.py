@@ -27,48 +27,62 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._helpers import mesh_or_data
 from ._mesh import Mesh
 
 
+@mesh_or_data
 def convert(
-    mesh, order=0, calc_points=False, calc_midfaces=False, calc_midvolumes=False
+    points,
+    cells,
+    cell_type,
+    order=0,
+    calc_points=False,
+    calc_midfaces=False,
+    calc_midvolumes=False,
 ):
     """Convert mesh to a given order (only order=0 and order=2
     from order=1 are supported)."""
 
-    if mesh.cell_type not in ["triangle", "tetra", "quad", "hexahedron"]:
+    ncells = len(cells)
+    dim = points.shape[1]
+
+    if cell_type not in ["triangle", "tetra", "quad", "hexahedron"]:
         raise NotImplementedError("Cell type not supported for conversion.")
 
     if order == 0:
 
         if calc_points:
-            points = np.stack(
-                [np.mean(mesh.points[cell], axis=0) for cell in mesh.cells]
-            )
+            points_new = np.stack([np.mean(points[cell], axis=0) for cell in cells])
         else:
-            points = np.zeros((mesh.ncells, mesh.dim), dtype=int)
+            points_new = np.zeros((ncells, dim), dtype=int)
 
-        cells = np.arange(mesh.ncells).reshape(-1, 1)
-        cell_type = mesh.cell_type
+        cells_new = np.arange(ncells).reshape(-1, 1)
+        cell_type_new = cell_type
 
     elif order == 2:
 
-        points, cells, cell_type = add_midpoints_edges(
-            mesh.points, mesh.cells, mesh.cell_type
+        points_new, cells_new, cell_type_new = add_midpoints_edges(
+            points, cells, cell_type
         )
 
         if calc_midfaces:
-            points, cells, cell_type = add_midpoints_faces(points, cells, cell_type)
+            points_new, cells_new, cell_type_new = add_midpoints_faces(
+                points_new, cells_new, cell_type_new
+            )
 
         if calc_midvolumes:
-            points, cells, cell_type = add_midpoints_volumes(points, cells, cell_type)
+            points_new, cells_new, cell_type_new = add_midpoints_volumes(
+                points_new, cells_new, cell_type_new
+            )
 
     else:
         raise NotImplementedError("Unsupported order conversion.")
 
-    return Mesh(points, cells, cell_type)
+    return points_new, cells_new, cell_type_new
 
 
+@mesh_or_data
 def collect_edges(points, cells, cell_type):
     """ "Collect all unique edges,
     calculate and return midpoints on edges as well as the additional
@@ -105,9 +119,10 @@ def collect_edges(points, cells, cell_type):
     # create the additionals cells array
     cells_edges = inverse.reshape(len(cells), -1)
 
-    return points_edges, cells_edges
+    return points_edges, cells_edges, cell_type
 
 
+@mesh_or_data
 def collect_faces(points, cells, cell_type):
     """ "Collect all unique faces,
     calculate and return midpoints on faces as well as the additional
@@ -188,9 +203,10 @@ def collect_faces(points, cells, cell_type):
     # create the additionals cells array
     cells_faces = inverse.reshape(len(cells), -1)
 
-    return points_faces, cells_faces
+    return points_faces, cells_faces, cell_type
 
 
+@mesh_or_data
 def collect_volumes(points, cells, cell_type):
     """ "Collect all volumes,
     calculate and return midpoints on volumes as well as the additional
@@ -219,9 +235,10 @@ def collect_volumes(points, cells, cell_type):
         points_volumes = np.mean(points[cells][:, :number_of_vertices, :], axis=1)
         cells_volumes = np.arange(cells.shape[0]).reshape(-1, 1)
 
-    return points_volumes, cells_volumes
+    return points_volumes, cells_volumes, cell_type
 
 
+@mesh_or_data
 def add_midpoints_edges(points, cells, cell_type):
     """ "Add midpoints on edges for given points and cells
     and update cell_type accordingly."""
@@ -234,7 +251,7 @@ def add_midpoints_edges(points, cells, cell_type):
     }
 
     # collect edges
-    points_edges, cells_edges = collect_edges(
+    points_edges, cells_edges, _ = collect_edges(
         points,
         cells,
         cell_type,
@@ -251,6 +268,7 @@ def add_midpoints_edges(points, cells, cell_type):
     return points_new, cells_new, cell_types_new[cell_type]
 
 
+@mesh_or_data
 def add_midpoints_faces(points, cells, cell_type):
     """ "Add midpoints on faces for given points and cells
     and update cell_type accordingly."""
@@ -267,7 +285,7 @@ def add_midpoints_faces(points, cells, cell_type):
     }
 
     # collect faces
-    points_faces, cells_faces = collect_faces(
+    points_faces, cells_faces, _ = collect_faces(
         points,
         cells,
         cell_type,
@@ -284,6 +302,7 @@ def add_midpoints_faces(points, cells, cell_type):
     return points_new, cells_new, cell_types_new[cell_type]
 
 
+@mesh_or_data
 def add_midpoints_volumes(points, cells, cell_type):
     """ "Add midpoints on volumes for given points and cells
     and update cell_type accordingly."""
@@ -299,7 +318,7 @@ def add_midpoints_volumes(points, cells, cell_type):
     }
 
     # collect volumes
-    points_volumes, cells_volumes = collect_volumes(
+    points_volumes, cells_volumes, _ = collect_volumes(
         points,
         cells,
         cell_type,

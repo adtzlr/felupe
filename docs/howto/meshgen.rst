@@ -32,11 +32,9 @@ First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n
 
 ..  code-block:: python
 
-    line = fe.mesh._line_line(a=1, b=3, n=7)
+    line = fe.mesh.Line(a=1, b=3, n=7)
     rect = fe.mesh.expand(line, n=2, z=5)
     hexa = fe.mesh.expand(rect, n=2, z=3)
-
-    mesh = fe.Mesh(*hexa, cell_type="hexahedron")
 
 .. image:: images/cube.png
    :width: 400px
@@ -50,17 +48,15 @@ Of course lines, rectangles, cubes and cylinders do not have to be constructed m
 Triangle and Tetrahedron meshes
 *******************************
 
-FElupe does not provide any tools for the creation of meshes consisting of triangles or tetrahedrons. For a similar interface and simple geometries it is recommended to use `meshzoo <https://github.com/nschloe/meshzoo>`_ instead (install with ``pip install meshzoo``).
+Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of Triangle or Tetrahedrons by :func:`felupe.mesh.triangulate`.
 
 ..  code-block:: python
 
-    import numpy as np
-    import meshzoo
+    rectangle_quad = fe.Rectangle(n=5)
+    rectangle_tetra = fe.mesh.triangulate(rect_quad)
 
-    cube = meshzoo.cube_tetra(
-        np.linspace(0,1,11), np.linspace(0,1,11), np.linspace(0,1,11)
-    )
-    mesh = fe.Mesh(*cube, cell_type="tetra")
+    cube_hexahedron = fe.Cube(n=5)
+    cube_tetra = fe.mesh.triangulate(cube_hexahedron)
 
 Meshes with midpoints
 *********************
@@ -70,15 +66,12 @@ If a mesh with midpoints is required by a region, functions for edge, face and v
 ..  code-block:: python
     
     rectangle_quad4 = fe.Rectangle(n=6)
-    rectangle_quad8 = fe.mesh.convert(rectangle, order=2)
-    rectangle_quad9 = fe.mesh.convert(rectangle, order=2, calc_midfaces=True)
+    rectangle_quad8 = fe.mesh.convert(rectangle_quad4, order=2)
+    rectangle_quad9 = fe.mesh.convert(rectangle_quad4, order=2, calc_midfaces=True)
 
-The same also applies on meshes with triangles. Meshzoo offers an equivalent midpoint insertion.
+The same also applies on meshes with triangles.
 
 ..  code-block:: python
 
-    rectangle = meshzoo.rectangle_tri(np.linspace(0,1,6), np.linspace(0,1,6))
-    rectangle_triangle6 = meshzoo.insert_midpoints_edges(*rectangle, "triangle")
-    
-    mesh = fe.Mesh(*rectangle_triangle6, cell_type="triangle6")
-    # mesh = fe.Mesh(*fe.mesh.add_midpoints_edges(*rectangle, "triangle"))
+    rectangle_triangle3 = fe.mesh.triangulate(fe.Rectangle(n=6))
+    rectangle_triangle6 = fe.mesh.add_midpoints_edges(rectangle_triangle3)

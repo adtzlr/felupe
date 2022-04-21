@@ -43,10 +43,12 @@ def expand(points, cells, cell_type, n=11, z=1):
         Original point-connectivity of cells.
     cell_type : str
         A string in VTK-convention that specifies the cell type.
-    n : int, optional (default is 11)
-        Number of n-point repetitions or (n-1)-cell repetitions
-    z : int, optional (default is 1)
-        Total expand dimension (edge length in expand direction is z / n)
+    n : int, optional
+        Number of n-point repetitions or (n-1)-cell repetitions,
+        default is 11.
+    z : int, optional
+        Total expand dimension (edge length in expand direction is z / n),
+        default is 1.
 
     Returns
     -------
@@ -102,8 +104,8 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
         Rotation angle in degree.
     axis : int
         Rotation axis.
-    center : list or ndarray or None, optional (default is None)
-        Center point coordinates.
+    center : list or ndarray or None, optional
+        Center point coordinates (default is None).
 
     Returns
     -------
@@ -143,12 +145,13 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         Original point-connectivity of cells.
     cell_type : str
         A string in VTK-convention that specifies the cell type.
-    n : int, optional (default is 11)
-        Number of n-point revolutions (or (n-1) cell revolutions).
-    phi : int, optional (default is 180)
-        Revolution angle in degree.
-    axis : int, optional (default is 0)
-        Revolution axis.
+    n : int, optional
+        Number of n-point revolutions (or (n-1) cell revolutions),
+        default is 11.
+    phi : int, optional
+        Revolution angle in degree (default is 180).
+    axis : int, optional
+        Revolution axis (default is 0).
 
     Returns
     -------
@@ -206,8 +209,8 @@ def sweep(points, cells, cell_type, decimals=None):
         Original point-connectivity of cells.
     cell_type : str
         A string in VTK-convention that specifies the cell type.
-    decimals : int or None, optional (default is None)
-        Number of decimals for point coordinate comparison.
+    decimals : int or None, optional
+        Number of decimals for point coordinate comparison (default is None).
 
     Returns
     -------
@@ -257,12 +260,12 @@ def mirror(
         Original point-connectivity of cells.
     cell_type : str
         A string in VTK-convention that specifies the cell type.
-    normal: list or ndarray, optional (default is [1, 0, 0])
-        Mirror-plane normal vector.
-    centerpoint: list or ndarray, optional (default is [0, 0, 0])
-        Center-point coordinates on the mirror plane.
-    axis: int or None, optional (default is None)
-        Mirror axis.
+    normal: list or ndarray, optional
+        Mirror-plane normal vector (default is [1, 0, 0]).
+    centerpoint: list or ndarray, optional
+        Center-point coordinates on the mirror plane (default is [0, 0, 0]).
+    axis: int or None, optional
+        Mirror axis (default is None).
 
     Returns
     -------
@@ -310,3 +313,86 @@ def mirror(
         cells_new[:, face] = cells[:, face[::-1]]
 
     return points_new, cells_new, cell_type
+
+
+@mesh_or_data
+def triangulate(points, cells, cell_type, mode=3):
+    """Triangulate a quad or a hex mesh.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    mode: int, optional
+        Choose a mode how to convert hexahedrons to tets [1] (default is 3).
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    References
+    ----------
+    [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
+    How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
+    IMR, 99, 195.
+    """
+
+    if cell_type == "quad":
+
+        # triangles out of a quad
+        i = [0, 3]
+        j = [1, 1]
+        k = [3, 2]
+
+        cells_new = np.dstack(
+            (
+                cells[:, i],
+                cells[:, j],
+                cells[:, k],
+            )
+        )
+
+        cell_type_new = "triangle"
+
+    elif cell_type == "hexahedron":
+
+        # tets out of a hex
+        # mode ... no. of diagional through hex-point 6.
+        if mode == 0:
+            i = [0, 0, 0, 0, 2]
+            j = [1, 2, 2, 5, 7]
+            k = [2, 7, 3, 7, 5]
+            l = [5, 5, 7, 4, 6]
+
+        elif mode == 3:
+            i = [0, 0, 0, 0, 1, 1]
+            j = [2, 3, 7, 5, 5, 6]
+            k = [3, 7, 4, 6, 6, 2]
+            l = [6, 6, 6, 4, 0, 0]
+
+        else:
+            raise NotImplementedError(f"Mode {mode} not implemented.")
+
+        cells_new = np.dstack(
+            (
+                cells[:, i],
+                cells[:, j],
+                cells[:, k],
+                cells[:, l],
+            )
+        )
+
+        cell_type_new = "tetra"
+
+    cells_new = cells_new.reshape(-1, cells_new.shape[-1])
+
+    return points, cells_new, cell_type_new

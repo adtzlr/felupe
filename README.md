@@ -51,7 +51,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `sym` argument to `Bilinearform.integrate()` and `Bilinearform.assemble()`.
 - Add `FieldsMixed` which creates a `FieldMixed` of length `n` based on a template region.
-- Add function to mirror a Mesh `mesh.tools.mirror()`.
+- Add function to mirror a Mesh `mesh.mirror()`.
 - Add a new `parallel` assembly that uses a threaded version of `np.einsum` instead ([einsumt](https://pypi.org/project/einsumt/)).
 - Add parallel versions of math helpers (`dya`, `cdya`, `dot`, `ddot`) using [einsumt](https://pypi.org/project/einsumt/).
 - Add `parallel` keyword to constitutive models (`NeoHooke`, `LinearElasticTensorNotation` and `ThreeFieldVariation`).
@@ -60,10 +60,11 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new Mesh-tool `triangulate()`, applicable on Quad and Hexahedron meshes.
 
 ### Changed
-- Enforce consistent arguments for functions inside `mesh.tools` (`points, cells, cell_data` or `Mesh`).
+- Enforce consistent arguments for functions inside `mesh` (`points, cells, cell_data` or `Mesh`).
 - Rename Numba-`parallel` assembly to `jit`.
 - Move single element shape functions and their derivatives from `region.h` to `region.element.h` and `region.dhdr` to `region.element.dhdr`.
 - [Repeat](https://numpy.org/doc/stable/reference/generated/numpy.tile.html) element shape functions and their derivatives for each cell (as preparation for an upcoming `RegionBoundary`).
+- Improve `mesh.convert()` by using the function decorator `@mesh_or_data`.
 
 ### Fixed
 - Fix area normal vectors of `RegionBoundary`.

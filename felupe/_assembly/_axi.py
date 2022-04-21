@@ -44,8 +44,15 @@ class IntegralFormAxisymmetric(IntegralForm):
 
                 self.mode = 1
 
-                form_a = IntegralForm(fun[:-1, :-1], v, self.dV, grad_v=True)
-                form_b = IntegralForm(fun[(-1,), (-1,)] / R, v.scalar, self.dV)
+                if grad_v:
+                    fun_2d = fun[:-1, :-1]
+                    fun_zz = fun[(-1,), (-1,)]
+                else:
+                    fun_2d = fun[:-1]
+                    fun_zz = fun[-1].reshape(1, *fun[-1].shape)
+
+                form_a = IntegralForm(fun_2d, v, self.dV, grad_v=grad_v)
+                form_b = IntegralForm(fun_zz, v.scalar, self.dV)
 
                 self.forms = [form_a, form_b]
 
@@ -64,23 +71,45 @@ class IntegralFormAxisymmetric(IntegralForm):
 
                 self.mode = 2
 
-                form_aa = IntegralForm(
-                    fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
-                )
-                form_bb = IntegralForm(
-                    fun[-1, -1, -1, -1] / R ** 2,
-                    v.scalar,
-                    self.dV,
-                    u.scalar,
-                    False,
-                    False,
-                )
-                form_ba = IntegralForm(
-                    fun[-1, -1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
-                )
-                form_ab = IntegralForm(
-                    fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
-                )
+                if grad_v and grad_u:
+
+                    form_aa = IntegralForm(
+                        fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
+                    )
+                    form_bb = IntegralForm(
+                        fun[-1, -1, -1, -1] / R ** 2,
+                        v.scalar,
+                        self.dV,
+                        u.scalar,
+                        False,
+                        False,
+                    )
+                    form_ba = IntegralForm(
+                        fun[-1, -1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
+                    )
+                    form_ab = IntegralForm(
+                        fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
+                    )
+
+                if not grad_v and grad_u:
+
+                    form_aa = IntegralForm(
+                        fun[:-1, :-1, :-1], v, self.dV, u, False, True
+                    )
+                    form_bb = IntegralForm(
+                        fun[-1, -1, -1] / R ** 2,
+                        v.scalar,
+                        self.dV,
+                        u.scalar,
+                        False,
+                        False,
+                    )
+                    form_ba = IntegralForm(
+                        fun[-1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
+                    )
+                    form_ab = IntegralForm(
+                        fun[:-1, -1, -1] / R, v, self.dV, u.scalar, False, False
+                    )
 
                 self.forms = [form_aa, form_bb, form_ba, form_ab]
 

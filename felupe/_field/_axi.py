@@ -97,6 +97,21 @@ class FieldAxisymmetric(Field):
         # in the region
         self.radius = self.scalar.interpolate()
 
+    def _interpolate_2d(self):
+        """Interpolate 2D field values at points and evaluate them at the
+        integration points of all cells in the region."""
+
+        # interpolated field values "aI"
+        # evaluated at quadrature point "p"
+        # for cell "c"
+        return np.einsum(
+            "ca...,apc->...pc", self.values[self.region.mesh.cells], self.region.h
+        )
+
+    def interpolate(self):
+        # extend dimension of in-plane 2d-gradient
+        return np.pad(self._interpolate_2d(), ((0, 1), (0, 0), (0, 0)))
+
     def _grad_2d(self, sym=False):
         """In-plane 2D gradient as partial derivative of field values at points
         w.r.t. the undeformed coordinates, evaluated at the integration points

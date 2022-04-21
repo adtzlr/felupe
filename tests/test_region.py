@@ -36,6 +36,7 @@ def test_region():
     mesh = fe.Rectangle()
     r = fe.RegionQuad(mesh)
     r = fe.RegionQuadBoundary(mesh)
+    r = fe.RegionQuadBoundary(mesh, ensure_3d=True)
     r = fe.RegionConstantQuad(mesh)
 
     mesh.cell_type = "some_fancy_cell_type"

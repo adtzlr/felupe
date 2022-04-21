@@ -64,6 +64,9 @@ All notable changes to this project will be documented in this file. The format 
 - Move single element shape functions and their derivatives from `region.h` to `region.element.h` and `region.dhdr` to `region.element.dhdr`.
 - [Repeat](https://numpy.org/doc/stable/reference/generated/numpy.tile.html) element shape functions and their derivatives for each cell (as preparation for an upcoming `RegionBoundary`).
 
+### Fixed
+- Fix area normal vectors of `RegionBoundary`.
+
 ## [2.0.1] - 2022-01-11
 
 ### Fixed

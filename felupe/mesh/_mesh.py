@@ -107,8 +107,8 @@ class Mesh:
 
         return Mesh(points, cells, cell_type=self.cell_type)
 
-    def save(self, filename="mesh.vtk"):
-        """Export the mesh as VTK file. For XDMF-export please ensure to have ``h5py`` (as an optional dependancy of ``meshio``) installed.
+    def as_meshio(self, **kwargs):
+        """Export the mesh as ``meshio.Mesh``.
 
         Parameters
         ----------
@@ -123,7 +123,20 @@ class Mesh:
             import meshio
 
         cells = {self.cell_type: self.cells}
-        meshio.Mesh(self.points, cells).write(filename)
+        return meshio.Mesh(self.points, cells, **kwargs)
+
+    def save(self, filename="mesh.vtk", **kwargs):
+        """Export the mesh as VTK file. For XDMF-export please ensure to have
+        ``h5py`` (as an optional dependancy of ``meshio``) installed.
+
+        Parameters
+        ----------
+        filename : str, optional
+            The filename of the mesh (default is ``mesh.vtk``).
+
+        """
+
+        self.as_meshio(**kwargs).write(filename)
 
     def copy(self):
         """Return a deepcopy of the mesh.

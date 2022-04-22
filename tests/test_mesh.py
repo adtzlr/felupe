@@ -81,9 +81,13 @@ def test_meshes():
     with pytest.raises(NotImplementedError):
         fe.mesh.convert(m, order=1)
 
-    fe.mesh.revolve(m, n=11, phi=180, axis=0)
+    mr1 = fe.mesh.revolve(m, n=11, phi=180, axis=0)
     fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=180, axis=0)
     fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=360, axis=0)
+
+    mr2 = fe.mesh.revolve(m, phi=np.linspace(0, 180, 11), axis=0)
+
+    assert np.allclose(mr1.points, mr2.points)
 
     with pytest.raises(ValueError):
         fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=361, axis=0)
@@ -93,6 +97,13 @@ def test_meshes():
     fe.mesh.expand(m.points, cells=m.cells, cell_type=m.cell_type)
     fe.mesh.expand(points=m.points, cells=m.cells, cell_type=m.cell_type)
     fe.mesh.expand(m)
+
+    me1 = fe.mesh.expand(m, n=3, z=1)
+    me2 = fe.mesh.expand(m, n=3, z=1.0)
+    me3 = fe.mesh.expand(m, z=np.linspace(0, 1, 3))
+
+    assert np.allclose(me1.points, me2.points)
+    assert np.allclose(me2.points, me3.points)
 
     m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
@@ -127,6 +138,7 @@ def test_meshes():
     fe.mesh.sweep(m)
     fe.mesh.sweep(m.points, m.cells, m.cell_type, decimals=4)
 
+    m.as_meshio(point_data={"data": m.points}, cell_data={"cell_data": [m.cells[:, 0]]})
     m.save()
 
     m.cell_type = None

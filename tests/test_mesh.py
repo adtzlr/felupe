@@ -94,6 +94,13 @@ def test_meshes():
     fe.mesh.expand(points=m.points, cells=m.cells, cell_type=m.cell_type)
     fe.mesh.expand(m)
 
+    me1 = fe.mesh.expand(m, n=3, z=1)
+    me2 = fe.mesh.expand(m, n=3, z=1.0)
+    me3 = fe.mesh.expand(m, z=np.linspace(0, 1, 3))
+
+    assert np.allclose(me1.points, me2.points)
+    assert np.allclose(me2.points, me3.points)
+
     m = fe.Cube(a=(-1, -2, -0.5), b=(2, 3.1, 1), n=(4, 9, 5))
     assert m.points.shape == (4 * 9 * 5, 3)
     assert m.cells.shape == (3 * 8 * 4, 8)

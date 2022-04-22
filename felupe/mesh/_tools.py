@@ -46,9 +46,10 @@ def expand(points, cells, cell_type, n=11, z=1):
     n : int, optional
         Number of n-point repetitions or (n-1)-cell repetitions,
         default is 11.
-    z : int, optional
-        Total expand dimension (edge length in expand direction is z / n),
-        default is 1.
+    z : float or ndarray, optional
+        Total expand dimension as float (edge length in expand direction is z / n),
+        default is 1. Optionally, if an array is passed these entries are
+        taken as expansion and `n` is ignored.
 
     Returns
     -------
@@ -79,7 +80,13 @@ def expand(points, cells, cell_type, n=11, z=1):
     p = np.pad(points, ((0, 0), (0, 1)))
 
     # generate new points array for every thickness expansion ``h``
-    points_new = np.vstack([p + np.array([*zeros, h]) for h in np.linspace(0, z, n)])
+    if isinstance(z, int) or isinstance(z, float):
+        points_z = np.linspace(0, z, n)
+    else:
+        points_z = z
+        n = len(z)
+
+    points_new = np.vstack([p + np.array([*zeros, h]) for h in points_z])
 
     # generate new cells array
     c = [cells + len(p) * a for a in np.arange(n)]

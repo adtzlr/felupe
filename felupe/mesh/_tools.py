@@ -155,7 +155,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
     n : int, optional
         Number of n-point revolutions (or (n-1) cell revolutions),
         default is 11.
-    phi : int, optional
+    phi : float or ndarray, optional
         Revolution angle in degree (default is 180).
     axis : int, optional
         Revolution axis (default is 0).
@@ -181,19 +181,23 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         "quad": ("hexahedron", slice(None, None, None)),
     }[cell_type]
 
-    if abs(phi) > 360:
+    if isinstance(phi, int) or isinstance(phi, float):
+        points_phi = np.linspace(0, phi, n)
+    else:
+        points_phi = phi
+        n = len(points_phi)
+
+    if abs(points_phi[-1]) > 360:
         raise ValueError("phi must be within |phi| <= 360 degree.")
 
     p = np.pad(points, ((0, 0), (0, 1)))
     R = rotation_matrix
 
-    points_new = np.vstack(
-        [(R(angle, dim + 1) @ p.T).T for angle in np.linspace(0, phi, n)]
-    )
+    points_new = np.vstack([(R(angle, dim + 1) @ p.T).T for angle in points_phi])
 
     c = [cells + len(p) * a for a in np.arange(n)]
 
-    if phi == 360:
+    if points_phi[-1] == 360:
         c[-1] = c[0]
         points_new = points_new[: len(points_new) - len(points)]
 

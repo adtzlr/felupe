@@ -81,9 +81,13 @@ def test_meshes():
     with pytest.raises(NotImplementedError):
         fe.mesh.convert(m, order=1)
 
-    fe.mesh.revolve(m, n=11, phi=180, axis=0)
+    mr1 = fe.mesh.revolve(m, n=11, phi=180, axis=0)
     fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=180, axis=0)
     fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=360, axis=0)
+
+    mr2 = fe.mesh.revolve(m, phi=np.linspace(0, 180, 11), axis=0)
+
+    assert np.allclose(mr1.points, mr2.points)
 
     with pytest.raises(ValueError):
         fe.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=361, axis=0)

@@ -27,7 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from copy import deepcopy
-import tempfile
 
 
 class Mesh:
@@ -150,34 +149,3 @@ class Mesh:
         """
 
         return deepcopy(self)
-
-    def draw(self, backend=False, **kwargs):
-        """Draw a mesh using vedo (https://vedo.embl.es/). Code taken from
-        scikit-fem (https://github.com/kinnala/scikit-fem/blob/master/skfem/visuals/vedo.py).
-
-        Parameters
-        ----------
-        backend : str or bool, optional
-            Specify a backend, e.g. "ipyvtk" (default is False).
-
-        Returns
-        -------
-        ug : vedo.Plotter
-            A Vedo Plotter with attribute ``ug.show()``.
-        """
-
-        import vedo
-
-        vedo.embedWindow(backend)
-
-        from vedo import Plotter, UGrid
-
-        vp = Plotter()
-
-        with tempfile.NamedTemporaryFile() as tmp:
-            self.save(tmp.name + ".vtk", **kwargs)
-            ug = UGrid(tmp.name + ".vtk")
-            ug.show = lambda: vp.show([ug.tomesh()]).close()
-            ug.plotter = vp
-
-        return ug

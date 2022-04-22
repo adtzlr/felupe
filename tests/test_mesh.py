@@ -129,7 +129,6 @@ def test_meshes():
 
     m.as_meshio(point_data={"data": m.points}, cell_data={"cell_data": [m.cells[:, 0]]})
     m.save()
-    m.draw()
 
     m.cell_type = None
     with pytest.raises(TypeError):

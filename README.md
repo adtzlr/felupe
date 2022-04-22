@@ -58,6 +58,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `RegionBoundary` along with template regions for `Quad` and `Hexahedron` and `GaussLegendreBoundary`.
 - Add optional normal vector argument for function and gradient methods of `AreaChange`.
 - Add a new Mesh-tool `triangulate()`, applicable on Quad and Hexahedron meshes.
+- Add a new Mesh-method `Mesh.as_meshio()`.
 
 ### Changed
 - Enforce consistent arguments for functions inside `mesh` (`points, cells, cell_data` or `Mesh`).
@@ -65,6 +66,8 @@ All notable changes to this project will be documented in this file. The format 
 - Move single element shape functions and their derivatives from `region.h` to `region.element.h` and `region.dhdr` to `region.element.dhdr`.
 - [Repeat](https://numpy.org/doc/stable/reference/generated/numpy.tile.html) element shape functions and their derivatives for each cell (as preparation for an upcoming `RegionBoundary`).
 - Improve `mesh.convert()` by using the function decorator `@mesh_or_data`.
+- Allow an array to be passed as the expansion arguments of `mesh.expand()` and `mesh.revolve()`.
+- Allow optional keyword args to be passed to `Mesh.save(**kwargs)`, acts as a wrapper for `Mesh.as_meshio(**kwargs).write()`.
 
 ### Fixed
 - Fix area normal vectors of `RegionBoundary`.

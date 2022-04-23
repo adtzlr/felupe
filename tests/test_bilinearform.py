@@ -196,6 +196,7 @@ def test_form_decorator():
             L.assemble(**options)
             L.assemble(kwargs=dict(coords=coords), **options)
             L.assemble(args=(coords,), kwargs={}, **options)
+            L.assemble(args=(coords,), kwargs=None, **options)
             L.assemble(**options)
             
             a.assemble(**options)

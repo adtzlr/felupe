@@ -557,6 +557,7 @@ class BaseForm:
     ):
 
         # set attributes
+        self.form = None
         self.grad_u = grad_u
         self.grad_v = grad_v
         self.dx = dx
@@ -569,10 +570,23 @@ class BaseForm:
         "Init or update the underlying form object."
 
         # update args and kwargs for weakform
-        if args is not None:
-            self.args = args
-        if kwargs is not None:
-            self.kwargs = kwargs
+        if args is not None or kwargs is not None:
+
+            if args is not None:
+                self.args = args
+            else:
+                self.args = ()
+
+            if kwargs is not None:
+                self.kwargs = kwargs
+            else:
+                self.kwargs = {}
+
+        # get current form type
+        if self.form is not None:
+            form_type = type(self.form)
+        else:
+            form_type = None
 
         if v is not None:
 
@@ -584,12 +598,12 @@ class BaseForm:
                 # mixed-field input
                 if isinstance(v, FieldMixed):
                     self.v = BasisMixed(v)
-                    self.form = LinearFormMixed(self.v, self.grad_v, self.dx)
+                    form = LinearFormMixed(self.v, self.grad_v, self.dx)
 
                 # single-field input
                 elif isinstance(v, Field):
                     self.v = Basis(v)
-                    self.form = LinearForm(self.v, self.grad_v, self.dx)
+                    form = LinearForm(self.v, self.grad_v, self.dx)
 
                 else:
                     raise TypeError("Unknown type of Field ``v``.")
@@ -600,7 +614,7 @@ class BaseForm:
                 if isinstance(v, BasisMixed):
                     self.v = BasisMixed(v)
                     self.u = BasisMixed(u)
-                    self.form = BilinearFormMixed(
+                    form = BilinearFormMixed(
                         self.v, self.u, self.grad_v, self.grad_u, self.dx
                     )
 
@@ -608,14 +622,27 @@ class BaseForm:
                 elif isinstance(v, Field):
                     self.v = Basis(v)
                     self.u = Basis(u)
-                    self.form = BilinearForm(
+                    form = BilinearForm(
                         self.v, self.u, self.grad_v, self.grad_u, self.dx
                     )
 
                 else:
                     raise TypeError("Unknown type of Field ``v``.")
 
-    def integrate(self, v=None, u=None, args=(), kwargs={}, parallel=False, sym=False):
+            # check if new form type matches initial form type (update-stage)
+            if form_type is not None:
+                if form_type == type(form):
+                    self.form = form
+                else:
+                    raise TypeError("Wrong type of fields.")
+
+            # set form without a check (init-stage)
+            else:
+                self.form = form
+
+    def integrate(
+        self, v=None, u=None, args=None, kwargs=None, parallel=False, sym=False
+    ):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters

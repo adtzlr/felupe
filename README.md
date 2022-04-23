@@ -71,6 +71,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix area normal vectors of `RegionBoundary`.
+- Fix integration and subsequent assembly of `BilinearForm` if field and mesh dimensions are not equal.
 
 ## [2.0.1] - 2022-01-11
 

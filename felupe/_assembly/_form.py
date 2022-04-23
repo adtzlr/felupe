@@ -209,7 +209,7 @@ class BilinearForm:
         else:
             u = self.u.basis
 
-        values = np.zeros((len(v), v.shape[-3], len(u), *u.shape[-3:]))
+        values = np.zeros((len(v), v.shape[-4], len(u), u.shape[-4], *u.shape[-2:]))
 
         if not parallel:
 

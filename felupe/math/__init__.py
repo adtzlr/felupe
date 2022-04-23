@@ -32,6 +32,4 @@ from ._field import (
     grad,
 )
 
-from ._spatial import (
-    rotation_matrix,
-)
+from ._spatial import rotation_matrix

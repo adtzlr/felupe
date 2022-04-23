@@ -125,9 +125,7 @@ class Field:
         # w.r.t. undeformed coordinates "J" evaluated at quadrature point "p"
         # for each cell "c"
         g = np.einsum(
-            "ca...,aJpc->...Jpc",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
+            "ca...,aJpc->...Jpc", self.values[self.region.mesh.cells], self.region.dhdX,
         )
 
         if sym:

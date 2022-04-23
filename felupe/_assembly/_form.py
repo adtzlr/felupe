@@ -598,7 +598,11 @@ class BaseForm:
                 # mixed-field input
                 if isinstance(v, FieldMixed):
                     self.v = BasisMixed(v)
-                    form = LinearFormMixed(self.v, self.grad_v, self.dx)
+                    form = LinearFormMixed(self.v, self.grad_v)
+
+                    # evaluate weakform to list of weakforms
+                    if isinstance(self.weakform, type(lambda x: x)):
+                        self.weakform = self.weakform()
 
                 # single-field input
                 elif isinstance(v, Field):
@@ -611,12 +615,14 @@ class BaseForm:
             else:
 
                 # mixed-field input
-                if isinstance(v, BasisMixed):
+                if isinstance(v, FieldMixed):
                     self.v = BasisMixed(v)
                     self.u = BasisMixed(u)
-                    form = BilinearFormMixed(
-                        self.v, self.u, self.grad_v, self.grad_u, self.dx
-                    )
+                    form = BilinearFormMixed(self.v, self.u, self.grad_v, self.grad_u)
+
+                    # evaluate weakform to list of weakforms
+                    if isinstance(self.weakform, type(lambda x: x)):
+                        self.weakform = self.weakform()
 
                 # single-field input
                 elif isinstance(v, Field):
@@ -673,7 +679,7 @@ class BaseForm:
 
         kwargs = dict(parallel=parallel, sym=sym)
 
-        if self.u is None:
+        if self.u is None or isinstance(self.v, BasisMixed):
             kwargs.pop("sym")
 
         return self.form.integrate(
@@ -713,7 +719,7 @@ class BaseForm:
 
         kwargs = dict(parallel=parallel, sym=sym)
 
-        if self.u is None:
+        if self.u is None or isinstance(self.u, BasisMixed):
             kwargs.pop("sym")
 
         return self.form.assemble(

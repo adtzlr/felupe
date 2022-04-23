@@ -217,9 +217,43 @@ def test_form_decorator():
     with pytest.raises(TypeError):
         a.assemble(v=field, u=None)
 
+def test_form_decorator_mixed():
+    
+    fieldmixed = pre_mixed(dim=3)
+    F, p = fieldmixed.extract()
+    b = fe.BasisMixed(fieldmixed)
+    
+    @fe.Form(v=fieldmixed, u=fieldmixed, grad_v=(True, False), grad_u=(True, False))
+    def a():
+        return (a_uu, a_up, a_pp)
+    
+    M = a.assemble(fieldmixed, fieldmixed, args=(F, p))
+    
+    K = fe.BilinearFormMixed(
+        v=b, u=b, grad_v=(True, False), grad_u=(True, False)
+    ).assemble((a_uu, a_up, a_pp), kwargs={"F": F, "p": p}, parallel=False)
+    
+    assert np.allclose(M.toarray(), K.toarray())
+    
+    @fe.Form(v=fieldmixed, grad_v=(True, False))
+    def L():
+        return (lformu, lformp)
+    
+    s = L.assemble(fieldmixed, args=(F, p))
+    
+    r = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble(
+        (lformu, lformp), kwargs={"F": F, "p": p}, parallel=False
+    )
+    
+    assert np.allclose(r.toarray(), s.toarray())
+    
+    
+    
+
 if __name__ == "__main__":
     test_linearform()
     test_bilinearform()
     test_linearform_mixed()
     test_bilinearform_mixed()
     test_form_decorator()
+    test_form_decorator_mixed()

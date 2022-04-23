@@ -310,53 +310,6 @@ def test_mixed():
 
             assert b.shape == (z, 1)
 
-def test_form_decorator():
-    
-    mesh = fe.mesh.triangulate(fe.Rectangle(n=6))
-    region = fe.RegionTriangle(mesh)
-    field = fe.Field(region)
-    coords = fe.Field(
-        region, dim=mesh.dim, values=mesh.points
-    ).interpolate()
-    fieldmixed = fe.FieldsMixed(fe.RegionQuad(fe.Rectangle(n=6)))
-
-    @fe.Form(v=field, u=field, grad_v=True, grad_u=True)
-    def a(dv, du):
-        return fe.math.ddot(dv, du)
-
-    @fe.Form(v=field, kwargs=dict(coords=coords))
-    def L(v, coords):
-        x, y = coords
-        f = np.sin(np.pi * x) * np.sin(np.pi * y)
-        return f * v
-
-    for parallel in [False, True]:
-        for sym in [False, True]:
-            
-            options = dict(parallel=parallel, sym=sym)
-            L.assemble(**options)
-            L.assemble(kwargs=dict(coords=coords), **options)
-            L.assemble(args=(coords,), kwargs={}, **options)
-            L.assemble(**options)
-            
-            a.assemble(**options)
-            a.assemble(field, field, **options)
-            
-            L.integrate(**options)
-            L.integrate(kwargs=dict(coords=coords), **options)
-            
-            a.integrate(**options)
-            a.integrate(field, field, **options)
-    
-    with pytest.raises(TypeError):
-        L.assemble(v=mesh)
-    
-    with pytest.raises(TypeError):
-        a.assemble(v=mesh)
-    
-    with pytest.raises(TypeError):
-        a.assemble(v=field, u=None)
-
 if __name__ == "__main__":
     test_linearform()
     test_linearform_broadcast()
@@ -364,4 +317,3 @@ if __name__ == "__main__":
     test_bilinearform_broadcast()
     test_axi()
     test_mixed()
-    test_form_decorator()

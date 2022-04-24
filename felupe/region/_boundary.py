@@ -111,12 +111,7 @@ class RegionBoundary(Region):
             i = [3, 1, 0, 2]
             j = [0, 2, 1, 3]
 
-            cells_faces = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                )
-            )
+            cells_faces = np.dstack((mesh.cells[:, i], mesh.cells[:, j],))
 
             # complementary edges for the creation of "boundary" quads
             # (rotated quads with 1st edge as n-th edge of one original quad)

@@ -59,6 +59,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add optional normal vector argument for function and gradient methods of `AreaChange`.
 - Add a new Mesh-tool `triangulate()`, applicable on Quad and Hexahedron meshes.
 - Add a new Mesh-method `Mesh.as_meshio()`.
+- Add a function decorator `@Form(...)` for linear and bilinear form objects.
 
 ### Changed
 - Enforce consistent arguments for functions inside `mesh` (`points, cells, cell_data` or `Mesh`).

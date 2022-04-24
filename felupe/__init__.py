@@ -36,6 +36,8 @@ from ._assembly import (
     BilinearForm,
     LinearFormMixed,
     BilinearFormMixed,
+    BaseForm,
+    Form,
 )
 from ._basis import (
     Basis,

@@ -364,13 +364,7 @@ def triangulate(points, cells, cell_type, mode=3):
         j = [1, 1]
         k = [3, 2]
 
-        cells_new = np.dstack(
-            (
-                cells[:, i],
-                cells[:, j],
-                cells[:, k],
-            )
-        )
+        cells_new = np.dstack((cells[:, i], cells[:, j], cells[:, k],))
 
         cell_type_new = "triangle"
 
@@ -393,14 +387,7 @@ def triangulate(points, cells, cell_type, mode=3):
         else:
             raise NotImplementedError(f"Mode {mode} not implemented.")
 
-        cells_new = np.dstack(
-            (
-                cells[:, i],
-                cells[:, j],
-                cells[:, k],
-                cells[:, l],
-            )
-        )
+        cells_new = np.dstack((cells[:, i], cells[:, j], cells[:, k], cells[:, l],))
 
         cell_type_new = "tetra"
 

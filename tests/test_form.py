@@ -26,8 +26,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-
 import felupe as fe
+import pytest
 
 
 def pre():
@@ -309,7 +309,6 @@ def test_mixed():
             b = L.assemble(parallel=parallel, jit=jit).toarray()
 
             assert b.shape == (z, 1)
-
 
 if __name__ == "__main__":
     test_linearform()

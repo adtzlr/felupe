@@ -35,3 +35,8 @@ Integral Form
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autodecorator:: felupe.Form
+   :members:
+   :undoc-members:
+   :inherited-members:

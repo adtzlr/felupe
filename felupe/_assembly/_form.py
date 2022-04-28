@@ -541,6 +541,8 @@ class BaseForm:
     kwargs : dict, optional (default is {})
         Dictionary with initial optional weakform-keyword-arguments. May be updated during
         integration / assembly.
+    parallel : bool, optional (default is False)
+        Flag to activate parallel (threaded) basis evaluation.
 
     """
 
@@ -554,6 +556,7 @@ class BaseForm:
         dx=None,
         args=(),
         kwargs={},
+        parallel=False,
     ):
 
         # set attributes
@@ -564,9 +567,9 @@ class BaseForm:
         self.weakform = weakform
 
         # init underlying linear or bilinear (mixed) form
-        self._init_or_update_forms(v, u, args, kwargs)
+        self._init_or_update_forms(v, u, args, kwargs, parallel)
 
-    def _init_or_update_forms(self, v, u, args, kwargs):
+    def _init_or_update_forms(self, v, u, args, kwargs, parallel):
         "Init or update the underlying form object."
 
         # update args and kwargs for weakform
@@ -597,7 +600,7 @@ class BaseForm:
 
                 # mixed-field input
                 if isinstance(v, FieldMixed):
-                    self.v = BasisMixed(v)
+                    self.v = BasisMixed(v, parallel=parallel)
                     form = LinearFormMixed(self.v, self.grad_v)
 
                     # evaluate weakform to list of weakforms
@@ -606,7 +609,7 @@ class BaseForm:
 
                 # single-field input
                 elif isinstance(v, Field):
-                    self.v = Basis(v)
+                    self.v = Basis(v, parallel=parallel)
                     form = LinearForm(self.v, self.grad_v, self.dx)
 
                 else:
@@ -616,8 +619,8 @@ class BaseForm:
 
                 # mixed-field input
                 if isinstance(v, FieldMixed):
-                    self.v = BasisMixed(v)
-                    self.u = BasisMixed(u)
+                    self.v = BasisMixed(v, parallel=parallel)
+                    self.u = BasisMixed(u, parallel=parallel)
                     form = BilinearFormMixed(self.v, self.u, self.grad_v, self.grad_u)
 
                     # evaluate weakform to list of weakforms
@@ -626,8 +629,8 @@ class BaseForm:
 
                 # single-field input
                 elif isinstance(v, Field):
-                    self.v = Basis(v)
-                    self.u = Basis(u)
+                    self.v = Basis(v, parallel=parallel)
+                    self.u = Basis(u, parallel=parallel)
                     form = BilinearForm(
                         self.v, self.u, self.grad_v, self.grad_u, self.dx
                     )
@@ -675,7 +678,7 @@ class BaseForm:
             Integrated (but not assembled) vector / matrix values.
         """
 
-        self._init_or_update_forms(v, u, args, kwargs)
+        self._init_or_update_forms(v, u, args, kwargs, parallel)
 
         kwargs = dict(parallel=parallel, sym=sym)
 
@@ -715,7 +718,7 @@ class BaseForm:
             The assembled vector / sparse matrix.
         """
 
-        self._init_or_update_forms(v, u, args, kwargs)
+        self._init_or_update_forms(v, u, args, kwargs, parallel)
 
         kwargs = dict(parallel=parallel, sym=sym)
 
@@ -727,7 +730,9 @@ class BaseForm:
         )
 
 
-def Form(v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}):
+def Form(
+    v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}, parallel=False
+):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
 
@@ -783,6 +788,7 @@ def Form(v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}):
             dx=dx,
             args=args,
             kwargs=kwargs,
+            parallel=parallel,
         )
 
     return form

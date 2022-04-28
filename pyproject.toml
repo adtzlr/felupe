@@ -52,7 +52,7 @@ all = [
 ]
 
 [project.urls]
-homepage = "https://adtzlr.github.io/felupe"
+homepage = "https://felupe.readthedocs.io/en/latest"
 code = "https://github.com/adtzlr/felupe"
 issues = "https://github.com/adtzlr/felupe/issues"
 

@@ -48,6 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## Added
+- Add optional parallel (threaded) basis evaluation
+
 ## [3.0.0] - 2022-04-28
 
 ### Added

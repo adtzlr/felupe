@@ -27,26 +27,41 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+try:
+    from einsumt import einsumt
+except:
+    print("ImportWarning: Module `einsumt` not found. Fall back to `np.einsum()`.")
+    from numpy import einsum as einsumt
+
 
 class Basis:
     r"""A basis and its gradient built on top of a scalar- or vector-valued
     field. *Basis* refers to the trial and test field, either values or
     gradients evaluated at quadrature points. The first two indices of a basis
     are used for looping over the element shape functions ``a`` and its
-    components ``i``. The third index represents the vector component ``k`` of
+    components ``i``. The third index represents the vector component ``j`` of
     the field. The two trailing axes ``(p, c)`` contain the evaluated element
-    shape functions at quadrature points per cell. For gradients, the fourth
-    index is used for the vector component of the partial derivative ``k``.
+    shape functions at quadrature points ``p`` per cell ``c``.
 
     ..  math::
 
-        \text{grad}(b)_{aijkpc} = \delta_{ij}
+        \varphi_{aijpc} = \delta_{ij} \left( h_a \right)_{pc}
+
+
+    For gradients, the fourth index is used for the vector component of the
+    partial derivative ``k``.
+
+    ..  math::
+
+        \text{grad}(\varphi)_{aijkpc} = \delta_{ij}
             \left( \frac{\partial h_a}{\partial X_K} \right)_{pc}
 
     Parameters
     ----------
     field : Field
         A field on which the basis should be created.
+    parallel : bool, optional (default is False)
+        Flag to activate parallel (threaded) basis evaluation.
 
     Attributes
     ----------
@@ -57,19 +72,20 @@ class Basis:
 
     """
 
-    def __init__(self, field):
+    def __init__(self, field, parallel=False):
 
         self.field = field
 
-        self.basis = np.einsum(
-            "ij,apc,c->aijpc",
+        einsum = einsumt if parallel else np.einsum
+
+        self.basis = einsum(
+            "ij,apc->aijpc",
             np.eye(self.field.dim),
             self.field.region.h,
-            np.ones(self.field.region.mesh.ncells),
         )
 
         if hasattr(self.field.region, "dhdX"):
-            self.grad = np.einsum(
+            self.grad = einsum(
                 "ij,akpc->aijkpc", np.eye(self.field.dim), self.field.region.dhdX
             )
 
@@ -94,10 +110,10 @@ class BasisMixed:
 
     """
 
-    def __init__(self, field):
+    def __init__(self, field, parallel=False):
 
         self.field = field
-        self.basis = [Basis(f) for f in self.field]
+        self.basis = [Basis(f, parallel=parallel) for f in self.field]
 
     def __getitem__(self, idx):
         "Slice-based access to underlying bases."

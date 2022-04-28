@@ -251,7 +251,11 @@ def add_midpoints_edges(points, cells, cell_type):
     }
 
     # collect edges
-    points_edges, cells_edges, _ = collect_edges(points, cells, cell_type,)
+    points_edges, cells_edges, _ = collect_edges(
+        points,
+        cells,
+        cell_type,
+    )
 
     # add offset to point index for edge-midpoints
     # in additional cells array
@@ -281,7 +285,11 @@ def add_midpoints_faces(points, cells, cell_type):
     }
 
     # collect faces
-    points_faces, cells_faces, _ = collect_faces(points, cells, cell_type,)
+    points_faces, cells_faces, _ = collect_faces(
+        points,
+        cells,
+        cell_type,
+    )
 
     # add offset to point index for faces-midpoints
     # in additional cells array
@@ -310,7 +318,11 @@ def add_midpoints_volumes(points, cells, cell_type):
     }
 
     # collect volumes
-    points_volumes, cells_volumes, _ = collect_volumes(points, cells, cell_type,)
+    points_volumes, cells_volumes, _ = collect_volumes(
+        points,
+        cells,
+        cell_type,
+    )
 
     # add offset to point index for volumes-midpoints
     # in additional cells array

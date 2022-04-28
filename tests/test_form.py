@@ -310,6 +310,7 @@ def test_mixed():
 
             assert b.shape == (z, 1)
 
+
 if __name__ == "__main__":
     test_linearform()
     test_linearform_broadcast()

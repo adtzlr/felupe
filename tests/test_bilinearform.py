@@ -169,15 +169,14 @@ def test_bilinearform_mixed():
 
     assert K.shape == (89, 89)
     assert np.allclose(K.toarray(), Kp.toarray())
-    
+
+
 def test_form_decorator():
-    
+
     mesh = fe.mesh.triangulate(fe.Rectangle(n=6))
     region = fe.RegionTriangle(mesh)
     field = fe.Field(region)
-    coords = fe.Field(
-        region, dim=mesh.dim, values=mesh.points
-    ).interpolate()
+    coords = fe.Field(region, dim=mesh.dim, values=mesh.points).interpolate()
 
     @fe.Form(v=field, u=field, grad_v=True, grad_u=True)
     def a(dv, du):
@@ -191,64 +190,63 @@ def test_form_decorator():
 
     for parallel in [False, True]:
         for sym in [False, True]:
-            
+
             options = dict(parallel=parallel, sym=sym)
             L.assemble(**options)
             L.assemble(kwargs=dict(coords=coords), **options)
             L.assemble(args=(coords,), kwargs={}, **options)
             L.assemble(args=(coords,), kwargs=None, **options)
             L.assemble(**options)
-            
+
             a.assemble(**options)
             a.assemble(field, field, **options)
-            
+
             L.integrate(**options)
             L.integrate(kwargs=dict(coords=coords), **options)
-            
+
             a.integrate(**options)
             a.integrate(field, field, **options)
-    
+
     with pytest.raises(TypeError):
         L.assemble(v=mesh)
-    
+
     with pytest.raises(TypeError):
         a.assemble(v=mesh)
-    
+
     with pytest.raises(TypeError):
         a.assemble(v=field, u=None)
 
+
 def test_form_decorator_mixed():
-    
+
     fieldmixed = pre_mixed(dim=3)
     F, p = fieldmixed.extract()
     b = fe.BasisMixed(fieldmixed)
-    
+
     @fe.Form(v=fieldmixed, u=fieldmixed, grad_v=(True, False), grad_u=(True, False))
     def a():
         return (a_uu, a_up, a_pp)
-    
+
     M = a.assemble(fieldmixed, fieldmixed, args=(F, p))
-    
+
     K = fe.BilinearFormMixed(
         v=b, u=b, grad_v=(True, False), grad_u=(True, False)
     ).assemble((a_uu, a_up, a_pp), kwargs={"F": F, "p": p}, parallel=False)
-    
+
     assert np.allclose(M.toarray(), K.toarray())
-    
+
     @fe.Form(v=fieldmixed, grad_v=(True, False))
     def L():
         return (lformu, lformp)
-    
+
     s = L.assemble(fieldmixed, args=(F, p))
-    
+
     r = fe.LinearFormMixed(v=b, grad_v=(True, False)).assemble(
         (lformu, lformp), kwargs={"F": F, "p": p}, parallel=False
     )
-    
+
     assert np.allclose(r.toarray(), s.toarray())
-    
-    
-    
+
 
 if __name__ == "__main__":
     test_linearform()

@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+
 try:
     from einsumt import einsumt
 except:
@@ -39,15 +40,15 @@ class Basis:
     gradients evaluated at quadrature points. The first two indices of a basis
     are used for looping over the element shape functions ``a`` and its
     components ``i``. The third index represents the vector component ``j`` of
-    the field. The two trailing axes ``(p, c)`` contain the evaluated element 
-    shape functions at quadrature points ``p`` per cell ``c``. 
-    
+    the field. The two trailing axes ``(p, c)`` contain the evaluated element
+    shape functions at quadrature points ``p`` per cell ``c``.
+
     ..  math::
 
         \varphi_{aijpc} = \delta_{ij} \left( h_a \right)_{pc}
-    
-    
-    For gradients, the fourth index is used for the vector component of the 
+
+
+    For gradients, the fourth index is used for the vector component of the
     partial derivative ``k``.
 
     ..  math::
@@ -74,7 +75,7 @@ class Basis:
     def __init__(self, field, parallel=False):
 
         self.field = field
-        
+
         einsum = einsumt if parallel else np.einsum
 
         self.basis = einsum(

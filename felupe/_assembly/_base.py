@@ -206,7 +206,12 @@ class IntegralForm:
                 )
             elif not grad_v and grad_u:
                 return einsum(
-                    "a...pe,...kLpe,bLpe,pe->a...bke", vb, fun, ub, dV, optimize=True,
+                    "a...pe,...kLpe,bLpe,pe->a...bke",
+                    vb,
+                    fun,
+                    ub,
+                    dV,
+                    optimize=True,
                 )
             else:  # grad_v and grad_u
                 if jit:
@@ -314,7 +319,6 @@ try:
                                         )
 
         return out
-
 
 except:
     pass

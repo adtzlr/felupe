@@ -506,17 +506,17 @@ class BilinearFormMixed:
 
 
 class BaseForm:
-    r"""A linear or bilinear form object based on a weak-form with 
+    r"""A linear or bilinear form object based on a weak-form with
     methods for integration and assembly of vectors / sparse matrices.
-    
+
     Linear Form:
 
     ..  math::
 
         L(v) = \int_\Omega f \cdot v \ dx
-        
+
     Bilinear Form:
-    
+
     ..  math::
 
         a(v, u) = \int_\Omega v \cdot f \cdot u \ dx
@@ -524,10 +524,10 @@ class BaseForm:
     Parameters
     ----------
     v : Field or FieldMixed
-        An object with interpolation or gradients of a field. May be 
+        An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
     u : Field or FieldMixed
-        An object with interpolation or gradients of a field. May be 
+        An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
@@ -706,7 +706,7 @@ class BaseForm:
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
         sym : bool, optional (default is False)
-            Flag to active symmetric integration/assembly 
+            Flag to active symmetric integration/assembly
             for bilinear forms.
 
         Returns
@@ -730,15 +730,15 @@ class BaseForm:
 def Form(v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
-    
+
     Linear Form:
 
     ..  math::
 
         L(v) = \int_\Omega f \cdot v \ dx
-        
+
     Bilinear Form:
-    
+
     ..  math::
 
         a(v, u) = \int_\Omega v \cdot f \cdot u \ dx
@@ -746,10 +746,10 @@ def Form(v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}):
     Parameters
     ----------
     v : Field or FieldMixed
-        An object with interpolation or gradients of a field. May be 
+        An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
     u : Field or FieldMixed
-        An object with interpolation or gradients of a field. May be 
+        An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
@@ -761,13 +761,13 @@ def Form(v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}):
         Tuple with initial optional weakform-arguments. May be updated during
         integration / assembly.
     kwargs : dict, optional (default is {})
-        Dictionary with initial optional weakform-keyword-arguments. May be 
+        Dictionary with initial optional weakform-keyword-arguments. May be
         updated during integration / assembly.
-    
+
     Returns
     -------
     BaseForm
-        A form object based on LinearForm, LinearFormMixed, BilinearForm or 
+        A form object based on LinearForm, LinearFormMixed, BilinearForm or
         BilinearFormMixed with methods for integration and assembly.
 
     """

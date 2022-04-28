@@ -48,25 +48,27 @@ def pre_constant(dim):
 
 def test_basis():
 
-    r, u = pre(dim=3)
-    b = fe.Basis(u)
+    for parallel in [False, True]:
 
-    assert b.grad is not None
+        r, u = pre(dim=3)
+        b = fe.Basis(u, parallel=parallel)
 
-    r, u = pre(dim=1)
-    b = fe.Basis(u)
+        assert b.grad is not None
 
-    assert b.grad is not None
+        r, u = pre(dim=1)
+        b = fe.Basis(u, parallel=parallel)
 
-    r, u = pre_constant(dim=3)
-    b = fe.Basis(u)
+        assert b.grad is not None
 
-    assert b.grad is None
+        r, u = pre_constant(dim=3)
+        b = fe.Basis(u, parallel=parallel)
 
-    r, u = pre_constant(dim=1)
-    b = fe.Basis(u)
+        assert b.grad is None
 
-    assert b.grad is None
+        r, u = pre_constant(dim=1)
+        b = fe.Basis(u, parallel=parallel)
+
+        assert b.grad is None
 
 
 if __name__ == "__main__":

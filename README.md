@@ -48,6 +48,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [3.0.0] - 2022-04-28
+
 ### Added
 - Add `sym` argument to `Bilinearform.integrate()` and `Bilinearform.assemble()`.
 - Add `FieldsMixed` which creates a `FieldMixed` of length `n` based on a template region.

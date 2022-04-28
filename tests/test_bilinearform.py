@@ -178,17 +178,18 @@ def test_form_decorator():
     field = fe.Field(region)
     coords = fe.Field(region, dim=mesh.dim, values=mesh.points).interpolate()
 
-    @fe.Form(v=field, u=field, grad_v=True, grad_u=True)
-    def a(dv, du):
-        return fe.math.ddot(dv, du)
-
-    @fe.Form(v=field, kwargs=dict(coords=coords))
-    def L(v, coords):
-        x, y = coords
-        f = np.sin(np.pi * x) * np.sin(np.pi * y)
-        return f * v
-
     for parallel in [False, True]:
+
+        @fe.Form(v=field, u=field, grad_v=True, grad_u=True, parallel=parallel)
+        def a(dv, du):
+            return fe.math.ddot(dv, du)
+
+        @fe.Form(v=field, kwargs=dict(coords=coords), parallel=parallel)
+        def L(v, coords):
+            x, y = coords
+            f = np.sin(np.pi * x) * np.sin(np.pi * y)
+            return f * v
+
         for sym in [False, True]:
 
             options = dict(parallel=parallel, sym=sym)

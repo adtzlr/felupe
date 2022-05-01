@@ -8,6 +8,7 @@ from . import tools
 from . import constitution
 from . import solve
 from . import region
+from . import mechanics
 
 from .region import (
     Region,
@@ -107,6 +108,7 @@ from .tools import (
     topoints,
     project,
 )
+from .mechanics import SolidBody
 
 __all__ = [
     "__version__",

@@ -26,6 +26,36 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-class SolidBody:
+class SolidBodyBoundary:
     def __init__(self):
+        pass
+
+
+class Pressure:
+    def __init__(self):
+        pass
+
+    def vector(self, field):
+        pass
+
+    def matrix(self, field):
+        pass
+
+
+class SolidBody:
+    def __init__(self, umat):
+        self.umat = umat
+        self.boundary = SolidBodyBoundary()
+        self.boundary.pressure = Pressure()
+
+    def vector(self, field):
+        pass
+
+    def matrix(self, field):
+        pass
+
+    def gradient(self, field):
+        pass
+
+    def hessian(self, field):
         pass

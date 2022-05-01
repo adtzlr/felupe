@@ -30,18 +30,184 @@ import felupe as fe
 import numpy as np
 
 
+def test_simple():
+
+    umat = fe.LinearElastic(E=1, nu=0.3)
+
+    m = fe.Cube(n=3)
+    r = fe.RegionHexahedron(m)
+    u = fe.Field(r, dim=3)
+
+    b = fe.SolidBody(umat, u)
+    r = b.vector()
+
+    K = b.matrix()
+    r = b.vector(u)
+    F = b.kinematics[0]
+    s = b.stress
+    C = b.elasticity
+
+    assert K.shape == (81, 81)
+    assert r.shape == (81, 1)
+    assert F.shape == (3, 3, 8, 8)
+    assert s.shape == (3, 3, 8, 8)
+    assert C.shape == (3, 3, 3, 3, 8, 8)
+
+
 def pre(dim):
+
+    umat = fe.NeoHooke(mu=1, bulk=2)
 
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.Field(r, dim=dim)
-    return r, u
+
+    return umat, u
+
+
+def pre_axi():
+
+    umat = fe.NeoHooke(mu=1, bulk=2)
+
+    m = fe.Rectangle(n=3)
+    r = fe.RegionQuad(m)
+    u = fe.FieldAxisymmetric(r)
+
+    return umat, u
+
+
+def pre_mixed(dim):
+
+    umat = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=2))
+
+    m = fe.Cube(n=3)
+    r = fe.RegionHexahedron(m)
+    u = fe.FieldsMixed(r, n=3)
+
+    return umat, u
 
 
 def test_solidbody():
 
-    B = fe.SolidBody()
+    umat, u = pre(dim=3)
+    b = fe.SolidBody(umat=umat, field=u)
+
+    for parallel in [False, True]:
+        for jit in [False, True]:
+
+            kwargs = {"parallel": parallel, "jit": jit}
+
+            r1 = b.vector(u, **kwargs)
+            assert r1.shape == (81, 1)
+
+            r2 = b.vector(**kwargs)
+            assert np.allclose(r1.toarray(), r2.toarray())
+
+            K1 = b.matrix(u, **kwargs)
+            assert K1.shape == (81, 81)
+
+            K2 = b.matrix(**kwargs)
+            assert np.allclose(K1.toarray(), K2.toarray())
+
+            P1 = b.stress
+            P2 = b.gradient()
+            P2 = b.gradient(u)
+            assert np.allclose(P1, P2)
+
+            A1 = b.elasticity
+            A2 = b.hessian()
+            A2 = b.hessian(u)
+            assert np.allclose(A1, A2)
+
+            F1 = b.kinematics
+            F2 = b.extract()
+            F2 = b.extract(u)
+            assert np.allclose(F1, F2)
+
+
+def test_solidbody_axi():
+
+    umat, u = pre_axi()
+    b = fe.SolidBody(umat=umat, field=u)
+
+    for parallel in [False, True]:
+        for jit in [False, True]:
+
+            kwargs = {"parallel": parallel, "jit": jit}
+
+            r1 = b.vector(u, **kwargs)
+            assert r1.shape == (18, 1)
+
+            r2 = b.vector(**kwargs)
+            assert np.allclose(r1.toarray(), r2.toarray())
+
+            K1 = b.matrix(u, **kwargs)
+            assert K1.shape == (18, 18)
+
+            K2 = b.matrix(**kwargs)
+            assert np.allclose(K1.toarray(), K2.toarray())
+
+            P1 = b.stress
+            P2 = b.gradient()
+            P2 = b.gradient(u)
+            assert np.allclose(P1, P2)
+
+            A1 = b.elasticity
+            A2 = b.hessian()
+            A2 = b.hessian(u)
+            assert np.allclose(A1, A2)
+
+            F1 = b.kinematics
+            F2 = b.extract()
+            F2 = b.extract(u)
+            assert np.allclose(F1, F2)
+
+
+def test_solidbody_mixed():
+
+    umat, u = pre_mixed(dim=3)
+    b = fe.SolidBody(umat=umat, field=u)
+
+    for parallel in [False, True]:
+        for jit in [False, True]:
+
+            kwargs = {"parallel": parallel, "jit": jit}
+
+            r1 = b.vector(u, **kwargs)
+            r1 = b.vector(u, items=3, **kwargs)
+            assert r1.shape == (97, 1)
+
+            r2 = b.vector(**kwargs)
+            assert np.allclose(r1.toarray(), r2.toarray())
+
+            K1 = b.matrix(u, **kwargs)
+            K1 = b.matrix(u, items=6, **kwargs)
+            assert K1.shape == (97, 97)
+
+            K2 = b.matrix(**kwargs)
+            assert np.allclose(K1.toarray(), K2.toarray())
+
+            P1 = b.stress
+            P2 = b.gradient()
+            P2 = b.gradient(u)
+            for p1, p2 in zip(P1, P2):
+                assert np.allclose(p1, p2)
+
+            A1 = b.elasticity
+            A2 = b.hessian()
+            A2 = b.hessian(u)
+            for a1, a2 in zip(A1, A2):
+                assert np.allclose(a1, a2)
+
+            F1 = b.kinematics
+            F2 = b.extract()
+            F2 = b.extract(u)
+            for f1, f2 in zip(F1, F2):
+                assert np.allclose(f1, f2)
 
 
 if __name__ == "__main__":
+    test_simple()
     test_solidbody()
+    test_solidbody_axi()
+    test_solidbody_mixed()

@@ -29,7 +29,7 @@ from .._field import Field, FieldMixed, FieldsMixed, FieldAxisymmetric
 from .._assembly import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
 
 
-class SolidBodyBoundary:
+class SolidBodyPressure:
     def __init__(self):
         pass
 
@@ -49,9 +49,6 @@ class SolidBody:
     def __init__(self, umat, field):
 
         self.umat = umat
-        self.boundary = SolidBodyBoundary()
-        self.boundary.pressure = Pressure()
-
         self.field = field
 
         if isinstance(field, FieldMixed):
@@ -59,11 +56,11 @@ class SolidBody:
         else:
             self.dV = self.field.region.dV
 
-        self.stress = None
+        self.kinematics = self.extract(self.field)
         self.force = None
+        self.stiffness = None
         self.stress = None
         self.elasticity = None
-        self.kinematics = None
 
         self.form = {
             Field: IntegralForm,
@@ -84,7 +81,7 @@ class SolidBody:
         if field is not None:
             self.field = field
 
-        self.stress = self.gradient(self.field)
+        self.stress = self.gradient(field)
 
         self.force = self.form(
             fun=self.stress[slice(items)],
@@ -99,7 +96,7 @@ class SolidBody:
         if field is not None:
             self.field = field
 
-        self.elasticity = self.hessian(self.field)
+        self.elasticity = self.hessian(field)
 
         self.stiffness = self.form(
             fun=self.elasticity[slice(items)],
@@ -110,10 +107,9 @@ class SolidBody:
 
         return self.stiffness
 
-    def extract(self, field=None):
+    def extract(self, field):
 
-        if field is not None:
-            self.field = field
+        self.field = field
 
         self.kinematics = self.field.extract()
         if isinstance(self.field, Field):

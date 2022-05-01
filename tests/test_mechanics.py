@@ -62,6 +62,8 @@ def pre(dim):
     r = fe.RegionHexahedron(m)
     u = fe.Field(r, dim=dim)
 
+    u.values = np.random.rand(*u.values.shape) / 10
+
     return umat, u
 
 
@@ -73,6 +75,8 @@ def pre_axi():
     r = fe.RegionQuad(m)
     u = fe.FieldAxisymmetric(r)
 
+    u.values = np.random.rand(*u.values.shape) / 10
+
     return umat, u
 
 
@@ -83,6 +87,10 @@ def pre_mixed(dim):
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.FieldsMixed(r, n=3)
+
+    u[0].values = np.random.rand(*u[0].values.shape) / 10
+    u[1].values = np.random.rand(*u[1].values.shape) / 10
+    u[2].values = np.random.rand(*u[2].values.shape) / 10
 
     return umat, u
 
@@ -100,11 +108,17 @@ def test_solidbody():
             r1 = b.vector(u, **kwargs)
             assert r1.shape == (81, 1)
 
+            r1b = b.force
+            assert np.allclose(r1.toarray(), r1b.toarray())
+
             r2 = b.vector(**kwargs)
             assert np.allclose(r1.toarray(), r2.toarray())
 
             K1 = b.matrix(u, **kwargs)
             assert K1.shape == (81, 81)
+
+            K1b = b.stiffness
+            assert np.allclose(K1.toarray(), K1b.toarray())
 
             K2 = b.matrix(**kwargs)
             assert np.allclose(K1.toarray(), K2.toarray())
@@ -120,7 +134,6 @@ def test_solidbody():
             assert np.allclose(A1, A2)
 
             F1 = b.kinematics
-            F2 = b.extract()
             F2 = b.extract(u)
             assert np.allclose(F1, F2)
 
@@ -158,7 +171,6 @@ def test_solidbody_axi():
             assert np.allclose(A1, A2)
 
             F1 = b.kinematics
-            F2 = b.extract()
             F2 = b.extract(u)
             assert np.allclose(F1, F2)
 
@@ -200,7 +212,6 @@ def test_solidbody_mixed():
                 assert np.allclose(a1, a2)
 
             F1 = b.kinematics
-            F2 = b.extract()
             F2 = b.extract(u)
             for f1, f2 in zip(F1, F2):
                 assert np.allclose(f1, f2)

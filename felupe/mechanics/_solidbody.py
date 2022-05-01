@@ -160,12 +160,14 @@ class SolidBody:
             FieldAxisymmetric: dict(dV=self.dV, grad_v=True, grad_u=True),
         }[type(self.field)]
 
-    def vector(self, field=None, parallel=False, jit=False, items=None):
+    def vector(
+        self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
+    ):
 
         if field is not None:
             self.field = field
 
-        self.stress = self.gradient(field)
+        self.stress = self.gradient(field, args=args, kwargs=kwargs)
 
         self.force = self.form(
             fun=self.stress[slice(items)],
@@ -175,12 +177,14 @@ class SolidBody:
 
         return self.force
 
-    def matrix(self, field=None, parallel=False, jit=False, items=None):
+    def matrix(
+        self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
+    ):
 
         if field is not None:
             self.field = field
 
-        self.elasticity = self.hessian(field)
+        self.elasticity = self.hessian(field, args=args, kwargs=kwargs)
 
         self.stiffness = self.form(
             fun=self.elasticity[slice(items)],
@@ -201,7 +205,7 @@ class SolidBody:
 
         return self.kinematics
 
-    def gradient(self, field=None, *args, **kwargs):
+    def gradient(self, field=None, args=(), kwargs={}):
 
         if field is not None:
             self.field = field
@@ -211,7 +215,7 @@ class SolidBody:
 
         return self.stress
 
-    def hessian(self, field=None, *args, **kwargs):
+    def hessian(self, field=None, args=(), kwargs={}):
 
         if field is not None:
             self.field = field

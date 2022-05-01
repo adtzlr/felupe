@@ -54,6 +54,48 @@ def test_simple():
     assert C.shape == (3, 3, 3, 3, 8, 8)
 
 
+def test_pressure():
+
+    umat = fe.LinearElastic(E=1, nu=0.3)
+
+    m = fe.Cube(n=3)
+    r = fe.RegionHexahedron(m)
+    u = fe.Field(r, dim=3)
+
+    u.values = np.random.rand(*u.values.shape) / 10
+
+    s = fe.RegionHexahedronBoundary(m)
+    v = fe.Field(s, dim=3)
+
+    b = fe.SolidBody(umat, u)
+    c = fe.SolidBodyPressure(umat, v)
+
+    r = b.vector()
+    K = b.matrix()
+    r = b.vector(u)
+    F = b.kinematics[0]
+    s = b.stress
+    C = b.elasticity
+
+    assert K.shape == (81, 81)
+    assert r.shape == (81, 1)
+    assert F.shape == (3, 3, 8, 8)
+    assert s.shape == (3, 3, 8, 8)
+    assert C.shape == (3, 3, 3, 3, 8, 8)
+
+    r = c.vector()
+    K = c.matrix()
+    r = c.vector(v)
+    F = c.kinematics[0]
+
+    assert K.shape == (81, 81)
+    assert r.shape == (81, 1)
+    assert F.shape == (3, 3, 4, 24)
+
+    c.update(u, v)
+    assert np.allclose(u.values, v.values)
+
+
 def pre(dim):
 
     umat = fe.NeoHooke(mu=1, bulk=2)
@@ -222,3 +264,4 @@ if __name__ == "__main__":
     test_solidbody()
     test_solidbody_axi()
     test_solidbody_mixed()
+    test_pressure()

@@ -27,22 +27,106 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from .._field import Field, FieldMixed, FieldsMixed, FieldAxisymmetric
 from .._assembly import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
+from ..constitution import AreaChange
 
 
 class SolidBodyPressure:
-    def __init__(self):
-        pass
+    def __init__(self, umat, field):
 
+        self.umat = umat
+        self.field = field
 
-class Pressure:
-    def __init__(self):
-        pass
+        self.dV = self.field.region.dV
+        self.normals = self.field.region.normals
 
-    def vector(self, field):
-        pass
+        self.kinematics = self.extract(self.field)
+        self.force = None
+        self.stiffness = None
 
-    def matrix(self, field):
-        pass
+        self.form = {
+            Field: IntegralForm,
+            FieldMixed: IntegralFormMixed,
+            FieldsMixed: IntegralFormMixed,
+            FieldAxisymmetric: IntegralFormAxisymmetric,
+        }[type(self.field)]
+
+        self.kwargs = {
+            Field: dict(dV=self.dV, grad_v=True, grad_u=True),
+            FieldMixed: dict(dV=self.dV),
+            FieldsMixed: dict(dV=self.dV),
+            FieldAxisymmetric: dict(dV=self.dV, grad_v=True, grad_u=True),
+        }[type(self.field)]
+
+        self.area_change = AreaChange()
+
+    def extract(self, field):
+
+        self.field = field
+        self.kinematics = (self.field.extract(),)
+
+        return self.kinematics
+
+    def vector(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
+
+        if field is not None:
+            self.field = field
+            self.kinematics = self.extract(field)
+
+        self.pressure = pressure
+
+        fun = pressure * self.area_change.function(
+            *self.kinematics,
+            self.normals,
+        )
+
+        self.force = IntegralForm(
+            fun=fun, v=self.field, dV=self.dV, grad_v=False
+        ).assemble(parallel=parallel, jit=jit)
+
+        if resize is not None:
+            self.force.resize(*resize.shape)
+
+        return self.force
+
+    def matrix(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
+
+        if field is not None:
+            self.field = field
+            self.kinematics = self.extract(field)
+
+        self.pressure = pressure
+
+        fun = pressure * self.area_change.gradient(
+            *self.kinematics,
+            self.normals,
+        )
+        self.stiffness = IntegralForm(
+            fun=fun,
+            v=self.field,
+            u=self.field,
+            dV=self.dV,
+            grad_v=False,
+            grad_u=True,
+        ).assemble(parallel=parallel, jit=jit)
+
+        if resize is not None:
+            self.stiffness.resize(*resize.shape)
+
+        return self.stiffness
+
+    def update(self, other_field, field=None):
+
+        if field is not None:
+            self.field = field
+
+        if isinstance(other_field, FieldMixed) or isinstance(other_field, FieldsMixed):
+            self.field.values = other_field[0].values
+        else:
+            self.field.values = other_field.values
+
+        self.kinematics = self.extract(self.field)
+
+        return self.field
 
 
 class SolidBody:

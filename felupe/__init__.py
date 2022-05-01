@@ -108,7 +108,10 @@ from .tools import (
     topoints,
     project,
 )
-from .mechanics import SolidBody
+from .mechanics import (
+    SolidBody,
+    SolidBodyPressure,
+)
 
 __all__ = [
     "__version__",

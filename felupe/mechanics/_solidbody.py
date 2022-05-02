@@ -238,7 +238,7 @@ class SolidBody:
 
         self.gradient(field)
 
-        if len(self.kinematics) > 0:
+        if len(self.kinematics) > 1:
             P = self.stress[0]
         else:
             P = self.stress

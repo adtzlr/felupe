@@ -99,9 +99,9 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
     4 1.0857485921106448e-09
     5 9.016379080063146e-16
 
-Results and cauchy stresses may be exported either for the total region (take care of result-averaging at region intersections!) or for sub-regions only.
+Results and may be exported either for the total region or with stresses for sub-regions only.
 
-.. image:: images/composite2_total.png
+.. image:: images/composite_total.png
    :width: 600px
 
 ..  code-block:: python
@@ -114,5 +114,5 @@ Results and cauchy stresses may be exported either for the total region (take ca
     fe.save(region_rubber, displacement_rubber, filename="result_rubber.vtk",
         point_data={"CauchyStress": cauchy_stress})
 
-.. image:: images/composite2_rubber_cauchy.png
+.. image:: images/composite_rubber_cauchy.png
    :width: 600px

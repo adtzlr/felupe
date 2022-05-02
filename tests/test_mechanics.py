@@ -44,12 +44,14 @@ def test_simple():
     K = b.matrix()
     r = b.vector(u)
     F = b.kinematics[0]
-    s = b.stress
+    P = b.stress
+    s = b.cauchy_stress()
     C = b.elasticity
 
     assert K.shape == (81, 81)
     assert r.shape == (81, 1)
     assert F.shape == (3, 3, 8, 8)
+    assert P.shape == (3, 3, 8, 8)
     assert s.shape == (3, 3, 8, 8)
     assert C.shape == (3, 3, 3, 3, 8, 8)
 
@@ -68,7 +70,7 @@ def test_pressure():
     v = fe.Field(s, dim=3)
 
     b = fe.SolidBody(umat, u)
-    c = fe.SolidBodyPressure(umat, v)
+    c = fe.SolidBodyPressure(v)
 
     r = b.vector()
     K = b.matrix()
@@ -180,6 +182,10 @@ def test_solidbody():
             F1 = b.kinematics
             F2 = b.extract(u)
             assert np.allclose(F1, F2)
+            
+            s1 = b.cauchy_stress()
+            s2 = b.cauchy_stress(u)
+            assert np.allclose(s1, s2)
 
 
 def test_solidbody_axi():
@@ -217,6 +223,10 @@ def test_solidbody_axi():
             F1 = b.kinematics
             F2 = b.extract(u)
             assert np.allclose(F1, F2)
+            
+            s1 = b.cauchy_stress()
+            s2 = b.cauchy_stress(u)
+            assert np.allclose(s1, s2)
 
 
 def test_solidbody_mixed():
@@ -259,6 +269,10 @@ def test_solidbody_mixed():
             F2 = b.extract(u)
             for f1, f2 in zip(F1, F2):
                 assert np.allclose(f1, f2)
+            
+            s1 = b.cauchy_stress()
+            s2 = b.cauchy_stress(u)
+            assert np.allclose(s1, s2)
 
 
 if __name__ == "__main__":

@@ -12,3 +12,4 @@ How-To Guides
    howto/solvers
    howto/composite
    howto/forms
+   howto/solid

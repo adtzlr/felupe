@@ -46,10 +46,10 @@ class IntegralFormAxisymmetric(IntegralForm):
 
                 if grad_v:
                     fun_2d = fun[:-1, :-1]
-                    fun_zz = fun[(-1,), (-1,)]
+                    fun_zz = fun[(-1,), (-1,)] / R
                 else:
                     fun_2d = fun[:-1]
-                    fun_zz = fun[-1].reshape(1, *fun[-1].shape)
+                    fun_zz = fun[-1].reshape(1, *fun[-1].shape) / R
 
                 form_a = IntegralForm(fun_2d, v, self.dV, grad_v=grad_v)
                 form_b = IntegralForm(fun_zz, v.scalar, self.dV)
@@ -142,6 +142,10 @@ class IntegralFormAxisymmetric(IntegralForm):
             val = values[0]
 
         if self.mode == 30:
+            if len(values[0].shape) > 4:
+                values[0] = values[0][:, :, 0, 0]
+            if len(values[1].shape) > 4:
+                values[1] = values[1][:, :, 0, 0]
             a, b, e = values[1].shape
             values[1] = values[1].reshape(a, 1, b, e)
 

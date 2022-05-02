@@ -1,5 +1,5 @@
-FElupe :sub:`beta`
-====================
+FElupe
+======
 
 .. image:: _static/logo_dark.svg
    :align: right

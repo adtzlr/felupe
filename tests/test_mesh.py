@@ -142,7 +142,7 @@ def test_meshes():
     m.save()
 
     m.cell_type = None
-    with pytest.raises(AttributeError):
+    with pytest.raises(AttributeError) or pytest.raises(KeyError):
         m.save()
 
 

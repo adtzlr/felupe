@@ -48,6 +48,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [3.1.0] - 2022-05-02
+
 ### Added
 - Add optional parallel (threaded) basis evaluation and add `Form(v, u, parallel=True)`.
 - Add `mechanics` submodule with `SolidBody` and `SolidBodyPressure`.

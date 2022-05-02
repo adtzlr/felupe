@@ -1,1 +1,2 @@
-from ._solidbody import SolidBody, SolidBodyPressure
+from ._solidbody import SolidBody
+from ._solidbody_pressure import SolidBodyPressure

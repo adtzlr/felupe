@@ -61,8 +61,8 @@ def test_pressure():
     umat = fe.LinearElastic(E=1, nu=0.3)
 
     m = fe.Cube(n=3)
-    r = fe.RegionHexahedron(m)
-    u = fe.Field(r, dim=3)
+    h = fe.RegionHexahedron(m)
+    u = fe.Field(h, dim=3)
 
     u.values = np.random.rand(*u.values.shape) / 10
 
@@ -98,6 +98,12 @@ def test_pressure():
 
     c.update(u, v)
     assert np.allclose(u.values, v.values)
+
+    w = fe.FieldsMixed(h)
+    w[0].values = np.random.rand(*w[0].values.shape) / 10
+
+    c.update(w, v)
+    assert np.allclose(w[0].values, v.values)
 
 
 def pre(dim):

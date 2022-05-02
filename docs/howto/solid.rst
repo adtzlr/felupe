@@ -1,5 +1,10 @@
-Solid Body (Mechanics)
-~~~~~~~~~~~~~~~~~~~~~~
+Solid Mechanics
+~~~~~~~~~~~~~~~
+
+The mechanics submodule contains classes for the generation of solid bodies.
+
+Solid Body
+----------
 
 The generation of internal force vectors or stiffness matrices of solid bodies are provided as assembly-methods of a :class:`felupe.SolidBody`. The correct integral form is chosen based on the :class:`felupe.Field`  (default, axisymmetric or mixed).
 
@@ -35,17 +40,17 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
     s = body.evaluate.cauchy_stress(displacement)
 
 
-Pressure Boundary on Solid Body (Mechanics)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Pressure Boundary on a Solid Body
+---------------------------------
 
-The generation of internal force vectors or stiffness matrices of pressure boundaries of solid bodies are provided as assembly-methods of a :class:`felupe.SolidBodyPressure`. The correct integral form is chosen based on the :class:`felupe.Field` (default or axisymmetric). If the internal field is a mixed field, the assembled vectors and matrices from the pressure contribution have to be resized to the dimensions of the internal force vector and the stiffness matrix.
+The generation of internal force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`felupe.SolidBodyPressure`. The correct integral form is chosen based on the :class:`felupe.Field` (default or axisymmetric). If the internal field is a mixed field, the assembled vectors and matrices from the pressure contribution have to be resized to the dimensions of the internal force vector and the stiffness matrix.
 
 ..  code-block:: python
     
     region_pressure = fe.RegionHexahedronBoundary(
         mesh=mesh,
         only_surface=True, # select only faces on the outline
-        mask=lambda x: x==0, # select a subset of faces on the surface
+        mask=mesh.points[:, 0] == 0, # select a subset of faces on the surface
     )
     
     displacement_boundary = fe.Field(region_pressure)
@@ -60,3 +65,22 @@ The generation of internal force vectors or stiffness matrices of pressure bound
     stiffness_matrix_pressure = body.assemble.matrix(
         field=displacement, parallel=False, jit=False, resize=stiffness_matrix
     )
+
+
+For axisymmetric problems the boundary region has to be created with the attribute ``ensure_3d=True``.
+
+..  code-block:: python
+    
+    mesh = fe.Rectangle(a=(0, 30), b=(20, 40), n=(21, 11))
+    region = fe.RegionQuad(mesh)
+    
+    region_pressure = fe.RegionQuadBoundary(
+        mesh=mesh,
+        only_surface=True, # select only faces on the outline
+        mask=mesh.points[:, 0] == 0, # select a subset of faces on the surface
+        ensure_3d=True,
+    )
+    
+    displacement = fe.FieldAxisymmetric(region)
+    displacement_boundary = fe.FieldAxisymmetric(region_pressure)
+    displacement_boundary.values = displacement.values # link field values

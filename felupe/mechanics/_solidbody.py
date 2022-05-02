@@ -31,95 +31,121 @@ from ..constitution import AreaChange
 from ..math import inv, dot
 
 
+class Assemble:
+    def __init__(self):
+        pass
+
+
+class Evaluate:
+    def __init__(self):
+        pass
+
+
+class Results:
+    def __init__(self, stress=False, elasticity=False):
+
+        self.force = None
+        self.stiffness = None
+        self.kinematics = None
+
+        if stress:
+            self.stress = None
+
+        if elasticity:
+            self.elasticity = None
+
+
 class SolidBodyPressure:
     def __init__(self, field):
 
         self.field = field
 
-        self.dV = self.field.region.dV
-        self.normals = self.field.region.normals
+        self._dV = self.field.region.dV
+        self._normals = self.field.region.normals
 
-        self.kinematics = self.extract(self.field)
-        self.force = None
-        self.stiffness = None
+        self.results = Results()
+        self.results.kinematics = self._extract(self.field)
+        self.assemble = Assemble()
+        self.assemble.vector = self._vector
+        self.assemble.matrix = self._matrix
 
-        self.form = {
+        self._form = {
             Field: IntegralForm,
             FieldMixed: IntegralFormMixed,
             FieldsMixed: IntegralFormMixed,
             FieldAxisymmetric: IntegralFormAxisymmetric,
         }[type(self.field)]
 
-        self.kwargs = {
-            Field: dict(dV=self.dV, grad_v=True, grad_u=True),
-            FieldMixed: dict(dV=self.dV),
-            FieldsMixed: dict(dV=self.dV),
-            FieldAxisymmetric: dict(dV=self.dV, grad_v=True, grad_u=True),
+        self._kwargs = {
+            Field: dict(dV=self._dV, grad_v=True, grad_u=True),
+            FieldMixed: dict(dV=self._dV),
+            FieldsMixed: dict(dV=self._dV),
+            FieldAxisymmetric: dict(dV=self._dV, grad_v=True, grad_u=True),
         }[type(self.field)]
 
-        self.IntForm = {
+        self._IntForm = {
             Field: IntegralForm,
             FieldAxisymmetric: IntegralFormAxisymmetric,
         }[type(self.field)]
 
-        self.area_change = AreaChange()
+        self._area_change = AreaChange()
 
-    def extract(self, field):
+    def _extract(self, field):
 
         self.field = field
-        self.kinematics = (self.field.extract(),)
+        self.results.kinematics = (self.field.extract(),)
 
-        return self.kinematics
+        return self.results.kinematics
 
-    def vector(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
+    def _vector(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
 
         if field is not None:
             self.field = field
-            self.kinematics = self.extract(field)
+            self.results.kinematics = self._extract(field)
 
-        self.pressure = pressure
+        self.results.pressure = pressure
 
-        fun = pressure * self.area_change.function(
-            *self.kinematics,
-            self.normals,
+        fun = pressure * self._area_change.function(
+            *self.results.kinematics,
+            self._normals,
             parallel=parallel,
         )
 
-        self.force = self.IntForm(
-            fun=fun, v=self.field, dV=self.dV, grad_v=False
+        self.results.force = self._IntForm(
+            fun=fun, v=self.field, dV=self._dV, grad_v=False
         ).assemble(parallel=parallel, jit=jit)
 
         if resize is not None:
-            self.force.resize(*resize.shape)
+            self.results.force.resize(*resize.shape)
 
-        return self.force
+        return self.results.force
 
-    def matrix(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
+    def _matrix(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
 
         if field is not None:
             self.field = field
-            self.kinematics = self.extract(field)
+            self.results.kinematics = self._extract(field)
 
-        self.pressure = pressure
+        self.results.pressure = pressure
 
-        fun = pressure * self.area_change.gradient(
-            *self.kinematics,
-            self.normals,
+        fun = pressure * self._area_change.gradient(
+            *self.results.kinematics,
+            self._normals,
             parallel=parallel,
         )
-        self.stiffness = self.IntForm(
+        self.results.stiffness = self._IntForm(
             fun=fun,
             v=self.field,
             u=self.field,
-            dV=self.dV,
+            dV=self._dV,
             grad_v=False,
             grad_u=True,
         ).assemble(parallel=parallel, jit=jit)
 
         if resize is not None:
-            self.stiffness.resize(*resize.shape)
+            self.results.stiffness.resize(*resize.shape)
 
-        return self.stiffness
+        return self.results.stiffness
 
     def update(self, other_field, field=None):
 
@@ -131,7 +157,7 @@ class SolidBodyPressure:
         else:
             self.field.values = other_field.values
 
-        self.kinematics = self.extract(self.field)
+        self.results.kinematics = self._extract(self.field)
 
         return self.field
 
@@ -143,106 +169,115 @@ class SolidBody:
         self.field = field
 
         if isinstance(field, FieldMixed):
-            self.dV = self.field[0].region.dV
+            self._dV = self.field[0].region.dV
         else:
-            self.dV = self.field.region.dV
+            self._dV = self.field.region.dV
 
-        self.kinematics = self.extract(self.field)
-        self.force = None
-        self.stiffness = None
-        self.stress = None
-        self.elasticity = None
+        self.results = Results(stress=True, elasticity=True)
+        self.assemble = Assemble()
+        self.assemble.vector = self._vector
+        self.assemble.matrix = self._matrix
+        self.results.kinematics = self._extract(self.field)
 
-        self.area_change = AreaChange()
+        self.evaluate = Evaluate()
+        self.evaluate.gradient = self._gradient
+        self.evaluate.hessian = self._hessian
+        self.evaluate.cauchy_stress = self._cauchy_stress
 
-        self.form = {
+        self._area_change = AreaChange()
+
+        self._form = {
             Field: IntegralForm,
             FieldMixed: IntegralFormMixed,
             FieldsMixed: IntegralFormMixed,
             FieldAxisymmetric: IntegralFormAxisymmetric,
         }[type(self.field)]
 
-        self.kwargs = {
-            Field: dict(dV=self.dV, grad_v=True, grad_u=True),
-            FieldMixed: dict(dV=self.dV),
-            FieldsMixed: dict(dV=self.dV),
-            FieldAxisymmetric: dict(dV=self.dV, grad_v=True, grad_u=True),
+        self._kwargs = {
+            Field: dict(dV=self._dV, grad_v=True, grad_u=True),
+            FieldMixed: dict(dV=self._dV),
+            FieldsMixed: dict(dV=self._dV),
+            FieldAxisymmetric: dict(dV=self._dV, grad_v=True, grad_u=True),
         }[type(self.field)]
 
-    def vector(
+    def _vector(
         self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
     ):
 
         if field is not None:
             self.field = field
 
-        self.stress = self.gradient(field, args=args, kwargs=kwargs)
+        self.results.stress = self._gradient(field, args=args, kwargs=kwargs)
 
-        self.force = self.form(
-            fun=self.stress[slice(items)],
+        self.results.force = self._form(
+            fun=self.results.stress[slice(items)],
             v=self.field,
-            **self.kwargs,
+            **self._kwargs,
         ).assemble(parallel=parallel, jit=jit)
 
-        return self.force
+        return self.results.force
 
-    def matrix(
+    def _matrix(
         self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
     ):
 
         if field is not None:
             self.field = field
 
-        self.elasticity = self.hessian(field, args=args, kwargs=kwargs)
+        self.results.elasticity = self._hessian(field, args=args, kwargs=kwargs)
 
-        self.stiffness = self.form(
-            fun=self.elasticity[slice(items)],
+        self.results.stiffness = self._form(
+            fun=self.results.elasticity[slice(items)],
             v=self.field,
             u=self.field,
-            **self.kwargs,
+            **self._kwargs,
         ).assemble(parallel=parallel, jit=jit)
 
-        return self.stiffness
+        return self.results.stiffness
 
-    def extract(self, field):
+    def _extract(self, field):
 
         self.field = field
 
-        self.kinematics = self.field.extract()
+        self.results.kinematics = self.field.extract()
         if isinstance(self.field, Field):
-            self.kinematics = (self.kinematics,)
+            self.results.kinematics = (self.results.kinematics,)
 
-        return self.kinematics
+        return self.results.kinematics
 
-    def gradient(self, field=None, args=(), kwargs={}):
-
-        if field is not None:
-            self.field = field
-            self.kinematics = self.extract(self.field)
-
-        self.stress = self.umat.gradient(*self.kinematics, *args, **kwargs)
-
-        return self.stress
-
-    def hessian(self, field=None, args=(), kwargs={}):
+    def _gradient(self, field=None, args=(), kwargs={}):
 
         if field is not None:
             self.field = field
-            self.kinematics = self.extract(self.field)
+            self.results.kinematics = self._extract(self.field)
 
-        self.elasticity = self.umat.hessian(*self.kinematics, *args, **kwargs)
+        self.results.stress = self.umat.gradient(
+            *self.results.kinematics, *args, **kwargs
+        )
 
-        return self.elasticity
+        return self.results.stress
 
-    def cauchy_stress(self, field=None):
+    def _hessian(self, field=None, args=(), kwargs={}):
 
-        self.gradient(field)
+        if field is not None:
+            self.field = field
+            self.results.kinematics = self._extract(self.field)
 
-        if len(self.kinematics) > 1:
-            P = self.stress[0]
+        self.results.elasticity = self.umat.hessian(
+            *self.results.kinematics, *args, **kwargs
+        )
+
+        return self.results.elasticity
+
+    def _cauchy_stress(self, field=None):
+
+        self._gradient(field)
+
+        if len(self.results.kinematics) > 1:
+            P = self.results.stress[0]
         else:
-            P = self.stress
+            P = self.results.stress
 
-        JiFT = self.area_change.function(self.kinematics[0])
+        JiFT = self._area_change.function(self.results.kinematics[0])
 
         return dot(P, inv(JiFT))

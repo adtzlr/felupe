@@ -26,7 +26,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-import meshio
 
 from ..math import dot, transpose, det, eigvalsh
 from . import topoints
@@ -89,6 +88,8 @@ def save(
         point_data["MinPrincipalCauchyStress"] = cauchyprinc[0]
 
         point_data["MaxPrincipalShearCauchyStress"] = cauchyprinc[2] - cauchyprinc[0]
+
+    import meshio
 
     mesh = meshio.Mesh(
         points=mesh.points,

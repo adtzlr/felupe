@@ -40,11 +40,11 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
-  "meshio",
 ]
 
 [project.optional-dependencies]
 all = [
+    "meshio",
     "h5py",
     "numba",
     "sparse",

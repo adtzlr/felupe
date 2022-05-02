@@ -1,7 +1,7 @@
-Composite regions
------------------
+Composite Regions with Solid Bodies
+-----------------------------------
 
-This section demonstrates how to set up a problem with two regions, each associated to a seperated material model but with the same kind of weak form formulation (displacement-based). First, a (total) region is created.
+This section demonstrates how to set up a problem with two regions, each associated to a seperated solid body. First, a (total) region is created.
 
 ..  code-block:: python
 
@@ -14,7 +14,7 @@ This section demonstrates how to set up a problem with two regions, each associa
     displacement = fe.Field(region, dim=3)
 
 
-In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated. Both sub-fields are added to a list of composite fields.
+In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated. All field values are linked, that means they share their values array.
     
 ..  code-block:: python
 
@@ -28,78 +28,62 @@ In a second step, sub-sets for points and cells are created from which two sub-r
     ))]
     cells = np.isin(mesh.cells, points).sum(1) == mesh.cells.shape[1]
 
-    rubber = mesh.copy()
-    rubber.update(rubber.cells[~cells])
+    mesh_rubber = mesh.copy()
+    mesh_rubber.update(mesh_rubber.cells[~cells])
 
-    rregion = fe.RegionHexahedron(rubber)
-    rdisplacement = fe.Field(rregion, dim=3)
-
-    steel = mesh.copy()
-    steel.update(steel.cells[cells])
-
-    sregion = fe.RegionHexahedron(steel)
-    sdisplacement = fe.Field(sregion, dim=3)
+    mesh_steel = mesh.copy()
+    mesh_steel.update(mesh_steel.cells[cells])
     
-    fields = [rdisplacement, sdisplacement]
+    region_rubber = fe.RegionHexahedron(mesh_rubber)
+    displacement_rubber = fe.Field(region_rubber, dim=3)
 
-The displacement boundaries are created on the total field whereas the partition of the degrees of freedom is performed on the sub-fields.
+    region_steel = fe.RegionHexahedron(mesh_steel)
+    displacement_steel = fe.Field(region_steel, dim=3)
+
+    # link fields
+    displacement_steel.values = displacement_rubber.values = displacement.values
+
+
+The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
     boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
         displacement, move=-0.25
     )
-    
-    dofs = [
-        fe.dof.partition(rdisplacement, boundaries),
-        fe.dof.partition(sdisplacement, boundaries),
-    ]
 
-The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation.
+
+The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
 
 ..  code-block:: python
 
-    umats = [fe.NeoHooke(mu=1.0, bulk=2.0), fe.LinearElastic(E=210000.0, nu=0.3)]
+    neohooke = fe.NeoHooke(mu=1.0, bulk=2.0)
+    linearelastic = fe.LinearElastic(E=210000.0, nu=0.3)
 
-The integral (weak) linear and bilinear forms are created with functions in order to re-use them for both sub-fields.
-
-..  code-block:: python
-
-    def fun(umat, field):
-        r = fe.IntegralForm(
-            umat.gradient(field.extract()), field, field.region.dV, None, True
-        ).assemble().toarray()[:, 0]
-        return r
-
-    def jac(umat, field):
-        K = fe.IntegralForm(
-            umat.hessian(field.extract()), field, field.region.dV, field, True, True
-        ).assemble()
-        return K
-    
-    funs = [fun, fun]
-    jacs = [jac, jac]
+    rubber = fe.SolidBody(neohooke, displacement_rubber)
+    steel = fe.SolidBody(linearelastic, displacement_steel)
 
 
-Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both sub-regions.
+Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both solid bodies.
 
 ..  code-block:: python
+
+    r = rubber.assemble.vector()
+    r+= steel.assemble.vector()
 
     for iteration in range(8):
-    
-        r = sum([f(umat, field) for f, umat, field in zip(funs, umats, fields)])
-        K = sum([j(umat, field) for j, umat, field in zip(jacs, umats, fields)])
+
+        K = rubber.assemble.matrix()
+        K+= steel.assemble.matrix()
 
         system = fe.solve.partition(displacement, K, dof1, dof0, r)
         du = fe.solve.solve(*system, ext0)
 
         displacement += du
         
-        for field, (d0, d1) in zip(fields, dofs):
-        
-            field.values.ravel()[d1] += du[d1]
-            field.values.ravel()[d0] += du[d0]
-        
+        r = rubber.assemble.vector(displacement_rubber)
+        r+= steel.assemble.vector(displacement_steel)
+
         norm = fe.math.norm(du)
         print(iteration, norm)
 
@@ -108,31 +92,27 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
 
 ..  code-block:: shell
 
-    0 9.636630560448182
-    1 0.31166451613964075
-    2 0.005354041194053835
-    3 2.8254858186935622e-05
-    4 1.0857486092949548e-09
-    5 9.475677365353017e-16
+    0 9.636630560459622
+    1 0.3116645161396399
+    2 0.005354041194053836
+    3 2.825485818694591e-05
+    4 1.0857485921106448e-09
+    5 9.016379080063146e-16
 
 Results and cauchy stresses may be exported either for the total region (take care of result-averaging at region intersections!) or for sub-regions only.
 
-.. image:: images/composite_total.png
+.. image:: images/composite2_total.png
    :width: 600px
 
 ..  code-block:: python
 
-    from felupe.math import dot, det, transpose, tovoigt
-
-    F = fields[0].extract()
-    s = dot(umats[0].gradient(F), transpose(F)) / det(F)
-
-    cauchy = fe.project(tovoigt(s), rregion)
+    s = rubber.evaluate.cauchy_stress()
+    cauchy_stress = fe.project(fe.math.tovoigt(s), region_rubber)
     
     fe.save(region, displacement, filename="result.vtk")
 
-    fe.save(fields[0].region, fields[0], filename="result_rubber.vtk",
-            point_data={"Cauchy": cauchy})
+    fe.save(region_rubber, displacement_rubber, filename="result_rubber.vtk",
+        point_data={"CauchyStress": cauchy_stress})
 
-.. image:: images/composite_rubber_cauchy.png
+.. image:: images/composite2_rubber_cauchy.png
    :width: 600px

@@ -48,9 +48,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-## Added
+### Added
 - Add optional parallel (threaded) basis evaluation and add `Form(v, u, parallel=True)`.
 - Add `mechanics` submodule with `SolidBody` and `SolidBodyPressure`.
+
+### Fixed
+- Fix matADi materials for (mixed) axisymmetric analyses.
+- Fix missing radius in axisymmetric integral forms.
 
 ## [3.0.0] - 2022-04-28
 

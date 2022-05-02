@@ -28,12 +28,12 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 from .._field import Field, FieldMixed, FieldsMixed, FieldAxisymmetric
 from .._assembly import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
 from ..constitution import AreaChange
+from ..math import inv, dot
 
 
 class SolidBodyPressure:
-    def __init__(self, umat, field):
+    def __init__(self, field):
 
-        self.umat = umat
         self.field = field
 
         self.dV = self.field.region.dV
@@ -57,6 +57,11 @@ class SolidBodyPressure:
             FieldAxisymmetric: dict(dV=self.dV, grad_v=True, grad_u=True),
         }[type(self.field)]
 
+        self.IntForm = {
+            Field: IntegralForm,
+            FieldAxisymmetric: IntegralFormAxisymmetric,
+        }[type(self.field)]
+
         self.area_change = AreaChange()
 
     def extract(self, field):
@@ -77,9 +82,10 @@ class SolidBodyPressure:
         fun = pressure * self.area_change.function(
             *self.kinematics,
             self.normals,
+            parallel=parallel,
         )
 
-        self.force = IntegralForm(
+        self.force = self.IntForm(
             fun=fun, v=self.field, dV=self.dV, grad_v=False
         ).assemble(parallel=parallel, jit=jit)
 
@@ -99,8 +105,9 @@ class SolidBodyPressure:
         fun = pressure * self.area_change.gradient(
             *self.kinematics,
             self.normals,
+            parallel=parallel,
         )
-        self.stiffness = IntegralForm(
+        self.stiffness = self.IntForm(
             fun=fun,
             v=self.field,
             u=self.field,
@@ -145,6 +152,8 @@ class SolidBody:
         self.stiffness = None
         self.stress = None
         self.elasticity = None
+
+        self.area_change = AreaChange()
 
         self.form = {
             Field: IntegralForm,
@@ -224,3 +233,16 @@ class SolidBody:
         self.elasticity = self.umat.hessian(*self.kinematics, *args, **kwargs)
 
         return self.elasticity
+
+    def cauchy_stress(self, field=None):
+
+        self.gradient(field)
+
+        if len(self.kinematics) > 0:
+            P = self.stress[0]
+        else:
+            P = self.stress
+
+        JiFT = self.area_change.function(self.kinematics[0])
+
+        return dot(P, inv(JiFT))

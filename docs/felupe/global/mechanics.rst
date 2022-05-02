@@ -1,5 +1,5 @@
-Element
-~~~~~~~
+Mechanics
+~~~~~~~~~
    
 .. autoclass:: felupe.SolidBody
    :members:

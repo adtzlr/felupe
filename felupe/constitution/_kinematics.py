@@ -77,7 +77,7 @@ class LineChange:
         """
         return F
 
-    def gradient(self, F):
+    def gradient(self, F, parallel=None):
         """Gradient of line change.
 
         Arguments
@@ -91,8 +91,11 @@ class LineChange:
             Gradient of line change
         """
 
+        if parallel is None:
+            parallel = self.parallel
+
         Eye = identity(F)
-        return cdya_ik(Eye, Eye, parallel=self.parallel)
+        return cdya_ik(Eye, Eye, parallel=parallel)
 
 
 class AreaChange:
@@ -113,7 +116,7 @@ class AreaChange:
     def __init__(self, parallel=False):
         self.parallel = parallel
 
-    def function(self, F, N=None):
+    def function(self, F, N=None, parallel=None):
         """Area change.
 
         Arguments
@@ -132,12 +135,15 @@ class AreaChange:
 
         Fs = J * transpose(inv(F, J))
 
+        if parallel is None:
+            parallel = self.parallel
+
         if N is None:
             return Fs
         else:
-            return dot(Fs, N, parallel=self.parallel)
+            return dot(Fs, N, parallel=parallel)
 
-    def gradient(self, F, N=None):
+    def gradient(self, F, N=None, parallel=None):
         """Gradient of area change.
 
         Arguments
@@ -155,13 +161,15 @@ class AreaChange:
 
         J = det(F)
 
+        if parallel is None:
+            parallel = self.parallel
+
         dJdF = self.function(F)
         dFsdF = (
-            dya(dJdF, dJdF, parallel=self.parallel)
-            - cdya_il(dJdF, dJdF, parallel=self.parallel)
+            dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J
 
-        if self.parallel:
+        if parallel:
             einsum = einsumt
         else:
             einsum = np.einsum
@@ -224,7 +232,7 @@ class VolumeChange:
         J = self.function(F)
         return J * transpose(inv(F, J))
 
-    def hessian(self, F):
+    def hessian(self, F, parallel=None):
         """Hessian of volume change.
 
         Arguments
@@ -238,9 +246,11 @@ class VolumeChange:
             Hessian of the determinant of the deformation gradient
         """
 
+        if parallel is None:
+            parallel = self.parallel
+
         J = self.function(F)
         dJdF = self.gradient(F)
         return (
-            dya(dJdF, dJdF, parallel=self.parallel)
-            - cdya_il(dJdF, dJdF, parallel=self.parallel)
+            dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J

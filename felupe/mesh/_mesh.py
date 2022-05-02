@@ -117,10 +117,7 @@ class Mesh:
 
         """
 
-        if self.cell_type is None:
-            raise TypeError("Cell type missing.")
-        else:
-            import meshio
+        import meshio
 
         cells = {self.cell_type: self.cells}
         return meshio.Mesh(self.points, cells, **kwargs)

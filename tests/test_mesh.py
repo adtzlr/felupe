@@ -142,7 +142,7 @@ def test_meshes():
     m.save()
 
     m.cell_type = None
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         m.save()
 
 

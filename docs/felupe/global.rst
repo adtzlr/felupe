@@ -15,3 +15,4 @@ felupe
    global/constitution
    global/assembly
    global/tools
+   global/mechanics

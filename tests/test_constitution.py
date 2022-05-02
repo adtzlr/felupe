@@ -47,7 +47,7 @@ def pre_mixed(sym, add_identity):
     v = fe.Field(r, dim=1)
     z = fe.Field(r, dim=1, values=1)
     w = fe.FieldMixed((u, v, z))
-    return r, w.extract(grad=True, sym=sym, add_identity=add_identity)
+    return r, w.extract(grad=True, sym=sym, add_identity=add_identity), m
 
 
 def test_nh():
@@ -207,9 +207,12 @@ def test_kinematics():
 
         xf = lc.function(F)
         xg = lc.gradient(F)
+        xg = lc.gradient(F, parallel=parallel)
 
         Yf = ac.function(F, N)
+        Yf = ac.function(F, N, parallel=parallel)
         Yg = ac.gradient(F, N)
+        Yg = ac.gradient(F, N, parallel=parallel)
 
         yf = ac.function(F)
         yg = ac.gradient(F)
@@ -217,6 +220,7 @@ def test_kinematics():
         zf = vc.function(F)
         zg = vc.gradient(F)
         zh = vc.hessian(F)
+        zh = vc.hessian(F, parallel=parallel)
 
         assert np.allclose(xf, F)
 
@@ -261,6 +265,13 @@ def test_wrappers():
                 if len(x) == 1:
                     return [self.material.hessian(*x)]
                 else:
+                    hess = self.material.hessian(*x)
+                    for a in [1, 2]:
+                        hess[a].reshape(*hess[a].shape[:-2], 1, 1, *hess[a].shape[-2:])
+                    for b in [3, 4, 5]:
+                        hess[b].reshape(
+                            *hess[b].shape[:-2], 1, 1, 1, *hess[b].shape[-2:]
+                        )
                     return self.material.hessian(*x)
 
         umat = fe.MatadiMaterial(AsMatadi(nh))
@@ -273,7 +284,7 @@ def test_wrappers():
         assert P.shape == (3, 3, *F.shape[-2:])
         assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
 
-        r, FpJ = pre_mixed(sym=False, add_identity=True)
+        r, FpJ, m = pre_mixed(sym=False, add_identity=True)
 
         umat = fe.MatadiMaterial(
             AsMatadi(fe.ThreeFieldVariation(nh, parallel=parallel))
@@ -284,6 +295,15 @@ def test_wrappers():
 
         assert P[0].shape == (3, 3, *FpJ[0].shape[-2:])
         assert A[0].shape == (3, 3, 3, 3, *FpJ[0].shape[-2:])
+
+        m = fe.Rectangle(n=3)
+        r = fe.RegionQuad(m)
+        v = fe.FieldsMixed(r, n=3, axisymmetric=True)
+        FpJ = v.extract()
+        A = umat.hessian(*FpJ)
+        K = fe.IntegralFormMixed(A, v, r.dV, v).assemble()
+
+        assert K.shape == (26, 26)
 
 
 if __name__ == "__main__":

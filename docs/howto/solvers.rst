@@ -88,36 +88,15 @@ Solvers from external packages:
        # ...
        
        def solver(A, b):
-           return PyPardisoSolver(mtype=6).solve(triu(A).tocsr(), b).squeeze()
+           # mtype = 1: real and structurally symmetric, supernode pivoting
+           # mtype = 2: real and symmetric positive definite
+           # mtype =-2: real and symmetric indefinite, 
+           #             diagonal or Bunch-Kaufman pivoting
+           # mtype = 6: complex and symmetric
+           return PyPardisoSolver(mtype=2).solve(triu(A).tocsr(), b).squeeze()
       
        system = fe.solve.partition(field, K, dof1, dof0)
        fe.solve.solve(*system, solver=solver)
-
-.. tab:: Krylov (iterative)
-
-   Ensure to have `Krylov <https://github.com/nschloe/krylov>`_ installed.
-
-   ..  code-block:: bash
-      
-       pip install krylov
-   
-   ``minres`` may be replaced by another iterative method.
-
-   ..  code-block:: python
-        
-       import felupe as fe
-       import krylov
-       
-       # ...
-       
-       def solver(A, b):
-           "Wrapper function for Krylov-solvers."
-           
-           return krylov.minres(A, b)[0]
-       
-       system = fe.solve.partition(field, K, dof1, dof0)
-       fe.solve.solve(*system, solver=solver)
-        
 
 
     

@@ -207,9 +207,12 @@ def test_kinematics():
 
         xf = lc.function(F)
         xg = lc.gradient(F)
+        xg = lc.gradient(F, parallel=parallel)
 
         Yf = ac.function(F, N)
+        Yf = ac.function(F, N, parallel=parallel)
         Yg = ac.gradient(F, N)
+        Yg = ac.gradient(F, N, parallel=parallel)
 
         yf = ac.function(F)
         yg = ac.gradient(F)
@@ -217,6 +220,7 @@ def test_kinematics():
         zf = vc.function(F)
         zg = vc.gradient(F)
         zh = vc.hessian(F)
+        zh = vc.hessian(F, parallel=parallel)
 
         assert np.allclose(xf, F)
 

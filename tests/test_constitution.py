@@ -265,6 +265,13 @@ def test_wrappers():
                 if len(x) == 1:
                     return [self.material.hessian(*x)]
                 else:
+                    hess = self.material.hessian(*x)
+                    for a in [1, 2]:
+                        hess[a].reshape(*hess[a].shape[:-2], 1, 1, *hess[a].shape[-2:])
+                    for b in [3, 4, 5]:
+                        hess[b].reshape(
+                            *hess[b].shape[:-2], 1, 1, 1, *hess[b].shape[-2:]
+                        )
                     return self.material.hessian(*x)
 
         umat = fe.MatadiMaterial(AsMatadi(nh))

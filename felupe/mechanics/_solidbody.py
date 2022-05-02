@@ -32,16 +32,27 @@ from ..math import inv, dot
 
 
 class Assemble:
-    def __init__(self):
-        pass
+    "A class with assembly methods of a SolidBody."
+
+    def __init__(self, vector, matrix):
+        self.vector = vector
+        self.matrix = matrix
 
 
 class Evaluate:
-    def __init__(self):
-        pass
+    "A class with evaluate methods of a SolidBody."
+
+    def __init__(self, gradient, hessian, cauchy_stress=None):
+        self.gradient = gradient
+        self.hessian = hessian
+
+        if cauchy_stress is not None:
+            self.cauchy_stress = cauchy_stress
 
 
 class Results:
+    "A class with intermediate results of a SolidBody."
+
     def __init__(self, stress=False, elasticity=False):
 
         self.force = None
@@ -56,6 +67,8 @@ class Results:
 
 
 class SolidBodyPressure:
+    "A hydrostatic pressure boundary on a SolidBody."
+
     def __init__(self, field):
 
         self.field = field
@@ -65,9 +78,7 @@ class SolidBodyPressure:
 
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
-        self.assemble = Assemble()
-        self.assemble.vector = self._vector
-        self.assemble.matrix = self._matrix
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
         self._form = {
             Field: IntegralForm,
@@ -163,6 +174,8 @@ class SolidBodyPressure:
 
 
 class SolidBody:
+    "A SolidBody with methods for the assembly of sparse vectors/matrices."
+
     def __init__(self, umat, field):
 
         self.umat = umat
@@ -174,15 +187,15 @@ class SolidBody:
             self._dV = self.field.region.dV
 
         self.results = Results(stress=True, elasticity=True)
-        self.assemble = Assemble()
-        self.assemble.vector = self._vector
-        self.assemble.matrix = self._matrix
         self.results.kinematics = self._extract(self.field)
 
-        self.evaluate = Evaluate()
-        self.evaluate.gradient = self._gradient
-        self.evaluate.hessian = self._hessian
-        self.evaluate.cauchy_stress = self._cauchy_stress
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+
+        self.evaluate = Evaluate(
+            gradient=self._gradient,
+            hessian=self._hessian,
+            cauchy_stress=self._cauchy_stress,
+        )
 
         self._area_change = AreaChange()
 

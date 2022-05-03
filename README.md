@@ -48,6 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Fix `tovoigt()` helper for data with more or less than two trailing axes.
+
 ## [3.1.0] - 2022-05-02
 
 ### Added

@@ -127,6 +127,7 @@ def test_math():
     fe.math.cdya(F, F)
 
     fe.math.tovoigt(C)
+    fe.math.tovoigt(C[:2, :2])
     fe.math.eigvals(C)
     fe.math.eigvals(C[:2, :2])
     fe.math.eigvals(C, shear=True)

@@ -28,7 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 from .._field import Field, FieldMixed, FieldsMixed, FieldAxisymmetric
 from .._assembly import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
 from ..constitution import AreaChange
-from ..math import inv, dot
+from ..math import inv, dot, transpose, det
 from ._helpers import Assemble, Evaluate, Results
 
 
@@ -54,6 +54,7 @@ class SolidBody:
             gradient=self._gradient,
             hessian=self._hessian,
             cauchy_stress=self._cauchy_stress,
+            kirchhoff_stress=self._kirchhoff_stress,
         )
 
         self._area_change = AreaChange()
@@ -141,6 +142,19 @@ class SolidBody:
 
         return self.results.elasticity
 
+    def _kirchhoff_stress(self, field=None):
+
+        self._gradient(field)
+
+        if len(self.results.kinematics) > 1:
+            P = self.results.stress[0]
+        else:
+            P = self.results.stress
+
+        F = self.results.kinematics[0]
+
+        return dot(P, transpose(F))
+
     def _cauchy_stress(self, field=None):
 
         self._gradient(field)
@@ -150,6 +164,7 @@ class SolidBody:
         else:
             P = self.results.stress
 
-        JiFT = self._area_change.function(self.results.kinematics[0])
+        F = self.results.kinematics[0]
+        J = det(F)
 
-        return dot(P, inv(JiFT))
+        return dot(P, transpose(F)) / J

@@ -48,8 +48,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `SolidBody.evaluate.kirchhoff_stress()` method. Contrary to the Cauchy stress method, this gives correct results in incompressible plane stress.
+
 ### Fixed
-- Fix `tovoigt()` helper for data with more or less than two trailing axes.
+- Fix `tovoigt()` helper for data with more or less than two trailing axes and 2D tensors.
 
 ## [3.1.0] - 2022-05-02
 

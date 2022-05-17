@@ -46,6 +46,7 @@ def test_simple():
     F = b.results.kinematics[0]
     P = b.results.stress
     s = b.evaluate.cauchy_stress()
+    t = b.evaluate.kirchhoff_stress()
     C = b.results.elasticity
 
     assert K.shape == (81, 81)
@@ -53,6 +54,7 @@ def test_simple():
     assert F.shape == (3, 3, 8, 8)
     assert P.shape == (3, 3, 8, 8)
     assert s.shape == (3, 3, 8, 8)
+    assert t.shape == (3, 3, 8, 8)
     assert C.shape == (3, 3, 3, 3, 8, 8)
 
 
@@ -193,6 +195,10 @@ def test_solidbody():
             s2 = b.evaluate.cauchy_stress(u)
             assert np.allclose(s1, s2)
 
+            t1 = b.evaluate.kirchhoff_stress()
+            t2 = b.evaluate.kirchhoff_stress(u)
+            assert np.allclose(t1, t2)
+
 
 def test_solidbody_axi():
 
@@ -233,6 +239,10 @@ def test_solidbody_axi():
             s1 = b.evaluate.cauchy_stress()
             s2 = b.evaluate.cauchy_stress(u)
             assert np.allclose(s1, s2)
+
+            t1 = b.evaluate.kirchhoff_stress()
+            t2 = b.evaluate.kirchhoff_stress(u)
+            assert np.allclose(t1, t2)
 
 
 def test_solidbody_mixed():
@@ -279,6 +289,10 @@ def test_solidbody_mixed():
             s1 = b.evaluate.cauchy_stress()
             s2 = b.evaluate.cauchy_stress(u)
             assert np.allclose(s1, s2)
+
+            t1 = b.evaluate.kirchhoff_stress()
+            t2 = b.evaluate.kirchhoff_stress(u)
+            assert np.allclose(t1, t2)
 
 
 if __name__ == "__main__":

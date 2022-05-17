@@ -37,12 +37,13 @@ class Assemble:
 class Evaluate:
     "A class with evaluate methods of a SolidBody."
 
-    def __init__(self, gradient, hessian, cauchy_stress=None):
+    def __init__(self, gradient, hessian, cauchy_stress=None, kirchhoff_stress=None):
         self.gradient = gradient
         self.hessian = hessian
 
         if cauchy_stress is not None:
             self.cauchy_stress = cauchy_stress
+            self.kirchhoff_stress = kirchhoff_stress
 
 
 class Results:
@@ -51,6 +52,7 @@ class Results:
     def __init__(self, stress=False, elasticity=False):
 
         self.force = None
+        self._force = None
         self.stiffness = None
         self.kinematics = None
 

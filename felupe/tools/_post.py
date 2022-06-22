@@ -27,9 +27,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from scipy.interpolate import interp1d
-
+from scipy.sparse import issparse
 
 def force(field, r, boundary, offsets=None):
+    if issparse(r):
+        r = r.toarray()
     if offsets is None:
         return ((r.reshape(-1, field.dim))[boundary.points]).sum(0)
     else:
@@ -39,7 +41,8 @@ def force(field, r, boundary, offsets=None):
 
 
 def moment(field, r, boundary, point=np.zeros(3), offsets=None):
-
+    if issparse(r):
+        r = r.toarray()
     point = point.reshape(1, 3)
 
     indices = np.array([(1, 2), (2, 0), (0, 1)])

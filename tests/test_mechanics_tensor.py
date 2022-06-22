@@ -29,32 +29,23 @@ import pytest
 import felupe as fe
 import numpy as np
 
-from matadi.models import displacement_pressure_split
-from matadi import MaterialTensor, Variable
-from matadi.math import trace, det, log, gradient
-
 def pre_umat():
     
-    F = Variable("F", 3, 3)
-    z = Variable("z", 5, 16)
-
-    def fun(x, C10=0.5, bulk=50):
-        """Compressible Neo-Hookean material model formulation
-        with some random (unused) state variables."""
-
-        F, z = x[0], x[-1]
-        
-        J = det(F)
-        C = F.T @ F
-        I1 = trace(C)
-        
-        W = C10 * (I1 - 3) - 2 * C10 * log(J) + bulk * (J - 1) ** 2 / 2
-        
-        return gradient(W, F), z
-
-    NH = MaterialTensor(x=[F, z], fun=fun, triu=True, statevars=1)
+    LE = fe.LinearElastic(E=210000, nu=0.3)
     
-    return fe.MatadiMaterial(NH)
+    class LETensor:
+        
+        def __init__(self, LE):
+            self.LE = LE
+          
+        def function(self, F, statevars):
+            # return dummy state variables along with stress
+            return self.LE.stress(F), statevars
+        
+        def gradient(self, F, statevars):
+            return self.LE.elasticity(F)
+    
+    return LETensor(LE)
 
 
 def test_simple_tensor():

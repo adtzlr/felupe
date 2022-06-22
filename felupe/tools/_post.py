@@ -29,6 +29,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.sparse import issparse
 
+
 def force(field, r, boundary, offsets=None):
     if issparse(r):
         r = r.toarray()

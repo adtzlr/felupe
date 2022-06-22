@@ -29,22 +29,22 @@ import pytest
 import felupe as fe
 import numpy as np
 
+
 def pre_umat():
-    
+
     LE = fe.LinearElastic(E=210000, nu=0.3)
-    
+
     class LETensor:
-        
         def __init__(self, LE):
             self.LE = LE
-          
+
         def function(self, F, statevars):
             # return dummy state variables along with stress
             return self.LE.stress(F), statevars
-        
+
         def gradient(self, F, statevars):
             return self.LE.elasticity(F)
-    
+
     return LETensor(LE)
 
 
@@ -55,7 +55,7 @@ def test_solidbody_tensor():
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.Field(r, dim=3)
-    
+
     sv = np.zeros((5, 16, r.quadrature.npoints, m.ncells))
 
     b = fe.SolidBodyTensor(umat, u, sv)
@@ -80,6 +80,7 @@ def test_solidbody_tensor():
     assert t.shape == (3, 3, 8, 8)
     assert C.shape == (3, 3, 3, 3, 8, 8)
     assert z.shape == (5, 16, 8, 8)
+
 
 if __name__ == "__main__":
     test_solidbody_tensor()

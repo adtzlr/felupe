@@ -125,11 +125,11 @@ class SolidBodyTensor:
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
-        
+
         function = self.umat.function(
             *self.results.kinematics, self.results.statevars, *args, **kwargs
         )
-         
+
         self.results.stress, self.results.statevars = function[:-1], function[-1]
 
         return self.results.stress

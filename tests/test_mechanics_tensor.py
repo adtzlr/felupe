@@ -48,7 +48,7 @@ def pre_umat():
     return LETensor(LE)
 
 
-def test_simple_tensor():
+def test_solidbody_tensor():
 
     umat = pre_umat()
 
@@ -61,8 +61,10 @@ def test_simple_tensor():
     b = fe.SolidBodyTensor(umat, u, sv)
     r = b.assemble.vector()
 
+    K = b.assemble.matrix(u)
     K = b.assemble.matrix()
     r = b.assemble.vector(u)
+    r = b.assemble.vector()
     F = b.results.kinematics[0]
     P = b.results.stress[0]
     s = b.evaluate.cauchy_stress()
@@ -80,4 +82,4 @@ def test_simple_tensor():
     assert z.shape == (5, 16, 8, 8)
 
 if __name__ == "__main__":
-    test_simple_tensor()
+    test_solidbody_tensor()

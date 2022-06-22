@@ -49,6 +49,7 @@ all = [
     "numba",
     "sparse",
     "einsumt",
+    "matadi",
 ]
 
 [project.urls]

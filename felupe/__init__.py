@@ -111,6 +111,7 @@ from .tools import (
 from .mechanics import (
     SolidBody,
     SolidBodyPressure,
+    SolidBodyTensor,
 )
 
 __all__ = [

@@ -79,8 +79,9 @@ def test_solve_check():
         gradient=W.gradient(F),
     )
 
-    force = fe.tools.force(u, b, bounds["symx"])
-    moment = fe.tools.moment(u, b, bounds["symx"])
+    for b in [L.assemble(), L.assemble().toarray(), L.assemble().toarray()[:, 0]]:
+        force = fe.tools.force(u, b, bounds["symx"])
+        moment = fe.tools.moment(u, b, bounds["symx"])
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])

@@ -150,11 +150,7 @@ class SolidBodyTensor:
 
         self._gradient(field)
 
-        if len(self.results.kinematics) > 1:
-            P = self.results.stress[0]
-        else:
-            P = self.results.stress
-
+        P = self.results.stress[0]
         F = self.results.kinematics[0]
 
         return dot(P, transpose(F))
@@ -163,11 +159,7 @@ class SolidBodyTensor:
 
         self._gradient(field)
 
-        if len(self.results.kinematics) > 1:
-            P = self.results.stress[0]
-        else:
-            P = self.results.stress
-
+        P = self.results.stress[0]
         F = self.results.kinematics[0]
         J = det(F)
 

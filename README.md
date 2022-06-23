@@ -28,11 +28,12 @@ region = fe.RegionHexahedron(fe.Cube(n=11))
 displacement = fe.Field(region, dim=3)
 boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
 
-# define the constitutive material behavior
+# define the constitutive material behavior and create a solid body
 umat = fe.NeoHooke(mu=1.0, bulk=2.0)
+solid = fe.SolidBody(umat, displacement)
 
 # newton-rhapson procedure
-res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+res = fe.newtonrhapson(body=body, dof1=dof1, dof0=dof0, ext0=ext0)
 
 # save result
 fe.save(region, res.x, filename="result.vtk")

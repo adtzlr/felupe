@@ -225,6 +225,7 @@ def test_newton_plane():
         ext0=ext0,
         timing=True,
         verbose=True,
+        kwargs={},
     )
 
     # define the constitutive material behavior
@@ -239,6 +240,7 @@ def test_newton_plane():
         ext0=ext0,
         timing=True,
         verbose=True,
+        kwargs={},
     )
 
 
@@ -293,7 +295,35 @@ def test_newton_mixed():
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        x0=field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
+        x0=field, umat=umat, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
+    )
+
+
+def test_newton_body():
+
+    # create a hexahedron-region on a cube
+    mesh = fe.Cube(n=6)
+    region = fe.RegionHexahedron(mesh)
+    region0 = fe.RegionConstantHexahedron(fe.mesh.convert(mesh, 0))
+
+    # add a displacement field and apply a uniaxial elongation on the cube
+    u = fe.Field(region, dim=3)
+    p = fe.Field(region0)
+    J = fe.Field(region0, values=1)
+    field = fe.FieldMixed((u, p, J))
+
+    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(
+        field, move=0.2, clamped=True
+    )
+
+    # define the constitutive material behavior
+    nh = fe.NeoHooke(mu=1.0, bulk=2.0)
+    umat = fe.ThreeFieldVariation(nh)
+    body = fe.SolidBody(umat, field)
+
+    # newton-rhapson procedure
+    res = fe.newtonrhapson(
+        x0=field, body=body, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
     )
 
 
@@ -305,3 +335,4 @@ if __name__ == "__main__":
     test_newton_mixed()
     test_newton_plane()
     test_newton_linearelastic()
+    test_newton_body()

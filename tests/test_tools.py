@@ -323,7 +323,7 @@ def test_newton_body():
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        x0=field, body=body, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
+        body=body, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
     )
 
 

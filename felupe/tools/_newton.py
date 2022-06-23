@@ -129,7 +129,7 @@ def check(dx, x, f, tol):
 
 
 def newtonrhapson(
-    x0,
+    x0=None,
     fun=fun,
     jac=jac,
     solve=solve,
@@ -184,9 +184,12 @@ def newtonrhapson(
     if timing:
         time_start = perf_counter()
 
-    # copy x0
-    x = x0
-    # x = deepcopy(x0)
+    if x0 is not None:
+        # copy x0
+        x = x0
+    else:
+        # copy field of body
+        x = body.field
 
     if umat is not None:
         kwargs["umat"] = umat

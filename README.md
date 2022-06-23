@@ -51,6 +51,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `SolidBody.evaluate.kirchhoff_stress()` method. Contrary to the Cauchy stress method, this gives correct results in incompressible plane stress.
 - Add `SolidBodyTensor` for tensor-based material definitions with state variables.
+- Add `body` argument to `newtonrhapson()`.
 
 ### Fixed
 - Fix `tovoigt()` helper for data with more or less than two trailing axes and 2D tensors.

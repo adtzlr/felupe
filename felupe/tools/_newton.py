@@ -46,6 +46,18 @@ class Result:
         self.iterations = iterations
 
 
+def fun_body(body, x=None, parallel=False, jit=False):
+    "Force residuals from assembly of equilibrium (weak form)."
+
+    return body.assemble.vector(field=x, parallel=parallel, jit=jit).toarray()[:, 0]
+
+
+def jac_body(body, parallel=False, jit=False):
+    "Tangent stiffness matrix from assembly of linearized equilibrium."
+
+    return body.assemble.matrix(parallel=parallel, jit=jit)
+
+
 def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
@@ -117,7 +129,7 @@ def check(dx, x, f, tol):
 
 
 def newtonrhapson(
-    x0,
+    x0=None,
     fun=fun,
     jac=jac,
     solve=solve,
@@ -130,6 +142,7 @@ def newtonrhapson(
     kwargs_check={},
     tol=np.sqrt(np.finfo(float).eps),
     umat=None,
+    body=None,
     dof1=None,
     dof0=None,
     offsets=None,
@@ -171,15 +184,21 @@ def newtonrhapson(
     if timing:
         time_start = perf_counter()
 
-    # copy x0
-    x = x0
-    # x = deepcopy(x0)
+    if x0 is not None:
+        # copy x0
+        x = x0
+    else:
+        # copy field of body
+        x = body.field
 
     if umat is not None:
         kwargs["umat"] = umat
 
     # pre-evaluate function at given unknowns "x"
-    f = fun(x, *args, **kwargs)
+    if body is not None:
+        f = fun_body(body, x, *args, **kwargs)
+    else:
+        f = fun(x, *args, **kwargs)
 
     if verbose:
         print()
@@ -193,7 +212,10 @@ def newtonrhapson(
     for iteration in range(maxiter):
 
         # evaluate jacobian at unknowns "x"
-        K = jac(x, *args, **kwargs)
+        if body is not None:
+            K = jac_body(body, *args, **kwargs)
+        else:
+            K = jac(x, *args, **kwargs)
 
         # solve linear system and update solution
         sig = inspect.signature(solve)
@@ -210,7 +232,10 @@ def newtonrhapson(
         x = update(x, dx)
 
         # evaluate function at unknowns "x"
-        f = fun(x, *args, **kwargs)
+        if body is not None:
+            f = fun_body(body, x, *args, **kwargs)
+        else:
+            f = fun(x, *args, **kwargs)
 
         # check success of solution
         norm, success = check(dx, x, f, tol, **kwargs_check)

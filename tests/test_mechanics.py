@@ -72,7 +72,7 @@ def test_pressure():
     v = fe.Field(s, dim=3)
 
     b = fe.SolidBody(umat, u)
-    c = fe.SolidBodyPressure(v)
+    c = fe.SolidBodyPressure(v, pressure=1.0)
 
     r = b.assemble.vector()
     K = b.assemble.matrix()

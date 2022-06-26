@@ -72,7 +72,7 @@ def test_pressure():
     v = fe.Field(s, dim=3)
 
     b = fe.SolidBody(umat, u)
-    c = fe.SolidBodyPressure(v)
+    c = fe.SolidBodyPressure(v, pressure=1.0)
 
     r = b.assemble.vector()
     K = b.assemble.matrix()
@@ -89,9 +89,9 @@ def test_pressure():
 
     r = c.assemble.vector()
     K = c.assemble.matrix()
-    K = c.assemble.matrix(v, resize=b.assemble.matrix())
+    K = c.assemble.matrix(v, resize=b.assemble.matrix(), pressure=2.0)
     r = c.assemble.vector(v)
-    r = c.assemble.vector(v, resize=b.assemble.vector())
+    r = c.assemble.vector(v, resize=b.assemble.vector(), pressure=2.0)
     F = c.results.kinematics[0]
 
     assert K.shape == (81, 81)

@@ -33,7 +33,7 @@ umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 solid = fe.SolidBody(umat, displacement)
 
 # newton-rhapson procedure
-res = fe.newtonrhapson(body=solid, dof1=dof1, dof0=dof0, ext0=ext0)
+res = fe.newtonrhapson(bodies=[solid], dof1=dof1, dof0=dof0, ext0=ext0)
 
 # save result
 fe.save(region, res.x, filename="result.vtk")
@@ -52,7 +52,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `SolidBody.evaluate.kirchhoff_stress()` method. Contrary to the Cauchy stress method, this gives correct results in incompressible plane stress.
 - Add `SolidBodyTensor` for tensor-based material definitions with state variables.
-- Add `body` argument to `newtonrhapson()`.
+- Add `bodies` argument to `newtonrhapson()`.
 
 ### Fixed
 - Fix `tovoigt()` helper for data with more or less than two trailing axes and 2D tensors.

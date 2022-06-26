@@ -321,9 +321,19 @@ def test_newton_body():
     umat = fe.ThreeFieldVariation(nh)
     body = fe.SolidBody(umat, field)
 
+    # create a region, a field and a body for a pressure boundary
+    regionp = fe.RegionHexahedronBoundary(mesh, only_surface=True)
+    fieldp = fe.Field(regionp, dim=3)
+    bodyp = fe.SolidBodyPressure(fieldp, pressure=1.0)
+
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        body=body, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
+        bodies=[body, bodyp],
+        kwargs={},
+        dof1=dof1,
+        dof0=dof0,
+        ext0=ext0,
+        offsets=offsets,
     )
 
 

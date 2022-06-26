@@ -34,7 +34,7 @@ from ._helpers import Assemble, Results
 class SolidBodyPressure:
     "A hydrostatic pressure boundary on a SolidBody."
 
-    def __init__(self, field):
+    def __init__(self, field, pressure=None):
 
         self.field = field
 
@@ -43,6 +43,8 @@ class SolidBodyPressure:
 
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
+        self.results.pressure = pressure
+
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
         self._form = {
@@ -73,15 +75,19 @@ class SolidBodyPressure:
 
         return self.results.kinematics
 
-    def _vector(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
+    def _vector(
+        self, field=None, pressure=None, parallel=False, jit=False, resize=None
+    ):
 
         if field is not None:
-            self.field = field
-            self.results.kinematics = self._extract(field)
 
-        self.results.pressure = pressure
+            self.update(field)
+            self.results.kinematics = self._extract(self.field)
 
-        fun = pressure * self._area_change.function(
+        if pressure is not None:
+            self.results.pressure = pressure
+
+        fun = self.results.pressure * self._area_change.function(
             *self.results.kinematics,
             self._normals,
             parallel=parallel,
@@ -96,15 +102,19 @@ class SolidBodyPressure:
 
         return self.results.force
 
-    def _matrix(self, field=None, pressure=1, parallel=False, jit=False, resize=None):
+    def _matrix(
+        self, field=None, pressure=None, parallel=False, jit=False, resize=None
+    ):
 
         if field is not None:
-            self.field = field
-            self.results.kinematics = self._extract(field)
 
-        self.results.pressure = pressure
+            self.update(field)
+            self.results.kinematics = self._extract(self.field)
 
-        fun = pressure * self._area_change.gradient(
+        if pressure is not None:
+            self.results.pressure = pressure
+
+        fun = self.results.pressure * self._area_change.gradient(
             *self.results.kinematics,
             self._normals,
             parallel=parallel,

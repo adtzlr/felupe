@@ -89,9 +89,9 @@ def test_pressure():
 
     r = c.assemble.vector()
     K = c.assemble.matrix()
-    K = c.assemble.matrix(v, resize=b.assemble.matrix())
+    K = c.assemble.matrix(v, resize=b.assemble.matrix(), pressure=2.0)
     r = c.assemble.vector(v)
-    r = c.assemble.vector(v, resize=b.assemble.vector())
+    r = c.assemble.vector(v, resize=b.assemble.vector(), pressure=2.0)
     F = c.results.kinematics[0]
 
     assert K.shape == (81, 81)

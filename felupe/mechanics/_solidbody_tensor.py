@@ -41,11 +41,6 @@ class SolidBodyTensor:
         self.umat = umat
         self.field = field
 
-        if isinstance(field, FieldMixed):
-            self._dV = self.field[0].region.dV
-        else:
-            self._dV = self.field.region.dV
-
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
         self.results.statevars = statevars
@@ -61,19 +56,7 @@ class SolidBodyTensor:
 
         self._area_change = AreaChange()
 
-        self._form = {
-            Field: IntegralForm,
-            FieldMixed: IntegralFormMixed,
-            FieldsMixed: IntegralFormMixed,
-            FieldAxisymmetric: IntegralFormAxisymmetric,
-        }[type(self.field)]
-
-        self._kwargs = {
-            Field: dict(dV=self._dV, grad_v=True, grad_u=True),
-            FieldMixed: dict(dV=self._dV),
-            FieldsMixed: dict(dV=self._dV),
-            FieldAxisymmetric: dict(dV=self._dV, grad_v=True, grad_u=True),
-        }[type(self.field)]
+        self._form = IntegralForm
 
     def _vector(
         self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
@@ -87,7 +70,7 @@ class SolidBodyTensor:
         self.results.force = self._form(
             fun=self.results.stress[slice(items)],
             v=self.field,
-            **self._kwargs,
+            dV=self.field.region.dV,
         ).assemble(parallel=parallel, jit=jit)
 
         return self.results.force
@@ -105,7 +88,7 @@ class SolidBodyTensor:
             fun=self.results.elasticity[slice(items)],
             v=self.field,
             u=self.field,
-            **self._kwargs,
+            dV=self.field.region.dV,
         ).assemble(parallel=parallel, jit=jit)
 
         return self.results.stiffness
@@ -113,10 +96,7 @@ class SolidBodyTensor:
     def _extract(self, field):
 
         self.field = field
-
         self.results.kinematics = self.field.extract()
-        if isinstance(self.field, Field):
-            self.results.kinematics = (self.results.kinematics,)
 
         return self.results.kinematics
 
@@ -127,7 +107,7 @@ class SolidBodyTensor:
             self.results.kinematics = self._extract(self.field)
 
         function = self.umat.function(
-            *self.results.kinematics, self.results.statevars, *args, **kwargs
+            self.results.kinematics, self.results.statevars, *args, **kwargs
         )
 
         self.results.stress, self.results.statevars = function[:-1], function[-1]
@@ -141,7 +121,7 @@ class SolidBodyTensor:
             self.results.kinematics = self._extract(self.field)
 
         self.results.elasticity = self.umat.gradient(
-            *self.results.kinematics, self.results.statevars, *args, **kwargs
+            self.results.kinematics, self.results.statevars, *args, **kwargs
         )
 
         return self.results.elasticity

@@ -47,7 +47,7 @@ from ._basis import (
 from ._field import (
     Field,
     FieldAxisymmetric,
-    FieldMixed,
+    FieldContainer,
     FieldsMixed,
 )
 from .dof import Boundary

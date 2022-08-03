@@ -33,12 +33,12 @@ from ._assembly import (
     IntegralForm,
     IntegralFormMixed,
     IntegralFormAxisymmetric,
-    LinearForm,
-    BilinearForm,
-    LinearFormMixed,
-    BilinearFormMixed,
-    BaseForm,
-    Form,
+    # LinearForm,
+    # BilinearForm,
+    # LinearFormMixed,
+    # BilinearFormMixed,
+    # BaseForm,
+    # Form,
 )
 from ._basis import (
     Basis,

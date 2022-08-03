@@ -25,10 +25,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from .._field import Field, FieldMixed, FieldsMixed, FieldAxisymmetric
-from .._assembly import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
+from .._assembly import IntegralForm
 from ..constitution import AreaChange
-from ..math import inv, dot, transpose, det
+from ..math import dot, transpose, det
 from ._helpers import Assemble, Evaluate, Results
 
 

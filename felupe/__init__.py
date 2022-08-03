@@ -30,9 +30,9 @@ from .region import (
     RegionLagrange,
 )
 from ._assembly import (
-    IntegralForm,
-    IntegralFormMixed,
-    IntegralFormAxisymmetric,
+    #IntegralForm,
+    IntegralFormMixed as IntegralForm,
+    #IntegralFormAxisymmetric,
     # LinearForm,
     # BilinearForm,
     # LinearFormMixed,

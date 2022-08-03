@@ -63,11 +63,8 @@ class MatadiMaterial:
             provided.
 
         """
-        fun = self.material.function(args, threads=self.threads)
-        if len(fun) == 1:
-            return fun[0]
-        else:
-            return fun
+        fun = self.material.function(*args, threads=self.threads)
+        return fun
 
     def gradient(self, *args):
         """Evaluate the gradient.
@@ -85,11 +82,8 @@ class MatadiMaterial:
             provided.
 
         """
-        grad = self.material.gradient(args, threads=self.threads)
-        if len(grad) == 1:
-            return grad[0]
-        else:
-            return grad
+        grad = self.material.gradient(*args, threads=self.threads)
+        return grad
 
     def hessian(self, *args):
         """Evaluate the hessian.
@@ -107,8 +101,5 @@ class MatadiMaterial:
             provided.
 
         """
-        hess = self.material.hessian(args, threads=self.threads)
-        if len(hess) == 1:
-            return hess[0]
-        else:
-            return hess
+        hess = self.material.hessian(*args, threads=self.threads)
+        return hess

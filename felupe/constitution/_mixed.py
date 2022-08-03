@@ -242,7 +242,7 @@ class ThreeFieldVariation:
 
         return self.PbbF / (3 * J) - p
 
-    def gradient(self, F, p, J):
+    def gradient(self, extract):
         r"""List of variations of total potential energy w.r.t
         displacements, pressure and volume ratio.
 
@@ -254,12 +254,10 @@ class ThreeFieldVariation:
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
-        p : ndarray
-            Hydrostatic pressure
-        J : ndarray
-            Volume ratio
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient ``F``
+            as first, the hydrostatic pressure ``p`` as second and the
+            volume ratio ``J`` as third item.
 
         Returns
         -------
@@ -267,6 +265,9 @@ class ThreeFieldVariation:
             List of gradients w.r.t. the input variables F, p and J
 
         """
+        
+        F, p, J = extract
+        
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
@@ -275,12 +276,12 @@ class ThreeFieldVariation:
         self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
 
         return [
-            self._gradient_u(F, p, J),
-            self._gradient_p(F, p, J),
-            self._gradient_J(F, p, J),
+            self._gradient_u(extract),
+            self._gradient_p(extract),
+            self._gradient_J(extract),
         ]
 
-    def hessian(self, F, p, J):
+    def hessian(self, extract):
         r"""List of linearized variations of total potential energy w.r.t
         displacements, pressure and volume ratio (these expressions are
         symmetric; ``A_up = A_pu`` if derived from a total potential energy
@@ -303,12 +304,10 @@ class ThreeFieldVariation:
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
-        p : ndarray
-            Hydrostatic pressure
-        J : ndarray
-            Volume ratio
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient ``F``
+            as first, the hydrostatic pressure ``p`` as second and the
+            volume ratio ``J`` as third item.
 
         Returns
         -------
@@ -316,6 +315,9 @@ class ThreeFieldVariation:
             List of hessians in upper triangle order
 
         """
+        
+        F, p, J = extract
+        
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F

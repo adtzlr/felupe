@@ -57,7 +57,7 @@ def partition(v, K, dof1, dof0, r=None):
     return u, u0, K11, K10, dof1, dof0, r1
 
 
-def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
+def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=spsolve):
     """Linear solution of equation system with optional given values of
     unknowns at prescribed deegrees of freedom.
 
@@ -70,13 +70,13 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
         r1 = np.zeros(len(dof1))
 
     # init external displacements
-    if u0ext is None:
-        u0ext = 0
+    if ext0 is None:
+        ext0 = 0
         # init inactive dofs of residuals
         dr0 = np.zeros(len(dof1))
     else:
         # evaluate inactive dofs of residuals
-        dr0 = K10.dot(u0ext - u0)
+        dr0 = K10.dot(ext0 - u0)
 
     # solve linear system (active dofs)
     du1 = solver(K11, -r1 - dr0.reshape(*r1.shape))
@@ -84,7 +84,7 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, u0ext=None, solver=spsolve):
     # full solution
     du = np.empty(u.size)
     du[dof1] = du1
-    du[dof0] = u0ext - u0
+    du[dof0] = ext0 - u0
 
     # reshape solution to shape of input
     return du.reshape(*u.shape)

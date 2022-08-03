@@ -28,7 +28,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._boundary import Boundary
-from .._field import FieldMixed
 
 
 def get_dof0(field, bounds):
@@ -75,11 +74,7 @@ def get_dof1(field, bounds, dof0):
 def partition(field, bounds):
     "Partition dof-list into prescribed (dof0) and active (dof1) parts."
 
-    # check if a mixed-field is passed
-    if isinstance(field, FieldMixed):
-        fields = field.fields
-    else:
-        fields = [field]
+    fields = field.fields
 
     # list of boundaries, partitioned by fields
     boundaries = [
@@ -108,11 +103,7 @@ def partition(field, bounds):
         [dof1 + offset for dof1, offset in zip(dofs1, np.insert(offsets, 0, 0))]
     )
 
-    # return offsets for mixed-field input
-    if len(offsets) > 0:
-        return dof0, dof1, offsets
-    else:
-        return dof0, dof1
+    return dof0, dof1, offsets
 
 
 def apply(field, bounds, dof0=None, offsets=None):
@@ -121,19 +112,13 @@ def apply(field, bounds, dof0=None, offsets=None):
     of the ``field`` based on the keyword ``dof0``."""
 
     # check if a mixed-field is passed
-    if isinstance(field, FieldMixed):
-        u = np.concatenate([f.values.ravel() for f in field.fields])
-        offsets = np.insert(offsets, 0, 0)
-    else:
-        u = field.values.copy()
+    u = np.concatenate([f.values.ravel() for f in field.fields])
+    offsets = np.insert(offsets, 0, 0)
 
     for b in bounds.values():
 
         # get offset for field-dof of current boundary
-        if isinstance(field, FieldMixed):
-            offset = offsets[[b.field == f for f in field.fields]]
-        else:
-            offset = 0
+        offset = offsets[[b.field == f for f in field.fields]]
 
         # set prescribed values
         u.ravel()[b.dof + offset] = b.value

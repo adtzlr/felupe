@@ -26,8 +26,10 @@ def test_readme():
     u = displacement.values
     ui = displacement.interpolate()
     dudX = displacement.grad()
+    
+    field = felupe.FieldContainer([displacement])
 
-    F = displacement.extract(grad=True, sym=False, add_identity=True)
+    F = field.extract(grad=True, sym=False, add_identity=True)
 
     umat = felupe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
@@ -44,13 +46,11 @@ def test_readme():
     boundaries["right"] = felupe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
     boundaries["move"] = felupe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 
-    dof0, dof1 = felupe.dof.partition(displacement, boundaries)
-    u0ext = felupe.dof.apply(displacement, boundaries, dof0)
+    dof0, dof1, offsets = felupe.dof.partition(field, boundaries)
+    ext0 = felupe.dof.apply(field, boundaries, dof0, offsets)
 
-    linearform = felupe.IntegralForm(P(F), displacement, dV, grad_v=True)
-    bilinearform = felupe.IntegralForm(
-        A(F), displacement, dV, u=displacement, grad_v=True, grad_u=True
-    )
+    linearform = felupe.IntegralForm(P(F), field, dV)
+    bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
     r = linearform.assemble().toarray()[:, 0]
     K = bilinearform.assemble()
@@ -59,41 +59,46 @@ def test_readme():
 
     # from pypardiso import spsolve
 
-    system = felupe.solve.partition(displacement, K, dof1, dof0, r)
-    du = felupe.solve.solve(*system, u0ext, solver=spsolve).reshape(*u.shape)
-    # displacement += du
+    system = felupe.solve.partition(field, K, dof1, dof0, r)
+    dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
+    
+    # du = np.split(dfield, offsets)
+    # field += du
 
     for iteration in range(8):
-        F = displacement.extract(grad=True, sym=False, add_identity=True)
+        F = field.extract()
 
-        linearform = felupe.IntegralForm(P(F), displacement, dV, grad_v=True)
-        bilinearform = felupe.IntegralForm(
-            A(F), displacement, dV, displacement, grad_v=True, grad_u=True
-        )
+        linearform = felupe.IntegralForm(P(F), field, dV)
+        bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
-        r = linearform.assemble().toarray()[:, 0]
+        r = linearform.assemble()
         K = bilinearform.assemble()
 
-        system = felupe.solve.partition(displacement, K, dof1, dof0, r)
-        du = felupe.solve.solve(*system, u0ext, solver=spsolve).reshape(*u.shape)
+        system = felupe.solve.partition(field, K, dof1, dof0, r)
+        dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
+        
+        du = np.split(dfield, offsets)
 
-        norm = np.linalg.norm(du)
-        print(iteration, norm)
-        displacement += du
+        norm = felupe.math.norm(du)
+        print(iteration, norm[0])
+        field += du
 
         if iteration == 0:
-            assert np.round(norm, 5) == 8.17418
+            assert np.round(norm[0], 5) == 8.17418
 
-        if norm < 1e-12:
+        if norm[0] < 1e-12:
             break
 
-    F[:, :, 0, 0]
+    F[0][:, :, 0, 0]
 
-    felupe.save(region, displacement, filename="result.vtk")
+    felupe.save(region, field, offsets=offsets, filename="result.vtk")
 
     from felupe.math import dot, det, transpose
 
-    s = dot(P(F), transpose(F)) / det(F)
+    PK1 = P(F)[0]
+    F = F[0]
+    
+    s = dot(PK1, transpose(F)) / det(F)
 
     # stress shifted and averaged to mesh-points
     cauchy_shifted = felupe.topoints(s, region, sym=True, mode="tensor")
@@ -103,7 +108,7 @@ def test_readme():
 
     felupe.save(
         region,
-        displacement,
+        field,
         filename="result_with_cauchy.vtk",
         point_data={
             "CauchyStressProjected": cauchy_projected,

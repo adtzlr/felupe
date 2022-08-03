@@ -26,7 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from ._base import Field
 from ._axi import FieldAxisymmetric
-from ._mixed import FieldMixed
+from ._container import FieldContainer
 from ..region._templates import (
     RegionQuad,
     RegionHexahedron,
@@ -43,15 +43,15 @@ from ..region._templates import (
 )
 
 
-class FieldsMixed(FieldMixed):
-    r"""A mixed field based on a region and returns a :class:`FieldMixed`
+class FieldsMixed(FieldContainer):
+    r"""A mixed field based on a region and returns a :class:`FieldContainer`
     instance."""
 
     def __init__(self, region, n=3, values=(0, 0, 1, 0), axisymmetric=False):
         r"""Create a mixed field based on a region. The dual region is chosen
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
         is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
-        are generated and passed to :class:`FieldMixed` .
+        are generated and passed to :class:`FieldContainer`.
 
         Arguments
         ---------
@@ -77,12 +77,12 @@ class FieldsMixed(FieldMixed):
             RegionTriangleMINI: RegionTriangle,
         }
 
-        region0 = regions[type(region)](region.mesh)
+        region_dual = regions[type(region)](region.mesh)
 
         F = [Field, FieldAxisymmetric][axisymmetric]
         fields = [F(region, dim=region.mesh.dim, values=values[0])]
 
         for a in range(1, n):
-            fields.append(Field(region0, values=values[a]))
+            fields.append(Field(region_dual, values=values[a]))
 
         super().__init__(fields=tuple(fields))

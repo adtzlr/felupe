@@ -40,10 +40,10 @@ from ._assembly import (
     # BaseForm,
     # Form,
 )
-from ._basis import (
-    Basis,
-    BasisMixed,
-)
+# from ._basis import (
+#     Basis,
+#     BasisMixed,
+# )
 from ._field import (
     Field,
     FieldAxisymmetric,

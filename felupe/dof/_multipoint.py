@@ -68,7 +68,7 @@ class MultiPointConstraint:
         c = self.centerpoint
         for t in self.points:
             for d in self.axes:
-                N = self.multiplier * (-field.values[t, d] + field.values[c, d])
+                N = self.multiplier * (-field.fields[0].values[t, d] + field.fields[0].values[c, d])
                 r[t, d] = -N
                 r[c, d] += N
         return sparse.COO(r).reshape((-1, 1)).tocsr()
@@ -96,8 +96,8 @@ class MultiPointContact:
             for d in self.axes:
                 Xc = self.mesh.points[c, d]
                 Xt = self.mesh.points[t, d]
-                xc = field.values[c, d] + Xc
-                xt = field.values[t, d] + Xt
+                xc = field.fields[0].values[c, d] + Xc
+                xt = field.fields[0].values[t, d] + Xt
                 # n = 0
                 if np.sign(-Xt + Xc) != np.sign(-xt + xc):
                     # n = -xt + xc
@@ -121,8 +121,8 @@ class MultiPointContact:
             for d in self.axes:
                 Xc = self.mesh.points[c, d]
                 Xt = self.mesh.points[t, d]
-                xc = field.values[c, d] + Xc
-                xt = field.values[t, d] + Xt
+                xc = field.fields[0].values[c, d] + Xc
+                xt = field.fields[0].values[t, d] + Xt
                 if np.sign(-Xt + Xc) != np.sign(-xt + xc):
                     n = -xt + xc
                     r[t, d] = -self.multiplier * n

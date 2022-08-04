@@ -39,14 +39,14 @@ First, setup a problem as usual (mesh, region, field, boundaries and umat). For 
     region = fe.RegionHexahedron(fe.Cube(n=2))
 
     # add a vector-valued displacement field
-    field = fe.Field(region, dim=3)
+    field = fe.FieldContainer([fe.Field(region, dim=3)])
 
     # introduce symmetry planes at x=y=z=0
-    bounds = fe.dof.symmetry(field, axes=(True, True, True))
+    bounds = fe.dof.symmetry(field[0], axes=(True, True, True))
     #bounds["left"] = fe.Boundary(field, fx=lambda x: x==0)
 
     # partition deegrees of freedom
-    dof0, dof1 = fe.dof.partition(field, bounds)
+    dof0, dof1, offsets = fe.dof.partition(field, bounds)
 
     # constitutive isotropic hyperelastic material formulation
     yeoh = mat.MaterialHyperelastic(
@@ -65,7 +65,7 @@ First, setup a problem as usual (mesh, region, field, boundaries and umat). For 
     )
     lab.plot(data)
 
-    umat = fe.MatadiMaterial(yeoh)
+    umat = yeoh
 
 .. image:: images/lab.png
 
@@ -100,7 +100,7 @@ The next step involves the problem definition for pacopy. For details have a loo
         
         def f(self, u, lmbda):
             # update field
-            field.values.ravel()[dof1] = u
+            field.fields[0].values.ravel()[dof1] = u
             
             # assemble weak-form --> residuals
             F = field.extract()
@@ -108,7 +108,6 @@ The next step involves the problem definition for pacopy. For details have a loo
                 fun=umat.gradient(F), 
                 v=field, 
                 dV=region.dV, 
-                grad_v=True, 
             ).assemble().toarray()[:,0]
             return (r - lmbda * f.ravel())[dof1]
         
@@ -117,7 +116,7 @@ The next step involves the problem definition for pacopy. For details have a loo
         
         def jacobian_solver(self, u, lmbda, rhs):
             # update field
-            field.values.ravel()[dof1] = u
+            field.fields[0].values.ravel()[dof1] = u
             
             # assemble weak-form --> tangent stiffness matrix
             F = field.extract()
@@ -126,13 +125,11 @@ The next step involves the problem definition for pacopy. For details have a loo
                 v=field, 
                 dV=region.dV, 
                 u=field, 
-                grad_v=True, 
-                grad_u=True
             ).assemble()
             
             # jacobian solver, return only active degrees of freedom
-            system = fe.solve.partition(field, K, dof1, dof0)
-            return fe.solve.solve(*system[:-1], -rhs)[dof1]
+            system = fe.solve.partition(field, K, dof1, dof0, offsets)
+            return np.split(fe.solve.solve(*system[:-1], -rhs), offsets)[0][dof1]
 
 Next we have to init the problem and specify the initial values of unknowns (the undeformed configuration).
 
@@ -141,7 +138,7 @@ Next we have to init the problem and specify the initial values of unknowns (the
     # init the problem
     problem = HyperelasticCube()
     
-    u0 = field.values.ravel()[dof1]
+    u0 = field.fields[0].values.ravel()[dof1]
     lmbda0 = 0
 
     lmbda_list = []
@@ -162,10 +159,10 @@ After each completed step of the numeric continuation the XDMF-file will be upda
             values_list.append(sol)
         
             # update field
-            field.values.ravel()[dof1] = sol
+            field.fields[0].values.ravel()[dof1] = sol
             
             # write mesh
-            writer.write_data(k, point_data={"u": field.values})
+            writer.write_data(k, point_data={"u": field.fields[0].values})
         
         # run pacopy
         pacopy.euler_newton(

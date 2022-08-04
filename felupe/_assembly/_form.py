@@ -709,7 +709,7 @@ class BaseForm:
 
 
 def Form(
-    v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}, parallel=False
+    v, u=None, grad_v=None, grad_u=None, dx=None, args=(), kwargs={}, parallel=False
 ):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
@@ -734,9 +734,9 @@ def Form(
     u : Field or FieldMixed
         An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
-    grad_v : bool, optional (default is False)
+    grad_v : bool, optional (default is None)
         Flag to use the gradient of ``v``.
-    grad_u : bool, optional (default is False)
+    grad_u : bool, optional (default is None)
         Flag to use the gradient of ``u``.
     dx : ndarray or None, optional (default is None)
         Array with (numerical) differential volumes.

@@ -1,7 +1,7 @@
 Linear and Bilinear Forms
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FElupe requires a pre-evaluated array for the definition of a bilinear :class:`felupe.IntegralForm` object on interpolated field values or their gradients. While this has two benefits, namely a fast integration of the form is easy to code and the array may be computed in any programming language, sometimes numeric representations of analytic linear and bilinear form expressions may be easier in user-code and less error prone compared to the calculation of explicit second or fourth-order tensors. Therefore, FElupe provides a function decorator :func:`felupe.Form` as an easy-to-use high-level interface, similar to what `scikit-fem <https://github.com/kinnala/scikit-fem>`_ offers. While the :func:`felupe.Form` decorator handles both single and mixed fields, additional access to the underlying form objects is enabled by :class:`felupe.LinearForm` and :class:`felupe.BilinearForm` for single-field as well as :class:`felupe.LinearFormMixed` and :class:`felupe.BilinearFormMixed` for mixed-field problems. All these linear and bilinear form classes are similar, but not identical in their usage compared to :class:`felupe.IntegralForm`. They require a callable function (with optional arguments and keyword arguments) instead of a pre-computed array to be passed. The bilinear form of linear elasticity serves as a reference example for the demonstration on how to use this feature of FElupe. The stiffness matrix is assembled for a unit cube out of hexahedrons.
+FElupe requires a pre-evaluated array for the definition of a bilinear :class:`felupe.IntegralForm` object on interpolated field values or their gradients. While this has two benefits, namely a fast integration of the form is easy to code and the array may be computed in any programming language, sometimes numeric representations of analytic linear and bilinear form expressions may be easier in user-code and less error prone compared to the calculation of explicit second or fourth-order tensors. Therefore, FElupe provides a function decorator :func:`felupe.Form` as an easy-to-use high-level interface, similar to what `scikit-fem <https://github.com/kinnala/scikit-fem>`_ offers. The :func:`felupe.Form` decorator handles a field container. The form class is similar, but not identical in its usage compared to :class:`felupe.IntegralForm`. It requires a callable function (with optional arguments and keyword arguments) instead of a pre-computed array to be passed. The bilinear form of linear elasticity serves as a reference example for the demonstration on how to use this feature of FElupe. The stiffness matrix is assembled for a unit cube out of hexahedrons.
 
 ..  code-block:: python
 
@@ -10,6 +10,7 @@ FElupe requires a pre-evaluated array for the definition of a bilinear :class:`f
     mesh = fe.Cube(n=11)
     region = fe.RegionHexahedron(mesh)
     displacement = fe.Field(region, dim=3)
+    field = fe.FieldContainer([displacement])
 
 The bilinear form of linear elasticity is defined as
 
@@ -31,11 +32,11 @@ and implemented in FElupe closely to the analytic expression. The first two argu
 
     from felupe.math import ddot, trace, sym
     
-    @fe.Form(v=displacement, u=displacement, grad_v=True, grad_u=True, kwargs={"mu": 1.0, "lmbda": 2.0})
+    @fe.Form(v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"mu": 1.0, "lmbda": 2.0})
     def linear_elasticity(gradv, gradu, mu, lmbda):
         "Linear elasticity."
-        
+
         de, e = sym(gradv), sym(gradu)
-        return 2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)
+        return [2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)]
 
     K = linear_elasticity.assemble(v=displacement, u=displacement, parallel=False)

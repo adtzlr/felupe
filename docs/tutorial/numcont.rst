@@ -128,7 +128,7 @@ The next step involves the problem definition for pacopy. For details have a loo
             ).assemble()
             
             # jacobian solver, return only active degrees of freedom
-            system = fe.solve.partition(field, K, dof1, dof0, offsets)
+            system = fe.solve.partition(field, K, dof1, dof0)
             return np.split(fe.solve.solve(*system[:-1], -rhs), offsets)[0][dof1]
 
 Next we have to init the problem and specify the initial values of unknowns (the undeformed configuration).

@@ -48,8 +48,8 @@ The points and cells of the above mesh are used to initiate a FElupe mesh.
 
     mesh = fe.Mesh(
         points=mesh.points[:, :2], 
-        cells=mesh.cells[1][1], 
-        cell_type=mesh.cells[1][0]
+        cells=mesh.cells[1].data, 
+        cell_type=mesh.cells[1].type
     )
 
 
@@ -96,14 +96,14 @@ The linear equation system may now be solved. First, a partition into active and
 
 ..  code-block:: python
 
-    system = fe.solve.partition(field, K, dof1, dof0, offsets)
+    system = fe.solve.partition(field, K, dof1, dof0)
     field += np.split(fe.solve.solve(*system, ext0), offsets)
 
 Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
 
 ..  code-block:: python
 
-    F = displacement.extract()
+    F = field.extract()
     stress = umat.gradient(F)[0]
 
 However, the stress results are still located at the numeric integration points. Let's project them to mesh points. Beside the stress tensor we are also interested in the equivalent stress von Mises. For the two-dimensional case it is calculated as:

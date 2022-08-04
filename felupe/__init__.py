@@ -35,15 +35,14 @@ from ._assembly import (
     #IntegralFormAxisymmetric,
     # LinearForm,
     # BilinearForm,
-    # LinearFormMixed,
-    # BilinearFormMixed,
+    # LinearFormMixed as LinearForm,
+    # BilinearFormMixed as BilinearForm,
     # BaseForm,
-    # Form,
+    Form,
 )
-# from ._basis import (
-#     Basis,
-#     BasisMixed,
-# )
+from ._basis import (
+     BasisMixed as Basis,
+)
 from ._field import (
     Field,
     FieldAxisymmetric,

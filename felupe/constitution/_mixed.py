@@ -271,14 +271,14 @@ class ThreeFieldVariation:
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
-        self.Pb = self.fun_P(self.Fb)
+        self.Pb = self.fun_P([self.Fb])[0]
         self.Pbb = (J / self.detF) ** (1 / 3) * self.Pb
         self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
 
         return [
-            self._gradient_u(extract),
-            self._gradient_p(extract),
-            self._gradient_J(extract),
+            self._gradient_u(F, p, J),
+            self._gradient_p(F, p, J),
+            self._gradient_J(F, p, J),
         ]
 
     def hessian(self, extract):
@@ -321,13 +321,13 @@ class ThreeFieldVariation:
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
-        self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P(self.Fb)
+        self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P([self.Fb])[0]
 
         self.eye = identity(F)
         self.P4 = cdya_ik(self.eye, self.eye, parallel=self.parallel) - 1 / 3 * dya(
             F, self.iFT, parallel=self.parallel
         )
-        self.A4b = self.fun_A(self.Fb)
+        self.A4b = self.fun_A([self.Fb])[0]
         self.A4bb = (J / self.detF) ** (2 / 3) * self.A4b
 
         self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)

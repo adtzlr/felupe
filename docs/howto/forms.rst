@@ -33,10 +33,15 @@ and implemented in FElupe closely to the analytic expression. The first two argu
     from felupe.math import ddot, trace, sym
     
     @fe.Form(v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"mu": 1.0, "lmbda": 2.0})
-    def linear_elasticity(gradv, gradu, mu, lmbda):
-        "Linear elasticity."
+    def bilinearform():
+        "A container for a bilinear form."
+        
+        def linear_elasticity(gradv, gradu, mu, lmbda):
+            "Linear elasticity."
+        
+            de, e = sym(gradv), sym(gradu)
+            return 2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)
+        
+        return [linear_elasticity,]
 
-        de, e = sym(gradv), sym(gradu)
-        return [2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)]
-
-    K = linear_elasticity.assemble(v=displacement, u=displacement, parallel=False)
+    K = bilinearform.assemble(v=field, u=field, parallel=False)

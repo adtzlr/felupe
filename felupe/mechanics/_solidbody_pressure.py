@@ -25,7 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from .._assembly import IntegralForm
+from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
 from ._helpers import Assemble, Results
 
@@ -63,18 +63,18 @@ class SolidBodyPressure:
             self.update(field)
             self.results.kinematics = self._extract(self.field)
 
-        if pressure is not None:
-            self.results.pressure = pressure
-
         fun = self._area_change.function(
             self.results.kinematics,
             self._normals,
             parallel=parallel,
         )
-        fun[0] *= self.results.pressure
+        
+        if pressure is not None:
+            self.results.pressure = pressure
+            fun[0] *= self.results.pressure
 
-        self.results.force = IntegralForm(
-            fun=fun, v=self.field, dV=self.field.region.dV, grad_v=False
+        self.results.force = IntegralFormMixed(
+            fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
         ).assemble(parallel=parallel, jit=jit)
 
         if resize is not None:
@@ -90,23 +90,24 @@ class SolidBodyPressure:
 
             self.update(field)
             self.results.kinematics = self._extract(self.field)
-
-        if pressure is not None:
-            self.results.pressure = pressure
-
+        
         fun = self._area_change.gradient(
             self.results.kinematics,
             self._normals,
             parallel=parallel,
         )
-        fun[0] *= self.results.pressure
-        self.results.stiffness = IntegralForm(
+        
+        if pressure is not None:
+            self.results.pressure = pressure
+            fun[0] *= self.results.pressure
+            
+        self.results.stiffness = IntegralFormMixed(
             fun=fun,
             v=self.field,
             u=self.field,
             dV=self.field.region.dV,
-            grad_v=False,
-            grad_u=True,
+            grad_v=[False],
+            grad_u=[True],
         ).assemble(parallel=parallel, jit=jit)
 
         if resize is not None:

@@ -71,7 +71,7 @@ Next, the field is added to a field container. The deformation gradient is obtai
 
     field = felupe.FieldContainer([displacement])
 
-    F = field.extract(grad=True, sym=False, add_identity=True)[0]
+    F = field.extract(grad=True, sym=False, add_identity=True)
 
 
 Constitution
@@ -128,7 +128,7 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 ..  code-block:: python
     
     dof0, dof1, offsets = felupe.dof.partition(field, boundaries)
-    ext0 = felupe.dof.apply(field, boundaries, dof0)
+    ext0 = felupe.dof.apply(field, boundaries, dof0, offsets)
 
 
 Integral forms of equilibrium equations
@@ -143,8 +143,8 @@ The integral (or weak) forms of equilibrium equations are defined by the :class:
 
 ..  code-block:: python
 
-    linearform   = felupe.IntegralForm(P(F), displacement, dV, grad_v=[True])
-    bilinearform = felupe.IntegralForm(A(F), displacement, dV, u=displacement, grad_v=[True], grad_u=[True])
+    linearform   = felupe.IntegralForm(P(F), field, dV, grad_v=[True])
+    bilinearform = felupe.IntegralForm(A(F), field, dV, u=field, grad_v=[True], grad_u=[True])
 
 
 Assembly of both forms lead to the (point-based) internal forces and the (sparse) stiffness matrix.
@@ -224,7 +224,7 @@ Alternatively, one may also use the Newton-Rhapson procedure as shown in :ref:`t
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, offsets=offsets, ext0=ext0)
     field = res.x
 
 
@@ -250,7 +250,7 @@ Results are exported as VTK or XDMF files using `meshio <https://pypi.org/projec
 
 ..  code-block:: python
 
-    felupe.save(region, displacement, filename="result.vtk")
+    felupe.save(region, field, offsets=offsets, filename="result.vtk")
 
 
 
@@ -260,7 +260,7 @@ Any tensor at quadrature points shifted or projected to, both averaged at mesh-p
 
     from felupe.math import dot, det, transpose, tovoigt
 
-    s = dot(P(F), transpose(F)) / det(F)
+    s = dot(P([F])[0], transpose(F)) / det(F)
 
     cauchy_shifted = felupe.topoints(s, region)
     cauchy_projected = felupe.project(tovoigt(s), region)

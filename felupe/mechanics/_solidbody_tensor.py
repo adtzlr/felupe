@@ -25,7 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from .._assembly import IntegralForm
+from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
 from ..math import dot, transpose, det
 from ._helpers import Assemble, Evaluate, Results
@@ -55,7 +55,7 @@ class SolidBodyTensor:
 
         self._area_change = AreaChange()
 
-        self._form = IntegralForm
+        self._form = IntegralFormMixed
 
     def _vector(
         self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}

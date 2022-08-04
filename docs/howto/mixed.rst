@@ -25,7 +25,7 @@ Next, let's create a meshed cube. Two regions, one for the displacements and ano
     pressure     = fe.Field(region0, dim=1)
     volumeratio  = fe.Field(region0, dim=1, values=1)
 
-    fields = fe.FieldMixed((displacement, pressure, volumeratio))
+    field = fe.FieldContainer((displacement, pressure, volumeratio))
 
 Boundary conditions are enforced in the same way as in Getting Started.
 
@@ -39,8 +39,8 @@ Boundary conditions are enforced in the same way as in Getting Started.
     boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
     boundaries["move" ] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
 
-    dof0, dof1, offsets = fe.dof.partition(fields, boundaries)
-    ext0 = fe.dof.apply(fields, boundaries, dof0, offsets)
+    dof0, dof1, offsets = fe.dof.partition(field, boundaries)
+    ext0 = fe.dof.apply(field, boundaries, dof0, offsets)
 
 The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`tutorial-getting-started`. FElupe provides a Mixed-field version of it's :class:`felupe.IntegralForm`, called :class:`felupe.IntegralFormMixed`. It assumes that the first field operates on the gradient and all the others don't. The resulting system vector with incremental values of the fields has to be splitted at the field-offsets in order to update the fields.
 
@@ -48,26 +48,26 @@ The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`t
 
     for iteration in range(8):
 
-        F, p, J = fields.extract()
+        F, p, J = field.extract()
         
-        linearform   = fe.IntegralFormMixed(umat.gradient(F, p, J), fields, dV)
-        bilinearform = fe.IntegralFormMixed(umat.hessian(F, p, J), fields, dV, fields)
+        linearform   = fe.IntegralForm(umat.gradient([F, p, J]), field, dV)
+        bilinearform = fe.IntegralForm(umat.hessian([F, p, J]), field, dV, field)
 
         r = linearform.assemble().toarray()[:, 0]
         K = bilinearform.assemble()
         
-        system = fe.solve.partition(fields, K, dof1, dof0, r)
-        dfields = np.split(fe.solve.solve(*system, ext0), offsets)
+        system = fe.solve.partition(field, K, dof1, dof0, r)
+        dfield = np.split(fe.solve.solve(*system, ext0), offsets)
         
-        fields += dfields
+        field += dfield
 
-        norm = np.linalg.norm(dfields[0])
+        norm = np.linalg.norm(dfield[0])
         print(iteration, norm)
 
         if norm < 1e-12:
             break
 
-    fe.tools.save(region, fields, offsets=offsets, filename="result.vtk")
+    fe.tools.save(region, field, offsets=offsets, filename="result.vtk")
 
 The deformed cube is finally visualized by a VTK output file with the help of Paraview.
 

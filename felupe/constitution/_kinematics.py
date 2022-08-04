@@ -173,7 +173,7 @@ class AreaChange:
         if parallel is None:
             parallel = self.parallel
 
-        dJdF = self.function(F)
+        dJdF = self.function([F])[0]
         dFsdF = (
             dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J
@@ -240,7 +240,7 @@ class VolumeChange:
             Gradient of the determinant of the deformation gradient
         """
         F = extract[0]
-        J = self.function(F)
+        J = self.function([F])[0]
         return [J * transpose(inv(F, J))]
 
     def hessian(self, extract, parallel=None):
@@ -263,8 +263,8 @@ class VolumeChange:
         if parallel is None:
             parallel = self.parallel
 
-        J = self.function(F)
-        dJdF = self.gradient(F)
+        J = self.function([F])[0]
+        dJdF = self.gradient(F[0])[0]
         return [(
             dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J]

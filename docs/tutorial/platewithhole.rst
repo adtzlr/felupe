@@ -139,7 +139,7 @@ Results are saved as VTK-files, where additional point-data is passed within the
         filename="plate_with_hole.vtk",
         point_data={
             "Stress": (stress_projected / 
-                stress_projected[right].mean(axis=0)
+                vonmises_projected[right].mean(axis=0)
             ),
             "Stress-von-Mises": (vonmises_projected / 
                 vonmises_projected[right].mean(axis=0)
@@ -161,7 +161,7 @@ The normal stress distribution over the hole at :math:`x=0` is plotted with matp
     plt.plot(
         mesh.points[:, 1][left] / h, 
         (stress_projected / 
-            stress_projected[right].mean(axis=0)
+            vonmises_projected[right].mean(axis=0)
         )[:, 0][left],
         "o-"
     )

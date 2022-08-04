@@ -32,7 +32,7 @@ import numpy as np
 from scipy.sparse.linalg import spsolve
 
 from ..math import norm
-from .._assembly import IntegralForm
+from .._assembly import IntegralFormMixed
 from .. import solve as fesolve
 
 
@@ -99,24 +99,21 @@ def jac_bodies(bodies, parallel=False, jit=False):
 def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
-    return IntegralForm(
+    return IntegralFormMixed(
         fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
         v=x,
         dV=x.region.dV,
-        grad_v=True,
     ).assemble(parallel=parallel, jit=jit).toarray()[:, 0]
 
 
 def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
-    return IntegralForm(
+    return IntegralFormMixed(
         fun=umat.hessian(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
         v=x,
         dV=x.region.dV,
         u=x,
-        grad_v=True,
-        grad_u=True,
     ).assemble(parallel=parallel, jit=jit)
 
 

@@ -55,18 +55,19 @@ def test_solidbody_tensor():
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.Field(r, dim=3)
+    v = fe.FieldContainer([u])
 
     sv = np.zeros((5, 16, r.quadrature.npoints, m.ncells))
 
-    b = fe.SolidBodyTensor(umat, u, sv)
+    b = fe.SolidBodyTensor(umat, v, sv)
     r = b.assemble.vector()
 
-    K = b.assemble.matrix(u)
+    K = b.assemble.matrix(v)
     K = b.assemble.matrix()
-    r = b.assemble.vector(u)
+    r = b.assemble.vector(v)
     r = b.assemble.vector()
-    F = b.results.kinematics[0]
-    P = b.results.stress[0]
+    F = b.results.kinematics
+    P = b.results.stress
     s = b.evaluate.cauchy_stress()
     t = b.evaluate.kirchhoff_stress()
     C = b.results.elasticity
@@ -74,11 +75,11 @@ def test_solidbody_tensor():
 
     assert K.shape == (81, 81)
     assert r.shape == (81, 1)
-    assert F.shape == (3, 3, 8, 8)
-    assert P.shape == (3, 3, 8, 8)
+    assert F[0].shape == (3, 3, 8, 8)
+    assert P[0][0].shape == (3, 3, 8, 8)
     assert s.shape == (3, 3, 8, 8)
     assert t.shape == (3, 3, 8, 8)
-    assert C.shape == (3, 3, 3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 8, 8)
     assert z.shape == (5, 16, 8, 8)
 
 

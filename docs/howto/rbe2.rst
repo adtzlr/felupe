@@ -9,8 +9,8 @@ This How-To demonstrates the usage of multi-point constraints (also called MPC o
     import felupe as fe
 
     # mesh with one additional rbe2-control point
-    mesh = fe.Rectangle(n=11)
-    mesh.points = np.vstack((mesh.points, [2.0, 0.0]))
+    mesh = fe.Cube(n=11)
+    mesh.points = np.vstack((mesh.points, [2.0, 0.0, 0.0]))
     mesh.update(mesh.cells)
 
 An instance of :class:`felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`felupe.MultiPointConstraint.stiffness` and :meth:`felupe.MultiPointConstraint.residuals`.
@@ -28,12 +28,15 @@ Finally, add the results of these methods to the internal force vector or the st
 
 ..  code-block:: python
 
-    # ...
+    region = felupe.RegionHexahedron(mesh)
+    displacement = felupe.Field(region, dim=3)
+    field = felupe.FieldContainer([displacement])
+    umat = felupe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
     K = fe.IntegralForm(
-        umat.hessian(field.extract()), field, region.dV, field, True, True
+        umat.hessian(field.extract()), field, region.dV, field
     ).assemble() + MPC.stiffness()
 
     r = fe.IntegralForm(
-        umat.gradient(field.extract()), field, region.dV, None, True
+        umat.gradient(field.extract()), field, region.dV
     ).assemble() + MPC.residuals(field)

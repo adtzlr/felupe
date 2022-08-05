@@ -34,12 +34,13 @@ First, let's import FElupe and create a meshed cube out of hexahedron cells with
     mesh = fe.Cube(n=11)
     region = fe.RegionHexahedron(mesh)
     displacement = fe.Field(region, dim=3)
+    field = fe.FieldContainer([displacement])
 
 A uniaxial loadcase is applied on the displacement field. This involves setting up symmetry planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is clamped: only displacements in direction x are allowed.
 
 ..  code-block:: python
 
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
 The material behavior is defined through a built-in Neo-Hookean material formulation.
 
@@ -51,7 +52,7 @@ Inside a Newton-Rhapson procedure, the internal force vector and the tangent sti
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
 
 Results are saved as VTK-files.
     

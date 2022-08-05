@@ -25,8 +25,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from .._field import Field, FieldMixed, FieldsMixed, FieldAxisymmetric
-from .._assembly import IntegralForm, IntegralFormMixed, IntegralFormAxisymmetric
+from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
 from ._helpers import Assemble, Results
 
@@ -38,40 +37,20 @@ class SolidBodyPressure:
 
         self.field = field
 
-        self._dV = self.field.region.dV
         self._normals = self.field.region.normals
 
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
         self.results.pressure = pressure
-
+        
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-
-        self._form = {
-            Field: IntegralForm,
-            FieldMixed: IntegralFormMixed,
-            FieldsMixed: IntegralFormMixed,
-            FieldAxisymmetric: IntegralFormAxisymmetric,
-        }[type(self.field)]
-
-        self._kwargs = {
-            Field: dict(dV=self._dV, grad_v=True, grad_u=True),
-            FieldMixed: dict(dV=self._dV),
-            FieldsMixed: dict(dV=self._dV),
-            FieldAxisymmetric: dict(dV=self._dV, grad_v=True, grad_u=True),
-        }[type(self.field)]
-
-        self._IntForm = {
-            Field: IntegralForm,
-            FieldAxisymmetric: IntegralFormAxisymmetric,
-        }[type(self.field)]
-
+        
         self._area_change = AreaChange()
 
     def _extract(self, field):
 
         self.field = field
-        self.results.kinematics = (self.field.extract(),)
+        self.results.kinematics = self.field.extract()
 
         return self.results.kinematics
 
@@ -84,17 +63,18 @@ class SolidBodyPressure:
             self.update(field)
             self.results.kinematics = self._extract(self.field)
 
-        if pressure is not None:
-            self.results.pressure = pressure
-
-        fun = self.results.pressure * self._area_change.function(
-            *self.results.kinematics,
+        fun = self._area_change.function(
+            self.results.kinematics,
             self._normals,
             parallel=parallel,
         )
+        
+        if pressure is not None:
+            self.results.pressure = pressure
+            fun[0] *= self.results.pressure
 
-        self.results.force = self._IntForm(
-            fun=fun, v=self.field, dV=self._dV, grad_v=False
+        self.results.force = IntegralFormMixed(
+            fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
         ).assemble(parallel=parallel, jit=jit)
 
         if resize is not None:
@@ -110,22 +90,24 @@ class SolidBodyPressure:
 
             self.update(field)
             self.results.kinematics = self._extract(self.field)
-
-        if pressure is not None:
-            self.results.pressure = pressure
-
-        fun = self.results.pressure * self._area_change.gradient(
-            *self.results.kinematics,
+        
+        fun = self._area_change.gradient(
+            self.results.kinematics,
             self._normals,
             parallel=parallel,
         )
-        self.results.stiffness = self._IntForm(
+        
+        if pressure is not None:
+            self.results.pressure = pressure
+            fun[0] *= self.results.pressure
+            
+        self.results.stiffness = IntegralFormMixed(
             fun=fun,
             v=self.field,
             u=self.field,
-            dV=self._dV,
-            grad_v=False,
-            grad_u=True,
+            dV=self.field.region.dV,
+            grad_v=[False],
+            grad_u=[True],
         ).assemble(parallel=parallel, jit=jit)
 
         if resize is not None:
@@ -138,11 +120,7 @@ class SolidBodyPressure:
         if field is not None:
             self.field = field
 
-        if isinstance(other_field, FieldMixed) or isinstance(other_field, FieldsMixed):
-            self.field.values = other_field[0].values
-        else:
-            self.field.values = other_field.values
-
+        self.field[0].values = other_field[0].values
         self.results.kinematics = self._extract(self.field)
 
         return self.field

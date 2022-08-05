@@ -10,7 +10,7 @@ Getting started
    
    * setup your own numeric region with a mesh, an element and a quadrature
    
-   * add a displacement field
+   * add a displacement field to a field container
    
    * define your own Neo-Hookean material formulation
    
@@ -65,11 +65,13 @@ In a second step fields may be added to the Region which may be either scalar or
     dudX = displacement.grad()
 
 
-The deformation gradient is obtained by a sum of the identity and the displacement gradient.
+Next, the field is added to a field container. The deformation gradient is obtained by a sum of the identity and the displacement gradient.
 
 ..  code-block:: python
 
-    F = displacement.extract(grad=True, sym=False, add_identity=True)
+    field = felupe.FieldContainer([displacement])
+
+    F = field.extract(grad=True, sym=False, add_identity=True)
 
 
 Constitution
@@ -93,10 +95,9 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
         J = det(F)
         C = transpose(F) @ F
 
-        return mu/2 * (J**(-2/3)*trace(C) - 3) + bulk/2 * (J - 1)**2
+        return mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 
-    nh = matadi.MaterialHyperelastic(W, mu=1.0, bulk=2.0)
-    umat = felupe.MatadiMaterial(nh)
+    umat = matadi.MaterialHyperelastic(W, mu=1.0, bulk=2.0)
 
     P = umat.gradient
     A = umat.hessian
@@ -126,14 +127,14 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 ..  code-block:: python
     
-    dof0, dof1 = felupe.dof.partition(displacement, boundaries)
-    u0ext = felupe.dof.apply(displacement, boundaries, dof0)
+    dof0, dof1 = felupe.dof.partition(field, boundaries)
+    ext0 = felupe.dof.apply(field, boundaries, dof0)
 
 
 Integral forms of equilibrium equations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The integral (or weak) forms of equilibrium equations are defined by the :class:`felupe.IntegralForm` class. The pre-evaluated function of interest has to be passed as the `fun` argument whereas the virtual field as the ``v`` argument. By setting ``grad_v=True``, FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if ``u=None`` (default) or creates a bilinear form if a field is passed to the field argument ``u``.
+The integral (or weak) forms of equilibrium equations are defined by the :class:`felupe.IntegralForm` class. The pre-evaluated function of interest has to be passed as the `fun` argument whereas the virtual field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if ``u=None`` (default) or creates a bilinear form if a field is passed to the field argument ``u``.
 
 .. math::
 
@@ -142,15 +143,15 @@ The integral (or weak) forms of equilibrium equations are defined by the :class:
 
 ..  code-block:: python
 
-    linearform   = felupe.IntegralForm(P(F), displacement, dV, grad_v=True)
-    bilinearform = felupe.IntegralForm(A(F), displacement, dV, u=displacement, grad_v=True, grad_u=True)
+    linearform   = felupe.IntegralForm(P(F), field, dV, grad_v=[True])
+    bilinearform = felupe.IntegralForm(A(F), field, dV, u=field, grad_v=[True], grad_u=[True])
 
 
 Assembly of both forms lead to the (point-based) internal forces and the (sparse) stiffness matrix.
 
 ..  code-block:: python
 
-    r = linearform.assemble().toarray()[:,0]
+    r = linearform.assemble()
     K = bilinearform.assemble()
 
 
@@ -181,9 +182,9 @@ The default solver of FElupe is `SuperLU <https://docs.scipy.org/doc/scipy/refer
     from scipy.sparse.linalg import spsolve # default
     # from pypardiso import spsolve
 
-    system = felupe.solve.partition(displacement, K, dof1, dof0, r)
-    du = felupe.solve.solve(*system, u0ext, solver=spsolve).reshape(*u.shape)
-    # displacement += du
+    system = felupe.solve.partition(field, K, dof1, dof0, r)
+    dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
+    # field += dfield
 
 
 A very simple newton-rhapson code looks like this:
@@ -191,22 +192,20 @@ A very simple newton-rhapson code looks like this:
 ..  code-block:: python
 
     for iteration in range(8):
-        F = displacement.extract(grad=True, sym=False, add_identity=True)
+        F = field.extract()
 
-        linearform = felupe.IntegralForm(P(F), displacement, dV, grad_v=True)
-        bilinearform = felupe.IntegralForm(
-            A(F), displacement, dV, displacement, grad_v=True, grad_u=True
-        )
+        linearform = felupe.IntegralForm(P(F), field, dV)
+        bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
-        r = linearform.assemble().toarray()[:, 0]
+        r = linearform.assemble()
         K = bilinearform.assemble()
 
-        system = felupe.solve.partition(displacement, K, dof1, dof0, r)
-        du = felupe.solve.solve(*system, u0ext, solver=spsolve).reshape(*u.shape)
+        system = felupe.solve.partition(field, K, dof1, dof0, r)
+        dfield = np.split(felupe.solve.solve(*system, ext0, solver=spsolve), field.offsets)
 
-        norm = np.linalg.norm(du)
+        norm = np.linalg.norm(dfield[0])
         print(iteration, norm)
-        displacement += du
+        field += dfield
 
         if norm < 1e-12:
             break
@@ -225,14 +224,15 @@ Alternatively, one may also use the Newton-Rhapson procedure as shown in :ref:`t
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(displacement, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
-    displacement = res.x
+    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    field = res.x
 
 
 All 3x3 components of the deformation gradient of integration point 1 of cell 1 (Python is 0-indexed) are obtained with
 
 ..  code-block:: python
 
+    F = F[0]
     F[:,:,0,0]
 
 
@@ -250,7 +250,7 @@ Results are exported as VTK or XDMF files using `meshio <https://pypi.org/projec
 
 ..  code-block:: python
 
-    felupe.save(region, displacement, filename="result.vtk")
+    felupe.save(region, field, filename="result.vtk")
 
 
 
@@ -260,14 +260,14 @@ Any tensor at quadrature points shifted or projected to, both averaged at mesh-p
 
     from felupe.math import dot, det, transpose, tovoigt
 
-    s = dot(P(F), transpose(F)) / det(F)
+    s = dot(P([F])[0], transpose(F)) / det(F)
 
     cauchy_shifted = felupe.topoints(s, region)
     cauchy_projected = felupe.project(tovoigt(s), region)
 
     felupe.save(
         region, 
-        displacement, 
+        field, 
         filename="result_with_cauchy.vtk", 
         point_data={
             "CauchyStressShifted": cauchy_shifted,

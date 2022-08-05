@@ -48,8 +48,8 @@ The points and cells of the above mesh are used to initiate a FElupe mesh.
 
     mesh = fe.Mesh(
         points=mesh.points[:, :2], 
-        cells=mesh.cells[1][1], 
-        cell_type=mesh.cells[1][0]
+        cells=mesh.cells[1].data, 
+        cell_type=mesh.cells[1].type
     )
 
 
@@ -62,9 +62,10 @@ A numeric quad-region created on the mesh in combination with a vector-valued di
 
     region = fe.RegionQuad(mesh)
     displacement = fe.Field(region, dim=2)
+    field = fe.FieldContainer([displacement])
 
     boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
-        displacement, move=0.001, right=L, clamped=False
+        field, move=0.001, right=L, clamped=False
     )
 
 
@@ -86,26 +87,24 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 
     K = fe.IntegralForm(
         fun=umat.elasticity(), 
-        v=displacement, 
+        v=field, 
         dV=region.dV, 
-        u=displacement, 
-        grad_v=True,
-        grad_u=True,
+        u=field, 
     ).assemble()
 
 The linear equation system may now be solved. First, a partition into active and inactive degrees of freedom is performed. This partitioned system is then passed to the solver. The resulting displacements are directly added to the displacement field.
 
 ..  code-block:: python
 
-    system = fe.solve.partition(displacement, K, dof1, dof0)
-    displacement += fe.solve.solve(*system, ext0)
+    system = fe.solve.partition(field, K, dof1, dof0)
+    field += np.split(fe.solve.solve(*system, ext0), field.offsets)
 
 Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
 
 ..  code-block:: python
 
-    F = displacement.extract()
-    stress = umat.gradient(F)
+    F = field.extract()
+    stress = umat.gradient(F)[0]
 
 However, the stress results are still located at the numeric integration points. Let's project them to mesh points. Beside the stress tensor we are also interested in the equivalent stress von Mises. For the two-dimensional case it is calculated as:
 
@@ -135,11 +134,11 @@ Results are saved as VTK-files, where additional point-data is passed within the
 
     fe.save(
         region, 
-        displacement, 
+        field,
         filename="plate_with_hole.vtk",
         point_data={
             "Stress": (stress_projected / 
-                stress_projected[right].mean(axis=0)
+                vonmises_projected[right].mean(axis=0)
             ),
             "Stress-von-Mises": (vonmises_projected / 
                 vonmises_projected[right].mean(axis=0)
@@ -161,7 +160,7 @@ The normal stress distribution over the hole at :math:`x=0` is plotted with matp
     plt.plot(
         mesh.points[:, 1][left] / h, 
         (stress_projected / 
-            stress_projected[right].mean(axis=0)
+            vonmises_projected[right].mean(axis=0)
         )[:, 0][left],
         "o-"
     )

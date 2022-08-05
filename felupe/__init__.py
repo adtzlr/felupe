@@ -30,24 +30,23 @@ from .region import (
     RegionLagrange,
 )
 from ._assembly import (
-    IntegralForm,
-    IntegralFormMixed,
-    IntegralFormAxisymmetric,
-    LinearForm,
-    BilinearForm,
-    LinearFormMixed,
-    BilinearFormMixed,
-    BaseForm,
+    #IntegralForm,
+    IntegralFormMixed as IntegralForm,
+    #IntegralFormAxisymmetric,
+    # LinearForm,
+    # BilinearForm,
+    # LinearFormMixed as LinearForm,
+    # BilinearFormMixed as BilinearForm,
+    # BaseForm,
     Form,
 )
 from ._basis import (
-    Basis,
-    BasisMixed,
+     BasisMixed as Basis,
 )
 from ._field import (
     Field,
     FieldAxisymmetric,
-    FieldMixed,
+    FieldContainer,
     FieldsMixed,
 )
 from .dof import Boundary
@@ -100,7 +99,6 @@ from .constitution import (
     LineChange,
     AreaChange,
     VolumeChange,
-    MatadiMaterial,
 )
 from .tools import (
     newtonrhapson,

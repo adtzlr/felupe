@@ -36,14 +36,14 @@ def test_simple():
 
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
-    u = fe.Field(r, dim=3)
+    u = fe.FieldContainer([fe.Field(r, dim=3)])
 
     b = fe.SolidBody(umat, u)
     r = b.assemble.vector()
 
     K = b.assemble.matrix()
     r = b.assemble.vector(u)
-    F = b.results.kinematics[0]
+    F = b.results.kinematics
     P = b.results.stress
     s = b.evaluate.cauchy_stress()
     t = b.evaluate.kirchhoff_stress()
@@ -51,11 +51,11 @@ def test_simple():
 
     assert K.shape == (81, 81)
     assert r.shape == (81, 1)
-    assert F.shape == (3, 3, 8, 8)
-    assert P.shape == (3, 3, 8, 8)
+    assert F[0].shape == (3, 3, 8, 8)
+    assert P[0].shape == (3, 3, 8, 8)
     assert s.shape == (3, 3, 8, 8)
     assert t.shape == (3, 3, 8, 8)
-    assert C.shape == (3, 3, 3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 8, 8)
 
 
 def test_pressure():
@@ -67,45 +67,47 @@ def test_pressure():
     u = fe.Field(h, dim=3)
 
     u.values = np.random.rand(*u.values.shape) / 10
+    v = fe.FieldContainer([u])
 
     s = fe.RegionHexahedronBoundary(m)
-    v = fe.Field(s, dim=3)
+    p = fe.Field(s, dim=3)
+    q = fe.FieldContainer([p])
 
-    b = fe.SolidBody(umat, u)
-    c = fe.SolidBodyPressure(v, pressure=1.0)
+    b = fe.SolidBody(umat, v)
+    c = fe.SolidBodyPressure(q, pressure=1.0)
 
     r = b.assemble.vector()
     K = b.assemble.matrix()
-    r = b.assemble.vector(u)
-    F = b.results.kinematics[0]
+    r = b.assemble.vector(v)
+    F = b.results.kinematics
     s = b.results.stress
     C = b.results.elasticity
 
     assert K.shape == (81, 81)
     assert r.shape == (81, 1)
-    assert F.shape == (3, 3, 8, 8)
-    assert s.shape == (3, 3, 8, 8)
-    assert C.shape == (3, 3, 3, 3, 8, 8)
+    assert F[0].shape == (3, 3, 8, 8)
+    assert s[0].shape == (3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 8, 8)
 
     r = c.assemble.vector()
     K = c.assemble.matrix()
-    K = c.assemble.matrix(v, resize=b.assemble.matrix(), pressure=2.0)
-    r = c.assemble.vector(v)
-    r = c.assemble.vector(v, resize=b.assemble.vector(), pressure=2.0)
-    F = c.results.kinematics[0]
+    K = c.assemble.matrix(q, resize=b.assemble.matrix(), pressure=2.0)
+    r = c.assemble.vector(q)
+    r = c.assemble.vector(q, resize=b.assemble.vector(), pressure=2.0)
+    F = c.results.kinematics
 
     assert K.shape == (81, 81)
     assert r.shape == (81, 1)
-    assert F.shape == (3, 3, 4, 24)
+    assert F[0].shape == (3, 3, 4, 24)
 
-    c.update(u, v)
-    assert np.allclose(u.values, v.values)
+    c.update(v, q)
+    assert np.allclose(v[0].values, q[0].values)
 
     w = fe.FieldsMixed(h)
     w[0].values = np.random.rand(*w[0].values.shape) / 10
 
     c.update(w, v)
-    assert np.allclose(w[0].values, v.values)
+    assert np.allclose(w[0].values, v[0].values)
 
 
 def pre(dim):
@@ -118,7 +120,7 @@ def pre(dim):
 
     u.values = np.random.rand(*u.values.shape) / 10
 
-    return umat, u
+    return umat, fe.FieldContainer([u])
 
 
 def pre_axi():
@@ -131,7 +133,7 @@ def pre_axi():
 
     u.values = np.random.rand(*u.values.shape) / 10
 
-    return umat, u
+    return umat, fe.FieldContainer([u])
 
 
 def pre_mixed(dim):

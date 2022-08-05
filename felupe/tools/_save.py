@@ -35,23 +35,17 @@ def save(
     region,
     fields,
     r=None,
-    F=None,
     gradient=None,
-    offsets=None,
     converged=True,
     filename="result.vtk",
     cell_data=None,
     point_data=None,
 ):
 
-    if offsets is not None:
-        if "mixed" in str(type(fields)):
-            fields = fields.fields
-        u = fields[0]
-    else:
-        u = fields
-
+    u = fields.fields[0]
     mesh = region.mesh
+    
+    offsets = fields.offsets
 
     if point_data is None:
         point_data = {}
@@ -59,19 +53,13 @@ def save(
     point_data["Displacements"] = u.values
 
     if r is not None:
-        if offsets is not None:
-            reactionforces = np.split(r, offsets)[0]
-        else:
-            reactionforces = r
-
+        reactionforces = np.split(r, offsets)[0]
         point_data["ReactionForce"] = reactionforces.reshape(*u.values.shape)
 
     if gradient is not None:
         # 1st Piola Kirchhoff stress
-        if offsets is not None:
-            P = gradient[0]
-        else:
-            P = gradient
+        F = fields.extract()[0]
+        P = gradient[0]
 
         # cauchy stress at integration points
         s = dot(P, transpose(F)) / det(F)

@@ -62,40 +62,44 @@ class LineChange:
     def __init__(self, parallel=False):
         self.parallel = parallel
 
-    def function(self, F):
+    def function(self, extract):
         """Line change.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient as first
+            item.
 
         Returns
         -------
         F : ndarray
             Deformation gradient
         """
-        return F
+        return extract
 
-    def gradient(self, F, parallel=None):
+    def gradient(self, extract, parallel=None):
         """Gradient of line change.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient as first
+            item.
 
         Returns
         -------
         ndarray
             Gradient of line change
         """
+        
+        F = extract[0]
 
         if parallel is None:
             parallel = self.parallel
 
         Eye = identity(F)
-        return cdya_ik(Eye, Eye, parallel=parallel)
+        return [cdya_ik(Eye, Eye, parallel=parallel)]
 
 
 class AreaChange:
@@ -116,13 +120,14 @@ class AreaChange:
     def __init__(self, parallel=False):
         self.parallel = parallel
 
-    def function(self, F, N=None, parallel=None):
+    def function(self, extract, N=None, parallel=None):
         """Area change.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient as first
+            item.
         N : ndarray or None, optional
             Area normal vector (default is None)
 
@@ -131,6 +136,8 @@ class AreaChange:
         ndarray
             Cofactor matrix of the deformation gradient
         """
+        
+        F = extract[0]
         J = det(F)
 
         Fs = J * transpose(inv(F, J))
@@ -139,17 +146,18 @@ class AreaChange:
             parallel = self.parallel
 
         if N is None:
-            return Fs
+            return [Fs]
         else:
-            return dot(Fs, N, parallel=parallel)
+            return [dot(Fs, N, parallel=parallel)]
 
-    def gradient(self, F, N=None, parallel=None):
+    def gradient(self, extract, N=None, parallel=None):
         """Gradient of area change.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient as first
+            item.
         N : ndarray or None, optional
             Area normal vector (default is None)
 
@@ -159,12 +167,13 @@ class AreaChange:
             Gradient of cofactor matrix of the deformation gradient
         """
 
+        F = extract[0]
         J = det(F)
 
         if parallel is None:
             parallel = self.parallel
 
-        dJdF = self.function(F)
+        dJdF = self.function([F])[0]
         dFsdF = (
             dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J
@@ -175,9 +184,9 @@ class AreaChange:
             einsum = np.einsum
 
         if N is None:
-            return dFsdF
+            return [dFsdF]
         else:
-            return einsum("ijkl...,j...->ikl...", dFsdF, N)
+            return [einsum("ijkl...,j...->ikl...", dFsdF, N)]
 
 
 class VolumeChange:
@@ -200,22 +209,24 @@ class VolumeChange:
     def __init__(self, parallel=False):
         self.parallel = parallel
 
-    def function(self, F):
+    def function(self, extract):
         """Gradient of volume change.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient as first
+            item.
 
         Returns
         -------
         J : ndarray
             Determinant of the deformation gradient
         """
-        return det(F)
+        F = extract[0]
+        return [det(F)]
 
-    def gradient(self, F):
+    def gradient(self, extract):
         """Gradient of volume change.
 
         Arguments
@@ -228,29 +239,32 @@ class VolumeChange:
         ndarray
             Gradient of the determinant of the deformation gradient
         """
+        F = extract[0]
+        J = self.function([F])[0]
+        return [J * transpose(inv(F, J))]
 
-        J = self.function(F)
-        return J * transpose(inv(F, J))
-
-    def hessian(self, F, parallel=None):
+    def hessian(self, extract, parallel=None):
         """Hessian of volume change.
 
         Arguments
         ---------
-        F : ndarray
-            Deformation gradient
+        extract : list of ndarray
+            List of extracted field values with Deformation gradient as first
+            item.
 
         Returns
         -------
         ndarray
             Hessian of the determinant of the deformation gradient
         """
+        
+        F = extract[0]
 
         if parallel is None:
             parallel = self.parallel
 
-        J = self.function(F)
-        dJdF = self.gradient(F)
-        return (
+        J = self.function([F])[0]
+        dJdF = self.gradient([F])[0]
+        return [(
             dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
-        ) / J
+        ) / J]

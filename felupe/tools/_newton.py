@@ -32,7 +32,7 @@ import numpy as np
 from scipy.sparse.linalg import spsolve
 
 from ..math import norm
-from .._assembly import IntegralForm, IntegralFormMixed
+from .._assembly import IntegralFormMixed
 from .. import solve as fesolve
 
 
@@ -99,66 +99,31 @@ def jac_bodies(bodies, parallel=False, jit=False):
 def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
-    if "mixed" in str(type(x)).lower():
-
-        L = IntegralFormMixed(
-            fun=umat.gradient(
-                *x.extract(grad=grad, add_identity=add_identity, sym=sym)
-            ),
-            v=x,
-            dV=x[0].region.dV,
-        )
-
-    else:
-
-        L = IntegralForm(
-            fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
-            v=x,
-            dV=x.region.dV,
-            grad_v=True,
-        )
-
-    return L.assemble(parallel=parallel, jit=jit).toarray()[:, 0]
+    return IntegralFormMixed(
+        fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
+        v=x,
+        dV=x.region.dV,
+    ).assemble(parallel=parallel, jit=jit).toarray()[:, 0]
 
 
 def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
-    if "mixed" in str(type(x)).lower():
-
-        a = IntegralFormMixed(
-            fun=umat.hessian(*x.extract(grad=grad, add_identity=add_identity, sym=sym)),
-            v=x,
-            dV=x[0].region.dV,
-            u=x,
-        )
-
-    else:
-
-        a = IntegralForm(
-            fun=umat.hessian(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
-            v=x,
-            dV=x.region.dV,
-            u=x,
-            grad_v=True,
-            grad_u=True,
-        )
-
-    return a.assemble(parallel=parallel, jit=jit)
+    return IntegralFormMixed(
+        fun=umat.hessian(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
+        v=x,
+        dV=x.region.dV,
+        u=x,
+    ).assemble(parallel=parallel, jit=jit)
 
 
 def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
     "Solve partitioned system."
 
     system = fesolve.partition(x, A, dof1, dof0, -b)
-
     dx = fesolve.solve(*system, ext0, solver=solver)
 
-    if "mixed" in str(type(x)).lower():
-        return np.split(dx, offsets)
-
-    else:
-        return dx
+    return np.split(dx, offsets)
 
 
 def check(dx, x, f, tol):
@@ -183,7 +148,6 @@ def newtonrhapson(
     bodies=None,
     dof1=None,
     dof0=None,
-    offsets=None,
     ext0=None,
     solver=spsolve,
     export_jac=False,
@@ -258,6 +222,11 @@ def newtonrhapson(
         # solve linear system and update solution
         sig = inspect.signature(solve)
 
+        try:
+            offsets = x.offsets
+        except:
+            offsets = []
+        
         keys = ["x", "dof1", "dof0", "offsets", "ext0", "solver"]
         values = [x, dof1, dof0, offsets, ext0, solver]
 

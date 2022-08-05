@@ -94,12 +94,31 @@ class Basis:
 
 
 class BasisMixed:
-    r"""A basis for mixed fields.
+    r"""A basis and its gradient built on top of a scalar- or vector-valued
+    field container. *Basis* refers to the trial and test field, either values or
+    gradients evaluated at quadrature points. The first two indices of a basis
+    are used for looping over the element shape functions ``a`` and its
+    components ``i``. The third index represents the vector component ``j`` of
+    the field. The two trailing axes ``(p, c)`` contain the evaluated element
+    shape functions at quadrature points ``p`` per cell ``c``.
+
+    ..  math::
+
+        \varphi_{aijpc} = \delta_{ij} \left( h_a \right)_{pc}
+
+
+    For gradients, the fourth index is used for the vector component of the
+    partial derivative ``k``.
+
+    ..  math::
+
+        \text{grad}(\varphi)_{aijkpc} = \delta_{ij}
+            \left( \frac{\partial h_a}{\partial X_K} \right)_{pc}
 
     Parameters
     ----------
-    field : FieldMixed
-        A mixed field on which the basis should be created.
+    field : FieldContainer
+        A field container on which the basis should be created.
 
     Attributes
     ----------

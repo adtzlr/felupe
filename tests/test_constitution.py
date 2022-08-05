@@ -35,7 +35,8 @@ def pre(sym, add_identity):
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    return r, u.extract(grad=True, sym=sym, add_identity=add_identity)
+    v = fe.FieldContainer([u])
+    return r, v.extract(grad=True, sym=sym, add_identity=add_identity)
 
 
 def pre_mixed(sym, add_identity):
@@ -46,7 +47,7 @@ def pre_mixed(sym, add_identity):
     u = fe.Field(r, dim=3)
     v = fe.Field(r, dim=1)
     z = fe.Field(r, dim=1, values=1)
-    w = fe.FieldMixed((u, v, z))
+    w = fe.FieldContainer([u, v, z])
     return r, w.extract(grad=True, sym=sym, add_identity=add_identity), m
 
 
@@ -69,9 +70,9 @@ def test_nh():
         assert np.allclose(P, Px)
         assert np.allclose(A, Ax)
 
-        assert W.shape == F.shape[-2:]
-        assert P.shape == (3, 3, *F.shape[-2:])
-        assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
+        assert W[0].shape == F[0].shape[-2:]
+        assert P[0].shape == (3, 3, *F[0].shape[-2:])
+        assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
         nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
 
@@ -79,9 +80,9 @@ def test_nh():
         P = nh.gradient(F, mu=2.0)
         A = nh.hessian(F, mu=2.0)
 
-        assert W.shape == F.shape[-2:]
-        assert P.shape == (3, 3, *F.shape[-2:])
-        assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
+        assert W[0].shape == F[0].shape[-2:]
+        assert P[0].shape == (3, 3, *F[0].shape[-2:])
+        assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
         assert np.allclose(P, 0)
 
@@ -104,15 +105,15 @@ def test_linear():
 
         stress = le.gradient(F)
         dsde = le.hessian(F)
-        dsde2 = le.hessian(shape=F.shape[-2:])
+        dsde2 = le.hessian(shape=F[0].shape[-2:])
         dsde3 = le.hessian(region=r)
 
-        assert le.elasticity().shape[-2:] == (1, 1)
+        assert le.elasticity()[0].shape[-2:] == (1, 1)
 
         check_stress.append(stress)
         check_dsde.append([dsde, dsde2, dsde3])
 
-        assert dsde.shape == dsde2.shape
+        assert dsde[0].shape == dsde2[0].shape
 
         le = LinearElastic(E=None, nu=0.3, **kwargs)
         stress = le.gradient(F, E=2.0)
@@ -120,8 +121,8 @@ def test_linear():
         dsde = le.hessian(F, E=2.0)
         dsde = le.hessian(F, E=3.0)
 
-        assert stress.shape == (3, 3, *F.shape[-2:])
-        assert dsde.shape == (3, 3, 3, 3, *F.shape[-2:])
+        assert stress[0].shape == (3, 3, *F[0].shape[-2:])
+        assert dsde[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
         assert np.allclose(stress, 0)
 
@@ -131,17 +132,17 @@ def test_linear():
 
 def test_linear_planestress():
     r, F = pre(sym=False, add_identity=True)
-    F = F[:2][:, :2]
+    F = [F[0][:2][:, :2]]
 
     le = fe.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
     stress = le.gradient(F)
     dsde = le.hessian(F)
     dsde = le.hessian(F)
-    dsde2 = le.hessian(shape=F.shape[-2:])
+    dsde2 = le.hessian(shape=F[0].shape[-2:])
     dsde3 = le.hessian(region=r)
 
-    assert le.elasticity().shape[-2:] == (1, 1)
+    assert le.elasticity()[0].shape[-2:] == (1, 1)
 
     check_dsde = [dsde, dsde2, dsde3]
 
@@ -150,8 +151,8 @@ def test_linear_planestress():
     stress_full = le.stress(F)
     strain_full = le.strain(F)
 
-    assert stress_full.shape == (3, 3, *F.shape[-2:])
-    assert strain_full.shape == (3, 3, *F.shape[-2:])
+    assert stress_full[0].shape == (3, 3, *F[0].shape[-2:])
+    assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
     le = fe.constitution.LinearElasticPlaneStress(E=None, nu=0.3)
     stress = le.gradient(F, E=2.0)
@@ -159,15 +160,15 @@ def test_linear_planestress():
     dsde = le.hessian(F, E=2.0)
     dsde = le.hessian(F, E=3.0)
 
-    assert stress.shape == (2, 2, *F.shape[-2:])
-    assert dsde.shape == (2, 2, 2, 2, *F.shape[-2:])
+    assert stress[0].shape == (2, 2, *F[0].shape[-2:])
+    assert dsde[0].shape == (2, 2, 2, 2, *F[0].shape[-2:])
 
     assert np.allclose(stress, 0)
 
 
 def test_linear_planestrain():
     r, F = pre(sym=False, add_identity=True)
-    F = F[:2][:, :2]
+    F = [F[0][:2][:, :2]]
 
     le = fe.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
@@ -178,8 +179,8 @@ def test_linear_planestrain():
     stress_full = le.stress(F)
     strain_full = le.strain(F)
 
-    assert stress_full.shape == (3, 3, *F.shape[-2:])
-    assert strain_full.shape == (3, 3, *F.shape[-2:])
+    assert stress_full[0].shape == (3, 3, *F[0].shape[-2:])
+    assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
     le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=None)
     le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=0.3)
@@ -188,8 +189,8 @@ def test_linear_planestrain():
     dsde = le.hessian(F, E=2.0)
     dsde = le.hessian(F, E=3.0)
 
-    assert stress.shape == (2, 2, *F.shape[-2:])
-    assert dsde.shape == (2, 2, 2, 2, *F.shape[-2:])
+    assert stress[0].shape == (2, 2, *F[0].shape[-2:])
+    assert dsde[0].shape == (2, 2, 2, 2, *F[0].shape[-2:])
 
     assert np.allclose(stress, 0)
 
@@ -197,7 +198,7 @@ def test_linear_planestrain():
 def test_kinematics():
     r, F = pre(sym=False, add_identity=True)
 
-    N = F[:, 0]
+    N = F[0][:, 0]
 
     for parallel in [False, True]:
 
@@ -224,86 +225,18 @@ def test_kinematics():
 
         assert np.allclose(xf, F)
 
-        assert xf.shape == (3, 3, *F.shape[-2:])
-        assert xg.shape == (3, 3, 3, 3, *F.shape[-2:])
+        assert xf[0].shape == (3, 3, *F[0].shape[-2:])
+        assert xg[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
-        assert yf.shape == (3, 3, *F.shape[-2:])
-        assert yg.shape == (3, 3, 3, 3, *F.shape[-2:])
+        assert yf[0].shape == (3, 3, *F[0].shape[-2:])
+        assert yg[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
-        assert Yf.shape == (3, *F.shape[-2:])
-        assert Yg.shape == (3, 3, 3, *F.shape[-2:])
+        assert Yf[0].shape == (3, *F[0].shape[-2:])
+        assert Yg[0].shape == (3, 3, 3, *F[0].shape[-2:])
 
-        assert zf.shape == F.shape[-2:]
-        assert zg.shape == (3, 3, *F.shape[-2:])
-        assert zh.shape == (3, 3, 3, 3, *F.shape[-2:])
-
-
-def test_wrappers():
-    r, F = pre(sym=False, add_identity=True)
-
-    for parallel in [False, True]:
-
-        nh = fe.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
-
-        class AsMatadi:
-            def __init__(self, material):
-                self.material = material
-
-            def function(self, x, threads=1):
-                if len(x) == 1:
-                    return [self.material.function(*x)]
-                else:
-                    return self.material.function(*x)
-
-            def gradient(self, x, threads=1):
-                if len(x) == 1:
-                    return [self.material.gradient(*x)]
-                else:
-                    return self.material.gradient(*x)
-
-            def hessian(self, x, threads=1):
-                if len(x) == 1:
-                    return [self.material.hessian(*x)]
-                else:
-                    hess = self.material.hessian(*x)
-                    for a in [1, 2]:
-                        hess[a].reshape(*hess[a].shape[:-2], 1, 1, *hess[a].shape[-2:])
-                    for b in [3, 4, 5]:
-                        hess[b].reshape(
-                            *hess[b].shape[:-2], 1, 1, 1, *hess[b].shape[-2:]
-                        )
-                    return self.material.hessian(*x)
-
-        umat = fe.MatadiMaterial(AsMatadi(nh))
-
-        W = umat.function(F)
-        P = umat.gradient(F)
-        A = umat.hessian(F)
-
-        assert W.shape == F.shape[-2:]
-        assert P.shape == (3, 3, *F.shape[-2:])
-        assert A.shape == (3, 3, 3, 3, *F.shape[-2:])
-
-        r, FpJ, m = pre_mixed(sym=False, add_identity=True)
-
-        umat = fe.MatadiMaterial(
-            AsMatadi(fe.ThreeFieldVariation(nh, parallel=parallel))
-        )
-
-        P = umat.gradient(*FpJ)
-        A = umat.hessian(*FpJ)
-
-        assert P[0].shape == (3, 3, *FpJ[0].shape[-2:])
-        assert A[0].shape == (3, 3, 3, 3, *FpJ[0].shape[-2:])
-
-        m = fe.Rectangle(n=3)
-        r = fe.RegionQuad(m)
-        v = fe.FieldsMixed(r, n=3, axisymmetric=True)
-        FpJ = v.extract()
-        A = umat.hessian(*FpJ)
-        K = fe.IntegralFormMixed(A, v, r.dV, v).assemble()
-
-        assert K.shape == (26, 26)
+        assert zf[0].shape == F[0].shape[-2:]
+        assert zg[0].shape == (3, 3, *F[0].shape[-2:])
+        assert zh[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
 
 if __name__ == "__main__":
@@ -312,4 +245,3 @@ if __name__ == "__main__":
     test_linear_planestress()
     test_linear_planestrain()
     test_kinematics()
-    test_wrappers()

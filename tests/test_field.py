@@ -37,7 +37,8 @@ def pre(values=0):
     q = fe.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3, values=values)
-    return r, u
+    v = fe.FieldContainer([u])
+    return r, v
 
 
 def pre_axi():
@@ -48,8 +49,9 @@ def pre_axi():
     r = fe.Region(m, e, q)
 
     u = fe.FieldAxisymmetric(r)
+    v = fe.FieldContainer([u])
 
-    return r, u
+    return r, v
 
 
 def pre_mixed():
@@ -63,7 +65,7 @@ def pre_mixed():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    f = fe.FieldMixed((u, p, J))
+    f = fe.FieldContainer((u, p, J))
     g = fe.FieldsMixed(fe.RegionHexahedron(m), n=3)
 
     u.values[0] = np.ones(3)
@@ -84,7 +86,7 @@ def pre_axi_mixed():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    f = fe.FieldMixed((u, p, J))
+    f = fe.FieldContainer((u, p, J))
 
     u.values[0] = np.ones(2)
     assert np.all(f.values[0][0] == 1)

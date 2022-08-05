@@ -75,7 +75,7 @@ as well as the absolute value of the prescribed shear movement in direction
         "control": fe.Boundary(displacement, fy=f2, skip=(0, 1)),
     }
     
-    dof0, dof1, offsets = fe.dof.partition(fields, boundaries)
+    dof0, dof1 = fe.dof.partition(fields, boundaries)
     ext0 = fe.dof.apply(displacement, boundaries, dof0)
 
 
@@ -159,7 +159,7 @@ of the top plate are saved.
             K += K_MPC
         
             system = fe.solve.partition(fields, K, dof1, dof0, r)
-            fields += np.split(fe.solve.solve(*system, ext0), offsets)
+            fields += np.split(fe.solve.solve(*system, ext0), fields.offsets)
             
             if iteration > 0:
                 

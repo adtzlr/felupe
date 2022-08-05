@@ -31,15 +31,10 @@ from ._boundary import Boundary
 from ._tools import partition, apply
 
 
-def _get_field(field):
-    "Get Field or First field of FieldMixed."
+def _get_first_field(field):
+    "Get first field of FieldContainer."
 
-    if "mixed" in str(type(field)).lower():
-        f = field.fields[0]
-    else:
-        f = field
-
-    return f
+    return field.fields[0]
 
 
 def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
@@ -80,7 +75,7 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
     """Define boundaries for uniaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0."""
 
-    f = _get_field(field)
+    f = _get_first_field(field)
 
     f1 = lambda x: np.isclose(x, right)
 
@@ -91,14 +86,10 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
 
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
 
-    part = partition(field, bounds)
-    dof0 = part[0]
-    offsets = part[2] if len(part) == 3 else None
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    out = bounds, *part, ext0
-
-    return out
+    return bounds, dof0, dof1, ext0
 
 
 def biaxial(field, right=1, move=0.2, clamped=False):
@@ -109,7 +100,7 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     like shape instead where the clamped faces at fx=1 and fy=1 do not share
     mesh-points."""
 
-    f = _get_field(field)
+    f = _get_first_field(field)
 
     f1 = lambda x: np.isclose(x, right)
 
@@ -122,21 +113,17 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     bounds["move-x"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
     bounds["move-y"] = Boundary(f, fy=f1, skip=(1, 0, 1), value=move)
 
-    part = partition(field, bounds)
-    dof0 = part[0]
-    offsets = part[2] if len(part) == 3 else None
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    out = bounds, *part, ext0
-
-    return out
+    return bounds, dof0, dof1, ext0
 
 
 def planar(field, right=1, move=0.2, clamped=False):
     """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0."""
 
-    f = _get_field(field)
+    f = _get_first_field(field)
 
     f1 = lambda x: np.isclose(x, right)
 
@@ -148,21 +135,17 @@ def planar(field, right=1, move=0.2, clamped=False):
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
     bounds["fix-y"] = Boundary(f, fy=f1, skip=(1, 0, 1))
 
-    part = partition(field, bounds)
-    dof0 = part[0]
-    offsets = part[2] if len(part) == 3 else None
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    out = bounds, *part, ext0
-
-    return out
+    return bounds, dof0, dof1, ext0
 
 
 def shear(field, bottom=0, top=1, move=0.2, sym=True):
     """Define boundaries for shear loading between two clamped plates. The
     bottom plate remains fixed while the shear is applied at the top plate."""
 
-    f = _get_field(field)
+    f = _get_first_field(field)
 
     f0 = lambda x: np.isclose(x, bottom)
     f1 = lambda x: np.isclose(x, top)
@@ -176,11 +159,7 @@ def shear(field, bottom=0, top=1, move=0.2, sym=True):
     bounds["top"] = Boundary(f, fy=f1, skip=(1, 0, 0))
     bounds["move"] = Boundary(f, fy=f1, skip=(0, 1, 1), value=move)
 
-    part = partition(field, bounds)
-    dof0 = part[0]
-    offsets = part[2] if len(part) == 3 else None
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    out = bounds, *part, ext0
-
-    return out
+    return bounds, dof0, dof1, ext0

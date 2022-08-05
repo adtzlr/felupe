@@ -16,17 +16,18 @@ The generation of internal force vectors or stiffness matrices of solid bodies a
     mesh = fe.Cube(n=6)
     region = fe.RegionHexahedron(mesh)
     displacement = fe.Field(region, dim=3)
+    field = fe.FieldContainer([displacement])
     
-    body = fe.SolidBody(umat=neohooke, field=displacement)
-    internal_force = body.assemble.vector(displacement, parallel=False, jit=False)
-    stiffness_matrix = body.assemble.matrix(displacement, parallel=False, jit=False)
+    body = fe.SolidBody(umat=neohooke, field=field)
+    internal_force = body.assemble.vector(field, parallel=False, jit=False)
+    stiffness_matrix = body.assemble.matrix(field, parallel=False, jit=False)
 
 
 During assembly, several results are stored, e.g. the gradient of the strain energy density function per unit undeformed volume (first Piola-Kirchhoff stress tensor). Other results are the deformation gradient or the fourth-order elasticity tensor associated to the first Piola-Kirchhoff stress tensor.
 
 ..  code-block:: python
     
-    F = body.results.kinematics[0]
+    F = body.results.kinematics
     P = body.results.stress
     A = body.results.elasticity
 
@@ -35,9 +36,9 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
 
 ..  code-block:: python
     
-    P = body.evaluate.gradient(displacement)
-    A = body.evaluate.hessian(displacement)
-    s = body.evaluate.cauchy_stress(displacement)
+    P = body.evaluate.gradient(field)
+    A = body.evaluate.hessian(field)
+    s = body.evaluate.cauchy_stress(field)
 
 
 Pressure Boundary on a Solid Body
@@ -53,17 +54,18 @@ The generation of internal force vectors or stiffness matrices of pressure bound
         mask=mesh.points[:, 0] == 0, # select a subset of faces on the surface
     )
     
-    displacement_boundary = fe.Field(region_pressure)
+    displacement_boundary = fe.Field(region_pressure, dim=3)
+    field_boundary = fe.FieldContainer([displacement_boundary])
     displacement_boundary.values = displacement.values # link field values
     
-    body_pressure = fe.SolidBodyPressure(field=displacement)
+    body_pressure = fe.SolidBodyPressure(field=field_boundary)
     
-    internal_force_pressure = body.assemble.vector(
-        field=displacement, parallel=False, jit=False, resize=internal_force
+    internal_force_pressure = body_pressure.assemble.vector(
+        field=field_boundary, parallel=False, jit=False, resize=internal_force
     )
     
-    stiffness_matrix_pressure = body.assemble.matrix(
-        field=displacement, parallel=False, jit=False, resize=stiffness_matrix
+    stiffness_matrix_pressure = body_pressure.assemble.matrix(
+        field=field_boundary, parallel=False, jit=False, resize=stiffness_matrix
     )
 
 
@@ -78,7 +80,7 @@ For axisymmetric problems the boundary region has to be created with the attribu
         mesh=mesh,
         only_surface=True, # select only faces on the outline
         mask=mesh.points[:, 0] == 0, # select a subset of faces on the surface
-        ensure_3d=True,
+        ensure_3d=True, # flag for axisymmetric boundary region
     )
     
     displacement = fe.FieldAxisymmetric(region)

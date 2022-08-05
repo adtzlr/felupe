@@ -39,54 +39,54 @@ def pre():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    f = fe.FieldMixed((u, p, J))
+    f = fe.FieldContainer((u, p, J))
 
     return r, f, (u, p, J)
 
 
 def test_solve_check():
 
-    r, f, (u, p, J) = pre()
+    r, _, (u, p, J) = pre()
+    f = fe.FieldContainer([u])
 
     W = fe.constitution.NeoHooke(1, 3)
 
-    F = u.extract()
+    F = f.extract()
 
     bounds = fe.dof.symmetry(u)
-    dof0, dof1 = fe.dof.partition(u, bounds)
+    dof0, dof1 = fe.dof.partition(f, bounds)
 
-    u0ext = fe.dof.apply(u, bounds, dof0)
+    ext0 = fe.dof.apply(f, bounds, dof0)
 
-    L = fe.IntegralForm(W.gradient(F), u, r.dV, grad_v=True)
-    a = fe.IntegralForm(W.hessian(F), u, r.dV, u, True, True)
+    L = fe.IntegralForm(W.gradient(F), f, r.dV)
+    a = fe.IntegralForm(W.hessian(F), f, r.dV, f)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
 
-    dx = fe.tools.solve(A, b, u, dof0, dof1, u0ext)
-    assert dx.shape == u.values.ravel().shape
+    dx = fe.tools.solve(A, b, f, dof0, dof1, f.offsets, ext0)
+    assert dx[0].shape == f[0].values.ravel().shape
 
-    fe.tools.check(dx, u, b, dof1, dof0, verbose=0)
-    fe.tools.check(dx, u, b, dof1, dof0, verbose=1)
+    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
+    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
-    fe.tools.save(r, u)
-    fe.tools.save(r, u, r=b)
+    fe.tools.save(r, f)
+    fe.tools.save(r, f, r=b)
     fe.tools.save(
         r,
-        u,
+        f,
         r=b,
-        F=F,
         gradient=W.gradient(F),
     )
 
     for b in [L.assemble(), L.assemble().toarray(), L.assemble().toarray()[:, 0]]:
-        force = fe.tools.force(u, b, bounds["symx"])
-        moment = fe.tools.moment(u, b, bounds["symx"])
+        force = fe.tools.force(f, b, bounds["symx"])
+        moment = fe.tools.moment(f, b, bounds["symx"])
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
 
-    s = fe.math.dot(W.gradient(F), fe.math.inv(fe.math.cof(F)))
+    s = fe.math.dot(W.gradient(F)[0], fe.math.inv(fe.math.cof(F[0])))
 
     cauchy = fe.tools.project(fe.math.tovoigt(s), region=r, average=True)
     assert cauchy.shape == (r.mesh.npoints, 6)
@@ -100,7 +100,7 @@ def test_solve_mixed_check():
     r, f, fields = pre()
     u = fields[0]
 
-    f = fe.FieldMixed(fields)
+    f = fe.FieldContainer(fields)
 
     F, p, J = f.extract()
 
@@ -110,17 +110,17 @@ def test_solve_mixed_check():
     F = u.extract()
 
     bounds = fe.dof.symmetry(u)
-    dof0, dof1, offsets = fe.dof.partition(f, bounds)
+    dof0, dof1 = fe.dof.partition(f, bounds)
 
-    u0ext = fe.dof.apply(u, bounds, dof0)
+    ext0 = fe.dof.apply(f, bounds, dof0)
 
-    L = fe.IntegralFormMixed(W_mixed.gradient(F, p, J), f, r.dV)
-    a = fe.IntegralFormMixed(W_mixed.hessian(F, p, J), f, r.dV, f)
+    L = fe.IntegralForm(W_mixed.gradient([F, p, J]), f, r.dV)
+    a = fe.IntegralForm(W_mixed.hessian([F, p, J]), f, r.dV, f)
 
     b = L.assemble().toarray()[:, 0]
     A = a.assemble()
 
-    dx = fe.tools.solve(A, b, f, dof0, dof1, u0ext, offsets)
+    dx = fe.tools.solve(A, b, f, dof0, dof1, f.offsets, ext0)
 
     assert dx[0].shape == u.values.ravel().shape
     assert dx[1].shape == fields[1].values.ravel().shape
@@ -129,19 +129,17 @@ def test_solve_mixed_check():
     fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
     fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
-    fe.tools.save(r, f, offsets=offsets)
-    fe.tools.save(r, f, r=b, offsets=offsets)
+    fe.tools.save(r, f)
+    fe.tools.save(r, f, r=b)
     fe.tools.save(
         r,
         f,
         r=b,
-        offsets=offsets,
-        F=F,
-        gradient=W_mixed.gradient(F, p, J),
+        gradient=W_mixed.gradient([F, p, J]),
     )
 
-    force = fe.tools.force(fields, b, bounds["symx"], offsets=offsets)
-    moment = fe.tools.moment(fields, b, bounds["symx"], offsets=offsets)
+    force = fe.tools.force(fields, b, bounds["symx"])
+    moment = fe.tools.moment(fields, b, bounds["symx"])
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])
@@ -184,7 +182,8 @@ def test_newton():
 
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fe.Field(region, dim=3)
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+    field = fe.FieldContainer([displacement])
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
@@ -193,7 +192,7 @@ def test_newton():
 
         # newton-rhapson procedure
         res = fe.newtonrhapson(
-            displacement,
+            field,
             umat=umat,
             dof1=dof1,
             dof0=dof0,
@@ -211,14 +210,15 @@ def test_newton_plane():
 
     # add a displacement field and apply a uniaxial elongation on the rectangle
     displacement = fe.Field(region, dim=2)
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+    field = fe.FieldContainer([displacement])
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     umat = fe.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        displacement,
+        field,
         umat=umat,
         dof1=dof1,
         dof0=dof0,
@@ -233,7 +233,7 @@ def test_newton_plane():
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        displacement,
+        field,
         umat=umat,
         dof1=dof1,
         dof0=dof0,
@@ -251,14 +251,15 @@ def test_newton_linearelastic():
 
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fe.Field(region, dim=3)
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+    field = fe.FieldContainer([displacement])
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     umat = fe.LinearElastic(E=1.0, nu=0.3)
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        displacement,
+        field,
         umat=umat,
         dof1=dof1,
         dof0=dof0,
@@ -280,9 +281,9 @@ def test_newton_mixed():
     u = fe.Field(region, dim=3)
     p = fe.Field(region0)
     J = fe.Field(region0, values=1)
-    field = fe.FieldMixed((u, p, J))
+    field = fe.FieldContainer((u, p, J))
 
-    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
         field, move=0.2, clamped=True
     )
 
@@ -295,7 +296,7 @@ def test_newton_mixed():
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        x0=field, umat=umat, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0, offsets=offsets
+        x0=field, umat=umat, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0
     )
 
 
@@ -310,9 +311,9 @@ def test_newton_body():
     u = fe.Field(region, dim=3)
     p = fe.Field(region0)
     J = fe.Field(region0, values=1)
-    field = fe.FieldMixed((u, p, J))
+    field = fe.FieldContainer((u, p, J))
 
-    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
         field, move=0.2, clamped=True
     )
 
@@ -323,7 +324,7 @@ def test_newton_body():
 
     # create a region, a field and a body for a pressure boundary
     regionp = fe.RegionHexahedronBoundary(mesh, only_surface=True)
-    fieldp = fe.Field(regionp, dim=3)
+    fieldp = fe.FieldContainer([fe.Field(regionp, dim=3)])
     bodyp = fe.SolidBodyPressure(fieldp, pressure=1.0)
 
     # newton-rhapson procedure
@@ -333,7 +334,6 @@ def test_newton_body():
         dof1=dof1,
         dof0=dof0,
         ext0=ext0,
-        offsets=offsets,
     )
 
 

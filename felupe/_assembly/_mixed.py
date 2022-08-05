@@ -71,9 +71,6 @@ class IntegralFormMixed:
 
         self.forms = []
 
-        if self.nv == 1:
-            raise ValueError("IntegralFormMixed needs at least 2 fields.")
-
         if len(fun) == self.nv and u is None:
             # LinearForm
             self.mode = 1

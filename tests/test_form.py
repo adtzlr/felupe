@@ -37,14 +37,17 @@ def pre():
 
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
+    
+    v = fe.FieldContainer([u])
+    q = fe.FieldContainer([p])
 
     W = fe.constitution.NeoHooke(1, 3)
 
-    F = u.extract(grad=True, add_identity=True)
+    F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian(F)
 
-    return r, u, p, P, A
+    return r, v, q, P, A
 
 
 def pre_broadcast():
@@ -56,14 +59,19 @@ def pre_broadcast():
 
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
+    
+    v = fe.FieldContainer([u])
+    q = fe.FieldContainer([p])
 
     W = fe.constitution.LinearElastic(E=1.0, nu=0.3)
 
-    F = u.extract(grad=True, add_identity=True)
+    F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian()
+    
+    P = [P[0][:, :, 0, 0].reshape(3, 3, 1, 1)]
 
-    return r, u, p, P[:, :, 0, 0].reshape(3, 3, 1, 1), A
+    return r, v, q, P, A
 
 
 def pre_axi():
@@ -72,14 +80,15 @@ def pre_axi():
     r = fe.RegionQuad(m)
 
     u = fe.FieldAxisymmetric(r)
+    v = fe.FieldContainer([u])
 
     W = fe.constitution.NeoHooke(1, 3)
 
-    F = u.extract(grad=True, add_identity=True)
+    F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian(F)
 
-    return r, u, P, A
+    return r, v, P, A
 
 
 def pre_mixed():
@@ -93,12 +102,12 @@ def pre_mixed():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    f = fe.FieldMixed((u, p, J))
+    f = fe.FieldContainer((u, p, J))
 
     nh = fe.NeoHooke(1, 3)
     W = fe.ThreeFieldVariation(nh)
 
-    return r, f, W.gradient(*f.extract()), W.hessian(*f.extract())
+    return r, f, W.gradient(f.extract()), W.hessian(f.extract())
 
 
 def pre_axi_mixed():
@@ -112,12 +121,12 @@ def pre_axi_mixed():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    f = fe.FieldMixed((u, p, J))
+    f = fe.FieldContainer((u, p, J))
 
     nh = fe.NeoHooke(1, 3)
     W = fe.ThreeFieldVariation(nh)
 
-    return r, f, W.gradient(*f.extract()), W.hessian(*f.extract())
+    return r, f, W.gradient(f.extract()), W.hessian(f.extract())
 
 
 def test_axi():
@@ -128,7 +137,7 @@ def test_axi():
 
         for jit in [False, True]:
 
-            L = fe.IntegralFormAxisymmetric(P, u, r.dV, grad_v=True)
+            L = fe.IntegralForm(P, u, r.dV)
             x = L.integrate(parallel=parallel, jit=jit)
 
             b = L.assemble(x, parallel=parallel).toarray()
@@ -137,25 +146,7 @@ def test_axi():
             b = L.assemble(parallel=parallel).toarray()
             assert b.shape == (r.mesh.ndof, 1)
 
-            a = fe.IntegralFormAxisymmetric(A, u, r.dV, u, grad_v=True, grad_u=True)
-            y = a.integrate(parallel=parallel, jit=jit)
-
-            K = a.assemble(y, parallel=parallel, jit=jit).toarray()
-            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-
-            K = a.assemble(parallel=parallel, jit=jit).toarray()
-            assert K.shape == (r.mesh.ndof, r.mesh.ndof)
-
-            L = fe.IntegralFormAxisymmetric(P[0], u, r.dV, grad_v=False)
-            x = L.integrate(parallel=parallel, jit=jit)
-
-            b = L.assemble(x, parallel=parallel).toarray()
-            assert b.shape == (r.mesh.ndof, 1)
-
-            b = L.assemble(parallel=parallel).toarray()
-            assert b.shape == (r.mesh.ndof, 1)
-
-            a = fe.IntegralFormAxisymmetric(A[0], u, r.dV, u, grad_v=False, grad_u=True)
+            a = fe.IntegralForm(A, u, r.dV, u, grad_v=[True], grad_u=[True])
             y = a.integrate(parallel=parallel, jit=jit)
 
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
@@ -173,14 +164,14 @@ def test_linearform():
 
         for jit in [False, True]:
 
-            L = fe.IntegralForm(P, u, r.dV, grad_v=True)
+            L = fe.IntegralForm(P, u, r.dV, grad_v=[True])
             x = L.integrate(parallel=parallel, jit=jit)
             b = L.assemble(x, parallel=parallel).toarray()
             assert b.shape == (r.mesh.ndof, 1)
             b = L.assemble(parallel=parallel, jit=jit).toarray()
             assert b.shape == (r.mesh.ndof, 1)
 
-            L = fe.IntegralForm(p.interpolate(), p, r.dV)
+            L = fe.IntegralForm(p.extract(grad=False), p, r.dV, grad_v=[False])
             x = L.integrate(parallel=parallel, jit=jit)
             b = L.assemble(x, parallel=parallel, jit=jit).toarray()
             assert b.shape == (r.mesh.npoints, 1)
@@ -196,14 +187,14 @@ def test_linearform_broadcast():
 
         for jit in [False, True]:
 
-            L = fe.IntegralForm(P, u, r.dV, grad_v=True)
+            L = fe.IntegralForm(P, u, r.dV, grad_v=[True])
             x = L.integrate(parallel=parallel, jit=jit)
             b = L.assemble(x, parallel=parallel, jit=jit).toarray()
             assert b.shape == (r.mesh.ndof, 1)
             b = L.assemble(parallel=parallel, jit=jit).toarray()
             assert b.shape == (r.mesh.ndof, 1)
 
-            L = fe.IntegralForm(p.interpolate(), p, r.dV)
+            L = fe.IntegralForm(p.extract(grad=False), p, r.dV, grad_v=[False])
             x = L.integrate(parallel=parallel, jit=jit)
             b = L.assemble(x, parallel=parallel, jit=jit).toarray()
             assert b.shape == (r.mesh.npoints, 1)
@@ -219,14 +210,14 @@ def test_bilinearform():
 
         for jit in [False, True]:
 
-            a = fe.IntegralForm(A, u, r.dV, u, True, True)
+            a = fe.IntegralForm(A, u, r.dV, u)
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.ndof)
             K = a.assemble(parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-            a = fe.IntegralForm(P, u, r.dV, p, True, False)
+            a = fe.IntegralForm(P, u, r.dV, p, [True], [False])
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.npoints)
@@ -242,23 +233,23 @@ def test_bilinearform_broadcast():
 
         for jit in [False, True]:
 
-            a = fe.IntegralForm(A, u, r.dV, u, True, True)
+            a = fe.IntegralForm(A, u, r.dV, u, [True], [True])
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.ndof)
             K = a.assemble(parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-            a = fe.IntegralForm(P, u, r.dV, p, True, False)
+            a = fe.IntegralForm(P, u, r.dV, p, [True], [False])
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.npoints)
             K = a.assemble(parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
-            q = p.interpolate()
+            q = p.extract(grad=False)
             f = fe.math.dya(q, q, mode=1)
-            a = fe.IntegralForm(f, p, r.dV, p, False, False)
+            a = fe.IntegralForm(f, p, r.dV, p, [False], [False])
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             assert K.shape == (r.mesh.npoints, r.mesh.npoints)
@@ -274,7 +265,7 @@ def test_mixed():
 
         for jit in [False, True]:
 
-            a = fe.IntegralFormMixed(A, v, r.dV, v)
+            a = fe.IntegralForm(A, v, r.dV, v)
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             K = a.assemble(parallel=parallel, jit=jit).toarray()
@@ -282,7 +273,7 @@ def test_mixed():
             z = r.mesh.ndof + 2 * r.mesh.npoints
             assert K.shape == (z, z)
 
-            L = fe.IntegralFormMixed(f, v, r.dV)
+            L = fe.IntegralForm(f, v, r.dV)
             x = L.integrate(parallel=parallel, jit=jit)
             b = L.assemble(x, parallel=parallel, jit=jit).toarray()
             b = L.assemble(parallel=parallel, jit=jit).toarray()
@@ -295,7 +286,7 @@ def test_mixed():
 
         for jit in [False, True]:
 
-            a = fe.IntegralFormMixed(A, v, r.dV, v)
+            a = fe.IntegralForm(A, v, r.dV, v)
             y = a.integrate(parallel=parallel, jit=jit)
             K = a.assemble(y, parallel=parallel, jit=jit).toarray()
             K = a.assemble(parallel=parallel, jit=jit).toarray()
@@ -303,7 +294,7 @@ def test_mixed():
             z = r.mesh.ndof + 2 * r.mesh.npoints
             assert K.shape == (z, z)
 
-            L = fe.IntegralFormMixed(f, v, r.dV)
+            L = fe.IntegralForm(f, v, r.dV)
             x = L.integrate(parallel=parallel, jit=jit)
             b = L.assemble(x, parallel=parallel, jit=jit).toarray()
             b = L.assemble(parallel=parallel, jit=jit).toarray()

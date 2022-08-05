@@ -26,17 +26,18 @@ region = fe.RegionHexahedron(fe.Cube(n=11))
 
 # add a displacement field and apply a uniaxial elongation on the cube
 displacement = fe.Field(region, dim=3)
-boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(displacement, move=0.2, clamped=True)
+field = fe.FieldContainer([displacement])
+boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
 # define the constitutive material behavior and create a solid body
 umat = fe.NeoHooke(mu=1.0, bulk=2.0)
-solid = fe.SolidBody(umat, displacement)
+solid = fe.SolidBody(umat, field)
 
 # newton-rhapson procedure
-res = fe.newtonrhapson(bodies=[solid], dof1=dof1, dof0=dof0, ext0=ext0)
+res = fe.newtonrhapson(bodies=[solid], dof1=dof1, dof0=dof0, offsets=offsets, ext0=ext0)
 
 # save result
-fe.save(region, res.x, filename="result.vtk")
+fe.save(region, res.x, offsets=offsets, filename="result.vtk")
 ```
 
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="600px"/>
@@ -53,6 +54,10 @@ All notable changes to this project will be documented in this file. The format 
 - Add `SolidBody.evaluate.kirchhoff_stress()` method. Contrary to the Cauchy stress method, this gives correct results in incompressible plane stress.
 - Add `SolidBodyTensor` for tensor-based material definitions with state variables.
 - Add `bodies` argument to `newtonrhapson()`.
+- Add a container class for fields, `FieldContainer`.
+
+### Changed
+- Unify handling of `Field` and `FieldMixed`.
 
 ### Fixed
 - Fix `tovoigt()` helper for data with more or less than two trailing axes and 2D tensors.

@@ -38,7 +38,7 @@ from ._base import IntegralForm
 from ._mixed import IntegralFormMixed
 
 from .._basis import Basis, BasisMixed
-from .._field import Field, FieldMixed
+from .._field import Field, FieldContainer as FieldMixed
 
 
 class LinearForm:
@@ -599,44 +599,22 @@ class BaseForm:
                 self.u = None
 
                 # mixed-field input
-                if isinstance(v, FieldMixed):
-                    self.v = BasisMixed(v, parallel=parallel)
-                    form = LinearFormMixed(self.v, self.grad_v)
+                self.v = BasisMixed(v, parallel=parallel)
+                form = LinearFormMixed(self.v, self.grad_v)
 
-                    # evaluate weakform to list of weakforms
-                    if isinstance(self.weakform, type(lambda x: x)):
-                        self.weakform = self.weakform()
-
-                # single-field input
-                elif isinstance(v, Field):
-                    self.v = Basis(v, parallel=parallel)
-                    form = LinearForm(self.v, self.grad_v, self.dx)
-
-                else:
-                    raise TypeError("Unknown type of Field ``v``.")
+                # evaluate weakform to list of weakforms
+                if isinstance(self.weakform, type(lambda x: x)):
+                    self.weakform = self.weakform()
 
             else:
 
-                # mixed-field input
-                if isinstance(v, FieldMixed):
-                    self.v = BasisMixed(v, parallel=parallel)
-                    self.u = BasisMixed(u, parallel=parallel)
-                    form = BilinearFormMixed(self.v, self.u, self.grad_v, self.grad_u)
+                self.v = BasisMixed(v, parallel=parallel)
+                self.u = BasisMixed(u, parallel=parallel)
+                form = BilinearFormMixed(self.v, self.u, self.grad_v, self.grad_u)
 
-                    # evaluate weakform to list of weakforms
-                    if isinstance(self.weakform, type(lambda x: x)):
-                        self.weakform = self.weakform()
-
-                # single-field input
-                elif isinstance(v, Field):
-                    self.v = Basis(v, parallel=parallel)
-                    self.u = Basis(u, parallel=parallel)
-                    form = BilinearForm(
-                        self.v, self.u, self.grad_v, self.grad_u, self.dx
-                    )
-
-                else:
-                    raise TypeError("Unknown type of Field ``v``.")
+                # evaluate weakform to list of weakforms
+                if isinstance(self.weakform, type(lambda x: x)):
+                    self.weakform = self.weakform()
 
             # check if new form type matches initial form type (update-stage)
             if form_type is not None:
@@ -731,7 +709,7 @@ class BaseForm:
 
 
 def Form(
-    v, u=None, grad_v=False, grad_u=False, dx=None, args=(), kwargs={}, parallel=False
+    v, u=None, grad_v=None, grad_u=None, dx=None, args=(), kwargs={}, parallel=False
 ):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
@@ -756,9 +734,9 @@ def Form(
     u : Field or FieldMixed
         An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
-    grad_v : bool, optional (default is False)
+    grad_v : bool, optional (default is None)
         Flag to use the gradient of ``v``.
-    grad_u : bool, optional (default is False)
+    grad_u : bool, optional (default is None)
         Flag to use the gradient of ``u``.
     dx : ndarray or None, optional (default is None)
         Array with (numerical) differential volumes.

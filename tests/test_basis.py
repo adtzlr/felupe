@@ -34,7 +34,7 @@ def pre(dim):
 
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
-    u = fe.Field(r, dim=dim)
+    u = fe.FieldContainer([fe.Field(r, dim=dim)])
     return r, u
 
 
@@ -42,7 +42,7 @@ def pre_constant(dim):
 
     m = fe.Cube(n=3)
     r = fe.RegionConstantHexahedron(m)
-    u = fe.Field(r, dim=dim)
+    u = fe.FieldContainer([fe.Field(r, dim=dim)])
     return r, u
 
 
@@ -53,22 +53,22 @@ def test_basis():
         r, u = pre(dim=3)
         b = fe.Basis(u, parallel=parallel)
 
-        assert b.grad is not None
+        assert b[0].grad is not None
 
         r, u = pre(dim=1)
         b = fe.Basis(u, parallel=parallel)
 
-        assert b.grad is not None
+        assert b[0].grad is not None
 
         r, u = pre_constant(dim=3)
         b = fe.Basis(u, parallel=parallel)
 
-        assert b.grad is None
+        assert b[0].grad is None
 
         r, u = pre_constant(dim=1)
         b = fe.Basis(u, parallel=parallel)
 
-        assert b.grad is None
+        assert b[0].grad is None
 
 
 if __name__ == "__main__":

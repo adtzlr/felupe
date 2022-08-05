@@ -30,30 +30,23 @@ from scipy.interpolate import interp1d
 from scipy.sparse import issparse
 
 
-def force(field, r, boundary, offsets=None):
+def force(field, r, boundary, offsets=[]):
     if issparse(r):
         r = r.toarray()
-    if offsets is None:
-        return ((r.reshape(-1, field.dim))[boundary.points]).sum(0)
-    else:
-        return (
-            ((np.split(r, offsets)[0]).reshape(-1, field[0].dim))[boundary.points]
-        ).sum(0)
+    return (
+        ((np.split(r, offsets)[0]).reshape(-1, field[0].dim))[boundary.points]
+    ).sum(0)
 
 
-def moment(field, r, boundary, point=np.zeros(3), offsets=None):
+def moment(field, r, boundary, point=np.zeros(3), offsets=[]):
     if issparse(r):
         r = r.toarray()
     point = point.reshape(1, 3)
 
     indices = np.array([(1, 2), (2, 0), (0, 1)])
 
-    if offsets is None:
-        displacements = field.values
-        force = r.reshape(-1, 3)
-    else:
-        displacements = field[0].values
-        force = (np.split(r, offsets)[0]).reshape(-1, 3)
+    displacements = field[0].values
+    force = (np.split(r, offsets)[0]).reshape(-1, 3)
 
     d = ((point + displacements) - point)[boundary.points]
     f = force[boundary.points]

@@ -64,7 +64,7 @@ A numeric quad-region created on the mesh in combination with a vector-valued di
     displacement = fe.Field(region, dim=2)
     field = fe.FieldContainer([displacement])
 
-    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
         field, move=0.001, right=L, clamped=False
     )
 
@@ -97,7 +97,7 @@ The linear equation system may now be solved. First, a partition into active and
 ..  code-block:: python
 
     system = fe.solve.partition(field, K, dof1, dof0)
-    field += np.split(fe.solve.solve(*system, ext0), offsets)
+    field += np.split(fe.solve.solve(*system, ext0), field.offsets)
 
 Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
 
@@ -135,7 +135,6 @@ Results are saved as VTK-files, where additional point-data is passed within the
     fe.save(
         region, 
         field,
-        offsets=offsets, 
         filename="plate_with_hole.vtk",
         point_data={
             "Stress": (stress_projected / 

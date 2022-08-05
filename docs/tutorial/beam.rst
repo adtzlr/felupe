@@ -23,6 +23,7 @@ First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)``
     cube = fe.Cube(a=(0, 0, 0), b=(2000, 100, 100), n=(181, 9, 9))
     region = fe.RegionHexahedron(cube)
     displacement = fe.Field(region, dim=3)
+    field = fe.FieldContainer([displacement])
 
 
 A fixed boundary condition is applied on the left end of the beam. The degrees of freedom are partitioned into active (``dof1``) and fixed or inactive (``dof0``) degrees of freedom.
@@ -53,9 +54,10 @@ The body force is now assembled. Note that the gravity vector has to be reshaped
     gravity = np.array([0, 0, 9.81]) * 1e3
 
     bodyforce = fe.IntegralForm(
-        fun=density * gravity.reshape(-1, 1, 1), 
-        v=displacement, 
+        fun=[density * gravity.reshape(-1, 1, 1)], 
+        v=field, 
         dV=region.dV,
+        grad_v=[False]
     ).assemble()
 
 The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.elasticity`.
@@ -69,21 +71,19 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
     
     stiffness = fe.IntegralForm(
         fun=umat.elasticity(region=region), 
-        v=displacement, 
+        v=field, 
         dV=region.dV, 
-        u=displacement, 
-        grad_v=True,
-        grad_u=True
+        u=field, 
     ).assemble(parallel=True)
 
 The linear equation system may now be solved. First, a partition into active and inactive degrees of freedom is performed. This partitioned system is then passed to the solver. The maximum displacement is identical to the one obtained in `[1] <https://www.doi.org/10.5545/sv-jme.2017.5081>`_.
 
 ..  code-block:: python
 
-    system = fe.solve.partition(displacement, stiffness, dof1, dof0, r=-bodyforce)
-    displacement += fe.solve.solve(*system)
+    system = fe.solve.partition(field, stiffness, dof1, dof0, r=-bodyforce)
+    field += np.split(fe.solve.solve(*system), field.offsets)
 
-    fe.save(region, displacement, filename="bodyforce.vtk")
+    fe.save(region, field, filename="bodyforce.vtk")
 
 
 .. image:: images/beam_bodyforce.png

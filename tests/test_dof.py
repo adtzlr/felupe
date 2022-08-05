@@ -36,7 +36,8 @@ def pre1d():
     q = fe.quadrature.GaussLegendre(1, 1)
     r = fe.Region(m, e, q)
     u = fe.Field(r)
-    return u
+    v = fe.FieldContainer([u])
+    return v
 
 
 def pre2d():
@@ -45,7 +46,8 @@ def pre2d():
     q = fe.quadrature.GaussLegendre(1, 2)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=2)
-    return u
+    v = fe.FieldContainer([u])
+    return v
 
 
 def pre3d():
@@ -54,28 +56,29 @@ def pre3d():
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    return u
+    v = fe.FieldContainer([u])
+    return v
 
 
 def test_boundary():
 
     u = pre3d()
-    bounds = {"boundary-label": fe.Boundary(u)}
+    bounds = {"boundary-label": fe.Boundary(u[0])}
 
     v = fe.dof.apply(u, bounds, dof0=None)
-    assert np.allclose(u.values, v)
+    assert np.allclose(u[0].values.ravel(), v)
 
     mask = np.ones(u.region.mesh.npoints, dtype=bool)
-    bounds = {"boundary-label": fe.Boundary(u, mask=mask)}
+    bounds = {"boundary-label": fe.Boundary(u[0], mask=mask)}
 
     v = fe.dof.apply(u, bounds, dof0=None)
-    assert np.allclose(u.values, v)
+    assert np.allclose(u[0].values.ravel(), v)
 
 
 def test_loadcase():
 
     for u in [pre1d(), pre2d(), pre3d()]:
-        v = fe.FieldMixed((u, deepcopy(u)))
+        v = fe.FieldContainer([u[0], deepcopy(u[0])])
 
         ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
         assert len(ux) == 4
@@ -86,10 +89,6 @@ def test_loadcase():
 
         ux = fe.dof.uniaxial(u, right=2.0, move=0.2, clamped=True)
         assert len(ux) == 4
-        assert "right" in ux[0]
-
-        ux = fe.dof.uniaxial(v, right=1.0, move=0.2, clamped=True)
-        assert len(ux) == 5
         assert "right" in ux[0]
 
         bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=False)
@@ -104,7 +103,7 @@ def test_loadcase():
         assert "right" in bx[0]
 
         bx = fe.dof.biaxial(v, right=1.0, move=0.2, clamped=True)
-        assert len(bx) == 5
+        assert len(bx) == 4
         assert "right" in bx[0]
 
         ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=False)
@@ -119,7 +118,7 @@ def test_loadcase():
         assert "right" in ps[0]
 
         ps = fe.dof.planar(v, right=1.0, move=0.2, clamped=True)
-        assert len(ps) == 5
+        assert len(ps) == 4
         assert "right" in ps[0]
 
         sh = fe.dof.shear(u, bottom=0.0, top=1.0, move=0.2, sym=True)
@@ -127,7 +126,7 @@ def test_loadcase():
         assert "top" in sh[0]
 
         sh = fe.dof.shear(v, bottom=0.0, top=1.0, move=0.2, sym=False)
-        assert len(sh) == 5
+        assert len(sh) == 4
         assert "top" in sh[0]
 
 
@@ -142,7 +141,7 @@ def test_mpc():
 
     region = fe.Region(mesh, element, quadrature)
 
-    u = fe.Field(region, dim=3)
+    u = fe.FieldContainer([fe.Field(region, dim=3)])
     F = u.extract()
 
     umat = fe.constitution.NeoHooke(mu=1.0, bulk=2.0)
@@ -152,23 +151,21 @@ def test_mpc():
     f2 = lambda x: np.isclose(x, 2)
 
     boundaries = {}
-    boundaries["left"] = fe.Boundary(u, fx=f0)
-    boundaries["right"] = fe.Boundary(u, fx=f2, skip=(1, 0, 0))
-    boundaries["move"] = fe.Boundary(u, fx=f2, skip=(0, 1, 1), value=0.5)
+    boundaries["left"] = fe.Boundary(u[0], fx=f0)
+    boundaries["right"] = fe.Boundary(u[0], fx=f2, skip=(1, 0, 0))
+    boundaries["move"] = fe.Boundary(u[0], fx=f2, skip=(0, 1, 1), value=0.5)
 
-    mpc = fe.Boundary(u, fx=f1).points
+    mpc = fe.Boundary(u[0], fx=f1).points
     cpoint = mesh.npoints - 1
 
     RBE2 = fe.MultiPointConstraint(mesh, points=mpc, centerpoint=cpoint)
     K_RBE2 = RBE2.stiffness()
     r_RBE2 = RBE2.residuals(u)
 
-    linearform = fe.IntegralForm(umat.gradient(F), u, region.dV, grad_v=True)
+    linearform = fe.IntegralForm(umat.gradient(F), u, region.dV)
     r = linearform.assemble() + r_RBE2
 
-    bilinearform = fe.IntegralForm(
-        umat.hessian(F), u, region.dV, u, grad_v=True, grad_u=True
-    )
+    bilinearform = fe.IntegralForm(umat.hessian(F), u, region.dV, u)
     K = bilinearform.assemble() + K_RBE2
 
     assert r.shape == (84, 1)
@@ -197,7 +194,7 @@ def pre_mpc_mixed(point, values):
 
     displacement.values[-1] = values
 
-    fields = fe.FieldMixed((displacement, pressure, volumeratio))
+    fields = fe.FieldContainer([displacement, pressure, volumeratio])
 
     F, p, J = fields.extract()
 
@@ -219,21 +216,21 @@ def pre_mpc_mixed(point, values):
     RBE2 = fe.MultiPointConstraint(mesh, points=mpc, centerpoint=cpoint)
     CONT = fe.MultiPointContact(mesh, points=mpc, centerpoint=cpoint)
     K_RBE2 = RBE2.stiffness()
-    r_RBE2 = RBE2.residuals(displacement)
+    r_RBE2 = RBE2.residuals(fields)
 
-    K_CONT = CONT.stiffness(displacement)
-    r_CONT = CONT.residuals(displacement)
+    K_CONT = CONT.stiffness(fields)
+    r_CONT = CONT.residuals(fields)
 
     assert K_RBE2.shape == K_CONT.shape
     assert r_RBE2.shape == r_CONT.shape
 
-    linearform = fe.IntegralFormMixed(umat.gradient(F, p, J), fields, dV)
+    linearform = fe.IntegralForm(umat.gradient([F, p, J]), fields, dV)
     r = linearform.assemble()
 
     r_RBE2.resize(*r.shape)
     r = r + r_RBE2
 
-    bilinearform = fe.IntegralFormMixed(umat.hessian(F, p, J), fields, dV, fields)
+    bilinearform = fe.IntegralForm(umat.hessian([F, p, J]), fields, dV, fields)
     K = bilinearform.assemble()
 
     K_RBE2.resize(*K.shape)

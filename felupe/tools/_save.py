@@ -36,7 +36,6 @@ def save(
     fields,
     r=None,
     gradient=None,
-    offsets=[],
     converged=True,
     filename="result.vtk",
     cell_data=None,
@@ -45,6 +44,8 @@ def save(
 
     u = fields.fields[0]
     mesh = region.mesh
+    
+    offsets = fields.offsets
 
     if point_data is None:
         point_data = {}

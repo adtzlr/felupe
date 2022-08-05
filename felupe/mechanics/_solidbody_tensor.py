@@ -129,7 +129,7 @@ class SolidBodyTensor:
 
         self._gradient(field)
 
-        P = self.results.stress[0]
+        P = self.results.stress[0][0]
         F = self.results.kinematics[0]
 
         return dot(P, transpose(F))
@@ -138,7 +138,7 @@ class SolidBodyTensor:
 
         self._gradient(field)
 
-        P = self.results.stress[0]
+        P = self.results.stress[0][0]
         F = self.results.kinematics[0]
         J = det(F)
 

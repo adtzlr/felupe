@@ -34,10 +34,10 @@ umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 solid = fe.SolidBody(umat, field)
 
 # newton-rhapson procedure
-res = fe.newtonrhapson(bodies=[solid], dof1=dof1, dof0=dof0, offsets=offsets, ext0=ext0)
+res = fe.newtonrhapson(bodies=[solid], dof1=dof1, dof0=dof0, ext0=ext0)
 
 # save result
-fe.save(region, res.x, offsets=offsets, filename="result.vtk")
+fe.save(region, res.x, filename="result.vtk")
 ```
 
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="600px"/>
@@ -54,14 +54,19 @@ All notable changes to this project will be documented in this file. The format 
 - Add `SolidBody.evaluate.kirchhoff_stress()` method. Contrary to the Cauchy stress method, this gives correct results in incompressible plane stress.
 - Add `SolidBodyTensor` for tensor-based material definitions with state variables.
 - Add `bodies` argument to `newtonrhapson()`.
-- Add a container class for fields, `FieldContainer`.
+- Add a container class for fields, `FieldContainer` (renamed from `FieldMixed`).
 
 ### Changed
 - Unify handling of `Field` and `FieldMixed`.
+- Constitutive models use lists as in- and output (consistency between single- and mixed-formulations).
 
 ### Fixed
 - Fix `tovoigt()` helper for data with more or less than two trailing axes and 2D tensors.
 - Fix errors for `force()` and `moment()` helpers if the residuals are sparse.
+
+### Removed
+- Remove wrapper for matADi-materials (not necessary with field containers).
+- Remove `IntegralFormMixed` and `IntegralFormAxisymmetric` from global namespace.
 
 ## [3.1.0] - 2022-05-02
 

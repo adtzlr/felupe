@@ -13,5 +13,3 @@ from ._kinematics import (
 )
 
 from ._mixed import ThreeFieldVariation
-
-from ._wrappers import MatadiMaterial

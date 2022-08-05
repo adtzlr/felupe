@@ -99,7 +99,6 @@ from .constitution import (
     LineChange,
     AreaChange,
     VolumeChange,
-    MatadiMaterial,
 )
 from .tools import (
     newtonrhapson,

@@ -46,8 +46,8 @@ def test_readme():
     boundaries["right"] = felupe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
     boundaries["move"] = felupe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 
-    dof0, dof1, offsets = felupe.dof.partition(field, boundaries)
-    ext0 = felupe.dof.apply(field, boundaries, dof0, offsets)
+    dof0, dof1 = felupe.dof.partition(field, boundaries)
+    ext0 = felupe.dof.apply(field, boundaries, dof0)
 
     linearform = felupe.IntegralForm(P(F), field, dV)
     bilinearform = felupe.IntegralForm(A(F), field, dV, field)
@@ -77,7 +77,7 @@ def test_readme():
         system = felupe.solve.partition(field, K, dof1, dof0, r)
         dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
         
-        du = np.split(dfield, offsets)
+        du = np.split(dfield, field.offsets)
 
         norm = felupe.math.norm(du)
         print(iteration, norm[0])
@@ -91,7 +91,7 @@ def test_readme():
 
     F[0][:, :, 0, 0]
 
-    felupe.save(region, field, offsets=offsets, filename="result.vtk")
+    felupe.save(region, field, filename="result.vtk")
 
     from felupe.math import dot, det, transpose
 

@@ -31,7 +31,7 @@ A fixed boundary condition is applied on the left end of the beam. The degrees o
 ..  code-block:: python
 
     bounds = {"fixed": fe.dof.Boundary(displacement, fx=lambda x: x==0)}
-    dof0, dof1 = fe.dof.partition(displacement, bounds)
+    dof0, dof1 = fe.dof.partition(field, bounds)
 
 
 The material behavior is defined through a built-in isotropic linear-elastic material formulation.

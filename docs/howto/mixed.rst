@@ -39,8 +39,8 @@ Boundary conditions are enforced in the same way as in Getting Started.
     boundaries["right"] = fe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
     boundaries["move" ] = fe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
 
-    dof0, dof1, offsets = fe.dof.partition(field, boundaries)
-    ext0 = fe.dof.apply(field, boundaries, dof0, offsets)
+    dof0, dof1 = fe.dof.partition(field, boundaries)
+    ext0 = fe.dof.apply(field, boundaries, dof0)
 
 The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`tutorial-getting-started`. FElupe provides a Mixed-field version of it's :class:`felupe.IntegralForm`, called :class:`felupe.IntegralFormMixed`. It assumes that the first field operates on the gradient and all the others don't. The resulting system vector with incremental values of the fields has to be splitted at the field-offsets in order to update the fields.
 
@@ -57,7 +57,7 @@ The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`t
         K = bilinearform.assemble()
         
         system = fe.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(fe.solve.solve(*system, ext0), offsets)
+        dfield = np.split(fe.solve.solve(*system, ext0), field.offsets)
         
         field += dfield
 
@@ -67,7 +67,7 @@ The Newton-Rhapson iterations are coded quite similar to the one used in :ref:`t
         if norm < 1e-12:
             break
 
-    fe.tools.save(region, field, offsets=offsets, filename="result.vtk")
+    fe.tools.save(region, field, filename="result.vtk")
 
 The deformed cube is finally visualized by a VTK output file with the help of Paraview.
 

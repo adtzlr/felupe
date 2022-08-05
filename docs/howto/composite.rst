@@ -51,7 +51,7 @@ The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    boundaries, dof0, dof1, offsets, ext0 = fe.dof.uniaxial(
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
         field, move=-0.25
     )
 
@@ -80,7 +80,7 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
         K+= steel.assemble.matrix()
 
         system = fe.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(fe.solve.solve(*system, ext0), offsets)
+        dfield = np.split(fe.solve.solve(*system, ext0), field.offsets)
 
         field += dfield
         
@@ -112,9 +112,9 @@ Results and may be exported either for the total region or with stresses for sub
     s = rubber.evaluate.cauchy_stress()
     cauchy_stress = fe.project(fe.math.tovoigt(s), region_rubber)
     
-    fe.save(region, field, offsets=offsets, filename="result.vtk")
+    fe.save(region, field, filename="result.vtk")
 
-    fe.save(region_rubber, field_rubber, offsets=offsets, 
+    fe.save(region_rubber, field_rubber,
         filename="result_rubber.vtk", 
         point_data={"CauchyStress": cauchy_stress}
     )

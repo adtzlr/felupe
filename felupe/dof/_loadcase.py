@@ -86,10 +86,10 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
 
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
 
-    dof0, dof1, offsets = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, offsets, ext0
+    return bounds, dof0, dof1, ext0
 
 
 def biaxial(field, right=1, move=0.2, clamped=False):
@@ -113,10 +113,10 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     bounds["move-x"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
     bounds["move-y"] = Boundary(f, fy=f1, skip=(1, 0, 1), value=move)
 
-    dof0, dof1, offsets = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, offsets, ext0
+    return bounds, dof0, dof1, ext0
 
 
 def planar(field, right=1, move=0.2, clamped=False):
@@ -135,10 +135,10 @@ def planar(field, right=1, move=0.2, clamped=False):
     bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
     bounds["fix-y"] = Boundary(f, fy=f1, skip=(1, 0, 1))
 
-    dof0, dof1, offsets = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, offsets, ext0
+    return bounds, dof0, dof1, ext0
 
 
 def shear(field, bottom=0, top=1, move=0.2, sym=True):
@@ -159,7 +159,7 @@ def shear(field, bottom=0, top=1, move=0.2, sym=True):
     bounds["top"] = Boundary(f, fy=f1, skip=(1, 0, 0))
     bounds["move"] = Boundary(f, fy=f1, skip=(0, 1, 1), value=move)
 
-    dof0, dof1, offsets = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0, offsets)
+    dof0, dof1 = partition(field, bounds)
+    ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, offsets, ext0
+    return bounds, dof0, dof1, ext0

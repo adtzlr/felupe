@@ -40,6 +40,10 @@ class FieldContainer:
 
         # get field values
         self.values = tuple(f.values for f in self.fields)
+        
+        # get sizes of fields and calculate offsets
+        self.fieldsizes = [f.indices.dof.size for f in self.fields]
+        self.offsets = np.cumsum(self.fieldsizes)[:-1]
 
     def extract(self, grad=True, sym=False, add_identity=True):
         """Generalized extraction method which evaluates either the gradient

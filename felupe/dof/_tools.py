@@ -110,7 +110,7 @@ def apply(field, bounds, dof0=None):
 
     # check if a mixed-field is passed
     u = np.concatenate([f.values.ravel() for f in field.fields])
-    offsets = field.offsets
+    offsets = np.insert(field.offsets, 0, 0)
 
     for b in bounds.values():
 

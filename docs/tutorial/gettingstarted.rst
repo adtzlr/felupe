@@ -127,8 +127,8 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 ..  code-block:: python
     
-    dof0, dof1, offsets = felupe.dof.partition(field, boundaries)
-    ext0 = felupe.dof.apply(field, boundaries, dof0, offsets)
+    dof0, dof1 = felupe.dof.partition(field, boundaries)
+    ext0 = felupe.dof.apply(field, boundaries, dof0)
 
 
 Integral forms of equilibrium equations
@@ -201,7 +201,7 @@ A very simple newton-rhapson code looks like this:
         K = bilinearform.assemble()
 
         system = felupe.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(felupe.solve.solve(*system, ext0, solver=spsolve), offsets)
+        dfield = np.split(felupe.solve.solve(*system, ext0, solver=spsolve), field.offsets)
 
         norm = np.linalg.norm(dfield[0])
         print(iteration, norm)
@@ -224,7 +224,7 @@ Alternatively, one may also use the Newton-Rhapson procedure as shown in :ref:`t
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, offsets=offsets, ext0=ext0)
+    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
     field = res.x
 
 
@@ -250,7 +250,7 @@ Results are exported as VTK or XDMF files using `meshio <https://pypi.org/projec
 
 ..  code-block:: python
 
-    felupe.save(region, field, offsets=offsets, filename="result.vtk")
+    felupe.save(region, field, filename="result.vtk")
 
 
 
@@ -268,7 +268,6 @@ Any tensor at quadrature points shifted or projected to, both averaged at mesh-p
     felupe.save(
         region, 
         field, 
-        offsets=offsets,
         filename="result_with_cauchy.vtk", 
         point_data={
             "CauchyStressShifted": cauchy_shifted,

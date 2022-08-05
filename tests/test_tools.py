@@ -39,7 +39,7 @@ def pre():
     p = fe.Field(r)
     J = fe.Field(r, values=1)
 
-    f = fe.FieldMixed((u, p, J))
+    f = fe.FieldContainer((u, p, J))
 
     return r, f, (u, p, J)
 

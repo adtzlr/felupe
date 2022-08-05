@@ -148,7 +148,6 @@ def newtonrhapson(
     bodies=None,
     dof1=None,
     dof0=None,
-    offsets=None,
     ext0=None,
     solver=spsolve,
     export_jac=False,
@@ -224,7 +223,7 @@ def newtonrhapson(
         sig = inspect.signature(solve)
 
         keys = ["x", "dof1", "dof0", "offsets", "ext0", "solver"]
-        values = [x, dof1, dof0, offsets, ext0, solver]
+        values = [x, dof1, dof0, x.offsets, ext0, solver]
 
         for key, value in zip(keys, values):
 

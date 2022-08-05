@@ -35,12 +35,11 @@ def test_math_field():
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
-    v = fe.FieldMixed((u, u))
+    v = fe.FieldContainer((u, u))
 
-    fe.math.values(u)
     fe.math.values(v)
-
     fe.math.defgrad(u)
+    fe.math.defgrad(v)
 
     fe.math.norm([u.values, u.values])
     fe.math.norm(u.values)

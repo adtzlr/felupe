@@ -222,8 +222,13 @@ def newtonrhapson(
         # solve linear system and update solution
         sig = inspect.signature(solve)
 
+        try:
+            offsets = x.offsets
+        except:
+            offsets = []
+        
         keys = ["x", "dof1", "dof0", "offsets", "ext0", "solver"]
-        values = [x, dof1, dof0, x.offsets, ext0, solver]
+        values = [x, dof1, dof0, offsets, ext0, solver]
 
         for key, value in zip(keys, values):
 

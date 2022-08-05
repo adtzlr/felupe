@@ -264,7 +264,7 @@ class VolumeChange:
             parallel = self.parallel
 
         J = self.function([F])[0]
-        dJdF = self.gradient(F[0])[0]
+        dJdF = self.gradient([F])[0]
         return [(
             dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J]

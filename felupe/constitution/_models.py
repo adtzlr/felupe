@@ -165,12 +165,12 @@ class LinearElastic:
 
         """
         
-        F = extract[0]
 
-        if F is None:
+        if extract is None:
             if region is not None:
                 shape = (len(region.quadrature.points), region.mesh.ncells)
         else:
+            F = extract[0]
             shape = F.shape[-2:]
 
         if E is None:
@@ -298,8 +298,7 @@ class LinearElasticTensorNotation:
             elasticity tensor (3x3x3x3)
 
         """
-        
-        F = extract[0]
+
 
         if E is None:
             E = self.E
@@ -307,11 +306,12 @@ class LinearElasticTensorNotation:
         if nu is None:
             nu = self.nu
 
-        if F is None:
+        if extract is None:
             if region is not None:
                 shape = (len(region.quadrature.points), region.mesh.ncells)
             I = identity(dim=3, shape=shape)
         else:
+            F = extract[0]
             I = identity(F)
 
         # convert to lame constants
@@ -513,7 +513,7 @@ class LinearElasticPlaneStrain:
         if nu is None:
             nu = self.nu
 
-        s = np.pad(self.gradient(F, E=E, nu=nu), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        s = np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))
         s[2, 2] = nu * (s[0, 0] + s[1, 1])
 
         return [s]
@@ -685,7 +685,7 @@ class LinearElasticPlaneStress:
         
         F = extract[0]
         
-        return [np.pad(self.gradient(F, E=E, nu=nu), ((0, 1), (0, 1), (0, 0), (0, 0)))]
+        return [np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))]
 
 
 class NeoHooke:

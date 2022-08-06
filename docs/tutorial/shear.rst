@@ -26,9 +26,7 @@ shear stress as a function of ?
 
 
 Let's create the mesh. An additional center-point is created for a multi-point
-constraint (MPC). By default, FElupe stores points not connected to any cells in
-:attr:`Mesh.points_without_cells` and adds them to the list of inactive
-degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
+constraint (MPC).
 
 ..  code-block:: python
 
@@ -45,7 +43,6 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
     mesh = fe.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
     mesh.points = np.vstack((mesh.points, [0, 2 * H]))
     mesh.update(mesh.cells)
-    mesh.points_without_cells = np.array([], dtype=bool)
 
 .. image:: images/shear_mesh.png
    :width: 400px
@@ -65,7 +62,7 @@ as well as the absolute value of the prescribed shear movement in direction
     displacement = fe.Field(region, dim=2)
     pressure     = fe.Field(region)
     volumeratio  = fe.Field(region, values=1)
-    fields       = fe.FieldMixed((displacement, pressure, volumeratio))
+    fields       = fe.FieldContainer([displacement, pressure, volumeratio])
     
     f0 = lambda y: np.isclose(y, 0)
     f2 = lambda y: np.isclose(y, 2* H)
@@ -76,7 +73,7 @@ as well as the absolute value of the prescribed shear movement in direction
     }
     
     dof0, dof1 = fe.dof.partition(fields, boundaries)
-    ext0 = fe.dof.apply(displacement, boundaries, dof0)
+    ext0 = fe.dof.apply(fields, boundaries, dof0)
 
 
 The micro-sphere material formulation is used for the rubber. It is defined
@@ -87,7 +84,7 @@ install matADi with ``pip install matadi`` first).
 
     import matadi as mat
 
-    umat = fe.MatadiMaterial(
+    umat = mat.ThreeFieldVariationPlaneStrain(
         mat.MaterialHyperelasticPlaneStrain(
             mat.models.miehe_goektepe_lulei, 
             mu=0.1475, 
@@ -132,24 +129,24 @@ of the top plate are saved.
     for move in UX[1:]:
         
         boundaries["control"].value = move
-        ext0 = fe.dof.apply(displacement, boundaries, dof0)
+        ext0 = fe.dof.apply(fields, boundaries, dof0)
     
         for iteration in range(8):
         
-            r_int = fe.IntegralFormMixed(
-                fun=umat.gradient(*fields.extract()),
+            r_int = fe.IntegralForm(
+                fun=umat.gradient(fields.extract()),
                 v=fields,
                 dV=region.dV,
             ).assemble(parallel=True).toarray()
             
-            r_MPC = MPC.residuals(fields[0])
+            r_MPC = MPC.residuals(fields)
             r_MPC.resize(r_int.shape)
             r_MPC = r_MPC.toarray()
         
             r = r_int + r_MPC
             
-            K = fe.IntegralFormMixed(
-                fun=umat.hessian(*fields.extract()),
+            K = fe.IntegralForm(
+                fun=umat.hessian(fields.extract()),
                 v=fields,
                 dV=region.dV,
                 u=fields,
@@ -159,7 +156,7 @@ of the top plate are saved.
             K += K_MPC
         
             system = fe.solve.partition(fields, K, dof1, dof0, r)
-            fields += np.split(fe.solve.solve(*system, ext0), fields.offsets)
+            fields += fe.solve.solve(*system, ext0)
             
             if iteration > 0:
                 

@@ -30,7 +30,7 @@ import numpy as np
 
 
 class FieldContainer:
-    """A container for fields based on a list or tuple of :class:`Field` 
+    """A container for fields based on a list or tuple of :class:`Field`
     instances."""
 
     def __init__(self, fields):
@@ -40,7 +40,7 @@ class FieldContainer:
 
         # get field values
         self.values = tuple(f.values for f in self.fields)
-        
+
         # get sizes of fields and calculate offsets
         self.fieldsizes = [f.indices.dof.size for f in self.fields]
         self.offsets = np.cumsum(self.fieldsizes)[:-1]
@@ -82,6 +82,8 @@ class FieldContainer:
 
     def __add__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field += dfield
@@ -90,6 +92,8 @@ class FieldContainer:
 
     def __sub__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field -= dfield
@@ -98,6 +102,8 @@ class FieldContainer:
 
     def __mul__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field *= dfield
@@ -106,6 +112,8 @@ class FieldContainer:
 
     def __truediv__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field /= dfield
@@ -113,21 +121,29 @@ class FieldContainer:
         return fields
 
     def __iadd__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field += dfield
         return self
 
     def __isub__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field -= dfield
         return self
 
     def __imul__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field *= dfield
         return self
 
     def __itruediv__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field /= dfield
         return self
@@ -136,3 +152,8 @@ class FieldContainer:
         "Slice-based access to underlying fields."
 
         return self.fields[idx]
+
+    def __len__(self):
+        "Number of fields inside the container."
+
+        return len(self.fields)

@@ -92,7 +92,7 @@ class LineChange:
         ndarray
             Gradient of line change
         """
-        
+
         F = extract[0]
 
         if parallel is None:
@@ -136,7 +136,7 @@ class AreaChange:
         ndarray
             Cofactor matrix of the deformation gradient
         """
-        
+
         F = extract[0]
         J = det(F)
 
@@ -257,7 +257,7 @@ class VolumeChange:
         ndarray
             Hessian of the determinant of the deformation gradient
         """
-        
+
         F = extract[0]
 
         if parallel is None:
@@ -265,6 +265,10 @@ class VolumeChange:
 
         J = self.function([F])[0]
         dJdF = self.gradient([F])[0]
-        return [(
-            dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
-        ) / J]
+        return [
+            (
+                dya(dJdF, dJdF, parallel=parallel)
+                - cdya_il(dJdF, dJdF, parallel=parallel)
+            )
+            / J
+        ]

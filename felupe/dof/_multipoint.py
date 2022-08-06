@@ -68,7 +68,9 @@ class MultiPointConstraint:
         c = self.centerpoint
         for t in self.points:
             for d in self.axes:
-                N = self.multiplier * (-field.fields[0].values[t, d] + field.fields[0].values[c, d])
+                N = self.multiplier * (
+                    -field.fields[0].values[t, d] + field.fields[0].values[c, d]
+                )
                 r[t, d] = -N
                 r[c, d] += N
         return sparse.COO(r).reshape((-1, 1)).tocsr()

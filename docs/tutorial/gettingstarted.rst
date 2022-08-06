@@ -65,7 +65,7 @@ In a second step fields may be added to the Region which may be either scalar or
     dudX = displacement.grad()
 
 
-Next, the field is added to a field container. The deformation gradient is obtained by a sum of the identity and the displacement gradient.
+Next, the field is added to a field container, which handles one or several (vector) fields. Like a field, the field container also provides the ``extract(grad=True, add_identity=True, sym=False)`` method, returning a list of interpolated field values or gradients. E.g., the deformation gradient is obtained by a sum of the identity and the displacement gradient.
 
 ..  code-block:: python
 
@@ -106,7 +106,7 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 Boundary Conditions
 ~~~~~~~~~~~~~~~~~~~
 
-Next we enforce boundary conditions on the displacement field. Boundary conditions are stored as a dictionary of multiple boundary instances. First, the left end of the cube is fixed. Displacements on the right end are fixed in directions y and z whereas displacements in direction x are prescribed with a user-defined value. A boundary instance hold useful attributes like ``points`` or ``dof``.
+Next we enforce boundary conditions on the displacement field. Boundaries are stored as a dictionary of multiple boundary instances. First, the left end of the cube is fixed. Displacements on the right end are fixed in directions y and z whereas displacements in direction x are prescribed with a user-defined value. A boundary instance hold useful attributes like ``points`` or ``dof``.
 
 ..  code-block:: python
     
@@ -147,7 +147,7 @@ The integral (or weak) forms of equilibrium equations are defined by the :class:
     bilinearform = felupe.IntegralForm(A(F), field, dV, u=field, grad_v=[True], grad_u=[True])
 
 
-Assembly of both forms lead to the (point-based) internal forces and the (sparse) stiffness matrix.
+The assembly of both forms lead to the (point-based) internal force vector and the (sparse) stiffness matrix.
 
 ..  code-block:: python
 
@@ -183,7 +183,7 @@ The default solver of FElupe is `SuperLU <https://docs.scipy.org/doc/scipy/refer
     # from pypardiso import spsolve
 
     system = felupe.solve.partition(field, K, dof1, dof0, r)
-    dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
+    dfield = felupe.solve.solve(*system, ext0, solver=spsolve)#.reshape(*u.shape)
     # field += dfield
 
 
@@ -201,9 +201,9 @@ A very simple newton-rhapson code looks like this:
         K = bilinearform.assemble()
 
         system = felupe.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(felupe.solve.solve(*system, ext0, solver=spsolve), field.offsets)
+        dfield = felupe.solve.solve(*system, ext0, solver=spsolve)
 
-        norm = np.linalg.norm(dfield[0])
+        norm = np.linalg.norm(dfield)
         print(iteration, norm)
         field += dfield
 

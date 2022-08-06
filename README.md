@@ -55,10 +55,12 @@ All notable changes to this project will be documented in this file. The format 
 - Add `SolidBodyTensor` for tensor-based material definitions with state variables.
 - Add `bodies` argument to `newtonrhapson()`.
 - Add a container class for fields, `FieldContainer` (renamed from `FieldMixed`).
+- Add `len(field)` method for `FieldContainer` (length = number of fields).
 
 ### Changed
 - Unify handling of `Field` and `FieldMixed`.
 - Constitutive models use lists as in- and output (consistency between single- and mixed-formulations).
+- Allow field updates directly from 1d sparse-solved vector without splitted by field-offsets.
 
 ### Fixed
 - Fix `tovoigt()` helper for data with more or less than two trailing axes and 2D tensors.

@@ -282,6 +282,8 @@ def test_newton_mixed():
     p = fe.Field(region0)
     J = fe.Field(region0, values=1)
     field = fe.FieldContainer((u, p, J))
+    
+    assert len(field) == 3
 
     boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
         field, move=0.2, clamped=True

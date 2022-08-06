@@ -97,7 +97,7 @@ The linear equation system may now be solved. First, a partition into active and
 ..  code-block:: python
 
     system = fe.solve.partition(field, K, dof1, dof0)
-    field += np.split(fe.solve.solve(*system, ext0), field.offsets)
+    field += fe.solve.solve(*system, ext0)
 
 Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
 

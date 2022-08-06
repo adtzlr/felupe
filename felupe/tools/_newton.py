@@ -99,11 +99,15 @@ def jac_bodies(bodies, parallel=False, jit=False):
 def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
-    return IntegralFormMixed(
-        fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
-        v=x,
-        dV=x.region.dV,
-    ).assemble(parallel=parallel, jit=jit).toarray()[:, 0]
+    return (
+        IntegralFormMixed(
+            fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
+            v=x,
+            dV=x.region.dV,
+        )
+        .assemble(parallel=parallel, jit=jit)
+        .toarray()[:, 0]
+    )
 
 
 def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
@@ -123,7 +127,7 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
     system = fesolve.partition(x, A, dof1, dof0, -b)
     dx = fesolve.solve(*system, ext0, solver=solver)
 
-    return np.split(dx, offsets)
+    return dx
 
 
 def check(dx, x, f, tol):
@@ -222,13 +226,8 @@ def newtonrhapson(
         # solve linear system and update solution
         sig = inspect.signature(solve)
 
-        try:
-            offsets = x.offsets
-        except:
-            offsets = []
-        
-        keys = ["x", "dof1", "dof0", "offsets", "ext0", "solver"]
-        values = [x, dof1, dof0, offsets, ext0, solver]
+        keys = ["x", "dof1", "dof0", "ext0", "solver"]
+        values = [x, dof1, dof0, ext0, solver]
 
         for key, value in zip(keys, values):
 

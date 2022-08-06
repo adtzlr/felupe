@@ -44,7 +44,7 @@ def save(
 
     u = fields.fields[0]
     mesh = region.mesh
-    
+
     offsets = fields.offsets
 
     if point_data is None:

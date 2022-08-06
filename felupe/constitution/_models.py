@@ -114,7 +114,7 @@ class LinearElastic:
             Stress tensor (3x3)
 
         """
-        
+
         F = extract[0]
 
         if E is None:
@@ -147,7 +147,7 @@ class LinearElastic:
         Arguments
         ---------
         extract : list of ndarray, optional
-            List with Deformation gradient ``F`` (3x3) as first item 
+            List with Deformation gradient ``F`` (3x3) as first item
             (default is None)
         E : float, optional
             Young's modulus (default is None)
@@ -164,7 +164,6 @@ class LinearElastic:
             elasticity tensor (3x3x3x3)
 
         """
-        
 
         if extract is None:
             if region is not None:
@@ -256,7 +255,7 @@ class LinearElasticTensorNotation:
             Stress tensor (3x3)
 
         """
-        
+
         F = extract[0]
 
         if E is None:
@@ -298,7 +297,6 @@ class LinearElasticTensorNotation:
             elasticity tensor (3x3x3x3)
 
         """
-
 
         if E is None:
             E = self.E
@@ -406,7 +404,7 @@ class LinearElasticPlaneStrain:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -433,7 +431,7 @@ class LinearElasticPlaneStrain:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -461,7 +459,7 @@ class LinearElasticPlaneStrain:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -473,7 +471,7 @@ class LinearElasticPlaneStrain:
         e : ndarray
             Strain tensor (3x3)
         """
-        
+
         F = extract[0]
 
         e = np.zeros((3, 3, *F.shape[-2:]))
@@ -491,7 +489,7 @@ class LinearElasticPlaneStrain:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -504,7 +502,7 @@ class LinearElasticPlaneStrain:
             Stress tensor (3x3)
 
         """
-        
+
         F = extract[0]
 
         if E is None:
@@ -544,7 +542,7 @@ class LinearElasticPlaneStress:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -557,9 +555,9 @@ class LinearElasticPlaneStress:
             In-plane components of stress tensor (2x2)
 
         """
-        
+
         F = extract[0]
-        
+
         if E is None:
             E = self.E
 
@@ -581,7 +579,7 @@ class LinearElasticPlaneStress:
         Arguments
         ---------
         extract : list of ndarray, optional
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item (default is None)
         E : float, optional
             Young's  modulus (default is None)
@@ -632,7 +630,7 @@ class LinearElasticPlaneStress:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -644,7 +642,7 @@ class LinearElasticPlaneStress:
         e : ndarray
             Strain tensor (3x3)
         """
-        
+
         F = extract[0]
 
         if E is None:
@@ -669,7 +667,7 @@ class LinearElasticPlaneStress:
         Arguments
         ---------
         extract : list of ndarray
-            List with In-plane components (2x2) of the Deformation gradient 
+            List with In-plane components (2x2) of the Deformation gradient
             ``F``as first item
         E : float, optional
             Young's modulus (default is None)
@@ -682,10 +680,12 @@ class LinearElasticPlaneStress:
             Stress tensor (3x3)
 
         """
-        
+
         F = extract[0]
-        
-        return [np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))]
+
+        return [
+            np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))
+        ]
 
 
 class NeoHooke:
@@ -826,7 +826,7 @@ class NeoHooke:
         bulk : float, optional
             Bulk modulus (default is None)
         """
-        
+
         F = extract[0]
 
         if mu is None:
@@ -855,7 +855,7 @@ class NeoHooke:
         bulk : float, optional
             Bulk modulus (default is None)
         """
-        
+
         F = extract[0]
 
         if mu is None:
@@ -885,7 +885,7 @@ class NeoHooke:
         bulk : float, optional
             Bulk modulus (default is None)
         """
-        
+
         F = extract[0]
 
         if mu is None:

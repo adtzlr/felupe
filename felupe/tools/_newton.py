@@ -123,7 +123,7 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
     system = fesolve.partition(x, A, dof1, dof0, -b)
     dx = fesolve.solve(*system, ext0, solver=solver)
 
-    return np.split(dx, offsets)
+    return dx
 
 
 def check(dx, x, f, tol):
@@ -221,14 +221,9 @@ def newtonrhapson(
 
         # solve linear system and update solution
         sig = inspect.signature(solve)
-
-        try:
-            offsets = x.offsets
-        except:
-            offsets = []
         
-        keys = ["x", "dof1", "dof0", "offsets", "ext0", "solver"]
-        values = [x, dof1, dof0, offsets, ext0, solver]
+        keys = ["x", "dof1", "dof0", "ext0", "solver"]
+        values = [x, dof1, dof0, ext0, solver]
 
         for key, value in zip(keys, values):
 

@@ -201,9 +201,9 @@ A very simple newton-rhapson code looks like this:
         K = bilinearform.assemble()
 
         system = felupe.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(felupe.solve.solve(*system, ext0, solver=spsolve), field.offsets)
+        dfield = felupe.solve.solve(*system, ext0, solver=spsolve)
 
-        norm = np.linalg.norm(dfield[0])
+        norm = np.linalg.norm(dfield)
         print(iteration, norm)
         field += dfield
 

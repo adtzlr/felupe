@@ -81,7 +81,7 @@ The linear equation system may now be solved. First, a partition into active and
 ..  code-block:: python
 
     system = fe.solve.partition(field, stiffness, dof1, dof0, r=-bodyforce)
-    field += np.split(fe.solve.solve(*system), field.offsets)
+    field += fe.solve.solve(*system)
 
     fe.save(region, field, filename="bodyforce.vtk")
 

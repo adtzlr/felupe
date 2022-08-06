@@ -18,15 +18,16 @@ Non-homogenous shear loadcase
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
 rigid plate on their top and bottom faces, are subjected to a displacement 
 controlled non-homogenous shear deformation by :math:`u_{ext}` in combination 
-with a compressive normal force :math:`F`. What is being looked for is the 
-shear stress as a function of ?
+with a compressive normal force :math:`F`.
 
 .. image:: images/shear.svg
    :width: 400px
 
 
 Let's create the mesh. An additional center-point is created for a multi-point
-constraint (MPC).
+constraint (MPC). By default, FElupe stores points not connected to any cells in
+:attr:`Mesh.points_without_cells` and adds them to the list of inactive
+degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 
 ..  code-block:: python
 
@@ -43,6 +44,7 @@ constraint (MPC).
     mesh = fe.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
     mesh.points = np.vstack((mesh.points, [0, 2 * H]))
     mesh.update(mesh.cells)
+    mesh.points_without_cells = np.array([], dtype=bool)
 
 .. image:: images/shear_mesh.png
    :width: 400px
@@ -56,20 +58,15 @@ as well as the absolute value of the prescribed shear movement in direction
 
 ..  code-block:: python
 
-    region  = fe.RegionQuad(mesh)
-    region0 = fe.RegionConstantQuad(mesh)
-    
-    displacement = fe.Field(region, dim=2)
-    pressure     = fe.Field(region)
-    volumeratio  = fe.Field(region, values=1)
-    fields       = fe.FieldContainer([displacement, pressure, volumeratio])
+    region = fe.RegionQuad(mesh)
+    fields = fe.FieldsMixed(region, n=3, values=[0, 0, 1])
     
     f0 = lambda y: np.isclose(y, 0)
     f2 = lambda y: np.isclose(y, 2* H)
     
     boundaries = {
-        "fixed": fe.Boundary(displacement, fy=f0),
-        "control": fe.Boundary(displacement, fy=f2, skip=(0, 1)),
+        "fixed": fe.Boundary(fields[0], fy=f0),
+        "control": fe.Boundary(fields[0], fy=f2, skip=(0, 1)),
     }
     
     dof0, dof1 = fe.dof.partition(fields, boundaries)
@@ -167,7 +164,7 @@ of the top plate are saved.
                 if norm <= 1e-9:
                     break
                 
-        UY.append(displacement.values[MPC.centerpoint, 1])
+        UY.append(fields[0].values[MPC.centerpoint, 1])
         FX.append(r[2 * MPC.centerpoint] * T)
         print("\nReaction Force FX(UX) =", move, FX[-1])
 
@@ -178,7 +175,7 @@ projected to mesh points is exported.
 
     from felupe.math import transpose, dot, eigh
     
-    F = displacement.extract()
+    F = fields[0].extract()
     C = dot(transpose(F), F)
     
     stretches = fe.project(np.sqrt(eigh(C)[0]), region)

@@ -51,9 +51,7 @@ The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
-        field, move=-0.25
-    )
+    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=-0.25)
 
 
 The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
@@ -80,14 +78,14 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
         K+= steel.assemble.matrix()
 
         system = fe.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(fe.solve.solve(*system, ext0), field.offsets)
+        dfield = fe.solve.solve(*system, ext0)
 
         field += dfield
         
         r = rubber.assemble.vector(field_rubber)
         r+= steel.assemble.vector(field_steel)
 
-        norm = fe.math.norm(dfield[0])
+        norm = fe.math.norm(dfield)
         print(iteration, norm)
 
         if norm < 1e-12:

@@ -136,3 +136,8 @@ class FieldContainer:
         "Slice-based access to underlying fields."
 
         return self.fields[idx]
+    
+    def __len__(self):
+        "Number of fields inside the container."
+        
+        return len(self.fields)

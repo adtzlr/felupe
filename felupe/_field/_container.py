@@ -82,6 +82,9 @@ class FieldContainer:
 
     def __add__(self, newvalues):
         fields = deepcopy(self)
+        
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field += dfield
@@ -113,6 +116,10 @@ class FieldContainer:
         return fields
 
     def __iadd__(self, newvalues):
+        
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
+            
         for field, dfield in zip(self.fields, newvalues):
             field += dfield
         return self

@@ -82,7 +82,6 @@ class FieldContainer:
 
     def __add__(self, newvalues):
         fields = deepcopy(self)
-        
         if len(newvalues) != len(self.fields):
             newvalues = np.split(newvalues, self.offsets)
 
@@ -93,6 +92,8 @@ class FieldContainer:
 
     def __sub__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field -= dfield
@@ -101,6 +102,8 @@ class FieldContainer:
 
     def __mul__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field *= dfield
@@ -109,6 +112,8 @@ class FieldContainer:
 
     def __truediv__(self, newvalues):
         fields = deepcopy(self)
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
 
         for field, dfield in zip(fields, newvalues):
             field /= dfield
@@ -116,25 +121,29 @@ class FieldContainer:
         return fields
 
     def __iadd__(self, newvalues):
-        
         if len(newvalues) != len(self.fields):
-            newvalues = np.split(newvalues, self.offsets)
-            
+            newvalues = np.split(newvalues, self.offsets)  
         for field, dfield in zip(self.fields, newvalues):
             field += dfield
         return self
 
     def __isub__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field -= dfield
         return self
 
     def __imul__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field *= dfield
         return self
 
     def __itruediv__(self, newvalues):
+        if len(newvalues) != len(self.fields):
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field /= dfield
         return self

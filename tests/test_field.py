@@ -176,8 +176,15 @@ def test_3d_mixed():
     
     df_1d = np.concatenate([dfi.ravel() for dfi in df])
     
-    f += df
-    f + df
+    f + df_1d
+    f - df_1d
+    f * df_1d
+    f / df_1d
+
+    f += df_1d
+    f -= df_1d
+    f *= df_1d
+    f /= df_1d
 
     v = u.copy()
     g = f.copy()

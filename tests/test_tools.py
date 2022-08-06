@@ -138,8 +138,8 @@ def test_solve_mixed_check():
         gradient=W_mixed.gradient([F, p, J]),
     )
 
-    force = fe.tools.force(fields, b, bounds["symx"])
-    moment = fe.tools.moment(fields, b, bounds["symx"])
+    force = fe.tools.force(f, b, bounds["symx"])
+    moment = fe.tools.moment(f, b, bounds["symx"])
 
     for a in [2, 3, 4, 5]:
         curve = fe.tools.curve(np.arange(a), np.ones(a) * force[0])

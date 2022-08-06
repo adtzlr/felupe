@@ -30,9 +30,9 @@ from .region import (
     RegionLagrange,
 )
 from ._assembly import (
-    #IntegralForm,
+    # IntegralForm,
     IntegralFormMixed as IntegralForm,
-    #IntegralFormAxisymmetric,
+    # IntegralFormAxisymmetric,
     # LinearForm,
     # BilinearForm,
     # LinearFormMixed as LinearForm,
@@ -41,7 +41,7 @@ from ._assembly import (
     Form,
 )
 from ._basis import (
-     BasisMixed as Basis,
+    BasisMixed as Basis,
 )
 from ._field import (
     Field,

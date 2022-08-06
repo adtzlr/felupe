@@ -99,11 +99,15 @@ def jac_bodies(bodies, parallel=False, jit=False):
 def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
-    return IntegralFormMixed(
-        fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
-        v=x,
-        dV=x.region.dV,
-    ).assemble(parallel=parallel, jit=jit).toarray()[:, 0]
+    return (
+        IntegralFormMixed(
+            fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
+            v=x,
+            dV=x.region.dV,
+        )
+        .assemble(parallel=parallel, jit=jit)
+        .toarray()[:, 0]
+    )
 
 
 def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
@@ -221,7 +225,7 @@ def newtonrhapson(
 
         # solve linear system and update solution
         sig = inspect.signature(solve)
-        
+
         keys = ["x", "dof1", "dof0", "ext0", "solver"]
         values = [x, dof1, dof0, ext0, solver]
 

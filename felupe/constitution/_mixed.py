@@ -265,9 +265,9 @@ class ThreeFieldVariation:
             List of gradients w.r.t. the input variables F, p and J
 
         """
-        
+
         F, p, J = extract
-        
+
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
@@ -315,9 +315,9 @@ class ThreeFieldVariation:
             List of hessians in upper triangle order
 
         """
-        
+
         F, p, J = extract
-        
+
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F

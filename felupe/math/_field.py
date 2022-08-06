@@ -43,7 +43,7 @@ def extract(field, grad=True, sym=False, add_identity=True):
 
 def values(field):
     "Return values of a field or a tuple of fields."
-    
+
     return np.concatenate([f.values.ravel() for f in field.fields])
 
 

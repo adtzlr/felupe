@@ -30,7 +30,7 @@ import numpy as np
 
 
 class FieldContainer:
-    """A container for fields based on a list or tuple of :class:`Field` 
+    """A container for fields based on a list or tuple of :class:`Field`
     instances."""
 
     def __init__(self, fields):
@@ -40,7 +40,7 @@ class FieldContainer:
 
         # get field values
         self.values = tuple(f.values for f in self.fields)
-        
+
         # get sizes of fields and calculate offsets
         self.fieldsizes = [f.indices.dof.size for f in self.fields]
         self.offsets = np.cumsum(self.fieldsizes)[:-1]
@@ -122,7 +122,7 @@ class FieldContainer:
 
     def __iadd__(self, newvalues):
         if len(newvalues) != len(self.fields):
-            newvalues = np.split(newvalues, self.offsets)  
+            newvalues = np.split(newvalues, self.offsets)
         for field, dfield in zip(self.fields, newvalues):
             field += dfield
         return self
@@ -152,8 +152,8 @@ class FieldContainer:
         "Slice-based access to underlying fields."
 
         return self.fields[idx]
-    
+
     def __len__(self):
         "Number of fields inside the container."
-        
+
         return len(self.fields)

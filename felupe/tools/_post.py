@@ -33,9 +33,9 @@ from scipy.sparse import issparse
 def force(field, r, boundary, offsets=[]):
     if issparse(r):
         r = r.toarray()
-    return (
-        ((np.split(r, offsets)[0]).reshape(-1, field[0].dim))[boundary.points]
-    ).sum(0)
+    return (((np.split(r, offsets)[0]).reshape(-1, field[0].dim))[boundary.points]).sum(
+        0
+    )
 
 
 def moment(field, r, boundary, point=np.zeros(3), offsets=[]):

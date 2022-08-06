@@ -42,9 +42,9 @@ class SolidBodyPressure:
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
         self.results.pressure = pressure
-        
+
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-        
+
         self._area_change = AreaChange()
 
     def _extract(self, field):
@@ -68,7 +68,7 @@ class SolidBodyPressure:
             self._normals,
             parallel=parallel,
         )
-        
+
         if pressure is not None:
             self.results.pressure = pressure
             fun[0] *= self.results.pressure
@@ -90,17 +90,17 @@ class SolidBodyPressure:
 
             self.update(field)
             self.results.kinematics = self._extract(self.field)
-        
+
         fun = self._area_change.gradient(
             self.results.kinematics,
             self._normals,
             parallel=parallel,
         )
-        
+
         if pressure is not None:
             self.results.pressure = pressure
             fun[0] *= self.results.pressure
-            
+
         self.results.stiffness = IntegralFormMixed(
             fun=fun,
             v=self.field,

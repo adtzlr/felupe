@@ -12,13 +12,17 @@ This How-To demonstrates the usage of multi-point constraints (also called MPC o
     mesh = fe.Cube(n=11)
     mesh.points = np.vstack((mesh.points, [2.0, 0.0, 0.0]))
     mesh.update(mesh.cells)
+    
+    region = felupe.RegionHexahedron(mesh)
+    displacement = felupe.Field(region, dim=3)
+    field = felupe.FieldContainer([displacement])
 
-An instance of :class:`felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`felupe.MultiPointConstraint.stiffness` and :meth:`felupe.MultiPointConstraint.residuals`.
+An instance of :class:`felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`felupe.MultiPointConstraint.assemble.vector` and :meth:`felupe.MultiPointConstraint.assemble.matrix`.
 
 ..  code-block:: python
 
     MPC = fe.MultiPointConstraint(
-        mesh=mesh, 
+        field=field, 
         points=np.arange(mesh.npoints)[mesh.points[:, 0] == 1], 
         centerpoint=mesh.npoints - 1, 
         skip=(0,1,1),
@@ -28,15 +32,12 @@ Finally, add the results of these methods to the internal force vector or the st
 
 ..  code-block:: python
 
-    region = felupe.RegionHexahedron(mesh)
-    displacement = felupe.Field(region, dim=3)
-    field = felupe.FieldContainer([displacement])
     umat = felupe.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
     K = fe.IntegralForm(
         umat.hessian(field.extract()), field, region.dV, field
-    ).assemble() + MPC.stiffness()
+    ).assemble() + MPC.assemble.matrix()
 
     r = fe.IntegralForm(
         umat.gradient(field.extract()), field, region.dV
-    ).assemble() + MPC.residuals(field)
+    ).assemble() + MPC.assemble.vector(field)

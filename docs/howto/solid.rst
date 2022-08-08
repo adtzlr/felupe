@@ -6,7 +6,7 @@ The mechanics submodule contains classes for the generation of solid bodies.
 Solid Body
 ----------
 
-The generation of internal force vectors or stiffness matrices of solid bodies are provided as assembly-methods of a :class:`felupe.SolidBody`. The correct integral form is chosen based on the :class:`felupe.Field`  (default, axisymmetric or mixed).
+The generation of internal force vectors or stiffness matrices of solid bodies are provided as assembly-methods of a :class:`felupe.SolidBody`. The correct integral form is chosen based on the :class:`felupe.Field` inside the :class:`felupe.FieldContainer`.
 
 ..  code-block:: python
 
@@ -41,10 +41,25 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
     s = body.evaluate.cauchy_stress(field)
 
 
+Body Force (Gravity) on a Solid Body
+---------------------------------
+
+The generation of internal force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`felupe.SolidBodyGravity`. The correct integral form is chosen based on the :class:`felupe.Field` inside the :class:`felupe.FieldContainer`. If the internal field is a mixed field, the assembled vectors from the gravity contribution have to be resized to the dimensions of the internal force vector.
+
+
+..  code-block:: python
+    
+    body = fe.SolidBodyGravity(field=field, gravity=[9810, 0, 0], density=7.85e-9)
+    
+    internal_force_gravity = body.assemble.vector(
+        field, parallel=False, jit=False, resize=internal_force
+    )
+
+
 Pressure Boundary on a Solid Body
 ---------------------------------
 
-The generation of internal force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`felupe.SolidBodyPressure`. The correct integral form is chosen based on the :class:`felupe.Field` (default or axisymmetric). If the internal field is a mixed field, the assembled vectors and matrices from the pressure contribution have to be resized to the dimensions of the internal force vector and the stiffness matrix.
+The generation of internal force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`felupe.SolidBodyPressure`. The correct integral form is chosen based on the :class:`felupe.Field` inside the :class:`felupe.FieldContainer`. If the internal field is a mixed field, the assembled vectors and matrices from the pressure contribution have to be resized to the dimensions of the internal force vector and the stiffness matrix.
 
 ..  code-block:: python
     

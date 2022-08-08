@@ -50,6 +50,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `SolidBodyPressure` for body forces acting on a solid body.
+
+### Fixes
+- Fix assembled vectors and results of `SolidBodyPressure` for initially defined pressure values.
+
 ## [4.0.0] - 2022-08-07
 
 ### Added

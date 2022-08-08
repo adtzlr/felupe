@@ -81,52 +81,52 @@ def test_loadcase():
         v = fe.FieldContainer([u[0], deepcopy(u[0])])
 
         ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
-        assert len(ux) == 4
+        assert len(ux) == 2
 
         ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True)
-        assert len(ux) == 4
+        assert len(ux) == 2
         assert "right" in ux[0]
 
         ux = fe.dof.uniaxial(u, right=2.0, move=0.2, clamped=True)
-        assert len(ux) == 4
+        assert len(ux) == 2
         assert "right" in ux[0]
 
         bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=False)
-        assert len(bx) == 4
+        assert len(bx) == 2
 
         bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=True)
-        assert len(bx) == 4
+        assert len(bx) == 2
         assert "right" in bx[0]
 
         bx = fe.dof.biaxial(u, right=2.0, move=0.2, clamped=True)
-        assert len(bx) == 4
+        assert len(bx) == 2
         assert "right" in bx[0]
 
         bx = fe.dof.biaxial(v, right=1.0, move=0.2, clamped=True)
-        assert len(bx) == 4
+        assert len(bx) == 2
         assert "right" in bx[0]
 
         ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=False)
-        assert len(ps) == 4
+        assert len(ps) == 2
 
         ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=True)
-        assert len(ps) == 4
+        assert len(ps) == 2
         assert "right" in ps[0]
 
         ps = fe.dof.planar(u, right=2.0, move=0.2, clamped=True)
-        assert len(ps) == 4
+        assert len(ps) == 2
         assert "right" in ps[0]
 
         ps = fe.dof.planar(v, right=1.0, move=0.2, clamped=True)
-        assert len(ps) == 4
+        assert len(ps) == 2
         assert "right" in ps[0]
 
         sh = fe.dof.shear(u, bottom=0.0, top=1.0, move=0.2, sym=True)
-        assert len(sh) == 4
+        assert len(sh) == 2
         assert "top" in sh[0]
 
         sh = fe.dof.shear(v, bottom=0.0, top=1.0, move=0.2, sym=False)
-        assert len(sh) == 4
+        assert len(sh) == 2
         assert "top" in sh[0]
 
 

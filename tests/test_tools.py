@@ -183,7 +183,7 @@ def test_newton():
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fe.Field(region, dim=3)
     field = fe.FieldContainer([displacement])
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
@@ -194,12 +194,10 @@ def test_newton():
         res = fe.newtonrhapson(
             field,
             umat=umat,
-            dof1=dof1,
-            dof0=dof0,
-            ext0=ext0,
             timing=True,
             verbose=True,
             kwargs=kwargs,
+            **loadcase,
         )
 
 
@@ -211,7 +209,7 @@ def test_newton_plane():
     # add a displacement field and apply a uniaxial elongation on the rectangle
     displacement = fe.Field(region, dim=2)
     field = fe.FieldContainer([displacement])
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     umat = fe.LinearElasticPlaneStress(E=1.0, nu=0.3)
@@ -220,12 +218,10 @@ def test_newton_plane():
     res = fe.newtonrhapson(
         field,
         umat=umat,
-        dof1=dof1,
-        dof0=dof0,
-        ext0=ext0,
         timing=True,
         verbose=True,
         kwargs={},
+        **loadcase,
     )
 
     # define the constitutive material behavior
@@ -235,12 +231,10 @@ def test_newton_plane():
     res = fe.newtonrhapson(
         field,
         umat=umat,
-        dof1=dof1,
-        dof0=dof0,
-        ext0=ext0,
         timing=True,
         verbose=True,
         kwargs={},
+        **loadcase,
     )
 
 
@@ -252,7 +246,7 @@ def test_newton_linearelastic():
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fe.Field(region, dim=3)
     field = fe.FieldContainer([displacement])
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     umat = fe.LinearElastic(E=1.0, nu=0.3)
@@ -261,12 +255,10 @@ def test_newton_linearelastic():
     res = fe.newtonrhapson(
         field,
         umat=umat,
-        dof1=dof1,
-        dof0=dof0,
-        ext0=ext0,
         timing=True,
         verbose=True,
         kwargs={"grad": True, "sym": True, "add_identity": False},
+        **loadcase,
     )
 
 
@@ -285,9 +277,7 @@ def test_newton_mixed():
     
     assert len(field) == 3
 
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
-        field, move=0.2, clamped=True
-    )
+    boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # deformation gradient
     F = field.extract(grad=True, sym=False, add_identity=True)
@@ -298,7 +288,7 @@ def test_newton_mixed():
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        x0=field, umat=umat, kwargs={}, dof1=dof1, dof0=dof0, ext0=ext0
+        x0=field, umat=umat, kwargs={}, **loadcase
     )
 
 
@@ -315,7 +305,7 @@ def test_newton_body():
     J = fe.Field(region0, values=1)
     field = fe.FieldContainer((u, p, J))
 
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
+    boundaries, loadcase = fe.dof.uniaxial(
         field, move=0.2, clamped=True
     )
 
@@ -333,9 +323,7 @@ def test_newton_body():
     res = fe.newtonrhapson(
         items=[body, bodyp],
         kwargs={},
-        dof1=dof1,
-        dof0=dof0,
-        ext0=ext0,
+        **loadcase,
     )
 
 

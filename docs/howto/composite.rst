@@ -85,7 +85,7 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
     
     Solution converged in 6 iterations within 63.52 seconds.
 
-Results and may be exported either for the total region or with stresses for sub-regions only.
+Results may be exported either for the total region or with stresses for sub-regions only.
 
 .. image:: images/composite_total.png
    :width: 600px

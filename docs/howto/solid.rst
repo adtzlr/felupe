@@ -1,7 +1,7 @@
 Solid Mechanics
 ~~~~~~~~~~~~~~~
 
-The mechanics submodule contains classes for the generation of solid bodies.
+The mechanics submodule contains classes for the generation of solid bodies. Solid body objects are supported as items of the Newton-Rhapson procedure.
 
 Solid Body
 ----------

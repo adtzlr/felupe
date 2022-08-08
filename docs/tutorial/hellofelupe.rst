@@ -53,7 +53,7 @@ Inside a Newton-Rhapson procedure, the internal force vector and the tangent sti
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(field, bodies=[body], dof1=dof1, dof0=dof0, ext0=ext0)
+    res = fe.newtonrhapson(field, items=[body], dof1=dof1, dof0=dof0, ext0=ext0)
 
 Results are saved as VTK-files.
     

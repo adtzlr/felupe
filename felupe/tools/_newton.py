@@ -30,6 +30,7 @@ from time import perf_counter
 
 import numpy as np
 from scipy.sparse.linalg import spsolve
+from scipy.sparse import csr_matrix
 
 from ..math import norm
 from .._assembly import IntegralFormMixed
@@ -46,30 +47,27 @@ class Result:
         self.iterations = iterations
 
 
-def fun_items(items, fields=None, x=None, parallel=False, jit=False):
+def fun_items(items, x, parallel=False, jit=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
-    # assemble vector of first body
-    if fields is not None:
-        [field.link(x) for field in fields]
+    # link field of items with global field
+    [item.field.link(x) for item in items]
 
-    field = fields[0] if fields is not None else x
-    vector = items[0].assemble.vector(field=field, **kwargs)
+    # init vector with shape from global field
+    shape = (np.sum(x.fieldsizes), 1)
+    vector = csr_matrix(shape)
 
-    # loop over other items
-    for a, body in enumerate(items[1:]):
-        
-        field = fields[a + 1] if fields is not None else x
+    for body in items:
 
         # assemble vector
-        r = body.assemble.vector(field=field, **kwargs)
+        r = body.assemble.vector(field=body.field, **kwargs)
 
         # check and reshape vector
-        if r.shape != vector.shape:
-            r.resize(*vector.shape)
+        if r.shape != shape:
+            r.resize(*shape)
 
         # add vector
         vector += r
@@ -77,24 +75,24 @@ def fun_items(items, fields=None, x=None, parallel=False, jit=False):
     return vector.toarray()[:, 0]
 
 
-def jac_items(items, parallel=False, jit=False):
+def jac_items(items, x, parallel=False, jit=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
-    # assemble matrix of first body
-    matrix = items[0].assemble.matrix(**kwargs)
+    # init matrix with shape from global field
+    shape = (np.sum(x.fieldsizes), np.sum(x.fieldsizes))
+    matrix = csr_matrix(shape)
 
-    # loop over other items
-    for body in items[1:]:
+    for body in items:
 
         # assemble matrix
         K = body.assemble.matrix(**kwargs)
 
         # check and reshape matrix
         if K.shape != matrix.shape:
-            K.resize(*matrix.shape)
+            K.resize(*shape)
 
         # add matrix
         matrix += K
@@ -162,7 +160,6 @@ def newtonrhapson(
     tol=np.sqrt(np.finfo(float).eps),
     umat=None,
     items=None,
-    fields=None,
     dof1=None,
     dof0=None,
     ext0=None,
@@ -215,7 +212,7 @@ def newtonrhapson(
 
     # pre-evaluate function at given unknowns "x"
     if items is not None:
-        f = fun_items(items, fields, x, *args, **kwargs)
+        f = fun_items(items, x, *args, **kwargs)
     else:
         f = fun(x, *args, **kwargs)
 
@@ -232,7 +229,7 @@ def newtonrhapson(
 
         # evaluate jacobian at unknowns "x"
         if items is not None:
-            K = jac_items(items, *args, **kwargs)
+            K = jac_items(items, x, *args, **kwargs)
         else:
             K = jac(x, *args, **kwargs)
 
@@ -252,7 +249,7 @@ def newtonrhapson(
 
         # evaluate function at unknowns "x"
         if items is not None:
-            f = fun_items(items, fields, x, *args, **kwargs)
+            f = fun_items(items, x, *args, **kwargs)
         else:
             f = fun(x, *args, **kwargs)
 

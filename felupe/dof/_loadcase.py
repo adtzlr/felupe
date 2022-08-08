@@ -89,7 +89,7 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, ext0
+    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
 def biaxial(field, right=1, move=0.2, clamped=False):
@@ -116,7 +116,7 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, ext0
+    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
 def planar(field, right=1, move=0.2, clamped=False):
@@ -138,7 +138,7 @@ def planar(field, right=1, move=0.2, clamped=False):
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, ext0
+    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
 def shear(field, bottom=0, top=1, move=0.2, sym=True):
@@ -162,4 +162,4 @@ def shear(field, bottom=0, top=1, move=0.2, sym=True):
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
 
-    return bounds, dof0, dof1, ext0
+    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)

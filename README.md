@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Move `MultiPointConstraint` to mechanics module and unify handling with `SolidBody`.
+- Rename `bodies` argument of Newton-Rhapson solver to `items` (now supports MPC).
 
 ### Fixed
 - Fix assembled vectors and results of `SolidBodyPressure` for initially defined pressure values.

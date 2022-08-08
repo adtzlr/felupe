@@ -11,7 +11,6 @@ This section demonstrates how to set up a problem with two regions, each associa
     n = 16
     mesh = fe.Cube(n=n)
     region = fe.RegionHexahedron(mesh)
-    field = fe.FieldsMixed(region, n=1)
 
 
 In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated.
@@ -40,12 +39,17 @@ In a second step, sub-sets for points and cells are created from which two sub-r
     region_steel = fe.RegionHexahedron(mesh_steel)
     field_steel = fe.FieldsMixed(region_steel, n=1)
 
+This is followed by the creation of a global (mixed) field. Note that is approach is only valid for a simulation model with one body formulated on mixed fields.
 
+..  code-block:: python
+    
+    field = fe.FieldContainer([fe.Field(region, dim=3), *field_rubber[1:]])
+    
 The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    boundaries, loadcase = fe.dof.uniaxial(field, move=-0.25)
+    boundaries, loadcase = fe.dof.uniaxial(field, move=-0.1)
 
 
 The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
@@ -72,14 +76,14 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
     
     | # |  norm(dx) |
     |---|-----------|
-    | 1 | 9.651e+00 |
-    | 2 | 9.227e-02 |
-    | 3 | 1.224e-02 |
-    | 4 | 3.778e-04 |
-    | 5 | 4.705e-07 |
-    | 6 | 9.387e-13 |
+    | 1 | 9.075e+01 |
+    | 2 | 1.370e+01 |
+    | 3 | 6.998e-01 |
+    | 4 | 1.105e-02 |
+    | 5 | 1.658e-06 |
+    | 6 | 5.446e-13 |
     
-    Solution converged in 6 iterations within 17.61 seconds.
+    Solution converged in 6 iterations within 63.52 seconds.
 
 Results and may be exported either for the total region or with stresses for sub-regions only.
 
@@ -91,7 +95,7 @@ Results and may be exported either for the total region or with stresses for sub
     s = rubber.evaluate.cauchy_stress()
     cauchy_stress = fe.project(fe.math.tovoigt(s), region_rubber)
     
-    fe.save(region, field, filename="result.vtk")
+    fe.save(region, res.x, filename="result.vtk")
 
     fe.save(region_rubber, field_rubber,
         filename="result_rubber.vtk", 

@@ -11,11 +11,10 @@ This section demonstrates how to set up a problem with two regions, each associa
     n = 16
     mesh = fe.Cube(n=n)
     region = fe.RegionHexahedron(mesh)
-    displacement = fe.Field(region, dim=3)
-    field = fe.FieldContainer([displacement])
+    field = fe.FieldsMixed(region, n=1)
 
 
-In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated. All field values are linked, that means they share their values array.
+In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated.
     
 ..  code-block:: python
 
@@ -36,15 +35,10 @@ In a second step, sub-sets for points and cells are created from which two sub-r
     mesh_steel.update(mesh_steel.cells[cells])
     
     region_rubber = fe.RegionHexahedron(mesh_rubber)
-    displacement_rubber = fe.Field(region_rubber, dim=3)
-    field_rubber = fe.FieldContainer([displacement_rubber])
+    field_rubber = fe.FieldsMixed(region_rubber, n=3)
 
     region_steel = fe.RegionHexahedron(mesh_steel)
-    displacement_steel = fe.Field(region_steel, dim=3)
-    field_steel = fe.FieldContainer([displacement_steel])
-
-    # link fields
-    displacement_steel.values = displacement_rubber.values = displacement.values
+    field_steel = fe.FieldsMixed(region_steel, n=1)
 
 
 The displacement boundaries are created on the total field.
@@ -58,51 +52,34 @@ The rubber is associated to a Neo-Hookean material formulation whereas the steel
 
 ..  code-block:: python
 
-    neohooke = fe.NeoHooke(mu=1.0, bulk=2.0)
+    neohooke = fe.ThreeFieldVariation(fe.NeoHooke(mu=1.0, bulk=5000.0))
     linearelastic = fe.LinearElastic(E=210000.0, nu=0.3)
-
+    
     rubber = fe.SolidBody(neohooke, field_rubber)
     steel = fe.SolidBody(linearelastic, field_steel)
 
 
-Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both solid bodies.
+Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both solid bodies. All field values are linked, that means they share their values array.
 
 ..  code-block:: python
 
-    r = rubber.assemble.vector()
-    r+= steel.assemble.vector()
-    
-    dof1 = loadcase["dof1"]
-    dof0 = loadcase["dof0"]
-    ext0 = loadcase["ext0"]
-
-    for iteration in range(8):
-
-        K = rubber.assemble.matrix()
-        K+= steel.assemble.matrix()
-
-        system = fe.solve.partition(field, K, dof1, dof0, r)
-        dfield = fe.solve.solve(*system, ext0)
-
-        field += dfield
-        
-        r = rubber.assemble.vector(field_rubber)
-        r+= steel.assemble.vector(field_steel)
-
-        norm = fe.math.norm(dfield)
-        print(iteration, norm)
-
-        if norm < 1e-12:
-            break
+    res = fe.newtonrhapson(field, items=[rubber, steel], **loadcase)
 
 ..  code-block:: shell
 
-    0 9.636630560459622
-    1 0.3116645161396399
-    2 0.005354041194053836
-    3 2.825485818694591e-05
-    4 1.0857485921106448e-09
-    5 9.016379080063146e-16
+    Newton-Rhapson solver
+    =====================
+    
+    | # |  norm(dx) |
+    |---|-----------|
+    | 1 | 9.651e+00 |
+    | 2 | 9.227e-02 |
+    | 3 | 1.224e-02 |
+    | 4 | 3.778e-04 |
+    | 5 | 4.705e-07 |
+    | 6 | 9.387e-13 |
+    
+    Solution converged in 6 iterations within 17.61 seconds.
 
 Results and may be exported either for the total region or with stresses for sub-regions only.
 

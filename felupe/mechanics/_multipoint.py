@@ -47,7 +47,7 @@ class MultiPointConstraint:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
     
-    def _vector(self, field=None):
+    def _vector(self, field=None, parallel=False, jit=False):
         "Calculate vector of residuals with RBE2 contributions."
         if field is not None:
             self.field = field
@@ -62,7 +62,7 @@ class MultiPointConstraint:
         self.results.force = sparse.COO(r).reshape((-1, 1)).tocsr()
         return self.results.force
 
-    def _matrix(self, field=None):
+    def _matrix(self, field=None, parallel=False, jit=False):
         "Calculate stiffness with RBE2 contributions."
         if field is not None:
             self.field = field

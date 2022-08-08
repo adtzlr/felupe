@@ -51,7 +51,7 @@ The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=-0.25)
+    boundaries, loadcase = fe.dof.uniaxial(field, move=-0.25)
 
 
 The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
@@ -71,6 +71,10 @@ Inside the Newton-Rhapson iterations both the internal force vector and the tang
 
     r = rubber.assemble.vector()
     r+= steel.assemble.vector()
+    
+    dof1 = loadcase["dof1"]
+    dof0 = loadcase["dof0"]
+    ext0 = loadcase["ext0"]
 
     for iteration in range(8):
 

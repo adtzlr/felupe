@@ -64,7 +64,7 @@ A numeric quad-region created on the mesh in combination with a vector-valued di
     displacement = fe.Field(region, dim=2)
     field = fe.FieldContainer([displacement])
 
-    boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(
+    boundaries, loadcase = fe.dof.uniaxial(
         field, move=0.001, right=L, clamped=False
     )
 
@@ -95,6 +95,10 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 The linear equation system may now be solved. First, a partition into active and inactive degrees of freedom is performed. This partitioned system is then passed to the solver. The resulting displacements are directly added to the displacement field.
 
 ..  code-block:: python
+
+    dof1 = loadcase["dof1"]
+    dof0 = loadcase["dof0"]
+    ext0 = loadcase["ext0"]
 
     system = fe.solve.partition(field, K, dof1, dof0)
     field += fe.solve.solve(*system, ext0)

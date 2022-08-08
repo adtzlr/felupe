@@ -46,26 +46,23 @@ class Result:
         self.iterations = iterations
 
 
-def fun_items(items, fields=None, x=None, parallel=False, jit=False):
+def fun_items(items, x=None, parallel=False, jit=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
-    # assemble vector of first body
-    if fields is not None:
-        [field.link(x) for field in fields]
+    # link field of items with global field
+    [item.field.link(x) for item in items]
 
-    field = fields[0] if fields is not None else x
-    vector = items[0].assemble.vector(field=field, **kwargs)
+    # assemble vector of first item (with reference shape)
+    vector = items[0].assemble.vector(field=items[0].field, **kwargs)
 
     # loop over other items
     for a, body in enumerate(items[1:]):
-        
-        field = fields[a + 1] if fields is not None else x
 
         # assemble vector
-        r = body.assemble.vector(field=field, **kwargs)
+        r = body.assemble.vector(field=body.field, **kwargs)
 
         # check and reshape vector
         if r.shape != vector.shape:
@@ -162,7 +159,6 @@ def newtonrhapson(
     tol=np.sqrt(np.finfo(float).eps),
     umat=None,
     items=None,
-    fields=None,
     dof1=None,
     dof0=None,
     ext0=None,
@@ -215,7 +211,7 @@ def newtonrhapson(
 
     # pre-evaluate function at given unknowns "x"
     if items is not None:
-        f = fun_items(items, fields, x, *args, **kwargs)
+        f = fun_items(items, x, *args, **kwargs)
     else:
         f = fun(x, *args, **kwargs)
 
@@ -252,7 +248,7 @@ def newtonrhapson(
 
         # evaluate function at unknowns "x"
         if items is not None:
-            f = fun_items(items, fields, x, *args, **kwargs)
+            f = fun_items(items, x, *args, **kwargs)
         else:
             f = fun(x, *args, **kwargs)
 

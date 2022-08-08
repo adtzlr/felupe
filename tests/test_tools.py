@@ -373,4 +373,4 @@ if __name__ == "__main__":
     test_newton_plane()
     test_newton_linearelastic()
     test_newton_body()
-    test_newton_body_field()
+    # test_newton_body_field()

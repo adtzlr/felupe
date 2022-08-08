@@ -50,14 +50,6 @@ from ._field import (
     FieldsMixed,
 )
 from .dof import Boundary
-
-try:
-    from .dof import (
-        MultiPointConstraint,
-        MultiPointContact,
-    )
-except:
-    pass
 from .element import (
     Line,
     #
@@ -112,6 +104,13 @@ from .mechanics import (
     SolidBodyTensor,
     SolidBodyGravity,
 )
+try:
+    from .mechanics import (
+        MultiPointConstraint,
+        MultiPointContact,
+    )
+except:
+    pass
 
 __all__ = [
     "__version__",

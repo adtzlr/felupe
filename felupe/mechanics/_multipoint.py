@@ -26,24 +26,46 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-
 import sparse
+
+from ._helpers import Assemble, Results
 
 
 class MultiPointConstraint:
     def __init__(
-        self, mesh, points, centerpoint, skip=(False, False, False), multiplier=1e3
+        self, field, points, centerpoint, skip=(False, False, False), multiplier=1e3
     ):
         "RBE2 Multi-point-constraint."
-        self.mesh = mesh
+        self.field = field
+        self.mesh = field.region.mesh
         self.points = points
         self.centerpoint = centerpoint
-        self.mask = ~np.array(skip, dtype=bool)[: mesh.dim]
-        self.axes = np.arange(mesh.dim)[self.mask]
+        self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
+        self.axes = np.arange(self.mesh.dim)[self.mask]
         self.multiplier = multiplier
+        
+        self.results = Results(stress=False, elasticity=False)
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+    
+    def _vector(self, field=None, parallel=False, jit=False):
+        "Calculate vector of residuals with RBE2 contributions."
+        if field is not None:
+            self.field = field
+        f = self.field.fields[0]
+        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
+        c = self.centerpoint
+        for t in self.points:
+            for d in self.axes:
+                N = self.multiplier * (-f.values[t, d] + f.values[c, d])
+                r[t, d] = -N
+                r[c, d] += N
+        self.results.force = sparse.COO(r).reshape((-1, 1)).tocsr()
+        return self.results.force
 
-    def stiffness(self, field=None):
+    def _matrix(self, field=None, parallel=False, jit=False):
         "Calculate stiffness with RBE2 contributions."
+        if field is not None:
+            self.field = field
         L = sparse.DOK(
             shape=(self.mesh.npoints, self.mesh.dim, self.mesh.npoints, self.mesh.dim)
         )
@@ -54,42 +76,58 @@ class MultiPointConstraint:
                 L[t, d, c, d] = -self.multiplier
                 L[c, d, t, d] = -self.multiplier
                 L[c, d, c, d] += self.multiplier
-        return (
+        self.results.stiffness = (
             sparse.COO(L)
             .reshape(
                 (self.mesh.npoints * self.mesh.dim, self.mesh.npoints * self.mesh.dim)
             )
             .tocsr()
         )
-
-    def residuals(self, field):
-        "Calculate vector of residuals with RBE2 contributions."
-        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
-        c = self.centerpoint
-        for t in self.points:
-            for d in self.axes:
-                N = self.multiplier * (
-                    -field.fields[0].values[t, d] + field.fields[0].values[c, d]
-                )
-                r[t, d] = -N
-                r[c, d] += N
-        return sparse.COO(r).reshape((-1, 1)).tocsr()
+        return self.results.stiffness
 
 
 class MultiPointContact:
     def __init__(
-        self, mesh, points, centerpoint, skip=(False, False, False), multiplier=1e6
+        self, field, points, centerpoint, skip=(False, False, False), multiplier=1e6
     ):
         "RBE2 Multi-point-bolt-constraint."
-        self.mesh = mesh
+        self.field = field
+        self.mesh = field.region.mesh
         self.points = points
         self.centerpoint = centerpoint
-        self.mask = ~np.array(skip, dtype=bool)[: mesh.dim]
-        self.axes = np.arange(mesh.dim)[self.mask]
+        self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
+        self.axes = np.arange(self.mesh.dim)[self.mask]
         self.multiplier = multiplier
+        
+        self.results = Results(stress=False, elasticity=False)
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
-    def stiffness(self, field):
+    def _vector(self, field=None):
+        "Calculate vector of residuals with RBE2 contributions."
+        if field is not None:
+            self.field = field
+        f = self.field.fields[0]
+        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
+        c = self.centerpoint
+        for t in self.points:
+            for d in self.axes:
+                Xc = self.mesh.points[c, d]
+                Xt = self.mesh.points[t, d]
+                xc = f.values[c, d] + Xc
+                xt = f.values[t, d] + Xt
+                if np.sign(-Xt + Xc) != np.sign(-xt + xc):
+                    n = -xt + xc
+                    r[t, d] = -self.multiplier * n
+                    r[c, d] += self.multiplier * n
+        self.results.force = sparse.COO(r).reshape((-1, 1)).tocsr()
+        return self.results.force
+
+
+    def _matrix(self, field=None):
         "Calculate stiffness with RBE2 contributions."
+        if field is not None:
+            self.field = field
+        f = self.field.fields[0]
         L = sparse.DOK(
             shape=(self.mesh.npoints, self.mesh.dim, self.mesh.npoints, self.mesh.dim)
         )
@@ -98,8 +136,8 @@ class MultiPointContact:
             for d in self.axes:
                 Xc = self.mesh.points[c, d]
                 Xt = self.mesh.points[t, d]
-                xc = field.fields[0].values[c, d] + Xc
-                xt = field.fields[0].values[t, d] + Xt
+                xc = f.values[c, d] + Xc
+                xt = f.values[t, d] + Xt
                 # n = 0
                 if np.sign(-Xt + Xc) != np.sign(-xt + xc):
                     # n = -xt + xc
@@ -107,26 +145,11 @@ class MultiPointContact:
                     L[t, d, c, d] = -self.multiplier
                     L[c, d, t, d] = -self.multiplier
                     L[c, d, c, d] += self.multiplier
-        return (
+        self.results.stiffness = (
             sparse.COO(L)
             .reshape(
                 (self.mesh.npoints * self.mesh.dim, self.mesh.npoints * self.mesh.dim)
             )
             .tocsr()
         )
-
-    def residuals(self, field):
-        "Calculate vector of residuals with RBE2 contributions."
-        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
-        c = self.centerpoint
-        for t in self.points:
-            for d in self.axes:
-                Xc = self.mesh.points[c, d]
-                Xt = self.mesh.points[t, d]
-                xc = field.fields[0].values[c, d] + Xc
-                xt = field.fields[0].values[t, d] + Xt
-                if np.sign(-Xt + Xc) != np.sign(-xt + xc):
-                    n = -xt + xc
-                    r[t, d] = -self.multiplier * n
-                    r[c, d] += self.multiplier * n
-        return sparse.COO(r).reshape((-1, 1)).tocsr()
+        return self.results.stiffness

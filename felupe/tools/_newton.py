@@ -46,17 +46,17 @@ class Result:
         self.iterations = iterations
 
 
-def fun_bodies(bodies, x=None, parallel=False, jit=False):
+def fun_items(items, x=None, parallel=False, jit=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
     # assemble vector of first body
-    vector = bodies[0].assemble.vector(field=x, **kwargs)
+    vector = items[0].assemble.vector(field=x, **kwargs)
 
-    # loop over other bodies
-    for body in bodies[1:]:
+    # loop over other items
+    for body in items[1:]:
 
         # assemble vector
         r = body.assemble.vector(field=x, **kwargs)
@@ -71,17 +71,17 @@ def fun_bodies(bodies, x=None, parallel=False, jit=False):
     return vector.toarray()[:, 0]
 
 
-def jac_bodies(bodies, parallel=False, jit=False):
+def jac_items(items, parallel=False, jit=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
     # assemble matrix of first body
-    matrix = bodies[0].assemble.matrix(**kwargs)
+    matrix = items[0].assemble.matrix(**kwargs)
 
-    # loop over other bodies
-    for body in bodies[1:]:
+    # loop over other items
+    for body in items[1:]:
 
         # assemble matrix
         K = body.assemble.matrix(**kwargs)
@@ -149,7 +149,7 @@ def newtonrhapson(
     kwargs_check={},
     tol=np.sqrt(np.finfo(float).eps),
     umat=None,
-    bodies=None,
+    items=None,
     dof1=None,
     dof0=None,
     ext0=None,
@@ -195,14 +195,14 @@ def newtonrhapson(
         x = x0
     else:
         # copy field of body
-        x = bodies[0].field
+        x = items[0].field
 
     if umat is not None:
         kwargs["umat"] = umat
 
     # pre-evaluate function at given unknowns "x"
-    if bodies is not None:
-        f = fun_bodies(bodies, x, *args, **kwargs)
+    if items is not None:
+        f = fun_items(items, x, *args, **kwargs)
     else:
         f = fun(x, *args, **kwargs)
 
@@ -218,8 +218,8 @@ def newtonrhapson(
     for iteration in range(maxiter):
 
         # evaluate jacobian at unknowns "x"
-        if bodies is not None:
-            K = jac_bodies(bodies, *args, **kwargs)
+        if items is not None:
+            K = jac_items(items, *args, **kwargs)
         else:
             K = jac(x, *args, **kwargs)
 
@@ -238,8 +238,8 @@ def newtonrhapson(
         x = update(x, dx)
 
         # evaluate function at unknowns "x"
-        if bodies is not None:
-            f = fun_bodies(bodies, x, *args, **kwargs)
+        if items is not None:
+            f = fun_items(items, x, *args, **kwargs)
         else:
             f = fun(x, *args, **kwargs)
 

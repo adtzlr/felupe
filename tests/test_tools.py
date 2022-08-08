@@ -331,7 +331,7 @@ def test_newton_body():
 
     # newton-rhapson procedure
     res = fe.newtonrhapson(
-        bodies=[body, bodyp],
+        items=[body, bodyp],
         kwargs={},
         dof1=dof1,
         dof0=dof0,

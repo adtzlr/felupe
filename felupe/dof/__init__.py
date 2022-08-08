@@ -6,11 +6,3 @@ from ._tools import (
     apply,
 )
 from ._loadcase import symmetry, uniaxial, biaxial, planar, shear
-
-try:
-    from ._multipoint import (
-        MultiPointConstraint,
-        MultiPointContact,
-    )
-except:
-    pass

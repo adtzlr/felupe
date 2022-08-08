@@ -43,7 +43,8 @@ This is followed by the creation of a global (mixed) field. Note that is approac
 
 ..  code-block:: python
     
-    field = fe.FieldContainer([fe.Field(region, dim=3), *field_rubber[1:]])
+    pressure, volumeratio = field_rubber[1:]
+    field = fe.FieldContainer([fe.Field(region, dim=3), pressure, volumeratio])
     
 The displacement boundaries are created on the total field.
 

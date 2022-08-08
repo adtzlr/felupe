@@ -142,8 +142,8 @@ def check(dx, x, f, tol):
 
 
 def update(x, dx):
-    "Update in-place."
-    #x += dx
+    "Update field."
+    #x += dx # in-place
     return x + dx
 
 

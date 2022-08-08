@@ -46,20 +46,26 @@ class Result:
         self.iterations = iterations
 
 
-def fun_items(items, x=None, parallel=False, jit=False):
+def fun_items(items, fields=None, x=None, parallel=False, jit=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
     # assemble vector of first body
-    vector = items[0].assemble.vector(field=x, **kwargs)
+    if fields is not None:
+        [field.link(x) for field in fields]
+
+    field = fields[0] if fields is not None else x
+    vector = items[0].assemble.vector(field=field, **kwargs)
 
     # loop over other items
-    for body in items[1:]:
+    for a, body in enumerate(items[1:]):
+        
+        field = fields[a + 1] if fields is not None else x
 
         # assemble vector
-        r = body.assemble.vector(field=x, **kwargs)
+        r = body.assemble.vector(field=field, **kwargs)
 
         # check and reshape vector
         if r.shape != vector.shape:
@@ -135,13 +141,19 @@ def check(dx, x, f, tol):
     return np.sum(norm(dx)), np.all(norm(dx) < tol)
 
 
+def update(x, dx):
+    "Update field."
+    #x += dx # in-place
+    return x + dx
+
+
 def newtonrhapson(
     x0=None,
     fun=fun,
     jac=jac,
     solve=solve,
     maxiter=16,
-    update=lambda x, dx: x + dx,
+    update=update,
     check=check,
     args=(),
     kwargs={},
@@ -150,6 +162,7 @@ def newtonrhapson(
     tol=np.sqrt(np.finfo(float).eps),
     umat=None,
     items=None,
+    fields=None,
     dof1=None,
     dof0=None,
     ext0=None,
@@ -194,7 +207,7 @@ def newtonrhapson(
         # copy x0
         x = x0
     else:
-        # copy field of body
+        # obtain field of first body
         x = items[0].field
 
     if umat is not None:
@@ -202,7 +215,7 @@ def newtonrhapson(
 
     # pre-evaluate function at given unknowns "x"
     if items is not None:
-        f = fun_items(items, x, *args, **kwargs)
+        f = fun_items(items, fields, x, *args, **kwargs)
     else:
         f = fun(x, *args, **kwargs)
 
@@ -239,7 +252,7 @@ def newtonrhapson(
 
         # evaluate function at unknowns "x"
         if items is not None:
-            f = fun_items(items, x, *args, **kwargs)
+            f = fun_items(items, fields, x, *args, **kwargs)
         else:
             f = fun(x, *args, **kwargs)
 

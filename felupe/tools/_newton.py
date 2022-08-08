@@ -30,6 +30,7 @@ from time import perf_counter
 
 import numpy as np
 from scipy.sparse.linalg import spsolve
+from scipy.sparse import csr_matrix
 
 from ..math import norm
 from .._assembly import IntegralFormMixed
@@ -46,7 +47,7 @@ class Result:
         self.iterations = iterations
 
 
-def fun_items(items, x=None, parallel=False, jit=False):
+def fun_items(items, x, parallel=False, jit=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     # init keyword arguments
@@ -55,18 +56,18 @@ def fun_items(items, x=None, parallel=False, jit=False):
     # link field of items with global field
     [item.field.link(x) for item in items]
 
-    # assemble vector of first item (with reference shape)
-    vector = items[0].assemble.vector(field=items[0].field, **kwargs)
+    # init vector with shape from global field
+    shape = (np.sum(x.fieldsizes), 1)
+    vector = csr_matrix(shape)
 
-    # loop over other items
-    for a, body in enumerate(items[1:]):
+    for body in items:
 
         # assemble vector
         r = body.assemble.vector(field=body.field, **kwargs)
 
         # check and reshape vector
-        if r.shape != vector.shape:
-            r.resize(*vector.shape)
+        if r.shape != shape:
+            r.resize(*shape)
 
         # add vector
         vector += r
@@ -74,24 +75,24 @@ def fun_items(items, x=None, parallel=False, jit=False):
     return vector.toarray()[:, 0]
 
 
-def jac_items(items, parallel=False, jit=False):
+def jac_items(items, x, parallel=False, jit=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     # init keyword arguments
     kwargs = {"parallel": parallel, "jit": jit}
 
-    # assemble matrix of first body
-    matrix = items[0].assemble.matrix(**kwargs)
+    # init matrix with shape from global field
+    shape = (np.sum(x.fieldsizes), np.sum(x.fieldsizes))
+    matrix = csr_matrix(shape)
 
-    # loop over other items
-    for body in items[1:]:
+    for body in items:
 
         # assemble matrix
         K = body.assemble.matrix(**kwargs)
 
         # check and reshape matrix
         if K.shape != matrix.shape:
-            K.resize(*matrix.shape)
+            K.resize(*shape)
 
         # add matrix
         matrix += K
@@ -228,7 +229,7 @@ def newtonrhapson(
 
         # evaluate jacobian at unknowns "x"
         if items is not None:
-            K = jac_items(items, *args, **kwargs)
+            K = jac_items(items, x, *args, **kwargs)
         else:
             K = jac(x, *args, **kwargs)
 

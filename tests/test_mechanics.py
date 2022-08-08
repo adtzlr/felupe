@@ -255,6 +255,8 @@ def test_solidbody_mixed():
     umat, u = pre_mixed(dim=3)
     b = fe.SolidBody(umat=umat, field=u)
     g = fe.SolidBodyGravity(field=u, gravity=[9810, 0, 0], density=7.85e-9)
+    
+    g.assemble.vector()
 
     for parallel in [False, True]:
         for jit in [False, True]:
@@ -300,17 +302,17 @@ def test_solidbody_mixed():
             t2 = b.evaluate.kirchhoff_stress(u)
             assert np.allclose(t1, t2)
             
-            rg1 = b.assemble.vector(u, **kwargs)
+            rg1 = g.assemble.vector(u, **kwargs)
             assert rg1.shape == (97, 1)
             
-            Kg1 = b.assemble.matrix(u, **kwargs)
+            Kg1 = g.assemble.matrix(u, **kwargs)
             assert Kg1.shape == (97, 97)
        
-            rg2 = b.assemble.vector(**kwargs)
+            rg2 = g.assemble.vector(**kwargs)
             assert rg1.shape == (97, 1)
             assert np.allclose(rg1.toarray(), rg2.toarray())
             
-            Kg2 = b.assemble.matrix(**kwargs)
+            Kg2 = g.assemble.matrix(**kwargs)
             assert Kg1.shape == (97, 97)
             assert np.allclose(Kg1.toarray(), Kg2.toarray())
             

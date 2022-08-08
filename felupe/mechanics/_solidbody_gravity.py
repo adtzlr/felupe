@@ -46,26 +46,30 @@ class SolidBodyGravity:
         self.results.density = density
 
     def _vector(
-        self, field=None, parallel=False, jit=False, resize=None
+        self, field=None, parallel=False, jit=False
     ):
 
         if field is not None:
             self.field = field
         
+        # copy and take only the first (displacement) field of the container
+        f = self.field.copy()
+        f.fields = f.fields[0: 1]
+            
         self.results.force = self._form(
             fun=[self.results.density * self.results.gravity.reshape(-1, 1, 1)],
-            v=self.field,
+            v=f, 
             dV=self.field.region.dV,
             grad_v=[False],
         ).assemble(parallel=parallel, jit=jit)
         
-        if resize is not None:
-            self.results.force.resize(*resize.shape)
+        if len(self.field) > 1:
+            self.results.force.resize(np.sum(self.field.fieldsizes), 1)
 
         return self.results.force
 
     def _matrix(
-        self, field=None, parallel=False, jit=False, resize=None
+        self, field=None, parallel=False, jit=False
     ):
         
         from scipy.sparse import csr_matrix
@@ -73,9 +77,7 @@ class SolidBodyGravity:
         if field is not None:
             self.field = field
 
-        self.results.stiffness = csr_matrix(([0], ([0], [0])))
-        
-        if resize is not None:
-            self.results.stiffness.resize(*resize.shape)
+        n = np.sum(self.field.fieldsizes)
+        self.results.stiffness = csr_matrix(([0], ([0], [0])), shape=(n, n))
 
         return self.results.stiffness

@@ -34,7 +34,7 @@ umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 solid = fe.SolidBody(umat, field)
 
 # newton-rhapson procedure
-res = fe.newtonrhapson(bodies=[solid], **loadcase)
+res = fe.newtonrhapson(items=[solid], **loadcase)
 
 # save result
 fe.save(region, res.x, filename="result.vtk")

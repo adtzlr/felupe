@@ -56,13 +56,18 @@ from ..mesh import Mesh
 class RegionConstantQuad(Region):
     "A region with a constant quad element."
 
-    def __init__(self, mesh):
+    def __init__(self, mesh, offset=0, npoints=None):
 
         element = ConstantQuad()
         quadrature = GaussLegendre(order=1, dim=2)
+        
+        if npoints is not None:
+            npts = npoints
+        else:
+            npts = offset + mesh.ncells
 
-        points = np.zeros((mesh.ncells, mesh.dim), dtype=int)
-        cells = np.arange(mesh.ncells).reshape(-1, 1)
+        points = np.zeros((npts, mesh.dim), dtype=int)
+        cells = offset + np.arange(mesh.ncells).reshape(-1, 1)
         m = Mesh(points, cells, mesh.cell_type)
 
         super().__init__(m, element, quadrature, grad=False)
@@ -100,13 +105,20 @@ class RegionQuadBoundary(RegionBoundary):
 class RegionConstantHexahedron(Region):
     "A region with a constant hexahedron element."
 
-    def __init__(self, mesh):
+    def __init__(self, mesh, offset=0, npoints=None):
 
         element = ConstantHexahedron()
         quadrature = GaussLegendre(order=1, dim=3)
+        
+        if npoints is not None:
+            npts = npoints
+            ncells = min(npoints, mesh.ncells)
+        else:
+            npts = offset + mesh.ncells
+            ncells = mesh.ncells
 
-        points = np.zeros((mesh.ncells, mesh.dim), dtype=int)
-        cells = np.arange(mesh.ncells).reshape(-1, 1)
+        points = np.zeros((npts, mesh.dim), dtype=int)
+        cells = offset + np.arange(ncells).reshape(-1, 1)
         m = Mesh(points, cells, mesh.cell_type)
 
         super().__init__(m, element, quadrature, grad=False)

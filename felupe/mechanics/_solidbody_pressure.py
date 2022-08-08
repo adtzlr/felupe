@@ -41,7 +41,11 @@ class SolidBodyPressure:
 
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
-        self.results.pressure = pressure
+        
+        if pressure is not None:
+            self.results.pressure = pressure
+        else:
+            self.results.pressure = 1.0
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
@@ -71,7 +75,8 @@ class SolidBodyPressure:
 
         if pressure is not None:
             self.results.pressure = pressure
-            fun[0] *= self.results.pressure
+        
+        fun[0] *= self.results.pressure
 
         self.results.force = IntegralFormMixed(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
@@ -99,7 +104,8 @@ class SolidBodyPressure:
 
         if pressure is not None:
             self.results.pressure = pressure
-            fun[0] *= self.results.pressure
+            
+        fun[0] *= self.results.pressure
 
         self.results.stiffness = IntegralFormMixed(
             fun=fun,

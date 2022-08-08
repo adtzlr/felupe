@@ -53,6 +53,9 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `SolidBodyPressure` for body forces acting on a solid body.
 
+### Changed
+- Move `MultiPointConstraint` to mechanics module and unify handling with `SolidBody`.
+
 ### Fixed
 - Fix assembled vectors and results of `SolidBodyPressure` for initially defined pressure values.
 

@@ -327,43 +327,6 @@ def test_newton_body():
     )
 
 
-def test_newton_body_field():
-
-    # create a hexahedron-region on a cube
-    mesh = fe.Cube(n=6)
-    region = fe.RegionHexahedron(mesh)
-    region0 = fe.RegionConstantHexahedron(fe.mesh.convert(mesh, 0))
-
-    # add a displacement field and apply a uniaxial elongation on the cube
-    u = fe.Field(region, dim=3)
-    p = fe.Field(region0)
-    J = fe.Field(region0, values=1)
-    field = fe.FieldContainer((u, p, J))
-
-    boundaries, loadcase = fe.dof.uniaxial(
-        field, move=0.2, clamped=True
-    )
-
-    # define the constitutive material behavior
-    nh = fe.NeoHooke(mu=1.0, bulk=2.0)
-    umat = fe.ThreeFieldVariation(nh)
-    body = fe.SolidBody(umat, field)
-    gravity = fe.SolidBodyGravity(field, gravity=[9850, 0, 0], density=7.85e-9)
-
-    # create a region, a field and a body for a pressure boundary
-    regionp = fe.RegionHexahedronBoundary(mesh, only_surface=True)
-    fieldp = fe.FieldContainer([fe.Field(regionp, dim=3)])
-    bodyp = fe.SolidBodyPressure(fieldp, pressure=1.0)
-
-    # newton-rhapson procedure
-    res = fe.newtonrhapson(
-        items=[body, bodyp, gravity],
-        fields=[field, fieldp, field],
-        kwargs={},
-        **loadcase,
-    )
-
-
 if __name__ == "__main__":
     test_solve_check()
     test_solve_mixed_check()
@@ -373,4 +336,3 @@ if __name__ == "__main__":
     test_newton_plane()
     test_newton_linearelastic()
     test_newton_body()
-    # test_newton_body_field()

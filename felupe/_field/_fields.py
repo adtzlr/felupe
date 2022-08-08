@@ -47,7 +47,7 @@ class FieldsMixed(FieldContainer):
     r"""A mixed field based on a region and returns a :class:`FieldContainer`
     instance."""
 
-    def __init__(self, region, n=3, values=(0, 0, 1, 0), axisymmetric=False):
+    def __init__(self, region, n=3, values=(0, 0, 1, 0), axisymmetric=False, offset=0, npoints=None):
         r"""Create a mixed field based on a region. The dual region is chosen
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
         is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
@@ -64,6 +64,10 @@ class FieldsMixed(FieldContainer):
             Initial field values.
         axisymmetric : bool, optional
             Flag to initiate a axisymmetric Field (default is False).
+        offset : int, optional
+            Offset for cell connectivity (default is 0).
+        npoints : int, optional
+            Specified number of mesh points (default is None).
         """
 
         regions = {
@@ -76,8 +80,14 @@ class FieldsMixed(FieldContainer):
             RegionTetraMINI: RegionTetra,
             RegionTriangleMINI: RegionTriangle,
         }
+        
+        kwargs = {}
+        if offset > 0:
+            kwargs["offset"] = offset
+        if npoints is not None:
+            kwargs["npoints"] = npoints
 
-        region_dual = regions[type(region)](region.mesh)
+        region_dual = regions[type(region)](region.mesh, **kwargs)
 
         F = [Field, FieldAxisymmetric][axisymmetric]
         fields = [F(region, dim=region.mesh.dim, values=values[0])]

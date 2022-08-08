@@ -27,14 +27,14 @@ region = fe.RegionHexahedron(fe.Cube(n=11))
 # add a displacement field and apply a uniaxial elongation on the cube
 displacement = fe.Field(region, dim=3)
 field = fe.FieldContainer([displacement])
-boundaries, dof0, dof1, ext0 = fe.dof.uniaxial(field, move=0.2, clamped=True)
+boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
 # define the constitutive material behavior and create a solid body
 umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 solid = fe.SolidBody(umat, field)
 
 # newton-rhapson procedure
-res = fe.newtonrhapson(bodies=[solid], dof1=dof1, dof0=dof0, ext0=ext0)
+res = fe.newtonrhapson(bodies=[solid], **loadcase)
 
 # save result
 fe.save(region, res.x, filename="result.vtk")
@@ -56,6 +56,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Move `MultiPointConstraint` to mechanics module and unify handling with `SolidBody`.
 - Rename `bodies` argument of Newton-Rhapson solver to `items` (now supports MPC).
+- Return partitioned system as dict from loadcases `loadcase=dict(dof0=dof0, dof1=dof1, ext0=ext0)`.
 
 ### Fixed
 - Fix assembled vectors and results of `SolidBodyPressure` for initially defined pressure values.

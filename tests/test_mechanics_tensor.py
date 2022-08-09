@@ -37,6 +37,7 @@ def pre_umat():
     class LETensor:
         def __init__(self, LE):
             self.LE = LE
+            self.x = [np.zeros((3, 3)), np.zeros((5, 16))]
 
         def function(self, x):
             F, statevars = x
@@ -61,28 +62,29 @@ def test_solidbody_tensor():
 
     sv = np.zeros((5, 16, r.quadrature.npoints, m.ncells))
 
-    b = fe.SolidBodyTensor(umat, v, sv)
-    r = b.assemble.vector()
-
-    K = b.assemble.matrix(v)
-    K = b.assemble.matrix()
-    r = b.assemble.vector(v)
-    r = b.assemble.vector()
-    F = b.results.kinematics
-    P = b.results.stress
-    s = b.evaluate.cauchy_stress()
-    t = b.evaluate.kirchhoff_stress()
-    C = b.results.elasticity
-    z = b.results.statevars
-
-    assert K.shape == (81, 81)
-    assert r.shape == (81, 1)
-    assert F[0].shape == (3, 3, 8, 8)
-    assert P[0][0].shape == (3, 3, 8, 8)
-    assert s.shape == (3, 3, 8, 8)
-    assert t.shape == (3, 3, 8, 8)
-    assert C[0].shape == (3, 3, 3, 3, 8, 8)
-    assert z.shape == (5, 16, 8, 8)
+    for statevars in [sv, None]:
+        b = fe.SolidBodyTensor(umat, v, statevars)
+        r = b.assemble.vector()
+    
+        K = b.assemble.matrix(v)
+        K = b.assemble.matrix()
+        r = b.assemble.vector(v)
+        r = b.assemble.vector()
+        F = b.results.kinematics
+        P = b.results.stress
+        s = b.evaluate.cauchy_stress()
+        t = b.evaluate.kirchhoff_stress()
+        C = b.results.elasticity
+        z = b.results.statevars
+    
+        assert K.shape == (81, 81)
+        assert r.shape == (81, 1)
+        assert F[0].shape == (3, 3, 8, 8)
+        assert P[0][0].shape == (3, 3, 8, 8)
+        assert s.shape == (3, 3, 8, 8)
+        assert t.shape == (3, 3, 8, 8)
+        assert C[0].shape == (3, 3, 3, 3, 8, 8)
+        assert z.shape == (5, 16, 8, 8)
 
 
 if __name__ == "__main__":

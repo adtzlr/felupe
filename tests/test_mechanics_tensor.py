@@ -38,11 +38,13 @@ def pre_umat():
         def __init__(self, LE):
             self.LE = LE
 
-        def function(self, F, statevars):
+        def function(self, x):
+            F, statevars = x
             # return dummy state variables along with stress
             return self.LE.stress(F), statevars
 
-        def gradient(self, F, statevars):
+        def gradient(self, x):
+            F, statevars = x
             return self.LE.elasticity(F)
 
     return LETensor(LE)

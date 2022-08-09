@@ -155,8 +155,8 @@ def newtonrhapson(
     check=check,
     args=(),
     kwargs={},
-    kwargs_solve={},
-    kwargs_check={},
+    kwargs_solve=None,
+    kwargs_check=None,
     tol=np.sqrt(np.finfo(float).eps),
     umat=None,
     items=None,
@@ -209,6 +209,12 @@ def newtonrhapson(
 
     if umat is not None:
         kwargs["umat"] = umat
+    
+    if kwargs_solve is None:
+        kwargs_solve = {}
+    
+    if kwargs_check is None:
+        kwargs_check = {}
 
     # pre-evaluate function at given unknowns "x"
     if items is not None:

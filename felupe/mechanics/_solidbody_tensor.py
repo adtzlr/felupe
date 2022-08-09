@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
 from ..math import dot, transpose, det
@@ -42,7 +44,15 @@ class SolidBodyTensor:
 
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
-        self.results.statevars = statevars
+        
+        if statevars is not None:
+            self.results.statevars = statevars
+        else:
+            self.results.statevars = np.zeros((
+                *umat.x[-1].shape, 
+                field.region.quadrature.npoints, 
+                field.region.mesh.ncells,
+            ))
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
@@ -104,9 +114,9 @@ class SolidBodyTensor:
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
-
+            
         function = self.umat.function(
-            self.results.kinematics, self.results.statevars, *args, **kwargs
+            [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
 
         self.results.stress, self.results.statevars = function[:-1], function[-1]
@@ -120,7 +130,7 @@ class SolidBodyTensor:
             self.results.kinematics = self._extract(self.field)
 
         self.results.elasticity = self.umat.gradient(
-            self.results.kinematics, self.results.statevars, *args, **kwargs
+            [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
 
         return self.results.elasticity

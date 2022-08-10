@@ -266,7 +266,7 @@ def newtonrhapson(
             print("|%2d | %1.3e |" % (1 + iteration, norm))
 
         if success:
-            if not timing:
+            if verbose and not timing:
                 print("\nSolution converged in %d iterations.\n" % (iteration + 1))
             break
 
@@ -281,7 +281,7 @@ def newtonrhapson(
     if export_jac:
         Res.jac = K
 
-    if timing:
+    if verbose and timing:
         time_finish = perf_counter()
         print(
             "\nSolution converged in %d iterations within %1.4g seconds.\n"

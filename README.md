@@ -51,7 +51,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Added
-- Add `SolidBodyPressure` for body forces acting on a solid body.
+- Add `SolidBodyGravity` for body forces acting on a solid body.
 - Support list of linked fields in Newton-Rhapson solver `newtonrhapson(fields=[field_1, field_2])`.
 - Automatic init of state variables in `SolidBodyTensor`.
 

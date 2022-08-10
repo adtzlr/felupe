@@ -59,6 +59,7 @@ All notable changes to this project will be documented in this file. The format 
 - Move `MultiPointConstraint` to mechanics module and unify handling with `SolidBody`.
 - Rename `bodies` argument of Newton-Rhapson solver to `items` (now supports MPC).
 - Return partitioned system as dict from loadcases `loadcase=dict(dof0=dof0, dof1=dof1, ext0=ext0)`.
+- Check function residuals norm in `newtonrhapson()` instead of incremental field-values norm.
 
 ### Fixed
 - Fix assembled vectors and results of `SolidBodyPressure` for initially defined pressure values.

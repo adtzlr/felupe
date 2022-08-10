@@ -62,6 +62,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix assembled vectors and results of `SolidBodyPressure` for initially defined pressure values.
+- Fix `verbose=0` option of `newtonrhapson()`.
 
 ## [4.0.0] - 2022-08-07
 

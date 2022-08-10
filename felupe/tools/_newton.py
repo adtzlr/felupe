@@ -134,9 +134,21 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
     return dx
 
 
-def check(dx, x, f, tol):
+def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, eps=1e-3):
     "Check result."
-    return np.sum(norm(dx)), np.all(norm(dx) < tol)
+    
+    sumnorm = lambda x: np.sum(norm(x))
+    xnorm = sumnorm(dx)
+    
+    if dof1 is None:
+        dof1 = slice(None)
+    
+    if dof0 is None:
+        dof0 = slice(0, 0)
+        
+    fnorm = sumnorm(f[dof1]) / (eps + sumnorm(f[dof0]))
+
+    return xnorm, fnorm, fnorm < ftol # and xnorm < xtol
 
 
 def update(x, dx):
@@ -227,8 +239,8 @@ def newtonrhapson(
         print("Newton-Rhapson solver")
         print("=====================")
         print()
-        print("| # |  norm(dx) |")
-        print("|---|-----------|")
+        print("| # | norm(fun) |  norm(dx) |")
+        print("|---|-----------|-----------|")
 
     # iteration loop
     for iteration in range(maxiter):
@@ -260,17 +272,17 @@ def newtonrhapson(
             f = fun(x, *args, **kwargs)
 
         # check success of solution
-        norm, success = check(dx, x, f, tol, **kwargs_check)
+        xnorm, fnorm, success = check(dx, x, f, tol, tol, dof1, dof0, **kwargs_check)
 
         if verbose:
-            print("|%2d | %1.3e |" % (1 + iteration, norm))
+            print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))
 
         if success:
             if verbose and not timing:
                 print("\nSolution converged in %d iterations.\n" % (iteration + 1))
             break
 
-        if np.isnan(norm):
+        if np.any(np.isnan([xnorm, fnorm])):
             raise ValueError("Norm of unknowns is NaN.")
 
     if 1 + iteration == maxiter and not success:

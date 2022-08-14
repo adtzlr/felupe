@@ -119,7 +119,7 @@ class SolidBodyTensor:
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
 
-        self.results.stress, self.results.statevars = function[:-1], function[-1]
+        self.results.stress, self.results._statevars = function[:-1], function[-1]
 
         return self.results.stress
 

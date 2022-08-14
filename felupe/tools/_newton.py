@@ -134,7 +134,7 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
     return dx
 
 
-def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, eps=1e-3):
+def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
     "Check result."
     
     sumnorm = lambda x: np.sum(norm(x))
@@ -145,10 +145,15 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, eps=1e-3):
     
     if dof0 is None:
         dof0 = slice(0, 0)
-        
+    
     fnorm = sumnorm(f[dof1]) / (eps + sumnorm(f[dof0]))
+    success = fnorm < ftol # and xnorm < xtol
+    
+    if success and items is not None:
+        for item in items:
+            [item.results.update_statevars() for item in items]
 
-    return xnorm, fnorm, fnorm < ftol # and xnorm < xtol
+    return xnorm, fnorm, success
 
 
 def update(x, dx):
@@ -272,7 +277,7 @@ def newtonrhapson(
             f = fun(x, *args, **kwargs)
 
         # check success of solution
-        xnorm, fnorm, success = check(dx, x, f, tol, tol, dof1, dof0, **kwargs_check)
+        xnorm, fnorm, success = check(dx, x, f, tol, tol, dof1, dof0, items, **kwargs_check)
 
         if verbose:
             print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))

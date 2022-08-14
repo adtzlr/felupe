@@ -55,9 +55,16 @@ class Results:
         self._force = None
         self.stiffness = None
         self.kinematics = None
+        self.statevars = None
+        self._statevars = None
 
         if stress:
             self.stress = None
 
         if elasticity:
             self.elasticity = None
+        
+    def update_statevars(self):
+        
+        if self._statevars is not None:
+            self.statevars = self._statevars

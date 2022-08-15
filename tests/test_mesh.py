@@ -233,7 +233,24 @@ def test_triangulate():
         n = fe.mesh.triangulate(m, mode=-1)
 
 
+def test_runouts():
+
+    m = fe.Rectangle(n=3)
+
+    n = fe.mesh.runouts(m, values=[0.0], axis=0, centerpoint=[0, 0])
+    assert n.points[:, 1].max() == m.points[:, 1].max()
+
+    n = fe.mesh.runouts(m, values=[0.1], axis=0, centerpoint=[0, 0])
+    assert n.points[:, 1].max() == m.points[:, 1].max() * 1.1
+
+    x = [0.5, 0.5]
+    n = fe.mesh.runouts(m, values=[0.1], axis=0, centerpoint=x)
+    assert (n.points - x)[:, 1].min() == (m.points - x)[:, 1].min() * 1.1
+    assert (n.points - x)[:, 1].max() == (m.points - x)[:, 1].max() * 1.1
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
     test_triangulate()
+    test_runouts()

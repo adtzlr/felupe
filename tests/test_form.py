@@ -37,7 +37,7 @@ def pre():
 
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
-    
+
     v = fe.FieldContainer([u])
     q = fe.FieldContainer([p])
 
@@ -59,7 +59,7 @@ def pre_broadcast():
 
     u = fe.Field(r, dim=3)
     p = fe.Field(r)
-    
+
     v = fe.FieldContainer([u])
     q = fe.FieldContainer([p])
 
@@ -68,7 +68,7 @@ def pre_broadcast():
     F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)
     A = W.hessian()
-    
+
     P = [P[0][:, :, 0, 0].reshape(3, 3, 1, 1)]
 
     return r, v, q, P, A

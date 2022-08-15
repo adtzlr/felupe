@@ -41,37 +41,33 @@ class SolidBodyGravity:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self._form = IntegralFormMixed
-        
+
         self.results.gravity = np.array(gravity)
         self.results.density = density
 
-    def _vector(
-        self, field=None, parallel=False, jit=False
-    ):
+    def _vector(self, field=None, parallel=False, jit=False):
 
         if field is not None:
             self.field = field
-        
+
         # copy and take only the first (displacement) field of the container
         f = self.field.copy()
-        f.fields = f.fields[0: 1]
-            
+        f.fields = f.fields[0:1]
+
         self.results.force = self._form(
             fun=[self.results.density * self.results.gravity.reshape(-1, 1, 1)],
-            v=f, 
+            v=f,
             dV=self.field.region.dV,
             grad_v=[False],
         ).assemble(parallel=parallel, jit=jit)
-        
+
         if len(self.field) > 1:
             self.results.force.resize(np.sum(self.field.fieldsizes), 1)
 
         return self.results.force
 
-    def _matrix(
-        self, field=None, parallel=False, jit=False
-    ):
-        
+    def _matrix(self, field=None, parallel=False, jit=False):
+
         from scipy.sparse import csr_matrix
 
         if field is not None:

@@ -44,15 +44,17 @@ class SolidBodyTensor:
 
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
-        
+
         if statevars is not None:
             self.results.statevars = statevars
         else:
-            self.results.statevars = np.zeros((
-                *umat.x[-1].shape, 
-                field.region.quadrature.npoints, 
-                field.region.mesh.ncells,
-            ))
+            self.results.statevars = np.zeros(
+                (
+                    *umat.x[-1].shape,
+                    field.region.quadrature.npoints,
+                    field.region.mesh.ncells,
+                )
+            )
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
@@ -114,7 +116,7 @@ class SolidBodyTensor:
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
-            
+
         function = self.umat.function(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )

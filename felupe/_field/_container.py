@@ -79,7 +79,7 @@ class FieldContainer:
     def copy(self):
         "Return a copy of the field."
         return deepcopy(self)
-    
+
     def link(self, other_field):
         "Link value array of other field."
         for field, newfield in zip(self.fields, other_field.fields):

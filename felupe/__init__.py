@@ -104,6 +104,7 @@ from .mechanics import (
     SolidBodyTensor,
     SolidBodyGravity,
 )
+
 try:
     from .mechanics import (
         MultiPointConstraint,

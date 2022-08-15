@@ -47,7 +47,15 @@ class FieldsMixed(FieldContainer):
     r"""A mixed field based on a region and returns a :class:`FieldContainer`
     instance."""
 
-    def __init__(self, region, n=3, values=(0, 0, 1, 0), axisymmetric=False, offset=0, npoints=None):
+    def __init__(
+        self,
+        region,
+        n=3,
+        values=(0, 0, 1, 0),
+        axisymmetric=False,
+        offset=0,
+        npoints=None,
+    ):
         r"""Create a mixed field based on a region. The dual region is chosen
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
         is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
@@ -80,7 +88,7 @@ class FieldsMixed(FieldContainer):
             RegionTetraMINI: RegionTetra,
             RegionTriangleMINI: RegionTriangle,
         }
-        
+
         kwargs = {}
         if offset > 0:
             kwargs["offset"] = offset

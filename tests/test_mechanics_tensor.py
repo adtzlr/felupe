@@ -65,7 +65,7 @@ def test_solidbody_tensor():
     for statevars in [sv, None]:
         b = fe.SolidBodyTensor(umat, v, statevars)
         r = b.assemble.vector()
-    
+
         K = b.assemble.matrix(v)
         K = b.assemble.matrix()
         r = b.assemble.vector(v)
@@ -76,7 +76,7 @@ def test_solidbody_tensor():
         t = b.evaluate.kirchhoff_stress()
         C = b.results.elasticity
         z = b.results.statevars
-    
+
         assert K.shape == (81, 81)
         assert r.shape == (81, 1)
         assert F[0].shape == (3, 3, 8, 8)

@@ -63,8 +63,8 @@ class Results:
 
         if elasticity:
             self.elasticity = None
-        
+
     def update_statevars(self):
-        
+
         if self._statevars is not None:
             self.statevars = self._statevars

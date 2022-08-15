@@ -60,7 +60,7 @@ class RegionConstantQuad(Region):
 
         element = ConstantQuad()
         quadrature = GaussLegendre(order=1, dim=2)
-        
+
         if npoints is not None:
             npts = npoints
         else:
@@ -109,7 +109,7 @@ class RegionConstantHexahedron(Region):
 
         element = ConstantHexahedron()
         quadrature = GaussLegendre(order=1, dim=3)
-        
+
         if npoints is not None:
             npts = npoints
             ncells = min(npoints, mesh.ncells)

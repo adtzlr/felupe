@@ -34,7 +34,7 @@ def test_mpc():
     mesh = fe.Cube(n=3)
     mesh.points = np.vstack((mesh.points, [2, 0, 0]))
     mesh.update(mesh.cells)
-    
+
     region = fe.RegionHexahedron(mesh)
 
     u = fe.FieldContainer([fe.Field(region, dim=3)])
@@ -55,17 +55,17 @@ def test_mpc():
     cpoint = mesh.npoints - 1
 
     RBE2 = fe.MultiPointConstraint(field=u, points=mpc, centerpoint=cpoint)
-    
+
     for f in [None, u]:
         K_RBE2 = RBE2.assemble.matrix(u)
         r_RBE2 = RBE2.assemble.vector(u)
-    
+
         linearform = fe.IntegralForm(umat.gradient(F), u, region.dV)
         r = linearform.assemble() + r_RBE2
-    
+
         bilinearform = fe.IntegralForm(umat.hessian(F), u, region.dV, u)
         K = bilinearform.assemble() + K_RBE2
-    
+
         assert r.shape == (84, 1)
         assert K.shape == (84, 84)
 
@@ -78,7 +78,7 @@ def pre_mpc_mixed(point, values):
 
     region = fe.RegionHexahedron(mesh)
     dV = region.dV
-    
+
     fields = fe.FieldsMixed(region, n=3)
     fields[0].values[-1] = values
     F, p, J = fields.extract()
@@ -100,14 +100,14 @@ def pre_mpc_mixed(point, values):
 
     RBE2 = fe.MultiPointConstraint(fields, points=mpc, centerpoint=cpoint)
     CONT = fe.MultiPointContact(fields, points=mpc, centerpoint=cpoint)
-    
+
     for f in [None, fields]:
         K_RBE2 = RBE2.assemble.matrix(f)
         r_RBE2 = RBE2.assemble.vector(f)
-    
+
         K_CONT = CONT.assemble.matrix(f)
         r_CONT = CONT.assemble.vector(f)
-    
+
         assert K_RBE2.shape == K_CONT.shape
         assert r_RBE2.shape == r_CONT.shape
 

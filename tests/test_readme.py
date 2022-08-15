@@ -26,7 +26,7 @@ def test_readme():
     u = displacement.values
     ui = displacement.interpolate()
     dudX = displacement.grad()
-    
+
     field = felupe.FieldContainer([displacement])
 
     F = field.extract(grad=True, sym=False, add_identity=True)
@@ -61,7 +61,7 @@ def test_readme():
 
     system = felupe.solve.partition(field, K, dof1, dof0, r)
     dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
-    
+
     # du = np.split(dfield, offsets)
     # field += du
 
@@ -76,7 +76,7 @@ def test_readme():
 
         system = felupe.solve.partition(field, K, dof1, dof0, r)
         dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
-        
+
         du = np.split(dfield, field.offsets)
 
         norm = felupe.math.norm(du)
@@ -97,7 +97,7 @@ def test_readme():
 
     PK1 = P(F)[0]
     F = F[0]
-    
+
     s = dot(PK1, transpose(F)) / det(F)
 
     # stress shifted and averaged to mesh-points

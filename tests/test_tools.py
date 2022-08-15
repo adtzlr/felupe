@@ -274,7 +274,7 @@ def test_newton_mixed():
     p = fe.Field(region0)
     J = fe.Field(region0, values=1)
     field = fe.FieldContainer((u, p, J))
-    
+
     assert len(field) == 3
 
     boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
@@ -287,9 +287,7 @@ def test_newton_mixed():
     umat = fe.ThreeFieldVariation(nh)
 
     # newton-rhapson procedure
-    res = fe.newtonrhapson(
-        x0=field, umat=umat, kwargs={}, **loadcase
-    )
+    res = fe.newtonrhapson(x0=field, umat=umat, kwargs={}, **loadcase)
 
 
 def test_newton_body():
@@ -305,9 +303,7 @@ def test_newton_body():
     J = fe.Field(region0, values=1)
     field = fe.FieldContainer((u, p, J))
 
-    boundaries, loadcase = fe.dof.uniaxial(
-        field, move=0.2, clamped=True
-    )
+    boundaries, loadcase = fe.dof.uniaxial(field, move=0.2, clamped=True)
 
     # define the constitutive material behavior
     nh = fe.NeoHooke(mu=1.0, bulk=2.0)

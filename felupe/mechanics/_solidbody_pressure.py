@@ -41,7 +41,7 @@ class SolidBodyPressure:
 
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
-        
+
         if pressure is not None:
             self.results.pressure = pressure
         else:
@@ -75,7 +75,7 @@ class SolidBodyPressure:
 
         if pressure is not None:
             self.results.pressure = pressure
-        
+
         fun[0] *= self.results.pressure
 
         self.results.force = IntegralFormMixed(
@@ -104,7 +104,7 @@ class SolidBodyPressure:
 
         if pressure is not None:
             self.results.pressure = pressure
-            
+
         fun[0] *= self.results.pressure
 
         self.results.stiffness = IntegralFormMixed(

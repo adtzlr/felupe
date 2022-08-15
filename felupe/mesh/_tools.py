@@ -407,3 +407,68 @@ def triangulate(points, cells, cell_type, mode=3):
     cells_new = cells_new.reshape(-1, cells_new.shape[-1])
 
     return points, cells_new, cell_type_new
+
+
+@mesh_or_data
+def runouts(
+    points,
+    cells,
+    cell_type,
+    values=[0.1, 0.1],
+    centerpoint=[0, 0, 0],
+    axis=0,
+    exponent=5,
+):
+    """Add simple rubber-runouts for realistic rubber-metal structures.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    values : list or ndarray, optional
+        Relative amount of runouts (per coordinate) perpendicular to the axis
+        (default is 10% per coordinate, i.e. [0.1, 0.1]).
+    centerpoint: list or ndarray, optional
+        Center-point coordinates (default is [0, 0, 0]).
+    axis: int or None, optional
+        Axis (default is 0).
+    exponent: int, optional
+        Positive exponent to control the shape of the runout. The higher
+        the exponent, the steeper the transition (default is 5).
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+    """
+
+    dim = points.shape[1]
+    runout_along = {0: [1, 2], 1: [0, 2], 2: [0, 1]}
+
+    centerpoint = np.array(centerpoint, dtype=float)[:dim]
+    values = np.array(values, dtype=float)[:dim]
+
+    points_new = points - centerpoint
+    top = points[:, axis].max()
+    bottom = points[:, axis].min()
+
+    # check symmetry
+    if top == centerpoint[axis] or bottom == centerpoint[axis]:
+        half_height = top - bottom
+    else:
+        half_height = (top - bottom) / 2
+
+    for i, coord in enumerate(runout_along[axis][: dim - 1]):
+
+        factor = (abs(points_new[:, axis]) / half_height) ** exponent
+        points_new[:, coord] *= 1 + factor * values[i]
+
+    return points_new + centerpoint, cells, cell_type

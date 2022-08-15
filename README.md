@@ -54,6 +54,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `SolidBodyGravity` for body forces acting on a solid body.
 - Support list of linked fields in Newton-Rhapson solver `newtonrhapson(fields=[field_1, field_2])`.
 - Automatic init of state variables in `SolidBodyTensor`.
+- Add `mesh.runouts()` for the creation of runouts of rubber-blocks of rubber-metal structures.
 
 ### Changed
 - Move `MultiPointConstraint` to mechanics module and unify handling with `SolidBody`.

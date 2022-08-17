@@ -30,6 +30,7 @@ from scipy.sparse import bmat, vstack
 
 from .._field._base import Field
 from .._field._axi import FieldAxisymmetric
+from .._field._planestrain import FieldPlaneStrain
 from ._base import IntegralForm
 from ._axi import IntegralFormAxisymmetric
 
@@ -49,9 +50,11 @@ class IntegralFormMixed:
             self.u = None
             self.nu = None
 
-        IntForm = {Field: IntegralForm, FieldAxisymmetric: IntegralFormAxisymmetric}[
-            type(self.v[0])
-        ]
+        IntForm = {
+            Field: IntegralForm,
+            FieldPlaneStrain: IntegralForm,
+            FieldAxisymmetric: IntegralFormAxisymmetric,
+        }[type(self.v[0])]
 
         if isinstance(self.v[0], FieldAxisymmetric):
             for i in range(1, len(self.v)):

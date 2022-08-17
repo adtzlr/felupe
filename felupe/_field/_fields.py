@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from ._base import Field
 from ._axi import FieldAxisymmetric
+from ._planestrain import FieldPlaneStrain
 from ._container import FieldContainer
 from ..region._templates import (
     RegionQuad,
@@ -53,6 +54,7 @@ class FieldsMixed(FieldContainer):
         n=3,
         values=(0, 0, 1, 0),
         axisymmetric=False,
+        planestrain=False,
         offset=0,
         npoints=None,
     ):
@@ -72,6 +74,8 @@ class FieldsMixed(FieldContainer):
             Initial field values.
         axisymmetric : bool, optional
             Flag to initiate a axisymmetric Field (default is False).
+        planestrain : bool, optional
+            Flag to initiate a plane strain Field (default is False).
         offset : int, optional
             Offset for cell connectivity (default is 0).
         npoints : int, optional
@@ -97,7 +101,13 @@ class FieldsMixed(FieldContainer):
 
         region_dual = regions[type(region)](region.mesh, **kwargs)
 
-        F = [Field, FieldAxisymmetric][axisymmetric]
+        if axisymmetric is False and planestrain is False:
+            F = Field
+        elif axisymmetric is True and planestrain is False:
+            F = FieldAxisymmetric
+        elif axisymmetric is False and planestrain is True:
+            F = FieldPlaneStrain
+
         fields = [F(region, dim=region.mesh.dim, values=values[0])]
 
         for a in range(1, n):

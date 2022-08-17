@@ -29,6 +29,25 @@ import felupe as fem
 import pytest
 
 
+def test_axi():
+
+    m = fem.Rectangle(n=6)
+    r = fem.RegionQuad(m)
+    f = fem.FieldsMixed(r, n=1, axisymmetric=True)
+    u = fem.NeoHooke(mu=1, bulk=2)
+    b = fem.SolidBody(u, f)
+    loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
+    res = fem.newtonrhapson(items=[b], **loadcase)
+    
+    u = f[0].interpolate()
+    strain = f[0].grad(sym=True)
+    
+    assert len(u) == 3
+    assert strain.shape[:-2] == (3, 3)
+
+    assert res.success
+
+
 def test_planestrain():
 
     m = fem.Rectangle(n=6)
@@ -38,6 +57,12 @@ def test_planestrain():
     b = fem.SolidBody(u, f)
     loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
     res = fem.newtonrhapson(items=[b], **loadcase)
+    
+    u = f[0].interpolate()
+    strain = f[0].grad(sym=True)
+    
+    assert len(u) == 3
+    assert strain.shape[:-2] == (3, 3)
 
     assert res.success
 
@@ -51,10 +76,17 @@ def test_planestrain_mixed():
     b = fem.SolidBody(u, f)
     loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
     res = fem.newtonrhapson(items=[b], **loadcase)
+    
+    u = f[0].interpolate()
+    strain = f[0].grad(sym=True)
+    
+    assert len(u) == 3
+    assert strain.shape[:-2] == (3, 3)
 
     assert res.success
 
 
 if __name__ == "__main__":
+    test_axi()
     test_planestrain()
     test_planestrain_mixed()

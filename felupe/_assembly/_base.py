@@ -163,6 +163,9 @@ class IntegralForm:
         dV = self.dV
         fun = self.fun
 
+        if len(fun) > v.dim:
+            fun = fun[tuple([slice(v.dim)] * (len(fun.shape) - 2))]
+
         if parallel:
             einsum = einsumt
         else:

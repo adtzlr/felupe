@@ -50,16 +50,12 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
    :width: 400px
 
 A numeric quad-region created on the mesh in combination with a vector-valued 
-displacement field as well as scalar-valued fields for the hydrostatic pressure
-and the volume ratio represents the rubber numerically. A shear loadcase is 
-applied on the displacement field. This involves setting up a y-symmetry plane 
-as well as the absolute value of the prescribed shear movement in direction 
-:math:`x` at the MPC-centerpoint.
+displacement field for plane-strain as well as scalar-valued fields for the hydrostatic pressure and the volume ratio represents the rubber numerically. A shear loadcase is applied on the displacement field. This involves setting up a y-symmetry plane as well as the absolute value of the prescribed shear movement in direction :math:`x` at the MPC-centerpoint.
 
 ..  code-block:: python
 
     region = fe.RegionQuad(mesh)
-    fields = fe.FieldsMixed(region, n=3, values=[0, 0, 1])
+    fields = fe.FieldsMixed(region, n=3, planestrain=True)
     
     f0 = lambda y: np.isclose(y, 0)
     f2 = lambda y: np.isclose(y, 2* H)
@@ -70,19 +66,22 @@ as well as the absolute value of the prescribed shear movement in direction
     }
     
     dof0, dof1 = fe.dof.partition(fields, boundaries)
-    ext0 = fe.dof.apply(fields, boundaries, dof0)
 
 
 The micro-sphere material formulation is used for the rubber. It is defined
-as a hyperelastic material for plane strain in matADi (be sure to
-install matADi with ``pip install matadi`` first).
+as a hyperelastic material in matADi. The material formulation is finally applied on the plane-strain field, resulting in a hyperelastic solid body.
+
+.. admonition:: **MatADi** - Material Definition with Automatic Differentation
+   :class: note
+   
+   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Get it on PyPI: ``pip install matadi``.
 
 ..  code-block:: python
 
     import matadi as mat
 
-    umat = mat.ThreeFieldVariationPlaneStrain(
-        mat.MaterialHyperelasticPlaneStrain(
+    umat = mat.ThreeFieldVariation(
+        mat.MaterialHyperelastic(
             mat.models.miehe_goektepe_lulei, 
             mu=0.1475, 
             N=3.273, 
@@ -92,6 +91,8 @@ install matADi with ``pip install matadi`` first).
             bulk=5000.0,
         )
     )
+    
+    rubber = fe.SolidBody(umat, fields)
 
 At the centerpoint of a multi-point constraint (MPC) the external shear
 movement is prescribed. It also ensures a force-free top plate in direction 
@@ -100,12 +101,10 @@ movement is prescribed. It also ensures a force-free top plate in direction
 ..  code-block:: python
 
     MPC = fe.MultiPointConstraint(
-        mesh=mesh,
+        field=fields,
         points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
         centerpoint=mesh.npoints - 1,
     )
-    
-    K_MPC = MPC.stiffness()
 
 
 The shear movement is applied in increments, which are each solved with an
@@ -120,53 +119,22 @@ of the top plate are saved.
 ..  code-block:: python
 
     UX = np.linspace(0, 15, 16)
-    UY = [0]
-    FX = [0]
+    UY = []
+    FX = []
     
-    for move in UX[1:]:
+    for move in UX:
         
         boundaries["control"].value = move
         ext0 = fe.dof.apply(fields, boundaries, dof0)
-    
-        for iteration in range(8):
         
-            r_int = fe.IntegralForm(
-                fun=umat.gradient(fields.extract()),
-                v=fields,
-                dV=region.dV,
-            ).assemble(parallel=True).toarray()
-            
-            r_MPC = MPC.residuals(fields)
-            r_MPC.resize(r_int.shape)
-            r_MPC = r_MPC.toarray()
-        
-            r = r_int + r_MPC
-            
-            K = fe.IntegralForm(
-                fun=umat.hessian(fields.extract()),
-                v=fields,
-                dV=region.dV,
-                u=fields,
-            ).assemble(parallel=True)
-            
-            K_MPC.resize(K.shape)
-            K += K_MPC
-        
-            system = fe.solve.partition(fields, K, dof1, dof0, r)
-            fields += fe.solve.solve(*system, ext0)
-            
-            if iteration > 0:
-                
-                ref = np.linalg.norm(r[dof0]) if np.linalg.norm(r[dof0]) != 0 else 1
-                norm = np.linalg.norm(r[dof1]) / ref
-                print(iteration, norm)
-            
-                if norm <= 1e-9:
-                    break
+        res = fe.newtonrhapson(
+            items=[rubber, MPC], dof0=dof0, dof1=dof1, ext0=ext0
+        )
                 
         UY.append(fields[0].values[MPC.centerpoint, 1])
-        FX.append(r[2 * MPC.centerpoint] * T)
-        print("\nReaction Force FX(UX) =", move, FX[-1])
+        FX.append(res.fun[2 * MPC.centerpoint] * T)
+        
+        print(f"Reaction Force FX(UX) = {FX[-1]:1.1f}N({move}mm)")
 
 For the maximum deformed model a VTK-file containing principal stretches
 projected to mesh points is exported.
@@ -180,7 +148,7 @@ projected to mesh points is exported.
     
     stretches = fe.project(np.sqrt(eigh(C)[0]), region)
     
-    fe.save(region, displacement, point_data={
+    fe.save(region, res.x, point_data={
         "Maximum-principal-stretch": np.max(stretches, axis=1),
         "Minimum-principal-stretch": np.min(stretches, axis=1),
     })

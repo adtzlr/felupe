@@ -71,10 +71,10 @@ displacement field for plane-strain as well as scalar-valued fields for the hydr
 The micro-sphere material formulation is used for the rubber. It is defined
 as a hyperelastic material in matADi. The material formulation is finally applied on the plane-strain field, resulting in a hyperelastic solid body.
 
-.. admonition:: **MatADi** - Material Definition with Automatic Differentation
+.. admonition:: **MatADi** - Material Definition with Automatic Differentiation
    :class: note
    
-   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Get it on PyPI: ``pip install matadi``.
+   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Get it on PyPI: ``pip install matadi``. Do not use the `MaterialHyperelasticPlaneStrain` and `ThreeFieldVariationPlaneStrain` classes of matADi in combination with a plane-strain field of FElupe. These classes are designed to be used on default two dimensional fields (i.e. use it only with ``fe.FieldsMixed(region, n=3, planestrain=False``).
 
 ..  code-block:: python
 

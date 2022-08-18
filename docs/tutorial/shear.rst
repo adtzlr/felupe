@@ -74,25 +74,28 @@ as a hyperelastic material in matADi. The material formulation is finally applie
 .. admonition:: **MatADi** - Material Definition with Automatic Differentiation
    :class: note
    
-   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Get it on PyPI: ``pip install matadi``. Do not use the `MaterialHyperelasticPlaneStrain` and `ThreeFieldVariationPlaneStrain` classes of matADi in combination with a plane-strain field of FElupe. These classes are designed to be used on default two dimensional fields (i.e. use it only with ``fe.FieldsMixed(region, n=3, planestrain=False``).
+   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Do not use the `MaterialHyperelasticPlaneStrain` and `ThreeFieldVariationPlaneStrain` classes of matADi in combination with a plane-strain field of FElupe. These classes are designed to be used on default two dimensional fields (i.e. use it only with ``fe.FieldsMixed(region, n=3, planestrain=False``). Get matADi on PyPI: 
+   
+   ..  code-block::
+       
+       pip install matadi
+
 
 ..  code-block:: python
 
     import matadi as mat
 
-    umat = mat.ThreeFieldVariation(
-        mat.MaterialHyperelastic(
-            mat.models.miehe_goektepe_lulei, 
-            mu=0.1475, 
-            N=3.273, 
-            p=9.31, 
-            U=9.94, 
-            q=0.567, 
-            bulk=5000.0,
-        )
+    umat = mat.MaterialHyperelastic(
+        mat.models.miehe_goektepe_lulei, 
+        mu=0.1475, 
+        N=3.273, 
+        p=9.31, 
+        U=9.94, 
+        q=0.567, 
+        bulk=5000.0,
     )
     
-    rubber = fe.SolidBody(umat, fields)
+    rubber = fe.SolidBody(umat=mat.ThreeFieldVariation(umat), field=fields)
 
 At the centerpoint of a multi-point constraint (MPC) the external shear
 movement is prescribed. It also ensures a force-free top plate in direction 

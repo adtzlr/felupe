@@ -56,6 +56,7 @@ All notable changes to this project will be documented in this file. The format 
 - Automatic init of state variables in `SolidBodyTensor`.
 - Add `mesh.runouts()` for the creation of runouts of rubber-blocks of rubber-metal structures.
 - Add `FieldPlaneStrain` which is a 2d-field and returns gradients of shape `(3, 3)` (for plane strain problems with 3d user materials).
+- Add `PointLoad` for the creation of external force vectors.
 
 ### Changed
 - Move `MultiPointConstraint` to mechanics module and unify handling with `SolidBody`.

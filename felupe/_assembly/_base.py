@@ -163,8 +163,15 @@ class IntegralForm:
         dV = self.dV
         fun = self.fun
 
-        if len(fun) > v.dim:
-            fun = fun[tuple([slice(v.dim)] * (len(fun.shape) - 2))]
+        # plane strain
+        # trim 3d vector-valued functions to the dimension of the field
+        function_dimension = len(fun.shape) - 2
+        function_is_vector = function_dimension >= 1
+        function_is_3d = len(fun) == 3
+        field_is_2d = v.dim == 2
+
+        if function_is_vector and function_is_3d and field_is_2d:
+            fun = fun[tuple([slice(2)] * function_dimension)]
 
         if parallel:
             einsum = einsumt

@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from scipy.sparse import csr_matrix
 
 from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
@@ -67,8 +68,6 @@ class SolidBodyGravity:
         return -self.results.force
 
     def _matrix(self, field=None, parallel=False, jit=False):
-
-        from scipy.sparse import csr_matrix
 
         if field is not None:
             self.field = field

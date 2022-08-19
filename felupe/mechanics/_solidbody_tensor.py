@@ -77,7 +77,6 @@ class SolidBodyTensor:
             self.field = field
 
         self.results.stress = self._gradient(field, args=args, kwargs=kwargs)
-
         self.results.force = self._form(
             fun=self.results.stress[slice(items)],
             v=self.field,
@@ -141,7 +140,7 @@ class SolidBodyTensor:
 
         self._gradient(field)
 
-        P = self.results.stress[0][0]
+        P = self.results.stress[0]
         F = self.results.kinematics[0]
 
         return dot(P, transpose(F))
@@ -150,7 +149,7 @@ class SolidBodyTensor:
 
         self._gradient(field)
 
-        P = self.results.stress[0][0]
+        P = self.results.stress[0]
         F = self.results.kinematics[0]
         J = det(F)
 

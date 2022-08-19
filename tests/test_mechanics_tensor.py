@@ -32,23 +32,43 @@ import numpy as np
 
 def pre_umat():
 
-    LE = fe.LinearElastic(E=210000, nu=0.3)
+    NH = fe.NeoHooke(mu=1, bulk=5000)
 
-    class LETensor:
-        def __init__(self, LE):
-            self.LE = LE
-            self.x = [np.zeros((3, 3)), np.zeros((5, 16))]
+    class NHTensor:
+        def __init__(self, NH):
+            self.NH = NH
+            self.x = [np.zeros((3, 3)), np.zeros((1, 1))]
 
         def function(self, x):
-            F, statevars = x
+            F, statevars = x[:-1], x[-1]
             # return dummy state variables along with stress
-            return self.LE.stress(F), statevars
+            return [*self.NH.gradient(F), statevars]
 
         def gradient(self, x):
-            F, statevars = x
-            return self.LE.elasticity(F)
+            F, statevars = x[:-1], x[-1]
+            return self.NH.hessian(F)
 
-    return LETensor(LE)
+    return NHTensor(NH)
+
+def pre_umat_mixed():
+
+    NH = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=5000))
+
+    class NHTensor:
+        def __init__(self, NH):
+            self.NH = NH
+            self.x = [np.zeros((3, 3)), np.zeros((1, 1)), np.zeros((1, 1)), np.zeros((1, 1))]
+
+        def function(self, x):
+            F, statevars = x[:-1], x[-1]
+            # return dummy state variables along with stress
+            return [*self.NH.gradient(F), statevars]
+
+        def gradient(self, x):
+            F, statevars = x[:-1], x[-1]
+            return self.NH.hessian(F)
+
+    return NHTensor(NH)
 
 
 def test_solidbody_tensor():
@@ -57,35 +77,64 @@ def test_solidbody_tensor():
 
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
-    u = fe.Field(r, dim=3)
-    v = fe.FieldContainer([u])
+    v = fe.FieldsMixed(r, n=1)
 
-    sv = np.zeros((5, 16, r.quadrature.npoints, m.ncells))
+    b = fe.SolidBodyTensor(umat, v)
+    r = b.assemble.vector()
 
-    for statevars in [sv, None]:
-        b = fe.SolidBodyTensor(umat, v, statevars)
-        r = b.assemble.vector()
+    K = b.assemble.matrix(v)
+    K = b.assemble.matrix()
+    r = b.assemble.vector(v)
+    r = b.assemble.vector()
+    F = b.results.kinematics
+    P = b.results.stress
+    s = b.evaluate.cauchy_stress()
+    t = b.evaluate.kirchhoff_stress()
+    C = b.results.elasticity
+    z = b.results.statevars
 
-        K = b.assemble.matrix(v)
-        K = b.assemble.matrix()
-        r = b.assemble.vector(v)
-        r = b.assemble.vector()
-        F = b.results.kinematics
-        P = b.results.stress
-        s = b.evaluate.cauchy_stress()
-        t = b.evaluate.kirchhoff_stress()
-        C = b.results.elasticity
-        z = b.results.statevars
+    assert K.shape == (81, 81)
+    assert r.shape == (81, 1)
+    assert F[0].shape == (3, 3, 8, 8)
+    assert P[0].shape == (3, 3, 8, 8)
+    assert s.shape == (3, 3, 8, 8)
+    assert t.shape == (3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 8, 8)
+    assert z.shape == (1, 1, 8, 8)
 
-        assert K.shape == (81, 81)
-        assert r.shape == (81, 1)
-        assert F[0].shape == (3, 3, 8, 8)
-        assert P[0][0].shape == (3, 3, 8, 8)
-        assert s.shape == (3, 3, 8, 8)
-        assert t.shape == (3, 3, 8, 8)
-        assert C[0].shape == (3, 3, 3, 3, 8, 8)
-        assert z.shape == (5, 16, 8, 8)
+
+def test_solidbody_tensor_mixed():
+
+    umat = pre_umat_mixed()
+
+    m = fe.Cube(n=3)
+    r = fe.RegionHexahedron(m)
+    v = fe.FieldsMixed(r, n=3)
+
+    b = fe.SolidBodyTensor(umat, v)
+    r = b.assemble.vector()
+
+    K = b.assemble.matrix(v)
+    K = b.assemble.matrix()
+    r = b.assemble.vector(v)
+    r = b.assemble.vector()
+    F = b.results.kinematics
+    P = b.results.stress
+    s = b.evaluate.cauchy_stress()
+    t = b.evaluate.kirchhoff_stress()
+    C = b.results.elasticity
+    z = b.results.statevars
+
+    assert K.shape == (97, 97)
+    assert r.shape == (97, 1)
+    assert F[0].shape == (3, 3, 8, 8)
+    assert P[0].shape == (3, 3, 8, 8)
+    assert s.shape == (3, 3, 8, 8)
+    assert t.shape == (3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 8, 8)
+    assert z.shape == (1, 1, 8, 8)
 
 
 if __name__ == "__main__":
     test_solidbody_tensor()
+    test_solidbody_tensor_mixed()

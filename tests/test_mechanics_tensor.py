@@ -78,29 +78,33 @@ def test_solidbody_tensor():
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     v = fe.FieldsMixed(r, n=1)
+    
+    sv = np.zeros((1, 1, r.quadrature.npoints, m.ncells))
 
-    b = fe.SolidBodyTensor(umat, v)
-    r = b.assemble.vector()
+    for statevars in [sv, None]:
 
-    K = b.assemble.matrix(v)
-    K = b.assemble.matrix()
-    r = b.assemble.vector(v)
-    r = b.assemble.vector()
-    F = b.results.kinematics
-    P = b.results.stress
-    s = b.evaluate.cauchy_stress()
-    t = b.evaluate.kirchhoff_stress()
-    C = b.results.elasticity
-    z = b.results.statevars
-
-    assert K.shape == (81, 81)
-    assert r.shape == (81, 1)
-    assert F[0].shape == (3, 3, 8, 8)
-    assert P[0].shape == (3, 3, 8, 8)
-    assert s.shape == (3, 3, 8, 8)
-    assert t.shape == (3, 3, 8, 8)
-    assert C[0].shape == (3, 3, 3, 3, 8, 8)
-    assert z.shape == (1, 1, 8, 8)
+        b = fe.SolidBodyTensor(umat, v, statevars)
+        r = b.assemble.vector()
+    
+        K = b.assemble.matrix(v)
+        K = b.assemble.matrix()
+        r = b.assemble.vector(v)
+        r = b.assemble.vector()
+        F = b.results.kinematics
+        P = b.results.stress
+        s = b.evaluate.cauchy_stress()
+        t = b.evaluate.kirchhoff_stress()
+        C = b.results.elasticity
+        z = b.results.statevars
+    
+        assert K.shape == (81, 81)
+        assert r.shape == (81, 1)
+        assert F[0].shape == (3, 3, 8, 8)
+        assert P[0].shape == (3, 3, 8, 8)
+        assert s.shape == (3, 3, 8, 8)
+        assert t.shape == (3, 3, 8, 8)
+        assert C[0].shape == (3, 3, 3, 3, 8, 8)
+        assert z.shape == (1, 1, 8, 8)
 
 
 def test_solidbody_tensor_mixed():
@@ -111,28 +115,32 @@ def test_solidbody_tensor_mixed():
     r = fe.RegionHexahedron(m)
     v = fe.FieldsMixed(r, n=3)
 
-    b = fe.SolidBodyTensor(umat, v)
-    r = b.assemble.vector()
+    sv = np.zeros((1, 1, r.quadrature.npoints, m.ncells))
 
-    K = b.assemble.matrix(v)
-    K = b.assemble.matrix()
-    r = b.assemble.vector(v)
-    r = b.assemble.vector()
-    F = b.results.kinematics
-    P = b.results.stress
-    s = b.evaluate.cauchy_stress()
-    t = b.evaluate.kirchhoff_stress()
-    C = b.results.elasticity
-    z = b.results.statevars
+    for statevars in [sv, None]:
 
-    assert K.shape == (97, 97)
-    assert r.shape == (97, 1)
-    assert F[0].shape == (3, 3, 8, 8)
-    assert P[0].shape == (3, 3, 8, 8)
-    assert s.shape == (3, 3, 8, 8)
-    assert t.shape == (3, 3, 8, 8)
-    assert C[0].shape == (3, 3, 3, 3, 8, 8)
-    assert z.shape == (1, 1, 8, 8)
+        b = fe.SolidBodyTensor(umat, v, statevars)
+        r = b.assemble.vector()
+    
+        K = b.assemble.matrix(v)
+        K = b.assemble.matrix()
+        r = b.assemble.vector(v)
+        r = b.assemble.vector()
+        F = b.results.kinematics
+        P = b.results.stress
+        s = b.evaluate.cauchy_stress()
+        t = b.evaluate.kirchhoff_stress()
+        C = b.results.elasticity
+        z = b.results.statevars
+    
+        assert K.shape == (97, 97)
+        assert r.shape == (97, 1)
+        assert F[0].shape == (3, 3, 8, 8)
+        assert P[0].shape == (3, 3, 8, 8)
+        assert s.shape == (3, 3, 8, 8)
+        assert t.shape == (3, 3, 8, 8)
+        assert C[0].shape == (3, 3, 3, 3, 8, 8)
+        assert z.shape == (1, 1, 8, 8)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+ _______  _______  ___      __   __  _______  _______ 
+|       ||       ||   |    |  | |  ||       ||       |
+|    ___||    ___||   |    |  | |  ||    _  ||    ___|
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
+|    ___||    ___||   |___ |       ||    ___||    ___|
+|   |    |   |___ |       ||       ||   |    |   |___ 
+|___|    |_______||_______||_______||___|    |_______|
+
+This file is part of felupe.
+
+Felupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Felupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+import numpy as np
+from scipy.sparse import csr_matrix
+
+from ._helpers import Assemble, Results
+
+
+class PointLoad:
+    "A point load with methods for the assembly of sparse vectors/matrices."
+
+    def __init__(self, field, mask, values, apply_on=0, axisymmetric=False):
+
+        self.field = field
+        self.mask = mask
+        self.values = values
+        self.apply_on = apply_on
+        self.axisymmetric = axisymmetric
+
+        self.results = Results()
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+
+    def _vector(self, field=None, parallel=False, jit=False):
+
+        if field is not None:
+            self.field = field
+
+        force = [np.zeros_like(f.values) for f in self.field.fields]
+        force[self.apply_on][self.mask] += self.values
+
+        if self.axisymmetric:
+            points = self.field[0].region.mesh.points
+            radius = points[self.mask, 1].reshape(-1, 1)
+            force[self.apply_on][self.mask] *= 2 * np.pi * radius
+
+        self.results.force = csr_matrix(
+            np.concatenate([f.ravel() for f in force]).reshape(-1, 1)
+        )
+
+        return -self.results.force
+
+    def _matrix(self, field=None, parallel=False, jit=False):
+
+        if field is not None:
+            self.field = field
+
+        n = np.sum(self.field.fieldsizes)
+        self.results.stiffness = csr_matrix(([0], ([0], [0])), shape=(n, n))
+
+        return self.results.stiffness

@@ -64,7 +64,7 @@ class SolidBodyGravity:
         if len(self.field) > 1:
             self.results.force.resize(np.sum(self.field.fieldsizes), 1)
 
-        return self.results.force
+        return -self.results.force
 
     def _matrix(self, field=None, parallel=False, jit=False):
 

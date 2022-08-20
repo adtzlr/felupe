@@ -46,6 +46,10 @@ class SolidBodyGravity:
         self.results.gravity = np.array(gravity)
         self.results.density = density
 
+    def update(self, gravity):
+
+        self.__init__(self.field, gravity, self.results.density)
+
     def _vector(self, field=None, parallel=False, jit=False):
 
         if field is not None:

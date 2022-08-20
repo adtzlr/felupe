@@ -36,7 +36,6 @@ class SolidBodyPressure:
     def __init__(self, field, pressure=None):
 
         self.field = field
-
         self._normals = self.field.region.normals
 
         self.results = Results()
@@ -48,8 +47,11 @@ class SolidBodyPressure:
             self.results.pressure = 1.0
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-
         self._area_change = AreaChange()
+
+    def update(self, pressure):
+
+        self.__init__(self.field, pressure)
 
     def _extract(self, field):
 

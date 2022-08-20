@@ -66,6 +66,7 @@ def test_pressure():
     h = fe.RegionHexahedron(m)
     u = fe.Field(h, dim=3)
 
+    np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
     v = fe.FieldContainer([u])
 
@@ -106,6 +107,7 @@ def test_pressure():
     c._update(v, q)
     assert np.allclose(v[0].values, q[0].values)
 
+    np.random.seed(156)
     w = fe.FieldsMixed(h)
     w[0].values = np.random.rand(*w[0].values.shape) / 10
 
@@ -120,7 +122,8 @@ def pre(dim):
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.Field(r, dim=dim)
-
+    
+    np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
 
     return umat, fe.FieldContainer([u])
@@ -134,6 +137,7 @@ def pre_axi():
     r = fe.RegionQuad(m)
     u = fe.FieldAxisymmetric(r)
 
+    np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
 
     return umat, fe.FieldContainer([u])
@@ -147,6 +151,7 @@ def pre_mixed(dim):
     r = fe.RegionHexahedron(m)
     u = fe.FieldsMixed(r, n=3)
 
+    np.random.seed(156)
     u[0].values = np.random.rand(*u[0].values.shape) / 10
     u[1].values = np.random.rand(*u[1].values.shape) / 10
     u[2].values = np.random.rand(*u[2].values.shape) / 10

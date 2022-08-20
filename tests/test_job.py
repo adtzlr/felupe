@@ -35,7 +35,7 @@ def pre():
             pressure: np.zeros(11),
             gravity: np.zeros((11, 3)),
         },
-        bounds=bounds,
+        boundaries=bounds,
     )
 
     return step
@@ -53,7 +53,22 @@ def test_curve():
 
     step = pre()
 
-    curve = fem.CharacteristicCurve(steps=[step], boundary=step.bounds["move"])
+    curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
+    curve.plot(xaxis=0, yaxis=0)
+
+    stretch = 1 + np.array(curve.x)[:, 0]
+    area = 1 ** 2 * np.pi
+    force = (stretch - 1 / stretch ** 2) * area
+
+    assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
+
+
+def test_curve2():
+
+    step = pre()
+
+    curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
+    curve.evaluate()
     curve.plot(xaxis=0, yaxis=0)
 
     stretch = 1 + np.array(curve.x)[:, 0]
@@ -66,3 +81,5 @@ def test_curve():
 if __name__ == "__main__":
     test_job()
     test_curve()
+    test_curve2()
+

@@ -35,13 +35,13 @@ class Step:
     """A Step with multiple substeps, subsequently depending on the solution
     of the previous substep."""
 
-    def __init__(self, items, ramp, bounds):
+    def __init__(self, items, ramp, boundaries):
         """A Step with multiple substeps, subsequently depending on the solution
         of the previous substep."""
 
         self.items = items
         self.ramp = dict(ramp)
-        self.bounds = bounds
+        self.boundaries = boundaries
         self.nsubsteps = len(list(self.ramp.values())[0])
 
     def generate(self, **kwargs):
@@ -61,8 +61,8 @@ class Step:
                 item.update(value[substep])
 
             # update load case
-            dof0, dof1 = partition(field, self.bounds)
-            ext0 = apply(field, self.bounds, dof0)
+            dof0, dof1 = partition(field, self.boundaries)
+            ext0 = apply(field, self.boundaries, dof0)
 
             # run newton-rhapson iterations
             res = newtonrhapson(

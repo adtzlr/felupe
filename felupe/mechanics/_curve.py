@@ -53,7 +53,8 @@ class CharacteristicCurve(Job):
 
         import matplotlib.pyplot as plt
 
-        self.evaluate(**kwargs)
+        if self.res is None:
+            self.evaluate(**kwargs)
 
         x = np.array(self.x)
         y = np.array(self.y)

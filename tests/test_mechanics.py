@@ -319,9 +319,6 @@ def test_solidbody_mixed():
 
 def test_load():
 
-    umat, field = pre(dim=3)
-    mask = field.region.mesh.points[:, 0] == 1
-
     for axi in [False, True]:
 
         if axi:

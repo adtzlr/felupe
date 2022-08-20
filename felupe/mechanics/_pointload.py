@@ -34,10 +34,10 @@ from ._helpers import Assemble, Results
 class PointLoad:
     "A point load with methods for the assembly of sparse vectors/matrices."
 
-    def __init__(self, field, mask, values, apply_on=0, axisymmetric=False):
+    def __init__(self, field, points, values, apply_on=0, axisymmetric=False):
 
         self.field = field
-        self.mask = mask
+        self.points = points
         self.values = values
         self.apply_on = apply_on
         self.axisymmetric = axisymmetric
@@ -51,12 +51,12 @@ class PointLoad:
             self.field = field
 
         force = [np.zeros_like(f.values) for f in self.field.fields]
-        force[self.apply_on][self.mask] += self.values
+        force[self.apply_on][self.points] += self.values
 
         if self.axisymmetric:
-            points = self.field[0].region.mesh.points
-            radius = points[self.mask, 1].reshape(-1, 1)
-            force[self.apply_on][self.mask] *= 2 * np.pi * radius
+            mesh_points = self.field[0].region.mesh.points
+            radius = mesh_points[self.points, 1].reshape(-1, 1)
+            force[self.apply_on][self.points] *= 2 * np.pi * radius
 
         self.results.force = csr_matrix(
             np.concatenate([f.ravel() for f in force]).reshape(-1, 1)

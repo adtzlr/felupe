@@ -104,6 +104,9 @@ from .mechanics import (
     SolidBodyTensor,
     SolidBodyGravity,
     PointLoad,
+    Step,
+    Job,
+    CharacteristicCurve,
 )
 
 try:

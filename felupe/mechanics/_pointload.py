@@ -34,16 +34,25 @@ from ._helpers import Assemble, Results
 class PointLoad:
     "A point load with methods for the assembly of sparse vectors/matrices."
 
-    def __init__(self, field, points, values, apply_on=0, axisymmetric=False):
+    def __init__(self, field, points, values=None, apply_on=0, axisymmetric=False):
 
         self.field = field
         self.points = points
-        self.values = values
+
+        if values is None:
+            self.values = 0
+        else:
+            self.values = values
+
         self.apply_on = apply_on
         self.axisymmetric = axisymmetric
 
         self.results = Results()
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+
+    def update(self, values):
+
+        self.__init__(self.field, self.points, values, self.apply_on, self.axisymmetric)
 
     def _vector(self, field=None, parallel=False, jit=False):
 

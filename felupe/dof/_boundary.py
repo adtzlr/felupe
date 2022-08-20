@@ -127,3 +127,7 @@ class Boundary:
 
         self.dof = dof[self.mask]
         self.points = np.arange(mesh.npoints)[mask]
+
+    def update(self, value):
+
+        self.value = value

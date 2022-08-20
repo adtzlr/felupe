@@ -28,42 +28,39 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from .._assembly import IntegralFormMixed
-from ..constitution import AreaChange
 from ._helpers import Assemble, Results
 
 
-class SolidBodyGravity:
-    "A SolidBody with methods for the assembly of sparse vectors/matrices."
+class PointLoad:
+    "A point load with methods for the assembly of sparse vectors/matrices."
 
-    def __init__(self, field, gravity, density):
+    def __init__(self, field, mask, values, apply_on=0, axisymmetric=False):
 
         self.field = field
-        self.results = Results(stress=False, elasticity=False)
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-        self._form = IntegralFormMixed
+        self.mask = mask
+        self.values = values
+        self.apply_on = apply_on
+        self.axisymmetric = axisymmetric
 
-        self.results.gravity = np.array(gravity)
-        self.results.density = density
+        self.results = Results()
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
     def _vector(self, field=None, parallel=False, jit=False):
 
         if field is not None:
             self.field = field
 
-        # copy and take only the first (displacement) field of the container
-        f = self.field.copy()
-        f.fields = f.fields[0:1]
+        force = [np.zeros_like(f.values) for f in self.field.fields]
+        force[self.apply_on][self.mask] += self.values
 
-        self.results.force = self._form(
-            fun=[self.results.density * self.results.gravity.reshape(-1, 1, 1)],
-            v=f,
-            dV=self.field.region.dV,
-            grad_v=[False],
-        ).assemble(parallel=parallel, jit=jit)
+        if self.axisymmetric:
+            points = self.field[0].region.mesh.points
+            radius = points[self.mask, 1].reshape(-1, 1)
+            force[self.apply_on][self.mask] *= 2 * np.pi * radius
 
-        if len(self.field) > 1:
-            self.results.force.resize(np.sum(self.field.fieldsizes), 1)
+        self.results.force = csr_matrix(
+            np.concatenate([f.ravel() for f in force]).reshape(-1, 1)
+        )
 
         return -self.results.force
 

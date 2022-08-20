@@ -50,6 +50,7 @@ def pre_umat():
 
     return NHTensor(NH)
 
+
 def pre_umat_mixed():
 
     NH = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=5000))
@@ -57,7 +58,12 @@ def pre_umat_mixed():
     class NHTensor:
         def __init__(self, NH):
             self.NH = NH
-            self.x = [np.zeros((3, 3)), np.zeros((1, 1)), np.zeros((1, 1)), np.zeros((1, 1))]
+            self.x = [
+                np.zeros((3, 3)),
+                np.zeros((1, 1)),
+                np.zeros((1, 1)),
+                np.zeros((1, 1)),
+            ]
 
         def function(self, x):
             F, statevars = x[:-1], x[-1]
@@ -78,14 +84,14 @@ def test_solidbody_tensor():
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     v = fe.FieldsMixed(r, n=1)
-    
+
     sv = np.zeros((1, 1, r.quadrature.npoints, m.ncells))
 
     for statevars in [sv, None]:
 
         b = fe.SolidBodyTensor(umat, v, statevars)
         r = b.assemble.vector()
-    
+
         K = b.assemble.matrix(v)
         K = b.assemble.matrix()
         r = b.assemble.vector(v)
@@ -96,7 +102,7 @@ def test_solidbody_tensor():
         t = b.evaluate.kirchhoff_stress()
         C = b.results.elasticity
         z = b.results.statevars
-    
+
         assert K.shape == (81, 81)
         assert r.shape == (81, 1)
         assert F[0].shape == (3, 3, 8, 8)
@@ -121,7 +127,7 @@ def test_solidbody_tensor_mixed():
 
         b = fe.SolidBodyTensor(umat, v, statevars)
         r = b.assemble.vector()
-    
+
         K = b.assemble.matrix(v)
         K = b.assemble.matrix()
         r = b.assemble.vector(v)
@@ -132,7 +138,7 @@ def test_solidbody_tensor_mixed():
         t = b.evaluate.kirchhoff_stress()
         C = b.results.elasticity
         z = b.results.statevars
-    
+
         assert K.shape == (97, 97)
         assert r.shape == (97, 1)
         assert F[0].shape == (3, 3, 8, 8)

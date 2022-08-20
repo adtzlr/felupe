@@ -317,9 +317,39 @@ def test_solidbody_mixed():
             assert np.allclose(Kg1.toarray(), Kg2.toarray())
 
 
+def test_load():
+
+    umat, field = pre(dim=3)
+    mask = field.region.mesh.points[:, 0] == 1
+
+    for axi in [False, True]:
+
+        if axi:
+            umat, field = pre(dim=3)
+        else:
+            umat, field = pre_axi()
+
+        mask = field.region.mesh.points[:, 0] == 1
+        values = 0.1
+
+        if axi:
+            values *= 0.025
+
+        body = fe.SolidBody(umat, field)
+        load = fe.PointLoad(field, mask, values=values, axisymmetric=axi)
+
+        bounds = {"fix": fe.Boundary(field[0], fx=lambda x: x == 0)}
+        dof0, dof1 = fe.dof.partition(field, bounds)
+
+        res = fe.newtonrhapson(items=[body, load], dof0=dof0, dof1=dof1)
+
+        assert res.success
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
     test_solidbody_axi()
     test_solidbody_mixed()
     test_pressure()
+    test_load()

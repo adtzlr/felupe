@@ -103,6 +103,7 @@ from .mechanics import (
     SolidBodyPressure,
     SolidBodyTensor,
     SolidBodyGravity,
+    PointLoad,
 )
 
 try:

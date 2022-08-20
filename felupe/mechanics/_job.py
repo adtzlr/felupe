@@ -65,7 +65,7 @@ FElupe Version {version}
             for i, substep in enumerate(substeps):
 
                 if verbose:
-                    _substep = f"Substep {i + 1}/{step.nsubsteps}"
+                    _substep = f"Substep {i}/{step.nsubsteps - 1}"
                     _step = f"Step {j + 1}/{self.nsteps}"
 
                     print(f"{_substep} of {_step} successful.")

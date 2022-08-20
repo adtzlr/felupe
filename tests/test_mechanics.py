@@ -103,13 +103,13 @@ def test_pressure():
     assert r.shape == (81, 1)
     assert F[0].shape == (3, 3, 4, 24)
 
-    c.update(v, q)
+    c._update(v, q)
     assert np.allclose(v[0].values, q[0].values)
 
     w = fe.FieldsMixed(h)
     w[0].values = np.random.rand(*w[0].values.shape) / 10
 
-    c.update(w, v)
+    c._update(w, v)
     assert np.allclose(w[0].values, v[0].values)
 
 

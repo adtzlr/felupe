@@ -19,8 +19,16 @@ def pre():
     body = fem.SolidBody(umat, field)
     bounds, loadcase = fem.dof.uniaxial(field)
 
+    points = mesh.points[:, 0] == 1
+    load = fem.PointLoad(field, points)
+    gravity = fem.SolidBodyGravity(field, [0, 0, 0], 0)
+
+    region2 = fem.RegionQuadBoundary(mesh, mask=points, ensure_3d=True)
+    field2 = fem.FieldContainer([fem.FieldAxisymmetric(region2, dim=2)])
+    pressure = fem.SolidBodyPressure(field2, pressure=0.0)
+
     step = fem.Step(
-        items=[body],
+        items=[body, load, gravity, pressure],
         ramp={bounds["move"]: fem.math.linsteps([0, 1], num=10)},
         bounds=bounds,
     )

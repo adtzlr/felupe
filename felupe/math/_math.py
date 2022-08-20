@@ -28,6 +28,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def linsteps(points, num=11):
+def linsteps(points, num=10):
 
-    return np.linspace(points[:-1], points[1:], num=num, endpoint=False, axis=1).ravel()
+    ls = np.linspace(points[:-1], points[1:], num=num, endpoint=False, axis=1).ravel()
+    ls_with_endpoint = np.append(ls, points[-1])
+
+    return ls_with_endpoint

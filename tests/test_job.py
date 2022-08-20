@@ -29,7 +29,12 @@ def pre():
 
     step = fem.Step(
         items=[body, load, gravity, pressure],
-        ramp={bounds["move"]: fem.math.linsteps([0, 1], num=10)},
+        ramp={
+            bounds["move"]: fem.math.linsteps([0, 1], num=10),
+            load: np.zeros((11, 2)),
+            pressure: np.zeros(11),
+            gravity: np.zeros((11, 3)),
+        },
         bounds=bounds,
     )
 

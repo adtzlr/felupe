@@ -66,7 +66,7 @@ class SolidBodyPressure:
 
         if field is not None:
 
-            self.update(field)
+            self._update(field)
             self.results.kinematics = self._extract(self.field)
 
         fun = self._area_change.function(
@@ -95,7 +95,7 @@ class SolidBodyPressure:
 
         if field is not None:
 
-            self.update(field)
+            self._update(field)
             self.results.kinematics = self._extract(self.field)
 
         fun = self._area_change.gradient(
@@ -123,7 +123,7 @@ class SolidBodyPressure:
 
         return self.results.stiffness
 
-    def update(self, other_field, field=None):
+    def _update(self, other_field, field=None):
 
         if field is not None:
             self.field = field

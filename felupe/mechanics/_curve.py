@@ -39,11 +39,13 @@ class CharacteristicCurve(Job):
         self.boundary = boundary
         self.x = []
         self.y = []
+        self.res = None
 
     def _callback(self, substep):
 
         self.x.append(substep.x[0].values[self.boundary.points[0]])
         self.y.append(force(substep.x, substep.fun, self.boundary))
+        self.res = substep
 
     def plot(
         self, xaxis=0, yaxis=0, xlabel="x", ylabel="y", fig=None, ax=None, **kwargs

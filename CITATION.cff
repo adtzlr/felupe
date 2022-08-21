@@ -1,0 +1,11 @@
+authors:
+- family-names: "Dutzler"
+  given-names: "Andreas"
+  orcid: "https://orcid.org/0000-0002-9383-9686"
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "FElupe: Finite Element Analysis"
+type: software
+doi: 10.5281/zenodo.4817406
+url: https://github.com/adtzlr/felupe
+license: GPL-3.0

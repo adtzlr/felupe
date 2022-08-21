@@ -59,6 +59,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [5.0.0] - 2022-08-21
+
 ### Added
 - Add `SolidBodyGravity` for body forces acting on a solid body.
 - Support list of linked fields in Newton-Rhapson solver `newtonrhapson(fields=[field_1, field_2])`.

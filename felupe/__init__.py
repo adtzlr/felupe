@@ -46,6 +46,7 @@ from ._basis import (
 from ._field import (
     Field,
     FieldAxisymmetric,
+    FieldPlaneStrain,
     FieldContainer,
     FieldsMixed,
 )

@@ -43,20 +43,15 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     # convert axes to array and slice by mesh dimension
     enforce = np.array(axes).astype(bool)[: field.dim]
 
-    # create search functions for x,y,z - axes
-    fx = lambda v: np.isclose(v, x)
-    fy = lambda v: np.isclose(v, y)
-    fz = lambda v: np.isclose(v, z)
-
     # invert boolean identity matrix and use its rows
     # for the skip argument (a symmetry condition on
     # axis "z" fixes all displacements u_z=0 but keeps
     # in-plane displacements active)
     skipax = ~np.eye(3).astype(bool)
     kwarglist = [
-        {"fx": fx, "skip": skipax[0][: field.dim]},
-        {"fy": fy, "skip": skipax[1][: field.dim]},
-        {"fz": fz, "skip": skipax[2][: field.dim]},
+        {"fx": x, "skip": skipax[0][: field.dim]},
+        {"fy": y, "skip": skipax[1][: field.dim]},
+        {"fz": z, "skip": skipax[2][: field.dim]},
     ]
 
     if bounds is None:
@@ -77,14 +72,12 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
 
     f = _get_first_field(field)
 
-    f1 = lambda x: np.isclose(x, right)
-
     bounds = symmetry(f)
 
     if clamped:
-        bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
+        bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
 
-    bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
+    bounds["move"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
@@ -102,16 +95,14 @@ def biaxial(field, right=1, move=0.2, clamped=False):
 
     f = _get_first_field(field)
 
-    f1 = lambda x: np.isclose(x, right)
-
     bounds = symmetry(f)
 
     if clamped:
-        bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
-        bounds["top"] = Boundary(f, fy=f1, skip=(0, 1, 0))
+        bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
+        bounds["top"] = Boundary(f, fy=right, skip=(0, 1, 0))
 
-    bounds["move-x"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
-    bounds["move-y"] = Boundary(f, fy=f1, skip=(1, 0, 1), value=move)
+    bounds["move-x"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
+    bounds["move-y"] = Boundary(f, fy=right, skip=(1, 0, 1), value=move)
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
@@ -125,15 +116,13 @@ def planar(field, right=1, move=0.2, clamped=False):
 
     f = _get_first_field(field)
 
-    f1 = lambda x: np.isclose(x, right)
-
     bounds = symmetry(f)
 
     if clamped:
-        bounds["right"] = Boundary(f, fx=f1, skip=(1, 0, 0))
+        bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
 
-    bounds["move"] = Boundary(f, fx=f1, skip=(0, 1, 1), value=move)
-    bounds["fix-y"] = Boundary(f, fy=f1, skip=(1, 0, 1))
+    bounds["move"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
+    bounds["fix-y"] = Boundary(f, fy=right, skip=(1, 0, 1))
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
@@ -147,17 +136,14 @@ def shear(field, bottom=0, top=1, move=0.2, sym=True):
 
     f = _get_first_field(field)
 
-    f0 = lambda x: np.isclose(x, bottom)
-    f1 = lambda x: np.isclose(x, top)
-
     if sym:
         bounds = symmetry(f, axes=(False, False, True))
     else:
         bounds = {}
 
-    bounds["bottom"] = Boundary(f, fy=f0)
-    bounds["top"] = Boundary(f, fy=f1, skip=(1, 0, 0))
-    bounds["move"] = Boundary(f, fy=f1, skip=(0, 1, 1), value=move)
+    bounds["bottom"] = Boundary(f, fy=bottom)
+    bounds["top"] = Boundary(f, fy=top, skip=(1, 0, 0))
+    bounds["move"] = Boundary(f, fy=top, skip=(0, 1, 1), value=move)
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)

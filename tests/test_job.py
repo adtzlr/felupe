@@ -82,4 +82,3 @@ if __name__ == "__main__":
     test_job()
     test_curve()
     test_curve2()
-

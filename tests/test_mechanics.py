@@ -122,7 +122,7 @@ def pre(dim):
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.Field(r, dim=dim)
-    
+
     np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
 

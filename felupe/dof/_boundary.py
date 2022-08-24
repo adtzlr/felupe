@@ -41,6 +41,7 @@ class Boundary:
         value=0,
         skip=(False, False, False),
         mask=None,
+        mode="or",
     ):
         """A Boundary as a collection of prescribed degrees of freedom
         (numbered coordinate components of a field at points of a mesh).
@@ -73,6 +74,9 @@ class Boundary:
             A tuple to define which axes of the selected points should be
             skipped (i.e. not prescribed).
 
+        mode : string, optional (default is `or`)
+            A string which defines the logical combination of points per axis.
+
 
         Attributes
         ----------
@@ -96,7 +100,15 @@ class Boundary:
         self.name = name
         self.value = value
         self.skip = np.array(skip).astype(int)[: mesh.dim]  # self.dim
-        self.fun = [fx, fy, fz][: mesh.dim]
+
+        self.mode = mode
+
+        # check if callable
+        _fx = fx if callable(fx) else lambda x: np.isclose(x, fx)
+        _fy = fy if callable(fy) else lambda y: np.isclose(y, fy)
+        _fz = fz if callable(fz) else lambda z: np.isclose(z, fz)
+
+        self.fun = [_fx, _fy, _fz][: mesh.dim]
 
         if mask is None:
 
@@ -104,16 +116,19 @@ class Boundary:
             # fx(x), fy(y), fz(z) and create a mask for each coordinate
             mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
 
+            # select the logical combination function "or" or "and"
+            combine = {"or": np.logical_or, "and": np.logical_and}[self.mode]
+
             # combine the masks with "logical_or" if dim > 1
             if mesh.dim == 1:
                 mask = mask[0]
 
             elif mesh.dim == 2:
-                mask = np.logical_or(mask[0], mask[1])
+                mask = combine(mask[0], mask[1])
 
             elif mesh.dim == 3:  # and mesh.points.shape[1] == 3:
                 tmp = np.logical_or(mask[0], mask[1])
-                mask = np.logical_or(tmp, mask[2])
+                mask = combine(tmp, mask[2])
 
         # tile the mask
         self.mask = np.tile(mask.reshape(-1, 1), self.dim)

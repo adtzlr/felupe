@@ -48,7 +48,15 @@ class CharacteristicCurve(Job):
         self.res = substep
 
     def plot(
-        self, xaxis=0, yaxis=0, xlabel="x", ylabel="y", fig=None, ax=None, **kwargs
+        self,
+        xaxis=0,
+        yaxis=0,
+        xlabel="x",
+        ylabel="y",
+        fig=None,
+        ax=None,
+        linestyle=".-",
+        **kwargs
     ):
 
         import matplotlib.pyplot as plt
@@ -62,7 +70,7 @@ class CharacteristicCurve(Job):
         if fig is None or ax is None:
             fig, ax = plt.subplots()
 
-        ax.plot(x[:, xaxis], y[:, yaxis], ".-")
+        ax.plot(x[:, xaxis], y[:, yaxis], linestyle)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
 

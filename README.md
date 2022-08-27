@@ -59,6 +59,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Enhance `Boundary`: Select Points by value in addition to a callable, also add `mode="and"` and `mode="or"` argument.
+
 ## [5.0.0] - 2022-08-21
 
 ### Added

@@ -177,7 +177,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 
     # set new cell-type and the appropriate slice
     cell_type_new, sl = {
-        # "line": ("quad", slice(None, None, -1)),
+        "line": ("quad", slice(None, None, -1)),
         "quad": ("hexahedron", slice(None, None, None)),
     }[cell_type]
 

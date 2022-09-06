@@ -60,7 +60,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Changed
-- Support integers for the definition of boundary point-selection functions (`fx=lambda x: x == 0` is equivalent to `fx=0`).
+- Enhance `Boundary`: Select Points by value in addition to a callable (`fx=lambda x: x == 0` is equivalent to `fx=0`), also add `mode="and"` and `mode="or"` argument.
 - Support line elements within the revolution function `mesh.revolve()`.
 
 ## [5.0.0] - 2022-08-21

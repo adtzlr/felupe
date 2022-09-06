@@ -5,7 +5,11 @@ from ._post import (
     moment,
     curve,
 )
-from ._newton import newtonrhapson
+from ._newton import (
+    newtonrhapson,
+    fun_items as fun,
+    jac_items as jac,
+)
 from ._project import (
     topoints,
     project,

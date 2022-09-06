@@ -9,6 +9,8 @@ Non-homogenous shear loadcase
    * use a mixed hyperelastic formulation in plane strain
    
    * assign a micro-sphere material formulation
+
+   * define a step and a job along with a callback-function
    
    * export and visualize principal stretches
    
@@ -103,41 +105,54 @@ movement is prescribed. It also ensures a force-free top plate in direction
 
 ..  code-block:: python
 
-    MPC = fe.MultiPointConstraint(
+    mpc = fe.MultiPointConstraint(
         field=fields,
         points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
         centerpoint=mesh.npoints - 1,
     )
 
 
-The shear movement is applied in increments, which are each solved with an
+The shear movement is applied in substeps, which are each solved with an
 iterative newton-rhapson procedure. Inside an iteration, the force residual
 vector and the tangent stiffness matrix are assembled. The fields are updated
 with the solution of unknowns. The equilibrium is checked as ratio between the 
 norm of residual forces of the active vs. the norm of the residual forces of 
 the inactive degrees of freedom. If convergence is obtained, the iteration loop
 ends. Both :math:`y`-displacement and the reaction force in direction :math:`x`
-of the top plate are saved.
+of the top plate are saved. This is realized by a callback-function which is
+called after each successful substep. A step combines all active items along
+with constant and ramped boundary conditions. Finally, the step is added to a
+job. A job returns a generator object with the results of all substeps.
 
 ..  code-block:: python
 
-    UX = np.linspace(0, 15, 16)
+    UX = fe.math.linsteps([0, 15], 15)
     UY = []
     FX = []
-    
-    for move in UX:
+
+    def callback(subcase):
+        """Callback-function for the evaluation of the force-displacement
+        characteristic curves."""
         
-        boundaries["control"].value = move
-        ext0 = fe.dof.apply(fields, boundaries, dof0)
+        # get current x-movement
+        move = boundaries["control"].value
         
-        res = fe.newtonrhapson(
-            items=[rubber, MPC], dof0=dof0, dof1=dof1, ext0=ext0
-        )
-                
-        UY.append(fields[0].values[MPC.centerpoint, 1])
-        FX.append(res.fun[2 * MPC.centerpoint] * T)
-        
+        UY.append(subcase.x[0].values[mpc.centerpoint, 1])
+        FX.append(subcase.fun[2 * mpc.centerpoint] * T)
+
         print(f"Reaction Force FX(UX) = {FX[-1]:1.1f}N({move}mm)")
+        return
+
+
+..  code-block:: python
+    
+    step = fe.Step(
+        items=[rubber, mpc], 
+        ramp={boundaries["control"]: UX}, 
+        boundaries=boundaries
+    )
+    job = fe.Job(steps=[step], callback=callback)
+    res = job.evaluate()
 
 For the maximum deformed model a VTK-file containing principal stretches
 projected to mesh points is exported.
@@ -151,7 +166,7 @@ projected to mesh points is exported.
     
     stretches = fe.project(np.sqrt(eigh(C)[0]), region)
     
-    fe.save(region, res.x, point_data={
+    fe.save(region, fields, point_data={
         "Maximum-principal-stretch": np.max(stretches, axis=1),
         "Minimum-principal-stretch": np.min(stretches, axis=1),
     })

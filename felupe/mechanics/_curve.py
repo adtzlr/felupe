@@ -41,7 +41,7 @@ class CharacteristicCurve(Job):
         self.y = []
         self.res = None
 
-    def _callback(self, substep):
+    def _callback(self, stepnumber, substepnumber, substep):
 
         self.x.append(substep.x[0].values[self.boundary.points[0]])
         self.y.append(force(substep.x, substep.fun, self.boundary))

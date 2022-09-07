@@ -130,7 +130,7 @@ job. A job returns a generator object with the results of all substeps.
     UY = []
     FX = []
 
-    def callback(subcase):
+    def callback(stepnumber, substepnumber, subcase):
         """Callback-function for the evaluation of the force-displacement
         characteristic curves."""
         

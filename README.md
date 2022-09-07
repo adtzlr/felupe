@@ -63,6 +63,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance `Boundary`: Select Points by value in addition to a callable (`fx=lambda x: x == 0` is equivalent to `fx=0`), also add `mode="and"` and `mode="or"` argument.
 - Support line elements within the revolution function `mesh.revolve()`.
 - Import previously hidden functions `fun_items()` and `jac_items()` as `tools.fun()` and `tools.jac()`, respectively (useful for numeric continuation).
+- Add step- and substep-numbers as arguments to the `callback(stepnumber, substepnumber, substep)`-function of a `Job`.
 
 ## [5.0.0] - 2022-08-21
 

@@ -1,10 +1,10 @@
-Non-homogenous shear loadcase
------------------------------
+Non-homogeneous shear loadcase
+------------------------------
 
 .. admonition:: Plane strain hyperelastic non-homogenous shear loadcase
    :class: note
 
-   * define a non-homogenous shear loadcase
+   * define a non-homogeneous shear loadcase
    
    * use a mixed hyperelastic formulation in plane strain
    
@@ -19,7 +19,7 @@ Non-homogenous shear loadcase
 
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
 rigid plate on their top and bottom faces, are subjected to a displacement 
-controlled non-homogenous shear deformation by :math:`u_{ext}` in combination 
+controlled non-homogeneous shear deformation by :math:`u_{ext}` in combination 
 with a compressive normal force :math:`F`.
 
 .. image:: images/shear.svg

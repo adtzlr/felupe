@@ -32,7 +32,7 @@ from .. import __version__ as version
 class Job:
     "A job with a list of steps."
 
-    def __init__(self, steps, callback=lambda substep: None):
+    def __init__(self, steps, callback=lambda stepnumber, substepnumber, substep: None):
         self.steps = steps
         self.nsteps = len(steps)
         self.callback = callback
@@ -70,4 +70,4 @@ FElupe Version {version}
 
                     print(f"{_substep} of {_step} successful.")
 
-                self.callback(substep)
+                self.callback(j, i, substep)

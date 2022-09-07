@@ -62,7 +62,7 @@ def test_meshes():
     m = fe.mesh.Line(n=5)
     assert m.points.shape == (5, 1)
     assert m.cells.shape == (4, 2)
-    
+
     mr = fe.mesh.revolve(m, n=11, phi=180, axis=2)
     assert mr.ncells == 4 * 10
 

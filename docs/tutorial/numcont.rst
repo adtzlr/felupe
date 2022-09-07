@@ -77,14 +77,6 @@ An external normal force is applied at :math:`x=1` on a quarter model of a cube 
     
     load = fem.PointLoad(field, right, values_load)
 
-    # dof of u_x at (x, y, z) = (1, 0, 0)
-    p = 3 * np.arange(region.mesh.npoints)[
-        np.all(region.mesh.points == [1, 0, 0], 1)
-    ][0]
-
-    # dof-number of p in active degrees of freedom `dof1`
-    dofp = np.argwhere(dof1[np.isin(dof1, p)][0] == dof1)[0][0]
-
 The next step involves the problem definition for contique. For details have a look at `contique's README <https://github.com/adtzlr/contique>`_.
 
 ..  code-block:: python
@@ -156,7 +148,7 @@ Finally, the force-displacement curve is plotted. It can be seen that the result
     plt.figure()
     
     # plot force-displacement curve
-    plt.plot(X[:, dofp], X[:, -1], "x-")
+    plt.plot(X[:, 0], X[:, -1], "x-")
     plt.xlabel(r"displacement $u(x=1)/L$ $\longrightarrow$")
     plt.ylabel(r"load-proportionality-factor $\lambda$ $\longrightarrow$")
 

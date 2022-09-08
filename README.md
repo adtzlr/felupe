@@ -59,6 +59,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [5.1.0] - 2022-09-09
+
 ### Changed
 - Enhance `Boundary`: Select Points by value in addition to a callable (`fx=lambda x: x == 0` is equivalent to `fx=0`), also add `mode="and"` and `mode="or"` argument.
 - Support line elements within the revolution function `mesh.revolve()`.

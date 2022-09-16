@@ -53,6 +53,8 @@ class CharacteristicCurve(Job):
         yaxis=0,
         xlabel="x",
         ylabel="y",
+        xscale=1,
+        yscale=1,
         fig=None,
         ax=None,
         linestyle=".-",
@@ -70,7 +72,7 @@ class CharacteristicCurve(Job):
         if fig is None or ax is None:
             fig, ax = plt.subplots()
 
-        ax.plot(x[:, xaxis], y[:, yaxis], linestyle)
+        ax.plot(x[:, xaxis] * xscale, y[:, yaxis] * yscale, linestyle)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
 

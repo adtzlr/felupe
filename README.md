@@ -59,6 +59,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `xscale` and `yscale` arguments to `CharacteristicCurve.plot()`.
+
 ## [5.1.0] - 2022-09-09
 
 ### Changed

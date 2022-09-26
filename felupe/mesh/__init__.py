@@ -5,6 +5,7 @@ from ._tools import (
     revolve,
     sweep,
     mirror,
+    concatenate,
     triangulate,
     runouts,
 )
@@ -21,6 +22,7 @@ from ._geometry import (
     Line,
     Rectangle,
     Cube,
+    Grid,
     RectangleArbitraryOrderQuad,
     CubeArbitraryOrderHexahedron,
 )

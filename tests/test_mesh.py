@@ -252,8 +252,44 @@ def test_runouts():
     assert (n.points - x)[:, 1].max() == (m.points - x)[:, 1].max() * 1.1
 
 
+def test_concatenate():
+
+    m = fe.Rectangle(n=3)
+
+    n = fe.mesh.concatenate([m, m, m])
+
+    assert n.npoints == 3 * m.npoints
+    assert n.ncells == 3 * m.ncells
+
+
+def test_grid():
+
+    m = fe.Rectangle(b=(10, 3), n=(4, 5))
+
+    x = np.linspace(0, 10, 4)
+    y = np.linspace(0, 3, 5)
+    n = fe.mesh.Grid(x, y)
+
+    assert np.allclose(m.points, n.points)
+    assert np.allclose(m.cells, n.cells)
+
+
+def test_grid_1d():
+
+    m = fe.mesh.Line(b=10, n=6)
+
+    x = np.linspace(0, 10, 6)
+    n = fe.mesh.Grid(x)
+
+    assert np.allclose(m.points, n.points)
+    assert np.allclose(m.cells, n.cells)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
     test_triangulate()
     test_runouts()
+    test_concatenate()
+    test_grid()
+    test_grid_1d()

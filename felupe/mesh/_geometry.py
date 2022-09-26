@@ -63,6 +63,26 @@ class Cube(Mesh):
         super().__init__(points, cells, cell_type)
 
 
+class Grid(Mesh):
+    def __init__(self, *xi, indexing="ij", **kwargs):
+
+        shape = np.array([len(x) for x in xi])
+        n = shape if len(shape) > 1 else shape[0]
+
+        M = [None, line_line, rectangle_quad, cube_hexa][len(xi)]
+        points, cells, cell_type = M(n=n)
+
+        super().__init__(points, cells, cell_type)
+
+        self.points = (
+            np.vstack(
+                [g.T.ravel() for g in np.meshgrid(*xi, indexing=indexing, **kwargs)]
+            )
+            .astype(float)
+            .T
+        )
+
+
 class RectangleArbitraryOrderQuad(Mesh):
     def __init__(self, a=(0, 0), b=(1, 1), order=2):
         yv, xv = np.meshgrid(

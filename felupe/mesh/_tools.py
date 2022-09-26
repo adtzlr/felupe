@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._mesh import Mesh
 from ._helpers import mesh_or_data
 from ..math import rotation_matrix
 
@@ -324,6 +325,17 @@ def mirror(
         cells_new[:, face] = cells[:, face[::-1]]
 
     return points_new, cells_new, cell_type
+
+
+def concatenate(meshes):
+    "Join a sequence of meshes with identical cell types."
+
+    points = np.vstack([mesh.points for mesh in meshes])
+    offsets = np.cumsum(np.insert([mesh.npoints for mesh in meshes][:-1], 0, 0))
+    cells = np.vstack([offset + mesh.cells for offset, mesh in zip(offsets, meshes)])
+    mesh = Mesh(points=points, cells=cells, cell_type=meshes[0].cell_type)
+
+    return mesh
 
 
 @mesh_or_data

@@ -77,7 +77,7 @@ class IntegralFormAxisymmetric(IntegralForm):
                         fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
                     )
                     form_bb = IntegralForm(
-                        fun[-1, -1, -1, -1] / R ** 2,
+                        fun[-1, -1, -1, -1] / R**2,
                         v.scalar,
                         self.dV,
                         u.scalar,
@@ -97,7 +97,7 @@ class IntegralFormAxisymmetric(IntegralForm):
                         fun[:-1, :-1, :-1], v, self.dV, u, False, True
                     )
                     form_bb = IntegralForm(
-                        fun[-1, -1, -1] / R ** 2,
+                        fun[-1, -1, -1] / R**2,
                         v.scalar,
                         self.dV,
                         u.scalar,

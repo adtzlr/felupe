@@ -57,8 +57,8 @@ def test_curve():
     curve.plot(xaxis=0, yaxis=0)
 
     stretch = 1 + np.array(curve.x)[:, 0]
-    area = 1 ** 2 * np.pi
-    force = (stretch - 1 / stretch ** 2) * area
+    area = 1**2 * np.pi
+    force = (stretch - 1 / stretch**2) * area
 
     assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
 
@@ -72,8 +72,8 @@ def test_curve2():
     curve.plot(xaxis=0, yaxis=0)
 
     stretch = 1 + np.array(curve.x)[:, 0]
-    area = 1 ** 2 * np.pi
-    force = (stretch - 1 / stretch ** 2) * area
+    area = 1**2 * np.pi
+    force = (stretch - 1 / stretch**2) * area
 
     assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
 

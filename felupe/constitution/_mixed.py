@@ -434,7 +434,7 @@ class ThreeFieldVariation:
             J,J - part of hessian
         """
 
-        return (self.FA4bbF - 2 * self.PbbF) / (9 * J ** 2)
+        return (self.FA4bbF - 2 * self.PbbF) / (9 * J**2)
 
     def _hessian_up(self, F, p, J):
         """Linearization w.r.t. pressure of variation of

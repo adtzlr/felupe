@@ -40,7 +40,7 @@ class ArbitraryOrderLagrange(Element):
 
         self._order = order
         self._nshape = order + 1
-        self._npoints = self._nshape ** dim
+        self._npoints = self._nshape**dim
         self._nbasis = self._npoints
         self._interval = interval
 
@@ -78,7 +78,7 @@ class ArbitraryOrderLagrange(Element):
         k = [self._AT @ np.append(0, self._polynomial(ra, n)[:-1]) for ra in r]
 
         # init output
-        dhdr = np.zeros((n ** self.dim, self.dim))
+        dhdr = np.zeros((n**self.dim, self.dim))
 
         # loop over columns
         for i in range(self.dim):
@@ -95,4 +95,4 @@ class ArbitraryOrderLagrange(Element):
     def _polynomial(self, r, n):
         "Lagrange-Polynomial of order n evaluated at coordinate r."
         m = np.arange(n)
-        return r ** m / factorial(m)
+        return r**m / factorial(m)

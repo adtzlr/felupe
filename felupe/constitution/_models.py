@@ -389,7 +389,7 @@ class LinearElasticPlaneStrain:
         if E is None or nu is None:
             E_eff = None
         else:
-            E_eff = E / (1 - nu ** 2)
+            E_eff = E / (1 - nu**2)
 
         if nu is None:
             nu_eff = None
@@ -566,9 +566,9 @@ class LinearElasticPlaneStress:
 
         stress = np.zeros((2, 2, *F.shape[-2:]))
 
-        stress[0, 0] = E / (1 - nu ** 2) * ((F[0, 0] - 1) + nu * (F[1, 1] - 1))
-        stress[1, 1] = E / (1 - nu ** 2) * ((F[1, 1] - 1) + nu * (F[0, 0] - 1))
-        stress[0, 1] = E / (1 - nu ** 2) * (1 - nu) / 2 * (F[0, 1] + F[1, 0])
+        stress[0, 0] = E / (1 - nu**2) * ((F[0, 0] - 1) + nu * (F[1, 1] - 1))
+        stress[1, 1] = E / (1 - nu**2) * ((F[1, 1] - 1) + nu * (F[0, 0] - 1))
+        stress[0, 1] = E / (1 - nu**2) * (1 - nu) / 2 * (F[0, 1] + F[1, 0])
         stress[1, 0] = stress[0, 1]
 
         return [stress]
@@ -613,13 +613,13 @@ class LinearElasticPlaneStress:
         elast = np.zeros((2, 2, 2, 2, *shape))
 
         for a in range(2):
-            elast[a, a, a, a] = E / (1 - nu ** 2)
+            elast[a, a, a, a] = E / (1 - nu**2)
 
             for b in range(2):
                 if b != a:
-                    elast[a, a, b, b] = E / (1 - nu ** 2) * nu
+                    elast[a, a, b, b] = E / (1 - nu**2) * nu
 
-        elast[0, 1, 0, 1] = E / (1 - nu ** 2) * (1 - nu) / 2
+        elast[0, 1, 0, 1] = E / (1 - nu**2) * (1 - nu) / 2
         elast[1, 0, 1, 0] = elast[1, 0, 0, 1] = elast[0, 1, 1, 0] = elast[0, 1, 0, 1]
 
         return [elast]

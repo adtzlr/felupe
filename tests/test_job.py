@@ -38,20 +38,23 @@ def pre():
         boundaries=bounds,
     )
 
-    return step
+    return field, step
 
 
 def test_job():
 
-    step = pre()
-
+    field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
+    
+    field, step = pre()
+    job = fem.Job(steps=[step])
+    job.evaluate(x0=field)
 
 
 def test_curve():
 
-    step = pre()
+    field, step = pre()
 
     curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
     curve.plot(xaxis=0, yaxis=0)
@@ -65,7 +68,7 @@ def test_curve():
 
 def test_curve2():
 
-    step = pre()
+    field, step = pre()
 
     curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
     curve.evaluate()

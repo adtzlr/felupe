@@ -63,6 +63,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `xscale` and `yscale` arguments to `CharacteristicCurve.plot()`.
 - Add `mesh.Grid(*xi)` as generalized line, rectangle or cube with custom linspaces.
 - Add `mesh.concatante(meshes)` to join a sequence of meshes with identical cell types.
+- Add `x0`-Argument to `Job.evaluate(x0=field)`.
 
 ## [5.1.0] - 2022-09-09
 

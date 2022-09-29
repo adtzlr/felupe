@@ -245,6 +245,10 @@ def test_runouts():
 
     n = fe.mesh.runouts(m, values=[0.1], axis=0, centerpoint=[0, 0])
     assert n.points[:, 1].max() == m.points[:, 1].max() * 1.1
+    
+    mask = np.zeros(m.npoints, dtype=bool)
+    n = fe.mesh.runouts(m, values=[0.1], axis=0, centerpoint=[0, 0], mask=mask)
+    assert n.points[:, 1].max() == m.points[:, 1].max()
 
     x = [0.5, 0.5]
     n = fe.mesh.runouts(m, values=[0.1], axis=0, centerpoint=x)

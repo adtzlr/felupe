@@ -194,7 +194,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
     p = np.pad(points, ((0, 0), (0, 1)))
     R = rotation_matrix
 
-    points_new = np.vstack([(R(angle, dim + 1) @ p.T).T for angle in points_phi])
+    points_new = np.vstack([(R(angle, dim + 1, axis=axis) @ p.T).T for angle in points_phi])
 
     c = [cells + len(p) * a for a in np.arange(n)]
 
@@ -430,6 +430,7 @@ def runouts(
     centerpoint=[0, 0, 0],
     axis=0,
     exponent=5,
+    mask=slice(None),
 ):
     """Add simple rubber-runouts for realistic rubber-metal structures.
 
@@ -444,13 +445,15 @@ def runouts(
     values : list or ndarray, optional
         Relative amount of runouts (per coordinate) perpendicular to the axis
         (default is 10% per coordinate, i.e. [0.1, 0.1]).
-    centerpoint: list or ndarray, optional
+    centerpoint : list or ndarray, optional
         Center-point coordinates (default is [0, 0, 0]).
-    axis: int or None, optional
+    axis : int or None, optional
         Axis (default is 0).
-    exponent: int, optional
+    exponent : int, optional
         Positive exponent to control the shape of the runout. The higher
         the exponent, the steeper the transition (default is 5).
+    mask : list or None, optional
+        List of points to be considered (default is None).
 
     Returns
     -------
@@ -480,7 +483,7 @@ def runouts(
 
     for i, coord in enumerate(runout_along[axis][: dim - 1]):
 
-        factor = (abs(points_new[:, axis]) / half_height) ** exponent
-        points_new[:, coord] *= 1 + factor * values[i]
+        factor = (abs(points_new[mask, axis]) / half_height) ** exponent
+        points_new[mask, coord] *= 1 + factor * values[i]
 
     return points_new + centerpoint, cells, cell_type

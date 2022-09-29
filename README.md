@@ -63,7 +63,11 @@ All notable changes to this project will be documented in this file. The format 
 - Add `xscale` and `yscale` arguments to `CharacteristicCurve.plot()`.
 - Add `mesh.Grid(*xi)` as generalized line, rectangle or cube with custom linspaces.
 - Add `mesh.concatante(meshes)` to join a sequence of meshes with identical cell types.
-- Add `x0`-Argument to `Job.evaluate(x0=field)`.
+- Add `x0` argument to `Job.evaluate(x0=field)`.
+- Add `mask` argument to `mesh.runouts(mask=slice(None))`.
+
+### Fixed
+- Fix ignored axis argument of `mesh.revolve(axis=1)`.
 
 ## [5.1.0] - 2022-09-09
 

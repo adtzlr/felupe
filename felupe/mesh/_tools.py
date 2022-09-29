@@ -430,7 +430,7 @@ def runouts(
     centerpoint=[0, 0, 0],
     axis=0,
     exponent=5,
-    mask=None,
+    mask=slice(None),
 ):
     """Add simple rubber-runouts for realistic rubber-metal structures.
 

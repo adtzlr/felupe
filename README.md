@@ -65,6 +65,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `mesh.concatante(meshes)` to join a sequence of meshes with identical cell types.
 - Add `x0` argument to `Job.evaluate(x0=field)`.
 - Add `mask` argument to `mesh.runouts(mask=slice(None))`.
+- Add `callback(stepnumber, substepnumber, substep)` argument to `CharacteristicCurve()` (like in `Job()`).
 
 ### Fixed
 - Fix ignored axis argument of `mesh.revolve(axis=1)`.

@@ -194,7 +194,9 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
     p = np.pad(points, ((0, 0), (0, 1)))
     R = rotation_matrix
 
-    points_new = np.vstack([(R(angle, dim + 1, axis=axis) @ p.T).T for angle in points_phi])
+    points_new = np.vstack(
+        [(R(angle, dim + 1, axis=axis) @ p.T).T for angle in points_phi]
+    )
 
     c = [cells + len(p) * a for a in np.arange(n)]
 

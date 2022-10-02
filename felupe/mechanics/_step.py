@@ -48,7 +48,7 @@ class Step:
         "Generate all substeps."
 
         substeps = np.arange(self.nsubsteps)
-        
+
         if not "x0" in kwargs.keys():
             field = self.items[0].field
         else:

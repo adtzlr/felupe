@@ -46,7 +46,7 @@ def test_job():
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
-    
+
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate(x0=field)

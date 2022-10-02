@@ -32,7 +32,9 @@ from ..tools import force
 
 
 class CharacteristicCurve(Job):
-    def __init__(self, steps, boundary, callback=lambda stepnumber, substepnumber, substep: None):
+    def __init__(
+        self, steps, boundary, callback=lambda stepnumber, substepnumber, substep: None
+    ):
 
         super().__init__(steps, self._callback)
 
@@ -47,7 +49,7 @@ class CharacteristicCurve(Job):
         self.x.append(substep.x[0].values[self.boundary.points[0]])
         self.y.append(force(substep.x, substep.fun, self.boundary))
         self.res = substep
-        
+
         self._cb(stepnumber, substepnumber, substep)
 
     def plot(

@@ -67,6 +67,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add `mask` argument to `mesh.runouts(mask=slice(None))`.
 - Add `callback(stepnumber, substepnumber, substep)` argument to `CharacteristicCurve()` (like in `Job()`).
 
+### Changed
+- Remove Warning if `einsumt` requirement is not found (switch to numpy without any warnings).
+
 ### Fixed
 - Fix ignored axis argument of `mesh.revolve(axis=1)`.
 

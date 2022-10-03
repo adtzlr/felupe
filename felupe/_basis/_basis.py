@@ -30,7 +30,6 @@ import numpy as np
 try:
     from einsumt import einsumt
 except:
-    print("ImportWarning: Module `einsumt` not found. Fall back to `np.einsum()`.")
     from numpy import einsum as einsumt
 
 

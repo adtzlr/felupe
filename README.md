@@ -51,10 +51,7 @@ fig, ax = job.plot(
 )
 ```
 
-<video width="600" controls>
-  <source src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_animation.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
+https://user-images.githubusercontent.com/5793153/194673269-a5e1e98a-56bd-4066-b655-6bd039da5264.mp4
 
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_characteristic_curve.svg" width="600px"/>
 

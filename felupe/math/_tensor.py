@@ -276,9 +276,10 @@ def ddot(A, B, n=2, parallel=False):
         raise TypeError("Unknown shape of A and B.")
 
 
-def tovoigt(A):
+def tovoigt(A, strain=False):
     "Convert (3, 3) tensor to (6, ) voigt notation."
-    if A.shape[0] * A.shape[1] == 4:
+    dim = A.shape[0]
+    if dim == 2:
         B = np.zeros((3, *A.shape[2:]))
         ij = [(0, 0), (1, 1), (0, 1)]
     else:
@@ -286,4 +287,6 @@ def tovoigt(A):
         ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
     for i6, (i, j) in enumerate(ij):
         B[i6] = A[i, j]
+    if strain:
+        B[dim:] *= 2
     return B

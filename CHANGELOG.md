@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [5.2.0] - 2022-10-08
+
 ### Added
 - Add `xscale` and `yscale` arguments to `CharacteristicCurve.plot()`.
 - Add `mesh.Grid(*xi)` as generalized line, rectangle or cube with custom linspaces.

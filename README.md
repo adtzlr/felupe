@@ -4,7 +4,7 @@
 
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/logo_light.svg" width="220px"/>
 
-FElupe is a Python 3.6+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like under the hood.
+FElupe is a Python 3.7+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like under the hood.
 
 # Installation
 Install Python, fire up a terminal and run
@@ -24,32 +24,39 @@ import felupe as fem
 # create a hexahedron-region on a cube
 region = fem.RegionHexahedron(fem.Cube(n=11))
 
-# add a displacement field and apply a uniaxial elongation on the cube
-displacement = fem.Field(region, dim=3)
-field = fem.FieldContainer([displacement])
-boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+# add a mixed field container (with displacement, pressure and volume ratio)
+field = fem.FieldsMixed(region, n=3, values=(0, 0, 1))
+
+# apply a uniaxial elongation on the cube
+boundaries = fem.dof.uniaxial(field, clamped=True)[0]
 
 # define the constitutive material behaviour and create a solid body
-umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
 solid = fem.SolidBody(umat, field)
 
 # prepare a step with substeps
-move = fem.math.linsteps([0, 0.2], num=10)
+move = fem.math.linsteps([0, 2, -0.4, 0], num=10)
 step = fem.Step(
     items=[solid], 
     ramp={boundaries["move"]: move}, 
     boundaries=boundaries
 )
 
-# add the step to a job and evaluate all substeps
-job = fem.Job(steps=[step])
-job.evaluate()
-
-# save result of last substep
-fem.save(region, field, filename="result.vtk")
+# add the step to a job, evaluate all substeps and create a plot
+job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+job.evaluate(filename="result.xdmf")
+fig, ax = job.plot(
+    xlabel="Displacement $u$ in mm $\longrightarrow$",
+    ylabel="Normal Force $F$ in N $\longrightarrow$",
+)
 ```
 
-<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/images/readme.png" width="600px"/>
+<video width="600" controls>
+  <source src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_animation.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
+
+<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_characteristic_curve.svg" width="600px"/>
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).
@@ -62,13 +69,15 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `xscale` and `yscale` arguments to `CharacteristicCurve.plot()`.
 - Add `mesh.Grid(*xi)` as generalized line, rectangle or cube with custom linspaces.
-- Add `mesh.concatante(meshes)` to join a sequence of meshes with identical cell types.
+- Add `mesh.concatenate(meshes)` to join a sequence of meshes with identical cell types.
 - Add `x0` argument to `Job.evaluate(x0=field)`.
 - Add `mask` argument to `mesh.runouts(mask=slice(None))`.
 - Add `callback(stepnumber, substepnumber, substep)` argument to `CharacteristicCurve()` (like in `Job()`).
+- Add an on-the-fly XDMF writer for a job (via meshio) `Job.evaluate(filename="result.xdmf)"` with the possibility to add optional `point_data` and `cell_data` dicts.
 
 ### Changed
 - Remove Warning if `einsumt` requirement is not found (switch to numpy without any warnings).
+- Requires Python 3.7+.
 
 ### Fixed
 - Fix ignored axis argument of `mesh.revolve(axis=1)`.

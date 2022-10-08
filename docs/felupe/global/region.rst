@@ -26,7 +26,7 @@ Region
    :undoc-members:
    :show-inheritance:
    
-   .. autoclass:: felupe.RegionHexahedron
+.. autoclass:: felupe.RegionHexahedron
    :members:
    :undoc-members:
    :show-inheritance:

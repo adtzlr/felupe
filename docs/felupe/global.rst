@@ -13,6 +13,6 @@ felupe
    global/basis
    global/dof
    global/constitution
+   global/mechanics
    global/assembly
    global/tools
-   global/mechanics

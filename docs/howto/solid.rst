@@ -42,7 +42,7 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
 
 
 Body Force (Gravity) on a Solid Body
----------------------------------
+------------------------------------
 
 The generation of internal force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`felupe.SolidBodyGravity`. The correct integral form is chosen based on the :class:`felupe.Field` inside the :class:`felupe.FieldContainer`. If the internal field is a mixed field, the assembled vectors from the gravity contribution have to be resized to the dimensions of the internal force vector.
 

@@ -82,6 +82,7 @@ from .mesh import (
     Mesh,
     Rectangle,
     Cube,
+    Grid,
 )
 from .constitution import (
     NeoHooke,

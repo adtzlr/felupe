@@ -15,3 +15,8 @@ Mesh
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. autoclass:: felupe.Grid
+   :members:
+   :undoc-members:
+   :show-inheritance:

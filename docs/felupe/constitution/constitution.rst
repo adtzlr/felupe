@@ -45,8 +45,3 @@ felupe.constitution
    :members:
    :undoc-members:
    :inherited-members:
-
-.. autoclass:: felupe.constitution.MatadiMaterial
-   :members:
-   :undoc-members:
-   :inherited-members:

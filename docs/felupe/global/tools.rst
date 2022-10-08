@@ -8,3 +8,7 @@ Tools
 .. autofunction:: felupe.topoints
 
 .. autofunction:: felupe.project
+
+.. autofunction:: felupe.tools.force
+
+.. autofunction:: felupe.tools.moment

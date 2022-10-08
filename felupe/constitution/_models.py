@@ -405,7 +405,7 @@ class LinearElasticPlaneStrain:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
@@ -432,7 +432,7 @@ class LinearElasticPlaneStrain:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
@@ -460,7 +460,7 @@ class LinearElasticPlaneStrain:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
@@ -490,7 +490,7 @@ class LinearElasticPlaneStrain:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
@@ -543,7 +543,7 @@ class LinearElasticPlaneStress:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
@@ -580,7 +580,7 @@ class LinearElasticPlaneStress:
         ---------
         extract : list of ndarray, optional
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item (default is None)
+            ``F`` as first item (default is None)
         E : float, optional
             Young's  modulus (default is None)
         nu : float, optional
@@ -631,7 +631,7 @@ class LinearElasticPlaneStress:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional
@@ -668,7 +668,7 @@ class LinearElasticPlaneStress:
         ---------
         extract : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            ``F``as first item
+            ``F`` as first item
         E : float, optional
             Young's modulus (default is None)
         nu : float, optional

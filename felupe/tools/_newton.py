@@ -187,7 +187,6 @@ def newtonrhapson(
 ):
     """
     General-purpose Newton-Rhapson algorithm
-    ========================================
 
     (Nonlinear) equilibrium equations `f`, as a function `f(x)` of the
     unknowns `x`, are solved by linearization of `f` at given unknowns `x0`.

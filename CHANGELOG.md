@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `x0` argument to `Job.evaluate(x0=field)`.
 - Add `mask` argument to `mesh.runouts(mask=slice(None))`.
 - Add `callback(stepnumber, substepnumber, substep)` argument to `CharacteristicCurve()` (like in `Job()`).
-- Add an on-the-fly XDMF writer for a job (via meshio) `Job.evaluate(filename="result.xdmf)"` with the possibility to add optional `point_data` and `cell_data` dicts.
+- Add an on-the-fly XDMF writer for a job (via meshio) `Job.evaluate(filename="result.xdmf")` with the possibility to add optional `point_data` and `cell_data` dicts.
 
 ### Changed
 - Remove Warning if `einsumt` requirement is not found (switch to numpy without any warnings).

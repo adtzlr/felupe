@@ -58,6 +58,10 @@ class ArbitraryOrderLagrange(Element):
         self._idx = [letter for letter in alphabet][: self.dim]
         self._subscripts = ",".join(self._idx) + "->" + "".join(self._idx)
 
+        # init points
+        grid = np.meshgrid(*np.tile(self._points(n), (dim, 1)), indexing="ij")[::-1]
+        self.points = np.vstack([point.ravel() for point in grid]).T
+
     def function(self, r):
         "Shape function vector at coordinate vector r."
         n = self._nshape

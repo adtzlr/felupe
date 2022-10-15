@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix ignored axis argument of `mesh.revolve(axis=1)`.
+- Fix missing `ArbitraryOrderLagrangeElement.points` attribute.
 
 ## [5.1.0] - 2022-09-09
 

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Fix missing `ArbitraryOrderLagrangeElement.points` attribute.
+
 ## [5.2.0] - 2022-10-08
 
 ### Added

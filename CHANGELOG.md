@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add optional pre-compression to shear-loadcase `dof.shear(compression=0.0)`.
+
 ### Fixed
 - Fix missing `ArbitraryOrderLagrangeElement.points` attribute.
 

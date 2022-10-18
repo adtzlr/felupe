@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix missing `ArbitraryOrderLagrangeElement.points` attribute.
+- Fix ignored mask `only_surface=True` for `RegionBoundary().mesh.cells_faces`.
 
 ## [5.2.0] - 2022-10-08
 

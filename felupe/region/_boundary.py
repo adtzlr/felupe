@@ -206,12 +206,12 @@ class RegionBoundary(Region):
 
         # get cell-faces and cells on boundary (unique cell-faces with one count)
         cells_on_boundary = cells[self._selection]
-
+        
         ## create mesh on boundary
         mesh_boundary = mesh.copy()
         mesh_boundary.update(cells_on_boundary)
         self.mesh = mesh_boundary
-        self.mesh.cells_faces = cells_faces
+        self.mesh.cells_faces = cells_faces[self._selection]
 
         # init region and faces
         super().__init__(mesh_boundary, element, quadrature, grad=grad)

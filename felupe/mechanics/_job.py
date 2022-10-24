@@ -131,7 +131,8 @@ FElupe Version {version}
 
             for j, step in enumerate(self.steps):
 
-                print(f"Begin Evaluation of Step {j + 1}.")
+                if verbose:
+                    print(f"Begin Evaluation of Step {j + 1}.")
 
                 substeps = step.generate(verbose=verbose, **kwargs)
                 for i, substep in enumerate(substeps):

@@ -80,6 +80,7 @@ from .quadrature import (
 )
 from .mesh import (
     Mesh,
+    MeshContainer,
     Rectangle,
     Cube,
     Grid,

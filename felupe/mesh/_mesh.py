@@ -108,14 +108,7 @@ class Mesh:
         return Mesh(points, cells, cell_type=self.cell_type)
 
     def as_meshio(self, **kwargs):
-        """Export the mesh as ``meshio.Mesh``.
-
-        Parameters
-        ----------
-        filename : str, optional
-            The filename of the mesh (default is ``mesh.vtk``).
-
-        """
+        "Export the mesh as ``meshio.Mesh``."
 
         import meshio
 
@@ -146,3 +139,14 @@ class Mesh:
         """
 
         return deepcopy(self)
+
+    def __repr__(self):
+        header = "<felupe mesh object>"
+        points = f"  Number of points: {len(self.points)}"
+        cells_header = "  Number of cells:"
+        cells = [f"    {self.cell_type}: {self.ncells}"]
+
+        return "\n".join([header, points, cells_header, *cells])
+
+    def __str__(self):
+        return self.__repr__()

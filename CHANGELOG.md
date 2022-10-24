@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add optional pre-compression to shear-loadcase `dof.shear(compression=0.0)`.
+Add `MeshContainer` and string-representation for `Mesh` objects.
 
 ### Fixed
 - Fix missing `ArbitraryOrderLagrangeElement.points` attribute.

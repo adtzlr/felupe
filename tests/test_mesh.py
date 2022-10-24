@@ -289,6 +289,37 @@ def test_grid_1d():
     assert np.allclose(m.cells, n.cells)
 
 
+def test_container():
+
+    mesh_1 = fe.Rectangle()
+    mesh_2 = fe.Rectangle(a=(1, 0), b=(2, 1))
+    mesh_3 = fe.mesh.triangulate(fe.Rectangle(a=(2, 0), b=(3, 1)))
+
+    for merge in [False, True]:
+        container = fe.MeshContainer([mesh_1, mesh_2], merge=merge)
+
+    mesh_1
+    container
+
+    print(mesh_1)
+    print(container)
+
+    assert container.points.shape[1] == container.dim
+
+    container.append(mesh_3)
+    print(container.as_meshio())
+
+    m_1 = container.pop(0)
+
+    assert m_1.ncells == 1
+    assert len(container.cells()) == 2
+
+    print(container.copy())
+    
+    container += mesh_1
+    container[2]
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -297,3 +328,4 @@ if __name__ == "__main__":
     test_concatenate()
     test_grid()
     test_grid_1d()
+    test_container()

@@ -317,6 +317,7 @@ def test_container():
     print(container.copy())
     
     container += mesh_1
+    container[2]
 
 
 if __name__ == "__main__":

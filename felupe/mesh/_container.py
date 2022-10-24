@@ -100,19 +100,25 @@ class MeshContainer:
         for i, m in enumerate(self.meshes):
             self.meshes[i].points = self.points = points
 
-    def as_meshio(self, **kwargs):
-        "Export a combined mesh object as ``meshio.Mesh``."
+    def as_meshio(self, combined=True, **kwargs):
+        "Export a (combined) mesh object as ``meshio.Mesh``."
 
         import meshio
 
-        cells = {}
+        if not combined:
+            cells = [
+                meshio.CellBlock(cell_type, data) for cell_type, data in self.cells()
+            ]
 
-        # combine cell-blocks
-        for mesh in self.meshes:
-            if mesh.cell_type not in cells.keys():
-                cells[mesh.cell_type] = mesh.cells
-            else:
-                cells[mesh.cell_type] = np.vstack([cells[mesh.cell_type], mesh.cells])
+        else:
+            cells = {}
+            for mesh in self.meshes:
+                if mesh.cell_type not in cells.keys():
+                    cells[mesh.cell_type] = mesh.cells
+                else:
+                    cells[mesh.cell_type] = np.vstack(
+                        [cells[mesh.cell_type], mesh.cells]
+                    )
 
         return meshio.Mesh(self.points, cells, **kwargs)
 

@@ -206,7 +206,7 @@ class RegionBoundary(Region):
 
         # get cell-faces and cells on boundary (unique cell-faces with one count)
         cells_on_boundary = cells[self._selection]
-        
+
         ## create mesh on boundary
         mesh_boundary = mesh.copy()
         mesh_boundary.update(cells_on_boundary)

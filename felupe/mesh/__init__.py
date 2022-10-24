@@ -1,4 +1,5 @@
 from ._mesh import Mesh
+from ._container import MeshContainer
 from ._tools import (
     expand,
     rotate,

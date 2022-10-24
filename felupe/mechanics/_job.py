@@ -85,6 +85,7 @@ class Job:
     def evaluate(
         self,
         filename=None,
+        mesh=None,
         point_data={"Displacement": displacement},
         cell_data={
             "Principal Values of Logarithmic Strain": log_strain_principal,
@@ -116,7 +117,9 @@ FElupe Version {version}
         if filename is not None:
             from meshio.xdmf import TimeSeriesWriter
 
-            mesh = self.steps[0].items[0].field.region.mesh.as_meshio()
+            if mesh is None:
+                mesh = self.steps[0].items[0].field.region.mesh.as_meshio()
+
             increment = 0
 
         else:  # fake a mesh and a TimeSeriesWriter

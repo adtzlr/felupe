@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add optional pre-compression to shear-loadcase `dof.shear(compression=0.0)`.
-Add `MeshContainer` and string-representation for `Mesh` objects.
+- Add `MeshContainer` and string-representation for `Mesh` objects.
+
+### Changed
+- Support an optional user-defined meshio-object in `Job().evaluate(mesh=None, filename="result.xdmf")`.
 
 ### Fixed
 - Fix missing `ArbitraryOrderLagrangeElement.points` attribute.

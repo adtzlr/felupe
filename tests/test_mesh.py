@@ -315,6 +315,8 @@ def test_container():
     assert len(container.cells()) == 2
 
     print(container.copy())
+    
+    container += mesh_1
 
 
 if __name__ == "__main__":

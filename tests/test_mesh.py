@@ -323,15 +323,15 @@ def test_container():
         print(container.as_meshio(combined=combined))
 
 
-def test_read():
+def test_read(filename="tests/mesh.bdf"):
 
-    mesh = fe.mesh.read(filename="mesh.bdf", dim=2)[0]
+    mesh = fe.mesh.read(filename=filename, dim=2)[0]
     assert mesh.dim == 2
 
-    mesh = fe.mesh.read(filename="mesh.bdf", dim=None)[0]
+    mesh = fe.mesh.read(filename=filename, dim=None)[0]
     assert mesh.dim == 3
 
-    mesh = fe.mesh.read(filename="mesh.bdf", cellblock=0)[0]
+    mesh = fe.mesh.read(filename=filename, cellblock=0)[0]
     assert mesh.dim == 3
 
 
@@ -344,4 +344,4 @@ if __name__ == "__main__":
     test_grid()
     test_grid_1d()
     test_container()
-    test_read()
+    test_read(filename="mesh.bdf")

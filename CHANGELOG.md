@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add optional pre-compression to shear-loadcase `dof.shear(compression=0.0)`.
 - Add `MeshContainer` and string-representation for `Mesh` objects.
+- Add a mesh-reader using meshio `mesh.read(filename, ...)`.
 
 ### Changed
 - Support an optional user-defined meshio-object in `Job().evaluate(mesh=None, filename="result.xdmf")`.
@@ -13,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 - Fix missing `ArbitraryOrderLagrangeElement.points` attribute.
 - Fix ignored mask `only_surface=True` for `RegionBoundary().mesh.cells_faces`.
+- Set default pressure to zero in `SolidBodyPressure()`.
 
 ## [5.2.0] - 2022-10-08
 

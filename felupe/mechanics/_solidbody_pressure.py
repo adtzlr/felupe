@@ -44,7 +44,7 @@ class SolidBodyPressure:
         if pressure is not None:
             self.results.pressure = pressure
         else:
-            self.results.pressure = 1.0
+            self.results.pressure = 0
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self._area_change = AreaChange()

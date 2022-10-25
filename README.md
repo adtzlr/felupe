@@ -15,7 +15,7 @@ pip install felupe[all]
 
 where `[all]` installs all optional dependencies. By default, FElupe only depends on `numpy` and `scipy`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
 
-# Hello, FElupe!
+# Getting Started
 A quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. This involves the creation of a mesh, a region as well as a displacement field (encapsulated in a field container). Furthermore, the boundary conditions are created by a template for a uniaxial loadcase. A Neo-Hookean material formulation is applied on a solid body. A step generates the consecutive substep-movements of a given boundary condition. The step is added to a job. During evaluation, each substep of each step is solved by an iterative Newton-Rhapson procedure. Finally, the solution of the last step is exported as a VTK file. For more details beside this high-level code snippet, please have a look at the [documentation](https://felupe.readthedocs.io/en/latest/?badge=latest).
 
 ```python

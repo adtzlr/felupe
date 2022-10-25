@@ -1,5 +1,6 @@
 from ._mesh import Mesh
 from ._container import MeshContainer
+from ._read import read
 from ._tools import (
     expand,
     rotate,

@@ -78,7 +78,8 @@ def test_pressure():
     z = fe.SolidBodyPressure(q)
     c = fe.SolidBodyPressure(q, pressure=1.0)
 
-    assert z.results.pressure == c.results.pressure == 1.0
+    assert z.results.pressure == 0
+    assert c.results.pressure == 1.0
 
     r = b.assemble.vector()
     K = b.assemble.matrix()

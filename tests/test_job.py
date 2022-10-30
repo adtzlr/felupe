@@ -61,7 +61,7 @@ def test_job_xdmf():
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate(filename="result.xdmf")
-    
+
 
 def test_job_xdmf_global_field():
 
@@ -72,7 +72,6 @@ def test_job_xdmf_global_field():
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate(filename="result.xdmf", x0=field)
-
 
 
 def test_curve():

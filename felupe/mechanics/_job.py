@@ -118,7 +118,10 @@ FElupe Version {version}
             from meshio.xdmf import TimeSeriesWriter
 
             if mesh is None:
-                mesh = self.steps[0].items[0].field.region.mesh.as_meshio()
+                if "x0" in kwargs.keys():
+                    mesh = kwargs["x0"].region.mesh.as_meshio()
+                else:
+                    mesh = self.steps[0].items[0].field.region.mesh.as_meshio()
 
             increment = 0
 

@@ -27,18 +27,47 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._field import Field
 from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
-from ..math import dot, transpose, det, dya, ddot, identity
+from ..math import dot, transpose, det, dya, ddot
 from ._helpers import Assemble, Evaluate, Results
+
+
+class State:
+    "A State with internal fields for (nearly) incompressible solid bodies."
+
+    def __init__(self, field):
+
+        self.field = field
+        self.dJdF = AreaChange().function
+
+        # initial values (on mesh-points) of the displacement field
+        self.u = field[0].values
+
+        # deformation gradient
+        self.F = field.extract()
+
+        # cell-values of the internal pressure and volume-ratio fields
+        self.p = np.zeros(field.region.mesh.ncells)
+        self.J = np.ones(field.region.mesh.ncells)
+
+    def h(self, parallel=False, jit=False):
+        "Integrated shape-function gradient w.r.t. the deformed coordinates `x`."
+
+        return IntegralFormMixed(
+            fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
+        ).integrate(parallel=parallel, jit=jit)[0]
+
+    def v(self):
+        "Cell volumes of the deformed configuration."
+        return (det(self.F[0]) * self.field.region.dV).sum(0)
 
 
 class SolidBodyNearlyIncompressible:
     """A (nearly) incompressible SolidBody with methods for the assembly of
     sparse vectors/matrices."""
 
-    def __init__(self, umat, field, bulk):
+    def __init__(self, umat, field, bulk, state=None):
 
         self.umat = umat
         self.field = field
@@ -47,25 +76,17 @@ class SolidBodyNearlyIncompressible:
         self._area_change = AreaChange()
         self._form = IntegralFormMixed
 
-        # internal state variables
-        self.p = np.zeros(self.field.region.mesh.ncells)
-        self.J = np.ones(self.field.region.mesh.ncells)
-        self.h = np.zeros(
-            (
-                self.field.region.mesh.cells.shape[1],  # points per cell
-                self.field[0].dim,  # dimension
-                self.field.region.mesh.ncells,  # cells
-            )
-        )
-        self.dp = self.dJ = self.u = 0
-
         # volume of undeformed configuration
         self.V = self.field.region.dV.sum(0)
-        self.v = self.V
 
         self.results = Results(stress=True, elasticity=True)
-        self.results.kinematics = self._extract(self.field)
 
+        if state is None:
+            self.results.state = State(field)  # init state of internal fields
+        else:
+            self.results.state = state
+
+        self.results.kinematics = self._extract(self.field)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
         self.evaluate = Evaluate(
@@ -79,9 +100,6 @@ class SolidBodyNearlyIncompressible:
         self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
     ):
 
-        if field is not None:
-            self.field = field
-
         self.results.stress = self._gradient(
             field, parallel=False, jit=False, args=args, kwargs=kwargs
         )
@@ -92,21 +110,22 @@ class SolidBodyNearlyIncompressible:
             dV=self.field.region.dV,
         )
 
+        h = self.results.state.h()
+        v = self.results.state.v()
+        p = self.results.state.p
+
         values = [
             form.integrate(parallel=parallel, jit=jit)[0]
-            + self.h * (self.bulk * (self.v / self.V - 1) - self.p)
+            + h * (self.bulk * (v / self.V - 1) - p)
         ]
 
-        self.results.force = form.assemble(values=values, parallel=parallel, jit=jit)
+        self.results.force = form.assemble(values=values)
 
         return self.results.force
 
     def _matrix(
         self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
     ):
-
-        if field is not None:
-            self.field = field
 
         self.results.elasticity = self._hessian(
             field, parallel=False, jit=False, args=args, kwargs=kwargs
@@ -119,41 +138,39 @@ class SolidBodyNearlyIncompressible:
             dV=self.field.region.dV,
         )
 
+        h = self.results.state.h()
+
         values = [
             form.integrate(parallel=parallel, jit=jit)[0]
-            + self.bulk / self.V * dya(self.h, self.h)
+            + self.bulk / self.V * dya(h, h)
         ]
 
-        self.results.stiffness = form.assemble(
-            values=values, parallel=parallel, jit=jit
-        )
+        self.results.stiffness = form.assemble(values=values)
 
         return self.results.stiffness
 
     def _extract(self, field, parallel=False, jit=False):
 
         u = field[0].values
-        self.du = (u - self.u)[self.field.region.mesh.cells].transpose([1, 2, 0])
+        u0 = self.results.state.u
+        h = self.results.state.h()
+        v = self.results.state.v()
+        J = self.results.state.J
+        p = self.results.state.p
+
+        du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
 
         # change of state variables due to change of displacement field
-        self.dJ = ddot(self.h, self.du, n=1) / self.V + (self.v / self.V - self.J)
-        self.dp = self.bulk * (self.dJ + self.v / self.V - 1) - self.p
+        dJ = ddot(h, du, n=1) / self.V + (v / self.V - J)
+        dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field
-        self.results.kinematics = self.field.extract()
+        self.results.kinematics = self.results.state.F = self.field.extract()
 
         # update state variables
-        self.p += self.dp
-        self.J += self.dJ
-        self.u = u
-
-        dJdF = self._area_change.function(self.results.kinematics)
-        self.h = self._form(fun=dJdF, v=self.field, dV=self.field.region.dV,).integrate(
-            parallel=parallel, jit=jit
-        )[0]
-
-        # volume of deformed configuration
-        self.v = (det(self.results.kinematics[0]) * self.field.region.dV).sum(0)
+        self.results.state.p = p + dp
+        self.results.state.J = J + dJ
+        self.results.state.u = u
 
         return self.results.kinematics
 
@@ -162,10 +179,12 @@ class SolidBodyNearlyIncompressible:
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel, jit=jit)
 
-        dJdF = self._area_change.function(self.results.kinematics)
+        dJdF = self._area_change.function
+        F = self.results.kinematics
+        p = self.results.state.p
+
         self.results.stress = [
-            self.umat.gradient(self.results.kinematics, *args, **kwargs)[0]
-            + self.p * dJdF[0]
+            self.umat.gradient(F, *args, **kwargs)[0] + p * dJdF(F)[0]
         ]
 
         return self.results.stress
@@ -175,10 +194,12 @@ class SolidBodyNearlyIncompressible:
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel, jit=jit)
 
-        d2JdF2 = self._area_change.gradient(self.results.kinematics)
+        d2JdF2 = self._area_change.gradient
+        F = self.results.kinematics
+        p = self.results.state.p
+
         self.results.elasticity = [
-            self.umat.hessian(self.results.kinematics, *args, **kwargs)[0]
-            + self.p * d2JdF2[0]
+            self.umat.hessian(F, *args, **kwargs)[0] + p * d2JdF2(F)[0]
         ]
 
         return self.results.elasticity

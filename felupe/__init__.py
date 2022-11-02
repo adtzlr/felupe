@@ -104,6 +104,7 @@ from .tools import (
 from .mechanics import (
     SolidBody,
     SolidBodyNearlyIncompressible,
+    StateNearlyIncompressible,
     SolidBodyPressure,
     SolidBodyTensor,
     SolidBodyGravity,

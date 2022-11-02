@@ -215,6 +215,9 @@ def test_solidbody_incompressible():
 
     umat, u = pre(dim=3, bulk=None)
     b = fe.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
+    b = fe.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, state=fe.StateNearlyIncompressible(u)
+    )
 
     for parallel in [False, True]:
         for jit in [False, True]:

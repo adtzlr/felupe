@@ -33,7 +33,7 @@ from ..math import dot, transpose, det, dya, ddot
 from ._helpers import Assemble, Evaluate, Results
 
 
-class State:
+class StateNearlyIncompressible:
     "A State with internal fields for (nearly) incompressible solid bodies."
 
     def __init__(self, field):
@@ -82,7 +82,8 @@ class SolidBodyNearlyIncompressible:
         self.results = Results(stress=True, elasticity=True)
 
         if state is None:
-            self.results.state = State(field)  # init state of internal fields
+            # init state of internal fields
+            self.results.state = StateNearlyIncompressible(field)
         else:
             self.results.state = state
 

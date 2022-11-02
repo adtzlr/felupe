@@ -103,7 +103,7 @@ from .tools import (
 )
 from .mechanics import (
     SolidBody,
-    SolidBodyIncompressible,
+    SolidBodyNearlyIncompressible,
     SolidBodyPressure,
     SolidBodyTensor,
     SolidBodyGravity,

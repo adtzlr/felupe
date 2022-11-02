@@ -210,6 +210,7 @@ def test_solidbody():
             t2 = b.evaluate.kirchhoff_stress(u)
             assert np.allclose(t1, t2)
 
+
 def test_solidbody_incompressible():
 
     umat, u = pre(dim=3, bulk=None)
@@ -259,6 +260,7 @@ def test_solidbody_incompressible():
             t1 = b.evaluate.kirchhoff_stress()
             t2 = b.evaluate.kirchhoff_stress(u)
             assert np.allclose(t1, t2)
+
 
 def test_solidbody_axi():
 

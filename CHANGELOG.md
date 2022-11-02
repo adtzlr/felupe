@@ -7,9 +7,11 @@ All notable changes to this project will be documented in this file. The format 
 - Add optional pre-compression to shear-loadcase `dof.shear(compression=0.0)`.
 - Add `MeshContainer` and string-representation for `Mesh` objects.
 - Add a mesh-reader using meshio `mesh.read(filename, ...)`.
+- Add `SolidBodyNearlyIncompressible(umat, field, bulk)` for (nearly) incompressible solids and a given (distortional-part only) constitutive material formulation. This is a pure displacement-based alternative to the three-field-formulation technique.
 
 ### Changed
 - Support an optional user-defined meshio-object in `Job().evaluate(mesh=None, filename="result.xdmf")`.
+- Support a distortional-part only Neo-Hookean material formulation with no bulk modulus defined `NeoHooke(mu=1.0)`.
 
 ### Fixed
 - Fix missing `ArbitraryOrderLagrangeElement.points` attribute.

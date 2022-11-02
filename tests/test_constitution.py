@@ -86,6 +86,16 @@ def test_nh():
 
         assert np.allclose(P, 0)
 
+        nh = fe.constitution.NeoHooke(mu=1.0, parallel=parallel)
+
+        W = nh.function(F)
+        P = nh.gradient(F)
+        A = nh.hessian(F)
+
+        assert W[0].shape == F[0].shape[-2:]
+        assert P[0].shape == (3, 3, *F[0].shape[-2:])
+        assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
+
 
 def test_linear():
     r, F = pre(sym=False, add_identity=True)

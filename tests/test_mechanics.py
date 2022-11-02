@@ -116,9 +116,9 @@ def test_pressure():
     assert np.allclose(w[0].values, v[0].values)
 
 
-def pre(dim):
+def pre(dim, bulk=2):
 
-    umat = fe.NeoHooke(mu=1, bulk=2)
+    umat = fe.NeoHooke(mu=1, bulk=bulk)
 
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
@@ -164,6 +164,60 @@ def test_solidbody():
 
     umat, u = pre(dim=3)
     b = fe.SolidBody(umat=umat, field=u)
+
+    for parallel in [False, True]:
+        for jit in [False, True]:
+
+            kwargs = {"parallel": parallel, "jit": jit}
+
+            r1 = b.assemble.vector(u, **kwargs)
+            assert r1.shape == (81, 1)
+
+            r1b = b.results.force
+            assert np.allclose(r1.toarray(), r1b.toarray())
+
+            r2 = b.assemble.vector(**kwargs)
+            assert np.allclose(r1.toarray(), r2.toarray())
+
+            K1 = b.assemble.matrix(u, **kwargs)
+            assert K1.shape == (81, 81)
+
+            K1b = b.results.stiffness
+            assert np.allclose(K1.toarray(), K1b.toarray())
+
+            K2 = b.assemble.matrix(**kwargs)
+            assert np.allclose(K1.toarray(), K2.toarray())
+
+            P1 = b.results.stress
+            P2 = b.evaluate.gradient()
+            P2 = b.evaluate.gradient(u)
+            assert np.allclose(P1, P2)
+
+            A1 = b.results.elasticity
+            A2 = b.evaluate.hessian()
+            A2 = b.evaluate.hessian(u)
+            assert np.allclose(A1, A2)
+
+            F1 = b.results.kinematics
+            F2 = b._extract(u)
+            assert np.allclose(F1, F2)
+
+            s1 = b.evaluate.cauchy_stress()
+            s2 = b.evaluate.cauchy_stress(u)
+            assert np.allclose(s1, s2)
+
+            t1 = b.evaluate.kirchhoff_stress()
+            t2 = b.evaluate.kirchhoff_stress(u)
+            assert np.allclose(t1, t2)
+
+
+def test_solidbody_incompressible():
+
+    umat, u = pre(dim=3, bulk=None)
+    b = fe.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
+    b = fe.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, state=fe.StateNearlyIncompressible(u)
+    )
 
     for parallel in [False, True]:
         for jit in [False, True]:
@@ -352,6 +406,7 @@ def test_load():
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
+    test_solidbody_incompressible()
     test_solidbody_axi()
     test_solidbody_mixed()
     test_pressure()

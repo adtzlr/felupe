@@ -838,7 +838,10 @@ class NeoHooke:
         J = det(F)
         C = dot(transpose(F), F, parallel=self.parallel)
 
-        W = mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk * (J - 1) ** 2 / 2
+        W = mu / 2 * (J ** (-2 / 3) * trace(C) - 3)
+
+        if bulk is not None:
+            W += bulk * (J - 1) ** 2 / 2
 
         return [W]
 
@@ -867,10 +870,14 @@ class NeoHooke:
         J = det(F)
         iFT = transpose(inv(F, J))
 
-        Pdev = mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
-        Pvol = bulk * (J - 1) * J * iFT
+        # "physical"-deviatoric (not math-deviatoric!) part of P
+        P = mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
 
-        return [Pdev + Pvol]
+        if bulk is not None:
+            # "physical"-volumetric (not math-volumetric!) part of P
+            P += bulk * (J - 1) * J * iFT
+
+        return [P]
 
     def hessian(self, extract, mu=None, bulk=None):
         """Hessian of the strain energy density function per unit
@@ -898,7 +905,8 @@ class NeoHooke:
         iFT = transpose(inv(F, J))
         eye = identity(F)
 
-        A4_dev = (
+        # "physical"-deviatoric (not math-deviatoric!) part of A4
+        A4 = (
             mu
             * (
                 cdya_ik(eye, eye, parallel=self.parallel)
@@ -916,12 +924,15 @@ class NeoHooke:
             * J ** (-2 / 3)
         )
 
-        p = bulk * (J - 1)
-        q = p + bulk * J
+        if bulk is not None:
 
-        A4_vol = J * (
-            q * dya(iFT, iFT, parallel=self.parallel)
-            - p * cdya_il(iFT, iFT, parallel=self.parallel)
-        )
+            p = bulk * (J - 1)
+            q = p + bulk * J
 
-        return [A4_dev + A4_vol]
+            # "physical"-volumetric (not math-volumetric!) part of A4
+            A4 += J * (
+                q * dya(iFT, iFT, parallel=self.parallel)
+                - p * cdya_il(iFT, iFT, parallel=self.parallel)
+            )
+
+        return [A4]

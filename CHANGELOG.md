@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [5.3.1] - 2022-11-03
+
+### Fixed
+- Fix volume evaluation of (nearly) incompressible solids for axisymmetric fields.
+
 ## [5.3.0] - 2022-11-03
 
 ### Added

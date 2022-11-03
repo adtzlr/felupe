@@ -151,6 +151,10 @@ FElupe Version {version}
 
                     self.callback(j, i, substep)
 
+                    # update x0 after each completed substep
+                    if "x0" in kwargs.keys():
+                        kwargs["x0"].link(substep.x)
+
                     if filename is not None:
                         self._write(writer, increment, substep, point_data, cell_data)
                         increment += 1

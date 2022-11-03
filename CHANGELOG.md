@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix ignored mask `only_surface=True` for `RegionBoundary().mesh.cells_faces`.
 - Set default pressure to zero in `SolidBodyPressure()`.
 - Take the mesh from the global `x0`-field if `x0` is passed to `job.evaluate(x0=...)`.
+- Fix missing update of global field `x0` in `job.evaluate(x0)` after each completed substep.
 
 ## [5.2.0] - 2022-10-08
 

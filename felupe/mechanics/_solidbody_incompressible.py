@@ -65,9 +65,35 @@ class StateNearlyIncompressible:
 
 class SolidBodyNearlyIncompressible:
     """A (nearly) incompressible SolidBody with methods for the assembly of
-    sparse vectors/matrices."""
+    sparse vectors/matrices.
+
+    The volumetric material behaviour is defined by a strain energy function.
+
+    ..  math::
+
+        U(J) = \frac{K}{2} (J - 1)^2
+
+    """
 
     def __init__(self, umat, field, bulk, state=None):
+        """A (nearly) incompressible SolidBody with methods for the assembly of
+        sparse vectors/matrices.
+
+        Parameters
+        ----------
+        umat : A constitutive material formulation with methods for the evaluation
+            of the gradient ``P = umat.gradient(F)`` as well as the hessian
+            ``A = umat.hessian(F)`` of the strain energy function w.r.t. the
+            deformation gradient.
+        field : FieldContainer
+            The field (and its underlying region) on which the solid body will
+            be created on.
+        bulk : float
+            The bulk modulus of the volumetric material behaviour
+            (:math:`U(J)=K(J-1)^2/2`).
+        state : StateNearlyIncompressible
+            A valid initial state for a (nearly) incompressible solid.
+        """
 
         self.umat = umat
         self.field = field
@@ -102,7 +128,7 @@ class SolidBodyNearlyIncompressible:
     ):
 
         self.results.stress = self._gradient(
-            field, parallel=False, jit=False, args=args, kwargs=kwargs
+            field, parallel=parallel, jit=jit, args=args, kwargs=kwargs
         )
 
         form = self._form(
@@ -111,7 +137,7 @@ class SolidBodyNearlyIncompressible:
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h()
+        h = self.results.state.h(parallel=parallel, jit=jit)
         v = self.results.state.v()
         p = self.results.state.p
 
@@ -129,7 +155,7 @@ class SolidBodyNearlyIncompressible:
     ):
 
         self.results.elasticity = self._hessian(
-            field, parallel=False, jit=False, args=args, kwargs=kwargs
+            field, parallel=parallel, jit=jit, args=args, kwargs=kwargs
         )
 
         form = self._form(
@@ -139,7 +165,7 @@ class SolidBodyNearlyIncompressible:
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h()
+        h = self.results.state.h(parallel=parallel, jit=jit)
 
         values = [
             form.integrate(parallel=parallel, jit=jit)[0]
@@ -154,7 +180,7 @@ class SolidBodyNearlyIncompressible:
 
         u = field[0].values
         u0 = self.results.state.u
-        h = self.results.state.h()
+        h = self.results.state.h(parallel=parallel, jit=jit)
         v = self.results.state.v()
         J = self.results.state.J
         p = self.results.state.p

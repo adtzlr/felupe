@@ -130,9 +130,9 @@ def pre(dim, bulk=2):
     return umat, fe.FieldContainer([u])
 
 
-def pre_axi():
+def pre_axi(bulk=2):
 
-    umat = fe.NeoHooke(mu=1, bulk=2)
+    umat = fe.NeoHooke(mu=1, bulk=bulk)
 
     m = fe.Rectangle(n=3)
     r = fe.RegionQuad(m)
@@ -266,6 +266,54 @@ def test_solidbody_incompressible():
 
 
 def test_solidbody_axi():
+
+    umat, u = pre_axi(bulk=None)
+    b = fe.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
+    b = fe.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, state=fe.StateNearlyIncompressible(u)
+    )
+
+    for parallel in [False, True]:
+        for jit in [False, True]:
+
+            kwargs = {"parallel": parallel, "jit": jit}
+
+            r1 = b.assemble.vector(u, **kwargs)
+            assert r1.shape == (18, 1)
+
+            r2 = b.assemble.vector(**kwargs)
+            assert np.allclose(r1.toarray(), r2.toarray())
+
+            K1 = b.assemble.matrix(u, **kwargs)
+            assert K1.shape == (18, 18)
+
+            K2 = b.assemble.matrix(**kwargs)
+            assert np.allclose(K1.toarray(), K2.toarray())
+
+            P1 = b.results.stress
+            P2 = b.evaluate.gradient()
+            P2 = b.evaluate.gradient(u)
+            assert np.allclose(P1, P2)
+
+            A1 = b.results.elasticity
+            A2 = b.evaluate.hessian()
+            A2 = b.evaluate.hessian(u)
+            assert np.allclose(A1, A2)
+
+            F1 = b.results.kinematics
+            F2 = b._extract(u)
+            assert np.allclose(F1, F2)
+
+            s1 = b.evaluate.cauchy_stress()
+            s2 = b.evaluate.cauchy_stress(u)
+            assert np.allclose(s1, s2)
+
+            t1 = b.evaluate.kirchhoff_stress()
+            t2 = b.evaluate.kirchhoff_stress(u)
+            assert np.allclose(t1, t2)
+
+
+def test_solidbody_axi_incompressible():
 
     umat, u = pre_axi()
     b = fe.SolidBody(umat=umat, field=u)

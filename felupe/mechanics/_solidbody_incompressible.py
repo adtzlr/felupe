@@ -28,6 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from .._assembly import IntegralFormMixed
+from .._field import FieldAxisymmetric
 from ..constitution import AreaChange
 from ..math import dot, transpose, det, dya, ddot
 from ._helpers import Assemble, Evaluate, Results
@@ -60,7 +61,12 @@ class StateNearlyIncompressible:
 
     def v(self):
         "Cell volumes of the deformed configuration."
-        return (det(self.F[0]) * self.field.region.dV).sum(0)
+        dV = self.field.region.dV
+        if isinstance(self.field[0], FieldAxisymmetric):
+            R = self.field[0].radius
+            dA = self.field.region.dV
+            dV = 2 * np.pi * R * dA
+        return (det(self.F[0]) * dV).sum(0)
 
 
 class SolidBodyNearlyIncompressible:
@@ -103,7 +109,13 @@ class SolidBodyNearlyIncompressible:
         self._form = IntegralFormMixed
 
         # volume of undeformed configuration
-        self.V = self.field.region.dV.sum(0)
+        if isinstance(self.field[0], FieldAxisymmetric):
+            R = self.field[0].radius
+            dA = self.field.region.dV
+            dV = 2 * np.pi * R * dA
+        else:
+            dV = self.field.region.dV
+        self.V = dV.sum(0)
 
         self.results = Results(stress=True, elasticity=True)
 

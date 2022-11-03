@@ -217,8 +217,9 @@ def newtonrhapson(
         time_start = perf_counter()
 
     if x0 is not None:
-        # copy x0
+        # take x0
         x = x0
+
     else:
         # obtain field of first body
         x = items[0].field

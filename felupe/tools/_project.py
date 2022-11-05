@@ -88,15 +88,25 @@ def project(values, region, average=True, mean=False):
 
     # 1d-reshaped values
     dim = int(np.product(values.shape[:-2]))
+    weights = region.quadrature.weights
 
     if mean:
+
+        # evaluate how often the values must be repeated to match the number
+        # of element-points
         reps = np.ones(len(values.shape), dtype=int)
         reps[-2] = len(region.element.points)
 
+        # np.average(keepdims=True) requires numpy >= 1.23.0
         values = np.tile(
-            values.mean(-2, keepdims=True),
+            np.average(values, axis=-2, weights=weights),
             reps=reps,
         )
+
+        # workaround for np.average(keepdims=True)
+        shape = values.shape
+        shape = np.insert(shape, -1, 1)
+        values = values.reshape(*shape)
 
     u = values.T.reshape(-1, dim)
 
@@ -112,11 +122,12 @@ def project(values, region, average=True, mean=False):
 
     # field for values on disconnected mesh; project values to mesh-points
     f = Field(r, dim=dim, values=u)
+    v = f.interpolate()
 
     if mean:
-        v = np.tile(f.interpolate().mean(-2, keepdims=True), reps=reps)
-    else:
-        v = f.interpolate()
+        v = np.tile(
+            np.average(v, axis=-2, weights=weights).reshape(dim, 1, -1), reps=reps
+        )
 
     if average:
 

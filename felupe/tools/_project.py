@@ -81,24 +81,53 @@ def topoints(values, region, sym=True, mode="tensor"):
     return out
 
 
-def project(values, region, average=True):
+def project(values, region, average=True, mean=False):
     """Projection (and optionally averaging) of scalar or vectorial values
     at quadrature points to mesh-points.
     """
 
     # 1d-reshaped values
     dim = int(np.product(values.shape[:-2]))
+    weights = region.quadrature.weights
+
+    if mean:
+
+        # evaluate how often the values must be repeated to match the number
+        # of element-points
+        reps = np.ones(len(values.shape), dtype=int)
+        reps[-2] = len(region.element.points)
+
+        # np.average(keepdims=True) requires numpy >= 1.23.0
+        values = np.tile(
+            np.average(values, axis=-2, weights=weights),
+            reps=reps,
+        )
+
+        # workaround for np.average(keepdims=True)
+        shape = values.shape
+        shape = np.insert(shape, -1, 1)
+        values = values.reshape(*shape)
+
     u = values.T.reshape(-1, dim)
 
     # disconnected mesh
     m = region.mesh.disconnect()
 
-    # region on disconnected mesh with inverse quadrature scheme
-    r = Region(m, region.element, region.quadrature.inv(), grad=False)
+    if mean:
+        # region on disconnected mesh with original quadrature scheme
+        r = Region(m, region.element, region.quadrature, grad=False)
+    else:
+        # region on disconnected mesh with inverse quadrature scheme
+        r = Region(m, region.element, region.quadrature.inv(), grad=False)
 
     # field for values on disconnected mesh; project values to mesh-points
     f = Field(r, dim=dim, values=u)
     v = f.interpolate()
+
+    if mean:
+        v = np.tile(
+            np.average(v, axis=-2, weights=weights).reshape(dim, 1, -1), reps=reps
+        )
 
     if average:
 

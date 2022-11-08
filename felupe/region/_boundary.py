@@ -29,6 +29,7 @@ import numpy as np
 
 from ..math import cross
 from ._region import Region
+from ..mesh import Mesh
 
 
 class RegionBoundary(Region):
@@ -208,13 +209,13 @@ class RegionBoundary(Region):
         cells_on_boundary = cells[self._selection]
 
         ## create mesh on boundary
-        mesh_boundary = mesh.copy()
-        mesh_boundary.update(cells_on_boundary)
-        self.mesh = mesh_boundary
+        mesh_boundary_cells = mesh.copy()
+        mesh_boundary_cells.update(cells_on_boundary)
+        self.mesh = mesh_boundary_cells
         self.mesh.cells_faces = cells_faces[self._selection]
 
         # init region and faces
-        super().__init__(mesh_boundary, element, quadrature, grad=grad)
+        super().__init__(mesh_boundary_cells, element, quadrature, grad=grad)
 
         if grad:
             self.dA, self.dV, self.normals = self._init_faces()
@@ -243,3 +244,9 @@ class RegionBoundary(Region):
                 normals = np.pad(normals, ((0, 1), (0, 0), (0, 0)))
 
         return dA, dV, normals
+
+    def mesh_faces(self):
+        "Return a Mesh with face-cells on the selected boundary."
+
+        face_type = {"quad": "line", "hexahedron": "quad"}[self.mesh.cell_type]
+        return Mesh(self.mesh.points, self.mesh.cells_faces, face_type)

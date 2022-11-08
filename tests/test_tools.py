@@ -93,7 +93,7 @@ def test_solve_check():
 
     cauchy = fe.tools.project(fe.math.tovoigt(s), region=r, average=False)
     assert cauchy.shape == (r.mesh.cells.size, 6)
-    
+
     cauchy = fe.tools.project(fe.math.tovoigt(s), region=r, mean=True)
     assert cauchy.shape == (r.mesh.npoints, 6)
 

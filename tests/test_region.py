@@ -49,6 +49,11 @@ def test_region():
     r = fe.RegionHexahedronBoundary(mesh, only_surface=False)
     r = fe.RegionHexahedronBoundary(mesh, mask=[0, 3])
     r = fe.RegionHexahedronBoundary(mesh, only_surface=False, mask=[0, 3])
+
+    m = r.mesh_faces()
+    assert np.allclose(m.points, mesh.points)
+    assert m.cell_type == "quad"
+
     r = fe.RegionConstantHexahedron(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)

@@ -94,14 +94,18 @@ class LinearElastic:
         # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
+        
+        # initial variables for calling
+        # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
+        self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(self, extract, E=None, nu=None):
+    def gradient(self, x, E=None, nu=None):
         """Evaluate the stress tensor (as a function of the deformation
         gradient).
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with Deformation gradient ``F`` (3x3) as first item
         E : float, optional
             Young's modulus (default is None)
@@ -115,7 +119,7 @@ class LinearElastic:
 
         """
 
-        F = extract[0]
+        F, statevars = x[0], x[-1]
 
         if E is None:
             E = self.E
@@ -138,15 +142,15 @@ class LinearElastic:
         for a, b in zip([0, 0, 1], [1, 2, 2]):
             stress[a, b] = stress[b, a] = (1 - 2 * nu) / 2 * 2 * strain[a, b]
 
-        return [E / (1 + nu) / (1 - 2 * nu) * stress]
+        return [E / (1 + nu) / (1 - 2 * nu) * stress, statevars]
 
-    def hessian(self, extract=None, E=None, nu=None, shape=(1, 1), region=None):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), region=None):
         """Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
         Arguments
         ---------
-        extract : list of ndarray, optional
+        x : list of ndarray, optional
             List with Deformation gradient ``F`` (3x3) as first item
             (default is None)
         E : float, optional
@@ -165,11 +169,11 @@ class LinearElastic:
 
         """
 
-        if extract is None:
+        if x is None:
             if region is not None:
                 shape = (len(region.quadrature.points), region.mesh.ncells)
         else:
-            F = extract[0]
+            F = x[0]
             shape = F.shape[-2:]
 
         if E is None:
@@ -235,14 +239,18 @@ class LinearElasticTensorNotation:
         # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
+        
+        # initial variables for calling
+        # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
+        self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(self, extract=None, E=None, nu=None):
+    def gradient(self, x=None, E=None, nu=None):
         """Evaluate the stress tensor (as a function of the deformation
         gradient).
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with Deformation gradient ``F`` (3x3) as first item
         E : float, optional
             Young's modulus (default is None)
@@ -256,7 +264,7 @@ class LinearElasticTensorNotation:
 
         """
 
-        F = extract[0]
+        F, statevars = x[0], x[-1]
 
         if E is None:
             E = self.E
@@ -271,15 +279,15 @@ class LinearElasticTensorNotation:
         H = F - identity(F)
         strain = (H + transpose(H)) / 2
 
-        return [2 * mu * strain + gamma * trace(strain) * identity(strain)]
+        return [2 * mu * strain + gamma * trace(strain) * identity(strain), statevars]
 
-    def hessian(self, extract=None, E=None, nu=None, shape=(1, 1), region=None):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), region=None):
         """Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
         Arguments
         ---------
-        extract : list of ndarray. optional
+        x : list of ndarray. optional
             List with Deformation gradient ``F`` (3x3) as first item
             (default is None)
         E : float, optional
@@ -304,12 +312,12 @@ class LinearElasticTensorNotation:
         if nu is None:
             nu = self.nu
 
-        if extract is None:
+        if x is None:
             if region is not None:
                 shape = (len(region.quadrature.points), region.mesh.ncells)
             I = identity(dim=3, shape=shape)
         else:
-            F = extract[0]
+            F = x[0]
             I = identity(F)
 
         # convert to lame constants
@@ -364,6 +372,10 @@ class LinearElasticPlaneStrain:
         self.nu = nu
 
         self._umat = LinearElasticPlaneStress(*self._convert(self.E, self.nu))
+        
+        # initial variables for calling
+        # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
+        self.x = [np.eye(2), np.zeros(0)]
 
         self.elasticity = self.hessian
 
@@ -398,12 +410,12 @@ class LinearElasticPlaneStrain:
 
         return E_eff, nu_eff
 
-    def gradient(self, extract, E=None, nu=None):
+    def gradient(self, x, E=None, nu=None):
         """Evaluate the 2d-stress tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -423,14 +435,14 @@ class LinearElasticPlaneStrain:
         if nu is None:
             nu = self.nu
 
-        return self._umat.gradient(extract, *self._convert(E, nu))
+        return self._umat.gradient(x, *self._convert(E, nu))
 
-    def hessian(self, extract, E=None, nu=None):
+    def hessian(self, x, E=None, nu=None):
         """Evaluate the 2d-elasticity tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -451,14 +463,14 @@ class LinearElasticPlaneStrain:
         if nu is None:
             nu = self.nu
 
-        return self._umat.hessian(extract, *self._convert(E, nu))
+        return self._umat.hessian(x, *self._convert(E, nu))
 
-    def strain(self, extract, E=None, nu=None):
+    def strain(self, x, E=None, nu=None):
         """Evaluate the strain tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -472,7 +484,7 @@ class LinearElasticPlaneStrain:
             Strain tensor (3x3)
         """
 
-        F = extract[0]
+        F = x[0]
 
         e = np.zeros((3, 3, *F.shape[-2:]))
 
@@ -483,12 +495,12 @@ class LinearElasticPlaneStrain:
 
         return [e]
 
-    def stress(self, extract, E=None, nu=None):
+    def stress(self, x, E=None, nu=None):
         """ "Evaluate the 3d-stress tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -503,7 +515,7 @@ class LinearElasticPlaneStrain:
 
         """
 
-        F = extract[0]
+        F = x[0]
 
         if E is None:
             E = self.E
@@ -533,15 +545,19 @@ class LinearElasticPlaneStress:
 
         self.E = E
         self.nu = nu
+        
+        # initial variables for calling
+        # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
+        self.x = [np.eye(2), np.zeros(0)]
 
         self.elasticity = self.hessian
 
-    def gradient(self, extract, E=None, nu=None):
+    def gradient(self, x, E=None, nu=None):
         """Evaluate the 2d-stress tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -556,7 +572,7 @@ class LinearElasticPlaneStress:
 
         """
 
-        F = extract[0]
+        F, statevars = x[0], x[-1]
 
         if E is None:
             E = self.E
@@ -571,14 +587,14 @@ class LinearElasticPlaneStress:
         stress[0, 1] = E / (1 - nu**2) * (1 - nu) / 2 * (F[0, 1] + F[1, 0])
         stress[1, 0] = stress[0, 1]
 
-        return [stress]
+        return [stress, statevars]
 
-    def hessian(self, extract=None, E=None, nu=None, shape=(1, 1), region=None):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), region=None):
         """Evaluate the elasticity tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray, optional
+        x : list of ndarray, optional
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item (default is None)
         E : float, optional
@@ -603,11 +619,11 @@ class LinearElasticPlaneStress:
         if nu is None:
             nu = self.nu
 
-        if extract is None:
+        if x is None:
             if region is not None:
                 shape = (len(region.quadrature.points), region.mesh.ncells)
         else:
-            F = extract[0]
+            F = x[0]
             shape = F.shape[-2:]
 
         elast = np.zeros((2, 2, 2, 2, *shape))
@@ -624,12 +640,12 @@ class LinearElasticPlaneStress:
 
         return [elast]
 
-    def strain(self, extract, E=None, nu=None):
+    def strain(self, x, E=None, nu=None):
         """Evaluate the strain tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -643,7 +659,7 @@ class LinearElasticPlaneStress:
             Strain tensor (3x3)
         """
 
-        F = extract[0]
+        F = x[0]
 
         if E is None:
             E = self.E
@@ -661,12 +677,12 @@ class LinearElasticPlaneStress:
 
         return [e]
 
-    def stress(self, extract, E=None, nu=None):
+    def stress(self, x, E=None, nu=None):
         """ "Evaluate the 3d-stress tensor from the deformation gradient.
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             ``F`` as first item
         E : float, optional
@@ -681,258 +697,8 @@ class LinearElasticPlaneStress:
 
         """
 
-        F = extract[0]
+        F = x[0]
 
         return [
             np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))
         ]
-
-
-class NeoHooke:
-    r"""Nearly-incompressible isotropic hyperelastic Neo-Hooke material
-    formulation. The strain energy density function of the Neo-Hookean
-    material formulation is a linear function of the trace of the
-    isochoric part of the right Cauchy-Green deformation tensor.
-
-    In a nearly-incompressible constitutive framework the strain energy
-    density is an additive composition of an isochoric and a volumetric
-    part. While the isochoric part is defined on the distortional part of
-    the deformation gradient, the volumetric part of the strain
-    energy function is defined on the determinant of the deformation
-    gradient.
-
-    .. math::
-
-        \psi &= \hat{\psi}(\hat{\boldsymbol{C}}) + U(J)
-
-        \hat\psi(\hat{\boldsymbol{C}}) &= \frac{\mu}{2} (\text{tr}(\hat{\boldsymbol{C}}) - 3)
-
-    with
-
-    .. math::
-
-       J &= \text{det}(\boldsymbol{F})
-
-       \hat{\boldsymbol{F}} &= J^{-1/3} \boldsymbol{F}
-
-       \hat{\boldsymbol{C}} &= \hat{\boldsymbol{F}}^T \hat{\boldsymbol{F}}
-
-    The volumetric part of the strain energy density function is a function
-    the volume ratio.
-
-    .. math::
-
-       U(J) = \frac{K}{2} (J - 1)^2
-
-    The first Piola-Kirchhoff stress tensor is evaluated as the gradient
-    of the strain energy density function. The hessian of the strain
-    energy density function enables the corresponding elasticity tensor.
-
-    .. math::
-
-       \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
-
-       \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
-
-    A chain rule application leads to the following expression for the stress tensor.
-    It is formulated as a sum of the **physical**-deviatoric (not the mathematical deviator!) and the physical-hydrostatic stress tensors.
-
-    .. math::
-
-       \boldsymbol{P} &= \boldsymbol{P}' + \boldsymbol{P}_U
-
-       \boldsymbol{P}' &= \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}} : \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} = \bar{\boldsymbol{P}} - \frac{1}{3} (\bar{\boldsymbol{P}} : \boldsymbol{F}) \boldsymbol{F}^{-T}
-
-       \boldsymbol{P}_U &= \frac{\partial U(J)}{\partial J} \frac{\partial J}{\partial \boldsymbol{F}} = U'(J) J \boldsymbol{F}^{-T}
-
-    with
-
-    .. math::
-
-       \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} &= J^{-1/3} \left( \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I} - \frac{1}{3} \boldsymbol{F} \otimes \boldsymbol{F}^{-T} \right)
-
-       \frac{\partial J}{\partial \boldsymbol{F}} &= J \boldsymbol{F}^{-T}
-
-       \bar{\boldsymbol{P}} &= J^{-1/3} \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}}
-
-    With the above partial derivatives the first Piola-Kirchhoff stress
-    tensor of the Neo-Hookean material model takes the following form.
-
-    .. math::
-
-       \boldsymbol{P} = \mu J^{-2/3} \left( \boldsymbol{F} - \frac{1}{3} (\boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \right) + K (J - 1) J \boldsymbol{F}^{-T}
-
-    Again, a chain rule application leads to an expression for the elasticity tensor.
-
-    .. math::
-
-       \mathbb{A} &= \mathbb{A}' + \mathbb{A}_{U}
-
-       \mathbb{A}' &= \bar{\mathbb{A}} - \frac{1}{3} \left( (\bar{\mathbb{A}} : \boldsymbol{F}) \otimes \boldsymbol{F}^{-T} + \boldsymbol{F}^{-T} \otimes (\boldsymbol{F} : \bar{\mathbb{A}}) \right ) + \frac{1}{9} (\boldsymbol{F} : \bar{\mathbb{A}} : \boldsymbol{F}) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T}
-
-       \mathbb{A}_{U} &= (U''(J) J + U'(J)) J \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - U'(J) J \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
-
-    with
-
-    .. math::
-
-       \bar{\mathbb{A}} = J^{-1/3} \frac{\partial^2 \hat\psi}{\partial \hat{\boldsymbol{F}}\ \partial \hat{\boldsymbol{F}}} J^{-1/3}
-
-    With the above partial derivatives the (physical-deviatoric and
-    -hydrostatic) parts of the elasticity tensor associated
-    to the first Piola-Kirchhoff stress tensor of the Neo-Hookean
-    material model takes the following form.
-
-    .. math::
-
-       \mathbb{A} &= \mathbb{A}' + \mathbb{A}_{U}
-
-       \mathbb{A}' &= J^{-2/3} \left(\boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I} - \frac{1}{3} \left( \boldsymbol{F} \otimes \boldsymbol{F}^{-T} + \boldsymbol{F}^{-T} \otimes \boldsymbol{F} \right ) + \frac{1}{9} (\boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} \right)
-
-       \mathbb{A}_{U} &= K J \left( (2J - 1) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - (J - 1) \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
-
-
-    Arguments
-    ---------
-    mu : float
-        Shear modulus
-    bulk : float
-        Bulk modulus
-
-    """
-
-    def __init__(self, mu=None, bulk=None, parallel=False):
-
-        self.parallel = parallel
-
-        self.mu = mu
-        self.bulk = bulk
-
-        # aliases for function, gradient and hessian
-        self.energy = self.function
-        self.stress = self.gradient
-        self.elasticity = self.hessian
-
-    def function(self, extract, mu=None, bulk=None):
-        """Strain energy density function per unit undeformed volume of the
-        Neo-Hookean material formulation.
-
-        Arguments
-        ---------
-        extract : list of ndarray
-            List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
-        """
-
-        F = extract[0]
-
-        if mu is None:
-            mu = self.mu
-
-        if bulk is None:
-            bulk = self.bulk
-
-        J = det(F)
-        C = dot(transpose(F), F, parallel=self.parallel)
-
-        W = mu / 2 * (J ** (-2 / 3) * trace(C) - 3)
-
-        if bulk is not None:
-            W += bulk * (J - 1) ** 2 / 2
-
-        return [W]
-
-    def gradient(self, extract, mu=None, bulk=None):
-        """Gradient of the strain energy density function per unit
-        undeformed volume of the Neo-Hookean material formulation.
-
-        Arguments
-        ---------
-        extract : list of ndarray
-            List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
-        """
-
-        F = extract[0]
-
-        if mu is None:
-            mu = self.mu
-
-        if bulk is None:
-            bulk = self.bulk
-
-        J = det(F)
-        iFT = transpose(inv(F, J))
-
-        # "physical"-deviatoric (not math-deviatoric!) part of P
-        P = mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
-
-        if bulk is not None:
-            # "physical"-volumetric (not math-volumetric!) part of P
-            P += bulk * (J - 1) * J * iFT
-
-        return [P]
-
-    def hessian(self, extract, mu=None, bulk=None):
-        """Hessian of the strain energy density function per unit
-        undeformed volume of the Neo-Hookean material formulation.
-
-        Arguments
-        ---------
-        extract : list of ndarray
-            List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
-        """
-
-        F = extract[0]
-
-        if mu is None:
-            mu = self.mu
-
-        if bulk is None:
-            bulk = self.bulk
-
-        J = det(F)
-        iFT = transpose(inv(F, J))
-        eye = identity(F)
-
-        # "physical"-deviatoric (not math-deviatoric!) part of A4
-        A4 = (
-            mu
-            * (
-                cdya_ik(eye, eye, parallel=self.parallel)
-                - 2 / 3 * dya(F, iFT, parallel=self.parallel)
-                - 2 / 3 * dya(iFT, F, parallel=self.parallel)
-                + 2
-                / 9
-                * ddot(F, F, parallel=self.parallel)
-                * dya(iFT, iFT, parallel=self.parallel)
-                + 1
-                / 3
-                * ddot(F, F, parallel=self.parallel)
-                * cdya_il(iFT, iFT, parallel=self.parallel)
-            )
-            * J ** (-2 / 3)
-        )
-
-        if bulk is not None:
-
-            p = bulk * (J - 1)
-            q = p + bulk * J
-
-            # "physical"-volumetric (not math-volumetric!) part of A4
-            A4 += J * (
-                q * dya(iFT, iFT, parallel=self.parallel)
-                - p * cdya_il(iFT, iFT, parallel=self.parallel)
-            )
-
-        return [A4]

@@ -107,8 +107,6 @@ from .mechanics import (
     SolidBodyNearlyIncompressible,
     StateNearlyIncompressible,
     SolidBodyPressure,
-    SolidBodyTensor,
-    SolidBodyTensorNearlyIncompressible,
     SolidBodyGravity,
     PointLoad,
     Step,

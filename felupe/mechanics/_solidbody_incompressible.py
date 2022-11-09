@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._helpers import StateNearlyIncompressible
 from .._assembly import IntegralFormMixed
 from .._field import FieldAxisymmetric
 from ..constitution import AreaChange
@@ -34,44 +35,9 @@ from ..math import dot, transpose, det, dya, ddot
 from ._helpers import Assemble, Evaluate, Results
 
 
-class StateNearlyIncompressible:
-    "A State with internal fields for (nearly) incompressible solid bodies."
-
-    def __init__(self, field):
-
-        self.field = field
-        self.dJdF = AreaChange().function
-
-        # initial values (on mesh-points) of the displacement field
-        self.u = field[0].values
-
-        # deformation gradient
-        self.F = field.extract()
-
-        # cell-values of the internal pressure and volume-ratio fields
-        self.p = np.zeros(field.region.mesh.ncells)
-        self.J = np.ones(field.region.mesh.ncells)
-
-    def h(self, parallel=False, jit=False):
-        "Integrated shape-function gradient w.r.t. the deformed coordinates `x`."
-
-        return IntegralFormMixed(
-            fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
-        ).integrate(parallel=parallel, jit=jit)[0]
-
-    def v(self):
-        "Cell volumes of the deformed configuration."
-        dV = self.field.region.dV
-        if isinstance(self.field[0], FieldAxisymmetric):
-            R = self.field[0].radius
-            dA = self.field.region.dV
-            dV = 2 * np.pi * R * dA
-        return (det(self.F[0]) * dV).sum(0)
-
-
 class SolidBodyNearlyIncompressible:
     """A (nearly) incompressible SolidBody with methods for the assembly of
-    sparse vectors/matrices.
+    sparse vectors/matrices based on a ``MaterialTensor`` with state variables.
 
     The volumetric material behaviour is defined by a strain energy function.
 
@@ -81,7 +47,7 @@ class SolidBodyNearlyIncompressible:
 
     """
 
-    def __init__(self, umat, field, bulk, state=None):
+    def __init__(self, umat, field, bulk, state=None, statevars=None):
         """A (nearly) incompressible SolidBody with methods for the assembly of
         sparse vectors/matrices.
 
@@ -118,6 +84,17 @@ class SolidBodyNearlyIncompressible:
         self.V = dV.sum(0)
 
         self.results = Results(stress=True, elasticity=True)
+
+        if statevars is not None:
+            self.results.statevars = statevars
+        else:
+            self.results.statevars = np.zeros(
+                (
+                    *umat.x[-1].shape,
+                    field.region.quadrature.npoints,
+                    field.region.mesh.ncells,
+                )
+            )
 
         if state is None:
             # init state of internal fields
@@ -219,12 +196,15 @@ class SolidBodyNearlyIncompressible:
             self.results.kinematics = self._extract(field, parallel=parallel, jit=jit)
 
         dJdF = self._area_change.function
-        F = self.results.kinematics
+        F = self.results.kinematics[0]
+        statevars = self.results.statevars
+
         p = self.results.state.p
 
-        self.results.stress = [
-            self.umat.gradient(F, *args, **kwargs)[0] + p * dJdF(F)[0]
-        ]
+        gradient = self.umat.gradient([F, statevars], *args, **kwargs)
+
+        self.results.stress = [gradient[0] + p * dJdF([F])[0]]
+        self.results._statevars = gradient[-1]
 
         return self.results.stress
 
@@ -234,11 +214,12 @@ class SolidBodyNearlyIncompressible:
             self.results.kinematics = self._extract(field, parallel=parallel, jit=jit)
 
         d2JdF2 = self._area_change.gradient
-        F = self.results.kinematics
+        F = self.results.kinematics[0]
+        statevars = self.results.statevars
         p = self.results.state.p
 
         self.results.elasticity = [
-            self.umat.hessian(F, *args, **kwargs)[0] + p * d2JdF2(F)[0]
+            self.umat.hessian([F, statevars], *args, **kwargs)[0] + p * d2JdF2([F])[0]
         ]
 
         return self.results.elasticity

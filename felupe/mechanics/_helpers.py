@@ -25,6 +25,12 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
+from .._assembly import IntegralFormMixed
+from .._field import FieldAxisymmetric
+from ..constitution import AreaChange
+from ..math import det
 
 class Assemble:
     "A class with assembly methods of a SolidBody."
@@ -68,3 +74,38 @@ class Results:
 
         if self._statevars is not None:
             self.statevars = self._statevars
+
+
+class StateNearlyIncompressible:
+    "A State with internal fields for (nearly) incompressible solid bodies."
+
+    def __init__(self, field):
+
+        self.field = field
+        self.dJdF = AreaChange().function
+
+        # initial values (on mesh-points) of the displacement field
+        self.u = field[0].values
+
+        # deformation gradient
+        self.F = field.extract()
+
+        # cell-values of the internal pressure and volume-ratio fields
+        self.p = np.zeros(field.region.mesh.ncells)
+        self.J = np.ones(field.region.mesh.ncells)
+
+    def h(self, parallel=False, jit=False):
+        "Integrated shape-function gradient w.r.t. the deformed coordinates `x`."
+
+        return IntegralFormMixed(
+            fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
+        ).integrate(parallel=parallel, jit=jit)[0]
+
+    def v(self):
+        "Cell volumes of the deformed configuration."
+        dV = self.field.region.dV
+        if isinstance(self.field[0], FieldAxisymmetric):
+            R = self.field[0].radius
+            dA = self.field.region.dV
+            dV = 2 * np.pi * R * dA
+        return (det(self.F[0]) * dV).sum(0)

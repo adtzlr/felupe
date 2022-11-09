@@ -151,31 +151,78 @@ def test_solidbody_tensor_mixed():
 
 def test_solidbody_tensor_nearlyincompr():
 
-    # create a hexahedron-region on a cube
-    region = fe.RegionHexahedron(fe.Cube(n=3))
+    m = fe.Cube(n=3)
+    r = fe.RegionHexahedron(m)
+    v = fe.FieldsMixed(r, n=1)
+    u = fe.OgdenRoxburgh(fe.NeoHooke(mu=1), r=3, m=1, beta=0)
+    b = fe.SolidBodyTensorNearlyIncompressible(u, v, bulk=5000)
 
-    # add a mixed field container (with displacement, pressure and volume ratio)
-    field = fe.FieldsMixed(region, n=1)
+    sv = np.zeros((1, r.quadrature.npoints, m.ncells))
 
-    # apply a uniaxial elongation on the cube
-    boundaries = fe.dof.uniaxial(field, clamped=True)[0]
+    for statevars in [sv, None]:
 
-    # define the constitutive material behaviour and create a solid body
-    umat = fe.OgdenRoxburgh(fe.NeoHooke(mu=1), r=3, m=1, beta=0)
-    solid = fe.SolidBodyTensorNearlyIncompressible(umat, field, bulk=5000)
+        b = fe.SolidBodyTensorNearlyIncompressible(u, v, bulk=5000, statevars=statevars)
+        r = b.assemble.vector()
 
-    # prepare a step with substeps
-    move = fe.math.linsteps([0, 1, 0], num=4)
-    step = fe.Step(
-        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
-    )
+        K = b.assemble.matrix(v)
+        K = b.assemble.matrix()
+        r = b.assemble.vector(v)
+        r = b.assemble.vector()
+        F = b.results.kinematics
+        P = b.results.stress
+        s = b.evaluate.cauchy_stress()
+        t = b.evaluate.kirchhoff_stress()
+        C = b.results.elasticity
+        z = b.results.statevars
 
-    # add the step to a job, evaluate all substeps and create a plot
-    job = fe.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-    job.evaluate(verbose=0, tol=1e-4)
+        assert K.shape == (81, 81)
+        assert r.shape == (81, 1)
+        assert F[0].shape == (3, 3, 8, 8)
+        assert P[0].shape == (3, 3, 8, 8)
+        assert s.shape == (3, 3, 8, 8)
+        assert t.shape == (3, 3, 8, 8)
+        assert C[0].shape == (3, 3, 3, 3, 8, 8)
+        assert z.shape == (1, 8, 8)
+
+
+def test_solidbody_tensor_nearlyincompr_axi():
+
+    m = fe.Rectangle(n=3)
+    r = fe.RegionQuad(m)
+    v = fe.FieldsMixed(r, n=1, axisymmetric=True)
+    u = fe.OgdenRoxburgh(fe.NeoHooke(mu=1), r=3, m=1, beta=0)
+    b = fe.SolidBodyTensorNearlyIncompressible(u, v, bulk=5000)
+
+    sv = np.zeros((1, r.quadrature.npoints, m.ncells))
+
+    for statevars in [sv, None]:
+
+        b = fe.SolidBodyTensorNearlyIncompressible(u, v, bulk=5000, statevars=statevars)
+        r = b.assemble.vector()
+
+        K = b.assemble.matrix(v)
+        K = b.assemble.matrix()
+        r = b.assemble.vector(v)
+        r = b.assemble.vector()
+        F = b.results.kinematics
+        P = b.results.stress
+        s = b.evaluate.cauchy_stress()
+        t = b.evaluate.kirchhoff_stress()
+        C = b.results.elasticity
+        z = b.results.statevars
+
+        assert K.shape == (18, 18)
+        assert r.shape == (18, 1)
+        assert F[0].shape == (3, 3, 4, 4)
+        assert P[0].shape == (3, 3, 4, 4)
+        assert s.shape == (3, 3, 4, 4)
+        assert t.shape == (3, 3, 4, 4)
+        assert C[0].shape == (3, 3, 3, 3, 4, 4)
+        assert z.shape == (1, 4, 4)
 
 
 if __name__ == "__main__":
     test_solidbody_tensor()
     test_solidbody_tensor_mixed()
     test_solidbody_tensor_nearlyincompr()
+    test_solidbody_tensor_nearlyincompr_axi()

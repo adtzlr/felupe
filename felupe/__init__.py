@@ -87,6 +87,7 @@ from .mesh import (
 )
 from .constitution import (
     NeoHooke,
+    OgdenRoxburgh,
     LinearElastic,
     LinearElasticPlaneStress,
     LinearElasticPlaneStrain,
@@ -107,6 +108,7 @@ from .mechanics import (
     StateNearlyIncompressible,
     SolidBodyPressure,
     SolidBodyTensor,
+    SolidBodyTensorNearlyIncompressible,
     SolidBodyGravity,
     PointLoad,
     Step,

@@ -6,6 +6,10 @@ from ._models import (
     NeoHooke,
 )
 
+from ._models_tensor import (
+    OgdenRoxburgh,
+)
+
 from ._kinematics import (
     LineChange,
     AreaChange,

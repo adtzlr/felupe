@@ -149,6 +149,33 @@ def test_solidbody_tensor_mixed():
         assert z.shape == (1, 1, 8, 8)
 
 
+def test_solidbody_tensor_nearlyincompr():
+
+    # create a hexahedron-region on a cube
+    region = fe.RegionHexahedron(fe.Cube(n=3))
+
+    # add a mixed field container (with displacement, pressure and volume ratio)
+    field = fe.FieldsMixed(region, n=1)
+
+    # apply a uniaxial elongation on the cube
+    boundaries = fe.dof.uniaxial(field, clamped=True)[0]
+
+    # define the constitutive material behaviour and create a solid body
+    umat = fe.OgdenRoxburgh(fe.NeoHooke(mu=1), r=3, m=1, beta=0)
+    solid = fe.SolidBodyTensorNearlyIncompressible(umat, field, bulk=5000)
+
+    # prepare a step with substeps
+    move = fe.math.linsteps([0, 1, 0], num=4)
+    step = fe.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+
+    # add the step to a job, evaluate all substeps and create a plot
+    job = fe.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+    job.evaluate(verbose=0, tol=1e-4)
+
+
 if __name__ == "__main__":
     test_solidbody_tensor()
     test_solidbody_tensor_mixed()
+    test_solidbody_tensor_nearlyincompr()

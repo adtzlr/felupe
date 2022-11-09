@@ -105,7 +105,9 @@ def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=Fa
 
     return (
         IntegralFormMixed(
-            fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
+            fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym))[
+                :-1
+            ],
             v=x,
             dV=x.region.dV,
         )

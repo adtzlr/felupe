@@ -55,13 +55,13 @@ class OgdenRoxburgh:
         self.beta = beta
 
         # initial variables for calling
-        # ``self.function(self.x)`` and ``self.gradient(self.x)``
+        # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(1)]
 
-    def function(self, x):
+    def gradient(self, x):
 
         # unpack variables into deformation gradient and state variables
-        F, statevars = x[0], x[1]
+        F, statevars = x[0], x[-1]
 
         # material parameters alias
         r, m, beta = self.r, self.m, self.beta
@@ -69,8 +69,8 @@ class OgdenRoxburgh:
         # isotropic material formulation: evaluate
         # * the strain energy function and
         # * the first Piola-Kirchhoff stress tensor
-        W = self.material.function(F)[0]
-        P = self.material.gradient(F)[0]
+        W = self.material.function([F, statevars])[0]
+        P = self.material.gradient([F, statevars])[0]
 
         # get the maximum load-history strain energy function
         Wmax = np.maximum(W, statevars[0])
@@ -85,10 +85,10 @@ class OgdenRoxburgh:
 
         return [eta * P, statevars_new]
 
-    def gradient(self, x):
+    def hessian(self, x):
 
         # unpack variables into deformation gradient and state variables
-        F, statevars = x[0], x[1]
+        F, statevars = x[0], x[-1]
 
         # material parameters alias
         r, m, beta = self.r, self.m, self.beta
@@ -97,9 +97,9 @@ class OgdenRoxburgh:
         # * the strain energy function and
         # * the first Piola-Kirchhoff stress tensor as well as
         # * the according fourth-order elasticity tensor
-        W = self.material.function(F)[0]
-        P = self.material.gradient(F)[0]
-        A = self.material.hessian(F)[0]
+        W = self.material.function([F, statevars])[0]
+        P = self.material.gradient([F, statevars])[0]
+        A = self.material.hessian([F, statevars])[0]
 
         # get the maximum load-history strain energy function
         Wmax = np.maximum(W, statevars[0])

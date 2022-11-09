@@ -163,7 +163,7 @@ def pre_mixed(dim):
 def test_solidbody():
 
     umat, u = pre(dim=3)
-    b = fe.SolidBody(umat=umat, field=u)
+    b = fe.SolidBody(umat=umat, field=u, statevars=np.ones(5))
 
     for parallel in [False, True]:
         for jit in [False, True]:
@@ -214,7 +214,11 @@ def test_solidbody():
 def test_solidbody_incompressible():
 
     umat, u = pre(dim=3, bulk=None)
-    b = fe.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
+    b = fe.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, statevars=np.ones(5)
+    )
+
+    umat = fe.OgdenRoxburgh(fe.NeoHooke(mu=1), r=3, m=1, beta=0)
     b = fe.SolidBodyNearlyIncompressible(
         umat=umat, field=u, bulk=5000, state=fe.StateNearlyIncompressible(u)
     )

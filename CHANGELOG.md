@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file. The format 
 - Add `project(mean=True)` to project cell mean-values to mesh-points. Now `project()` supports Triangles and Tetrahedrons.
 - Add `RegionBoundary.mesh_faces()` for a mesh with face-cells on the selected boundary of a region.
 - Add pseudo-elastic material `OgdenRoxburgh()` which may be used with the new `SolidBodyTensorNearlyIncompressible()`.
+- Add `umat = UserMaterial(stress, elasticity, nstatevars=0, **kwargs)` with user-defined functions for the (first Piola-Kirchhoff) stress tensor `P, statevars_new = umat.gradient([F, statevars], **kwargs)` and the according fourth-order elasticity tensor `A = umat.hessian([F, statevars], **kwargs)`.
+
+### Changed
+- Unify material definition with methods for the stress `P, statevars_new = umat.gradient([F, statevars])` and the elasticity tensor `A = umat.hessian([F, statevars])`. This breaks support for materials defined by matadi<=0.1.10.
+
+### Removed
+- Remove unused `SolidBodyTensor()` and `SolidBodyTensorNearlyIncompressible()`.
 
 ## [5.3.1] - 2022-11-03
 

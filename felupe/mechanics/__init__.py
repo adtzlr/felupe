@@ -1,11 +1,9 @@
 from ._solidbody import SolidBody
 from ._solidbody_incompressible import (
     SolidBodyNearlyIncompressible,
-    StateNearlyIncompressible,
 )
+from ._helpers import StateNearlyIncompressible
 from ._solidbody_pressure import SolidBodyPressure
-from ._solidbody_tensor import SolidBodyTensor
-from ._solidbody_tensor_incompressible import SolidBodyTensorNearlyIncompressible
 from ._solidbody_gravity import SolidBodyGravity
 from ._pointload import PointLoad
 from ._step import Step

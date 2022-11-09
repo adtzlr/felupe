@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
 from ..math import dot, transpose, det
@@ -34,12 +36,24 @@ from ._helpers import Assemble, Evaluate, Results
 class SolidBody:
     "A SolidBody with methods for the assembly of sparse vectors/matrices."
 
-    def __init__(self, umat, field):
+    def __init__(self, umat, field, statevars=None):
 
         self.umat = umat
         self.field = field
+
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
+
+        if statevars is not None:
+            self.results.statevars = statevars
+        else:
+            self.results.statevars = np.zeros(
+                (
+                    *umat.x[-1].shape,
+                    field.region.quadrature.npoints,
+                    field.region.mesh.ncells,
+                )
+            )
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
@@ -51,6 +65,7 @@ class SolidBody:
         )
 
         self._area_change = AreaChange()
+
         self._form = IntegralFormMixed
 
     def _vector(
@@ -61,7 +76,6 @@ class SolidBody:
             self.field = field
 
         self.results.stress = self._gradient(field, args=args, kwargs=kwargs)
-
         self.results.force = self._form(
             fun=self.results.stress[slice(items)],
             v=self.field,
@@ -101,9 +115,11 @@ class SolidBody:
             self.field = field
             self.results.kinematics = self._extract(self.field)
 
-        self.results.stress = self.umat.gradient(
-            self.results.kinematics, *args, **kwargs
+        gradient = self.umat.gradient(
+            [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+
+        self.results.stress, self.results._statevars = gradient[:-1], gradient[-1]
 
         return self.results.stress
 
@@ -114,7 +130,7 @@ class SolidBody:
             self.results.kinematics = self._extract(self.field)
 
         self.results.elasticity = self.umat.hessian(
-            self.results.kinematics, *args, **kwargs
+            [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
 
         return self.results.elasticity

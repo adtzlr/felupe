@@ -164,6 +164,10 @@ class ThreeFieldVariation:
         self.fun_P = material.gradient
         self.fun_A = material.hessian
 
+        # initial variables for calling
+        # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
+        self.x = [material.x[0], np.ones(1), np.ones(1), material.x[-1]]
+
         self.parallel = parallel
 
     def _gradient_u(self, F, p, J):
@@ -242,7 +246,7 @@ class ThreeFieldVariation:
 
         return self.PbbF / (3 * J) - p
 
-    def gradient(self, extract):
+    def gradient(self, x):
         r"""List of variations of total potential energy w.r.t
         displacements, pressure and volume ratio.
 
@@ -254,7 +258,7 @@ class ThreeFieldVariation:
 
         Arguments
         ---------
-        extract : list of ndarray
+        x : list of ndarray
             List of extracted field values with Deformation gradient ``F``
             as first, the hydrostatic pressure ``p`` as second and the
             volume ratio ``J`` as third item.
@@ -266,12 +270,12 @@ class ThreeFieldVariation:
 
         """
 
-        F, p, J = extract
+        [F, p, J], statevars = x[:3], x[-1]
 
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
-        self.Pb = self.fun_P([self.Fb])[0]
+        self.Pb, statevars_new = self.fun_P([self.Fb, statevars])
         self.Pbb = (J / self.detF) ** (1 / 3) * self.Pb
         self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
 
@@ -279,9 +283,10 @@ class ThreeFieldVariation:
             self._gradient_u(F, p, J),
             self._gradient_p(F, p, J),
             self._gradient_J(F, p, J),
+            statevars_new,
         ]
 
-    def hessian(self, extract):
+    def hessian(self, x):
         r"""List of linearized variations of total potential energy w.r.t
         displacements, pressure and volume ratio (these expressions are
         symmetric; ``A_up = A_pu`` if derived from a total potential energy
@@ -316,18 +321,18 @@ class ThreeFieldVariation:
 
         """
 
-        F, p, J = extract
+        [F, p, J], statevars = x[:3], x[-1]
 
         self.detF = det(F)
         self.iFT = transpose(inv(F))
         self.Fb = (J / self.detF) ** (1 / 3) * F
-        self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P([self.Fb])[0]
+        self.Pbb = (J / self.detF) ** (1 / 3) * self.fun_P([self.Fb, statevars])[0]
 
         self.eye = identity(F)
         self.P4 = cdya_ik(self.eye, self.eye, parallel=self.parallel) - 1 / 3 * dya(
             F, self.iFT, parallel=self.parallel
         )
-        self.A4b = self.fun_A([self.Fb])[0]
+        self.A4b = self.fun_A([self.Fb, statevars])[0]
         self.A4bb = (J / self.detF) ** (2 / 3) * self.A4b
 
         self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)

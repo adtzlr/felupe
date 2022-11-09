@@ -60,7 +60,7 @@ def test_mpc():
         K_RBE2 = RBE2.assemble.matrix(u)
         r_RBE2 = RBE2.assemble.vector(u)
 
-        linearform = fe.IntegralForm(umat.gradient(F), u, region.dV)
+        linearform = fe.IntegralForm(umat.gradient(F)[:-1], u, region.dV)
         r = linearform.assemble() + r_RBE2
 
         bilinearform = fe.IntegralForm(umat.hessian(F), u, region.dV, u)
@@ -111,7 +111,7 @@ def pre_mpc_mixed(point, values):
         assert K_RBE2.shape == K_CONT.shape
         assert r_RBE2.shape == r_CONT.shape
 
-    linearform = fe.IntegralForm(umat.gradient([F, p, J]), fields, dV)
+    linearform = fe.IntegralForm(umat.gradient([F, p, J])[:-1], fields, dV)
     r = linearform.assemble()
 
     r_RBE2.resize(*r.shape)

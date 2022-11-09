@@ -58,7 +58,7 @@ def test_solve_check():
 
     ext0 = fe.dof.apply(f, bounds, dof0)
 
-    L = fe.IntegralForm(W.gradient(F), f, r.dV)
+    L = fe.IntegralForm(W.gradient(F)[:-1], f, r.dV)
     a = fe.IntegralForm(W.hessian(F), f, r.dV, f)
 
     b = L.assemble().toarray()[:, 0]
@@ -117,7 +117,7 @@ def test_solve_mixed_check():
 
     ext0 = fe.dof.apply(f, bounds, dof0)
 
-    L = fe.IntegralForm(W_mixed.gradient([F, p, J]), f, r.dV)
+    L = fe.IntegralForm(W_mixed.gradient([F, p, J])[:-1], f, r.dV)
     a = fe.IntegralForm(W_mixed.hessian([F, p, J]), f, r.dV, f)
 
     b = L.assemble().toarray()[:, 0]

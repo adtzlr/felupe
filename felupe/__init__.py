@@ -86,6 +86,7 @@ from .mesh import (
     Grid,
 )
 from .constitution import (
+    UserMaterial,
     NeoHooke,
     OgdenRoxburgh,
     LinearElastic,
@@ -107,8 +108,6 @@ from .mechanics import (
     SolidBodyNearlyIncompressible,
     StateNearlyIncompressible,
     SolidBodyPressure,
-    SolidBodyTensor,
-    SolidBodyTensorNearlyIncompressible,
     SolidBodyGravity,
     PointLoad,
     Step,

@@ -49,7 +49,7 @@ def test_readme():
     dof0, dof1 = felupe.dof.partition(field, boundaries)
     ext0 = felupe.dof.apply(field, boundaries, dof0)
 
-    linearform = felupe.IntegralForm(P(F), field, dV)
+    linearform = felupe.IntegralForm(P(F)[:-1], field, dV)
     bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
     r = linearform.assemble().toarray()[:, 0]
@@ -68,7 +68,7 @@ def test_readme():
     for iteration in range(8):
         F = field.extract()
 
-        linearform = felupe.IntegralForm(P(F), field, dV)
+        linearform = felupe.IntegralForm(P(F)[:-1], field, dV)
         bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
         r = linearform.assemble()

@@ -59,11 +59,11 @@ def test_nh():
         nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
 
         W = nh.function(F)
-        P = nh.gradient(F)
+        P = nh.gradient(F)[:-1]
         A = nh.hessian(F)
 
         Wx = nh.energy(F)
-        Px = nh.stress(F)
+        Px = nh.stress(F)[:-1]
         Ax = nh.elasticity(F)
 
         assert np.allclose(W, Wx)
@@ -77,7 +77,7 @@ def test_nh():
         nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
 
         W = nh.function(F, mu=2.0)
-        P = nh.gradient(F, mu=2.0)
+        P = nh.gradient(F, mu=2.0)[:-1]
         A = nh.hessian(F, mu=2.0)
 
         assert W[0].shape == F[0].shape[-2:]
@@ -89,7 +89,7 @@ def test_nh():
         nh = fe.constitution.NeoHooke(mu=1.0, parallel=parallel)
 
         W = nh.function(F)
-        P = nh.gradient(F)
+        P = nh.gradient(F)[:-1]
         A = nh.hessian(F)
 
         assert W[0].shape == F[0].shape[-2:]
@@ -113,7 +113,7 @@ def test_linear():
 
         le = LinearElastic(E=1.0, nu=0.3, **kwargs)
 
-        stress = le.gradient(F)
+        stress = le.gradient(F)[:-1]
         dsde = le.hessian(F)
         dsde2 = le.hessian(shape=F[0].shape[-2:])
         dsde3 = le.hessian(region=r)
@@ -126,8 +126,8 @@ def test_linear():
         assert dsde[0].shape == dsde2[0].shape
 
         le = LinearElastic(E=None, nu=0.3, **kwargs)
-        stress = le.gradient(F, E=2.0)
-        stress = le.gradient(F, E=0.5, nu=0.2)
+        stress = le.gradient(F, E=2.0)[:-1]
+        stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
         dsde = le.hessian(F, E=2.0)
         dsde = le.hessian(F, E=3.0)
 
@@ -146,7 +146,7 @@ def test_linear_planestress():
 
     le = fe.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
-    stress = le.gradient(F)
+    stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)
     dsde = le.hessian(F)
     dsde2 = le.hessian(shape=F[0].shape[-2:])
@@ -165,8 +165,8 @@ def test_linear_planestress():
     assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
     le = fe.constitution.LinearElasticPlaneStress(E=None, nu=0.3)
-    stress = le.gradient(F, E=2.0)
-    stress = le.gradient(F, E=0.5, nu=0.2)
+    stress = le.gradient(F, E=2.0)[:-1]
+    stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
     dsde = le.hessian(F, E=2.0)
     dsde = le.hessian(F, E=3.0)
 
@@ -182,7 +182,7 @@ def test_linear_planestrain():
 
     le = fe.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
-    stress = le.gradient(F)
+    stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)
     dsde = le.hessian(F)
 
@@ -194,8 +194,8 @@ def test_linear_planestrain():
 
     le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=None)
     le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=0.3)
-    stress = le.gradient(F, E=2.0)
-    stress = le.gradient(F, E=0.5, nu=0.2)
+    stress = le.gradient(F, E=2.0)[:-1]
+    stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
     dsde = le.hessian(F, E=2.0)
     dsde = le.hessian(F, E=3.0)
 
@@ -249,9 +249,50 @@ def test_kinematics():
         assert zh[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
 
+def test_umat():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    from felupe.math import dya, cdya, sym, trace, identity
+
+    def stress(x, mu, lmbda):
+        "Evaluate the user-defined linear-elastic stress tensor."
+
+        # extract variables
+        F, statevars = x[0], x[-1]
+
+        # user code for linear-elastic stress tensor
+        e = sym(F)
+        s = 2 * mu * e + lmbda * trace(e) * identity(e)
+
+        # update state variables
+        statevars_new = None
+
+        return [s, statevars_new]
+
+    def elasticity(x, mu, lmbda):
+        """Evaluate the user-defined fourth-order elasticity tensor according to
+        the first Piola-Kirchhoff stress tensor."""
+
+        # extract variables
+        F, statevars = x[0], x[-1]
+
+        # user code for fourth-order elasticity tensor
+        d = identity(F)
+        dsde = 2 * mu * cdya(d, d) + lmbda * dya(d, d)
+
+        return [dsde]
+
+    linear_elastic = fe.UserMaterial(stress, elasticity, mu=1, lmbda=2)
+
+    s, statevars_new = linear_elastic.gradient([F, None])
+    dsde = linear_elastic.hessian([F, None])
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
     test_linear_planestress()
     test_linear_planestrain()
     test_kinematics()
+    test_umat()

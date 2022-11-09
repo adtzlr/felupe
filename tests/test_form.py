@@ -44,7 +44,7 @@ def pre():
     W = fe.constitution.NeoHooke(1, 3)
 
     F = v.extract(grad=True, add_identity=True)
-    P = W.gradient(F)
+    P = W.gradient(F)[:-1]
     A = W.hessian(F)
 
     return r, v, q, P, A
@@ -66,7 +66,7 @@ def pre_broadcast():
     W = fe.constitution.LinearElastic(E=1.0, nu=0.3)
 
     F = v.extract(grad=True, add_identity=True)
-    P = W.gradient(F)
+    P = W.gradient(F)[:-1]
     A = W.hessian()
 
     P = [P[0][:, :, 0, 0].reshape(3, 3, 1, 1)]
@@ -85,7 +85,7 @@ def pre_axi():
     W = fe.constitution.NeoHooke(1, 3)
 
     F = v.extract(grad=True, add_identity=True)
-    P = W.gradient(F)
+    P = W.gradient(F)[:-1]
     A = W.hessian(F)
 
     return r, v, P, A
@@ -107,7 +107,7 @@ def pre_mixed():
     nh = fe.NeoHooke(1, 3)
     W = fe.ThreeFieldVariation(nh)
 
-    return r, f, W.gradient(f.extract()), W.hessian(f.extract())
+    return r, f, W.gradient(f.extract())[:-1], W.hessian(f.extract())
 
 
 def pre_axi_mixed():
@@ -126,7 +126,7 @@ def pre_axi_mixed():
     nh = fe.NeoHooke(1, 3)
     W = fe.ThreeFieldVariation(nh)
 
-    return r, f, W.gradient(f.extract()), W.hessian(f.extract())
+    return r, f, W.gradient(f.extract())[:-1], W.hessian(f.extract())
 
 
 def test_axi():

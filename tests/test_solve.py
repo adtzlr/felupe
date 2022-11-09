@@ -41,7 +41,7 @@ def test_solve():
     W = fe.constitution.NeoHooke(1, 3)
 
     F = v.extract()
-    P = W.gradient(F)
+    P = W.gradient(F)[:-1]
     A = W.hessian(F)
 
     b = fe.dof.symmetry(u)

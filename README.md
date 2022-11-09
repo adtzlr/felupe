@@ -22,20 +22,21 @@ A quarter model of a solid cube with hyperelastic material behaviour is subjecte
 import felupe as fem
 
 # create a hexahedron-region on a cube
-region = fem.RegionHexahedron(fem.Cube(n=11))
+mesh = fem.Cube(n=11)
+region = fem.RegionHexahedron(mesh)
 
 # add a mixed field container (with displacement, pressure and volume ratio)
-field = fem.FieldsMixed(region, n=3, values=(0, 0, 1))
+field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 # apply a uniaxial elongation on the cube
 boundaries = fem.dof.uniaxial(field, clamped=True)[0]
 
 # define the constitutive material behaviour and create a solid body
-umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
-solid = fem.SolidBody(umat, field)
+umat = fem.OgdenRoxburgh(material=fem.NeoHooke(mu=1), r=3, m=1, beta=0)
+solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
 # prepare a step with substeps
-move = fem.math.linsteps([0, 2, -0.4, 0], num=10)
+move = fem.math.linsteps([0, 2, 0], num=10)
 step = fem.Step(
     items=[solid], 
     ramp={boundaries["move"]: move}, 
@@ -51,7 +52,7 @@ fig, ax = job.plot(
 )
 ```
 
-https://user-images.githubusercontent.com/5793153/194673269-a5e1e98a-56bd-4066-b655-6bd039da5264.mp4
+https://user-images.githubusercontent.com/5793153/200951381-ea310e54-7623-4dd1-a55f-a28f9055063f.mp4
 
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_characteristic_curve.svg" width="600px"/>
 

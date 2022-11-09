@@ -165,7 +165,7 @@ class NeoHooke:
         self.energy = self.function
         self.stress = self.gradient
         self.elasticity = self.hessian
-        
+
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]

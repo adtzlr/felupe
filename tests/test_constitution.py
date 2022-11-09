@@ -59,11 +59,11 @@ def test_nh():
         nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
 
         W = nh.function(F)
-        P = nh.gradient(F)
+        P = nh.gradient(F)[:-1]
         A = nh.hessian(F)
 
         Wx = nh.energy(F)
-        Px = nh.stress(F)
+        Px = nh.stress(F)[:-1]
         Ax = nh.elasticity(F)
 
         assert np.allclose(W, Wx)
@@ -77,7 +77,7 @@ def test_nh():
         nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
 
         W = nh.function(F, mu=2.0)
-        P = nh.gradient(F, mu=2.0)
+        P = nh.gradient(F, mu=2.0)[:-1]
         A = nh.hessian(F, mu=2.0)
 
         assert W[0].shape == F[0].shape[-2:]
@@ -89,7 +89,7 @@ def test_nh():
         nh = fe.constitution.NeoHooke(mu=1.0, parallel=parallel)
 
         W = nh.function(F)
-        P = nh.gradient(F)
+        P = nh.gradient(F)[:-1]
         A = nh.hessian(F)
 
         assert W[0].shape == F[0].shape[-2:]
@@ -113,7 +113,7 @@ def test_linear():
 
         le = LinearElastic(E=1.0, nu=0.3, **kwargs)
 
-        stress = le.gradient(F)
+        stress = le.gradient(F)[:-1]
         dsde = le.hessian(F)
         dsde2 = le.hessian(shape=F[0].shape[-2:])
         dsde3 = le.hessian(region=r)
@@ -126,8 +126,8 @@ def test_linear():
         assert dsde[0].shape == dsde2[0].shape
 
         le = LinearElastic(E=None, nu=0.3, **kwargs)
-        stress = le.gradient(F, E=2.0)
-        stress = le.gradient(F, E=0.5, nu=0.2)
+        stress = le.gradient(F, E=2.0)[:-1]
+        stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
         dsde = le.hessian(F, E=2.0)
         dsde = le.hessian(F, E=3.0)
 
@@ -146,7 +146,7 @@ def test_linear_planestress():
 
     le = fe.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
-    stress = le.gradient(F)
+    stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)
     dsde = le.hessian(F)
     dsde2 = le.hessian(shape=F[0].shape[-2:])
@@ -165,8 +165,8 @@ def test_linear_planestress():
     assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
     le = fe.constitution.LinearElasticPlaneStress(E=None, nu=0.3)
-    stress = le.gradient(F, E=2.0)
-    stress = le.gradient(F, E=0.5, nu=0.2)
+    stress = le.gradient(F, E=2.0)[:-1]
+    stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
     dsde = le.hessian(F, E=2.0)
     dsde = le.hessian(F, E=3.0)
 
@@ -182,7 +182,7 @@ def test_linear_planestrain():
 
     le = fe.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
-    stress = le.gradient(F)
+    stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)
     dsde = le.hessian(F)
 
@@ -194,8 +194,8 @@ def test_linear_planestrain():
 
     le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=None)
     le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=0.3)
-    stress = le.gradient(F, E=2.0)
-    stress = le.gradient(F, E=0.5, nu=0.2)
+    stress = le.gradient(F, E=2.0)[:-1]
+    stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
     dsde = le.hessian(F, E=2.0)
     dsde = le.hessian(F, E=3.0)
 

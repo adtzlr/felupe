@@ -32,6 +32,7 @@ from .._field import FieldAxisymmetric
 from ..constitution import AreaChange
 from ..math import det
 
+
 class Assemble:
     "A class with assembly methods of a SolidBody."
 

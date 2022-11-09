@@ -94,7 +94,7 @@ class LinearElastic:
         # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
-        
+
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
@@ -239,7 +239,7 @@ class LinearElasticTensorNotation:
         # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
-        
+
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
@@ -372,7 +372,7 @@ class LinearElasticPlaneStrain:
         self.nu = nu
 
         self._umat = LinearElasticPlaneStress(*self._convert(self.E, self.nu))
-        
+
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(2), np.zeros(0)]
@@ -545,7 +545,7 @@ class LinearElasticPlaneStress:
 
         self.E = E
         self.nu = nu
-        
+
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(2), np.zeros(0)]

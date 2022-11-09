@@ -163,7 +163,7 @@ class ThreeFieldVariation:
 
         self.fun_P = material.gradient
         self.fun_A = material.hessian
-        
+
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [material.x[0], np.ones(1), np.ones(1), material.x[-1]]
@@ -270,7 +270,7 @@ class ThreeFieldVariation:
 
         """
 
-        F, p, J, statevars = x
+        [F, p, J], statevars = x[:3], x[-1]
 
         self.detF = det(F)
         self.iFT = transpose(inv(F))
@@ -321,7 +321,7 @@ class ThreeFieldVariation:
 
         """
 
-        F, p, J, statevars = x
+        [F, p, J], statevars = x[:3], x[-1]
 
         self.detF = det(F)
         self.iFT = transpose(inv(F))

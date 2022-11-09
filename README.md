@@ -25,7 +25,7 @@ import felupe as fem
 mesh = fem.Cube(n=11)
 region = fem.RegionHexahedron(mesh)
 
-# add a mixed field container (with displacement, pressure and volume ratio)
+# add a field container (with a vector-valued displacement field)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 # apply a uniaxial elongation on the cube

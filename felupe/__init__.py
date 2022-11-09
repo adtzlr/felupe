@@ -86,6 +86,7 @@ from .mesh import (
     Grid,
 )
 from .constitution import (
+    UserMaterial,
     NeoHooke,
     OgdenRoxburgh,
     LinearElastic,

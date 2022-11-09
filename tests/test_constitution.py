@@ -249,9 +249,50 @@ def test_kinematics():
         assert zh[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
 
+def test_umat():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    from felupe.math import dya, cdya, sym, trace, identity
+
+    def stress(x, mu, lmbda):
+        "Evaluate the user-defined linear-elastic stress tensor."
+
+        # extract variables
+        F, statevars = x[0], x[-1]
+
+        # user code for linear-elastic stress tensor
+        e = sym(F)
+        s = 2 * mu * e + lmbda * trace(e) * identity(e)
+
+        # update state variables
+        statevars_new = None
+
+        return [s, statevars_new]
+
+    def elasticity(x, mu, lmbda):
+        """Evaluate the user-defined fourth-order elasticity tensor according to
+        the first Piola-Kirchhoff stress tensor."""
+
+        # extract variables
+        F, statevars = x[0], x[-1]
+
+        # user code for fourth-order elasticity tensor
+        d = identity(F)
+        dsde = 2 * mu * cdya(d, d) + lmbda * dya(d, d)
+
+        return [dsde]
+
+    linear_elastic = fe.UserMaterial(stress, elasticity, mu=1, lmbda=2)
+
+    s, statevars_new = linear_elastic.gradient([F, None])
+    dsde = linear_elastic.hessian([F, None])
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
     test_linear_planestress()
     test_linear_planestrain()
     test_kinematics()
+    test_umat()

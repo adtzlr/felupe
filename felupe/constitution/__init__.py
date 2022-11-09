@@ -13,6 +13,8 @@ from ._models_pseudo_elasticity import (
     OgdenRoxburgh,
 )
 
+from ._models_umat import UserMaterial
+
 from ._kinematics import (
     LineChange,
     AreaChange,

@@ -66,7 +66,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 | **Package** |                     **Description**                     |                **Link**               |
 |:-----------:|:-------------------------------------------------------:|:-------------------------------------:|
 |    matADi   | Material Definition with Automatic Differentiation (AD) |    https://github.com/adtzlr/matadi   |
-|    FEplot   |             A visualization tool for FElupe.            | https://github.com/ZAARAOUI999/feplot |
+|    FEplot   |             A visualization tool for FElupe             | https://github.com/ZAARAOUI999/feplot |
 
 # Changelog
 All notable changes to this project will be documented in [this file](CHANGELOG.md). The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

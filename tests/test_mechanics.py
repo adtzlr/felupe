@@ -55,7 +55,7 @@ def test_simple():
     assert P[0].shape == (3, 3, 8, 8)
     assert s.shape == (3, 3, 8, 8)
     assert t.shape == (3, 3, 8, 8)
-    assert C[0].shape == (3, 3, 3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 1, 1)
 
 
 def test_pressure():
@@ -92,7 +92,7 @@ def test_pressure():
     assert r.shape == (81, 1)
     assert F[0].shape == (3, 3, 8, 8)
     assert s[0].shape == (3, 3, 8, 8)
-    assert C[0].shape == (3, 3, 3, 3, 8, 8)
+    assert C[0].shape == (3, 3, 3, 3, 1, 1)
 
     r = c.assemble.vector()
     K = c.assemble.matrix()

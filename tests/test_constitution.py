@@ -116,14 +116,13 @@ def test_linear():
         stress = le.gradient(F)[:-1]
         dsde = le.hessian(F)
         dsde2 = le.hessian(shape=F[0].shape[-2:])
-        dsde3 = le.hessian(region=r)
 
         assert le.elasticity()[0].shape[-2:] == (1, 1)
 
         check_stress.append(stress)
-        check_dsde.append([dsde, dsde2, dsde3])
+        check_dsde.append([dsde[0][..., 0, 0], dsde2[0][..., 0, 0]])
 
-        assert dsde[0].shape == dsde2[0].shape
+        assert dsde[0].shape[:-2] == dsde2[0].shape[:-2]
 
         le = LinearElastic(E=None, nu=0.3, **kwargs)
         stress = le.gradient(F, E=2.0)[:-1]
@@ -132,7 +131,7 @@ def test_linear():
         dsde = le.hessian(F, E=3.0)
 
         assert stress[0].shape == (3, 3, *F[0].shape[-2:])
-        assert dsde[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
+        assert dsde[0].shape == (3, 3, 3, 3, 1, 1)
 
         assert np.allclose(stress, 0)
 
@@ -150,11 +149,10 @@ def test_linear_planestress():
     dsde = le.hessian(F)
     dsde = le.hessian(F)
     dsde2 = le.hessian(shape=F[0].shape[-2:])
-    dsde3 = le.hessian(region=r)
 
     assert le.elasticity()[0].shape[-2:] == (1, 1)
 
-    check_dsde = [dsde, dsde2, dsde3]
+    check_dsde = [dsde[0][..., 0, 0], dsde2[0][..., 0, 0]]
 
     assert np.allclose(*check_dsde)
 
@@ -171,7 +169,7 @@ def test_linear_planestress():
     dsde = le.hessian(F, E=3.0)
 
     assert stress[0].shape == (2, 2, *F[0].shape[-2:])
-    assert dsde[0].shape == (2, 2, 2, 2, *F[0].shape[-2:])
+    assert dsde[0].shape == (2, 2, 2, 2, 1, 1)
 
     assert np.allclose(stress, 0)
 
@@ -200,7 +198,7 @@ def test_linear_planestrain():
     dsde = le.hessian(F, E=3.0)
 
     assert stress[0].shape == (2, 2, *F[0].shape[-2:])
-    assert dsde[0].shape == (2, 2, 2, 2, *F[0].shape[-2:])
+    assert dsde[0].shape == (2, 2, 2, 2, 1, 1)
 
     assert np.allclose(stress, 0)
 

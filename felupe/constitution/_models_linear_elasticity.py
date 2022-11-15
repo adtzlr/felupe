@@ -169,20 +169,13 @@ class LinearElastic:
 
         """
 
-        if x is None:
-            if region is not None:
-                shape = (len(region.quadrature.points), region.mesh.ncells)
-        else:
-            F = x[0]
-            shape = F.shape[-2:]
-
         if E is None:
             E = self.E
 
         if nu is None:
             nu = self.nu
 
-        elast = np.zeros((3, 3, 3, 3, *shape))
+        elast = np.zeros((3, 3, 3, 3, 1, 1))
 
         # diagonal normal components
         for i in range(3):
@@ -312,13 +305,7 @@ class LinearElasticTensorNotation:
         if nu is None:
             nu = self.nu
 
-        if x is None:
-            if region is not None:
-                shape = (len(region.quadrature.points), region.mesh.ncells)
-            I = identity(dim=3, shape=shape)
-        else:
-            F = x[0]
-            I = identity(F)
+        I = identity(dim=3, shape=[1, 1])
 
         # convert to lame constants
         mu, gamma = self._lame_converter(E, nu)
@@ -619,14 +606,7 @@ class LinearElasticPlaneStress:
         if nu is None:
             nu = self.nu
 
-        if x is None:
-            if region is not None:
-                shape = (len(region.quadrature.points), region.mesh.ncells)
-        else:
-            F = x[0]
-            shape = F.shape[-2:]
-
-        elast = np.zeros((2, 2, 2, 2, *shape))
+        elast = np.zeros((2, 2, 2, 2, 1, 1))
 
         for a in range(2):
             elast[a, a, a, a] = E / (1 - nu**2)

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Unify material definition with methods for the stress `P, statevars_new = umat.gradient([F, statevars])` and the elasticity tensor `A = umat.hessian([F, statevars])`. This breaks support for materials defined by matadi<=0.1.10.
+- Do not broadcast the (constant) elasticity tensor for linear-elastic materials as `einsumt>=0.9.3` supports broadcasting along the parallel-executed dimension.
 
 ### Removed
 - Remove unused `SolidBodyTensor()` and `SolidBodyTensorNearlyIncompressible()`.

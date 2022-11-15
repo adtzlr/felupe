@@ -144,7 +144,7 @@ class LinearElastic:
 
         return [E / (1 + nu) / (1 - 2 * nu) * stress, statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), region=None):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
         """Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -157,10 +157,8 @@ class LinearElastic:
             Young's modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, int), optional (default is (1, 1))
-            Tuple with shape of the trailing axes (default is None)
-        region : Region, optional
-            A numeric region for shape of the trailing axes (default is None)
+        shape : (int, ...), optional
+            Tuple with shape of the trailing axes (default is (1, 1))
 
         Returns
         -------
@@ -168,13 +166,6 @@ class LinearElastic:
             elasticity tensor (3x3x3x3)
 
         """
-
-        if x is None:
-            if region is not None:
-                shape = (len(region.quadrature.points), region.mesh.ncells)
-        else:
-            F = x[0]
-            shape = F.shape[-2:]
 
         if E is None:
             E = self.E
@@ -281,7 +272,7 @@ class LinearElasticTensorNotation:
 
         return [2 * mu * strain + gamma * trace(strain) * identity(strain), statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), region=None):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
         """Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -294,10 +285,8 @@ class LinearElasticTensorNotation:
             Young's modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, int), optional (default is (1, 1))
-            Tuple with shape of the trailing axes (default is None)
-        region : Region, optional
-            A numeric region for shape of the trailing axes (default is None)
+        shape : (int, ...), optional 
+            Tuple with shape of the trailing axes (default is (1, 1))
 
         Returns
         -------
@@ -312,13 +301,7 @@ class LinearElasticTensorNotation:
         if nu is None:
             nu = self.nu
 
-        if x is None:
-            if region is not None:
-                shape = (len(region.quadrature.points), region.mesh.ncells)
-            I = identity(dim=3, shape=shape)
-        else:
-            F = x[0]
-            I = identity(F)
+        I = identity(dim=3, shape=shape)
 
         # convert to lame constants
         mu, gamma = self._lame_converter(E, nu)
@@ -589,7 +572,7 @@ class LinearElasticPlaneStress:
 
         return [stress, statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), region=None):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
         """Evaluate the elasticity tensor from the deformation gradient.
 
         Arguments
@@ -601,10 +584,8 @@ class LinearElasticPlaneStress:
             Young's  modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, int), optional (default is (1, 1))
-            Tuple with shape of the trailing axes (default is None)
-        region : Region, optional
-            A numeric region for shape of the trailing axes (default is None)
+        shape : (int, ...), optional 
+            Tuple with shape of the trailing axes (default is (1, 1))
 
         Returns
         -------
@@ -618,13 +599,6 @@ class LinearElasticPlaneStress:
 
         if nu is None:
             nu = self.nu
-
-        if x is None:
-            if region is not None:
-                shape = (len(region.quadrature.points), region.mesh.ncells)
-        else:
-            F = x[0]
-            shape = F.shape[-2:]
 
         elast = np.zeros((2, 2, 2, 2, *shape))
 

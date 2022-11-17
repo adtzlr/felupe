@@ -38,9 +38,6 @@ class FieldContainer:
         self.fields = fields
         self.region = fields[0].region
 
-        # get field values
-        self.values = tuple(f.values for f in self.fields)
-
         # get sizes of fields and calculate offsets
         self.fieldsizes = [f.indices.dof.size for f in self.fields]
         self.offsets = np.cumsum(self.fieldsizes)[:-1]
@@ -75,6 +72,10 @@ class FieldContainer:
         return tuple(
             f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
         )
+
+    def values(self):
+        "Return the field values."
+        return tuple(f.values for f in self.fields)
 
     def copy(self):
         "Return a copy of the field."

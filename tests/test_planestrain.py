@@ -86,7 +86,7 @@ def test_planestrain():
     r = fem.newtonrhapson(items=[b], **fem.dof.uniaxial(f, clamped=True)[-1])
     s = fem.newtonrhapson(items=[c], **fem.dof.uniaxial(f, clamped=True)[-1])
 
-    assert np.allclose(r.x.values, s.x.values)
+    assert np.allclose(r.x.values(), s.x.values())
     assert np.allclose(r.fun, s.fun)
 
 

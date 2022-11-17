@@ -285,7 +285,7 @@ class LinearElasticTensorNotation:
             Young's modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, ...), optional 
+        shape : (int, ...), optional
             Tuple with shape of the trailing axes (default is (1, 1))
 
         Returns
@@ -584,7 +584,7 @@ class LinearElasticPlaneStress:
             Young's  modulus (default is None)
         nu : float, optional
             Poisson ratio (default is None)
-        shape : (int, ...), optional 
+        shape : (int, ...), optional
             Tuple with shape of the trailing axes (default is (1, 1))
 
         Returns

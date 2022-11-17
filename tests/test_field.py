@@ -69,7 +69,7 @@ def pre_mixed():
     g = fe.FieldsMixed(fe.RegionHexahedron(m), n=3)
 
     u.values[0] = np.ones(3)
-    assert np.all(f.values[0][0] == 1)
+    assert np.all(f.values()[0][0] == 1)
     assert len(g.fields) == 3
 
     return r, f, u, p, J
@@ -89,7 +89,7 @@ def pre_axi_mixed():
     f = fe.FieldContainer((u, p, J))
 
     u.values[0] = np.ones(2)
-    assert np.all(f.values[0][0] == 1)
+    assert np.all(f.values()[0][0] == 1)
 
     return r, f, u, p, J
 
@@ -97,7 +97,7 @@ def pre_axi_mixed():
 def test_axi():
 
     r, u = pre_axi()
-    u += u.values
+    u += u.values()
 
     r, f, u, p, J = pre_axi_mixed()
 
@@ -110,7 +110,7 @@ def test_axi():
 def test_3d():
 
     r, u = pre()
-    u += u.values
+    u += u.values()
 
     with pytest.raises(ValueError):
         r, u = pre(values=np.ones(2))

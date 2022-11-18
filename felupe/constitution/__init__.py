@@ -14,7 +14,7 @@ from ._models_pseudo_elasticity import (
 )
 
 from ._models_umat import (
-    UserMaterial, 
+    UserMaterial,
     UserMaterialStrain,
     linear_elastic,
     linear_elastic_isotropic_harding,

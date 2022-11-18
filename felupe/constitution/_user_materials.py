@@ -96,18 +96,18 @@ class UserMaterialStrain:
     """A strain-based user-defined material definition with a given functions
     for the stress tensor and the (fourth-order) elasticity tensor.
 
-    Take this code-block from linear-elastic material formulation
+    Take this code-block from the linear-elastic material formulation
 
     ..  code-block::
 
-        from felupe.math import kronecker, cdya, dya, trace
+        from felupe.math import identity, cdya, dya, trace
 
-        def linear_elastic(δε, εn, σn, ζn, λ, μ, **kwargs):
+        def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
             '''3D linear-elastic material formulation.
 
             Arguments
             ---------
-            δε : ndarray
+            dε : ndarray
                 Incremental strain tensor.
             εn : ndarray
                 Old strain tensor.
@@ -122,12 +122,12 @@ class UserMaterialStrain:
             '''
 
             # change of stress due to change of strain
-            δ = kronecker(δε)
-            δσ = 2 * μ * δε + λ * trace(δε) * δ
+            I = identity(dε)
+            dσ = 2 * μ * dε + λ * trace(dε) * I
 
             # update stress and evaluate elasticity tensor
-            σ = σn + δσ
-            dσdε = 2 * μ * cdya(δ, δ) + λ * dya(δ, δ)
+            σ = σn + dσ
+            dσdε = 2 * μ * cdya(I, I) + λ * dya(I, I)
 
             # update state variables (not used here)
             ζ = ζn
@@ -140,10 +140,10 @@ class UserMaterialStrain:
 
     ..  code-block::
 
-        def fun(δε, εn, σn, ζn, **kwargs):
+        def fun(dε, εn, σn, ζn, **kwargs):
             return dσdε, σ, ζ
 
-        umat = UserMaterialStrain(fun, **kwargs)
+        umat = UserMaterialStrain(material=fun, **kwargs)
 
     """
 
@@ -168,10 +168,10 @@ class UserMaterialStrain:
 
         # unpack deformation gradient F = dx/dX
         dim = self.dim
-        F, statevars = x
+        dxdX, statevars = x
 
-        # small-strain tensor as eps = sym(dx/dX - 1)
-        dudx = F - identity(F)
+        # small-strain tensor as strain = sym(dx/dX - 1)
+        dudx = dxdX - identity(dxdX)
         strain = sym(dudx)
 
         # separate strain and stress from state variables
@@ -221,9 +221,17 @@ class UserMaterialStrain:
 
         dsde = self.material(
             dstrain, strain_old, stress_old, statevars_old, **self.kwargs
-        )[:1]
+        )[0]
 
-        return dsde
+        # ensure minor-symmetric elasticity tensor due to symmetry of strain
+        dsde = (
+            dsde
+            + np.einsum("ijkl...->jikl...", dsde)
+            + np.einsum("ijkl...->ijlk...", dsde)
+            + np.einsum("ijkl...->jilk...", dsde)
+        ) / 4
+
+        return [dsde]
 
 
 class LinearElasticPlasticIsotropicHardening(UserMaterialStrain):

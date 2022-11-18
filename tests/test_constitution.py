@@ -287,6 +287,41 @@ def test_umat():
     dsde = linear_elastic.hessian([F, None])
 
 
+def test_umat_strain():
+
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+    statevars = np.zeros((18, *F.shape[-2:]))
+
+    umat = fe.UserMaterialStrain(
+        material=fe.constitution.linear_elastic,
+        λ=1,
+        μ=1,
+    )
+
+    s, statevars_new = umat.gradient([F, statevars])
+    dsde = umat.hessian([F, statevars])
+
+
+def test_umat_strain_plasticity():
+
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+    statevars = np.zeros((28, *F.shape[-2:]))
+
+    umat = fe.UserMaterialStrain(
+        material=fe.constitution.linear_elastic_plastic_isotropic_hardening,
+        λ=1,
+        μ=1,
+        σy=1,
+        K=0.1,
+        statevars=(1, (3, 3)),
+    )
+
+    s, statevars_new = umat.gradient([F, statevars])
+    dsde = umat.hessian([F, statevars])
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -294,3 +329,5 @@ if __name__ == "__main__":
     test_linear_planestrain()
     test_kinematics()
     test_umat()
+    test_umat_strain()
+    test_umat_strain_plasticity()

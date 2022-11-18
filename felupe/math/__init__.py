@@ -20,7 +20,11 @@ from ._tensor import (
     ddot,
     tovoigt,
     sym,
+    reshape,
+    ravel,
 )
+
+from numpy import sqrt
 
 from ._field import (
     defgrad,

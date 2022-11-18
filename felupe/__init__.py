@@ -87,11 +87,13 @@ from .mesh import (
 )
 from .constitution import (
     UserMaterial,
+    UserMaterialStrain,
     NeoHooke,
     OgdenRoxburgh,
     LinearElastic,
     LinearElasticPlaneStress,
     LinearElasticPlaneStrain,
+    LinearElasticPlasticIsotropicHardening,
     ThreeFieldVariation,
     LineChange,
     AreaChange,

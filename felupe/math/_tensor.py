@@ -290,3 +290,12 @@ def tovoigt(A, strain=False):
     if strain:
         B[dim:] *= 2
     return B
+
+
+def reshape(A, shape, trailing_axes=2):
+    return A.reshape(np.append(shape, A.shape[-trailing_axes:]))
+
+
+def ravel(A, trailing_axes=2):
+    ij, shape = np.split(A.shape, [-trailing_axes])
+    return reshape(A, shape=np.product(ij))

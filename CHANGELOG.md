@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `umat = UserMaterial(stress, elasticity, nstatevars=0, **kwargs)` with user-defined functions for the (first Piola-Kirchhoff) stress tensor `P, statevars_new = umat.gradient([F, statevars], **kwargs)` and the according fourth-order elasticity tensor `A = umat.hessian([F, statevars], **kwargs)`.
 - Add `UserMaterialStrain()` for small-strain based user-defined material formulations with an umat-interface suitable for elastic-plastic frameworks.
 - Add `LinearElasticPlasticIsotropicHardening()` which is based on `UserMaterialStrain()` and `constitution.linear_elastic_plastic_isotropic_hardening()`.
-- Add new math helpers: `math.ravel()`, `math.reshape()` and `math.kronecker()` as an alias for `identity()`.
+- Add new math helpers `math.ravel()` and `math.reshape()`.
 - Add optional axis argument on which the norm is evaluated `math.norm(axis=None)`.
 
 ### Changed

@@ -1,6 +1,5 @@
 from ._tensor import (
     identity,
-    identity as kronecker,
     det,
     inv,
     dya,

@@ -47,12 +47,12 @@ def values(field):
     return np.concatenate([f.values.ravel() for f in field.fields])
 
 
-def norm(array):
+def norm(array, axis=None):
     "Calculate the norm of an array or the norms of a list of arrays."
     if isinstance(array, list):
-        return np.array([np.linalg.norm(arr) for arr in array])
+        return np.array([np.linalg.norm(arr, axis=axis) for arr in array])
     else:
-        return np.linalg.norm(array)
+        return np.linalg.norm(array, axis=axis)
 
 
 def interpolate(field):

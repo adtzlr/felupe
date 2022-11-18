@@ -1,5 +1,6 @@
 from ._tensor import (
     identity,
+    identity as kronecker,
     det,
     inv,
     dya,
@@ -20,7 +21,11 @@ from ._tensor import (
     ddot,
     tovoigt,
     sym,
+    reshape,
+    ravel,
 )
+
+from numpy import sqrt
 
 from ._field import (
     defgrad,

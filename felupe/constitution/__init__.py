@@ -13,7 +13,12 @@ from ._models_pseudo_elasticity import (
     OgdenRoxburgh,
 )
 
-from ._models_umat import UserMaterial
+from ._models_umat import (
+    UserMaterial, 
+    UserMaterialStrain,
+    linear_elastic,
+    linear_elastic_isotropic_harding,
+)
 
 from ._kinematics import (
     LineChange,

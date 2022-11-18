@@ -322,6 +322,18 @@ def test_umat_strain_plasticity():
     dsde = umat.hessian([F, statevars])
 
 
+def test_elpliso():
+
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+    statevars = np.zeros((28, *F.shape[-2:]))
+
+    umat = fe.LinearElasticPlasticIsotropicHardening(E=3, nu=0.3, sy=1, K=0.1)
+
+    s, statevars_new = umat.gradient([F, statevars])
+    dsde = umat.hessian([F, statevars])
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -331,3 +343,4 @@ if __name__ == "__main__":
     test_umat()
     test_umat_strain()
     test_umat_strain_plasticity()
+    test_elpliso()

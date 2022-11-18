@@ -57,7 +57,7 @@ def linear_elastic(de, εn, σn, ζn, λ, μ, **kwargs):
     """
 
     # change of stress due to change of strain
-    I = identity(de)
+    I = identity(dim=3, shape=(1, 1))
     dσ = 2 * μ * de + λ * trace(de) * I
 
     # update stress

@@ -30,7 +30,7 @@ import numpy as np
 from ..math import (
     trace,
     identity,
-    cdya,
+    cdya_ik,
     dya,
     ddot,
     sqrt,
@@ -65,7 +65,7 @@ def linear_elastic(de, εn, σn, ζn, λ, μ, **kwargs):
 
     # evaluate elasticity tensor
     if kwargs["tangent"]:
-        dσdε = 2 * μ * cdya(I, I) + λ * dya(I, I)
+        dσdε = 2 * μ * cdya_ik(I, I) + λ * dya(I, I)
     else:
         dσdε = None
 
@@ -103,7 +103,7 @@ def linear_elastic_plastic_isotropic_hardening(de, εn, σn, ζn, λ, μ, σy, K
 
     # elasticity tensor
     if kwargs["tangent"]:
-        dσdε = λ * dya(I, I) + 2 * μ * cdya(I, I)
+        dσdε = λ * dya(I, I) + 2 * μ * cdya_ik(I, I)
     else:
         dσdε = None
 
@@ -144,7 +144,7 @@ def linear_elastic_plastic_isotropic_hardening(de, εn, σn, ζn, λ, μ, σy, K
                 * μ
                 * dγ
                 / norm_s
-                * (2 * μ * (cdya(I, I) - 1 / 3 * dya(I, I)) - 2 * μ * dya(n, n))
+                * (2 * μ * (cdya_ik(I, I) - 1 / 3 * dya(I, I)) - 2 * μ * dya(n, n))
             )[..., mask]
 
         # update list of state variables

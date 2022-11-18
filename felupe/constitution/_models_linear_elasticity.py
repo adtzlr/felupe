@@ -42,6 +42,30 @@ from ..math import (
 )
 
 
+def lame_converter(E, nu):
+    """Convert material parameters to first and second Lamé - constants.
+
+    Arguments
+    ---------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+
+    Returns
+    -------
+    lmbda : float
+        First Lamé - constant.
+    mu : float
+        Second Lamé - constant (shear modulus).
+    """
+
+    lmbda = E * nu / ((1 + nu) * (1 - 2 * nu))
+    mu = E / (2 * (1 + nu))
+
+    return lmbda, mu
+
+
 class LinearElastic:
     r"""Isotropic linear-elastic material formulation.
 
@@ -264,7 +288,7 @@ class LinearElasticTensorNotation:
             nu = self.nu
 
         # convert to lame constants
-        mu, gamma = self._lame_converter(E, nu)
+        gamma, mu = lame_converter(E, nu)
 
         # convert the deformation gradient to strain
         H = F - identity(F)
@@ -304,37 +328,13 @@ class LinearElasticTensorNotation:
         I = identity(dim=3, shape=shape)
 
         # convert to lame constants
-        mu, gamma = self._lame_converter(E, nu)
+        gamma, mu = lame_converter(E, nu)
 
         elast = 2 * mu * cdya(I, I, parallel=self.parallel) + gamma * dya(
             I, I, parallel=self.parallel
         )
 
         return [elast]
-
-    def _lame_converter(self, E, nu):
-        """Convert material parameters to first and second Lamé - constants.
-
-        Arguments
-        ---------
-        E : float
-            Young's modulus
-        nu : float
-            Poisson ratio
-
-        Returns
-        -------
-        mu : float
-            First Lamé - constant (shear modulus)
-        gamma : float
-            Second Lamé - constant
-
-        """
-
-        mu = E / (2 * (1 + nu))
-        gamma = E * nu / ((1 + nu) * (1 - 2 * nu))
-
-        return mu, gamma
 
 
 class LinearElasticPlaneStrain:

@@ -93,6 +93,7 @@ from .constitution import (
     LinearElastic,
     LinearElasticPlaneStress,
     LinearElasticPlaneStrain,
+    LinearElasticPlasticIsotropicHardening,
     ThreeFieldVariation,
     LineChange,
     AreaChange,

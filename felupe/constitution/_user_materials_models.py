@@ -29,7 +29,7 @@ import numpy as np
 
 from ..math import (
     trace,
-    kronecker,
+    identity,
     cdya,
     dya,
     ddot,
@@ -37,12 +37,12 @@ from ..math import (
 )
 
 
-def linear_elastic(δε, εn, σn, ζn, λ, μ, **kwargs):
+def linear_elastic(de, εn, σn, ζn, λ, μ, **kwargs):
     """3D linear-elastic material formulation.
 
     Arguments
     ---------
-    δε : ndarray
+    de : ndarray
         Strain increment.
     εn : ndarray
         Old strain tensor.
@@ -57,15 +57,15 @@ def linear_elastic(δε, εn, σn, ζn, λ, μ, **kwargs):
     """
 
     # change of stress due to change of strain
-    δ = kronecker(δε)
-    δσ = 2 * μ * δε + λ * trace(δε) * δ
+    I = identity(de)
+    dσ = 2 * μ * de + λ * trace(de) * I
 
     # update stress
-    σ = σn + δσ
+    σ = σn + dσ
 
     # evaluate elasticity tensor
     if kwargs["tangent"]:
-        dσdε = 2 * μ * cdya(δ, δ) + λ * dya(δ, δ)
+        dσdε = 2 * μ * cdya(I, I) + λ * dya(I, I)
     else:
         dσdε = None
 
@@ -75,13 +75,13 @@ def linear_elastic(δε, εn, σn, ζn, λ, μ, **kwargs):
     return dσdε, σ, ζ
 
 
-def linear_elastic_plastic_isotropic_hardening(δε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
+def linear_elastic_plastic_isotropic_hardening(de, εn, σn, ζn, λ, μ, σy, K, **kwargs):
     """Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm).
 
     Arguments
     ---------
-    δε : ndarray
+    de : ndarray
         Strain increment.
     εn : ndarray
         Old strain tensor.
@@ -99,18 +99,18 @@ def linear_elastic_plastic_isotropic_hardening(δε, εn, σn, ζn, λ, μ, σy,
         Isotropic hardening modulus.
     """
 
-    δ = kronecker(δε)
+    I = identity(de)
 
     # elasticity tensor
     if kwargs["tangent"]:
-        dσdε = λ * dya(δ, δ) + 2 * μ * cdya(δ, δ)
+        dσdε = λ * dya(I, I) + 2 * μ * cdya(I, I)
     else:
         dσdε = None
 
     # elastic hypothetic (trial) stress and deviatoric stress
-    δσ = 2 * μ * δε + λ * trace(δε) * δ
-    σ = σn + δσ
-    s = σ - 1 / 3 * trace(σ) * δ
+    dσ = 2 * μ * de + λ * trace(de) * I
+    σ = σn + dσ
+    s = σ - 1 / 3 * trace(σ) * I
 
     # unpack old state variables
     α, εp = ζn
@@ -127,13 +127,13 @@ def linear_elastic_plastic_isotropic_hardening(δε, εn, σn, ζn, λ, μ, σy,
     # update stress, tangent and state due to plasticity
     if np.any(mask):
 
-        δγ = f / (2 * μ + 2 / 3 * K)
+        dγ = f / (2 * μ + 2 / 3 * K)
         n = s / norm_s
-        εp = εp + δγ * n
-        α = α + sqrt(2 / 3) * δγ
+        εp = εp + dγ * n
+        α = α + sqrt(2 / 3) * dγ
 
         # stress
-        σ[..., mask] = (σ - 2 * μ * δγ * n)[..., mask]
+        σ[..., mask] = (σ - 2 * μ * dγ * n)[..., mask]
 
         # algorithmic consistent tangent modulus
         if kwargs["tangent"]:
@@ -142,9 +142,9 @@ def linear_elastic_plastic_isotropic_hardening(δε, εn, σn, ζn, λ, μ, σy,
                 - 2 * μ / (1 + K / (3 * μ)) * dya(n, n)
                 - 2
                 * μ
-                * δγ
+                * dγ
                 / norm_s
-                * (2 * μ * (cdya(δ, δ) - 1 / 3 * dya(δ, δ)) - 2 * μ * dya(n, n))
+                * (2 * μ * (cdya(I, I) - 1 / 3 * dya(I, I)) - 2 * μ * dya(n, n))
             )[..., mask]
 
         # update list of state variables

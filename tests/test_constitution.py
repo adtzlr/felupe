@@ -307,7 +307,7 @@ def test_umat_strain_plasticity():
 
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
-    statevars = np.zeros((28, *F.shape[-2:]))
+    statevars = np.ones((28, *F.shape[-2:]))
 
     umat = fe.UserMaterialStrain(
         material=fe.constitution.linear_elastic_plastic_isotropic_hardening,

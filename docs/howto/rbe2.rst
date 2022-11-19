@@ -1,7 +1,7 @@
 Multi-Point Constraints
 -----------------------
 
-This How-To demonstrates the usage of multi-point constraints (also called MPC or RBE2 rigid-body-elements) with an independent centerpoint and one or more dependent points. First, a centerpoint has to be added to the mesh. MPC objects are supported as items of the Newton-Rhapson procedure.
+This How-To demonstrates the usage of multi-point constraints (also called MPC or RBE2 rigid-body-elements) with an independent centerpoint and one or more dependent points. First, a centerpoint has to be added to the mesh. MPC objects are supported as items of a Step and the Newton-Rhapson procedure.
 
 ..  code-block:: python
 
@@ -13,9 +13,9 @@ This How-To demonstrates the usage of multi-point constraints (also called MPC o
     mesh.points = np.vstack((mesh.points, [2.0, 0.0, 0.0]))
     mesh.update(mesh.cells)
     
-    region = felupe.RegionHexahedron(mesh)
-    displacement = felupe.Field(region, dim=3)
-    field = felupe.FieldContainer([displacement])
+    region = fem.RegionHexahedron(mesh)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
 
 An instance of :class:`felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`felupe.MultiPointConstraint.assemble.vector` and :meth:`felupe.MultiPointConstraint.assemble.matrix`.
 
@@ -32,12 +32,8 @@ Finally, add the results of these methods to the internal force vector or the st
 
 ..  code-block:: python
 
-    umat = felupe.constitution.NeoHooke(mu=1.0, bulk=2.0)
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    body = fem.SolidBody(umat=umat, field=field)
 
-    K = fem.IntegralForm(
-        umat.hessian(field.extract()), field, region.dV, field
-    ).assemble() + MPC.assemble.matrix()
-
-    r = fem.IntegralForm(
-        umat.gradient(field.extract()), field, region.dV
-    ).assemble() + MPC.assemble.vector(field)
+    K = body.assemble.matrix() + MPC.assemble.matrix()
+    r = body.assemble.vector(field) + MPC.assemble.vector(field)

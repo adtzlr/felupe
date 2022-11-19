@@ -1,7 +1,7 @@
 Composite Regions with Solid Bodies
 -----------------------------------
 
-This section demonstrates how to set up a problem with two regions, each associated to a seperated solid body. First, a (total) region is created.
+This section demonstrates how to set up a problem with two regions, each associated to a seperated solid body.
 
 ..  code-block:: python
 
@@ -11,7 +11,7 @@ This section demonstrates how to set up a problem with two regions, each associa
     m = fem.Rectangle(n=21)
 
 
-In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated.
+In a second step, sub-meshes are created.
     
 ..  code-block:: python
 
@@ -40,18 +40,16 @@ This is followed by the creation of a global region/field and two sub-regions/su
     regions = [fem.RegionQuad(me) for me in mesh]
     
     # a global and two sub-fields
-    field = fem.FieldsMixed(region, n=1, planestrain=True)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     fields = [
-        fem.FieldsMixed(regions[0], n=1, planestrain=True),
-        fem.FieldsMixed(regions[1], n=1, planestrain=True),
+        fem.FieldContainer([fem.FieldPlaneStrain(region[0], dim=2)]),
+        fem.FieldContainer([fem.FieldPlaneStrain(region[1], dim=2)]),
     ]
     
 The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    # boundary conditions; applied on the global field
-    # which must be the x0-argument in job.evaluate()
     boundaries = dict(
         fixed=fem.Boundary(field[0], fx=0),
         move=fem.Boundary(field[0], fx=1),

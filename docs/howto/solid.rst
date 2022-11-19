@@ -6,7 +6,7 @@ The mechanics submodule contains classes for the generation of solid bodies. Sol
 Solid Body
 ----------
 
-The generation of internal force vectors and stiffness matrices of solid bodies are provided as assembly-methods of a :class:`felupe.SolidBody`.
+The generation of internal force vectors and stiffness matrices of solid bodies are provided as assembly-methods of a :class:`felupe.SolidBody` or a :class:`felupe.SolidBodyNearlyIncompressible`.
 
 ..  code-block:: python
 
@@ -16,8 +16,11 @@ The generation of internal force vectors and stiffness matrices of solid bodies 
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
     
-    neohooke = fem.NeoHooke(mu=1, bulk=2)
-    body = fem.SolidBody(umat=neohooke, field=field)
+    # a solid body
+    body = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=2), field=field)
+    
+    # a (nearly) incompressible solid body (to be used with quads and hexahedrons)
+    body = fem.SolidBodyNearlyIncompressible(umat=fem.NeoHooke(mu=1), field=field, bulk=5000)
     
     internal_force = body.assemble.vector(field, parallel=False, jit=False)
     stiffness_matrix = body.assemble.matrix(field, parallel=False, jit=False)

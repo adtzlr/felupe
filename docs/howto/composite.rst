@@ -8,100 +8,85 @@ This section demonstrates how to set up a problem with two regions, each associa
     import felupe as fem
     import numpy as np
 
-    n = 16
-    mesh = fem.Cube(n=n)
-    region = fem.RegionHexahedron(mesh)
+    m = fem.Rectangle(n=21)
 
 
 In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated.
     
 ..  code-block:: python
 
-    points = np.arange(mesh.npoints)[np.logical_or.reduce((
-        mesh.points[:,0] == 0,
-        mesh.points[:,0] == 0 + 1/(n - 1),
-        mesh.points[:,0] == 0.5 - 1/(n - 1) / 2,
-        mesh.points[:,0] == 0.5 + 1/(n - 1) / 2,
-        mesh.points[:,0] == 1 - 1/(n - 1),
-        mesh.points[:,0] == 1,
-    ))]
-    cells = np.isin(mesh.cells, points).sum(1) == mesh.cells.shape[1]
-
-    mesh_rubber = mesh.copy()
-    mesh_rubber.update(mesh_rubber.cells[~cells])
-
-    mesh_steel = mesh.copy()
-    mesh_steel.update(mesh_steel.cells[cells])
+    # take some points from the inside for the fiber-reinforced area
+    eps = 1e-3
+    mask = np.arange(m.npoints)[np.logical_and.reduce([
+        m.points[:, 0] >= 0.3,
+        m.points[:, 0] <= 0.7 + eps,
+        m.points[:, 1] >= 0.3,
+        m.points[:, 1] <= 0.7 + eps,
+    ])]
     
-    region_rubber = fem.RegionHexahedron(mesh_rubber)
-    field_rubber = fem.FieldsMixed(region_rubber, n=3)
+    # copies of the mesh
+    mesh = [m.copy(), m.copy()]
+    
+    # create sub-meshes (fiber, matrix)
+    mesh[0].update(m.cells[ np.all(np.isin(m.cells, mask), axis=1)])
+    mesh[1].update(m.cells[~np.all(np.isin(m.cells, mask), axis=1)])
 
-    region_steel = fem.RegionHexahedron(mesh_steel)
-    field_steel = fem.FieldsMixed(region_steel, n=1)
-
-This is followed by the creation of a global (mixed) field. Note that is approach is only valid for a simulation model with one body formulated on mixed fields.
+This is followed by the creation of a global region/field and two sub-regions/sub-fields.
 
 ..  code-block:: python
     
-    pressure, volumeratio = field_rubber[1:]
-    field = fem.FieldContainer([fe.Field(region, dim=3), pressure, volumeratio])
+    # a global and two sub-regions
+    region = fem.RegionQuad(m)
+    regions = [fem.RegionQuad(me) for me in mesh]
+    
+    # a global and two sub-fields
+    field = fem.FieldsMixed(region, n=1, planestrain=True)
+    fields = [
+        fem.FieldsMixed(regions[0], n=1, planestrain=True),
+        fem.FieldsMixed(regions[1], n=1, planestrain=True),
+    ]
     
 The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    boundaries, loadcase = fem.dof.uniaxial(field, move=-0.1)
+    # boundary conditions; applied on the global field
+    # which must be the x0-argument in job.evaluate()
+    boundaries = dict(
+        fixed=fem.Boundary(field[0], fx=0),
+        move=fem.Boundary(field[0], fx=1),
+    )
 
 
 The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
 
 ..  code-block:: python
 
-    neohooke = fem.ThreeFieldVariation(fe.NeoHooke(mu=1.0, bulk=5000.0))
-    linearelastic = fem.LinearElastic(E=210000.0, nu=0.3)
+    # two material model formulations
+    neo_hooke = fem.NeoHooke(mu=1, bulk=1)
+    linear_elastic = fem.LinearElastic(E=100, nu=0.3)
     
-    rubber = fem.SolidBody(neohooke, field_rubber)
-    steel = fem.SolidBody(linearelastic, field_steel)
+    # the solid bodies
+    fiber = fem.SolidBody(umat=linear_elastic, field=fields[0])
+    matrix = fem.SolidBody(umat=neo_hooke, field=fields[1])
 
 
-Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both solid bodies. All field values are linked, that means they share their values array.
+A step is created and further added to a job. The global field must be passed to the ``x0`` argument during the evaluation of the job. Internally, all field values are linked automatically, i.e. they share their ``values`` attribute.
 
 ..  code-block:: python
 
-    res = fem.newtonrhapson(field, items=[rubber, steel], **loadcase)
-
-..  code-block:: shell
-
-    Newton-Rhapson solver
-    =====================
-    
-    | # |  norm(dx) |
-    |---|-----------|
-    | 1 | 9.075e+01 |
-    | 2 | 1.370e+01 |
-    | 3 | 6.998e-01 |
-    | 4 | 1.105e-02 |
-    | 5 | 1.658e-06 |
-    | 6 | 5.446e-13 |
-    
-    Solution converged in 6 iterations within 63.52 seconds.
-
-Results may be exported either for the total region or with stresses for sub-regions only.
-
-.. image:: images/composite_total.png
-   :width: 600px
-
-..  code-block:: python
-
-    s = rubber.evaluate.cauchy_stress()
-    cauchy_stress = fem.project(fe.math.tovoigt(s), region_rubber)
-    
-    fem.save(region, res.x, filename="result.vtk")
-
-    fem.save(region_rubber, field_rubber,
-        filename="result_rubber.vtk", 
-        point_data={"CauchyStress": cauchy_stress}
+    # prepare a step with substeps
+    move = fem.math.linsteps([0, 0.5], num=10)
+    step = fem.Step(
+        items=[matrix, fiber],
+        ramp={boundaries["move"]: move}, 
+        boundaries=boundaries
     )
+    
+    # take care of the x0-argument
+    job = fem.Job(steps=[step])
+    job.evaluate(x0=field, filename="result.xdmf")
 
-.. image:: images/composite_rubber_cauchy.png
+
+.. image:: images/composite.png
    :width: 600px

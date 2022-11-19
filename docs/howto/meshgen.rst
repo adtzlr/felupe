@@ -43,7 +43,7 @@ First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n
 Lines, rectangles and cubes
 ***************************
 
-Of course lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`.
+Of course lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
 
 Triangle and Tetrahedron meshes
 *******************************

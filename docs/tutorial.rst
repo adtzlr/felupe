@@ -8,3 +8,4 @@ This section is all about learning. Each tutorial focusses on a some lessons to 
    :caption: Tutorials:
    
    tutorial/getting_started
+   tutorial/jobs

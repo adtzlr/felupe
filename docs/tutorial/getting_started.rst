@@ -18,8 +18,7 @@ Getting Started
     
     * export the displaced mesh
 
-
-A quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. First, let's import FElupe and create a meshed cube out of hexahedron cells with ``n=11`` points per axis. A numeric region, pre-defined for hexahedrons, is created on the mesh. A vector-valued displacement field is initiated on the region. Next, a field container is created on top of the displacement field.
+This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. First, let's import FElupe and create a meshed cube out of hexahedron cells with ``n=11`` points per axis. A numeric region, pre-defined for hexahedrons, is created on the mesh. A vector-valued displacement field is initiated on the region. Next, a field container is created on top of the displacement field.
 
 ..  code-block:: python
 
@@ -30,7 +29,7 @@ A quarter model of a solid cube with hyperelastic material behaviour is subjecte
     displacement = fem.Field(region=region, dim=3)
     field = fem.FieldContainer(fields=[displacement])
 
-A uniaxial load case is applied on the displacement field stored inside the field container. This involves setting up symmetry planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is clamped: only displacements in direction x are allowed. The dict of boundary conditions for this pre-defined load case are returned as ``boundaries`` and the partitioned degrees of freedom as well as the external displacements are stored within the returned dict ``loadcase``.
+A uniaxial load case is applied on the displacement field stored inside the field container. This involves setting up symmetry planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is *clamped*: only displacements in direction x are allowed. The dict of boundary conditions for this pre-defined load case are returned as ``boundaries`` and the partitioned degrees of freedom as well as the external displacements are stored within the returned dict ``loadcase``.
 
 ..  code-block:: python
 

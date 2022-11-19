@@ -1,6 +1,6 @@
-.. _tutorial-getting-started:
+.. _howto-building-blocks:
 
-Getting started
+Building Blocks
 ---------------
 
 .. admonition:: Have a look at the building blocks of FElupe.
@@ -220,7 +220,7 @@ A very simple newton-rhapson code looks like this:
     4 6.017153213511068e-09
     5 5.675484825228616e-16
 
-Alternatively, one may also use the Newton-Rhapson procedure as shown in :ref:`tutorial-hello-felupe`.
+Alternatively, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 

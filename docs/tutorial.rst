@@ -7,9 +7,4 @@ This section is all about learning. Each tutorial focusses on a some lessons to 
    :maxdepth: 1
    :caption: Tutorials:
    
-   tutorial/hellofelupe
-   tutorial/gettingstarted
-   tutorial/platewithhole
-   tutorial/beam
-   tutorial/shear
-   tutorial/numcont
+   tutorial/getting_started

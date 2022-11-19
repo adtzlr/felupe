@@ -21,7 +21,7 @@ Let's create a meshed plate with a hole out of quad cells with the help of ``pyg
 
 ..  code-block:: python
 
-    import felupe as fe
+    import felupe as fem
     import pygmsh
 
     h = 1.0
@@ -46,7 +46,7 @@ The points and cells of the above mesh are used to initiate a FElupe mesh.
 
 ..  code-block:: python
 
-    mesh = fe.Mesh(
+    mesh = fem.Mesh(
         points=mesh.points[:, :2], 
         cells=mesh.cells[1].data, 
         cell_type=mesh.cells[1].type
@@ -60,11 +60,11 @@ A numeric quad-region created on the mesh in combination with a vector-valued di
 
 ..  code-block:: python
 
-    region = fe.RegionQuad(mesh)
-    displacement = fe.Field(region, dim=2)
-    field = fe.FieldContainer([displacement])
+    region = fem.RegionQuad(mesh)
+    displacement = fem.Field(region, dim=2)
+    field = fem.FieldContainer([displacement])
 
-    boundaries, loadcase = fe.dof.uniaxial(
+    boundaries, loadcase = fem.dof.uniaxial(
         field, move=0.001, right=L, clamped=False
     )
 
@@ -73,7 +73,7 @@ The material behavior is defined through a built-in isotropic linear-elastic mat
 
 ..  code-block:: python
 
-    umat = fe.LinearElasticPlaneStress(E=210000, nu=0.3)
+    umat = fem.LinearElasticPlaneStress(E=210000, nu=0.3)
     
 
 The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian` (or the alias :func:`umat.elasticity`).
@@ -85,7 +85,7 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 
 ..  code-block:: python
 
-    K = fe.IntegralForm(
+    K = fem.IntegralForm(
         fun=umat.elasticity(), 
         v=field, 
         dV=region.dV, 
@@ -100,8 +100,8 @@ The linear equation system may now be solved. First, a partition into active and
     dof0 = loadcase["dof0"]
     ext0 = loadcase["ext0"]
 
-    system = fe.solve.partition(field, K, dof1, dof0)
-    field += fe.solve.solve(*system, ext0)
+    system = fem.solve.partition(field, K, dof1, dof0)
+    field += fem.solve.solve(*system, ext0)
 
 Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
 
@@ -126,8 +126,8 @@ However, the stress results are still located at the numeric integration points.
         stress[0, 0] * stress[1, 1]
     )
     
-    stress_projected = fe.project(stress, region)
-    vonmises_projected = fe.project(vonmises, region)
+    stress_projected = fem.project(stress, region)
+    vonmises_projected = fem.project(vonmises, region)
 
 
 Results are saved as VTK-files, where additional point-data is passed within the ``point_data`` argument. Stresses are normalized by the mean value of the stress at the right end-face in order to visualize a normalized stress distribution over the plate.
@@ -136,7 +136,7 @@ Results are saved as VTK-files, where additional point-data is passed within the
 
     right = mesh.points[:, 0] == L
 
-    fe.save(
+    fem.save(
         region, 
         field,
         filename="plate_with_hole.vtk",

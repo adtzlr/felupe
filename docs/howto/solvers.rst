@@ -9,18 +9,18 @@ Solvers from SciPy Sparse:
 
    .. code-block:: python
       
-      import felupe as fe
+      import felupe as fem
       
       # ...
       
-      system = fe.solve.partition(field, K, dof1, dof0)
-      fe.solve.solve(*system)
+      system = fem.solve.partition(field, K, dof1, dof0)
+      fem.solve.solve(*system)
 
 .. tab:: SciPy Sparse (direct, symmetric)
 
    .. code-block:: python
       
-      import felupe as fe
+      import felupe as fem
       import scipy.sparse.linalg as spla
       from scipy.sparse import tril
       
@@ -29,8 +29,8 @@ Solvers from SciPy Sparse:
       def solver(A, b):
           return spla.spsolve_triangular(tril(A).tocsr(), b).squeeze()
       
-      system = fe.solve.partition(field, K, dof1, dof0)
-      fe.solve.solve(*system)
+      system = fem.solve.partition(field, K, dof1, dof0)
+      fem.solve.solve(*system)
 
 .. tab:: SciPy Sparse (iterative)
 
@@ -38,7 +38,7 @@ Solvers from SciPy Sparse:
 
    ..  code-block:: python
         
-       import felupe as fe
+       import felupe as fem
        import scipy.sparse.linalg as spla
        
        # ...
@@ -48,8 +48,8 @@ Solvers from SciPy Sparse:
            
            return spla.minres(A, b)[0]
        
-       system = fe.solve.partition(field, K, dof1, dof0)
-       fe.solve.solve(*system, solver=solver)
+       system = fem.solve.partition(field, K, dof1, dof0)
+       fem.solve.solve(*system, solver=solver)
 
 Solvers from external packages:
 
@@ -63,7 +63,7 @@ Solvers from external packages:
 
    ..  code-block:: python
       
-       import felupe as fe
+       import felupe as fem
        from pypardiso import spsolve as solver
        
        # undocumented, untested workaround if multiple blas libaries are installed
@@ -72,8 +72,8 @@ Solvers from external packages:
        
        # ...
        
-       system = fe.solve.partition(field, K, dof1, dof0)
-       fe.solve.solve(*system, solver=solver)
+       system = fem.solve.partition(field, K, dof1, dof0)
+       fem.solve.solve(*system, solver=solver)
 
 .. tab:: PyPardiso (direct, symmetric)
 
@@ -85,7 +85,7 @@ Solvers from external packages:
 
    ..  code-block:: python
       
-       import felupe as fe
+       import felupe as fem
        from pypardiso import PyPardisoSolver
        from scipy.sparse import triu
       
@@ -99,8 +99,8 @@ Solvers from external packages:
            # mtype = 6: complex and symmetric
            return PyPardisoSolver(mtype=2).solve(triu(A).tocsr(), b).squeeze()
       
-       system = fe.solve.partition(field, K, dof1, dof0)
-       fe.solve.solve(*system, solver=solver)
+       system = fem.solve.partition(field, K, dof1, dof0)
+       fem.solve.solve(*system, solver=solver)
 
 
     

@@ -18,27 +18,27 @@ First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)``
 ..  code-block:: python
 
     import numpy as np
-    import felupe as fe
+    import felupe as fem
 
-    cube = fe.Cube(a=(0, 0, 0), b=(2000, 100, 100), n=(181, 9, 9))
-    region = fe.RegionHexahedron(cube)
-    displacement = fe.Field(region, dim=3)
-    field = fe.FieldContainer([displacement])
+    cube = fem.Cube(a=(0, 0, 0), b=(2000, 100, 100), n=(181, 9, 9))
+    region = fem.RegionHexahedron(cube)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
 
 
 A fixed boundary condition is applied on the left end of the beam. The degrees of freedom are partitioned into active (``dof1``) and fixed or inactive (``dof0``) degrees of freedom.
 
 ..  code-block:: python
 
-    bounds = {"fixed": fe.dof.Boundary(displacement, fx=lambda x: x==0)}
-    dof0, dof1 = fe.dof.partition(field, bounds)
+    bounds = {"fixed": fem.dof.Boundary(displacement, fx=lambda x: x==0)}
+    dof0, dof1 = fem.dof.partition(field, bounds)
 
 
 The material behavior is defined through a built-in isotropic linear-elastic material formulation.
 
 ..  code-block:: python
 
-    umat = fe.LinearElastic(E=206000, nu=0.3)
+    umat = fem.LinearElastic(E=206000, nu=0.3)
     density = 7850 * 1e-12
 
 
@@ -53,7 +53,7 @@ The body force is now assembled. Note that the gravity vector has to be reshaped
 
     gravity = np.array([0, 0, 9.81]) * 1e3
 
-    bodyforce = fe.IntegralForm(
+    bodyforce = fem.IntegralForm(
         fun=[density * gravity.reshape(-1, 1, 1)], 
         v=field, 
         dV=region.dV,
@@ -69,7 +69,7 @@ The weak form of linear elasticity is assembled into the stiffness matrix, where
 
 ..  code-block:: python
     
-    stiffness = fe.IntegralForm(
+    stiffness = fem.IntegralForm(
         fun=umat.elasticity(), 
         v=field, 
         dV=region.dV, 
@@ -80,10 +80,10 @@ The linear equation system may now be solved. First, a partition into active and
 
 ..  code-block:: python
 
-    system = fe.solve.partition(field, stiffness, dof1, dof0, r=-bodyforce)
-    field += fe.solve.solve(*system)
+    system = fem.solve.partition(field, stiffness, dof1, dof0, r=-bodyforce)
+    field += fem.solve.solve(*system)
 
-    fe.save(region, field, filename="bodyforce.vtk")
+    fem.save(region, field, filename="bodyforce.vtk")
 
 
 .. image:: images/beam_bodyforce.png

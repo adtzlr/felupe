@@ -224,7 +224,7 @@ Alternatively, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = fem.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
     field = res.x
 
 

@@ -5,12 +5,12 @@ This section demonstrates how to set up a problem with two regions, each associa
 
 ..  code-block:: python
 
-    import felupe as fe
+    import felupe as fem
     import numpy as np
 
     n = 16
-    mesh = fe.Cube(n=n)
-    region = fe.RegionHexahedron(mesh)
+    mesh = fem.Cube(n=n)
+    region = fem.RegionHexahedron(mesh)
 
 
 In a second step, sub-sets for points and cells are created from which two sub-regions and sub-fields are initiated.
@@ -33,42 +33,42 @@ In a second step, sub-sets for points and cells are created from which two sub-r
     mesh_steel = mesh.copy()
     mesh_steel.update(mesh_steel.cells[cells])
     
-    region_rubber = fe.RegionHexahedron(mesh_rubber)
-    field_rubber = fe.FieldsMixed(region_rubber, n=3)
+    region_rubber = fem.RegionHexahedron(mesh_rubber)
+    field_rubber = fem.FieldsMixed(region_rubber, n=3)
 
-    region_steel = fe.RegionHexahedron(mesh_steel)
-    field_steel = fe.FieldsMixed(region_steel, n=1)
+    region_steel = fem.RegionHexahedron(mesh_steel)
+    field_steel = fem.FieldsMixed(region_steel, n=1)
 
 This is followed by the creation of a global (mixed) field. Note that is approach is only valid for a simulation model with one body formulated on mixed fields.
 
 ..  code-block:: python
     
     pressure, volumeratio = field_rubber[1:]
-    field = fe.FieldContainer([fe.Field(region, dim=3), pressure, volumeratio])
+    field = fem.FieldContainer([fe.Field(region, dim=3), pressure, volumeratio])
     
 The displacement boundaries are created on the total field.
 
 ..  code-block:: python
 
-    boundaries, loadcase = fe.dof.uniaxial(field, move=-0.1)
+    boundaries, loadcase = fem.dof.uniaxial(field, move=-0.1)
 
 
 The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
 
 ..  code-block:: python
 
-    neohooke = fe.ThreeFieldVariation(fe.NeoHooke(mu=1.0, bulk=5000.0))
-    linearelastic = fe.LinearElastic(E=210000.0, nu=0.3)
+    neohooke = fem.ThreeFieldVariation(fe.NeoHooke(mu=1.0, bulk=5000.0))
+    linearelastic = fem.LinearElastic(E=210000.0, nu=0.3)
     
-    rubber = fe.SolidBody(neohooke, field_rubber)
-    steel = fe.SolidBody(linearelastic, field_steel)
+    rubber = fem.SolidBody(neohooke, field_rubber)
+    steel = fem.SolidBody(linearelastic, field_steel)
 
 
 Inside the Newton-Rhapson iterations both the internal force vector and the tangent stiffness matrix are assembled and summed up from contributions of both solid bodies. All field values are linked, that means they share their values array.
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(field, items=[rubber, steel], **loadcase)
+    res = fem.newtonrhapson(field, items=[rubber, steel], **loadcase)
 
 ..  code-block:: shell
 
@@ -94,11 +94,11 @@ Results may be exported either for the total region or with stresses for sub-reg
 ..  code-block:: python
 
     s = rubber.evaluate.cauchy_stress()
-    cauchy_stress = fe.project(fe.math.tovoigt(s), region_rubber)
+    cauchy_stress = fem.project(fe.math.tovoigt(s), region_rubber)
     
-    fe.save(region, res.x, filename="result.vtk")
+    fem.save(region, res.x, filename="result.vtk")
 
-    fe.save(region_rubber, field_rubber,
+    fem.save(region_rubber, field_rubber,
         filename="result_rubber.vtk", 
         point_data={"CauchyStress": cauchy_stress}
     )

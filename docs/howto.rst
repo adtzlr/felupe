@@ -14,3 +14,4 @@ How-To Guides
    howto/composite
    howto/forms
    howto/solid
+   howto/umat

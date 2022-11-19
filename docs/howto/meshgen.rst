@@ -6,7 +6,7 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A Mesh insta
 ..  code-block:: python
 
     import numpy as np
-    import felupe as fe
+    import felupe as fem
 
     points = np.array([
         [ 0, 0], # point 1
@@ -19,7 +19,7 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A Mesh insta
         [ 0, 1, 3, 2], # point-connectivity of first cell
     ])
 
-    mesh = fe.Mesh(points, cells, cell_type="quad")
+    mesh = fem.Mesh(points, cells, cell_type="quad")
 
 .. image:: images/quad.png
    :width: 400px
@@ -32,9 +32,9 @@ First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n
 
 ..  code-block:: python
 
-    line = fe.mesh.Line(a=1, b=3, n=7)
-    rect = fe.mesh.expand(line, n=2, z=5)
-    hexa = fe.mesh.expand(rect, n=2, z=3)
+    line = fem.mesh.Line(a=1, b=3, n=7)
+    rect = fem.mesh.expand(line, n=2, z=5)
+    hexa = fem.mesh.expand(rect, n=2, z=3)
 
 .. image:: images/cube.png
    :width: 400px
@@ -52,11 +52,11 @@ Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of T
 
 ..  code-block:: python
 
-    rectangle_quad = fe.Rectangle(n=5)
-    rectangle_tetra = fe.mesh.triangulate(rect_quad)
+    rectangle_quad = fem.Rectangle(n=5)
+    rectangle_tetra = fem.mesh.triangulate(rect_quad)
 
-    cube_hexahedron = fe.Cube(n=5)
-    cube_tetra = fe.mesh.triangulate(cube_hexahedron)
+    cube_hexahedron = fem.Cube(n=5)
+    cube_tetra = fem.mesh.triangulate(cube_hexahedron)
 
 Meshes with midpoints
 *********************
@@ -65,13 +65,13 @@ If a mesh with midpoints is required by a region, functions for edge, face and v
 
 ..  code-block:: python
     
-    rectangle_quad4 = fe.Rectangle(n=6)
-    rectangle_quad8 = fe.mesh.convert(rectangle_quad4, order=2)
-    rectangle_quad9 = fe.mesh.convert(rectangle_quad4, order=2, calc_midfaces=True)
+    rectangle_quad4 = fem.Rectangle(n=6)
+    rectangle_quad8 = fem.mesh.convert(rectangle_quad4, order=2)
+    rectangle_quad9 = fem.mesh.convert(rectangle_quad4, order=2, calc_midfaces=True)
 
 The same also applies on meshes with triangles.
 
 ..  code-block:: python
 
-    rectangle_triangle3 = fe.mesh.triangulate(fe.Rectangle(n=6))
-    rectangle_triangle6 = fe.mesh.add_midpoints_edges(rectangle_triangle3)
+    rectangle_triangle3 = fem.mesh.triangulate(fe.Rectangle(n=6))
+    rectangle_triangle6 = fem.mesh.add_midpoints_edges(rectangle_triangle3)

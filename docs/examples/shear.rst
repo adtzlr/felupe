@@ -34,7 +34,7 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 ..  code-block:: python
 
     import numpy as np
-    import felupe as fe
+    import felupe as fem
 
     H = 10
     L = 20
@@ -43,7 +43,7 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
     n = 21
     a = min(L / n, H / n)
     
-    mesh = fe.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
+    mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
     mesh.points = np.vstack((mesh.points, [0, 2 * H]))
     mesh.update(mesh.cells)
     mesh.points_without_cells = np.array([], dtype=bool)
@@ -56,18 +56,18 @@ displacement field for plane-strain as well as scalar-valued fields for the hydr
 
 ..  code-block:: python
 
-    region = fe.RegionQuad(mesh)
-    fields = fe.FieldsMixed(region, n=3, planestrain=True)
+    region = fem.RegionQuad(mesh)
+    fields = fem.FieldsMixed(region, n=3, planestrain=True)
     
     f0 = lambda y: np.isclose(y, 0)
     f2 = lambda y: np.isclose(y, 2* H)
     
     boundaries = {
-        "fixed": fe.Boundary(fields[0], fy=f0),
-        "control": fe.Boundary(fields[0], fy=f2, skip=(0, 1)),
+        "fixed": fem.Boundary(fields[0], fy=f0),
+        "control": fem.Boundary(fields[0], fy=f2, skip=(0, 1)),
     }
     
-    dof0, dof1 = fe.dof.partition(fields, boundaries)
+    dof0, dof1 = fem.dof.partition(fields, boundaries)
 
 
 The micro-sphere material formulation is used for the rubber. It is defined
@@ -97,7 +97,7 @@ as a hyperelastic material in matADi. The material formulation is finally applie
         bulk=5000.0,
     )
     
-    rubber = fe.SolidBody(umat=mat.ThreeFieldVariation(umat), field=fields)
+    rubber = fem.SolidBody(umat=mat.ThreeFieldVariation(umat), field=fields)
 
 At the centerpoint of a multi-point constraint (MPC) the external shear
 movement is prescribed. It also ensures a force-free top plate in direction 
@@ -105,7 +105,7 @@ movement is prescribed. It also ensures a force-free top plate in direction
 
 ..  code-block:: python
 
-    mpc = fe.MultiPointConstraint(
+    mpc = fem.MultiPointConstraint(
         field=fields,
         points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
         centerpoint=mesh.npoints - 1,
@@ -126,7 +126,7 @@ job. A job returns a generator object with the results of all substeps.
 
 ..  code-block:: python
 
-    UX = fe.math.linsteps([0, 15], 15)
+    UX = fem.math.linsteps([0, 15], 15)
     UY = []
     FX = []
 
@@ -146,12 +146,12 @@ job. A job returns a generator object with the results of all substeps.
 
 ..  code-block:: python
     
-    step = fe.Step(
+    step = fem.Step(
         items=[rubber, mpc], 
         ramp={boundaries["control"]: UX}, 
         boundaries=boundaries
     )
-    job = fe.Job(steps=[step], callback=callback)
+    job = fem.Job(steps=[step], callback=callback)
     res = job.evaluate()
 
 For the maximum deformed model a VTK-file containing principal stretches
@@ -164,9 +164,9 @@ projected to mesh points is exported.
     F = fields[0].extract()
     C = dot(transpose(F), F)
     
-    stretches = fe.project(np.sqrt(eigh(C)[0]), region)
+    stretches = fem.project(np.sqrt(eigh(C)[0]), region)
     
-    fe.save(region, fields, point_data={
+    fem.save(region, fields, point_data={
         "Maximum-principal-stretch": np.max(stretches, axis=1),
         "Minimum-principal-stretch": np.min(stretches, axis=1),
     })

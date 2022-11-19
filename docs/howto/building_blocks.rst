@@ -143,7 +143,7 @@ The integral (or weak) forms of equilibrium equations are defined by the :class:
 
 ..  code-block:: python
 
-    linearform   = felupe.IntegralForm(P(F), field, dV, grad_v=[True])
+    linearform = felupe.IntegralForm(P(F)[:-1], field, dV, grad_v=[True])
     bilinearform = felupe.IntegralForm(A(F), field, dV, u=field, grad_v=[True], grad_u=[True])
 
 
@@ -194,7 +194,7 @@ A very simple newton-rhapson code looks like this:
     for iteration in range(8):
         F = field.extract()
 
-        linearform = felupe.IntegralForm(P(F), field, dV)
+        linearform = felupe.IntegralForm(P(F)[:-1], field, dV)
         bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
         r = linearform.assemble()

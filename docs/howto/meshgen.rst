@@ -73,5 +73,5 @@ The same also applies on meshes with triangles.
 
 ..  code-block:: python
 
-    rectangle_triangle3 = fem.mesh.triangulate(fe.Rectangle(n=6))
+    rectangle_triangle3 = fem.mesh.triangulate(fem.Rectangle(n=6))
     rectangle_triangle6 = fem.mesh.add_midpoints_edges(rectangle_triangle3)

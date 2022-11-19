@@ -31,7 +31,7 @@ The ramped prescribed displacements for 20 substeps are created with ``linsteps`
 ..  code-block:: python
 
     move = fem.math.linsteps([0, 2, 0], num=10)
-    step = fem.Step(
+    uniaxial = fem.Step(
         items=[solid], 
         ramp={boundaries["move"]: move}, 
         boundaries=boundaries
@@ -41,7 +41,7 @@ This step is now added to a **Job**. The results are exported after each complet
 
 ..  code-block:: python
 
-    job = fem.Job(steps=[step])
+    job = fem.Job(steps=[uniaxial])
     job.evaluate(filename="result.xdmf")
 
 

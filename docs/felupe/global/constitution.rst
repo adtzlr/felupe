@@ -6,6 +6,11 @@ Constitution
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.OgdenRoxburgh
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.LinearElastic
    :members:
    :undoc-members:
@@ -27,6 +32,11 @@ Constitution
    :inherited-members:
 
 .. autoclass:: felupe.ThreeFieldVariation
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+   .. autoclass:: felupe.UserMaterial
    :members:
    :undoc-members:
    :inherited-members:

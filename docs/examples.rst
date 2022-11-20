@@ -3,7 +3,7 @@ Examples
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials:
+   :caption: Examples:
    
    examples/beam
    examples/numcont

@@ -5,7 +5,12 @@ Mesh
    :members:
    :undoc-members:
    :inherited-members:
-   
+
+.. autoclass:: felupe.MeshContainer
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.Rectangle
    :members:
    :undoc-members:

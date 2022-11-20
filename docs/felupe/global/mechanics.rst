@@ -11,12 +11,37 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: felupe.StateNearlyIncompressible
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: felupe.SolidBodyGravity
    :members:
    :undoc-members:
    :show-inheritance:
 
 .. autoclass:: felupe.SolidBodyPressure
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.PointLoad
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.Step
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.Job
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.CharacteristicCurve
    :members:
    :undoc-members:
    :show-inheritance:

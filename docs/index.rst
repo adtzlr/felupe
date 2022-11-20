@@ -74,6 +74,7 @@ Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``
    :caption: Contents:
    
    tutorial
+   examples
    howto
    explanation
 

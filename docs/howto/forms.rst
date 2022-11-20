@@ -5,12 +5,12 @@ FElupe requires a pre-evaluated array for the definition of a bilinear :class:`f
 
 ..  code-block:: python
 
-    import felupe as fe
+    import felupe as fem
     
-    mesh = fe.Cube(n=11)
-    region = fe.RegionHexahedron(mesh)
-    displacement = fe.Field(region, dim=3)
-    field = fe.FieldContainer([displacement])
+    mesh = fem.Cube(n=11)
+    region = fem.RegionHexahedron(mesh)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
 
 The bilinear form of linear elasticity is defined as
 

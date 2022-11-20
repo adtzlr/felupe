@@ -37,12 +37,12 @@ from ..math import (
 )
 
 
-def linear_elastic(de, εn, σn, ζn, λ, μ, **kwargs):
+def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     """3D linear-elastic material formulation.
 
     Arguments
     ---------
-    de : ndarray
+    dε : ndarray
         Strain increment.
     εn : ndarray
         Old strain tensor.
@@ -58,7 +58,7 @@ def linear_elastic(de, εn, σn, ζn, λ, μ, **kwargs):
 
     # change of stress due to change of strain
     I = identity(dim=3, shape=(1, 1))
-    dσ = 2 * μ * de + λ * trace(de) * I
+    dσ = 2 * μ * dε + λ * trace(dε) * I
 
     # update stress
     σ = σn + dσ
@@ -75,13 +75,13 @@ def linear_elastic(de, εn, σn, ζn, λ, μ, **kwargs):
     return dσdε, σ, ζ
 
 
-def linear_elastic_plastic_isotropic_hardening(de, εn, σn, ζn, λ, μ, σy, K, **kwargs):
+def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
     """Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm).
 
     Arguments
     ---------
-    de : ndarray
+    dε : ndarray
         Strain increment.
     εn : ndarray
         Old strain tensor.
@@ -99,7 +99,7 @@ def linear_elastic_plastic_isotropic_hardening(de, εn, σn, ζn, λ, μ, σy, K
         Isotropic hardening modulus.
     """
 
-    I = identity(de)
+    I = identity(dε)
 
     # elasticity tensor
     if kwargs["tangent"]:
@@ -108,7 +108,7 @@ def linear_elastic_plastic_isotropic_hardening(de, εn, σn, ζn, λ, μ, σy, K
         dσdε = None
 
     # elastic hypothetic (trial) stress and deviatoric stress
-    dσ = 2 * μ * de + λ * trace(de) * I
+    dσ = 2 * μ * dε + λ * trace(dε) * I
     σ = σn + dσ
     s = σ - 1 / 3 * trace(σ) * I
 

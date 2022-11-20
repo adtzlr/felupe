@@ -1,6 +1,6 @@
-.. _tutorial-getting-started:
+.. _howto-building-blocks:
 
-Getting started
+Building Blocks
 ---------------
 
 .. admonition:: Have a look at the building blocks of FElupe.
@@ -143,7 +143,7 @@ The integral (or weak) forms of equilibrium equations are defined by the :class:
 
 ..  code-block:: python
 
-    linearform   = felupe.IntegralForm(P(F), field, dV, grad_v=[True])
+    linearform = felupe.IntegralForm(P(F)[:-1], field, dV, grad_v=[True])
     bilinearform = felupe.IntegralForm(A(F), field, dV, u=field, grad_v=[True], grad_u=[True])
 
 
@@ -194,7 +194,7 @@ A very simple newton-rhapson code looks like this:
     for iteration in range(8):
         F = field.extract()
 
-        linearform = felupe.IntegralForm(P(F), field, dV)
+        linearform = felupe.IntegralForm(P(F)[:-1], field, dV)
         bilinearform = felupe.IntegralForm(A(F), field, dV, field)
 
         r = linearform.assemble()
@@ -220,11 +220,11 @@ A very simple newton-rhapson code looks like this:
     4 6.017153213511068e-09
     5 5.675484825228616e-16
 
-Alternatively, one may also use the Newton-Rhapson procedure as shown in :ref:`tutorial-hello-felupe`.
+Alternatively, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 
-    res = fe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = fem.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
     field = res.x
 
 

@@ -6,7 +6,7 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.SolidBodyTensor
+.. autoclass:: felupe.SolidBodyNearlyIncompressible
    :members:
    :undoc-members:
    :show-inheritance:

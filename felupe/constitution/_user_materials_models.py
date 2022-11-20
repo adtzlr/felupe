@@ -153,11 +153,11 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
     s = σ - 1 / 3 * trace(σ) * I
 
     # unpack old state variables
-    αn, εpn = ζn
+    α, εp = ζn
 
     # hypothetic (trial) yield function
     norm_s = sqrt(ddot(s, s))
-    f = norm_s - sqrt(2 / 3) * (σy + K * αn)
+    f = norm_s - sqrt(2 / 3) * (σy + K * α)
 
     ζ = ζn
 
@@ -169,8 +169,8 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
         dγ = f / (2 * μ + 2 / 3 * K)
         n = s / norm_s
-        εp = εpn + dγ * n
-        α = αn + sqrt(2 / 3) * dγ
+        εp = εp + dγ * n
+        α = α + sqrt(2 / 3) * dγ
 
         # stress
         σ[..., mask] = (σ - 2 * μ * dγ * n)[..., mask]

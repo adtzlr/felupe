@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `project(mean=True)` to project cell mean-values to mesh-points. Now `project()` supports Triangles and Tetrahedrons.
 - Add `RegionBoundary.mesh_faces()` for a mesh with face-cells on the selected boundary of a region.
-- Add pseudo-elastic material `OgdenRoxburgh()` which may be used with the new `SolidBodyTensorNearlyIncompressible()`.
-- Add `umat = UserMaterial(stress, elasticity, nstatevars=0, **kwargs)` with user-defined functions for the (first Piola-Kirchhoff) stress tensor `P, statevars_new = umat.gradient([F, statevars], **kwargs)` and the according fourth-order elasticity tensor `A = umat.hessian([F, statevars], **kwargs)`.
+- Add pseudo-elastic material `OgdenRoxburgh()` which may be used with `SolidBodyNearlyIncompressible()`.
+- Add `umat = UserMaterial(stress, elasticity, nstatevars=0, **kwargs)` with user-defined functions for the (first Piola-Kirchhoff) stress tensor `P, statevars_new = umat.gradient([F, statevars], **kwargs)` and the according fourth-order elasticity tensor `A = umat.hessian([F, statevars], **kwargs)` based on the deformation gradient.
 - Add `UserMaterialStrain()` for small-strain based user-defined material formulations with an umat-interface suitable for elastic-plastic frameworks.
 - Add `LinearElasticPlasticIsotropicHardening()` which is based on `UserMaterialStrain()` and `constitution.linear_elastic_plastic_isotropic_hardening()`.
 - Add new math helpers `math.ravel()` and `math.reshape()`.

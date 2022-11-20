@@ -44,7 +44,7 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     
     2.  Given strain increment dε, so that ε = εn + dε.
     
-    3.  Evaluation of the stress σ and the algorithmic consistent tanget modulus dσdε.
+    3.  Evaluation of the stress σ and the algorithmic consistent tangent modulus dσdε.
         
         dσdε = λ 1 ⊗ 1 + 2μ 1 ⊙ 1
         
@@ -111,7 +111,7 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
         
             Set y = yn + dy, y=(σ, ζ=[εp, α]),
             
-            algorithmic consistent tanget modulus dσdε.
+            algorithmic consistent tangent modulus dσdε.
         
         Else:
            
@@ -125,7 +125,7 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
             
             α = αn + sqrt(2 / 3) dγ   
         
-            Algorithmic consistent tanget modulus:
+            Algorithmic consistent tangent modulus:
             
             dσdε = dσdε - 2μ / (1 + K / 3μ) n ⊗ n - 2μ dγ / ||s|| ((2μ 1 ⊙ 1 - 1/3 1 ⊗ 1) - 2μ n ⊗ n)
             

@@ -39,6 +39,16 @@ from ..math import (
 
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     """3D linear-elastic material formulation.
+    
+    1.  Given state in point x (σn, ζn=[εpn, αn]) (valid).
+    
+    2.  Given strain increment dε, so that ε = εn + dε.
+    
+    3.  Evaluation of the stress σ and the algorithmic consistent tanget modulus dσdε.
+        
+        dσdε = λ 1 ⊗ 1 + 2μ 1 ⊙ 1
+        
+        σ = σn + dσdε : dε
 
     Arguments
     ---------

@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.0.0] - 2022-11-20
+
 ### Added
 - Add `project(mean=True)` to project cell mean-values to mesh-points. Now `project()` supports Triangles and Tetrahedrons.
 - Add `RegionBoundary.mesh_faces()` for a mesh with face-cells on the selected boundary of a region.

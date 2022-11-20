@@ -26,23 +26,26 @@ First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)``
     field = fem.FieldContainer([displacement])
 
 
-A fixed boundary condition is applied on the left end of the beam. The degrees of freedom are partitioned into active (``dof1``) and fixed or inactive (``dof0``) degrees of freedom.
+A fixed boundary condition is applied on the left end of the beam.
 
 ..  code-block:: python
 
-    bounds = {"fixed": fem.dof.Boundary(displacement, fx=lambda x: x==0)}
-    dof0, dof1 = fem.dof.partition(field, bounds)
+    boundaries = {"fixed": fem.dof.Boundary(displacement, fx=0)}
+    dof0, dof1 = fem.dof.partition(field, boundaries)
 
 
 The material behavior is defined through a built-in isotropic linear-elastic material formulation.
 
+.. math::
+
+   \delta W_{int} = - \int_v \delta \boldsymbol{\varepsilon} : \mathbb{C} : \boldsymbol{\varepsilon} \ dv
+
 ..  code-block:: python
 
     umat = fem.LinearElastic(E=206000, nu=0.3)
-    density = 7850 * 1e-12
+    solid = fem.SolidBody(umat=umat, field=field)
 
-
-The body force is now assembled. Note that the gravity vector has to be reshaped for shape compatibility.
+The body force is defined by a (constant) gravity field on a solid body.
 
 ..  math::
 
@@ -51,38 +54,15 @@ The body force is now assembled. Note that the gravity vector has to be reshaped
 
 ..  code-block:: python
 
-    gravity = np.array([0, 0, 9.81]) * 1e3
+    gravity = fem.SolidBodyGravity(
+        field, gravity=[0, 0, 9810], density=7850 * 1e-12
+    )
 
-    bodyforce = fem.IntegralForm(
-        fun=[density * gravity.reshape(-1, 1, 1)], 
-        v=field, 
-        dV=region.dV,
-        grad_v=[False]
-    ).assemble()
-
-The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.elasticity`.
-
-.. math::
-
-   \delta W_{int} = - \int_v \delta \boldsymbol{\varepsilon} : \mathbb{C} : \boldsymbol{\varepsilon} \ dv
-
-
-..  code-block:: python
-    
-    stiffness = fem.IntegralForm(
-        fun=umat.elasticity(), 
-        v=field, 
-        dV=region.dV, 
-        u=field, 
-    ).assemble(parallel=True)
-
-The linear equation system may now be solved. First, a partition into active and inactive degrees of freedom is performed. This partitioned system is then passed to the solver. The maximum displacement is identical to the one obtained in `[1] <https://www.doi.org/10.5545/sv-jme.2017.5081>`_.
+Inside a Newton-Rhapson procedure, the weak form of linear elasticity is assembled into the stiffness matrix and the applied gravity field is assembled into the body force vector. The maximum displacement of the solution is identical to the one obtained in `[1] <https://www.doi.org/10.5545/sv-jme.2017.5081>`_.
 
 ..  code-block:: python
 
-    system = fem.solve.partition(field, stiffness, dof1, dof0, r=-bodyforce)
-    field += fem.solve.solve(*system)
-
+    res = fem.newtonrhapson(items=[solid, gravity], dof0=dof0, dof1=dof1)
     fem.save(region, field, filename="bodyforce.vtk")
 
 

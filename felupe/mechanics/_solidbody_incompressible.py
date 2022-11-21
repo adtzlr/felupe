@@ -38,13 +38,13 @@ from ._helpers import Assemble, Evaluate, Results
 class SolidBodyNearlyIncompressible:
     r"""A (nearly) incompressible SolidBody with methods for the assembly of
     sparse vectors/matrices based on a ``MaterialTensor`` with state variables.
-    
+
     The volumetric material behaviour is defined by a strain energy function.
-    
+
     ..  math::
-        
+
         U(J) = \frac{K}{2} (J - 1)^2
-    
+
     """
 
     def __init__(self, umat, field, bulk, state=None, statevars=None):

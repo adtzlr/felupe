@@ -39,15 +39,15 @@ from ..math import (
 
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     """3D linear-elastic material formulation.
-    
+
     1.  Given state in point x (σn, ζn=[εpn, αn]) (valid).
-    
+
     2.  Given strain increment dε, so that ε = εn + dε.
-    
+
     3.  Evaluation of the stress σ and the algorithmic consistent tangent modulus dσdε.
-        
+
         dσdε = λ 1 ⊗ 1 + 2μ 1 ⊙ 1
-        
+
         σ = σn + dσdε : dε
 
     Arguments
@@ -88,47 +88,47 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
     r"""Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm).
-    
+
     1.  Given state in point x (σn, ζn=[εpn, αn]) (valid).
-    
+
     2.  Given strain increment dε, so that ε = εn + dε.
-    
+
     3.  Evaluation of the hypothetic trial state:
-        
+
         dσdε = λ 1 ⊗ 1 + 2μ 1 ⊙ 1
-        
+
         σ = σn + dσdε : dε
-        
+
         s = dev(σ)
-        
+
         εp = εpn
-        
+
         α = αn
-        
+
         f = ||s|| - sqrt(2/3) (σy + K α)
-    
-    4.  If f ≤ 0, then elastic step: 
-        
+
+    4.  If f ≤ 0, then elastic step:
+
             Set y = yn + dy, y=(σ, ζ=[εp, α]),
-            
+
             algorithmic consistent tangent modulus dσdε.
-        
+
         Else:
-           
+
             dγ = f / (2μ + 2/3 K)
-            
+
             n = s / ||s||
-            
+
             σ = σ - 2μ dγ n
-            
+
             εp = εpn + dγ n
-            
-            α = αn + sqrt(2 / 3) dγ   
-        
+
+            α = αn + sqrt(2 / 3) dγ
+
             Algorithmic consistent tangent modulus:
-            
+
             dσdε = dσdε - 2μ / (1 + K / 3μ) n ⊗ n - 2μ dγ / ||s|| ((2μ 1 ⊙ 1 - 1/3 1 ⊗ 1) - 2μ n ⊗ n)
-            
+
     Arguments
     ---------
     dε : ndarray

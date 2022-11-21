@@ -34,7 +34,11 @@ from ..tools import force
 
 class CharacteristicCurve(Job):
     def __init__(
-        self, steps, boundary, items=None, callback=lambda stepnumber, substepnumber, substep: None
+        self,
+        steps,
+        boundary,
+        items=None,
+        callback=lambda stepnumber, substepnumber, substep: None,
     ):
 
         super().__init__(steps, self._callback)
@@ -47,7 +51,7 @@ class CharacteristicCurve(Job):
         self._cb = callback
 
     def _callback(self, stepnumber, substepnumber, substep):
-        
+
         if self.items is not None:
             fun = sum([item.results.force for item in self.items])
         else:
@@ -85,10 +89,10 @@ class CharacteristicCurve(Job):
             x = self.x
         if y is None:
             y = self.y
-        
+
         x = np.array(x)
         y = np.array(y)
-        
+
         if gradient:
             y = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
             z = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)

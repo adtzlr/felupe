@@ -111,7 +111,7 @@ def test_curve_custom_items():
     curve = fem.CharacteristicCurve(
         steps=[step], items=step.items, boundary=step.boundaries["move"]
     )
-    curve.plot(xaxis=0, yaxis=0)
+    curve.plot(xaxis=0, yaxis=0, gradient=True)
     curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
 
     stretch = 1 + np.array(curve.x)[:, 0]

@@ -27,17 +27,23 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ..dof import Boundary
 from ._job import Job
 from ..tools import force
 
 
 class CharacteristicCurve(Job):
     def __init__(
-        self, steps, boundary, callback=lambda stepnumber, substepnumber, substep: None
+        self,
+        steps,
+        boundary,
+        items=None,
+        callback=lambda stepnumber, substepnumber, substep: None,
     ):
 
         super().__init__(steps, self._callback)
 
+        self.items = items
         self.boundary = boundary
         self.x = []
         self.y = []
@@ -46,20 +52,28 @@ class CharacteristicCurve(Job):
 
     def _callback(self, stepnumber, substepnumber, substep):
 
+        if self.items is not None:
+            fun = sum([item.results.force for item in self.items])
+        else:
+            fun = substep.fun
+
         self.x.append(substep.x[0].values[self.boundary.points[0]])
-        self.y.append(force(substep.x, substep.fun, self.boundary))
+        self.y.append(force(substep.x, fun, self.boundary))
         self.res = substep
 
         self._cb(stepnumber, substepnumber, substep)
 
     def plot(
         self,
+        x=None,
+        y=None,
         xaxis=0,
         yaxis=0,
         xlabel="x",
         ylabel="y",
         xscale=1,
         yscale=1,
+        gradient=False,
         fig=None,
         ax=None,
         linestyle=".-",
@@ -71,8 +85,19 @@ class CharacteristicCurve(Job):
         if self.res is None:
             self.evaluate(**kwargs)
 
-        x = np.array(self.x)
-        y = np.array(self.y)
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+
+        x = np.array(x)
+        y = np.array(y)
+
+        if gradient:
+            y = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
+            z = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
+            cuttoff = np.mean(abs(z[:, yaxis])) + 2 * np.std(abs(z[:, yaxis]))
+            y[abs(z) > cuttoff] = np.nan
 
         if fig is None or ax is None:
             fig, ax = plt.subplots()

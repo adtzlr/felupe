@@ -1,9 +1,9 @@
 [project]
 name = "felupe"
-version = "6.0.0"
+version = "6.1.0"
 description = "Finite Element Analysis"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 license = {file = "LICE7SE"}
 keywords = [
   "python", 

@@ -80,6 +80,7 @@ def test_curve():
 
     curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
     curve.plot(xaxis=0, yaxis=0)
+    curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
 
     stretch = 1 + np.array(curve.x)[:, 0]
     area = 1**2 * np.pi
@@ -103,9 +104,27 @@ def test_curve2():
     assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
 
 
+def test_curve_custom_items():
+
+    field, step = pre()
+
+    curve = fem.CharacteristicCurve(
+        steps=[step], items=step.items, boundary=step.boundaries["move"]
+    )
+    curve.plot(xaxis=0, yaxis=0, gradient=True)
+    curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
+
+    stretch = 1 + np.array(curve.x)[:, 0]
+    area = 1**2 * np.pi
+    force = (stretch - 1 / stretch**2) * area
+
+    assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
+
+
 if __name__ == "__main__":
     test_job()
     test_job_xdmf()
     test_job_xdmf_global_field()
     test_curve()
     test_curve2()
+    test_curve_custom_items()

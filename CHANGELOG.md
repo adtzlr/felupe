@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Enhance plotting with custom `x`- and `y`-data in `CharacteristicCurve.plot(x, y)` and allow a list of items for force evaluation in `CharacteristicCurve(items=[...])` to be passed.
+
 ## [6.0.0] - 2022-11-20
 
 ### Added

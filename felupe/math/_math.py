@@ -30,7 +30,25 @@ import numpy as np
 
 def linsteps(points, num=10):
 
-    ls = np.linspace(points[:-1], points[1:], num=num, endpoint=False, axis=1).ravel()
-    ls_with_endpoint = np.append(ls, points[-1])
+    points = np.array(points).ravel()
+    start = points[:-1]
+    end = points[1:]
+    num = np.array([num]).ravel()
 
-    return ls_with_endpoint
+    if len(num) == 1:
+        num = np.tile(num, max(1, len(start)))
+
+    num = np.pad(num, (0, max(0, len(start) - len(num))), mode="edge")
+
+    steplist = [
+        np.linspace(a, b, n, endpoint=False) for a, b, n in zip(start, end, num)
+    ]
+    if len(steplist) > 0:
+        steps = np.concatenate(
+            [np.linspace(a, b, n, endpoint=False) for a, b, n in zip(start, end, num)]
+        )
+    else:
+        steps = np.array([])
+    steps_with_endpoint = np.append(steps, points[-1])
+
+    return steps_with_endpoint

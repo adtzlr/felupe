@@ -93,7 +93,7 @@ class UserMaterial:
 
 
 class UserMaterialStrain:
-    """A strain-based user-defined material definition with a given functions
+    """A strain-based user-defined material definition with a given function
     for the stress tensor and the (fourth-order) elasticity tensor.
 
     Take this code-block from the linear-elastic material formulation

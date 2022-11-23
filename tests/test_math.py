@@ -140,6 +140,24 @@ def test_math():
     fe.math.trace(C)
 
 
+def test_math_linsteps():
+
+    steps = fe.math.linsteps([0, 1], num=10)
+    assert len(steps) == 11
+
+    steps = fe.math.linsteps([0, 1, 0], num=(10, 100))
+    assert len(steps) == 111
+
+    steps = fe.math.linsteps([1], num=0)
+    assert len(steps) == 1
+    assert steps[-1] == 1
+
+    steps = fe.math.linsteps([1], num=(0, 1))
+    assert len(steps) == 1
+    assert steps[-1] == 1
+
+
 if __name__ == "__main__":
     test_math()
     test_math_field()
+    test_math_linsteps()

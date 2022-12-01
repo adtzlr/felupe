@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Enhance plotting with custom `x`- and `y`-data in `CharacteristicCurve.plot(x, y)` and allow a list of items for force evaluation in `CharacteristicCurve(items=[...])` to be passed.
 - Enhance `math.linsteps(points=[0, 5, 0], num=[5, 10])` by supporting a list of substeps.
+- Enhance compression of shear loadcase: Apply the compression on the bottom and the top `dof.shear(compression=(0, 0))`.
 
 ## [6.0.0] - 2022-11-20
 

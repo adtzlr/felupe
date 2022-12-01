@@ -130,7 +130,7 @@ def planar(field, right=1, move=0.2, clamped=False):
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def shear(field, bottom=0, top=1, move=0.2, compression=0.0, sym=True):
+def shear(field, bottom=0, top=1, move=0.2, compression=(0, 0), sym=True):
     """Define boundaries for shear loading between two clamped plates. The
     bottom plate remains fixed while the shear is applied at the top plate."""
 
@@ -142,8 +142,13 @@ def shear(field, bottom=0, top=1, move=0.2, compression=0.0, sym=True):
         bounds = {}
 
     bounds["bottom"] = Boundary(f, fy=bottom, skip=(0, 1, 0))
-    bounds["compression"] = Boundary(f, fy=bottom, skip=(1, 0, 1), value=compression)
-    bounds["top"] = Boundary(f, fy=top, skip=(1, 0, 0))
+    bounds["top"] = Boundary(f, fy=top, skip=(1, 1, 0))
+    bounds["compression_bottom"] = Boundary(
+        f, fy=bottom, skip=(1, 0, 1), value=compression[0]
+    )
+    bounds["compression_top"] = Boundary(
+        f, fy=top, skip=(1, 0, 1), value=-compression[1]
+    )
     bounds["move"] = Boundary(f, fy=top, skip=(0, 1, 1), value=move)
 
     dof0, dof1 = partition(field, bounds)

@@ -87,6 +87,7 @@ from .mesh import (
 )
 from .constitution import (
     UserMaterial,
+    UserMaterialHyperelastic,
     UserMaterialStrain,
     NeoHooke,
     OgdenRoxburgh,

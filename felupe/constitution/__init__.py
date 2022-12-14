@@ -16,6 +16,7 @@ from ._models_pseudo_elasticity import (
 
 from ._user_materials import (
     UserMaterial,
+    UserMaterialHyperelastic,
     UserMaterialStrain,
     LinearElasticPlasticIsotropicHardening,
 )

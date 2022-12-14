@@ -39,6 +39,7 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
+  "tensortrax",
 ]
 
 [project.optional-dependencies]

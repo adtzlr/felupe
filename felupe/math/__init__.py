@@ -38,3 +38,4 @@ from ._field import (
 
 from ._spatial import rotation_matrix
 from ._math import linsteps
+import tensortrax.math as ad

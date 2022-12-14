@@ -98,7 +98,22 @@ class UserMaterial:
 
 class UserMaterialHyperelastic(UserMaterial):
     """A user-defined hyperelastic material definition with a given function
-    for the strain energy function with Automatic Differentiation."""
+    for the strain energy function with Automatic Differentiation.
+
+    Take this code-block as template:
+
+    ..  code-block::
+
+        from felupe.math import ad
+
+        def neo_hooke(C, mu):
+            "Strain energy function of the Neo-Hookean material formulation."
+            return mu / 2 * (ad.linalg.det(C) ** (-1/3) * ad.trace(C) - 3)
+
+        umat = fem.UserMaterialHyperelastic(neo_hooke, mu=1)
+
+
+    """
 
     def __init__(self, fun, parallel=False, **kwargs):
         self.fun = fun

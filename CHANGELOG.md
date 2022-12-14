@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add Total-Lagrange `UserMaterialHyperelastic(fun, parallel=False, **kwargs)` based on `tensortrax`.
+
 ## [6.1.0] - 2022-12-10
 
 ### Changed

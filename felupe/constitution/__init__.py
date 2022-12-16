@@ -2,6 +2,13 @@ from ._models_hyperelasticity import (
     NeoHooke,
 )
 
+from ._models_hyperelasticity_ad import (
+    neo_hooke,
+    yeoh,
+    third_order_deformation,
+    ogden,
+)
+
 from ._models_linear_elasticity import (
     LinearElastic,
     LinearElasticTensorNotation,

@@ -2,6 +2,17 @@ from ._models_hyperelasticity import (
     NeoHooke,
 )
 
+try:
+    from ._models_hyperelasticity_ad import (
+        isochoric_volumetric_split,
+        neo_hooke,
+        yeoh,
+        third_order_deformation,
+        ogden,
+    )
+except:
+    pass
+
 from ._models_linear_elasticity import (
     LinearElastic,
     LinearElasticTensorNotation,

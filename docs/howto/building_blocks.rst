@@ -77,7 +77,7 @@ Next, the field is added to a field container, which handles one or several (vec
 Constitution
 ~~~~~~~~~~~~
 
-The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a very basic constitutive library (Neo-Hooke, linear elasticity and a Hu-Washizu (u,p,J) three field variation). Alternatively, an isotropic material formulation is defined by a strain energy density function - both variation (stress) and linearization (elasticity) are carried out by automatic differentiation using `matadi <https://github.com/adtzlr/matadi)>`_. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model.
+The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a very basic hard-coded constitutive library (Neo-Hooke, linear elasticity and a generalized Hu-Washizu (u,p,J) three field variation). Alternatively, an isotropic material formulation is defined by a strain energy density function - both variation (stress) and linearization (elasticity) are carried out by automatic differentiation using `tensortrax <https://github.com/adtzlr/tensortrax)>`_. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model.
 
 .. math::
 
@@ -86,8 +86,7 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
 ..  code-block:: python
 
-    import matadi
-    from matadi.math import det, transpose, trace
+    from tensortrax.math import det, transpose, trace
 
     def W(F, mu, bulk):
         "Neo-Hooke"
@@ -97,7 +96,7 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
         return mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 
-    umat = matadi.MaterialHyperelastic(W, mu=1.0, bulk=2.0)
+    umat = felupe.UserMaterialHyperelastic(W, mu=1.0, bulk=2.0)
 
     P = umat.gradient
     A = umat.hessian

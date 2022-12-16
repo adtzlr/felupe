@@ -15,3 +15,4 @@ How-To Guides
    howto/forms
    howto/solid
    howto/umat
+   howto/umat_hyperelasticity

@@ -88,15 +88,15 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
 ..  code-block:: python
 
-    from tensortrax.math import det, transpose, trace
+    import tensortrax.math as tm
 
     def W(F, mu, bulk):
         "Neo-Hooke"
 
-        J = det(F)
-        C = transpose(F) @ F
+        J = tm.linalg.det(F)
+        C = tm.transpose(F) @ F
 
-        return mu / 2 * (J ** (-2 / 3) * trace(C) - 3) + bulk * (J - 1) ** 2 / 2
+        return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 
     umat = felupe.UserMaterialHyperelastic(W, mu=1.0, bulk=2.0)
 
@@ -225,7 +225,7 @@ Alternatively, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 
-    res = fem.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = felupe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
     field = res.x
 
 

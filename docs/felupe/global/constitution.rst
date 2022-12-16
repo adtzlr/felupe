@@ -50,6 +50,19 @@ Constitution
 
 .. autofunction:: felupe.constitution.linear_elastic_plastic_isotropic_hardening
 
+.. autoclass:: felupe.UserMaterialHyperelastic
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autofunction:: felupe.constitution.neo_hooke
+
+.. autofunction:: felupe.constitution.yeoh
+
+.. autofunction:: felupe.constitution.third_order_deformation
+
+.. autofunction:: felupe.constitution.ogden
+
 .. autoclass:: felupe.LineChange
    :members:
    :undoc-members:

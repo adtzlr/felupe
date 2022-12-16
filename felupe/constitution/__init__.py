@@ -2,12 +2,15 @@ from ._models_hyperelasticity import (
     NeoHooke,
 )
 
-from ._models_hyperelasticity_ad import (
-    neo_hooke,
-    yeoh,
-    third_order_deformation,
-    ogden,
-)
+try:
+    from ._models_hyperelasticity_ad import (
+        neo_hooke,
+        yeoh,
+        third_order_deformation,
+        ogden,
+    )
+except:
+    pass
 
 from ._models_linear_elasticity import (
     LinearElastic,

@@ -28,6 +28,8 @@ Start setting up a problem in FElupe by the creation of a numeric **Region** wit
 
 ..  code-block:: python
 
+    import felupe
+
     mesh = felupe.Cube(n=9)
     element = felupe.Hexahedron()
     quadrature = felupe.GaussLegendre(order=1, dim=3)

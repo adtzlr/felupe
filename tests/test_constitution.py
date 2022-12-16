@@ -296,10 +296,21 @@ def test_umat_hyperelastic():
     def neo_hooke(C, mu=1):
         return mu / 2 * (tm.linalg.det(C) ** (-1 / 3) * tm.trace(C) - 3)
 
-    umat = fe.UserMaterialHyperelastic(neo_hooke, mu=1)
+    for model, kwargs in [
+        (neo_hooke, {"mu": 1}),
+        (fe.constitution.neo_hooke, {"mu": 1}),
+        (fe.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}),
+        (
+            fe.constitution.third_order_deformation,
+            {"C10": 0.5, "C01": 0.1, "C11": 0.01, "C20": -0.1, "C30": 0.02},
+        ),
+        (fe.constitution.ogden, {"mu": [1], "alpha": [1.7]}),
+    ]:
 
-    s, statevars_new = umat.gradient([F, None])
-    dsde = umat.hessian([F, None])
+        umat = fe.UserMaterialHyperelastic(model, **kwargs)
+
+        s, statevars_new = umat.gradient([F, None])
+        dsde = umat.hessian([F, None])
 
 
 def test_umat_strain():

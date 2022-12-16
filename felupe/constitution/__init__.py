@@ -4,6 +4,7 @@ from ._models_hyperelasticity import (
 
 try:
     from ._models_hyperelasticity_ad import (
+        isochoric_volumetric_split,
         neo_hooke,
         yeoh,
         third_order_deformation,

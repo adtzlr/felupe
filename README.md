@@ -65,7 +65,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 
 | **Package** |                     **Description**                     |                **Link**               |
 |:-----------:|:-------------------------------------------------------:|:-------------------------------------:|
-|  tensortrax |    Math on (Hyper-Dual) Tensors with Trailing Axes.     |  https://github.com/adtzlr/tensortrax |
+|  tensortrax |     Math on (Hyper-Dual) Tensors with Trailing Axes     |  https://github.com/adtzlr/tensortrax |
 |    matADi   | Material Definition with Automatic Differentiation (AD) |    https://github.com/adtzlr/matadi   |
 |    FEplot   |             A visualization tool for FElupe             | https://github.com/ZAARAOUI999/feplot |
 

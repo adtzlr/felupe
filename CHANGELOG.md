@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.2.0] - 2022-12-16
+
 ### Added
 - Add Total-Lagrange `UserMaterialHyperelastic(fun, parallel=False, **kwargs)` based on optional `tensortrax`. Only available if `tensortrax` is installed.
 - Add constitutive isotropic hyperelastic model formulations to be used with `UserMaterialHyperelastic()` (`constitution.ogden(C, mu, alpha)`, etc.).

@@ -39,7 +39,6 @@ classifiers = [
 dependencies = [
   "numpy",
   "scipy",
-  "tensortrax",
 ]
 
 [project.optional-dependencies]
@@ -49,6 +48,7 @@ all = [
     "numba",
     "sparse",
     "einsumt",
+    "tensortrax",
 ]
 
 [project.urls]

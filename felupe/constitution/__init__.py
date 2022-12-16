@@ -16,10 +16,16 @@ from ._models_pseudo_elasticity import (
 
 from ._user_materials import (
     UserMaterial,
-    UserMaterialHyperelastic,
     UserMaterialStrain,
     LinearElasticPlasticIsotropicHardening,
 )
+
+try:
+    from ._user_materials_hyperelastic import (
+        UserMaterialHyperelastic,
+    )
+except:
+    pass
 
 from ._user_materials_models import (
     linear_elastic,

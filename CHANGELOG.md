@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.2.1] - 2022-12-19
+
+### Fixed
+- Fix version string.
+
 ## [6.2.0] - 2022-12-16
 
 ### Added

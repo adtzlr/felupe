@@ -100,6 +100,13 @@ from .constitution import (
     AreaChange,
     VolumeChange,
 )
+
+try:
+    from .constitution import (
+        UserMaterialHyperelastic,
+    )
+except:
+    pass
 from .tools import (
     newtonrhapson,
     save,

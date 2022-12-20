@@ -1,6 +1,6 @@
 [project]
 name = "felupe"
-version = "6.2.1"
+version = "6.2.2"
 description = "Finite Element Analysis"
 readme = "README.md"
 requires-python = ">=3.7"

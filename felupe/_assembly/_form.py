@@ -31,14 +31,15 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import numpy as np
 from threading import Thread
 
-from ._base import IntegralForm
-from ._mixed import IntegralFormMixed
+import numpy as np
 
 from .._basis import Basis, BasisMixed
-from .._field import Field, FieldContainer as FieldMixed
+from .._field import Field
+from .._field import FieldContainer as FieldMixed
+from ._base import IntegralForm
+from ._mixed import IntegralFormMixed
 
 
 class LinearForm:

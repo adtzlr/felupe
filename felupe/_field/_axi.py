@@ -26,8 +26,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from ._base import Field
+
 from ..math import sym as symmetric
+from ._base import Field
 
 
 class FieldAxisymmetric(Field):

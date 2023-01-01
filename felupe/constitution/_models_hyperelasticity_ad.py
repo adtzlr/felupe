@@ -27,8 +27,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from functools import wraps
 
+from tensortrax.math import sum as sum1
+from tensortrax.math import trace
 from tensortrax.math._linalg import det, eigvalsh
-from tensortrax.math import trace, sum as sum1
 
 
 def isochoric_volumetric_split(fun):

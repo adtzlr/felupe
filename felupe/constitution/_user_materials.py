@@ -27,13 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import (
-    identity,
-    sym,
-    ravel,
-    reshape,
-)
-
+from ..math import identity, ravel, reshape, sym
 from ._models_linear_elasticity import lame_converter
 from ._user_materials_models import linear_elastic_plastic_isotropic_hardening
 

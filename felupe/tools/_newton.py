@@ -29,12 +29,12 @@ import inspect
 from time import perf_counter
 
 import numpy as np
-from scipy.sparse.linalg import spsolve
 from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import spsolve
 
-from ..math import norm
-from .._assembly import IntegralFormMixed
 from .. import solve as fesolve
+from .._assembly import IntegralFormMixed
+from ..math import norm
 
 
 class Result:

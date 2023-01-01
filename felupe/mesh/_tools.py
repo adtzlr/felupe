@@ -27,9 +27,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._mesh import Mesh
-from ._helpers import mesh_or_data
 from ..math import rotation_matrix
+from ._helpers import mesh_or_data
+from ._mesh import Mesh
 
 
 @mesh_or_data

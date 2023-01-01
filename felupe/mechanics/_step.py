@@ -27,7 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..dof import partition, apply
+from ..dof import apply, partition
 from ..tools import newtonrhapson
 
 

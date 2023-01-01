@@ -1,40 +1,30 @@
+from numpy import sqrt
+
+from ._field import defgrad, extract, grad, interpolate, norm, strain, values
+from ._math import linsteps
+from ._spatial import rotation_matrix
 from ._tensor import (
-    identity,
-    det,
-    inv,
-    dya,
     cdya,
     cdya_ik,
     cdya_il,
-    dev,
     cof,
+    cross,
+    ddot,
+    det,
+    dev,
+    dot,
+    dya,
     eig,
     eigh,
     eigvals,
     eigvalsh,
-    transpose,
+    identity,
+    inv,
     majortranspose,
-    trace,
-    cross,
-    dot,
-    ddot,
-    tovoigt,
-    sym,
-    reshape,
     ravel,
+    reshape,
+    sym,
+    tovoigt,
+    trace,
+    transpose,
 )
-
-from numpy import sqrt
-
-from ._field import (
-    defgrad,
-    strain,
-    extract,
-    values,
-    norm,
-    interpolate,
-    grad,
-)
-
-from ._spatial import rotation_matrix
-from ._math import linsteps

@@ -31,6 +31,7 @@ try:
     from einsumt import einsumt
 except:
     from numpy import einsum as einsumt
+
 from scipy.sparse import csr_matrix as sparsematrix
 
 
@@ -235,7 +236,8 @@ class IntegralForm:
 
 
 try:
-    from numba import jit as numba_jit, prange
+    from numba import jit as numba_jit
+    from numba import prange
 
     jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
 

@@ -27,8 +27,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._field._base import Field
 from .._field._axi import FieldAxisymmetric
+from .._field._base import Field
 from ._base import IntegralForm
 
 

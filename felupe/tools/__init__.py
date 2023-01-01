@@ -1,17 +1,8 @@
 from ._check import check
-from ._solve import solve
-from ._post import (
-    force,
-    moment,
-    curve,
-)
-from ._newton import (
-    newtonrhapson,
-    fun_items as fun,
-    jac_items as jac,
-)
-from ._project import (
-    topoints,
-    project,
-)
+from ._newton import fun_items as fun
+from ._newton import jac_items as jac
+from ._newton import newtonrhapson
+from ._post import curve, force, moment
+from ._project import project, topoints
 from ._save import save
+from ._solve import solve

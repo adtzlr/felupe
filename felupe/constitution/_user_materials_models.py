@@ -27,14 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import (
-    trace,
-    identity,
-    cdya_ik,
-    dya,
-    ddot,
-    sqrt,
-)
+from ..math import cdya_ik, ddot, dya, identity, sqrt, trace
 
 
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):

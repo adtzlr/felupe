@@ -28,16 +28,16 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import (
-    dot,
-    ddot,
-    transpose,
-    inv,
-    dya,
     cdya_ik,
     cdya_il,
+    ddot,
     det,
+    dot,
+    dya,
     identity,
+    inv,
     trace,
+    transpose,
 )
 
 

@@ -25,9 +25,10 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pytest
-import felupe as fe
 import numpy as np
+import pytest
+
+import felupe as fe
 
 
 def test_simple():

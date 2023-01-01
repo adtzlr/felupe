@@ -27,30 +27,27 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._region import Region
-from ._boundary import RegionBoundary
 from ..element import (
-    ConstantQuad,
-    Quad,
+    ArbitraryOrderLagrange,
     ConstantHexahedron,
+    ConstantQuad,
     Hexahedron,
+    Quad,
     QuadraticHexahedron,
-    TriQuadraticHexahedron,
-    Triangle,
+    QuadraticTetra,
     QuadraticTriangle,
     Tetra,
-    QuadraticTetra,
-    TriangleMINI,
     TetraMINI,
-    ArbitraryOrderLagrange,
-)
-from ..quadrature import (
-    GaussLegendre,
-    GaussLegendreBoundary,
-    Triangle as TriangleQuadrature,
-    Tetrahedron as TetraQuadrature,
+    Triangle,
+    TriangleMINI,
+    TriQuadraticHexahedron,
 )
 from ..mesh import Mesh
+from ..quadrature import GaussLegendre, GaussLegendreBoundary
+from ..quadrature import Tetrahedron as TetraQuadrature
+from ..quadrature import Triangle as TriangleQuadrature
+from ._boundary import RegionBoundary
+from ._region import Region
 
 
 class RegionConstantQuad(Region):

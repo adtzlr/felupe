@@ -1,4 +1,1 @@
-from ._solve import (
-    partition,
-    solve,
-)
+from ._solve import partition, solve

@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.2.4] - 2023-01-01
+
+### Changed
+- Update actions used in CI/CD workflows.
+
 ## [6.2.3] - 2023-01-01
 
 ### Changed

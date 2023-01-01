@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.2.3] - 2023-01-01
+
+### Changed
+- Remove `setup.cfg`, change `pyproject.toml` and store the version tag only once within the source code (`__about__.py`).
+
 ## [6.2.2] - 2022-12-20
 
 ### Fixed

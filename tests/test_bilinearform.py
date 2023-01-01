@@ -26,8 +26,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import pytest
-import felupe as fe
 
+import felupe as fe
 from felupe.math import ddot, dot, dya
 
 

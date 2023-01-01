@@ -25,8 +25,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import numpy as np
 from string import ascii_lowercase
+
+import numpy as np
 
 from . import Scheme
 

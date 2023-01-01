@@ -25,10 +25,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from copy import deepcopy as copy
+from string import ascii_lowercase as alphabet
+
 import numpy as np
 from scipy.special import factorial
-from string import ascii_lowercase as alphabet
-from copy import deepcopy as copy
 
 from ._base import Element
 

@@ -32,16 +32,7 @@ try:
 except:
     from numpy import einsum as einsumt
 
-from ..math import (
-    transpose,
-    dot,
-    inv,
-    dya,
-    cdya_ik,
-    cdya_il,
-    det,
-    identity,
-)
+from ..math import cdya_ik, cdya_il, det, dot, dya, identity, inv, transpose
 
 
 class LineChange:

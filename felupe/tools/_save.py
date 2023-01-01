@@ -27,7 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import dot, transpose, det, eigvalsh
+from ..math import det, dot, eigvalsh, transpose
 from . import topoints
 
 

@@ -26,8 +26,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+
+from ._base import cube_hexa, line_line, rectangle_quad
 from ._mesh import Mesh
-from ._base import cube_hexa, rectangle_quad, line_line
 
 
 class Line(Mesh):

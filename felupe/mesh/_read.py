@@ -25,8 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from ._mesh import Mesh
 from ._container import MeshContainer
+from ._mesh import Mesh
 
 
 def read(

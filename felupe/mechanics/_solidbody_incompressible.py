@@ -27,12 +27,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._helpers import StateNearlyIncompressible
 from .._assembly import IntegralFormMixed
 from .._field import FieldAxisymmetric
 from ..constitution import AreaChange
-from ..math import dot, transpose, det, dya, ddot
-from ._helpers import Assemble, Evaluate, Results
+from ..math import ddot, det, dot, dya, transpose
+from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 
 
 class SolidBodyNearlyIncompressible:

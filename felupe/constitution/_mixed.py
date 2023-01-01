@@ -27,16 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import (
-    ddot,
-    transpose,
-    inv,
-    dya,
-    cdya_ik,
-    cdya_il,
-    det,
-    identity,
-)
+from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
 
 
 class ThreeFieldVariation:

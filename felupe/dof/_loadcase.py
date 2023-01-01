@@ -28,7 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._boundary import Boundary
-from ._tools import partition, apply
+from ._tools import apply, partition
 
 
 def _get_first_field(field):

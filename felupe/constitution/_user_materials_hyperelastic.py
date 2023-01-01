@@ -28,12 +28,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 
+from ..math import cdya_ik, dot, transpose
 from ._user_materials import UserMaterial
-from ..math import (
-    dot,
-    transpose,
-    cdya_ik,
-)
 
 
 class UserMaterialHyperelastic(UserMaterial):

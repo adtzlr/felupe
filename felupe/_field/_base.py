@@ -25,9 +25,12 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import numpy as np
 from copy import deepcopy
-from ..math import identity, sym as symmetric
+
+import numpy as np
+
+from ..math import identity
+from ..math import sym as symmetric
 from ._indices import Indices
 
 

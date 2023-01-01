@@ -6,6 +6,7 @@ Created on Sun Aug 21 00:27:38 2022
 """
 
 import numpy as np
+
 import felupe as fem
 
 

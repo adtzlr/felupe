@@ -24,8 +24,9 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import pytest
 import numpy as np
+import pytest
+
 import felupe as fe
 
 
@@ -251,7 +252,7 @@ def test_umat():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
-    from felupe.math import dya, cdya, sym, trace, identity
+    from felupe.math import cdya, dya, identity, sym, trace
 
     def stress(x, mu, lmbda):
         "Evaluate the user-defined linear-elastic stress tensor."

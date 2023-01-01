@@ -1,135 +1,103 @@
+from . import (
+    constitution,
+    dof,
+    element,
+    math,
+    mechanics,
+    mesh,
+    quadrature,
+    region,
+    solve,
+    tools,
+)
 from .__about__ import __version__
-from . import math
-from . import mesh
-from . import quadrature
-from . import dof
-from . import element
-from . import tools
-from . import constitution
-from . import solve
-from . import region
-from . import mechanics
-
-from .region import (
-    Region,
-    RegionBoundary,
-    RegionQuad,
-    RegionHexahedron,
-    RegionQuadBoundary,
-    RegionHexahedronBoundary,
-    RegionConstantQuad,
-    RegionConstantHexahedron,
-    RegionQuadraticHexahedron,
-    RegionTriQuadraticHexahedron,
-    RegionTriangle,
-    RegionTetra,
-    RegionQuadraticTriangle,
-    RegionQuadraticTetra,
-    RegionTriangleMINI,
-    RegionTetraMINI,
-    RegionLagrange,
-)
+from ._assembly import Form
 from ._assembly import (
-    # IntegralForm,
-    IntegralFormMixed as IntegralForm,
-    # IntegralFormAxisymmetric,
-    # LinearForm,
-    # BilinearForm,
-    # LinearFormMixed as LinearForm,
-    # BilinearFormMixed as BilinearForm,
-    # BaseForm,
-    Form,
+    IntegralFormMixed as IntegralForm,  # IntegralForm,; IntegralFormAxisymmetric,; LinearForm,; BilinearForm,; LinearFormMixed as LinearForm,; BilinearFormMixed as BilinearForm,; BaseForm,
 )
-from ._basis import (
-    BasisMixed as Basis,
-)
+from ._basis import BasisMixed as Basis
 from ._field import (
     Field,
     FieldAxisymmetric,
-    FieldPlaneStrain,
     FieldContainer,
+    FieldPlaneStrain,
     FieldsMixed,
 )
-from .dof import Boundary
-from .element import (
-    Line,
-    #
-    Quad,
-    ConstantQuad,
-    #
-    ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement,
-    #
-    Hexahedron,
-    ConstantHexahedron,
-    QuadraticHexahedron,
-    TriQuadraticHexahedron,
-    #
-    Triangle,
-    TriangleMINI,
-    QuadraticTriangle,
-    #
-    Tetra,
-    TetraMINI,
-    QuadraticTetra,
-)
-from .quadrature import (
-    GaussLegendre,
-    GaussLegendreBoundary,
-    Triangle as TriangleQuadrature,
-    Tetrahedron as TetrahedronQuadrature,
-)
-from .mesh import (
-    Mesh,
-    MeshContainer,
-    Rectangle,
-    Cube,
-    Grid,
-)
 from .constitution import (
+    AreaChange,
+    LinearElastic,
+    LinearElasticPlaneStrain,
+    LinearElasticPlaneStress,
+    LinearElasticPlasticIsotropicHardening,
+    LineChange,
+    NeoHooke,
+    OgdenRoxburgh,
+    ThreeFieldVariation,
     UserMaterial,
     UserMaterialHyperelastic,
     UserMaterialStrain,
-    NeoHooke,
-    OgdenRoxburgh,
-    LinearElastic,
-    LinearElasticPlaneStress,
-    LinearElasticPlaneStrain,
-    LinearElasticPlasticIsotropicHardening,
-    ThreeFieldVariation,
-    LineChange,
-    AreaChange,
     VolumeChange,
 )
+from .dof import Boundary
+from .element import ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement
+from .element import (
+    ConstantHexahedron,
+    ConstantQuad,
+    Hexahedron,
+    Line,
+    Quad,
+    QuadraticHexahedron,
+    QuadraticTetra,
+    QuadraticTriangle,
+    Tetra,
+    TetraMINI,
+    Triangle,
+    TriangleMINI,
+    TriQuadraticHexahedron,
+)
+from .mesh import Cube, Grid, Mesh, MeshContainer, Rectangle
+from .quadrature import GaussLegendre, GaussLegendreBoundary
+from .quadrature import Tetrahedron as TetrahedronQuadrature
+from .quadrature import Triangle as TriangleQuadrature
+from .region import (
+    Region,
+    RegionBoundary,
+    RegionConstantHexahedron,
+    RegionConstantQuad,
+    RegionHexahedron,
+    RegionHexahedronBoundary,
+    RegionLagrange,
+    RegionQuad,
+    RegionQuadBoundary,
+    RegionQuadraticHexahedron,
+    RegionQuadraticTetra,
+    RegionQuadraticTriangle,
+    RegionTetra,
+    RegionTetraMINI,
+    RegionTriangle,
+    RegionTriangleMINI,
+    RegionTriQuadraticHexahedron,
+)
 
 try:
-    from .constitution import (
-        UserMaterialHyperelastic,
-    )
+    from .constitution import UserMaterialHyperelastic
 except:
     pass
-from .tools import (
-    newtonrhapson,
-    save,
-    topoints,
-    project,
-)
 from .mechanics import (
-    SolidBody,
-    SolidBodyNearlyIncompressible,
-    StateNearlyIncompressible,
-    SolidBodyPressure,
-    SolidBodyGravity,
-    PointLoad,
-    Step,
-    Job,
     CharacteristicCurve,
+    Job,
+    PointLoad,
+    SolidBody,
+    SolidBodyGravity,
+    SolidBodyNearlyIncompressible,
+    SolidBodyPressure,
+    StateNearlyIncompressible,
+    Step,
 )
+from .tools import newtonrhapson, project, save, topoints
 
 try:
-    from .mechanics import (
-        MultiPointConstraint,
-        MultiPointContact,
-    )
+    from .mechanics import MultiPointConstraint, MultiPointContact
 except:
     pass
 

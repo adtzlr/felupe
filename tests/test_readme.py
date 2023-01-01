@@ -93,7 +93,7 @@ def test_readme():
 
     felupe.save(region, field, filename="result.vtk")
 
-    from felupe.math import dot, det, transpose
+    from felupe.math import det, dot, transpose
 
     PK1 = P(F)[0]
     F = F[0]

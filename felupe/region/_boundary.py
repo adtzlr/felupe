@@ -28,8 +28,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import cross
-from ._region import Region
 from ..mesh import Mesh
+from ._region import Region
 
 
 class RegionBoundary(Region):

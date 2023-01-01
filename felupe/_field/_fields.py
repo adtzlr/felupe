@@ -24,24 +24,24 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from ._base import Field
-from ._axi import FieldAxisymmetric
-from ._planestrain import FieldPlaneStrain
-from ._container import FieldContainer
 from ..region._templates import (
-    RegionQuad,
-    RegionHexahedron,
-    RegionConstantQuad,
     RegionConstantHexahedron,
+    RegionConstantQuad,
+    RegionHexahedron,
+    RegionQuad,
     RegionQuadraticHexahedron,
-    RegionTriQuadraticHexahedron,
-    RegionTriangle,
-    RegionTetra,
-    RegionQuadraticTriangle,
     RegionQuadraticTetra,
-    RegionTriangleMINI,
+    RegionQuadraticTriangle,
+    RegionTetra,
     RegionTetraMINI,
+    RegionTriangle,
+    RegionTriangleMINI,
+    RegionTriQuadraticHexahedron,
 )
+from ._axi import FieldAxisymmetric
+from ._base import Field
+from ._container import FieldContainer
+from ._planestrain import FieldPlaneStrain
 
 
 class FieldsMixed(FieldContainer):

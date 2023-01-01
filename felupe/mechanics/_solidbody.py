@@ -29,7 +29,7 @@ import numpy as np
 
 from .._assembly import IntegralFormMixed
 from ..constitution import AreaChange
-from ..math import dot, transpose, det
+from ..math import det, dot, transpose
 from ._helpers import Assemble, Evaluate, Results
 
 

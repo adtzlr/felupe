@@ -26,9 +26,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from .. import __version__ as version
 
-from ..math import dot, transpose, eigvalsh, eigh, tovoigt
+from .. import __version__ as version
+from ..math import dot, eigh, eigvalsh, tovoigt, transpose
 
 
 def displacement(substep):

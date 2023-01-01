@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from copy import deepcopy
+
 import numpy as np
 
 from ._mesh import Mesh

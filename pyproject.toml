@@ -1,10 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.isort]
+profile = "black"
+
 [project]
 name = "felupe"
-version = "6.2.2"
+authors = [
+  {email = "a.dutzler@gmail.com"},
+  {name = "Andreas Dutzler"}
+]
 description = "Finite Element Analysis"
 readme = "README.md"
-requires-python = ">=3.7"
-license = {file = "LICE7SE"}
+license = {file = "LICENSE"}
 keywords = [
   "python", 
   "constitution",
@@ -13,12 +22,6 @@ keywords = [
   "finite-elements-analysis",
   "hyperelasticity", 
 ]
-
-authors = [
-  {email = "a.dutzler@gmail.com"},
-  {name = "Andreas Dutzler"}
-]
-
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python",
@@ -35,7 +38,8 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Mathematics",
   "Topic :: Utilities"
 ]
-
+dynamic = ["version"]
+requires-python = ">=3.7"
 dependencies = [
   "numpy",
   "scipy",
@@ -51,11 +55,10 @@ all = [
     "tensortrax",
 ]
 
-[project.urls]
-homepage = "https://felupe.readthedocs.io/en/latest"
-code = "https://github.com/adtzlr/felupe"
-issues = "https://github.com/adtzlr/felupe/issues"
+[tool.setuptools.dynamic]
+version = {attr = "felupe.__about__.__version__"}
 
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+[project.urls]
+Homepage = "https://felupe.readthedocs.io/en/latest"
+Code = "https://github.com/adtzlr/felupe"
+Issues = "https://github.com/adtzlr/felupe/issues"

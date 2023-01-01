@@ -34,7 +34,6 @@ from .constitution import (
     OgdenRoxburgh,
     ThreeFieldVariation,
     UserMaterial,
-    UserMaterialHyperelastic,
     UserMaterialStrain,
     VolumeChange,
 )

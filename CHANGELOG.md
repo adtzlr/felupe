@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.2.5] - 2023-01-02
+
+### Fixed
+- Once again fix init if `tensortrax` is not installed.
+
 ## [6.2.4] - 2023-01-01
 
 ### Changed

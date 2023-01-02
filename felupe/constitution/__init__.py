@@ -2,10 +2,15 @@ from ._models_hyperelasticity import NeoHooke
 
 try:
     from ._models_hyperelasticity_ad import (
+        arruda_boyce,
+        extended_tube,
         isochoric_volumetric_split,
+        mooney_rivlin,
         neo_hooke,
         ogden,
+        saint_venant_kirchhoff,
         third_order_deformation,
+        van_der_waals,
         yeoh,
     )
 except:

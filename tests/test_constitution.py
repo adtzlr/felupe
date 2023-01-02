@@ -299,13 +299,24 @@ def test_umat_hyperelastic():
 
     for model, kwargs in [
         (neo_hooke, {"mu": 1}),
+        (fe.constitution.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}),
         (fe.constitution.neo_hooke, {"mu": 1}),
+        (fe.constitution.mooney_rivlin, {"C10": 0.3, "C01": 0.8}),
         (fe.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}),
         (
             fe.constitution.third_order_deformation,
             {"C10": 0.5, "C01": 0.1, "C11": 0.01, "C20": -0.1, "C30": 0.02},
         ),
-        (fe.constitution.ogden, {"mu": [1], "alpha": [1.7]}),
+        (fe.constitution.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}),
+        (fe.constitution.arruda_boyce, {"C1": 1.0, "limit": 3.2}),
+        (
+            fe.constitution.extended_tube,
+            {"Gc": 0.1867, "Ge": 0.2169, "beta": 0.2, "delta": 0.09693},
+        ),
+        (
+            fe.constitution.van_der_waals,
+            {"mu": 1.0, "beta": 0.1, "a": 0.5, "limit": 5.0},
+        ),
     ]:
 
         umat = fe.UserMaterialHyperelastic(model, **kwargs)

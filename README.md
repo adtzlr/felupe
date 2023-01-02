@@ -73,7 +73,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 All notable changes to this project will be documented in [this file](CHANGELOG.md). The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # License
-FElupe - finite element analysis (C) 2022 Andreas Dutzler, Graz (Austria).
+FElupe - finite element analysis (C) 2023 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

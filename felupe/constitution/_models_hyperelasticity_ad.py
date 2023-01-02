@@ -27,6 +27,9 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from functools import wraps
 
+import numpy as np
+import tensortrax as tr
+from tensortrax.math import log, sqrt
 from tensortrax.math import sum as sum1
 from tensortrax.math import trace
 from tensortrax.math._linalg import det, eigvalsh
@@ -43,10 +46,26 @@ def isochoric_volumetric_split(fun):
     return apply_iso
 
 
+def saint_venant_kirchhoff(C, mu, lmbda):
+    """Strain energy function of the Saint Venant-Kirchhoff material formulation.
+    Here, ``I1`` and ``I2`` are strain invariants of the Green-Lagrange strain tensor."""
+    I1 = trace(C) / 2 - 3 / 2
+    I2 = trace(C @ C) / 4 - trace(C) / 2 + 3 / 4
+    return mu * I2 + lmbda * I1**2 / 2
+
+
 @isochoric_volumetric_split
 def neo_hooke(C, mu):
     "Strain energy function of the Neo-Hookean material formulation."
     return mu / 2 * (trace(C) - 3)
+
+
+@isochoric_volumetric_split
+def mooney_rivlin(C, C10, C01):
+    "Strain energy function of the Mooney-Rivlin material formulation."
+    I1 = trace(C)
+    I2 = (I1**2 - trace(C @ C)) / 2
+    return C10 * (I1 - 3) + C01 * (I2 - 3)
 
 
 @isochoric_volumetric_split
@@ -74,3 +93,43 @@ def ogden(C, mu, alpha):
     "Strain energy function of the Ogden material formulation."
     wC = eigvalsh(C)
     return sum1([2 * m / a**2 * (sum1(wC ** (a / 2)) - 3) for m, a in zip(mu, alpha)])
+
+
+@isochoric_volumetric_split
+def arruda_boyce(C, C1, limit):
+    "Strain energy function of the Arruda-Boyce material formulation."
+    I1 = trace(C)
+
+    alpha = [1 / 2, 1 / 20, 11 / 1050, 19 / 7000, 519 / 673750]
+    beta = 1 / limit**2
+
+    out = []
+    for i, a in enumerate(alpha):
+        j = i + 1
+        out.append(a * beta ** (2 * j - 2) * (I1**j - 3**j))
+
+    return C1 * sum1(out)
+
+
+@isochoric_volumetric_split
+def extended_tube(C, Gc, delta, Ge, beta):
+    "Strain energy function of the Extended-Tube material formulation."
+    D = trace(C)
+    wC = eigvalsh(C)
+    g = (1 - delta**2) * (D - 3) / (1 - delta**2 * (D - 3))
+    Wc = Gc / 2 * (g + log(1 - delta**2 * (D - 3)))
+    We = 2 * Ge / beta**2 * sum1(wC ** (-beta / 2) - 1)
+    return Wc + We
+
+
+@isochoric_volumetric_split
+def van_der_waals(C, mu, limit, a, beta):
+    "Strain energy function of the Van der Waals material formulation."
+    I1 = trace(C)
+    I2 = (trace(C) ** 2 - trace(C @ C)) / 2
+    I = (1 - beta) * I1 + beta * I2
+    I[np.isclose(tr.f(I), 3)] += 1e-8
+    eta = sqrt((I - 3) / (limit**2 - 3))
+    return mu * (
+        -(limit**2 - 3) * (log(1 - eta) + eta) - 2 / 3 * a * ((I - 3) / 2) ** (3 / 2)
+    )

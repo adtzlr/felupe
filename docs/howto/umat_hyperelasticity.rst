@@ -11,11 +11,11 @@ User materials based on the right Cauchy-Green deformation tensor, suitable for 
 
 and must return:
 
-+-------------+-----------------------------+
-| **Returns** | **Description**             |
-+-------------+-----------------------------+
-|      W      | strain energy function      |
-+-------------+-----------------------------+
++-------------+------------------------+
+| **Returns** | **Description**        |
++-------------+------------------------+
+|      W      | strain energy function |
++-------------+------------------------+
 
 ..  code-block:: python
 
@@ -34,10 +34,15 @@ This function is further added as the ``fun`` argument of :class:`felupe.UserMat
 
 FElupe contains several reference implementations of hyperelastic user material formulations
 
+* :func:`felupe.constitution.saint_venant_kirchhoff`
 * :func:`felupe.constitution.neo_hooke`
+* :func:`felupe.constitution.mooney_rivlin`
 * :func:`felupe.constitution.yeoh`
 * :func:`felupe.constitution.third_order_deformation`
 * :func:`felupe.constitution.ogden`
+* :func:`felupe.constitution.arruda_boyce`
+* :func:`felupe.constitution.extended_tube`
+* :func:`felupe.constitution.van_der_waals`
 
 as well as a function decorator for the multiplicative isochoric-volumetric split of the Deformation Gradient.
 

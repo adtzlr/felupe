@@ -55,13 +55,23 @@ Constitution
    :undoc-members:
    :inherited-members:
 
+.. autofunction:: felupe.constitution.saint_venant_kirchhoff
+
 .. autofunction:: felupe.constitution.neo_hooke
+
+.. autofunction:: felupe.constitution.mooney_rivlin
 
 .. autofunction:: felupe.constitution.yeoh
 
 .. autofunction:: felupe.constitution.third_order_deformation
 
 .. autofunction:: felupe.constitution.ogden
+
+.. autofunction:: felupe.constitution.arruda_boyce
+
+.. autofunction:: felupe.constitution.extended_tube
+
+.. autofunction:: felupe.constitution.van_der_waals
 
 .. autoclass:: felupe.LineChange
    :members:

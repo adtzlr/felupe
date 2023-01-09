@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add more hyperelastic material formulations: Saint Venant-Kirchhoff, Mooney-Rivlin, Arruda-Boyce, Extended Tube and Van der Waals.
 
+### Changed
+- Fix rotation matrix for a rotation around the y-axis.
+
 ## [6.2.5] - 2023-01-02
 
 ### Fixed

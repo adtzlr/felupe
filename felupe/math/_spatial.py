@@ -50,8 +50,8 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
     rotation_matrix = np.array([[np.cos(a), -np.sin(a)], [np.sin(a), np.cos(a)]])
 
     if dim == 3:
-        # rotation_matrix = np.pad(rotation_matrix, (1, 0))
-        # rotation_matrix[0, 0] = 1
+        if axis == 1:
+            rotation_matrix = rotation_matrix.T
         rotation_matrix = np.insert(rotation_matrix, [axis], np.zeros((1, 2)), axis=0)
         rotation_matrix = np.insert(rotation_matrix, [axis], np.zeros((3, 1)), axis=1)
         rotation_matrix[axis, axis] = 1

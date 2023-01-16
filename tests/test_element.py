@@ -72,6 +72,20 @@ def test_quad4():
     assert quad4.shape == dhdr.shape
 
 
+def test_quad9():
+    quad9 = fe.element.BiQuadraticQuad()
+
+    r = [-1, -1]
+
+    h = quad9.function(r)
+    dhdr = quad9.gradient(r)
+
+    assert h[0] == 1
+    assert np.all(dhdr[0] == -1.5)
+
+    assert quad9.shape == dhdr.shape
+
+
 def test_hex0():
     hex0 = fe.element.ConstantHexahedron()
 
@@ -240,6 +254,7 @@ if __name__ == "__main__":
 
     test_quad0()
     test_quad4()
+    test_quad9()
 
     test_hex0()
     test_hex8()

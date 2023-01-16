@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add more hyperelastic material formulations: Saint Venant-Kirchhoff, Mooney-Rivlin, Arruda-Boyce, Extended Tube and Van der Waals.
+- Add `BiQuadraticQuad` element (as a permuted version of `ArbitraryOrderLagrangeElement`).
 
 ### Changed
 - Fix rotation matrix for a rotation around the y-axis.

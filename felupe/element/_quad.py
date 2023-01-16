@@ -28,6 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._base import Element
+from ._lagrange import ArbitraryOrderLagrange
 
 
 class ConstantQuad(Element):
@@ -203,3 +204,31 @@ class Quad(Element):
             )
             * 0.25
         )
+
+
+class BiQuadraticQuad(Element):
+    def __init__(self):
+        super().__init__(shape=(9, 2))
+
+        self._lagrange = ArbitraryOrderLagrange(order=2, dim=2)
+
+        self._vertices = np.array([0, 2, 8, 6])
+        self._edges = np.array([1, 5, 7, 3])
+        self._faces = np.array([4])
+        self._volume = np.array([], dtype=int)
+
+        self._permute = np.concatenate(
+            (self._vertices, self._edges, self._faces, self._volume)
+        )
+
+        self.points = self._lagrange.points[self._permute]
+
+    def function(self, rst):
+        "quadratic quad shape functions"
+
+        return self._lagrange.function(rst)[self._permute]
+
+    def gradient(self, rst):
+        "quadratic quad gradient of shape functions"
+
+        return self._lagrange.gradient(rst)[self._permute, :]

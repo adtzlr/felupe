@@ -40,6 +40,7 @@ from .constitution import (
 from .dof import Boundary
 from .element import ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement
 from .element import (
+    BiQuadraticQuad,
     ConstantHexahedron,
     ConstantQuad,
     Hexahedron,

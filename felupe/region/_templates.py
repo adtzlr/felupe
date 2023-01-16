@@ -84,7 +84,13 @@ class RegionQuad(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True):
 
         element = Quad()
-        super().__init__(mesh, element, quadrature, grad=grad)
+
+        if len(mesh.cells.T) > 4:
+            m = Mesh(mesh.points, mesh.cells[:, :4], "quad")
+        else:
+            m = mesh
+
+        super().__init__(m, element, quadrature, grad=grad)
 
 
 class RegionQuadraticQuad(Region):
@@ -165,7 +171,13 @@ class RegionHexahedron(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=3), grad=True):
 
         element = Hexahedron()
-        super().__init__(mesh, element, quadrature, grad=grad)
+
+        if len(mesh.cells.T) > 8:
+            m = Mesh(mesh.points, mesh.cells[:, :8], "hexahedron")
+        else:
+            m = mesh
+
+        super().__init__(m, element, quadrature, grad=grad)
 
 
 class RegionHexahedronBoundary(RegionBoundary):

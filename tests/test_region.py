@@ -41,9 +41,11 @@ def test_region():
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
     r = fe.RegionQuadraticQuad(mesh2)
+    f = fe.FieldsMixed(r)
 
     mesh3 = fe.mesh.convert(mesh, 2, True, True, False)
     r = fe.RegionBiQuadraticQuad(mesh3)
+    f = fe.FieldsMixed(r)
 
     mesh.cell_type = "some_fancy_cell_type"
     with pytest.raises(NotImplementedError):
@@ -64,9 +66,11 @@ def test_region():
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
     r = fe.RegionQuadraticHexahedron(mesh2)
+    f = fe.FieldsMixed(r)
 
     mesh3 = fe.mesh.convert(mesh, 2, True, True, True)
     r = fe.RegionTriQuadraticHexahedron(mesh3)
+    f = fe.FieldsMixed(r)
 
     triangle = fe.Triangle()
     points = triangle.points

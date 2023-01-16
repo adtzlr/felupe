@@ -233,7 +233,13 @@ class RegionTriangle(Region):
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=1), grad=True):
 
         element = Triangle()
-        super().__init__(mesh, element, quadrature, grad=grad)
+
+        if len(mesh.cells.T) > 3:
+            m = Mesh(mesh.points, mesh.cells[:, :3], "triangle")
+        else:
+            m = mesh
+
+        super().__init__(m, element, quadrature, grad=grad)
 
 
 class RegionTetra(Region):
@@ -242,7 +248,13 @@ class RegionTetra(Region):
     def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True):
 
         element = Tetra()
-        super().__init__(mesh, element, quadrature, grad=grad)
+
+        if len(mesh.cells.T) > 4:
+            m = Mesh(mesh.points, mesh.cells[:, :4], "tetra")
+        else:
+            m = mesh
+
+        super().__init__(m, element, quadrature, grad=grad)
 
 
 class RegionTriangleMINI(Region):

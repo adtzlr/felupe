@@ -80,6 +80,7 @@ def test_region():
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
     r = fe.RegionQuadraticTriangle(mesh2)
+    f = fe.FieldsMixed(r)
 
     tetra = fe.Tetra()
     points = tetra.points
@@ -89,18 +90,21 @@ def test_region():
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
     r = fe.RegionQuadraticTetra(mesh2)
+    f = fe.FieldsMixed(r)
 
     triangle = fe.TriangleMINI()
     points = triangle.points
     cells = np.arange(4).reshape(1, -1)
     mesh = fe.Mesh(points, cells, "triangle-mini")
     r = fe.RegionTriangleMINI(mesh)
+    f = fe.FieldsMixed(r)
 
     tetra = fe.TetraMINI()
     points = tetra.points
     cells = np.arange(5).reshape(1, -1)
     mesh = fe.Mesh(points, cells, "tetra-mini")
     r = fe.RegionTetraMINI(mesh)
+    f = fe.FieldsMixed(r)
 
     order = 5
     dim = 3

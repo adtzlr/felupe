@@ -103,7 +103,9 @@ class FieldsMixed(FieldContainer):
         if npoints is not None:
             kwargs["npoints"] = npoints
 
-        region_dual = regions[type(region)](region.mesh, **kwargs)
+        region_dual = regions[type(region)](
+            region.mesh, quadrature=region.quadrature, grad=False, **kwargs
+        )
 
         if axisymmetric is False and planestrain is False:
             F = Field

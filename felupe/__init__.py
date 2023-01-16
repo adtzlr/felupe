@@ -40,12 +40,14 @@ from .constitution import (
 from .dof import Boundary
 from .element import ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement
 from .element import (
+    BiQuadraticQuad,
     ConstantHexahedron,
     ConstantQuad,
     Hexahedron,
     Line,
     Quad,
     QuadraticHexahedron,
+    QuadraticQuad,
     QuadraticTetra,
     QuadraticTriangle,
     Tetra,
@@ -60,6 +62,7 @@ from .quadrature import Tetrahedron as TetrahedronQuadrature
 from .quadrature import Triangle as TriangleQuadrature
 from .region import (
     Region,
+    RegionBiQuadraticQuad,
     RegionBoundary,
     RegionConstantHexahedron,
     RegionConstantQuad,
@@ -69,6 +72,7 @@ from .region import (
     RegionQuad,
     RegionQuadBoundary,
     RegionQuadraticHexahedron,
+    RegionQuadraticQuad,
     RegionQuadraticTetra,
     RegionQuadraticTriangle,
     RegionTetra,

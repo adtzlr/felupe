@@ -25,11 +25,13 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..region._templates import (
+    RegionBiQuadraticQuad,
     RegionConstantHexahedron,
     RegionConstantQuad,
     RegionHexahedron,
     RegionQuad,
     RegionQuadraticHexahedron,
+    RegionQuadraticQuad,
     RegionQuadraticTetra,
     RegionQuadraticTriangle,
     RegionTetra,
@@ -85,7 +87,9 @@ class FieldsMixed(FieldContainer):
         regions = {
             RegionHexahedron: RegionConstantHexahedron,
             RegionQuad: RegionConstantQuad,
-            RegionQuadraticHexahedron: RegionHexahedron,
+            RegionQuadraticQuad: RegionConstantQuad,
+            RegionBiQuadraticQuad: RegionQuad,
+            RegionQuadraticHexahedron: RegionConstantHexahedron,
             RegionTriQuadraticHexahedron: RegionHexahedron,
             RegionQuadraticTetra: RegionTetra,
             RegionQuadraticTriangle: RegionTriangle,
@@ -99,7 +103,9 @@ class FieldsMixed(FieldContainer):
         if npoints is not None:
             kwargs["npoints"] = npoints
 
-        region_dual = regions[type(region)](region.mesh, **kwargs)
+        region_dual = regions[type(region)](
+            region.mesh, quadrature=region.quadrature, grad=False, **kwargs
+        )
 
         if axisymmetric is False and planestrain is False:
             F = Field

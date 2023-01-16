@@ -1,6 +1,7 @@
 from ._boundary import RegionBoundary
 from ._region import Region
 from ._templates import (
+    RegionBiQuadraticQuad,
     RegionConstantHexahedron,
     RegionConstantQuad,
     RegionHexahedron,
@@ -9,6 +10,7 @@ from ._templates import (
     RegionQuad,
     RegionQuadBoundary,
     RegionQuadraticHexahedron,
+    RegionQuadraticQuad,
     RegionQuadraticTetra,
     RegionQuadraticTriangle,
     RegionTetra,

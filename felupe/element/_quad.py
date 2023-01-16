@@ -49,7 +49,7 @@ class ConstantQuad(Element):
           |                       |
           |                       |
           o-----------------------o
-        0 (-1,-1)                  1 ( 1/-1)
+        0 (-1/-1)                  1 ( 1/-1)
 
     Attributes
     ----------
@@ -123,7 +123,7 @@ class Quad(Element):
           |                       |
           |                       |
           o-----------------------o
-        0 (-1,-1)                  1 ( 1/-1)
+        0 (-1/-1)                  1 ( 1/-1)
 
 
     Attributes
@@ -204,6 +204,95 @@ class Quad(Element):
             )
             * 0.25
         )
+
+
+class QuadraticQuad(Element):
+    r"""Quadratic serendipity quadrilateral element.
+
+    ..  code-block::
+
+                      ^ s
+         3 (-1/ 1)    |6 ( 0/ 1)   2 ( 1/ 1)
+          o-----------o-----------o
+          |           |           |
+          |           |           |
+          |           |           |
+          |7 (-1/ 0)  |           |5 ( 1/ 0)
+          o      -----|-----------o-----> r
+          |           |           |
+          |           |           |
+          |                       |
+          |                       |
+          o-----------o-----------o
+        0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
+
+
+    Attributes
+    ----------
+    points : ndarray
+        Array with point locations in natural coordinate system
+    """
+
+    def __init__(self):
+        super().__init__(shape=(8, 2))
+        self.points = np.array(
+            [
+                [-1, -1],
+                [1, -1],
+                [1, 1],
+                [-1, 1],
+                [0, -1],
+                [1, 0],
+                [0, 1],
+                [-1, 0],
+            ],
+            dtype=float,
+        )
+
+    def function(self, rs):
+        r"""Quadratic serendipity quadrilateral - shape functions."""
+        r, s = rs
+        ra, sa = self.points.T
+
+        h = (1 + ra * r) * (1 + sa * s) * (ra * r + sa * s - 1) / 4
+        h[ra == 0] = (1 - r**2) * (1 + sa[ra == 0] * s) / 2
+        h[sa == 0] = (1 + ra[sa == 0] * r) * (1 - s**2) / 2
+
+        return h
+
+    def gradient(self, rs):
+        r"""Quadratic serendipity quadrilateral - gradient of shape functions.
+
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for gradient of shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Gradient of shape functions evaluated at given location
+        """
+
+        r, s = rs
+        ra, sa = self.points.T
+
+        dhdr = (
+            ra * (1 + sa * s) * (ra * r + sa * s - 1) / 4
+            + (1 + ra * r) * (1 + sa * s) * ra / 4
+        )
+
+        dhdr[ra == 0] = -2 * r * (1 + sa[ra == 0] * s) / 2
+        dhdr[sa == 0] = ra[sa == 0] * (1 - s**2) / 2
+
+        dhds = (1 + ra * r) * sa * (ra * r + sa * s - 1) / 4 + (1 + ra * r) * (
+            1 + sa * s
+        ) * sa / 4
+
+        dhds[ra == 0] = (1 - r**2) * sa[ra == 0] / 2
+        dhds[sa == 0] = (1 + ra[sa == 0] * r) * -2 * s / 2
+
+        return np.vstack([dhdr, dhds]).T
 
 
 class BiQuadraticQuad(Element):

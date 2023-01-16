@@ -47,6 +47,7 @@ from .element import (
     Line,
     Quad,
     QuadraticHexahedron,
+    QuadraticQuad,
     QuadraticTetra,
     QuadraticTriangle,
     Tetra,
@@ -61,6 +62,7 @@ from .quadrature import Tetrahedron as TetrahedronQuadrature
 from .quadrature import Triangle as TriangleQuadrature
 from .region import (
     Region,
+    RegionBiQuadraticQuad,
     RegionBoundary,
     RegionConstantHexahedron,
     RegionConstantQuad,
@@ -70,6 +72,7 @@ from .region import (
     RegionQuad,
     RegionQuadBoundary,
     RegionQuadraticHexahedron,
+    RegionQuadraticQuad,
     RegionQuadraticTetra,
     RegionQuadraticTriangle,
     RegionTetra,

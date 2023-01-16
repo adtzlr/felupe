@@ -29,11 +29,13 @@ import numpy as np
 
 from ..element import (
     ArbitraryOrderLagrange,
+    BiQuadraticQuad,
     ConstantHexahedron,
     ConstantQuad,
     Hexahedron,
     Quad,
     QuadraticHexahedron,
+    QuadraticQuad,
     QuadraticTetra,
     QuadraticTriangle,
     Tetra,
@@ -77,6 +79,28 @@ class RegionQuad(Region):
 
         element = Quad()
         quadrature = GaussLegendre(order=1, dim=2)
+
+        super().__init__(mesh, element, quadrature)
+
+
+class RegionQuadraticQuad(Region):
+    "A region with a (serendipity) quadratic quad element."
+
+    def __init__(self, mesh):
+
+        element = QuadraticQuad()
+        quadrature = GaussLegendre(order=2, dim=2)
+
+        super().__init__(mesh, element, quadrature)
+
+
+class RegionBiQuadraticQuad(Region):
+    "A region with a bi-quadratic (lagrange) quad element."
+
+    def __init__(self, mesh):
+
+        element = BiQuadraticQuad()
+        quadrature = GaussLegendre(order=2, dim=2)
 
         super().__init__(mesh, element, quadrature)
 

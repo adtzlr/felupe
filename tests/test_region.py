@@ -39,6 +39,12 @@ def test_region():
     r = fe.RegionQuadBoundary(mesh, ensure_3d=True)
     r = fe.RegionConstantQuad(mesh)
 
+    mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
+    r = fe.RegionQuadraticQuad(mesh2)
+
+    mesh3 = fe.mesh.convert(mesh, 2, True, True, False)
+    r = fe.RegionBiQuadraticQuad(mesh3)
+
     mesh.cell_type = "some_fancy_cell_type"
     with pytest.raises(NotImplementedError):
         r = fe.RegionBoundary(mesh, fe.Quad(), fe.GaussLegendreBoundary(order=1, dim=2))

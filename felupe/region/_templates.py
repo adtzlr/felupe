@@ -111,7 +111,7 @@ class RegionQuadBoundary(RegionBoundary):
     def __init__(
         self,
         mesh,
-        quadrature=GaussLegendre(order=1, dim=2),
+        quadrature=GaussLegendreBoundary(order=1, dim=2),
         grad=True,
         only_surface=True,
         mask=None,
@@ -174,7 +174,7 @@ class RegionHexahedronBoundary(RegionBoundary):
     def __init__(
         self,
         mesh,
-        quadrature=GaussLegendre(order=1, dim=3),
+        quadrature=GaussLegendreBoundary(order=1, dim=3),
         grad=True,
         only_surface=True,
         mask=None,

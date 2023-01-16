@@ -6,9 +6,11 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add more hyperelastic material formulations: Saint Venant-Kirchhoff, Mooney-Rivlin, Arruda-Boyce, Extended Tube and Van der Waals.
 - Add `BiQuadraticQuad` element (as a permuted version of `ArbitraryOrderLagrangeElement`).
+- Add `Quadratic` element.
 
 ### Changed
 - Fix rotation matrix for a rotation around the y-axis.
+- Add new arguments for more flexible region templates, e.g. `RegionQuad(mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True)`.
 
 ## [6.2.5] - 2023-01-02
 

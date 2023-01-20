@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add new arguments for more flexible region templates, e.g. `RegionQuad(mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True)`.
 - Add support for triangle/tetra in `FieldsMixed()`.
 
+### Changed
+- Switch to a `src/`-layout.
+
 ### Fixed
 - Fix rotation matrix for a rotation around the y-axis.
 

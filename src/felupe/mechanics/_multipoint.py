@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import sparse
+from scipy.sparse import csr_matrix
 
 from ._helpers import Assemble, Results
 
@@ -49,17 +50,29 @@ class MultiPointConstraint:
 
     def _vector(self, field=None, parallel=False, jit=False):
         "Calculate vector of residuals with RBE2 contributions."
+
         if field is not None:
             self.field = field
+
         f = self.field.fields[0]
-        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
+        t = self.points.reshape(-1, 1)
         c = self.centerpoint
-        for t in self.points:
-            for d in self.axes:
-                N = self.multiplier * (-f.values[t, d] + f.values[c, d])
-                r[t, d] = -N
-                r[c, d] += N
-        self.results.force = sparse.COO(r).reshape((-1, 1)).tocsr()
+        d = self.mesh.dim
+        n = self.mesh.npoints
+        ax = self.axes
+
+        N = -f.values[t, ax] + f.values[c, ax]
+
+        a = (np.repeat(d * t, d, axis=1) + np.arange(d))[:, ax].ravel()
+        b = (np.repeat(d * c, d) + np.arange(d))[ax]
+        ai = (a, np.zeros_like(a))
+        bi = (b, np.zeros_like(b))
+
+        forces = csr_matrix((N.ravel(), ai), shape=(n * d, 1))
+        centerforce = csr_matrix((N.sum(axis=0), bi), shape=(n * d, 1))
+
+        self.results.force = -forces + centerforce
+
         return self.results.force
 
     def _matrix(self, field=None, parallel=False, jit=False):

@@ -350,6 +350,16 @@ def test_umat_viscoelastic():
     s, statevars_new = umat.gradient([F, statevars])
     dsde = umat.hessian([F, statevars])
 
+    umat = fe.UserMaterialHyperelastic(
+        fe.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
+    )
+
+    s2, statevars_new = umat.gradient([F, statevars])
+    dsde2 = umat.hessian([F, statevars])
+
+    assert np.allclose(s, s2)
+    assert np.allclose(dsde, dsde2)
+
 
 def test_umat_strain():
 

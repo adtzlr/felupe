@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add new arguments for more flexible region templates, e.g. `RegionQuad(mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True)`.
 - Add support for triangle/tetra in `FieldsMixed()`.
 - Add optional state variables to `UserMaterialHyperelastic(model, nstatevars=0)`.
+- Add finite-strain viscoelastic material formulation.
 
 ### Changed
 - Switch to a `src/`-layout.

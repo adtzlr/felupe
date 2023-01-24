@@ -147,5 +147,5 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     # first invariant of elastic part of right Cauchy-Green deformation tensor
     I1 = trace(C @ inv(Ci))
 
-    # first Piola-Kirchhoff stress tensor and state variable
+    # strain energy function and state variable
     return mu / 2 * (I1 - 3), triu_1d(Ci)

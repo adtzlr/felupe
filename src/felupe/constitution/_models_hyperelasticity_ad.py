@@ -32,7 +32,8 @@ import tensortrax as tr
 from tensortrax.math import log, sqrt
 from tensortrax.math import sum as sum1
 from tensortrax.math import trace
-from tensortrax.math._linalg import det, eigvalsh
+from tensortrax.math._linalg import det, eigvalsh, inv
+from tensortrax.math._special import from_triu_1d, triu_1d
 
 
 def isochoric_volumetric_split(fun):
@@ -133,3 +134,18 @@ def van_der_waals(C, mu, limit, a, beta):
     return mu * (
         -(limit**2 - 3) * (log(1 - eta) + eta) - 2 / 3 * a * ((I - 3) / 2) ** (3 / 2)
     )
+
+
+@isochoric_volumetric_split
+def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
+    "Finite strain viscoelastic material formulation."
+
+    # update of state variables by evolution equation
+    Ci = from_triu_1d(Cin) + mu / eta * dtime * C
+    Ci = det(Ci) ** (-1 / 3) * Ci
+
+    # first invariant of elastic part of right Cauchy-Green deformation tensor
+    I1 = trace(C @ inv(Ci))
+
+    # first Piola-Kirchhoff stress tensor and state variable
+    return mu / 2 * (I1 - 3), triu_1d(Ci)

@@ -4,6 +4,7 @@ try:
     from ._models_hyperelasticity_ad import (
         arruda_boyce,
         extended_tube,
+        finite_strain_viscoelastic,
         isochoric_volumetric_split,
         mooney_rivlin,
         neo_hooke,

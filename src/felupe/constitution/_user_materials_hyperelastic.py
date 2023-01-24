@@ -37,7 +37,7 @@ class UserMaterialHyperelastic(UserMaterial):
     for the strain energy function with Automatic Differentiation provided by
     ``tensortrax``.
 
-    Take this code-block as template:
+    Take this code-block as template
 
     ..  code-block::
 
@@ -49,32 +49,87 @@ class UserMaterialHyperelastic(UserMaterial):
 
         umat = fem.UserMaterialHyperelastic(neo_hooke, mu=1)
 
+    and this code-block for material formulations with state variables:
+
+    ..  code-block::
+
+        import tensortrax.math as tm
+
+        def viscoelastic(C, Cin, mu, eta, dtime):
+            "Finite strain viscoelastic material formulation."
+
+            # unimodular part of the right Cauchy-Green deformation tensor
+            Cu = det(C) ** (-1 / 3) * C
+
+            # update of state variables by evolution equation
+            Ci = tm.special.from_triu_1d(Cin) + mu / eta * dtime * Cu
+            Ci = det(Ci) ** (-1 / 3) * Ci
+
+            # first invariant of elastic part of right Cauchy-Green deformation tensor
+            I1 = tm.trace(Cu @ inv(Ci))
+
+            # first Piola-Kirchhoff stress tensor and state variable
+            return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
+
+        umat = fem.UserMaterialHyperelastic(
+            neo_hooke, mu=1, eta=1, dtime=1, nstatevars=1
+        )
+
     See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
     for further details.
 
     """
 
-    def __init__(self, fun, parallel=False, **kwargs):
-        self.fun = fun
+    def __init__(self, fun, nstatevars=0, parallel=False, **kwargs):
+
+        if nstatevars > 0:
+            # split the original function into two sub-functions
+            self.fun = tr.take(fun, item=0)
+            self.fun_statevars = tr.take(fun, item=1)
+        else:
+            self.fun = fun
+
         self.parallel = parallel
+
         super().__init__(
-            stress=self._stress, elasticity=self._elasticity, nstatevars=0, **kwargs
+            stress=self._stress,
+            elasticity=self._elasticity,
+            nstatevars=nstatevars,
+            **kwargs
         )
 
     def _stress(self, x, **kwargs):
         F = x[0]
+
+        if self.nstatevars > 0:
+            statevars = (x[1],)
+        else:
+            statevars = ()
+
         C = dot(transpose(F), F)
         S = tr.gradient(self.fun, wrt=0, ntrax=2, parallel=self.parallel, sym=True)(
-            C, **kwargs
+            C, *statevars, **kwargs
         )
-        return [dot(F, 2 * S), None]
+        if self.nstatevars > 0:
+            statevars_new = tr.function(
+                self.fun_statevars, wrt=0, ntrax=2, parallel=self.parallel
+            )(C, *statevars, **kwargs)
+        else:
+            statevars_new = None
+        return [dot(F, 2 * S), statevars_new]
 
     def _elasticity(self, x, **kwargs):
         F = x[0]
+
+        if self.nstatevars > 0:
+            statevars = (x[1],)
+        else:
+            statevars = ()
+
         C = dot(transpose(F), F)
         D, S, W = tr.hessian(
             self.fun, wrt=0, ntrax=2, full_output=True, parallel=self.parallel, sym=True
-        )(C, **kwargs)
+        )(C, *statevars, **kwargs)
         A = np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, 4 * D)
         A += cdya_ik(np.eye(3), 2 * S)
         return [A]

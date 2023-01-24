@@ -74,12 +74,16 @@ class UserMaterialHyperelastic(UserMaterial):
     """
 
     def __init__(self, fun, nstatevars=0, parallel=False, **kwargs):
+        
         if nstatevars > 0:
+            # split the original function into two sub-functions
             self.fun = tr.take(fun, item=0)
             self.fun_statevars = tr.take(fun, item=1)
         else:
             self.fun = fun
+            
         self.parallel = parallel
+        
         super().__init__(
             stress=self._stress,
             elasticity=self._elasticity,
@@ -89,10 +93,12 @@ class UserMaterialHyperelastic(UserMaterial):
 
     def _stress(self, x, **kwargs):
         F = x[0]
+        
         if self.nstatevars > 0:
             statevars = (x[1],)
         else:
             statevars = ()
+            
         C = dot(transpose(F), F)
         S = tr.gradient(self.fun, wrt=0, ntrax=2, parallel=self.parallel, sym=True)(
             C, *statevars, **kwargs
@@ -107,10 +113,12 @@ class UserMaterialHyperelastic(UserMaterial):
 
     def _elasticity(self, x, **kwargs):
         F = x[0]
+        
         if self.nstatevars > 0:
             statevars = (x[1],)
         else:
             statevars = ()
+            
         C = dot(transpose(F), F)
         D, S, W = tr.hessian(
             self.fun, wrt=0, ntrax=2, full_output=True, parallel=self.parallel, sym=True

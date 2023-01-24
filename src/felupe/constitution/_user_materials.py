@@ -77,6 +77,7 @@ class UserMaterial:
 
         self.umat = {"stress": stress, "elasticity": elasticity}
         self.kwargs = kwargs
+        self.nstatevars = nstatevars
         self.x = [np.eye(3), np.zeros(nstatevars)]
 
     def gradient(self, x):

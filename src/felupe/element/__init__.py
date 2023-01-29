@@ -1,3 +1,4 @@
+from ._base import Element
 from ._hexahedron import (
     ConstantHexahedron,
     Hexahedron,

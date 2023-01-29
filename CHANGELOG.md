@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Switch to a `src/`-layout.
+- Import base-element class as `element.Element()`.
 
 ### Fixed
 - Fix rotation matrix for a rotation around the y-axis.

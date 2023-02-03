@@ -32,6 +32,16 @@ import pytest
 import felupe as fe
 
 
+def pre1d():
+    m = fe.mesh.Line()
+    e = fe.element.Line()
+    q = fe.quadrature.GaussLegendre(1, 1)
+    r = fe.Region(m, e, q)
+    u = fe.Field(r, dim=1)
+    v = fe.FieldContainer([u])
+    return v
+
+
 def pre2d():
     m = fe.mesh.Rectangle()
     e = fe.element.Quad()
@@ -68,6 +78,9 @@ def test_boundary():
 
 
 def test_loadcase():
+
+    ux = fe.dof.uniaxial(pre1d())
+    assert len(ux) == 2
 
     for u in [pre2d(), pre3d()]:
         v = fe.FieldContainer([u[0], deepcopy(u[0])])

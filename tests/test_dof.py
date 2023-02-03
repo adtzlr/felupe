@@ -37,7 +37,7 @@ def pre1d():
     e = fe.element.Line()
     q = fe.quadrature.GaussLegendre(1, 1)
     r = fe.Region(m, e, q)
-    u = fe.Field(r)
+    u = fe.Field(r, dim=1)
     v = fe.FieldContainer([u])
     return v
 
@@ -79,7 +79,10 @@ def test_boundary():
 
 def test_loadcase():
 
-    for u in [pre1d(), pre2d(), pre3d()]:
+    ux = fe.dof.uniaxial(pre1d())
+    assert len(ux) == 2
+
+    for u in [pre2d(), pre3d()]:
         v = fe.FieldContainer([u[0], deepcopy(u[0])])
 
         ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
@@ -89,7 +92,7 @@ def test_loadcase():
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        ux = fe.dof.uniaxial(u, right=2.0, move=0.2, clamped=True)
+        ux = fe.dof.uniaxial(u, right=None, move=0.2, clamped=True)
         assert len(ux) == 2
         assert "right" in ux[0]
 
@@ -100,7 +103,7 @@ def test_loadcase():
         assert len(bx) == 2
         assert "right" in bx[0]
 
-        bx = fe.dof.biaxial(u, right=2.0, move=0.2, clamped=True)
+        bx = fe.dof.biaxial(u, right=None, move=0.2, clamped=True)
         assert len(bx) == 2
         assert "right" in bx[0]
 
@@ -115,7 +118,7 @@ def test_loadcase():
         assert len(ps) == 2
         assert "right" in ps[0]
 
-        ps = fe.dof.planar(u, right=2.0, move=0.2, clamped=True)
+        ps = fe.dof.planar(u, right=None, move=0.2, clamped=True)
         assert len(ps) == 2
         assert "right" in ps[0]
 
@@ -127,7 +130,7 @@ def test_loadcase():
         assert len(sh) == 2
         assert "top" in sh[0]
 
-        sh = fe.dof.shear(v, bottom=0.0, top=1.0, move=0.2, sym=False)
+        sh = fe.dof.shear(v, bottom=None, top=None, move=0.2, sym=False)
         assert len(sh) == 2
         assert "top" in sh[0]
 

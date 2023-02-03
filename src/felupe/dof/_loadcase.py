@@ -66,11 +66,14 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     return bounds
 
 
-def uniaxial(field, right=1, move=0.2, clamped=False):
+def uniaxial(field, right=None, move=0.2, clamped=False):
     """Define boundaries for uniaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0."""
 
     f = _get_first_field(field)
+
+    if right is None:
+        right = f.region.mesh.points[:, 0].max()
 
     bounds = symmetry(f)
 
@@ -85,7 +88,7 @@ def uniaxial(field, right=1, move=0.2, clamped=False):
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def biaxial(field, right=1, move=0.2, clamped=False):
+def biaxial(field, right=None, move=0.2, clamped=False):
     """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0.
 
@@ -94,6 +97,9 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     mesh-points."""
 
     f = _get_first_field(field)
+
+    if right is None:
+        right = f.region.mesh.points[:, 0].max()
 
     bounds = symmetry(f)
 
@@ -110,11 +116,14 @@ def biaxial(field, right=1, move=0.2, clamped=False):
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def planar(field, right=1, move=0.2, clamped=False):
+def planar(field, right=None, move=0.2, clamped=False):
     """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0."""
 
     f = _get_first_field(field)
+
+    if right is None:
+        right = f.region.mesh.points[:, 0].max()
 
     bounds = symmetry(f)
 
@@ -130,11 +139,17 @@ def planar(field, right=1, move=0.2, clamped=False):
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def shear(field, bottom=0, top=1, move=0.2, compression=(0, 0), sym=True):
+def shear(field, bottom=None, top=None, move=0.2, compression=(0, 0), sym=True):
     """Define boundaries for shear loading between two clamped plates. The
     bottom plate remains fixed while the shear is applied at the top plate."""
 
     f = _get_first_field(field)
+
+    if bottom is None:
+        bottom = f.region.mesh.points[:, 1].min()
+
+    if top is None:
+        top = f.region.mesh.points[:, 1].max()
 
     if sym:
         bounds = symmetry(f, axes=(False, False, True))

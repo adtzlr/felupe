@@ -333,9 +333,8 @@ def test_umat_viscoelastic():
 
     def viscoelastic(C, Cin, mu, eta, dtime):
         "Finite strain viscoelastic material formulation."
-
         Ci = (
-            tm.special.from_triu_1d(Cin)
+            tm.special.from_triu_1d(Cin, like=C)
             + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
         )
         Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci

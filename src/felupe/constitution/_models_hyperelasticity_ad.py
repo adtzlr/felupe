@@ -129,7 +129,7 @@ def van_der_waals(C, mu, limit, a, beta):
     I1 = trace(C)
     I2 = (trace(C) ** 2 - trace(C @ C)) / 2
     I = (1 - beta) * I1 + beta * I2
-    I[np.isclose(tr.f(I), 3)] += 1e-8
+    I.x[np.isclose(I.x, 3)] += 1e-8
     eta = sqrt((I - 3) / (limit**2 - 3))
     return mu * (
         -(limit**2 - 3) * (log(1 - eta) + eta) - 2 / 3 * a * ((I - 3) / 2) ** (3 / 2)
@@ -141,7 +141,7 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     "Finite strain viscoelastic material formulation."
 
     # update of state variables by evolution equation
-    Ci = from_triu_1d(Cin) + mu / eta * dtime * C
+    Ci = from_triu_1d(Cin, like=C) + mu / eta * dtime * C
     Ci = det(Ci) ** (-1 / 3) * Ci
 
     # first invariant of elastic part of right Cauchy-Green deformation tensor

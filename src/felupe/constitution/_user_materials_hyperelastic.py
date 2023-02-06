@@ -62,7 +62,7 @@ class UserMaterialHyperelastic(UserMaterial):
             Cu = det(C) ** (-1 / 3) * C
 
             # update of state variables by evolution equation
-            Ci = tm.special.from_triu_1d(Cin) + mu / eta * dtime * Cu
+            Ci = tm.special.from_triu_1d(Cin, like=C) + mu / eta * dtime * Cu
             Ci = det(Ci) ** (-1 / 3) * Ci
 
             # first invariant of elastic part of right Cauchy-Green deformation tensor
@@ -72,7 +72,7 @@ class UserMaterialHyperelastic(UserMaterial):
             return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
 
         umat = fem.UserMaterialHyperelastic(
-            neo_hooke, mu=1, eta=1, dtime=1, nstatevars=1
+            viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6
         )
 
     See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_

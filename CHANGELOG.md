@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.3.0] - 2023-02-06
+
 ### Added
 - Add more hyperelastic material formulations: Saint Venant-Kirchhoff, Mooney-Rivlin, Arruda-Boyce, Extended Tube and Van der Waals.
 - Add `BiQuadraticQuad` element (as a permuted version of `ArbitraryOrderLagrangeElement`).

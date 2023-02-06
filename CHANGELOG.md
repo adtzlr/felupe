@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Switch to a `src/`-layout.
 - Import base-element class as `element.Element()`.
 - Auto-detect min/max-coordinates of mesh-points for loadcases if `dof.uniaxial(right=None)`.
-- Ensure compatibility with `tensortrax>=0.6.0` (Van-der-Waals and Viscoelastic models).
+- Ensure compatibility with `tensortrax>0.6.0` (Van-der-Waals and Viscoelastic models).
 
 ### Fixed
 - Fix rotation matrix for a rotation around the y-axis.

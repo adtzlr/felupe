@@ -55,31 +55,29 @@ def saint_venant_kirchhoff(C, mu, lmbda):
     return mu * I2 + lmbda * I1**2 / 2
 
 
-@isochoric_volumetric_split
 def neo_hooke(C, mu):
     "Strain energy function of the Neo-Hookean material formulation."
-    return mu / 2 * (trace(C) - 3)
+    return mu / 2 * (det(C) ** (-1 / 3) * trace(C) - 3)
 
 
-@isochoric_volumetric_split
 def mooney_rivlin(C, C10, C01):
     "Strain energy function of the Mooney-Rivlin material formulation."
-    I1 = trace(C)
-    I2 = (I1**2 - trace(C @ C)) / 2
+    J3 = det(C) ** (-1 / 3)
+    I1 = J3 * trace(C)
+    I2 = J3 * (I1**2 - trace(C @ C)) / 2
     return C10 * (I1 - 3) + C01 * (I2 - 3)
 
 
-@isochoric_volumetric_split
 def yeoh(C, C10, C20, C30):
-    I1 = trace(C)
+    I1 = det(C) ** (-1 / 3) * trace(C)
     return C10 * (I1 - 3) + C20 * (I1 - 3) ** 2 + C30 * (I1 - 3) ** 3
 
 
-@isochoric_volumetric_split
 def third_order_deformation(C, C10, C01, C11, C20, C30):
     "Strain energy function of the Third-Order-Deformation material formulation."
-    I1 = trace(C)
-    I2 = (I1**2 - trace(C @ C)) / 2
+    J3 = det(C) ** (-1 / 3)
+    I1 = J3 * trace(C)
+    I2 = J3 * (I1**2 - trace(C @ C)) / 2
     return (
         C10 * (I1 - 3)
         + C01 * (I2 - 3)
@@ -89,17 +87,15 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     )
 
 
-@isochoric_volumetric_split
 def ogden(C, mu, alpha):
     "Strain energy function of the Ogden material formulation."
-    wC = eigvalsh(C)
+    wC = det(C) ** (-1 / 3) * eigvalsh(C)
     return sum1([2 * m / a**2 * (sum1(wC ** (a / 2)) - 3) for m, a in zip(mu, alpha)])
 
 
-@isochoric_volumetric_split
 def arruda_boyce(C, C1, limit):
     "Strain energy function of the Arruda-Boyce material formulation."
-    I1 = trace(C)
+    I1 = det(C) ** (-1 / 3) * trace(C)
 
     alpha = [1 / 2, 1 / 20, 11 / 1050, 19 / 7000, 519 / 673750]
     beta = 1 / limit**2
@@ -112,22 +108,22 @@ def arruda_boyce(C, C1, limit):
     return C1 * sum1(out)
 
 
-@isochoric_volumetric_split
 def extended_tube(C, Gc, delta, Ge, beta):
     "Strain energy function of the Extended-Tube material formulation."
-    D = trace(C)
-    wC = eigvalsh(C)
+    J3 = det(C) ** (-1 / 3)
+    D = J3 * trace(C)
+    wC = J3 * eigvalsh(C)
     g = (1 - delta**2) * (D - 3) / (1 - delta**2 * (D - 3))
     Wc = Gc / 2 * (g + log(1 - delta**2 * (D - 3)))
     We = 2 * Ge / beta**2 * sum1(wC ** (-beta / 2) - 1)
     return Wc + We
 
 
-@isochoric_volumetric_split
 def van_der_waals(C, mu, limit, a, beta):
     "Strain energy function of the Van der Waals material formulation."
-    I1 = trace(C)
-    I2 = (trace(C) ** 2 - trace(C @ C)) / 2
+    J3 = det(C) ** (-1 / 3)
+    I1 = J3 * trace(C)
+    I2 = J3 * (trace(C) ** 2 - trace(C @ C)) / 2
     I = (1 - beta) * I1 + beta * I2
     I.x[np.isclose(I.x, 3)] += 1e-8
     eta = sqrt((I - 3) / (limit**2 - 3))

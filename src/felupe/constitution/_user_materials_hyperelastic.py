@@ -131,5 +131,5 @@ class UserMaterialHyperelastic(UserMaterial):
             self.fun, wrt=0, ntrax=2, full_output=True, parallel=self.parallel, sym=True
         )(C, *statevars, **kwargs)
         A = np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, 4 * D)
-        A += cdya_ik(np.eye(3), 2 * S)
-        return [A]
+        B = cdya_ik(np.eye(3), 2 * S)
+        return [np.sum(np.broadcast_arrays(A, B), axis=0)]

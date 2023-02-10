@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Enhance Domain integration in `IntegralForm`: Ensure C-contiguous arrays as `fun`-argument.
+- Enhance performance of hyperelastic material model formulations using automatic differentiation.
+
+### Fixed
+- Fix broadcast arrays for the geometric stiffness contribution of hyperelastic material model formulations using automatic differentiation.
+
 ## [6.3.0] - 2023-02-06
 
 ### Added

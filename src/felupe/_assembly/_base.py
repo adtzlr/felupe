@@ -112,7 +112,7 @@ class IntegralForm:
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
-        self.fun = fun
+        self.fun = np.ascontiguousarray(fun)
         self.dV = dV
 
         self.v = v

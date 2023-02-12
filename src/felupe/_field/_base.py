@@ -82,7 +82,10 @@ class Field:
 
         # init values
         if isinstance(values, np.ndarray):
-            if len(values) == region.mesh.npoints:
+            if values.size == dim:
+                shape = (region.mesh.npoints, dim)
+                self.values = np.broadcast_to(values.reshape(-1, dim), shape)
+            elif len(values) == region.mesh.npoints:
                 self.values = values
             else:
                 raise ValueError("Wrong shape of values.")

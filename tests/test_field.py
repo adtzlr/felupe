@@ -73,6 +73,8 @@ def pre_mixed():
     assert np.all(f.values()[0][0] == 1)
     assert len(g.fields) == 3
 
+    fe.Field(r, dim=9, values=np.eye(3))
+
     return r, f, u, p, J
 
 

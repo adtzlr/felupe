@@ -35,25 +35,25 @@ class FieldAxisymmetric(Field):
     r"""A axisymmetric Field on points of a two-dimensional
     `region` with dimension `dim` (default is 2) and initial point
     `values` (default is 0).
-    
+
     * component 1 =  axial component
     * component 2 = radial component
-    
+
     ..  code-block::
-        
+
          x_2 (radial direction)
-        
+
           ^
           |        _
           |       / \
         --|-----------------> x_1 (axial rotation axis)
                   \_^
-    
+
     This is a modified :class:`Field` class in which the radial coordinates
     are evaluated at the numeric integration points. The :meth:`grad`-method is
     modified in such a way that it does not only contain the in-plane
     2d-gradient but also the circumferential stretch as shown in Eq.(1).
-    
+
     ..  code-block::
 
                     |  dudX(2d) :   0   |

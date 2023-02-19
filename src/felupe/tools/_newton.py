@@ -187,7 +187,7 @@ def newtonrhapson(
     solver=spsolve,
     export_jac=False,
     verbose=True,
-    timing=True, 
+    timing=True,
 ):
     """
     General-purpose Newton-Rhapson algorithm

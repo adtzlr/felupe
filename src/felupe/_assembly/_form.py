@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan  4 17:26:08 2022
-
-@author: adutz
-"""
-# -*- coding: utf-8 -*-
-"""
  _______  _______  ___      __   __  _______  _______ 
 |       ||       ||   |    |  | |  ||       ||       |
 |    ___||    ___||   |    |  | |  ||    _  ||    ___|
@@ -35,9 +29,7 @@ from threading import Thread
 
 import numpy as np
 
-from .._basis import Basis, BasisMixed
-from .._field import Field
-from .._field import FieldContainer as FieldMixed
+from .._basis import BasisMixed
 from ._base import IntegralForm
 from ._mixed import IntegralFormMixed
 

@@ -49,7 +49,7 @@ class Step:
 
         substeps = np.arange(self.nsubsteps)
 
-        if not "x0" in kwargs.keys():
+        if "x0" not in kwargs.keys():
             field = self.items[0].field
         else:
             field = kwargs["x0"]

@@ -29,7 +29,6 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from .._assembly import IntegralFormMixed
-from ..constitution import AreaChange
 from ._helpers import Assemble, Results
 
 

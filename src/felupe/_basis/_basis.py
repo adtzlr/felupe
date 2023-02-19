@@ -29,7 +29,7 @@ import numpy as np
 
 try:
     from einsumt import einsumt
-except:
+except ImportError:
     from numpy import einsum as einsumt
 
 

@@ -29,7 +29,7 @@ import numpy as np
 
 try:
     from einsumt import einsumt
-except:
+except ImportError:
     from numpy import einsum as einsumt
 
 from scipy.sparse import csr_matrix as sparsematrix
@@ -331,5 +331,5 @@ try:
 
         return out
 
-except:
+except ImportError:
     pass

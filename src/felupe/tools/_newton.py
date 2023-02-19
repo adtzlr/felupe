@@ -139,7 +139,9 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
 def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
     "Check result."
 
-    sumnorm = lambda x: np.sum(norm(x))
+    def sumnorm(x):
+        return np.sum(norm(x))
+
     xnorm = sumnorm(dx)
 
     if dof1 is None:
@@ -185,7 +187,7 @@ def newtonrhapson(
     solver=spsolve,
     export_jac=False,
     verbose=True,
-    timing=True,
+    timing=True, 
 ):
     """
     General-purpose Newton-Rhapson algorithm

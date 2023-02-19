@@ -10,3 +10,23 @@ from ._line import Line
 from ._quad import BiQuadraticQuad, ConstantQuad, Quad, QuadraticQuad
 from ._tetra import QuadraticTetra, Tetra, TetraMINI
 from ._triangle import QuadraticTriangle, Triangle, TriangleMINI
+
+__all__ = [
+    "Element",
+    "ConstantHexahedron",
+    "Hexahedron",
+    "QuadraticHexahedron",
+    "TriQuadraticHexahedron",
+    "ArbitraryOrderLagrange",
+    "Line",
+    "BiQuadraticQuad",
+    "ConstantQuad",
+    "Quad",
+    "QuadraticQuad",
+    "QuadraticTetra",
+    "Tetra",
+    "TetraMINI",
+    "QuadraticTriangle",
+    "Triangle",
+    "TriangleMINI",
+]

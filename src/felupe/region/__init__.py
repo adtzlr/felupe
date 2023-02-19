@@ -19,3 +19,25 @@ from ._templates import (
     RegionTriangleMINI,
     RegionTriQuadraticHexahedron,
 )
+
+__all__ = [
+    "RegionBoundary",
+    "Region",
+    "RegionBiQuadraticQuad",
+    "RegionConstantHexahedron",
+    "RegionConstantQuad",
+    "RegionHexahedron",
+    "RegionHexahedronBoundary",
+    "RegionLagrange",
+    "RegionQuad",
+    "RegionQuadBoundary",
+    "RegionQuadraticHexahedron",
+    "RegionQuadraticQuad",
+    "RegionQuadraticTetra",
+    "RegionQuadraticTriangle",
+    "RegionTetra",
+    "RegionTetraMINI",
+    "RegionTriangle",
+    "RegionTriangleMINI",
+    "RegionTriQuadraticHexahedron",
+]

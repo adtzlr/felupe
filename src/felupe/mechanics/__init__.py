@@ -10,5 +10,19 @@ from ._step import Step
 
 try:
     from ._multipoint import MultiPointConstraint, MultiPointContact
-except:
+except ImportError:
     pass
+
+__all__ = [
+    "CharacteristicCurve",
+    "StateNearlyIncompressible",
+    "Job",
+    "PointLoad",
+    "SolidBody",
+    "SolidBodyGravity",
+    "SolidBodyNearlyIncompressible",
+    "SolidBodyPressure",
+    "Step",
+    "MultiPointConstraint",
+    "MultiPointContact",
+]

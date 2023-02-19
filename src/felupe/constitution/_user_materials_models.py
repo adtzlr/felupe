@@ -60,15 +60,15 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     """
 
     # change of stress due to change of strain
-    I = identity(dim=3, shape=(1, 1))
-    dσ = 2 * μ * dε + λ * trace(dε) * I
+    eye = identity(dim=3, shape=(1, 1))
+    dσ = 2 * μ * dε + λ * trace(dε) * eye
 
     # update stress
     σ = σn + dσ
 
     # evaluate elasticity tensor
     if kwargs["tangent"]:
-        dσdε = 2 * μ * cdya_ik(I, I) + λ * dya(I, I)
+        dσdε = 2 * μ * cdya_ik(eye, eye) + λ * dya(eye, eye)
     else:
         dσdε = None
 
@@ -142,18 +142,18 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
         Isotropic hardening modulus.
     """
 
-    I = identity(dε)
+    eye = identity(dε)
 
     # elasticity tensor
     if kwargs["tangent"]:
-        dσdε = λ * dya(I, I) + 2 * μ * cdya_ik(I, I)
+        dσdε = λ * dya(eye, eye) + 2 * μ * cdya_ik(eye, eye)
     else:
         dσdε = None
 
     # elastic hypothetic (trial) stress and deviatoric stress
-    dσ = 2 * μ * dε + λ * trace(dε) * I
+    dσ = 2 * μ * dε + λ * trace(dε) * eye
     σ = σn + dσ
-    s = σ - 1 / 3 * trace(σ) * I
+    s = σ - 1 / 3 * trace(σ) * eye
 
     # unpack old state variables
     α, εp = ζn
@@ -187,7 +187,10 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
                 * μ
                 * dγ
                 / norm_s
-                * (2 * μ * (cdya_ik(I, I) - 1 / 3 * dya(I, I)) - 2 * μ * dya(n, n))
+                * (
+                    2 * μ * (cdya_ik(eye, eye) - 1 / 3 * dya(eye, eye))
+                    - 2 * μ * dya(n, n)
+                )
             )[..., mask]
 
         # update list of state variables

@@ -28,7 +28,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 from functools import wraps
 
 import numpy as np
-import tensortrax as tr
 from tensortrax.math import log, sqrt
 from tensortrax.math import sum as sum1
 from tensortrax.math import trace
@@ -124,11 +123,11 @@ def van_der_waals(C, mu, limit, a, beta):
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
     I2 = J3 * (trace(C) ** 2 - trace(C @ C)) / 2
-    I = (1 - beta) * I1 + beta * I2
-    I.x[np.isclose(I.x, 3)] += 1e-8
-    eta = sqrt((I - 3) / (limit**2 - 3))
+    Im = (1 - beta) * I1 + beta * I2
+    Im.x[np.isclose(Im.x, 3)] += 1e-8
+    eta = sqrt((Im - 3) / (limit**2 - 3))
     return mu * (
-        -(limit**2 - 3) * (log(1 - eta) + eta) - 2 / 3 * a * ((I - 3) / 2) ** (3 / 2)
+        -(limit**2 - 3) * (log(1 - eta) + eta) - 2 / 3 * a * ((Im - 3) / 2) ** (3 / 2)
     )
 
 

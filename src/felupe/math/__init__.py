@@ -31,6 +31,15 @@ from ._tensor import (
 
 __all__ = [
     "sqrt",
+    "defgrad",
+    "extract",
+    "grad",
+    "interpolate",
+    "norm",
+    "strain",
+    "values",
+    "linsteps",
+    "rotation_matrix",
     "linsteps",
     "rotation_matrix",
     "cdya",

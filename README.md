@@ -31,18 +31,14 @@ field = fem.FieldContainer([fem.Field(region, dim=3)])
 # apply a uniaxial elongation on the cube
 boundaries = fem.dof.uniaxial(field, clamped=True)[0]
 
-# define the constitutive material behaviour 
+# define the constitutive material behaviour
 # and create a nearly-incompressible (u,p,J - formulation) solid body
 umat = fem.OgdenRoxburgh(material=fem.NeoHooke(mu=1), r=3, m=1, beta=0)
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
 # prepare a step with substeps
 move = fem.math.linsteps([0, 2, 0], num=10)
-step = fem.Step(
-    items=[solid], 
-    ramp={boundaries["move"]: move}, 
-    boundaries=boundaries
-)
+step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
 # add the step to a job, evaluate all substeps and create a plot
 job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])

@@ -42,8 +42,8 @@ This is followed by the creation of a global region/field and two sub-regions/su
     # a global and two sub-fields
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     fields = [
-        fem.FieldContainer([fem.FieldPlaneStrain(region[0], dim=2)]),
-        fem.FieldContainer([fem.FieldPlaneStrain(region[1], dim=2)]),
+        fem.FieldContainer([fem.FieldPlaneStrain(regions[0], dim=2)]),
+        fem.FieldContainer([fem.FieldPlaneStrain(regions[1], dim=2)]),
     ]
     
 The displacement boundaries are created on the total field.

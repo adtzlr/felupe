@@ -66,7 +66,7 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     return bounds
 
 
-def uniaxial(field, right=None, move=0.2, clamped=False):
+def uniaxial(field, right=None, move=0.2, clamped=False, left=None, sym=True):
     """Define boundaries for uniaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0."""
 
@@ -75,10 +75,19 @@ def uniaxial(field, right=None, move=0.2, clamped=False):
     if right is None:
         right = f.region.mesh.points[:, 0].max()
 
-    bounds = symmetry(f)
+    if sym:
+        bounds = symmetry(f)
+    else:
+        if left is None:
+            left = f.region.mesh.points[:, 0].min()
+
+        bounds = {"leftx": Boundary(f, fx=left, skip=(0, 1, 1))}
 
     if clamped:
         bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
+
+        if sym is False:
+            bounds["leftyz"] = Boundary(f, fx=left, skip=(1, 0, 0))
 
     bounds["move"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
 

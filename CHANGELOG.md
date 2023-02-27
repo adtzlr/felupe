@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance Domain integration in `IntegralForm`: Ensure C-contiguous arrays as `fun`-argument.
 - Enhance performance of hyperelastic material model formulations using automatic differentiation.
 - Perform reshape and broadcasting if user-defined `Field`-values with correct size are given.
+- Make symmetry-related boundary conditions in uniaxial loadcase optional `dof.uniaxial(sym=True)`.
 
 ### Fixed
 - Fix broadcast arrays for the geometric stiffness contribution of hyperelastic material model formulations using automatic differentiation.

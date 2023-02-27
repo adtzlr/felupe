@@ -85,10 +85,10 @@ def test_loadcase():
     for u in [pre2d(), pre3d()]:
         v = fe.FieldContainer([u[0], deepcopy(u[0])])
 
-        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False)
+        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False, sym=True)
         assert len(ux) == 2
 
-        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True)
+        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True, sym=False)
         assert len(ux) == 2
         assert "right" in ux[0]
 

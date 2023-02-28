@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add a new argument to pass a mesh for the dual regions in `FieldsMixed(mesh=None)`.
+- Add quadrature and grad arguments to `RegionLagrange`.
+- Add order attribute to `RegionLagrange`.
 
 ### Changed
 - Enhance Domain integration in `IntegralForm`: Ensure C-contiguous arrays as `fun`-argument.
@@ -12,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Perform reshape and broadcasting if user-defined `Field`-values with correct size are given.
 - Make symmetry-related boundary conditions in uniaxial loadcase optional `dof.uniaxial(sym=True)`.
 - Merge custom point- and cell-data dicts with default dicts in `Job` instead of replacing them, also add `Job(point_data_default=True, cell_data_default=True)`.
+- Allow to change cell-type in `Mesh.update(cells, cell_type=None)`.
 
 ### Fixed
 - Fix broadcast arrays for the geometric stiffness contribution of hyperelastic material model formulations using automatic differentiation.

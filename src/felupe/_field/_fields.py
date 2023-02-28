@@ -29,6 +29,7 @@ from ..region._templates import (
     RegionConstantHexahedron,
     RegionConstantQuad,
     RegionHexahedron,
+    RegionLagrange,
     RegionQuad,
     RegionQuadraticHexahedron,
     RegionQuadraticQuad,
@@ -60,6 +61,7 @@ class FieldsMixed(FieldContainer):
         offset=0,
         npoints=None,
         mesh=None,
+        **kwargs,
     ):
         r"""Create a mixed field based on a region. The dual region is chosen
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
@@ -98,13 +100,17 @@ class FieldsMixed(FieldContainer):
             RegionQuadraticTriangle: RegionTriangle,
             RegionTetraMINI: RegionTetra,
             RegionTriangleMINI: RegionTriangle,
+            RegionLagrange: RegionLagrange,
         }
 
-        kwargs = {}
         if offset > 0:
             kwargs["offset"] = offset
         if npoints is not None:
             kwargs["npoints"] = npoints
+
+        if isinstance(region, RegionLagrange):
+            kwargs["order"] = region.order - 1
+            kwargs["dim"] = region.mesh.dim
 
         if mesh is None:
             mesh = region.mesh

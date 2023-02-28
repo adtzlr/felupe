@@ -59,6 +59,7 @@ class FieldsMixed(FieldContainer):
         planestrain=False,
         offset=0,
         npoints=None,
+        mesh=None,
     ):
         r"""Create a mixed field based on a region. The dual region is chosen
         automatically, i.e. for a :class:`RegionHexahedron` the dual region
@@ -80,8 +81,10 @@ class FieldsMixed(FieldContainer):
             Flag to initiate a plane strain Field (default is False).
         offset : int, optional
             Offset for cell connectivity (default is 0).
-        npoints : int, optional
+        npoints : int or None, optional
             Specified number of mesh points (default is None).
+        mesh: Mesh or None, optional
+            A mesh for the dual region (default is None).
         """
 
         regions = {
@@ -103,8 +106,11 @@ class FieldsMixed(FieldContainer):
         if npoints is not None:
             kwargs["npoints"] = npoints
 
+        if mesh is None:
+            mesh = region.mesh
+
         region_dual = regions[type(region)](
-            region.mesh, quadrature=region.quadrature, grad=False, **kwargs
+            mesh, quadrature=region.quadrature, grad=False, **kwargs
         )
 
         if axisymmetric is False and planestrain is False:

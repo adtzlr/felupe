@@ -86,12 +86,10 @@ class Job:
         self,
         filename=None,
         mesh=None,
-        point_data={"Displacement": displacement},
-        cell_data={
-            "Principal Values of Logarithmic Strain": log_strain_principal,
-            "Logarithmic Strain": log_strain,
-            "Deformation Gradient": deformation_gradient,
-        },
+        point_data=None,
+        cell_data=None,
+        point_data_default=True,
+        cell_data_default=True,
         verbose=True,
         **kwargs,
     ):
@@ -125,6 +123,28 @@ FElupe Version {version}
 
             increment = 0
 
+            pdata = point_data_default if point_data_default is True else {}
+            cdata = cell_data_default if cell_data_default is not None else {}
+
+            pdata = {}
+            cdata = {}
+
+            if point_data_default is True:
+                pdata = {"Displacement": displacement}
+
+            if cell_data_default is True:
+                cdata = {
+                    "Principal Values of Logarithmic Strain": log_strain_principal,
+                    "Logarithmic Strain": log_strain,
+                    "Deformation Gradient": deformation_gradient,
+                }
+
+            if point_data is None:
+                point_data = {}
+
+            if cell_data is None:
+                cell_data = {}
+
         else:  # fake a mesh and a TimeSeriesWriter
             from contextlib import nullcontext
 
@@ -156,5 +176,11 @@ FElupe Version {version}
                         kwargs["x0"].link(substep.x)
 
                     if filename is not None:
-                        self._write(writer, increment, substep, point_data, cell_data)
+                        self._write(
+                            writer=writer,
+                            time=increment,
+                            substep=substep,
+                            point_data={**pdata, **point_data},
+                            cell_data={**cdata, **cell_data},
+                        )
                         increment += 1

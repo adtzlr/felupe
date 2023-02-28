@@ -110,6 +110,22 @@ def test_axi():
     u.extract(grad=True, add_identity=False)
 
 
+def test_mixed_lagrange():
+
+    order = 4
+
+    m = fe.Cube(n=order + 1)
+    md = fe.Cube(n=order)
+
+    m.update(np.arange(m.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON")
+    md.update(np.arange(md.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON")
+
+    r = fe.RegionLagrange(m, order=order, dim=3)
+    g = fe.FieldsMixed(r, mesh=md)
+
+    assert len(g.fields) == 3
+
+
 def test_3d():
 
     r, u = pre()
@@ -200,3 +216,4 @@ if __name__ == "__main__":
     test_axi()
     test_3d()
     test_3d_mixed()
+    test_mixed_lagrange()

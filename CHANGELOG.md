@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add a new argument to pass a mesh for the dual regions in `FieldsMixed(mesh=None)`.
+
 ### Changed
 - Enhance Domain integration in `IntegralForm`: Ensure C-contiguous arrays as `fun`-argument.
 - Enhance performance of hyperelastic material model formulations using automatic differentiation.

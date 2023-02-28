@@ -219,12 +219,15 @@ class RegionTriQuadraticHexahedron(Region):
 class RegionLagrange(Region):
     "A region with an arbitrary order lagrange element."
 
-    def __init__(self, mesh, order, dim):
+    def __init__(self, mesh, order, dim, quadrature=None, grad=True):
+
+        if quadrature is None:
+            quadrature = GaussLegendre(order=order, dim=dim, permute=False)
 
         element = ArbitraryOrderLagrange(order, dim)
-        quadrature = GaussLegendre(order, dim, permute=False)
+        self.order = order
 
-        super().__init__(mesh, element, quadrature)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionTriangle(Region):

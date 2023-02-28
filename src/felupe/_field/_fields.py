@@ -103,20 +103,25 @@ class FieldsMixed(FieldContainer):
             RegionLagrange: RegionLagrange,
         }
 
+        kwargs0 = {}
+
         if offset > 0:
-            kwargs["offset"] = offset
+            kwargs0["offset"] = offset
         if npoints is not None:
-            kwargs["npoints"] = npoints
+            kwargs0["npoints"] = npoints
 
         if isinstance(region, RegionLagrange):
-            kwargs["order"] = region.order - 1
-            kwargs["dim"] = region.mesh.dim
+            kwargs0["order"] = region.order - 1
+            kwargs0["dim"] = region.mesh.dim
 
         if mesh is None:
             mesh = region.mesh
 
         region_dual = regions[type(region)](
-            mesh, quadrature=region.quadrature, grad=False, **kwargs
+            mesh,
+            quadrature=region.quadrature,
+            grad=False,
+            **{**kwargs0, **kwargs},
         )
 
         if axisymmetric is False and planestrain is False:

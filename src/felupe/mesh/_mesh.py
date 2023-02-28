@@ -74,9 +74,12 @@ class Mesh:
 
         self.update(self.cells)
 
-    def update(self, cells):
+    def update(self, cells, cell_type=None):
         "Update the cell and dimension attributes with a given cell array."
         self.cells = cells
+
+        if cell_type is not None:
+            self.cell_type = cell_type
 
         # obtain dimensions
         self.npoints, self.dim = self.points.shape

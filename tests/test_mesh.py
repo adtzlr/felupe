@@ -43,6 +43,11 @@ def test_meshes():
         cells=np.array([[0, 1, 2]]),
         cell_type="triangle",
     )
+    
+    n = m.copy()
+    n.update(m.cells, cell_type="my-fancy-cell-type")
+    
+    assert n.cell_type == "my-fancy-cell-type"
 
     fe.mesh.convert(m, order=0)
     fe.mesh.convert(m, order=0, calc_points=True)

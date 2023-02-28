@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance performance of hyperelastic material model formulations using automatic differentiation.
 - Perform reshape and broadcasting if user-defined `Field`-values with correct size are given.
 - Make symmetry-related boundary conditions in uniaxial loadcase optional `dof.uniaxial(sym=True)`.
+- Merge custom point- and cell-data dicts with default dicts in `Job` instead of replacing them, also add `Job(point_data_default=True, cell_data_default=True)`.
 
 ### Fixed
 - Fix broadcast arrays for the geometric stiffness contribution of hyperelastic material model formulations using automatic differentiation.

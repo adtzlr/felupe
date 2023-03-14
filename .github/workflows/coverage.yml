@@ -1,4 +1,4 @@
-name: ci
+name: Codecov
 
 on:
   push:
@@ -9,15 +9,7 @@ on:
     - main
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repo
-        uses: actions/checkout@v3
-      - name: Run pre-commit
-        uses: pre-commit/action@v3.0.0
-
-  build:
+  run:
     name: Upload coverage report to codecov.io
     runs-on: ubuntu-latest
     strategy:

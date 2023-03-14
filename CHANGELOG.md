@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new argument to pass a mesh for the dual regions in `FieldsMixed(mesh=None)`.
 - Add quadrature and grad arguments to `RegionLagrange`.
 - Add order attribute to `RegionLagrange`.
+- Add items-argument for custom slicing of characteristic curve plots in `CharacteristicCurve.plot(items=None)`.
 
 ### Changed
 - Enhance Domain integration in `IntegralForm`: Ensure C-contiguous arrays as `fun`-argument.

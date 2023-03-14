@@ -77,6 +77,7 @@ class CharacteristicCurve(Job):
         fig=None,
         ax=None,
         linestyle=".-",
+        items=None,
         **kwargs
     ):
 
@@ -90,8 +91,11 @@ class CharacteristicCurve(Job):
         if y is None:
             y = self.y
 
-        x = np.array(x)
-        y = np.array(y)
+        if items is None:
+            items = slice(None)
+
+        x = np.array(x)[items]
+        y = np.array(y)[items]
 
         if gradient:
             y = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)

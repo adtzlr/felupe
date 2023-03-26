@@ -31,7 +31,6 @@ import felupe as fe
 
 
 def test_meshes():
-
     m = fe.Mesh(
         points=np.array(
             [
@@ -144,6 +143,11 @@ def test_meshes():
     assert m_dg.dim == m.dim
     assert m_dg.npoints == m.cells.size
 
+    m_dg = m.disconnect(points_per_cell=2, calc_points=False)
+    assert np.allclose(m_dg.points, 0)
+    assert m_dg.npoints == m.ncells * 2
+    assert m_dg.cell_type is None
+
     fe.mesh.sweep(m)
     fe.mesh.sweep(m.points, m.cells, m.cell_type, decimals=4)
 
@@ -156,7 +160,6 @@ def test_meshes():
 
 
 def test_mirror():
-
     for kwargs in [
         dict(axis=None, normal=[1, 0, 0]),
         dict(axis=None, normal=[1, 1, 0]),
@@ -167,11 +170,9 @@ def test_mirror():
         dict(axis=1, normal=[]),
         dict(axis=2, normal=[]),
     ]:
-
         axis = kwargs["axis"]
 
         if axis is None or axis < 1:
-
             m = fe.mesh.Line()
             r = fe.Region(m, fe.Line(), fe.GaussLegendre(1, 1))
             n = fe.mesh.mirror(m, **kwargs)
@@ -179,7 +180,6 @@ def test_mirror():
             assert np.isclose(r.dV.sum(), s.dV.sum())
 
         if axis is None or axis < 2:
-
             m = fe.Rectangle()
             r = fe.RegionQuad(m)
             n = fe.mesh.mirror(m, **kwargs)
@@ -220,7 +220,6 @@ def test_mirror():
 
 
 def test_triangulate():
-
     m = fe.Rectangle(n=3)
     n = fe.mesh.triangulate(m)
 
@@ -243,7 +242,6 @@ def test_triangulate():
 
 
 def test_runouts():
-
     m = fe.Rectangle(n=3)
 
     n = fe.mesh.runouts(m, values=[0.0], axis=0, centerpoint=[0, 0])
@@ -263,7 +261,6 @@ def test_runouts():
 
 
 def test_concatenate():
-
     m = fe.Rectangle(n=3)
 
     n = fe.mesh.concatenate([m, m, m])
@@ -273,7 +270,6 @@ def test_concatenate():
 
 
 def test_grid():
-
     m = fe.Rectangle(b=(10, 3), n=(4, 5))
 
     x = np.linspace(0, 10, 4)
@@ -285,7 +281,6 @@ def test_grid():
 
 
 def test_grid_1d():
-
     m = fe.mesh.Line(b=10, n=6)
 
     x = np.linspace(0, 10, 6)
@@ -296,7 +291,6 @@ def test_grid_1d():
 
 
 def test_container():
-
     mesh_1 = fe.Rectangle()
     mesh_2 = fe.Rectangle(a=(1, 0), b=(2, 1))
     mesh_3 = fe.mesh.triangulate(fe.Rectangle(a=(2, 0), b=(3, 1)))
@@ -330,7 +324,6 @@ def test_container():
 
 
 def test_read(filename="tests/mesh.bdf"):
-
     mesh = fe.mesh.read(filename=filename, dim=2)[0]
     assert mesh.dim == 2
 

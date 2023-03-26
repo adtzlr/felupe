@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Make symmetry-related boundary conditions in uniaxial loadcase optional `dof.uniaxial(sym=True)`.
 - Merge custom point- and cell-data dicts with default dicts in `Job` instead of replacing them, also add `Job(point_data_default=True, cell_data_default=True)`.
 - Allow to change cell-type in `Mesh.update(cells, cell_type=None)`.
+- Enhance the creation of a disconnected mesh for mixed-field formulations by `Mesh.disconnect(points_per_cell=None, calc_points=True)`.
 
 ### Fixed
 - Fix broadcast arrays for the geometric stiffness contribution of hyperelastic material model formulations using automatic differentiation.

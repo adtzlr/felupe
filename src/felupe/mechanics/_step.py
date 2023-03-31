@@ -35,14 +35,23 @@ class Step:
     """A Step with multiple substeps, subsequently depending on the solution
     of the previous substep."""
 
-    def __init__(self, items, ramp, boundaries):
+    def __init__(self, items, ramp=None, boundaries=None):
         """A Step with multiple substeps, subsequently depending on the solution
         of the previous substep."""
 
         self.items = items
-        self.ramp = dict(ramp)
+
+        if ramp is None:
+            self.ramp = {}
+            self.nsubsteps = 1
+        else:
+            self.ramp = dict(ramp)
+            self.nsubsteps = len(list(self.ramp.values())[0])
+
+        if boundaries is None:
+            boundaries = {}
+
         self.boundaries = boundaries
-        self.nsubsteps = len(list(self.ramp.values())[0])
 
     def generate(self, **kwargs):
         "Generate all substeps."

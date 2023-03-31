@@ -122,6 +122,35 @@ def test_curve_custom_items():
     assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
 
 
+def test_empty():
+
+    mesh = fem.Cube(n=2)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldsMixed(region, n=1)
+
+    umat = fem.NeoHooke(mu=1, bulk=5000)
+    solid = fem.SolidBody(umat, field)
+
+    step = fem.Step(items=[solid], ramp=None, boundaries=None)
+    job = fem.Job(steps=[step])
+    job.evaluate()
+
+
+def test_noramp():
+
+    mesh = fem.Cube(n=2)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldsMixed(region, n=1)
+
+    umat = fem.LinearElastic(E=1, nu=0.3)
+    solid = fem.SolidBody(umat, field)
+    bounds = fem.dof.uniaxial(field)[0]
+
+    step = fem.Step(items=[solid], ramp=None, boundaries=bounds)
+    job = fem.Job(steps=[step])
+    job.evaluate()
+
+
 if __name__ == "__main__":
     test_job()
     test_job_xdmf()
@@ -129,3 +158,5 @@ if __name__ == "__main__":
     test_curve()
     test_curve2()
     test_curve_custom_items()
+    test_empty()
+    test_noramp()

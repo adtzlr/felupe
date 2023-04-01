@@ -27,7 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from einsumt import einsumt
-
 from scipy.sparse import csr_matrix as sparsematrix
 
 

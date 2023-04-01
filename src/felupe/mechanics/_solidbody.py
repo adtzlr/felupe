@@ -68,9 +68,7 @@ class SolidBody:
 
         self._form = IntegralFormMixed
 
-    def _vector(
-        self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
-    ):
+    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
 
         if field is not None:
             self.field = field
@@ -80,13 +78,11 @@ class SolidBody:
             fun=self.results.stress[slice(items)],
             v=self.field,
             dV=self.field.region.dV,
-        ).assemble(parallel=parallel, jit=jit)
+        ).assemble(parallel=parallel)
 
         return self.results.force
 
-    def _matrix(
-        self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
-    ):
+    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
 
         if field is not None:
             self.field = field
@@ -98,7 +94,7 @@ class SolidBody:
             v=self.field,
             u=self.field,
             dV=self.field.region.dV,
-        ).assemble(parallel=parallel, jit=jit)
+        ).assemble(parallel=parallel)
 
         return self.results.stiffness
 

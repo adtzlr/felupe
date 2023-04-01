@@ -139,11 +139,11 @@ class IntegralForm:
             self.indices = (eaibk0, eaibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
-    def assemble(self, values=None, parallel=False, jit=False):
+    def assemble(self, values=None, parallel=False):
         "Assembly of sparse region vectors or matrices."
 
         if values is None:
-            values = self.integrate(parallel=parallel, jit=jit)
+            values = self.integrate(parallel=parallel)
 
         permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
             int
@@ -155,7 +155,7 @@ class IntegralForm:
 
         return out
 
-    def integrate(self, parallel=False, jit=False):
+    def integrate(self, parallel=False):
         "Return evaluated (but not assembled) integrals."
 
         grad_v, grad_u = self.grad_v, self.grad_u
@@ -194,13 +194,7 @@ class IntegralForm:
             if not grad_v:
                 return einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
             else:
-                if jit:
-                    if fun.shape[-2:] == (1, 1):
-                        return integrate_gradv_broadcast(vb, fun, dV)
-                    else:
-                        return integrate_gradv(vb, fun, dV)
-                else:
-                    return einsum("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
+                return einsum("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
 
         else:
 
@@ -224,112 +218,6 @@ class IntegralForm:
                     optimize=True,
                 )
             else:  # grad_v and grad_u
-                if jit:
-                    if fun.shape[-2:] == (1, 1):
-                        return integrate_gradv_gradu_broadcast(vb, fun, ub, dV)
-                    else:
-                        return integrate_gradv_gradu(vb, fun, ub, dV)
-                else:
-                    return einsum(
-                        "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
-                    )
-
-
-try:
-    from numba import jit as numba_jit
-    from numba import prange
-
-    jitargs = {"nopython": True, "nogil": True, "fastmath": True, "parallel": True}
-
-    @numba_jit(**jitargs)
-    def integrate_gradv_broadcast(v, fun, dV):  # pragma: no cover
-
-        npoints = v.shape[0]
-        ngauss, ncells = v.shape[-2:]
-        dim1, dim2 = fun.shape[:-2]
-
-        out = np.zeros((npoints, dim1, ncells))
-
-        for a in prange(npoints):  # basis function "a"
-            for p in range(ngauss):  # integration point "p"
-                for c in prange(ncells):  # cell "c"
-                    for i in prange(dim1):  # first index "i"
-                        for J in range(dim2):  # second index "J"
-                            out[a, i, c] += v[a, J, p, c] * fun[i, J, 0, 0] * dV[p, c]
-
-        return out
-
-    @numba_jit(**jitargs)
-    def integrate_gradv(v, fun, dV):  # pragma: no cover
-
-        npoints = v.shape[0]
-        ngauss, ncells = v.shape[-2:]
-        dim1, dim2 = fun.shape[:-2]
-
-        out = np.zeros((npoints, dim1, ncells))
-
-        for a in prange(npoints):  # basis function "a"
-            for p in range(ngauss):  # integration point "p"
-                for c in prange(ncells):  # cell "c"
-                    for i in prange(dim1):  # first index "i"
-                        for J in range(dim2):  # second index "J"
-                            out[a, i, c] += v[a, J, p, c] * fun[i, J, p, c] * dV[p, c]
-
-        return out
-
-    @numba_jit(**jitargs)
-    def integrate_gradv_gradu_broadcast(v, fun, u, dV):  # pragma: no cover
-
-        npoints_a = v.shape[0]
-        npoints_b = u.shape[0]
-        ngauss, ncells = v.shape[-2:]
-        dim1, dim2, dim3, dim4 = fun.shape[:-2]
-
-        out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
-
-        for p in range(ngauss):  # integration point "p"
-            for c in prange(ncells):  # cell "c"
-                for a in prange(npoints_a):  # basis function "a"
-                    for b in prange(npoints_b):  # basis function "b"
-                        for i in prange(dim1):  # first index "i"
-                            for J in range(dim2):  # second index "J"
-                                for k in prange(dim3):  # third index "k"
-                                    for L in range(dim4):  # fourth index "L"
-                                        out[a, i, b, k, c] += (
-                                            v[a, J, p, c]
-                                            * u[b, L, p, c]
-                                            * fun[i, J, k, L, 0, 0]
-                                            * dV[p, c]
-                                        )
-
-        return out
-
-    @numba_jit(**jitargs)
-    def integrate_gradv_gradu(v, fun, u, dV):  # pragma: no cover
-
-        npoints_a = v.shape[0]
-        npoints_b = u.shape[0]
-        ngauss, ncells = v.shape[-2:]
-        dim1, dim2, dim3, dim4 = fun.shape[:-2]
-
-        out = np.zeros((npoints_a, dim1, npoints_b, dim3, ncells))
-
-        for p in range(ngauss):  # integration point "p"
-            for c in prange(ncells):  # cell "c"
-                for a in prange(npoints_a):  # basis function "a"
-                    for b in prange(npoints_b):  # basis function "b"
-                        for i in prange(dim1):  # first index "i"
-                            for J in range(dim2):  # second index "J"
-                                for k in prange(dim3):  # third index "k"
-                                    for L in range(dim4):  # fourth index "L"
-                                        out[a, i, b, k, c] += (
-                                            v[a, J, p, c]
-                                            * u[b, L, p, c]
-                                            * fun[i, J, k, L, p, c]
-                                            * dV[p, c]
-                                        )
-
-        return out
-
-except:
-    pass
+                return einsum(
+                    "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
+                )

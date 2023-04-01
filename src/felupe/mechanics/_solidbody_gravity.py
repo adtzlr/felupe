@@ -50,7 +50,7 @@ class SolidBodyGravity:
 
         self.__init__(self.field, gravity, self.results.density)
 
-    def _vector(self, field=None, parallel=False, jit=False):
+    def _vector(self, field=None, parallel=False):
 
         if field is not None:
             self.field = field
@@ -64,14 +64,14 @@ class SolidBodyGravity:
             v=f,
             dV=self.field.region.dV,
             grad_v=[False],
-        ).assemble(parallel=parallel, jit=jit)
+        ).assemble(parallel=parallel)
 
         if len(self.field) > 1:
             self.results.force.resize(np.sum(self.field.fieldsizes), 1)
 
         return -self.results.force
 
-    def _matrix(self, field=None, parallel=False, jit=False):
+    def _matrix(self, field=None, parallel=False):
 
         if field is not None:
             self.field = field

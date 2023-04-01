@@ -60,9 +60,7 @@ class SolidBodyPressure:
 
         return self.results.kinematics
 
-    def _vector(
-        self, field=None, pressure=None, parallel=False, jit=False, resize=None
-    ):
+    def _vector(self, field=None, pressure=None, parallel=False, resize=None):
 
         if field is not None:
 
@@ -82,16 +80,14 @@ class SolidBodyPressure:
 
         self.results.force = IntegralFormMixed(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
-        ).assemble(parallel=parallel, jit=jit)
+        ).assemble(parallel=parallel)
 
         if resize is not None:
             self.results.force.resize(*resize.shape)
 
         return self.results.force
 
-    def _matrix(
-        self, field=None, pressure=None, parallel=False, jit=False, resize=None
-    ):
+    def _matrix(self, field=None, pressure=None, parallel=False, resize=None):
 
         if field is not None:
 
@@ -116,7 +112,7 @@ class SolidBodyPressure:
             dV=self.field.region.dV,
             grad_v=[False],
             grad_u=[True],
-        ).assemble(parallel=parallel, jit=jit)
+        ).assemble(parallel=parallel)
 
         if resize is not None:
             self.results.stiffness.resize(*resize.shape)

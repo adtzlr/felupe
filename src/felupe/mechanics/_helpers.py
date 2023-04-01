@@ -95,12 +95,12 @@ class StateNearlyIncompressible:
         self.p = np.zeros(field.region.mesh.ncells)
         self.J = np.ones(field.region.mesh.ncells)
 
-    def h(self, parallel=False, jit=False):
+    def h(self, parallel=False):
         "Integrated shape-function gradient w.r.t. the deformed coordinates `x`."
 
         return IntegralFormMixed(
             fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
-        ).integrate(parallel=parallel, jit=jit)[0]
+        ).integrate(parallel=parallel)[0]
 
     def v(self):
         "Cell volumes of the deformed configuration."

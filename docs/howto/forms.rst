@@ -26,7 +26,7 @@ with
     
     \boldsymbol{\varepsilon} &= \text{sym}(\text{grad}(\boldsymbol{u})) 
     
-and implemented in FElupe closely to the analytic expression. The first two arguments for the callable *weak-form* function of a bilinear form are always arrays of field (gradients) ``(v, u)`` followed by arguments and keyword arguments. Optionally, the integration/assembly may be performed in parallel (threaded). Please note that this is only faster for relatively large systems. Contrary to :class:`felupe.IntegralForm`, :func:`felupe.Form` does not offer a Just-In-Time (JIT) compilation by Numba for integration/assembly. The weak-form function is decorated by :func:`felupe.Form` where the appropriate fields are linked to ``v`` and ``u`` along with the gradient flags for both fields. Arguments as well as keyword arguments of the weak-form may be defined inside the decorator or as part of the assembly arguments.
+and implemented in FElupe closely to the analytic expression. The first two arguments for the callable *weak-form* function of a bilinear form are always arrays of field (gradients) ``(v, u)`` followed by arguments and keyword arguments. Optionally, the integration/assembly may be performed in parallel (threaded). Please note that this is only faster for relatively large systems. The weak-form function is decorated by :func:`felupe.Form` where the appropriate fields are linked to ``v`` and ``u`` along with the gradient flags for both fields. Arguments as well as keyword arguments of the weak-form may be defined inside the decorator or as part of the assembly arguments.
 
 ..  code-block:: python
 

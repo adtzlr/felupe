@@ -27,7 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import sparse
-from scipy.sparse import lil_matrix
+from scipy.sparse import eye, lil_matrix
 
 from ._helpers import Assemble, Results
 
@@ -50,7 +50,6 @@ class MultiPointConstraint:
 
     def _vector(self, field=None, parallel=False):
         "Calculate vector of residuals with RBE2 contributions."
-
         if field is not None:
             self.field = field
 
@@ -71,15 +70,17 @@ class MultiPointConstraint:
             self.field = field
 
         indices = np.arange(self.mesh.ndof).reshape(self.mesh.points.shape)
-        td = indices[self.points.reshape(-1, 1), self.axes].ravel()
-        cd = indices[self.centerpoint, self.axes].ravel()
+        td = [indices[self.points.reshape(-1, 1), ax].ravel() for ax in self.axes]
+        cd = [indices[self.centerpoint, ax].ravel() for ax in self.axes]
 
         L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
 
-        L[td.reshape(-1, 1), td] = self.multiplier
-        L[td.reshape(-1, 1), cd] = -self.multiplier
-        L[cd.reshape(-1, 1), td] = -self.multiplier
-        L[cd.reshape(-1, 1), cd] = self.multiplier * len(self.points) * len(self.axes)
+        for t, c in zip(td, cd):
+
+            L[t.reshape(-1, 1), t] = eye(len(t)) * self.multiplier
+            L[t.reshape(-1, 1), c] = -self.multiplier
+            L[c.reshape(-1, 1), t] = -self.multiplier
+            L[c.reshape(-1, 1), c] = eye(len(c)) * self.multiplier * len(self.points)
 
         self.results.stiffness = L.tocsr()
         return self.results.stiffness

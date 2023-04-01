@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import sparse
+from scipy.sparse import lil_matrix
 
 from ._helpers import Assemble, Results
 
@@ -49,40 +50,38 @@ class MultiPointConstraint:
 
     def _vector(self, field=None, parallel=False):
         "Calculate vector of residuals with RBE2 contributions."
+
         if field is not None:
             self.field = field
-        f = self.field.fields[0]
-        r = sparse.DOK(shape=(self.mesh.npoints, self.mesh.dim))
-        c = self.centerpoint
-        for t in self.points:
-            for d in self.axes:
-                N = self.multiplier * (-f.values[t, d] + f.values[c, d])
-                r[t, d] = -N
-                r[c, d] += N
-        self.results.force = sparse.COO(r).reshape((-1, 1)).tocsr()
+
+        u = self.field.fields[0].values
+        N = self.multiplier * (-u[self.points] + u[self.centerpoint])
+
+        r = lil_matrix(u.shape)
+        r[self.points] = -N
+        r[self.centerpoint] = N.sum(axis=0)
+
+        self.results.force = r.reshape(-1, 1).tocsr()
         return self.results.force
 
     def _matrix(self, field=None, parallel=False):
         "Calculate stiffness with RBE2 contributions."
+
         if field is not None:
             self.field = field
-        L = sparse.DOK(
-            shape=(self.mesh.npoints, self.mesh.dim, self.mesh.npoints, self.mesh.dim)
-        )
-        c = self.centerpoint
-        for t in self.points:
-            for d in self.axes:
-                L[t, d, t, d] = self.multiplier
-                L[t, d, c, d] = -self.multiplier
-                L[c, d, t, d] = -self.multiplier
-                L[c, d, c, d] += self.multiplier
-        self.results.stiffness = (
-            sparse.COO(L)
-            .reshape(
-                (self.mesh.npoints * self.mesh.dim, self.mesh.npoints * self.mesh.dim)
-            )
-            .tocsr()
-        )
+
+        indices = np.arange(self.mesh.ndof).reshape(self.mesh.points.shape)
+        td = indices[self.points.reshape(-1, 1), self.axes].ravel()
+        cd = indices[self.centerpoint, self.axes].ravel()
+
+        L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
+
+        L[td.reshape(-1, 1), td] = self.multiplier
+        L[td.reshape(-1, 1), cd] = -self.multiplier
+        L[cd.reshape(-1, 1), td] = -self.multiplier
+        L[cd.reshape(-1, 1), cd] = self.multiplier * len(self.points) * len(self.axes)
+
+        self.results.stiffness = L.tocsr()
         return self.results.stiffness
 
 

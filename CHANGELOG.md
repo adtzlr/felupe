@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Removed
 - Remove `jit`-compilation of forms (`parallel` is the preferred method).
+- Remove unused `tools.check()`.
 
 ## [6.4.0] - 2023-04-01
 

@@ -26,11 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-
-try:
-    from einsumt import einsumt
-except:
-    from numpy import einsum as einsumt
+from einsumt import einsumt
 
 
 class Basis:

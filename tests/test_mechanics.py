@@ -167,49 +167,48 @@ def test_solidbody():
     b = fe.SolidBody(umat=umat, field=u, statevars=np.ones(5))
 
     for parallel in [False, True]:
-        for jit in [False, True]:
 
-            kwargs = {"parallel": parallel, "jit": jit}
+        kwargs = {"parallel": parallel}
 
-            r1 = b.assemble.vector(u, **kwargs)
-            assert r1.shape == (81, 1)
+        r1 = b.assemble.vector(u, **kwargs)
+        assert r1.shape == (81, 1)
 
-            r1b = b.results.force
-            assert np.allclose(r1.toarray(), r1b.toarray())
+        r1b = b.results.force
+        assert np.allclose(r1.toarray(), r1b.toarray())
 
-            r2 = b.assemble.vector(**kwargs)
-            assert np.allclose(r1.toarray(), r2.toarray())
+        r2 = b.assemble.vector(**kwargs)
+        assert np.allclose(r1.toarray(), r2.toarray())
 
-            K1 = b.assemble.matrix(u, **kwargs)
-            assert K1.shape == (81, 81)
+        K1 = b.assemble.matrix(u, **kwargs)
+        assert K1.shape == (81, 81)
 
-            K1b = b.results.stiffness
-            assert np.allclose(K1.toarray(), K1b.toarray())
+        K1b = b.results.stiffness
+        assert np.allclose(K1.toarray(), K1b.toarray())
 
-            K2 = b.assemble.matrix(**kwargs)
-            assert np.allclose(K1.toarray(), K2.toarray())
+        K2 = b.assemble.matrix(**kwargs)
+        assert np.allclose(K1.toarray(), K2.toarray())
 
-            P1 = b.results.stress
-            P2 = b.evaluate.gradient()
-            P2 = b.evaluate.gradient(u)
-            assert np.allclose(P1, P2)
+        P1 = b.results.stress
+        P2 = b.evaluate.gradient()
+        P2 = b.evaluate.gradient(u)
+        assert np.allclose(P1, P2)
 
-            A1 = b.results.elasticity
-            A2 = b.evaluate.hessian()
-            A2 = b.evaluate.hessian(u)
-            assert np.allclose(A1, A2)
+        A1 = b.results.elasticity
+        A2 = b.evaluate.hessian()
+        A2 = b.evaluate.hessian(u)
+        assert np.allclose(A1, A2)
 
-            F1 = b.results.kinematics
-            F2 = b._extract(u)
-            assert np.allclose(F1, F2)
+        F1 = b.results.kinematics
+        F2 = b._extract(u)
+        assert np.allclose(F1, F2)
 
-            s1 = b.evaluate.cauchy_stress()
-            s2 = b.evaluate.cauchy_stress(u)
-            assert np.allclose(s1, s2)
+        s1 = b.evaluate.cauchy_stress()
+        s2 = b.evaluate.cauchy_stress(u)
+        assert np.allclose(s1, s2)
 
-            t1 = b.evaluate.kirchhoff_stress()
-            t2 = b.evaluate.kirchhoff_stress(u)
-            assert np.allclose(t1, t2)
+        t1 = b.evaluate.kirchhoff_stress()
+        t2 = b.evaluate.kirchhoff_stress(u)
+        assert np.allclose(t1, t2)
 
 
 def test_solidbody_incompressible():
@@ -225,49 +224,48 @@ def test_solidbody_incompressible():
     )
 
     for parallel in [False, True]:
-        for jit in [False, True]:
 
-            kwargs = {"parallel": parallel, "jit": jit}
+        kwargs = {"parallel": parallel}
 
-            r1 = b.assemble.vector(u, **kwargs)
-            assert r1.shape == (81, 1)
+        r1 = b.assemble.vector(u, **kwargs)
+        assert r1.shape == (81, 1)
 
-            r1b = b.results.force
-            assert np.allclose(r1.toarray(), r1b.toarray())
+        r1b = b.results.force
+        assert np.allclose(r1.toarray(), r1b.toarray())
 
-            r2 = b.assemble.vector(**kwargs)
-            assert np.allclose(r1.toarray(), r2.toarray())
+        r2 = b.assemble.vector(**kwargs)
+        assert np.allclose(r1.toarray(), r2.toarray())
 
-            K1 = b.assemble.matrix(u, **kwargs)
-            assert K1.shape == (81, 81)
+        K1 = b.assemble.matrix(u, **kwargs)
+        assert K1.shape == (81, 81)
 
-            K1b = b.results.stiffness
-            assert np.allclose(K1.toarray(), K1b.toarray())
+        K1b = b.results.stiffness
+        assert np.allclose(K1.toarray(), K1b.toarray())
 
-            K2 = b.assemble.matrix(**kwargs)
-            assert np.allclose(K1.toarray(), K2.toarray())
+        K2 = b.assemble.matrix(**kwargs)
+        assert np.allclose(K1.toarray(), K2.toarray())
 
-            P1 = b.results.stress
-            P2 = b.evaluate.gradient()
-            P2 = b.evaluate.gradient(u)
-            assert np.allclose(P1, P2)
+        P1 = b.results.stress
+        P2 = b.evaluate.gradient()
+        P2 = b.evaluate.gradient(u)
+        assert np.allclose(P1, P2)
 
-            A1 = b.results.elasticity
-            A2 = b.evaluate.hessian()
-            A2 = b.evaluate.hessian(u)
-            assert np.allclose(A1, A2)
+        A1 = b.results.elasticity
+        A2 = b.evaluate.hessian()
+        A2 = b.evaluate.hessian(u)
+        assert np.allclose(A1, A2)
 
-            F1 = b.results.kinematics
-            F2 = b._extract(u)
-            assert np.allclose(F1, F2)
+        F1 = b.results.kinematics
+        F2 = b._extract(u)
+        assert np.allclose(F1, F2)
 
-            s1 = b.evaluate.cauchy_stress()
-            s2 = b.evaluate.cauchy_stress(u)
-            assert np.allclose(s1, s2)
+        s1 = b.evaluate.cauchy_stress()
+        s2 = b.evaluate.cauchy_stress(u)
+        assert np.allclose(s1, s2)
 
-            t1 = b.evaluate.kirchhoff_stress()
-            t2 = b.evaluate.kirchhoff_stress(u)
-            assert np.allclose(t1, t2)
+        t1 = b.evaluate.kirchhoff_stress()
+        t2 = b.evaluate.kirchhoff_stress(u)
+        assert np.allclose(t1, t2)
 
 
 def test_solidbody_axi():
@@ -279,43 +277,42 @@ def test_solidbody_axi():
     )
 
     for parallel in [False, True]:
-        for jit in [False, True]:
 
-            kwargs = {"parallel": parallel, "jit": jit}
+        kwargs = {"parallel": parallel}
 
-            r1 = b.assemble.vector(u, **kwargs)
-            assert r1.shape == (18, 1)
+        r1 = b.assemble.vector(u, **kwargs)
+        assert r1.shape == (18, 1)
 
-            r2 = b.assemble.vector(**kwargs)
-            assert np.allclose(r1.toarray(), r2.toarray())
+        r2 = b.assemble.vector(**kwargs)
+        assert np.allclose(r1.toarray(), r2.toarray())
 
-            K1 = b.assemble.matrix(u, **kwargs)
-            assert K1.shape == (18, 18)
+        K1 = b.assemble.matrix(u, **kwargs)
+        assert K1.shape == (18, 18)
 
-            K2 = b.assemble.matrix(**kwargs)
-            assert np.allclose(K1.toarray(), K2.toarray())
+        K2 = b.assemble.matrix(**kwargs)
+        assert np.allclose(K1.toarray(), K2.toarray())
 
-            P1 = b.results.stress
-            P2 = b.evaluate.gradient()
-            P2 = b.evaluate.gradient(u)
-            assert np.allclose(P1, P2)
+        P1 = b.results.stress
+        P2 = b.evaluate.gradient()
+        P2 = b.evaluate.gradient(u)
+        assert np.allclose(P1, P2)
 
-            A1 = b.results.elasticity
-            A2 = b.evaluate.hessian()
-            A2 = b.evaluate.hessian(u)
-            assert np.allclose(A1, A2)
+        A1 = b.results.elasticity
+        A2 = b.evaluate.hessian()
+        A2 = b.evaluate.hessian(u)
+        assert np.allclose(A1, A2)
 
-            F1 = b.results.kinematics
-            F2 = b._extract(u)
-            assert np.allclose(F1, F2)
+        F1 = b.results.kinematics
+        F2 = b._extract(u)
+        assert np.allclose(F1, F2)
 
-            s1 = b.evaluate.cauchy_stress()
-            s2 = b.evaluate.cauchy_stress(u)
-            assert np.allclose(s1, s2)
+        s1 = b.evaluate.cauchy_stress()
+        s2 = b.evaluate.cauchy_stress(u)
+        assert np.allclose(s1, s2)
 
-            t1 = b.evaluate.kirchhoff_stress()
-            t2 = b.evaluate.kirchhoff_stress(u)
-            assert np.allclose(t1, t2)
+        t1 = b.evaluate.kirchhoff_stress()
+        t2 = b.evaluate.kirchhoff_stress(u)
+        assert np.allclose(t1, t2)
 
 
 def test_solidbody_axi_incompressible():
@@ -324,43 +321,42 @@ def test_solidbody_axi_incompressible():
     b = fe.SolidBody(umat=umat, field=u)
 
     for parallel in [False, True]:
-        for jit in [False, True]:
 
-            kwargs = {"parallel": parallel, "jit": jit}
+        kwargs = {"parallel": parallel}
 
-            r1 = b.assemble.vector(u, **kwargs)
-            assert r1.shape == (18, 1)
+        r1 = b.assemble.vector(u, **kwargs)
+        assert r1.shape == (18, 1)
 
-            r2 = b.assemble.vector(**kwargs)
-            assert np.allclose(r1.toarray(), r2.toarray())
+        r2 = b.assemble.vector(**kwargs)
+        assert np.allclose(r1.toarray(), r2.toarray())
 
-            K1 = b.assemble.matrix(u, **kwargs)
-            assert K1.shape == (18, 18)
+        K1 = b.assemble.matrix(u, **kwargs)
+        assert K1.shape == (18, 18)
 
-            K2 = b.assemble.matrix(**kwargs)
-            assert np.allclose(K1.toarray(), K2.toarray())
+        K2 = b.assemble.matrix(**kwargs)
+        assert np.allclose(K1.toarray(), K2.toarray())
 
-            P1 = b.results.stress
-            P2 = b.evaluate.gradient()
-            P2 = b.evaluate.gradient(u)
-            assert np.allclose(P1, P2)
+        P1 = b.results.stress
+        P2 = b.evaluate.gradient()
+        P2 = b.evaluate.gradient(u)
+        assert np.allclose(P1, P2)
 
-            A1 = b.results.elasticity
-            A2 = b.evaluate.hessian()
-            A2 = b.evaluate.hessian(u)
-            assert np.allclose(A1, A2)
+        A1 = b.results.elasticity
+        A2 = b.evaluate.hessian()
+        A2 = b.evaluate.hessian(u)
+        assert np.allclose(A1, A2)
 
-            F1 = b.results.kinematics
-            F2 = b._extract(u)
-            assert np.allclose(F1, F2)
+        F1 = b.results.kinematics
+        F2 = b._extract(u)
+        assert np.allclose(F1, F2)
 
-            s1 = b.evaluate.cauchy_stress()
-            s2 = b.evaluate.cauchy_stress(u)
-            assert np.allclose(s1, s2)
+        s1 = b.evaluate.cauchy_stress()
+        s2 = b.evaluate.cauchy_stress(u)
+        assert np.allclose(s1, s2)
 
-            t1 = b.evaluate.kirchhoff_stress()
-            t2 = b.evaluate.kirchhoff_stress(u)
-            assert np.allclose(t1, t2)
+        t1 = b.evaluate.kirchhoff_stress()
+        t2 = b.evaluate.kirchhoff_stress(u)
+        assert np.allclose(t1, t2)
 
 
 def test_solidbody_mixed():
@@ -372,62 +368,61 @@ def test_solidbody_mixed():
     g.assemble.vector()
 
     for parallel in [False, True]:
-        for jit in [False, True]:
 
-            kwargs = {"parallel": parallel, "jit": jit}
+        kwargs = {"parallel": parallel}
 
-            r1 = b.assemble.vector(u, **kwargs)
-            r1 = b.assemble.vector(u, items=3, **kwargs)
-            assert r1.shape == (97, 1)
+        r1 = b.assemble.vector(u, **kwargs)
+        r1 = b.assemble.vector(u, items=3, **kwargs)
+        assert r1.shape == (97, 1)
 
-            r2 = b.assemble.vector(**kwargs)
-            assert np.allclose(r1.toarray(), r2.toarray())
+        r2 = b.assemble.vector(**kwargs)
+        assert np.allclose(r1.toarray(), r2.toarray())
 
-            K1 = b.assemble.matrix(u, **kwargs)
-            K1 = b.assemble.matrix(u, items=6, **kwargs)
-            assert K1.shape == (97, 97)
+        K1 = b.assemble.matrix(u, **kwargs)
+        K1 = b.assemble.matrix(u, items=6, **kwargs)
+        assert K1.shape == (97, 97)
 
-            K2 = b.assemble.matrix(**kwargs)
-            assert np.allclose(K1.toarray(), K2.toarray())
+        K2 = b.assemble.matrix(**kwargs)
+        assert np.allclose(K1.toarray(), K2.toarray())
 
-            P1 = b.results.stress
-            P2 = b.evaluate.gradient()
-            P2 = b.evaluate.gradient(u)
-            for p1, p2 in zip(P1, P2):
-                assert np.allclose(p1, p2)
+        P1 = b.results.stress
+        P2 = b.evaluate.gradient()
+        P2 = b.evaluate.gradient(u)
+        for p1, p2 in zip(P1, P2):
+            assert np.allclose(p1, p2)
 
-            A1 = b.results.elasticity
-            A2 = b.evaluate.hessian()
-            A2 = b.evaluate.hessian(u)
-            for a1, a2 in zip(A1, A2):
-                assert np.allclose(a1, a2)
+        A1 = b.results.elasticity
+        A2 = b.evaluate.hessian()
+        A2 = b.evaluate.hessian(u)
+        for a1, a2 in zip(A1, A2):
+            assert np.allclose(a1, a2)
 
-            F1 = b.results.kinematics
-            F2 = b._extract(u)
-            for f1, f2 in zip(F1, F2):
-                assert np.allclose(f1, f2)
+        F1 = b.results.kinematics
+        F2 = b._extract(u)
+        for f1, f2 in zip(F1, F2):
+            assert np.allclose(f1, f2)
 
-            s1 = b.evaluate.cauchy_stress()
-            s2 = b.evaluate.cauchy_stress(u)
-            assert np.allclose(s1, s2)
+        s1 = b.evaluate.cauchy_stress()
+        s2 = b.evaluate.cauchy_stress(u)
+        assert np.allclose(s1, s2)
 
-            t1 = b.evaluate.kirchhoff_stress()
-            t2 = b.evaluate.kirchhoff_stress(u)
-            assert np.allclose(t1, t2)
+        t1 = b.evaluate.kirchhoff_stress()
+        t2 = b.evaluate.kirchhoff_stress(u)
+        assert np.allclose(t1, t2)
 
-            rg1 = g.assemble.vector(u, **kwargs)
-            assert rg1.shape == (97, 1)
+        rg1 = g.assemble.vector(u, **kwargs)
+        assert rg1.shape == (97, 1)
 
-            Kg1 = g.assemble.matrix(u, **kwargs)
-            assert Kg1.shape == (97, 97)
+        Kg1 = g.assemble.matrix(u, **kwargs)
+        assert Kg1.shape == (97, 97)
 
-            rg2 = g.assemble.vector(**kwargs)
-            assert rg1.shape == (97, 1)
-            assert np.allclose(rg1.toarray(), rg2.toarray())
+        rg2 = g.assemble.vector(**kwargs)
+        assert rg1.shape == (97, 1)
+        assert np.allclose(rg1.toarray(), rg2.toarray())
 
-            Kg2 = g.assemble.matrix(**kwargs)
-            assert Kg1.shape == (97, 97)
-            assert np.allclose(Kg1.toarray(), Kg2.toarray())
+        Kg2 = g.assemble.matrix(**kwargs)
+        assert Kg1.shape == (97, 97)
+        assert np.allclose(Kg1.toarray(), Kg2.toarray())
 
 
 def test_load():

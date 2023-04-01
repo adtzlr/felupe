@@ -44,7 +44,7 @@ def pre():
     return r, f, (u, p, J)
 
 
-def test_solve_check():
+def test_solve():
 
     r, _, (u, p, J) = pre()
     f = fe.FieldContainer([u])
@@ -66,9 +66,6 @@ def test_solve_check():
 
     dx = fe.tools.solve(A, b, f, dof0, dof1, f.offsets, ext0)
     assert dx[0].shape == f[0].values.ravel().shape
-
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
     fe.tools.save(r, f)
     fe.tools.save(r, f, r=b)
@@ -98,7 +95,7 @@ def test_solve_check():
     assert cauchy.shape == (r.mesh.npoints, 6)
 
 
-def test_solve_mixed_check():
+def test_solve_mixed():
 
     r, f, fields = pre()
     u = fields[0]
@@ -128,9 +125,6 @@ def test_solve_mixed_check():
     assert dx[0].shape == u.values.ravel().shape
     assert dx[1].shape == fields[1].values.ravel().shape
     assert dx[2].shape == fields[2].values.ravel().shape
-
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
     fe.tools.save(r, f)
     fe.tools.save(r, f, r=b)
@@ -327,8 +321,8 @@ def test_newton_body():
 
 
 if __name__ == "__main__":
-    test_solve_check()
-    test_solve_mixed_check()
+    test_solve()
+    test_solve_mixed()
     test_newton_simple()
     test_newton()
     test_newton_mixed()

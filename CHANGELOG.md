@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [6.4.0] - 2023-04-01
+
 ### Added
 - Add a new argument to pass a mesh for the dual regions in `FieldsMixed(mesh=None)`.
 - Add quadrature and grad arguments to `RegionLagrange`.

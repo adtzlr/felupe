@@ -49,7 +49,6 @@ dependencies = [
 all = [
     "meshio",
     "h5py",
-    "numba",
     "sparse",
     "einsumt",
     "tensortrax",

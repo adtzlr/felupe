@@ -111,12 +111,10 @@ class SolidBodyNearlyIncompressible:
             kirchhoff_stress=self._kirchhoff_stress,
         )
 
-    def _vector(
-        self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
-    ):
+    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
 
         self.results.stress = self._gradient(
-            field, parallel=parallel, jit=jit, args=args, kwargs=kwargs
+            field, parallel=parallel, args=args, kwargs=kwargs
         )
 
         form = self._form(
@@ -125,12 +123,12 @@ class SolidBodyNearlyIncompressible:
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h(parallel=parallel, jit=jit)
+        h = self.results.state.h(parallel=parallel)
         v = self.results.state.v()
         p = self.results.state.p
 
         values = [
-            form.integrate(parallel=parallel, jit=jit)[0]
+            form.integrate(parallel=parallel)[0]
             + h * (self.bulk * (v / self.V - 1) - p)
         ]
 
@@ -138,12 +136,10 @@ class SolidBodyNearlyIncompressible:
 
         return self.results.force
 
-    def _matrix(
-        self, field=None, parallel=False, jit=False, items=None, args=(), kwargs={}
-    ):
+    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
 
         self.results.elasticity = self._hessian(
-            field, parallel=parallel, jit=jit, args=args, kwargs=kwargs
+            field, parallel=parallel, args=args, kwargs=kwargs
         )
 
         form = self._form(
@@ -153,22 +149,19 @@ class SolidBodyNearlyIncompressible:
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h(parallel=parallel, jit=jit)
+        h = self.results.state.h(parallel=parallel)
 
-        values = [
-            form.integrate(parallel=parallel, jit=jit)[0]
-            + self.bulk / self.V * dya(h, h)
-        ]
+        values = [form.integrate(parallel=parallel)[0] + self.bulk / self.V * dya(h, h)]
 
         self.results.stiffness = form.assemble(values=values)
 
         return self.results.stiffness
 
-    def _extract(self, field, parallel=False, jit=False):
+    def _extract(self, field, parallel=False):
 
         u = field[0].values
         u0 = self.results.state.u
-        h = self.results.state.h(parallel=parallel, jit=jit)
+        h = self.results.state.h(parallel=parallel)
         v = self.results.state.v()
         J = self.results.state.J
         p = self.results.state.p
@@ -189,10 +182,10 @@ class SolidBodyNearlyIncompressible:
 
         return self.results.kinematics
 
-    def _gradient(self, field=None, parallel=False, jit=False, args=(), kwargs={}):
+    def _gradient(self, field=None, parallel=False, args=(), kwargs={}):
 
         if field is not None:
-            self.results.kinematics = self._extract(field, parallel=parallel, jit=jit)
+            self.results.kinematics = self._extract(field, parallel=parallel)
 
         dJdF = self._area_change.function
         F = self.results.kinematics[0]
@@ -207,10 +200,10 @@ class SolidBodyNearlyIncompressible:
 
         return self.results.stress
 
-    def _hessian(self, field=None, parallel=False, jit=False, args=(), kwargs={}):
+    def _hessian(self, field=None, parallel=False, args=(), kwargs={}):
 
         if field is not None:
-            self.results.kinematics = self._extract(field, parallel=parallel, jit=jit)
+            self.results.kinematics = self._extract(field, parallel=parallel)
 
         d2JdF2 = self._area_change.gradient
         F = self.results.kinematics[0]

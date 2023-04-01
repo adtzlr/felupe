@@ -44,7 +44,7 @@ def pre():
     return r, f, (u, p, J)
 
 
-def test_solve_check():
+def test_solve():
 
     r, _, (u, p, J) = pre()
     f = fe.FieldContainer([u])
@@ -66,9 +66,6 @@ def test_solve_check():
 
     dx = fe.tools.solve(A, b, f, dof0, dof1, f.offsets, ext0)
     assert dx[0].shape == f[0].values.ravel().shape
-
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
 
     fe.tools.save(r, f)
     fe.tools.save(r, f, r=b)
@@ -98,7 +95,7 @@ def test_solve_check():
     assert cauchy.shape == (r.mesh.npoints, 6)
 
 
-def test_solve_mixed_check():
+def test_solve_mixed():
 
     r, f, fields = pre()
     u = fields[0]
@@ -129,9 +126,6 @@ def test_solve_mixed_check():
     assert dx[1].shape == fields[1].values.ravel().shape
     assert dx[2].shape == fields[2].values.ravel().shape
 
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=0)
-    fe.tools.check(dx, f, b, dof1, dof0, verbose=1)
-
     fe.tools.save(r, f)
     fe.tools.save(r, f, r=b)
     fe.tools.save(
@@ -158,11 +152,7 @@ def test_newton_simple():
     x0 = np.array([3.1])
 
     res = fe.tools.newtonrhapson(
-        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True, timing=False
-    )
-
-    res = fe.tools.newtonrhapson(
-        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True, timing=True
+        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True
     )
 
     assert abs(res.fun) < 1e-6
@@ -191,13 +181,11 @@ def test_newton():
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 
-    for kwargs in [{"parallel": True}, {"jit": True}]:
+    for kwargs in [{"parallel": True, "umat": umat}]:
 
         # newton-rhapson procedure
         res = fe.newtonrhapson(
             field,
-            umat=umat,
-            timing=True,
             verbose=True,
             kwargs=kwargs,
             **loadcase,
@@ -220,10 +208,8 @@ def test_newton_plane():
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         field,
-        umat=umat,
-        timing=True,
         verbose=True,
-        kwargs={},
+        kwargs=dict(umat=umat),
         **loadcase,
     )
 
@@ -233,10 +219,8 @@ def test_newton_plane():
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         field,
-        umat=umat,
-        timing=True,
         verbose=True,
-        kwargs={},
+        kwargs=dict(umat=umat),
         **loadcase,
     )
 
@@ -257,10 +241,8 @@ def test_newton_linearelastic():
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         field,
-        umat=umat,
-        timing=True,
         verbose=True,
-        kwargs={"grad": True, "sym": True, "add_identity": False},
+        kwargs={"umat": umat, "grad": True, "sym": True, "add_identity": False},
         **loadcase,
     )
 
@@ -290,7 +272,7 @@ def test_newton_mixed():
     umat = fe.ThreeFieldVariation(nh)
 
     # newton-rhapson procedure
-    res = fe.newtonrhapson(x0=field, umat=umat, kwargs={}, **loadcase)
+    res = fe.newtonrhapson(x0=field, kwargs=dict(umat=umat), **loadcase)
 
 
 def test_newton_body():
@@ -327,8 +309,8 @@ def test_newton_body():
 
 
 if __name__ == "__main__":
-    test_solve_check()
-    test_solve_mixed_check()
+    test_solve()
+    test_solve_mixed()
     test_newton_simple()
     test_newton()
     test_newton_mixed()

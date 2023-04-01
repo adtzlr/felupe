@@ -1,4 +1,3 @@
-from ._check import check
 from ._newton import fun_items as fun
 from ._newton import jac_items as jac
 from ._newton import newtonrhapson

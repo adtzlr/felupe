@@ -47,11 +47,11 @@ class Result:
         self.iterations = iterations
 
 
-def fun_items(items, x, parallel=False, jit=False):
+def fun_items(items, x, parallel=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     # init keyword arguments
-    kwargs = {"parallel": parallel, "jit": jit}
+    kwargs = {"parallel": parallel}
 
     # link field of items with global field
     [item.field.link(x) for item in items]
@@ -75,11 +75,11 @@ def fun_items(items, x, parallel=False, jit=False):
     return vector.toarray()[:, 0]
 
 
-def jac_items(items, x, parallel=False, jit=False):
+def jac_items(items, x, parallel=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     # init keyword arguments
-    kwargs = {"parallel": parallel, "jit": jit}
+    kwargs = {"parallel": parallel}
 
     # init matrix with shape from global field
     shape = (np.sum(x.fieldsizes), np.sum(x.fieldsizes))
@@ -100,7 +100,7 @@ def jac_items(items, x, parallel=False, jit=False):
     return matrix
 
 
-def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
+def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     return (
@@ -111,12 +111,12 @@ def fun(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=Fa
             v=x,
             dV=x.region.dV,
         )
-        .assemble(parallel=parallel, jit=jit)
+        .assemble(parallel=parallel)
         .toarray()[:, 0]
     )
 
 
-def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=False):
+def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
     return IntegralFormMixed(
@@ -124,7 +124,7 @@ def jac(x, umat, parallel=False, jit=False, grad=True, add_identity=True, sym=Fa
         v=x,
         dV=x.region.dV,
         u=x,
-    ).assemble(parallel=parallel, jit=jit)
+    ).assemble(parallel=parallel)
 
 
 def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
@@ -149,7 +149,7 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
         dof0 = slice(0, 0)
 
     fnorm = sumnorm(f[dof1]) / (eps + sumnorm(f[dof0]))
-    success = fnorm < ftol  # and xnorm < xtol
+    success = fnorm < ftol and xnorm < xtol
 
     if success and items is not None:
         for item in items:
@@ -174,18 +174,13 @@ def newtonrhapson(
     check=check,
     args=(),
     kwargs={},
-    kwargs_solve=None,
-    kwargs_check=None,
     tol=np.sqrt(np.finfo(float).eps),
-    umat=None,
     items=None,
     dof1=None,
     dof0=None,
     ext0=None,
     solver=spsolve,
-    export_jac=False,
     verbose=True,
-    timing=True,
 ):
     """
     General-purpose Newton-Rhapson algorithm
@@ -215,7 +210,7 @@ def newtonrhapson(
 
     """
 
-    if timing:
+    if verbose:
         time_start = perf_counter()
 
     if x0 is not None:
@@ -226,14 +221,8 @@ def newtonrhapson(
         # obtain field of first body
         x = items[0].field
 
-    if umat is not None:
-        kwargs["umat"] = umat
-
-    if kwargs_solve is None:
-        kwargs_solve = {}
-
-    if kwargs_check is None:
-        kwargs_check = {}
+    kwargs_solve = {}
+    sig = inspect.signature(solve)
 
     # pre-evaluate function at given unknowns "x"
     if items is not None:
@@ -258,9 +247,7 @@ def newtonrhapson(
         else:
             K = jac(x, *args, **kwargs)
 
-        # solve linear system and update solution
-        sig = inspect.signature(solve)
-
+        # create keyword-arguments for solving the linear system
         keys = ["x", "dof1", "dof0", "ext0", "solver"]
         values = [x, dof1, dof0, ext0, solver]
 
@@ -269,6 +256,7 @@ def newtonrhapson(
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
+        # solve linear system and update solution
         dx = solve(K, -f, **kwargs_solve)
         x = update(x, dx)
 
@@ -280,15 +268,13 @@ def newtonrhapson(
 
         # check success of solution
         xnorm, fnorm, success = check(
-            dx, x, f, tol, tol, dof1, dof0, items, **kwargs_check
+            dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
         )
 
         if verbose:
             print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))
 
         if success:
-            if verbose and not timing:
-                print("\nSolution converged in %d iterations.\n" % (iteration + 1))
             break
 
         if np.any(np.isnan([xnorm, fnorm])):
@@ -299,10 +285,7 @@ def newtonrhapson(
 
     Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 
-    if export_jac:
-        Res.jac = K
-
-    if verbose and timing:
+    if verbose:
         time_finish = perf_counter()
         print(
             "\nSolution converged in %d iterations within %1.4g seconds.\n"

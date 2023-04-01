@@ -134,8 +134,8 @@ class IntegralFormAxisymmetric(IntegralForm):
                     form_a,
                 ]
 
-    def integrate(self, parallel=False, jit=False):
-        values = [form.integrate(parallel=parallel, jit=jit) for form in self.forms]
+    def integrate(self, parallel=False):
+        values = [form.integrate(parallel=parallel) for form in self.forms]
 
         if self.mode == 1:
             values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))
@@ -175,7 +175,7 @@ class IntegralFormAxisymmetric(IntegralForm):
 
         return val
 
-    def assemble(self, values=None, parallel=False, jit=False):
+    def assemble(self, values=None, parallel=False):
         if values is None:
-            values = self.integrate(parallel=parallel, jit=jit)
+            values = self.integrate(parallel=parallel)
         return self.forms[0].assemble(values)

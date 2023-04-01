@@ -54,7 +54,7 @@ class PointLoad:
 
         self.__init__(self.field, self.points, values, self.apply_on, self.axisymmetric)
 
-    def _vector(self, field=None, parallel=False, jit=False):
+    def _vector(self, field=None, parallel=False):
 
         if field is not None:
             self.field = field
@@ -73,7 +73,7 @@ class PointLoad:
 
         return -self.results.force
 
-    def _matrix(self, field=None, parallel=False, jit=False):
+    def _matrix(self, field=None, parallel=False):
 
         if field is not None:
             self.field = field

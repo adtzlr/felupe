@@ -57,7 +57,7 @@ Another key feature is the easy and straightforward definition of mixed field fo
 Installation
 ------------
 
-Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe only depends on ``numpy`` and ``scipy``. However,  ``meshio``, ``h5py``, ``einsumt`` and ``sparse`` are highly recommended. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For constitutive material definitions using Automatic Differentation consider also installing `matADi <https://github.com/adtzlr/matadi>`_.
+Install Python, open the terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe only depends on ``numpy`` and ``scipy``. However,  ``meshio``, ``h5py``, ``einsumt`` and ``sparse`` are highly recommended. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For constitutive material definitions using Automatic Differentation consider also installing `matADi <https://github.com/adtzlr/matadi>`_.
 
 .. code-block:: shell
 
@@ -87,7 +87,7 @@ Install Python, fire up a terminal and run ``pip install felupe[all]``, where ``
 License
 -------
 
-FElupe - finite element analysis (C) 2023 Andreas Dutzler, Graz (Austria).
+FElupe - Finite Element Analysis (C) 2023 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

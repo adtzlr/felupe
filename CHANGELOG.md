@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Add `einsumt` to requirements.
+- Vectorize implementation of `MultiPointConstraint`.
 
 ### Removed
 - Remove `jit`-compilation of forms (`parallel` is the preferred method).

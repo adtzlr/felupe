@@ -50,7 +50,6 @@ dependencies = [
 all = [
     "meshio",
     "h5py",
-    "sparse",
     "tensortrax",
 ]
 

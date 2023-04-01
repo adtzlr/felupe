@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Add `einsumt` to requirements.
-- Vectorize implementation of `MultiPointConstraint`.
+- Vectorize implementations of `MultiPointConstraint` and `MultiPointContact` and re-implement both as `scipy.sparse.lil_matrix()`.
 
 ### Removed
 - Remove `jit`-compilation of forms (`parallel` is the preferred method).
 - Remove unused `tools.check()`.
+- Remove optional dependency `sparse`.
 
 ## [6.4.0] - 2023-04-01
 

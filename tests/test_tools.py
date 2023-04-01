@@ -152,11 +152,7 @@ def test_newton_simple():
     x0 = np.array([3.1])
 
     res = fe.tools.newtonrhapson(
-        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True, timing=False
-    )
-
-    res = fe.tools.newtonrhapson(
-        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True, timing=True
+        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True
     )
 
     assert abs(res.fun) < 1e-6
@@ -185,13 +181,11 @@ def test_newton():
     # define the constitutive material behavior
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 
-    for kwargs in [{"parallel": True}, {"jit": True}]:
+    for kwargs in [{"parallel": True, "umat": umat}]:
 
         # newton-rhapson procedure
         res = fe.newtonrhapson(
             field,
-            umat=umat,
-            timing=True,
             verbose=True,
             kwargs=kwargs,
             **loadcase,
@@ -214,10 +208,8 @@ def test_newton_plane():
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         field,
-        umat=umat,
-        timing=True,
         verbose=True,
-        kwargs={},
+        kwargs=dict(umat=umat),
         **loadcase,
     )
 
@@ -227,10 +219,8 @@ def test_newton_plane():
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         field,
-        umat=umat,
-        timing=True,
         verbose=True,
-        kwargs={},
+        kwargs=dict(umat=umat),
         **loadcase,
     )
 
@@ -251,10 +241,8 @@ def test_newton_linearelastic():
     # newton-rhapson procedure
     res = fe.newtonrhapson(
         field,
-        umat=umat,
-        timing=True,
         verbose=True,
-        kwargs={"grad": True, "sym": True, "add_identity": False},
+        kwargs={"umat": umat, "grad": True, "sym": True, "add_identity": False},
         **loadcase,
     )
 
@@ -284,7 +272,7 @@ def test_newton_mixed():
     umat = fe.ThreeFieldVariation(nh)
 
     # newton-rhapson procedure
-    res = fe.newtonrhapson(x0=field, umat=umat, kwargs={}, **loadcase)
+    res = fe.newtonrhapson(x0=field, kwargs=dict(umat=umat), **loadcase)
 
 
 def test_newton_body():

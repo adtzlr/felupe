@@ -33,7 +33,7 @@ from ._region import Region
 
 
 def boundary_cells_quad(mesh):
-    "Convert the cells array of a quad into a boundary cells array."
+    "Convert the cells array of a quad mesh into a boundary cells array."
 
     # edges (boundary) of a quad
     i = [3, 1, 0, 2]
@@ -65,7 +65,7 @@ def boundary_cells_quad(mesh):
 
 
 def boundary_cells_quad8(mesh):
-    "Convert the cells array of a quadratic quad into a boundary cells array."
+    "Convert the cells array of a quadratic quad mesh into a boundary cells array."
 
     cells_quad, cells_faces_quad = boundary_cells_quad(mesh)
 
@@ -99,7 +99,7 @@ def boundary_cells_quad8(mesh):
 
 
 def boundary_cells_quad9(mesh):
-    "Convert the cells array of a bi-quadratic quad into a boundary cells array."
+    "Convert the cells array of a bi-quadratic quad mesh into a boundary cells array."
 
     cells_quad8, cells_faces_quad8 = boundary_cells_quad8(mesh)
 
@@ -114,6 +114,53 @@ def boundary_cells_quad9(mesh):
     )
 
     return cells, cells_faces_quad8
+
+
+def boundary_cells_hexahedron(mesh):
+    "Convert the cells array of a hex mesh into a boundary cells array."
+
+    # faces (boundary) of a hexahedron
+    i = [0, 1, 1, 2, 0, 4]
+    j = [3, 2, 0, 3, 1, 5]
+    k = [7, 6, 4, 7, 2, 6]
+    l = [4, 5, 5, 6, 3, 7]
+
+    cells_faces = np.dstack(
+        (
+            mesh.cells[:, i],
+            mesh.cells[:, j],
+            mesh.cells[:, k],
+            mesh.cells[:, l],
+        )
+    )
+
+    # complementary faces for the creation of "boundary" hexahedrons
+    # (6 rotated hexahedrons with 1st face as n-th face of
+    #  one original hexahedron)
+    t = [1, 0, 3, 2, 5, 4]
+    m = np.array(i)[t]
+    n = np.array(j)[t]
+    p = np.array(k)[t]
+    q = np.array(l)[t]
+
+    cells = np.dstack(
+        (
+            mesh.cells[:, i],
+            mesh.cells[:, j],
+            mesh.cells[:, k],
+            mesh.cells[:, l],
+            mesh.cells[:, m],
+            mesh.cells[:, n],
+            mesh.cells[:, p],
+            mesh.cells[:, q],
+        )
+    )
+    # ensure right-hand-side cell connectivity
+    for a in [1, 3, 5]:
+        cells[:, a, :4] = cells[:, a, :4].T[::-1].T
+        cells[:, a, 4:] = cells[:, a, 4:].T[::-1].T
+
+    return cells, cells_faces
 
 
 class RegionBoundary(Region):
@@ -192,56 +239,12 @@ class RegionBoundary(Region):
 
         if mesh.cell_type == "quad":
             cells, cells_faces = boundary_cells_quad(mesh)
-
         elif mesh.cell_type == "quad8":
             cells, cells_faces = boundary_cells_quad8(mesh)
-
         elif mesh.cell_type == "quad9":
             cells, cells_faces = boundary_cells_quad9(mesh)
-
         elif mesh.cell_type == "hexahedron":
-
-            # faces (boundary) of a hexahedron
-            i = [0, 1, 1, 2, 0, 4]
-            j = [3, 2, 0, 3, 1, 5]
-            k = [7, 6, 4, 7, 2, 6]
-            l = [4, 5, 5, 6, 3, 7]
-
-            cells_faces = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, k],
-                    mesh.cells[:, l],
-                )
-            )
-
-            # complementary faces for the creation of "boundary" hexahedrons
-            # (6 rotated hexahedrons with 1st face as n-th face of
-            #  one original hexahedron)
-            t = [1, 0, 3, 2, 5, 4]
-            m = np.array(i)[t]
-            n = np.array(j)[t]
-            p = np.array(k)[t]
-            q = np.array(l)[t]
-
-            cells = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, k],
-                    mesh.cells[:, l],
-                    mesh.cells[:, m],
-                    mesh.cells[:, n],
-                    mesh.cells[:, p],
-                    mesh.cells[:, q],
-                )
-            )
-            # ensure right-hand-side cell connectivity
-            for a in [1, 3, 5]:
-                cells[:, a, :4] = cells[:, a, :4].T[::-1].T
-                cells[:, a, 4:] = cells[:, a, 4:].T[::-1].T
-
+            cells, cells_faces = boundary_cells_hexahedron(mesh)
         else:
             raise NotImplementedError("Cell type not supported.")
 

@@ -259,6 +259,24 @@ class RegionQuadraticHexahedron(Region):
         super().__init__(mesh, element, quadrature, grad=grad)
 
 
+class RegionQuadraticHexahedronBoundary(RegionBoundary):
+    "A boundary region with a (serendipity) quadratic hexahedron element."
+
+    def __init__(
+        self,
+        mesh,
+        quadrature=GaussLegendreBoundary(order=2, dim=3),
+        grad=True,
+        only_surface=True,
+        mask=None,
+    ):
+
+        element = QuadraticHexahedron()
+        super().__init__(
+            mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
+        )
+
+
 class RegionTriQuadraticHexahedron(Region):
     "A region with a tri-quadratic (lagrange) hexahedron element."
 
@@ -266,6 +284,24 @@ class RegionTriQuadraticHexahedron(Region):
 
         element = TriQuadraticHexahedron()
         super().__init__(mesh, element, quadrature, grad=grad)
+
+
+class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
+    "A boundary region with a tri-quadratic (lagrange) hexahedron element."
+
+    def __init__(
+        self,
+        mesh,
+        quadrature=GaussLegendreBoundary(order=2, dim=3),
+        grad=True,
+        only_surface=True,
+        mask=None,
+    ):
+
+        element = TriQuadraticHexahedron()
+        super().__init__(
+            mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
+        )
 
 
 class RegionLagrange(Region):

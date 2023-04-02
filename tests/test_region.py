@@ -72,9 +72,13 @@ def test_region():
     r = fe.RegionQuadraticHexahedron(mesh2)
     f = fe.FieldsMixed(r)
 
+    r = fe.RegionQuadraticHexahedronBoundary(mesh2)
+
     mesh3 = fe.mesh.convert(mesh, 2, True, True, True)
     r = fe.RegionTriQuadraticHexahedron(mesh3)
     f = fe.FieldsMixed(r)
+
+    r = fe.RegionTriQuadraticHexahedronBoundary(mesh3)
 
     triangle = fe.Triangle()
     points = triangle.points

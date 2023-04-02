@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add boundary regions `RegionQuadraticQuadBoundary` and `RegionBiQuadraticQuadBoundary` for quadratic quads.
+- Add boundary regions `RegionQuadraticHexahedronBoundary` and `RegionTriQuadraticHexahedronBoundary` for quadratic hexahedrons.
 
 ### Changed
 - Change `einsumt` from an optional to a required dependency.

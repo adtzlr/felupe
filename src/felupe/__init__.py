@@ -73,6 +73,7 @@ from .region import (
     RegionQuad,
     RegionQuadBoundary,
     RegionQuadraticHexahedron,
+    RegionQuadraticHexahedronBoundary,
     RegionQuadraticQuad,
     RegionQuadraticQuadBoundary,
     RegionQuadraticTetra,
@@ -82,6 +83,7 @@ from .region import (
     RegionTriangle,
     RegionTriangleMINI,
     RegionTriQuadraticHexahedron,
+    RegionTriQuadraticHexahedronBoundary,
 )
 
 try:

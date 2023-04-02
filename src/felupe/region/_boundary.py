@@ -32,6 +32,90 @@ from ..mesh import Mesh
 from ._region import Region
 
 
+def boundary_cells_quad(mesh):
+    "Convert the cells array of a quad into a boundary cells array."
+
+    # edges (boundary) of a quad
+    i = [3, 1, 0, 2]
+    j = [0, 2, 1, 3]
+
+    cells_faces = np.dstack(
+        (
+            mesh.cells[:, i],
+            mesh.cells[:, j],
+        )
+    )
+
+    # complementary edges for the creation of "boundary" quads
+    # (rotated quads with 1st edge as n-th edge of one original quad)
+    t = [1, 0, 3, 2]
+    k = np.array(i)[t]
+    l = np.array(j)[t]
+
+    cells = np.dstack(
+        (
+            mesh.cells[:, i],
+            mesh.cells[:, j],
+            mesh.cells[:, k],
+            mesh.cells[:, l],
+        )
+    )
+
+    return cells, cells_faces
+
+
+def boundary_cells_quad8(mesh):
+    "Convert the cells array of a quadratic quad into a boundary cells array."
+
+    cells_quad, cells_faces_quad = boundary_cells_quad(mesh)
+
+    # midpoints on edges (boundary) of a quadratic quad
+    m = [7, 5, 4, 6]
+
+    cells_faces = np.dstack(
+        (
+            cells_faces_quad,
+            mesh.cells[:, m],
+        )
+    )
+
+    # complementary midpoints of edges for the creation of "boundary" quadratic quads
+    # (rotated quads with 1st edge as n-th edge of one original quad)
+    n = [5, 6, 7, 4]
+    p = [4, 5, 6, 7]
+    q = [6, 7, 4, 5]
+
+    cells = np.dstack(
+        (
+            cells_quad,
+            mesh.cells[:, m],
+            mesh.cells[:, n],
+            mesh.cells[:, p],
+            mesh.cells[:, q],
+        )
+    )
+
+    return cells, cells_faces
+
+
+def boundary_cells_quad9(mesh):
+    "Convert the cells array of a bi-quadratic quad into a boundary cells array."
+
+    cells_quad8, cells_faces_quad8 = boundary_cells_quad8(mesh)
+
+    # midpoints on edges (boundary) of a quadratic quad
+    r = [8, 8, 8, 8]
+
+    cells = np.dstack(
+        (
+            cells_quad8,
+            mesh.cells[:, r],
+        )
+    )
+
+    return cells, cells_faces_quad8
+
+
 class RegionBoundary(Region):
     r"""
     A numeric boundary-region as a combination of a mesh, an element and a
@@ -107,120 +191,13 @@ class RegionBoundary(Region):
         self.ensure_3d = ensure_3d
 
         if mesh.cell_type == "quad":
-
-            # edges (boundary) of a quad
-            i = [3, 1, 0, 2]
-            j = [0, 2, 1, 3]
-
-            cells_faces = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                )
-            )
-
-            # complementary edges for the creation of "boundary" quads
-            # (rotated quads with 1st edge as n-th edge of one original quad)
-            t = [1, 0, 3, 2]
-            k = np.array(i)[t]
-            l = np.array(j)[t]
-
-            cells = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, k],
-                    mesh.cells[:, l],
-                )
-            )
+            cells, cells_faces = boundary_cells_quad(mesh)
 
         elif mesh.cell_type == "quad8":
-
-            # edges (boundary) of a quadratic quad
-            i = [3, 1, 0, 2]
-            j = [0, 2, 1, 3]
-
-            # midpoints on edges (boundary) of a quadratic quad
-            m = [7, 5, 4, 6]
-
-            cells_faces = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, m],
-                )
-            )
-
-            # complementary edges for the creation of "boundary" quadratic quads
-            # (rotated quads with 1st edge as n-th edge of one original quad)
-            t = [1, 0, 3, 2]
-            k = np.array(i)[t]
-            l = np.array(j)[t]
-
-            # complementary midpoints of edges for the creation of "boundary"
-            # quadratic quads
-            # (rotated quads with 1st edge as n-th edge of one original quad)
-            n = [5, 6, 7, 4]
-            p = [4, 5, 6, 7]
-            q = [6, 7, 4, 5]
-
-            cells = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, k],
-                    mesh.cells[:, l],
-                    mesh.cells[:, m],
-                    mesh.cells[:, n],
-                    mesh.cells[:, p],
-                    mesh.cells[:, q],
-                )
-            )
+            cells, cells_faces = boundary_cells_quad8(mesh)
 
         elif mesh.cell_type == "quad9":
-
-            # edges (boundary) of a bi-quadratic quad
-            i = [3, 1, 0, 2]
-            j = [0, 2, 1, 3]
-
-            # midpoints on edges (boundary) of a bi-quadratic quad
-            m = [7, 5, 4, 6]
-
-            cells_faces = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, m],
-                )
-            )
-
-            # complementary edges for the creation of "boundary" bi-quadratic quads
-            # (rotated quads with 1st edge as n-th edge of one original quad)
-            t = [1, 0, 3, 2]
-            k = np.array(i)[t]
-            l = np.array(j)[t]
-
-            # complementary midpoints of edges for the creation of "boundary"
-            # bi-quadratic quads
-            # (rotated quads with 1st edge as n-th edge of one original quad)
-            n = [5, 6, 7, 4]
-            p = [4, 5, 6, 7]
-            q = [6, 7, 4, 5]
-            r = [8, 8, 8, 8]
-
-            cells = np.dstack(
-                (
-                    mesh.cells[:, i],
-                    mesh.cells[:, j],
-                    mesh.cells[:, k],
-                    mesh.cells[:, l],
-                    mesh.cells[:, m],
-                    mesh.cells[:, n],
-                    mesh.cells[:, p],
-                    mesh.cells[:, q],
-                    mesh.cells[:, r],
-                )
-            )
+            cells, cells_faces = boundary_cells_quad9(mesh)
 
         elif mesh.cell_type == "hexahedron":
 

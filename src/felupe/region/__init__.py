@@ -11,6 +11,7 @@ from ._templates import (
     RegionQuad,
     RegionQuadBoundary,
     RegionQuadraticHexahedron,
+    RegionQuadraticHexahedronBoundary,
     RegionQuadraticQuad,
     RegionQuadraticQuadBoundary,
     RegionQuadraticTetra,
@@ -20,4 +21,5 @@ from ._templates import (
     RegionTriangle,
     RegionTriangleMINI,
     RegionTriQuadraticHexahedron,
+    RegionTriQuadraticHexahedronBoundary,
 )

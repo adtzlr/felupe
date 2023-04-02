@@ -119,10 +119,10 @@ def boundary_cells_hexahedron(mesh):
     "Convert the cells array of a hex mesh into a boundary cells array."
 
     # faces (boundary) of a hexahedron
-    i = [0, 1, 1, 2, 0, 4]
-    j = [3, 2, 0, 3, 1, 5]
-    k = [7, 6, 4, 7, 2, 6]
-    l = [4, 5, 5, 6, 3, 7]
+    i = [0, 2, 1, 3, 0, 5]
+    j = [3, 1, 0, 2, 1, 4]
+    k = [7, 5, 4, 6, 2, 7]
+    l = [4, 6, 5, 7, 3, 6]
 
     cells_faces = np.dstack(
         (
@@ -136,11 +136,10 @@ def boundary_cells_hexahedron(mesh):
     # complementary faces for the creation of "boundary" hexahedrons
     # (6 rotated hexahedrons with 1st face as n-th face of
     #  one original hexahedron)
-    t = [1, 0, 3, 2, 5, 4]
-    m = np.array(i)[t]
-    n = np.array(j)[t]
-    p = np.array(k)[t]
-    q = np.array(l)[t]
+    m = [1, 3, 2, 0, 4, 1]
+    n = [2, 0, 3, 1, 5, 0]
+    p = [6, 4, 7, 5, 6, 3]
+    q = [5, 7, 6, 4, 7, 2]
 
     cells = np.dstack(
         (
@@ -151,10 +150,103 @@ def boundary_cells_hexahedron(mesh):
             mesh.cells[:, q],
         )
     )
-    # ensure right-hand-side cell connectivity
-    for a in [1, 3, 5]:
-        cells[:, a, :4] = cells[:, a, :4].T[::-1].T
-        cells[:, a, 4:] = cells[:, a, 4:].T[::-1].T
+
+    return cells, cells_faces
+
+
+def boundary_cells_hexahedron20(mesh):
+    "Convert the cells array of a quadratic hex mesh into a boundary cells array."
+
+    cells_hexahedron, cells_faces_hexahedron = boundary_cells_hexahedron(mesh)
+
+    # midpoints on edges of faces (boundary) of a hexahedron
+    i = [11, 9, 8, 10, 8, 12]
+    j = [19, 17, 16, 18, 9, 15]
+    k = [15, 13, 12, 14, 10, 14]
+    l = [16, 18, 17, 19, 11, 13]
+
+    cells_faces = np.dstack(
+        (
+            cells_faces_hexahedron,
+            mesh.cells[:, i],
+            mesh.cells[:, j],
+            mesh.cells[:, k],
+            mesh.cells[:, l],
+        )
+    )
+
+    # complementary faces for the creation of "boundary" hexahedrons
+    # (6 rotated hexahedrons with 1st face as n-th face of
+    #  one original hexahedron)
+    m = [9, 11, 10, 8, 12, 8]
+    n = [18, 16, 19, 17, 13, 11]
+    p = [13, 15, 14, 12, 14, 10]
+    q = [17, 19, 18, 16, 15, 9]
+
+    r = [8, 10, 9, 11, 16, 17]
+    s = [10, 8, 11, 9, 17, 16]
+    t = [14, 12, 15, 13, 18, 19]
+    u = [12, 14, 13, 15, 19, 18]
+
+    cells = np.dstack(
+        (
+            cells_hexahedron,
+            mesh.cells[:, i],
+            mesh.cells[:, j],
+            mesh.cells[:, k],
+            mesh.cells[:, l],
+            mesh.cells[:, m],
+            mesh.cells[:, n],
+            mesh.cells[:, p],
+            mesh.cells[:, q],
+            mesh.cells[:, r],
+            mesh.cells[:, s],
+            mesh.cells[:, t],
+            mesh.cells[:, u],
+        )
+    )
+
+    return cells, cells_faces
+
+
+def boundary_cells_hexahedron27(mesh):
+    "Convert the cells array of a bi-quadratic hex mesh into a boundary cells array."
+
+    cells_hexahedron20, cells_faces_hexahedron20 = boundary_cells_hexahedron20(mesh)
+
+    # midpoints of faces (boundary) of a hexahedron
+    i = [20, 21, 22, 23, 24, 25]
+
+    cells_faces = np.dstack(
+        (
+            cells_faces_hexahedron20,
+            mesh.cells[:, i],
+        )
+    )
+
+    # complementary faces for the creation of "boundary" hexahedrons
+    # (6 rotated hexahedrons with 1st face as n-th face of
+    #  one original hexahedron)
+    j = [22, 23, 21, 20, 20, 21]
+    k = [23, 22, 20, 21, 21, 20]
+    l = [24, 25, 24, 25, 22, 23]
+    m = [25, 24, 25, 24, 23, 22]
+    n = [20, 21, 22, 23, 24, 25]
+    p = [21, 20, 23, 22, 25, 24]
+    q = [26, 26, 26, 26, 26, 26]
+
+    cells = np.dstack(
+        (
+            cells_hexahedron20,
+            mesh.cells[:, j],
+            mesh.cells[:, k],
+            mesh.cells[:, l],
+            mesh.cells[:, m],
+            mesh.cells[:, n],
+            mesh.cells[:, p],
+            mesh.cells[:, q],
+        )
+    )
 
     return cells, cells_faces
 
@@ -241,6 +333,10 @@ class RegionBoundary(Region):
             cells, cells_faces = boundary_cells_quad9(mesh)
         elif mesh.cell_type == "hexahedron":
             cells, cells_faces = boundary_cells_hexahedron(mesh)
+        elif mesh.cell_type == "hexahedron20":
+            cells, cells_faces = boundary_cells_hexahedron20(mesh)
+        elif mesh.cell_type == "hexahedron27":
+            cells, cells_faces = boundary_cells_hexahedron27(mesh)
         else:
             raise NotImplementedError("Cell type not supported.")
 
@@ -296,7 +392,11 @@ class RegionBoundary(Region):
             dA_1 = self.dXdr[:, 0][::-1]
             dA_1[0] = -dA_1[0]
 
-        elif self.mesh.cell_type == "hexahedron":
+        elif (
+            self.mesh.cell_type == "hexahedron"
+            or self.mesh.cell_type == "hexahedron20"
+            or self.mesh.cell_type == "hexahedron27"
+        ):
             dA_1 = cross(self.dXdr[:, 0], self.dXdr[:, 1])
 
         dA = -dA_1 * self.quadrature.weights.reshape(-1, 1)

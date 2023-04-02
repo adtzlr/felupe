@@ -296,6 +296,32 @@ class QuadraticQuad(Element):
 
 
 class BiQuadraticQuad(Element):
+    r"""Bi-Quadratic Lagrange quadrilateral element.
+
+    ..  code-block::
+
+                      ^ s
+         3 (-1/ 1)    |6 ( 0/ 1)   2 ( 1/ 1)
+          o-----------o-----------o
+          |           |           |
+          |           |           |
+          |           |           |
+          |7 (-1/ 0)  |8 ( 0/ 0)  |5 ( 1/ 0)
+          o      -----o-----------o-----> r
+          |           |           |
+          |           |           |
+          |                       |
+          |                       |
+          o-----------o-----------o
+        0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
+
+
+    Attributes
+    ----------
+    points : ndarray
+        Array with point locations in natural coordinate system
+    """
+
     def __init__(self):
         super().__init__(shape=(9, 2))
 
@@ -312,12 +338,23 @@ class BiQuadraticQuad(Element):
 
         self.points = self._lagrange.points[self._permute]
 
-    def function(self, rst):
-        "quadratic quad shape functions"
+    def function(self, rs):
+        r"""Bi-Quadratic Lagrange quadrilateral - shape functions."""
 
-        return self._lagrange.function(rst)[self._permute]
+        return self._lagrange.function(rs)[self._permute]
 
-    def gradient(self, rst):
-        "quadratic quad gradient of shape functions"
+    def gradient(self, rs):
+        r"""Bi-Quadratic Lagrange quadrilateral - gradient of shape functions.
 
-        return self._lagrange.gradient(rst)[self._permute, :]
+        Arguments
+        ---------
+        rs : ndarray
+            Point as coordinate vector for gradient of shape function evaluation
+
+        Returns
+        -------
+        ndarray
+            Gradient of shape functions evaluated at given location
+        """
+
+        return self._lagrange.gradient(rs)[self._permute, :]

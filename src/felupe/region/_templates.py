@@ -137,6 +137,58 @@ class RegionQuadBoundary(RegionBoundary):
         )
 
 
+class RegionQuadraticQuadBoundary(RegionBoundary):
+    "A boundary region with a quadratic quad element."
+
+    def __init__(
+        self,
+        mesh,
+        quadrature=GaussLegendreBoundary(order=2, dim=2),
+        grad=True,
+        only_surface=True,
+        mask=None,
+        ensure_3d=False,
+    ):
+
+        element = QuadraticQuad()
+
+        super().__init__(
+            mesh,
+            element,
+            quadrature,
+            grad=grad,
+            only_surface=only_surface,
+            mask=mask,
+            ensure_3d=ensure_3d,
+        )
+
+
+class RegionBiQuadraticQuadBoundary(RegionBoundary):
+    "A boundary region with a bi-quadratic quad element."
+
+    def __init__(
+        self,
+        mesh,
+        quadrature=GaussLegendreBoundary(order=2, dim=2),
+        grad=True,
+        only_surface=True,
+        mask=None,
+        ensure_3d=False,
+    ):
+
+        element = BiQuadraticQuad()
+
+        super().__init__(
+            mesh,
+            element,
+            quadrature,
+            grad=grad,
+            only_surface=only_surface,
+            mask=mask,
+            ensure_3d=ensure_3d,
+        )
+
+
 class RegionConstantHexahedron(Region):
     "A region with a constant hexahedron element."
 

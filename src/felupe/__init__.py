@@ -63,6 +63,7 @@ from .quadrature import Triangle as TriangleQuadrature
 from .region import (
     Region,
     RegionBiQuadraticQuad,
+    RegionBiQuadraticQuadBoundary,
     RegionBoundary,
     RegionConstantHexahedron,
     RegionConstantQuad,
@@ -73,6 +74,7 @@ from .region import (
     RegionQuadBoundary,
     RegionQuadraticHexahedron,
     RegionQuadraticQuad,
+    RegionQuadraticQuadBoundary,
     RegionQuadraticTetra,
     RegionQuadraticTriangle,
     RegionTetra,

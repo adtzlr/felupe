@@ -54,8 +54,7 @@ def boundary_cells_quad(mesh):
 
     cells = np.dstack(
         (
-            mesh.cells[:, i],
-            mesh.cells[:, j],
+            cells_faces,
             mesh.cells[:, k],
             mesh.cells[:, l],
         )
@@ -145,10 +144,7 @@ def boundary_cells_hexahedron(mesh):
 
     cells = np.dstack(
         (
-            mesh.cells[:, i],
-            mesh.cells[:, j],
-            mesh.cells[:, k],
-            mesh.cells[:, l],
+            cells_faces,
             mesh.cells[:, m],
             mesh.cells[:, n],
             mesh.cells[:, p],

@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix `tools.project()` for higher-order quad- and hexahedron elements.
 - Fix transposed output of `tools.project()`.
 - Fix failed scalar-value checks by using `np.isscalar()` in `mesh.expand(z=1)` and `mesh.revolve(phi=180)` where `z` or `phi` are of type `np.int32`.
+- Fix read a Mesh with no cells in `mesh.read()`.
 
 ### Removed
 - Remove `jit`-compilation of forms (`parallel` is the preferred method).

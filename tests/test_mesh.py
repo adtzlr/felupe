@@ -334,6 +334,18 @@ def test_read(filename="tests/mesh.bdf"):
     assert mesh.dim == 3
 
 
+def test_read_nocells(filename="tests/mesh_no-cells.bdf"):
+    mesh = fe.mesh.read(filename=filename, dim=2)
+    assert mesh[0].dim == 2
+    assert mesh[0].ncells == 0
+    assert mesh[0].cells.shape == (0, 0)
+
+    mesh = fe.mesh.read(filename=filename, dim=None)
+    assert mesh[0].dim == 3
+    assert mesh[0].ncells == 0
+    assert mesh[0].cells.shape == (0, 0)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -344,3 +356,4 @@ if __name__ == "__main__":
     test_grid_1d()
     test_container()
     test_read(filename="mesh.bdf")
+    test_read_nocells(filename="mesh_no-cells.bdf")

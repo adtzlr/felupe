@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 from ._container import MeshContainer
 from ._mesh import Mesh
 
@@ -51,6 +53,9 @@ def read(
     if not isinstance(cells, list):
         cells = [cells]
 
-    meshes = [Mesh(points, c.data, c.type) for c in cells]
+    if len(cells) > 0:
+        meshes = [Mesh(points, c.data, c.type) for c in cells]
+    else:
+        meshes = [Mesh(points, np.zeros((0, 0), dtype=int), None)]
 
     return MeshContainer(meshes, merge=merge, decimals=decimals)

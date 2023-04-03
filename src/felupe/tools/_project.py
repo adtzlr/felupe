@@ -85,9 +85,14 @@ def project(values, region, average=True, mean=False):
     at quadrature points to mesh-points.
     """
 
-    # 1d-reshaped values
-    dim = int(np.product(values.shape[:-2]))
+    dim = values.shape[:-2]
+    size = int(np.product(dim))
     weights = region.quadrature.weights
+
+    # transpose values
+    idx = np.arange(len(values.shape))
+    idx[: len(dim)] = idx[: len(dim)][::-1]
+    values = values.transpose(idx)
 
     if mean:
 
@@ -97,50 +102,59 @@ def project(values, region, average=True, mean=False):
         reps[-2] = len(region.element.points)
 
         # np.average(keepdims=True) requires numpy >= 1.23.0
-        values = np.tile(
-            np.average(values, axis=-2, weights=weights),
-            reps=reps,
-        )
+        values = np.average(values, axis=-2, weights=weights)
 
         # workaround for np.average(keepdims=True)
         shape = values.shape
         shape = np.insert(shape, -1, 1)
         values = values.reshape(*shape)
 
-    u = values.T.reshape(-1, dim)
+        # broadcast averaged values to match the number of element-points
+        values = np.broadcast_to(values, shape=np.broadcast_shapes(shape, reps))
 
-    # disconnected mesh
+    # reshape from (shape, nint.points, nelements) to 1d-values
+    u = values.T.reshape(-1, size)
+
+    # disconnect the mesh
     m = region.mesh.disconnect()
 
     if mean:
         # region on disconnected mesh with original quadrature scheme
+        # a single-point quadrature would be sufficient
+        # but would require additional (not available) informations
         r = Region(m, region.element, region.quadrature, grad=False)
     else:
         # region on disconnected mesh with inverse quadrature scheme
         r = Region(m, region.element, region.quadrature.inv(), grad=False)
 
     # field for values on disconnected mesh; project values to mesh-points
-    f = Field(r, dim=dim, values=u)
+    f = Field(r, dim=size, values=u)
     v = f.interpolate()
 
     if mean:
-        v = np.tile(
-            np.average(v, axis=-2, weights=weights).reshape(dim, 1, -1), reps=reps
-        )
+
+        # due to the usage of the original quadrature scheme the averaging must be
+        # applied again
+        # np.average(keepdims=True) requires numpy >= 1.23.0
+        v = np.average(v, axis=-2, weights=weights).reshape(size, 1, -1)
+
+        # broadcast averaged values to match the number of element-points
+        shape = np.array([*v.shape[:-2], len(region.element.points), v.shape[-1]])
+        v = np.broadcast_to(v, shape=shape)
 
     if average:
 
         # create dummy field for values on original mesh
         # (used for calculation of sparse-matrix indices)
-        g = Field(region, dim=dim)
+        g = Field(region, dim=size)
 
         # average values
         w = sparsematrix(
-            (v.T.ravel(), g.indices.ai), shape=(dim * region.mesh.npoints, 1)
-        ).toarray().reshape(-1, dim) / region.mesh.cells_per_point.reshape(-1, 1)
+            (v.T.ravel(), g.indices.ai), shape=(size * region.mesh.npoints, 1)
+        ).toarray().reshape(-1, size) / region.mesh.cells_per_point.reshape(-1, 1)
 
     else:
 
-        w = v.reshape(-1, dim)
+        w = v.T.reshape(-1, size)
 
     return w

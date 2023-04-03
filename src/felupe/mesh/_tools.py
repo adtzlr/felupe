@@ -81,7 +81,7 @@ def expand(points, cells, cell_type, n=11, z=1):
     p = np.pad(points, ((0, 0), (0, 1)))
 
     # generate new points array for every thickness expansion ``h``
-    if isinstance(z, int) or isinstance(z, float):
+    if np.isscalar(z):
         points_z = np.linspace(0, z, n)
     else:
         points_z = z
@@ -182,7 +182,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         "quad": ("hexahedron", slice(None, None, None)),
     }[cell_type]
 
-    if isinstance(phi, int) or isinstance(phi, float):
+    if np.isscalar(phi):
         points_phi = np.linspace(0, phi, n)
     else:
         points_phi = phi

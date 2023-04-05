@@ -25,12 +25,29 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from copy import deepcopy
+from functools import wraps
 
 import numpy as np
 
+from ._convert import (
+    add_midpoints_edges,
+    add_midpoints_faces,
+    add_midpoints_volumes,
+    collect_edges,
+    collect_faces,
+    collect_volumes,
+    convert,
+)
+from ._discrete_geometry import DiscreteGeometry
+from ._tools import expand, mirror, revolve, rotate, runouts, sweep, triangulate
 
-class Mesh:
+
+def as_mesh(obj):
+    "Convert a ``DiscreteGeometry`` object to a ``Mesh`` object."
+    return Mesh(points=obj.points, cells=obj.cells, cell_type=obj.cell_type)
+
+
+class Mesh(DiscreteGeometry):
     """A mesh with points, cells and optional a specified cell type.
 
     Parameters
@@ -50,20 +67,6 @@ class Mesh:
         Point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
-    npoints : int
-        Amount of points.
-    dim : int
-        Dimension of mesh point coordinates.
-    ndof : int
-        Amount of degrees of freedom.
-    ncells : int
-        Amount of cells.
-    points_with_cells : array
-        Array with points connected to cells.
-    points_without_cells : array
-        Array with points not connected to cells.
-    cells_per_point : array
-        Array which counts connected cells per point. Used for averging results.
 
     """
 
@@ -72,93 +75,7 @@ class Mesh:
         self.cells = np.array(cells)
         self.cell_type = cell_type
 
-        self.update(self.cells)
-
-    def update(self, cells, cell_type=None):
-        "Update the cell and dimension attributes with a given cell array."
-        self.cells = cells
-
-        if cell_type is not None:
-            self.cell_type = cell_type
-
-        # obtain dimensions
-        self.npoints, self.dim = self.points.shape
-        self.ndof = self.points.size
-        self.ncells = self.cells.shape[0]
-
-        # get number of cells per point
-        points_in_cell, self.cells_per_point = np.unique(cells, return_counts=True)
-
-        # check if there are points without cells
-        if self.npoints != len(self.cells_per_point):
-            self.point_has_cell = np.isin(np.arange(self.npoints), points_in_cell)
-            # update "cells_per_point" ... cells per point
-            cells_per_point = -np.ones(self.npoints, dtype=int)
-            cells_per_point[points_in_cell] = self.cells_per_point
-            self.cells_per_point = cells_per_point
-
-            self.points_without_cells = np.arange(self.npoints)[~self.point_has_cell]
-            self.points_with_cells = np.arange(self.npoints)[self.point_has_cell]
-        else:
-            self.points_without_cells = np.array([], dtype=int)
-            self.points_with_cells = np.arange(self.npoints)
-
-    def disconnect(self, points_per_cell=None, calc_points=True):
-        """Return a new instance of a Mesh with disconnected cells. Optionally, the
-        points-per-cell may be specified (must be lower or equal the number of points-
-        per-cell of the original Mesh). If the Mesh is to be used as a *dual* Mesh, then
-        the point-coordinates do not have to be re-created because they are not used."""
-
-        cells_trimmed = self.cells
-        cell_type = self.cell_type
-
-        if points_per_cell is not None:
-            cell_type = None
-            cells_trimmed = cells_trimmed[:, :points_per_cell]
-
-        if calc_points:
-            points = self.points[cells_trimmed].reshape(-1, self.dim)
-        else:
-            points = np.zeros(
-                (self.ncells * cells_trimmed.shape[1], self.dim), dtype=int
-            )
-
-        cells = np.arange(cells_trimmed.size).reshape(*cells_trimmed.shape)
-
-        return Mesh(points, cells, cell_type=cell_type)
-
-    def as_meshio(self, **kwargs):
-        "Export the mesh as ``meshio.Mesh``."
-
-        import meshio
-
-        cells = {self.cell_type: self.cells}
-        return meshio.Mesh(self.points, cells, **kwargs)
-
-    def save(self, filename="mesh.vtk", **kwargs):
-        """Export the mesh as VTK file. For XDMF-export please ensure to have
-        ``h5py`` (as an optional dependancy of ``meshio``) installed.
-
-        Parameters
-        ----------
-        filename : str, optional
-            The filename of the mesh (default is ``mesh.vtk``).
-
-        """
-
-        self.as_meshio(**kwargs).write(filename)
-
-    def copy(self):
-        """Return a deepcopy of the mesh.
-
-        Returns
-        -------
-        Mesh
-            A deepcopy of the mesh.
-
-        """
-
-        return deepcopy(self)
+        super().__init__(points=points, cells=cells, cell_type=cell_type)
 
     def __repr__(self):
         header = "<felupe mesh object>"
@@ -170,3 +87,89 @@ class Mesh:
 
     def __str__(self):
         return self.__repr__()
+
+    @wraps(expand)
+    def expand(self, n=11, z=1):
+        return as_mesh(expand(self, n=n, z=z))
+
+    @wraps(rotate)
+    def rotate(self, angle_deg, axis, center=None):
+        return as_mesh(rotate(angle_deg=angle_deg, axis=axis, center=center))
+
+    @wraps(revolve)
+    def revolve(self, n=11, phi=180, axis=0):
+        return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
+
+    @wraps(sweep)
+    def sweep(self, decimals=None):
+        return as_mesh(sweep(self, decimals=decimals))
+
+    @wraps(mirror)
+    def mirror(self, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):
+        return as_mesh(mirror(self, normal=normal, centerpoint=centerpoint, axis=axis))
+
+    @wraps(triangulate)
+    def triangulate(self, mode=3):
+        return as_mesh(triangulate(self, mode=mode))
+
+    @wraps(runouts)
+    def add_runouts(
+        self,
+        values=[0.1, 0.1],
+        centerpoint=[0, 0, 0],
+        axis=0,
+        exponent=5,
+        mask=slice(None),
+    ):
+        return as_mesh(
+            runouts(
+                self,
+                values=values,
+                centerpoint=centerpoint,
+                axis=axis,
+                exponent=exponent,
+                mask=mask,
+            )
+        )
+
+    @wraps(convert)
+    def convert(
+        self,
+        order=0,
+        calc_points=False,
+        calc_midfaces=False,
+        calc_midvolumes=False,
+    ):
+        return as_mesh(
+            convert(
+                self,
+                order=order,
+                calc_points=calc_points,
+                calc_midfaces=calc_midfaces,
+                calc_midvolumes=calc_midvolumes,
+            )
+        )
+
+    @wraps(collect_edges)
+    def collect_edges(self):
+        return collect_edges
+
+    @wraps(collect_faces)
+    def collect_faces(self):
+        return collect_faces
+
+    @wraps(collect_volumes)
+    def collect_volumes(self):
+        return collect_volumes
+
+    @wraps(add_midpoints_edges)
+    def add_midpoints_edges(self):
+        return add_midpoints_edges
+
+    @wraps(add_midpoints_faces)
+    def add_midpoints_faces(self):
+        return add_midpoints_faces
+
+    @wraps(add_midpoints_volumes)
+    def add_midpoints_volumes(self):
+        return add_midpoints_volumes

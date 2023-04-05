@@ -78,6 +78,8 @@ class Mesh(DiscreteGeometry):
 
         super().__init__(points=points, cells=cells, cell_type=cell_type)
 
+        self.__mesh__ = Mesh
+
     def __repr__(self):
         header = "<felupe mesh object>"
         points = f"  Number of points: {len(self.points)}"

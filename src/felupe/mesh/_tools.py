@@ -29,7 +29,6 @@ import numpy as np
 
 from ..math import rotation_matrix
 from ._helpers import mesh_or_data
-from ._mesh import Mesh
 
 
 @mesh_or_data
@@ -331,6 +330,8 @@ def mirror(
 
 def concatenate(meshes):
     "Join a sequence of meshes with identical cell types."
+
+    Mesh = meshes[0].__mesh__
 
     points = np.vstack([mesh.points for mesh in meshes])
     offsets = np.cumsum(np.insert([mesh.npoints for mesh in meshes][:-1], 0, 0))

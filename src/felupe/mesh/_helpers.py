@@ -27,12 +27,10 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from functools import wraps
 
-from ._mesh import Mesh
-
 
 def mesh_or_data(meshfun):
-    """If a ``Mesh`` is passed to a mesh function, extract ``points`` and
-    ``cells`` arrays along with the ``cell_type`` and return a ``Mesh``
+    """If a ``DiscreteGeometry`` is passed to a mesh function, extract ``points`` and
+    ``cells`` arrays along with the ``cell_type`` and return a ``DiscreteGeometry``
     as a result."""
 
     @wraps(meshfun)
@@ -44,8 +42,8 @@ def mesh_or_data(meshfun):
         # check if unnamed args are passed
         if len(args) > 0:
 
-            # meshfun(Mesh)
-            if isinstance(args[0], Mesh):
+            # meshfun(DiscreteGeometry)
+            if hasattr(args[0], "__mesh__"):
 
                 # set mesh flag
                 is_mesh = True
@@ -54,6 +52,9 @@ def mesh_or_data(meshfun):
                 points = args[0].points
                 cells = args[0].cells
                 cell_type = args[0].cell_type
+
+                # get mesh class
+                Mesh = args[0].__mesh__
 
                 # remove Mesh from args
                 args = args[1:]
@@ -104,7 +105,7 @@ def mesh_or_data(meshfun):
         # call mesh manipulation function
         points, cells, cell_type = meshfun(points, cells, cell_type, *args, **kwargs)
 
-        # return a Mesh if a Mesh was passed
+        # return a DiscreteGeometry if a DiscreteGeometry was passed
         if is_mesh:
             return Mesh(points=points, cells=cells, cell_type=cell_type)
 

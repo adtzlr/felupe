@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Change `einsumt` from an optional to a required dependency.
 - Vectorize implementations of `MultiPointConstraint` and `MultiPointContact` and re-implement both as `scipy.sparse.lil_matrix()`.
+- Rename old `Mesh` to `DiscreteGeometry` and rebase new `Mesh` on `DiscreteGeometry`. 
+- Simplify the usage of explicit mesh-related tools by adding them as methods to `Mesh`, i.e. `mesh.tools.expand(Rectangle())` is equivalent to `Rectangle().expand()`.
 
 ### Fixed
 - Fix `tools.project()` for higher-order quad- and hexahedron elements.

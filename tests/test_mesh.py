@@ -52,6 +52,7 @@ def test_meshes():
     fe.mesh.convert(m, order=0, calc_points=True)
     fe.mesh.convert(m, order=2)
     fe.mesh.convert(m, order=2, calc_midfaces=True)
+    m.convert(order=2)
 
     m = fe.Mesh(
         points=np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]]),
@@ -69,6 +70,7 @@ def test_meshes():
     assert m.cells.shape == (4, 2)
 
     mr = fe.mesh.revolve(m, n=11, phi=180, axis=2)
+    mr = m.revolve(n=11, phi=180, axis=2)
     assert mr.ncells == 4 * 10
 
     m = fe.Rectangle(a=(-1.2, -2), b=(2, 3.1), n=(4, 9))
@@ -105,6 +107,7 @@ def test_meshes():
     fe.mesh.expand(m.points, cells=m.cells, cell_type=m.cell_type)
     fe.mesh.expand(points=m.points, cells=m.cells, cell_type=m.cell_type)
     fe.mesh.expand(m)
+    m.expand()
 
     me1 = fe.mesh.expand(m, n=3, z=1)
     me2 = fe.mesh.expand(m, n=3, z=1.0)
@@ -130,6 +133,7 @@ def test_meshes():
     fe.mesh.rotate(m, angle_deg=10, axis=0, center=None)
     fe.mesh.rotate(m.points, m.cells, m.cell_type, angle_deg=10, axis=0, center=None)
     fe.mesh.rotate(m, angle_deg=10, axis=1, center=[0, 0, 0])
+    m.rotate(angle_deg=10, axis=0, center=None)
 
     fe.mesh.CubeArbitraryOrderHexahedron()
     fe.mesh.RectangleArbitraryOrderQuad()
@@ -150,6 +154,7 @@ def test_meshes():
 
     fe.mesh.sweep(m)
     fe.mesh.sweep(m.points, m.cells, m.cell_type, decimals=4)
+    m.sweep()
 
     m.as_meshio(point_data={"data": m.points}, cell_data={"cell_data": [m.cells[:, 0]]})
     m.save()
@@ -176,6 +181,7 @@ def test_mirror():
             m = fe.mesh.Line()
             r = fe.Region(m, fe.Line(), fe.GaussLegendre(1, 1))
             n = fe.mesh.mirror(m, **kwargs)
+            n = m.mirror(**kwargs)
             s = fe.Region(n, fe.Line(), fe.GaussLegendre(1, 1))
             assert np.isclose(r.dV.sum(), s.dV.sum())
 
@@ -222,6 +228,7 @@ def test_mirror():
 def test_triangulate():
     m = fe.Rectangle(n=3)
     n = fe.mesh.triangulate(m)
+    n = m.triangulate()
 
     rm = fe.RegionQuad(m)
     rn = fe.RegionTriangle(n)
@@ -244,6 +251,7 @@ def test_triangulate():
 def test_runouts():
     m = fe.Rectangle(n=3)
 
+    n = m.add_runouts(values=[0.0], axis=0, centerpoint=[0, 0])
     n = fe.mesh.runouts(m, values=[0.0], axis=0, centerpoint=[0, 0])
     assert n.points[:, 1].max() == m.points[:, 1].max()
 
@@ -346,6 +354,16 @@ def test_read_nocells(filename="tests/mesh_no-cells.bdf"):
     assert mesh[0].cells.shape == (0, 0)
 
 
+def test_mesh_methods():
+    mesh = fe.Cube()
+    mesh.collect_edges()
+    mesh.collect_faces()
+    mesh.collect_volumes()
+    mesh.add_midpoints_edges()
+    mesh.add_midpoints_faces()
+    mesh.add_midpoints_volumes()
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -356,4 +374,5 @@ if __name__ == "__main__":
     test_grid_1d()
     test_container()
     test_read(filename="mesh.bdf")
+    test_mesh_methods()
     test_read_nocells(filename="mesh_no-cells.bdf")

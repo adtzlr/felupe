@@ -154,7 +154,7 @@ class Mesh(DiscreteGeometry):
 
     @wraps(rotate)
     def rotate(self, angle_deg, axis, center=None):
-        return as_mesh(rotate(angle_deg=angle_deg, axis=axis, center=center))
+        return as_mesh(rotate(self, angle_deg=angle_deg, axis=axis, center=center))
 
     @wraps(revolve)
     def revolve(self, n=11, phi=180, axis=0):

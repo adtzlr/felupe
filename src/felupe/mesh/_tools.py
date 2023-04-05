@@ -331,7 +331,7 @@ def mirror(
 def concatenate(meshes):
     "Join a sequence of meshes with identical cell types."
 
-    Mesh = type(meshes[0])
+    Mesh = meshes[0].__mesh__
 
     points = np.vstack([mesh.points for mesh in meshes])
     offsets = np.cumsum(np.insert([mesh.npoints for mesh in meshes][:-1], 0, 0))

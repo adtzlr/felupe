@@ -27,8 +27,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from functools import wraps
 
-from ._discrete_geometry import DiscreteGeometry
-
 
 def mesh_or_data(meshfun):
     """If a ``DiscreteGeometry`` is passed to a mesh function, extract ``points`` and
@@ -45,7 +43,7 @@ def mesh_or_data(meshfun):
         if len(args) > 0:
 
             # meshfun(DiscreteGeometry)
-            if isinstance(args[0], DiscreteGeometry):
+            if hasattr(args[0], "__mesh__"):
 
                 # set mesh flag
                 is_mesh = True
@@ -54,6 +52,9 @@ def mesh_or_data(meshfun):
                 points = args[0].points
                 cells = args[0].cells
                 cell_type = args[0].cell_type
+
+                # get mesh class
+                Mesh = args[0].__mesh__
 
                 # remove Mesh from args
                 args = args[1:]
@@ -106,7 +107,7 @@ def mesh_or_data(meshfun):
 
         # return a DiscreteGeometry if a DiscreteGeometry was passed
         if is_mesh:
-            return DiscreteGeometry(points=points, cells=cells, cell_type=cell_type)
+            return Mesh(points=points, cells=cells, cell_type=cell_type)
 
         else:
             # or (points, cells, cell_type) if arrays were given

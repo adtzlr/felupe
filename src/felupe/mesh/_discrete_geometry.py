@@ -25,8 +25,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from copy import deepcopy
-
 import numpy as np
 
 
@@ -102,60 +100,3 @@ class DiscreteGeometry:
         else:
             self.points_without_cells = np.array([], dtype=int)
             self.points_with_cells = np.arange(self.npoints)
-
-    def disconnect(self, points_per_cell=None, calc_points=True):
-        """Return a new instance of a Mesh with disconnected cells. Optionally, the
-        points-per-cell may be specified (must be lower or equal the number of points-
-        per-cell of the original Mesh). If the Mesh is to be used as a *dual* Mesh, then
-        the point-coordinates do not have to be re-created because they are not used."""
-
-        cells_trimmed = self.cells
-        cell_type = self.cell_type
-
-        if points_per_cell is not None:
-            cell_type = None
-            cells_trimmed = cells_trimmed[:, :points_per_cell]
-
-        if calc_points:
-            points = self.points[cells_trimmed].reshape(-1, self.dim)
-        else:
-            points = np.zeros(
-                (self.ncells * cells_trimmed.shape[1], self.dim), dtype=int
-            )
-
-        cells = np.arange(cells_trimmed.size).reshape(*cells_trimmed.shape)
-
-        return self(points, cells, cell_type=cell_type)
-
-    def as_meshio(self, **kwargs):
-        "Export the mesh as ``meshio.Mesh``."
-
-        import meshio
-
-        cells = {self.cell_type: self.cells}
-        return meshio.Mesh(self.points, cells, **kwargs)
-
-    def save(self, filename="mesh.vtk", **kwargs):
-        """Export the mesh as VTK file. For XDMF-export please ensure to have
-        ``h5py`` (as an optional dependancy of ``meshio``) installed.
-
-        Parameters
-        ----------
-        filename : str, optional
-            The filename of the mesh (default is ``mesh.vtk``).
-
-        """
-
-        self.as_meshio(**kwargs).write(filename)
-
-    def copy(self):
-        """Return a deepcopy of the mesh.
-
-        Returns
-        -------
-        Mesh
-            A deepcopy of the mesh.
-
-        """
-
-        return deepcopy(self)

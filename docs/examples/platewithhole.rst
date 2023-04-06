@@ -13,7 +13,7 @@ Plate with a Hole
    * export and plot stress results
 
 
-A plate with length :math:`2L`, height :math:`2h` and a hole with radius :math:`r` is subjected to a uniaxial tension :math:`p=-100` MPa. What is being looked for is the concentration of normal stress :math:`\sigma_{11}` over the hole.
+A plate with length :math:`2L`, height :math:`2h` and a hole with radius :math:`r` is subjected to a uniaxial tension :math:`p=-100` MPa. What is being looked for is the von Mises stress distribution and the concentration of normal stress :math:`\sigma_{11}` over the hole.
 
 .. image:: images/platewithhole.svg
    :width: 400px

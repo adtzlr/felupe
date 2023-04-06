@@ -54,6 +54,7 @@ class MultiPointConstraint:
 
         u = self.field.fields[0].values
         N = self.multiplier * (-u[self.points] + u[self.centerpoint])
+        N[:, ~self.mask] = 0
 
         r = lil_matrix(u.shape)
         r[self.points] = -N
@@ -116,6 +117,7 @@ class MultiPointContact:
         xt = u[self.points] + Xt
 
         mask = np.sign(-Xt + Xc) == np.sign(-xt + xc)
+        mask[:, ~self.mask] = True
         n = -xt + xc
         n[mask] = 0
 

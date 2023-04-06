@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - Vectorize implementations of `MultiPointConstraint` and `MultiPointContact` and re-implement both as `scipy.sparse.lil_matrix()`.
 - Rename old `Mesh` to `DiscreteGeometry` and rebase new `Mesh` on `DiscreteGeometry`. 
 - Simplify the usage of explicit mesh-related tools by adding them as methods to `Mesh`, i.e. `mesh.tools.expand(Rectangle())` is equivalent to `Rectangle().expand()`.
+- Print runtimes for time spent on Assembly and Solve in `newtonrhapson(verbose=True)`.
 
 ### Fixed
 - Fix `tools.project()` for higher-order quad- and hexahedron elements.

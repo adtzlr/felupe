@@ -15,7 +15,7 @@ Plate with a Hole
 
 A plate with length :math:`2L`, height :math:`2h` and a hole with radius :math:`r` is subjected to a uniaxial tension :math:`p=-100` MPa. What is being looked for is the concentration of normal stress :math:`\sigma_{11}` over the hole.
 
-.. image:: images/platehole.svg
+.. image:: images/platewithhole.svg
    :width: 400px
 
 

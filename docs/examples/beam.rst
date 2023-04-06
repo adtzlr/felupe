@@ -13,7 +13,7 @@ The displacement due to gravity of a cantilever beam with young's modulus :math:
 .. image:: images/beam.png
 
 
-First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)`` points per axis. A numeric region created on the mesh represents the cantilever beam. A vector-valued displacement field is initiated on the region.
+First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)`` points per axis. A numeric region created on the mesh represents the cantilever beam. A three-dimensional vector-valued displacement field is initiated on the region.
 
 ..  code-block:: python
 
@@ -31,14 +31,9 @@ A fixed boundary condition is applied on the left end of the beam.
 ..  code-block:: python
 
     boundaries = {"fixed": fem.dof.Boundary(displacement, fx=0)}
-    dof0, dof1 = fem.dof.partition(field, boundaries)
 
 
-The material behavior is defined through a built-in isotropic linear-elastic material formulation.
-
-.. math::
-
-   \delta W_{int} = - \int_v \delta \boldsymbol{\varepsilon} : \mathbb{C} : \boldsymbol{\varepsilon} \ dv
+The material behaviour is defined through a built-in isotropic linear-elastic material formulation.
 
 ..  code-block:: python
 
@@ -54,16 +49,14 @@ The body force is defined by a (constant) gravity field on a solid body.
 
 ..  code-block:: python
 
-    gravity = fem.SolidBodyGravity(
-        field, gravity=[0, 0, 9810], density=7850 * 1e-12
-    )
+    gravity = fem.SolidBodyGravity(field, gravity=[0, 0, 9810], density=7850 * 1e-12)
 
 Inside a Newton-Rhapson procedure, the weak form of linear elasticity is assembled into the stiffness matrix and the applied gravity field is assembled into the body force vector. The maximum displacement of the solution is identical to the one obtained in `[1] <https://www.doi.org/10.5545/sv-jme.2017.5081>`_.
 
 ..  code-block:: python
 
-    res = fem.newtonrhapson(items=[solid, gravity], dof0=dof0, dof1=dof1)
-    fem.save(region, field, filename="bodyforce.vtk")
+    step = fem.Step(items=[solid, gravity], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate(filename="result.xdmf")
 
 
 .. image:: images/beam_bodyforce.png

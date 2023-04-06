@@ -6,6 +6,6 @@ Examples
    :caption: Examples:
    
    examples/beam
-   examples/numcont
    examples/platewithhole
    examples/shear
+   examples/numcont

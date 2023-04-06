@@ -211,7 +211,7 @@ def newtonrhapson(
     """
 
     if verbose:
-        time_start = perf_counter()
+        runtime = [perf_counter()]
 
     if x0 is not None:
         # take x0
@@ -257,7 +257,14 @@ def newtonrhapson(
                 kwargs_solve[key] = value
 
         # solve linear system and update solution
+        if verbose:
+            soltime = [perf_counter()]
+
         dx = solve(K, -f, **kwargs_solve)
+
+        if verbose:
+            soltime.append(perf_counter())
+
         x = update(x, dx)
 
         # evaluate function at unknowns "x"
@@ -286,10 +293,10 @@ def newtonrhapson(
     Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 
     if verbose:
-        time_finish = perf_counter()
+        runtime.append(perf_counter())
         print(
-            "\nSolution converged in %d iterations within %1.4g seconds.\n"
-            % (iteration + 1, time_finish - time_start)
+            "\nConverged in %d iterations (Assembly: %1.4g s, Solve: %1.4g s).\n"
+            % (iteration + 1, np.diff(runtime) - np.diff(soltime), np.diff(soltime))
         )
 
     return Res

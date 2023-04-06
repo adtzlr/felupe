@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from platform import architecture, machine, platform
+
 import numpy as np
 
 from ..__about__ import __version__ as version
@@ -104,7 +106,7 @@ class Job:
 |    ___||    ___||   |___ |       ||    ___||    ___|
 |   |    |   |___ |       ||       ||   |    |   |___ 
 |___|    |_______||_______||_______||___|    |_______|
-FElupe Version {version}
+FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]})
 
 """
             )

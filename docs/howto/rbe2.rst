@@ -1,7 +1,7 @@
 Multi-Point Constraints
 -----------------------
 
-This How-To demonstrates the usage of multi-point constraints (also called MPC or RBE2 rigid-body-elements) with an independent centerpoint and one or more dependent points. First, a centerpoint has to be added to the mesh. MPC objects are supported as items of a Step and the Newton-Rhapson procedure.
+This How-To demonstrates the usage of multi-point constraints (also called MPC or RBE2 rigid-body-elements) with an independent centerpoint and one or more dependent points. First, a centerpoint has to be added to the mesh. MPC objects are supported as ``items`` of a Step and within the Newton-Rhapson procedure.
 
 ..  code-block:: python
 

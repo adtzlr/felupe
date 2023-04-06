@@ -1,7 +1,7 @@
 Generate Meshes
 ~~~~~~~~~~~~~~~
 
-FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A Mesh instance contains essentially two arrays: one with ``points`` and another one containing the cell connectivities, called ``cells``. Only a single ``cell_type`` is supported per mesh. Optionally the ``cell_type`` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
+FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A :class:`felupe.Mesh` instance contains essentially two arrays: one with ``points`` and another one containing the cell connectivities, called ``cells``. Only a single ``cell_type`` is supported per mesh. Optionally the ``cell_type`` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
 
 ..  code-block:: python
 
@@ -34,7 +34,14 @@ First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n
 
     line = fem.mesh.Line(a=1, b=3, n=7)
     rect = fem.mesh.expand(line, n=2, z=5)
-    hexa = fem.mesh.expand(rect, n=2, z=3)
+    cube = fem.mesh.expand(rect, n=2, z=3)
+
+
+Alternatively, these mesh-related tools are also provided as methods of a :class:`felupe.Mesh`.
+
+..  code-block:: python
+
+    cube = fem.mesh.Line(a=1, b=3, n=7).expand(n=2, z=5).expand(n=2, z=3)
 
 .. image:: images/cube.png
    :width: 400px
@@ -52,8 +59,7 @@ Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of T
 
 ..  code-block:: python
 
-    rectangle_quad = fem.Rectangle(n=5)
-    rectangle_tetra = fem.mesh.triangulate(rect_quad)
+    rectangle_quad = fem.Rectangle(n=5).triangulate(rect_quad)
 
     cube_hexahedron = fem.Cube(n=5)
     cube_tetra = fem.mesh.triangulate(cube_hexahedron)
@@ -66,12 +72,12 @@ If a mesh with midpoints is required by a region, functions for edge, face and v
 ..  code-block:: python
     
     rectangle_quad4 = fem.Rectangle(n=6)
-    rectangle_quad8 = fem.mesh.convert(rectangle_quad4, order=2)
+    rectangle_quad8 = rectangle_quad4.convert(order=2)
     rectangle_quad9 = fem.mesh.convert(rectangle_quad4, order=2, calc_midfaces=True)
 
 The same also applies on meshes with triangles.
 
 ..  code-block:: python
 
-    rectangle_triangle3 = fem.mesh.triangulate(fem.Rectangle(n=6))
-    rectangle_triangle6 = fem.mesh.add_midpoints_edges(rectangle_triangle3)
+    rectangle_triangle3 = fem.Rectangle(n=6).triangulate()
+    rectangle_triangle6 = rectangle_triangle3.add_midpoints_edges()

@@ -6,12 +6,14 @@ Plate with a Hole
 
    * create and mesh a plate with a hole
    
-   * load a linear-elastic plane stress material
+   * define a solid body with a linear-elastic plane stress material
+   
+   * create an external pressure load
    
    * export and plot stress results
 
 
-A plate with length :math:`2L`, height :math:`2h` and a hole with radius :math:`r` is subjected to a displacement controlled uniaxial tension :math:`u_{ext}`. What is being looked for is the concentration of normal stress :math:`\sigma_{11}` over the hole.
+A plate with length :math:`2L`, height :math:`2h` and a hole with radius :math:`r` is subjected to a uniaxial tension :math:`p=-100` MPa. What is being looked for is the concentration of normal stress :math:`\sigma_{11}` over the hole.
 
 .. image:: images/platehole.svg
    :width: 400px
@@ -56,7 +58,7 @@ The points and cells of the above mesh are used to initiate a FElupe mesh.
 .. image:: images/platewithhole_mesh.png
    :width: 400px
 
-A numeric quad-region created on the mesh in combination with a vector-valued displacement field represents the plate. A uniaxial loadcase is applied on the displacement field. This involves setting up symmetry planes as well as the absolute value of the prescribed displacement in direction :math:`x` at the mesh-points on the right-end face of the rectangle.
+A numeric quad-region created on the mesh in combination with a vector-valued displacement field represents the plate. The Boundary conditions for the symmetry planes are generated on the displacement field.
 
 ..  code-block:: python
 
@@ -64,53 +66,27 @@ A numeric quad-region created on the mesh in combination with a vector-valued di
     displacement = fem.Field(region, dim=2)
     field = fem.FieldContainer([displacement])
 
-    boundaries, loadcase = fem.dof.uniaxial(
-        field, move=0.001, right=L, clamped=False
-    )
+    boundaries = fem.dof.symmetry(displacement)
 
 
-The material behavior is defined through a built-in isotropic linear-elastic material formulation for plane stress problems.
+The material behavior is defined through a built-in isotropic linear-elastic material formulation for plane stress problems. A solid body applies the linear-elastic material formulation on the displacement field.
 
 ..  code-block:: python
 
     umat = fem.LinearElasticPlaneStress(E=210000, nu=0.3)
+    solid = fem.SolidBody(umat, field)
+
+
+The external uniaxial tension is applied by a pressure load on the right end at :math:`x=L`. Therefore, a boundary region in combination with a field has to be created at :math:`x=L`.
+
+..  code-block:: python
+
+    region_boundary = fem.RegionQuadBoundary(mesh, mask=mesh.points[:, 0] == L)
+    field_boundary = fem.FieldContainer([fem.Field(region_boundary, dim=2)])
     
+    load = fem.SolidBodyPressure(field_boundary, pressure=-100)
 
-The weak form of linear elasticity is assembled into the stiffness matrix, where the constitutive elasticity matrix is generated with :func:`umat.hessian` (or the alias :func:`umat.elasticity`).
-
-.. math::
-
-   \delta W_{int} = - \int_v \delta \boldsymbol{\varepsilon} : \mathbb{C} : \boldsymbol{\varepsilon} \ dv
-
-
-..  code-block:: python
-
-    K = fem.IntegralForm(
-        fun=umat.elasticity(), 
-        v=field, 
-        dV=region.dV, 
-        u=field, 
-    ).assemble()
-
-The linear equation system may now be solved. First, a partition into active and inactive degrees of freedom is performed. This partitioned system is then passed to the solver. The resulting displacements are directly added to the displacement field.
-
-..  code-block:: python
-
-    dof1 = loadcase["dof1"]
-    dof0 = loadcase["dof0"]
-    ext0 = loadcase["ext0"]
-
-    system = fem.solve.partition(field, K, dof1, dof0)
-    field += fem.solve.solve(*system, ext0)
-
-Let's evaluate the deformation gradient from the displacement field and calculate the stress tensor. This process is also called *stress recovery*.
-
-..  code-block:: python
-
-    F = field.extract()
-    stress = umat.gradient(F)[0]
-
-However, the stress results are still located at the numeric integration points. Let's project them to mesh points. Beside the stress tensor we are also interested in the equivalent stress von Mises. For the two-dimensional case it is calculated as:
+The equivalent stress von Mises, projected to mesh points, will be added to the result file. For the two-dimensional case it is calculated by:
 
 .. math::
 
@@ -121,60 +97,44 @@ However, the stress results are still located at the numeric integration points.
 
     import numpy as np
     
-    vonmises = np.sqrt(
-        stress[0, 0] ** 2 + stress[1, 1] ** 2 + 3 * stress[0, 1] ** 2 +
-        stress[0, 0] * stress[1, 1]
-    )
+    def von_mises(substep):
+        "Von Mises Stress projected to mesh points."
+        
+        stress = solid.evaluate.gradient(substep.x)[0]
+        
+        vonmises = np.sqrt(
+            stress[0, 0] ** 2 + stress[1, 1] ** 2 + 3 * stress[0, 1] ** 2 +
+            stress[0, 0] * stress[1, 1]
+        )
     
-    stress_projected = fem.project(stress, region)
-    vonmises_projected = fem.project(vonmises, region)
+        return fem.project(vonmises, region)
 
+The simulation model is now ready to be solved. The results are saved within a XDMF-file, where additional point-data is passed to the ``point_data`` argument. 
 
-Results are saved as VTK-files, where additional point-data is passed within the ``point_data`` argument. Stresses are normalized by the mean value of the stress at the right end-face in order to visualize a normalized stress distribution over the plate.
-    
 ..  code-block:: python
-
-    right = mesh.points[:, 0] == L
-
-    fem.save(
-        region, 
-        field,
-        filename="plate_with_hole.vtk",
-        point_data={
-            "Stress": (stress_projected / 
-                vonmises_projected[right].mean(axis=0)
-            ),
-            "Stress-von-Mises": (vonmises_projected / 
-                vonmises_projected[right].mean(axis=0)
-            ),
-        },
-    )
+    
+    step = fem.Step(items=[solid, load], boundaries=boundaries)
+    job = fem.Job(steps=[step])
+    job.evaluate(filename="result.xdmf", point_data={"von Mises Stress": von_mises})
 
 
-.. image:: images/platewithhole_stress.png
+.. image:: images/platewithhole_stress_continuous_alpha.png
 
 The normal stress distribution over the hole at :math:`x=0` is plotted with matplotlib.
 
 ..  code-block:: python
 
     import matplotlib.pyplot as plt
-	
+
     left = mesh.points[:, 0] == 0
 
     plt.plot(
-        mesh.points[:, 1][left] / h, 
-        (stress_projected / 
-            vonmises_projected[right].mean(axis=0)
-        )[:, 0][left],
+        fem.tools.project(solid.results.stress[0], region)[:, 0][left],
+        mesh.points[:, 1][left] / h,
         "o-"
     )
-    
-    plt.xlim(0, 1)
-    plt.ylim(0, 3)
-    
-    plt.grid()
-    
-    plt.xlabel(r"$y/h\ \longrightarrow$")
-    plt.ylabel(r"$\sigma_{11}(x=0, y)\ /\ \sigma_{11}(x=x_{max})$ $\longrightarrow$")
 
-.. image:: images/platewithhole_stressplot.png
+    plt.xlabel(r"$\sigma_{11}(x=0, y)$ in MPa $\longrightarrow$")
+    plt.ylabel(r"$y/h$ $\longrightarrow$")
+
+.. image:: images/platewithhole_stressplot.svg

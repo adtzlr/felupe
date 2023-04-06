@@ -212,24 +212,24 @@ class Mesh(DiscreteGeometry):
 
     @wraps(collect_edges)
     def collect_edges(self):
-        return collect_edges
+        return collect_edges(self)
 
     @wraps(collect_faces)
     def collect_faces(self):
-        return collect_faces
+        return collect_faces(self)
 
     @wraps(collect_volumes)
     def collect_volumes(self):
-        return collect_volumes
+        return collect_volumes(self)
 
     @wraps(add_midpoints_edges)
     def add_midpoints_edges(self):
-        return add_midpoints_edges
+        return add_midpoints_edges(self)
 
     @wraps(add_midpoints_faces)
     def add_midpoints_faces(self):
-        return add_midpoints_faces
+        return add_midpoints_faces(self)
 
     @wraps(add_midpoints_volumes)
     def add_midpoints_volumes(self):
-        return add_midpoints_volumes
+        return add_midpoints_volumes(self)

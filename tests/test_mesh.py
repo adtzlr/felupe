@@ -356,12 +356,24 @@ def test_read_nocells(filename="tests/mesh_no-cells.bdf"):
 
 def test_mesh_methods():
     mesh = fe.Cube()
-    mesh.collect_edges()
-    mesh.collect_faces()
-    mesh.collect_volumes()
-    mesh.add_midpoints_edges()
-    mesh.add_midpoints_faces()
-    mesh.add_midpoints_volumes()
+
+    m = mesh.collect_edges()
+    assert isinstance(m, fe.Mesh)
+
+    m = mesh.collect_faces()
+    assert isinstance(m, fe.Mesh)
+
+    m = mesh.collect_volumes()
+    assert isinstance(m, fe.Mesh)
+
+    m = mesh.add_midpoints_edges()
+    assert isinstance(m, fe.Mesh)
+
+    m = mesh.add_midpoints_faces()
+    assert isinstance(m, fe.Mesh)
+
+    m = mesh.add_midpoints_volumes()
+    assert isinstance(m, fe.Mesh)
 
 
 if __name__ == "__main__":

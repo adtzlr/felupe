@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add string representations for `Region` and `FieldContainer.`
+
 ## [7.0.0] - 2023-04-07
 
 ### Added

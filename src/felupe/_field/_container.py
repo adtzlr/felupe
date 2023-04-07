@@ -42,6 +42,17 @@ class FieldContainer:
         self.fieldsizes = [f.indices.dof.size for f in self.fields]
         self.offsets = np.cumsum(self.fieldsizes)[:-1]
 
+    def __repr__(self):
+        header = "<felupe FieldContainer object>"
+        size = f"  Number of fields: {len(self.fields)}"
+        fields_header = "  Dimension of fields:"
+        fields = [
+            f"    {type(field).__name__}: {field.dim}"
+            for a, field in enumerate(self.fields)
+        ]
+
+        return "\n".join([header, size, fields_header, *fields])
+
     def extract(self, grad=True, sym=False, add_identity=True):
         """Generalized extraction method which evaluates either the gradient
         or the field values at the integration points of all cells

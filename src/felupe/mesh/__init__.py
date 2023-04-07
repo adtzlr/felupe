@@ -24,6 +24,7 @@ from ._read import read
 from ._tools import (
     concatenate,
     expand,
+    flip,
     mirror,
     revolve,
     rotate,

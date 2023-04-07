@@ -259,6 +259,54 @@ def sweep(points, cells, cell_type, decimals=None):
 
 
 @mesh_or_data
+def flip(points, cells, cell_type, mask=None):
+    """Ensure positive cell volumes for `tria`, `tetra`, `quad` and
+    `hexahedron` cell types.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    mask: list or ndarray, optional
+        Boolean mask for selected cells to flip.
+
+    Returns
+    -------
+    points : ndarray
+        Point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    """
+
+    if mask is None:
+        mask = slice(None)
+    else:
+        mask = np.where(mask)[0].reshape(-1, 1)
+
+    faces_to_flip = {
+        "line": ([0, 1],),
+        "triangle": ([0, 1, 2],),
+        "tetra": ([0, 1, 2],),
+        "quad": ([0, 1, 2, 3],),
+        "hexahedron": ([0, 1, 2, 3], [4, 5, 6, 7]),
+    }[cell_type]
+
+    cells_new = cells.copy()
+
+    for face in faces_to_flip:
+        cells_new[:, face] = cells[:, face[::-1]]
+
+    return points, cells_new, cell_type
+
+
+@mesh_or_data
 def mirror(
     points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None
 ):
@@ -312,20 +360,7 @@ def mirror(
         "i, k, ...k -> ...i", 2 * normal, normal, (points - centerpoint)
     )
 
-    faces_to_flip = {
-        "line": ([0, 1],),
-        "triangle": ([0, 1, 2],),
-        "tetra": ([0, 1, 2],),
-        "quad": ([0, 1, 2, 3],),
-        "hexahedron": ([0, 1, 2, 3], [4, 5, 6, 7]),
-    }[cell_type]
-
-    cells_new = cells.copy()
-
-    for face in faces_to_flip:
-        cells_new[:, face] = cells[:, face[::-1]]
-
-    return points_new, cells_new, cell_type
+    return flip(points_new, cells, cell_type, mask=None)
 
 
 def concatenate(meshes):

@@ -38,7 +38,7 @@ class MultiPointConstraint:
         "RBE2 Multi-point-constraint."
         self.field = field
         self.mesh = field.region.mesh
-        self.points = points
+        self.points = np.asarray(points)
         self.centerpoint = centerpoint
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]
@@ -49,11 +49,13 @@ class MultiPointConstraint:
 
     def _vector(self, field=None, parallel=False):
         "Calculate vector of residuals with RBE2 contributions."
+
         if field is not None:
             self.field = field
 
         u = self.field.fields[0].values
         N = self.multiplier * (-u[self.points] + u[self.centerpoint])
+        N[:, ~self.mask] = 0
 
         r = lil_matrix(u.shape)
         r[self.points] = -N
@@ -92,7 +94,7 @@ class MultiPointContact:
         "RBE2 Multi-point-bolt-constraint."
         self.field = field
         self.mesh = field.region.mesh
-        self.points = points
+        self.points = np.asarray(points)
         self.centerpoint = centerpoint
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]
@@ -116,6 +118,7 @@ class MultiPointContact:
         xt = u[self.points] + Xt
 
         mask = np.sign(-Xt + Xc) == np.sign(-xt + xc)
+        mask[:, ~self.mask] = True
         n = -xt + xc
         n[mask] = 0
 

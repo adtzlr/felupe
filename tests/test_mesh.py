@@ -128,6 +128,9 @@ def test_meshes():
     with pytest.raises(KeyError):
         fe.mesh.revolve(m.points, m.cells, m.cell_type)
 
+    m.flip()
+    fe.mesh.flip(m, mask=[0, 1])
+
     fe.mesh.convert(m, order=2, calc_midfaces=True, calc_midvolumes=True)
 
     fe.mesh.rotate(m, angle_deg=10, axis=0, center=None)

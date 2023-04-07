@@ -130,6 +130,112 @@ def test_mpc_mixed():
     pre_mpc_mixed(point=[2, 0, 0], values=[-5, 0, 0])
 
 
+def test_mpc_isolated():
+
+    mesh = fe.mesh.Line(n=3)
+    mesh.update(mesh.cells[:1])
+    mesh.points = np.pad(mesh.points, ((0, 0), (0, 2)))
+    mesh.points[-1] = np.array([1, 0.5, 0.5])
+    mesh.dim = 3
+    mesh.ndof = 9
+
+    element = fe.Line()
+    quadrature = fe.GaussLegendre(order=0, dim=1)
+    region = fe.Region(mesh, element, quadrature, grad=False)
+    field = fe.FieldContainer([fe.Field(region, dim=3)])
+
+    # constraint
+
+    field[0].values[-1] = [-0.6, 0, -0.6]
+
+    # in x
+    mpc = fe.MultiPointConstraint(
+        field, points=[0, 1], centerpoint=2, skip=(0, 1, 1), multiplier=1e3
+    )
+    r = mpc.assemble.vector().toarray()
+    K = mpc.assemble.matrix().toarray()
+
+    assert np.allclose(r[[0, 3, 6]].ravel(), [600, 600, -1200])
+    assert np.allclose(
+        K[[0, 0, 3, 3, 6, 6, 6], [0, 6, 3, 6, 0, 3, 6]].ravel(),
+        [1000, -1000, 1000, -1000, -1000, -1000, 2000],
+    )
+
+    # in z
+    mpc = fe.MultiPointConstraint(
+        field, points=[0, 1], centerpoint=2, skip=(1, 1, 0), multiplier=1e3
+    )
+    r = mpc.assemble.vector().toarray()
+    K = mpc.assemble.matrix().toarray()
+
+    assert np.allclose(r[[2, 5, 8]].ravel(), [600, 600, -1200])
+    assert np.allclose(
+        K[[2, 2, 5, 5, 8, 8, 8], [2, 8, 5, 8, 2, 5, 8]].ravel(),
+        [1000, -1000, 1000, -1000, -1000, -1000, 2000],
+    )
+
+    # contact
+
+    field[0].values[-1] = [-1.1, 0, -0.6]
+
+    # in x
+    mpc = fe.MultiPointContact(
+        field, points=[0, 1], centerpoint=2, skip=(0, 1, 1), multiplier=1e3
+    )
+    r = mpc.assemble.vector().toarray()
+    K = mpc.assemble.matrix().toarray()
+
+    assert np.allclose(r[[0, 3, 6]].ravel(), [100, 600, -700])
+    assert np.allclose(
+        K[[0, 0, 3, 3, 6, 6, 6], [0, 6, 3, 6, 0, 3, 6]].ravel(),
+        [1000, -1000, 1000, -1000, -1000, -1000, 2000],
+    )
+
+    # in z
+    mpc = fe.MultiPointConstraint(
+        field, points=[0, 1], centerpoint=2, skip=(1, 1, 0), multiplier=1e3
+    )
+    r = mpc.assemble.vector().toarray()
+    K = mpc.assemble.matrix().toarray()
+
+    assert np.allclose(r[[2, 5, 8]].ravel(), [600, 600, -1200])
+    assert np.allclose(
+        K[[2, 2, 5, 5, 8, 8, 8], [2, 8, 5, 8, 2, 5, 8]].ravel(),
+        [1000, -1000, 1000, -1000, -1000, -1000, 2000],
+    )
+
+    # contact with partial active points
+
+    field[0].values[-1] = [-0.6, 0, -0.6]
+
+    # in x
+    mpc = fe.MultiPointContact(
+        field, points=[0, 1], centerpoint=2, skip=(0, 1, 1), multiplier=1e3
+    )
+    r = mpc.assemble.vector().toarray()
+    K = mpc.assemble.matrix().toarray()
+
+    assert np.allclose(r[[3, 6]].ravel(), [100, -100])
+    assert np.allclose(
+        K[[3, 3, 6, 6], [3, 6, 3, 6]].ravel(), [1000, -1000, -1000, 1000]
+    )
+
+    mesh.points[-2, 2] = -100
+
+    # in z
+    mpc = fe.MultiPointContact(
+        field, points=[0, 1], centerpoint=2, skip=(1, 1, 0), multiplier=1e3
+    )
+    r = mpc.assemble.vector().toarray()
+    K = mpc.assemble.matrix().toarray()
+
+    assert np.allclose(r[[2, 8]].ravel(), [100, -100])
+    assert np.allclose(
+        K[[2, 2, 8, 8], [2, 8, 2, 8]].ravel(), [1000, -1000, -1000, 1000]
+    )
+
+
 if __name__ == "__main__":
     test_mpc()
     test_mpc_mixed()
+    test_mpc_isolated()

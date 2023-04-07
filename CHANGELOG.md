@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add boundary regions `RegionQuadraticQuadBoundary` and `RegionBiQuadraticQuadBoundary` for quadratic quads.
 - Add boundary regions `RegionQuadraticHexahedronBoundary` and `RegionTriQuadraticHexahedronBoundary` for quadratic hexahedrons.
+- Add `mesh.flip(mask=None)` to flip a mirrored or wrong indexed cells array, applied on a given boolean `mask` of cells.
 
 ### Changed
 - Change `einsumt` from an optional to a required dependency.
@@ -13,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Rename old `Mesh` to `DiscreteGeometry` and rebase new `Mesh` on `DiscreteGeometry`. 
 - Simplify the usage of explicit mesh-related tools by adding them as methods to `Mesh`, i.e. `mesh.tools.expand(Rectangle())` is equivalent to `Rectangle().expand()`.
 - Print runtimes for time spent on Assembly and Solve in `newtonrhapson(verbose=True)`.
+- Check for negative cell-volumes at quadrature points and print a warning along with a possible fix.
 
 ### Fixed
 - Fix `tools.project()` for higher-order quad- and hexahedron elements.

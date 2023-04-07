@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import warnings
+
 import numpy as np
 
 from ..math import det, inv
@@ -109,6 +111,13 @@ class Region:
 
             # numeric **differential volume element**
             self.dV = det(self.dXdr) * self.quadrature.weights.reshape(-1, 1)
+
+            # check for negative **differential volume elements**
+            if np.any(self.dV < 0):
+                cells_negative_volume = np.where(np.any(self.dV < 0, axis=0))[0]
+                warnings.warn(
+                    f"Negative volumes in Region for cells \n {cells_negative_volume}\n Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` and re-create the region."
+                )
 
             # Partial derivative of element shape function
             # w.r.t. undeformed coordinates

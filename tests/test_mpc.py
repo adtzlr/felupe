@@ -130,7 +130,7 @@ def test_mpc_mixed():
     pre_mpc_mixed(point=[2, 0, 0], values=[-5, 0, 0])
 
 
-def test_mpc2():
+def test_mpc_isolated():
 
     mesh = fe.mesh.Line(n=3)
     mesh.update(mesh.cells[:1])
@@ -238,4 +238,4 @@ def test_mpc2():
 if __name__ == "__main__":
     test_mpc()
     test_mpc_mixed()
-    test_mpc2()
+    test_mpc_isolated()

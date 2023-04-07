@@ -81,7 +81,7 @@ class Mesh(DiscreteGeometry):
         self.__mesh__ = Mesh
 
     def __repr__(self):
-        header = "<felupe mesh object>"
+        header = "<felupe Mesh object>"
         points = f"  Number of points: {len(self.points)}"
         cells_header = "  Number of cells:"
         cells = [f"    {self.cell_type}: {self.ncells}"]

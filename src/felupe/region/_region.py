@@ -122,3 +122,11 @@ class Region:
             # Partial derivative of element shape function
             # w.r.t. undeformed coordinates
             self.dhdX = np.einsum("aIpc,IJpc->aJpc", self.dhdr, self.drdX)
+
+    def __repr__(self):
+        header = "<felupe Region object>"
+        element = f"  Element formulation: {type(self.element).__name__}"
+        quadrature = f"  Quadrature rule: {type(self.quadrature).__name__}"
+        grad = f"  Gradient evaluated: {hasattr(self, 'dV')}"
+
+        return "\n".join([header, element, quadrature, grad])

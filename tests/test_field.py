@@ -39,6 +39,7 @@ def pre(values=0):
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3, values=values)
     v = fe.FieldContainer([u])
+
     return r, v
 
 
@@ -51,6 +52,8 @@ def pre_axi():
 
     u = fe.FieldAxisymmetric(r)
     v = fe.FieldContainer([u])
+
+    print(m), print(r), print(v)
 
     return r, v
 
@@ -68,6 +71,8 @@ def pre_mixed():
 
     f = fe.FieldContainer((u, p, J))
     g = fe.FieldsMixed(fe.RegionHexahedron(m), n=3)
+
+    print(m), print(r), print(f)
 
     u.values[0] = np.ones(3)
     assert np.all(f.values()[0][0] == 1)

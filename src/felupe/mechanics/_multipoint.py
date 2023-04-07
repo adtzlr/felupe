@@ -49,6 +49,7 @@ class MultiPointConstraint:
 
     def _vector(self, field=None, parallel=False):
         "Calculate vector of residuals with RBE2 contributions."
+
         if field is not None:
             self.field = field
 

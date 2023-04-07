@@ -38,7 +38,7 @@ class MultiPointConstraint:
         "RBE2 Multi-point-constraint."
         self.field = field
         self.mesh = field.region.mesh
-        self.points = points
+        self.points = np.asarray(points)
         self.centerpoint = centerpoint
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]
@@ -93,7 +93,7 @@ class MultiPointContact:
         "RBE2 Multi-point-bolt-constraint."
         self.field = field
         self.mesh = field.region.mesh
-        self.points = points
+        self.points = np.asarray(points)
         self.centerpoint = centerpoint
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]

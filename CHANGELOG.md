@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.0.0] - 2023-04-07
+
 ### Added
 - Add boundary regions `RegionQuadraticQuadBoundary` and `RegionBiQuadraticQuadBoundary` for quadratic quads.
 - Add boundary regions `RegionQuadraticHexahedronBoundary` and `RegionTriQuadraticHexahedronBoundary` for quadratic hexahedrons.

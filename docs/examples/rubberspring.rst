@@ -13,7 +13,7 @@ Rubber Spring
    * export and plot the log. strain
 
 
-A meshed three-dimensional geometry of a rubber-metal spring is loaded by an external axial and lateral displacement. A simplified elastic-to-rigid contact definition simulates the end stop caused by a steel plate.
+A `meshed three-dimensional geometry <../_static/mesh.vtk>`_ of a rubber-metal spring is loaded by an external axial and lateral displacement. A simplified elastic-to-rigid contact definition simulates the end stop caused by a steel plate.
 
 ..  code-block:: python
 

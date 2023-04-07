@@ -40,7 +40,7 @@ from ._convert import (
     convert,
 )
 from ._discrete_geometry import DiscreteGeometry
-from ._tools import expand, mirror, revolve, rotate, runouts, sweep, triangulate
+from ._tools import expand, flip, mirror, revolve, rotate, runouts, sweep, triangulate
 
 
 def as_mesh(obj):
@@ -163,6 +163,10 @@ class Mesh(DiscreteGeometry):
     @wraps(sweep)
     def sweep(self, decimals=None):
         return as_mesh(sweep(self, decimals=decimals))
+
+    @wraps(flip)
+    def flip(self, mask=None):
+        return as_mesh(flip(self, mask=mask))
 
     @wraps(mirror)
     def mirror(self, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):

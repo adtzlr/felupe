@@ -6,6 +6,7 @@ Created on Sun Aug 21 00:27:38 2022
 """
 
 import numpy as np
+import pytest
 
 import felupe as fem
 
@@ -80,6 +81,11 @@ def test_curve():
     field, step = pre()
 
     curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
+
+    with pytest.raises(ValueError):
+        curve.plot()
+
+    curve.evaluate()
     curve.plot(xaxis=0, yaxis=0)
     curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
 
@@ -112,6 +118,7 @@ def test_curve_custom_items():
     curve = fem.CharacteristicCurve(
         steps=[step], items=step.items, boundary=step.boundaries["move"]
     )
+    curve.evaluate()
     curve.plot(xaxis=0, yaxis=0, gradient=True)
     curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
 

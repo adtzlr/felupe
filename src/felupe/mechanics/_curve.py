@@ -76,15 +76,15 @@ class CharacteristicCurve(Job):
         gradient=False,
         fig=None,
         ax=None,
-        linestyle=".-",
         items=None,
         **kwargs
     ):
+        if self.res is None:
+            raise ValueError(
+                "Job results are empty. Run `job.evaluate()` and call `job.plot()` again."
+            )
 
         import matplotlib.pyplot as plt
-
-        if self.res is None:
-            self.evaluate(**kwargs)
 
         if x is None:
             x = self.x
@@ -106,7 +106,7 @@ class CharacteristicCurve(Job):
         if fig is None or ax is None:
             fig, ax = plt.subplots()
 
-        ax.plot(x[:, xaxis] * xscale, y[:, yaxis] * yscale, linestyle)
+        ax.plot(x[:, xaxis] * xscale, y[:, yaxis] * yscale, **kwargs)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
 

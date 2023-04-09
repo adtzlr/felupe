@@ -28,7 +28,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def linsteps(points, num=10):
+def linsteps(points, num=10, endpoint=True):
 
     points = np.array(points).ravel()
     start = points[:-1]
@@ -49,6 +49,8 @@ def linsteps(points, num=10):
         )
     else:
         steps = np.array([])
-    steps_with_endpoint = np.append(steps, points[-1])
 
-    return steps_with_endpoint
+    if endpoint:
+        steps = np.append(steps, points[-1])
+
+    return steps

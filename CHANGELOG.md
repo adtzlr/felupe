@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add string representations for `Region` and `FieldContainer.`
 
+### Changed
+- Pass optional keyword-arguments in `CharacteristicCurve.plot(**kwargs)` to the figure.
+- Don't invoke `CharacteristicCurve.evaluate()` from `CharacteristicCurve.plot()`, raise an error if the current job is not evaluated instead.
+- Make the endpoint of `math.linsteps(endpoint=True)` optional.
+
 ## [7.0.0] - 2023-04-07
 
 ### Added

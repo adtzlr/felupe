@@ -66,7 +66,7 @@ The boundary conditions are created on the global displacement field. First, a m
 )
 
 
-The material behaviour of the rubber is defined through a built-in hyperelastic isotropic Neo-Hookean material formulation. A solid body, suitable for nearly-incompressible material formulations, applies the material formulation on the displacement field. The air is also simulated by a Neo-Hookean material formulation but with no volumetric contribution and hence, no special mixed-field treatment is necessary here. A crucial parameter is the shear modulus which is used for the simulation of the air. The air is meshed and simulated to capture the contacts of the rubber blocks inside the engine mount during the deformation. Hence, its overall stiffness contribution must be as low as possible. Here, one fortieth of the shear modulus of the rubber is used. The bulk modulus of the rubber is lowered to provide a more realistic deformation for the three-dimensional component simulated by a plane-strain analysis.
+The material behaviour of the rubber is defined through a built-in hyperelastic isotropic Neo-Hookean material formulation. A solid body, suitable for nearly-incompressible material formulations, applies the material formulation on the displacement field. The air is also simulated by a Neo-Hookean material formulation but with no volumetric contribution and hence, no special mixed-field treatment is necessary here. A crucial parameter is the shear modulus which is used for the simulation of the air. The air is meshed and simulated to capture the contacts of the rubber blocks inside the engine mount during the deformation. Hence, its overall stiffness contribution must be as low as possible. Here, one fiftieth of the shear modulus of the rubber is used. The bulk modulus of the rubber is lowered to provide a more realistic deformation for the three-dimensional component simulated by a plane-strain analysis.
 
 ..  code-block:: python
 
@@ -122,9 +122,6 @@ After defining the consecutive load steps, the simulation model is ready to be s
     </video>
 
 
-..  image:: images/engine-mount_deformed.png
-
-
 The vertical force-displacement curve is obtained from the characteristic-curve job.
 
 ..  code-block:: python
@@ -176,3 +173,5 @@ The lateral force-displacement curves are plotted for the two different levels o
     ax.legend()
 
 ..  image:: images/engine-mount_Fx-ux.svg
+
+..  image:: images/engine-mount_deformed.png

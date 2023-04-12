@@ -62,7 +62,7 @@ def test_job_xdmf():
 
     field, step = pre()
     job = fem.Job(steps=[step])
-    job.evaluate(filename="result.xdmf")
+    job.evaluate(filename="result.xdmf", parallel=True)
 
 
 def test_job_xdmf_global_field():

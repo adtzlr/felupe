@@ -93,6 +93,7 @@ class Job:
         point_data_default=True,
         cell_data_default=True,
         verbose=True,
+        parallel=False,
         **kwargs,
     ):
 
@@ -113,6 +114,11 @@ FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]}
 
             print("Run Job")
             print("=======\n")
+        
+        if parallel:
+            if not "kwargs" in kwargs.keys():
+                kwargs["kwargs"] = {}
+            kwargs["kwargs"]["parallel"] = True
 
         if filename is not None:
             from meshio.xdmf import TimeSeriesWriter

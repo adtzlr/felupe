@@ -10,16 +10,20 @@ FElupe supports mixed-field formulations in a similar way it can handle (default
     neohooke = fem.constitution.NeoHooke(mu=1.0, bulk=5000.0)
     umat = fem.constitution.ThreeFieldVariation(neohooke)
 
-Next, let's create a meshed cube. Two regions, one for the displacements and another one for the pressure and the volume ratio are created.
+Next, let's create a meshed cube. A Taylor-Hood Q2/P1 hexahedron element formulation is created, where a tri-quadratic Lagrange 27-point per cell displacement formulation is used in combination with discontinuous 8-point per cell linear formulations for the pressure and volume ratio fields. Hence, the mesh of the cube is converted to a tri-quadratic mesh for the displacement field. The regions for the pressure and the volume ratio are created on a disconnected mesh for the generation of discontinuous fields.
 
 ..  code-block:: python
 
-    mesh  = fem.Cube(n=6)
+    mesh1  = fem.Cube(n=5)
+    mesh2 = mesh1.convert(
+        order=2, 
+        calc_points=True, 
+        calc_midfaces=True, 
+        calc_midvolumes=True
+    )
 
-    region  = fem.RegionHexahedron(mesh)
-    region0 = fem.RegionConstantHexahedron(mesh)
-
-    dV = region.dV
+    region  = fem.RegionTriQuadraticHexahedron(mesh2)
+    region0 = fem.RegionHexahedron(mesh1.disconnect(), quadrature=region.quadrature)
 
     displacement = fem.Field(region,  dim=3)
     pressure     = fem.Field(region0, dim=1)
@@ -27,49 +31,27 @@ Next, let's create a meshed cube. Two regions, one for the displacements and ano
 
     field = fem.FieldContainer(fields=[displacement, pressure, volumeratio])
 
-Boundary conditions are enforced on the displacement field.
+Boundary conditions are enforced on the displacement field. For the pre-defined loadcases like the clamped uniaxial compression, the boundaries are automatically applied on the first field.
 
 ..  code-block:: python
 
     import numpy as np
 
-    f1 = lambda x: np.isclose(x, 1)
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-    boundaries = fem.dof.symmetry(displacement)
-    boundaries["right"] = fem.Boundary(displacement, fx=f1, skip=(1, 0, 0))
-    boundaries["move" ] = fem.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=-0.4)
-
-    dof0, dof1 = fem.dof.partition(field, boundaries)
-    ext0 = fem.dof.apply(field, boundaries, dof0)
-
-The Newton-Rhapson iterations are coded quite similar. For mixed-fields, FElupe assumes that the first field operates on the gradient and all the others don't. The resulting system vector with incremental values of the fields has to be splitted at the field-offsets in order to update the fields.
+The Step and Job definitions are identical to single field formulations.
 
 ..  code-block:: python
 
-    for iteration in range(8):
+    step = fem.Step(
+        items=[solid], 
+        ramp={boundaries["move"]: fem.math.linsteps([0, -0.4], num=12)},
+        boundaries=boundaries
+    )
+    job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+    job.evaluate(filename="result.xdmf")
 
-        F, p, J = field.extract()
-        
-        linearform = fem.IntegralForm(umat.gradient([F, p, J])[:-1], field, dV)
-        bilinearform = fem.IntegralForm(umat.hessian([F, p, J]), field, dV, field)
-
-        r = linearform.assemble().toarray()[:, 0]
-        K = bilinearform.assemble()
-        
-        system = fem.solve.partition(field, K, dof1, dof0, r)
-        dfield = np.split(fem.solve.solve(*system, ext0), field.offsets)
-        
-        field += dfield
-
-        norm = np.linalg.norm(dfield[0])
-        print(iteration, norm)
-
-        if norm < 1e-12:
-            break
-
-    fem.tools.save(region, field, filename="result.vtk")
-
-The deformed cube is finally visualized by a VTK output file with the help of Paraview.
+The deformed cube is finally visualized by a XDMF output file with the help of Paraview.
 
 .. image:: images/threefield_cube.png
    :width: 600px

@@ -11,6 +11,7 @@ from ._convert import (
     collect_volumes,
     convert,
 )
+from ._dual import dual
 from ._geometry import (
     Cube,
     CubeArbitraryOrderHexahedron,

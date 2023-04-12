@@ -58,8 +58,6 @@ class FieldsMixed(FieldContainer):
         values=(0, 0, 1, 0),
         axisymmetric=False,
         planestrain=False,
-        offset=0,
-        npoints=None,
         mesh=None,
         **kwargs,
     ):
@@ -81,10 +79,6 @@ class FieldsMixed(FieldContainer):
             Flag to initiate a axisymmetric Field (default is False).
         planestrain : bool, optional
             Flag to initiate a plane strain Field (default is False).
-        offset : int, optional
-            Offset for cell connectivity (default is 0).
-        npoints : int or None, optional
-            Specified number of mesh points (default is None).
         mesh: Mesh or None, optional
             A mesh for the dual region (default is None).
         """
@@ -102,22 +96,28 @@ class FieldsMixed(FieldContainer):
             RegionTriangleMINI: RegionTriangle,
             RegionLagrange: RegionLagrange,
         }
+        points_per_cell = {
+            RegionConstantHexahedron: 1,
+            RegionConstantQuad: 1,
+            RegionQuad: 4,
+            RegionHexahedron: 8,
+            RegionTriangle: 3,
+            RegionTetra: 4,
+            RegionLagrange: None,
+        }
 
         kwargs0 = {}
-
-        if offset > 0:
-            kwargs0["offset"] = offset
-        if npoints is not None:
-            kwargs0["npoints"] = npoints
 
         if isinstance(region, RegionLagrange):
             kwargs0["order"] = region.order - 1
             kwargs0["dim"] = region.mesh.dim
+        
+        RegionDual = regions[type(region)]
+        
+        if mesh is None and points_per_cell[RegionDual] is not None:
+            mesh = region.mesh.dual(points_per_cell=points_per_cell[RegionDual])
 
-        if mesh is None:
-            mesh = region.mesh
-
-        region_dual = regions[type(region)](
+        region_dual = RegionDual(
             mesh,
             quadrature=region.quadrature,
             grad=False,

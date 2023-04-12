@@ -63,7 +63,6 @@ class RegionConstantQuad(Region):
     ):
 
         element = ConstantQuad()
-
         super().__init__(mesh, element, quadrature, grad=grad)
 
 

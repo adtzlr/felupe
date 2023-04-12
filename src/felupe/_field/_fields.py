@@ -58,6 +58,8 @@ class FieldsMixed(FieldContainer):
         values=(0, 0, 1, 0),
         axisymmetric=False,
         planestrain=False,
+        offset=0,
+        npoints=None,
         mesh=None,
         **kwargs,
     ):
@@ -79,6 +81,10 @@ class FieldsMixed(FieldContainer):
             Flag to initiate a axisymmetric Field (default is False).
         planestrain : bool, optional
             Flag to initiate a plane strain Field (default is False).
+        offset : int, optional
+            Offset for cell connectivity (default is 0).
+        npoints : int or None, optional
+            Specified number of mesh points (default is None).
         mesh: Mesh or None, optional
             A mesh for the dual region (default is None).
         """
@@ -117,6 +123,7 @@ class FieldsMixed(FieldContainer):
         
         if mesh is None and points_per_cell[RegionDual] is not None:
             mesh = region.mesh.dual(points_per_cell=points_per_cell[RegionDual])
+            mesh.cells += offset
 
         region_dual = RegionDual(
             mesh,

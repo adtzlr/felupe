@@ -111,6 +111,7 @@ class FieldsMixed(FieldContainer):
         if isinstance(region, RegionLagrange):
             kwargs0["order"] = region.order - 1
             kwargs0["dim"] = region.mesh.dim
+            points_per_cell[RegionLagrange] = (region.order + 1) ** region.element.dim
         
         RegionDual = regions[type(region)]
         

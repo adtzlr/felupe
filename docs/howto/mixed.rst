@@ -10,7 +10,7 @@ FElupe supports mixed-field formulations in a similar way it can handle (default
     neohooke = fem.constitution.NeoHooke(mu=1.0, bulk=5000.0)
     umat = fem.constitution.ThreeFieldVariation(neohooke)
 
-Next, let's create a meshed cube. A Taylor-Hood Q2/P1 hexahedron element formulation is created, where a tri-quadratic Lagrange 27-point per cell displacement formulation is used in combination with discontinuous 8-point per cell linear formulations for the pressure and volume ratio fields. Hence, the mesh of the cube is converted to a tri-quadratic mesh for the displacement field. The regions for the pressure and the volume ratio are created on a disconnected mesh for the generation of discontinuous fields.
+Next, let's create a meshed cube for a Hood-Taylor element formulation. The family of Hood-Taylor elements have a pressure field which is one order lower than the displacement field. A Hood-Taylor Q2/Q1 hexahedron element formulation is created, where a tri-quadratic continuous (Lagrange) 27-point per cell displacement formulation is used in combination with discontinuous 8-point per cell linear formulations for the pressure and volume ratio fields. The mesh of the cube is converted to a tri-quadratic mesh for the displacement field. The regions for the pressure and the volume ratio are created on a disconnected mesh for the generation of the discontinuous fields.
 
 ..  code-block:: python
 
@@ -39,7 +39,7 @@ Boundary conditions are enforced on the displacement field. For the pre-defined 
 
     boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-The Step and Job definitions are identical to single field formulations.
+The Step and Job definitions are identical to ones of single field formulations.
 
 ..  code-block:: python
 

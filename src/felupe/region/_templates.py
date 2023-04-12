@@ -60,14 +60,11 @@ class RegionConstantQuad(Region):
         mesh,
         quadrature=GaussLegendre(order=1, dim=2),
         grad=False,
-        offset=0,
     ):
 
         element = ConstantQuad()
-        m = mesh.dual(points_per_cell=1)
-        m.cells += offset
 
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionQuad(Region):
@@ -189,14 +186,10 @@ class RegionConstantHexahedron(Region):
         mesh,
         quadrature=GaussLegendre(order=1, dim=3),
         grad=False,
-        offset=0,
     ):
 
         element = ConstantHexahedron()
-        m = mesh.dual(points_per_cell=1)
-        m.cells += offset
-
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionHexahedron(Region):

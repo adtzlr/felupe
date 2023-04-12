@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add string representations for `Region` and `FieldContainer.`
+- Add `Job.evaluate(parallel=True)` in addition to `Job.evaluate(kwargs={"parallel": True})`. If both are given, the key in the dict is overwritten by the user-defined value.
 
 ### Changed
 - Pass optional keyword-arguments in `CharacteristicCurve.plot(**kwargs)` to the figure.

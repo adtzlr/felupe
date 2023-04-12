@@ -55,7 +55,7 @@ The Step and Job definitions are identical to ones used with single field formul
     job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
     job.evaluate(filename="result.xdmf")
 
-The deformed cube is finally visualized by a XDMF output file with the help of Paraview.
+The deformed cube is finally visualized by a XDMF output file with the help of Paraview. The cell-based means of the maximum principal values of the logarithmic strain tensor are shown.
 
 .. image:: images/threefield_cube.png
    :width: 600px

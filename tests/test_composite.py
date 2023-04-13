@@ -12,7 +12,7 @@ import felupe as fe
 
 def test_composite():
 
-    n = 10
+    n = 5
     mesh = fe.Cube(n=n)
     region = fe.RegionHexahedron(mesh)
 

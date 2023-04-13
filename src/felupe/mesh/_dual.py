@@ -46,7 +46,7 @@ def dual(
     """
 
     ncells = len(cells)
-    npoints, dim = points.shape
+    dim = points.shape[1]
     cell_type_new = None
     
     if points_per_cell is None:

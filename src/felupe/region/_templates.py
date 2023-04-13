@@ -60,22 +60,10 @@ class RegionConstantQuad(Region):
         mesh,
         quadrature=GaussLegendre(order=1, dim=2),
         grad=False,
-        offset=0,
-        npoints=None,
     ):
 
         element = ConstantQuad()
-
-        if npoints is not None:
-            npts = npoints
-        else:
-            npts = offset + mesh.ncells
-
-        points = np.zeros((npts, mesh.dim), dtype=int)
-        cells = offset + np.arange(mesh.ncells).reshape(-1, 1)
-        m = Mesh(points, cells, mesh.cell_type)
-
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionQuad(Region):
@@ -86,11 +74,9 @@ class RegionQuad(Region):
         element = Quad()
 
         if len(mesh.cells.T) > 4:
-            m = Mesh(mesh.points, mesh.cells[:, :4], "quad")
-        else:
-            m = mesh
+            mesh = Mesh(mesh.points, mesh.cells[:, :4], "quad")
 
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionQuadraticQuad(Region):
@@ -99,6 +85,10 @@ class RegionQuadraticQuad(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
 
         element = QuadraticQuad()
+        
+        if len(mesh.cells.T) > 8:
+            mesh = Mesh(mesh.points, mesh.cells[:, :8], "quad8")
+
         super().__init__(mesh, element, quadrature, grad=grad)
 
 
@@ -108,6 +98,7 @@ class RegionBiQuadraticQuad(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
 
         element = BiQuadraticQuad()
+        
         super().__init__(mesh, element, quadrature, grad=grad)
 
 
@@ -197,24 +188,10 @@ class RegionConstantHexahedron(Region):
         mesh,
         quadrature=GaussLegendre(order=1, dim=3),
         grad=False,
-        offset=0,
-        npoints=None,
     ):
 
         element = ConstantHexahedron()
-
-        if npoints is not None:
-            npts = npoints
-            ncells = min(npoints, mesh.ncells)
-        else:
-            npts = offset + mesh.ncells
-            ncells = mesh.ncells
-
-        points = np.zeros((npts, mesh.dim), dtype=int)
-        cells = offset + np.arange(ncells).reshape(-1, 1)
-        m = Mesh(points, cells, mesh.cell_type)
-
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionHexahedron(Region):
@@ -225,11 +202,9 @@ class RegionHexahedron(Region):
         element = Hexahedron()
 
         if len(mesh.cells.T) > 8:
-            m = Mesh(mesh.points, mesh.cells[:, :8], "hexahedron")
-        else:
-            m = mesh
+            mesh = Mesh(mesh.points, mesh.cells[:, :8], "hexahedron")
 
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad)
 
 
 class RegionHexahedronBoundary(RegionBoundary):
@@ -256,6 +231,10 @@ class RegionQuadraticHexahedron(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
 
         element = QuadraticHexahedron()
+        
+        if len(mesh.cells.T) > 20:
+            mesh = Mesh(mesh.points, mesh.cells[:, :20], "hexahedron20")
+            
         super().__init__(mesh, element, quadrature, grad=grad)
 
 

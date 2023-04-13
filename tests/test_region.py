@@ -46,6 +46,8 @@ def test_region():
     r = fe.RegionQuadraticQuadBoundary(mesh2, ensure_3d=True)
 
     mesh3 = fe.mesh.convert(mesh, 2, True, True, False)
+    r = fe.RegionQuad(mesh3)
+    r = fe.RegionQuadraticQuad(mesh3)
     r = fe.RegionBiQuadraticQuad(mesh3)
     f = fe.FieldsMixed(r)
 
@@ -75,6 +77,8 @@ def test_region():
     r = fe.RegionQuadraticHexahedronBoundary(mesh2)
 
     mesh3 = fe.mesh.convert(mesh, 2, True, True, True)
+    r = fe.RegionHexahedron(mesh3)
+    r = fe.RegionQuadraticHexahedron(mesh3)
     r = fe.RegionTriQuadraticHexahedron(mesh3)
     f = fe.FieldsMixed(r)
 
@@ -87,6 +91,7 @@ def test_region():
     r = fe.RegionTriangle(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
+    r = fe.RegionTriangle(mesh2)
     r = fe.RegionQuadraticTriangle(mesh2)
     f = fe.FieldsMixed(r)
 
@@ -97,6 +102,7 @@ def test_region():
     r = fe.RegionTetra(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
+    r = fe.RegionTetra(mesh2)
     r = fe.RegionQuadraticTetra(mesh2)
     f = fe.FieldsMixed(r)
 

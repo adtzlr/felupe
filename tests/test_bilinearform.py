@@ -71,7 +71,7 @@ def pre(dim):
 
     mesh = fe.Cube(n=3)
     region = fe.RegionHexahedron(mesh)
-    region0 = fe.RegionConstantHexahedron(mesh)
+    region0 = fe.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
     u = fe.Field(region, dim=3)
     p = fe.Field(region0)
     up = fe.FieldContainer([u, p])

@@ -10,24 +10,22 @@ FElupe supports mixed-field formulations in a similar way it can handle (default
     neohooke = fem.constitution.NeoHooke(mu=1.0, bulk=5000.0)
     umat = fem.constitution.ThreeFieldVariation(neohooke)
 
-Next, let's create a meshed cube for a Hood-Taylor element formulation. The family of Hood-Taylor elements have a pressure field which is one order lower than the displacement field. A Hood-Taylor Q2/P1 hexahedron element formulation is created, where a tri-quadratic continuous (Lagrange) 27-point per cell displacement formulation is used in combination with discontinuous 4-point per cell linear formulations for the pressure and volume ratio fields. The mesh of the cube is converted to a tri-quadratic mesh for the displacement field. The tetra regions for the pressure and the volume ratio are created on a disconnected mesh for the generation of the discontinuous fields.
+Next, let's create a meshed cube for a Hood-Taylor element formulation. The family of Hood-Taylor elements have a pressure field which is one order lower than the displacement field. A Hood-Taylor Q2/P1 hexahedron element formulation is created, where a tri-quadratic continuous (Lagrange) 27-point per cell displacement formulation is used in combination with discontinuous (quadratic tetra) 10-point per cell formulations for the pressure and volume ratio fields. The mesh of the cube is converted to a tri-quadratic mesh for the displacement field. The quadratic tetra regions for the pressure and the volume ratio are created on a dual (disconnected) mesh for the generation of the discontinuous fields.
 
 ..  code-block:: python
 
     mesh  = fem.Cube(n=5)
     mesh_q2 = mesh.convert(
-        order=2, 
-        calc_points=True, 
-        calc_midfaces=True, 
+        order=2,
+        calc_points=True,
+        calc_midfaces=True,
         calc_midvolumes=True
     )
-    mesh_p1 = mesh.copy()
-    mesh_p1.update(mesh.cells[:, :4])
 
     region_q2 = fem.RegionTriQuadraticHexahedron(mesh_q2)
-    region_p1 = fem.RegionTetra(
-        mesh=mesh_p1.disconnect(), 
-        quadrature=region_q2.quadrature, 
+    region_p1 = fem.RegionQuadraticTetra(
+        mesh=mesh.dual(points_per_cell=10),
+        quadrature=region_q2.quadrature,
         grad=False
     )
 
@@ -36,6 +34,7 @@ Next, let's create a meshed cube for a Hood-Taylor element formulation. The fami
     volumeratio  = fem.Field(region_p1, dim=1, values=1)
 
     field = fem.FieldContainer(fields=[displacement, pressure, volumeratio])
+    solid = fem.SolidBody(umat=umat, field=field)
 
 Boundary conditions are enforced on the displacement field. For the pre-defined loadcases like the clamped uniaxial compression, the boundaries are automatically applied on the first field.
 

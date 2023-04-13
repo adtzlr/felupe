@@ -40,6 +40,7 @@ from ._convert import (
     convert,
 )
 from ._discrete_geometry import DiscreteGeometry
+from ._dual import dual
 from ._tools import expand, flip, mirror, revolve, rotate, runouts, sweep, triangulate
 
 
@@ -97,23 +98,13 @@ class Mesh(DiscreteGeometry):
         per-cell of the original Mesh). If the Mesh is to be used as a *dual* Mesh, then
         the point-coordinates do not have to be re-created because they are not used."""
 
-        cells_trimmed = self.cells
-        cell_type = self.cell_type
-
-        if points_per_cell is not None:
-            cell_type = None
-            cells_trimmed = cells_trimmed[:, :points_per_cell]
-
-        if calc_points:
-            points = self.points[cells_trimmed].reshape(-1, self.dim)
-        else:
-            points = np.zeros(
-                (self.ncells * cells_trimmed.shape[1], self.dim), dtype=int
-            )
-
-        cells = np.arange(cells_trimmed.size).reshape(*cells_trimmed.shape)
-
-        return Mesh(points, cells, cell_type=cell_type)
+        return self.dual(
+            points_per_cell=points_per_cell, 
+            disconnect=True, 
+            calc_points=calc_points,
+            offset=0,
+            npoints=None,
+        )
 
     def as_meshio(self, **kwargs):
         "Export the mesh as ``meshio.Mesh``."
@@ -147,6 +138,25 @@ class Mesh(DiscreteGeometry):
         """
 
         return deepcopy(self)
+    
+    @wraps(dual)
+    def dual(self, 
+            points_per_cell=None, 
+            disconnect=True, 
+            calc_points=False, 
+            offset=0,
+            npoints=None,
+        ):
+        return as_mesh(
+            dual(
+                self, 
+                points_per_cell=points_per_cell, 
+                disconnect=disconnect,
+                calc_points=calc_points,
+                offset=offset,
+                npoints=npoints,
+            )
+        )
 
     @wraps(expand)
     def expand(self, n=11, z=1):

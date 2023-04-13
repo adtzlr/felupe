@@ -91,6 +91,7 @@ def test_region():
     r = fe.RegionTriangle(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
+    r = fe.RegionTriangle(mesh2)
     r = fe.RegionQuadraticTriangle(mesh2)
     f = fe.FieldsMixed(r)
 
@@ -101,6 +102,7 @@ def test_region():
     r = fe.RegionTetra(mesh)
 
     mesh2 = fe.mesh.convert(mesh, 2, True, False, False)
+    r = fe.RegionTetra(mesh2)
     r = fe.RegionQuadraticTetra(mesh2)
     f = fe.FieldsMixed(r)
 

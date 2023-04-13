@@ -114,7 +114,7 @@ FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]}
 
             print("Run Job")
             print("=======\n")
-        
+
         if parallel:
             if not "kwargs" in kwargs.keys():
                 kwargs["kwargs"] = {}

@@ -85,7 +85,7 @@ class RegionQuadraticQuad(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
 
         element = QuadraticQuad()
-        
+
         if len(mesh.cells.T) > 8:
             mesh = Mesh(mesh.points, mesh.cells[:, :8], "quad8")
 
@@ -98,7 +98,7 @@ class RegionBiQuadraticQuad(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
 
         element = BiQuadraticQuad()
-        
+
         super().__init__(mesh, element, quadrature, grad=grad)
 
 
@@ -231,10 +231,10 @@ class RegionQuadraticHexahedron(Region):
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
 
         element = QuadraticHexahedron()
-        
+
         if len(mesh.cells.T) > 20:
             mesh = Mesh(mesh.points, mesh.cells[:, :20], "hexahedron20")
-            
+
         super().__init__(mesh, element, quadrature, grad=grad)
 
 

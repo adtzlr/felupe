@@ -114,8 +114,8 @@ def test_composite_planestrain():
     )
 
     field = fe.FieldsMixed(
-        region, 
-        n=3, 
+        region,
+        n=3,
         planestrain=True,
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )

@@ -41,23 +41,23 @@ def dual(
     offset=0,
     npoints=None,
 ):
-    """Create a new dual mesh with given points per cell. The point coordinates are not 
+    """Create a new dual mesh with given points per cell. The point coordinates are not
     used in a dual mesh and hence, by default they are all zero.
     """
 
     ncells = len(cells)
     dim = points.shape[1]
     cell_type_new = None
-    
+
     if points_per_cell is None:
         points_per_cell = cells.shape[1]
         cell_type_new = cell_type
-    
+
     if disconnect:
         cells_new = np.arange(ncells * points_per_cell).reshape(ncells, points_per_cell)
     else:
         cells_new = cells[:, :points_per_cell]
-    
+
     if calc_points:
         points_new = points[cells[:, :points_per_cell]].reshape(-1, dim)
     else:
@@ -68,8 +68,8 @@ def dual(
     if offset > 0:
         cells_new += offset
         points_new = np.pad(points_new, ((offset, 0), (0, 0)))
-    
+
     if npoints is not None and npoints > len(points_new):
         points_new = np.pad(points_new, ((npoints - len(points_new), 0), (0, 0)))
-    
+
     return points_new, cells_new, cell_type_new

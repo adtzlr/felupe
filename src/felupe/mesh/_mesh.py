@@ -99,8 +99,8 @@ class Mesh(DiscreteGeometry):
         the point-coordinates do not have to be re-created because they are not used."""
 
         return self.dual(
-            points_per_cell=points_per_cell, 
-            disconnect=True, 
+            points_per_cell=points_per_cell,
+            disconnect=True,
             calc_points=calc_points,
             offset=0,
             npoints=None,
@@ -138,19 +138,20 @@ class Mesh(DiscreteGeometry):
         """
 
         return deepcopy(self)
-    
+
     @wraps(dual)
-    def dual(self, 
-            points_per_cell=None, 
-            disconnect=True, 
-            calc_points=False, 
-            offset=0,
-            npoints=None,
-        ):
+    def dual(
+        self,
+        points_per_cell=None,
+        disconnect=True,
+        calc_points=False,
+        offset=0,
+        npoints=None,
+    ):
         return as_mesh(
             dual(
-                self, 
-                points_per_cell=points_per_cell, 
+                self,
+                points_per_cell=points_per_cell,
                 disconnect=disconnect,
                 calc_points=calc_points,
                 offset=offset,

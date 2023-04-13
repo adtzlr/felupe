@@ -59,7 +59,7 @@ def test_meshes():
         cells=np.array([[0, 1, 2, 3]]),
         cell_type="tetra",
     )
-    
+
     m.dual()
     fe.mesh.dual(m, disconnect=False)
     fe.mesh.dual(m, calc_points=True)

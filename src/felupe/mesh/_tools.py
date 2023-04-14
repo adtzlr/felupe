@@ -376,6 +376,18 @@ def concatenate(meshes):
     return mesh
 
 
+def stack(meshes):
+    "Stack cell-blocks from meshes with identical points-array and cell-types."
+
+    Mesh = meshes[0].__mesh__
+
+    points = meshes[0].points
+    cells = np.vstack([mesh.cells for mesh in meshes])
+    mesh = Mesh(points=points, cells=cells, cell_type=meshes[0].cell_type)
+
+    return mesh
+
+
 @mesh_or_data
 def triangulate(points, cells, cell_type, mode=3):
     """Triangulate a quad or a hex mesh.

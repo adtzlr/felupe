@@ -90,11 +90,10 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
     import tensortrax.math as tm
 
-    def W(F, mu, bulk):
+    def W(C, mu, bulk):
         "Neo-Hooke"
 
-        J = tm.linalg.det(F)
-        C = tm.transpose(F) @ F
+        J = tm.sqrt(tm.linalg.det(C))
 
         return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 

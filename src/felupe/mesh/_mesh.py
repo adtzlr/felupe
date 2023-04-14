@@ -41,7 +41,17 @@ from ._convert import (
 )
 from ._discrete_geometry import DiscreteGeometry
 from ._dual import dual
-from ._tools import expand, flip, mirror, revolve, rotate, runouts, sweep, triangulate
+from ._tools import (
+    expand,
+    flip,
+    mirror,
+    revolve,
+    rotate,
+    runouts,
+    sweep,
+    translate,
+    triangulate,
+)
 
 
 def as_mesh(obj):
@@ -182,6 +192,10 @@ class Mesh(DiscreteGeometry):
     @wraps(mirror)
     def mirror(self, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):
         return as_mesh(mirror(self, normal=normal, centerpoint=centerpoint, axis=axis))
+
+    @wraps(translate)
+    def translate(self, move, axis):
+        return as_mesh(translate(self, move=move, axis=axis))
 
     @wraps(triangulate)
     def triangulate(self, mode=3):

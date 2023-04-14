@@ -142,6 +142,11 @@ def test_meshes():
     fe.mesh.rotate(m, angle_deg=10, axis=1, center=[0, 0, 0])
     m.rotate(angle_deg=10, axis=0, center=None)
 
+    fe.mesh.translate(m, move=1, axis=1)
+    fe.mesh.translate(m.points, m.cells, m.cell_type, move=1, axis=1)
+    fe.mesh.translate(m, move=1, axis=1)
+    m.translate(move=1, axis=1)
+
     fe.mesh.CubeArbitraryOrderHexahedron()
     fe.mesh.RectangleArbitraryOrderQuad()
 
@@ -275,13 +280,18 @@ def test_runouts():
     assert (n.points - x)[:, 1].max() == (m.points - x)[:, 1].max() * 1.1
 
 
-def test_concatenate():
+def test_concatenate_stack():
     m = fe.Rectangle(n=3)
 
     n = fe.mesh.concatenate([m, m, m])
 
     assert n.npoints == 3 * m.npoints
     assert n.ncells == 3 * m.ncells
+
+    p = fe.mesh.stack([m, m, m])
+
+    assert m.npoints == p.npoints
+    assert n.ncells == p.ncells
 
 
 def test_grid():
@@ -388,7 +398,7 @@ if __name__ == "__main__":
     test_mirror()
     test_triangulate()
     test_runouts()
-    test_concatenate()
+    test_concatenate_stack()
     test_grid()
     test_grid_1d()
     test_container()

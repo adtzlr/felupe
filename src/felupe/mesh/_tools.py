@@ -259,6 +259,39 @@ def sweep(points, cells, cell_type, decimals=None):
 
 
 @mesh_or_data
+def translate(points, cells, cell_type, move, axis):
+    """Translate (move) a Mesh.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    move : float
+        Translation along given axis.
+    axis : int
+        Translation axis.
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+    """
+
+    points_new = np.array(points)
+    points_new[:, axis] += move
+
+    return points_new, cells, cell_type
+
+
+@mesh_or_data
 def flip(points, cells, cell_type, mask=None):
     """Ensure positive cell volumes for `tria`, `tetra`, `quad` and
     `hexahedron` cell types.
@@ -371,6 +404,18 @@ def concatenate(meshes):
     points = np.vstack([mesh.points for mesh in meshes])
     offsets = np.cumsum(np.insert([mesh.npoints for mesh in meshes][:-1], 0, 0))
     cells = np.vstack([offset + mesh.cells for offset, mesh in zip(offsets, meshes)])
+    mesh = Mesh(points=points, cells=cells, cell_type=meshes[0].cell_type)
+
+    return mesh
+
+
+def stack(meshes):
+    "Stack cell-blocks from meshes with identical points-array and cell-types."
+
+    Mesh = meshes[0].__mesh__
+
+    points = meshes[0].points
+    cells = np.vstack([mesh.cells for mesh in meshes])
     mesh = Mesh(points=points, cells=cells, cell_type=meshes[0].cell_type)
 
     return mesh

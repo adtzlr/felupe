@@ -30,6 +30,8 @@ from ._tools import (
     revolve,
     rotate,
     runouts,
+    stack,
     sweep,
+    translate,
     triangulate,
 )

@@ -26,7 +26,12 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from einsumt import einsumt
+
+try:
+    from einsumt import einsumt
+except ModuleNotFoundError:
+    from numpy import einsum as einsumt
+
 from scipy.sparse import csr_matrix as sparsematrix
 
 

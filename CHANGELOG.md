@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.1.0] - 2023-04-15
+
 ### Added
 - Add string representations for `Region` and `FieldContainer.`
 - Add `Job.evaluate(parallel=True)` in addition to `Job.evaluate(kwargs={"parallel": True})`. If both are given, the key in the dict is overwritten by the user-defined value.

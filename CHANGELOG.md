@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add string representations for `Region` and `FieldContainer.`
 - Add `Job.evaluate(parallel=True)` in addition to `Job.evaluate(kwargs={"parallel": True})`. If both are given, the key in the dict is overwritten by the user-defined value.
+- Add `mesh.stack(meshes)` for joining meshes with identical points-arrays and cell-types. Contrary to `mesh.concatenate(meshes)`, the points are not stacked and no offsets are inserted into the cells-arrays.
+- Add `mesh.translate(move, axis)` for the translation of mesh-points.
 
 ### Changed
 - Pass optional keyword-arguments in `CharacteristicCurve.plot(**kwargs)` to the figure.

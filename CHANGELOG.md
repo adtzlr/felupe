@@ -14,6 +14,11 @@ All notable changes to this project will be documented in this file. The format 
 - Don't invoke `CharacteristicCurve.evaluate()` from `CharacteristicCurve.plot()`, raise an error if the current job is not evaluated instead.
 - Make the endpoint of `math.linsteps(endpoint=True)` optional.
 - Don't modify the mesh for the dual regions `RegionConstantQuad()` and `RegionConstantHexahedron()`. Instead, it is required to pass a dual (disconnected) mesh with one point per cell `RegionConstantQuad(mesh.dual(points_per_cell=1))`.
+- Make requirement `einsumt` optional again due to issues with JupyterLite.
+- Add `matplotlib` to optional requirements.
+
+### Fixed
+- Catch `ModuleNotFoundError` if `from einsumt import einsumt` fails (in JupyterLite) and fall back to `from numpy import einsum as einsumt`.
 
 ## [7.0.0] - 2023-04-07
 

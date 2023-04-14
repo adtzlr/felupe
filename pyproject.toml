@@ -44,13 +44,13 @@ requires-python = ">=3.7"
 dependencies = [
   "numpy",
   "scipy",
-  "einsumt",
 ]
 
 [project.optional-dependencies]
 all = [
-    "meshio",
+    "einsumt",
     "h5py",
+    "meshio",
     "tensortrax",
 ]
 

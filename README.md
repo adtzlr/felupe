@@ -15,7 +15,7 @@ Install Python, fire up a terminal and run
 pip install felupe[all]
 ```
 
-where `[all]` installs all optional dependencies. By default, FElupe depends on `numpy`, `scipy` and `einsumt`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies (`h5py`, `meshio` and `tensortrax`).
+where `[all]` installs all optional dependencies. By default, FElupe depends on `numpy` and `scipy`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies (`einsumt`, `h5py`, `meshio` and `tensortrax`).
 
 # Getting Started
 A quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. This involves the creation of a mesh, a region as well as a displacement field (encapsulated in a field container). Furthermore, the boundary conditions are created by a template for a uniaxial loadcase. An isotropic pseudo-elastic Ogden-Roxburgh Mullins-softening model formulation in combination with an isotropic hyperelastic Neo-Hookean material formulation is applied on a nearly-incompressible solid body. A step generates the consecutive substep-movements of a given boundary condition. The step is further added to a list of steps of a job (here, a characteristic-curve job is used). During evaluation, each substep of each step is solved by an iterative Newton-Rhapson procedure. The solution is exported after each completed substep as a time-series XDMF file. For more details beside this high-level code snippet, please have a look at the [documentation](https://felupe.readthedocs.io/en/latest/?badge=latest).

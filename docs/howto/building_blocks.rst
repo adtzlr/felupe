@@ -224,7 +224,9 @@ Alternatively, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 
-    res = felupe.newtonrhapson(field, umat=umat, dof1=dof1, dof0=dof0, ext0=ext0)
+    res = felupe.newtonrhapson(
+        field, dof1=dof1, dof0=dof0, ext0=ext0, kwargs={"umat": umat}
+    )
     field = res.x
 
 

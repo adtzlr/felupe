@@ -142,6 +142,11 @@ def test_meshes():
     fe.mesh.rotate(m, angle_deg=10, axis=1, center=[0, 0, 0])
     m.rotate(angle_deg=10, axis=0, center=None)
 
+    fe.mesh.translate(m, move=1, axis=1)
+    fe.mesh.translate(m.points, m.cells, m.cell_type, move=1, axis=1)
+    fe.mesh.translate(m, move=1, axis=1)
+    m.translate(move=1, axis=1)
+
     fe.mesh.CubeArbitraryOrderHexahedron()
     fe.mesh.RectangleArbitraryOrderQuad()
 

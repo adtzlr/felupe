@@ -49,12 +49,14 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "h5py",
+    "matplotlib",
     "meshio",
     "tensortrax",
 ]
 all = [
     "einsumt",
     "h5py",
+    "matplotlib",
     "meshio",
     "tensortrax",
 ]

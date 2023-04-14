@@ -57,7 +57,7 @@ Another key feature is the easy and straightforward definition of mixed field fo
 Installation
 ------------
 
-Install Python, open the terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe depends on ``numpy`` and ``scipy``. However,  ``einsumt``, ``h5py``, ``meshio`` and ``tensortrax`` are highly recommended. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For more flexible constitutive material definitions using Automatic Differentation consider also installing `matADi <https://github.com/adtzlr/matadi>`_.
+Install Python, open the terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe depends on ``numpy`` and ``scipy``. However,  ``einsumt``, ``h5py``, ``matplotlib``, ``meshio`` and ``tensortrax`` are highly recommended. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For more flexible constitutive material definitions using Automatic Differentation consider also installing `matADi <https://github.com/adtzlr/matadi>`_.
 
 .. code-block:: shell
 

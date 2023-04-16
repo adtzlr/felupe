@@ -1,43 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan  4 17:26:08 2022
+This file is part of FElupe.
 
-@author: adutz
-"""
-# -*- coding: utf-8 -*-
-"""
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
-
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from threading import Thread
 
 import numpy as np
 
-from .._basis import Basis, BasisMixed
-from .._field import Field
-from .._field import FieldContainer as FieldMixed
+from .._basis import BasisMixed
 from ._base import IntegralForm
 from ._mixed import IntegralFormMixed
 
@@ -540,8 +523,8 @@ class BaseForm:
         Tuple with initial optional weakform-arguments. May be updated during
         integration / assembly.
     kwargs : dict, optional (default is {})
-        Dictionary with initial optional weakform-keyword-arguments. May be updated during
-        integration / assembly.
+        Dictionary with initial optional weakform-keyword-arguments. May be updated
+        during integration / assembly.
     parallel : bool, optional (default is False)
         Flag to activate parallel (threaded) basis evaluation.
 

@@ -12,9 +12,7 @@ from . import (
 )
 from .__about__ import __version__
 from ._assembly import Form
-from ._assembly import (
-    IntegralFormMixed as IntegralForm,  # IntegralForm,; IntegralFormAxisymmetric,; LinearForm,; BilinearForm,; LinearFormMixed as LinearForm,; BilinearFormMixed as BilinearForm,; BaseForm,
-)
+from ._assembly import IntegralFormMixed as IntegralForm
 from ._basis import BasisMixed as Basis
 from ._field import (
     Field,
@@ -110,4 +108,6 @@ except:
 
 __all__ = [
     "__version__",
+    "Form",
+    "IntegralForm",
 ]

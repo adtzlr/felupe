@@ -1,0 +1,16 @@
+name: mybinder-environment
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - scipy
+  - matplotlib
+  - pip
+  - pip:
+    - einsumt
+    - tensortrax
+    - h5py
+    - meshio
+    - matadi
+    - felupe

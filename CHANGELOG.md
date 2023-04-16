@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add an `einvironment.yml` config file for [MyBinder](https://mybinder.org/).
+
+### Changed
+- Make everything in `/src` compliant with [flake8](https://flake8.pycqa.org/).
+
 ## [7.1.0] - 2023-04-15
 
 ### Added

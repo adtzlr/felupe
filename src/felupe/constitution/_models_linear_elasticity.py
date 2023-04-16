@@ -18,13 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import (
-    cdya,
-    dya,
-    identity,
-    trace,
-    transpose,
-)
+from ..math import cdya, dya, identity, trace, transpose
 
 
 def lame_converter(E, nu):

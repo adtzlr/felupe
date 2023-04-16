@@ -137,6 +137,7 @@ __all__ = [
     "ThreeFieldVariation",
     "UserMaterial",
     "UserMaterialStrain",
+    "UserMaterialHyperelastic",
     "VolumeChange",
     "Boundary",
     "ArbitraryOrderLagrangeElement",
@@ -198,4 +199,8 @@ __all__ = [
     "RegionTriangleMINI",
     "RegionTriQuadraticHexahedron",
     "RegionTriQuadraticHexahedronBoundary",
+    "newtonrhapson",
+    "project",
+    "save",
+    "topoints",
 ]

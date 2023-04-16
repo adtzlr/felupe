@@ -110,4 +110,5 @@ __all__ = [
     "__version__",
     "Form",
     "IntegralForm",
+    "Basis",
 ]

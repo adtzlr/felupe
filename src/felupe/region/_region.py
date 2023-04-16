@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
+This file is part of FElupe.
 
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import warnings
@@ -43,7 +34,8 @@ class Region:
 
        \frac{\partial X^I}{\partial r^J} &= X_a^I \frac{\partial h_a}{\partial r^J}
 
-       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I} \frac{\partial r^I}{\partial X^J}
+       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I}
+       \frac{\partial r^I}{\partial X^J}
 
        dV &= \det\left(\frac{\partial X^I}{\partial r^J}\right) w
 
@@ -68,17 +60,28 @@ class Region:
     quadrature: Quadrature scheme
         An element-compatible numeric integration scheme with points and weights.
     h : ndarray
-        Element shape function array ``h_ap`` of shape function ``a`` evaluated at quadrature point ``p``.
+        Element shape function array ``h_ap`` of shape function ``a`` evaluated at
+        quadrature point ``p``.
     dhdr : ndarray
-        Partial derivative of element shape function array ``dhdr_aJp`` with shape function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation between ``X`` and ``r``).
+        Partial derivative of element shape function array ``dhdr_aJp`` with shape
+        function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature
+        point ``p`` for every cell ``c`` (geometric gradient or **Jacobian**
+        transformation between ``X`` and ``r``).
     dXdr : ndarray
-        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation between ``X`` and ``r``).
+        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate
+        ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point
+        ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation
+        between ``X`` and ``r``).
     drdX : ndarray
         Inverse of dXdr.
     dV : ndarray
-        Numeric *Differential volume element* as product of determinant of geometric gradient  ``dV_pc = det(dXdr)_pc w_p`` and quadrature weight ``w_p``, evaluated at quadrature point ``p`` for every cell ``c``.
+        Numeric *Differential volume element* as product of determinant of geometric
+        gradient  ``dV_pc = det(dXdr)_pc w_p`` and quadrature weight ``w_p``, evaluated
+        at quadrature point ``p`` for every cell ``c``.
     dhdX : ndarray
-        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c``.
+        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function
+        ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for
+        every cell ``c``.
     """
 
     def __init__(self, mesh, element, quadrature, grad=True):
@@ -115,9 +118,14 @@ class Region:
             # check for negative **differential volume elements**
             if np.any(self.dV < 0):
                 cells_negative_volume = np.where(np.any(self.dV < 0, axis=0))[0]
-                warnings.warn(
-                    f"Negative volumes in Region for cells \n {cells_negative_volume}\n Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` and re-create the region."
+                message_negative_volumes = "".join(
+                    [
+                        f"Negative volumes for cells \n {cells_negative_volume}\n",
+                        "Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` ",
+                        "and re-create the region.",
+                    ]
                 )
+                warnings.warn(message_negative_volumes)
 
             # Partial derivative of element shape function
             # w.r.t. undeformed coordinates

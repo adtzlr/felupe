@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
+This file is part of FElupe.
 
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
@@ -58,7 +49,8 @@ class NeoHooke:
 
         \psi &= \hat{\psi}(\hat{\boldsymbol{C}}) + U(J)
 
-        \hat\psi(\hat{\boldsymbol{C}}) &= \frac{\mu}{2} (\text{tr}(\hat{\boldsymbol{C}}) - 3)
+        \hat\psi(\hat{\boldsymbol{C}}) &= \frac{\mu}{2}
+        (\text{tr}(\hat{\boldsymbol{C}}) - 3)
 
     with
 
@@ -85,35 +77,46 @@ class NeoHooke:
 
        \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
 
-       \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+       \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial
+       \boldsymbol{F}}
 
     A chain rule application leads to the following expression for the stress tensor.
-    It is formulated as a sum of the **physical**-deviatoric (not the mathematical deviator!) and the physical-hydrostatic stress tensors.
+    It is formulated as a sum of the **physical**-deviatoric (not the mathematical
+    deviator!) and the physical-hydrostatic stress tensors.
 
     .. math::
 
        \boldsymbol{P} &= \boldsymbol{P}' + \boldsymbol{P}_U
 
-       \boldsymbol{P}' &= \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}} : \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} = \bar{\boldsymbol{P}} - \frac{1}{3} (\bar{\boldsymbol{P}} : \boldsymbol{F}) \boldsymbol{F}^{-T}
+       \boldsymbol{P}' &= \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}} :
+       \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} =
+       \bar{\boldsymbol{P}} - \frac{1}{3} (\bar{\boldsymbol{P}} : \boldsymbol{F})
+       \boldsymbol{F}^{-T}
 
-       \boldsymbol{P}_U &= \frac{\partial U(J)}{\partial J} \frac{\partial J}{\partial \boldsymbol{F}} = U'(J) J \boldsymbol{F}^{-T}
+       \boldsymbol{P}_U &= \frac{\partial U(J)}{\partial J} \frac{\partial J}{\partial
+       \boldsymbol{F}} = U'(J) J \boldsymbol{F}^{-T}
 
     with
 
     .. math::
 
-       \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} &= J^{-1/3} \left( \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I} - \frac{1}{3} \boldsymbol{F} \otimes \boldsymbol{F}^{-T} \right)
+       \frac{\partial \hat{\boldsymbol{F}}}{\partial \boldsymbol{F}} &= J^{-1/3} \left(
+       \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I} - \frac{1}{3} \boldsymbol{F}
+       \otimes \boldsymbol{F}^{-T} \right)
 
        \frac{\partial J}{\partial \boldsymbol{F}} &= J \boldsymbol{F}^{-T}
 
-       \bar{\boldsymbol{P}} &= J^{-1/3} \frac{\partial \hat{\psi}}{\partial \hat{\boldsymbol{F}}}
+       \bar{\boldsymbol{P}} &= J^{-1/3} \frac{\partial \hat{\psi}}{\partial
+       \hat{\boldsymbol{F}}}
 
     With the above partial derivatives the first Piola-Kirchhoff stress
     tensor of the Neo-Hookean material model takes the following form.
 
     .. math::
 
-       \boldsymbol{P} = \mu J^{-2/3} \left( \boldsymbol{F} - \frac{1}{3} (\boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \right) + K (J - 1) J \boldsymbol{F}^{-T}
+       \boldsymbol{P} = \mu J^{-2/3} \left( \boldsymbol{F} - \frac{1}{3} (
+       \boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \right) + K (J - 1) J
+       \boldsymbol{F}^{-T}
 
     Again, a chain rule application leads to an expression for the elasticity tensor.
 
@@ -121,15 +124,22 @@ class NeoHooke:
 
        \mathbb{A} &= \mathbb{A}' + \mathbb{A}_{U}
 
-       \mathbb{A}' &= \bar{\mathbb{A}} - \frac{1}{3} \left( (\bar{\mathbb{A}} : \boldsymbol{F}) \otimes \boldsymbol{F}^{-T} + \boldsymbol{F}^{-T} \otimes (\boldsymbol{F} : \bar{\mathbb{A}}) \right ) + \frac{1}{9} (\boldsymbol{F} : \bar{\mathbb{A}} : \boldsymbol{F}) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T}
+       \mathbb{A}' &= \bar{\mathbb{A}} - \frac{1}{3} \left( (\bar{\mathbb{A}} :
+       \boldsymbol{F}) \otimes \boldsymbol{F}^{-T} + \boldsymbol{F}^{-T} \otimes
+       (\boldsymbol{F} : \bar{\mathbb{A}}) \right ) + \frac{1}{9} (\boldsymbol{F} :
+       \bar{\mathbb{A}} : \boldsymbol{F}) \boldsymbol{F}^{-T} \otimes
+       \boldsymbol{F}^{-T}
 
-       \mathbb{A}_{U} &= (U''(J) J + U'(J)) J \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - U'(J) J \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
+       \mathbb{A}_{U} &= (U''(J) J + U'(J)) J \boldsymbol{F}^{-T} \otimes
+       \boldsymbol{F}^{-T} - U'(J) J \boldsymbol{F}^{-T} \overset{il}{\otimes}
+       \boldsymbol{F}^{-T}
 
     with
 
     .. math::
 
-       \bar{\mathbb{A}} = J^{-1/3} \frac{\partial^2 \hat\psi}{\partial \hat{\boldsymbol{F}}\ \partial \hat{\boldsymbol{F}}} J^{-1/3}
+       \bar{\mathbb{A}} = J^{-1/3} \frac{\partial^2 \hat\psi}{\partial
+       \hat{\boldsymbol{F}}\ \partial \hat{\boldsymbol{F}}} J^{-1/3}
 
     With the above partial derivatives the (physical-deviatoric and
     -hydrostatic) parts of the elasticity tensor associated
@@ -140,9 +150,14 @@ class NeoHooke:
 
        \mathbb{A} &= \mathbb{A}' + \mathbb{A}_{U}
 
-       \mathbb{A}' &= J^{-2/3} \left(\boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I} - \frac{1}{3} \left( \boldsymbol{F} \otimes \boldsymbol{F}^{-T} + \boldsymbol{F}^{-T} \otimes \boldsymbol{F} \right ) + \frac{1}{9} (\boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} \right)
+       \mathbb{A}' &= J^{-2/3} \left(\boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
+       - \frac{1}{3} \left( \boldsymbol{F} \otimes \boldsymbol{F}^{-T} +
+       \boldsymbol{F}^{-T} \otimes \boldsymbol{F} \right ) + \frac{1}{9} (\boldsymbol{F}
+       : \boldsymbol{F}) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} \right)
 
-       \mathbb{A}_{U} &= K J \left( (2J - 1) \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - (J - 1) \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
+       \mathbb{A}_{U} &= K J \left( (2J - 1) \boldsymbol{F}^{-T} \otimes
+       \boldsymbol{F}^{-T} - (J - 1) \boldsymbol{F}^{-T} \overset{il}{\otimes}
+       \boldsymbol{F}^{-T} \right)
 
 
     Arguments

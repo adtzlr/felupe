@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
+This file is part of FElupe.
 
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
@@ -46,7 +37,8 @@ class LineChange:
 
     .. math::
 
-       \frac{\partial \boldsymbol{F}}{\partial \boldsymbol{F}} = \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
+       \frac{\partial \boldsymbol{F}}{\partial \boldsymbol{F}} =
+       \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
     """
 
     def __init__(self, parallel=False):
@@ -103,7 +95,9 @@ class AreaChange:
 
     .. math::
 
-       \frac{\partial J \boldsymbol{F}^{-T}}{\partial \boldsymbol{F}} = J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
+       \frac{\partial J \boldsymbol{F}^{-T}}{\partial \boldsymbol{F}} =
+       J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T}
+       - \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
 
     """
 
@@ -192,7 +186,9 @@ class VolumeChange:
 
        \frac{\partial J}{\partial \boldsymbol{F}} &= J \boldsymbol{F}^{-T}
 
-       \frac{\partial^2 J}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} &= J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} - \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
+       \frac{\partial^2 J}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} &=
+       J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} -
+       \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T} \right)
 
     """
 

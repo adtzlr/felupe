@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
+This file is part of FElupe.
 
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
@@ -262,7 +253,8 @@ class RegionBoundary(Region):
 
        \frac{\partial X^I}{\partial r^J} &= X_a^I \frac{\partial h_a}{\partial r^J}
 
-       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I} \frac{\partial r^I}{\partial X^J}
+       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I}
+       \frac{\partial r^I}{\partial X^J}
 
        dV &= \det\left(\frac{\partial X^I}{\partial r^J}\right) w
 
@@ -293,11 +285,18 @@ class RegionBoundary(Region):
     quadrature: Quadrature scheme
         An element-compatible numeric integration scheme with points and weights.
     h : ndarray
-        Element shape function array ``h_ap`` of shape function ``a`` evaluated at quadrature point ``p``.
+        Element shape function array ``h_ap`` of shape function ``a`` evaluated at
+        quadrature point ``p``.
     dhdr : ndarray
-        Partial derivative of element shape function array ``dhdr_aJp`` with shape function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation between ``X`` and ``r``).
+        Partial derivative of element shape function array ``dhdr_aJp`` with shape
+        function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature
+        point ``p`` for every cell ``c`` (geometric gradient or **Jacobian**
+        transformation between ``X`` and ``r``).
     dXdr : ndarray
-        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation between ``X`` and ``r``).
+        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate
+        ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point
+        ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation
+        between ``X`` and ``r``).
     drdX : ndarray
         Inverse of dXdr.
     dA : ndarray
@@ -307,7 +306,9 @@ class RegionBoundary(Region):
     dV : ndarray
         Numeric *Differential volume element* as norm of *Differential area vectors*.
     dhdX : ndarray
-        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for every cell ``c``.
+        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function
+        ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for
+        every cell ``c``.
     """
 
     def __init__(
@@ -368,7 +369,7 @@ class RegionBoundary(Region):
         # get cell-faces and cells on boundary (unique cell-faces with one count)
         cells_on_boundary = cells[self._selection]
 
-        ## create mesh on boundary
+        # create mesh on boundary
         mesh_boundary_cells = mesh.copy()
         mesh_boundary_cells.update(cells_on_boundary)
         self.mesh = mesh_boundary_cells

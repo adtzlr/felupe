@@ -1,34 +1,24 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
+This file is part of FElupe.
 
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from functools import wraps
 
 import numpy as np
-import tensortrax as tr
 from tensortrax.math import log, sqrt
 from tensortrax.math import sum as sum1
 from tensortrax.math import trace
@@ -49,7 +39,8 @@ def isochoric_volumetric_split(fun):
 
 def saint_venant_kirchhoff(C, mu, lmbda):
     """Strain energy function of the Saint Venant-Kirchhoff material formulation.
-    Here, ``I1`` and ``I2`` are strain invariants of the Green-Lagrange strain tensor."""
+    Here, ``I1`` and ``I2`` are strain invariants of the Green-Lagrange strain tensor.
+    """
     I1 = trace(C) / 2 - 3 / 2
     I2 = trace(C @ C) / 4 - trace(C) / 2 + 3 / 4
     return mu * I2 + lmbda * I1**2 / 2

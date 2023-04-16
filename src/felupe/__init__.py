@@ -111,4 +111,9 @@ __all__ = [
     "Form",
     "IntegralForm",
     "Basis",
+    "Field",
+    "FieldAxisymmetric",
+    "FieldContainer",
+    "FieldPlaneStrain",
+    "FieldsMixed",
 ]

@@ -32,6 +32,7 @@ from .constitution import (
     OgdenRoxburgh,
     ThreeFieldVariation,
     UserMaterial,
+    UserMaterialHyperelastic,
     UserMaterialStrain,
     VolumeChange,
 )
@@ -53,6 +54,19 @@ from .element import (
     Triangle,
     TriangleMINI,
     TriQuadraticHexahedron,
+)
+from .mechanics import (
+    CharacteristicCurve,
+    Job,
+    MultiPointConstraint,
+    MultiPointContact,
+    PointLoad,
+    SolidBody,
+    SolidBodyGravity,
+    SolidBodyNearlyIncompressible,
+    SolidBodyPressure,
+    StateNearlyIncompressible,
+    Step,
 )
 from .mesh import Cube, Grid, Mesh, MeshContainer, Rectangle
 from .quadrature import GaussLegendre, GaussLegendreBoundary
@@ -83,24 +97,7 @@ from .region import (
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
 )
-
-try:
-    from .constitution import UserMaterialHyperelastic
-except ImportError:
-    pass
-from .mechanics import (
-    CharacteristicCurve,
-    Job,
-    PointLoad,
-    SolidBody,
-    SolidBodyGravity,
-    SolidBodyNearlyIncompressible,
-    SolidBodyPressure,
-    StateNearlyIncompressible,
-    Step,
-)
 from .tools import newtonrhapson, project, save, topoints
-from .mechanics import MultiPointConstraint, MultiPointContact
 
 __all__ = [
     "__version__",

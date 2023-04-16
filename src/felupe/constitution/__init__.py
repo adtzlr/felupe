@@ -1,22 +1,19 @@
+from ._kinematics import AreaChange, LineChange, VolumeChange
+from ._mixed import ThreeFieldVariation
 from ._models_hyperelasticity import NeoHooke
-
-try:
-    from ._models_hyperelasticity_ad import (
-        arruda_boyce,
-        extended_tube,
-        finite_strain_viscoelastic,
-        isochoric_volumetric_split,
-        mooney_rivlin,
-        neo_hooke,
-        ogden,
-        saint_venant_kirchhoff,
-        third_order_deformation,
-        van_der_waals,
-        yeoh,
-    )
-except ImportError:
-    pass
-
+from ._models_hyperelasticity_ad import (
+    arruda_boyce,
+    extended_tube,
+    finite_strain_viscoelastic,
+    isochoric_volumetric_split,
+    mooney_rivlin,
+    neo_hooke,
+    ogden,
+    saint_venant_kirchhoff,
+    third_order_deformation,
+    van_der_waals,
+    yeoh,
+)
 from ._models_linear_elasticity import (
     LinearElastic,
     LinearElasticPlaneStrain,
@@ -30,14 +27,7 @@ from ._user_materials import (
     UserMaterial,
     UserMaterialStrain,
 )
-
-try:
-    from ._user_materials_hyperelastic import UserMaterialHyperelastic
-except ImportError:
-    pass
-
-from ._kinematics import AreaChange, LineChange, VolumeChange
-from ._mixed import ThreeFieldVariation
+from ._user_materials_hyperelastic import UserMaterialHyperelastic
 from ._user_materials_models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,

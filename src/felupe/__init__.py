@@ -100,11 +100,7 @@ from .mechanics import (
     Step,
 )
 from .tools import newtonrhapson, project, save, topoints
-
-try:
-    from .mechanics import MultiPointConstraint, MultiPointContact
-except ImportError:
-    pass
+from .mechanics import MultiPointConstraint, MultiPointContact
 
 __all__ = [
     "__version__",

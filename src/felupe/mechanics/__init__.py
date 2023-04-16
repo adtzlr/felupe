@@ -7,11 +7,7 @@ from ._solidbody_gravity import SolidBodyGravity
 from ._solidbody_incompressible import SolidBodyNearlyIncompressible
 from ._solidbody_pressure import SolidBodyPressure
 from ._step import Step
-
-try:
-    from ._multipoint import MultiPointConstraint, MultiPointContact
-except ImportError:
-    pass
+from ._multipoint import MultiPointConstraint, MultiPointContact
 
 __all__ = [
     "CharacteristicCurve",

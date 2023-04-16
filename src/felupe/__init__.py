@@ -86,7 +86,7 @@ from .region import (
 
 try:
     from .constitution import UserMaterialHyperelastic
-except:
+except ImportError:
     pass
 from .mechanics import (
     CharacteristicCurve,
@@ -103,7 +103,7 @@ from .tools import newtonrhapson, project, save, topoints
 
 try:
     from .mechanics import MultiPointConstraint, MultiPointContact
-except:
+except ImportError:
     pass
 
 __all__ = [
@@ -116,4 +116,17 @@ __all__ = [
     "FieldContainer",
     "FieldPlaneStrain",
     "FieldsMixed",
+    "AreaChange",
+    "LinearElastic",
+    "LinearElasticPlaneStrain",
+    "LinearElasticPlaneStress",
+    "LinearElasticPlasticIsotropicHardening",
+    "LineChange",
+    "NeoHooke",
+    "OgdenRoxburgh",
+    "ThreeFieldVariation",
+    "UserMaterial",
+    "UserMaterialStrain",
+    "VolumeChange",
+    "Boundary",
 ]

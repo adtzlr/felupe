@@ -171,4 +171,8 @@ __all__ = [
     "Step",
     "MultiPointConstraint",
     "MultiPointContact",
+    "GaussLegendre",
+    "GaussLegendreBoundary",
+    "TetrahedronQuadrature",
+    "TriangleQuadrature",
 ]

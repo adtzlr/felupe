@@ -145,4 +145,9 @@ __all__ = [
     "Triangle",
     "TriangleMINI",
     "TriQuadraticHexahedron",
+    "Cube",
+    "Grid",
+    "Mesh",
+    "MeshContainer",
+    "Rectangle",
 ]

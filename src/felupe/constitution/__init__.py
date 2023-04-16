@@ -14,7 +14,7 @@ try:
         van_der_waals,
         yeoh,
     )
-except:
+except ImportError:
     pass
 
 from ._models_linear_elasticity import (
@@ -33,7 +33,7 @@ from ._user_materials import (
 
 try:
     from ._user_materials_hyperelastic import UserMaterialHyperelastic
-except:
+except ImportError:
     pass
 
 from ._kinematics import AreaChange, LineChange, VolumeChange
@@ -42,3 +42,34 @@ from ._user_materials_models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
 )
+
+__all__ = [
+    "NeoHooke",
+    "arruda_boyce",
+    "extended_tube",
+    "finite_strain_viscoelastic",
+    "isochoric_volumetric_split",
+    "mooney_rivlin",
+    "neo_hooke",
+    "ogden",
+    "saint_venant_kirchhoff",
+    "third_order_deformation",
+    "van_der_waals",
+    "yeoh",
+    "LinearElastic",
+    "LinearElasticPlaneStrain",
+    "LinearElasticPlaneStress",
+    "LinearElasticTensorNotation",
+    "lame_converter",
+    "OgdenRoxburgh",
+    "LinearElasticPlasticIsotropicHardening",
+    "UserMaterial",
+    "UserMaterialStrain",
+    "UserMaterialHyperelastic",
+    "AreaChange",
+    "LineChange",
+    "VolumeChange",
+    "ThreeFieldVariation",
+    "linear_elastic",
+    "linear_elastic_plastic_isotropic_hardening",
+]

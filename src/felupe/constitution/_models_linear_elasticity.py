@@ -1,42 +1,27 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
-|___|    |_______||_______||_______||___|    |_______|
+This file is part of FElupe.
 
-This file is part of felupe.
-
-Felupe is free software: you can redistribute it and/or modify
+FElupe is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Felupe is distributed in the hope that it will be useful,
+FElupe is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
-
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
 
 from ..math import (
     cdya,
-    cdya_ik,
-    cdya_il,
-    ddot,
-    det,
-    dot,
     dya,
     identity,
-    inv,
     trace,
     transpose,
 )
@@ -98,7 +83,9 @@ class LinearElastic:
 
     ..  math::
 
-        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} \right)^T \right)
+        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}
+        {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
+        {\partial \boldsymbol{X}} \right)^T \right)
 
 
     Arguments
@@ -224,15 +211,20 @@ class LinearElasticTensorNotation:
 
     ..  math::
 
-        \boldsymbol{\sigma} &= 2 \mu \ \boldsymbol{\varepsilon} + \gamma \ \text{tr}(\boldsymbol{\varepsilon}) \ \boldsymbol{I}
+        \boldsymbol{\sigma} &= 2 \mu \ \boldsymbol{\varepsilon} + \gamma \
+        \text{tr}(\boldsymbol{\varepsilon}) \ \boldsymbol{I}
 
-        \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} &= 2 \mu \ \boldsymbol{I} \odot \boldsymbol{I} + \gamma \ \boldsymbol{I} \otimes \boldsymbol{I}
+        \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} &=
+        2 \mu \ \boldsymbol{I} \odot \boldsymbol{I} + \gamma \ \boldsymbol{I} \otimes
+        \boldsymbol{I}
 
     with the strain tensor
 
     ..  math::
 
-        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} \right)^T \right)
+        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}
+        {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
+        {\partial \boldsymbol{X}} \right)^T \right)
 
 
     Arguments

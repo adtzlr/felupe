@@ -41,13 +41,13 @@ def boundary_cells_quad(mesh):
     # (rotated quads with 1st edge as n-th edge of one original quad)
     t = [1, 0, 3, 2]
     k = np.array(i)[t]
-    l = np.array(j)[t]
+    m = np.array(j)[t]
 
     cells = np.dstack(
         (
             cells_faces,
             mesh.cells[:, k],
-            mesh.cells[:, l],
+            mesh.cells[:, m],
         )
     )
 
@@ -113,14 +113,14 @@ def boundary_cells_hexahedron(mesh):
     i = [0, 2, 1, 3, 0, 5]
     j = [3, 1, 0, 2, 1, 4]
     k = [7, 5, 4, 6, 2, 7]
-    l = [4, 6, 5, 7, 3, 6]
+    r = [4, 6, 5, 7, 3, 6]
 
     cells_faces = np.dstack(
         (
             mesh.cells[:, i],
             mesh.cells[:, j],
             mesh.cells[:, k],
-            mesh.cells[:, l],
+            mesh.cells[:, r],
         )
     )
 
@@ -154,7 +154,7 @@ def boundary_cells_hexahedron20(mesh):
     i = [11, 9, 8, 10, 8, 12]
     j = [19, 17, 16, 18, 9, 15]
     k = [15, 13, 12, 14, 10, 14]
-    l = [16, 18, 17, 19, 11, 13]
+    v = [16, 18, 17, 19, 11, 13]
 
     cells_faces = np.dstack(
         (
@@ -162,7 +162,7 @@ def boundary_cells_hexahedron20(mesh):
             mesh.cells[:, i],
             mesh.cells[:, j],
             mesh.cells[:, k],
-            mesh.cells[:, l],
+            mesh.cells[:, v],
         )
     )
 
@@ -185,7 +185,7 @@ def boundary_cells_hexahedron20(mesh):
             mesh.cells[:, i],
             mesh.cells[:, j],
             mesh.cells[:, k],
-            mesh.cells[:, l],
+            mesh.cells[:, v],
             mesh.cells[:, m],
             mesh.cells[:, n],
             mesh.cells[:, p],
@@ -220,7 +220,7 @@ def boundary_cells_hexahedron27(mesh):
     #  one original hexahedron)
     j = [22, 23, 21, 20, 20, 21]
     k = [23, 22, 20, 21, 21, 20]
-    l = [24, 25, 24, 25, 22, 23]
+    r = [24, 25, 24, 25, 22, 23]
     m = [25, 24, 25, 24, 23, 22]
     n = [20, 21, 22, 23, 24, 25]
     p = [21, 20, 23, 22, 25, 24]
@@ -231,7 +231,7 @@ def boundary_cells_hexahedron27(mesh):
             cells_hexahedron20,
             mesh.cells[:, j],
             mesh.cells[:, k],
-            mesh.cells[:, l],
+            mesh.cells[:, r],
             mesh.cells[:, m],
             mesh.cells[:, n],
             mesh.cells[:, p],

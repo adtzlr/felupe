@@ -311,13 +311,13 @@ class LinearElasticTensorNotation:
         if nu is None:
             nu = self.nu
 
-        I = identity(dim=3, shape=shape)
+        eye = identity(dim=3, shape=shape)
 
         # convert to lame constants
         gamma, mu = lame_converter(E, nu)
 
-        elast = 2 * mu * cdya(I, I, parallel=self.parallel) + gamma * dya(
-            I, I, parallel=self.parallel
+        elast = 2 * mu * cdya(eye, eye, parallel=self.parallel) + gamma * dya(
+            eye, eye, parallel=self.parallel
         )
 
         return [elast]

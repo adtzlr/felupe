@@ -156,7 +156,7 @@ def collect_faces(points, cells, cell_type):
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
 
     elif "quad" in cell_type:
-        # k-th edge is (i[k], j[k], k[k], l[k])
+        # k-th edge is (i[k], j[k], k[k], m[k])
         i = [
             0,
         ]
@@ -166,20 +166,20 @@ def collect_faces(points, cells, cell_type):
         k = [
             2,
         ]
-        l = [
+        m = [
             3,
         ]
 
-        faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
+        faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, m]
 
     elif "hexahedron" in cell_type:
         # k-th edge is (i[k], j[k], k[k], l[k])
         i = [0, 1, 1, 2, 0, 4]
         j = [3, 2, 0, 3, 1, 5]
         k = [7, 6, 4, 7, 2, 6]
-        l = [4, 5, 5, 6, 3, 7]
+        m = [4, 5, 5, 6, 3, 7]
 
-        faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, l]
+        faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, m]
 
     # sort points of edges
     faces = np.sort(np.dstack(faces_to_stack).reshape(-1, len(faces_to_stack)), axis=1)

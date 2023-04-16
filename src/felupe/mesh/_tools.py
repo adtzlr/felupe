@@ -468,13 +468,13 @@ def triangulate(points, cells, cell_type, mode=3):
             i = [0, 0, 0, 0, 2]
             j = [1, 2, 2, 5, 7]
             k = [2, 7, 3, 7, 5]
-            l = [5, 5, 7, 4, 6]
+            m = [5, 5, 7, 4, 6]
 
         elif mode == 3:
             i = [0, 0, 0, 0, 1, 1]
             j = [2, 3, 7, 5, 5, 6]
             k = [3, 7, 4, 6, 6, 2]
-            l = [6, 6, 6, 4, 0, 0]
+            m = [6, 6, 6, 4, 0, 0]
 
         else:
             raise NotImplementedError(f"Mode {mode} not implemented.")
@@ -484,7 +484,7 @@ def triangulate(points, cells, cell_type, mode=3):
                 cells[:, i],
                 cells[:, j],
                 cells[:, k],
-                cells[:, l],
+                cells[:, m],
             )
         )
 

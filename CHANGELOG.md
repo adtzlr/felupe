@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Make everything in `/src` compliant with [flake8](https://flake8.pycqa.org/).
+- Generalize the math-module so that all functions handle an arbitrary number of elementwise-operating trailing axes.
+- Enhance the overall performance by enforcing the identity matrix to a C-contiguous array.
 
 ## [7.1.0] - 2023-04-15
 

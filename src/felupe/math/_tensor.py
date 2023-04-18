@@ -27,12 +27,17 @@ except ModuleNotFoundError:
 def identity(A=None, dim=None, shape=None):
     "Identity according to matrix A with optional specified dim."
     if A is not None:
-        dimA, g, e = A.shape[-3:]
+        dimA = A.shape[0]
+        shapeA = A.shape[2:]
         if dim is None:
             dim = dimA
-    else:
-        g, e = shape
-    return np.tile(np.eye(dim), (g, e, 1, 1)).transpose([2, 3, 0, 1])
+        if shape is None:
+            shape = shapeA
+
+    ones = (1,) * len(shape)
+    eye = np.eye(dim).reshape(dim, dim, *ones)
+
+    return np.ascontiguousarray(np.broadcast_to(eye, (dim, dim, *shape)))
 
 
 def sym(A):
@@ -130,8 +135,8 @@ def cof(A):
 
 def eig(A, eig=np.linalg.eig):
     "Eigenvalues and -vectors of matrix A."
-    wA, vA = eig(A.transpose([2, 3, 0, 1]))
-    return wA.transpose([2, 0, 1]), vA.transpose([2, 3, 0, 1])
+    wA, vA = eig(A.T)
+    return wA.T, vA.T
 
 
 def eigh(A):
@@ -141,7 +146,7 @@ def eigh(A):
 
 def eigvals(A, shear=False, eig=np.linalg.eig):
     "Eigenvalues (and optional principal shear values) of a matrix A."
-    wA = eig(A.transpose([2, 3, 0, 1]))[0].transpose([2, 0, 1])
+    wA = eig(A.T)[0].T
     if shear:
         dim = wA.shape[0]
         if dim == 3:
@@ -162,7 +167,7 @@ def eigvalsh(A, shear=False):
 def transpose(A, mode=1):
     "Transpose (mode=1) or major-transpose (mode=2) of matrix A."
     if mode == 1:
-        return A.transpose([1, 0, 2, 3])
+        return np.einsum("ij...->ji...", A)
     elif mode == 2:
         return np.einsum("ijkl...->klij...", A)
     else:
@@ -208,7 +213,7 @@ def cross(a, b):
     )
 
 
-def dot(A, B, n=2, parallel=False):
+def dot(A, B, mode=(2, 2), parallel=False):
     "Dot-product of A and B with inputs of n trailing axes.."
 
     if parallel:
@@ -216,38 +221,38 @@ def dot(A, B, n=2, parallel=False):
     else:
         einsum = np.einsum
 
-    if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
+    if mode == (2, 2):
         return einsum("ik...,kj...->ij...", A, B)
 
-    elif len(A.shape) == 1 + n and len(B.shape) == 1 + n:
+    elif mode == (1, 1):
         return einsum("i...,i...->...", A, B)
 
-    elif len(A.shape) == 4 + n and len(B.shape) == 4 + n:
+    elif mode == (4, 4):
         return einsum("ijkp...,plmn...->ijklmn...", A, B)
 
-    elif len(A.shape) == 2 + n and len(B.shape) == 1 + n:
+    elif mode == (2, 1):
         return einsum("ij...,j...->i...", A, B)
 
-    elif len(A.shape) == 1 + n and len(B.shape) == 2 + n:
+    elif mode == (1, 2):
         return einsum("i...,ij...->j...", A, B)
 
-    elif len(A.shape) == 4 + n and len(B.shape) == 1 + n:
+    elif mode == (4, 1):
         return einsum("ijkl...,l...->ijk...", A, B)
 
-    elif len(A.shape) == 1 + n and len(B.shape) == 4 + n:
+    elif mode == (1, 4):
         return einsum("i...,ijkl...->jkl...", A, B)
 
-    elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:
+    elif mode == (2, 4):
         return einsum("im...,mjkl...->ijkl...", A, B)
 
-    elif len(A.shape) == 4 + n and len(B.shape) == 2 + n:
+    elif mode == (4, 2):
         return einsum("ijkm...,ml...->ijkl...", A, B)
 
     else:
         raise TypeError("Unknown shape of A and B.")
 
 
-def ddot(A, B, n=2, parallel=False):
+def ddot(A, B, mode=(2, 2), parallel=False):
     "Double-Dot-product of A and B with inputs of `n` trailing axes."
 
     if parallel:
@@ -255,13 +260,13 @@ def ddot(A, B, n=2, parallel=False):
     else:
         einsum = np.einsum
 
-    if len(A.shape) == 2 + n and len(B.shape) == 2 + n:
+    if mode == (2, 2):
         return einsum("ij...,ij...->...", A, B)
-    elif len(A.shape) == 2 + n and len(B.shape) == 4 + n:
+    elif mode == (2, 4):
         return einsum("ij...,ijkl...->kl...", A, B)
-    elif len(A.shape) == 4 + n and len(B.shape) == 2 + n:
+    elif mode == (4, 2):
         return einsum("ijkl...,kl...->ij...", A, B)
-    elif len(A.shape) == 4 + n and len(B.shape) == 4 + n:
+    elif mode == (4, 4):
         return einsum("ijkl...,klmn...->ijmn...", A, B)
     else:
         raise TypeError("Unknown shape of A and B.")

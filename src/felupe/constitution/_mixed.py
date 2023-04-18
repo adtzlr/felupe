@@ -304,7 +304,7 @@ class ThreeFieldVariation:
         self.Fb = (J / self.detF) ** (1 / 3) * F
         self.Pb, statevars_new = self.fun_P([self.Fb, statevars])
         self.Pbb = (J / self.detF) ** (1 / 3) * self.Pb
-        self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
+        self.PbbF = ddot(self.Pbb, F, mode=(2, 2), parallel=self.parallel)
 
         return [
             self._gradient_u(F, p, J),
@@ -362,10 +362,10 @@ class ThreeFieldVariation:
         self.A4b = self.fun_A([self.Fb, statevars])[0]
         self.A4bb = (J / self.detF) ** (2 / 3) * self.A4b
 
-        self.PbbF = ddot(self.Pbb, F, parallel=self.parallel)
-        self.FA4bb = ddot(F, self.A4bb, parallel=self.parallel)
-        self.A4bbF = ddot(self.A4bb, F, parallel=self.parallel)
-        self.FA4bbF = ddot(F, self.A4bbF, parallel=self.parallel)
+        self.PbbF = ddot(self.Pbb, F, mode=(2, 2), parallel=self.parallel)
+        self.FA4bb = ddot(F, self.A4bb, mode=(2, 4), parallel=self.parallel)
+        self.A4bbF = ddot(self.A4bb, F, mode=(4, 2), parallel=self.parallel)
+        self.FA4bbF = ddot(F, self.A4bbF, mode=(2, 2), parallel=self.parallel)
 
         return [
             self._hessian_uu(F, p, J),

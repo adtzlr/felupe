@@ -76,8 +76,8 @@ def test_math():
     fe.math.sym(H)
 
     fe.math.dot(C, C)
-    fe.math.dot(C, A)
-    fe.math.dot(A, C)
+    fe.math.dot(C, A, mode=(2, 4))
+    fe.math.dot(A, C, mode=(4, 2))
 
     fe.math.transpose(F, mode=1)
     fe.math.transpose(A, mode=2)
@@ -86,29 +86,27 @@ def test_math():
         fe.math.transpose(F, mode=3)
 
     with pytest.raises(TypeError):
-        fe.math.dot(C, B)
+        fe.math.dot(C, B, mode=(2, 3))
+        fe.math.dot(B, C, mode=(3, 2))
+
+    assert fe.math.dot(C, a, mode=(2, 1)).shape == (3, 8, 200)
+    assert fe.math.dot(a, C, mode=(1, 2)).shape == (3, 8, 200)
+    assert fe.math.dot(a, a, mode=(1, 1)).shape == (8, 200)
+
+    assert fe.math.dot(a, A, mode=(1, 4)).shape == (3, 3, 3, 8, 200)
+    assert fe.math.dot(A, a, mode=(4, 1)).shape == (3, 3, 3, 8, 200)
+    assert fe.math.dot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 3, 3, 8, 200)
+
+    assert fe.math.ddot(C, C, mode=(2, 2)).shape == (8, 200)
+    assert fe.math.ddot(C, A, mode=(2, 4)).shape == (3, 3, 8, 200)
+    assert fe.math.ddot(A, C, mode=(4, 2)).shape == (3, 3, 8, 200)
+
+    assert fe.math.ddot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 8, 200)
 
     with pytest.raises(TypeError):
-        fe.math.dot(B, C)
-
-    assert fe.math.dot(C, a).shape == (3, 8, 200)
-    assert fe.math.dot(a, C).shape == (3, 8, 200)
-    assert fe.math.dot(a, a).shape == (8, 200)
-
-    assert fe.math.dot(a, A).shape == (3, 3, 3, 8, 200)
-    assert fe.math.dot(A, a).shape == (3, 3, 3, 8, 200)
-    assert fe.math.dot(A, A).shape == (3, 3, 3, 3, 3, 3, 8, 200)
-
-    assert fe.math.ddot(C, C).shape == (8, 200)
-    assert fe.math.ddot(C, A).shape == (3, 3, 8, 200)
-    assert fe.math.ddot(A, C).shape == (3, 3, 8, 200)
-
-    assert fe.math.ddot(A, A).shape == (3, 3, 3, 3, 8, 200)
-
-    with pytest.raises(TypeError):
-        fe.math.ddot(A, B)
-        fe.math.ddot(B, B)
-        fe.math.ddot(C, B)
+        fe.math.ddot(A, B, mode=(4, 3))
+        fe.math.ddot(B, B, mode=(3, 3))
+        fe.math.ddot(C, B, mode=(2, 3))
 
     detC = fe.math.det(C)
     fe.math.det(C[:2, :2])

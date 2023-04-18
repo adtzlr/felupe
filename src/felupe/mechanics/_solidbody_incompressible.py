@@ -160,7 +160,7 @@ class SolidBodyNearlyIncompressible:
         du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
 
         # change of state variables due to change of displacement field
-        dJ = ddot(h, du, n=1) / self.V + (v / self.V - J)
+        dJ = ddot(h, du, mode=(2, 2)) / self.V + (v / self.V - J)
         dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field

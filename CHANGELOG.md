@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Make everything in `/src` compliant with [flake8](https://flake8.pycqa.org/).
+- Generalize the math-module so that all functions handle an arbitrary number of elementwise-operating trailing axes.
+- The special contraction modes of `math.dot(mode=(2,2))` and `math.ddot(mode=(2,2))` have to be specified by the `mode`-argument and are not detected by the shapes of the operands.
+- Enhance the overall performance by enforcing the identity matrix to a C-contiguous array.
 
 ## [7.1.0] - 2023-04-15
 

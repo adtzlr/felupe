@@ -132,7 +132,7 @@ class AreaChange:
         if N is None:
             return [Fs]
         else:
-            return [dot(Fs, N, parallel=parallel)]
+            return [dot(Fs, N, mode=(2, 1), parallel=parallel)]
 
     def gradient(self, extract, N=None, parallel=None):
         """Gradient of area change.

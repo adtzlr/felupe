@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file. The format 
 - The special contraction modes of `math.dot(mode=(2,2))` and `math.ddot(mode=(2,2))` have to be specified by the `mode`-argument and are not detected by the shapes of the operands.
 - Enhance the overall performance by enforcing the identity matrix to a C-contiguous array.
 
+### Fixed
+- Fix timings shown in `newtonrhapson(verbose=True)`: The solve time was only related to one call of the solver while the assembly time referred to the whole runtime subtracted by the single-call solve time.
+
 ## [7.1.0] - 2023-04-15
 
 ### Added

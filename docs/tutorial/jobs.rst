@@ -32,7 +32,7 @@ The ramped prescribed displacements for 20 substeps are created with ``linsteps`
 
     move = fem.math.linsteps([0, 2, 0], num=10)
     uniaxial = fem.Step(
-        items=[solid], 
+        items=[body], 
         ramp={boundaries["move"]: move}, 
         boundaries=boundaries
     )

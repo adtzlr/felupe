@@ -52,7 +52,6 @@ def fun_items(items, x, parallel=False):
     vector = csr_matrix(shape)
 
     for body in items:
-
         # assemble vector
         r = body.assemble.vector(field=body.field, **kwargs)
 
@@ -77,7 +76,6 @@ def jac_items(items, x, parallel=False):
     matrix = csr_matrix(shape)
 
     for body in items:
-
         # assemble matrix
         K = body.assemble.matrix(**kwargs)
 
@@ -204,7 +202,8 @@ def newtonrhapson(
     """
 
     if verbose:
-        runtime = [perf_counter()]
+        runtimes = [perf_counter()]
+        soltimes = []
 
     if x0 is not None:
         # take x0
@@ -233,7 +232,6 @@ def newtonrhapson(
 
     # iteration loop
     for iteration in range(maxiter):
-
         # evaluate jacobian at unknowns "x"
         if items is not None:
             K = jac_items(items, x, *args, **kwargs)
@@ -245,18 +243,18 @@ def newtonrhapson(
         values = [x, dof1, dof0, ext0, solver]
 
         for key, value in zip(keys, values):
-
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
         # solve linear system and update solution
         if verbose:
-            soltime = [perf_counter()]
+            soltime_start = perf_counter()
 
         dx = solve(K, -f, **kwargs_solve)
 
         if verbose:
-            soltime.append(perf_counter())
+            soltime_end = perf_counter()
+            soltimes.append([soltime_start, soltime_end])
 
         x = update(x, dx)
 
@@ -286,10 +284,12 @@ def newtonrhapson(
     Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
 
     if verbose:
-        runtime.append(perf_counter())
+        runtimes.append(perf_counter())
+        runtime = np.diff(runtimes)
+        soltime = np.diff(soltimes).sum()
         print(
             "\nConverged in %d iterations (Assembly: %1.4g s, Solve: %1.4g s).\n"
-            % (iteration + 1, np.diff(runtime) - np.diff(soltime), np.diff(soltime))
+            % (iteration + 1, runtime - soltime, soltime)
         )
 
     return Res

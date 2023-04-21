@@ -67,6 +67,7 @@ class Job:
         self.steps = steps
         self.nsteps = len(steps)
         self.callback = callback
+        self.timetrack = []
 
     def _write(self, writer, time, substep, point_data, cell_data):
         writer.write_data(
@@ -175,6 +176,7 @@ FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]}
                         kwargs["x0"].link(substep.x)
 
                     if filename is not None:
+                        self.timetrack.append(increment)
                         self._write(
                             writer=writer,
                             time=increment,

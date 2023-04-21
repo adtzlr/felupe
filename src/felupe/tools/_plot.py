@@ -30,16 +30,13 @@ class ResultFile:
         time=0,
     ):
 
-        from pyvista import XdmfReader
-
         self.filename = filename
         self.scalars = scalars
         self.component = component
         self.label = label
         self.show_edges = show_edges
 
-        self.file = XdmfReader(self.filename)
-        self.file.set_active_time_value(time)
+        self.time = time
 
         self.cmap = cmap
         self.cpos = cpos
@@ -47,7 +44,10 @@ class ResultFile:
     def init(self, off_screen=False):
         "Init a plotter, read the file, add its mesh and return the plotter."
 
-        from pyvista import Plotter
+        from pyvista import Plotter, XdmfReader
+
+        self.file = XdmfReader(self.filename)
+        self.file.set_active_time_value(self.time)
 
         plotter = Plotter(off_screen=off_screen)
 

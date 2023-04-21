@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add `environment.yml` config file for [MyBinder](https://mybinder.org/).
+- Add a timetrack-list as `Job.timetrack` which is updated incrementally on `Job.evaluate()`.
 
 ### Changed
 - Make everything in `/src` compliant with [flake8](https://flake8.pycqa.org/).

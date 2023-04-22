@@ -25,9 +25,6 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pytest
-import pyvista
-
 import felupe as fem
 
 
@@ -65,60 +62,84 @@ def pre_2d(n=3):
 
 def test_xdmf_cell_data():
 
-    pre(n=3)
+    try:
+        import pyvista
 
-    # TODO: Remove if pyvista has a release with ``XdmfReader`` included.
-    major, minor = pyvista.__version__.split(".")[:2]
-    if int(major) == 0 and int(minor) < 39:
-        print("Xdmf-Reader not available. Requires ``pyvista >= 0.39``.")
-    else:
-        result = fem.ResultXdmf("result.xdmf", time=3)
-        plotter = result.plot(
-            scalars="Principal Values of Logarithmic Strain",
-            off_screen=True,
-        )
-        plotter.show(screenshot="cube-xdmf.png")
+        pre(n=3)
+
+        # TODO: Remove if pyvista has a release with ``XdmfReader`` included.
+        major, minor = pyvista.__version__.split(".")[:2]
+        if int(major) == 0 and int(minor) < 39:
+            print("Xdmf-Reader not available. Requires ``pyvista >= 0.39``.")
+        else:
+            result = fem.ResultXdmf("result.xdmf", time=3)
+            plotter = result.plot(
+                scalars="Principal Values of Logarithmic Strain",
+                off_screen=True,
+            )
+            plotter.show(screenshot="cube-xdmf.png")
+
+    except ModuleNotFoundError:
+        pass
 
 
 def test_xdmf_point_data():
 
-    pre_2d(n=3)
+    try:
+        import pyvista
 
-    # TODO: Remove if pyvista has a release with ``XdmfReader`` included.
-    major, minor = pyvista.__version__.split(".")[:2]
-    if int(major) == 0 and int(minor) < 39:
-        print("Xdmf-Reader not available. Requires ``pyvista >= 0.39``.")
-    else:
-        result = fem.ResultXdmf("result.xdmf", time=3)
+        pre_2d(n=3)
+
+        # TODO: Remove if pyvista has a release with ``XdmfReader`` included.
+        major, minor = pyvista.__version__.split(".")[:2]
+        if int(major) == 0 and int(minor) < 39:
+            print("Xdmf-Reader not available. Requires ``pyvista >= 0.39``.")
+        else:
+            result = fem.ResultXdmf("result.xdmf", time=3)
+            plotter = result.plot(
+                scalars="Displacement",
+                off_screen=True,
+                scalar_bar_vertical=False,
+            )
+            plotter.show(screenshot="rectangle-xdmf.png")
+
+    except ModuleNotFoundError:
+        pass
+
+
+def test_cell_data():
+
+    try:
+        import pyvista
+
+        mesh, field = pre(n=3)
+        result = fem.Result(mesh, field)
+        plotter = result.plot(
+            scalars="Principal Values of Logarithmic Strain",
+            off_screen=True,
+        )
+        plotter.show(screenshot="cube.png")
+
+    except ModuleNotFoundError:
+        pass
+
+
+def test_point_data():
+
+    try:
+        import pyvista
+
+        mesh, field = pre_2d(n=3)
+        result = fem.Result(mesh, field)
         plotter = result.plot(
             scalars="Displacement",
             off_screen=True,
             scalar_bar_vertical=False,
         )
-        plotter.show(screenshot="rectangle-xdmf.png")
+        plotter.show(screenshot="rectangle.png")
 
-
-def test_cell_data():
-
-    mesh, field = pre(n=3)
-    result = fem.Result(mesh, field)
-    plotter = result.plot(
-        scalars="Principal Values of Logarithmic Strain",
-        off_screen=True,
-    )
-    plotter.show(screenshot="cube.png")
-
-
-def test_point_data():
-
-    mesh, field = pre_2d(n=3)
-    result = fem.Result(mesh, field)
-    plotter = result.plot(
-        scalars="Displacement",
-        off_screen=True,
-        scalar_bar_vertical=False,
-    )
-    plotter.show(screenshot="rectangle.png")
+    except ModuleNotFoundError:
+        pass
 
 
 if __name__ == "__main__":

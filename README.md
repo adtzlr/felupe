@@ -49,9 +49,17 @@ fig, ax = job.plot(
     xlabel="Displacement $u$ in mm $\longrightarrow$",
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
+
+result = fem.XdmfReader("result.xdmf", time=10)
+plotter = result.plot(
+    scalars="Principal Values of Logarithmic Strain",
+    cpos="iso",
+    off_screen=True,  # hide the window (necessary for taking screenshots)
+)  # this is an instance of `pyvista.Plotter`
+plotter.show(screenshot="cube.png")
 ```
 
-https://user-images.githubusercontent.com/5793153/200951381-ea310e54-7623-4dd1-a55f-a28f9055063f.mp4
+![cube](https://user-images.githubusercontent.com/5793153/233777472-55136037-a601-4f0a-b53b-a7917a83ae28.png)
 
 <img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_characteristic_curve.svg" width="600px"/>
 

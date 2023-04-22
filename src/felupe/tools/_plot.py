@@ -129,7 +129,7 @@ class Plot:
         return plotter
 
 
-class ResultXdmf(Plot):
+class ResultXdmf(Plot): # pragma: no cover
     def __init__(
         self,
         filename,

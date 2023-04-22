@@ -13,4 +13,5 @@ dependencies:
     - h5py
     - meshio
     - matadi
+    - pyvista
     - felupe

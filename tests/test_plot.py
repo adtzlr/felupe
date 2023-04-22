@@ -110,8 +110,6 @@ def test_xdmf_point_data():
 def test_cell_data():
 
     try:
-        import pyvista
-
         mesh, field = pre(n=3)
         result = fem.Result(mesh, field)
         plotter = result.plot(
@@ -127,8 +125,6 @@ def test_cell_data():
 def test_point_data():
 
     try:
-        import pyvista
-
         mesh, field = pre_2d(n=3)
         result = fem.Result(mesh, field)
         plotter = result.plot(

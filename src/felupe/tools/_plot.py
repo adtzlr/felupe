@@ -16,72 +16,125 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import numpy as np
 
-class ResultFile:
+
+class XdmfReader:
     def __init__(
         self,
         filename,
-        scalars="Principal Values of Logarithmic Strain",
-        component=0,
-        label=None,
-        show_edges=True,
-        cmap="turbo",
-        cpos="xy",
         time=0,
     ):
+        "XDMF Result file reader and plotter."
 
         self.filename = filename
-        self.scalars = scalars
-        self.component = component
-        self.label = label
-        self.show_edges = show_edges
+        self.mesh = self._read(time)
 
-        self.time = time
+    def _read(self, time):
+        "Read the file and obtain the mesh."
 
-        self.cmap = cmap
-        self.cpos = cpos
+        import pyvista as pv
 
-    def init(self, off_screen=False):
-        "Init a plotter, read the file, add its mesh and return the plotter."
-
-        from pyvista import Plotter, XdmfReader
-
-        self.file = XdmfReader(self.filename)
-        self.file.set_active_time_value(self.time)
-
-        plotter = Plotter(off_screen=off_screen)
-
-        if self.label is None:
-            if "Principal Values of " in self.scalars:
-                comp = ["Maximum", "Intermediate", "Minimum"]
-                self.label = f"{self.scalars[20:]} ({comp[self.component]})"
+        self.file = pv.XdmfReader(self.filename)
+        self.file.set_active_time_value(time)
 
         mesh = self.file.read()[0]
 
+        return mesh
+
+    def set_active_time_value(self, time):
+        "Set new active time value and re-read the mesh."
+
+        self.mesh = self._read(time)
+
+    def plot(
+        self,
+        scalars,
+        component=0,
+        label=None,
+        show_edges=True,
+        show_undeformed=False,
+        time=0,
+        cmap="turbo",
+        cpos="xy",
+        theme="document",
+        scalar_bar_vertical=False,
+        add_axes=True,
+        off_screen=False,
+        plotter=None,
+        **kwargs,
+    ):
+        "Create or append to a given plotter and return the plotter."
+
+        import pyvista as pv
+
+        pv.set_plot_theme(theme)
+
+        if plotter is None:
+            plotter = pv.Plotter(off_screen=off_screen)
+
+        if scalars in self.mesh.point_data.keys():
+            data = self.mesh.point_data[scalars]
+        else:
+            data = self.mesh.cell_data[scalars]
+
+        dim = data.shape[1]
+
+        if label is None:
+            data_label = scalars
+
+            if "Principal Values of " in scalars:
+                component_labels = [
+                    "\n (Max. Principal)",
+                    "\n (Int. Principal)",
+                    "\n (Min. Principal)",
+                ]
+                data_label = data_label[20:]
+
+            elif dim == 3:
+                component_labels = ["X", "Y", "Z"]
+
+            elif dim == 6:
+                component_labels = ["XX", "YY", "ZZ", "XY", "YZ", "XZ"]
+
+            elif dim == 9:
+                component_labels = [
+                    "XX",
+                    "XY",
+                    "XZ",
+                    "YX",
+                    "YY",
+                    "YZ",
+                    "ZX",
+                    "ZY",
+                    "ZZ",
+                ]
+
+            else:
+                component_labels = np.arange(dim)
+
+            component_label = component_labels[component]
+            label = f"{data_label} {component_label}"
+
+        if show_undeformed:
+            plotter.add_mesh(self.mesh, show_edges=False, opacity=0.2)
+
         plotter.add_mesh(
-            mesh=mesh.warp_by_vector("Displacement"),
-            scalars=self.scalars,
-            component=self.component,
-            show_edges=self.show_edges,
-            cmap=self.cmap,
-            scalar_bar_args={"title": self.label},
+            mesh=self.mesh.warp_by_vector("Displacement"),
+            scalars=scalars,
+            component=component,
+            show_edges=show_edges,
+            cmap=cmap,
+            scalar_bar_args={
+                "title": label,
+                "interactive": True,
+                "vertical": scalar_bar_vertical,
+            },
+            **kwargs,
         )
-        plotter.add_axes()
+        plotter.camera_position = cpos
+
+        if add_axes:
+            plotter.add_axes()
 
         return plotter
-
-    def as_png(self, filename=None):
-        "Take a screenshot of the scene."
-
-        if filename is None:
-            name = ".".join(self.filename.split(".")[:-1])
-            filename = f"{name}.png"
-
-        plotter = self.init(off_screen=True)
-        plotter.show(cpos=self.cpos, screenshot=filename)
-
-    def show(self):
-        "Show the scene."
-
-        plotter = self.init(off_screen=False)
-        plotter.show(cpos=self.cpos)

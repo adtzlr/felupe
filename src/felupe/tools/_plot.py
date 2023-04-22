@@ -67,8 +67,9 @@ class XdmfReader:
         "Create or append to a given plotter and return the plotter."
 
         import pyvista as pv
-
-        pv.set_plot_theme(theme)
+        
+        if theme is not None:
+            pv.set_plot_theme(theme)
 
         if plotter is None:
             plotter = pv.Plotter(off_screen=off_screen)

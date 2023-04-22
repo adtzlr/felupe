@@ -18,7 +18,7 @@ pip install felupe[all]
 where `[all]` installs all optional dependencies. By default, FElupe depends on `numpy`, `scipy` and `tensortrax`. In order to make use of all features of FElupe, it is suggested to install all optional dependencies (`einsumt`, `h5py`, `matplotlib` and `meshio`).
 
 # Getting Started
-A quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. This involves the creation of a mesh, a region as well as a displacement field (encapsulated in a field container). Furthermore, the boundary conditions are created by a template for a uniaxial loadcase. An isotropic pseudo-elastic Ogden-Roxburgh Mullins-softening model formulation in combination with an isotropic hyperelastic Neo-Hookean material formulation is applied on a nearly-incompressible solid body. A step generates the consecutive substep-movements of a given boundary condition. The step is further added to a list of steps of a job (here, a characteristic-curve job is used). During evaluation, each substep of each step is solved by an iterative Newton-Rhapson procedure. The solution is exported after each completed substep as a time-series XDMF file. For more details beside this high-level code snippet, please have a look at the [documentation](https://felupe.readthedocs.io/en/latest/?badge=latest).
+This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. First, let’s import FElupe and create a meshed cube out of hexahedron cells with 11 points per axis. A numeric region, pre-defined for hexahedrons, is created on the mesh. A vector-valued displacement field is initiated on the region. Next, a field container is created on top of the displacement field. A uniaxial load case is applied on the displacement field stored inside the field container. This involves setting up symmetry planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is *clamped*: only displacements in direction *x* are allowed. The dict of boundary conditions for this pre-defined load case are returned as `boundaries` and the partitioned degrees of freedom as well as the external displacements are stored within the returned dict `loadcase`. An isotropic pseudo-elastic Ogden-Roxburgh Mullins-softening model formulation in combination with an isotropic hyperelastic Neo-Hookean material formulation is applied on the displacement field of a nearly-incompressible solid body. A step generates the consecutive substep-movements of a given boundary condition. The step is further added to a list of steps of a job (here, a characteristic-curve job is used). During evaluation, each substep of each step is solved by an iterative Newton-Rhapson procedure. The solution is exported after each completed substep as a time-series XDMF file. Finally, the result of the last completed substep is plotted. For more details beside this high-level code snippet, please have a look at the [documentation](https://felupe.readthedocs.io/en/latest/?badge=latest).
 
 ```python
 import felupe as fem
@@ -31,7 +31,7 @@ region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 # apply a uniaxial elongation on the cube
-boundaries = fem.dof.uniaxial(field, clamped=True)[0]
+boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
 # define the constitutive material behaviour
 # and create a nearly-incompressible (u,p,J - formulation) solid body
@@ -39,7 +39,7 @@ umat = fem.OgdenRoxburgh(material=fem.NeoHooke(mu=1), r=3, m=1, beta=0)
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
 # prepare a step with substeps
-move = fem.math.linsteps([0, 2, 0], num=10)
+move = fem.math.linsteps([0, 1, 0, 1, 2, 1], num=5)
 step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
 # add the step to a job, evaluate all substeps and create a plot
@@ -49,11 +49,19 @@ fig, ax = job.plot(
     xlabel="Displacement $u$ in mm $\longrightarrow$",
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
+
+result = fem.Result(mesh, field)
+# result = fem.ResultXdmf("result.xdmf", time=25)
+plotter = result.plot(
+    scalars="Principal Values of Logarithmic Strain",
+    off_screen=True,  # hide the window (necessary for taking screenshots)
+)  # this is an instance of ``pyvista.Plotter``
+plotter.show(screenshot="cube.png")
 ```
 
-https://user-images.githubusercontent.com/5793153/200951381-ea310e54-7623-4dd1-a55f-a28f9055063f.mp4
+![cube](https://user-images.githubusercontent.com/5793153/233806193-8740967b-9174-46d1-af4f-d7dba3322543.png)
 
-<img src="https://raw.githubusercontent.com/adtzlr/felupe/main/docs/_static/readme_characteristic_curve.svg" width="600px"/>
+![curve](https://user-images.githubusercontent.com/5793153/233806168-c72b76cd-dd73-4d1e-9239-1120be1fa3f5.svg)
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).

@@ -97,7 +97,7 @@ from .region import (
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
 )
-from .tools import newtonrhapson, project, save, topoints
+from .tools import Result, ResultXdmf, newtonrhapson, project, save, topoints
 
 __all__ = [
     "__version__",
@@ -196,4 +196,6 @@ __all__ = [
     "project",
     "save",
     "topoints",
+    "Result",
+    "ResultXdmf",
 ]

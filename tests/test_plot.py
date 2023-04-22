@@ -77,7 +77,7 @@ def test_xdmf_cell_data():
                 scalars="Principal Values of Logarithmic Strain",
                 off_screen=True,
             )
-            plotter.show(screenshot="cube-xdmf.png")
+            # plotter.show(screenshot="cube-xdmf.png")
 
     except ModuleNotFoundError:
         pass
@@ -101,7 +101,7 @@ def test_xdmf_point_data():
                 off_screen=True,
                 scalar_bar_vertical=False,
             )
-            plotter.show(screenshot="rectangle-xdmf.png")
+            # plotter.show(screenshot="rectangle-xdmf.png")
 
     except ModuleNotFoundError:
         pass
@@ -116,7 +116,7 @@ def test_cell_data():
             scalars="Principal Values of Logarithmic Strain",
             off_screen=True,
         )
-        plotter.show(screenshot="cube.png")
+        # plotter.show(screenshot="cube.png")
 
     except ModuleNotFoundError:
         pass
@@ -132,7 +132,7 @@ def test_point_data():
             off_screen=True,
             scalar_bar_vertical=False,
         )
-        plotter.show(screenshot="rectangle.png")
+        # plotter.show(screenshot="rectangle.png")
 
     except ModuleNotFoundError:
         pass

@@ -67,7 +67,7 @@ class XdmfReader:
         "Create or append to a given plotter and return the plotter."
 
         import pyvista as pv
-        
+
         if theme is not None:
             pv.set_plot_theme(theme)
 
@@ -92,14 +92,10 @@ class XdmfReader:
                 ]
                 data_label = data_label[20:]
 
-            elif dim == 3:
-                component_labels = ["X", "Y", "Z"]
-
-            elif dim == 6:
-                component_labels = ["XX", "YY", "ZZ", "XY", "YZ", "XZ"]
-
-            elif dim == 9:
-                component_labels = [
+            component_labels_dict = {
+                3: ["X", "Y", "Z"],
+                6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
+                9: [
                     "XX",
                     "XY",
                     "XZ",
@@ -109,10 +105,12 @@ class XdmfReader:
                     "ZX",
                     "ZY",
                     "ZZ",
-                ]
+                ],
+            }
 
-            else:
-                component_labels = np.arange(dim)
+            component_labels = np.arange(dim)
+            if dim in component_labels_dict.keys():
+                component_labels = component_labels_dict[dim]
 
             component_label = component_labels[component]
             label = f"{data_label} {component_label}"

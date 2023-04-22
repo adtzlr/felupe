@@ -39,7 +39,7 @@ umat = fem.OgdenRoxburgh(material=fem.NeoHooke(mu=1), r=3, m=1, beta=0)
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
 # prepare a step with substeps
-move = fem.math.linsteps([0, 2, 0], num=10)
+move = fem.math.linsteps([0, 2, 0, 2], num=10)
 step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
 # add the step to a job, evaluate all substeps and create a plot
@@ -50,12 +50,11 @@ fig, ax = job.plot(
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
 
-result = fem.XdmfReader("result.xdmf", time=10)
+result = fem.Result(mesh, field)
 plotter = result.plot(
     scalars="Principal Values of Logarithmic Strain",
-    cpos="iso",
     off_screen=True,  # hide the window (necessary for taking screenshots)
-)  # this is an instance of `pyvista.Plotter`
+)  # this is an instance of ``pyvista.Plotter``
 plotter.show(screenshot="cube.png")
 ```
 

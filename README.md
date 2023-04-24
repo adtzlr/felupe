@@ -57,9 +57,9 @@ result = fem.Result(field)
 result.plot("Principal Values of Logarithmic Strain").show()
 ```
 
-![cube](https://user-images.githubusercontent.com/5793153/233806193-8740967b-9174-46d1-af4f-d7dba3322543.png)
-
 ![curve](https://user-images.githubusercontent.com/5793153/233806168-c72b76cd-dd73-4d1e-9239-1120be1fa3f5.svg)
+
+![cube](https://user-images.githubusercontent.com/5793153/233806193-8740967b-9174-46d1-af4f-d7dba3322543.png)
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).

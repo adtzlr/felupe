@@ -54,9 +54,7 @@ fig, ax = job.plot(
 
 # visualize the results
 result = fem.Result(field)
-# result = fem.ResultXdmf("result.xdmf", time=25)
-plotter = result.plot("Principal Values of Logarithmic Strain")
-plotter.show()
+result.plot("Principal Values of Logarithmic Strain").show()
 ```
 
 ![cube](https://user-images.githubusercontent.com/5793153/233806193-8740967b-9174-46d1-af4f-d7dba3322543.png)

@@ -48,7 +48,7 @@ class Plot:
         show_undeformed=True,
         cmap="turbo",
         cpos=None,
-        theme="document",
+        theme=None,
         scalar_bar_vertical=True,
         add_axes=True,
         off_screen=False,
@@ -79,8 +79,8 @@ class Plot:
             The color map (default is "turbo").
         cpos : str or None, optional
             The default camera position, e.g. "xy" or "iso" (default is None).
-        theme : str, optional
-            The theme used for plotting (default is "document").
+        theme : str or None, optional
+            The theme used for plotting, e.g. "document" (default is None).
         scalar_bar_vertical : bool, optional
             A flag to show the interactive scalar bar in vertical orientation on the
             right side (default is True).

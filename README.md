@@ -52,13 +52,11 @@ fig, ax = job.plot(
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
 
-result = fem.Result(mesh, field)
+# visualize the results
+result = fem.Result(field)
 # result = fem.ResultXdmf("result.xdmf", time=25)
-plotter = result.plot(
-    scalars="Principal Values of Logarithmic Strain",
-    off_screen=True,  # hide the window (necessary for taking screenshots)
-)  # this is an instance of ``pyvista.Plotter``
-plotter.show(screenshot="cube.png")
+plotter = result.plot("Principal Values of Logarithmic Strain")
+plotter.show()
 ```
 
 ![cube](https://user-images.githubusercontent.com/5793153/233806193-8740967b-9174-46d1-af4f-d7dba3322543.png)

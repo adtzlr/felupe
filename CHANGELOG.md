@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `environment.yml` config file for [MyBinder](https://mybinder.org/).
 - Add a timetrack-list as `Job.timetrack` which is updated incrementally on `Job.evaluate()`.
-- Add `Reader(mesh, field, point_data=None, cell_data=None)`, a result plotter powered by [`pyvista`](https://github.com/pyvista/pyvista).
+- Add `Reader(field, point_data=None, cell_data=None)`, a result plotter powered by [`pyvista`](https://github.com/pyvista/pyvista).
 - Add `ReaderXdmf(filename, time=0)`, a result plotter powered by [`pyvista`](https://github.com/pyvista/pyvista).
 
 ### Changed

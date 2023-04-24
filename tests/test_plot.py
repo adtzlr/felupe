@@ -74,7 +74,7 @@ def test_xdmf_cell_data():
         else:
             result = fem.ResultXdmf("result.xdmf", time=3)
             plotter = result.plot(
-                scalars="Principal Values of Logarithmic Strain",
+                "Principal Values of Logarithmic Strain",
                 off_screen=True,
             )
             # plotter.show(screenshot="cube-xdmf.png")
@@ -97,7 +97,7 @@ def test_xdmf_point_data():
         else:
             result = fem.ResultXdmf("result.xdmf", time=3)
             plotter = result.plot(
-                scalars="Displacement",
+                "Displacement",
                 off_screen=True,
                 scalar_bar_vertical=False,
             )
@@ -111,9 +111,9 @@ def test_cell_data():
 
     try:
         mesh, field = pre(n=3)
-        result = fem.Result(mesh, field)
+        result = fem.Result(field)
         plotter = result.plot(
-            scalars="Principal Values of Logarithmic Strain",
+            "Principal Values of Logarithmic Strain",
             off_screen=True,
         )
         # plotter.show(screenshot="cube.png")
@@ -126,9 +126,9 @@ def test_point_data():
 
     try:
         mesh, field = pre_2d(n=3)
-        result = fem.Result(mesh, field)
+        result = fem.Result(field)
         plotter = result.plot(
-            scalars="Displacement",
+            "Displacement",
             off_screen=True,
             scalar_bar_vertical=False,
         )

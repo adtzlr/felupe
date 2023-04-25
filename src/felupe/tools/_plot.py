@@ -39,7 +39,7 @@ class Scene:
 
     def plot(
         self,
-        name,
+        name=None,
         component=0,
         label=None,
         factor=1.0,
@@ -59,8 +59,8 @@ class Scene:
 
         Parameters
         ----------
-        name: str
-            Name of array of scalars to plot.
+        name: str or None, optional
+            Name of array of scalars to plot (default is None).
         component : int, optional
             Component of vector-valued scalars to plot (default is 0).
         label : str or None, optional
@@ -112,73 +112,84 @@ class Scene:
         if scalar_bar_args is None:
             scalar_bar_args = {}
 
-        if name in self.mesh.point_data.keys():
-            data = self.mesh.point_data[name]
-        else:
-            data = self.mesh.cell_data[name]
+        if name is not None:
+            if name in self.mesh.point_data.keys():
+                data = self.mesh.point_data[name]
+            else:
+                data = self.mesh.cell_data[name]
 
-        dim = 1
+            dim = 1
 
-        if len(data.shape) == 2:
-            dim = data.shape[1]
+            if len(data.shape) == 2:
+                dim = data.shape[1]
 
-        if label is None:
-            data_label = name
+            if label is None:
+                data_label = name
 
-            component_labels_dict = {
-                1: [""],
-                2: ["X", "Y"],
-                3: ["X", "Y", "Z"],
-                6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
-                9: [
-                    "XX",
-                    "XY",
-                    "XZ",
-                    "YX",
-                    "YY",
-                    "YZ",
-                    "ZX",
-                    "ZY",
-                    "ZZ",
-                ],
-            }
+                component_labels_dict = {
+                    1: [""],
+                    2: ["X", "Y"],
+                    3: ["X", "Y", "Z"],
+                    6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
+                    9: [
+                        "XX",
+                        "XY",
+                        "XZ",
+                        "YX",
+                        "YY",
+                        "YZ",
+                        "ZX",
+                        "ZY",
+                        "ZZ",
+                    ],
+                }
 
-            if "Principal Values of " in name:
-                component_labels_dict[2] = [
-                    "(Max. Principal)",
-                    "(Min. Principal)",
-                ]
-                component_labels_dict[3] = [
-                    "(Max. Principal)",
-                    "(Int. Principal)",
-                    "(Min. Principal)",
-                ]
-                data_label = data_label[20:]
+                if "Principal Values of " in name:
+                    component_labels_dict[2] = [
+                        "(Max. Principal)",
+                        "(Min. Principal)",
+                    ]
+                    component_labels_dict[3] = [
+                        "(Max. Principal)",
+                        "(Int. Principal)",
+                        "(Min. Principal)",
+                    ]
+                    data_label = data_label[20:]
 
-            component_labels = np.arange(dim)
-            if dim in component_labels_dict.keys():
-                component_labels = component_labels_dict[dim]
+                component_labels = np.arange(dim)
+                if dim in component_labels_dict.keys():
+                    component_labels = component_labels_dict[dim]
 
-            component_label = component_labels[component]
-            label = f"{data_label} {component_label}"
+                component_label = component_labels[component]
+                label = f"{data_label} {component_label}"
 
         if show_undeformed:
-            plotter.add_mesh(self.mesh, show_edges=False, opacity=0.2)
+            show_edges_undeformed = False
+            opacity_undeformed = 0.2
 
-        plotter.add_mesh(
-            mesh=self.mesh.warp_by_vector("Displacement", factor=factor),
-            scalars=name,
-            component=component,
-            show_edges=show_edges,
-            cmap=cmap,
-            scalar_bar_args={
-                "title": label,
-                "interactive": True,
-                "vertical": scalar_bar_vertical,
-                **scalar_bar_args,
-            },
-            **kwargs,
-        )
+            if name is None:
+                show_edges_undeformed = show_edges
+                opacity_undeformed = None
+
+            plotter.add_mesh(
+                self.mesh, show_edges=show_edges_undeformed, opacity=opacity_undeformed
+            )
+
+        if name is not None:
+            plotter.add_mesh(
+                mesh=self.mesh.warp_by_vector("Displacement", factor=factor),
+                scalars=name,
+                component=component,
+                show_edges=show_edges,
+                cmap=cmap,
+                scalar_bar_args={
+                    "title": label,
+                    "interactive": True,
+                    "vertical": scalar_bar_vertical,
+                    **scalar_bar_args,
+                },
+                **kwargs,
+            )
 
         if view == "default":
 

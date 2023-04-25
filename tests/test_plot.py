@@ -147,8 +147,23 @@ def test_point_data():
         pass
 
 
+def test_model():
+
+    try:
+        mesh, field = pre(n=3)
+        result = fem.Result(field)
+        plotter = result.plot(
+            off_screen=True,
+        )
+        # plotter.show(screenshot="undeformed.png")
+
+    except ModuleNotFoundError:
+        pass
+
+
 if __name__ == "__main__":
     test_xdmf_cell_data()
     test_xdmf_point_data()
     test_cell_data()
     test_point_data()
+    test_model()

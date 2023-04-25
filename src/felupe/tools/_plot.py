@@ -42,6 +42,7 @@ class Scene:
         name,
         component=0,
         label=None,
+        factor=1.0,
         show_edges=True,
         show_undeformed=True,
         cmap="turbo",
@@ -70,6 +71,8 @@ class Scene:
             replaced by ``"XY"``, etc. If ``"Principal Values of"`` is in the name, the
             component number is replaced by ``"\n (Max. Principal)"``, assuming that the
             principal values are sorted in descending order.
+        factor : float, optional
+            Factor for the scaling of the warped (deformed) mesh (default is 1.0).
         show_edges : bool, optional
             Show the edges of the cells (default is True).
         show_undeformed : bool, optional
@@ -163,7 +166,7 @@ class Scene:
             plotter.add_mesh(self.mesh, show_edges=False, opacity=0.2)
 
         plotter.add_mesh(
-            mesh=self.mesh.warp_by_vector("Displacement"),
+            mesh=self.mesh.warp_by_vector("Displacement", factor=factor),
             scalars=name,
             component=component,
             show_edges=show_edges,

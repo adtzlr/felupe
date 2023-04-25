@@ -114,12 +114,16 @@ def test_cell_data():
         result = fem.Result(
             field, 
             point_data={"My Displacements": field[0].values},
-            cell_data={"Cell Volume": field.region.dV.sum(0)},
+            cell_data={"Cell Volume": field.region.dV.sum(0).ravel()},
         )
         plotter = result.plot(
             "Principal Values of Logarithmic Strain",
             off_screen=True,
             theme="document",
+        )
+        plotter = result.plot(
+            "Cell Volume",
+            off_screen=True,
         )
         # plotter.show(screenshot="cube.png")
 

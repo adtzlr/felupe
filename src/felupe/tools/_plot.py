@@ -107,7 +107,7 @@ class Scene:
 
         if plotter is None:
             plotter = pv.Plotter(off_screen=off_screen)
-        
+
         if scalar_bar_args is None:
             scalar_bar_args = {}
 

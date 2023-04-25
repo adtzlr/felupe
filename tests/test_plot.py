@@ -72,8 +72,8 @@ def test_xdmf_cell_data():
         if int(major) == 0 and int(minor) < 39:
             print("Xdmf-Reader not available. Requires ``pyvista >= 0.39``.")
         else:
-            result = fem.ResultXdmf("result.xdmf", time=3)
-            plotter = result.plot(
+            view = fem.ViewXdmf("result.xdmf", time=3)
+            plotter = view.plot(
                 "Principal Values of Logarithmic Strain",
                 off_screen=True,
             )
@@ -95,8 +95,8 @@ def test_xdmf_point_data():
         if int(major) == 0 and int(minor) < 39:
             print("Xdmf-Reader not available. Requires ``pyvista >= 0.39``.")
         else:
-            result = fem.ResultXdmf("result.xdmf", time=3)
-            plotter = result.plot(
+            view = fem.ViewXdmf("result.xdmf", time=3)
+            plotter = view.plot(
                 "Displacement",
                 off_screen=True,
                 scalar_bar_vertical=True,
@@ -111,17 +111,17 @@ def test_cell_data():
 
     try:
         mesh, field = pre(n=3)
-        result = fem.Result(
+        view = fem.View(
             field, 
             point_data={"My Displacements": field[0].values},
             cell_data={"Cell Volume": field.region.dV.sum(0).ravel()},
         )
-        plotter = result.plot(
+        plotter = view.plot(
             "Principal Values of Logarithmic Strain",
             off_screen=True,
             theme="document",
         )
-        plotter = result.plot(
+        plotter = view.plot(
             "Cell Volume",
             off_screen=True,
         )
@@ -135,8 +135,8 @@ def test_point_data():
 
     try:
         mesh, field = pre_2d(n=3)
-        result = fem.Result(field)
-        plotter = result.plot(
+        view = fem.View(field)
+        plotter = view.plot(
             "Displacement",
             off_screen=True,
             scalar_bar_vertical=False,
@@ -151,8 +151,8 @@ def test_model():
 
     try:
         mesh, field = pre(n=3)
-        result = fem.Result(field)
-        plotter = result.plot(
+        view = fem.View(field)
+        plotter = view.plot(
             off_screen=True,
         )
         # plotter.show(screenshot="undeformed.png")

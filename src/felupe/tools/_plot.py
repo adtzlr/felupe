@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from types import SimpleNamespace
-
 import numpy as np
 
 from ..mechanics._job import (
@@ -114,12 +112,16 @@ class Scene:
         else:
             data = self.mesh.cell_data[name]
 
-        dim = data.shape[1]
+        if len(data.shape) == 2:
+            dim = data.shape[-1]
+        else:
+            dim = 1
 
         if label is None:
             data_label = name
 
             component_labels_dict = {
+                1: [""],
                 2: ["X", "Y"],
                 3: ["X", "Y", "Z"],
                 6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
@@ -281,13 +283,12 @@ class Result(Scene):
         point_data_from_field = {}
         cell_data_from_field = {}
 
-        substep = SimpleNamespace(x=field)
-        point_data_from_field["Displacement"] = displacement(substep)
-        cell_data_from_field["Deformation Gradient"] = deformation_gradient(substep)[0]
-        cell_data_from_field["Logarithmic Strain"] = log_strain(substep)[0]
+        point_data_from_field["Displacement"] = displacement(field)
+        cell_data_from_field["Deformation Gradient"] = deformation_gradient(field)[0]
+        cell_data_from_field["Logarithmic Strain"] = log_strain(field)[0]
         cell_data_from_field[
             "Principal Values of Logarithmic Strain"
-        ] = log_strain_principal(substep)[0]
+        ] = log_strain_principal(field)[0]
 
         if point_data is None:
             point_data = {}
@@ -296,7 +297,7 @@ class Result(Scene):
             cell_data = {}
 
         pdata = {**point_data_from_field, **point_data}
-        cdata = {**cell_data_from_field, **point_data}
+        cdata = {**cell_data_from_field, **cell_data}
 
         for label, data in pdata.items():
             self.mesh.point_data[label] = data

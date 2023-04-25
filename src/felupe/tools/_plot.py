@@ -117,10 +117,10 @@ class Scene:
         else:
             data = self.mesh.cell_data[name]
 
+        dim = 1
+
         if len(data.shape) == 2:
-            dim = data.shape[-1]
-        else:
-            dim = 1
+            dim = data.shape[1]
 
         if label is None:
             data_label = name

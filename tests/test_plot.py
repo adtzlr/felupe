@@ -117,8 +117,9 @@ def test_cell_data():
             cell_data={"Cell Volume": field.region.dV.sum(0)},
         )
         plotter = result.plot(
-            "Cell Volume",
+            "Principal Values of Logarithmic Strain",
             off_screen=True,
+            theme="document",
         )
         # plotter.show(screenshot="cube.png")
 
@@ -130,7 +131,11 @@ def test_point_data():
 
     try:
         mesh, field = pre_2d(n=3)
-        result = fem.Result(field)
+        result = fem.Result(
+            field,
+            point_data={"My Displacements": field[0].values},
+            cell_data={"Cell Volume": field.region.dV.sum(0)},
+        )
         plotter = result.plot(
             "Displacement",
             off_screen=True,

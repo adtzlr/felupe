@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Generalize the math-module so that all functions handle an arbitrary number of elementwise-operating trailing axes.
 - The special contraction modes of `math.dot(mode=(2,2))` and `math.ddot(mode=(2,2))` have to be specified by the `mode`-argument and are not detected by the shapes of the operands.
 - Enhance the overall performance by enforcing the identity matrix to a C-contiguous array.
+- Change point- and cell-data functions used in `Job.evaluate(point_data=None, cell_data=None)` from `fun(substep)` to `fun(field, substep)`.
 
 ### Fixed
 - Fix timings shown in `newtonrhapson(verbose=True)`: The solve time was only related to one call of the solver while the assembly time referred to the whole runtime subtracted by the single-call solve time.

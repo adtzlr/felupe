@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from types import SimpleNamespace
-
 import numpy as np
 
 from ..mechanics._job import (
@@ -44,11 +42,13 @@ class Scene:
         name,
         component=0,
         label=None,
+        factor=1.0,
         show_edges=True,
         show_undeformed=True,
         cmap="turbo",
-        cpos=None,
+        view="default",
         theme=None,
+        scalar_bar_args=None,
         scalar_bar_vertical=False,
         add_axes=True,
         off_screen=False,
@@ -71,14 +71,17 @@ class Scene:
             replaced by ``"XY"``, etc. If ``"Principal Values of"`` is in the name, the
             component number is replaced by ``"\n (Max. Principal)"``, assuming that the
             principal values are sorted in descending order.
+        factor : float, optional
+            Factor for the scaling of the warped (deformed) mesh (default is 1.0).
         show_edges : bool, optional
             Show the edges of the cells (default is True).
         show_undeformed : bool, optional
             Show the undeformed model (default is True).
         cmap : str, optional
             The color map (default is "turbo").
-        cpos : str or None, optional
-            The default camera position, e.g. "xy" or "iso" (default is None).
+        view : str or None, optional
+            The camera position, e.g. "xy" or "iso" (default is "default"). If not
+            specified, this is None for 3d-meshes and "xy" for 2d-meshes.
         theme : str or None, optional
             The theme used for plotting, e.g. "document" (default is None).
         scalar_bar_vertical : bool, optional
@@ -100,26 +103,30 @@ class Scene:
 
         import pyvista as pv
 
-        if cpos is None and np.allclose(self.mesh.points[:, 2], 0):
-            cpos = "xy"
+        if plotter is None:
+            plotter = pv.Plotter(off_screen=off_screen)
 
         if theme is not None:
             pv.set_plot_theme(theme)
 
-        if plotter is None:
-            plotter = pv.Plotter(off_screen=off_screen)
+        if scalar_bar_args is None:
+            scalar_bar_args = {}
 
         if name in self.mesh.point_data.keys():
             data = self.mesh.point_data[name]
         else:
             data = self.mesh.cell_data[name]
 
-        dim = data.shape[1]
+        dim = 1
+
+        if len(data.shape) == 2:
+            dim = data.shape[1]
 
         if label is None:
             data_label = name
 
             component_labels_dict = {
+                1: [""],
                 2: ["X", "Y"],
                 3: ["X", "Y", "Z"],
                 6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
@@ -159,7 +166,7 @@ class Scene:
             plotter.add_mesh(self.mesh, show_edges=False, opacity=0.2)
 
         plotter.add_mesh(
-            mesh=self.mesh.warp_by_vector("Displacement"),
+            mesh=self.mesh.warp_by_vector("Displacement", factor=factor),
             scalars=name,
             component=component,
             show_edges=show_edges,
@@ -168,10 +175,22 @@ class Scene:
                 "title": label,
                 "interactive": True,
                 "vertical": scalar_bar_vertical,
+                **scalar_bar_args,
             },
             **kwargs,
         )
-        plotter.camera_position = cpos
+
+        if view == "default":
+
+            if np.allclose(self.mesh.points[:, 2], 0):
+                view = "xy"
+
+            else:
+                view = None
+                plotter.camera.elevation = -15
+                plotter.camera.azimuth = -100
+
+        plotter.camera_position = view
 
         if add_axes:
             plotter.add_axes()
@@ -281,13 +300,12 @@ class Result(Scene):
         point_data_from_field = {}
         cell_data_from_field = {}
 
-        substep = SimpleNamespace(x=field)
-        point_data_from_field["Displacement"] = displacement(substep)
-        cell_data_from_field["Deformation Gradient"] = deformation_gradient(substep)[0]
-        cell_data_from_field["Logarithmic Strain"] = log_strain(substep)[0]
+        point_data_from_field["Displacement"] = displacement(field)
+        cell_data_from_field["Deformation Gradient"] = deformation_gradient(field)[0]
+        cell_data_from_field["Logarithmic Strain"] = log_strain(field)[0]
         cell_data_from_field[
             "Principal Values of Logarithmic Strain"
-        ] = log_strain_principal(substep)[0]
+        ] = log_strain_principal(field)[0]
 
         if point_data is None:
             point_data = {}
@@ -296,7 +314,7 @@ class Result(Scene):
             cell_data = {}
 
         pdata = {**point_data_from_field, **point_data}
-        cdata = {**cell_data_from_field, **point_data}
+        cdata = {**cell_data_from_field, **cell_data}
 
         for label, data in pdata.items():
             self.mesh.point_data[label] = data

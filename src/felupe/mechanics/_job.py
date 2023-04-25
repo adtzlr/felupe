@@ -24,30 +24,30 @@ from ..__about__ import __version__ as version
 from ..math import dot, eigh, eigvalsh, tovoigt, transpose
 
 
-def displacement(substep):
+def displacement(field, substep=None):
     "Displacement Vector"
-    u = substep.x[0].values
+    u = field[0].values
     return np.pad(u, ((0, 0), (0, 3 - u.shape[1])))
 
 
-def deformation_gradient(substep):
+def deformation_gradient(field, substep=None):
     "Deformation Gradient"
-    F = substep.x[0].extract()
+    F = field[0].extract()
     return [F.mean(-2).transpose([2, 0, 1])]
 
 
-def log_strain_principal(substep):
+def log_strain_principal(field, substep=None):
     "Principal Values of Logarithmic Strain"
-    u = substep.x[0]
+    u = field[0]
     F = u.extract()
     stretch = np.sqrt(eigvalsh(dot(transpose(F), F)))[::-1]
     strain = np.log(stretch).mean(-2)
     return [strain.T]
 
 
-def log_strain(substep):
+def log_strain(field, substep=None):
     "Lagrangian Logarithmic Strain Tensor"
-    u = substep.x[0]
+    u = field[0]
     F = u.extract()
     w, v = eigh(dot(transpose(F), F))
     stretch = np.sqrt(w)
@@ -70,10 +70,12 @@ class Job:
         self.timetrack = []
 
     def _write(self, writer, time, substep, point_data, cell_data):
+        field = substep.x
+        kwargs = dict(field=field, substep=substep)
         writer.write_data(
             time,
-            point_data={key: value(substep) for key, value in point_data.items()},
-            cell_data={key: value(substep) for key, value in cell_data.items()},
+            point_data={key: value(**kwargs) for key, value in point_data.items()},
+            cell_data={key: value(**kwargs) for key, value in cell_data.items()},
         )
 
     def evaluate(

@@ -69,7 +69,7 @@ result.plot("Principal Values of Logarithmic Strain").show()
 
 ![curve](https://user-images.githubusercontent.com/5793153/234382805-d9a56108-9dd7-4f57-a029-571a5a2486a4.svg)
 
-![cube](https://user-images.githubusercontent.com/5793153/234382454-a5bd5272-0ba4-40cb-9cb7-ef8679e8da11.png)
+![cube](https://user-images.githubusercontent.com/5793153/234405093-2f5201c1-3bba-46ee-bd91-af87813609d9.png)
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).

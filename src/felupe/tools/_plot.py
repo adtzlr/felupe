@@ -47,6 +47,7 @@ class Scene:
         cmap="turbo",
         cpos=None,
         theme=None,
+        scalar_bar_args=None,
         scalar_bar_vertical=False,
         add_axes=True,
         off_screen=False,
@@ -106,6 +107,9 @@ class Scene:
 
         if plotter is None:
             plotter = pv.Plotter(off_screen=off_screen)
+        
+        if scalar_bar_args is None:
+            scalar_bar_args = {}
 
         if name in self.mesh.point_data.keys():
             data = self.mesh.point_data[name]
@@ -170,6 +174,7 @@ class Scene:
                 "title": label,
                 "interactive": True,
                 "vertical": scalar_bar_vertical,
+                **scalar_bar_args,
             },
             **kwargs,
         )

@@ -97,10 +97,10 @@ The equivalent stress von Mises, projected to mesh points, will be added to the 
 
     import numpy as np
     
-    def von_mises(substep):
+    def von_mises(field, **kwargs):
         "Von Mises Stress projected to mesh points."
         
-        stress = solid.evaluate.gradient(substep.x)[0]
+        stress = solid.evaluate.gradient(field)[0]
         
         vonmises = np.sqrt(
             stress[0, 0] ** 2 + stress[1, 1] ** 2 + 3 * stress[0, 1] ** 2 +

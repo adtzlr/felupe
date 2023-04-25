@@ -1,6 +1,3 @@
-from ._base import cube_hexa as _cube_hexa
-from ._base import line_line as _line_line
-from ._base import rectangle_quad as _rectangle_quad
 from ._container import MeshContainer
 from ._convert import (
     add_midpoints_edges,
@@ -20,6 +17,9 @@ from ._geometry import (
     Rectangle,
     RectangleArbitraryOrderQuad,
 )
+from ._line_rectangle_cube import cube_hexa as _cube_hexa
+from ._line_rectangle_cube import line_line as _line_line
+from ._line_rectangle_cube import rectangle_quad as _rectangle_quad
 from ._mesh import Mesh
 from ._read import read
 from ._tools import (

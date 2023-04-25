@@ -49,7 +49,7 @@ class Scene:
         cmap="turbo",
         cpos=None,
         theme=None,
-        scalar_bar_vertical=True,
+        scalar_bar_vertical=False,
         add_axes=True,
         off_screen=False,
         plotter=None,
@@ -138,13 +138,13 @@ class Scene:
 
             if "Principal Values of " in name:
                 component_labels_dict[2] = [
-                    "\n (Max. Principal)",
-                    "\n (Min. Principal)",
+                    "(Max. Principal)",
+                    "(Min. Principal)",
                 ]
                 component_labels_dict[3] = [
-                    "\n (Max. Principal)",
-                    "\n (Int. Principal)",
-                    "\n (Min. Principal)",
+                    "(Max. Principal)",
+                    "(Int. Principal)",
+                    "(Min. Principal)",
                 ]
                 data_label = data_label[20:]
 

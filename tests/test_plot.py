@@ -117,7 +117,7 @@ def test_cell_data():
             cell_data={"Cell Volume": field.region.dV.sum(0)},
         )
         plotter = result.plot(
-            "Principal Values of Logarithmic Strain",
+            "Cell Volume",
             off_screen=True,
         )
         # plotter.show(screenshot="cube.png")

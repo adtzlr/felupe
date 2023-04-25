@@ -45,7 +45,7 @@ class Scene:
         show_edges=True,
         show_undeformed=True,
         cmap="turbo",
-        cpos=None,
+        view="default",
         theme=None,
         scalar_bar_args=None,
         scalar_bar_vertical=False,
@@ -76,8 +76,9 @@ class Scene:
             Show the undeformed model (default is True).
         cmap : str, optional
             The color map (default is "turbo").
-        cpos : str or None, optional
-            The default camera position, e.g. "xy" or "iso" (default is None).
+        view : str or None, optional
+            The camera position, e.g. "xy" or "iso" (default is "default"). If not
+            specified, this is None for 3d-meshes and "xy" for 2d-meshes.
         theme : str or None, optional
             The theme used for plotting, e.g. "document" (default is None).
         scalar_bar_vertical : bool, optional
@@ -99,14 +100,11 @@ class Scene:
 
         import pyvista as pv
 
-        if cpos is None and np.allclose(self.mesh.points[:, 2], 0):
-            cpos = "xy"
+        if plotter is None:
+            plotter = pv.Plotter(off_screen=off_screen)
 
         if theme is not None:
             pv.set_plot_theme(theme)
-
-        if plotter is None:
-            plotter = pv.Plotter(off_screen=off_screen)
 
         if scalar_bar_args is None:
             scalar_bar_args = {}
@@ -178,7 +176,18 @@ class Scene:
             },
             **kwargs,
         )
-        plotter.camera_position = cpos
+
+        if view == "default":
+
+            if np.allclose(self.mesh.points[:, 2], 0):
+                view = "xy"
+
+            else:
+                view = None
+                plotter.camera.elevation = -15
+                plotter.camera.azimuth = -100
+
+        plotter.camera_position = view
 
         if add_axes:
             plotter.add_axes()

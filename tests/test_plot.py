@@ -99,7 +99,7 @@ def test_xdmf_point_data():
             plotter = result.plot(
                 "Displacement",
                 off_screen=True,
-                scalar_bar_vertical=False,
+                scalar_bar_vertical=True,
             )
             # plotter.show(screenshot="rectangle-xdmf.png")
 
@@ -111,7 +111,11 @@ def test_cell_data():
 
     try:
         mesh, field = pre(n=3)
-        result = fem.Result(field)
+        result = fem.Result(
+            field, 
+            point_data={"My Displacements": field[0].values},
+            cell_data={"Cell Volume": field.region.dV.sum(0)},
+        )
         plotter = result.plot(
             "Principal Values of Logarithmic Strain",
             off_screen=True,

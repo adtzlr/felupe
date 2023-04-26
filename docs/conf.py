@@ -34,7 +34,24 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
+    "myst_nb",
 ]
+
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".myst": "myst-nb",
+}
+myst_enable_extensions = [
+    "amsmath",
+    "colon_fence",
+    "deflist",
+    "dollarmath",
+    "html_image",
+]
+myst_url_schemes = ("http", "https", "mailto")
+
+nb_execution_mode = "off"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -44,6 +61,8 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# Execution mode for notebooks
+# nb_execution_mode = "force"
 
 # -- Options for HTML output -------------------------------------------------
 

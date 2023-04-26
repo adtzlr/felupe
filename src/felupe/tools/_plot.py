@@ -47,7 +47,7 @@ class Scene:
         show_undeformed=True,
         cmap="turbo",
         view="default",
-        theme=None,
+        theme="default",
         scalar_bar_args=None,
         scalar_bar_vertical=False,
         add_axes=True,
@@ -82,8 +82,8 @@ class Scene:
         view : str or None, optional
             The camera position, e.g. "xy" or "iso" (default is "default"). If not
             specified, this is None for 3d-meshes and "xy" for 2d-meshes.
-        theme : str or None, optional
-            The theme used for plotting, e.g. "document" (default is None).
+        theme : str, optional
+            The theme used for plotting, e.g. "document" (default is "default").
         scalar_bar_vertical : bool, optional
             A flag to show the interactive scalar bar in vertical orientation on the
             right side (default is True).
@@ -103,65 +103,71 @@ class Scene:
 
         import pyvista as pv
 
+        pv.set_plot_theme(theme)
+
         if plotter is None:
             plotter = pv.Plotter(off_screen=off_screen)
-
-        if theme is not None:
-            pv.set_plot_theme(theme)
 
         if scalar_bar_args is None:
             scalar_bar_args = {}
 
         if name is not None:
-            if name in self.mesh.point_data.keys():
-                data = self.mesh.point_data[name]
-            else:
-                data = self.mesh.cell_data[name]
-
-            dim = 1
-
-            if len(data.shape) == 2:
-                dim = data.shape[1]
 
             if label is None:
                 data_label = name
 
-                component_labels_dict = {
-                    1: [""],
-                    2: ["X", "Y"],
-                    3: ["X", "Y", "Z"],
-                    6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
-                    9: [
-                        "XX",
-                        "XY",
-                        "XZ",
-                        "YX",
-                        "YY",
-                        "YZ",
-                        "ZX",
-                        "ZY",
-                        "ZZ",
-                    ],
-                }
+            if component is not None:
 
-                if "Principal Values of " in name:
-                    component_labels_dict[2] = [
-                        "(Max. Principal)",
-                        "(Min. Principal)",
-                    ]
-                    component_labels_dict[3] = [
-                        "(Max. Principal)",
-                        "(Int. Principal)",
-                        "(Min. Principal)",
-                    ]
-                    data_label = data_label[20:]
+                if name in self.mesh.point_data.keys():
+                    data = self.mesh.point_data[name]
+                else:
+                    data = self.mesh.cell_data[name]
 
-                component_labels = np.arange(dim)
-                if dim in component_labels_dict.keys():
-                    component_labels = component_labels_dict[dim]
+                dim = 1
 
-                component_label = component_labels[component]
-                label = f"{data_label} {component_label}"
+                if len(data.shape) == 2:
+                    dim = data.shape[1]
+
+                    component_labels_dict = {
+                        1: [""],
+                        2: ["X", "Y"],
+                        3: ["X", "Y", "Z"],
+                        6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
+                        9: [
+                            "XX",
+                            "XY",
+                            "XZ",
+                            "YX",
+                            "YY",
+                            "YZ",
+                            "ZX",
+                            "ZY",
+                            "ZZ",
+                        ],
+                    }
+
+                    if "Principal Values of " in name:
+                        component_labels_dict[2] = [
+                            "(Max. Principal)",
+                            "(Min. Principal)",
+                        ]
+                        component_labels_dict[3] = [
+                            "(Max. Principal)",
+                            "(Int. Principal)",
+                            "(Min. Principal)",
+                        ]
+                        data_label = data_label[20:]
+
+                    component_labels = np.arange(dim)
+                    if dim in component_labels_dict.keys():
+                        component_labels = component_labels_dict[dim]
+
+                    component_label = component_labels[component]
+
+            else:
+                component_label = "Magnitude"
+
+            label = f"{data_label} {component_label}"
 
         if show_undeformed:
             show_edges_undeformed = False
@@ -202,6 +208,7 @@ class Scene:
                 plotter.camera.azimuth = -100
 
         plotter.camera_position = view
+        # pv.set_plot_theme(theme)
 
         if add_axes:
             plotter.add_axes()

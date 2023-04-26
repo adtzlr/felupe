@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.2.0] - 2023-04-26
+
 ### Added
 - Add `environment.yml` config file for [MyBinder](https://mybinder.org/).
 - Add a timetrack-list as `Job.timetrack` which is updated incrementally on `Job.evaluate()`.

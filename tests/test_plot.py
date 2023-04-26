@@ -110,11 +110,14 @@ def test_xdmf_point_data():
 def test_cell_data():
 
     try:
+        import pyvista
+
         mesh, field = pre(n=3)
         view = fem.View(
-            field, 
+            field,
             point_data={"My Displacements": field[0].values},
             cell_data={"Cell Volume": field.region.dV.sum(0).ravel()},
+            cell_type=pyvista.CellType.HEXAHEDRON,
         )
         plotter = view.plot(
             "Principal Values of Logarithmic Strain",

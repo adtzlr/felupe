@@ -269,6 +269,8 @@ class View(Scene):
         Additional point-data dict (default is None).
     cell_data : dict or None, optional
         Additional cell-data dict (default is None).
+    cell_type : pyvista.CellType or None, optional
+        Cell-type of PyVista (default is None).
 
     Attributes
     ----------
@@ -278,7 +280,7 @@ class View(Scene):
 
     """
 
-    def __init__(self, field, point_data=None, cell_data=None):
+    def __init__(self, field, point_data=None, cell_data=None, cell_type=None):
 
         import pyvista as pv
 
@@ -288,23 +290,23 @@ class View(Scene):
             mesh.cells, ((0, 0), (1, 0)), constant_values=mesh.cells.shape[1]
         )
 
-        meshio_to_pyvista_cell_types = {
-            "line": pv.CellType.LINE,
-            "triangle": pv.CellType.TRIANGLE,
-            "triangle6": pv.CellType.QUADRATIC_TRIANGLE,
-            "tetra": pv.CellType.TETRA,
-            "tetra10": pv.CellType.QUADRATIC_TETRA,
-            "quad": pv.CellType.QUAD,
-            "quad8": pv.CellType.QUADRATIC_QUAD,
-            "quad9": pv.CellType.BIQUADRATIC_QUAD,
-            "hexahedron": pv.CellType.HEXAHEDRON,
-            "hexahedron20": pv.CellType.QUADRATIC_HEXAHEDRON,
-            "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
-        }
+        if cell_type is None:
+            meshio_to_pyvista_cell_types = {
+                "line": pv.CellType.LINE,
+                "triangle": pv.CellType.TRIANGLE,
+                "triangle6": pv.CellType.QUADRATIC_TRIANGLE,
+                "tetra": pv.CellType.TETRA,
+                "tetra10": pv.CellType.QUADRATIC_TETRA,
+                "quad": pv.CellType.QUAD,
+                "quad8": pv.CellType.QUADRATIC_QUAD,
+                "quad9": pv.CellType.BIQUADRATIC_QUAD,
+                "hexahedron": pv.CellType.HEXAHEDRON,
+                "hexahedron20": pv.CellType.QUADRATIC_HEXAHEDRON,
+                "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
+            }
+            cell_type = meshio_to_pyvista_cell_types[mesh.cell_type]
 
-        cell_types = meshio_to_pyvista_cell_types[mesh.cell_type] * np.ones(
-            mesh.ncells, dtype=int
-        )
+        cell_types = cell_type * np.ones(mesh.ncells, dtype=int)
 
         self.mesh = pv.UnstructuredGrid(cells, cell_types, points)
 

@@ -128,42 +128,42 @@ class Scene:
                 if len(data.shape) == 2:
                     dim = data.shape[1]
 
-                    component_labels_dict = {
-                        1: [""],
-                        2: ["X", "Y"],
-                        3: ["X", "Y", "Z"],
-                        6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
-                        9: [
-                            "XX",
-                            "XY",
-                            "XZ",
-                            "YX",
-                            "YY",
-                            "YZ",
-                            "ZX",
-                            "ZY",
-                            "ZZ",
-                        ],
-                    }
+                component_labels_dict = {
+                    1: [""],
+                    2: ["X", "Y"],
+                    3: ["X", "Y", "Z"],
+                    6: ["XX", "YY", "ZZ", "XY", "YZ", "XZ"],
+                    9: [
+                        "XX",
+                        "XY",
+                        "XZ",
+                        "YX",
+                        "YY",
+                        "YZ",
+                        "ZX",
+                        "ZY",
+                        "ZZ",
+                    ],
+                }
 
-                    if "Principal Values of " in name:
-                        component_labels_dict[2] = [
-                            "(Max. Principal)",
-                            "(Min. Principal)",
-                        ]
-                        component_labels_dict[3] = [
-                            "(Max. Principal)",
-                            "(Int. Principal)",
-                            "(Min. Principal)",
-                        ]
-                        data_label = data_label[20:]
+                if "Principal Values of " in name:
+                    component_labels_dict[2] = [
+                        "(Max. Principal)",
+                        "(Min. Principal)",
+                    ]
+                    component_labels_dict[3] = [
+                        "(Max. Principal)",
+                        "(Int. Principal)",
+                        "(Min. Principal)",
+                    ]
+                    data_label = data_label[20:]
 
-                    component_labels = np.arange(dim)
-                    if dim in component_labels_dict.keys():
-                        component_labels = component_labels_dict[dim]
+                component_labels = np.arange(dim)
+                if dim in component_labels_dict.keys():
+                    component_labels = component_labels_dict[dim]
 
-                    component_label = component_labels[component]
-
+                component_label = component_labels[component]
+    
             else:
                 component_label = "Magnitude"
 

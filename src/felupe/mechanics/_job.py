@@ -55,6 +55,29 @@ def log_strain(field, substep=None):
     return [tovoigt(strain.mean(-2), True).T]
 
 
+def header(verbose):
+    if verbose == 1:
+        return "\n".join([
+            f"FElupe Version {version}",
+            f"{platform(terse=True)} {machine()} {architecture()[0]}",
+            "",
+        ])
+    elif verbose > 1:
+        return f"""
+ _______  _______  ___      __   __  _______  _______
+|       ||       ||   |    |  | |  ||       ||       |
+|    ___||    ___||   |    |  | |  ||    _  ||    ___|
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
+|    ___||    ___||   |___ |       ||    ___||    ___|
+|   |    |   |___ |       ||       ||   |    |   |___
+|___|    |_______||_______||_______||___|    |_______|
+FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]})
+
+Run Job
+=======
+"""
+
+
 class Job:
     "A job with a list of steps."
 
@@ -90,29 +113,20 @@ class Job:
         parallel=False,
         **kwargs,
     ):
+        try:
+            from tqdm import tqdm
+        except ModuleNotFoundError:
+            verbose = 2
 
         if verbose:
-            print(
-                f"""
- _______  _______  ___      __   __  _______  _______
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___
-|___|    |_______||_______||_______||___|    |_______|
-FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]})
-
-"""
-            )
-
-            print("Run Job")
-            print("=======\n")
+            print(header(verbose))
 
         if parallel:
             if "kwargs" not in kwargs.keys():
                 kwargs["kwargs"] = {}
             kwargs["kwargs"]["parallel"] = True
+
+        increment = 0
 
         if filename is not None:
             from meshio.xdmf import TimeSeriesWriter
@@ -122,8 +136,6 @@ FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]}
                     mesh = kwargs["x0"].region.mesh.as_meshio()
                 else:
                     mesh = self.steps[0].items[0].field.region.mesh.as_meshio()
-
-            increment = 0
 
             pdata = point_data_default if point_data_default is True else {}
             cdata = cell_data_default if cell_data_default is not None else {}
@@ -157,16 +169,22 @@ FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]}
             if filename is not None:
                 writer.write_points_cells(mesh.points, mesh.cells)
 
+            if verbose == 1:
+                total = sum([step.nsubsteps for step in self.steps])
+                progress_bar = tqdm(total=total, unit=" substeps")
+
             for j, step in enumerate(self.steps):
 
-                if verbose:
+                newton_verbose = False
+                if verbose == 2:
                     print(f"Begin Evaluation of Step {j + 1}.")
+                    newton_verbose = True
 
-                substeps = step.generate(verbose=verbose, **kwargs)
+                substeps = step.generate(verbose=newton_verbose, **kwargs)
                 for i, substep in enumerate(substeps):
 
-                    if verbose:
-                        _substep = f"Substep {i}/{step.nsubsteps - 1}"
+                    if verbose == 2:
+                        _substep = f"Substep {i + 1}/{step.nsubsteps}"
                         _step = f"Step {j + 1}/{self.nsteps}"
 
                         print(f"{_substep} of {_step} successful.")
@@ -186,4 +204,11 @@ FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]}
                             point_data={**pdata, **point_data},
                             cell_data={**cdata, **cell_data},
                         )
-                        increment += 1
+
+                    increment += 1
+
+                    if verbose == 1:
+                        progress_bar.update(1)
+
+            if verbose == 1:
+                progress_bar.close()

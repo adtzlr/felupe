@@ -25,6 +25,7 @@ In order to make use of all features of FElupe, it is suggested to install all o
 * `matplotlib` for plotting graphs
 * `meshio` for mesh-related I/O
 * `pyvista` for interactive visualizations
+* `tqdm` for showing progress bars during job evaluation
 
 # Getting Started
 This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. 

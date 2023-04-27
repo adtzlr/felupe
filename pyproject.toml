@@ -52,7 +52,6 @@ test = [
     "h5py",
     "matplotlib",
     "meshio",
-    "pyvista",
     "tensortrax",
 ]
 all = [
@@ -61,6 +60,8 @@ all = [
     "matplotlib",
     "meshio",
     "tensortrax",
+    "pyvista",
+    "tqdm",
 ]
 
 [tool.setuptools.dynamic]

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Removed
+- Remove config files for MyBinder. They are now located in a different repository [adtzlr/felupe-web](https://github.com/adtzlr/felupe-web).
+
 ## [7.2.0] - 2023-04-26
 
 ### Added

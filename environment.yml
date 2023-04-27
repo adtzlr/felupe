@@ -5,14 +5,14 @@ dependencies:
   - python
   - numpy
   - scipy
-  - meshio
   - matplotlib
-  - panel
-  - trame
   - pip
   - pip:
     - einsumt
     - tensortrax
     - matadi
+    - meshio
+    - trame
+    - panel
     - pyvista
     - felupe

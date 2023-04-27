@@ -1,4 +1,4 @@
-name: mybinder-environment
+name: felupe-environment
 channels:
   - conda-forge
 dependencies:
@@ -6,6 +6,13 @@ dependencies:
   - numpy
   - scipy
   - matplotlib
+  - vtk
+  - panel
+  - trame
+  - trame-client
+  - trame-server
+  - trame-vtk
+  - pyvista
   - pip
   - pip:
     - einsumt
@@ -13,7 +20,4 @@ dependencies:
     - h5py
     - meshio
     - matadi
-    - trame
-    - panel
-    - pyvista
     - felupe

@@ -52,7 +52,6 @@ test = [
     "h5py",
     "matplotlib",
     "meshio",
-    "pyvista",
     "tensortrax",
 ]
 all = [

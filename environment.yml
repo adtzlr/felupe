@@ -6,18 +6,32 @@ dependencies:
   - numpy
   - scipy
   - matplotlib
+  - meshio
+  - colorcet
+  - cmocean
+  - h5py
   - vtk
   - panel
+  - imageio
+  - imageio-ffmpeg
+  - ipygany
+  - ipyvtklink
+  - trimesh
+  - rtree
+  - pyembree
   - trame
   - trame-client
   - trame-server
   - trame-vtk
+  - pythreejs
+  - pillow
+  - pooch
+  - scooby
+  - tqdm
   - pyvista
   - pip
   - pip:
     - einsumt
     - tensortrax
-    - h5py
-    - meshio
     - matadi
     - felupe

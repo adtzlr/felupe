@@ -2,35 +2,39 @@ name: felupe-environment
 channels:
   - conda-forge
 dependencies:
-  - python
+  - python>=3.8
+  - jupyterlab
   - numpy
   - scipy
-  - matplotlib
+  - vtk
+  - scooby>=0.5.1
   - meshio
+  - matplotlib
+  - imageio>=2.5.0
+  - imageio-ffmpeg
   - colorcet
   - cmocean
-  - h5py
-  - vtk
-  - panel
-  - imageio
-  - imageio-ffmpeg
-  - ipygany
-  - ipyvtklink
+  - tqdm
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - codecov
+  - hypothesis>=5.8.0
+  - pip
   - trimesh
   - rtree
   - pyembree
-  - trame
-  - trame-client
-  - trame-server
-  - trame-vtk
+  - panel
+  - ipygany
+  - ipyvtklink
   - pythreejs
-  - pillow
   - pooch
-  - scooby
-  - tqdm
-  - pyvista
-  - pip
+  - trame>=2.2.6
+  - trame-client>=2.4.2
+  - trame-server>=2.8.0
+  - trame-vtk>=2.4.0
   - pip:
+    - pytest-memprof
     - einsumt
     - tensortrax
     - matadi

@@ -125,7 +125,7 @@ class Job:
             if "kwargs" not in kwargs.keys():
                 kwargs["kwargs"] = {}
             kwargs["kwargs"]["parallel"] = True
-        
+
         increment = 0
 
         if filename is not None:
@@ -168,7 +168,7 @@ class Job:
 
             if filename is not None:
                 writer.write_points_cells(mesh.points, mesh.cells)
-            
+
             if verbose == 1:
                 total = sum([step.nsubsteps for step in self.steps])
                 progress_bar = tqdm(total=total, unit=" substeps")
@@ -204,11 +204,11 @@ class Job:
                             point_data={**pdata, **point_data},
                             cell_data={**cdata, **cell_data},
                         )
-                        
+
                     increment += 1
-                    
+
                     if verbose == 1:
                         progress_bar.update(1)
-            
+
             if verbose == 1:
                 progress_bar.close()

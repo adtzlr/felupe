@@ -264,18 +264,13 @@ class ViewXdmf(Scene):  # pragma: no cover
         self.mesh = self._read(time)
 
 
-class View(Scene):
-    """Provide Visualization methods for :class:`felupe.Field`. The warped (deformed)
-    mesh is created from the values of the first field (displacements).
+class ViewMesh(Scene):
+    """Provide Visualization methods for :class:`felupe.Mesh`.
 
     Parameters
     ----------
-    field : felupe.FieldContainer
-        The field-container.
-    point_data : dict or None, optional
-        Additional point-data dict (default is None).
-    cell_data : dict or None, optional
-        Additional cell-data dict (default is None).
+    mesh : felupe.Mesh
+        The mesh object.
     cell_type : pyvista.CellType or None, optional
         Cell-type of PyVista (default is None).
 
@@ -287,11 +282,10 @@ class View(Scene):
 
     """
 
-    def __init__(self, field, point_data=None, cell_data=None, cell_type=None):
+    def __init__(self, mesh, cell_type=None):
 
         import pyvista as pv
 
-        mesh = field.region.mesh
         points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.points.shape[1])))
         cells = np.pad(
             mesh.cells, ((0, 0), (1, 0)), constant_values=mesh.cells.shape[1]
@@ -316,6 +310,34 @@ class View(Scene):
         cell_types = cell_type * np.ones(mesh.ncells, dtype=int)
 
         self.mesh = pv.UnstructuredGrid(cells, cell_types, points)
+
+
+class ViewField(ViewMesh):
+    """Provide Visualization methods for :class:`felupe.Field`. The warped (deformed)
+    mesh is created from the values of the first field (displacements).
+
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        The field-container.
+    point_data : dict or None, optional
+        Additional point-data dict (default is None).
+    cell_data : dict or None, optional
+        Additional cell-data dict (default is None).
+    cell_type : pyvista.CellType or None, optional
+        Cell-type of PyVista (default is None).
+
+    Attributes
+    ----------
+    mesh : pyvista.UnstructuredGrid
+        A generalized Dataset with the mesh as well as point- and cell-data. This is
+        not an instance of :class:`felupe.Mesh`.
+
+    """
+
+    def __init__(self, field, point_data=None, cell_data=None, cell_type=None):
+
+        super().__init__(mesh=field.region.mesh, cell_type=cell_type)
 
         point_data_from_field = {}
         cell_data_from_field = {}

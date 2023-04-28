@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `ViewMesh(mesh)` and rebase `View` (internally renamed to `ViewField`) on `ViewMesh` with additional point- and cell-data.
 
+### Changed
+- Change `math.linsteps(axis=None, axes=None)` to create optional multi-column arrays, where the steps are inserted at the given `axis`.
+- Make last `gravity` and `density` arguments of `SolidBodyGravity(field, gravity=None, density=1.0)` optional.
+
 ## [7.3.0] - 2023-04-28
 
 ### Changed

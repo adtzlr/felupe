@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def linsteps(points, num=10, endpoint=True):
+def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
 
     points = np.array(points).ravel()
     start = points[:-1]
@@ -43,5 +43,14 @@ def linsteps(points, num=10, endpoint=True):
 
     if endpoint:
         steps = np.append(steps, points[-1])
+
+    if axis is not None:
+
+        if axes is None:
+            axes = axis + 1
+
+        steps_1d = steps
+        steps = np.zeros((len(steps_1d), axes))
+        steps[:, axis] = steps_1d
 
     return steps

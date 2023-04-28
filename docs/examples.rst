@@ -7,6 +7,7 @@ Examples
    
    examples/beam
    examples/platewithhole
+   examples/plasticity
    examples/rubberspring
    examples/enginemount
    examples/shear

@@ -16,12 +16,10 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from platform import architecture, machine, platform
-
 import numpy as np
 
-from ..__about__ import __version__ as version
 from ..math import dot, eigh, eigvalsh, tovoigt, transpose
+from ..tools._misc import logo, runs_on
 
 
 def displacement(field, substep=None):
@@ -55,27 +53,8 @@ def log_strain(field, substep=None):
     return [tovoigt(strain.mean(-2), True).T]
 
 
-def header(verbose):
-    if verbose == 1:
-        return "\n".join([
-            f"FElupe Version {version}",
-            f"{platform(terse=True)} {machine()} {architecture()[0]}",
-            "",
-        ])
-    elif verbose > 1:
-        return f"""
- _______  _______  ___      __   __  _______  _______
-|       ||       ||   |    |  | |  ||       ||       |
-|    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
-|    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___
-|___|    |_______||_______||_______||___|    |_______|
-FElupe Version {version} ({platform(terse=True)} {machine()} {architecture()[0]})
-
-Run Job
-=======
-"""
+def print_header():
+    print("\n".join([logo(), runs_on(), "", "Run Job", "======="]))
 
 
 class Job:
@@ -118,8 +97,8 @@ class Job:
         except ModuleNotFoundError:
             verbose = 2
 
-        if verbose:
-            print(header(verbose))
+        if verbose == 2:
+            print_header()
 
         if parallel:
             if "kwargs" not in kwargs.keys():
@@ -171,7 +150,7 @@ class Job:
 
             if verbose == 1:
                 total = sum([step.nsubsteps for step in self.steps])
-                progress_bar = tqdm(total=total, unit=" substeps")
+                progress_bar = tqdm(total=total, unit="substep")
 
             for j, step in enumerate(self.steps):
 

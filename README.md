@@ -8,7 +8,7 @@
 FElupe is a Python 3.7+ 🐍 finite element analysis package 📦 focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics 🔧 of solid bodies 🚂. Its name is a combination of FE (finite element) and the german word *Lupe* 🔍 (magnifying glass) as a synonym for getting an insight 📖 how a finite element analysis code 🧮 looks like under the hood 🕳️.
 
 # Installation
-Install Python, fire up a terminal and run
+Install Python, fire up 🔥 a terminal and run 🏃
 
 ```shell
 pip install felupe[all]

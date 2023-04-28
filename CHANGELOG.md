@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.3.0] - 2023-04-28
+
 ### Changed
 - Show a progress bar during `Job.evaluate(verbose=True)` (new optional dependency `tqdm`). The legacy detailed output is available with `Job.evaluate(verbose=2)`.
 

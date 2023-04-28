@@ -163,7 +163,7 @@ class Scene:
                     component_labels = component_labels_dict[dim]
 
                 component_label = component_labels[component]
-    
+
             else:
                 component_label = "Magnitude"
 

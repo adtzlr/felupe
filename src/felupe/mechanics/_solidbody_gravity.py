@@ -26,7 +26,7 @@ from ._helpers import Assemble, Results
 class SolidBodyGravity:
     "A SolidBody with methods for the assembly of sparse vectors/matrices."
 
-    def __init__(self, field, gravity, density):
+    def __init__(self, field, gravity=None, density=1.0):
 
         self.field = field
         self.results = Results(stress=False, elasticity=False)

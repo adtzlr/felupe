@@ -19,7 +19,7 @@ where `[all]` installs all optional dependencies. FElupe has minimal dependencie
 * `scipy` for sparse matrices
 * `tensortrax` for automatic differentiation
 
-In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
+In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
 * `einsumt` for parallel assembly
 * `h5py` for XDMF result files
 * `matplotlib` for plotting graphs

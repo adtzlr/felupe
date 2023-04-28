@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Changed
-- Show a progress bar during `Job.evaluate(verbose=True)`. The old output is available with `verbose=2`.
+- Show a progress bar during `Job.evaluate(verbose=True)` (new optional dependency `tqdm`). The legacy detailed output is available with `Job.evaluate(verbose=2)`.
 
 ### Removed
 - Remove config files for MyBinder. They are now located in a different repository [adtzlr/felupe-web](https://github.com/adtzlr/felupe-web).

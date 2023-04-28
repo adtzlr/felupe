@@ -155,7 +155,7 @@ def test_math_linsteps():
     assert len(steps) == 1
     assert steps[-1] == 1
 
-    steps = fe.math.linsteps([0, 1, 5], num=(10, 100), axis=1, axes=2)
+    steps = fe.math.linsteps([0, 1, 5], num=(10, 100), axis=1, axes=None)
     assert len(steps) == 111
     assert np.allclose(steps[-1], (0, 5))
 

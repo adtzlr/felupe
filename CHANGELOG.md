@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.4.0] - 2023-04-29
+
 ### Added
 - Add `ViewMesh(mesh)` and rebase `View` (internally renamed to `ViewField`) on `ViewMesh` with additional point- and cell-data.
 

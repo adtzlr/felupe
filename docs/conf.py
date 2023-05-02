@@ -76,8 +76,7 @@ html_show_sourcelink = True
 html_sourcelink_suffix = ""
 
 html_static_path = ["_static"]
-html_logo = "logo.png"
-# html_theme_options = {
-#     "light_logo": "logo_light.svg",
-#     "dark_logo": "logo_dark.svg",
-# }
+html_theme_options = {
+    "light_logo": "logo.png",
+    "dark_logo": "logo.png",
+}

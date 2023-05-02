@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.4.1] - 2023-05-02
+
+### Changed
+- Change the logo.
+
 ## [7.4.0] - 2023-04-29
 
 ### Added

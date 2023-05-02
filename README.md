@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://readthedocs.org/projects/felupe/badge/?version=latest"><img src="https://user-images.githubusercontent.com/5793153/235789118-eb03eb25-2556-401d-8a0f-580f37e72f8d.png" height="80px"/></a>
+  <a href="https://felupe.readthedocs.io/en/latest/?badge=latest"><img src="https://user-images.githubusercontent.com/5793153/235789118-eb03eb25-2556-401d-8a0f-580f37e72f8d.png" height="80px"/></a>
   <p align="center">Finite Element Analysis.</p>
 </p>
 

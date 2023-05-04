@@ -315,7 +315,7 @@ class ViewMesh(Scene):
         cell_types = cell_type * np.ones(mesh.ncells, dtype=int)
 
         self.mesh = pv.UnstructuredGrid(cells, cell_types, points)
-        
+
         if point_data is None:
             point_data = {}
 
@@ -331,7 +331,6 @@ class ViewMesh(Scene):
         self.mesh.set_active_scalars(None)
         self.mesh.set_active_vectors(None)
         self.mesh.set_active_tensors(None)
-
 
 
 class ViewField(ViewMesh):
@@ -377,8 +376,8 @@ class ViewField(ViewMesh):
             cell_data = {}
 
         super().__init__(
-            mesh=field.region.mesh, 
-            point_data={**point_data_from_field, **point_data}, 
-            cell_data={**cell_data_from_field, **cell_data}, 
-            cell_type=cell_type
+            mesh=field.region.mesh,
+            point_data={**point_data_from_field, **point_data},
+            cell_data={**cell_data_from_field, **cell_data},
+            cell_type=cell_type,
         )

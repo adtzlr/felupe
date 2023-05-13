@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Add optional point- and cell-data args for `ViewMesh(mesh, point_data=None, cell_data=None)` like already implemented in `ViewField`.
+- Enforce contiguous arrays in `UserMaterialHyperelastic` (enhance performance).
 
 ## [7.4.1] - 2023-05-02
 

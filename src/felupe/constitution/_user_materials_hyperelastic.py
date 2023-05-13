@@ -90,7 +90,7 @@ class UserMaterialHyperelastic(UserMaterial):
         )
 
     def _stress(self, x, **kwargs):
-        F = x[0]
+        F = np.ascontiguousarray(x[0])
 
         if self.nstatevars > 0:
             statevars = (x[1],)
@@ -110,7 +110,7 @@ class UserMaterialHyperelastic(UserMaterial):
         return [dot(F, 2 * S), statevars_new]
 
     def _elasticity(self, x, **kwargs):
-        F = x[0]
+        F = np.ascontiguousarray(x[0])
 
         if self.nstatevars > 0:
             statevars = (x[1],)
@@ -121,6 +121,6 @@ class UserMaterialHyperelastic(UserMaterial):
         D, S, W = tr.hessian(
             self.fun, wrt=0, ntrax=2, full_output=True, parallel=self.parallel, sym=True
         )(C, *statevars, **kwargs)
-        A = np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, 4 * D)
+        A = np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, 4 * np.ascontiguousarray(D))
         B = cdya_ik(np.eye(3), 2 * S)
         return [np.sum(np.broadcast_arrays(A, B), axis=0)]

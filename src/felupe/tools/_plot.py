@@ -182,8 +182,13 @@ class Scene:
             )
 
         if name is not None:
+
+            mesh = self.mesh
+            if "Displacement" in self.mesh.point_data.keys():
+                mesh = mesh.warp_by_vector("Displacement", factor=factor)
+
             plotter.add_mesh(
-                mesh=self.mesh.warp_by_vector("Displacement", factor=factor),
+                mesh=mesh,
                 scalars=name,
                 component=component,
                 show_edges=show_edges,
@@ -265,12 +270,17 @@ class ViewXdmf(Scene):  # pragma: no cover
 
 
 class ViewMesh(Scene):
-    """Provide Visualization methods for :class:`felupe.Mesh`.
+    """Provide Visualization methods for :class:`felupe.Mesh` with optional given
+    dicts of point- and cell-data items.
 
     Parameters
     ----------
     mesh : felupe.Mesh
         The mesh object.
+    point_data : dict or None, optional
+        Additional point-data dict (default is None).
+    cell_data : dict or None, optional
+        Additional cell-data dict (default is None).
     cell_type : pyvista.CellType or None, optional
         Cell-type of PyVista (default is None).
 
@@ -282,7 +292,7 @@ class ViewMesh(Scene):
 
     """
 
-    def __init__(self, mesh, cell_type=None):
+    def __init__(self, mesh, point_data=None, cell_data=None, cell_type=None):
 
         import pyvista as pv
 
@@ -311,10 +321,30 @@ class ViewMesh(Scene):
 
         self.mesh = pv.UnstructuredGrid(cells, cell_types, points)
 
+        if point_data is None:
+            point_data = {}
+
+        if cell_data is None:
+            cell_data = {}
+
+        for label, data in point_data.items():
+            self.mesh.point_data[label] = data
+
+        for label, data in cell_data.items():
+            self.mesh.cell_data[label] = data
+
+        self.mesh.set_active_scalars(None)
+        self.mesh.set_active_vectors(None)
+        self.mesh.set_active_tensors(None)
+
 
 class ViewField(ViewMesh):
     """Provide Visualization methods for :class:`felupe.Field`. The warped (deformed)
-    mesh is created from the values of the first field (displacements).
+    mesh is created from the values of the first field (displacements). By default,
+    the "Deformation Gradient" tensor, the "Logarithmic Strain" tensor and the
+    "Principal Values of Logarithmic Strain" are evaluated as field-related items of the
+    cell-data dict. Optional items of given point- and cell-data overwrite these default
+    field-related cell-data items.
 
     Parameters
     ----------
@@ -337,17 +367,12 @@ class ViewField(ViewMesh):
 
     def __init__(self, field, point_data=None, cell_data=None, cell_type=None):
 
-        super().__init__(mesh=field.region.mesh, cell_type=cell_type)
-
-        point_data_from_field = {}
-        cell_data_from_field = {}
-
-        point_data_from_field["Displacement"] = displacement(field)
-        cell_data_from_field["Deformation Gradient"] = deformation_gradient(field)[0]
-        cell_data_from_field["Logarithmic Strain"] = log_strain(field)[0]
-        cell_data_from_field[
-            "Principal Values of Logarithmic Strain"
-        ] = log_strain_principal(field)[0]
+        point_data_from_field = {"Displacement": displacement(field)}
+        cell_data_from_field = {
+            "Deformation Gradient": deformation_gradient(field)[0],
+            "Logarithmic Strain": log_strain(field)[0],
+            "Principal Values of Logarithmic Strain": log_strain_principal(field)[0],
+        }
 
         if point_data is None:
             point_data = {}
@@ -355,15 +380,9 @@ class ViewField(ViewMesh):
         if cell_data is None:
             cell_data = {}
 
-        pdata = {**point_data_from_field, **point_data}
-        cdata = {**cell_data_from_field, **cell_data}
-
-        for label, data in pdata.items():
-            self.mesh.point_data[label] = data
-
-        for label, data in cdata.items():
-            self.mesh.cell_data[label] = data
-
-        self.mesh.set_active_scalars(None)
-        self.mesh.set_active_vectors(None)
-        self.mesh.set_active_tensors(None)
+        super().__init__(
+            mesh=field.region.mesh,
+            point_data={**point_data_from_field, **point_data},
+            cell_data={**cell_data_from_field, **cell_data},
+            cell_type=cell_type,
+        )

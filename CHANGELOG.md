@@ -3,9 +3,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `ViewSolid`, which enables `view = ViewSolid(field, solid=None)` the view of cauchy stresses, e.g. `view.plot("Principal Values of Cauchy Stress").show()`.
+
 ### Changed
 - Add optional point- and cell-data args for `ViewMesh(mesh, point_data=None, cell_data=None)` like already implemented in `ViewField`.
 - Enforce contiguous arrays in `UserMaterialHyperelastic` (enhance performance).
+- `View`: Switch from `ViewField` to `ViewSolid`.
 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.

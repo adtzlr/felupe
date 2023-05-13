@@ -41,7 +41,7 @@ def pre(n=3):
     )
     fem.Job(steps=[step]).evaluate(filename="result.xdmf", verbose=False)
 
-    return mesh, field
+    return mesh, field, solid
 
 
 def pre_2d(n=3):
@@ -57,7 +57,7 @@ def pre_2d(n=3):
     )
     fem.Job(steps=[step]).evaluate(filename="result.xdmf", verbose=False)
 
-    return mesh, field
+    return mesh, field, solid
 
 
 def test_xdmf_cell_data():
@@ -112,7 +112,7 @@ def test_cell_data():
     try:
         import pyvista
 
-        mesh, field = pre(n=3)
+        mesh, field, solid = pre(n=3)
         view = fem.View(
             field,
             point_data={"My Displacements": field[0].values},
@@ -137,7 +137,7 @@ def test_cell_data():
 def test_point_data():
 
     try:
-        mesh, field = pre_2d(n=3)
+        mesh, field, solid = pre_2d(n=3)
         view = fem.View(field)
         plotter = view.plot(
             "Displacement",
@@ -153,7 +153,7 @@ def test_point_data():
 def test_mesh():
 
     try:
-        mesh, field = pre(n=3)
+        mesh, field, solid = pre(n=3)
         view = fem.ViewMesh(mesh)
         plotter = view.plot(
             off_screen=True,
@@ -167,8 +167,8 @@ def test_mesh():
 def test_model():
 
     try:
-        mesh, field = pre(n=3)
-        view = fem.View(field)
+        mesh, field, solid = pre(n=3)
+        view = fem.View(field, solid=solid)
         plotter = view.plot(
             off_screen=True,
         )

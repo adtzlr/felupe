@@ -97,8 +97,10 @@ from .region import (
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
 )
-from .tools import ViewField as View
-from .tools import ViewMesh, ViewXdmf, newtonrhapson, project, runs_on, save, topoints
+from .tools import ViewField, ViewMesh
+from .tools import ViewSolid
+from .tools import ViewSolid as View
+from .tools import ViewXdmf, newtonrhapson, project, runs_on, save, topoints
 
 __all__ = [
     "__version__",
@@ -198,7 +200,9 @@ __all__ = [
     "save",
     "topoints",
     "View",
+    "ViewField",
     "ViewMesh",
     "ViewXdmf",
+    "ViewSolid",
     "runs_on",
 ]

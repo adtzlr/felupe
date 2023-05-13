@@ -18,6 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ..math import eigvalsh, tovoigt
 from ..mechanics._job import (
     deformation_gradient,
     displacement,
@@ -384,5 +385,59 @@ class ViewField(ViewMesh):
             mesh=field.region.mesh,
             point_data={**point_data_from_field, **point_data},
             cell_data={**cell_data_from_field, **cell_data},
+            cell_type=cell_type,
+        )
+
+
+class ViewSolid(ViewField):
+    """Provide Visualization methods for :class:`felupe.Field` and `felupe.SolidBody`.
+    The warped (deformed) mesh is created from the values of the first field
+    (displacements). By default, the "Deformation Gradient" tensor, the
+    "Logarithmic Strain" tensor and the "Principal Values of Logarithmic Strain" are
+    evaluated as field-related items of the cell-data dict. Optional items of given
+    point- and cell-data overwrite these default field-related cell-data items.
+
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        The field-container.
+    solid : felupe.SolidBody or felupe.SolidBodyIncompressible or None, optional
+        A solid body to evaluate the Cauchy stress (default is None).
+    point_data : dict or None, optional
+        Additional point-data dict (default is None).
+    cell_data : dict or None, optional
+        Additional cell-data dict (default is None).
+    cell_type : pyvista.CellType or None, optional
+        Cell-type of PyVista (default is None).
+
+    Attributes
+    ----------
+    mesh : pyvista.UnstructuredGrid
+        A generalized Dataset with the mesh as well as point- and cell-data. This is
+        not an instance of :class:`felupe.Mesh`.
+
+    """
+
+    def __init__(
+        self, field, solid=None, point_data=None, cell_data=None, cell_type=None
+    ):
+
+        if cell_data is None:
+            cell_data = {}
+
+        cell_data_from_solid = {}
+
+        if solid is not None:
+            cauchy_stress = solid.evaluate.cauchy_stress(field)
+
+            cell_data_from_solid["Cauchy Stress"] = tovoigt(cauchy_stress.mean(-2)).T
+            cell_data_from_solid["Principal Values of Cauchy Stress"] = (
+                eigvalsh(cauchy_stress).mean(-2)[::-1].T
+            )
+
+        super().__init__(
+            field=field,
+            point_data=point_data,
+            cell_data={**cell_data_from_solid, **cell_data},
             cell_type=cell_type,
         )

@@ -182,8 +182,13 @@ class Scene:
             )
 
         if name is not None:
+
+            mesh = self.mesh
+            if "Displacement" in self.mesh.point_data.keys():
+                mesh = mesh.warp_by_vector("Displacement", factor=factor)
+
             plotter.add_mesh(
-                mesh=self.mesh.warp_by_vector("Displacement", factor=factor),
+                mesh=mesh,
                 scalars=name,
                 component=component,
                 show_edges=show_edges,

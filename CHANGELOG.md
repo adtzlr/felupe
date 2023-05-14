@@ -10,9 +10,11 @@ All notable changes to this project will be documented in this file. The format 
 - Add optional point- and cell-data args for `ViewMesh(mesh, point_data=None, cell_data=None)` like already implemented in `ViewField`.
 - Enforce contiguous arrays in `UserMaterialHyperelastic` (enhance performance).
 - `View`: Switch from `ViewField` to `ViewSolid`.
+- `View`: Always plot the undeformed mesh with `opacity=0.2` and `show_edges=False`.
 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.
+- Warp the mesh in case no name is passed in `View.plot(name=None)`.
 
 ## [7.4.1] - 2023-05-02
 

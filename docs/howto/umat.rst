@@ -1,7 +1,7 @@
 Small-Strain based Materials
 ----------------------------
 
-User materials based on the incremental small-strain tensor, suitable for elastic-plastic material formulations, are to be created with :class:`felupe.MaterialStrain`. A user-defined function must be created with the arguments
+User materials (Umat) based on the incremental small-strain tensor, suitable for elastic-plastic material formulations, are to be created with :class:`felupe.MaterialStrain`. A user-defined function must be created with the arguments
 
 +---------------+-----------------------------+
 | **Arguments** | **Description**             |

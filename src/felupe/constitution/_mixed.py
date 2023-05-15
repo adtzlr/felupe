@@ -187,7 +187,6 @@ class ThreeFieldVariation:
     """
 
     def __init__(self, material, parallel=False):
-
         self.fun_P = material.gradient
         self.fun_A = material.hessian
 

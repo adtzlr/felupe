@@ -20,10 +20,10 @@ import numpy as np
 import tensortrax as tr
 
 from ..math import cdya_ik, dot, transpose
-from ._user_materials import UserMaterial
+from ._user_materials import Material
 
 
-class UserMaterialHyperelastic(UserMaterial):
+class Hyperelastic(Material):
     """A user-defined hyperelastic material definition with a given function
     for the strain energy function with Automatic Differentiation provided by
     ``tensortrax``.
@@ -38,7 +38,7 @@ class UserMaterialHyperelastic(UserMaterial):
             "Strain energy function of the Neo-Hookean material formulation."
             return mu / 2 * (tm.linalg.det(C) ** (-1/3) * tm.trace(C) - 3)
 
-        umat = fem.UserMaterialHyperelastic(neo_hooke, mu=1)
+        umat = fem.Hyperelastic(neo_hooke, mu=1)
 
     and this code-block for material formulations with state variables:
 
@@ -62,7 +62,7 @@ class UserMaterialHyperelastic(UserMaterial):
             # first Piola-Kirchhoff stress tensor and state variable
             return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
 
-        umat = fem.UserMaterialHyperelastic(
+        umat = fem.Hyperelastic(
             viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6
         )
 
@@ -72,7 +72,6 @@ class UserMaterialHyperelastic(UserMaterial):
     """
 
     def __init__(self, fun, nstatevars=0, parallel=False, **kwargs):
-
         if nstatevars > 0:
             # split the original function into two sub-functions
             self.fun = tr.take(fun, item=0)
@@ -86,7 +85,7 @@ class UserMaterialHyperelastic(UserMaterial):
             stress=self._stress,
             elasticity=self._elasticity,
             nstatevars=nstatevars,
-            **kwargs
+            **kwargs,
         )
 
     def _stress(self, x, **kwargs):

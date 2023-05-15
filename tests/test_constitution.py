@@ -56,7 +56,6 @@ def test_nh():
     r, F = pre(sym=False, add_identity=True)
 
     for parallel in [False, True]:
-
         nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
 
         W = nh.function(F)
@@ -109,7 +108,6 @@ def test_linear():
         (fe.constitution.LinearElasticTensorNotation, dict(parallel=False)),
         (fe.constitution.LinearElasticTensorNotation, dict(parallel=True)),
     ]:
-
         LinearElastic, kwargs = Material
 
         le = LinearElastic(E=1.0, nu=0.3, **kwargs)
@@ -210,7 +208,6 @@ def test_kinematics():
     N = F[0][:, 0]
 
     for parallel in [False, True]:
-
         lc = fe.constitution.LineChange(parallel=parallel)
         ac = fe.constitution.AreaChange(parallel=parallel)
         vc = fe.constitution.VolumeChange(parallel=parallel)
@@ -282,7 +279,7 @@ def test_umat():
 
         return [dsde]
 
-    linear_elastic = fe.UserMaterial(stress, elasticity, mu=1, lmbda=2)
+    linear_elastic = fe.Material(stress, elasticity, mu=1, lmbda=2)
 
     s, statevars_new = linear_elastic.gradient([F, None])
     dsde = linear_elastic.hessian([F, None])
@@ -318,8 +315,7 @@ def test_umat_hyperelastic():
             {"mu": 1.0, "beta": 0.1, "a": 0.5, "limit": 5.0},
         ),
     ]:
-
-        umat = fe.UserMaterialHyperelastic(model, **kwargs)
+        umat = fe.Hyperelastic(model, **kwargs)
 
         s, statevars_new = umat.gradient([F, None])
         dsde = umat.hessian([F, None])
@@ -343,13 +339,13 @@ def test_umat_viscoelastic():
         return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
 
     kwargs = {"mu": 1, "eta": 1, "dtime": 1}
-    umat = fe.UserMaterialHyperelastic(viscoelastic, nstatevars=6, **kwargs)
+    umat = fe.Hyperelastic(viscoelastic, nstatevars=6, **kwargs)
 
     statevars = np.zeros((6, *F.shape[-2:]))
     s, statevars_new = umat.gradient([F, statevars])
     dsde = umat.hessian([F, statevars])
 
-    umat = fe.UserMaterialHyperelastic(
+    umat = fe.Hyperelastic(
         fe.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
 
@@ -361,12 +357,11 @@ def test_umat_viscoelastic():
 
 
 def test_umat_strain():
-
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
     statevars = np.zeros((18, *F.shape[-2:]))
 
-    umat = fe.UserMaterialStrain(
+    umat = fe.MaterialStrain(
         material=fe.constitution.linear_elastic,
         λ=1,
         μ=1,
@@ -377,13 +372,12 @@ def test_umat_strain():
 
 
 def test_umat_strain_plasticity():
-
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
     statevars = np.ones((28, *F.shape[-2:]))
 
-    umat = fe.UserMaterialStrain(
+    umat = fe.MaterialStrain(
         material=fe.constitution.linear_elastic_plastic_isotropic_hardening,
         λ=1,
         μ=1,
@@ -397,7 +391,6 @@ def test_umat_strain_plasticity():
 
 
 def test_elpliso():
-
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
     statevars = np.zeros((28, *F.shape[-2:]))

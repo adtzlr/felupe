@@ -12,7 +12,6 @@ import felupe as fem
 
 
 def pre():
-
     mesh = fem.Rectangle(n=2)
     region = fem.RegionQuad(mesh)
     field = fem.FieldsMixed(region, n=3, axisymmetric=True)
@@ -44,7 +43,6 @@ def pre():
 
 
 def test_job():
-
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
@@ -55,7 +53,6 @@ def test_job():
 
 
 def test_job_xdmf():
-
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
@@ -66,7 +63,6 @@ def test_job_xdmf():
 
 
 def test_job_xdmf_global_field():
-
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
@@ -77,7 +73,6 @@ def test_job_xdmf_global_field():
 
 
 def test_curve():
-
     field, step = pre()
 
     curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
@@ -97,7 +92,6 @@ def test_curve():
 
 
 def test_curve2():
-
     field, step = pre()
 
     curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
@@ -112,7 +106,6 @@ def test_curve2():
 
 
 def test_curve_custom_items():
-
     field, step = pre()
 
     curve = fem.CharacteristicCurve(
@@ -130,7 +123,6 @@ def test_curve_custom_items():
 
 
 def test_empty():
-
     mesh = fem.Cube(n=2)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldsMixed(region, n=1)
@@ -144,7 +136,6 @@ def test_empty():
 
 
 def test_noramp():
-
     mesh = fem.Cube(n=2)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldsMixed(region, n=1)

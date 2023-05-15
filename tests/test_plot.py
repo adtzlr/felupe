@@ -61,7 +61,6 @@ def pre_2d(n=3):
 
 
 def test_xdmf_cell_data():
-
     try:
         import pyvista
 
@@ -84,7 +83,6 @@ def test_xdmf_cell_data():
 
 
 def test_xdmf_point_data():
-
     try:
         import pyvista
 
@@ -108,7 +106,6 @@ def test_xdmf_point_data():
 
 
 def test_cell_data():
-
     try:
         import pyvista
 
@@ -135,7 +132,6 @@ def test_cell_data():
 
 
 def test_point_data():
-
     try:
         mesh, field, solid = pre_2d(n=3)
         view = fem.View(field)
@@ -151,7 +147,6 @@ def test_point_data():
 
 
 def test_mesh():
-
     try:
         mesh, field, solid = pre(n=3)
         view = fem.ViewMesh(mesh)
@@ -165,7 +160,6 @@ def test_mesh():
 
 
 def test_model():
-
     try:
         mesh, field, solid = pre(n=3)
         view = fem.View(field, solid=solid)

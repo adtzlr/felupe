@@ -32,7 +32,6 @@ import felupe as fem
 
 
 def test_axi():
-
     m = fem.Rectangle(n=11)
     r = fem.RegionQuad(m)
     f = fem.FieldsMixed(r, n=1, axisymmetric=True)
@@ -51,7 +50,6 @@ def test_axi():
 
 
 def test_axi_mixed():
-
     m = fem.Rectangle(n=6)
     r = fem.RegionQuad(m)
     f = fem.FieldsMixed(r, n=3, axisymmetric=True)
@@ -70,7 +68,6 @@ def test_axi_mixed():
 
 
 def test_planestrain():
-
     m = fem.Rectangle(n=6)
     r = fem.RegionQuad(m)
 
@@ -91,7 +88,6 @@ def test_planestrain():
 
 
 def test_planestrain_nh():
-
     m = fem.Rectangle(n=6)
     r = fem.RegionQuad(m)
     f = fem.FieldsMixed(r, n=1, planestrain=True)
@@ -110,7 +106,6 @@ def test_planestrain_nh():
 
 
 def test_planestrain_nh_mixed():
-
     m = fem.Rectangle(n=6)
     r = fem.RegionQuad(m)
     f = fem.FieldsMixed(r, n=3, planestrain=True)

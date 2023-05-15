@@ -181,14 +181,12 @@ class IntegralForm:
                 ub = u.region.dhdX
 
         if u is None:
-
             if not grad_v:
                 return einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
             else:
                 return einsum("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
 
         else:
-
             if not grad_v and not grad_u:
                 out = einsum("ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True)
                 if len(out.shape) == 5:

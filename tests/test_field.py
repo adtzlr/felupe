@@ -32,7 +32,6 @@ import felupe as fe
 
 
 def pre(values=0):
-
     m = fe.Cube(n=3)
     e = fe.Hexahedron()
     q = fe.GaussLegendre(1, 3)
@@ -44,7 +43,6 @@ def pre(values=0):
 
 
 def pre_axi():
-
     m = fe.Rectangle(n=3)
     e = fe.Quad()
     q = fe.GaussLegendre(1, 2)
@@ -59,7 +57,6 @@ def pre_axi():
 
 
 def pre_mixed():
-
     m = fe.Cube(n=3)
     e = fe.Hexahedron()
     q = fe.GaussLegendre(1, 3)
@@ -84,7 +81,6 @@ def pre_mixed():
 
 
 def pre_axi_mixed():
-
     m = fe.Rectangle(n=3)
     e = fe.Quad()
     q = fe.GaussLegendre(1, 2)
@@ -103,7 +99,6 @@ def pre_axi_mixed():
 
 
 def test_axi():
-
     r, u = pre_axi()
     u += u.values()
 
@@ -116,7 +111,6 @@ def test_axi():
 
 
 def test_mixed_lagrange():
-
     order = 4
 
     m = fe.Cube(n=order + 1)
@@ -132,7 +126,6 @@ def test_mixed_lagrange():
 
 
 def test_3d():
-
     r, u = pre()
     u += u.values()
 
@@ -141,7 +134,6 @@ def test_3d():
 
 
 def test_3d_mixed():
-
     r, f, u, p, J = pre_mixed()
 
     f.extract()

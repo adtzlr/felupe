@@ -56,7 +56,6 @@ class Step:
 
         stop = False
         for substep in substeps:
-
             if stop:
                 break
 

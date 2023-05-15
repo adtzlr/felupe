@@ -63,7 +63,6 @@ def pre3d():
 
 
 def test_boundary():
-
     u = pre3d()
     bounds = {"boundary-label": fe.Boundary(u[0])}
 
@@ -78,7 +77,6 @@ def test_boundary():
 
 
 def test_loadcase():
-
     ux = fe.dof.uniaxial(pre1d())
     assert len(ux) == 2
 

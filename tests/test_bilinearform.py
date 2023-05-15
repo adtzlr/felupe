@@ -68,7 +68,6 @@ def a_pp(q, r, F, p):
 
 
 def pre(dim):
-
     mesh = fe.Cube(n=3)
     region = fe.RegionHexahedron(mesh)
     region0 = fe.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
@@ -80,7 +79,6 @@ def pre(dim):
 
 
 def test_form_decorator():
-
     field = pre(dim=3)
     F, p = field.extract()
     b = fe.Basis(field)

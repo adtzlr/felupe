@@ -25,7 +25,6 @@ class SolidBodyPressure:
     "A hydrostatic pressure boundary on a SolidBody."
 
     def __init__(self, field, pressure=None):
-
         self.field = field
         self._normals = self.field.region.normals
 
@@ -41,20 +40,16 @@ class SolidBodyPressure:
         self._area_change = AreaChange()
 
     def update(self, pressure):
-
         self.__init__(self.field, pressure)
 
     def _extract(self, field):
-
         self.field = field
         self.results.kinematics = self.field.extract()
 
         return self.results.kinematics
 
     def _vector(self, field=None, pressure=None, parallel=False, resize=None):
-
         if field is not None:
-
             self._update(field)
             self.results.kinematics = self._extract(self.field)
 
@@ -79,9 +74,7 @@ class SolidBodyPressure:
         return self.results.force
 
     def _matrix(self, field=None, pressure=None, parallel=False, resize=None):
-
         if field is not None:
-
             self._update(field)
             self.results.kinematics = self._extract(self.field)
 
@@ -111,7 +104,6 @@ class SolidBodyPressure:
         return self.results.stiffness
 
     def _update(self, other_field, field=None):
-
         if field is not None:
             self.field = field
 

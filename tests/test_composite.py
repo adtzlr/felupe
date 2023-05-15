@@ -11,7 +11,6 @@ import felupe as fe
 
 
 def test_composite():
-
     n = 5
     mesh = fe.Cube(n=n)
     region = fe.RegionHexahedron(mesh)
@@ -70,7 +69,6 @@ def test_composite():
 
 
 def test_composite_planestrain():
-
     n = 5
     mesh = fe.Rectangle(n=n)
     region = fe.RegionQuad(mesh)

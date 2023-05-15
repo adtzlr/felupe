@@ -9,7 +9,6 @@ import numpy as np
 
 
 def test_readme():
-
     import felupe
 
     mesh = felupe.Cube(n=9)

@@ -29,7 +29,6 @@ class ArbitraryOrderLagrange(Element):
     "Lagrange quad/hexahdron finite element of arbitrary order."
 
     def __init__(self, order, dim, interval=(-1, 1)):
-
         self._order = order
         self._nshape = order + 1
         self._npoints = self._nshape**dim

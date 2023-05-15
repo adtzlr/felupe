@@ -32,7 +32,6 @@ import felupe as fe
 
 
 def test_simple():
-
     umat = fe.LinearElastic(E=1, nu=0.3)
 
     m = fe.Cube(n=3)
@@ -60,7 +59,6 @@ def test_simple():
 
 
 def test_pressure():
-
     umat = fe.LinearElastic(E=1, nu=0.3)
 
     m = fe.Cube(n=3)
@@ -118,7 +116,6 @@ def test_pressure():
 
 
 def pre(dim, bulk=2):
-
     umat = fe.NeoHooke(mu=1, bulk=bulk)
 
     m = fe.Cube(n=3)
@@ -132,7 +129,6 @@ def pre(dim, bulk=2):
 
 
 def pre_axi(bulk=2):
-
     umat = fe.NeoHooke(mu=1, bulk=bulk)
 
     m = fe.Rectangle(n=3)
@@ -146,7 +142,6 @@ def pre_axi(bulk=2):
 
 
 def pre_mixed(dim):
-
     umat = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=2))
 
     m = fe.Cube(n=3)
@@ -162,12 +157,10 @@ def pre_mixed(dim):
 
 
 def test_solidbody():
-
     umat, u = pre(dim=3)
     b = fe.SolidBody(umat=umat, field=u, statevars=np.ones(5))
 
     for parallel in [False, True]:
-
         kwargs = {"parallel": parallel}
 
         r1 = b.assemble.vector(u, **kwargs)
@@ -212,7 +205,6 @@ def test_solidbody():
 
 
 def test_solidbody_incompressible():
-
     umat, u = pre(dim=3, bulk=None)
     b = fe.SolidBodyNearlyIncompressible(
         umat=umat, field=u, bulk=5000, statevars=np.ones(5)
@@ -224,7 +216,6 @@ def test_solidbody_incompressible():
     )
 
     for parallel in [False, True]:
-
         kwargs = {"parallel": parallel}
 
         r1 = b.assemble.vector(u, **kwargs)
@@ -269,7 +260,6 @@ def test_solidbody_incompressible():
 
 
 def test_solidbody_axi():
-
     umat, u = pre_axi(bulk=None)
     b = fe.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
     b = fe.SolidBodyNearlyIncompressible(
@@ -277,7 +267,6 @@ def test_solidbody_axi():
     )
 
     for parallel in [False, True]:
-
         kwargs = {"parallel": parallel}
 
         r1 = b.assemble.vector(u, **kwargs)
@@ -316,12 +305,10 @@ def test_solidbody_axi():
 
 
 def test_solidbody_axi_incompressible():
-
     umat, u = pre_axi()
     b = fe.SolidBody(umat=umat, field=u)
 
     for parallel in [False, True]:
-
         kwargs = {"parallel": parallel}
 
         r1 = b.assemble.vector(u, **kwargs)
@@ -360,7 +347,6 @@ def test_solidbody_axi_incompressible():
 
 
 def test_solidbody_mixed():
-
     umat, u = pre_mixed(dim=3)
     b = fe.SolidBody(umat=umat, field=u)
     g = fe.SolidBodyGravity(field=u, gravity=[9810, 0, 0], density=7.85e-9)
@@ -368,7 +354,6 @@ def test_solidbody_mixed():
     g.assemble.vector()
 
     for parallel in [False, True]:
-
         kwargs = {"parallel": parallel}
 
         r1 = b.assemble.vector(u, **kwargs)
@@ -426,9 +411,7 @@ def test_solidbody_mixed():
 
 
 def test_load():
-
     for axi in [False, True]:
-
         if axi:
             umat, field = pre(dim=3)
         else:

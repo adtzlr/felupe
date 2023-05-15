@@ -50,7 +50,6 @@ class RegionConstantQuad(Region):
         quadrature=GaussLegendre(order=1, dim=2),
         grad=False,
     ):
-
         element = ConstantQuad()
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -59,7 +58,6 @@ class RegionQuad(Region):
     "A region with a quad element."
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True):
-
         element = Quad()
 
         if len(mesh.cells.T) > 4:
@@ -72,7 +70,6 @@ class RegionQuadraticQuad(Region):
     "A region with a (serendipity) quadratic quad element."
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
-
         element = QuadraticQuad()
 
         if len(mesh.cells.T) > 8:
@@ -85,7 +82,6 @@ class RegionBiQuadraticQuad(Region):
     "A region with a bi-quadratic (lagrange) quad element."
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
-
         element = BiQuadraticQuad()
 
         super().__init__(mesh, element, quadrature, grad=grad)
@@ -103,7 +99,6 @@ class RegionQuadBoundary(RegionBoundary):
         mask=None,
         ensure_3d=False,
     ):
-
         element = Quad()
 
         super().__init__(
@@ -129,7 +124,6 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
         mask=None,
         ensure_3d=False,
     ):
-
         element = QuadraticQuad()
 
         super().__init__(
@@ -155,7 +149,6 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
         mask=None,
         ensure_3d=False,
     ):
-
         element = BiQuadraticQuad()
 
         super().__init__(
@@ -178,7 +171,6 @@ class RegionConstantHexahedron(Region):
         quadrature=GaussLegendre(order=1, dim=3),
         grad=False,
     ):
-
         element = ConstantHexahedron()
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -187,7 +179,6 @@ class RegionHexahedron(Region):
     "A region with a hexahedron element."
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=3), grad=True):
-
         element = Hexahedron()
 
         if len(mesh.cells.T) > 8:
@@ -207,7 +198,6 @@ class RegionHexahedronBoundary(RegionBoundary):
         only_surface=True,
         mask=None,
     ):
-
         element = Hexahedron()
         super().__init__(
             mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
@@ -218,7 +208,6 @@ class RegionQuadraticHexahedron(Region):
     "A region with a (serendipity) quadratic hexahedron element."
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
-
         element = QuadraticHexahedron()
 
         if len(mesh.cells.T) > 20:
@@ -238,7 +227,6 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
         only_surface=True,
         mask=None,
     ):
-
         element = QuadraticHexahedron()
         super().__init__(
             mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
@@ -249,7 +237,6 @@ class RegionTriQuadraticHexahedron(Region):
     "A region with a tri-quadratic (lagrange) hexahedron element."
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
-
         element = TriQuadraticHexahedron()
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -265,7 +252,6 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
         only_surface=True,
         mask=None,
     ):
-
         element = TriQuadraticHexahedron()
         super().__init__(
             mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
@@ -276,7 +262,6 @@ class RegionLagrange(Region):
     "A region with an arbitrary order lagrange element."
 
     def __init__(self, mesh, order, dim, quadrature=None, grad=True):
-
         if quadrature is None:
             quadrature = GaussLegendre(order=order, dim=dim, permute=False)
 
@@ -290,7 +275,6 @@ class RegionTriangle(Region):
     "A region with a triangle element."
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=1), grad=True):
-
         element = Triangle()
 
         if len(mesh.cells.T) > 3:
@@ -305,7 +289,6 @@ class RegionTetra(Region):
     "A region with a tetra element."
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True):
-
         element = Tetra()
 
         if len(mesh.cells.T) > 4:
@@ -320,7 +303,6 @@ class RegionTriangleMINI(Region):
     "A region with a triangle-MINI element."
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=2), grad=True):
-
         element = TriangleMINI()
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -329,7 +311,6 @@ class RegionTetraMINI(Region):
     "A region with a tetra-MINI element."
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True):
-
         element = TetraMINI()
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -338,7 +319,6 @@ class RegionQuadraticTriangle(Region):
     "A region with a quadratic triangle element."
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=2), grad=True):
-
         element = QuadraticTriangle()
         super().__init__(mesh, element, quadrature, grad=grad)
 
@@ -347,6 +327,5 @@ class RegionQuadraticTetra(Region):
     "A region with a quadratic tetra element."
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True):
-
         element = QuadraticTetra()
         super().__init__(mesh, element, quadrature, grad=grad)

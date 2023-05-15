@@ -68,7 +68,6 @@ class MultiPointConstraint:
         L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
 
         for t, c in zip(td, cd):
-
             L[t.reshape(-1, 1), t] = eye(len(t)) * self.multiplier
             L[t.reshape(-1, 1), c] = -self.multiplier
             L[c.reshape(-1, 1), t] = -self.multiplier
@@ -144,7 +143,6 @@ class MultiPointContact:
         L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
 
         for t, c, m in zip(td, cd, masks):
-
             L[t[m].reshape(-1, 1), t[m]] = eye(len(t[m])) * self.multiplier
             L[t[m].reshape(-1, 1), c] = -self.multiplier
             L[c.reshape(-1, 1), t[m]] = -self.multiplier

@@ -32,7 +32,6 @@ import felupe as fe
 
 
 def pre(dim):
-
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
     u = fe.FieldContainer([fe.Field(r, dim=dim)])
@@ -40,7 +39,6 @@ def pre(dim):
 
 
 def pre_constant(dim):
-
     m = fe.Cube(n=3)
     r = fe.RegionConstantHexahedron(m)
     u = fe.FieldContainer([fe.Field(r, dim=dim)])
@@ -48,9 +46,7 @@ def pre_constant(dim):
 
 
 def test_basis():
-
     for parallel in [False, True]:
-
         r, u = pre(dim=3)
         b = fe.Basis(u, parallel=parallel)
 

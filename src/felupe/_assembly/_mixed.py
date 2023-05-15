@@ -28,7 +28,6 @@ from ._base import IntegralForm
 
 class IntegralFormMixed:
     def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):
-
         self.fun = fun
         self.v = v.fields
         self.nv = len(self.v)
@@ -94,7 +93,6 @@ class IntegralFormMixed:
             raise ValueError("Unknown input format.")
 
     def assemble(self, values=None, parallel=False, block=True):
-
         out = []
 
         if values is None:
@@ -119,7 +117,6 @@ class IntegralFormMixed:
             return out
 
     def integrate(self, parallel=False):
-
         out = []
         for form in self.forms:
             out.append(form.integrate(parallel=parallel))

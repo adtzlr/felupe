@@ -41,7 +41,6 @@ def convert(
         raise NotImplementedError("Cell type not supported for conversion.")
 
     if order == 0:
-
         if calc_points:
             points_new = np.stack([np.mean(points[cell], axis=0) for cell in cells])
         else:
@@ -51,7 +50,6 @@ def convert(
         cell_type_new = cell_type
 
     elif order == 2:
-
         points_new, cells_new, cell_type_new = add_midpoints_edges(
             points, cells, cell_type
         )
@@ -221,7 +219,6 @@ def collect_volumes(points, cells, cell_type):
         number_of_vertices = 8
 
     if cell_type in supported_cell_types:
-
         points_volumes = np.mean(points[cells][:, :number_of_vertices, :], axis=1)
         cells_volumes = np.arange(cells.shape[0]).reshape(-1, 1)
 

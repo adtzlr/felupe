@@ -444,7 +444,6 @@ def triangulate(points, cells, cell_type, mode=3):
     """
 
     if cell_type == "quad":
-
         # triangles out of a quad
         i = [0, 3]
         j = [1, 1]
@@ -461,7 +460,6 @@ def triangulate(points, cells, cell_type, mode=3):
         cell_type_new = "triangle"
 
     elif cell_type == "hexahedron":
-
         # tets out of a hex
         # mode ... no. of diagional through hex-point 6.
         if mode == 0:
@@ -556,7 +554,6 @@ def runouts(
         half_height = (top - bottom) / 2
 
     for i, coord in enumerate(runout_along[axis][: dim - 1]):
-
         factor = (abs(points_new[mask, axis]) / half_height) ** exponent
         points_new[mask, coord] *= 1 + factor * values[i]
 

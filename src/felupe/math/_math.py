@@ -20,7 +20,6 @@ import numpy as np
 
 
 def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
-
     points = np.array(points).ravel()
     start = points[:-1]
     end = points[1:]
@@ -45,7 +44,6 @@ def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
         steps = np.append(steps, points[-1])
 
     if axis is not None:
-
         if axes is None:
             axes = axis + 1
 

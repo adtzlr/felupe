@@ -26,7 +26,6 @@ class FieldContainer:
     instances."""
 
     def __init__(self, fields):
-
         self.fields = fields
         self.region = fields[0].region
 

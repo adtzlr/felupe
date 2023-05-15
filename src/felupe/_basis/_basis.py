@@ -63,7 +63,6 @@ class Basis:
     """
 
     def __init__(self, field, parallel=False):
-
         self.field = field
 
         einsum = einsumt if parallel else np.einsum
@@ -120,7 +119,6 @@ class BasisMixed:
     """
 
     def __init__(self, field, parallel=False):
-
         self.field = field
         self.basis = [Basis(f, parallel=parallel) for f in self.field]
 

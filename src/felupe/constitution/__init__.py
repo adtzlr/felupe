@@ -24,10 +24,10 @@ from ._models_linear_elasticity import (
 from ._models_pseudo_elasticity import OgdenRoxburgh
 from ._user_materials import (
     LinearElasticPlasticIsotropicHardening,
-    UserMaterial,
-    UserMaterialStrain,
+    Material,
+    MaterialStrain,
 )
-from ._user_materials_hyperelastic import UserMaterialHyperelastic
+from ._user_materials_hyperelastic import Hyperelastic
 from ._user_materials_models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
@@ -53,9 +53,9 @@ __all__ = [
     "lame_converter",
     "OgdenRoxburgh",
     "LinearElasticPlasticIsotropicHardening",
-    "UserMaterial",
-    "UserMaterialStrain",
-    "UserMaterialHyperelastic",
+    "Material",
+    "MaterialStrain",
+    "Hyperelastic",
     "AreaChange",
     "LineChange",
     "VolumeChange",

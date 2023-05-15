@@ -57,7 +57,6 @@ def test_gausslegendre():
 
 
 def test_gausslegendre_boundary():
-
     with pytest.raises(ValueError):
         q11 = fe.GaussLegendreBoundary(order=1, dim=1)
         assert q11.points.shape == (2, 1)

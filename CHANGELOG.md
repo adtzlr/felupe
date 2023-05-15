@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enforce contiguous arrays in `UserMaterialHyperelastic` (enhance performance).
 - `View`: Switch from `ViewField` to `ViewSolid`.
 - `View`: Always plot the undeformed mesh with `opacity=0.2` and `show_edges=False`.
+- Rename `UserMaterial` to `Material`, `UserMaterialStrain` to `MaterialStrain`, `UserMaterialHyperelastic` to `Hyperelastic` (keep old alias names until next major release).
 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.

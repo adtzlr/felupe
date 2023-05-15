@@ -36,12 +36,12 @@ Constitution
    :undoc-members:
    :inherited-members:
 
-   .. autoclass:: felupe.UserMaterial
+   .. autoclass:: felupe.Material
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.UserMaterialStrain
+.. autoclass:: felupe.MaterialStrain
    :members:
    :undoc-members:
    :inherited-members:
@@ -50,7 +50,7 @@ Constitution
 
 .. autofunction:: felupe.constitution.linear_elastic_plastic_isotropic_hardening
 
-.. autoclass:: felupe.UserMaterialHyperelastic
+.. autoclass:: felupe.Hyperelastic
    :members:
    :undoc-members:
    :inherited-members:

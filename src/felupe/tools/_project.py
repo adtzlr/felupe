@@ -24,7 +24,6 @@ from ..region import Region
 
 
 def topoints(values, region, sym=True, mode="tensor"):
-
     rows = region.mesh.cells.T.ravel()
     cols = np.zeros_like(rows)
 
@@ -86,7 +85,6 @@ def project(values, region, average=True, mean=False):
     values = values.transpose(idx)
 
     if mean:
-
         # evaluate how often the values must be repeated to match the number
         # of element-points
         reps = np.ones(len(values.shape), dtype=int)
@@ -123,7 +121,6 @@ def project(values, region, average=True, mean=False):
     v = f.interpolate()
 
     if mean:
-
         # due to the usage of the original quadrature scheme the averaging must be
         # applied again
         # np.average(keepdims=True) requires numpy >= 1.23.0
@@ -134,7 +131,6 @@ def project(values, region, average=True, mean=False):
         v = np.broadcast_to(v, shape=shape)
 
     if average:
-
         # create dummy field for values on original mesh
         # (used for calculation of sparse-matrix indices)
         g = Field(region, dim=size)
@@ -145,7 +141,6 @@ def project(values, region, average=True, mean=False):
         ).toarray().reshape(-1, size) / region.mesh.cells_per_point.reshape(-1, 1)
 
     else:
-
         w = v.T.reshape(-1, size)
 
     return w

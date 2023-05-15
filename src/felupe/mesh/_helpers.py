@@ -26,16 +26,13 @@ def mesh_or_data(meshfun):
 
     @wraps(meshfun)
     def mesh_or_points_cells_type(*args, **kwargs):
-
         # init mesh flag
         is_mesh = False
 
         # check if unnamed args are passed
         if len(args) > 0:
-
             # meshfun(DiscreteGeometry)
             if hasattr(args[0], "__mesh__"):
-
                 # set mesh flag
                 is_mesh = True
 
@@ -51,7 +48,6 @@ def mesh_or_data(meshfun):
                 args = args[1:]
 
         if not is_mesh:
-
             # meshfun(points:ndarray, cells:ndarray, cell_type:str)
             if "points" in kwargs.keys():
                 # get points, cells and cell_type from keyword arguments

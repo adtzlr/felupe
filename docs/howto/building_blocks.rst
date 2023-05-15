@@ -97,7 +97,7 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
         return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 
-    umat = felupe.UserMaterialHyperelastic(W, mu=1.0, bulk=2.0)
+    umat = felupe.Hyperelastic(W, mu=1.0, bulk=2.0)
 
     P = umat.gradient
     A = umat.hessian

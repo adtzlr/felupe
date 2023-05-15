@@ -39,7 +39,6 @@ class OgdenRoxburgh:
     """
 
     def __init__(self, material, r, m, beta):
-
         # isotropic hyperelastic material formulation
         self.material = material
 
@@ -53,7 +52,6 @@ class OgdenRoxburgh:
         self.x = [np.eye(3), np.zeros(1)]
 
     def gradient(self, x):
-
         # unpack variables into deformation gradient and state variables
         F, statevars = x[0], x[-1]
 
@@ -80,7 +78,6 @@ class OgdenRoxburgh:
         return [eta * P, statevars_new]
 
     def hessian(self, x):
-
         # unpack variables into deformation gradient and state variables
         F, statevars = x[0], x[-1]
 

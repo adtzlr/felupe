@@ -32,7 +32,6 @@ def save(
     cell_data=None,
     point_data=None,
 ):
-
     u = fields.fields[0]
     mesh = region.mesh
 

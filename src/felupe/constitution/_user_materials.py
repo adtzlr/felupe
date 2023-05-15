@@ -23,7 +23,7 @@ from ._models_linear_elasticity import lame_converter
 from ._user_materials_models import linear_elastic_plastic_isotropic_hardening
 
 
-class UserMaterial:
+class Material:
     """A user-defined material definition with given functions for the (first
     Piola-Kirchhoff) stress tensor and the according fourth-order elasticity
     tensor. Both functions take a list of the deformation gradient and optional
@@ -60,12 +60,11 @@ class UserMaterial:
 
             return [dPdF]
 
-        umat = UserMaterial(stress, elasticity, **kwargs)
+        umat = Material(stress, elasticity, **kwargs)
 
     """
 
     def __init__(self, stress, elasticity, nstatevars=0, **kwargs):
-
         self.umat = {"stress": stress, "elasticity": elasticity}
         self.kwargs = kwargs
         self.nstatevars = nstatevars
@@ -78,7 +77,7 @@ class UserMaterial:
         return self.umat["elasticity"](x, **self.kwargs)
 
 
-class UserMaterialStrain:
+class MaterialStrain:
     """A strain-based user-defined material definition with a given function
     for the stress tensor and the (fourth-order) elasticity tensor.
 
@@ -120,7 +119,7 @@ class UserMaterialStrain:
 
             return dσdε, σ, ζ
 
-        umat = UserMaterialStrain(material=linear_elastic, μ=1, λ=2)
+        umat = MaterialStrain(material=linear_elastic, μ=1, λ=2)
 
     or this minimal header as template:
 
@@ -129,12 +128,11 @@ class UserMaterialStrain:
         def fun(dε, εn, σn, ζn, **kwargs):
             return dσdε, σ, ζ
 
-        umat = UserMaterialStrain(material=fun, **kwargs)
+        umat = MaterialStrain(material=fun, **kwargs)
 
     """
 
     def __init__(self, material, dim=3, statevars=(0,), **kwargs):
-
         self.material = material
         self.statevars_shape = statevars
         self.statevars_size = [np.product(shape) for shape in statevars]
@@ -182,7 +180,6 @@ class UserMaterialStrain:
         return strain_old, dstrain, stress_old, statevars_old
 
     def gradient(self, x):
-
         strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = False
 
@@ -201,7 +198,6 @@ class UserMaterialStrain:
         return [stress_new, statevars_new]
 
     def hessian(self, x):
-
         strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = True
 
@@ -220,7 +216,7 @@ class UserMaterialStrain:
         return [dsde]
 
 
-class LinearElasticPlasticIsotropicHardening(UserMaterialStrain):
+class LinearElasticPlasticIsotropicHardening(MaterialStrain):
     """Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm)."""
 

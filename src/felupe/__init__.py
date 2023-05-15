@@ -31,9 +31,9 @@ from .constitution import (
     NeoHooke,
     OgdenRoxburgh,
     ThreeFieldVariation,
-    UserMaterial,
-    UserMaterialHyperelastic,
-    UserMaterialStrain,
+    Material,
+    Hyperelastic,
+    MaterialStrain,
     VolumeChange,
 )
 from .dof import Boundary
@@ -102,6 +102,10 @@ from .tools import ViewSolid
 from .tools import ViewSolid as View
 from .tools import ViewXdmf, newtonrhapson, project, runs_on, save, topoints
 
+UserMaterial = Material  # to be removed in v8.0.0
+UserMaterialStrain = MaterialStrain  # to be removed in v8.0.0
+UserMaterialHyperelastic = Hyperelastic  # to be removed in v8.0.0
+
 __all__ = [
     "__version__",
     "constitution",
@@ -131,9 +135,9 @@ __all__ = [
     "NeoHooke",
     "OgdenRoxburgh",
     "ThreeFieldVariation",
-    "UserMaterial",
-    "UserMaterialStrain",
-    "UserMaterialHyperelastic",
+    "Material",
+    "MaterialStrain",
+    "Hyperelastic",
     "VolumeChange",
     "Boundary",
     "ArbitraryOrderLagrangeElement",
@@ -205,4 +209,7 @@ __all__ = [
     "ViewXdmf",
     "ViewSolid",
     "runs_on",
+    "UserMaterial",  # to be removed in v8.0.0
+    "UserMaterialStrain",  # to be removed in v8.0.0
+    "UserMaterialHyperelastic",  # to be removed in v8.0.0
 ]

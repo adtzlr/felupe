@@ -28,7 +28,6 @@ class SolidBody:
     "A SolidBody with methods for the assembly of sparse vectors/matrices."
 
     def __init__(self, umat, field, statevars=None):
-
         self.umat = umat
         self.field = field
 
@@ -60,7 +59,6 @@ class SolidBody:
         self._form = IntegralFormMixed
 
     def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
-
         if field is not None:
             self.field = field
 
@@ -74,7 +72,6 @@ class SolidBody:
         return self.results.force
 
     def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
-
         if field is not None:
             self.field = field
 
@@ -90,14 +87,12 @@ class SolidBody:
         return self.results.stiffness
 
     def _extract(self, field):
-
         self.field = field
         self.results.kinematics = self.field.extract()
 
         return self.results.kinematics
 
     def _gradient(self, field=None, args=(), kwargs={}):
-
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
@@ -111,7 +106,6 @@ class SolidBody:
         return self.results.stress
 
     def _hessian(self, field=None, args=(), kwargs={}):
-
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
@@ -123,7 +117,6 @@ class SolidBody:
         return self.results.elasticity
 
     def _kirchhoff_stress(self, field=None):
-
         self._gradient(field)
 
         P = self.results.stress[0]
@@ -132,7 +125,6 @@ class SolidBody:
         return dot(P, transpose(F))
 
     def _cauchy_stress(self, field=None):
-
         self._gradient(field)
 
         P = self.results.stress[0]

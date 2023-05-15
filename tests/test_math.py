@@ -140,7 +140,6 @@ def test_math():
 
 
 def test_math_linsteps():
-
     steps = fe.math.linsteps([0, 1], num=10)
     assert len(steps) == 11
 

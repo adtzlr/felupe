@@ -102,7 +102,6 @@ class Boundary:
         self.fun = [_fx, _fy, _fz][: mesh.dim]
 
         if mask is None:
-
             # apply functions on the points per coordinate
             # fx(x), fy(y), fz(z) and create a mask for each coordinate
             mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
@@ -135,5 +134,4 @@ class Boundary:
         self.points = np.arange(mesh.npoints)[mask]
 
     def update(self, value):
-
         self.value = value

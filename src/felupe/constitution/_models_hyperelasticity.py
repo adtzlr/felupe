@@ -170,7 +170,6 @@ class NeoHooke:
     """
 
     def __init__(self, mu=None, bulk=None, parallel=False):
-
         self.parallel = parallel
 
         self.mu = mu
@@ -297,7 +296,6 @@ class NeoHooke:
         )
 
         if bulk is not None:
-
             p = bulk * (J - 1)
             q = p + bulk * J
 

@@ -26,7 +26,6 @@ class PointLoad:
     "A point load with methods for the assembly of sparse vectors/matrices."
 
     def __init__(self, field, points, values=None, apply_on=0, axisymmetric=False):
-
         self.field = field
         self.points = points
 
@@ -42,11 +41,9 @@ class PointLoad:
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
     def update(self, values):
-
         self.__init__(self.field, self.points, values, self.apply_on, self.axisymmetric)
 
     def _vector(self, field=None, parallel=False):
-
         if field is not None:
             self.field = field
 
@@ -65,7 +62,6 @@ class PointLoad:
         return -self.results.force
 
     def _matrix(self, field=None, parallel=False):
-
         if field is not None:
             self.field = field
 

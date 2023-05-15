@@ -103,7 +103,6 @@ class SolidBodyNearlyIncompressible:
         )
 
     def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
-
         self.results.stress = self._gradient(
             field, parallel=parallel, args=args, kwargs=kwargs
         )
@@ -128,7 +127,6 @@ class SolidBodyNearlyIncompressible:
         return self.results.force
 
     def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
-
         self.results.elasticity = self._hessian(
             field, parallel=parallel, args=args, kwargs=kwargs
         )
@@ -149,7 +147,6 @@ class SolidBodyNearlyIncompressible:
         return self.results.stiffness
 
     def _extract(self, field, parallel=False):
-
         u = field[0].values
         u0 = self.results.state.u
         h = self.results.state.h(parallel=parallel)
@@ -174,7 +171,6 @@ class SolidBodyNearlyIncompressible:
         return self.results.kinematics
 
     def _gradient(self, field=None, parallel=False, args=(), kwargs={}):
-
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
 
@@ -192,7 +188,6 @@ class SolidBodyNearlyIncompressible:
         return self.results.stress
 
     def _hessian(self, field=None, parallel=False, args=(), kwargs={}):
-
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
 
@@ -208,7 +203,6 @@ class SolidBodyNearlyIncompressible:
         return self.results.elasticity
 
     def _kirchhoff_stress(self, field=None):
-
         self._gradient(field)
 
         P = self.results.stress[0]
@@ -217,7 +211,6 @@ class SolidBodyNearlyIncompressible:
         return dot(P, transpose(F))
 
     def _cauchy_stress(self, field=None):
-
         self._gradient(field)
 
         P = self.results.stress[0]

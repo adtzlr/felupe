@@ -113,12 +113,10 @@ class Scene:
             scalar_bar_args = {}
 
         if name is not None:
-
             if label is None:
                 data_label = name
 
             if component is not None:
-
                 if name in self.mesh.point_data.keys():
                     data = self.mesh.point_data[name]
                 else:
@@ -198,7 +196,6 @@ class Scene:
         )
 
         if view == "default":
-
             if np.allclose(self.mesh.points[:, 2], 0):
                 view = "xy"
 
@@ -288,7 +285,6 @@ class ViewMesh(Scene):
     """
 
     def __init__(self, mesh, point_data=None, cell_data=None, cell_type=None):
-
         import pyvista as pv
 
         points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.points.shape[1])))
@@ -361,7 +357,6 @@ class ViewField(ViewMesh):
     """
 
     def __init__(self, field, point_data=None, cell_data=None, cell_type=None):
-
         point_data_from_field = {"Displacement": displacement(field)}
         cell_data_from_field = {
             "Deformation Gradient": deformation_gradient(field)[0],
@@ -415,7 +410,6 @@ class ViewSolid(ViewField):
     def __init__(
         self, field, solid=None, point_data=None, cell_data=None, cell_type=None
     ):
-
         if cell_data is None:
             cell_data = {}
 

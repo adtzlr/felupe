@@ -104,7 +104,6 @@ def apply(field, bounds, dof0=None):
     offsets = np.insert(field.offsets, 0, 0)
 
     for b in bounds.values():
-
         # get offset for field-dof of current boundary
         offset = offsets[[b.field == f for f in field.fields]]
 

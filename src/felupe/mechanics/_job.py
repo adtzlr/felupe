@@ -144,7 +144,6 @@ class Job:
             TimeSeriesWriter = nullcontext
 
         with TimeSeriesWriter(filename) as writer:
-
             if filename is not None:
                 writer.write_points_cells(mesh.points, mesh.cells)
 
@@ -153,7 +152,6 @@ class Job:
                 progress_bar = tqdm(total=total, unit="substep")
 
             for j, step in enumerate(self.steps):
-
                 newton_verbose = False
                 if verbose == 2:
                     print(f"Begin Evaluation of Step {j + 1}.")
@@ -161,7 +159,6 @@ class Job:
 
                 substeps = step.generate(verbose=newton_verbose, **kwargs)
                 for i, substep in enumerate(substeps):
-
                     if verbose == 2:
                         _substep = f"Substep {i + 1}/{step.nsubsteps}"
                         _step = f"Step {j + 1}/{self.nsteps}"

@@ -57,7 +57,6 @@ class Cube(Mesh):
 
 class Grid(Mesh):
     def __init__(self, *xi, indexing="ij", **kwargs):
-
         shape = np.array([len(x) for x in xi])
         n = shape if len(shape) > 1 else shape[0]
 

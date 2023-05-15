@@ -32,7 +32,6 @@ import felupe as fe
 
 
 def pre():
-
     r = fe.RegionHexahedron(fe.Cube(n=3))
 
     u = fe.Field(r, dim=3)
@@ -45,7 +44,6 @@ def pre():
 
 
 def test_solve():
-
     r, _, (u, p, J) = pre()
     f = fe.FieldContainer([u])
 
@@ -96,7 +94,6 @@ def test_solve():
 
 
 def test_solve_mixed():
-
     r, f, fields = pre()
     u = fields[0]
 
@@ -169,7 +166,6 @@ def test_newton_simple():
 
 
 def test_newton():
-
     # create a hexahedron-region on a cube
     region = fe.RegionHexahedron(fe.Cube(n=6))
 
@@ -182,7 +178,6 @@ def test_newton():
     umat = fe.NeoHooke(mu=1.0, bulk=2.0)
 
     for kwargs in [{"parallel": True, "umat": umat}]:
-
         # newton-rhapson procedure
         res = fe.newtonrhapson(
             field,
@@ -193,7 +188,6 @@ def test_newton():
 
 
 def test_newton_plane():
-
     # create a quad-region on a rectangle
     region = fe.RegionQuad(fe.Rectangle(n=6))
 
@@ -226,7 +220,6 @@ def test_newton_plane():
 
 
 def test_newton_linearelastic():
-
     # create a hexahedron-region on a cube
     region = fe.RegionHexahedron(fe.Cube(n=6))
 
@@ -248,7 +241,6 @@ def test_newton_linearelastic():
 
 
 def test_newton_mixed():
-
     # create a hexahedron-region on a cube
     mesh = fe.Cube(n=6)
     region = fe.RegionHexahedron(mesh)
@@ -276,7 +268,6 @@ def test_newton_mixed():
 
 
 def test_newton_body():
-
     # create a hexahedron-region on a cube
     mesh = fe.Cube(n=6)
     region = fe.RegionHexahedron(mesh)

@@ -32,7 +32,6 @@ import felupe as fe
 
 
 def pre():
-
     m = fe.Cube(n=3)
     r = fe.RegionHexahedron(m)
 
@@ -52,7 +51,6 @@ def pre():
 
 
 def pre_broadcast():
-
     m = fe.Cube(n=3)
     e = fe.Hexahedron()
     q = fe.GaussLegendre(1, 3)
@@ -76,7 +74,6 @@ def pre_broadcast():
 
 
 def pre_axi():
-
     m = fe.Rectangle(n=3)
     r = fe.RegionQuad(m)
 
@@ -93,7 +90,6 @@ def pre_axi():
 
 
 def pre_mixed():
-
     m = fe.mesh.Cube(n=3)
     e = fe.element.Hexahedron()
     q = fe.quadrature.GaussLegendre(1, 3)
@@ -112,7 +108,6 @@ def pre_mixed():
 
 
 def pre_axi_mixed():
-
     m = fe.mesh.Rectangle(n=3)
     e = fe.element.Quad()
     q = fe.quadrature.GaussLegendre(1, 2)
@@ -131,11 +126,9 @@ def pre_axi_mixed():
 
 
 def test_axi():
-
     r, u, P, A = pre_axi()
 
     for parallel in [False, True]:
-
         L = fe.IntegralForm(P, u, r.dV)
         x = L.integrate(parallel=parallel)
 
@@ -156,11 +149,9 @@ def test_axi():
 
 
 def test_linearform():
-
     r, u, p, P, A = pre()
 
     for parallel in [False, True]:
-
         L = fe.IntegralForm(P, u, r.dV, grad_v=[True])
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
@@ -177,11 +168,9 @@ def test_linearform():
 
 
 def test_linearform_broadcast():
-
     r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
-
         L = fe.IntegralForm(P, u, r.dV, grad_v=[True])
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
@@ -198,11 +187,9 @@ def test_linearform_broadcast():
 
 
 def test_bilinearform():
-
     r, u, p, P, A = pre()
 
     for parallel in [False, True]:
-
         a = fe.IntegralForm(A, u, r.dV, u)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
@@ -219,11 +206,9 @@ def test_bilinearform():
 
 
 def test_bilinearform_broadcast():
-
     r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
-
         a = fe.IntegralForm(A, u, r.dV, u, [True], [True])
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
@@ -249,11 +234,9 @@ def test_bilinearform_broadcast():
 
 
 def test_mixed():
-
     r, v, f, A = pre_mixed()
 
     for parallel in [False, True]:
-
         a = fe.IntegralForm(A, v, r.dV, v)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
@@ -272,7 +255,6 @@ def test_mixed():
     r, v, f, A = pre_axi_mixed()
 
     for parallel in [False, True]:
-
         a = fe.IntegralForm(A, v, r.dV, v)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()

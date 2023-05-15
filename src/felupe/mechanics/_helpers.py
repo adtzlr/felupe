@@ -47,7 +47,6 @@ class Results:
     "A class with intermediate results of a SolidBody."
 
     def __init__(self, stress=False, elasticity=False):
-
         self.force = None
         self._force = None
         self.stiffness = None
@@ -62,7 +61,6 @@ class Results:
             self.elasticity = None
 
     def update_statevars(self):
-
         if self._statevars is not None:
             self.statevars = self._statevars
 
@@ -71,7 +69,6 @@ class StateNearlyIncompressible:
     "A State with internal fields for (nearly) incompressible solid bodies."
 
     def __init__(self, field):
-
         self.field = field
         self.dJdF = AreaChange().function
 

@@ -92,7 +92,6 @@ class LinearElastic:
     """
 
     def __init__(self, E=None, nu=None):
-
         self.E = E
         self.nu = nu
 
@@ -231,7 +230,6 @@ class LinearElasticTensorNotation:
     """
 
     def __init__(self, E=None, nu=None, parallel=False):
-
         self.parallel = parallel
 
         self.E = E
@@ -336,7 +334,6 @@ class LinearElasticPlaneStrain:
     """
 
     def __init__(self, E, nu):
-
         self.E = E
         self.nu = nu
 
@@ -511,7 +508,6 @@ class LinearElasticPlaneStress:
     """
 
     def __init__(self, E, nu):
-
         self.E = E
         self.nu = nu
 

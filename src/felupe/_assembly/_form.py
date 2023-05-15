@@ -81,7 +81,6 @@ class LinearForm:
         values = np.zeros((len(v), *v.shape[-3:]))
 
         if not parallel:
-
             for a, vbasis in enumerate(v):
                 for i, vb in enumerate(vbasis):
                     values[a, i] = weakform(vb, *args, **kwargs) * self.dx
@@ -199,34 +198,26 @@ class BilinearForm:
         values = np.zeros((len(v), v.shape[-4], len(u), u.shape[-4], *u.shape[-2:]))
 
         if not parallel:
-
             for a, vbasis in enumerate(v):
                 for i, vb in enumerate(vbasis):
-
                     for b, ubasis in enumerate(u):
                         for j, ub in enumerate(ubasis):
-
                             if sym:
-
                                 if len(vbasis) * a + i <= len(ubasis) * b + j:
-
                                     values[a, i, b, j] = values[b, j, a, i] = (
                                         weakform(vb, ub, *args, **kwargs) * self.dx
                                     )
 
                             else:
-
                                 values[a, i, b, j] = (
                                     weakform(vb, ub, *args, **kwargs) * self.dx
                                 )
 
         else:
-
             idx_a, idx_i, idx_b, idx_j = np.indices(values.shape[:4])
             aibj = zip(idx_a.ravel(), idx_i.ravel(), idx_b.ravel(), idx_j.ravel())
 
             if sym:
-
                 len_vbasis = values.shape[1]
                 len_ubasis = values.shape[3]
 
@@ -239,7 +230,6 @@ class BilinearForm:
                 )
 
             def contribution(values, a, i, b, j, sym, args, kwargs):
-
                 if sym:
                     values[a, i, b, j] = values[b, j, a, i] = (
                         weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
@@ -428,7 +418,6 @@ class BilinearFormMixed:
         self._bilinearform = []
 
         for a, (i, j) in enumerate(zip(self.i, self.j)):
-
             self._bilinearform.append(
                 BilinearForm(
                     v=self.v[i],
@@ -542,7 +531,6 @@ class BaseForm:
         kwargs={},
         parallel=False,
     ):
-
         # set attributes
         self.form = None
         self.grad_u = grad_u
@@ -558,7 +546,6 @@ class BaseForm:
 
         # update args and kwargs for weakform
         if args is not None or kwargs is not None:
-
             if args is not None:
                 self.args = args
             else:
@@ -576,10 +563,8 @@ class BaseForm:
             form_type = None
 
         if v is not None:
-
             # linear form
             if u is None:
-
                 self.u = None
 
                 # mixed-field input
@@ -591,7 +576,6 @@ class BaseForm:
                     self.weakform = self.weakform()
 
             else:
-
                 self.v = BasisMixed(v, parallel=parallel)
                 self.u = BasisMixed(u, parallel=parallel)
                 form = BilinearFormMixed(self.v, self.u, self.grad_v, self.grad_u)
@@ -740,7 +724,6 @@ def Form(
     """
 
     def form(weakform):
-
         return BaseForm(
             weakform=weakform,
             v=v,

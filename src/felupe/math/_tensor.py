@@ -74,7 +74,6 @@ def inv(A, determinant=None, full_output=False, sym=False):
         detA = determinant
 
     if A.shape[0] == 3:
-
         detAinvA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
         detAinvA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
         detAinvA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]

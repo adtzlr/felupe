@@ -25,14 +25,11 @@ from ._base import IntegralForm
 
 class IntegralFormAxisymmetric(IntegralForm):
     def __init__(self, fun, v, dV, u=None, grad_v=True, grad_u=True):
-
         R = v.radius
         self.dV = 2 * np.pi * R * dV
 
         if u is None:
-
             if isinstance(v, FieldAxisymmetric):
-
                 self.mode = 1
 
                 if grad_v:
@@ -48,7 +45,6 @@ class IntegralFormAxisymmetric(IntegralForm):
                 self.forms = [form_a, form_b]
 
             else:
-
                 self.mode = 10
 
                 form_a = IntegralForm(fun, v, self.dV, grad_v=False)
@@ -57,13 +53,10 @@ class IntegralFormAxisymmetric(IntegralForm):
                 ]
 
         else:
-
             if isinstance(v, FieldAxisymmetric) and isinstance(u, FieldAxisymmetric):
-
                 self.mode = 2
 
                 if grad_v and grad_u:
-
                     form_aa = IntegralForm(
                         fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
                     )
@@ -83,7 +76,6 @@ class IntegralFormAxisymmetric(IntegralForm):
                     )
 
                 if not grad_v and grad_u:
-
                     form_aa = IntegralForm(
                         fun[:-1, :-1, :-1], v, self.dV, u, False, True
                     )
@@ -105,7 +97,6 @@ class IntegralFormAxisymmetric(IntegralForm):
                 self.forms = [form_aa, form_bb, form_ba, form_ab]
 
             elif isinstance(v, FieldAxisymmetric) and isinstance(u, Field):
-
                 self.mode = 30
 
                 form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, True, False)
@@ -116,7 +107,6 @@ class IntegralFormAxisymmetric(IntegralForm):
                 self.forms = [form_a, form_b]
 
             elif isinstance(v, Field) and isinstance(u, Field):
-
                 self.mode = 40
 
                 form_a = IntegralForm(fun, v, self.dV, u, False, False)

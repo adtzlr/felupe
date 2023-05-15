@@ -27,7 +27,6 @@ class SolidBodyGravity:
     "A SolidBody with methods for the assembly of sparse vectors/matrices."
 
     def __init__(self, field, gravity=None, density=1.0):
-
         self.field = field
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
@@ -37,11 +36,9 @@ class SolidBodyGravity:
         self.results.density = density
 
     def update(self, gravity):
-
         self.__init__(self.field, gravity, self.results.density)
 
     def _vector(self, field=None, parallel=False):
-
         if field is not None:
             self.field = field
 
@@ -62,7 +59,6 @@ class SolidBodyGravity:
         return -self.results.force
 
     def _matrix(self, field=None, parallel=False):
-
         if field is not None:
             self.field = field
 

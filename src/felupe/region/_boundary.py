@@ -321,7 +321,6 @@ class RegionBoundary(Region):
         mask=None,
         ensure_3d=False,
     ):
-
         self.only_surface = only_surface
         self.mask = mask
         self.ensure_3d = ensure_3d
@@ -389,7 +388,6 @@ class RegionBoundary(Region):
             or self.mesh.cell_type == "quad8"
             or self.mesh.cell_type == "quad9"
         ):
-
             dA_1 = self.dXdr[:, 0][::-1]
             dA_1[0] = -dA_1[0]
 
@@ -407,7 +405,6 @@ class RegionBoundary(Region):
         normals = dA / dV
 
         if self.ensure_3d:
-
             if dA.shape[0] == 2:
                 dA = np.pad(dA, ((0, 1), (0, 0), (0, 0)))
                 normals = np.pad(normals, ((0, 1), (0, 0), (0, 0)))

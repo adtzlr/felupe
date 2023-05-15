@@ -30,7 +30,6 @@ class CharacteristicCurve(Job):
         items=None,
         callback=lambda stepnumber, substepnumber, substep: None,
     ):
-
         super().__init__(steps, self._callback)
 
         self.items = items
@@ -41,7 +40,6 @@ class CharacteristicCurve(Job):
         self._cb = callback
 
     def _callback(self, stepnumber, substepnumber, substep):
-
         if self.items is not None:
             fun = sum([item.results.force for item in self.items])
         else:
@@ -67,7 +65,7 @@ class CharacteristicCurve(Job):
         fig=None,
         ax=None,
         items=None,
-        **kwargs
+        **kwargs,
     ):
         if self.res is None:
             raise ValueError(

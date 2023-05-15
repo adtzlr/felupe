@@ -62,7 +62,6 @@ class Field:
     """
 
     def __init__(self, region, dim=1, values=0, **kwargs):
-
         self.region = region
         self.dim = dim
         self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
@@ -188,7 +187,6 @@ class Field:
         self.values.fill(a)
 
     def __add__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             field = deepcopy(self)
             field.values += newvalues.reshape(-1, field.dim)
@@ -203,7 +201,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __sub__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             field = deepcopy(self)
             field.values -= newvalues.reshape(-1, field.dim)
@@ -218,7 +215,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __mul__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             field = deepcopy(self)
             field.values *= newvalues.reshape(-1, field.dim)
@@ -233,7 +229,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __truediv__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             field = deepcopy(self)
             field.values /= newvalues.reshape(-1, field.dim)
@@ -248,7 +243,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __iadd__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             self.values += newvalues.reshape(-1, self.dim)
             return self
@@ -261,7 +255,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __isub__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             self.values -= newvalues.reshape(-1, self.dim)
             return self
@@ -274,7 +267,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __imul__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             self.values *= newvalues.reshape(-1, self.dim)
             return self
@@ -287,7 +279,6 @@ class Field:
             raise TypeError("Unknown type.")
 
     def __itruediv__(self, newvalues):
-
         if isinstance(newvalues, np.ndarray):
             self.values /= newvalues.reshape(-1, self.dim)
             return self

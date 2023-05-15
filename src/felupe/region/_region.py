@@ -85,7 +85,6 @@ class Region:
     """
 
     def __init__(self, mesh, element, quadrature, grad=True):
-
         self.mesh = mesh
         self.element = element
         self.quadrature = quadrature
@@ -103,7 +102,6 @@ class Region:
         self.dhdr = np.tile(np.expand_dims(self.element.dhdr, -1), self.mesh.ncells)
 
         if grad:
-
             # geometric gradient
             self.dXdr = np.einsum(
                 "caI,aJpc->IJpc", self.mesh.points[self.mesh.cells], self.dhdr

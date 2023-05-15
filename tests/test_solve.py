@@ -31,7 +31,6 @@ import felupe as fe
 
 
 def test_solve():
-
     m = fe.Cube(n=3)
     e = fe.Hexahedron()
     q = fe.GaussLegendre(1, 3)

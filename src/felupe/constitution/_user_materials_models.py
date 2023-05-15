@@ -161,7 +161,6 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
     # update stress, tangent and state due to plasticity
     if np.any(mask):
-
         dγ = f / (2 * μ + 2 / 3 * K)
         n = s / norm_s
         εp = εp + dγ * n

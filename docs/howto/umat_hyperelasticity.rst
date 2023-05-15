@@ -1,7 +1,7 @@
-Isotropic Hyperelastic User Materials
--------------------------------------
+Isotropic Hyperelastic Materials
+--------------------------------
 
-User materials based on the right Cauchy-Green deformation tensor, suitable for Total-Lagrange isotropic hyperelastic material formulations, are to be created with :class:`felupe.Hyperelastic`. Only the strain energy function must be defined. Both gradient and hessian are evaluated by forward-mode automatic differentiation. Therefore, only math-functions from `tensortrax.math` are supported. A user-defined function must be created with the arguments
+User materials (Umat) based on the right Cauchy-Green deformation tensor, suitable for Total-Lagrange isotropic hyperelastic material formulations, are to be created with :class:`felupe.Hyperelastic`. Only the strain energy function must be defined. Both gradient and hessian are evaluated by forward-mode automatic differentiation. Therefore, only math-functions from `tensortrax.math` are supported. A user-defined function must be created with the arguments
 
 +---------------+---------------------------------------+
 | **Arguments** | **Description**                       |

@@ -174,34 +174,28 @@ class Scene:
             show_edges_undeformed = False
             opacity_undeformed = 0.2
 
-            if name is None:
-                show_edges_undeformed = show_edges
-                opacity_undeformed = None
-
             plotter.add_mesh(
                 self.mesh, show_edges=show_edges_undeformed, opacity=opacity_undeformed
             )
 
-        if name is not None:
+        mesh = self.mesh
+        if "Displacement" in self.mesh.point_data.keys():
+            mesh = mesh.warp_by_vector("Displacement", factor=factor)
 
-            mesh = self.mesh
-            if "Displacement" in self.mesh.point_data.keys():
-                mesh = mesh.warp_by_vector("Displacement", factor=factor)
-
-            plotter.add_mesh(
-                mesh=mesh,
-                scalars=name,
-                component=component,
-                show_edges=show_edges,
-                cmap=cmap,
-                scalar_bar_args={
-                    "title": label,
-                    "interactive": True,
-                    "vertical": scalar_bar_vertical,
-                    **scalar_bar_args,
-                },
-                **kwargs,
-            )
+        plotter.add_mesh(
+            mesh=mesh,
+            scalars=name,
+            component=component,
+            show_edges=show_edges,
+            cmap=cmap,
+            scalar_bar_args={
+                "title": label,
+                "interactive": True,
+                "vertical": scalar_bar_vertical,
+                **scalar_bar_args,
+            },
+            **kwargs,
+        )
 
         if view == "default":
 

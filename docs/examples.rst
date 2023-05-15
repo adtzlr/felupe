@@ -8,6 +8,7 @@ Examples
    examples/beam
    examples/platewithhole
    examples/plasticity
+   examples/inflation
    examples/rubberspring
    examples/enginemount
    examples/shear

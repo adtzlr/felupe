@@ -11,7 +11,7 @@ FElupe
    :class: only-light
    :width: 100px
 
-.. admonition:: FElupe - Finite Element Analysis
+.. admonition:: Finite Element Analysis
    :class: tip
 
    💯 Python ➡️ easy install and intuitive usage 👌🏻

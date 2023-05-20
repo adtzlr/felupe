@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file. The format 
 - `View`: Switch from `ViewField` to `ViewSolid`.
 - `View`: Always plot the undeformed mesh with `opacity=0.2` and `show_edges=False`.
 - Rename `UserMaterial` to `Material`, `UserMaterialStrain` to `MaterialStrain`, `UserMaterialHyperelastic` to `Hyperelastic` (keep old alias names until next major release).
+- Use consistent indices in `einsum()` for (elementwise operating) trailing axes: `q` for quadrature point and `c` for cell.
 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.

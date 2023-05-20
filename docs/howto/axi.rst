@@ -25,7 +25,7 @@ For simplicity, let's assume a (built-in) Neo-Hookean material.
     umat = fem.NeoHooke(mu=1, bulk=5)
 
 
-FElupe provides an adopted :class:`felupe.IntegralFormAxisymmetric` class for the integration and the sparse matrix assemblage of axisymmetric problems under hood. It uses the additional information (e.g. radial coordinates at integration points) stored in :class:`felupe.FieldAxisymmetric` to provide a consistent interface in comparison to default IntegralForms.
+Internally, FElupe provides an adopted :class:`felupe.IntegralFormAxisymmetric` class for the integration and the sparse matrix assemblage of axisymmetric problems. It uses the additional information (e.g. radial coordinates at integration points) stored in :class:`felupe.FieldAxisymmetric` to provide a consistent interface in comparison to default IntegralForms.
 
 ..  code-block:: python
 

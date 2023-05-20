@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from .._assembly import IntegralFormMixed
+from .._assembly import IntegralForm
 from ._helpers import Assemble, Results
 
 
@@ -30,7 +30,7 @@ class SolidBodyGravity:
         self.field = field
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-        self._form = IntegralFormMixed
+        self._form = IntegralForm
 
         self.results.gravity = np.array(gravity)
         self.results.density = density

@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - `View`: Always plot the undeformed mesh with `opacity=0.2` and `show_edges=False`.
 - Rename `UserMaterial` to `Material`, `UserMaterialStrain` to `MaterialStrain`, `UserMaterialHyperelastic` to `Hyperelastic` (keep old alias names until next major release).
 - Use consistent indices in `einsum()` for (elementwise operating) trailing axes: `q` for quadrature point and `c` for cell.
+- Rename internal `IntegralFormMixed` to `IntegralForm`, which is now consistent internally and in the top-level namespace. The previous internal base-class for a single-field `IntegralForm` is renamed to `WeakForm`.
 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.

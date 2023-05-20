@@ -21,8 +21,8 @@ from threading import Thread
 import numpy as np
 
 from .._basis import BasisMixed
-from ._base import IntegralForm
-from ._mixed import IntegralFormMixed
+from ._integral import IntegralForm
+from ._weak import WeakForm
 
 
 class LinearForm:
@@ -51,7 +51,7 @@ class LinearForm:
         else:
             self.dx = dx
 
-        self._form = IntegralForm(fun=None, v=v.field, dV=self.dx, grad_v=grad_v)
+        self._form = WeakForm(fun=None, v=v.field, dV=self.dx, grad_v=grad_v)
 
     def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
@@ -161,7 +161,7 @@ class BilinearForm:
         else:
             self.dx = dx
 
-        self._form = IntegralForm(None, v.field, self.dx, u.field, grad_v, grad_u)
+        self._form = WeakForm(None, v.field, self.dx, u.field, grad_v, grad_u)
 
     def integrate(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
@@ -303,7 +303,7 @@ class LinearFormMixed:
     def __init__(self, v, grad_v=None):
         self.v = v
         self.dx = self.v.field[0].region.dV
-        self._form = IntegralFormMixed(
+        self._form = IntegralForm(
             np.zeros(len(v.field.fields)), self.v.field, self.dx, grad_v=grad_v
         )
 
@@ -406,7 +406,7 @@ class BilinearFormMixed:
         self.grad_v = _set_first_grad_true(grad_v, self.v.field.fields)
         self.grad_u = _set_first_grad_true(grad_u, self.u.field.fields)
 
-        self._form = IntegralFormMixed(
+        self._form = IntegralForm(
             fun=np.zeros(len(self.i)),
             v=self.v.field,
             dV=self.dx,

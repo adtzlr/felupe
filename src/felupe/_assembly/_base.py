@@ -121,13 +121,13 @@ class IntegralForm:
 
         # # bilinear form
         else:
-            eai = self.v.indices.eai
-            ebk = self.u.indices.eai
+            cai = self.v.indices.cai
+            cbk = self.u.indices.cai
 
-            eaibk0 = np.repeat(eai, ebk.shape[1] * self.u.dim)
-            eaibk1 = np.tile(ebk, (1, eai.shape[1] * self.v.dim, 1)).ravel()
+            caibk0 = np.repeat(cai, cbk.shape[1] * self.u.dim)
+            caibk1 = np.tile(cbk, (1, cai.shape[1] * self.v.dim, 1)).ravel()
 
-            self.indices = (eaibk0, eaibk1)
+            self.indices = (caibk0, caibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
     def assemble(self, values=None, parallel=False):
@@ -182,24 +182,24 @@ class IntegralForm:
 
         if u is None:
             if not grad_v:
-                return einsum("ape,...pe,pe->a...e", vb, fun, dV, optimize=True)
+                return einsum("aqc,...qc,qc->a...c", vb, fun, dV, optimize=True)
             else:
-                return einsum("aJpe,...Jpe,pe->a...e", vb, fun, dV, optimize=True)
+                return einsum("aJqc,...Jqc,qc->a...c", vb, fun, dV, optimize=True)
 
         else:
             if not grad_v and not grad_u:
-                out = einsum("ape,...pe,bpe,pe->a...be", vb, fun, ub, dV, optimize=True)
+                out = einsum("aqc,...qc,bqc,qc->a...bc", vb, fun, ub, dV, optimize=True)
                 if len(out.shape) == 5:
-                    return einsum("aijbe->aibje", out)
+                    return einsum("aijbc->aibjc", out)
                 else:
                     return out
             elif grad_v and not grad_u:
                 return einsum(
-                    "aJpe,iJ...pe,bpe,pe->aib...e", vb, fun, ub, dV, optimize=True
+                    "aJqc,iJ...qc,bqc,qc->aib...c", vb, fun, ub, dV, optimize=True
                 )
             elif not grad_v and grad_u:
                 return einsum(
-                    "a...pe,...kLpe,bLpe,pe->a...bke",
+                    "a...qc,...kLqc,bLqc,qc->a...bkc",
                     vb,
                     fun,
                     ub,
@@ -208,5 +208,5 @@ class IntegralForm:
                 )
             else:  # grad_v and grad_u
                 return einsum(
-                    "aJpe,iJkLpe,bLpe,pe->aibke", vb, fun, ub, dV, optimize=True
+                    "aJqc,iJkLqc,bLqc,qc->aibkc", vb, fun, ub, dV, optimize=True
                 )

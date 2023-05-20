@@ -60,27 +60,27 @@ class Region:
     quadrature: Quadrature scheme
         An element-compatible numeric integration scheme with points and weights.
     h : ndarray
-        Element shape function array ``h_ap`` of shape function ``a`` evaluated at
-        quadrature point ``p``.
+        Element shape function array ``h_aq`` of shape function ``a`` evaluated at
+        quadrature point ``q``.
     dhdr : ndarray
-        Partial derivative of element shape function array ``dhdr_aJp`` with shape
+        Partial derivative of element shape function array ``dhdr_aJq`` with shape
         function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature
-        point ``p`` for every cell ``c`` (geometric gradient or **Jacobian**
+        point ``q`` for every cell ``c`` (geometric gradient or **Jacobian**
         transformation between ``X`` and ``r``).
     dXdr : ndarray
-        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate
+        Geometric gradient ``dXdr_IJqc`` as partial derivative of undeformed coordinate
         ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point
-        ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation
+        ``q`` for every cell ``c`` (geometric gradient or **Jacobian** transformation
         between ``X`` and ``r``).
     drdX : ndarray
         Inverse of dXdr.
     dV : ndarray
         Numeric *Differential volume element* as product of determinant of geometric
-        gradient  ``dV_pc = det(dXdr)_pc w_p`` and quadrature weight ``w_p``, evaluated
-        at quadrature point ``p`` for every cell ``c``.
+        gradient  ``dV_qc = det(dXdr)_qc w_q`` and quadrature weight ``w_q``, evaluated
+        at quadrature point ``q`` for every cell ``c``.
     dhdX : ndarray
-        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function
-        ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for
+        Partial derivative of element shape functions ``dhdX_aJqc`` of shape function
+        ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``q`` for
         every cell ``c``.
     """
 
@@ -91,20 +91,20 @@ class Region:
 
         # element shape function
         self.element.h = np.array(
-            [self.element.function(p) for p in self.quadrature.points]
+            [self.element.function(q) for q in self.quadrature.points]
         ).T
         self.h = np.tile(np.expand_dims(self.element.h, -1), self.mesh.ncells)
 
         # partial derivative of element shape function
         self.element.dhdr = np.array(
-            [self.element.gradient(p) for p in self.quadrature.points]
+            [self.element.gradient(q) for q in self.quadrature.points]
         ).transpose(1, 2, 0)
         self.dhdr = np.tile(np.expand_dims(self.element.dhdr, -1), self.mesh.ncells)
 
         if grad:
             # geometric gradient
             self.dXdr = np.einsum(
-                "caI,aJpc->IJpc", self.mesh.points[self.mesh.cells], self.dhdr
+                "caI,aJqc->IJqc", self.mesh.points[self.mesh.cells], self.dhdr
             )
 
             # inverse of dXdr
@@ -127,7 +127,7 @@ class Region:
 
             # Partial derivative of element shape function
             # w.r.t. undeformed coordinates
-            self.dhdX = np.einsum("aIpc,IJpc->aJpc", self.dhdr, self.drdX)
+            self.dhdX = np.einsum("aIqc,IJqc->aJqc", self.dhdr, self.drdX)
 
     def __repr__(self):
         header = "<felupe Region object>"

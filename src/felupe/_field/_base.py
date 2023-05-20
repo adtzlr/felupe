@@ -31,7 +31,7 @@ class Field:
     accesses the field values as 1d-array.
 
     The interpolation method returns the field values evaluated at the
-    numeric integration points ``p`` of all cells ``c`` in the region.
+    numeric integration points ``q`` of all cells ``c`` in the region.
 
     ..  math::
 
@@ -89,7 +89,7 @@ class Field:
     def _indices_per_cell(self, cells, dim):
         "Calculate pre-defined indices for sparse matrices."
 
-        # index of cell "e", point "a" and component "i"
+        # index of cell "c", point "a" and component "i"
         eai = (
             dim * np.repeat(cells, dim) + np.tile(np.arange(dim), cells.size)
         ).reshape(*cells.shape, dim)
@@ -118,10 +118,10 @@ class Field:
         """
 
         # gradient dudX_IJpe as partial derivative of field values at points "aI"
-        # w.r.t. undeformed coordinates "J" evaluated at quadrature point "p"
+        # w.r.t. undeformed coordinates "J" evaluated at quadrature point "q"
         # for each cell "c"
         g = np.einsum(
-            "ca...,aJpc->...Jpc",
+            "ca...,aJqc->...Jqc",
             self.values[self.region.mesh.cells],
             self.region.dhdX,
         )
@@ -136,10 +136,10 @@ class Field:
         integration points of all cells in the region."""
 
         # interpolated field values "aI"
-        # evaluated at quadrature point "p"
+        # evaluated at quadrature point "q"
         # for cell "c"
         return np.einsum(
-            "ca...,apc->...pc", self.values[self.region.mesh.cells], self.region.h
+            "ca...,aqc->...qc", self.values[self.region.mesh.cells], self.region.h
         )
 
     def extract(self, grad=True, sym=False, add_identity=True):

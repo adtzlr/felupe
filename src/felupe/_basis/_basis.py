@@ -30,8 +30,8 @@ class Basis:
     gradients evaluated at quadrature points. The first two indices of a basis
     are used for looping over the element shape functions ``a`` and its
     components ``i``. The third index represents the vector component ``j`` of
-    the field. The two trailing axes ``(p, c)`` contain the evaluated element
-    shape functions at quadrature points ``p`` per cell ``c``.
+    the field. The two trailing axes ``(q, c)`` contain the evaluated element
+    shape functions at quadrature points ``q`` per cell ``c``.
 
     ..  math::
 
@@ -68,14 +68,14 @@ class Basis:
         einsum = einsumt if parallel else np.einsum
 
         self.basis = einsum(
-            "ij,apc->aijpc",
+            "ij,aqc->aijqc",
             np.eye(self.field.dim),
             self.field.region.h,
         )
 
         if hasattr(self.field.region, "dhdX"):
             self.grad = einsum(
-                "ij,akpc->aijkpc", np.eye(self.field.dim), self.field.region.dhdX
+                "ij,akqc->aijkqc", np.eye(self.field.dim), self.field.region.dhdX
             )
 
         else:
@@ -88,8 +88,8 @@ class BasisMixed:
     gradients evaluated at quadrature points. The first two indices of a basis
     are used for looping over the element shape functions ``a`` and its
     components ``i``. The third index represents the vector component ``j`` of
-    the field. The two trailing axes ``(p, c)`` contain the evaluated element
-    shape functions at quadrature points ``p`` per cell ``c``.
+    the field. The two trailing axes ``(q, c)`` contain the evaluated element
+    shape functions at quadrature points ``q`` per cell ``c``.
 
     ..  math::
 

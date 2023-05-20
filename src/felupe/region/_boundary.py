@@ -285,17 +285,17 @@ class RegionBoundary(Region):
     quadrature: Quadrature scheme
         An element-compatible numeric integration scheme with points and weights.
     h : ndarray
-        Element shape function array ``h_ap`` of shape function ``a`` evaluated at
-        quadrature point ``p``.
+        Element shape function array ``h_aq`` of shape function ``a`` evaluated at
+        quadrature point ``q``.
     dhdr : ndarray
-        Partial derivative of element shape function array ``dhdr_aJp`` with shape
+        Partial derivative of element shape function array ``dhdr_aJq`` with shape
         function ``a`` w.r.t. natural element coordinate ``J`` evaluated at quadrature
-        point ``p`` for every cell ``c`` (geometric gradient or **Jacobian**
+        point ``q`` for every cell ``c`` (geometric gradient or **Jacobian**
         transformation between ``X`` and ``r``).
     dXdr : ndarray
-        Geometric gradient ``dXdr_IJpc`` as partial derivative of undeformed coordinate
+        Geometric gradient ``dXdr_IJqc`` as partial derivative of undeformed coordinate
         ``I`` w.r.t. natural element coordinate ``J`` evaluated at quadrature point
-        ``p`` for every cell ``c`` (geometric gradient or **Jacobian** transformation
+        ``q`` for every cell ``c`` (geometric gradient or **Jacobian** transformation
         between ``X`` and ``r``).
     drdX : ndarray
         Inverse of dXdr.
@@ -306,8 +306,8 @@ class RegionBoundary(Region):
     dV : ndarray
         Numeric *Differential volume element* as norm of *Differential area vectors*.
     dhdX : ndarray
-        Partial derivative of element shape functions ``dhdX_aJpc`` of shape function
-        ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``p`` for
+        Partial derivative of element shape functions ``dhdX_aJqc`` of shape function
+        ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``q`` for
         every cell ``c``.
     """
 

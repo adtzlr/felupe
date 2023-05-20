@@ -81,52 +81,6 @@ class FieldsMixed(FieldContainer):
             A mesh for the dual region (default is None).
         """
 
-        regions = {
-            RegionHexahedron: RegionConstantHexahedron,
-            RegionQuad: RegionConstantQuad,
-            RegionQuadraticQuad: RegionConstantQuad,
-            RegionBiQuadraticQuad: RegionQuad,
-            RegionQuadraticHexahedron: RegionConstantHexahedron,
-            RegionTriQuadraticHexahedron: RegionHexahedron,
-            RegionQuadraticTetra: RegionTetra,
-            RegionQuadraticTriangle: RegionTriangle,
-            RegionTetraMINI: RegionTetra,
-            RegionTriangleMINI: RegionTriangle,
-            RegionLagrange: RegionLagrange,
-        }
-        points_per_cell = {
-            RegionConstantHexahedron: 1,
-            RegionConstantQuad: 1,
-            RegionQuad: 4,
-            RegionHexahedron: 8,
-            RegionTriangle: 3,
-            RegionTetra: 4,
-            RegionLagrange: None,
-        }
-
-        kwargs0 = {}
-
-        if isinstance(region, RegionLagrange):
-            kwargs0["order"] = region.order - 1
-            kwargs0["dim"] = region.mesh.dim
-            points_per_cell[RegionLagrange] = region.order**region.element.dim
-
-        RegionDual = regions[type(region)]
-
-        if mesh is None and points_per_cell[RegionDual] is not None:
-            mesh = region.mesh.dual(
-                points_per_cell=points_per_cell[RegionDual],
-                offset=offset,
-                npoints=npoints,
-            )
-
-        region_dual = RegionDual(
-            mesh,
-            quadrature=region.quadrature,
-            grad=False,
-            **{**kwargs0, **kwargs},
-        )
-
         if axisymmetric is False and planestrain is False:
             F = Field
         elif axisymmetric is True and planestrain is False:
@@ -135,6 +89,54 @@ class FieldsMixed(FieldContainer):
             F = FieldPlaneStrain
 
         fields = [F(region, dim=region.mesh.dim, values=values[0])]
+
+        # create dual regions
+        if n > 1:
+            regions = {
+                RegionHexahedron: RegionConstantHexahedron,
+                RegionQuad: RegionConstantQuad,
+                RegionQuadraticQuad: RegionConstantQuad,
+                RegionBiQuadraticQuad: RegionQuad,
+                RegionQuadraticHexahedron: RegionConstantHexahedron,
+                RegionTriQuadraticHexahedron: RegionHexahedron,
+                RegionQuadraticTetra: RegionTetra,
+                RegionQuadraticTriangle: RegionTriangle,
+                RegionTetraMINI: RegionTetra,
+                RegionTriangleMINI: RegionTriangle,
+                RegionLagrange: RegionLagrange,
+            }
+            points_per_cell = {
+                RegionConstantHexahedron: 1,
+                RegionConstantQuad: 1,
+                RegionQuad: 4,
+                RegionHexahedron: 8,
+                RegionTriangle: 3,
+                RegionTetra: 4,
+                RegionLagrange: None,
+            }
+
+            kwargs0 = {}
+
+            if isinstance(region, RegionLagrange):
+                kwargs0["order"] = region.order - 1
+                kwargs0["dim"] = region.mesh.dim
+                points_per_cell[RegionLagrange] = region.order**region.element.dim
+
+            RegionDual = regions[type(region)]
+
+            if mesh is None and points_per_cell[RegionDual] is not None:
+                mesh = region.mesh.dual(
+                    points_per_cell=points_per_cell[RegionDual],
+                    offset=offset,
+                    npoints=npoints,
+                )
+
+            region_dual = RegionDual(
+                mesh,
+                quadrature=region.quadrature,
+                grad=False,
+                **{**kwargs0, **kwargs},
+            )
 
         for a in range(1, n):
             fields.append(Field(region_dual, values=values[a]))

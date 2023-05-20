@@ -94,10 +94,10 @@ class FieldAxisymmetric(Field):
         integration points of all cells in the region."""
 
         # interpolated field values "aI"
-        # evaluated at quadrature point "p"
+        # evaluated at quadrature point "q"
         # for cell "c"
         return np.einsum(
-            "ca...,apc->...pc", self.values[self.region.mesh.cells], self.region.h
+            "ca...,aqc->...qc", self.values[self.region.mesh.cells], self.region.h
         )
 
     def interpolate(self):
@@ -124,10 +124,10 @@ class FieldAxisymmetric(Field):
         """
 
         # gradient as partial derivative of field component "I" at point "a"
-        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "p"
+        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "q"
         # for each cell "e"
         g = np.einsum(
-            "ca...,aJpc->...Jpc",
+            "ca...,aJqc->...Jqc",
             self.values[self.region.mesh.cells],
             self.region.dhdX,
         )

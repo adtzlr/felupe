@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._assembly import IntegralFormMixed
+from .._assembly import IntegralForm
 from ..constitution import AreaChange
 from ..math import det, dot, transpose
 from ._helpers import Assemble, Evaluate, Results
@@ -56,7 +56,7 @@ class SolidBody:
 
         self._area_change = AreaChange()
 
-        self._form = IntegralFormMixed
+        self._form = IntegralForm
 
     def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
         if field is not None:

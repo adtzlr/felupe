@@ -23,10 +23,10 @@ from .._field._axi import FieldAxisymmetric
 from .._field._base import Field
 from .._field._planestrain import FieldPlaneStrain
 from ._axi import IntegralFormAxisymmetric
-from ._base import IntegralForm
+from ._weak import WeakForm
 
 
-class IntegralFormMixed:
+class IntegralForm:
     def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):
         self.fun = fun
         self.v = v.fields
@@ -41,8 +41,8 @@ class IntegralFormMixed:
             self.nu = None
 
         IntForm = {
-            Field: IntegralForm,
-            FieldPlaneStrain: IntegralForm,
+            Field: WeakForm,
+            FieldPlaneStrain: WeakForm,
             FieldAxisymmetric: IntegralFormAxisymmetric,
         }[type(self.v[0])]
 

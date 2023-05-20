@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .._assembly import IntegralFormMixed
+from .._assembly import IntegralForm
 from ..constitution import AreaChange
 from ._helpers import Assemble, Results
 
@@ -64,7 +64,7 @@ class SolidBodyPressure:
 
         fun[0] *= self.results.pressure
 
-        self.results.force = IntegralFormMixed(
+        self.results.force = IntegralForm(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
         ).assemble(parallel=parallel)
 
@@ -89,7 +89,7 @@ class SolidBodyPressure:
 
         fun[0] *= self.results.pressure
 
-        self.results.stiffness = IntegralFormMixed(
+        self.results.stiffness = IntegralForm(
             fun=fun,
             v=self.field,
             u=self.field,

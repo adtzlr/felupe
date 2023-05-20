@@ -11,8 +11,7 @@ from . import (
     tools,
 )
 from .__about__ import __version__
-from ._assembly import Form
-from ._assembly import IntegralFormMixed as IntegralForm
+from ._assembly import Form, IntegralForm
 from ._basis import BasisMixed as Basis
 from ._field import (
     Field,

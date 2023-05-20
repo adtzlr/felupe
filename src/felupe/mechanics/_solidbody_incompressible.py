@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._assembly import IntegralFormMixed
+from .._assembly import IntegralForm
 from .._field import FieldAxisymmetric
 from ..constitution import AreaChange
 from ..math import ddot, det, dot, dya, transpose
@@ -62,7 +62,7 @@ class SolidBodyNearlyIncompressible:
         self.bulk = bulk
 
         self._area_change = AreaChange()
-        self._form = IntegralFormMixed
+        self._form = IntegralForm
 
         # volume of undeformed configuration
         if isinstance(self.field[0], FieldAxisymmetric):

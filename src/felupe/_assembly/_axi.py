@@ -20,10 +20,10 @@ import numpy as np
 
 from .._field._axi import FieldAxisymmetric
 from .._field._base import Field
-from ._base import IntegralForm
+from ._weak import WeakForm
 
 
-class IntegralFormAxisymmetric(IntegralForm):
+class IntegralFormAxisymmetric(WeakForm):
     def __init__(self, fun, v, dV, u=None, grad_v=True, grad_u=True):
         R = v.radius
         self.dV = 2 * np.pi * R * dV
@@ -39,15 +39,15 @@ class IntegralFormAxisymmetric(IntegralForm):
                     fun_2d = fun[:-1]
                     fun_zz = fun[-1].reshape(1, *fun[-1].shape) / R
 
-                form_a = IntegralForm(fun_2d, v, self.dV, grad_v=grad_v)
-                form_b = IntegralForm(fun_zz, v.scalar, self.dV)
+                form_a = WeakForm(fun_2d, v, self.dV, grad_v=grad_v)
+                form_b = WeakForm(fun_zz, v.scalar, self.dV)
 
                 self.forms = [form_a, form_b]
 
             else:
                 self.mode = 10
 
-                form_a = IntegralForm(fun, v, self.dV, grad_v=False)
+                form_a = WeakForm(fun, v, self.dV, grad_v=False)
                 self.forms = [
                     form_a,
                 ]
@@ -57,10 +57,10 @@ class IntegralFormAxisymmetric(IntegralForm):
                 self.mode = 2
 
                 if grad_v and grad_u:
-                    form_aa = IntegralForm(
+                    form_aa = WeakForm(
                         fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
                     )
-                    form_bb = IntegralForm(
+                    form_bb = WeakForm(
                         fun[-1, -1, -1, -1] / R**2,
                         v.scalar,
                         self.dV,
@@ -68,18 +68,16 @@ class IntegralFormAxisymmetric(IntegralForm):
                         False,
                         False,
                     )
-                    form_ba = IntegralForm(
+                    form_ba = WeakForm(
                         fun[-1, -1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
                     )
-                    form_ab = IntegralForm(
+                    form_ab = WeakForm(
                         fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
                     )
 
                 if not grad_v and grad_u:
-                    form_aa = IntegralForm(
-                        fun[:-1, :-1, :-1], v, self.dV, u, False, True
-                    )
-                    form_bb = IntegralForm(
+                    form_aa = WeakForm(fun[:-1, :-1, :-1], v, self.dV, u, False, True)
+                    form_bb = WeakForm(
                         fun[-1, -1, -1] / R**2,
                         v.scalar,
                         self.dV,
@@ -87,10 +85,10 @@ class IntegralFormAxisymmetric(IntegralForm):
                         False,
                         False,
                     )
-                    form_ba = IntegralForm(
+                    form_ba = WeakForm(
                         fun[-1, :-1, :-1] / R, v.scalar, self.dV, u, False, True
                     )
-                    form_ab = IntegralForm(
+                    form_ab = WeakForm(
                         fun[:-1, -1, -1] / R, v, self.dV, u.scalar, False, False
                     )
 
@@ -99,17 +97,15 @@ class IntegralFormAxisymmetric(IntegralForm):
             elif isinstance(v, FieldAxisymmetric) and isinstance(u, Field):
                 self.mode = 30
 
-                form_a = IntegralForm(fun[:-1, :-1], v, self.dV, u, True, False)
-                form_b = IntegralForm(
-                    fun[-1, -1] / R, v.scalar, self.dV, u, False, False
-                )
+                form_a = WeakForm(fun[:-1, :-1], v, self.dV, u, True, False)
+                form_b = WeakForm(fun[-1, -1] / R, v.scalar, self.dV, u, False, False)
 
                 self.forms = [form_a, form_b]
 
             elif isinstance(v, Field) and isinstance(u, Field):
                 self.mode = 40
 
-                form_a = IntegralForm(fun, v, self.dV, u, False, False)
+                form_a = WeakForm(fun, v, self.dV, u, False, False)
 
                 self.forms = [
                     form_a,

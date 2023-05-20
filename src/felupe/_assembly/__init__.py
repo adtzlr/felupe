@@ -1,23 +1,15 @@
 from ._axi import IntegralFormAxisymmetric
-from ._base import IntegralForm
-from ._form import (
-    BaseForm,
-    BilinearForm,
-    BilinearFormMixed,
-    Form,
-    LinearForm,
-    LinearFormMixed,
-)
-from ._mixed import IntegralFormMixed
+from ._form import BilinearForm, BilinearFormMixed, Form, LinearForm, LinearFormMixed
+from ._integral import IntegralForm
+from ._weak import WeakForm
 
 __all__ = [
+    "WeakForm",
     "IntegralFormAxisymmetric",
     "IntegralForm",
-    "BaseForm",
     "BilinearForm",
     "BilinearFormMixed",
     "Form",
     "LinearForm",
     "LinearFormMixed",
-    "IntegralFormMixed",
 ]

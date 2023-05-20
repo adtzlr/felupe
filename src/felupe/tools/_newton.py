@@ -24,7 +24,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spsolve
 
 from .. import solve as fesolve
-from .._assembly import IntegralFormMixed
+from .._assembly import IntegralForm
 from ..math import norm
 
 
@@ -93,7 +93,7 @@ def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Force residuals from assembly of equilibrium (weak form)."
 
     return (
-        IntegralFormMixed(
+        IntegralForm(
             fun=umat.gradient(x.extract(grad=grad, add_identity=add_identity, sym=sym))[
                 :-1
             ],
@@ -108,7 +108,7 @@ def fun(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
 def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     "Tangent stiffness matrix from assembly of linearized equilibrium."
 
-    return IntegralFormMixed(
+    return IntegralForm(
         fun=umat.hessian(x.extract(grad=grad, add_identity=add_identity, sym=sym)),
         v=x,
         dV=x.region.dV,

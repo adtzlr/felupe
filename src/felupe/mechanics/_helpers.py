@@ -17,7 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
 
-from .._assembly import IntegralFormMixed
+from .._assembly import IntegralForm
 from .._field import FieldAxisymmetric
 from ..constitution import AreaChange
 from ..math import det
@@ -85,7 +85,7 @@ class StateNearlyIncompressible:
     def h(self, parallel=False):
         "Integrated shape-function gradient w.r.t. the deformed coordinates `x`."
 
-        return IntegralFormMixed(
+        return IntegralForm(
             fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
         ).integrate(parallel=parallel)[0]
 

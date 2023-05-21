@@ -20,6 +20,9 @@ All notable changes to this project will be documented in this file. The format 
 - Don't warp the mesh in `ViewMesh.plot()`.
 - Warp the mesh in case no name is passed in `View.plot(name=None)`.
 
+### Removed
+- Remove internal (unused) imports of the assembly submodule.
+
 ## [7.4.1] - 2023-05-02
 
 ### Changed

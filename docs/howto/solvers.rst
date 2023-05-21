@@ -1,7 +1,14 @@
 Use external solvers
 --------------------
 
-FElupe uses SuperLU as direct sparse solver by default. Not because it is super fast - just because it is shipped with SciPy (and SciPy is already a dependancy of FElupe). While it is definitely a good choice for small to mid-sized problems, faster alternatives are easy to install and use. This section demonstrates several possibilities, e.g. a fast direct solver from `PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``) and the ``minres`` iterative solver from ``SciPy``. Be aware to check the solution (residuals) for iterative solvers.
+FElupe uses SuperLU as direct sparse solver by default because it is shipped with SciPy (and SciPy is already a dependency of FElupe). While it is definitely a good choice for small to mid-sized problems, faster alternatives are easy to install and use. This section demonstrates several possibilities, e.g. a fast direct solver from `PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``) and the ``minres`` iterative solver from ``SciPy``. Custom solvers may be passed to the evaluation of a job.
+
+..  code-block:: python
+
+    import felupe as fem
+
+    job = fem.Job(steps)
+    job.evaluate(solver=solver) # function `x = solver(A, b)`
 
 Solvers from SciPy Sparse:
 
@@ -9,28 +16,19 @@ Solvers from SciPy Sparse:
 
    .. code-block:: python
       
-      import felupe as fem
-      
-      # ...
-      
-      system = fem.solve.partition(field, K, dof1, dof0)
-      fem.solve.solve(*system)
+      # the default solver
+      from scipy.sparse.linalg import spsolve as solver
 
 .. tab:: SciPy Sparse (direct, symmetric)
 
    .. code-block:: python
       
-      import felupe as fem
       import scipy.sparse.linalg as spla
       from scipy.sparse import tril
       
-      # ...
-      
       def solver(A, b):
           return spla.spsolve_triangular(tril(A).tocsr(), b).squeeze()
-      
-      system = fem.solve.partition(field, K, dof1, dof0)
-      fem.solve.solve(*system)
+
 
 .. tab:: SciPy Sparse (iterative)
 
@@ -38,18 +36,12 @@ Solvers from SciPy Sparse:
 
    ..  code-block:: python
         
-       import felupe as fem
        import scipy.sparse.linalg as spla
-       
-       # ...
-       
+
        def solver(A, b):
            "Wrapper function for iterative solvers from scipy.sparse."
            
            return spla.minres(A, b)[0]
-       
-       system = fem.solve.partition(field, K, dof1, dof0)
-       fem.solve.solve(*system, solver=solver)
 
 Solvers from external packages:
 
@@ -63,17 +55,11 @@ Solvers from external packages:
 
    ..  code-block:: python
       
-       import felupe as fem
        from pypardiso import spsolve as solver
        
        # undocumented, untested workaround if multiple blas libaries are installed
        # import os
        # os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-       
-       # ...
-       
-       system = fem.solve.partition(field, K, dof1, dof0)
-       fem.solve.solve(*system, solver=solver)
 
 .. tab:: PyPardiso (direct, symmetric)
 
@@ -85,12 +71,9 @@ Solvers from external packages:
 
    ..  code-block:: python
       
-       import felupe as fem
        from pypardiso import PyPardisoSolver
        from scipy.sparse import triu
-      
-       # ...
-       
+
        def solver(A, b):
            # mtype = 1: real and structurally symmetric, supernode pivoting
            # mtype = 2: real and symmetric positive definite
@@ -98,9 +81,3 @@ Solvers from external packages:
            #             diagonal or Bunch-Kaufman pivoting
            # mtype = 6: complex and symmetric
            return PyPardisoSolver(mtype=2).solve(triu(A).tocsr(), b).squeeze()
-      
-       system = fem.solve.partition(field, K, dof1, dof0)
-       fem.solve.solve(*system, solver=solver)
-
-
-    

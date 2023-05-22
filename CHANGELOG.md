@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `ViewSolid`, which enables `view = ViewSolid(field, solid=None)` the view of cauchy stresses, e.g. `view.plot("Principal Values of Cauchy Stress").show()`.
 - Add constitutive models to top-level namespace, e.g. `yeoh()` from `constitution.yeoh()`. This makes typing hyperelastic material formulations shorter: `Hyperelastic(yeoh, C10=0.5, C20=-0.1, C30=0.02)`.
+- Add `MaterialAD`: A user-defined material definition with Automatic Differentiation. Only the first Piola-Kirchhoff stress tensor must be provided.
 
 ### Changed
 - Add optional point- and cell-data args for `ViewMesh(mesh, point_data=None, cell_data=None)` like already implemented in `ViewField`.

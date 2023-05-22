@@ -356,6 +356,42 @@ def test_umat_viscoelastic():
     assert np.allclose(dsde, dsde2)
 
 
+def test_umat_viscoelastic2():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    import tensortrax.math as tm
+
+    def viscoelastic(F, Cin, mu, eta, dtime):
+        "Finite strain viscoelastic material formulation."
+        C = tm.dot(tm.transpose(F), F)
+        Cu = tm.linalg.det(C) ** (-1 / 3) * C
+        Ci = (
+            tm.special.from_triu_1d(Cin, like=C)
+            + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
+        )
+        Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
+        S = mu * tm.special.dev(Cu @ tm.linalg.inv(Ci)) @ tm.linalg.inv(C)
+        return F @ S, tm.special.triu_1d(Ci)
+
+    kwargs = {"mu": 1, "eta": 1, "dtime": 1}
+    umat = fe.MaterialAD(viscoelastic, nstatevars=6, **kwargs)
+
+    statevars = np.zeros((6, *F.shape[-2:]))
+    s, statevars_new = umat.gradient([F, statevars])
+    dsde = umat.hessian([F, statevars])
+
+    umat = fe.Hyperelastic(
+        fe.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
+    )
+
+    s2, statevars_new = umat.gradient([F, statevars])
+    dsde2 = umat.hessian([F, statevars])
+
+    assert np.allclose(s, s2)
+    assert np.allclose(dsde, dsde2)
+
+
 def test_umat_strain():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
@@ -410,6 +446,7 @@ if __name__ == "__main__":
     test_umat()
     test_umat_hyperelastic()
     test_umat_viscoelastic()
+    test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_plasticity()
     test_elpliso()

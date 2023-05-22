@@ -27,7 +27,7 @@ from ._user_materials import (
     Material,
     MaterialStrain,
 )
-from ._user_materials_hyperelastic import Hyperelastic
+from ._user_materials_hyperelastic import Hyperelastic, MaterialAD
 from ._user_materials_models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
@@ -55,6 +55,7 @@ __all__ = [
     "LinearElasticPlasticIsotropicHardening",
     "Material",
     "MaterialStrain",
+    "MaterialAD",
     "Hyperelastic",
     "AreaChange",
     "LineChange",

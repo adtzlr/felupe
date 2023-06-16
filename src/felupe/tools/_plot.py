@@ -118,7 +118,7 @@ class Scene:
                     data = self.mesh.point_data[name]
                 else:
                     data = self.mesh.cell_data[name]
-        
+
         if name is not None and label is None:
             data_label = name
 
@@ -417,7 +417,13 @@ class ViewSolid(ViewField):
     """
 
     def __init__(
-        self, field, solid=None, stress_type="Cauchy", point_data=None, cell_data=None, cell_type=None
+        self,
+        field,
+        solid=None,
+        stress_type="Cauchy",
+        point_data=None,
+        cell_data=None,
+        cell_type=None,
     ):
         if cell_data is None:
             cell_data = {}
@@ -432,9 +438,7 @@ class ViewSolid(ViewField):
             stress = stress_from_field[stress_type.lower()](field)
             stress_label = f"{stress_type.title()} Stress"
 
-            cell_data_from_solid[stress_label] = tovoigt(
-                stress.mean(-2)
-            ).T
+            cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
             cell_data_from_solid[f"Principal Values of {stress_label}"] = (
                 eigvalsh(stress).mean(-2)[::-1].T
             )

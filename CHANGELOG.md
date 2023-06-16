@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.
 - Warp the mesh in case no name is passed in `View.plot(name=None)`.
+- Don't modify a given label in `Scene.plot(label=None)`.
 
 ### Removed
 - Remove internal (unused) imports of the assembly submodule.

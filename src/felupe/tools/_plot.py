@@ -113,8 +113,14 @@ class Scene:
             scalar_bar_args = {}
 
         if name is not None:
-            if label is None:
-                data_label = name
+            if component is not None:
+                if name in self.mesh.point_data.keys():
+                    data = self.mesh.point_data[name]
+                else:
+                    data = self.mesh.cell_data[name]
+
+        if name is not None and label is None:
+            data_label = name
 
             if component is not None:
                 if name in self.mesh.point_data.keys():
@@ -145,7 +151,7 @@ class Scene:
                     ],
                 }
 
-                if "Principal Values of " in name:
+                if "Principal Values of " in data_label:
                     component_labels_dict[2] = [
                         "(Max. Principal)",
                         "(Min. Principal)",
@@ -391,7 +397,10 @@ class ViewSolid(ViewField):
     field : felupe.FieldContainer
         The field-container.
     solid : felupe.SolidBody or felupe.SolidBodyIncompressible or None, optional
-        A solid body to evaluate the Cauchy stress (default is None).
+        A solid body to evaluate the (Cauchy) stress (default is None).
+    stress_type : str, optional
+        The type of stress, either "Cauchy" or "Kirchhoff, which is exported (default is
+        "Cauchy").
     point_data : dict or None, optional
         Additional point-data dict (default is None).
     cell_data : dict or None, optional
@@ -408,7 +417,13 @@ class ViewSolid(ViewField):
     """
 
     def __init__(
-        self, field, solid=None, point_data=None, cell_data=None, cell_type=None
+        self,
+        field,
+        solid=None,
+        stress_type="Cauchy",
+        point_data=None,
+        cell_data=None,
+        cell_type=None,
     ):
         if cell_data is None:
             cell_data = {}
@@ -416,11 +431,16 @@ class ViewSolid(ViewField):
         cell_data_from_solid = {}
 
         if solid is not None:
-            cauchy_stress = solid.evaluate.cauchy_stress(field)
+            stress_from_field = {
+                "cauchy": solid.evaluate.cauchy_stress,
+                "kirchhoff": solid.evaluate.kirchhoff_stress,
+            }
+            stress = stress_from_field[stress_type.lower()](field)
+            stress_label = f"{stress_type.title()} Stress"
 
-            cell_data_from_solid["Cauchy Stress"] = tovoigt(cauchy_stress.mean(-2)).T
-            cell_data_from_solid["Principal Values of Cauchy Stress"] = (
-                eigvalsh(cauchy_stress).mean(-2)[::-1].T
+            cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
+            cell_data_from_solid[f"Principal Values of {stress_label}"] = (
+                eigvalsh(stress).mean(-2)[::-1].T
             )
 
         super().__init__(

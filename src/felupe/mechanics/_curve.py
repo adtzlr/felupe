@@ -57,11 +57,12 @@ class CharacteristicCurve(Job):
         y=None,
         xaxis=0,
         yaxis=0,
-        xlabel="x",
-        ylabel="y",
+        xlabel=None,
+        ylabel=None,
         xscale=1,
         yscale=1,
         gradient=False,
+        swapaxes=False,
         fig=None,
         ax=None,
         items=None,
@@ -94,8 +95,17 @@ class CharacteristicCurve(Job):
         if fig is None or ax is None:
             fig, ax = plt.subplots()
 
+        if swapaxes:
+            x, y = y, x
+            xlabel, ylabel = ylabel, xlabel
+            xscale, yscale = yscale, xscale
+
         ax.plot(x[:, xaxis] * xscale, y[:, yaxis] * yscale, **kwargs)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
+
+        if xlabel is not None:
+            ax.set_xlabel(xlabel)
+
+        if ylabel is not None:
+            ax.set_ylabel(ylabel)
 
         return fig, ax

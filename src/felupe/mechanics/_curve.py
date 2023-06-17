@@ -98,6 +98,7 @@ class CharacteristicCurve(Job):
         if swapaxes:
             x, y = y, x
             xlabel, ylabel = ylabel, xlabel
+            xaxis, yaxis = yaxis, xaxis
             xscale, yscale = yscale, xscale
 
         ax.plot(x[:, xaxis] * xscale, y[:, yaxis] * yscale, **kwargs)

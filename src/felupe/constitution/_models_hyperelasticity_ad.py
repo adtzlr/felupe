@@ -55,7 +55,7 @@ def mooney_rivlin(C, C10, C01):
     "Strain energy function of the Mooney-Rivlin material formulation."
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
-    I2 = J3 * (I1**2 - trace(C @ C)) / 2
+    I2 = (I1**2 - J3**2 * trace(C @ C)) / 2
     return C10 * (I1 - 3) + C01 * (I2 - 3)
 
 
@@ -68,7 +68,7 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     "Strain energy function of the Third-Order-Deformation material formulation."
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
-    I2 = J3 * (I1**2 - trace(C @ C)) / 2
+    I2 = (I1**2 - J3**2 * trace(C @ C)) / 2
     return (
         C10 * (I1 - 3)
         + C01 * (I2 - 3)
@@ -114,7 +114,7 @@ def van_der_waals(C, mu, limit, a, beta):
     "Strain energy function of the Van der Waals material formulation."
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
-    I2 = J3 * (trace(C) ** 2 - trace(C @ C)) / 2
+    I2 = (trace(C) ** 2 - J3**2 * trace(C @ C)) / 2
     Im = (1 - beta) * I1 + beta * I2
     Im.x[np.isclose(Im.x, 3)] += 1e-8
     eta = sqrt((Im - 3) / (limit**2 - 3))

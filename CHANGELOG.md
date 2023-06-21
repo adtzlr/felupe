@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. The format 
 - Don't warp the mesh in `ViewMesh.plot()`.
 - Warp the mesh in case no name is passed in `View.plot(name=None)`.
 - Don't modify a given label in `Scene.plot(label=None)`.
+- Fix the second invariant of the distortional part of the right Cauchy-Green deformation tensor in hyperelastic material formulations using tensortrax, i.e. fix the implementations of `mooney_rivlin()`, `third_order_deformation()` and `van_der_waals()`.
 
 ### Removed
 - Remove internal (unused) imports of the assembly submodule.

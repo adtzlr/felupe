@@ -30,12 +30,17 @@ import pytest
 import felupe as fe
 
 
-def pre(sym, add_identity):
+def pre(sym, add_identity, add_random=False):
     m = fe.mesh.Cube()
     e = fe.element.Hexahedron()
     q = fe.quadrature.GaussLegendre(1, 3)
     r = fe.Region(m, e, q)
     u = fe.Field(r, dim=3)
+
+    if add_random:
+        np.random.seed(55601)
+        u.values += np.random.rand(*u.values.shape) / 20
+
     v = fe.FieldContainer([u])
     return r, v.extract(grad=True, sym=sym, add_identity=add_identity)
 
@@ -321,8 +326,37 @@ def test_umat_hyperelastic():
         dsde = umat.hessian([F, None])
 
 
+def test_umat_hyperelastic2():
+    r, x = pre(sym=False, add_identity=True, add_random=True)
+    F = x[0]
+
+    import tensortrax.math as tm
+
+    def neo_hooke(F, mu=1):
+        "First Piola-Kirchhoff stress of the Neo-Hookean material formulation."
+
+        C = tm.dot(tm.transpose(F), F)
+        Cu = tm.linalg.det(C) ** (-1 / 3) * C
+
+        return mu * F @ tm.special.dev(Cu) @ tm.linalg.inv(C)
+
+    kwargs = {"mu": 1}
+    umat = fe.MaterialAD(neo_hooke, **kwargs)
+
+    s, statevars_new = umat.gradient([F, None])
+    dsde = umat.hessian([F, None])
+
+    umat = fe.Hyperelastic(fe.constitution.neo_hooke, **kwargs)
+
+    s2, statevars_new = umat.gradient([F, None])
+    dsde2 = umat.hessian([F, None])
+
+    assert np.allclose(s, s2)
+    assert np.allclose(dsde, dsde2)
+
+
 def test_umat_viscoelastic():
-    r, x = pre(sym=False, add_identity=True)
+    r, x = pre(sym=False, add_identity=True, add_random=True)
     F = x[0]
 
     import tensortrax.math as tm
@@ -340,6 +374,42 @@ def test_umat_viscoelastic():
 
     kwargs = {"mu": 1, "eta": 1, "dtime": 1}
     umat = fe.Hyperelastic(viscoelastic, nstatevars=6, **kwargs)
+
+    statevars = np.zeros((6, *F.shape[-2:]))
+    s, statevars_new = umat.gradient([F, statevars])
+    dsde = umat.hessian([F, statevars])
+
+    umat = fe.Hyperelastic(
+        fe.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
+    )
+
+    s2, statevars_new = umat.gradient([F, statevars])
+    dsde2 = umat.hessian([F, statevars])
+
+    assert np.allclose(s, s2)
+    assert np.allclose(dsde, dsde2)
+
+
+def test_umat_viscoelastic2():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    import tensortrax.math as tm
+
+    def viscoelastic(F, Cin, mu, eta, dtime):
+        "Finite strain viscoelastic material formulation."
+        C = tm.dot(tm.transpose(F), F)
+        Cu = tm.linalg.det(C) ** (-1 / 3) * C
+        Ci = (
+            tm.special.from_triu_1d(Cin, like=C)
+            + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
+        )
+        Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
+        S = mu * tm.special.dev(Cu @ tm.linalg.inv(Ci)) @ tm.linalg.inv(C)
+        return F @ S, tm.special.triu_1d(Ci)
+
+    kwargs = {"mu": 1, "eta": 1, "dtime": 1}
+    umat = fe.MaterialAD(viscoelastic, nstatevars=6, **kwargs)
 
     statevars = np.zeros((6, *F.shape[-2:]))
     s, statevars_new = umat.gradient([F, statevars])
@@ -409,7 +479,9 @@ if __name__ == "__main__":
     test_kinematics()
     test_umat()
     test_umat_hyperelastic()
+    test_umat_hyperelastic2()
     test_umat_viscoelastic()
+    test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_plasticity()
     test_elpliso()

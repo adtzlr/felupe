@@ -89,11 +89,12 @@ The documentation is located [here](https://felupe.readthedocs.io/en/latest/?bad
 # Extension Packages
 The capabilities of FElupe may be enhanced with extension packages created by the community.
 
-|                    **Package**                      |                     **Description**                     |
-|:---------------------------------------------------:|:-------------------------------------------------------:|
-|  [tensortrax](https://github.com/adtzlr/tensortrax) |     Math on (Hyper-Dual) Tensors with Trailing Axes     |
-|    [matadi](https://github.com/adtzlr/matadi)       | Material Definition with Automatic Differentiation (AD) |
-|    [feplot](https://github.com/ZAARAOUI999/feplot)  |             A visualization tool for FElupe             |
+|                    **Package**                          |                     **Description**                     |
+|:-------------------------------------------------------:|:-------------------------------------------------------:|
+|  [hyperelastic](https://github.com/adtzlr/hyperelastic) |     Constitutive hyperelastic material formulations     |
+|    [matadi](https://github.com/adtzlr/matadi)           | Material Definition with Automatic Differentiation (AD) |
+|  [tensortrax](https://github.com/adtzlr/tensortrax)     |     Math on (Hyper-Dual) Tensors with Trailing Axes     |
+|    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
 # Changelog
 All notable changes to this project will be documented in [this file](CHANGELOG.md). The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

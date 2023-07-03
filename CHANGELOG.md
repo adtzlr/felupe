@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `ViewSolid`, which enables `view = ViewSolid(field, solid=None)` the view of cauchy stresses, e.g. `view.plot("Principal Values of Cauchy Stress").show()`.
 - Add constitutive models to top-level namespace, e.g. `yeoh()` from `constitution.yeoh()`. This makes typing hyperelastic material formulations shorter: `Hyperelastic(yeoh, C10=0.5, C20=-0.1, C30=0.02)`.
+- Add `CharacteristicCurve.plot(swapaxes=False)`.
 - Add `MaterialAD`: A user-defined material definition with Automatic Differentiation. Only the first Piola-Kirchhoff stress tensor must be provided.
 
 ### Changed
@@ -16,11 +17,13 @@ All notable changes to this project will be documented in this file. The format 
 - Rename `UserMaterial` to `Material`, `UserMaterialStrain` to `MaterialStrain`, `UserMaterialHyperelastic` to `Hyperelastic` (keep old alias names until next major release).
 - Use consistent indices in `einsum()` for (elementwise operating) trailing axes: `q` for quadrature point and `c` for cell.
 - Rename internal `IntegralFormMixed` to `IntegralForm`, which is now consistent internally and in the top-level namespace. The previous internal base-class for a single-field `IntegralForm` is renamed to `WeakForm`.
+- Don't plot x- and y-labels in `CharacteristicCurve.plot(xlabel=None, ylabel=None)` if they are not specified.
 
 ### Fixed
 - Don't warp the mesh in `ViewMesh.plot()`.
 - Warp the mesh in case no name is passed in `View.plot(name=None)`.
 - Don't modify a given label in `Scene.plot(label=None)`.
+- Fix the second invariant of the distortional part of the right Cauchy-Green deformation tensor in hyperelastic material formulations using tensortrax, i.e. fix the implementations of `mooney_rivlin()`, `third_order_deformation()` and `van_der_waals()`.
 
 ### Removed
 - Remove internal (unused) imports of the assembly submodule.

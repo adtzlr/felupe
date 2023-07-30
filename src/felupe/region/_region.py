@@ -87,7 +87,7 @@ class Region:
     --------
     >>> from felupe import Cube, Hexahedron, GaussLegendre, Region
 
-    >>> mesh = Cube(n=4)
+    >>> mesh = Cube(n=3)
     >>> element = Hexahedron()
     >>> quadrature = GaussLegendre(order=1, dim=3)
 

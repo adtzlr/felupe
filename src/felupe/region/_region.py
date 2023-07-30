@@ -82,6 +82,35 @@ class Region:
         Partial derivative of element shape functions ``dhdX_aJqc`` of shape function
         ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``q`` for
         every cell ``c``.
+
+    Examples
+    --------
+    >>> from felupe import Cube, Hexahedron, GaussLegendre, Region
+
+    >>> mesh = Cube(n=4)
+    >>> element = Hexahedron()
+    >>> quadrature = GaussLegendre(order=1, dim=3)
+
+    >>> region = Region(mesh, element, quadrature)
+    >>> region
+    <felupe Region object>
+      Element formulation: Hexahedron
+      Quadrature rule: GaussLegendre
+      Gradient evaluated: True
+
+    Cell-volumes may be obtained by a sum of the differential volumes located at the
+    quadrature points.
+
+    >>> region.dV.sum(axis=0)
+    array([0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125])
+
+    The partial derivative of the first element shape function w.r.t. the undeformed
+    coordinates evaluated at the second integration point of the last element of the
+    region:
+
+    >>> region.dhdX[0, :, 1, -1]
+    array([-1.24401694, -0.33333333, -0.33333333])
+
     """
 
     def __init__(self, mesh, element, quadrature, grad=True):

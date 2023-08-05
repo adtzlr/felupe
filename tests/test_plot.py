@@ -165,6 +165,7 @@ def test_model():
         view = fem.View(field, solid=solid)
         plotter = view.plot(
             off_screen=True,
+            notebook=True,
         )
         # plotter.show(screenshot="undeformed.png")
 

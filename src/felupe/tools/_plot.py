@@ -54,6 +54,7 @@ class Scene:
         add_axes=True,
         off_screen=False,
         plotter=None,
+        notebook=False,
         **kwargs,
     ):
         """Plot scalars, selected by name and component.
@@ -95,6 +96,10 @@ class Scene:
             screenshots, it is necessary to set ``off_screen=True`` (default is False).
         plotter : pyvista.Plotter or None, optional
             Use a given Plotter instead of creating a new instance (default is None).
+        notebook : bool, optional
+            When True, the resulting plot is placed inline a jupyter notebook. Assumes a
+            jupyter console is active. Automatically enables off_screen (default is
+            False).
 
         Returns
         -------
@@ -108,7 +113,7 @@ class Scene:
             pv.set_plot_theme(theme)
 
         if plotter is None:
-            plotter = pv.Plotter(off_screen=off_screen)
+            plotter = pv.Plotter(off_screen=off_screen, notebook=notebook)
 
         if scalar_bar_args is None:
             scalar_bar_args = {}

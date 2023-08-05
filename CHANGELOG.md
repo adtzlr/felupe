@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.5.1] - 2023-08-05
+
+### Changed
+- Only set a theme for pyvista if the theme-argument is given, i.e. don't call `pv.set_plot_theme(theme)` if the theme-argument is None `View(field).plot(theme=None)`.
+
 ## [7.5.0] - 2023-07-20
 
 ### Added

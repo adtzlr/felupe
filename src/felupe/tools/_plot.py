@@ -83,8 +83,8 @@ class Scene:
         view : str or None, optional
             The camera position, e.g. "xy" or "iso" (default is "default"). If not
             specified, this is None for 3d-meshes and "xy" for 2d-meshes.
-        theme : str, optional
-            The theme used for plotting, e.g. "document" (default is "default").
+        theme : str or None, optional
+            The theme used for plotting, e.g. "default" or "document" (default is None).
         scalar_bar_vertical : bool, optional
             A flag to show the interactive scalar bar in vertical orientation on the
             right side (default is True).
@@ -104,7 +104,8 @@ class Scene:
 
         import pyvista as pv
 
-        pv.set_plot_theme(theme)
+        if theme is not None:
+            pv.set_plot_theme(theme)
 
         if plotter is None:
             plotter = pv.Plotter(off_screen=off_screen)

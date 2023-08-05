@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-## [7.6.0] - 2023-08-05
+## [7.6.0] - 2023-08-06
 
 ### Added
 - Add Jupyter-Notebook argument to `View.plot(notebook=False)`, which passes the notebook-argument to the pyvista-plotter.

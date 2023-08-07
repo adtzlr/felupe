@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.6.1] - 2023-08-07
+
+### Changed
+- Start a virtual framebuffer in Jupyter notebook plotting of `View.plot(notebook=True)`. Note: Requires `sudo apt-get install xvfb`.
+
 ## [7.6.0] - 2023-08-06
 
 ### Added

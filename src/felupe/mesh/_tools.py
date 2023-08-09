@@ -503,6 +503,7 @@ def runouts(
     axis=0,
     exponent=5,
     mask=slice(None),
+    normalize=False,
 ):
     """Add simple rubber-runouts for realistic rubber-metal structures.
 
@@ -526,6 +527,9 @@ def runouts(
         the exponent, the steeper the transition (default is 5).
     mask : list or None, optional
         List of points to be considered (default is None).
+    normalize : bool, optional
+        Normalize the runouts to create indents, i.e. maintain the original shape at the
+        ends (default is False).
 
     Returns
     -------
@@ -555,6 +559,11 @@ def runouts(
 
     for i, coord in enumerate(runout_along[axis][: dim - 1]):
         factor = (abs(points_new[mask, axis]) / half_height) ** exponent
-        points_new[mask, coord] *= 1 + factor * values[i]
+        scale = 1 + factor * values[i]
+
+        if normalize:
+            scale /= np.max(np.abs(scale))
+
+        points_new[mask, coord] *= scale
 
     return points_new + centerpoint, cells, cell_type

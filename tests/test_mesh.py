@@ -279,6 +279,10 @@ def test_runouts():
     assert (n.points - x)[:, 1].min() == (m.points - x)[:, 1].min() * 1.1
     assert (n.points - x)[:, 1].max() == (m.points - x)[:, 1].max() * 1.1
 
+    n = fe.mesh.runouts(m, values=[0.1], axis=0, centerpoint=x, normalize=True)
+    assert (n.points - x)[:, 1].min() == (m.points - x)[:, 1].min()
+    assert (n.points - x)[:, 1].max() == (m.points - x)[:, 1].max()
+
 
 def test_concatenate_stack():
     m = fe.Rectangle(n=3)

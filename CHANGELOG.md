@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add optional normalization of mesh runouts (which are then indents) by `mesh.runouts(normalize=False)`.
+
 ## [7.6.1] - 2023-08-07
 
 ### Changed

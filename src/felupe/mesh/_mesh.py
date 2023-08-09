@@ -202,6 +202,7 @@ class Mesh(DiscreteGeometry):
         axis=0,
         exponent=5,
         mask=slice(None),
+        normalize=False,
     ):
         return as_mesh(
             runouts(
@@ -211,6 +212,7 @@ class Mesh(DiscreteGeometry):
                 axis=axis,
                 exponent=exponent,
                 mask=mask,
+                normalize=normalize,
             )
         )
 

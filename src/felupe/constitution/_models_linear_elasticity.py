@@ -104,8 +104,7 @@ class LinearElastic:
         self.x = [np.eye(3), np.zeros(0)]
 
     def gradient(self, x, E=None, nu=None):
-        """Evaluate the stress tensor (as a function of the deformation
-        gradient).
+        """Evaluate the stress tensor (as a function of the deformation gradient).
 
         Arguments
         ---------

@@ -24,6 +24,7 @@ from .constitution import (
     AreaChange,
     Hyperelastic,
     LinearElastic,
+    LinearElasticLargeStrain,
     LinearElasticPlaneStrain,
     LinearElasticPlaneStress,
     LinearElasticPlasticIsotropicHardening,

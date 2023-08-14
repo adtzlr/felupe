@@ -21,6 +21,7 @@ from ._models_linear_elasticity import (
     LinearElasticTensorNotation,
     lame_converter,
 )
+from ._models_linear_elasticity_large_strain import LinearElasticLargeStrain
 from ._models_pseudo_elasticity import OgdenRoxburgh
 from ._user_materials import (
     LinearElasticPlasticIsotropicHardening,
@@ -47,6 +48,7 @@ __all__ = [
     "van_der_waals",
     "yeoh",
     "LinearElastic",
+    "LinearElasticLargeStrain",
     "LinearElasticPlaneStrain",
     "LinearElasticPlaneStress",
     "LinearElasticTensorNotation",

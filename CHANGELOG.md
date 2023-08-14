@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add optional normalization of mesh runouts (which are then indents) by `mesh.runouts(normalize=False)`.
+- Add `LinearElasticLargeStrain(E=None, nu=None, parallel=False)`, suitable for large-rotation analyses. This is based on `NeoHooke()` with converted Lamé-constants.
+
+### Removed
+- Remove tests on Python 3.7 (end of life).
 
 ## [7.6.1] - 2023-08-07
 

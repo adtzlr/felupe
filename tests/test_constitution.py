@@ -61,45 +61,47 @@ def test_nh():
     r, F = pre(sym=False, add_identity=True)
 
     for parallel in [False, True]:
-        nh = fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel)
+        for nh in [
+            fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel),
+            fe.constitution.LinearElasticLargeStrain(E=1.0, nu=0.3, parallel=parallel),
+        ]:
+            W = nh.function(F)
+            P = nh.gradient(F)[:-1]
+            A = nh.hessian(F)
 
-        W = nh.function(F)
-        P = nh.gradient(F)[:-1]
-        A = nh.hessian(F)
+            Wx = nh.energy(F)
+            Px = nh.stress(F)[:-1]
+            Ax = nh.elasticity(F)
 
-        Wx = nh.energy(F)
-        Px = nh.stress(F)[:-1]
-        Ax = nh.elasticity(F)
+            assert np.allclose(W, Wx)
+            assert np.allclose(P, Px)
+            assert np.allclose(A, Ax)
 
-        assert np.allclose(W, Wx)
-        assert np.allclose(P, Px)
-        assert np.allclose(A, Ax)
+            assert W[0].shape == F[0].shape[-2:]
+            assert P[0].shape == (3, 3, *F[0].shape[-2:])
+            assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
-        assert W[0].shape == F[0].shape[-2:]
-        assert P[0].shape == (3, 3, *F[0].shape[-2:])
-        assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
+            nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
 
-        nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
+            W = nh.function(F, mu=2.0)
+            P = nh.gradient(F, mu=2.0)[:-1]
+            A = nh.hessian(F, mu=2.0)
 
-        W = nh.function(F, mu=2.0)
-        P = nh.gradient(F, mu=2.0)[:-1]
-        A = nh.hessian(F, mu=2.0)
+            assert W[0].shape == F[0].shape[-2:]
+            assert P[0].shape == (3, 3, *F[0].shape[-2:])
+            assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
-        assert W[0].shape == F[0].shape[-2:]
-        assert P[0].shape == (3, 3, *F[0].shape[-2:])
-        assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
+            assert np.allclose(P, 0)
 
-        assert np.allclose(P, 0)
+            nh = fe.constitution.NeoHooke(mu=1.0, parallel=parallel)
 
-        nh = fe.constitution.NeoHooke(mu=1.0, parallel=parallel)
+            W = nh.function(F)
+            P = nh.gradient(F)[:-1]
+            A = nh.hessian(F)
 
-        W = nh.function(F)
-        P = nh.gradient(F)[:-1]
-        A = nh.hessian(F)
-
-        assert W[0].shape == F[0].shape[-2:]
-        assert P[0].shape == (3, 3, *F[0].shape[-2:])
-        assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
+            assert W[0].shape == F[0].shape[-2:]
+            assert P[0].shape == (3, 3, *F[0].shape[-2:])
+            assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
 
 def test_linear():

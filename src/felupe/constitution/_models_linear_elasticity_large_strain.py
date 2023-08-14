@@ -53,12 +53,12 @@ class LinearElasticLargeStrain:
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
+        mu = None
+        bulk = None
+
         if self.E is not None and self.nu is not None:
             gamma, mu = lame_converter(E, nu)
             bulk = gamma + 2 * mu / 3
-        else:
-            mu = None
-            bulk = None
 
         self.material = NeoHooke(mu=mu, bulk=bulk, parallel=parallel)
 

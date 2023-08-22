@@ -64,7 +64,7 @@ class FieldAxisymmetric(Field):
     """
 
     def __init__(self, region, dim=2, values=0):
-        """A continous axisymmetric Field on points of a two-dimensional
+        """A continuous axisymmetric Field on points of a two-dimensional
         `region` with dimension `dim` (default is 2) and initial point
         `values` (default is 0).
 

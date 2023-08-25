@@ -96,6 +96,17 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 |  [tensortrax](https://github.com/adtzlr/tensortrax)     |     Math on (Hyper-Dual) Tensors with Trailing Axes     |
 |    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
+# Scientific Publications
+A list of articles in which FElupe was used for numeric simulations.
+
+[1] A. Dutzler, C. Buzzi, and M. Leitner, "Nondimensional translational characteristics of elastomer components", Journal of Applied Engineering Design and Simulation, vol. 1, no. 1. UiTM Press, Universiti Teknologi MARA, Sep. 21, 2021. doi: [10.24191/jaeds.v1i1.20](https://doi.org/10.24191/jaeds.v1i1.20).
+
+[2] C. Buzzi, A. Dutzler, T. Faethe, J. Lassacher, M. Leitner, and F.-J. Weber, "Development of a tool for estimating 
+the characteristic curves of rubber-metal parts", in Proceedings of the [12th International Conference on Railway 
+Bogies and Running Gears](https://transportation.bme.hu/2022/11/30/bogie22/), 2022 (ISBN 978-963-9058-46-0). 
+
+[3] J. Torggler et al., "Investigating Damage Mechanisms in Cord-Rubber Composite Air Spring Bellows of Rail Vehicles and Representative Specimen Design", Applied Composite Materials. Springer Science and Business Media LLC, Aug. 22, 2023. doi: [10.1007/s10443-023-10157-1](https://link.springer.com/article/10.1007/s10443-023-10157-1).
+
 # Changelog
 All notable changes to this project will be documented in [this file](CHANGELOG.md). The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

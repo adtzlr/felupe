@@ -97,7 +97,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 |    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
 # Scientific Publications
-A list of articles in which FElupe is used for numeric simulations. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and open a pull-request to add your publication to this list.
+A list of articles in which FElupe is used for numeric simulations. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
 
 1. A. Dutzler, C. Buzzi, and M. Leitner, "Nondimensional translational characteristics of elastomer components", Journal of Applied Engineering Design and Simulation, vol. 1, no. 1. UiTM Press, Universiti Teknologi MARA, Sep. 21, 2021. doi: [10.24191/jaeds.v1i1.20](https://doi.org/10.24191/jaeds.v1i1.20).
 

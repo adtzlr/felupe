@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add optional normalization of mesh runouts (which are then indents) by `mesh.runouts(normalize=False)`.
 - Add `LinearElasticLargeStrain(E=None, nu=None, parallel=False)`, suitable for large-rotation analyses. This is based on `NeoHooke()` with converted Lamé-constants.
+- Add a simple boundary-based quad- or hex mesher: A mesh tool for filling the face or volume between two line- or quad-meshes `mesh.fill_between(mesh, other_mesh, n=11)`.
 
 ### Removed
 - Remove tests on Python 3.7 (end of life).

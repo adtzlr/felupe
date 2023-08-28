@@ -17,8 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from scipy.interpolate import griddata
 
-from ..math import rotation_matrix
+from ..math import rotation_matrix, transpose
 from ._helpers import mesh_or_data
 
 
@@ -84,6 +85,45 @@ def expand(points, cells, cell_type, n=11, z=1):
     cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
 
     return points_new, cells_new, cell_type_new
+
+
+def fill_between(mesh, other_mesh, n=11):
+    """Fill a 2d-Quad Mesh between two 1d-Line Meshes, embedded in 2d-space, or a
+    3d-Hexahedron Mesh between two 2d-Quad Meshes, embedded in 3d-space, by expansion.
+    Both meshes must have equal number of points and cells. The cells-array is taken
+    from the first mesh.
+
+    Parameters
+    ----------
+    mesh : felupe.Mesh
+        The base line- or quad-mesh.
+    other_mesh : felupe.Mesh
+        The other line- or quad-mesh.
+    n : int or ndarray
+        Number of n-point repetitions or (n-1)-cell repetitions,
+        (default is 11). If an array is given, then its values are used for the
+        relative positions in a reference configuration (-1, 1) between the two meshes.
+
+    Returns
+    -------
+    mesh : felupe.Mesh
+        The expanded mesh.
+    """
+
+    if not hasattr(n, "__len__"):
+        n = np.linspace(-1, 1, n)
+
+    sections = []
+    for bottom, top in zip(mesh.points, other_mesh.points):
+        sections.append(griddata(points=[-1, 1], values=np.vstack([bottom, top]), xi=n))
+
+    new_mesh = mesh.copy()
+    new_mesh.points = new_mesh.points[:, : mesh.points.shape[1] - 1]
+
+    new_mesh = new_mesh.expand(n=len(n))
+    new_mesh.points[:] = transpose(sections).reshape(new_mesh.points.shape)
+
+    return new_mesh
 
 
 @mesh_or_data

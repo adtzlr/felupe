@@ -17,7 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from scipy.interpolate import griddata
 
+from ..math import transpose
 from ._line_rectangle_cube import cube_hexa, line_line, rectangle_quad
 from ._mesh import Mesh
 

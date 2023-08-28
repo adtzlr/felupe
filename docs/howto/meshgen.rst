@@ -25,26 +25,26 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A :class:`fe
    :width: 400px
 
 
-Generate a cube by hand
-***********************
+A cube by hand
+**************
 
 First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`felupe.mesh.expand`: :func:`felupe.mesh.rotate`, :func:`felupe.mesh.revolve` and :func:`felupe.mesh.sweep`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
 
 ..  code-block:: python
 
     line = fem.mesh.Line(a=1, b=3, n=7)
-    rect = fem.mesh.expand(line, n=2, z=5)
-    cube = fem.mesh.expand(rect, n=2, z=3)
+    rect = fem.mesh.expand(line, n=5, z=5)
+    cube = fem.mesh.expand(rect, n=6, z=3)
 
 
 Alternatively, these mesh-related tools are also provided as methods of a :class:`felupe.Mesh`.
 
 ..  code-block:: python
 
-    cube = fem.mesh.Line(a=1, b=3, n=7).expand(n=2, z=5).expand(n=2, z=3)
+    cube = fem.mesh.Line(a=1, b=3, n=7).expand(n=5, z=5).expand(n=6, z=3)
 
-.. image:: images/cube.png
-   :width: 400px
+..  image:: images/cube.png
+    :width: 400px
 
 
 Lines, rectangles and cubes
@@ -52,17 +52,72 @@ Lines, rectangles and cubes
 
 Of course lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
 
-Triangle and Tetrahedron meshes
-*******************************
+..  code-block:: python
 
-Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of Triangle or Tetrahedrons by :func:`felupe.mesh.triangulate`.
+    cube = fem.Cube(a=(1, 0, 0), b=(3, 5, 3), n=(7, 5, 6))
+
+..  image:: images/cube.png
+    :width: 400px
+
+
+Cylinders
+*********
+
+Cylinders are created by a revolution of a rectangle.
 
 ..  code-block:: python
 
-    rectangle_quad = fem.Rectangle(n=5).triangulate(rect_quad)
+    r = 25
+    R = 50
+    H = 100
+    
+    rect = fem.Rectangle(a=(r, 0), b=(R, H), n=(11, 41))
+    cylinder = rect.revolve(n=19, phi=180, axis=1)
 
-    cube_hexahedron = fem.Cube(n=5)
-    cube_tetra = fem.mesh.triangulate(cube_hexahedron)
+..  image:: images/cylinder.png
+    :width: 400px
+
+Fill between boundaries
+***********************
+
+Meshed boundaries may be used to fill the area or volume in between for line and quad meshes. A plate with a hole is initiated by a line mesh, which is copied two times for the boundaries. The points arrays are updated for the hole and the upper edge. The face is filled by a quad mesh.
+
+..  code-block:: python
+
+    n = (11, 9)
+    phi = np.linspace(1, 0.5, n[0]) * np.pi / 2
+    
+    line = fem.mesh.Line(n=n[0])
+    bottom = line.copy()
+    top = line.copy()
+    
+    bottom.points = 0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T
+    top.points = np.vstack([np.linspace(0, 1, n[0]), np.linspace(1, 1, n[0])]).T
+    
+    solid = bottom.fill_between(top, n=n[1])
+    solid = fem.mesh.concatenate([solid, solid.mirror(normal=[-1, 1, 0])]).sweep()
+    
+..  image:: images/plate-with-hole.png
+    :width: 400px
+
+Triangle and Tetrahedron meshes
+*******************************
+
+Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of Triangles or Tetrahedrons by :func:`felupe.mesh.triangulate`.
+
+..  code-block:: python
+
+    rectangle = fem.Rectangle(n=5).triangulate()
+
+..  image:: images/rectangle-triangle.png
+    :width: 400px
+
+..  code-block:: python
+
+    cube = fem.Cube(n=5).triangulate()
+
+..  image:: images/cube-tetra.png
+    :width: 400px
 
 Meshes with midpoints
 *********************

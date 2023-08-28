@@ -34,6 +34,7 @@ from ._discrete_geometry import DiscreteGeometry
 from ._dual import dual
 from ._tools import (
     expand,
+    fill_between,
     flip,
     mirror,
     revolve,
@@ -177,6 +178,10 @@ class Mesh(DiscreteGeometry):
     @wraps(sweep)
     def sweep(self, decimals=None):
         return as_mesh(sweep(self, decimals=decimals))
+
+    @wraps(fill_between)
+    def fill_between(self, other_mesh, n=11):
+        return as_mesh(fill_between(self, other_mesh=other_mesh, n=n))
 
     @wraps(flip)
     def flip(self, mask=None):

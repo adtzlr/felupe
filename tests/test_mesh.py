@@ -397,6 +397,38 @@ def test_mesh_methods():
     assert isinstance(m, fe.Mesh)
 
 
+def test_mesh_fill_between():
+    # 2d
+    phi = np.linspace(1, 0.5, 11) * np.pi / 2
+
+    line = fe.mesh.Line(n=11)
+    bottom = line.copy()
+    top = line.copy()
+
+    bottom.points = 0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T
+    top.points = np.vstack([np.linspace(0, 1, 11), np.linspace(1, 1, 11)]).T
+
+    face1 = bottom.fill_between(top, n=5)
+    face2 = fe.mesh.fill_between(bottom, top, n=5)
+
+    assert np.allclose(face1.points, face2.points)
+
+    # 3d
+    face = fe.Rectangle(n=(6, 7))
+
+    bottom = face.copy()
+    top = face.copy()
+
+    bottom.points = np.hstack([face.points, np.zeros((face.npoints, 1))])
+    top.points = np.hstack([face.points, np.ones((face.npoints, 1))])
+    top.points[:, 2] += np.random.rand(top.npoints) / 10
+
+    solid1 = bottom.fill_between(top, n=5)
+    solid2 = fe.mesh.fill_between(bottom, top, n=5)
+
+    assert np.allclose(solid1.points, solid2.points)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -409,3 +441,4 @@ if __name__ == "__main__":
     test_read(filename="mesh.bdf")
     test_mesh_methods()
     test_read_nocells(filename="mesh_no-cells.bdf")
+    test_mesh_fill_between()

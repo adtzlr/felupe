@@ -30,7 +30,7 @@ An engine-mount is loaded by a combined vertical and horizontal displacement. Wh
     
     # a mesh used for the results (without air)
     xdmf = mesh.copy()
-    xdmf.update(mesh.cells[:-air.ncells])
+    xdmf.update(cells=mesh.cells[:-air.ncells])
     xdmf = xdmf.as_meshio()
 
 

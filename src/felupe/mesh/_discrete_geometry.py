@@ -82,7 +82,7 @@ class DiscreteGeometry:
         self.ncells = self.cells.shape[0]
 
         # get number of cells per point
-        points_in_cell, self.cells_per_point = np.unique(cells, return_counts=True)
+        points_in_cell, self.cells_per_point = np.unique(self.cells, return_counts=True)
 
         # check if there are points without cells
         if self.npoints != len(self.cells_per_point):

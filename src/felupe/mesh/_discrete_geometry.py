@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from copy import deepcopy
+
 import numpy as np
 
 
@@ -63,6 +65,16 @@ class DiscreteGeometry:
         self.cell_type = cell_type
 
         self.update()
+
+    def copy(self, points=None, cells=None, cell_type=None):
+        """Return a deepcopy."""
+
+        out = deepcopy(self)
+
+        if points is not None or cells is not None or cell_type is not None:
+            out.update(points=points, cells=cells, cell_type=cell_type)
+
+        return out
 
     def update(self, points=None, cells=None, cell_type=None):
         "Update the cell and dimension attributes with a given cell array."

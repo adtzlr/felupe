@@ -116,8 +116,12 @@ def test_mixed_lagrange():
     m = fe.Cube(n=order + 1)
     md = fe.Cube(n=order)
 
-    m.update(np.arange(m.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON")
-    md.update(np.arange(md.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON")
+    m.update(
+        cells=np.arange(m.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON"
+    )
+    md.update(
+        cells=np.arange(md.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON"
+    )
 
     r = fe.RegionLagrange(m, order=order, dim=3)
     g = fe.FieldsMixed(r, mesh=md)

@@ -45,7 +45,7 @@ degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
     
     mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
     mesh.points = np.vstack((mesh.points, [0, 2 * H]))
-    mesh.update(mesh.cells)
+    mesh.update(cells=mesh.cells)
     mesh.points_without_cells = np.array([], dtype=bool)
 
 .. image:: images/shear_mesh.png

@@ -28,8 +28,8 @@ In a second step, sub-meshes are created.
     mesh = [m.copy(), m.copy()]
     
     # create sub-meshes (fiber, matrix)
-    mesh[0].update(m.cells[ np.all(np.isin(m.cells, mask), axis=1)])
-    mesh[1].update(m.cells[~np.all(np.isin(m.cells, mask), axis=1)])
+    mesh[0].update(cells=m.cells[ np.all(np.isin(m.cells, mask), axis=1)])
+    mesh[1].update(cells=m.cells[~np.all(np.isin(m.cells, mask), axis=1)])
 
 This is followed by the creation of a global region/field and two sub-regions/sub-fields.
 

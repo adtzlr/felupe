@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add `LinearElasticLargeStrain(E=None, nu=None, parallel=False)`, suitable for large-rotation analyses. This is based on `NeoHooke()` with converted Lamé-constants.
 - Add a simple boundary-based quad- or hex mesher: A mesh tool for filling the face or volume between two line- or quad-meshes `mesh.fill_between(mesh, other_mesh, n=11)`.
 
+### Changed
+- Update the mesh also with a new points array: this changes the Mesh-update function `mesh.update(cells, cell_type=None)` to `mesh.update(points=None, cells=None, cell_type=None)`. Note that this could break old scripts which use `mesh.update(new_cells)` instead of `mesh.update(cells=new_cells)`.
+
 ### Removed
 - Remove tests on Python 3.7 (end of life).
 

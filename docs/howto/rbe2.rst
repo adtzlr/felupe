@@ -11,7 +11,7 @@ This How-To demonstrates the usage of multi-point constraints (also called MPC o
     # mesh with one additional rbe2-control point
     mesh = fem.Cube(n=11)
     mesh.points = np.vstack((mesh.points, [2.0, 0.0, 0.0]))
-    mesh.update(mesh.cells)
+    mesh.update(cells=mesh.cells)
     
     region = fem.RegionHexahedron(mesh)
     displacement = fem.Field(region, dim=3)

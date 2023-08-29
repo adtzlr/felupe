@@ -370,7 +370,7 @@ class RegionBoundary(Region):
 
         # create mesh on boundary
         mesh_boundary_cells = mesh.copy()
-        mesh_boundary_cells.update(cells_on_boundary)
+        mesh_boundary_cells.update(cells=cells_on_boundary)
         self.mesh = mesh_boundary_cells
         self.mesh.cells_faces = cells_faces[self._selection]
 

@@ -62,11 +62,16 @@ class DiscreteGeometry:
         self.cells = np.array(cells)
         self.cell_type = cell_type
 
-        self.update(self.cells)
+        self.update()
 
-    def update(self, cells, cell_type=None):
+    def update(self, points=None, cells=None, cell_type=None):
         "Update the cell and dimension attributes with a given cell array."
-        self.cells = cells
+
+        if points is not None:
+            self.points = points
+
+        if cells is not None:
+            self.cells = cells
 
         if cell_type is not None:
             self.cell_type = cell_type
@@ -77,7 +82,7 @@ class DiscreteGeometry:
         self.ncells = self.cells.shape[0]
 
         # get number of cells per point
-        points_in_cell, self.cells_per_point = np.unique(cells, return_counts=True)
+        points_in_cell, self.cells_per_point = np.unique(self.cells, return_counts=True)
 
         # check if there are points without cells
         if self.npoints != len(self.cells_per_point):

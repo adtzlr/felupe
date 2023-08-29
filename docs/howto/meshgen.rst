@@ -21,6 +21,12 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A :class:`fe
 
     mesh = fem.Mesh(points, cells, cell_type="quad")
 
+    # view the mesh in an interactive window
+    fem.ViewMesh(mesh).plot().show()
+    
+    # take a screenshot of an off-screen view
+    fem.ViewMesh(mesh).plot(off_screen=True).show(screenshot="quad.png")
+
 .. image:: images/quad.png
    :width: 400px
 
@@ -136,3 +142,5 @@ The same also applies on meshes with triangles.
 
     rectangle_triangle3 = fem.Rectangle(n=6).triangulate()
     rectangle_triangle6 = rectangle_triangle3.add_midpoints_edges()
+
+While views on higher-order meshes are possible, it is suggested to use ParaView for the visualization of meshes with midpoints due to the improved representation of the cells.

@@ -66,10 +66,10 @@ class DiscreteGeometry:
 
     def update(self, points=None, cells=None, cell_type=None):
         "Update the cell and dimension attributes with a given cell array."
-        
+
         if points is not None:
             self.points = points
-        
+
         if cells is not None:
             self.cells = cells
 

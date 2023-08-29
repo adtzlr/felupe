@@ -62,11 +62,16 @@ class DiscreteGeometry:
         self.cells = np.array(cells)
         self.cell_type = cell_type
 
-        self.update(self.cells)
+        self.update()
 
-    def update(self, cells, cell_type=None):
+    def update(self, points=None, cells=None, cell_type=None):
         "Update the cell and dimension attributes with a given cell array."
-        self.cells = cells
+        
+        if points is not None:
+            self.points = points
+        
+        if cells is not None:
+            self.cells = cells
 
         if cell_type is not None:
             self.cell_type = cell_type

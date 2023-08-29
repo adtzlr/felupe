@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Update the mesh also with a new points array: this changes the Mesh-update function `mesh.update(cells, cell_type=None)` to `mesh.update(points=None, cells=None, cell_type=None)`. Note that this could break old scripts which use `mesh.update(new_cells)` instead of `mesh.update(cells=new_cells)`.
+- Move the copy-method of a Mesh `Mesh.copy()` to its base-class and extend it to optionally update the attributes `DiscreteGeometry.copy(points=None, cells=None, cell_type=None)`.
 
 ### Removed
 - Remove tests on Python 3.7 (end of life).

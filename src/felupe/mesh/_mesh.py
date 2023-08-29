@@ -131,18 +131,6 @@ class Mesh(DiscreteGeometry):
 
         self.as_meshio(**kwargs).write(filename)
 
-    def copy(self):
-        """Return a deepcopy of the mesh.
-
-        Returns
-        -------
-        Mesh
-            A deepcopy of the mesh.
-
-        """
-
-        return deepcopy(self)
-
     @wraps(dual)
     def dual(
         self,

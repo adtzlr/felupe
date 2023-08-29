@@ -402,11 +402,8 @@ def test_mesh_fill_between():
     phi = np.linspace(1, 0.5, 11) * np.pi / 2
 
     line = fe.mesh.Line(n=11)
-    bottom = line.copy()
-    top = line.copy()
-
-    bottom.points = 0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T
-    top.points = np.vstack([np.linspace(0, 1, 11), np.linspace(1, 1, 11)]).T
+    bottom = line.copy(points=0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T)
+    top = line.copy(points=np.vstack([np.linspace(0, 1, 11), np.linspace(1, 1, 11)]).T)
 
     face1 = bottom.fill_between(top, n=5)
     face2 = fe.mesh.fill_between(bottom, top, n=5)

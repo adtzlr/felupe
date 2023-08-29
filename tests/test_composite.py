@@ -30,10 +30,10 @@ def test_composite():
     cells = np.isin(mesh.cells, points).sum(1) == mesh.cells.shape[1]
 
     mesh_rubber = mesh.copy()
-    mesh_rubber.update(mesh_rubber.cells[~cells])
+    mesh_rubber.update(cells=mesh_rubber.cells[~cells])
 
     mesh_reinforced = mesh.copy()
-    mesh_reinforced.update(mesh_reinforced.cells[cells])
+    mesh_reinforced.update(cells=mesh_reinforced.cells[cells])
 
     region_rubber = fe.RegionHexahedron(mesh_rubber)
     field_rubber = fe.FieldsMixed(
@@ -88,10 +88,10 @@ def test_composite_planestrain():
     cells = np.isin(mesh.cells, points).sum(1) == mesh.cells.shape[1]
 
     mesh_rubber = mesh.copy()
-    mesh_rubber.update(mesh_rubber.cells[~cells])
+    mesh_rubber.update(cells=mesh_rubber.cells[~cells])
 
     mesh_reinforced = mesh.copy()
-    mesh_reinforced.update(mesh_reinforced.cells[cells])
+    mesh_reinforced.update(cells=mesh_reinforced.cells[cells])
 
     region_rubber = fe.RegionQuad(mesh_rubber)
     field_rubber = fe.FieldsMixed(

@@ -33,7 +33,7 @@ import felupe as fe
 def test_mpc():
     mesh = fe.Cube(n=3)
     mesh.points = np.vstack((mesh.points, [2, 0, 0]))
-    mesh.update(mesh.cells)
+    mesh.update(cells=mesh.cells)
 
     region = fe.RegionHexahedron(mesh)
 
@@ -73,7 +73,7 @@ def test_mpc():
 def pre_mpc_mixed(point, values):
     mesh = fe.mesh.Cube(n=3)
     mesh.points = np.vstack((mesh.points, point))
-    mesh.update(mesh.cells)
+    mesh.update(cells=mesh.cells)
 
     region = fe.RegionHexahedron(mesh)
     dV = region.dV
@@ -130,7 +130,7 @@ def test_mpc_mixed():
 
 def test_mpc_isolated():
     mesh = fe.mesh.Line(n=3)
-    mesh.update(mesh.cells[:1])
+    mesh.update(cells=mesh.cells[:1])
     mesh.points = np.pad(mesh.points, ((0, 0), (0, 2)))
     mesh.points[-1] = np.array([1, 0.5, 0.5])
     mesh.dim = 3

@@ -44,7 +44,7 @@ def test_meshes():
     )
 
     n = m.copy()
-    n.update(m.cells, cell_type="my-fancy-cell-type")
+    n.update(cells=m.cells, cell_type="my-fancy-cell-type")
 
     assert n.cell_type == "my-fancy-cell-type"
 

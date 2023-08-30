@@ -150,6 +150,13 @@ Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of T
 ..  image:: images/cube-tetra.png
     :width: 400px
 
+..  code-block:: python
+
+    cube = fem.Cube(n=5).triangulate(mode=0)
+
+..  image:: images/cube-tetra-mode.png
+    :width: 400px
+
 Meshes with midpoints
 *********************
 

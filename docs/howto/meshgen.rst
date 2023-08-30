@@ -117,7 +117,7 @@ Typical indentations (runouts) of the free-rubber surfaces in rubber-metal compo
 
 ..  code-block:: python
 
-    block = fem.mesh.expand(mesh, z=0.5)
+    block = mesh.expand(z=0.5)
     x, y, z = block.points.T
     
     solid = block.add_runouts(

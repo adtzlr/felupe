@@ -97,11 +97,10 @@ Meshed boundaries may be used to fill the area or volume in between for line and
     phi = np.linspace(1, 0.5, n[0]) * np.pi / 2
     
     line = fem.mesh.Line(n=n[0])
-    bottom = line.copy()
-    top = line.copy()
-    
-    bottom.points = 0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T
-    top.points = np.vstack([np.linspace(0, 1, n[0]), np.linspace(1, 1, n[0])]).T
+    bottom = line.copy(points=0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T)
+    top = line.copy(
+        points=np.vstack([np.linspace(0, 1, n[0]), np.linspace(1, 1, n[0])]).T
+    )
     
     face = bottom.fill_between(top, n=n[1])
     mesh = fem.mesh.concatenate([face, face.mirror(normal=[-1, 1, 0])]).sweep()

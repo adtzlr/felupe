@@ -25,7 +25,10 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A :class:`fe
     fem.ViewMesh(mesh).plot().show()
     
     # take a screenshot of an off-screen view
-    fem.ViewMesh(mesh).plot(off_screen=True).show(screenshot="quad.png")
+    img = fem.ViewMesh(mesh).plot(off_screen=True).screenshot(
+        "mesh.png", 
+        transparent_background=True,
+    )
 
 .. image:: images/quad.png
    :width: 400px
@@ -100,10 +103,33 @@ Meshed boundaries may be used to fill the area or volume in between for line and
     bottom.points = 0.5 * np.vstack([np.cos(phi), np.sin(phi)]).T
     top.points = np.vstack([np.linspace(0, 1, n[0]), np.linspace(1, 1, n[0])]).T
     
-    solid = bottom.fill_between(top, n=n[1])
-    solid = fem.mesh.concatenate([solid, solid.mirror(normal=[-1, 1, 0])]).sweep()
-    
+    face = bottom.fill_between(top, n=n[1])
+    mesh = fem.mesh.concatenate([face, face.mirror(normal=[-1, 1, 0])]).sweep()
+
+
 ..  image:: images/plate-with-hole.png
+    :width: 400px
+
+Indentations for rubber-metal parts
+***********************************
+
+Typical indentations (runouts) of the free-rubber surfaces in rubber-metal components are defined by a centerpoint, an axis and relative values. Optionally, the transformation of the point coordinates is restricted to a list of given points.
+
+..  code-block:: python
+
+    block = fem.mesh.expand(mesh, z=0.5)
+    x, y, z = block.points.T
+    
+    solid = block.add_runouts(
+        centerpoint=[0, 0, 0], 
+        axis=2,
+        values=[0.07, 0.02],
+        exponent=5,  # shape parameter
+        normalize=True,
+        mask=np.arange(solid.npoints)[np.sqrt(x**2 + y**2) > 0.5]
+    )
+
+..  image:: images/runouts.png
     :width: 400px
 
 Triangle and Tetrahedron meshes

@@ -112,7 +112,7 @@ Meshed boundaries may be used to fill the area or volume in between for line and
 Indentations for rubber-metal parts
 ***********************************
 
-Typical indentations (runouts) of the free-rubber surfaces in rubber-metal components are defined by a centerpoint, an axis and relative values. Optionally, the transformation of the point coordinates is restricted to a list of given points.
+Typical indentations (runouts) of the free-rubber surfaces in rubber-metal components are defined by a centerpoint, an axis and their relative amounts (values) per axis. Optionally, the transformation of the point coordinates is restricted to a list of given points.
 
 ..  code-block:: python
 

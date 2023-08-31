@@ -136,8 +136,7 @@ The axial-compressive and lateral-shear force-displacement curves are obtained f
 .. image:: images/rubber-spring_curve-axial.svg
 
 
-The shear lateral force-displacement curve is again obtained from the characteristic-curve
-job.
+The shear lateral force-displacement curve is again obtained from the characteristic-curve job.
 
 ..  code-block:: python
 

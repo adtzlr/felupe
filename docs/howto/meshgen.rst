@@ -117,6 +117,30 @@ Meshed boundaries may be used to fill the area or volume in between for line and
 ..  image:: images/plate-with-hole.png
     :width: 400px
 
+Connect two quad-meshed faces by hexahedrons:
+
+..  code-block:: python
+
+    x = np.linspace(0, 1, 11)
+    y = np.linspace(0, 1, 11)
+    
+    xg, yg = np.meshgrid(x, y, indexing="ij")
+    zg = (
+        0.5 + 0.3 * xg**2 + 0.5 * yg**2 - 0.7 * yg ** 3 + np.random.rand(11, 11) / 50
+    )
+    
+    grid = fem.Grid(x, y)
+    top = grid.copy(points=np.hstack([grid.points, zg.reshape(-1, 1)]))
+    bottom = grid.copy(points=np.hstack([grid.points, 0 * zg.reshape(-1, 1)]))
+    
+    bottom.points += [0.2, 0.1, 0]
+    bottom.points *= 0.75
+    
+    mesh = bottom.fill_between(top, n=6)
+
+..  image:: images/fill-between.png
+    :width: 400px
+
 Indentations for rubber-metal parts
 ***********************************
 

@@ -410,6 +410,10 @@ def test_mesh_fill_between():
 
     assert np.allclose(face1.points, face2.points)
 
+    region = fe.RegionQuad(face1)
+
+    assert np.all(region.dV > 0)
+
     # 3d
     face = fe.Rectangle(n=(6, 7))
 
@@ -425,6 +429,40 @@ def test_mesh_fill_between():
 
     assert np.allclose(solid1.points, solid2.points)
 
+    region = fe.RegionHexahedron(solid1)
+
+    assert np.all(region.dV > 0)
+
+
+def test_circle():
+    centerpoint = [0, 0]
+    radius = 1.5
+    x0, y0 = centerpoint
+
+    mesh = fe.Circle(
+        radius=radius,
+        centerpoint=centerpoint,
+        n=6,
+        sections=[0, 90, 180],
+        exponent=2,
+        value=0.15,
+        decimals=12,
+    )
+
+    x, y = mesh.points.T
+
+    r = np.sqrt((x - x0) ** 2 + (y - y0) ** 2)
+
+    assert np.all(r - 1e-10 <= 1.5)
+
+    region = fe.RegionQuad(mesh)
+
+    assert np.all(region.dV > 0)
+
+    boundary = fe.RegionQuadBoundary(mesh)
+
+    assert boundary.mesh.ncells == 50
+
 
 if __name__ == "__main__":
     test_meshes()
@@ -439,3 +477,4 @@ if __name__ == "__main__":
     test_mesh_methods()
     test_read_nocells(filename="mesh_no-cells.bdf")
     test_mesh_fill_between()
+    test_circle()

@@ -10,6 +10,7 @@ from ._convert import (
 )
 from ._dual import dual
 from ._geometry import (
+    Circle,
     Cube,
     CubeArbitraryOrderHexahedron,
     Grid,
@@ -50,6 +51,7 @@ __all__ = [
     "collect_volumes",
     "convert",
     "dual",
+    "Circle",
     "Cube",
     "CubeArbitraryOrderHexahedron",
     "Grid",
@@ -61,6 +63,7 @@ __all__ = [
     "concatenate",
     "expand",
     "flip",
+    "fill_between",
     "mirror",
     "revolve",
     "rotate",

@@ -82,7 +82,7 @@ from .mechanics import (
     StateNearlyIncompressible,
     Step,
 )
-from .mesh import Cube, Grid, Mesh, MeshContainer, Rectangle
+from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Rectangle
 from .quadrature import GaussLegendre, GaussLegendreBoundary
 from .quadrature import Tetrahedron as TetrahedronQuadrature
 from .quadrature import Triangle as TriangleQuadrature
@@ -142,6 +142,7 @@ __all__ = [
     "FieldsMixed",
     "AreaChange",
     "LinearElastic",
+    "LinearElasticLargeStrain",
     "LinearElasticPlaneStrain",
     "LinearElasticPlaneStress",
     "LinearElasticPlasticIsotropicHardening",
@@ -184,6 +185,7 @@ __all__ = [
     "Triangle",
     "TriangleMINI",
     "TriQuadraticHexahedron",
+    "Circle",
     "Cube",
     "Grid",
     "Mesh",

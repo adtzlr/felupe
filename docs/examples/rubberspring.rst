@@ -19,6 +19,7 @@ A `meshed three-dimensional geometry <../_static/mesh.vtk>`_ of a rubber-metal s
 
     import felupe as fem
     import numpy as np
+    # import pypardiso # see docs on external solvers
 
     mesh = fem.mesh.read("mesh.vtk")[0]
     X, Y, Z = mesh.points.T
@@ -106,6 +107,7 @@ The simulation model is now ready to be solved. The results are saved within a X
     job.evaluate(
         filename="result.xdmf", 
         kwargs={"parallel": True}, 
+        # solver=pypardiso.spsolve, # see docs on external solvers
         point_data = {"Logarithmic Strain (Max. Principal)": log_strain}
     )
     

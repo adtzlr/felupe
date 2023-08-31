@@ -21,6 +21,11 @@ felupe.mesh
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.mesh.Circle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.mesh.RectangleArbitraryOrderQuad
    :members:
    :undoc-members:

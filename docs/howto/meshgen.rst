@@ -59,7 +59,7 @@ Alternatively, these mesh-related tools are also provided as methods of a :class
 Lines, rectangles, cubes and circles
 ************************************
 
-Of course lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
+Lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
 
 ..  code-block:: python
 
@@ -113,7 +113,6 @@ Meshed boundaries may be used to fill the area or volume in between for line and
     
     face = bottom.fill_between(top, n=n[1])
     mesh = fem.mesh.concatenate([face, face.mirror(normal=[-1, 1, 0])]).sweep()
-
 
 ..  image:: images/plate-with-hole.png
     :width: 400px

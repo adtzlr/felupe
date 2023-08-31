@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from copy import deepcopy
 from functools import wraps
 
 import numpy as np

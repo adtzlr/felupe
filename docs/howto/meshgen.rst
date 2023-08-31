@@ -56,8 +56,8 @@ Alternatively, these mesh-related tools are also provided as methods of a :class
     :width: 400px
 
 
-Lines, rectangles and cubes
-***************************
+Lines, rectangles, cubes and circles
+************************************
 
 Of course lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
 
@@ -68,6 +68,14 @@ Of course lines, rectangles, cubes and cylinders do not have to be constructed m
 ..  image:: images/cube.png
     :width: 400px
 
+There is also :class:`felupe.Circle` for the creation of a quad-mesh for a circle.
+
+..  code-block:: python
+
+    circle = fem.Circle(radius=1.5, centerpoint=[1, 2], n=6, sections=[0, 90, 180, 270])
+
+..  image:: images/circle.png
+    :width: 400px
 
 Cylinders
 *********
@@ -85,6 +93,7 @@ Cylinders are created by a revolution of a rectangle.
 
 ..  image:: images/cylinder.png
     :width: 400px
+
 
 Fill between boundaries
 ***********************

@@ -17,11 +17,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from scipy.interpolate import griddata
 
-from ..math import transpose
 from ._line_rectangle_cube import cube_hexa, line_line, rectangle_quad
 from ._mesh import Mesh
+from ._tools import concatenate
 
 
 class Line(Mesh):
@@ -216,3 +215,40 @@ class CubeArbitraryOrderHexahedron(Mesh):
         cells = np.hstack((vertices, edges, faces, volume)).reshape(1, -1)
 
         super().__init__(points, cells, cell_type="VTK_LAGRANGE_HEXAHEDRON")
+
+
+class Circle(Mesh):
+    def __init__(
+        self,
+        radius=1,
+        centerpoint=[0, 0],
+        n=6,
+        sections=[0, 90, 180, 270],
+        value=0.15,
+        exponent=2,
+        decimals=10,
+    ):
+        rect = Rectangle(b=(0.5, 0.5), n=(n, n))
+        right = rect.points[:, 0] == 0.5
+
+        rect = rect.add_runouts(values=[-value], axis=0, exponent=exponent)
+        rect.points[:, 0] = rect.points[:, 1].reshape(n, n, order="F").ravel()
+
+        line = Line(n=n)
+        phi = np.linspace(np.pi / 4, 0, n)
+
+        bottom = line.copy(points=rect.points[right][::-1])
+        top = line.copy(points=np.vstack([np.cos(phi), np.sin(phi)]).T)
+        face = bottom.fill_between(top, n=n)
+
+        quarter = concatenate([face, face.mirror(normal=[-1, 1]), rect])
+        circle = concatenate([quarter.rotate(alpha, 2) for alpha in sections]).sweep(
+            decimals=decimals
+        )
+
+        circle.points *= radius
+        circle.points += np.array(centerpoint)
+
+        super().__init__(
+            points=circle.points, cells=circle.cells, cell_type=circle.cell_type
+        )

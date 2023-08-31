@@ -24,6 +24,8 @@ from ._tools import concatenate
 
 
 class Line(Mesh):
+    "A line shaped 1d-mesh with lines between ``a`` and ``b`` with ``n`` points."
+    
     def __init__(self, a=0, b=1, n=2):
         self.a = a
         self.b = b
@@ -35,6 +37,9 @@ class Line(Mesh):
 
 
 class Rectangle(Mesh):
+    """A rectangular 2d-mesh with quads between ``a`` and ``b`` with ``n`` 
+    points per axis."""
+    
     def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
         self.a = a
         self.b = b
@@ -46,6 +51,9 @@ class Rectangle(Mesh):
 
 
 class Cube(Mesh):
+    """A cube shaped 3d-mesh with hexahedrons between ``a`` and ``b`` with ``n`` 
+    points per axis."""
+    
     def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
         self.a = a
         self.b = b
@@ -57,6 +65,9 @@ class Cube(Mesh):
 
 
 class Grid(Mesh):
+    """A grid shaped 3d-mesh with hexahedrons. Basically a wrapper for 
+    :func:`numpy.meshgrid` with  default ``indexing="ij"``."""
+    
     def __init__(self, *xi, indexing="ij", **kwargs):
         shape = np.array([len(x) for x in xi])
         n = shape if len(shape) > 1 else shape[0]
@@ -76,6 +87,9 @@ class Grid(Mesh):
 
 
 class RectangleArbitraryOrderQuad(Mesh):
+    """A rectangular 2d-mesh with arbitrary order quads between ``a`` and ``b`` with 
+    ``n`` points per axis."""
+    
     def __init__(self, a=(0, 0), b=(1, 1), order=2):
         yv, xv = np.meshgrid(
             np.linspace(a[1], b[1], order + 1),
@@ -128,6 +142,9 @@ class RectangleArbitraryOrderQuad(Mesh):
 
 
 class CubeArbitraryOrderHexahedron(Mesh):
+    """A cube shaped 3d-mesh with arbitrary order hexahedrons between ``a`` and ``b`` 
+    with ``n`` points per axis."""
+    
     def __init__(self, a=(0, 0, 0), b=(1, 1, 1), order=2):
         zv, yv, xv = np.meshgrid(
             np.linspace(a[2], b[2], order + 1),
@@ -218,6 +235,9 @@ class CubeArbitraryOrderHexahedron(Mesh):
 
 
 class Circle(Mesh):
+    """A circular shaped 2d-mesh with quads and ``n`` points in the rectangular
+    center. 90-degree ``sections`` are placed at given angles in degree."""
+    
     def __init__(
         self,
         radius=1,

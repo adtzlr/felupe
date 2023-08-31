@@ -21,6 +21,9 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A :class:`fe
 
     mesh = fem.Mesh(points, cells, cell_type="quad")
 
+    # if needed, convert a FElupe mesh to a meshio-mesh
+    mesh_meshio = mesh.as_meshio()
+
     # view the mesh in an interactive window
     fem.ViewMesh(mesh).plot().show()
     

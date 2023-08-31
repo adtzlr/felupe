@@ -23,13 +23,15 @@ A `meshed three-dimensional geometry <../_static/mesh.vtk>`_ of a rubber-metal s
     mesh = fem.mesh.read("mesh.vtk")[0]
     X, Y, Z = mesh.points.T
 
-
 ..  image:: images/rubber-spring_mesh.png
 
 
-A numeric hexahedron-region created on the mesh in combination with a vector-valued displacement field represents the rubber volume. The Boundary conditions for the :math:`y`-symmetry plane as well as the fixed faces on the bottom and the top of the solid are generated on the displacement field.
+A numeric hexahedron-region created on the mesh in combination with a vector-valued displacement field represents the rubber volume. Imported meshes may contain cells with negative volumes. This is fixed as proposed in the warning message. The Boundary conditions for the :math:`y`-symmetry plane as well as the fixed faces on the bottom and the top of the solid are generated on the displacement field.
 
 ..  code-block:: python
+
+    region = fem.RegionHexahedron(mesh)
+    mesh = mesh.flip(np.any(region.dV < 0, axis=0))
 
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldsMixed(region, n=1)
@@ -73,10 +75,10 @@ The max. principal value of the logarithmic strain, projected to mesh points, wi
 
 ..  code-block:: python
     
-    def log_strain(substep):
+    def log_strain(substep=None, field=None):
         "Project the max. principal log. strain from quadrature- to mesh-points."
         
-        F = substep.x.extract()[0]
+        F = field.extract()[0]
         C = fem.math.dot(fem.math.transpose(F), F)
         strain = np.log(fem.math.eigvalsh(C)[-1]) / 2
         
@@ -106,18 +108,23 @@ The simulation model is now ready to be solved. The results are saved within a X
         kwargs={"parallel": True}, 
         point_data = {"Logarithmic Strain (Max. Principal)": log_strain}
     )
+    
+    # evaluate the log. strain on points and view the strain distribution on the
+    # deformed mesh
+    fem.View(
+        field=field, 
+        point_data={"Logarithmic Strain (Max. Principal)": log_strain(field)},
+    ).plot("Logarithmic Strain (Max. Principal)").show()
 
 
 .. image:: images/rubber-spring.png
 
-The compressive axial force-displacement curve is obtained from the characteristic-curve
-job. The force is multiplied by two due to the fact that only one half of the geometry
-is simulated.
+The axial-compressive and lateral-shear force-displacement curves are obtained from the characteristic-curve job. The force is multiplied by two due to the fact that only one half of the geometry is simulated.
 
 ..  code-block:: python
 
     fig, ax = job.plot(
-        xlabel="Displacement $u_Z$ in mm $\longrightarrow$",
+        xlabel="Displacement $d_Z$ in mm $\longrightarrow$",
         ylabel="Normal Force $F_Z$ in kN $\longrightarrow$",
         xaxis=2,
         yaxis=2,
@@ -125,3 +132,19 @@ is simulated.
     )
 
 .. image:: images/rubber-spring_curve-axial.svg
+
+
+The shear lateral force-displacement curve is again obtained from the characteristic-curve
+job.
+
+..  code-block:: python
+
+    fig, ax = job.plot(
+        xlabel="Displacement $d_X$ in mm $\longrightarrow$",
+        ylabel="Normal Force $F_X$ in kN $\longrightarrow$",
+        xaxis=0,
+        yaxis=0,
+        yscale=2 / 1000,
+    )
+
+.. image:: images/rubber-spring_curve-lateral.svg

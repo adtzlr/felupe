@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `mesh.Triangle(a, b, c, n=2)` for the creation of a quad-meshed triangle.
+
+### Changed
+- Change `mesh.Circle(n=6)` to the minimum `mesh.Circle(n=2)`.
+
 ## [7.7.0] - 2023-08-31
 
 ### Added

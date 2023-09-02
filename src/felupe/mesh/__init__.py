@@ -17,6 +17,7 @@ from ._geometry import (
     Line,
     Rectangle,
     RectangleArbitraryOrderQuad,
+    Triangle,
 )
 from ._line_rectangle_cube import cube_hexa as _cube_hexa
 from ._line_rectangle_cube import line_line as _line_line
@@ -58,6 +59,7 @@ __all__ = [
     "Line",
     "Rectangle",
     "RectangleArbitraryOrderQuad",
+    "Triangle",
     "Mesh",
     "read",
     "concatenate",

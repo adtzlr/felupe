@@ -460,14 +460,11 @@ def test_circle():
     assert np.all(region.dV > 0)
 
     boundary = fe.RegionQuadBoundary(mesh)
-    
-    fe.ViewMesh(boundary.mesh).plot().show()
 
     assert boundary.mesh.ncells == 50
 
 
 def test_triangle():
-
     mesh = fe.mesh.Triangle(
         a=(0, 0),
         b=(1, 0),
@@ -482,11 +479,9 @@ def test_triangle():
     assert np.all(region.dV > 0)
 
     boundary = fe.RegionQuadBoundary(mesh)
-    print(boundary.mesh.ncells)
-    
-    fe.ViewMesh(boundary.mesh).plot().show()
 
     assert boundary.mesh.ncells == 24
+
 
 if __name__ == "__main__":
     test_meshes()

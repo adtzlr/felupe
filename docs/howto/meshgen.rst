@@ -80,7 +80,7 @@ For circles, there is :class:`felupe.Circle` for the creation of a quad-mesh for
 ..  image:: images/circle.png
     :width: 400px
 
-For triangles, there is :class:`felupe.mesh.Triangle` for the creation of a quad-mesh for a triangle.
+For triangles, there is :class:`felupe.mesh.Triangle` for the creation of a quad-mesh for a triangle. For positive cell volumes, the coordinates of ``a``, ``b`` and ``c`` must be sorted counter-clockwise around the center point.
 
 ..  code-block:: python
 

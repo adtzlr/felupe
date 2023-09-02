@@ -309,7 +309,7 @@ class Triangle(Mesh):
 
         middle = line.copy(points=np.vstack([x2, y2]).T)
 
-        sections.append(left.fill_between(middle, n=n))
+        sections.append(middle.fill_between(left, n=n))
 
         # section (connected to point) b
         x3 = np.linspace(b[0], centerpoints["bc"][0], n)
@@ -317,18 +317,18 @@ class Triangle(Mesh):
 
         right = line.copy(points=np.vstack([x3, y3]).T)
 
-        sections.append(middle.fill_between(right, n=n))
+        sections.append(right.fill_between(middle, n=n))
 
         # section (connected to point) c
         x4 = np.linspace(centerpoints["ac"][0], c[0], n)
         y4 = np.linspace(centerpoints["ac"][1], c[1], n)
 
-        bottom = line.copy(points=np.vstack([x4, y4]).T)
+        top = line.copy(points=np.vstack([x4, y4]).T)
 
         x5 = np.linspace(centerpoint[0], centerpoints["bc"][0], n)
         y5 = np.linspace(centerpoint[1], centerpoints["bc"][1], n)
 
-        top = line.copy(points=np.vstack([x5, y5]).T)
+        bottom = line.copy(points=np.vstack([x5, y5]).T)
 
         sections.append(bottom.fill_between(top, n=n))
 

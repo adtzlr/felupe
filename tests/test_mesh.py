@@ -460,9 +460,33 @@ def test_circle():
     assert np.all(region.dV > 0)
 
     boundary = fe.RegionQuadBoundary(mesh)
+    
+    fe.ViewMesh(boundary.mesh).plot().show()
 
     assert boundary.mesh.ncells == 50
 
+
+def test_triangle():
+
+    mesh = fe.mesh.Triangle(
+        a=(0, 0),
+        b=(1, 0),
+        c=(0, 1),
+        n=5,
+    )
+
+    x, y = mesh.points.T
+
+    region = fe.RegionQuad(mesh)
+
+    assert np.all(region.dV > 0)
+
+    boundary = fe.RegionQuadBoundary(mesh)
+    print(boundary.mesh.ncells)
+    
+    fe.ViewMesh(boundary.mesh).plot().show()
+
+    assert boundary.mesh.ncells == 24
 
 if __name__ == "__main__":
     test_meshes()
@@ -478,3 +502,4 @@ if __name__ == "__main__":
     test_read_nocells(filename="mesh_no-cells.bdf")
     test_mesh_fill_between()
     test_circle()
+    test_triangle()

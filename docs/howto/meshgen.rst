@@ -109,6 +109,23 @@ The elementary shapes are combined to create more complex shapes, e.g. a triangu
 ..  image:: images/fidget_spinner.png
     :width: 400px
 
+For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region.
+
+..  code-block:: python
+
+    boundary = fem.RegionQuadBoundary(mesh)
+    boundary.mesh
+
+..  image:: images/fidget_spinner_boundary.png
+    :width: 400px
+    
+..  code-block:: python
+
+    boundary.mesh_faces()
+
+..  image:: images/fidget_spinner_boundary_faces.png
+    :width: 400px
+
 Cylinders
 *********
 

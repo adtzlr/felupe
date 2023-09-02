@@ -59,10 +59,10 @@ Alternatively, these mesh-related tools are also provided as methods of a :class
     :width: 400px
 
 
-Lines, rectangles, cubes and circles
-************************************
+Elementary Shapes
+*****************
 
-Lines, rectangles, cubes and cylinders do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
+Lines, rectangles, cubes, circles and triangles do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`felupe.mesh.Line`, :class:`felupe.Rectangle` or :class:`felupe.Cube`. For non equi-distant points per axis use :class:`felupe.Grid`.
 
 ..  code-block:: python
 
@@ -71,13 +71,59 @@ Lines, rectangles, cubes and cylinders do not have to be constructed manually ea
 ..  image:: images/cube.png
     :width: 400px
 
-There is also :class:`felupe.Circle` for the creation of a quad-mesh for a circle.
+For circles, there is :class:`felupe.Circle` for the creation of a quad-mesh for a circle.
 
 ..  code-block:: python
 
     circle = fem.Circle(radius=1.5, centerpoint=[1, 2], n=6, sections=[0, 90, 180, 270])
 
 ..  image:: images/circle.png
+    :width: 400px
+
+For triangles, there is :class:`felupe.mesh.Triangle` for the creation of a quad-mesh for a triangle.
+
+..  code-block:: python
+
+    circle = fem.Triangle(a=(0, 0), b=(1, 0), c=(0, 1), n=5)
+
+..  image:: images/triangle.png
+    :width: 400px
+
+Combinations of elementary shapes
+*********************************
+
+The elementary shapes are combined to create more complex shapes, e.g. a triangular shaped face connected to three arms with rounded ends.
+
+..  code-block:: python
+    
+    rectangle = fem.Rectangle(a=(-1, 0), b=(1, 5), n=(13, 26))
+    circle = fem.Circle(radius=1, centerpoint=(0, 5), sections=(0, 90), n=4)
+    triangle = fem.mesh.Triangle(a=(-1, 0), b=(1, 0), c=(0, -np.sqrt(12) / 2), n=7)
+    arm = fem.mesh.concatenate([rectangle, circle])
+    
+    center = triangle.points.mean(axis=0)
+    arms = [arm.rotate(phi, axis=2, center=center) for phi in [0, 120, 240]]
+    
+    mesh = fem.mesh.concatenate([triangle, *arms]).sweep(decimals=8)
+    
+..  image:: images/fidget_spinner.png
+    :width: 400px
+
+For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region. The boundary-mesh consists of the quad-cells which have their **first edge** located at the boundary. Hence, these are not the original cells connected to the boundary. The boundary line-mesh is available as method. In FElupe, boundaries of cell (volumes) are considered as faces and hence, the line-mesh for the edges of a quad-mesh is obtained by a mesh-*face* method of the boundary region.
+
+..  code-block:: python
+
+    boundary = fem.RegionQuadBoundary(mesh)
+    boundary.mesh
+
+..  image:: images/fidget_spinner_boundary.png
+    :width: 400px
+    
+..  code-block:: python
+
+    boundary.mesh_faces()
+
+..  image:: images/fidget_spinner_boundary_faces.png
     :width: 400px
 
 Cylinders
@@ -96,7 +142,6 @@ Cylinders are created by a revolution of a rectangle.
 
 ..  image:: images/cylinder.png
     :width: 400px
-
 
 Fill between boundaries
 ***********************

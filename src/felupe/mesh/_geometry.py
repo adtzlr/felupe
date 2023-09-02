@@ -25,7 +25,7 @@ from ._tools import concatenate
 
 class Line(Mesh):
     "A line shaped 1d-mesh with lines between ``a`` and ``b`` with ``n`` points."
-    
+
     def __init__(self, a=0, b=1, n=2):
         self.a = a
         self.b = b
@@ -37,9 +37,9 @@ class Line(Mesh):
 
 
 class Rectangle(Mesh):
-    """A rectangular 2d-mesh with quads between ``a`` and ``b`` with ``n`` 
+    """A rectangular 2d-mesh with quads between ``a`` and ``b`` with ``n``
     points per axis."""
-    
+
     def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
         self.a = a
         self.b = b
@@ -51,9 +51,9 @@ class Rectangle(Mesh):
 
 
 class Cube(Mesh):
-    """A cube shaped 3d-mesh with hexahedrons between ``a`` and ``b`` with ``n`` 
+    """A cube shaped 3d-mesh with hexahedrons between ``a`` and ``b`` with ``n``
     points per axis."""
-    
+
     def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
         self.a = a
         self.b = b
@@ -65,9 +65,9 @@ class Cube(Mesh):
 
 
 class Grid(Mesh):
-    """A grid shaped 3d-mesh with hexahedrons. Basically a wrapper for 
+    """A grid shaped 3d-mesh with hexahedrons. Basically a wrapper for
     :func:`numpy.meshgrid` with  default ``indexing="ij"``."""
-    
+
     def __init__(self, *xi, indexing="ij", **kwargs):
         shape = np.array([len(x) for x in xi])
         n = shape if len(shape) > 1 else shape[0]
@@ -87,9 +87,9 @@ class Grid(Mesh):
 
 
 class RectangleArbitraryOrderQuad(Mesh):
-    """A rectangular 2d-mesh with arbitrary order quads between ``a`` and ``b`` with 
+    """A rectangular 2d-mesh with arbitrary order quads between ``a`` and ``b`` with
     ``n`` points per axis."""
-    
+
     def __init__(self, a=(0, 0), b=(1, 1), order=2):
         yv, xv = np.meshgrid(
             np.linspace(a[1], b[1], order + 1),
@@ -142,9 +142,9 @@ class RectangleArbitraryOrderQuad(Mesh):
 
 
 class CubeArbitraryOrderHexahedron(Mesh):
-    """A cube shaped 3d-mesh with arbitrary order hexahedrons between ``a`` and ``b`` 
+    """A cube shaped 3d-mesh with arbitrary order hexahedrons between ``a`` and ``b``
     with ``n`` points per axis."""
-    
+
     def __init__(self, a=(0, 0, 0), b=(1, 1, 1), order=2):
         zv, yv, xv = np.meshgrid(
             np.linspace(a[2], b[2], order + 1),
@@ -235,14 +235,15 @@ class CubeArbitraryOrderHexahedron(Mesh):
 
 
 class Circle(Mesh):
-    """A circular shaped 2d-mesh with quads and ``n`` points in the rectangular
-    center. 90-degree ``sections`` are placed at given angles in degree."""
-    
+    """A circular shaped 2d-mesh with quads and ``n`` points on the circumferential
+    edge of a 45-degree section. 90-degree ``sections`` are placed at given angles in
+    degree."""
+
     def __init__(
         self,
         radius=1,
         centerpoint=[0, 0],
-        n=6,
+        n=2,
         sections=[0, 90, 180, 270],
         value=0.15,
         exponent=2,
@@ -271,4 +272,69 @@ class Circle(Mesh):
 
         super().__init__(
             points=circle.points, cells=circle.cells, cell_type=circle.cell_type
+        )
+
+
+class Triangle(Mesh):
+    """A triangular shaped 2d-mesh with quads and ``n`` points at the edges of the three
+    sub-quadrilaterals."""
+
+    def __init__(
+        self,
+        a=(0, 0),
+        b=(1, 0),
+        c=(0, 1),
+        n=2,
+        decimals=10,
+    ):
+        a = np.asarray(a)
+        b = np.asarray(b)
+        c = np.asarray(c)
+
+        sections = []
+
+        centerpoint = (a + b + c) / 3
+        centerpoints = {"ab": (a + b) / 2, "bc": (b + c) / 2, "ac": (a + c) / 2}
+
+        line = Line(n=n)
+
+        # section (connected to point) a
+        x1 = np.linspace(a[0], centerpoints["ac"][0], n)
+        y1 = np.linspace(a[1], centerpoints["ac"][1], n)
+
+        left = line.copy(points=np.vstack([x1, y1]).T)
+
+        x2 = np.linspace(centerpoints["ab"][0], centerpoint[0], n)
+        y2 = np.linspace(centerpoints["ab"][1], centerpoint[1], n)
+
+        middle = line.copy(points=np.vstack([x2, y2]).T)
+
+        sections.append(middle.fill_between(left, n=n))
+
+        # section (connected to point) b
+        x3 = np.linspace(b[0], centerpoints["bc"][0], n)
+        y3 = np.linspace(b[1], centerpoints["bc"][1], n)
+
+        right = line.copy(points=np.vstack([x3, y3]).T)
+
+        sections.append(right.fill_between(middle, n=n))
+
+        # section (connected to point) c
+        x4 = np.linspace(centerpoints["ac"][0], c[0], n)
+        y4 = np.linspace(centerpoints["ac"][1], c[1], n)
+
+        top = line.copy(points=np.vstack([x4, y4]).T)
+
+        x5 = np.linspace(centerpoint[0], centerpoints["bc"][0], n)
+        y5 = np.linspace(centerpoint[1], centerpoints["bc"][1], n)
+
+        bottom = line.copy(points=np.vstack([x5, y5]).T)
+
+        sections.append(bottom.fill_between(top, n=n))
+
+        # combine sections
+        triangle = concatenate(sections).sweep(decimals=decimals)
+
+        super().__init__(
+            points=triangle.points, cells=triangle.cells, cell_type=triangle.cell_type
         )

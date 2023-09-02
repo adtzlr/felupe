@@ -464,6 +464,25 @@ def test_circle():
     assert boundary.mesh.ncells == 50
 
 
+def test_triangle():
+    mesh = fe.mesh.Triangle(
+        a=(0, 0),
+        b=(1, 0),
+        c=(0, 1),
+        n=5,
+    )
+
+    x, y = mesh.points.T
+
+    region = fe.RegionQuad(mesh)
+
+    assert np.all(region.dV > 0)
+
+    boundary = fe.RegionQuadBoundary(mesh)
+
+    assert boundary.mesh.ncells == 24
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -478,3 +497,4 @@ if __name__ == "__main__":
     test_read_nocells(filename="mesh_no-cells.bdf")
     test_mesh_fill_between()
     test_circle()
+    test_triangle()

@@ -109,7 +109,7 @@ The elementary shapes are combined to create more complex shapes, e.g. a triangu
 ..  image:: images/fidget_spinner.png
     :width: 400px
 
-For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region.
+For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region. The boundary-mesh consists of the quad-cells which have their **first edge** located at the boundary. Hence, these are not the original cells connected to the boundary. The boundary line-mesh is available as method. In FElupe, boundaries of cell (volumes) are considered as faces and hence, the line-mesh for the edges of a quad-mesh is obtained by a mesh-*face* method of the boundary region.
 
 ..  code-block:: python
 

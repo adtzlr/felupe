@@ -241,9 +241,9 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 
 @mesh_or_data
 def sweep(points, cells, cell_type, decimals=None):
-    """Sweep duplicated points and update cells of a Mesh.
+    """Merge duplicated points and update cells of a Mesh.
 
-    **WARNING**: This function sorts points.
+    **WARNING**: This function re-sorts points.
 
     Parameters
     ----------

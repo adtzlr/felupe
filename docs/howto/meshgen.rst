@@ -89,43 +89,6 @@ For triangles, there is :class:`felupe.mesh.Triangle` for the creation of a quad
 ..  image:: images/triangle.png
     :width: 400px
 
-Combinations of elementary shapes
-*********************************
-
-The elementary shapes are combined to create more complex shapes, e.g. a triangular shaped face connected to three arms with rounded ends.
-
-..  code-block:: python
-    
-    rectangle = fem.Rectangle(a=(-1, 0), b=(1, 5), n=(13, 26))
-    circle = fem.Circle(radius=1, centerpoint=(0, 5), sections=(0, 90), n=4)
-    triangle = fem.mesh.Triangle(a=(-1, 0), b=(1, 0), c=(0, -np.sqrt(12) / 2), n=7)
-    arm = fem.mesh.concatenate([rectangle, circle])
-    
-    center = triangle.points.mean(axis=0)
-    arms = [arm.rotate(phi, axis=2, center=center) for phi in [0, 120, 240]]
-    
-    mesh = fem.mesh.concatenate([triangle, *arms]).sweep(decimals=8)
-    
-..  image:: images/fidget_spinner.png
-    :width: 400px
-
-For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region. The boundary-mesh consists of the quad-cells which have their **first edge** located at the boundary. Hence, these are not the original cells connected to the boundary. The boundary line-mesh is available as method. In FElupe, boundaries of cell (volumes) are considered as faces and hence, the line-mesh for the edges of a quad-mesh is obtained by a mesh-*face* method of the boundary region.
-
-..  code-block:: python
-
-    boundary = fem.RegionQuadBoundary(mesh)
-    boundary.mesh
-
-..  image:: images/fidget_spinner_boundary.png
-    :width: 400px
-    
-..  code-block:: python
-
-    boundary.mesh_faces()
-
-..  image:: images/fidget_spinner_boundary_faces.png
-    :width: 400px
-
 Cylinders
 *********
 
@@ -188,6 +151,90 @@ Connect two quad-meshed faces by hexahedrons:
 
 ..  image:: images/fill-between.png
     :width: 400px
+
+Combinations of elementary shapes
+*********************************
+
+The elementary shapes are combined to create more complex shapes, e.g. a planar triangular shaped face connected to three arms with rounded ends.
+
+..  code-block:: python
+    
+    rectangle = fem.Rectangle(a=(-1, 0), b=(1, 5), n=(13, 26))
+    circle = fem.Circle(radius=1, centerpoint=(0, 5), sections=(0, 90), n=4)
+    triangle = fem.mesh.Triangle(a=(-1, 0), b=(1, 0), c=(0, -np.sqrt(12) / 2), n=7)
+    arm = fem.mesh.concatenate([rectangle, circle])
+    
+    center = triangle.points.mean(axis=0)
+    arms = [arm.rotate(phi, axis=2, center=center) for phi in [0, 120, 240]]
+    
+    mesh = fem.mesh.concatenate([triangle, *arms]).sweep(decimals=8)
+    
+..  image:: images/fidget_spinner.png
+    :width: 400px
+
+For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region. The boundary-mesh consists of the quad-cells which have their **first edge** located at the boundary. Hence, these are not the original cells connected to the boundary. The boundary line-mesh is available as a method. In FElupe, boundaries of cell (volumes) are considered as faces and hence, the line-mesh for the edges of a quad-mesh is obtained by a mesh-*face* method of the boundary region.
+
+..  code-block:: python
+
+    boundary = fem.RegionQuadBoundary(mesh)
+    boundary.mesh
+
+..  image:: images/fidget_spinner_boundary.png
+    :width: 400px
+    
+..  code-block:: python
+
+    boundary.mesh_faces()
+
+..  image:: images/fidget_spinner_boundary_faces.png
+    :width: 400px
+
+A three-dimensional example demonstrates a combination of two different expansions of a rectangle, fill-betweens of two lines and a circle.
+
+..  code-block:: python
+    
+    import felupe as fem
+    import numpy as np
+
+    circle = fem.Circle(radius=1, centerpoint=(0, 0), sections=(0, 90, 180, 270), n=6)
+
+    phi = np.linspace(1, 0.5, 6) * np.pi / 2
+
+    line = fem.mesh.Line(n=6)
+    curve = line.copy(points=1.0 * np.vstack([np.cos(phi), np.sin(phi)]).T)
+    top = line.copy(points=np.vstack([np.linspace(0, 1.5, 6), np.linspace(1.5, 1.5, 6)]).T)
+
+    transition = curve.fill_between(top, n=6)
+    transition = fem.mesh.concatenate([transition, transition.mirror(normal=[-1, 1, 0])])
+
+    rect = fem.Rectangle(a=(-1.5, 1.5), b=(1.5, 5.0), n=(11, 14))
+    rect.points[:, 0] *= 1 + (rect.points[:, 1] - 1.5) / 10
+
+    face = fem.mesh.concatenate([
+        transition, 
+        transition.mirror(normal=[1, 0, 0]),
+        fem.mesh.Line(a=-1.5, b=-1, n=6).revolve(n=21, phi=180, axis=2).flip(),
+        rect
+    ])
+
+    mesh = fem.mesh.concatenate([
+        face.expand(n=6, z=0.5),
+        circle.expand(n=11, z=1),
+    ]).sweep(decimals=8)
+
+..  image:: images/solid.png
+    :width: 400px
+
+The boundary mesh isn't visualized correctly in PyVista and in ParaView because there are two duplicated cells at the edges. However, this is not a bug - it's a feature. Each face on the surface has one attached cell - with the surface face as its first face. Hence, at edges, there are two overlapping cells with different point connectivity.
+
+..  code-block:: python
+
+    boundary = fem.RegionQuadBoundary(mesh)
+    boundary.mesh
+
+..  image:: images/solid-boundary.png
+    :width: 400px
+
 
 Indentations for rubber-metal parts
 ***********************************

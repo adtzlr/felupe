@@ -434,7 +434,9 @@ def concatenate(meshes):
 
     points = np.vstack([mesh.points for mesh in meshes])
     offsets = np.cumsum(np.insert([mesh.npoints for mesh in meshes][:-1], 0, 0))
-    cells = np.vstack([offset + mesh.cells for offset, mesh in zip(offsets, meshes)])
+    cells = np.vstack(
+        [int(offset) + mesh.cells for offset, mesh in zip(offsets, meshes)]
+    )
     mesh = Mesh(points=points, cells=cells, cell_type=meshes[0].cell_type)
 
     return mesh

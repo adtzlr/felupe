@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Change `mesh.Circle(n=6)` to the minimum `mesh.Circle(n=2)`.
 
+### Fixed
+- Fix `mesh.concatenate([mesh])` for a list of length one by enforcing the dtype of the offset as integer.
+
 ## [7.7.0] - 2023-08-31
 
 ### Added

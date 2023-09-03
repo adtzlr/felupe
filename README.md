@@ -18,7 +18,7 @@ Install Python, fire up 🔥 a terminal and run 🏃
 pip install felupe[all]
 ```
 
-where `[all]` installs all optional dependencies. FElupe has minimal dependencies, all available at PyPI supporting all platforms.
+where `[all]` installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
 * `numpy` for array operations
 * `scipy` for sparse matrices
 * `tensortrax` for automatic differentiation
@@ -29,7 +29,7 @@ In order to make use of all features of FElupe 💎💰💍👑💎, it is sugge
 * `matplotlib` for plotting graphs
 * `meshio` for mesh-related I/O
 * `pyvista` for interactive visualizations
-* `tqdm` for showing progress bars during job evaluation
+* `tqdm` for showing progress bars during job evaluations
 
 # Getting Started
 This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. 

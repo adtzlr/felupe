@@ -100,8 +100,8 @@ Cylinders are created by a revolution of a rectangle.
     R = 50
     H = 100
     
-    rect = fem.Rectangle(a=(r, 0), b=(R, H), n=(11, 41))
-    cylinder = rect.revolve(n=19, phi=180, axis=1)
+    rect = fem.Rectangle(a=(-r, 0), b=(-R, H), n=(11, 41))
+    cylinder = rect.revolve(n=19, phi=-180, axis=1)
 
 ..  image:: images/cylinder.png
     :width: 400px

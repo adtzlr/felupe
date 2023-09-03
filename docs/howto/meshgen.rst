@@ -192,9 +192,6 @@ For quad- and hexahedron-meshes it is possible to extract the boundaries of the 
 A three-dimensional example demonstrates a combination of two different expansions of a rectangle, fill-betweens of two lines and a circle.
 
 ..  code-block:: python
-    
-    import felupe as fem
-    import numpy as np
 
     circle = fem.Circle(radius=1, centerpoint=(0, 0), sections=(0, 90, 180, 270), n=6)
 

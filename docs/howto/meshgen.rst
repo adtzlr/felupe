@@ -84,7 +84,7 @@ For triangles, there is :class:`felupe.mesh.Triangle` for the creation of a quad
 
 ..  code-block:: python
 
-    circle = fem.Triangle(a=(0, 0), b=(1, 0), c=(0, 1), n=5)
+    triangle = fem.mesh.Triangle(a=(0, 0), b=(1, 0), c=(0, 1), n=5)
 
 ..  image:: images/triangle.png
     :width: 400px

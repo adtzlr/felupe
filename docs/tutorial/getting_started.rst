@@ -48,7 +48,7 @@ The problem is solved by an iterative `Newton-Rhapson`_ procedure.
 
     res = fem.newtonrhapson(items=[body], **loadcase)
 
-..  code-block::
+..  code-block:: markdown
     
     Newton-Rhapson solver
     =====================

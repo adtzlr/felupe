@@ -25,3 +25,8 @@ Mesh
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. autoclass:: felupe.Circle
+   :members:
+   :undoc-members:
+   :show-inheritance:

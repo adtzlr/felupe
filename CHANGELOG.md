@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.8.0] - 2023-09-05
+
 ### Added
 - Add `mesh.Triangle(a, b, c, n=2)` for the creation of a quad-meshed triangle.
 

@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Change `mesh.Circle(n=6)` to the minimum `mesh.Circle(n=2)`.
+- Enhance `dof.uniaxial(axis=0, sym=(False, True, False))` by a user-defined axis and selective symmetries.
+- Enhance `dof.shear(axis_compression=1, axis_shear=0, sym=True)` by user-defined axes of compression and shear.
 
 ### Fixed
 - Fix `mesh.concatenate([mesh])` for a list of length one by enforcing the dtype of the offset as integer.

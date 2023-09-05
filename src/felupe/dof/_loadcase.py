@@ -57,30 +57,41 @@ def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
     return bounds
 
 
-def uniaxial(field, right=None, move=0.2, clamped=False, left=None, sym=True):
-    """Define boundaries for uniaxial loading on a quarter model (x > 0, y > 0,
-    z > 0) with symmetries at x=0, y=0 and z=0."""
+def uniaxial(field, right=None, move=0.2, axis=0, clamped=False, left=None, sym=True):
+    """Define boundaries for uniaxial loading along a given axis on (a quarter of) a
+    model (x > 0, y > 0, z > 0) with optional symmetries at x=0, y=0 and z=0."""
 
     f = _get_first_field(field)
 
+    fx = ["fx", "fy", "fz"][axis]
+
+    mask = np.ones(3, dtype=bool)
+    mask[axis] = False
+
+    active = tuple(mask.astype(int))
+    inactive = tuple((~mask).astype(int))
+
+    if not hasattr(sym, "__len__"):
+        sym = (sym, sym, sym)
+
     if right is None:
-        right = f.region.mesh.points[:, 0].max()
+        right = f.region.mesh.points[:, axis].max()
 
-    if sym:
-        bounds = symmetry(f)
-    else:
+    bounds = symmetry(f, axes=sym)
+
+    if not sym[axis]:
         if left is None:
-            left = f.region.mesh.points[:, 0].min()
+            left = f.region.mesh.points[:, axis].min()
 
-        bounds = {"leftx": Boundary(f, fx=left, skip=(0, 1, 1))}
+        bounds["leftx"] = Boundary(f, skip=active, **{fx: left})
 
     if clamped:
-        bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
+        bounds["right"] = Boundary(f, skip=inactive, **{fx: right})
 
-        if sym is False:
-            bounds["leftyz"] = Boundary(f, fx=left, skip=(1, 0, 0))
+        if not sym[axis]:
+            bounds["leftyz"] = Boundary(f, skip=inactive, **{fx: left})
 
-    bounds["move"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
+    bounds["move"] = Boundary(f, skip=active, value=move, **{fx: right})
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)
@@ -139,32 +150,60 @@ def planar(field, right=None, move=0.2, clamped=False):
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def shear(field, bottom=None, top=None, move=0.2, compression=(0, 0), sym=True):
+def shear(
+    field,
+    bottom=None,
+    top=None,
+    move=0.2,
+    axis_shear=0,
+    axis_compression=1,
+    compression=(0, 0),
+    sym=True,
+):
     """Define boundaries for shear loading between two clamped plates. The
     bottom plate remains fixed while the shear is applied at the top plate."""
 
     f = _get_first_field(field)
 
     if bottom is None:
-        bottom = f.region.mesh.points[:, 1].min()
+        bottom = f.region.mesh.points[:, axis_compression].min()
 
     if top is None:
-        top = f.region.mesh.points[:, 1].max()
+        top = f.region.mesh.points[:, axis_compression].max()
 
     if sym:
-        bounds = symmetry(f, axes=(False, False, True))
+        axes = [True, True, True]
+        axes[axis_shear] = False
+        axes[axis_compression] = False
+
+        bounds = symmetry(f, axes=axes)
     else:
         bounds = {}
 
-    bounds["bottom"] = Boundary(f, fy=bottom, skip=(0, 1, 0))
-    bounds["top"] = Boundary(f, fy=top, skip=(1, 1, 0))
+    fy = ["fx", "fy", "fz"][axis_compression]
+
+    skip_compression = [0, 0, 0]
+    skip_compression[axis_compression] = 1
+
+    not_skip_compression = [1, 1, 1]
+    not_skip_compression[axis_compression] = 0
+
+    not_skip_thickness = [0, 0, 0]
+    not_skip_thickness[axis_compression] = 1
+    not_skip_thickness[axis_shear] = 1
+
+    not_skip_shear = [1, 1, 1]
+    not_skip_shear[axis_shear] = 0
+
+    bounds["bottom"] = Boundary(f, **{fy: bottom}, skip=skip_compression)
+    bounds["top"] = Boundary(f, **{fy: top}, skip=not_skip_thickness)
     bounds["compression_bottom"] = Boundary(
-        f, fy=bottom, skip=(1, 0, 1), value=compression[0]
+        f, **{fy: bottom}, skip=not_skip_compression, value=compression[0]
     )
     bounds["compression_top"] = Boundary(
-        f, fy=top, skip=(1, 0, 1), value=-compression[1]
+        f, **{fy: top}, skip=not_skip_compression, value=-compression[1]
     )
-    bounds["move"] = Boundary(f, fy=top, skip=(0, 1, 1), value=move)
+    bounds["move"] = Boundary(f, **{fy: top}, skip=not_skip_shear, value=move)
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)

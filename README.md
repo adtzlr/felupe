@@ -47,26 +47,18 @@ For more details beside this high-level code snippet, please have a look at the 
 ```python
 import felupe as fem
 
-# create a hexahedron-region on a cube
 mesh = fem.Cube(n=6)
 region = fem.RegionHexahedron(mesh)
-
-# add a field container (with a vector-valued displacement field)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-# apply a uniaxial elongation on the cube
 boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-# define the constitutive material behaviour
-# and create a nearly-incompressible (u,p,J - formulation) solid body
 umat = fem.OgdenRoxburgh(material=fem.NeoHooke(mu=1), r=3, m=1, beta=0)
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
-# prepare a step with substeps
 move = fem.math.linsteps([0, 1, 0, 1, 2, 1], num=5)
 step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
-# add the step to a job, evaluate all substeps and create a plot
 job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
 job.evaluate(filename="result.xdmf")
 fig, ax = job.plot(
@@ -74,7 +66,6 @@ fig, ax = job.plot(
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
 
-# visualize the results
 view = fem.View(field)
 view.plot("Principal Values of Logarithmic Strain").show()
 ```

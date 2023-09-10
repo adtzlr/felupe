@@ -7,20 +7,28 @@ profile = "black"
 
 [project]
 name = "felupe"
-authors = [
-  {email = "a.dutzler@gmail.com"},
-  {name = "Andreas Dutzler"}
-]
 description = "Finite Element Analysis"
 readme = "README.md"
+authors = [
+  {name = "Andreas Dutzler"},
+  {email = "a.dutzler@gmail.com"},
+  
+]
+requires-python = ">=3.8"
 license = {file = "LICENSE"}
 keywords = [
-  "python", 
-  "constitution",
-  "scientific-computing",
+  "computational-mechanics",
+  "fea",
   "fem",
+  "finite-elements",
   "finite-elements-analysis",
-  "hyperelasticity", 
+  "finite-elements-methods",
+  "hyperelasticity",
+  "partial-differential-equations",
+  "pde",
+  "python", 
+  "scientific-computing",
+  "solid-mechanics-codes",
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -39,7 +47,7 @@ classifiers = [
   "Topic :: Utilities"
 ]
 dynamic = ["version"]
-requires-python = ">=3.7"
+
 dependencies = [
   "numpy",
   "scipy",

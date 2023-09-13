@@ -90,6 +90,20 @@ def partition(field, bounds):
     >>> displacement = fem.FieldPlaneStrain(region, dim=2)
     >>> field = fem.FieldContainer([displacement])
 
+    A plot shows the point-ids along with the associated degrees of freedom.
+
+    >>> plotter = mesh.plot(off_screen=True)
+    >>> plotter.add_point_labels(
+    >>>     points=np.pad(mesh.points, ((0, 0), (0, 1))),
+    >>>     labels=[
+    >>>         f"Point {i}: DOF {a}, {b}"
+    >>>         for i, (a, b) in enumerate(displacement.indices.dof)
+    >>>     ],
+    >>> )
+    >>> img = plotter.screenshot("dof_partition.png", transparent_background=True)
+
+    ..  image:: images/dof_partition.png
+
     >>> boundaries = dict(
     >>>     left=fem.Boundary(displacement, fx=0, value=0.2),
     >>>     right=fem.Boundary(displacement, fx=1),
@@ -243,3 +257,13 @@ def apply(field, bounds, dof0=None):
         return u
     else:
         return u.ravel()[dof0]
+
+
+def f(x):
+    plotter.add_point_labels(
+        points=np.pad(mesh.points, ((0, 0), (0, 1))),
+        labels=[
+            f"point{i}: dof {a}, {b}"
+            for i, (a, b) in enumerate(displacement.indices.dof)
+        ],
+    )

@@ -126,7 +126,14 @@ class FieldContainer:
         """
         return self.view().plot(*args, **kwargs)
 
-    def screenshot(self, filename="field.png", **kwargs):
+    def screenshot(
+        self,
+        *args,
+        filename="field.png",
+        transparent_background=None,
+        scale=None,
+        **kwargs,
+    ):
         """Take a screenshot of the first field of the container.
 
         See Also
@@ -134,7 +141,11 @@ class FieldContainer:
         pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
         """
 
-        return self.plot(off_screen=True).screenshot(filename=filename, **kwargs)
+        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            scale=scale,
+        )
 
     def __add__(self, newvalues):
         fields = deepcopy(self)

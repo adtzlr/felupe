@@ -166,7 +166,14 @@ class Mesh(DiscreteGeometry):
         """
         return self.view().plot(*args, show_undeformed=False, **kwargs)
 
-    def screenshot(self, filename="mesh.png", **kwargs):
+    def screenshot(
+        self,
+        *args,
+        filename="field.png",
+        transparent_background=None,
+        scale=None,
+        **kwargs,
+    ):
         """Take a screenshot of the mesh.
 
         See Also
@@ -174,7 +181,11 @@ class Mesh(DiscreteGeometry):
         pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
         """
 
-        return self.plot(off_screen=True).screenshot(filename=filename, **kwargs)
+        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            scale=scale,
+        )
 
     @wraps(dual)
     def dual(

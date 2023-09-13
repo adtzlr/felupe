@@ -257,13 +257,3 @@ def apply(field, bounds, dof0=None):
         return u
     else:
         return u.ravel()[dof0]
-
-
-def f(x):
-    plotter.add_point_labels(
-        points=np.pad(mesh.points, ((0, 0), (0, 1))),
-        labels=[
-            f"point{i}: dof {a}, {b}"
-            for i, (a, b) in enumerate(displacement.indices.dof)
-        ],
-    )

@@ -55,6 +55,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+docs = [
+    "furo",
+    "sphinx-autoapi",
+    "sphinx-inline-tabs",
+    "sphinx-copybutton",
+    "myst-nb",
+    "panel",
+]
 test = [
     "h5py",
     "matplotlib",

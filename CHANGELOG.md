@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.9.0] - 2023-09-13
+
 ### Added
 - Add `ViewMesh` as method to a mesh `Mesh.view()`. Now a mesh provides the view sub-methods directly, i.e. add `Mesh.plot()` and `Mesh.screenshot(filename="mesh.png")`.
 

@@ -40,13 +40,13 @@ The material behaviour is defined through a built-in Neo-Hookean material formul
 ..  code-block:: python
 
     umat = fem.NeoHooke(mu=1.0, bulk=2.0)
-    body = fem.SolidBody(umat=umat, field=field)
+    solid = fem.SolidBody(umat=umat, field=field)
 
 The problem is solved by an iterative `Newton-Rhapson`_ procedure.
 
 ..  code-block:: python
 
-    res = fem.newtonrhapson(items=[body], **loadcase)
+    res = fem.newtonrhapson(items=[solid], **loadcase)
 
 ..  code-block:: markdown
     
@@ -62,11 +62,10 @@ The problem is solved by an iterative `Newton-Rhapson`_ procedure.
 
     Converged in 4 iterations (Assembly: 0.5824 s, Solve: 1.082 s).
 
-Results are saved within a VTK-file and have to be analyzed in a third-party VTK-viewer (e.g. ParaView) or are to be viewed directly in an interactive window.
+Results may be viewed in an interactive window.
     
 ..  code-block:: python
 
-    fem.save(region, field, filename="result.vtk")
     fem.View(field).plot("Displacement", component=0).show()
 
 

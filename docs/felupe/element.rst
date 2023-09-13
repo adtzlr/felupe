@@ -1,5 +1,10 @@
 Element
 ~~~~~~~
+
+.. autoclass:: felupe.Line
+   :members:
+   :undoc-members:
+   :show-inheritance:
    
 .. autoclass:: felupe.Quad
    :members:

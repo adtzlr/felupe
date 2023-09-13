@@ -5,5 +5,3 @@ Integral Form
    :members:
    :undoc-members:
    :inherited-members:
-
-.. autofunction:: felupe.Form

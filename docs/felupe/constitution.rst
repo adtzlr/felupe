@@ -16,6 +16,11 @@ Constitution
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.constitution.LinearElasticTensorNotation
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.LinearElasticPlaneStress
    :members:
    :undoc-members:

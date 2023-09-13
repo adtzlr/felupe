@@ -67,7 +67,7 @@ class Boundary:
 
     Examples
     --------
-    A Boundary condition prescribes values for chosen degrees of freedom of a given
+    A boundary condition prescribes values for chosen degrees of freedom of a given
     field (**not** a field container). This is demonstrated for a plane-strain
     vector field on a quad-mesh of a circle.
 

@@ -66,8 +66,7 @@ fig, ax = job.plot(
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
 
-view = fem.View(field)
-view.plot("Principal Values of Logarithmic Strain").show()
+field.plot("Principal Values of Logarithmic Strain").show()
 ```
 
 ![curve](https://user-images.githubusercontent.com/5793153/234382805-d9a56108-9dd7-4f57-a029-571a5a2486a4.svg)

@@ -81,27 +81,43 @@ class Boundary:
 
     A boundary on the displacement field which prescribes all components of the field
     on the outermost left point of the circle is created. The easiest way is to pass the
-    desired value to ``fx``. The same result is obtained if a callable function is 
+    desired value to ``fx``. The same result is obtained if a callable function is
     passed to ``fx``.
 
     >>> left = fem.Boundary(displacement, fx=x.min())
     >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
 
-    If ``fx`` and ``fy`` are given, the masks are combined by logical-or. This may
-    be changed to logical-and if desired.
+    >>> plotter = mesh.plot(off_screen=True)
+    >>> plotter.add_points(
+    >>>     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+    >>>     point_size=20,
+    >>>     color="red",
+    >>> )
+    >>> img = plotter.screenshot("boundary_left.png", transparent_background=True)
+
+    ..  image:: images/boundary_left.png
+
+    If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 
     >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
+
+    ..  image:: images/boundary_axes.png
+
+    This may be changed to *logical-and* if desired.
+
     >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
+
+    ..  image:: images/boundary_center.png
 
     For the most-general case, a user-defined boolean mask for the selection of the
     mesh-points is provided. While the two upper methods are useful to select
     points separated per point-coordinates, providing a mask is more flexible as
     it may involve all three coordinates (or any other quantities of interest).
 
-    >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x < 0)
+    >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x <= 0)
     >>> surface = fem.Boundary(displacement, mask=mask)
-    >>> len(surface.points)
-    19
+
+    ..  image:: images/boundary_surface.png
 
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must

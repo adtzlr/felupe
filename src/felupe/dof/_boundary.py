@@ -29,29 +29,29 @@ class Boundary:
         Field on wich the boundary is created.
     name : str, optional (default is "default")
         Name of the boundary.
-    fx : float or callable, optional (default is `np.isnan`)
+    fx : float or callable, optional
         Mask-function for x-component of mesh-points which returns `True` at points
-        on which the boundary will be applied. If a float is passed, this is
-        transformed to `lambda x: np.isclose(x, fx)`.
-    fy : float or callable, optional (default is `np.isnan`)
+        on which the boundary will be applied (default is ``np.isnan``). If a float is
+        passed, this is transformed to ``lambda x: np.isclose(x, fx)``.
+    fy : float or callable, optional
         Mask-function for y-component of mesh-points which returns `True` at points
-        on which the boundary will be applied. If a float is passed, this is
-        transformed to `lambda y: np.isclose(y, fy)`.
-    fz : float or callable, optional (default is `np.isnan`)
+        on which the boundary will be applied (default is ``np.isnan``). If a float is
+        passed, this is transformed to ``lambda y: np.isclose(y, fy)``.
+    fz : float or callable, optional
         Mask-function for z-component of mesh-points which returns `True` at points
-        on which the boundary will be applied. If a float is passed, this is
-        transformed to `lambda z: np.isclose(z, fz)`.
-    value : int, optional (default is 0)
-        Value of the selected (prescribed) degrees of freedom.
-    skip : tuple of bool or int, optional (default is `(False, False, False)`)
-        A tuple to define which axes of the selected points should be skipped (i.e.
-        not prescribed).
+        on which the boundary will be applied (default is ``np.isnan``). If a float is
+        passed, this is transformed to ``lambda z: np.isclose(z, fz)``.
+    value : int, optional
+        Value of the selected (prescribed) degrees of freedom (default is 0).
+    skip : tuple of bool or int, optional
+        A tuple to define which axes of the selected points should be skipped, i.e.
+        not prescribed (default is ``(False, False, False)``).
     mask : ndarray
         Boolean mask for the prescribed degrees of freedom. If a mask is passed, ``fx``,
         ``fy`` and ``fz`` are ignored. However, ``skip`` is still applied on the mask.
-    mode : string, optional (default is `or`)
+    mode : string, optional
         A string which defines the logical operation for the selected points per
-        axis.
+        axis (default is `or`).
 
     Attributes
     ----------

@@ -81,12 +81,10 @@ class Boundary:
 
     A boundary on the displacement field which prescribes a value of 0.1 for all
     components on outermost left point of the circle is created in several ways.
-    The easiest way is to pass the desired value to ``fx``.
+    The easiest way is to pass the desired value to ``fx``. The same result is obtained
+    if a callable function is passed to ``fx``.
 
     >>> left = fem.Boundary(displacement, fx=x.min())
-
-    The same result is obtained if a callable function is passed to ``fx``.
-
     >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
 
     If ``fx`` and ``fy`` are given, the masks are combined by logical-or. This may

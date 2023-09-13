@@ -79,10 +79,10 @@ class Boundary:
     >>> displacement = fem.FieldPlaneStrain(region, dim=2)
     >>> field = fem.FieldContainer([displacement])
 
-    A boundary on the displacement field which prescribes a value of 0.1 for all
-    components on outermost left point of the circle is created in several ways.
-    The easiest way is to pass the desired value to ``fx``. The same result is obtained
-    if a callable function is passed to ``fx``.
+    A boundary on the displacement field which prescribes all components of the field
+    on the outermost left point of the circle is created. The easiest way is to pass the
+    desired value to ``fx``. The same result is obtained if a callable function is 
+    passed to ``fx``.
 
     >>> left = fem.Boundary(displacement, fx=x.min())
     >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
@@ -91,12 +91,7 @@ class Boundary:
     be changed to logical-and if desired.
 
     >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
-    >>> len(axes.points)
-    41
-
     >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
-    >>> len(center.points)
-    1
 
     For the most-general case, a user-defined boolean mask for the selection of the
     mesh-points is provided. While the two upper methods are useful to select

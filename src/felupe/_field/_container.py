@@ -20,6 +20,8 @@ from copy import deepcopy
 
 import numpy as np
 
+from ..tools._plot import ViewField
+
 
 class FieldContainer:
     """A container for fields based on a list or tuple of :class:`Field`
@@ -87,6 +89,52 @@ class FieldContainer:
         "Link value array of other field."
         for field, newfield in zip(self.fields, other_field.fields):
             field.values = newfield.values
+
+    def view(self, point_data=None, cell_data=None, cell_type=None):
+        """View the field with optional given dicts of point- and cell-data items.
+
+        Parameters
+        ----------
+        point_data : dict or None, optional
+            Additional point-data dict (default is None).
+        cell_data : dict or None, optional
+            Additional cell-data dict (default is None).
+        cell_type : pyvista.CellType or None, optional
+            Cell-type of PyVista (default is None).
+
+        Returns
+        -------
+        felupe.ViewField
+            A object which provides visualization methods for
+            :class:`felupe.FieldContainer`.
+
+        See Also
+        --------
+        felupe.ViewField : Visualization methods for :class:`felupe.FieldContainer`.
+        """
+
+        return ViewField(
+            self, point_data=point_data, cell_data=cell_data, cell_type=cell_type
+        )
+
+    def plot(self, *args, **kwargs):
+        """Plot the mesh.
+
+        See Also
+        --------
+        felupe.Scene.plot: Plot method of a scene.
+        """
+        return self.view().plot(*args, **kwargs)
+
+    def screenshot(self, filename="mesh.png", **kwargs):
+        """Plot the field.
+
+        See Also
+        --------
+        pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
+        """
+
+        return self.plot(off_screen=True).screenshot(filename=filename, **kwargs)
 
     def __add__(self, newvalues):
         fields = deepcopy(self)

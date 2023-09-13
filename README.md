@@ -90,7 +90,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 # Scientific Publications
 A list of articles in which FElupe is used for numeric simulations. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
 
-1. A. Dutzler, C. Buzzi, and M. Leitner, "Nondimensional translational characteristics of elastomer components", [Journal of Applied Engineering Design and Simulation](https://jaeds.uitm.edu.my/index.php/jaeds), vol. 1, no. 1. UiTM Press, Universiti Teknologi MARA, Sep. 21, 2021. doi: [10.24191/jaeds.v1i1.20](https://doi.org/10.24191/jaeds.v1i1.20).
+1. A. Dutzler, C. Buzzi, and M. Leitner, "Nondimensional translational characteristics of elastomer components", [Journal of Applied Engineering Design and Simulation](https://jaeds.uitm.edu.my/index.php/jaeds), vol. 1, no. 1. UiTM Press, Universiti Teknologi MARA, Sep. 21, 2021. doi: [10.24191/jaeds.v1i1.20](https://doi.org/10.24191/jaeds.v1i1.20). [![medium-story](https://img.shields.io/badge/medium-story-white)](https://medium.com/@adtzlr/nonlinear-force-displacement-curves-of-rubber-metal-parts-ab7c48448e96)
 
 2. C. Buzzi, A. Dutzler, T. Faethe, J. Lassacher, M. Leitner, and F.-J. Weber, "Development of a tool for estimating 
 the characteristic curves of rubber-metal parts", in Proceedings of the [12th International Conference on Railway 

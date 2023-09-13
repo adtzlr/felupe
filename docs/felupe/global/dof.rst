@@ -5,3 +5,7 @@ DOF
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autofunction:: felupe.dof.partition
+
+.. autofunction:: felupe.dof.apply

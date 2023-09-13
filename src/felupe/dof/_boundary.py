@@ -138,9 +138,10 @@ class Boundary:
 
     See Also
     --------
-    felupe.CharacteristicCurve: A job with a boundary to be tracked.
-    felupe.dof.partition: Partition dof into prescribed dof0 and active dof1.
-    felupe.dof.apply: Apply prescribed values for a list of boundaries.
+    felupe.CharacteristicCurve : A job with a boundary to be tracked.
+    felupe.dof.partition : Partition degrees of freedom into prescribed and active dof.
+    felupe.dof.apply : Apply prescribed values for a list of boundaries.
+    
     """
 
     def __init__(

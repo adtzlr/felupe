@@ -63,7 +63,71 @@ def get_dof1(field, bounds, dof0):
 
 
 def partition(field, bounds):
-    "Partition dof-list into prescribed (dof0) and active (dof1) parts."
+    """Partition a list of degrees of freedom into prescribed (dof0) and active (dof1)
+    degrees of freedom.
+
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        FieldContainer which holds the fields used in the boundaries.
+    bounds : dict of felupe.Boundary
+        Dict of boundaries.
+
+    Returns
+    -------
+    dof0 : ndarray
+        1d-array of int with all prescribed degress of freedom.
+    dof1 : ndarray
+        1d-array of int with all active degrees of freedom.
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(3, 3))
+    >>> region = fem.RegionQuad(mesh)
+    >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+    >>> field = fem.FieldContainer([displacement])
+
+    >>> boundaries = dict(
+    >>>     left=fem.Boundary(displacement, fx=0, value=0.2),
+    >>>     right=fem.Boundary(displacement, fx=1),
+    >>> )
+
+    >>> dof0, dof1 = fem.dof.partition(field, boundaries)
+    >>> ext0 = fem.dof.apply(field, boundaries, dof0=dof0)
+
+    >>> dof0
+    array([ 0,  1,  4,  5,  6,  7, 10, 11, 12, 13, 16, 17])
+
+    >>> dof1
+    array([ 2,  3,  8,  9, 14, 15])
+
+    >>> ext0
+    array([0.2, 0.2, 0. , 0. , 0.2, 0.2, 0. , 0. , 0.2, 0.2, 0. , 0. ])
+
+    ``dof0=None`` is required (default) if the prescribed displacement array should be
+    returned for all degrees of freedom.
+
+    >>> fem.dof.apply(field, boundaries).reshape(
+    >>>     displacement.values.shape
+    >>> )
+    array([[0.2, 0.2],
+           [0. , 0. ],
+           [0. , 0. ],
+           [0.2, 0.2],
+           [0. , 0. ],
+           [0. , 0. ],
+           [0.2, 0.2],
+           [0. , 0. ],
+           [0. , 0. ]])
+
+    See Also
+    --------
+    felupe.Boundary : A collection of prescribed degrees of freedom.
+    felupe.dof.apply : Apply prescribed values for a list of boundaries.
+    """
 
     fields = field.fields
     offsets = field.offsets
@@ -95,9 +159,74 @@ def partition(field, bounds):
 
 
 def apply(field, bounds, dof0=None):
-    """Apply prescribed values for a list of boundaries
-    and return all (default) or only the prescribed components
-    of the ``field`` based on the keyword ``dof0``."""
+    """Apply prescribed values for a list of boundaries and return all (default) or only
+    the prescribed components of the ``field`` based on ``dof0``.
+
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        FieldContainer which holds the fields used in the boundaries.
+    bounds : dict of felupe.Boundary
+        Dict of boundaries.
+    dof0 : ndarray or None, optional
+        1d-array of int with prescribed degrees of freedom (default is None). If not
+        None, only the given deegrees of freedom ``dof0`` of the field values,
+        prescribed by the boundaries, are returned.
+
+    Returns
+    -------
+    ndarray
+        Field values at mesh-points for all (default) or only the prescribed components
+        of the ``field`` based on ``dof0`.
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(3, 3))
+    >>> region = fem.RegionQuad(mesh)
+    >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+    >>> field = fem.FieldContainer([displacement])
+
+    >>> boundaries = dict(
+    >>>     left=fem.Boundary(displacement, fx=0, value=0.2),
+    >>>     right=fem.Boundary(displacement, fx=1),
+    >>> )
+
+    >>> dof0, dof1 = fem.dof.partition(field, boundaries)
+    >>> ext0 = fem.dof.apply(field, boundaries, dof0=dof0)
+
+    >>> dof0
+    array([ 0,  1,  4,  5,  6,  7, 10, 11, 12, 13, 16, 17])
+
+    >>> dof1
+    array([ 2,  3,  8,  9, 14, 15])
+
+    >>> ext0
+    array([0.2, 0.2, 0. , 0. , 0.2, 0.2, 0. , 0. , 0.2, 0.2, 0. , 0. ])
+
+    ``dof0=None`` is required (default) if the prescribed displacement array should be
+    returned for all degrees of freedom.
+
+    >>> fem.dof.apply(field, boundaries).reshape(
+    >>>     displacement.values.shape
+    >>> )
+    array([[0.2, 0.2],
+           [0. , 0. ],
+           [0. , 0. ],
+           [0.2, 0.2],
+           [0. , 0. ],
+           [0. , 0. ],
+           [0.2, 0.2],
+           [0. , 0. ],
+           [0. , 0. ]])
+
+    See Also
+    --------
+    felupe.Boundary : A collection of prescribed degrees of freedom.
+    felupe.dof.partition : Partition degrees of freedom into prescribed and active dof.
+    """
 
     # check if a mixed-field is passed
     u = np.concatenate([f.values.ravel() for f in field.fields])

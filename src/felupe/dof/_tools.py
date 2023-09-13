@@ -191,7 +191,7 @@ def apply(field, bounds, dof0=None):
     -------
     ndarray
         Field values at mesh-points for all (default) or only the prescribed components
-        of the ``field`` based on ``dof0`.
+        of the ``field`` based on ``dof0``.
 
     Examples
     --------

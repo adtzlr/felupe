@@ -41,8 +41,8 @@ class Boundary:
         Mask-function for z-component of mesh-points which returns `True` at points
         on which the boundary will be applied (default is ``np.isnan``). If a float is
         passed, this is transformed to ``lambda z: np.isclose(z, fz)``.
-    value : int, optional
-        Value of the selected (prescribed) degrees of freedom (default is 0).
+    value : ndarray or float, optional
+        Value(s) of the selected (prescribed) degrees of freedom (default is 0.0).
     skip : tuple of bool or int, optional
         A tuple to define which axes of the selected points should be skipped, i.e.
         not prescribed (default is ``(False, False, False)``).
@@ -62,7 +62,7 @@ class Boundary:
     points : ndarray
         1d-array of ints which contains the point ids on which one or more degrees of
         freedom are prescribed.
-    value : int
+    value : ndarray or float
         Value of the selected (prescribed) degrees of freedom.
 
     Examples
@@ -141,7 +141,7 @@ class Boundary:
         fx=np.isnan,
         fy=np.isnan,
         fz=np.isnan,
-        value=0,
+        value=0.0,
         skip=(False, False, False),
         mask=None,
         mode="or",

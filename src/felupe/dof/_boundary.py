@@ -26,17 +26,16 @@ class Boundary:
         self,
         field,
         name="default",
-        fx=lambda v: v == np.nan,
-        fy=lambda v: v == np.nan,
-        fz=lambda v: v == np.nan,
+        fx=lambda x: np.isnan(x),
+        fy=lambda y: np.isnan(y),
+        fz=lambda z: np.isnan(z),
         value=0,
         skip=(False, False, False),
         mask=None,
         mode="or",
     ):
-        """A Boundary as a collection of prescribed degrees of freedom
-        (numbered coordinate components of a field at points of a mesh).
-
+        """A Boundary as a collection of prescribed degrees of freedom (numbered
+        coordinate components of a field at points of a mesh).
 
         Arguments
         ---------
@@ -46,28 +45,31 @@ class Boundary:
         name : str, optional (default is "default")
             Name of the boundary.
 
-        fx : function, optional (default is `lambda v: v == np.nan`)
-            Mask-function for x-component of mesh-points which returns
-            `True` at points on which the boundary will be applied.
+        fx : float or callable, optional (default is `lambda x: np.isnan(x)`)
+            Mask-function for x-component of mesh-points which returns `True` at points
+            on which the boundary will be applied. If a float is passed, this is
+            transformed to `lambda x: np.isclose(x, fx)`.
 
-        fy : function, optional (default is `lambda v: v == np.nan`)
-            Mask-function for y-component of mesh-points which returns
-            `True` at points on which the boundary will be applied.
+        fy : float or callable, optional (default is `lambda y: np.isnan(y)`)
+            Mask-function for y-component of mesh-points which returns `True` at points
+            on which the boundary will be applied. If a float is passed, this is
+            transformed to `lambda y: np.isclose(y, fy)`.
 
-        fz : function, optional (default is `lambda v: v == np.nan`)
-            Mask-function for z-component of mesh-points which returns
-            `True` at points on which the boundary will be applied.
+        fz : float or callable, optional (default is `lambda z: np.isnan(z)`)
+            Mask-function for z-component of mesh-points which returns `True` at points
+            on which the boundary will be applied. If a float is passed, this is
+            transformed to `lambda z: np.isclose(z, fz)`.
 
         value : int, optional (default is 0)
             Value of the selected (prescribed) degrees of freedom.
 
         skip : tuple of bool, optional (default is `(False, False, False)`)
-            A tuple to define which axes of the selected points should be
-            skipped (i.e. not prescribed).
+            A tuple to define which axes of the selected points should be skipped (i.e.
+            not prescribed).
 
         mode : string, optional (default is `or`)
-            A string which defines the logical combination of points per axis.
-
+            A string which defines the logical operation for the selected points per
+            axis.
 
         Attributes
         ----------
@@ -81,6 +83,73 @@ class Boundary:
             Array which contains the points on which one or more degrees of
             freedom are prescribed.
 
+        Examples
+        --------
+        A Boundary condition prescribes values for chosen degrees of freedom of a given
+        field (**not** a field container). This is demonstrated for a plane-strain
+        vector field on a quad-mesh of a circle.
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Circle(radius=1, n=6)
+        >>> x, y = mesh.points.T
+        >>> region = fem.RegionQuad(mesh)
+        >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+        >>> field = fem.FieldContainer([displacement])
+
+        A boundary on the displacement field which prescribes a value of 0.1 for all
+        components on outermost left point of the circle is created in several ways.
+        The easiest way is to pass the desired value to ``fx``.
+
+        >>> left = fem.Boundary(displacement, fx=x.min())
+
+        The same result is obtained if a callable function is passed to ``fx``.
+
+        >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
+
+        If ``fx`` and ``fy`` are given, the masks are combined by logical-or. This may
+        be changed to logical-and if desired.
+
+        >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
+        >>> len(axes.points)
+        41
+
+        >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
+        >>> len(center.points)
+        1
+
+        For the most-general case, a user-defined boolean mask for the selection of the
+        mesh-points is provided. While the two upper methods are useful to select
+        points separated per point-coordinates, providing a mask is more flexible as
+        it may involve all three coordinates (or any other quantities of interest).
+
+        >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x < 0)
+        >>> surface = fem.Boundary(displacement, mask=mask)
+        >>> len(surface.points)
+        19
+
+        A boundary condition may be skipped on given axes, i.e. if only the x-components
+        of a field should be prescribed on the selected points, then the y-axis must
+        be skipped.
+
+        >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
+
+        Values for the prescribed degress of freedom are either applied during creation
+        or by the update-method.
+
+        >>> left = fem.Boundary(displacement, fx=x.min(), value=-0.2)
+        >>> left.update(-0.3)
+
+        Sometimes it is useful to create a boundary with all axes skipped. This
+        boundary has no prescribed degrees of freedom and hence, is without effect.
+        However, it may still be used in a characteristic job for the boundary to be
+        tracked.
+
+        See Also
+        --------
+        felupe.CharacteristicCurve: A job with a boundary to be tracked.
+        felupe.dof.partition: Partition dof into prescribed dof0 and active dof1.
+        felupe.dof.apply: Apply prescribed values for a list of boundaries.
         """
 
         mesh = field.region.mesh

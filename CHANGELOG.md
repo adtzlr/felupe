@@ -3,11 +3,16 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.10.0] - 2023-09-14
+
 ### Added
 - Add `ViewField` as method to a field container `FieldContainer.view()`. Now a field container provides the view sub-methods directly, i.e. add `FieldContainer.plot()` and `FieldContainer.screenshot(filename="mesh.png")`.
 
 ### Changed
 - Hide the undeformed mesh in `Mesh.plot()` by default (also affects `Mesh.screenshot()`).
+
+### Fixed
+- Fix taking screenshots of a mesh.
 
 ## [7.9.0] - 2023-09-13
 

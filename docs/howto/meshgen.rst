@@ -25,11 +25,11 @@ FElupe provides a simple mesh generation module :mod:`felupe.mesh`. A :class:`fe
     mesh_meshio = mesh.as_meshio()
 
     # view the mesh in an interactive window
-    fem.ViewMesh(mesh).plot().show()
+    mesh.plot().show()
     
     # take a screenshot of an off-screen view
-    img = fem.ViewMesh(mesh).plot(off_screen=True).screenshot(
-        "mesh.png", 
+    img = mesh.screenshot(
+        filename="mesh.png", 
         transparent_background=True,
     )
 

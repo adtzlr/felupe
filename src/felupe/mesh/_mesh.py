@@ -167,7 +167,7 @@ class Mesh(DiscreteGeometry):
         return self.view().plot(*args, show_undeformed=False, **kwargs)
 
     def screenshot(self, filename="mesh.png", **kwargs):
-        """Plot the mesh.
+        """Take a screenshot of the mesh.
 
         See Also
         --------

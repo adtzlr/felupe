@@ -46,7 +46,7 @@ class Boundary:
     skip : tuple of bool or int, optional (default is `(False, False, False)`)
         A tuple to define which axes of the selected points should be skipped (i.e.
         not prescribed).
-    mask : array
+    mask : ndarray
         Boolean mask for the prescribed degrees of freedom. If a mask is passed, ``fx``,
         ``fy`` and ``fz`` are ignored. However, ``skip`` is still applied on the mask.
     mode : string, optional (default is `or`)
@@ -55,12 +55,12 @@ class Boundary:
 
     Attributes
     ----------
-    mask : array
-        Boolean mask for the prescribed degrees of freedom.
-    dof : array
-        Array of ints which contains the prescribed degrees of freedom.
-    points : array
-        Array of ints which contains the point ids on which one or more degrees of
+    mask : ndarray
+        1d- or 2d-boolean mask array for the prescribed degrees of freedom.
+    dof : ndarray
+        1d-array of ints which contains the prescribed degrees of freedom.
+    points : ndarray
+        1d-array of ints which contains the point ids on which one or more degrees of
         freedom are prescribed.
     value : int
         Value of the selected (prescribed) degrees of freedom.

@@ -213,8 +213,17 @@ def test_3d_mixed():
     assert np.allclose(g[0].values, f[0].values)
 
 
+def test_view():
+    mesh = fe.Rectangle(n=6)
+    region = fe.RegionQuad(mesh)
+    field = fe.FieldContainer([fe.FieldPlaneStrain(region, dim=2)])
+    plotter = field.plot(off_screen=True)
+    # img = mesh.screenshot(transparent_background=True)
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
     test_3d_mixed()
     test_mixed_lagrange()
+    test_view()

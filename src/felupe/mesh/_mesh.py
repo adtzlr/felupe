@@ -157,14 +157,14 @@ class Mesh(DiscreteGeometry):
             self, point_data=point_data, cell_data=cell_data, cell_type=cell_type
         )
 
-    def plot(self, **kwargs):
+    def plot(self, *args, **kwargs):
         """Plot the mesh.
 
         See Also
         --------
         felupe.Scene.plot: Plot method of a scene.
         """
-        return self.view().plot(**kwargs)
+        return self.view().plot(*args, show_undeformed=False, **kwargs)
 
     def screenshot(self, filename="mesh.png", **kwargs):
         """Plot the mesh.

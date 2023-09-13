@@ -487,7 +487,7 @@ def test_view():
     mesh = fe.Rectangle(n=6)
     view = mesh.view()
     plotter = mesh.plot(off_screen=True)
-    img = mesh.screenshot(transparent_background=True)
+    # img = mesh.screenshot(transparent_background=True)
 
 
 if __name__ == "__main__":

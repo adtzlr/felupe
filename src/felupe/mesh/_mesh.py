@@ -132,7 +132,7 @@ class Mesh(DiscreteGeometry):
         self.as_meshio(**kwargs).write(filename)
 
     def view(self, point_data=None, cell_data=None, cell_type=None):
-        """View the with optional given dicts of point- and cell-data items.
+        """View the mesh with optional given dicts of point- and cell-data items.
 
         Parameters
         ----------

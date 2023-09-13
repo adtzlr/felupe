@@ -20,6 +20,7 @@ from functools import wraps
 
 import numpy as np
 
+from ..tools._plot import ViewMesh
 from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,
@@ -129,6 +130,51 @@ class Mesh(DiscreteGeometry):
         """
 
         self.as_meshio(**kwargs).write(filename)
+
+    def view(self, point_data=None, cell_data=None, cell_type=None):
+        """View the with optional given dicts of point- and cell-data items.
+
+        Parameters
+        ----------
+        point_data : dict or None, optional
+            Additional point-data dict (default is None).
+        cell_data : dict or None, optional
+            Additional cell-data dict (default is None).
+        cell_type : pyvista.CellType or None, optional
+            Cell-type of PyVista (default is None).
+
+        Returns
+        -------
+        felupe.ViewMesh
+            A object which provides visualization methods for :class:`felupe.Mesh`.
+
+        See Also
+        --------
+        felupe.ViewMesh : Visualization methods for :class:`felupe.Mesh`.
+        """
+
+        return ViewMesh(
+            self, point_data=point_data, cell_data=cell_data, cell_type=cell_type
+        )
+
+    def plot(self, **kwargs):
+        """Plot the mesh.
+
+        See Also
+        --------
+        felupe.Scene.plot: Plot method of a scene.
+        """
+        return self.view().plot(**kwargs)
+
+    def screenshot(self, filename="mesh.png", **kwargs):
+        """Plot the mesh.
+
+        See Also
+        --------
+        pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
+        """
+
+        return self.plot(off_screen=True).screenshot(filename=filename, **kwargs)
 
     @wraps(dual)
     def dual(

@@ -483,6 +483,13 @@ def test_triangle():
     assert boundary.mesh.ncells == 24
 
 
+def test_view():
+    mesh = fe.Rectangle(n=6)
+    view = mesh.view()
+    plotter = mesh.plot(off_screen=True)
+    img = mesh.screenshot(transparent_background=True)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -498,3 +505,4 @@ if __name__ == "__main__":
     test_mesh_fill_between()
     test_circle()
     test_triangle()
+    test_view()

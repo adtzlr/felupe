@@ -25,7 +25,7 @@ class Boundary:
 
     Parameters
     ----------
-    field : Field
+    field : felupe.Field
         Field on wich the boundary is created.
     name : str, optional (default is "default")
         Name of the boundary.

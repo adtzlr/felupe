@@ -118,7 +118,7 @@ class FieldContainer:
         )
 
     def plot(self, *args, **kwargs):
-        """Plot the mesh.
+        """Plot the first field of the container.
 
         See Also
         --------
@@ -126,8 +126,8 @@ class FieldContainer:
         """
         return self.view().plot(*args, **kwargs)
 
-    def screenshot(self, filename="mesh.png", **kwargs):
-        """Plot the field.
+    def screenshot(self, filename="field.png", **kwargs):
+        """Take a screenshot of the first field of the container.
 
         See Also
         --------

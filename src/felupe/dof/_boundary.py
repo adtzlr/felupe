@@ -203,4 +203,6 @@ class Boundary:
         self.points = np.arange(mesh.npoints)[mask]
 
     def update(self, value):
+        "Update the value of the boundary."
+
         self.value = value

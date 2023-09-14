@@ -32,6 +32,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
     "myst_nb",

@@ -330,7 +330,7 @@ def biaxial(
 
     ..  image:: images/loadcase_bx.png
 
-    Repeating the above example with ``fem.dof.biaxial(field, clamped=True)`` results
+    Repeating the above example with ``fem.dof.biaxial(field, clamped=False)`` results
     in a different deformation at the end faces.
 
     ..  image:: images/loadcase_bx_free.png

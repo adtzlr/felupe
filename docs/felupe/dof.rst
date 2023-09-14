@@ -15,3 +15,5 @@ This module contains the definition of a boundary condition as well as tools rel
 .. autofunction:: felupe.dof.symmetry
 
 .. autofunction:: felupe.dof.uniaxial
+
+.. autofunction:: felupe.dof.biaxial

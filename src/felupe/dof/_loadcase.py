@@ -128,12 +128,16 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
     symmetry face) and a right (applied) end face along a given axis with optional
     selective symmetries at the origin. Optionally, the right end face is assumed to be
     rigid (clamped) in the transversal directions perpendicular to the longitudinal
-    direction.
+    loading direction.
 
     Parameters
     ----------
     field : felupe.FieldContainer
         FieldContainer on wich the symmetry boundaries are created.
+    left : float or None, optional
+        The position of the left end face along the given axis (default is None). If
+        None, the outermost left position of the mesh-points is taken, i.e.
+        ``left=field.region.mesh.points[:, axis].min()``.
     right : float or None, optional
         The position of the right end face where the longitudinal movement is applied
         along the given axis (default is None). If None, the outermost right position
@@ -148,10 +152,6 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
         A flag to assume the right end face to be rigid, i.e. zero
         displacements in the direction of the transversal axes are enforced (default is
         True).
-    left : float or None, optional
-        The position of the left end face along the given axis (default is None). If
-        None, the outermost left position of the mesh-points is taken, i.e.
-        ``left=field.region.mesh.points[:, axis].min()``.
     sym : bool or tuple of bool, optional
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the direction of the longitudinal axis as well as in the
@@ -248,12 +248,101 @@ def biaxial(
     clamped=False,
     sym=True,
 ):
-    """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
-    z > 0) with symmetries at x=0, y=0 and z=0.
+    """Return a dict of boundaries for biaxial loading between a left (applied or
+    symmetry face) and a right (applied) end face along a given pair of axes with
+    optional selective symmetries at the origin. Optionally, the applied end faces are
+    assumed to be rigid (clamped) in the transversal directions perpendicular to the
+    longitudinal loading direction.
 
-    Note that `clamped=True` is not a valid loadcase for a cube. Use a cross-
-    like shape instead where the clamped faces at fx=1 and fy=1 do not share
-    mesh-points."""
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        FieldContainer on wich the symmetry boundaries are created.
+    lefts : tuple of float or None, optional
+        The position of the left end faces where the longitudinal movement is applied
+        along the given axes (default is (None, None)). If an item of the tuple is None,
+        the outermost left position of the mesh-points is taken, i.e.
+        ``lefts=[field.region.mesh.points[:, axis].min() for axis in axes]``.
+    rights : tuple of float or None, optional
+        The position of the right end faces where the longitudinal movement is applied
+        along the given axes (default is (None, None)). If an item of the tuple is None,
+        the outermost right position of the mesh-points is taken, i.e.
+        ``rights=[field.region.mesh.points[:, axis].max() for axis in axes]``.
+    moves : tuple of float, optional
+        The values of the longitudinal displacements applied each one half of the value
+        at the left and right end faces (default is (0.2, 0.2)).
+    axes : tuple of int, optional
+        The pair of longitudinal axes (default is (0, 1)).
+    clamped : bool, optional
+        A flag to assume the applied end faces to be rigid, i.e. zero
+        displacements in the direction of the transversal axes are enforced (default is
+        True).
+    sym : bool or tuple of bool, optional
+        A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
+        left end face in the directions of the longitudinal axes as well as in the
+        direction of the transversal axis.
+
+    Returns
+    -------
+    dict of felupe.Boundary
+        Dict of boundaries for a biaxial loadcase.
+    dict of ndarray
+        Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
+        freedom as well as the external displacement values ``ext0`` for the prescribed
+        degrees of freedom.
+
+    Notes
+    -----
+    ..  warning:: Note that `clamped=True` is not a valid loadcase for a cube. Instead,
+        use a shape where the clamped end faces do not share mesh-points.
+
+    Examples
+    --------
+    A cross-like planar specimen of a hyperelastic solid is subjected to biaxial
+    displacement-controlled tension on rigid end faces.
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(21, 21))
+    >>> x, y = mesh.points.T
+    >>> points = np.arange(mesh.npoints)[np.logical_or.reduce([x <= 0.6, y <= 0.6])]
+    >>> mesh.update(cells=mesh.cells[np.all(np.isin(mesh.cells, points), axis=1)])
+
+    >>> region = fem.RegionQuad(mesh)
+    >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    >>> boundaries = fem.dof.biaxial(field, clamped=True)[0]
+
+    The longitudinal displacements are applied incrementally.
+
+    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+    >>> step = fem.Step(
+    >>>     items=[solid],
+    >>>     ramp={
+    >>>         boundaries["move-right-0"]: fem.math.linsteps([0, 0.1], num=5),
+    >>>         boundaries["move-right-1"]: fem.math.linsteps([0, 0.1], num=5),
+    >>>     },
+    >>>     boundaries=boundaries
+    >>> )
+
+    >>> fem.Job(steps=[step]).evaluate()
+    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
+
+    ..  image:: images/loadcase_bx.png
+
+    Repeating the above example with ``fem.dof.biaxial(field, clamped=True)`` results
+    in a different deformation at the end faces.
+
+    ..  image:: images/loadcase_bx_free.png
+
+    See Also
+    --------
+    felupe.Boundary : A collection of prescribed degrees of freedom.
+    felupe.dof.partition : Partition degrees of freedom into prescribed and active dof.
+    felupe.dof.apply : Apply prescribed values for a list of boundaries.
+    felupe.dof.symmetry : Return a dict of boundaries for the symmetry axes.
+
+    """
 
     f = _get_first_field(field)
 
@@ -278,25 +367,29 @@ def biaxial(
 
     bounds = symmetry(f, axes=sym)
 
-    for i, (left, axis, active) in enumerate(zip(lefts, axes, actives)):
+    for i, (left, axis, active, move) in enumerate(zip(lefts, axes, actives, moves)):
         if not sym[axis]:
             if left is None:
-                left = f.region.mesh.points[:, axis].min()
+                lefts[i] = f.region.mesh.points[:, axis].min()
 
             fx = fxyz[axis]
-            bounds[f"left-{axis}"] = Boundary(f, skip=active, **{fx: left})
+            bounds[f"move-left-{axis}"] = Boundary(
+                f, skip=active, value=-move, **{fx: lefts[i]}
+            )
 
-    for i, (right, axis, active, inactive, move) in enumerate(
-        zip(rights, axes, actives, inactives, moves)
+    for i, (left, right, axis, active, inactive, move) in enumerate(
+        zip(lefts, rights, axes, actives, inactives, moves)
     ):
         fx = fxyz[axis]
         if clamped:
             bounds[f"right-{axis}"] = Boundary(f, skip=inactive, **{fx: right})
 
             if not sym[axis]:
-                bounds["left-{axis}-z"] = Boundary(f, skip=inactive, **{fx: left})
+                bounds[f"left-{axis}"] = Boundary(f, skip=inactive, **{fx: left})
 
-        bounds[f"move-{axis}"] = Boundary(f, skip=active, value=move, **{fx: right})
+        bounds[f"move-right-{axis}"] = Boundary(
+            f, skip=active, value=move, **{fx: right}
+        )
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)

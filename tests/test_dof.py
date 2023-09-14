@@ -106,20 +106,20 @@ def test_loadcase():
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=False)
+        bx = fe.dof.biaxial(u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=False)
         assert len(bx) == 2
 
-        bx = fe.dof.biaxial(u, right=1.0, move=0.2, clamped=True)
+        bx = fe.dof.biaxial(u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=True)
         assert len(bx) == 2
-        assert "right" in bx[0]
+        assert "right-0" in bx[0]
 
-        bx = fe.dof.biaxial(u, right=None, move=0.2, clamped=True)
+        bx = fe.dof.biaxial(u, rights=(None, None), moves=(0.2, 0.2), clamped=True)
         assert len(bx) == 2
-        assert "right" in bx[0]
+        assert "right-0" in bx[0]
 
-        bx = fe.dof.biaxial(v, right=1.0, move=0.2, clamped=True)
+        bx = fe.dof.biaxial(v, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=True)
         assert len(bx) == 2
-        assert "right" in bx[0]
+        assert "right-0" in bx[0]
 
         ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=False)
         assert len(ps) == 2

@@ -55,7 +55,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     Notes
     -----
     The symmetry boundaries are labeled as ``"symx"``, ``"symy"`` and ``"symz"``.
-    
+
     +---------------+-------------------------+--------------------------+
     | Symmetry Axis | Prescribed (Fixed) Axes |      Skip-Argument       |
     +===============+=========================+==========================+

@@ -123,7 +123,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     return bounds
 
 
-def uniaxial(field, right=None, move=0.2, axis=0, clamped=False, left=None, sym=True):
+def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=True):
     """Return a dict of boundaries for uniaxial loading between a left (fixed or
     symmetry face) and a right (applied) end face along a given axis with optional
     selective symmetries at the origin. Optionally, the right end face is assumed to be
@@ -223,13 +223,13 @@ def uniaxial(field, right=None, move=0.2, axis=0, clamped=False, left=None, sym=
         if left is None:
             left = f.region.mesh.points[:, axis].min()
 
-        bounds["leftx"] = Boundary(f, skip=active, **{fx: left})
+        bounds["left-x"] = Boundary(f, skip=active, **{fx: left})
 
     if clamped:
         bounds["right"] = Boundary(f, skip=inactive, **{fx: right})
 
         if not sym[axis]:
-            bounds["leftyz"] = Boundary(f, skip=inactive, **{fx: left})
+            bounds["left-yz"] = Boundary(f, skip=inactive, **{fx: left})
 
     bounds["move"] = Boundary(f, skip=active, value=move, **{fx: right})
 
@@ -239,7 +239,15 @@ def uniaxial(field, right=None, move=0.2, axis=0, clamped=False, left=None, sym=
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def biaxial(field, right=None, move=0.2, clamped=False):
+def biaxial(
+    field,
+    lefts=(None, None),
+    rights=(None, None),
+    moves=(0.2, 0.2),
+    axes=(0, 1),
+    clamped=False,
+    sym=True,
+):
     """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
     z > 0) with symmetries at x=0, y=0 and z=0.
 
@@ -249,17 +257,46 @@ def biaxial(field, right=None, move=0.2, clamped=False):
 
     f = _get_first_field(field)
 
-    if right is None:
-        right = f.region.mesh.points[:, 0].max()
+    fxyz = ["fx", "fy", "fz"]
 
-    bounds = symmetry(f)
+    lefts = np.asarray(lefts)
+    rights = np.asarray(rights)
 
-    if clamped:
-        bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
-        bounds["top"] = Boundary(f, fy=right, skip=(0, 1, 0))
+    masks = [np.ones(3, dtype=bool), np.ones(3, dtype=bool)]
+    for i, axis in enumerate(axes):
+        masks[i][axis] = False
 
-    bounds["move-x"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
-    bounds["move-y"] = Boundary(f, fy=right, skip=(1, 0, 1), value=move)
+    actives = [tuple(mask.astype(int)) for mask in masks]
+    inactives = [tuple((~mask).astype(int)) for mask in masks]
+
+    if not hasattr(sym, "__len__"):
+        sym = (sym, sym, sym)
+
+    for i, (right, axis) in enumerate(zip(rights, axes)):
+        if right is None:
+            rights[i] = f.region.mesh.points[:, axis].max()
+
+    bounds = symmetry(f, axes=sym)
+
+    for i, (left, axis, active) in enumerate(zip(lefts, axes, actives)):
+        if not sym[axis]:
+            if left is None:
+                left = f.region.mesh.points[:, axis].min()
+
+            fx = fxyz[axis]
+            bounds[f"left-{axis}"] = Boundary(f, skip=active, **{fx: left})
+
+    for i, (right, axis, active, inactive, move) in enumerate(
+        zip(rights, axes, actives, inactives, moves)
+    ):
+        fx = fxyz[axis]
+        if clamped:
+            bounds[f"right-{axis}"] = Boundary(f, skip=inactive, **{fx: right})
+
+            if not sym[axis]:
+                bounds["left-{axis}-z"] = Boundary(f, skip=inactive, **{fx: left})
+
+        bounds[f"move-{axis}"] = Boundary(f, skip=active, value=move, **{fx: right})
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)

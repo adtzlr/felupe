@@ -72,6 +72,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     given x-coordinate. The degrees of freedom are prescribed except for the symmetry
     x-axis.
 
+    >>> import numpy as np
     >>> import felupe as fem
 
     >>> mesh = fem.Circle(radius=1, n=6, sections=[0, 270])
@@ -123,8 +124,82 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
 
 
 def uniaxial(field, right=None, move=0.2, axis=0, clamped=False, left=None, sym=True):
-    """Define boundaries for uniaxial loading along a given axis on (a quarter of) a
-    model (x > 0, y > 0, z > 0) with optional symmetries at x=0, y=0 and z=0."""
+    """Return a dict of boundaries for uniaxial loading between a left (fixed or
+    symmetry face) and a right (applied) end face along a given axis with optional
+    selective symmetries at the origin. Optionally, the right end face is assumed to be
+    rigid (clamped) in the transversal directions perpendicular to the longitudinal
+    direction.
+
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        FieldContainer on wich the symmetry boundaries are created.
+    right : float or None, optional
+        The position of the right end face where the longitudinal movement is applied
+        along the given axis (default is None). If None, the outermost right position
+        of the mesh-points is taken, i.e.
+        ``right=field.region.mesh.points[:, axis].max()``.
+    move : float, optional
+        The value of the longitudinal displacement applied at the right end face
+        (default is 0.2).
+    axis : int, optional
+        The longitudinal axis (default is 0).
+    clamped : bool, optional
+        A flag to assume the right end face to be rigid, i.e. zero
+        displacements in the direction of the transversal axes are enforced (default is
+        True).
+    left : float or None, optional
+        The position of the left end face along the given axis (default is None). If
+        None, the outermost left position of the mesh-points is taken, i.e.
+        ``left=field.region.mesh.points[:, axis].min()``.
+    sym : bool or tuple of bool, optional
+        A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
+        left end face in the direction of the longitudinal axis as well as in the
+        directions of the transversal axes.
+
+    Returns
+    -------
+    dict of felupe.Boundary
+        Dict of boundaries for a uniaxial loadcase.
+    dict of ndarray
+        Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
+        freedom as well as the external displacement values ``ext0`` for the prescribed
+        degrees of freedom.
+
+    Examples
+    --------
+    A quarter of a solid hyperelastic cube is subjected to uniaxial displacement-
+    controlled compression on a rigid end face.
+
+    >>> import felupe as fem
+
+    >>> region = fem.RegionHexahedron(fem.Cube(a=(0, 0, 0), b=(2, 3, 1), n=(11, 16, 6)))
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)[0]
+
+    The longitudinal displacement is applied incrementally.
+
+    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+    >>> step = fem.Step(
+    >>>     items=[solid],
+    >>>     ramp={boundaries["move"]: fem.math.linsteps([0, -0.3], num=5)},
+    >>>     boundaries=boundaries
+    >>> )
+
+    >>> fem.Job(steps=[step]).evaluate()
+    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
+
+    ..  image:: images/loadcase_ux.png
+
+    See Also
+    --------
+    felupe.Boundary : A collection of prescribed degrees of freedom.
+    felupe.dof.partition : Partition degrees of freedom into prescribed and active dof.
+    felupe.dof.apply : Apply prescribed values for a list of boundaries.
+    felupe.dof.symmetry : Return a dict of boundaries for the symmetry axes.
+
+    """
 
     f = _get_first_field(field)
 

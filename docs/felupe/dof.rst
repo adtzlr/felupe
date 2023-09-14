@@ -11,3 +11,5 @@ This module contains the definition of a boundary condition as well as tools rel
 .. autofunction:: felupe.dof.partition
 
 .. autofunction:: felupe.dof.apply
+
+.. autofunction:: felupe.dof.symmetry

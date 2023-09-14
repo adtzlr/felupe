@@ -28,8 +28,73 @@ def _get_first_field(field):
     return field.fields[0]
 
 
-def symmetry(field, axes=(True, True, True), x=0, y=0, z=0, bounds=None):
-    "Create symmetry boundary conditions."
+def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
+    """Return a dict of boundaries for the symmetry axes on the x-, y- and
+    z-coordinates.
+
+    Parameters
+    ----------
+    field : felupe.Field
+        Field on wich the symmetry boundaries are created.
+    axes : tuple of bool or int
+        Flags to invoke symmetries on the x-, y- and z-axis.
+    x : float, optional
+        Center of the x-symmetry (default is 0.0).
+    y : float, optional
+        Center of the y-symmetry (default is 0.0).
+    z : float, optional
+        Center of the z-symmetry (default is 0.0).
+    bounds : dict of felupe.Boundary, optional
+        Extend a given dict of boundaries by the symmetry boundaries (default is None).
+
+    Returns
+    -------
+    dict of felupe.Boundary
+        New or extended dict of boundaries including symmetry boundaries.
+
+    Notes
+    -----
+    The symmetry boundaries are labeled as ``"symx"``, ``"symy"`` and ``"symz"``.
+    
+    +---------------+-------------------------+--------------------------+
+    | Symmetry Axis | Prescribed (Fixed) Axes |      Skip-Argument       |
+    +===============+=========================+==========================+
+    |       x       |           y, z          | ``(True, False, False)`` |
+    +---------------+-------------------------+--------------------------+
+    |       y       |           x, z          | ``(False, True, False)`` |
+    +---------------+-------------------------+--------------------------+
+    |       z       |           x, y          | ``(False, False, True)`` |
+    +---------------+-------------------------+--------------------------+
+
+    Examples
+    --------
+    The x-symmetry boundary for a symmetry on the x-axis contains all points at the
+    given x-coordinate. The degrees of freedom are prescribed except for the symmetry
+    x-axis.
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Circle(radius=1, n=6, sections=[0, 270])
+    >>> x, y = mesh.points.T
+    >>> region = fem.RegionQuad(mesh)
+    >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+
+    >>> boundaries = fem.dof.symmetry(displacement, axes=(True, False), x=0.0)
+
+    >>> plotter = mesh.plot(off_screen=True)
+    >>> plotter.add_points(
+    >>>     np.pad(mesh.points[boundaries["symx"].points], ((0, 0), (0, 1))),
+    >>>     point_size=20,
+    >>>     color="red",
+    >>> )
+    >>> img = plotter.screenshot("boundary_symx.png", transparent_background=True)
+
+    ..  image:: images/boundary_symx.png
+
+    See Also
+    --------
+    felupe.Boundary : A collection of prescribed degrees of freedom.
+    """
 
     # convert axes to array and slice by mesh dimension
     enforce = np.array(axes).astype(bool)[: field.dim]

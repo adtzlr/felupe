@@ -109,9 +109,11 @@ def test_loadcase():
         bx = fe.dof.biaxial(u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=False)
         assert len(bx) == 2
 
-        bx = fe.dof.biaxial(u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=True)
+        bx = fe.dof.biaxial(
+            u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=True, sym=False
+        )
         assert len(bx) == 2
-        assert "right-0" in bx[0]
+        assert "left-0" in bx[0]
 
         bx = fe.dof.biaxial(u, rights=(None, None), moves=(0.2, 0.2), clamped=True)
         assert len(bx) == 2

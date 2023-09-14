@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clamped=False, sym=True)`. Now with a full-featured docstring including an example.
+
 ## [7.10.0] - 2023-09-14
 
 ### Added

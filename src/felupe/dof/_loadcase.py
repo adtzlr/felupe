@@ -245,7 +245,7 @@ def biaxial(
     rights=(None, None),
     moves=(0.2, 0.2),
     axes=(0, 1),
-    clamped=False,
+    clampes=(False, False),
     sym=True,
 ):
     """Return a dict of boundaries for biaxial loading between a left (applied or
@@ -273,8 +273,8 @@ def biaxial(
         at the left and right end faces (default is (0.2, 0.2)).
     axes : tuple of int, optional
         The pair of longitudinal axes (default is (0, 1)).
-    clamped : bool, optional
-        A flag to assume the applied end faces to be rigid, i.e. zero
+    clampes : tuple of bool, optional
+        Flags to assume the applied end faces to be rigid, i.e. zero
         displacements in the direction of the transversal axes are enforced (default is
         True).
     sym : bool or tuple of bool, optional
@@ -293,14 +293,15 @@ def biaxial(
 
     Notes
     -----
-    ..  warning:: Note that `clamped=True` is not a valid loadcase for a cube. Instead,
-        use a shape where the clamped end faces do not share mesh-points.
+    ..  warning:: Note that `clampes=(True, True)` is not a valid loadcase for a cube.
+        Instead, use a shape where the clamped end faces do not share mesh-points.
 
     Examples
     --------
     A cross-like planar specimen of a hyperelastic solid is subjected to biaxial
     displacement-controlled tension on rigid end faces.
 
+    >>> import numpy as np
     >>> import felupe as fem
 
     >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(21, 21))
@@ -311,7 +312,7 @@ def biaxial(
     >>> region = fem.RegionQuad(mesh)
     >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
-    >>> boundaries = fem.dof.biaxial(field, clamped=True)[0]
+    >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))[0]
 
     The longitudinal displacements are applied incrementally.
 
@@ -330,10 +331,31 @@ def biaxial(
 
     ..  image:: images/loadcase_bx.png
 
-    Repeating the above example with ``fem.dof.biaxial(field, clamped=False)`` results
-    in a different deformation at the end faces.
+    Repeating the above example with ``fem.dof.biaxial(field, clampes=(False, False)``
+    results in a different deformation at the end faces.
 
     ..  image:: images/loadcase_bx_free.png
+
+    The biaxial loadcase may also invoke a planar loading, where one of the longitudinal
+    axes is fixed with no displacements at the end plates. The clampling must at least
+    be deactivated on the fixed longitudinal axis.
+
+    >>> mesh = fem.Cube(n=2)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>> boundaries = fem.dof.biaxial(
+    >>>     field, clampes=(True, False), moves=(0, 0), sym=False, axes=(0, 1)
+    >>> )[0]
+    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+    >>> step = fem.Step(
+    >>>     items=[solid],
+    >>>     ramp={boundaries["move-right-0"]: fem.math.linsteps([0, 0.3], num=5),},
+    >>>     boundaries=boundaries
+    >>> )
+    >>> fem.Job(steps=[step]).evaluate()
+    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
+
+    ..  image:: images/loadcase_ps.png
 
     See Also
     --------
@@ -377,8 +399,8 @@ def biaxial(
                 f, skip=active, value=-move, **{fx: lefts[i]}
             )
 
-    for i, (left, right, axis, active, inactive, move) in enumerate(
-        zip(lefts, rights, axes, actives, inactives, moves)
+    for i, (left, right, axis, active, inactive, move, clamped) in enumerate(
+        zip(lefts, rights, axes, actives, inactives, moves, clampes)
     ):
         fx = fxyz[axis]
         if clamped:
@@ -397,83 +419,132 @@ def biaxial(
     return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
 
 
-def planar(field, right=None, move=0.2, clamped=False):
-    """Define boundaries for biaxial loading on a quarter model (x > 0, y > 0,
-    z > 0) with symmetries at x=0, y=0 and z=0."""
-
-    f = _get_first_field(field)
-
-    if right is None:
-        right = f.region.mesh.points[:, 0].max()
-
-    bounds = symmetry(f)
-
-    if clamped:
-        bounds["right"] = Boundary(f, fx=right, skip=(1, 0, 0))
-
-    bounds["move"] = Boundary(f, fx=right, skip=(0, 1, 1), value=move)
-    bounds["fix-y"] = Boundary(f, fy=right, skip=(1, 0, 1))
-
-    dof0, dof1 = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0)
-
-    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
-
-
 def shear(
     field,
     bottom=None,
     top=None,
-    move=0.2,
-    axis_shear=0,
-    axis_compression=1,
-    compression=(0, 0),
+    moves=(0.2, 0.0, 0.0),
+    axes=(0, 1),
     sym=True,
 ):
-    """Define boundaries for shear loading between two clamped plates. The
-    bottom plate remains fixed while the shear is applied at the top plate."""
+    """Return a dict of boundaries for shear loading with optional combined compression
+    between a rigid bottom and a rigid top end face along a given pair of axes. The
+    first axis is the direction of shear and the second axis the direction of
+    compression. The bottom face remains fixed while the shear is applied at the top
+    face. Optionally, a symmetry boundary condition in the thickness direction at
+    the origin may be added.
+
+    Parameters
+    ----------
+    field : felupe.FieldContainer
+        FieldContainer on wich the symmetry boundaries are created.
+    bottom : float or None, optional
+        The position of the bottom end face (default is None). If None, the outermost
+        bottom position of the mesh-points is taken, i.e.
+        ``bottom=[field.region.mesh.points[:, axis].min() for axis in axes]``.
+    top : float or None, optional
+        The position of the top end face (default is None). If None, the outermost
+        top position of the mesh-points is taken, i.e.
+        ``top=[field.region.mesh.points[:, axis].min() for axis in axes]``.
+    moves : tuple of float, optional
+        The values of the displacements applied on the end faces (default is
+        (0.2, 0.0, 0.0)). The first item is the shear displacement applied on the top
+        end face. The second and third items refer to the tension/compression
+        displacements. The second item is applied on the bottom and the third item on
+        the top end face.
+    axes : tuple of int, optional
+        The pair of axes: the first item is the axis of shear and the second item is the
+        axis of compression (default is (0, 1)).
+    sym : bool, optional
+        A flag to invoke a symmetry boundary in the direction of the thickness axis.
+
+    Returns
+    -------
+    dict of felupe.Boundary
+        Dict of boundaries for a biaxial loadcase.
+    dict of ndarray
+        Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
+        freedom as well as the external displacement values ``ext0`` for the prescribed
+        degrees of freedom.
+
+    Examples
+    --------
+    A rectangular planar specimen of a hyperelastic solid is subjected to a
+    displacement-controlled combined shear-compression loading on rigid end faces.
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle(a=(0, 0), b=(4, 1), n=(41, 11))
+    >>> region = fem.RegionQuad(mesh)
+    >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    The top edge is moved by ``-0.1`` to add a 10% constant compressive loading.
+
+    >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))[0]
+
+    The shear displacement is applied incrementally.
+
+    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+    >>> step = fem.Step(
+    >>>     items=[solid],
+    >>>     ramp={boundaries["move"]: fem.math.linsteps([0, 1], num=5)},
+    >>>     boundaries=boundaries
+    >>> )
+
+    >>> fem.Job(steps=[step]).evaluate()
+    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
+
+    ..  image:: images/loadcase_shear.png
+
+    See Also
+    --------
+    felupe.Boundary : A collection of prescribed degrees of freedom.
+    felupe.dof.partition : Partition degrees of freedom into prescribed and active dof.
+    felupe.dof.apply : Apply prescribed values for a list of boundaries.
+    felupe.dof.symmetry : Return a dict of boundaries for the symmetry axes.
+
+    """
 
     f = _get_first_field(field)
 
     if bottom is None:
-        bottom = f.region.mesh.points[:, axis_compression].min()
+        bottom = f.region.mesh.points[:, axes[1]].min()
 
     if top is None:
-        top = f.region.mesh.points[:, axis_compression].max()
+        top = f.region.mesh.points[:, axes[1]].max()
 
     if sym:
-        axes = [True, True, True]
-        axes[axis_shear] = False
-        axes[axis_compression] = False
+        sym = np.ones(3, dtype=bool)
+        sym[axes,] = False
 
         bounds = symmetry(f, axes=axes)
     else:
         bounds = {}
 
-    fy = ["fx", "fy", "fz"][axis_compression]
+    fy = ["fx", "fy", "fz"][axes[1]]
 
     skip_compression = [0, 0, 0]
-    skip_compression[axis_compression] = 1
+    skip_compression[axes[1]] = 1
 
     not_skip_compression = [1, 1, 1]
-    not_skip_compression[axis_compression] = 0
+    not_skip_compression[axes[1]] = 0
 
     not_skip_thickness = [0, 0, 0]
-    not_skip_thickness[axis_compression] = 1
-    not_skip_thickness[axis_shear] = 1
+    not_skip_thickness[axes[1]] = 1
+    not_skip_thickness[axes[0]] = 1
 
     not_skip_shear = [1, 1, 1]
-    not_skip_shear[axis_shear] = 0
+    not_skip_shear[axes[0]] = 0
 
     bounds["bottom"] = Boundary(f, **{fy: bottom}, skip=skip_compression)
     bounds["top"] = Boundary(f, **{fy: top}, skip=not_skip_thickness)
     bounds["compression_bottom"] = Boundary(
-        f, **{fy: bottom}, skip=not_skip_compression, value=compression[0]
+        f, **{fy: bottom}, skip=not_skip_compression, value=moves[1]
     )
     bounds["compression_top"] = Boundary(
-        f, **{fy: top}, skip=not_skip_compression, value=-compression[1]
+        f, **{fy: top}, skip=not_skip_compression, value=moves[2]
     )
-    bounds["move"] = Boundary(f, **{fy: top}, skip=not_skip_shear, value=move)
+    bounds["move"] = Boundary(f, **{fy: top}, skip=not_skip_shear, value=moves[0])
 
     dof0, dof1 = partition(field, bounds)
     ext0 = apply(field, bounds, dof0)

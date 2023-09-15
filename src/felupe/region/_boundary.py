@@ -245,19 +245,7 @@ def boundary_cells_hexahedron27(mesh):
 class RegionBoundary(Region):
     r"""
     A numeric boundary-region as a combination of a mesh, an element and a
-    numeric integration scheme (quadrature). The gradients of the element shape
-    functions are evaluated at all integration points of each cell in the region
-    if the optional gradient argument is True.
-
-    .. math::
-
-       \frac{\partial X^I}{\partial r^J} &= X_a^I \frac{\partial h_a}{\partial r^J}
-
-       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I}
-       \frac{\partial r^I}{\partial X^J}
-
-       dV &= \det\left(\frac{\partial X^I}{\partial r^J}\right) w
-
+    numeric integration scheme (quadrature rule).
 
     Parameters
     ----------
@@ -309,6 +297,74 @@ class RegionBoundary(Region):
         Partial derivative of element shape functions ``dhdX_aJqc`` of shape function
         ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``q`` for
         every cell ``c``.
+
+    Notes
+    -----
+    The gradients of the element shape functions w.r.t the undeformed coordinates are
+    evaluated at all integration points of each cell in the region if the optional
+    gradient argument is ``True``.
+
+    .. math::
+
+       \frac{\partial X_I}{\partial r_J} &= \hat{X}_{aI} \frac{
+               \partial h_a}{\partial r_J
+           }
+
+       \frac{\partial h_a}{\partial X_J} &= \frac{\partial h_a}{\partial r_I}
+       \frac{\partial r_I}{\partial X_J}
+
+       dV &= \det\left(\frac{\partial X_I}{\partial r_J}\right) w
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle(n=(3, 2))
+    >>> element = fem.Quad()
+    >>> quadrature = fem.GaussLegendreBoundary(order=1, dim=2)
+
+    >>> region = fem.RegionBoundary(mesh, element, quadrature)
+    >>> region
+    <felupe Region object>
+      Element formulation: Quad
+      Quadrature rule: GaussLegendreBoundary
+      Gradient evaluated: True
+
+    The numeric differential area vectors are the products of the cofactors of the
+    geometric gradient :math:`\partial X_I / \partial r_J` and the weights `w` of the
+    quadrature points. The differential area vectors array is of shape
+    ``(nquadraturepoints, ndim, nboundarycells)``.
+
+    >>> region.dA
+    array([[[ 0.  , -0.5 ,  0.  ,  0.5 ,  0.  ,  0.  ],
+            [ 0.  , -0.5 ,  0.  ,  0.5 ,  0.  ,  0.  ]],
+
+           [[-0.25, -0.  , -0.25, -0.  ,  0.25,  0.25],
+            [-0.25, -0.  , -0.25, -0.  ,  0.25,  0.25]]])
+
+    In a boundary region, the numeric differential volumes are the magnitudes of the
+    differential area vectors. For a quad mesh, the boundary cell volumes are the edge
+    lengths.
+
+    >>> region.dV.sum(axis=0)
+    array([0.5, 1. , 0.5, 1. , 0.5, 0.5])
+
+    Unit normal vectors are obtained by the ratio of the differential area vectors and
+    the differential volumes.
+
+    >>> region.dA / region.dV  ## this is equal to ``region.normals``
+    array([[[ 0., -1.,  0.,  1.,  0.,  0.],
+            [ 0., -1.,  0.,  1.,  0.,  0.]],
+
+           [[-1., -0., -1., -0.,  1.,  1.],
+            [-1., -0., -1., -0.,  1.,  1.]]])
+
+    The partial derivative of the first element shape function w.r.t. the undeformed
+    coordinates evaluated at the second integration point of the last element of the
+    region:
+
+    >>> region.dhdX[0, :, 1, -1]
+    array([2.        , 0.21132487])
     """
 
     def __init__(

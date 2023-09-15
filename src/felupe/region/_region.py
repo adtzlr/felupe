@@ -25,20 +25,8 @@ from ..math import det, inv
 
 class Region:
     r"""
-    A numeric region as a combination of a mesh, an element and a numeric
-    integration scheme (quadrature). The gradients of the element shape
-    functions are evaluated at all integration points of each cell in the
-    region if the optional gradient argument is True.
-
-    .. math::
-
-       \frac{\partial X^I}{\partial r^J} &= X_a^I \frac{\partial h_a}{\partial r^J}
-
-       \frac{\partial h_a}{\partial X^J} &= \frac{\partial h_a}{\partial r^I}
-       \frac{\partial r^I}{\partial X^J}
-
-       dV &= \det\left(\frac{\partial X^I}{\partial r^J}\right) w
-
+    A numeric region as a combination of a mesh, an element and a numeric integration
+    scheme (quadrature rule).
 
     Parameters
     ----------
@@ -75,7 +63,7 @@ class Region:
     drdX : ndarray
         Inverse of dXdr.
     dV : ndarray
-        Numeric *Differential volume element* as product of determinant of geometric
+        Numeric *differential volume element* as product of determinant of geometric
         gradient  ``dV_qc = det(dXdr)_qc w_q`` and quadrature weight ``w_q``, evaluated
         at quadrature point ``q`` for every cell ``c``.
     dhdX : ndarray
@@ -83,33 +71,61 @@ class Region:
         ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``q`` for
         every cell ``c``.
 
+    Notes
+    -----
+    The gradients of the element shape functions w.r.t the undeformed coordinates are
+    evaluated at all integration points of each cell in the region if the optional
+    gradient argument is ``True``.
+
+    .. math::
+
+       \frac{\partial X_I}{\partial r_J} &= \hat{X}_{aI} \frac{
+               \partial h_a}{\partial r_J
+           }
+
+       \frac{\partial h_a}{\partial X_J} &= \frac{\partial h_a}{\partial r_I}
+       \frac{\partial r_I}{\partial X_J}
+
+       dV &= \det\left(\frac{\partial X_I}{\partial r_J}\right) w
+
     Examples
     --------
-    >>> from felupe import Cube, Hexahedron, GaussLegendre, Region
+    >>> import felupe as fem
 
-    >>> mesh = Cube(n=3)
-    >>> element = Hexahedron()
-    >>> quadrature = GaussLegendre(order=1, dim=3)
+    >>> mesh = fem.Rectangle(n=(3, 2))
+    >>> element = fem.Quad()
+    >>> quadrature = fem.GaussLegendre(order=1, dim=2)
 
-    >>> region = Region(mesh, element, quadrature)
+    >>> region = fem.Region(mesh, element, quadrature)
     >>> region
     <felupe Region object>
-      Element formulation: Hexahedron
+      Element formulation: Quad
       Quadrature rule: GaussLegendre
       Gradient evaluated: True
 
-    Cell-volumes may be obtained by a sum of the differential volumes located at the
-    quadrature points.
+    The numeric differential volumes are the products of the determinant of the
+    geometric gradient :math:`\partial X_I / \partial r_J` and the weights `w` of the
+    quadrature points. The differential volume array is of shape
+    ``(nquadraturepoints, ncells)``.
+
+    >>> region.dV
+    array([[0.125, 0.125],
+           [0.125, 0.125],
+           [0.125, 0.125],
+           [0.125, 0.125]])
+
+    Cell-volumes may be obtained by cell-wise sums of the differential volumes located
+    at the quadrature points.
 
     >>> region.dV.sum(axis=0)
-    array([0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125])
+    array([0.5, 0.5])
 
     The partial derivative of the first element shape function w.r.t. the undeformed
     coordinates evaluated at the second integration point of the last element of the
     region:
 
     >>> region.dhdX[0, :, 1, -1]
-    array([-1.24401694, -0.33333333, -0.33333333])
+    array([-1.57735027, -0.21132487])
 
     """
 

@@ -1,6 +1,41 @@
 Region
 ~~~~~~
 
+This module contains the definition of a region as well as a boundary region along with template-regions for pre-defined combinations of elements and quadrature rules.
+
+**Core**
+
+.. currentmodule:: felupe
+
+.. autosummary::
+
+   Region
+   RegionBoundary
+
+**Templates**
+
+.. autosummary::
+
+   RegionQuad
+   RegionHexahedron
+   RegionTriangle
+   RegionTetra
+   RegionConstantQuad
+   RegionConstantHexahedron
+   RegionQuadraticQuad
+   RegionQuadraticHexahedron
+   RegionQuadraticTriangle
+   RegionQuadraticTetra
+   RegionBiQuadraticQuad
+   RegionTriQuadraticHexahedron
+   RegionTriangleMINI
+   RegionTetraMINI
+   RegionLagrange
+   RegionQuadBoundary
+   RegionHexahedronBoundary
+
+**Detailed API Reference**
+
 .. autoclass:: felupe.Region
    :members:
    :undoc-members:
@@ -42,6 +77,16 @@ Region
    :show-inheritance:
 
 .. autoclass:: felupe.RegionConstantQuad
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+. autoclass:: felupe.RegionQuadraticQuad
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+. autoclass:: felupe.RegionBiQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,30 +1,32 @@
 Degrees of Freedom
 ==================
 
-This module contains the definition of a boundary condition as well as tools related to the partition of degrees of freedom and the application of boundary conditions on a field container.
+This module contains the definition of a boundary condition, tools related to the handling of degrees of freedom as well as boundary condition templates for simple load cases.
 
 **Core**
 
+.. currentmodule:: felupe
+
 .. autosummary::
 
-   felupe.Boundary
+   Boundary
 
 
 **Tools**
 
 .. autosummary::
 
-   felupe.dof.partition
-   felupe.dof.apply
-   felupe.dof.symmetry
+   dof.partition
+   dof.apply
+   dof.symmetry
 
 
 **Load Cases**
 
 .. autosummary::
 
-   felupe.dof.uniaxial
-   felupe.dof.biaxial
+   dof.uniaxial
+   dof.biaxial
 
 
 **Detailed API Reference**

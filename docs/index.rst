@@ -70,7 +70,7 @@ Install Python, open the terminal and run ``pip install felupe[all]``, where ``[
    pip install matadi
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
    
    tutorial
@@ -79,7 +79,7 @@ Install Python, open the terminal and run ``pip install felupe[all]``, where ``[
    explanation
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Reference:
    
    felupe

@@ -106,43 +106,34 @@ def test_loadcase():
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        bx = fe.dof.biaxial(u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=False)
+        bx = fe.dof.biaxial(
+            u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(False, False)
+        )
         assert len(bx) == 2
 
         bx = fe.dof.biaxial(
-            u, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=True, sym=False
+            u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(True, True), sym=False
         )
         assert len(bx) == 2
         assert "left-0" in bx[0]
 
-        bx = fe.dof.biaxial(u, rights=(None, None), moves=(0.2, 0.2), clamped=True)
+        bx = fe.dof.biaxial(
+            u, rights=(None, None), moves=(0.2, 0.2), clampes=(True, True)
+        )
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
-        bx = fe.dof.biaxial(v, rights=(1.0, 1.0), moves=(0.2, 0.2), clamped=True)
+        bx = fe.dof.biaxial(
+            v, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(True, True)
+        )
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
-        ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=False)
-        assert len(ps) == 2
-
-        ps = fe.dof.planar(u, right=1.0, move=0.2, clamped=True)
-        assert len(ps) == 2
-        assert "right" in ps[0]
-
-        ps = fe.dof.planar(u, right=None, move=0.2, clamped=True)
-        assert len(ps) == 2
-        assert "right" in ps[0]
-
-        ps = fe.dof.planar(v, right=1.0, move=0.2, clamped=True)
-        assert len(ps) == 2
-        assert "right" in ps[0]
-
-        sh = fe.dof.shear(u, bottom=0.0, top=1.0, move=0.2, sym=True)
+        sh = fe.dof.shear(u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True)
         assert len(sh) == 2
         assert "top" in sh[0]
 
-        sh = fe.dof.shear(v, bottom=None, top=None, move=0.2, sym=False)
+        sh = fe.dof.shear(v, bottom=None, top=None, moves=(0.2, 0, 0), sym=False)
         assert len(sh) == 2
         assert "top" in sh[0]
 

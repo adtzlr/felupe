@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Changed
-- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clamped=False, sym=True)`. Now with a full-featured docstring including an example.
+- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example.
+- Change function signature and enhance `dof.shear(field, bottom=None, top=None, moves=(0.2, 0.0, 0.0), axes=(0, 1), sym=True)`. Now with a full-featured docstring including an example. This is not backward compatible! However, due to the fact, that this was previously a non-documented function this won't enforce a new major version.
+
+### Removed
+- Remove `dof.planar()` because this is a special case of the biaxial load case `dof.biaxial(field, clampes=(True, False), moves=(0.2, 0), sym=False, axes=(0, 1))`.
 
 ## [7.10.0] - 2023-09-14
 

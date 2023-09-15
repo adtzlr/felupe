@@ -336,7 +336,7 @@ def biaxial(
 
     ..  image:: images/loadcase_bx_free.png
 
-    The biaxial loadcase may also invoke a planar loading, where one of the longitudinal
+    The biaxial load case may also invoke a planar loading, where one of the longitudinal
     axes is fixed with no displacements at the end plates. The clampling must at least
     be deactivated on the fixed longitudinal axis.
 

@@ -226,16 +226,9 @@ def collect_volumes(points, cells, cell_type):
 
 
 @mesh_or_data
-def add_midpoints_edges(points, cells, cell_type):
+def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
     """ "Add midpoints on edges for given points and cells
     and update cell_type accordingly."""
-
-    cell_types_new = {
-        "triangle": "triangle6",
-        "tetra": "tetra10",
-        "quad": "quad8",
-        "hexahedron": "hexahedron20",
-    }
 
     # collect edges
     points_edges, cells_edges, _ = collect_edges(
@@ -252,24 +245,21 @@ def add_midpoints_edges(points, cells, cell_type):
     points_new = np.vstack((points, points_edges))
     cells_new = np.hstack((cells, cells_edges))
 
-    return points_new, cells_new, cell_types_new[cell_type]
+    if cell_type_new is None:
+        cell_type_new = {
+            "triangle": "triangle6",
+            "tetra": "tetra10",
+            "quad": "quad8",
+            "hexahedron": "hexahedron20",
+        }[cell_type]
+
+    return points_new, cells_new, cell_type_new
 
 
 @mesh_or_data
-def add_midpoints_faces(points, cells, cell_type):
+def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
     """ "Add midpoints on faces for given points and cells
     and update cell_type accordingly."""
-
-    cell_types_new = {
-        None: None,
-        "triangle": None,
-        "triangle6": "triangle7",
-        "tetra10": "tetra14",
-        "quad": None,
-        "quad8": "quad9",
-        "hexahedron": None,
-        "hexahedron20": "hexahedron26",
-    }
 
     # collect faces
     points_faces, cells_faces, _ = collect_faces(
@@ -286,23 +276,25 @@ def add_midpoints_faces(points, cells, cell_type):
     points_new = np.vstack((points, points_faces))
     cells_new = np.hstack((cells, cells_faces))
 
-    return points_new, cells_new, cell_types_new[cell_type]
+    if cell_type_new is None:
+        cell_type_new = {
+            None: None,
+            "triangle": None,
+            "triangle6": "triangle7",
+            "tetra10": "tetra14",
+            "quad": None,
+            "quad8": "quad9",
+            "hexahedron": None,
+            "hexahedron20": "hexahedron26",
+        }[cell_type]
+
+    return points_new, cells_new, cell_type_new
 
 
 @mesh_or_data
-def add_midpoints_volumes(points, cells, cell_type):
+def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
     """ "Add midpoints on volumes for given points and cells
     and update cell_type accordingly."""
-
-    cell_types_new = {
-        None: None,
-        "tetra": None,
-        "tetra10": None,
-        "tetra14": "tetra15",
-        "hexahedron": None,
-        "hexahedron20": None,
-        "hexahedron26": "hexahedron27",
-    }
 
     # collect volumes
     points_volumes, cells_volumes, _ = collect_volumes(
@@ -319,4 +311,15 @@ def add_midpoints_volumes(points, cells, cell_type):
     points_new = np.vstack((points, points_volumes))
     cells_new = np.hstack((cells, cells_volumes))
 
-    return points_new, cells_new, cell_types_new[cell_type]
+    if cell_type_new is None:
+        cell_type_new = {
+            None: None,
+            "tetra": None,
+            "tetra10": None,
+            "tetra14": "tetra15",
+            "hexahedron": None,
+            "hexahedron20": None,
+            "hexahedron26": "hexahedron27",
+        }[cell_type]
+
+    return points_new, cells_new, cell_type_new

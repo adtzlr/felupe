@@ -296,13 +296,13 @@ class Mesh(DiscreteGeometry):
         return collect_volumes(self)
 
     @wraps(add_midpoints_edges)
-    def add_midpoints_edges(self):
-        return add_midpoints_edges(self)
+    def add_midpoints_edges(self, cell_type=None):
+        return add_midpoints_edges(self, cell_type_new=cell_type)
 
     @wraps(add_midpoints_faces)
-    def add_midpoints_faces(self):
-        return add_midpoints_faces(self)
+    def add_midpoints_faces(self, cell_type=None):
+        return add_midpoints_faces(self, cell_type_new=cell_type)
 
     @wraps(add_midpoints_volumes)
-    def add_midpoints_volumes(self):
-        return add_midpoints_volumes(self)
+    def add_midpoints_volumes(self, cell_type=None):
+        return add_midpoints_volumes(self, cell_type_new=cell_type)

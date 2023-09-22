@@ -105,6 +105,19 @@ class FieldsMixed(FieldContainer):
                 RegionTriangleMINI: RegionTriangle,
                 RegionLagrange: RegionLagrange,
             }
+            mesh_kwargs = {
+                RegionHexahedron: {},
+                RegionQuad: {},
+                RegionQuadraticQuad: {},
+                RegionBiQuadraticQuad: {},
+                RegionQuadraticHexahedron: {},
+                RegionTriQuadraticHexahedron: {},
+                RegionQuadraticTetra: {},
+                RegionQuadraticTriangle: {},
+                RegionTetraMINI: {"disconnect": False},
+                RegionTriangleMINI: {"disconnect": False},
+                RegionLagrange: {},
+            }
             points_per_cell = {
                 RegionConstantHexahedron: 1,
                 RegionConstantQuad: 1,
@@ -129,6 +142,7 @@ class FieldsMixed(FieldContainer):
                     points_per_cell=points_per_cell[RegionDual],
                     offset=offset,
                     npoints=npoints,
+                    **mesh_kwargs[type(region)],
                 )
 
             region_dual = RegionDual(

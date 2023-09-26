@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix `FieldsMixed()` for regions with MINI-element formulations: Disable the disconnection of the dual mesh.
+- Fix `dof.shear(sym=True)` which was previously ignored due to a wrong setup of the symmetry boundaries.
 
 ### Removed
 - Remove `dof.planar()` because this is a special case of the biaxial load case `dof.biaxial(field, clampes=(True, False), moves=(0.2, 0), sym=False, axes=(0, 1))`.

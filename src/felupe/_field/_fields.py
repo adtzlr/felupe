@@ -128,7 +128,7 @@ class FieldsMixed(FieldContainer):
                 RegionLagrange: None,
             }
 
-            kwargs0 = {}
+            kwargs0 = {"quadrature": region.quadrature, "grad": False}
 
             if isinstance(region, RegionLagrange):
                 kwargs0["order"] = region.order - 1
@@ -147,8 +147,6 @@ class FieldsMixed(FieldContainer):
 
             region_dual = RegionDual(
                 mesh,
-                quadrature=region.quadrature,
-                grad=False,
                 **{**kwargs0, **kwargs},
             )
 

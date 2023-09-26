@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example.
 - Change function signature and enhance `dof.shear(field, bottom=None, top=None, moves=(0.2, 0.0, 0.0), axes=(0, 1), sym=True)`. Now with a full-featured docstring including an example. This is not backward compatible! However, due to the fact, that this was previously a non-documented function this won't enforce a new major version.
+- Merge keyword-arguments for the dual-regions with hard-coded arguments in `FieldsMixed(region, **kwargs)`.
 
 ### Fixed
 - Fix `FieldsMixed()` for regions with MINI-element formulations: Disable the disconnection of the dual mesh.

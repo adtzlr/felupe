@@ -517,7 +517,7 @@ def shear(
         sym = np.ones(3, dtype=bool)
         sym[axes,] = False
 
-        bounds = symmetry(f, axes=axes)
+        bounds = symmetry(f, axes=sym)
     else:
         bounds = {}
 

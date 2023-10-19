@@ -61,7 +61,7 @@ Install Python, open the terminal and run ``pip install felupe[all]``, where ``[
 
 .. code-block:: shell
 
-   pip install felupe[all]
+   pip install felupe[all] --extra-index-url https://wheels.vtk.org
 
 *optional:*
 

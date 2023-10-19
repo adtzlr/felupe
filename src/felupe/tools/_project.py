@@ -76,7 +76,7 @@ def project(values, region, average=True, mean=False):
     """
 
     dim = values.shape[:-2]
-    size = int(np.product(dim))
+    size = int(np.prod(dim))
     weights = region.quadrature.weights
 
     # transpose values

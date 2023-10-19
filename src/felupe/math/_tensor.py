@@ -293,4 +293,4 @@ def reshape(A, shape, trailing_axes=2):
 
 def ravel(A, trailing_axes=2):
     ij, shape = np.split(A.shape, [-trailing_axes])
-    return reshape(A, shape=np.product(ij))
+    return reshape(A, shape=np.prod(ij))

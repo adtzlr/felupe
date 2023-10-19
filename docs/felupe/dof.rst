@@ -27,6 +27,7 @@ This module contains the definition of a boundary condition, tools related to th
 
    dof.uniaxial
    dof.biaxial
+   dof.shear
 
 
 **Detailed API Reference**

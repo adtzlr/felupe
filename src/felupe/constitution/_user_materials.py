@@ -135,7 +135,7 @@ class MaterialStrain:
     def __init__(self, material, dim=3, statevars=(0,), **kwargs):
         self.material = material
         self.statevars_shape = statevars
-        self.statevars_size = [np.product(shape) for shape in statevars]
+        self.statevars_size = [np.prod(shape) for shape in statevars]
         self.statevars_offsets = np.cumsum(self.statevars_size)
         self.nstatevars = sum(self.statevars_size)
 

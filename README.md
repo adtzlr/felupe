@@ -15,10 +15,10 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
 Install Python, fire up 🔥 a terminal and run 🏃
 
 ```shell
-pip install felupe[all]
+pip install --extra-index-url https://wheels.vtk.org felupe[all]
 ```
 
-where `[all]` installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
+where the extra-index-url pulls VTK-wheels if they are not (yet) available on PyPI and `[all]` installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
 * `numpy` for array operations
 * `scipy` for sparse matrices
 * `tensortrax` for automatic differentiation

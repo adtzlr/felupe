@@ -285,7 +285,7 @@ def newtonrhapson(
 
     if verbose:
         runtimes.append(perf_counter())
-        runtime = np.diff(runtimes)
+        runtime = np.diff(runtimes)[0]
         soltime = np.diff(soltimes).sum()
         print(
             "\nConverged in %d iterations (Assembly: %1.4g s, Solve: %1.4g s).\n"

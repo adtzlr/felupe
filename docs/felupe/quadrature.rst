@@ -1,5 +1,5 @@
 Quadrature
-~~~~~~~~~~
+==========
 
 This module contains quadrature (numeric integration) schemes for different finite element formulations.
 

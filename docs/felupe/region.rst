@@ -1,5 +1,5 @@
 Region
-~~~~~~
+======
 
 This module contains the definition of a region as well as a boundary region along with template-regions for pre-defined combinations of elements and quadrature rules.
 

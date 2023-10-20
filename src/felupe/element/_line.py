@@ -22,16 +22,38 @@ from ._base import Element
 
 
 class Line(Element):
+    r"""A 1D line element formulation with linear shape functions.
+
+    Notes
+    -----
+    The linear line element is defined by two points (0-1). [1]_
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r)`.
+    
+    .. math::
+
+       \boldsymbol{h}(r) = \frac{1}{2} \begin{bmatrix}
+               (1-r) \\
+               (1+r)
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self):
         super().__init__(shape=(2, 1))
         self.points = np.array([-1, 1], dtype=float)
 
     def function(self, rv):
-        "linear line shape functions"
+        "Return the shape functions at given coordinates (r,)."
         (r,) = rv
         return np.array([(1 - r), (1 + r)]) * 0.5
 
     def gradient(self, rv):
-        "linear line gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r,)."
         (r,) = rv
         return np.array([[-1], [1]]) * 0.5

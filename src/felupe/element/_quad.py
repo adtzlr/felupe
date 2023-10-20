@@ -155,9 +155,9 @@ class QuadraticQuad(Element):
 
     Notes
     -----
-    The quadratic (serendipity) quadrilateral element is defined by eight points (0-7). 
+    The quadratic (serendipity) quadrilateral element is defined by eight points (0-7).
     [1]_
-    
+
     ..  code-block::
 
                       ^ s
@@ -175,7 +175,7 @@ class QuadraticQuad(Element):
           o-----------o-----------o
         0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
 
     References
@@ -241,7 +241,7 @@ class BiQuadraticQuad(Element):
     Notes
     -----
     The bi-quadratic quadrilateral element is defined by nine points (0-8). [1]_
-    
+
     ..  code-block::
 
                       ^ s
@@ -259,7 +259,7 @@ class BiQuadraticQuad(Element):
           o-----------o-----------o
         0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
 
     References

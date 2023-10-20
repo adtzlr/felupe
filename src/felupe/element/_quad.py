@@ -23,7 +23,11 @@ from ._lagrange import ArbitraryOrderLagrange
 
 
 class ConstantQuad(Element):
-    r"""Quadrilateral element with constant shape functions.
+    r"""A 2D quadrilateral element formulation with constant shape functions.
+
+    Notes
+    -----
+    The quadrilateral element is defined by four points (0-3). [1]_
 
     ..  code-block::
 
@@ -42,63 +46,38 @@ class ConstantQuad(Element):
           o-----------------------o
         0 (-1/-1)                  1 ( 1/-1)
 
-    Attributes
+    The shape function :math:`h` is given in terms of the coordinates :math:`(r,s)`.
+
+    .. math::
+
+       h(r,s) = 1
+
+    References
     ----------
-    points : ndarray
-        Array with point locations in natural coordinate system
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
     """
 
     def __init__(self):
         super().__init__(shape=(1, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
-    def function(self, rst):
-        r"""Constant quadrilateral - shape functions.
-
-        ..  math::
-
-            \boldsymbol{h}(\boldsymbol{r}) = \begin{bmatrix}
-                1
-            \end{bmatrix}
-
-        Arguments
-        ---------
-        rs : ndarray
-            Point as coordinate vector for shape function evaluation
-
-        Returns
-        -------
-        ndarray
-            Shape functions evaluated at given location
-        """
+    def function(self, rs):
+        "Return the shape functions at given coordinates (r, s)."
         return np.array([1])
 
     def gradient(self, rst):
-        r"""Constant quadrilateral - gradient of shape functions.
-
-        ..  math::
-
-            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} =
-            \begin{bmatrix}
-                0
-            \end{bmatrix}
-
-        Arguments
-        ---------
-        rs : ndarray
-            Point as coordinate vector for gradient of shape function evaluation
-
-        Returns
-        -------
-        ndarray
-            Gradient of shape functions evaluated at given location
-        """
+        "Return the gradient of shape functions at given coordinates (r, s)."
         return np.array([[0, 0]])
 
 
 class Quad(Element):
-    r"""Quadrilateral element with linear shape functions.
+    r"""A 2D quadrilateral element formulation with constant shape functions.
 
+    Notes
+    -----
+    The quadrilateral element is defined by four points (0-3). [1]_
+    
     ..  code-block::
 
                       ^ s
@@ -116,11 +95,22 @@ class Quad(Element):
           o-----------------------o
         0 (-1/-1)                  1 ( 1/-1)
 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s)`.
 
-    Attributes
+    .. math::
+
+       \boldsymbol{h}(r,s) = \frac{1}{4} \begin{bmatrix}
+               (1-r) (1-s) \\
+               (1+r) (1-s) \\
+               (1+r) (1+s) \\
+               (1-r) (1+s)
+           \end{bmatrix}
+
+    References
     ----------
-    points : ndarray
-        Array with point locations in natural coordinate system
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
     """
 
     def __init__(self):
@@ -128,24 +118,7 @@ class Quad(Element):
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
 
     def function(self, rs):
-        r"""Linear quadrilateral - shape functions.
-
-        ..  math::
-
-            \boldsymbol{h}(\boldsymbol{r}) = \frac{1}{4} \begin{bmatrix}
-                (1-r)(1-s) \\ (1+r)(1-s) \\ (1+r)(1+s) \\ (1-r)(1+s)
-            \end{bmatrix}
-
-        Arguments
-        ---------
-        rs : ndarray
-            Point as coordinate vector for shape function evaluation
-
-        Returns
-        -------
-        ndarray
-            Shape functions evaluated at given location
-        """
+        "Return the shape functions at given coordinates (r, s)."
         r, s = rs
         return (
             np.array(
@@ -160,28 +133,7 @@ class Quad(Element):
         )
 
     def gradient(self, rs):
-        r"""Linear quadrilateral - gradient of shape functions.
-
-        ..  math::
-
-            \frac{\partial \boldsymbol{h}}{\partial \boldsymbol{r}} =
-            \frac{1}{4} \begin{bmatrix}
-                -(1-s) & -(1-r) \\
-                 (1-s) & -(1+r) \\
-                 (1+s) &  (1+r) \\
-                -(1+s) &  (1-r)
-            \end{bmatrix}
-
-        Arguments
-        ---------
-        rs : ndarray
-            Point as coordinate vector for gradient of shape function evaluation
-
-        Returns
-        -------
-        ndarray
-            Gradient of shape functions evaluated at given location
-        """
+        "Return the gradient of shape functions at given coordinates (r, s)."
 
         r, s = rs
         return (
@@ -198,8 +150,14 @@ class Quad(Element):
 
 
 class QuadraticQuad(Element):
-    r"""Quadratic serendipity quadrilateral element.
+    r"""A 2D quadrilateral element formulation with quadratic (serendipity) shape
+    functions.
 
+    Notes
+    -----
+    The quadratic (serendipity) quadrilateral element is defined by eight points (0-7). 
+    [1]_
+    
     ..  code-block::
 
                       ^ s
@@ -217,11 +175,13 @@ class QuadraticQuad(Element):
           o-----------o-----------o
         0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s)`.
 
-    Attributes
+    References
     ----------
-    points : ndarray
-        Array with point locations in natural coordinate system
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
     """
 
     def __init__(self):
@@ -241,7 +201,7 @@ class QuadraticQuad(Element):
         )
 
     def function(self, rs):
-        r"""Quadratic serendipity quadrilateral - shape functions."""
+        "Return the shape functions at given coordinates (r, s)."
         r, s = rs
         ra, sa = self.points.T
 
@@ -252,18 +212,7 @@ class QuadraticQuad(Element):
         return h
 
     def gradient(self, rs):
-        r"""Quadratic serendipity quadrilateral - gradient of shape functions.
-
-        Arguments
-        ---------
-        rs : ndarray
-            Point as coordinate vector for gradient of shape function evaluation
-
-        Returns
-        -------
-        ndarray
-            Gradient of shape functions evaluated at given location
-        """
+        "Return the gradient of shape functions at given coordinates (r, s)."
 
         r, s = rs
         ra, sa = self.points.T
@@ -287,8 +236,12 @@ class QuadraticQuad(Element):
 
 
 class BiQuadraticQuad(Element):
-    r"""Bi-Quadratic Lagrange quadrilateral element.
+    r"""A 2D quadrilateral element formulation with bi-quadratic shape functions.
 
+    Notes
+    -----
+    The bi-quadratic quadrilateral element is defined by nine points (0-8). [1]_
+    
     ..  code-block::
 
                       ^ s
@@ -306,11 +259,13 @@ class BiQuadraticQuad(Element):
           o-----------o-----------o
         0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s)`.
 
-    Attributes
+    References
     ----------
-    points : ndarray
-        Array with point locations in natural coordinate system
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
     """
 
     def __init__(self):
@@ -330,22 +285,11 @@ class BiQuadraticQuad(Element):
         self.points = self._lagrange.points[self._permute]
 
     def function(self, rs):
-        r"""Bi-Quadratic Lagrange quadrilateral - shape functions."""
+        "Return the shape functions at given coordinates (r, s)."
 
         return self._lagrange.function(rs)[self._permute]
 
     def gradient(self, rs):
-        r"""Bi-Quadratic Lagrange quadrilateral - gradient of shape functions.
-
-        Arguments
-        ---------
-        rs : ndarray
-            Point as coordinate vector for gradient of shape function evaluation
-
-        Returns
-        -------
-        ndarray
-            Gradient of shape functions evaluated at given location
-        """
+        "Return the gradient of shape functions at given coordinates (r, s)."
 
         return self._lagrange.gradient(rs)[self._permute, :]

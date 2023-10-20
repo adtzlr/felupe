@@ -1,5 +1,52 @@
 Element
-~~~~~~~
+=======
+
+This module provides classes for the finite element formulations.
+
+**Core Elements**
+
+.. currentmodule:: felupe
+
+.. autosummary::
+
+   Line
+   Quad
+   Hexahedron
+   Triangle
+   Tetra
+
+**Constant Elements**
+
+.. autosummary::
+
+   ConstantQuad
+   ConstantHexahedron
+
+**Quadratic Elements**
+
+.. autosummary::
+
+   QuadraticQuad
+   QuadraticHexahedron
+   BiQuadraticQuad
+   TriQuadraticHexahedron
+   QuadraticTriangle
+   QuadraticTetra
+
+**Bubble-Enriched**
+
+.. autosummary::
+
+   TriangleMINI
+   TetraMINI
+
+**Arbitrary-Order**
+
+.. autosummary::
+   
+   ArbitraryOrderLagrangeElement
+
+**Detailed API Reference**
 
 .. autoclass:: felupe.Line
    :members:
@@ -42,6 +89,16 @@ Element
    :show-inheritance:
 
 .. autoclass:: felupe.TriQuadraticHexahedron
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.QuadraticQuad
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.BiQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:

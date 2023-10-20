@@ -3,7 +3,7 @@ Element
 
 This module provides classes for the finite element formulations.
 
-**Core Elements**
+**Linear Elements**
 
 .. currentmodule:: felupe
 

@@ -1,5 +1,54 @@
 Mesh
-~~~~
+====
+
+This module contains meshing-related classes and functions. Standalone mesh-tools (functions) are also available as mesh-methods.
+
+**Core**
+
+.. currentmodule:: felupe
+
+.. autosummary::
+
+   Mesh
+   MeshContainer
+
+**Geometries**
+
+.. autosummary::
+
+   mesh.Line
+   Rectangle
+   Cube
+   Grid
+   Circle
+   mesh.Triangle
+   mesh.RectangleArbitraryOrderQuad
+   mesh.RectangleArbitraryOrderHexahedron
+
+**Tools**
+
+.. autosummary::
+
+   mesh.expand, 
+   mesh.rotate, 
+   mesh.revolve, 
+   mesh.sweep, 
+   mesh.mirror, 
+   mesh.concatenate, 
+   mesh.runouts, 
+   mesh.triangulate, 
+   mesh.convert, 
+   mesh.collect_edges, 
+   mesh.collect_faces, 
+   mesh.collect_volumes, 
+   mesh.add_midpoints_edges, 
+   mesh.add_midpoints_faces, 
+   mesh.add_midpoints_volumes, 
+   mesh.flip, 
+   mesh.fill_between, 
+   mesh.dual
+
+**Detailed API Reference**
 
 .. autoclass:: felupe.Mesh
    :members:

@@ -72,7 +72,7 @@ class ConstantQuad(Element):
 
 
 class Quad(Element):
-    r"""A 2D quadrilateral element formulation with constant shape functions.
+    r"""A 2D quadrilateral element formulation with linear shape functions.
 
     Notes
     -----

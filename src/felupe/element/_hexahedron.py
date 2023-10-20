@@ -49,6 +49,34 @@ class ConstantHexahedron(Element):
 
 
 class Hexahedron(Element):
+    r"""A 3D hexahedron (brick) element formulation with linear shape functions.
+
+    Notes
+    -----
+    The hexahedron element is defined by eight points (0-7) where (0,1,2,3) forms the
+    base and (4,5,6,7) the opposite quad. [1]_
+
+    The shape functions are given in terms of the coordinates :math:`(r,s,t)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s,t) = \begin{bmatrix}
+               (1-r) (1-s) (1-t) \\
+               (1+r) (1-s) (1-t) \\
+               (1+r) (1+s) (1-t) \\
+               (1-r) (1+s) (1-t) \\
+               (1-r) (1-s) (1+t) \\
+               (1+r) (1-s) (1+t) \\
+               (1+r) (1+s) (1+t) \\
+               (1-r) (1+s) (1+t)
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self):
         self.points = np.array(
             [
@@ -66,7 +94,7 @@ class Hexahedron(Element):
         super().__init__(shape=(8, 3))
 
     def function(self, rst):
-        "linear hexahedron shape functions"
+        "Return the shape functions at given coordinates (r, s, t)."
         r, s, t = rst
         return (
             np.array(
@@ -85,7 +113,7 @@ class Hexahedron(Element):
         )
 
     def gradient(self, rst):
-        "linear hexahedron gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s, t)."
         r, s, t = rst
         return (
             np.array(

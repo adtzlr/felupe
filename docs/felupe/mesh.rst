@@ -29,23 +29,23 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
 
 .. autosummary::
 
-   mesh.expand, 
-   mesh.rotate, 
-   mesh.revolve, 
-   mesh.sweep, 
-   mesh.mirror, 
-   mesh.concatenate, 
-   mesh.runouts, 
-   mesh.triangulate, 
-   mesh.convert, 
-   mesh.collect_edges, 
-   mesh.collect_faces, 
-   mesh.collect_volumes, 
-   mesh.add_midpoints_edges, 
-   mesh.add_midpoints_faces, 
-   mesh.add_midpoints_volumes, 
-   mesh.flip, 
-   mesh.fill_between, 
+   mesh.expand
+   mesh.rotate
+   mesh.revolve
+   mesh.sweep
+   mesh.mirror
+   mesh.concatenate
+   mesh.runouts
+   mesh.triangulate
+   mesh.convert
+   mesh.collect_edges
+   mesh.collect_faces
+   mesh.collect_volumes
+   mesh.add_midpoints_edges
+   mesh.add_midpoints_faces
+   mesh.add_midpoints_volumes
+   mesh.flip
+   mesh.fill_between
    mesh.dual
 
 **Detailed API Reference**

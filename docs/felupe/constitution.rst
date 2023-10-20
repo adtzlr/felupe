@@ -13,6 +13,7 @@ This module provides constitutive material formulations.
    LinearElasticPlaneStrain
    LinearElasticPlaneStress
    LinearElasticTensorNotation
+   LinearElasticLargeStrain
 
 **Plasticity**
 
@@ -24,7 +25,6 @@ This module provides constitutive material formulations.
 
 .. autosummary::
 
-   LinearElasticLargeStrain
    NeoHooke
    ThreeFieldVariation
 

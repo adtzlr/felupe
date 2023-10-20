@@ -33,14 +33,14 @@ This module provides classes for the finite element formulations.
    QuadraticTriangle
    QuadraticTetra
 
-**Bubble-Enriched**
+**Bubble-Enriched Elements**
 
 .. autosummary::
 
    TriangleMINI
    TetraMINI
 
-**Arbitrary-Order**
+**Arbitrary-Order Elements**
 
 .. autosummary::
    

@@ -336,9 +336,9 @@ def biaxial(
 
     ..  image:: images/loadcase_bx_free.png
 
-    The biaxial load case may also invoke a planar loading, where one of the longitudinal
-    axes is fixed with no displacements at the end plates. The clampling must at least
-    be deactivated on the fixed longitudinal axis.
+    The biaxial load case may also invoke a planar loading, where one of the
+    longitudinal axes is fixed with no displacements at the end plates. The clampling
+    must at least be deactivated on the fixed longitudinal axis.
 
     >>> mesh = fem.Cube(n=2)
     >>> region = fem.RegionHexahedron(mesh)

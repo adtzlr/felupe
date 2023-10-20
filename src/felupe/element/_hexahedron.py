@@ -81,7 +81,7 @@ class Hexahedron(Element):
 
     .. math::
 
-       \boldsymbol{h}(r,s,t) = \begin{bmatrix}
+       \boldsymbol{h}(r,s,t) = \frac{1}{8} \begin{bmatrix}
                (1-r) (1-s) (1-t) \\
                (1+r) (1-s) (1-t) \\
                (1+r) (1+s) (1-t) \\

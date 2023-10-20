@@ -23,6 +23,25 @@ from ._lagrange import ArbitraryOrderLagrange
 
 
 class ConstantHexahedron(Element):
+    r"""A 3D hexahedron (brick) element formulation with constant shape functions.
+
+    Notes
+    -----
+    The hexahedron element is defined by eight points (0-7) where (0,1,2,3) forms the
+    base and (4,5,6,7) the opposite quad. [1]_
+
+    The shape function :math:`h` in terms of the coordinates :math:`(r,s,t)` is constant
+    and hence, its gradient is zero.
+
+    .. math::
+
+       h(r,s,t) = 1
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
     def __init__(self):
         self.points = np.array(
             [
@@ -40,11 +59,11 @@ class ConstantHexahedron(Element):
         super().__init__(shape=(1, 3))
 
     def function(self, rst):
-        "constant hexahedron shape functions"
+        "Return the shape functions at given coordinates (r, s, t)."
         return np.array([1])
 
     def gradient(self, rst):
-        "constant hexahedron gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s, t)."
         return np.array([[0, 0, 0]])
 
 
@@ -56,7 +75,8 @@ class Hexahedron(Element):
     The hexahedron element is defined by eight points (0-7) where (0,1,2,3) forms the
     base and (4,5,6,7) the opposite quad. [1]_
 
-    The shape functions are given in terms of the coordinates :math:`(r,s,t)`.
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s,t)`.
 
     .. math::
 

@@ -1,23 +1,39 @@
 Field
-~~~~~
+=====
 
-A field container with pre-defined fields are created with:
+A field container with pre-defined fields is created with:
+
+.. currentmodule:: felupe
+
+.. autosummary::
+
+   FieldsMixed
+
+A Field-container holds one or more fields.
+
+.. autosummary::
+
+   FieldContainer
+
+Available kinds of fields:
+
+.. autosummary::
+
+   Field
+   FieldAxisymmetric
+   FieldPlaneStrain
+
+**Detailed API Reference**
 
 .. autoclass:: felupe.FieldsMixed
    :members:
    :undoc-members:
    :inherited-members:
 
-
-A Field-container holds one or more fields.
-
 .. autoclass:: felupe.FieldContainer
    :members:
    :undoc-members:
    :inherited-members:
-
-
-Available kinds of fields:
 
 .. autoclass:: felupe.Field
    :members:

@@ -52,6 +52,14 @@ class ConstantQuad(Element):
 
        h(r,s) = 1
 
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.ConstantQuad().screenshot(transparent_background=True)
+
+    ..  image:: images/quad.png
+
     References
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
@@ -108,6 +116,14 @@ class Quad(Element):
                (1+r) (1+s) \\
                (1-r) (1+s)
            \end{bmatrix}
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.Quad().screenshot(transparent_background=True)
+
+    ..  image:: images/quad.png
 
     References
     ----------
@@ -181,6 +197,14 @@ class QuadraticQuad(Element):
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.QuadraticQuad().screenshot(transparent_background=True)
+
+    ..  image:: images/quad8.png
 
     References
     ----------
@@ -267,6 +291,14 @@ class BiQuadraticQuad(Element):
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.BiQuadraticQuad().screenshot(transparent_background=True)
+
+    ..  image:: images/quad9.png
 
     References
     ----------

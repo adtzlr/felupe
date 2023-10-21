@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add cell-type argument to `Mesh.add_midpoints_volumes(cell_type=None)` and its variants for edges and faces.
+- Add `element.Element.view()`, `element.Element.plot()` and `element.Element.screenshot()`. This enables an interactive plot of the element in the reference configuration with its point ids, e.g. `Hexahedron().plot().show()`.
 
 ### Changed
 - Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example.

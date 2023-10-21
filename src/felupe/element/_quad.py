@@ -66,7 +66,7 @@ class ConstantQuad(Element):
         "Return the shape functions at given coordinates (r, s)."
         return np.array([1])
 
-    def gradient(self, rst):
+    def gradient(self, rs):
         "Return the gradient of shape functions at given coordinates (r, s)."
         return np.array([[0, 0]])
 

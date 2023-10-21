@@ -22,17 +22,40 @@ from ._base import Element
 
 
 class Triangle(Element):
+    r"""A 2D triangle element formulation with linear shape functions.
+
+    Notes
+    -----
+    The triangle element is defined by three points (0-2). [1]_
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s) = \begin{bmatrix}
+               1-r-s \\
+               r \\
+               s
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self):
         super().__init__(shape=(3, 2))
         self.points = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
 
     def function(self, rs):
-        "linear triangle shape functions"
+        "Return the shape functions at given coordinates (r, s)."
         r, s = rs
         return np.array([1 - r - s, r, s])
 
     def gradient(self, rs):
-        "linear triangle gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s)."
         r, s = rs
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
@@ -44,13 +67,13 @@ class TriangleMINI(Element):
         self.bubble_multiplier = bubble_multiplier
 
     def function(self, rs):
-        "linear bubble-enriched triangle shape functions"
+        "Return the shape functions at given coordinates (r, s)."
         r, s = rs
         a = self.bubble_multiplier
         return np.array([1 - r - s, r, s, a * r * s * (1 - r - s)])
 
     def gradient(self, rs):
-        "linear bubble-enriched triangle gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s)."
         r, s = rs
         a = self.bubble_multiplier
         return np.array(
@@ -65,6 +88,32 @@ class TriangleMINI(Element):
 
 
 class QuadraticTriangle(Element):
+    r"""A 2D triangle element formulation with quadratic shape functions.
+
+    Notes
+    -----
+    The quadratic triangle element is defined by six points (0-5). [1]_
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s) = \begin{bmatrix}
+               1-r-s \\
+               r \\
+               s \\
+               4 r (1-r-s) \\
+               4 r s \\
+               4 s (1-r-s)
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self):
         super().__init__(shape=(6, 2))
         self.points = np.zeros(self.shape)
@@ -74,7 +123,7 @@ class QuadraticTriangle(Element):
         self.points[5] = np.mean(self.points[[2, 0]], axis=0)
 
     def function(self, rs):
-        "quadratic triangle shape functions"
+        "Return the shape functions at given coordinates (r, s)."
         r, s = rs
         h = np.array(
             [1 - r - s, r, s, 4 * r * (1 - r - s), 4 * r * s, 4 * s * (1 - r - s)]
@@ -86,7 +135,7 @@ class QuadraticTriangle(Element):
         return h
 
     def gradient(self, rs):
-        "quadratic triangle gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s)."
         r, s = rs
 
         t1 = 1 - r - s

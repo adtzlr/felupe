@@ -44,7 +44,7 @@ This module provides classes for the finite element formulations.
 
 .. autosummary::
    
-   ArbitraryOrderLagrangeElement
+   element.ArbitraryOrderLagrange
 
 **Detailed API Reference**
 
@@ -123,7 +123,7 @@ This module provides classes for the finite element formulations.
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.ArbitraryOrderLagrangeElement
+.. autoclass:: felupe.element.ArbitraryOrderLagrange
    :members:
    :undoc-members:
    :show-inheritance:

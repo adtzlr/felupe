@@ -28,9 +28,9 @@ class Line(Element):
     -----
     The linear line element is defined by two points (0-1). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r)`.
-    
+
     .. math::
 
        \boldsymbol{h}(r) = \frac{1}{2} \begin{bmatrix}
@@ -47,6 +47,8 @@ class Line(Element):
     def __init__(self):
         super().__init__(shape=(2, 1))
         self.points = np.array([-1, 1], dtype=float)
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "line"
 
     def function(self, rv):
         "Return the shape functions at given coordinates (r,)."

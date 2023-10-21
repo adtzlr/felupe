@@ -162,11 +162,11 @@ class QuadraticTetra(Element):
     .. math::
 
        t_1 &= 1 - r - s - t
-       
+
        t_2 &= r
-       
+
        t_3 &= s
-       
+
        t_4 &= t
 
     References

@@ -28,7 +28,7 @@ class Triangle(Element):
     -----
     The triangle element is defined by three points (0-2). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
 
     .. math::
@@ -48,6 +48,8 @@ class Triangle(Element):
     def __init__(self):
         super().__init__(shape=(3, 2))
         self.points = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "triangle"
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."
@@ -67,7 +69,7 @@ class TriangleMINI(Element):
     -----
     The MINI triangle element is defined by four points (0-3). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
 
     .. math::
@@ -88,6 +90,8 @@ class TriangleMINI(Element):
     def __init__(self, bubble_multiplier=1.0):
         super().__init__(shape=(4, 2))
         self.points = np.array([[0, 0], [1, 0], [0, 1], [1 / 3, 1 / 3]], dtype=float)
+        self.cells = np.arange(len(self.points) - 1).reshape(1, -1)
+        self.cell_type = "triangle"
         self.bubble_multiplier = bubble_multiplier
 
     def function(self, rs):
@@ -122,7 +126,7 @@ class QuadraticTriangle(Element):
     between points (0,1); id #4 is the mid-edge point between points (1,2); and id #5 is
     the mid-edge point between points (2,0). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
 
     .. math::
@@ -149,6 +153,9 @@ class QuadraticTriangle(Element):
         self.points[3] = np.mean(self.points[[0, 1]], axis=0)
         self.points[4] = np.mean(self.points[[1, 2]], axis=0)
         self.points[5] = np.mean(self.points[[2, 0]], axis=0)
+
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "triangle6"
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."

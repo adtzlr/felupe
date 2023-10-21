@@ -57,6 +57,8 @@ class ConstantHexahedron(Element):
             ],
             dtype=float,
         )
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "hexahedron"
         super().__init__(shape=(1, 3))
 
     def function(self, rst):
@@ -76,7 +78,7 @@ class Hexahedron(Element):
     The hexahedron element is defined by eight points (0-7) where (0,1,2,3) forms the
     base and (4,5,6,7) the opposite quad. [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.
 
     .. math::
@@ -112,6 +114,8 @@ class Hexahedron(Element):
             ],
             dtype=float,
         )
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "hexahedron"
         super().__init__(shape=(8, 3))
 
     def function(self, rst):
@@ -204,6 +208,8 @@ class QuadraticHexahedron(Element):
             ],
             dtype=float,
         )
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "hexahedron20"
         super().__init__(shape=(20, 3))
 
     def function(self, rst):
@@ -442,6 +448,8 @@ class TriQuadraticHexahedron(Element):
             ],
             dtype=float,
         )
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "hexahedron27"
 
         self._lagrange = ArbitraryOrderLagrange(order=2, dim=3)
 

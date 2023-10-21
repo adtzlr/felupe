@@ -28,7 +28,7 @@ class Tetra(Element):
     -----
     The tetrahedron element is defined by four points (0-3). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.
 
     .. math::
@@ -51,6 +51,8 @@ class Tetra(Element):
         self.points = np.array(
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
         )
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "tetra"
 
     def function(self, rst):
         "Return the shape functions at given coordinates (r, s, t)."
@@ -64,14 +66,14 @@ class Tetra(Element):
 
 
 class TetraMINI(Element):
-    r"""A 3D tetrahedron element formulation with bubble-enriched linear shape 
+    r"""A 3D tetrahedron element formulation with bubble-enriched linear shape
     functions.
 
     Notes
     -----
     The MINI tetrahedron element is defined by five points (0-4). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.
 
     .. math::
@@ -96,6 +98,8 @@ class TetraMINI(Element):
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1 / 3, 1 / 3, 1 / 3]],
             dtype=float,
         )
+        self.cells = np.arange(len(self.points) - -1).reshape(1, -1)
+        self.cell_type = "tetra"
         self.bubble_multiplier = bubble_multiplier
 
     def function(self, rst):
@@ -129,13 +133,13 @@ class QuadraticTetra(Element):
 
     Notes
     -----
-    The quadratic tetrahedron element is defined by ten points (0-9). The element 
+    The quadratic tetrahedron element is defined by ten points (0-9). The element
     includes a mid-edge point on each of the edges of the tetrahedron. The ordering of
     the ten points defining the cell is point ids (0-3,4-9) where ids 0-3 are the four
-    tetra vertices; and point ids 4-9 are the mid-edge points between (0,1), (1,2), 
+    tetra vertices; and point ids 4-9 are the mid-edge points between (0,1), (1,2),
     (2,0), (0,3), (1,3), and (2,3). [1]
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.
 
     .. math::
@@ -152,11 +156,11 @@ class QuadraticTetra(Element):
                4 t_2 t_4 \\
                4 t_3 t_4
            \end{bmatrix}
-    
+
     with
-    
+
     .. math::
-       
+
        t_1 = 1 - r - s - t
        t_2 = r
        t_3 = s
@@ -180,6 +184,9 @@ class QuadraticTetra(Element):
         self.points[7] = np.mean(self.points[[0, 3]], axis=0)
         self.points[8] = np.mean(self.points[[1, 3]], axis=0)
         self.points[9] = np.mean(self.points[[2, 3]], axis=0)
+
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "tetra10"
 
     def function(self, rst):
         "Return the shape functions at given coordinates (r, s, t)."

@@ -61,6 +61,8 @@ class ConstantQuad(Element):
     def __init__(self):
         super().__init__(shape=(1, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "quad"
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."
@@ -77,7 +79,7 @@ class Quad(Element):
     Notes
     -----
     The quadrilateral element is defined by four points (0-3). [1]
-    
+
     ..  code-block::
 
                       ^ s
@@ -95,7 +97,7 @@ class Quad(Element):
           o-----------------------o
         0 (-1/-1)                  1 ( 1/-1)
 
-    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
 
     .. math::
@@ -116,6 +118,8 @@ class Quad(Element):
     def __init__(self):
         super().__init__(shape=(4, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "quad"
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."
@@ -199,6 +203,8 @@ class QuadraticQuad(Element):
             ],
             dtype=float,
         )
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "quad8"
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."
@@ -283,6 +289,8 @@ class BiQuadraticQuad(Element):
         )
 
         self.points = self._lagrange.points[self._permute]
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "quad9"
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."

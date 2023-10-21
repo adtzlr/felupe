@@ -61,6 +61,29 @@ class Triangle(Element):
 
 
 class TriangleMINI(Element):
+    r"""A 2D triangle element formulation with bubble-enriched linear shape functions.
+
+    Notes
+    -----
+    The MINI triangle element is defined by four points (0-3). [1]_
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s) = \begin{bmatrix}
+               1-r-s \\
+               r \\
+               s \\
+               r s (1-r-s)
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
     def __init__(self, bubble_multiplier=1.0):
         super().__init__(shape=(4, 2))
         self.points = np.array([[0, 0], [1, 0], [0, 1], [1 / 3, 1 / 3]], dtype=float)

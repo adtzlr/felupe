@@ -106,7 +106,7 @@ class Hexahedron(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.Hexahedron().screenshot(transparent_background=True)
+    >>> img = fem.Hexahedron().screenshot()
 
     ..  image:: images/hexahedron.png
 
@@ -192,7 +192,7 @@ class QuadraticHexahedron(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.QuadraticHexahedron().screenshot(transparent_background=True)
+    >>> img = fem.QuadraticHexahedron().screenshot()
 
     ..  image:: images/hexahedron20.png
 
@@ -429,7 +429,7 @@ class TriQuadraticHexahedron(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.TriQuadraticHexahedron().screenshot(transparent_background=True)
+    >>> img = fem.TriQuadraticHexahedron().screenshot()
 
     ..  image:: images/hexahedron27.png
 

@@ -56,7 +56,7 @@ class ConstantQuad(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.ConstantQuad().screenshot(transparent_background=True)
+    >>> img = fem.ConstantQuad().screenshot()
 
     ..  image:: images/quad.png
 
@@ -121,7 +121,7 @@ class Quad(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.Quad().screenshot(transparent_background=True)
+    >>> img = fem.Quad().screenshot()
 
     ..  image:: images/quad.png
 
@@ -202,7 +202,7 @@ class QuadraticQuad(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.QuadraticQuad().screenshot(transparent_background=True)
+    >>> img = fem.QuadraticQuad().screenshot()
 
     ..  image:: images/quad8.png
 
@@ -296,7 +296,7 @@ class BiQuadraticQuad(Element):
     --------
     >>> import felupe as fem
 
-    >>> img = fem.BiQuadraticQuad().screenshot(transparent_background=True)
+    >>> img = fem.BiQuadraticQuad().screenshot()
 
     ..  image:: images/quad9.png
 

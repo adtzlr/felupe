@@ -22,6 +22,30 @@ from ._base import Element
 
 
 class Tetra(Element):
+    r"""A 3D tetrahedron element formulation with linear shape functions.
+
+    Notes
+    -----
+    The tetrahedron element is defined by four points (0-3). [1]
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s,t)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s,t) = \begin{bmatrix}
+               1-r-s-t \\
+               r \\
+               s \\
+               t
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self):
         super().__init__(shape=(4, 3))
         self.points = np.array(
@@ -29,17 +53,43 @@ class Tetra(Element):
         )
 
     def function(self, rst):
-        "linear tetrahedral shape functions"
+        "Return the shape functions at given coordinates (r, s, t)."
         r, s, t = rst
         return np.array([1 - r - s - t, r, s, t])
 
     def gradient(self, rst):
-        "linear tetrahedral gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s, t)."
         r, s, t = rst
         return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
 
 
 class TetraMINI(Element):
+    r"""A 3D tetrahedron element formulation with bubble-enriched linear shape 
+    functions.
+
+    Notes
+    -----
+    The MINI tetrahedron element is defined by five points (0-4). [1]
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s,t)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s,t) = \begin{bmatrix}
+               1-r-s-t \\
+               r \\
+               s \\
+               t \\
+               r s t (1-r-s-t)
+           \end{bmatrix}
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self, bubble_multiplier=1.0):
         super().__init__(shape=(5, 3))
         self.points = np.array(
@@ -49,13 +99,13 @@ class TetraMINI(Element):
         self.bubble_multiplier = bubble_multiplier
 
     def function(self, rst):
-        "linear bubble-enriched tetrahedral basis functions"
+        "Return the shape functions at given coordinates (r, s, t)."
         r, s, t = rst
         a = self.bubble_multiplier
         return np.array([1 - r - s - t, r, s, t, a * r * s * t * (1 - r - s - t)])
 
     def gradient(self, rst):
-        "linear bubble-enriched tetrahedral derivative of basis functions"
+        "Return the gradient of shape functions at given coordinates (r, s, t)."
         r, s, t = rst
         a = self.bubble_multiplier
         return np.array(
@@ -75,6 +125,49 @@ class TetraMINI(Element):
 
 
 class QuadraticTetra(Element):
+    r"""A 3D tetrahedron element formulation with quadratic shape functions.
+
+    Notes
+    -----
+    The quadratic tetrahedron element is defined by ten points (0-9). The element 
+    includes a mid-edge point on each of the edges of the tetrahedron. The ordering of
+    the ten points defining the cell is point ids (0-3,4-9) where ids 0-3 are the four
+    tetra vertices; and point ids 4-9 are the mid-edge points between (0,1), (1,2), 
+    (2,0), (0,3), (1,3), and (2,3). [1]
+
+    The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
+    :math:`(r,s,t)`.
+
+    .. math::
+
+       \boldsymbol{h}(r,s,t) = \begin{bmatrix}
+               t_1 (2 t_1 - 1) \\
+               t_2 (2 t_2 - 1) \\
+               t_3 (2 t_3 - 1) \\
+               t_4 (2 t_4 - 1) \\
+               4 t_1 t_2 \\
+               4 t_2 t_3 \\
+               4 t_3 t_1 \\
+               4 t_1 t_4 \\
+               4 t_2 t_4 \\
+               4 t_3 t_4
+           \end{bmatrix}
+    
+    with
+    
+    .. math::
+       
+       t_1 = 1 - r - s - t
+       t_2 = r
+       t_3 = s
+       t_4 = t
+
+    References
+    ----------
+    .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
+       Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    """
+
     def __init__(self):
         super().__init__(shape=(10, 3))
         self.points = np.zeros(self.shape)
@@ -89,7 +182,7 @@ class QuadraticTetra(Element):
         self.points[9] = np.mean(self.points[[2, 3]], axis=0)
 
     def function(self, rst):
-        "quadratic tetrahedral shape functions"
+        "Return the shape functions at given coordinates (r, s, t)."
         r, s, t = rst
 
         t1 = 1 - r - s - t
@@ -115,7 +208,7 @@ class QuadraticTetra(Element):
         return h
 
     def gradient(self, rst):
-        "quadratic tetrahedral gradient of shape functions"
+        "Return the gradient of shape functions at given coordinates (r, s, t)."
         r, s, t = rst
 
         t1 = 1 - r - s - t

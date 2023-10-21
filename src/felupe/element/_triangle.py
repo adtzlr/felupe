@@ -116,7 +116,11 @@ class QuadraticTriangle(Element):
 
     Notes
     -----
-    The quadratic triangle element is defined by six points (0-5). [1]
+    The quadratic triangle element is defined by six points (0-5). The element includes
+    three mid-edge points besides the three triangle vertices. The ordering of the three
+    points defining the element is point ids (0-2,3-5) where id #3 is the mid-edge point
+    between points (0,1); id #4 is the mid-edge point between points (1,2); and id #5 is
+    the mid-edge point between points (2,0). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
     :math:`(r,s)`.

@@ -84,6 +84,7 @@ class TriangleMINI(Element):
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
        Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
     """
+
     def __init__(self, bubble_multiplier=1.0):
         super().__init__(shape=(4, 2))
         self.points = np.array([[0, 0], [1, 0], [0, 1], [1 / 3, 1 / 3]], dtype=float)

@@ -93,6 +93,14 @@ class Hexahedron(Element):
                (1+r) (1+s) (1+t) \\
                (1-r) (1+s) (1+t)
            \end{bmatrix}
+    
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.Hexahedron().screenshot(transparent_background=True)
+
+    ..  image:: images/hexahedron.png
 
     References
     ----------
@@ -170,7 +178,15 @@ class QuadraticHexahedron(Element):
     (1,5), (2,6), (3,7). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
-    :math:`(r,s,t)`.
+    :math:`(r,s,t)`..
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.QuadraticHexahedron().screenshot(transparent_background=True)
+
+    ..  image:: images/hexahedron20.png
 
     References
     ----------
@@ -400,6 +416,14 @@ class TriQuadraticHexahedron(Element):
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.TriQuadraticHexahedron().screenshot(transparent_background=True)
+
+    ..  image:: images/hexahedron27.png
 
     References
     ----------

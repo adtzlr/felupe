@@ -37,6 +37,14 @@ class ConstantHexahedron(Element):
 
        h(r,s,t) = 1
 
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.ConstantHexahedron().screenshot(transparent_background=True)
+
+    ..  image:: images/hexahedron.png
+
     References
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization

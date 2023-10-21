@@ -29,23 +29,6 @@ class ConstantQuad(Element):
     -----
     The quadrilateral element is defined by four points (0-3). [1]
 
-    ..  code-block::
-
-                      ^ s
-         3 (-1/ 1)    |            2 ( 1/ 1)
-          o-----------|-----------o
-          |           |           |
-          |           |           |
-          |           |           |
-          |           |           |
-          |      -----|-----------|-----> r
-          |           |           |
-          |           |           |
-          |                       |
-          |                       |
-          o-----------------------o
-        0 (-1/-1)                  1 ( 1/-1)
-
     The shape function :math:`h` is given in terms of the coordinates :math:`(r,s)`.
 
     .. math::
@@ -87,23 +70,6 @@ class Quad(Element):
     Notes
     -----
     The quadrilateral element is defined by four points (0-3). [1]
-
-    ..  code-block::
-
-                      ^ s
-         3 (-1/ 1)    |            2 ( 1/ 1)
-          o-----------|-----------o
-          |           |           |
-          |           |           |
-          |           |           |
-          |           |           |
-          |      -----|-----------|-----> r
-          |           |           |
-          |           |           |
-          |                       |
-          |                       |
-          o-----------------------o
-        0 (-1/-1)                  1 ( 1/-1)
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
@@ -177,23 +143,6 @@ class QuadraticQuad(Element):
     -----
     The quadratic (serendipity) quadrilateral element is defined by eight points (0-7).
     [1]
-
-    ..  code-block::
-
-                      ^ s
-         3 (-1/ 1)    |6 ( 0/ 1)   2 ( 1/ 1)
-          o-----------o-----------o
-          |           |           |
-          |           |           |
-          |           |           |
-          |7 (-1/ 0)  |           |5 ( 1/ 0)
-          o      -----|-----------o-----> r
-          |           |           |
-          |           |           |
-          |                       |
-          |                       |
-          o-----------o-----------o
-        0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.
@@ -271,23 +220,6 @@ class BiQuadraticQuad(Element):
     Notes
     -----
     The bi-quadratic quadrilateral element is defined by nine points (0-8). [1]
-
-    ..  code-block::
-
-                      ^ s
-         3 (-1/ 1)    |6 ( 0/ 1)   2 ( 1/ 1)
-          o-----------o-----------o
-          |           |           |
-          |           |           |
-          |           |           |
-          |7 (-1/ 0)  |8 ( 0/ 0)  |5 ( 1/ 0)
-          o      -----o-----------o-----> r
-          |           |           |
-          |           |           |
-          |                       |
-          |                       |
-          o-----------o-----------o
-        0 (-1/-1)     4 ( 0/-1)    1 ( 1/-1)
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s)`.

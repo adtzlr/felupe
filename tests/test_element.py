@@ -71,6 +71,8 @@ def test_quad4():
 
     assert quad4.shape == dhdr.shape
 
+    quad4.plot(off_screen=True)
+
 
 def test_quad8():
     quad8 = fe.element.QuadraticQuad()
@@ -141,6 +143,8 @@ def test_hex20():
 
     assert hex20.shape == dhdr.shape
 
+    hex20.plot(off_screen=True)
+
 
 def test_hex27():
     hex27 = fe.element.TriQuadraticHexahedron()
@@ -154,6 +158,8 @@ def test_hex27():
     assert np.all(dhdr[0] == -1.5)
 
     assert hex27.shape == dhdr.shape
+
+    hex27.plot(off_screen=True)
 
 
 def test_tri3():

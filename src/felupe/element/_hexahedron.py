@@ -28,7 +28,7 @@ class ConstantHexahedron(Element):
     Notes
     -----
     The hexahedron element is defined by eight points (0-7) where (0,1,2,3) forms the
-    base and (4,5,6,7) the opposite quad. [1]_
+    base and (4,5,6,7) the opposite quad. [1]
 
     The shape function :math:`h` in terms of the coordinates :math:`(r,s,t)` is constant
     and hence, its gradient is zero.
@@ -74,7 +74,7 @@ class Hexahedron(Element):
     Notes
     -----
     The hexahedron element is defined by eight points (0-7) where (0,1,2,3) forms the
-    base and (4,5,6,7) the opposite quad. [1]_
+    base and (4,5,6,7) the opposite quad. [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
     :math:`(r,s,t)`.
@@ -163,7 +163,7 @@ class QuadraticHexahedron(Element):
     where (0,1,2,3) forms the base and (4,5,6,7) the opposite quad; followed by 12 mid-
     edge points. The mid-edge points correspond to the edges defined by the lines
     between the points (0,1), (1,2), (2,3), (3,0), (4,5), (5,6), (6,7), (7,4), (0,4),
-    (1,5), (2,6), (3,7). [1]_
+    (1,5), (2,6), (3,7). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.
@@ -390,7 +390,7 @@ class TriQuadraticHexahedron(Element):
     mid-surface points lie on the faces defined by (first edge point id's, than mid-edge
     point id's): (0,1,5,4;8,17,12,16), (1,2,6,5;9,18,13,17), (2,3,7,6,10,19,14,18),
     (3,0,4,7;11,16,15,19), (0,1,2,3;8,9,10,11), (4,5,6,7;12,13,14,15). The last point
-    lies in the center (0,1,2,3,4,5,6,7). [1]_
+    lies in the center (0,1,2,3,4,5,6,7). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
     :math:`(r,s,t)`.

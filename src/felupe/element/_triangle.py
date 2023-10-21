@@ -26,7 +26,7 @@ class Triangle(Element):
 
     Notes
     -----
-    The triangle element is defined by three points (0-2). [1]_
+    The triangle element is defined by three points (0-2). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
     :math:`(r,s)`.
@@ -65,7 +65,7 @@ class TriangleMINI(Element):
 
     Notes
     -----
-    The MINI triangle element is defined by four points (0-3). [1]_
+    The MINI triangle element is defined by four points (0-3). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
     :math:`(r,s)`.
@@ -116,7 +116,7 @@ class QuadraticTriangle(Element):
 
     Notes
     -----
-    The quadratic triangle element is defined by six points (0-5). [1]_
+    The quadratic triangle element is defined by six points (0-5). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
     :math:`(r,s)`.

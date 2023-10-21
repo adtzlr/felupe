@@ -26,7 +26,7 @@ class Line(Element):
 
     Notes
     -----
-    The linear line element is defined by two points (0-1). [1]_
+    The linear line element is defined by two points (0-1). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates 
     :math:`(r)`.

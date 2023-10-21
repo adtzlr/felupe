@@ -27,7 +27,7 @@ class ConstantQuad(Element):
 
     Notes
     -----
-    The quadrilateral element is defined by four points (0-3). [1]_
+    The quadrilateral element is defined by four points (0-3). [1]
 
     ..  code-block::
 
@@ -76,7 +76,7 @@ class Quad(Element):
 
     Notes
     -----
-    The quadrilateral element is defined by four points (0-3). [1]_
+    The quadrilateral element is defined by four points (0-3). [1]
     
     ..  code-block::
 
@@ -156,7 +156,7 @@ class QuadraticQuad(Element):
     Notes
     -----
     The quadratic (serendipity) quadrilateral element is defined by eight points (0-7).
-    [1]_
+    [1]
 
     ..  code-block::
 
@@ -240,7 +240,7 @@ class BiQuadraticQuad(Element):
 
     Notes
     -----
-    The bi-quadratic quadrilateral element is defined by nine points (0-8). [1]_
+    The bi-quadratic quadrilateral element is defined by nine points (0-8). [1]
 
     ..  code-block::
 

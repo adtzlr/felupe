@@ -55,7 +55,18 @@ class RegionConstantQuad(Region):
 
 
 class RegionQuad(Region):
-    "A region with a quad element."
+    r"""A region with a quad element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> region = fem.RegionQuad(fem.Rectangle())
+    >>> region.screenshot_scheme()
+
+    .. image:: images/region-quad.png
+
+    """
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True):
         element = Quad()
@@ -176,7 +187,18 @@ class RegionConstantHexahedron(Region):
 
 
 class RegionHexahedron(Region):
-    "A region with a hexahedron element."
+    r"""A region with a hexahedron element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> region = fem.RegionHexahedron(fem.Cube())
+    >>> region.screenshot_scheme()
+
+    .. image:: images/region-hexahedron.png
+
+    """
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=3), grad=True):
         element = Hexahedron()
@@ -272,7 +294,18 @@ class RegionLagrange(Region):
 
 
 class RegionTriangle(Region):
-    "A region with a triangle element."
+    """A region with a triangle element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> region = fem.RegionTriangle(fem.Rectangle().triangulate())
+    >>> region.screenshot_scheme()
+
+    .. image:: images/region-triangle.png
+
+    """
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=1), grad=True):
         element = Triangle()
@@ -286,7 +319,18 @@ class RegionTriangle(Region):
 
 
 class RegionTetra(Region):
-    "A region with a tetra element."
+    """A region with a tetra element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> region = fem.RegionTetra(fem.Cube().triangulate())
+    >>> region.screenshot_scheme()
+
+    .. image:: images/region-tetra.png
+
+    """
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True):
         element = Tetra()

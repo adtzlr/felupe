@@ -28,11 +28,13 @@ class GaussLegendre(Scheme):
 
     def __init__(self, order: int, dim: int, permute: bool = True):
         """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
-        on the interval [-1, 1] as approximation of
+        on the interval [-1, 1] as an approximation of
 
-            ∫ f(x) dx ≈ ∑ f(x_a) w_a                                    (1)
+        ..  math::
 
-        with `a` quadrature points `x_a` and corresponding weights `w_a`.
+            \int f(x) dx \approx \sum f(x_a) w_a
+
+        with quadrature points `x_a` and corresponding weights `w_a`.
 
         """
         # integration point weights and coordinates
@@ -86,9 +88,11 @@ class GaussLegendreBoundary(GaussLegendre):
         """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
         on the interval [-1, 1] as approximation of
 
-            ∫ f(x) dx ≈ ∑ f(x_a) w_a                                    (1)
+        ..  math::
 
-        with `a` quadrature points `x_a` and corresponding weights `w_a`.
+            \int f(x) dx \approx \sum f(x_a) w_a
+
+        with quadrature points `x_a` and corresponding weights `w_a`.
 
         """
 

@@ -181,3 +181,32 @@ class Region:
         grad = f"  Gradient evaluated: {hasattr(self, 'dV')}"
 
         return "\n".join([header, element, quadrature, grad])
+
+    def plot_scheme(self, **kwargs):
+        """Plot the element with point-ids and the quadrature points,
+        scaled by their weights."""
+
+        return self.quadrature.plot(self.element.plot(**kwargs))
+
+    def screenshot_scheme(
+        self,
+        filename=None,
+        transparent_background=None,
+        scale=None,
+        **kwargs,
+    ):
+        """Take a screenshot of the element with the applied quadrature.
+
+        See Also
+        --------
+        pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
+        """
+
+        if filename is None:
+            filename = f"region-{self.element.cell_type}.png"
+
+        return self.plot_scheme(off_screen=True, **kwargs).screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            scale=scale,
+        )

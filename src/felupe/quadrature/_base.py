@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import numpy as np
+
 
 class Scheme:
     "A quadrature scheme."
@@ -27,3 +29,22 @@ class Scheme:
         self.weights = weights
 
         self.npoints, self.dim = self.points.shape
+
+    def plot(self, plotter, **kwargs):
+        """Plot the quadrature points, scaled by their weights, into a given PyVista
+        plotter.
+
+        See Also
+        --------
+        felupe.Scene.plot: Plot method of a scene.
+        """
+
+        for weight, point in zip(self.weights, self.points):
+            plotter.add_points(
+                points=np.pad([point], ((0, 0), (0, 3 - self.points.shape[1]))),
+                point_size=100 * weight,
+                render_points_as_spheres=True,
+                color="grey",
+            )
+
+        return plotter

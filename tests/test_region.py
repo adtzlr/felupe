@@ -34,6 +34,9 @@ import felupe as fe
 def test_region():
     mesh = fe.Rectangle()
     r = fe.RegionQuad(mesh)
+    
+    r.plot_scheme(off_screen=True)
+    
     r = fe.RegionQuadBoundary(mesh)
     r = fe.RegionQuadBoundary(mesh, ensure_3d=True)
     r = fe.RegionConstantQuad(mesh)

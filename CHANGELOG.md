@@ -8,8 +8,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add `element.Element.view()`, `element.Element.plot()` and `element.Element.screenshot()`. This enables an interactive plot of the element in the reference configuration with its point ids, e.g. `Hexahedron().plot().show()`.
 
 ### Changed
-- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example. `move` defaults to `None`, is deprecated and will be removed in the next major release.
-- Change function signature and enhance `dof.shear(field, bottom=None, top=None, moves=(0.2, 0.0, 0.0), axes=(0, 1), sym=True)`. Now with a full-featured docstring including an example. This is not backward compatible! However, due to the fact, that this was previously a non-documented function this won't enforce a new major version. `move`, `axis_compression`, `axis_shear` and `compression` all default to `None`, are deprecated and will be removed in the next major relase.
+- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example. The old-style input `move` defaults to `None`, is deprecated and will be removed in the next major release.
+- Change function signature and enhance `dof.shear(field, bottom=None, top=None, moves=(0.2, 0.0, 0.0), axes=(0, 1), sym=True)`. Now with a full-featured docstring including an example. The old-style `move`, `axis_compression`, `axis_shear` and `compression` all default to `None`, are deprecated and will be removed in the next major relase.
 - Merge keyword-arguments for the dual-regions with hard-coded arguments in `FieldsMixed(region, **kwargs)`.
 - Replace `np.product()` (will be removed in NumPy 2.0) with the equivalent `np.prod()`.
 

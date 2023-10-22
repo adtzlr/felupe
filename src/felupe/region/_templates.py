@@ -61,8 +61,18 @@ class RegionQuad(Region):
     --------
     >>> import felupe as fem
 
-    >>> region = fem.RegionQuad(fem.Rectangle())
-    >>> region.screenshot_scheme()
+    >>> mesh = fem.Rectangle()
+    >>> region = fem.RegionQuad(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: Quad
+      Quadrature rule: GaussLegendre
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot()
 
     .. image:: images/region-quad.png
 
@@ -90,7 +100,28 @@ class RegionQuadraticQuad(Region):
 
 
 class RegionBiQuadraticQuad(Region):
-    "A region with a bi-quadratic (lagrange) quad element."
+    """A region with a bi-quadratic (lagrange) quad element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle().convert(2, True, True)
+    >>> region = fem.RegionBiQuadraticQuad(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: BiQuadraticQuad
+      Quadrature rule: GaussLegendre
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot()
+
+    .. image:: images/region-quad9.png
+
+    """
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
         element = BiQuadraticQuad()
@@ -99,7 +130,28 @@ class RegionBiQuadraticQuad(Region):
 
 
 class RegionQuadBoundary(RegionBoundary):
-    "A region with a quad element."
+    """A region with a quad element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle()
+    >>> region = fem.RegionQuadBoundary(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: Quad
+      Quadrature rule: GaussLegendreBoundary
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot(filename="region-boundary-quad.png")
+
+    .. image:: images/region-boundary-quad.png
+
+    """
 
     def __init__(
         self,
@@ -193,8 +245,18 @@ class RegionHexahedron(Region):
     --------
     >>> import felupe as fem
 
-    >>> region = fem.RegionHexahedron(fem.Cube())
-    >>> region.screenshot_scheme()
+    >>> mesh = fem.Cube()
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: Hexahedron
+      Quadrature rule: GaussLegendre
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot()
 
     .. image:: images/region-hexahedron.png
 
@@ -210,7 +272,29 @@ class RegionHexahedron(Region):
 
 
 class RegionHexahedronBoundary(RegionBoundary):
-    "A region with a hexahedron element."
+    """A region with a hexahedron element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Cube()
+    >>> region = fem.RegionHexahedronBoundary(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: Hexahedron
+      Quadrature rule: GaussLegendreBoundary
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show()
+    >>> # or region.screenshot(filename="region-boundary-hexahedron.png")
+
+    .. image:: images/region-boundary-hexahedron.png
+
+    """
 
     def __init__(
         self,
@@ -256,7 +340,28 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
 
 
 class RegionTriQuadraticHexahedron(Region):
-    "A region with a tri-quadratic (lagrange) hexahedron element."
+    """A region with a tri-quadratic (lagrange) hexahedron element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Cube().convert(2, True, True, True)
+    >>> region = fem.RegionTriQuadraticHexahedron(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: TriQuadraticHexahedron
+      Quadrature rule: GaussLegendre
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot()
+
+    .. image:: images/region-hexahedron27.png
+
+    """
 
     def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
         element = TriQuadraticHexahedron()
@@ -300,8 +405,18 @@ class RegionTriangle(Region):
     --------
     >>> import felupe as fem
 
-    >>> region = fem.RegionTriangle(fem.Rectangle().triangulate())
-    >>> region.screenshot_scheme()
+    >>> mesh = fem.Rectangle().triangulate()
+    >>> region = fem.RegionTriangle(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: Triangle
+      Quadrature rule: Triangle
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot()
 
     .. image:: images/region-triangle.png
 
@@ -325,10 +440,20 @@ class RegionTetra(Region):
     --------
     >>> import felupe as fem
 
-    >>> region = fem.RegionTetra(fem.Cube().triangulate())
-    >>> region.screenshot_scheme()
+    >>> mesh = fem.Cube().triangulate()
+    >>> region = fem.RegionTetra(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: Tetra
+      Quadrature rule: Tetrahedron
+      Gradient evaluated: True
 
-    .. image:: images/region-tetra.png
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot()
+
+    .. image:: images/region-triangle.png
 
     """
 
@@ -344,7 +469,28 @@ class RegionTetra(Region):
 
 
 class RegionTriangleMINI(Region):
-    "A region with a triangle-MINI element."
+    """A region with a triangle-MINI element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle().triangulate().add_midpoints_faces()
+    >>> region = fem.RegionTriangleMINI(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: TriangleMINI
+      Quadrature rule: Triangle
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot(filename="region-triangle-mini.png")
+
+    .. image:: images/region-triangle-mini.png
+
+    """
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=2), grad=True):
         element = TriangleMINI()
@@ -352,7 +498,28 @@ class RegionTriangleMINI(Region):
 
 
 class RegionTetraMINI(Region):
-    "A region with a tetra-MINI element."
+    """A region with a tetra-MINI element.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Cube().triangulate().add_midpoints_volumes()
+    >>> region = fem.RegionTetraMINI(mesh)
+    >>> region
+    <felupe Region object>
+      Element formulation: TetraMINI
+      Quadrature rule: Tetrahedron
+      Gradient evaluated: True
+
+    Plot the element with its point-ids and the applied quadrature rule (quadrature
+    points are shown as spheres, scaled by their weights).
+
+    >>> region.plot().show() # or region.screenshot(filename="region-tetra-mini.png")
+
+    .. image:: images/region-tetra-mini.png
+
+    """
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True):
         element = TetraMINI()

@@ -24,21 +24,31 @@ from . import Scheme
 
 
 class GaussLegendre(Scheme):
-    "A n-dimensional Gauss-Legendre quadrature rule."
+    r"""An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
+    interval [-1, 1].
+
+    Notes
+    -----
+
+    The approximation is given by
+
+    ..  math::
+
+        \int f(x) dx \approx \sum f(x_a) w_a
+
+    with quadrature points :math:`x_a` and corresponding weights :math:`w_a`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> fem.GaussLegendre(order=2, dim=3).screenshot()
+
+    .. image:: images/quadrature.png
+
+    """
 
     def __init__(self, order: int, dim: int, permute: bool = True):
-        """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
-        on the interval [-1, 1] as an approximation of
-
-        ..  math::
-
-            \int f(x) dx \approx \sum f(x_a) w_a
-
-        with quadrature points `x_a` and corresponding weights `w_a`.
-
-        """
-        # integration point weights and coordinates
-
         if dim not in [1, 2, 3]:
             raise ValueError("Wrong dimension.")
 
@@ -82,20 +92,23 @@ class GaussLegendre(Scheme):
 
 
 class GaussLegendreBoundary(GaussLegendre):
-    "A n-dimensional Gauss-Legendre quadrature rule on boundaries."
+    """An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
+    interval [-1, 1].
+
+    Notes
+    -----
+
+    The approximation is given by
+
+    ..  math::
+
+        \int f(x) dx \approx \sum f(x_a) w_a
+
+    with quadrature points :math:`x_a` and corresponding weights :math:`w_a`.
+
+    """
 
     def __init__(self, order: int, dim: int, permute: bool = True):
-        """Arbitrary `order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3
-        on the interval [-1, 1] as approximation of
-
-        ..  math::
-
-            \int f(x) dx \approx \sum f(x_a) w_a
-
-        with quadrature points `x_a` and corresponding weights `w_a`.
-
-        """
-
         super().__init__(order=order, dim=dim - 1, permute=permute)
 
         # reset dimension

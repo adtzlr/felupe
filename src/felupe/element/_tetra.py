@@ -40,6 +40,14 @@ class Tetra(Element):
                t
            \end{bmatrix}
 
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.Tetra().screenshot()
+
+    ..  image:: images/tetra.png
+
     References
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
@@ -86,6 +94,14 @@ class TetraMINI(Element):
                r s t (1-r-s-t)
            \end{bmatrix}
 
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.TetraMINI().screenshot(filename="tetra-mini.png")
+
+    ..  image:: images/tetra-mini.png
+
     References
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
@@ -98,7 +114,7 @@ class TetraMINI(Element):
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1 / 3, 1 / 3, 1 / 3]],
             dtype=float,
         )
-        self.cells = np.arange(len(self.points) - -1).reshape(1, -1)
+        self.cells = np.arange(len(self.points) - 1).reshape(1, -1)
         self.cell_type = "tetra"
         self.bubble_multiplier = bubble_multiplier
 
@@ -168,6 +184,14 @@ class QuadraticTetra(Element):
        t_3 &= s
 
        t_4 &= t
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.QuadraticTetra().screenshot()
+
+    ..  image:: images/tetra10.png
 
     References
     ----------

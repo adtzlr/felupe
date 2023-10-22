@@ -39,6 +39,14 @@ class Triangle(Element):
                s
            \end{bmatrix}
 
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.Triangle().screenshot()
+
+    ..  image:: images/triangle.png
+
     References
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
@@ -80,6 +88,14 @@ class TriangleMINI(Element):
                s \\
                r s (1-r-s)
            \end{bmatrix}
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.TriangleMINI().screenshot(filename="triangle-mini.png")
+
+    ..  image:: images/triangle-mini.png
 
     References
     ----------
@@ -139,6 +155,14 @@ class QuadraticTriangle(Element):
                4 r s \\
                4 s (1-r-s)
            \end{bmatrix}
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> img = fem.QuadraticTriangle().screenshot()
+
+    ..  image:: images/triangle6.png
 
     References
     ----------

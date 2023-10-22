@@ -92,7 +92,7 @@ class GaussLegendre(Scheme):
 
 
 class GaussLegendreBoundary(GaussLegendre):
-    """An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
+    r"""An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
     interval [-1, 1].
 
     Notes

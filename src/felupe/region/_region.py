@@ -182,13 +182,13 @@ class Region:
 
         return "\n".join([header, element, quadrature, grad])
 
-    def plot_scheme(self, **kwargs):
+    def plot(self, **kwargs):
         """Plot the element with point-ids and the quadrature points,
         scaled by their weights."""
 
-        return self.quadrature.plot(self.element.plot(**kwargs))
+        return self.quadrature.plot(plotter=self.element.plot(**kwargs), add_axes=False)
 
-    def screenshot_scheme(
+    def screenshot(
         self,
         filename=None,
         transparent_background=None,
@@ -205,7 +205,7 @@ class Region:
         if filename is None:
             filename = f"region-{self.element.cell_type}.png"
 
-        return self.plot_scheme(off_screen=True, **kwargs).screenshot(
+        return self.plot(off_screen=True, **kwargs).screenshot(
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,

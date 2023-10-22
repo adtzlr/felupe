@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add plot- and screenshot-methods to `Region` and `Scheme` (base class for quadratures).
+
 ## [7.11.0] - 2023-10-22
 
 ### Added

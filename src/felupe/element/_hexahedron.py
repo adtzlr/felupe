@@ -101,7 +101,7 @@ class Hexahedron(Element):
                (1+r) (1+s) (1+t) \\
                (1-r) (1+s) (1+t)
            \end{bmatrix}
-    
+
     Examples
     --------
     >>> import felupe as fem

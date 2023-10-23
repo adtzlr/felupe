@@ -26,37 +26,162 @@ from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 
 
 class SolidBodyNearlyIncompressible:
-    r"""A (nearly) incompressible SolidBody with methods for the assembly of
-    sparse vectors/matrices based on a ``MaterialTensor`` with state variables.
+    r"""A (nearly) incompressible SolidBody with methods for the assembly of sparse
+    vectors/matrices for a material with optional state variables.
 
-    The volumetric material behaviour is defined by a strain energy function.
+    Parameters
+    ----------
+    umat : A constitutive material formulation with methods for the evaluation
+        of the gradient ``P = umat.gradient(F)`` as well as the hessian
+        ``A = umat.hessian(F)`` of the strain energy function w.r.t. the
+        deformation gradient.
+    field : FieldContainer
+        The field (and its underlying region) on which the solid body will
+        be created on.
+    bulk : float
+        The bulk modulus of the volumetric material behaviour
+        (:math:`U(J)=K(J-1)^2/2`).
+    state : StateNearlyIncompressible
+        A valid initial state for a (nearly) incompressible solid.
+
+    Notes
+    -----
+    The volumetric material behaviour is hard-coded and is defined by the strain energy
+    function.
 
     ..  math::
 
         U(J) = \frac{K}{2} (J - 1)^2
 
+
+    **Hu-Washizu Three-Field-Variation Principle**
+
+    The Three-Field-Variation :math:`(\boldsymbol{u},p,J)` leads to a linearized 
+    equation system with nine sub block-matrices. Due to the fact that the equation 
+    system is derived by a potential, the matrix is symmetric and hence, only six 
+    independent sub-matrices have to be evaluated. Furthermore, by the application of 
+    the mean dilatation technique, two of the remaining six sub-matrices are identified
+    to be zero. That means four sub-matrices are left to be evaluated, where two 
+    non-zero sub-matrices are scalar-valued entries.
+
+    ..  math::
+
+        \begin{bmatrix} 
+            \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
+            \boldsymbol{b}^T &             0  &            -c  \\
+            \boldsymbol{0}^T &            -c  &             d
+        \end{bmatrix} \cdot \begin{bmatrix} 
+            \boldsymbol{x} \\
+                        y  \\
+                        z 
+        \end{bmatrix} = \begin{bmatrix} 
+            \boldsymbol{u} \\
+                        v  \\
+                        w 
+        \end{bmatrix}
+
+    An alternative representation of the equation system, only dependent on the primary
+    unknowns :math:`\boldsymbol{u}` is carried out. To do so, the second line is 
+    multiplied by :math:`\frac{d}{c}`.
+
+    ..  math::
+
+        \begin{bmatrix} 
+                        \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
+            \frac{d}{c}~\boldsymbol{b}^T &             0  &            -d  \\
+                        \boldsymbol{0}^T &            -c  &             d
+        \end{bmatrix} \cdot \begin{bmatrix} 
+            \boldsymbol{x} \\
+                        y  \\
+                        z 
+        \end{bmatrix} = \begin{bmatrix} 
+            \boldsymbol{u} \\
+            \frac{d}{c}~v  \\
+            -w 
+        \end{bmatrix}
+
+    Now, equations two and three are summed up. This eliminates one of the three 
+    unknowns.
+
+    ..  math::
+
+        \begin{bmatrix} 
+                        \boldsymbol{A}   & \boldsymbol{b} \\
+            \frac{d}{c}~\boldsymbol{b}^T &    -c
+        \end{bmatrix} \cdot \begin{bmatrix} 
+            \boldsymbol{x} \\
+                y
+        \end{bmatrix} = \begin{bmatrix} 
+            \boldsymbol{u} \\
+            \frac{d}{c}~v + w
+        \end{bmatrix}
+
+    Next, the second equation is left-multiplied by :math:`\frac{1}{c}~\boldsymbol{b}` 
+    and both equations are summed up again.
+
+    ..  math::
+
+        \begin{bmatrix} 
+            \boldsymbol{A} + \frac{d}{c^2}~\boldsymbol{b} \otimes \boldsymbol{b}
+        \end{bmatrix} \cdot \begin{bmatrix} 
+            \boldsymbol{x}
+        \end{bmatrix} = \begin{bmatrix} 
+            \boldsymbol{u} + \frac{d}{c^2}~\boldsymbol{b}~v + 
+                \frac{1}{c}~\boldsymbol{b}~w
+        \end{bmatrix}
+
+    The secondary unknowns are evaluated after solving the primary unknowns.
+
+    ..  math::
+
+        z &= \frac{1}{c}~\boldsymbol{b}^T \boldsymbol{x} - \frac{1}{c}~v
+
+        y &= \frac{d}{c}~z - \frac{1}{c}~w
+
+    For the mean-dilatation technique, the variables, equations as well as sub-matrices
+    are evaluated. Note that the pairs of indices :math:`(ai)` and :math:`(bk)` have to
+    be treated as 1d-vectors.
+
+    ..  math::
+
+        A_{aibk} &= \int_V \frac{\partial h_a}{\partial X_J}  \left( 
+            \frac{\partial^2 \overset{\wedge}{\psi}}{\partial F_{iJ} \partial F_{kL}} + 
+            p \frac{\partial^2 J}{\partial F_{iJ} \partial F_{kL}} \right) 
+            \frac{\partial h_b}{\partial X_L} \ dV
+
+        b_{ai} &= \int_V \frac{\partial h_a}{\partial X_J} 
+            \frac{\partial J}{\partial F_{iJ}} \ dV
+
+        c &= \int_V \ dV = V
+
+        d &= \int_V \frac{\partial^2 U(\bar{J})}{\partial \bar{J} \partial \bar{J}} \ dV
+           = \bar{U}'' V
+
+    and
+
+    ..  math::
+
+        x_{ai} &= \delta {u}_{ai}
+
+        y &= \delta p
+
+        z &= \delta \bar{J}
+
+    as well as
+
+    ..  math::
+
+        u_{ai} (= -r_{ai}) &= -\int_V \frac{\partial h_a}{\partial X_J} \left( 
+            \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} + 
+            p \frac{\partial J}{\partial F_{iJ}} \right) \ dV
+
+        v &= -\int_V (J - \bar{J}) \ dV = \bar{J} V - v
+
+        z &= -\int_V (\bar{U}' - p) \ dV = p V - \bar{U}' V
+
     """
 
     def __init__(self, umat, field, bulk, state=None, statevars=None):
-        """A (nearly) incompressible SolidBody with methods for the assembly of
-        sparse vectors/matrices.
-
-        Parameters
-        ----------
-        umat : A constitutive material formulation with methods for the evaluation
-            of the gradient ``P = umat.gradient(F)`` as well as the hessian
-            ``A = umat.hessian(F)`` of the strain energy function w.r.t. the
-            deformation gradient.
-        field : FieldContainer
-            The field (and its underlying region) on which the solid body will
-            be created on.
-        bulk : float
-            The bulk modulus of the volumetric material behaviour
-            (:math:`U(J)=K(J-1)^2/2`).
-        state : StateNearlyIncompressible
-            A valid initial state for a (nearly) incompressible solid.
-        """
-
         self.umat = umat
         self.field = field
         self.bulk = bulk

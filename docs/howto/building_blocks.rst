@@ -33,7 +33,26 @@ Start setting up a problem in FElupe by the creation of a numeric **Region** wit
     mesh = felupe.Cube(n=9)
     element = felupe.Hexahedron()
     quadrature = felupe.GaussLegendre(order=1, dim=3)
+    
+    mesh.plot().show()
 
+
+..  image:: images/undeformed_mesh.png
+    :width: 600px
+
+An overview of the mesh-metadata is available in the console.
+
+..  code-block:: python
+    
+    mesh
+
+
+..  code-block::
+    
+    <felupe Mesh object>
+      Number of points: 729
+      Number of cells:
+        hexahedron: 512
 
 Region
 ~~~~~~
@@ -44,19 +63,32 @@ A region essentially pre-calculates element shape functions and derivatives eval
 
     region = felupe.Region(mesh, element, quadrature)
     # region = felupe.RegionHexahedron(mesh)
+    region
+
+..  code-block::
+    <felupe Region object>
+      Element formulation: Hexahedron
+      Quadrature rule: GaussLegendre
+      Gradient evaluated: True
+
+..  code-block:: python
 
     dV = region.dV
     V = dV.sum()
 
+The scheme of the region, the finite element formulation and the quadrature rule, may be
+visualized by its plot-method.
 
-.. image:: images/undeformed_mesh.png
-   :width: 600px
-
+..  code-block::
+    
+    region.plot().show()
+    
+..  image:: ../felupe/images/region-hexahedron.png
 
 Field
 ~~~~~
 
-In a second step fields may be added to the Region which may be either scalar or vector fields. The values at mesh-points are obtained with the attribute ``values``. Interpolated field values at quadrature points are calculated with the ``interpolate()`` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method ``grad()``. A generalized extraction method ``extract(grad=True, add_identity=True, sym=False)`` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
+In a second step fields are added to the Region which may be either scalar or vector fields. The values at mesh-points are obtained with the attribute ``values``. Interpolated field values at quadrature points are calculated with the ``interpolate()`` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method ``grad()``. A generalized extraction method ``extract(grad=True, add_identity=True, sym=False)`` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
 
 ..  code-block:: python
 
@@ -67,11 +99,23 @@ In a second step fields may be added to the Region which may be either scalar or
     dudX = displacement.grad()
 
 
-Next, the field is added to a field container, which handles one or several (vector) fields. Like a field, the field container also provides the ``extract(grad=True, add_identity=True, sym=False)`` method, returning a list of interpolated field values or gradients. E.g., the deformation gradient is obtained by a sum of the identity and the displacement gradient.
+Next, the field is added to a field container, which handles one or several (vector) fields. Like a field, the field container also provides the ``extract(grad=True, add_identity=True, sym=False)`` method, returning a list of interpolated field values or gradients.
 
 ..  code-block:: python
 
     field = felupe.FieldContainer([displacement])
+    field
+
+..  code-block::
+    
+    <felupe FieldContainer object>
+      Number of fields: 1
+      Dimension of fields:
+        Field: 3
+
+The deformation gradient is obtained by a sum of the identity and the displacement gradient.
+
+..  code-block:: python
 
     F = field.extract(grad=True, sym=False, add_identity=True)
 

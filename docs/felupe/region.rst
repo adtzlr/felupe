@@ -81,12 +81,12 @@ This module contains the definition of a region as well as a boundary region alo
    :undoc-members:
    :show-inheritance:
 
-. autoclass:: felupe.RegionQuadraticQuad
+.. autoclass:: felupe.RegionQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-. autoclass:: felupe.RegionBiQuadraticQuad
+.. autoclass:: felupe.RegionBiQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:

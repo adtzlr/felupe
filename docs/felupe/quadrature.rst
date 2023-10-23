@@ -1,7 +1,7 @@
 Quadrature
 ==========
 
-This module contains quadrature (numeric integration) schemes for different finite element formulations.
+This module contains quadrature (numeric integration) schemes for different finite element formulations. The integration points of a boundary-quadrature are located on the first edge for 2d elements and on the first face for 3d elements.
 
 **Lines, Quads and Hexahedrons**
 
@@ -18,6 +18,8 @@ This module contains quadrature (numeric integration) schemes for different fini
 
    TriangleQuadrature
    TetrahedronQuadrature
+   quadrature.Triangle
+   quadrature.Tetrahedron
 
 **Detailed API Reference**
 
@@ -31,12 +33,12 @@ This module contains quadrature (numeric integration) schemes for different fini
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.TriangleQuadrature
+.. autoclass:: felupe.quadrature.Triangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.TetrahedronQuadrature
+.. autoclass:: felupe.quadrature.Tetrahedron
    :members:
    :undoc-members:
    :show-inheritance:

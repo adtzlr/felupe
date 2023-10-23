@@ -76,7 +76,6 @@ Install Python, open the terminal and run ``pip install felupe[all]``, where ``[
    tutorial
    examples
    howto
-   explanation
 
 .. toctree::
    :maxdepth: 1

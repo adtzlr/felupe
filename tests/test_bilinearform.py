@@ -119,7 +119,10 @@ def test_linear_elastic():
             linear_elasticity,
         ]
 
-    K = bilinearform.assemble(v=field, u=field, parallel=False)
+    bilinearform.assemble(v=field, u=field, parallel=False)
+    bilinearform.assemble(v=field, u=field, parallel=True)
+    bilinearform.assemble(v=field, u=field, parallel=False, sym=True)
+    bilinearform.assemble(v=field, u=field, parallel=True, sym=True)
 
 
 if __name__ == "__main__":

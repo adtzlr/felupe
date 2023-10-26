@@ -170,7 +170,7 @@ class FormExpression:
 
         kwargs = dict(parallel=parallel, sym=sym)
 
-        if self.u is None or isinstance(self.v, Basis):
+        if self.u is None:
             kwargs.pop("sym")
 
         return self.form.integrate(
@@ -210,7 +210,7 @@ class FormExpression:
 
         kwargs = dict(parallel=parallel, sym=sym)
 
-        if self.u is None or isinstance(self.u, Basis):
+        if self.u is None:
             kwargs.pop("sym")
 
         return self.form.assemble(

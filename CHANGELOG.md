@@ -11,7 +11,8 @@ All notable changes to this project will be documented in this file. The format 
 - Move `Basis` to the new `assembly.expression` submodule.
 
 ### Removed
-- Don't import `Basis` to the global namespace (not necessary as it is used only internally by `Form`).
+- Don't import `Basis` to the global namespace (not necessary as it is used only internally by the weak-`Form` expression decorator).
+- Remove unused internal assemble-methods from `assembly.expression._linear.LinearForm` and `assembly.expression._bilinear.BiLinearForm`.
 
 ## [7.11.0] - 2023-10-22
 

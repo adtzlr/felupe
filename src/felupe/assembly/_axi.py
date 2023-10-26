@@ -18,8 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._field._axi import FieldAxisymmetric
-from .._field._base import Field
+from ..field._axi import FieldAxisymmetric
+from ..field._base import Field
 from ._cartesian import IntegralFormCartesian
 
 

@@ -1,6 +1,6 @@
 from numpy import sqrt
 
-from ._field import defgrad, extract, grad, interpolate, norm, strain, values
+from .field import defgrad, extract, grad, interpolate, norm, strain, values
 from ._math import linsteps
 from ._spatial import rotation_matrix
 from ._tensor import (

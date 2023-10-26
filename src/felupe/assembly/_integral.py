@@ -19,9 +19,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from scipy.sparse import bmat, vstack
 
-from .._field._axi import FieldAxisymmetric
-from .._field._base import Field
-from .._field._planestrain import FieldPlaneStrain
+from ..field._axi import FieldAxisymmetric
+from ..field._base import Field
+from ..field._planestrain import FieldPlaneStrain
 from ._axi import IntegralFormAxisymmetric
 from ._cartesian import IntegralFormCartesian
 

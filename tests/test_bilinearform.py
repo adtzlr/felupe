@@ -81,7 +81,6 @@ def pre(dim):
 def test_form_decorator():
     field = pre(dim=3)
     F, p = field.extract()
-    b = fe.Basis(field)
 
     @fe.Form(v=field, u=field, grad_v=(True, False), grad_u=(True, False))
     def a():
@@ -96,5 +95,33 @@ def test_form_decorator():
     s = L.assemble(field, args=(F, p))
 
 
+def test_linear_elastic():
+    mesh = fe.Cube(n=11)
+    region = fe.RegionHexahedron(mesh)
+    displacement = fe.Field(region, dim=3)
+    field = fe.FieldContainer([displacement])
+
+    from felupe.math import ddot, sym, trace
+
+    @fe.Form(
+        v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"mu": 1.0, "lmbda": 2.0}
+    )
+    def bilinearform():
+        "A container for a bilinear form."
+
+        def linear_elasticity(gradv, gradu, mu, lmbda):
+            "Linear elasticity."
+
+            de, e = sym(gradv), sym(gradu)
+            return 2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)
+
+        return [
+            linear_elasticity,
+        ]
+
+    K = bilinearform.assemble(v=field, u=field, parallel=False)
+
+
 if __name__ == "__main__":
     test_form_decorator()
+    test_linear_elastic()

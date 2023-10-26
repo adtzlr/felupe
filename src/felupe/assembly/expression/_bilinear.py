@@ -149,28 +149,28 @@ class BilinearForm:
 
         return values.sum(-2)
 
-    def assemble(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
-        r"""Return the assembled integral as sparse matrix.
+    # def assemble(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
+    #     r"""Return the assembled integral as sparse matrix.
 
-        Parameters
-        ----------
-        weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform
-        kwargs : dict, optional
-            Optional named arguments for callable weakform
-        parallel : bool, optional (default is False)
-            Flag to activate parallel threading.
-        sym : bool, optional (default is False)
-            Flag to active symmetric integration/assembly.
+    #     Parameters
+    #     ----------
+    #     weakform : callable
+    #         A callable function ``weakform(v, *args, **kwargs)``.
+    #     args : tuple, optional
+    #         Optional arguments for callable weakform
+    #     kwargs : dict, optional
+    #         Optional named arguments for callable weakform
+    #     parallel : bool, optional (default is False)
+    #         Flag to activate parallel threading.
+    #     sym : bool, optional (default is False)
+    #         Flag to active symmetric integration/assembly.
 
-        Returns
-        -------
-        values : csr_matrix
-            The assembled sparse matrix.
-        """
+    #     Returns
+    #     -------
+    #     values : csr_matrix
+    #         The assembled sparse matrix.
+    #     """
 
-        values = self.integrate(weakform, args, kwargs, parallel=parallel, sym=sym)
+    #     values = self.integrate(weakform, args, kwargs, parallel=parallel, sym=sym)
 
-        return self._form.assemble(values)
+    #     return self._form.assemble(values)

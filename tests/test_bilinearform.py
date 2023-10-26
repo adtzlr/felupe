@@ -86,13 +86,16 @@ def test_form_decorator():
     def a():
         return (a_uu, a_up, a_pp)
 
-    M = a.assemble(field, field, args=(F, p))
+    a.assemble(field, field, args=(F, p))
 
     @fe.Form(v=field, grad_v=(True, False))
     def L():
         return (lformu, lformp)
 
-    s = L.assemble(field, args=(F, p))
+    L.assemble(field, args=(F, p), parallel=False)
+    L.assemble(field, args=(F, p), parallel=True)
+    L.assemble(field, args=(F, p), parallel=False, sym=True)
+    L.assemble(field, args=(F, p), parallel=True, sym=True)
 
 
 def test_linear_elastic():

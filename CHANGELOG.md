@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add plot- and screenshot-methods to `Region` and `Scheme` (base class for quadratures).
 
+### Changed
+- Refactor the assembly-submodule. Move the weak-form expression-related classes to the `assembly.expression` submodule.
+- Move `Basis` to the new `assembly.expression` submodule.
+
+### Removed
+- Don't import `Basis` to the global namespace (not necessary as it is used only internally by `Form`).
+
 ## [7.11.0] - 2023-10-22
 
 ### Added

@@ -169,7 +169,7 @@ class BilinearFormExpression:
                 )
             )
 
-    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
+    def integrate(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
@@ -190,11 +190,11 @@ class BilinearFormExpression:
         """
 
         return [
-            form.integrate(fun, args, kwargs, parallel=parallel)
+            form.integrate(fun, args, kwargs, parallel=parallel, sym=sym)
             for form, fun in zip(self._bilinearform, weakform)
         ]
 
-    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
+    def assemble(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
         r"""Return the assembled integral as matrix.
 
         Parameters
@@ -214,6 +214,6 @@ class BilinearFormExpression:
             The assembled matrix.
         """
 
-        values = self.integrate(weakform, args, kwargs, parallel=parallel)
+        values = self.integrate(weakform, args, kwargs, parallel=parallel, sym=sym)
 
         return self._form.assemble(values)

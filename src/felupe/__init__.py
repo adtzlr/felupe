@@ -19,7 +19,7 @@ from ._field import (
     FieldsMixed,
 )
 from .assembly import IntegralForm
-from .assembly.expression import Basis, Form
+from .assembly.expression import Form
 from .constitution import (
     AreaChange,
     Hyperelastic,

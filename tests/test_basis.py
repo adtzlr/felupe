@@ -48,22 +48,22 @@ def pre_constant(dim):
 def test_basis():
     for parallel in [False, True]:
         r, u = pre(dim=3)
-        b = fe.Basis(u, parallel=parallel)
+        b = fe.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is not None
 
         r, u = pre(dim=1)
-        b = fe.Basis(u, parallel=parallel)
+        b = fe.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is not None
 
         r, u = pre_constant(dim=3)
-        b = fe.Basis(u, parallel=parallel)
+        b = fe.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is None
 
         r, u = pre_constant(dim=1)
-        b = fe.Basis(u, parallel=parallel)
+        b = fe.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is None
 

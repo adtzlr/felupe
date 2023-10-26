@@ -11,8 +11,6 @@ from . import (
     tools,
 )
 from .__about__ import __version__
-from ._assembly import Form, IntegralForm
-from ._basis import BasisMixed as Basis
 from ._field import (
     Field,
     FieldAxisymmetric,
@@ -20,6 +18,8 @@ from ._field import (
     FieldPlaneStrain,
     FieldsMixed,
 )
+from .assembly import IntegralForm
+from .assembly.expression import Form
 from .constitution import (
     AreaChange,
     Hyperelastic,

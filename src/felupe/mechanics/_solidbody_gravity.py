@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from .._assembly import IntegralForm
+from ..assembly import IntegralForm
 from ._helpers import Assemble, Results
 
 

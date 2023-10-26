@@ -18,8 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._assembly import IntegralForm
 from .._field import FieldAxisymmetric
+from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..math import ddot, det, dot, dya, transpose
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible

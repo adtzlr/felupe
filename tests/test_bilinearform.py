@@ -81,20 +81,78 @@ def pre(dim):
 def test_form_decorator():
     field = pre(dim=3)
     F, p = field.extract()
-    b = fe.Basis(field)
 
     @fe.Form(v=field, u=field, grad_v=(True, False), grad_u=(True, False))
     def a():
         return (a_uu, a_up, a_pp)
 
-    M = a.assemble(field, field, args=(F, p))
+    a.assemble(field, field, args=(F, p))
+
+    @fe.Form(v=field, u=field, grad_v=None, grad_u=None)
+    def a():
+        return (a_uu, a_up, a_pp)
+
+    a.assemble(field, field, args=(F, p))
 
     @fe.Form(v=field, grad_v=(True, False))
     def L():
         return (lformu, lformp)
 
-    s = L.assemble(field, args=(F, p))
+    L.assemble(field, args=(F, p), parallel=False)
+    L.assemble(field, args=(F, p), parallel=True)
+    L.assemble(field, args=(F, p), parallel=False, sym=True)
+    L.assemble(field, args=(F, p), parallel=True, sym=True)
+
+    @fe.Form(v=field, grad_v=None)
+    def L():
+        return (lformu, lformp)
+
+    L.integrate(field, args=(F, p), parallel=False)
+    L.integrate(field, args=(F, p), parallel=True)
+    L.integrate(field, args=(F, p), parallel=False, sym=True)
+    L.integrate(field, args=(F, p), parallel=True, sym=True)
+
+    L.assemble(field, args=(F, p), parallel=False)
+    L.assemble(field, args=(F, p), parallel=True)
+    L.assemble(field, args=(F, p), parallel=False, sym=True)
+    L.assemble(field, args=(F, p), parallel=True, sym=True)
+
+
+def test_linear_elastic():
+    mesh = fe.Cube(n=11)
+    region = fe.RegionHexahedron(mesh)
+    displacement = fe.Field(region, dim=3)
+    field = fe.FieldContainer([displacement])
+
+    from felupe.math import ddot, sym, trace
+
+    @fe.Form(
+        v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"mu": 1.0, "lmbda": 2.0}
+    )
+    def bilinearform():
+        "A container for a bilinear form."
+
+        def linear_elasticity(gradv, gradu, mu, lmbda):
+            "Linear elasticity."
+
+            de, e = sym(gradv), sym(gradu)
+            return 2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)
+
+        return [
+            linear_elasticity,
+        ]
+
+    bilinearform.integrate(v=field, u=field, parallel=False)
+    bilinearform.integrate(v=field, u=field, parallel=True)
+    bilinearform.integrate(v=field, u=field, parallel=False, sym=True)
+    bilinearform.integrate(v=field, u=field, parallel=True, sym=True)
+
+    bilinearform.assemble(v=field, u=field, parallel=False)
+    bilinearform.assemble(v=field, u=field, parallel=True)
+    bilinearform.assemble(v=field, u=field, parallel=False, sym=True)
+    bilinearform.assemble(v=field, u=field, parallel=True, sym=True)
 
 
 if __name__ == "__main__":
     test_form_decorator()
+    test_linear_elastic()

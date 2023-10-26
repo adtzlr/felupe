@@ -26,7 +26,7 @@ except ModuleNotFoundError:
 from scipy.sparse import csr_matrix as sparsematrix
 
 
-class WeakForm:
+class IntegralFormCartesian:
     r"""Single-Field Integral-Form constructed by a function result ``fun``,
     a virtual field ``v``, differential volumes ``dV`` and optionally a
     field ``u``. For both fields ``v`` and ``u`` gradients may be passed by

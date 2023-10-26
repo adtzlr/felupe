@@ -24,7 +24,7 @@ except ModuleNotFoundError:
     from numpy import einsum as einsumt
 
 
-class Basis:
+class BasisField:
     r"""A basis and its gradient built on top of a scalar- or vector-valued
     field. *Basis* refers to the trial and test field, either values or
     gradients evaluated at quadrature points. The first two indices of a basis
@@ -82,7 +82,7 @@ class Basis:
             self.grad = None
 
 
-class BasisMixed:
+class Basis:
     r"""A basis and its gradient built on top of a scalar- or vector-valued
     field container. *Basis* refers to the trial and test field, either values or
     gradients evaluated at quadrature points. The first two indices of a basis
@@ -120,7 +120,7 @@ class BasisMixed:
 
     def __init__(self, field, parallel=False):
         self.field = field
-        self.basis = [Basis(f, parallel=parallel) for f in self.field]
+        self.basis = [BasisField(f, parallel=parallel) for f in self.field]
 
     def __getitem__(self, idx):
         "Slice-based access to underlying bases."

@@ -11,7 +11,7 @@ from . import (
     tools,
 )
 from .__about__ import __version__
-from ._field import (
+from .field import (
     Field,
     FieldAxisymmetric,
     FieldContainer,

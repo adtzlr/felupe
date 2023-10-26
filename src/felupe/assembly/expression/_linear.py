@@ -37,17 +37,15 @@ class LinearForm:
         An object with basis functions (gradients) of a field.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
-
+    dx : ndarray or None, optional (default is None)
+        Array with (numerical) differential volumes.
 
     """
 
     def __init__(self, v, grad_v=False, dx=None):
         self.v = v
         self.grad_v = grad_v
-        if dx is None:
-            self.dx = v.field.region.dV
-        else:
-            self.dx = dx
+        self.dx = dx
 
         self._form = IntegralFormCartesian(
             fun=None, v=v.field, dV=self.dx, grad_v=grad_v

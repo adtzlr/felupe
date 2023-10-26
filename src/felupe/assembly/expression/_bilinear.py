@@ -41,6 +41,8 @@ class BilinearForm:
         An object with basis function (gradients) of a field.
     grad_u : bool, optional (default is False)
         Flag to use the gradient of ``u``.
+    dx : ndarray or None, optional (default is None)
+        Array with (numerical) differential volumes.
 
     """
 
@@ -49,10 +51,7 @@ class BilinearForm:
         self.grad_v = grad_v
         self.u = u
         self.grad_u = grad_u
-        if dx is None:
-            self.dx = v.field.region.dV
-        else:
-            self.dx = dx
+        self.dx = dx
 
         self._form = IntegralFormCartesian(
             None, v.field, self.dx, u.field, grad_v, grad_u

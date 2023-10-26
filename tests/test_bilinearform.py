@@ -107,6 +107,11 @@ def test_form_decorator():
     def L():
         return (lformu, lformp)
 
+    L.integrate(field, args=(F, p), parallel=False)
+    L.integrate(field, args=(F, p), parallel=True)
+    L.integrate(field, args=(F, p), parallel=False, sym=True)
+    L.integrate(field, args=(F, p), parallel=True, sym=True)
+
     L.assemble(field, args=(F, p), parallel=False)
     L.assemble(field, args=(F, p), parallel=True)
     L.assemble(field, args=(F, p), parallel=False, sym=True)
@@ -136,6 +141,11 @@ def test_linear_elastic():
         return [
             linear_elasticity,
         ]
+
+    bilinearform.integrate(v=field, u=field, parallel=False)
+    bilinearform.integrate(v=field, u=field, parallel=True)
+    bilinearform.integrate(v=field, u=field, parallel=False, sym=True)
+    bilinearform.integrate(v=field, u=field, parallel=True, sym=True)
 
     bilinearform.assemble(v=field, u=field, parallel=False)
     bilinearform.assemble(v=field, u=field, parallel=True)

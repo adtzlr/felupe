@@ -103,26 +103,26 @@ class LinearForm:
 
         return values.sum(-2)
 
-    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
-        r"""Return the assembled integral as vector.
+    # def assemble(self, weakform, args=(), kwargs={}, parallel=False):
+    #     r"""Return the assembled integral as vector.
 
-        Parameters
-        ----------
-        weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform
-        kawargs : dict, optional
-            Optional named arguments for callable weakform
-        parallel : bool, optional (default is False)
-            Flag to activate parallel threading.
+    #     Parameters
+    #     ----------
+    #     weakform : callable
+    #         A callable function ``weakform(v, *args, **kwargs)``.
+    #     args : tuple, optional
+    #         Optional arguments for callable weakform
+    #     kawargs : dict, optional
+    #         Optional named arguments for callable weakform
+    #     parallel : bool, optional (default is False)
+    #         Flag to activate parallel threading.
 
-        Returns
-        -------
-        values : csr_matrix
-            The assembled vector.
-        """
+    #     Returns
+    #     -------
+    #     values : csr_matrix
+    #         The assembled vector.
+    #     """
 
-        values = self.integrate(weakform, args, kwargs, parallel=parallel)
+    #     values = self.integrate(weakform, args, kwargs, parallel=parallel)
 
-        return self._form.assemble(values)
+    #     return self._form.assemble(values)

@@ -24,7 +24,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spsolve
 
 from .. import solve as fesolve
-from .._assembly import IntegralForm
+from ..assembly import IntegralForm
 from ..math import norm
 
 

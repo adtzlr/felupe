@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from .._assembly import IntegralForm
+from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..math import det, dot, transpose
 from ._helpers import Assemble, Evaluate, Results

@@ -23,7 +23,7 @@ from .._field._axi import FieldAxisymmetric
 from .._field._base import Field
 from .._field._planestrain import FieldPlaneStrain
 from ._axi import IntegralFormAxisymmetric
-from ._weak import WeakForm
+from ._cartesian import IntegralFormCartesian
 
 
 class IntegralForm:
@@ -41,8 +41,8 @@ class IntegralForm:
             self.nu = None
 
         IntForm = {
-            Field: WeakForm,
-            FieldPlaneStrain: WeakForm,
+            Field: IntegralFormCartesian,
+            FieldPlaneStrain: IntegralFormCartesian,
             FieldAxisymmetric: IntegralFormAxisymmetric,
         }[type(self.v[0])]
 

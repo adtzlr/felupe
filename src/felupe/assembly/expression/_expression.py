@@ -1,0 +1,218 @@
+# -*- coding: utf-8 -*-
+"""
+This file is part of FElupe.
+
+FElupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+FElupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+from ._basis import Basis
+from ._mixed import BilinearFormExpression, LinearFormExpression
+
+
+class FormExpression:
+    r"""A linear or bilinear form object based on a weak-form with
+    methods for integration and assembly of vectors / sparse matrices.
+
+    Linear Form:
+
+    ..  math::
+
+        L(v) = \int_\Omega f \cdot v \ dx
+
+    Bilinear Form:
+
+    ..  math::
+
+        a(v, u) = \int_\Omega v \cdot f \cdot u \ dx
+
+    Parameters
+    ----------
+    v : Field or FieldMixed
+        An object with interpolation or gradients of a field. May be
+        updated during integration / assembly.
+    u : Field or FieldMixed
+        An object with interpolation or gradients of a field. May be
+        updated during integration / assembly.
+    grad_v : bool, optional (default is False)
+        Flag to use the gradient of ``v``.
+    grad_u : bool, optional (default is False)
+        Flag to use the gradient of ``u``.
+    dx : ndarray or None, optional (default is None)
+        Array with (numerical) differential volumes.
+    args : tuple, optional (default is ())
+        Tuple with initial optional weakform-arguments. May be updated during
+        integration / assembly.
+    kwargs : dict, optional (default is {})
+        Dictionary with initial optional weakform-keyword-arguments. May be updated
+        during integration / assembly.
+    parallel : bool, optional (default is False)
+        Flag to activate parallel (threaded) basis evaluation.
+
+    """
+
+    def __init__(
+        self,
+        weakform,
+        v,
+        u=None,
+        grad_v=False,
+        grad_u=False,
+        dx=None,
+        args=(),
+        kwargs={},
+        parallel=False,
+    ):
+        # set attributes
+        self.form = None
+        self.grad_u = grad_u
+        self.grad_v = grad_v
+        self.dx = dx
+        self.weakform = weakform
+
+        # init underlying linear or bilinear (mixed) form
+        self._init_or_update_forms(v, u, args, kwargs, parallel)
+
+    def _init_or_update_forms(self, v, u, args, kwargs, parallel):
+        "Init or update the underlying form object."
+
+        # update args and kwargs for weakform
+        if args is not None or kwargs is not None:
+            if args is not None:
+                self.args = args
+            else:
+                self.args = ()
+
+            if kwargs is not None:
+                self.kwargs = kwargs
+            else:
+                self.kwargs = {}
+
+        # get current form type
+        if self.form is not None:
+            form_type = type(self.form)
+        else:
+            form_type = None
+
+        if v is not None:
+            # linear form
+            if u is None:
+                self.u = None
+
+                # mixed-field input
+                self.v = Basis(v, parallel=parallel)
+                form = LinearFormExpression(self.v, self.grad_v)
+
+                # evaluate weakform to list of weakforms
+                if isinstance(self.weakform, type(lambda x: x)):
+                    self.weakform = self.weakform()
+
+            else:
+                self.v = Basis(v, parallel=parallel)
+                self.u = Basis(u, parallel=parallel)
+                form = BilinearFormExpression(self.v, self.u, self.grad_v, self.grad_u)
+
+                # evaluate weakform to list of weakforms
+                if isinstance(self.weakform, type(lambda x: x)):
+                    self.weakform = self.weakform()
+
+            # check if new form type matches initial form type (update-stage)
+            if form_type is not None:
+                if form_type == type(form):
+                    self.form = form
+                else:
+                    raise TypeError("Wrong type of fields.")
+
+            # set form without a check (init-stage)
+            else:
+                self.form = form
+
+    def integrate(
+        self, v=None, u=None, args=None, kwargs=None, parallel=False, sym=False
+    ):
+        r"""Return evaluated (but not assembled) integrals.
+
+        Parameters
+        ----------
+        v : Field, FieldMixed or None, optional
+            An object with interpolation or gradients of a field as specified
+            by boolean flag ``self.grad_v`` (default is None).
+        u : Field, FieldMixed or None, optional
+            An object with interpolation or gradients of a field as specified
+            by boolean flag ``self.grad_v`` (default is None).
+        args : tuple, optional (default is ())
+            Tuple with optional weakform-arguments.
+        kwargs : dict, optional (default is {})
+            Dictionary with optional weakform-keyword-arguments.
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
+        sym : bool, optional (default is False)
+            Flag to active symmetric integration/assembly
+            for bilinear forms.
+
+        Returns
+        -------
+        values : ndarray
+            Integrated (but not assembled) vector / matrix values.
+        """
+
+        self._init_or_update_forms(v, u, args, kwargs, parallel)
+
+        kwargs = dict(parallel=parallel, sym=sym)
+
+        if self.u is None or isinstance(self.v, Basis):
+            kwargs.pop("sym")
+
+        return self.form.integrate(
+            self.weakform, args=self.args, kwargs=self.kwargs, **kwargs
+        )
+
+    def assemble(
+        self, v=None, u=None, args=None, kwargs=None, parallel=False, sym=False
+    ):
+        r"""Return the assembled integral as vector / sparse matrix.
+
+        Parameters
+        ----------
+        v : Field, FieldMixed or None, optional
+            An object with interpolation or gradients of a field as specified
+            by boolean flag ``self.grad_v`` (default is None).
+        u : Field, FieldMixed or None, optional
+            An object with interpolation or gradients of a field as specified
+            by boolean flag ``self.grad_v`` (default is None).
+        args : tuple, optional (default is ())
+            Tuple with optional weakform-arguments.
+        kwargs : dict, optional (default is {})
+            Dictionary with optional weakform-keyword-arguments.
+        parallel : bool, optional (default is False)
+            Flag to activate parallel threading.
+        sym : bool, optional (default is False)
+            Flag to active symmetric integration/assembly
+            for bilinear forms.
+
+        Returns
+        -------
+        values : csr_matrix
+            The assembled vector / sparse matrix.
+        """
+
+        self._init_or_update_forms(v, u, args, kwargs, parallel)
+
+        kwargs = dict(parallel=parallel, sym=sym)
+
+        if self.u is None or isinstance(self.u, Basis):
+            kwargs.pop("sym")
+
+        return self.form.assemble(
+            self.weakform, args=self.args, kwargs=self.kwargs, **kwargs
+        )

@@ -88,7 +88,22 @@ def test_form_decorator():
 
     a.assemble(field, field, args=(F, p))
 
+    @fe.Form(v=field, u=field, grad_v=None, grad_u=None)
+    def a():
+        return (a_uu, a_up, a_pp)
+
+    a.assemble(field, field, args=(F, p))
+
     @fe.Form(v=field, grad_v=(True, False))
+    def L():
+        return (lformu, lformp)
+
+    L.assemble(field, args=(F, p), parallel=False)
+    L.assemble(field, args=(F, p), parallel=True)
+    L.assemble(field, args=(F, p), parallel=False, sym=True)
+    L.assemble(field, args=(F, p), parallel=True, sym=True)
+
+    @fe.Form(v=field, grad_v=None)
     def L():
         return (lformu, lformp)
 

@@ -24,7 +24,7 @@ from ..tools._plot import ViewField
 
 
 class FieldContainer:
-    """A container for fields based on a list or tuple of :class:`Field`
+    """A container for fields which holds a list or a tuple of :class:`Field`
     instances."""
 
     def __init__(self, fields):

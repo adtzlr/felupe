@@ -12,7 +12,6 @@ How-To Guides
    howto/axi
    howto/solvers
    howto/composite
-   howto/forms
    howto/solid
    howto/umat
    howto/umat_hyperelasticity

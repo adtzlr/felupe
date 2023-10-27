@@ -17,9 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
 
-from ..field import FieldAxisymmetric
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
+from ..field import FieldAxisymmetric
 from ..math import det
 
 

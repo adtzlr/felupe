@@ -18,9 +18,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..field import FieldAxisymmetric
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
+from ..field import FieldAxisymmetric
 from ..math import ddot, det, dot, dya, transpose
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 
@@ -56,77 +56,77 @@ class SolidBodyNearlyIncompressible:
 
     **Hu-Washizu Three-Field-Variation Principle**
 
-    The Three-Field-Variation :math:`(\boldsymbol{u},p,J)` leads to a linearized 
-    equation system with nine sub block-matrices. Due to the fact that the equation 
-    system is derived by a potential, the matrix is symmetric and hence, only six 
-    independent sub-matrices have to be evaluated. Furthermore, by the application of 
+    The Three-Field-Variation :math:`(\boldsymbol{u},p,J)` leads to a linearized
+    equation system with nine sub block-matrices. Due to the fact that the equation
+    system is derived by a potential, the matrix is symmetric and hence, only six
+    independent sub-matrices have to be evaluated. Furthermore, by the application of
     the mean dilatation technique, two of the remaining six sub-matrices are identified
-    to be zero. That means four sub-matrices are left to be evaluated, where two 
+    to be zero. That means four sub-matrices are left to be evaluated, where two
     non-zero sub-matrices are scalar-valued entries.
 
     ..  math::
 
-        \begin{bmatrix} 
+        \begin{bmatrix}
             \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
             \boldsymbol{b}^T &             0  &            -c  \\
             \boldsymbol{0}^T &            -c  &             d
-        \end{bmatrix} \cdot \begin{bmatrix} 
+        \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
                         y  \\
-                        z 
-        \end{bmatrix} = \begin{bmatrix} 
+                        z
+        \end{bmatrix} = \begin{bmatrix}
             \boldsymbol{u} \\
                         v  \\
-                        w 
+                        w
         \end{bmatrix}
 
     An alternative representation of the equation system, only dependent on the primary
-    unknowns :math:`\boldsymbol{u}` is carried out. To do so, the second line is 
+    unknowns :math:`\boldsymbol{u}` is carried out. To do so, the second line is
     multiplied by :math:`\frac{d}{c}`.
 
     ..  math::
 
-        \begin{bmatrix} 
+        \begin{bmatrix}
                         \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
             \frac{d}{c}~\boldsymbol{b}^T &             0  &            -d  \\
                         \boldsymbol{0}^T &            -c  &             d
-        \end{bmatrix} \cdot \begin{bmatrix} 
+        \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
                         y  \\
-                        z 
-        \end{bmatrix} = \begin{bmatrix} 
+                        z
+        \end{bmatrix} = \begin{bmatrix}
             \boldsymbol{u} \\
             \frac{d}{c}~v  \\
-            -w 
+            -w
         \end{bmatrix}
 
-    Now, equations two and three are summed up. This eliminates one of the three 
+    Now, equations two and three are summed up. This eliminates one of the three
     unknowns.
 
     ..  math::
 
-        \begin{bmatrix} 
+        \begin{bmatrix}
                         \boldsymbol{A}   & \boldsymbol{b} \\
             \frac{d}{c}~\boldsymbol{b}^T &    -c
-        \end{bmatrix} \cdot \begin{bmatrix} 
+        \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
                 y
-        \end{bmatrix} = \begin{bmatrix} 
+        \end{bmatrix} = \begin{bmatrix}
             \boldsymbol{u} \\
             \frac{d}{c}~v + w
         \end{bmatrix}
 
-    Next, the second equation is left-multiplied by :math:`\frac{1}{c}~\boldsymbol{b}` 
+    Next, the second equation is left-multiplied by :math:`\frac{1}{c}~\boldsymbol{b}`
     and both equations are summed up again.
 
     ..  math::
 
-        \begin{bmatrix} 
+        \begin{bmatrix}
             \boldsymbol{A} + \frac{d}{c^2}~\boldsymbol{b} \otimes \boldsymbol{b}
-        \end{bmatrix} \cdot \begin{bmatrix} 
+        \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x}
-        \end{bmatrix} = \begin{bmatrix} 
-            \boldsymbol{u} + \frac{d}{c^2}~\boldsymbol{b}~v + 
+        \end{bmatrix} = \begin{bmatrix}
+            \boldsymbol{u} + \frac{d}{c^2}~\boldsymbol{b}~v +
                 \frac{1}{c}~\boldsymbol{b}~w
         \end{bmatrix}
 
@@ -144,12 +144,12 @@ class SolidBodyNearlyIncompressible:
 
     ..  math::
 
-        A_{aibk} &= \int_V \frac{\partial h_a}{\partial X_J}  \left( 
-            \frac{\partial^2 \overset{\wedge}{\psi}}{\partial F_{iJ} \partial F_{kL}} + 
-            p \frac{\partial^2 J}{\partial F_{iJ} \partial F_{kL}} \right) 
+        A_{aibk} &= \int_V \frac{\partial h_a}{\partial X_J}  \left(
+            \frac{\partial^2 \overset{\wedge}{\psi}}{\partial F_{iJ} \partial F_{kL}} +
+            p \frac{\partial^2 J}{\partial F_{iJ} \partial F_{kL}} \right)
             \frac{\partial h_b}{\partial X_L} \ dV
 
-        b_{ai} &= \int_V \frac{\partial h_a}{\partial X_J} 
+        b_{ai} &= \int_V \frac{\partial h_a}{\partial X_J}
             \frac{\partial J}{\partial F_{iJ}} \ dV
 
         c &= \int_V \ dV = V
@@ -171,8 +171,8 @@ class SolidBodyNearlyIncompressible:
 
     ..  math::
 
-        u_{ai} (= -r_{ai}) &= -\int_V \frac{\partial h_a}{\partial X_J} \left( 
-            \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} + 
+        u_{ai} (= -r_{ai}) &= -\int_V \frac{\partial h_a}{\partial X_J} \left(
+            \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} +
             p \frac{\partial J}{\partial F_{iJ}} \right) \ dV
 
         v &= -\int_V (J - \bar{J}) \ dV = \bar{J} V - v

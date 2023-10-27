@@ -11,13 +11,6 @@ from . import (
     tools,
 )
 from .__about__ import __version__
-from .field import (
-    Field,
-    FieldAxisymmetric,
-    FieldContainer,
-    FieldPlaneStrain,
-    FieldsMixed,
-)
 from .assembly import IntegralForm
 from .assembly.expression import Form
 from .constitution import (
@@ -68,6 +61,13 @@ from .element import (
     Triangle,
     TriangleMINI,
     TriQuadraticHexahedron,
+)
+from .field import (
+    Field,
+    FieldAxisymmetric,
+    FieldContainer,
+    FieldPlaneStrain,
+    FieldsMixed,
 )
 from .mechanics import (
     CharacteristicCurve,

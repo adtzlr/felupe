@@ -25,6 +25,7 @@ Define weak-form expressions on-the-fly for flexible and general form expression
 .. autosummary::
 
    Form
+   expression.FormExpressionDecorator
 
 **Detailed API Reference**
 
@@ -34,3 +35,5 @@ Define weak-form expressions on-the-fly for flexible and general form expression
    :inherited-members:
 
 .. autofunction:: felupe.Form
+
+.. autofunction:: felupe.expression.FormExpressionDecorator

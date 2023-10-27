@@ -15,7 +15,6 @@ FElupe consists of several (sub-) modules. Relevant functions and classes are av
    felupe/quadrature
    felupe/region
    felupe/field
-   felupe/basis
    felupe/constitution
    felupe/assembly
    felupe/dof

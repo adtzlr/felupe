@@ -7,13 +7,13 @@ Created on Tue Aug  9 01:40:56 2022
 
 import numpy as np
 
-import felupe as fe
+import felupe as fem
 
 
 def test_composite():
     n = 5
-    mesh = fe.Cube(n=n)
-    region = fe.RegionHexahedron(mesh)
+    mesh = fem.Cube(n=n)
+    region = fem.RegionHexahedron(mesh)
 
     points = np.arange(mesh.npoints)[
         np.logical_or.reduce(
@@ -35,43 +35,43 @@ def test_composite():
     mesh_reinforced = mesh.copy()
     mesh_reinforced.update(cells=mesh_reinforced.cells[cells])
 
-    region_rubber = fe.RegionHexahedron(mesh_rubber)
-    field_rubber = fe.FieldsMixed(
+    region_rubber = fem.RegionHexahedron(mesh_rubber)
+    field_rubber = fem.FieldsMixed(
         region_rubber,
         n=3,
         offset=0,
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )
 
-    region_reinforced = fe.RegionHexahedron(mesh_reinforced)
-    field_reinforced = fe.FieldsMixed(
+    region_reinforced = fem.RegionHexahedron(mesh_reinforced)
+    field_reinforced = fem.FieldsMixed(
         region_reinforced,
         n=3,
         offset=mesh_rubber.ncells,
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )
 
-    field = fe.FieldsMixed(
+    field = fem.FieldsMixed(
         region, n=3, npoints=mesh_rubber.ncells + mesh_reinforced.ncells
     )
 
-    boundaries, loadcase = fe.dof.uniaxial(field, move=-0.1)
+    boundaries, loadcase = fem.dof.uniaxial(field, move=-0.1)
 
-    nh1 = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=5000))
-    nh2 = fe.ThreeFieldVariation(fe.NeoHooke(mu=5000, bulk=5000))
+    nh1 = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
+    nh2 = fem.ThreeFieldVariation(fem.NeoHooke(mu=5000, bulk=5000))
 
-    rubber = fe.SolidBody(nh1, field_rubber)
-    reinforced = fe.SolidBody(nh2, field_reinforced)
+    rubber = fem.SolidBody(nh1, field_rubber)
+    reinforced = fem.SolidBody(nh2, field_reinforced)
 
-    res = fe.newtonrhapson(field, items=[rubber, reinforced], **loadcase)
+    res = fem.newtonrhapson(field, items=[rubber, reinforced], **loadcase)
 
-    fe.save(region, res.x)
+    fem.save(region, res.x)
 
 
 def test_composite_planestrain():
     n = 5
-    mesh = fe.Rectangle(n=n)
-    region = fe.RegionQuad(mesh)
+    mesh = fem.Rectangle(n=n)
+    region = fem.RegionQuad(mesh)
 
     points = np.arange(mesh.npoints)[
         np.logical_or.reduce(
@@ -93,8 +93,8 @@ def test_composite_planestrain():
     mesh_reinforced = mesh.copy()
     mesh_reinforced.update(cells=mesh_reinforced.cells[cells])
 
-    region_rubber = fe.RegionQuad(mesh_rubber)
-    field_rubber = fe.FieldsMixed(
+    region_rubber = fem.RegionQuad(mesh_rubber)
+    field_rubber = fem.FieldsMixed(
         region_rubber,
         n=3,
         offset=0,
@@ -102,8 +102,8 @@ def test_composite_planestrain():
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )
 
-    region_reinforced = fe.RegionQuad(mesh_reinforced)
-    field_reinforced = fe.FieldsMixed(
+    region_reinforced = fem.RegionQuad(mesh_reinforced)
+    field_reinforced = fem.FieldsMixed(
         region_reinforced,
         n=3,
         offset=mesh_rubber.ncells,
@@ -111,24 +111,24 @@ def test_composite_planestrain():
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )
 
-    field = fe.FieldsMixed(
+    field = fem.FieldsMixed(
         region,
         n=3,
         planestrain=True,
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )
 
-    boundaries, loadcase = fe.dof.uniaxial(field, move=-0.1)
+    boundaries, loadcase = fem.dof.uniaxial(field, move=-0.1)
 
-    nh1 = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=5000))
-    nh2 = fe.ThreeFieldVariation(fe.NeoHooke(mu=5000, bulk=5000))
+    nh1 = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
+    nh2 = fem.ThreeFieldVariation(fem.NeoHooke(mu=5000, bulk=5000))
 
-    rubber = fe.SolidBody(nh1, field_rubber)
-    reinforced = fe.SolidBody(nh2, field_reinforced)
+    rubber = fem.SolidBody(nh1, field_rubber)
+    reinforced = fem.SolidBody(nh2, field_reinforced)
 
-    res = fe.newtonrhapson(field, items=[rubber, reinforced], **loadcase)
+    res = fem.newtonrhapson(field, items=[rubber, reinforced], **loadcase)
 
-    fe.save(region, res.x)
+    fem.save(region, res.x)
 
 
 if __name__ == "__main__":

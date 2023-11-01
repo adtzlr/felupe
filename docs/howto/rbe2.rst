@@ -17,7 +17,7 @@ This How-To demonstrates the usage of multi-point constraints (also called MPC o
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
 
-An instance of :class:`felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`felupe.MultiPointConstraint.assemble.vector` and :meth:`felupe.MultiPointConstraint.assemble.matrix`.
+An instance of :class:`fem.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`fem.MultiPointConstraint.assemble.vector` and :meth:`fem.MultiPointConstraint.assemble.matrix`.
 
 ..  code-block:: python
 

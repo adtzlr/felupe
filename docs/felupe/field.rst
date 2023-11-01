@@ -25,27 +25,27 @@ Available kinds of fields:
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.FieldsMixed
+.. autoclass:: fem.FieldsMixed
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.FieldContainer
+.. autoclass:: fem.FieldContainer
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.Field
+.. autoclass:: fem.Field
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.FieldAxisymmetric
+.. autoclass:: fem.FieldAxisymmetric
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.FieldPlaneStrain
+.. autoclass:: fem.FieldPlaneStrain
    :members:
    :undoc-members:
    :inherited-members:

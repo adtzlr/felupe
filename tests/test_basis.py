@@ -28,42 +28,42 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def pre(dim):
-    m = fe.Cube(n=3)
-    r = fe.RegionHexahedron(m)
-    u = fe.FieldContainer([fe.Field(r, dim=dim)])
+    m = fem.Cube(n=3)
+    r = fem.RegionHexahedron(m)
+    u = fem.FieldContainer([fem.Field(r, dim=dim)])
     return r, u
 
 
 def pre_constant(dim):
-    m = fe.Cube(n=3)
-    r = fe.RegionConstantHexahedron(m)
-    u = fe.FieldContainer([fe.Field(r, dim=dim)])
+    m = fem.Cube(n=3)
+    r = fem.RegionConstantHexahedron(m)
+    u = fem.FieldContainer([fem.Field(r, dim=dim)])
     return r, u
 
 
 def test_basis():
     for parallel in [False, True]:
         r, u = pre(dim=3)
-        b = fe.assembly.expression.Basis(u, parallel=parallel)
+        b = fem.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is not None
 
         r, u = pre(dim=1)
-        b = fe.assembly.expression.Basis(u, parallel=parallel)
+        b = fem.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is not None
 
         r, u = pre_constant(dim=3)
-        b = fe.assembly.expression.Basis(u, parallel=parallel)
+        b = fem.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is None
 
         r, u = pre_constant(dim=1)
-        b = fe.assembly.expression.Basis(u, parallel=parallel)
+        b = fem.assembly.expression.Basis(u, parallel=parallel)
 
         assert b[0].grad is None
 

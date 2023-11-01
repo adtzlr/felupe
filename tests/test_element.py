@@ -27,11 +27,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def test_line2():
-    line2 = fe.element.Line()
+    line2 = fem.element.Line()
 
     r = [-1]
 
@@ -45,7 +45,7 @@ def test_line2():
 
 
 def test_quad0():
-    quad0 = fe.element.ConstantQuad()
+    quad0 = fem.element.ConstantQuad()
 
     r = [-1, -1]
 
@@ -59,7 +59,7 @@ def test_quad0():
 
 
 def test_quad4():
-    quad4 = fe.element.Quad()
+    quad4 = fem.element.Quad()
 
     r = [-1, -1]
 
@@ -75,7 +75,7 @@ def test_quad4():
 
 
 def test_quad8():
-    quad8 = fe.element.QuadraticQuad()
+    quad8 = fem.element.QuadraticQuad()
 
     r = [-1, -1]
 
@@ -89,7 +89,7 @@ def test_quad8():
 
 
 def test_quad9():
-    quad9 = fe.element.BiQuadraticQuad()
+    quad9 = fem.element.BiQuadraticQuad()
 
     r = [-1, -1]
 
@@ -103,7 +103,7 @@ def test_quad9():
 
 
 def test_hex0():
-    hex0 = fe.element.ConstantHexahedron()
+    hex0 = fem.element.ConstantHexahedron()
 
     r = [-1, -1, -1]
 
@@ -117,7 +117,7 @@ def test_hex0():
 
 
 def test_hex8():
-    hex8 = fe.element.Hexahedron()
+    hex8 = fem.element.Hexahedron()
 
     r = [-1, -1, -1]
 
@@ -131,7 +131,7 @@ def test_hex8():
 
 
 def test_hex20():
-    hex20 = fe.element.QuadraticHexahedron()
+    hex20 = fem.element.QuadraticHexahedron()
 
     r = [-1, -1, -1]
 
@@ -147,7 +147,7 @@ def test_hex20():
 
 
 def test_hex27():
-    hex27 = fe.element.TriQuadraticHexahedron()
+    hex27 = fem.element.TriQuadraticHexahedron()
 
     r = [-1, -1, -1]
 
@@ -163,7 +163,7 @@ def test_hex27():
 
 
 def test_tri3():
-    tri3 = fe.element.Triangle()
+    tri3 = fem.element.Triangle()
 
     r = [0, 0]
 
@@ -177,7 +177,7 @@ def test_tri3():
 
 
 def test_tri6():
-    tri6 = fe.element.QuadraticTriangle()
+    tri6 = fem.element.QuadraticTriangle()
 
     r = [0, 0]
 
@@ -191,7 +191,7 @@ def test_tri6():
 
 
 def test_tri_mini():
-    trim = fe.element.TriangleMINI()
+    trim = fem.element.TriangleMINI()
 
     r = [0, 0]
 
@@ -206,7 +206,7 @@ def test_tri_mini():
 
 
 def test_tet4():
-    tet4 = fe.element.Tetra()
+    tet4 = fem.element.Tetra()
 
     r = [0, 0, 0]
 
@@ -220,7 +220,7 @@ def test_tet4():
 
 
 def test_tet10():
-    tet10 = fe.element.QuadraticTetra()
+    tet10 = fem.element.QuadraticTetra()
 
     r = [0, 0, 0]
 
@@ -234,7 +234,7 @@ def test_tet10():
 
 
 def test_tet_mini():
-    tetm = fe.element.TetraMINI()
+    tetm = fem.element.TetraMINI()
 
     r = [0, 0, 0]
 
@@ -249,8 +249,8 @@ def test_tet_mini():
 
 
 def test_aol():
-    aol32 = fe.element.ArbitraryOrderLagrange(order=3, dim=2)
-    aol23 = fe.element.ArbitraryOrderLagrange(order=2, dim=3)
+    aol32 = fem.element.ArbitraryOrderLagrange(order=3, dim=2)
+    aol23 = fem.element.ArbitraryOrderLagrange(order=2, dim=3)
 
     r = [-1, -1]
 

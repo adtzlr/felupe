@@ -27,7 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import pytest
 
-import felupe as fe
+import felupe as fem
 from felupe.math import ddot, dot, dya
 
 
@@ -68,12 +68,12 @@ def a_pp(q, r, F, p):
 
 
 def pre(dim):
-    mesh = fe.Cube(n=3)
-    region = fe.RegionHexahedron(mesh)
-    region0 = fe.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
-    u = fe.Field(region, dim=3)
-    p = fe.Field(region0)
-    up = fe.FieldContainer([u, p])
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    region0 = fem.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
+    u = fem.Field(region, dim=3)
+    p = fem.Field(region0)
+    up = fem.FieldContainer([u, p])
 
     return up
 
@@ -82,19 +82,19 @@ def test_form_decorator():
     field = pre(dim=3)
     F, p = field.extract()
 
-    @fe.Form(v=field, u=field, grad_v=(True, False), grad_u=(True, False))
+    @fem.Form(v=field, u=field, grad_v=(True, False), grad_u=(True, False))
     def a():
         return (a_uu, a_up, a_pp)
 
     a.assemble(field, field, args=(F, p))
 
-    @fe.Form(v=field, u=field, grad_v=None, grad_u=None)
+    @fem.Form(v=field, u=field, grad_v=None, grad_u=None)
     def a():
         return (a_uu, a_up, a_pp)
 
     a.assemble(field, field, args=(F, p))
 
-    @fe.Form(v=field, grad_v=(True, False))
+    @fem.Form(v=field, grad_v=(True, False))
     def L():
         return (lformu, lformp)
 
@@ -103,7 +103,7 @@ def test_form_decorator():
     L.assemble(field, args=(F, p), parallel=False, sym=True)
     L.assemble(field, args=(F, p), parallel=True, sym=True)
 
-    @fe.Form(v=field, grad_v=None)
+    @fem.Form(v=field, grad_v=None)
     def L():
         return (lformu, lformp)
 
@@ -119,14 +119,14 @@ def test_form_decorator():
 
 
 def test_linear_elastic():
-    mesh = fe.Cube(n=11)
-    region = fe.RegionHexahedron(mesh)
-    displacement = fe.Field(region, dim=3)
-    field = fe.FieldContainer([displacement])
+    mesh = fem.Cube(n=11)
+    region = fem.RegionHexahedron(mesh)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
 
     from felupe.math import ddot, sym, trace
 
-    @fe.Form(
+    @fem.Form(
         v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"mu": 1.0, "lmbda": 2.0}
     )
     def bilinearform():

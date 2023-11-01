@@ -23,22 +23,22 @@ This module contains quadrature (numeric integration) schemes for different fini
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.GaussLegendre
+.. autoclass:: fem.GaussLegendre
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.GaussLegendreBoundary
+.. autoclass:: fem.GaussLegendreBoundary
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.quadrature.Triangle
+.. autoclass:: fem.quadrature.Triangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.quadrature.Tetrahedron
+.. autoclass:: fem.quadrature.Tetrahedron
    :members:
    :undoc-members:
    :show-inheritance:

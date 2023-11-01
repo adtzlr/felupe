@@ -29,111 +29,111 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def pre1d():
-    m = fe.mesh.Line()
-    e = fe.element.Line()
-    q = fe.quadrature.GaussLegendre(1, 1)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=1)
-    v = fe.FieldContainer([u])
+    m = fem.mesh.Line()
+    e = fem.element.Line()
+    q = fem.quadrature.GaussLegendre(1, 1)
+    r = fem.Region(m, e, q)
+    u = fem.Field(r, dim=1)
+    v = fem.FieldContainer([u])
     return v
 
 
 def pre2d():
-    m = fe.mesh.Rectangle()
-    e = fe.element.Quad()
-    q = fe.quadrature.GaussLegendre(1, 2)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=2)
-    v = fe.FieldContainer([u])
+    m = fem.mesh.Rectangle()
+    e = fem.element.Quad()
+    q = fem.quadrature.GaussLegendre(1, 2)
+    r = fem.Region(m, e, q)
+    u = fem.Field(r, dim=2)
+    v = fem.FieldContainer([u])
     return v
 
 
 def pre3d():
-    m = fe.mesh.Cube()
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=3)
-    v = fe.FieldContainer([u])
+    m = fem.mesh.Cube()
+    e = fem.element.Hexahedron()
+    q = fem.quadrature.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
+    u = fem.Field(r, dim=3)
+    v = fem.FieldContainer([u])
     return v
 
 
 def test_boundary():
     u = pre3d()
-    bounds = {"boundary-label": fe.Boundary(u[0])}
+    bounds = {"boundary-label": fem.Boundary(u[0])}
 
-    v = fe.dof.apply(u, bounds, dof0=None)
+    v = fem.dof.apply(u, bounds, dof0=None)
     assert np.allclose(u[0].values.ravel(), v)
 
     mask = np.ones(u.region.mesh.npoints, dtype=bool)
-    bounds = {"boundary-label": fe.Boundary(u[0], mask=mask)}
+    bounds = {"boundary-label": fem.Boundary(u[0], mask=mask)}
 
-    v = fe.dof.apply(u, bounds, dof0=None)
+    v = fem.dof.apply(u, bounds, dof0=None)
     assert np.allclose(u[0].values.ravel(), v)
 
 
 def test_loadcase():
-    ux = fe.dof.uniaxial(pre1d())
+    ux = fem.dof.uniaxial(pre1d())
     assert len(ux) == 2
 
     for u in [pre2d(), pre3d()]:
-        v = fe.FieldContainer([u[0], deepcopy(u[0])])
+        v = fem.FieldContainer([u[0], deepcopy(u[0])])
 
-        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=False, sym=True)
+        ux = fem.dof.uniaxial(u, right=1.0, move=0.2, clamped=False, sym=True)
         assert len(ux) == 2
 
-        ux = fe.dof.uniaxial(u, right=1.0, move=0.2, clamped=True, sym=False)
+        ux = fem.dof.uniaxial(u, right=1.0, move=0.2, clamped=True, sym=False)
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        ux = fe.dof.uniaxial(
+        ux = fem.dof.uniaxial(
             u, right=1.0, move=0.2, clamped=True, axis=1, sym=(False, True, False)
         )
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        ux = fe.dof.uniaxial(
+        ux = fem.dof.uniaxial(
             u, right=1.0, move=0.2, clamped=True, axis=1, sym=(True, False, True)
         )
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        ux = fe.dof.uniaxial(u, right=None, move=0.2, clamped=True)
+        ux = fem.dof.uniaxial(u, right=None, move=0.2, clamped=True)
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        bx = fe.dof.biaxial(
+        bx = fem.dof.biaxial(
             u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(False, False)
         )
         assert len(bx) == 2
 
-        bx = fe.dof.biaxial(
+        bx = fem.dof.biaxial(
             u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(True, True), sym=False
         )
         assert len(bx) == 2
         assert "left-0" in bx[0]
 
-        bx = fe.dof.biaxial(
+        bx = fem.dof.biaxial(
             u, rights=(None, None), moves=(0.2, 0.2), clampes=(True, True)
         )
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
-        bx = fe.dof.biaxial(
+        bx = fem.dof.biaxial(
             v, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(True, True)
         )
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
-        sh = fe.dof.shear(u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True)
+        sh = fem.dof.shear(u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True)
         assert len(sh) == 2
         assert "top" in sh[0]
 
-        sh = fe.dof.shear(v, bottom=None, top=None, moves=(0.2, 0, 0), sym=False)
+        sh = fem.dof.shear(v, bottom=None, top=None, moves=(0.2, 0, 0), sym=False)
         assert len(sh) == 2
         assert "top" in sh[0]
 

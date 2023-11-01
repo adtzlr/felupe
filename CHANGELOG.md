@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Refactor the assembly-submodule. Move the weak-form expression-related classes to the `assembly.expression` submodule.
 - Move `Basis` to the new `assembly.expression` submodule.
 - Make the `field`-submodule public.
+- Always `import felupe as fem` in docs and tests.
 
 ### Removed
 - Don't import `Basis` to the global namespace (not necessary as it is used only internally by the weak-`Form` expression decorator).

@@ -27,33 +27,33 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def pre(sym, add_identity, add_random=False):
-    m = fe.mesh.Cube()
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=3)
+    m = fem.mesh.Cube()
+    e = fem.element.Hexahedron()
+    q = fem.quadrature.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
+    u = fem.Field(r, dim=3)
 
     if add_random:
         np.random.seed(55601)
         u.values += np.random.rand(*u.values.shape) / 20
 
-    v = fe.FieldContainer([u])
+    v = fem.FieldContainer([u])
     return r, v.extract(grad=True, sym=sym, add_identity=add_identity)
 
 
 def pre_mixed(sym, add_identity):
-    m = fe.mesh.Cube()
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=3)
-    v = fe.Field(r, dim=1)
-    z = fe.Field(r, dim=1, values=1)
-    w = fe.FieldContainer([u, v, z])
+    m = fem.mesh.Cube()
+    e = fem.element.Hexahedron()
+    q = fem.quadrature.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
+    u = fem.Field(r, dim=3)
+    v = fem.Field(r, dim=1)
+    z = fem.Field(r, dim=1, values=1)
+    w = fem.FieldContainer([u, v, z])
     return r, w.extract(grad=True, sym=sym, add_identity=add_identity), m
 
 
@@ -62,8 +62,8 @@ def test_nh():
 
     for parallel in [False, True]:
         for nh in [
-            fe.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel),
-            fe.constitution.LinearElasticLargeStrain(E=1.0, nu=0.3, parallel=parallel),
+            fem.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel),
+            fem.constitution.LinearElasticLargeStrain(E=1.0, nu=0.3, parallel=parallel),
         ]:
             W = nh.function(F)
             P = nh.gradient(F)[:-1]
@@ -81,7 +81,7 @@ def test_nh():
             assert P[0].shape == (3, 3, *F[0].shape[-2:])
             assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
-            nh = fe.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
+            nh = fem.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
 
             W = nh.function(F, mu=2.0)
             P = nh.gradient(F, mu=2.0)[:-1]
@@ -93,7 +93,7 @@ def test_nh():
 
             assert np.allclose(P, 0)
 
-            nh = fe.constitution.NeoHooke(mu=1.0, parallel=parallel)
+            nh = fem.constitution.NeoHooke(mu=1.0, parallel=parallel)
 
             W = nh.function(F)
             P = nh.gradient(F)[:-1]
@@ -111,9 +111,9 @@ def test_linear():
     check_dsde = []
 
     for Material in [
-        (fe.constitution.LinearElastic, {}),
-        (fe.constitution.LinearElasticTensorNotation, dict(parallel=False)),
-        (fe.constitution.LinearElasticTensorNotation, dict(parallel=True)),
+        (fem.constitution.LinearElastic, {}),
+        (fem.constitution.LinearElasticTensorNotation, dict(parallel=False)),
+        (fem.constitution.LinearElasticTensorNotation, dict(parallel=True)),
     ]:
         LinearElastic, kwargs = Material
 
@@ -149,7 +149,7 @@ def test_linear_planestress():
     r, F = pre(sym=False, add_identity=True)
     F = [F[0][:2][:, :2]]
 
-    le = fe.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
+    le = fem.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
     stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)
@@ -168,7 +168,7 @@ def test_linear_planestress():
     assert stress_full[0].shape == (3, 3, *F[0].shape[-2:])
     assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
-    le = fe.constitution.LinearElasticPlaneStress(E=None, nu=0.3)
+    le = fem.constitution.LinearElasticPlaneStress(E=None, nu=0.3)
     stress = le.gradient(F, E=2.0)[:-1]
     stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
     dsde = le.hessian(F, E=2.0)
@@ -184,7 +184,7 @@ def test_linear_planestrain():
     r, F = pre(sym=False, add_identity=True)
     F = [F[0][:2][:, :2]]
 
-    le = fe.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
+    le = fem.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
     stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)
@@ -196,8 +196,8 @@ def test_linear_planestrain():
     assert stress_full[0].shape == (3, 3, *F[0].shape[-2:])
     assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
-    le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=None)
-    le = fe.constitution.LinearElasticPlaneStrain(E=None, nu=0.3)
+    le = fem.constitution.LinearElasticPlaneStrain(E=None, nu=None)
+    le = fem.constitution.LinearElasticPlaneStrain(E=None, nu=0.3)
     stress = le.gradient(F, E=2.0)[:-1]
     stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
     dsde = le.hessian(F, E=2.0)
@@ -215,9 +215,9 @@ def test_kinematics():
     N = F[0][:, 0]
 
     for parallel in [False, True]:
-        lc = fe.constitution.LineChange(parallel=parallel)
-        ac = fe.constitution.AreaChange(parallel=parallel)
-        vc = fe.constitution.VolumeChange(parallel=parallel)
+        lc = fem.constitution.LineChange(parallel=parallel)
+        ac = fem.constitution.AreaChange(parallel=parallel)
+        vc = fem.constitution.VolumeChange(parallel=parallel)
 
         xf = lc.function(F)
         xg = lc.gradient(F)
@@ -286,7 +286,7 @@ def test_umat():
 
         return [dsde]
 
-    linear_elastic = fe.Material(stress, elasticity, mu=1, lmbda=2)
+    linear_elastic = fem.Material(stress, elasticity, mu=1, lmbda=2)
 
     s, statevars_new = linear_elastic.gradient([F, None])
     dsde = linear_elastic.hessian([F, None])
@@ -303,26 +303,26 @@ def test_umat_hyperelastic():
 
     for model, kwargs in [
         (neo_hooke, {"mu": 1}),
-        (fe.constitution.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}),
-        (fe.constitution.neo_hooke, {"mu": 1}),
-        (fe.constitution.mooney_rivlin, {"C10": 0.3, "C01": 0.8}),
-        (fe.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}),
+        (fem.constitution.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}),
+        (fem.constitution.neo_hooke, {"mu": 1}),
+        (fem.constitution.mooney_rivlin, {"C10": 0.3, "C01": 0.8}),
+        (fem.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}),
         (
-            fe.constitution.third_order_deformation,
+            fem.constitution.third_order_deformation,
             {"C10": 0.5, "C01": 0.1, "C11": 0.01, "C20": -0.1, "C30": 0.02},
         ),
-        (fe.constitution.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}),
-        (fe.constitution.arruda_boyce, {"C1": 1.0, "limit": 3.2}),
+        (fem.constitution.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}),
+        (fem.constitution.arruda_boyce, {"C1": 1.0, "limit": 3.2}),
         (
-            fe.constitution.extended_tube,
+            fem.constitution.extended_tube,
             {"Gc": 0.1867, "Ge": 0.2169, "beta": 0.2, "delta": 0.09693},
         ),
         (
-            fe.constitution.van_der_waals,
+            fem.constitution.van_der_waals,
             {"mu": 1.0, "beta": 0.1, "a": 0.5, "limit": 5.0},
         ),
     ]:
-        umat = fe.Hyperelastic(model, **kwargs)
+        umat = fem.Hyperelastic(model, **kwargs)
 
         s, statevars_new = umat.gradient([F, None])
         dsde = umat.hessian([F, None])
@@ -343,12 +343,12 @@ def test_umat_hyperelastic2():
         return mu * F @ tm.special.dev(Cu) @ tm.linalg.inv(C)
 
     kwargs = {"mu": 1}
-    umat = fe.MaterialAD(neo_hooke, **kwargs)
+    umat = fem.MaterialAD(neo_hooke, **kwargs)
 
     s, statevars_new = umat.gradient([F, None])
     dsde = umat.hessian([F, None])
 
-    umat = fe.Hyperelastic(fe.constitution.neo_hooke, **kwargs)
+    umat = fem.Hyperelastic(fem.constitution.neo_hooke, **kwargs)
 
     s2, statevars_new = umat.gradient([F, None])
     dsde2 = umat.hessian([F, None])
@@ -375,14 +375,14 @@ def test_umat_viscoelastic():
         return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
 
     kwargs = {"mu": 1, "eta": 1, "dtime": 1}
-    umat = fe.Hyperelastic(viscoelastic, nstatevars=6, **kwargs)
+    umat = fem.Hyperelastic(viscoelastic, nstatevars=6, **kwargs)
 
     statevars = np.zeros((6, *F.shape[-2:]))
     s, statevars_new = umat.gradient([F, statevars])
     dsde = umat.hessian([F, statevars])
 
-    umat = fe.Hyperelastic(
-        fe.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
+    umat = fem.Hyperelastic(
+        fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
 
     s2, statevars_new = umat.gradient([F, statevars])
@@ -411,14 +411,14 @@ def test_umat_viscoelastic2():
         return F @ S, tm.special.triu_1d(Ci)
 
     kwargs = {"mu": 1, "eta": 1, "dtime": 1}
-    umat = fe.MaterialAD(viscoelastic, nstatevars=6, **kwargs)
+    umat = fem.MaterialAD(viscoelastic, nstatevars=6, **kwargs)
 
     statevars = np.zeros((6, *F.shape[-2:]))
     s, statevars_new = umat.gradient([F, statevars])
     dsde = umat.hessian([F, statevars])
 
-    umat = fe.Hyperelastic(
-        fe.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
+    umat = fem.Hyperelastic(
+        fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
 
     s2, statevars_new = umat.gradient([F, statevars])
@@ -433,8 +433,8 @@ def test_umat_strain():
     F = x[0]
     statevars = np.zeros((18, *F.shape[-2:]))
 
-    umat = fe.MaterialStrain(
-        material=fe.constitution.linear_elastic,
+    umat = fem.MaterialStrain(
+        material=fem.constitution.linear_elastic,
         λ=1,
         μ=1,
     )
@@ -449,8 +449,8 @@ def test_umat_strain_plasticity():
 
     statevars = np.ones((28, *F.shape[-2:]))
 
-    umat = fe.MaterialStrain(
-        material=fe.constitution.linear_elastic_plastic_isotropic_hardening,
+    umat = fem.MaterialStrain(
+        material=fem.constitution.linear_elastic_plastic_isotropic_hardening,
         λ=1,
         μ=1,
         σy=0,
@@ -467,7 +467,7 @@ def test_elpliso():
     F = x[0]
     statevars = np.zeros((28, *F.shape[-2:]))
 
-    umat = fe.LinearElasticPlasticIsotropicHardening(E=3, nu=0.3, sy=1, K=0.1)
+    umat = fem.LinearElasticPlasticIsotropicHardening(E=3, nu=0.3, sy=1, K=0.1)
 
     s, statevars_new = umat.gradient([F, statevars])
     dsde = umat.hessian([F, statevars])

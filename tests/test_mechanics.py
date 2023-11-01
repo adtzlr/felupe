@@ -28,17 +28,17 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def test_simple():
-    umat = fe.LinearElastic(E=1, nu=0.3)
+    umat = fem.LinearElastic(E=1, nu=0.3)
 
-    m = fe.Cube(n=3)
-    r = fe.RegionHexahedron(m)
-    u = fe.FieldContainer([fe.Field(r, dim=3)])
+    m = fem.Cube(n=3)
+    r = fem.RegionHexahedron(m)
+    u = fem.FieldContainer([fem.Field(r, dim=3)])
 
-    b = fe.SolidBody(umat, u)
+    b = fem.SolidBody(umat, u)
     r = b.assemble.vector()
 
     K = b.assemble.matrix()
@@ -59,23 +59,23 @@ def test_simple():
 
 
 def test_pressure():
-    umat = fe.LinearElastic(E=1, nu=0.3)
+    umat = fem.LinearElastic(E=1, nu=0.3)
 
-    m = fe.Cube(n=3)
-    h = fe.RegionHexahedron(m)
-    u = fe.Field(h, dim=3)
+    m = fem.Cube(n=3)
+    h = fem.RegionHexahedron(m)
+    u = fem.Field(h, dim=3)
 
     np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
-    v = fe.FieldContainer([u])
+    v = fem.FieldContainer([u])
 
-    s = fe.RegionHexahedronBoundary(m)
-    p = fe.Field(s, dim=3)
-    q = fe.FieldContainer([p])
+    s = fem.RegionHexahedronBoundary(m)
+    p = fem.Field(s, dim=3)
+    q = fem.FieldContainer([p])
 
-    b = fe.SolidBody(umat, v)
-    z = fe.SolidBodyPressure(q)
-    c = fe.SolidBodyPressure(q, pressure=1.0)
+    b = fem.SolidBody(umat, v)
+    z = fem.SolidBodyPressure(q)
+    c = fem.SolidBodyPressure(q, pressure=1.0)
 
     assert z.results.pressure == 0
     assert c.results.pressure == 1.0
@@ -108,7 +108,7 @@ def test_pressure():
     assert np.allclose(v[0].values, q[0].values)
 
     np.random.seed(156)
-    w = fe.FieldsMixed(h)
+    w = fem.FieldsMixed(h)
     w[0].values = np.random.rand(*w[0].values.shape) / 10
 
     c._update(w, v)
@@ -116,37 +116,37 @@ def test_pressure():
 
 
 def pre(dim, bulk=2):
-    umat = fe.NeoHooke(mu=1, bulk=bulk)
+    umat = fem.NeoHooke(mu=1, bulk=bulk)
 
-    m = fe.Cube(n=3)
-    r = fe.RegionHexahedron(m)
-    u = fe.Field(r, dim=dim)
+    m = fem.Cube(n=3)
+    r = fem.RegionHexahedron(m)
+    u = fem.Field(r, dim=dim)
 
     np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
 
-    return umat, fe.FieldContainer([u])
+    return umat, fem.FieldContainer([u])
 
 
 def pre_axi(bulk=2):
-    umat = fe.NeoHooke(mu=1, bulk=bulk)
+    umat = fem.NeoHooke(mu=1, bulk=bulk)
 
-    m = fe.Rectangle(n=3)
-    r = fe.RegionQuad(m)
-    u = fe.FieldAxisymmetric(r)
+    m = fem.Rectangle(n=3)
+    r = fem.RegionQuad(m)
+    u = fem.FieldAxisymmetric(r)
 
     np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10
 
-    return umat, fe.FieldContainer([u])
+    return umat, fem.FieldContainer([u])
 
 
 def pre_mixed(dim):
-    umat = fe.ThreeFieldVariation(fe.NeoHooke(mu=1, bulk=2))
+    umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=2))
 
-    m = fe.Cube(n=3)
-    r = fe.RegionHexahedron(m)
-    u = fe.FieldsMixed(r, n=3)
+    m = fem.Cube(n=3)
+    r = fem.RegionHexahedron(m)
+    u = fem.FieldsMixed(r, n=3)
 
     np.random.seed(156)
     u[0].values = np.random.rand(*u[0].values.shape) / 10
@@ -158,7 +158,7 @@ def pre_mixed(dim):
 
 def test_solidbody():
     umat, u = pre(dim=3)
-    b = fe.SolidBody(umat=umat, field=u, statevars=np.ones(5))
+    b = fem.SolidBody(umat=umat, field=u, statevars=np.ones(5))
 
     for parallel in [False, True]:
         kwargs = {"parallel": parallel}
@@ -206,13 +206,13 @@ def test_solidbody():
 
 def test_solidbody_incompressible():
     umat, u = pre(dim=3, bulk=None)
-    b = fe.SolidBodyNearlyIncompressible(
+    b = fem.SolidBodyNearlyIncompressible(
         umat=umat, field=u, bulk=5000, statevars=np.ones(5)
     )
 
-    umat = fe.OgdenRoxburgh(fe.NeoHooke(mu=1), r=3, m=1, beta=0)
-    b = fe.SolidBodyNearlyIncompressible(
-        umat=umat, field=u, bulk=5000, state=fe.StateNearlyIncompressible(u)
+    umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
+    b = fem.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, state=fem.StateNearlyIncompressible(u)
     )
 
     for parallel in [False, True]:
@@ -261,9 +261,9 @@ def test_solidbody_incompressible():
 
 def test_solidbody_axi():
     umat, u = pre_axi(bulk=None)
-    b = fe.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
-    b = fe.SolidBodyNearlyIncompressible(
-        umat=umat, field=u, bulk=5000, state=fe.StateNearlyIncompressible(u)
+    b = fem.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
+    b = fem.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, state=fem.StateNearlyIncompressible(u)
     )
 
     for parallel in [False, True]:
@@ -306,7 +306,7 @@ def test_solidbody_axi():
 
 def test_solidbody_axi_incompressible():
     umat, u = pre_axi()
-    b = fe.SolidBody(umat=umat, field=u)
+    b = fem.SolidBody(umat=umat, field=u)
 
     for parallel in [False, True]:
         kwargs = {"parallel": parallel}
@@ -348,8 +348,8 @@ def test_solidbody_axi_incompressible():
 
 def test_solidbody_mixed():
     umat, u = pre_mixed(dim=3)
-    b = fe.SolidBody(umat=umat, field=u)
-    g = fe.SolidBodyGravity(field=u, gravity=[9810, 0, 0], density=7.85e-9)
+    b = fem.SolidBody(umat=umat, field=u)
+    g = fem.SolidBodyGravity(field=u, gravity=[9810, 0, 0], density=7.85e-9)
 
     g.assemble.vector()
 
@@ -423,13 +423,13 @@ def test_load():
         if axi:
             values *= 0.025
 
-        body = fe.SolidBody(umat, field)
-        load = fe.PointLoad(field, mask, values=values, axisymmetric=axi)
+        body = fem.SolidBody(umat, field)
+        load = fem.PointLoad(field, mask, values=values, axisymmetric=axi)
 
-        bounds = {"fix": fe.Boundary(field[0], fx=lambda x: x == 0)}
-        dof0, dof1 = fe.dof.partition(field, bounds)
+        bounds = {"fix": fem.Boundary(field[0], fx=lambda x: x == 0)}
+        dof0, dof1 = fem.dof.partition(field, bounds)
 
-        res = fe.newtonrhapson(items=[body, load], dof0=dof0, dof1=dof1)
+        res = fem.newtonrhapson(items=[body, load], dof0=dof0, dof1=dof1)
 
         assert res.success
 

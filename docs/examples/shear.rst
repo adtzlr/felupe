@@ -76,7 +76,7 @@ as a hyperelastic material in matADi. The material formulation is finally applie
 .. admonition:: **MatADi** - Material Definition with Automatic Differentiation
    :class: note
    
-   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Do not use the ``MaterialHyperelasticPlaneStrain()`` and ``ThreeFieldVariationPlaneStrain()`` classes of matADi in combination with a plane-strain field of FElupe. These classes are designed to be used on default two dimensional fields (i.e. use it only with ``fe.FieldsMixed(region, n=3, planestrain=False``). Get matADi on PyPI: 
+   MatADi is a powerful and lightweight Python package for the definition of hyperelastic material model formulations. Do not use the ``MaterialHyperelasticPlaneStrain()`` and ``ThreeFieldVariationPlaneStrain()`` classes of matADi in combination with a plane-strain field of FElupe. These classes are designed to be used on default two dimensional fields (i.e. use it only with ``fem.FieldsMixed(region, n=3, planestrain=False``). Get matADi on PyPI: 
    
    ..  code-block::
        

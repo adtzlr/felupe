@@ -28,20 +28,20 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def pre():
-    m = fe.Cube(n=3)
-    r = fe.RegionHexahedron(m)
+    m = fem.Cube(n=3)
+    r = fem.RegionHexahedron(m)
 
-    u = fe.Field(r, dim=3)
-    p = fe.Field(r)
+    u = fem.Field(r, dim=3)
+    p = fem.Field(r)
 
-    v = fe.FieldContainer([u])
-    q = fe.FieldContainer([p])
+    v = fem.FieldContainer([u])
+    q = fem.FieldContainer([p])
 
-    W = fe.constitution.NeoHooke(1, 3)
+    W = fem.constitution.NeoHooke(1, 3)
 
     F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)[:-1]
@@ -51,18 +51,18 @@ def pre():
 
 
 def pre_broadcast():
-    m = fe.Cube(n=3)
-    e = fe.Hexahedron()
-    q = fe.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
+    m = fem.Cube(n=3)
+    e = fem.Hexahedron()
+    q = fem.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
 
-    u = fe.Field(r, dim=3)
-    p = fe.Field(r)
+    u = fem.Field(r, dim=3)
+    p = fem.Field(r)
 
-    v = fe.FieldContainer([u])
-    q = fe.FieldContainer([p])
+    v = fem.FieldContainer([u])
+    q = fem.FieldContainer([p])
 
-    W = fe.constitution.LinearElastic(E=1.0, nu=0.3)
+    W = fem.constitution.LinearElastic(E=1.0, nu=0.3)
 
     F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)[:-1]
@@ -74,13 +74,13 @@ def pre_broadcast():
 
 
 def pre_axi():
-    m = fe.Rectangle(n=3)
-    r = fe.RegionQuad(m)
+    m = fem.Rectangle(n=3)
+    r = fem.RegionQuad(m)
 
-    u = fe.FieldAxisymmetric(r)
-    v = fe.FieldContainer([u])
+    u = fem.FieldAxisymmetric(r)
+    v = fem.FieldContainer([u])
 
-    W = fe.constitution.NeoHooke(1, 3)
+    W = fem.constitution.NeoHooke(1, 3)
 
     F = v.extract(grad=True, add_identity=True)
     P = W.gradient(F)[:-1]
@@ -90,37 +90,37 @@ def pre_axi():
 
 
 def pre_mixed():
-    m = fe.mesh.Cube(n=3)
-    e = fe.element.Hexahedron()
-    q = fe.quadrature.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
+    m = fem.mesh.Cube(n=3)
+    e = fem.element.Hexahedron()
+    q = fem.quadrature.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
 
-    u = fe.Field(r, dim=3)
-    p = fe.Field(r)
-    J = fe.Field(r, values=1)
+    u = fem.Field(r, dim=3)
+    p = fem.Field(r)
+    J = fem.Field(r, values=1)
 
-    f = fe.FieldContainer((u, p, J))
+    f = fem.FieldContainer((u, p, J))
 
-    nh = fe.NeoHooke(1, 3)
-    W = fe.ThreeFieldVariation(nh)
+    nh = fem.NeoHooke(1, 3)
+    W = fem.ThreeFieldVariation(nh)
 
     return r, f, W.gradient(f.extract())[:-1], W.hessian(f.extract())
 
 
 def pre_axi_mixed():
-    m = fe.mesh.Rectangle(n=3)
-    e = fe.element.Quad()
-    q = fe.quadrature.GaussLegendre(1, 2)
-    r = fe.Region(m, e, q)
+    m = fem.mesh.Rectangle(n=3)
+    e = fem.element.Quad()
+    q = fem.quadrature.GaussLegendre(1, 2)
+    r = fem.Region(m, e, q)
 
-    u = fe.FieldAxisymmetric(r, dim=2)
-    p = fe.Field(r)
-    J = fe.Field(r, values=1)
+    u = fem.FieldAxisymmetric(r, dim=2)
+    p = fem.Field(r)
+    J = fem.Field(r, values=1)
 
-    f = fe.FieldContainer((u, p, J))
+    f = fem.FieldContainer((u, p, J))
 
-    nh = fe.NeoHooke(1, 3)
-    W = fe.ThreeFieldVariation(nh)
+    nh = fem.NeoHooke(1, 3)
+    W = fem.ThreeFieldVariation(nh)
 
     return r, f, W.gradient(f.extract())[:-1], W.hessian(f.extract())
 
@@ -129,7 +129,7 @@ def test_axi():
     r, u, P, A = pre_axi()
 
     for parallel in [False, True]:
-        L = fe.IntegralForm(P, u, r.dV)
+        L = fem.IntegralForm(P, u, r.dV)
         x = L.integrate(parallel=parallel)
 
         b = L.assemble(x, parallel=parallel).toarray()
@@ -138,7 +138,7 @@ def test_axi():
         b = L.assemble(parallel=parallel).toarray()
         assert b.shape == (r.mesh.ndof, 1)
 
-        a = fe.IntegralForm(A, u, r.dV, u, grad_v=[True], grad_u=[True])
+        a = fem.IntegralForm(A, u, r.dV, u, grad_v=[True], grad_u=[True])
         y = a.integrate(parallel=parallel)
 
         K = a.assemble(y, parallel=parallel).toarray()
@@ -152,14 +152,14 @@ def test_linearform():
     r, u, p, P, A = pre()
 
     for parallel in [False, True]:
-        L = fe.IntegralForm(P, u, r.dV, grad_v=[True])
+        L = fem.IntegralForm(P, u, r.dV, grad_v=[True])
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
         assert b.shape == (r.mesh.ndof, 1)
         b = L.assemble(parallel=parallel).toarray()
         assert b.shape == (r.mesh.ndof, 1)
 
-        L = fe.IntegralForm(p.extract(grad=False), p, r.dV, grad_v=[False])
+        L = fem.IntegralForm(p.extract(grad=False), p, r.dV, grad_v=[False])
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
         assert b.shape == (r.mesh.npoints, 1)
@@ -171,14 +171,14 @@ def test_linearform_broadcast():
     r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
-        L = fe.IntegralForm(P, u, r.dV, grad_v=[True])
+        L = fem.IntegralForm(P, u, r.dV, grad_v=[True])
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
         assert b.shape == (r.mesh.ndof, 1)
         b = L.assemble(parallel=parallel).toarray()
         assert b.shape == (r.mesh.ndof, 1)
 
-        L = fe.IntegralForm(p.extract(grad=False), p, r.dV, grad_v=[False])
+        L = fem.IntegralForm(p.extract(grad=False), p, r.dV, grad_v=[False])
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
         assert b.shape == (r.mesh.npoints, 1)
@@ -190,14 +190,14 @@ def test_bilinearform():
     r, u, p, P, A = pre()
 
     for parallel in [False, True]:
-        a = fe.IntegralForm(A, u, r.dV, u)
+        a = fem.IntegralForm(A, u, r.dV, u)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-        a = fe.IntegralForm(P, u, r.dV, p, [True], [False])
+        a = fem.IntegralForm(P, u, r.dV, p, [True], [False])
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
@@ -209,14 +209,14 @@ def test_bilinearform_broadcast():
     r, u, p, P, A = pre_broadcast()
 
     for parallel in [False, True]:
-        a = fe.IntegralForm(A, u, r.dV, u, [True], [True])
+        a = fem.IntegralForm(A, u, r.dV, u, [True], [True])
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-        a = fe.IntegralForm(P, u, r.dV, p, [True], [False])
+        a = fem.IntegralForm(P, u, r.dV, p, [True], [False])
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
@@ -224,8 +224,8 @@ def test_bilinearform_broadcast():
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
         q = p.extract(grad=False)
-        f = fe.math.dya(q, q, mode=1)
-        a = fe.IntegralForm(f, p, r.dV, p, [False], [False])
+        f = fem.math.dya(q, q, mode=1)
+        a = fem.IntegralForm(f, p, r.dV, p, [False], [False])
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         assert K.shape == (r.mesh.npoints, r.mesh.npoints)
@@ -237,7 +237,7 @@ def test_mixed():
     r, v, f, A = pre_mixed()
 
     for parallel in [False, True]:
-        a = fe.IntegralForm(A, v, r.dV, v)
+        a = fem.IntegralForm(A, v, r.dV, v)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         K = a.assemble(parallel=parallel).toarray()
@@ -245,7 +245,7 @@ def test_mixed():
         z = r.mesh.ndof + 2 * r.mesh.npoints
         assert K.shape == (z, z)
 
-        L = fe.IntegralForm(f, v, r.dV)
+        L = fem.IntegralForm(f, v, r.dV)
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
         b = L.assemble(parallel=parallel).toarray()
@@ -255,7 +255,7 @@ def test_mixed():
     r, v, f, A = pre_axi_mixed()
 
     for parallel in [False, True]:
-        a = fe.IntegralForm(A, v, r.dV, v)
+        a = fem.IntegralForm(A, v, r.dV, v)
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()
         K = a.assemble(parallel=parallel).toarray()
@@ -263,7 +263,7 @@ def test_mixed():
         z = r.mesh.ndof + 2 * r.mesh.npoints
         assert K.shape == (z, z)
 
-        L = fe.IntegralForm(f, v, r.dV)
+        L = fem.IntegralForm(f, v, r.dV)
         x = L.integrate(parallel=parallel)
         b = L.assemble(x, parallel=parallel).toarray()
         b = L.assemble(parallel=parallel).toarray()

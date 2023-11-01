@@ -50,55 +50,55 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.Mesh
+.. autoclass:: fem.Mesh
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.MeshContainer
+.. autoclass:: fem.MeshContainer
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.mesh.Line
+.. autoclass:: fem.mesh.Line
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Rectangle
+.. autoclass:: fem.Rectangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Cube
+.. autoclass:: fem.Cube
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Grid
+.. autoclass:: fem.Grid
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Circle
+.. autoclass:: fem.Circle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.mesh.Triangle
+.. autoclass:: fem.mesh.Triangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.mesh.RectangleArbitraryOrderQuad
+.. autoclass:: fem.mesh.RectangleArbitraryOrderQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.mesh.CubeArbitraryOrderHexahedron
+.. autoclass:: fem.mesh.CubeArbitraryOrderHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: felupe.mesh
+.. automodule:: fem.mesh
    :members: expand, rotate, revolve, sweep, mirror, concatenate, runouts, triangulate, convert, collect_edges, collect_faces, collect_volumes, add_midpoints_edges, add_midpoints_faces, add_midpoints_volumes, flip, fill_between, dual

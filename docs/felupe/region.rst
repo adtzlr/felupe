@@ -36,97 +36,97 @@ This module contains the definition of a region as well as a boundary region alo
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.Region
+.. autoclass:: fem.Region
    :members:
    :undoc-members:
    :inherited-members:
    
-.. autoclass:: felupe.RegionBoundary
+.. autoclass:: fem.RegionBoundary
    :members:
    :undoc-members:
    :inherited-members:
    
-.. autoclass:: felupe.RegionQuad
+.. autoclass:: fem.RegionQuad
    :members:
    :undoc-members:
    :show-inheritance:
    
-.. autoclass:: felupe.RegionQuadBoundary
+.. autoclass:: fem.RegionQuadBoundary
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionHexahedronBoundary
+.. autoclass:: fem.RegionHexahedronBoundary
    :members:
    :undoc-members:
    :show-inheritance:
    
-.. autoclass:: felupe.RegionHexahedron
+.. autoclass:: fem.RegionHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionTriangle
+.. autoclass:: fem.RegionTriangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionTetra
+.. autoclass:: fem.RegionTetra
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionConstantQuad
+.. autoclass:: fem.RegionConstantQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionQuadraticQuad
+.. autoclass:: fem.RegionQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionBiQuadraticQuad
+.. autoclass:: fem.RegionBiQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionConstantHexahedron
+.. autoclass:: fem.RegionConstantHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionQuadraticHexahedron
+.. autoclass:: fem.RegionQuadraticHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionTriQuadraticHexahedron
+.. autoclass:: fem.RegionTriQuadraticHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionQuadraticTriangle
+.. autoclass:: fem.RegionQuadraticTriangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionQuadraticTetra
+.. autoclass:: fem.RegionQuadraticTetra
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionTriangleMINI
+.. autoclass:: fem.RegionTriangleMINI
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionTetraMINI
+.. autoclass:: fem.RegionTetraMINI
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.RegionLagrange
+.. autoclass:: fem.RegionLagrange
    :members:
    :undoc-members:
    :show-inheritance:

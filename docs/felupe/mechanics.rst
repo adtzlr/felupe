@@ -1,57 +1,57 @@
 Mechanics
 ~~~~~~~~~
    
-.. autoclass:: felupe.SolidBody
+.. autoclass:: fem.SolidBody
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.SolidBodyNearlyIncompressible
+.. autoclass:: fem.SolidBodyNearlyIncompressible
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.StateNearlyIncompressible
+.. autoclass:: fem.StateNearlyIncompressible
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.SolidBodyGravity
+.. autoclass:: fem.SolidBodyGravity
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.SolidBodyPressure
+.. autoclass:: fem.SolidBodyPressure
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.PointLoad
+.. autoclass:: fem.PointLoad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Step
+.. autoclass:: fem.Step
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Job
+.. autoclass:: fem.Job
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.CharacteristicCurve
+.. autoclass:: fem.CharacteristicCurve
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.MultiPointConstraint
+.. autoclass:: fem.MultiPointConstraint
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.MultiPointContact
+.. autoclass:: fem.MultiPointContact
    :members:
    :undoc-members:
    :inherited-members:

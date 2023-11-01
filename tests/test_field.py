@@ -28,28 +28,28 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import pytest
 
-import felupe as fe
+import felupe as fem
 
 
 def pre(values=0):
-    m = fe.Cube(n=3)
-    e = fe.Hexahedron()
-    q = fe.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
-    u = fe.Field(r, dim=3, values=values)
-    v = fe.FieldContainer([u])
+    m = fem.Cube(n=3)
+    e = fem.Hexahedron()
+    q = fem.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
+    u = fem.Field(r, dim=3, values=values)
+    v = fem.FieldContainer([u])
 
     return r, v
 
 
 def pre_axi():
-    m = fe.Rectangle(n=3)
-    e = fe.Quad()
-    q = fe.GaussLegendre(1, 2)
-    r = fe.Region(m, e, q)
+    m = fem.Rectangle(n=3)
+    e = fem.Quad()
+    q = fem.GaussLegendre(1, 2)
+    r = fem.Region(m, e, q)
 
-    u = fe.FieldAxisymmetric(r)
-    v = fe.FieldContainer([u])
+    u = fem.FieldAxisymmetric(r)
+    v = fem.FieldContainer([u])
 
     print(m), print(r), print(v)
 
@@ -57,17 +57,17 @@ def pre_axi():
 
 
 def pre_mixed():
-    m = fe.Cube(n=3)
-    e = fe.Hexahedron()
-    q = fe.GaussLegendre(1, 3)
-    r = fe.Region(m, e, q)
+    m = fem.Cube(n=3)
+    e = fem.Hexahedron()
+    q = fem.GaussLegendre(1, 3)
+    r = fem.Region(m, e, q)
 
-    u = fe.Field(r, dim=3)
-    p = fe.Field(r)
-    J = fe.Field(r, values=1)
+    u = fem.Field(r, dim=3)
+    p = fem.Field(r)
+    J = fem.Field(r, values=1)
 
-    f = fe.FieldContainer((u, p, J))
-    g = fe.FieldsMixed(fe.RegionHexahedron(m), n=3)
+    f = fem.FieldContainer((u, p, J))
+    g = fem.FieldsMixed(fem.RegionHexahedron(m), n=3)
 
     print(m), print(r), print(f)
 
@@ -75,22 +75,22 @@ def pre_mixed():
     assert np.all(f.values()[0][0] == 1)
     assert len(g.fields) == 3
 
-    fe.Field(r, dim=9, values=np.eye(3))
+    fem.Field(r, dim=9, values=np.eye(3))
 
     return r, f, u, p, J
 
 
 def pre_axi_mixed():
-    m = fe.Rectangle(n=3)
-    e = fe.Quad()
-    q = fe.GaussLegendre(1, 2)
-    r = fe.Region(m, e, q)
+    m = fem.Rectangle(n=3)
+    e = fem.Quad()
+    q = fem.GaussLegendre(1, 2)
+    r = fem.Region(m, e, q)
 
-    u = fe.FieldAxisymmetric(r, dim=2)
-    p = fe.Field(r)
-    J = fe.Field(r, values=1)
+    u = fem.FieldAxisymmetric(r, dim=2)
+    p = fem.Field(r)
+    J = fem.Field(r, values=1)
 
-    f = fe.FieldContainer((u, p, J))
+    f = fem.FieldContainer((u, p, J))
 
     u.values[0] = np.ones(2)
     assert np.all(f.values()[0][0] == 1)
@@ -113,8 +113,8 @@ def test_axi():
 def test_mixed_lagrange():
     order = 4
 
-    m = fe.Cube(n=order + 1)
-    md = fe.Cube(n=order)
+    m = fem.Cube(n=order + 1)
+    md = fem.Cube(n=order)
 
     m.update(
         cells=np.arange(m.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON"
@@ -123,8 +123,8 @@ def test_mixed_lagrange():
         cells=np.arange(md.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON"
     )
 
-    r = fe.RegionLagrange(m, order=order, dim=3)
-    g = fe.FieldsMixed(r, mesh=md)
+    r = fem.RegionLagrange(m, order=order, dim=3)
+    g = fem.FieldsMixed(r, mesh=md)
 
     assert len(g.fields) == 3
 
@@ -214,9 +214,9 @@ def test_3d_mixed():
 
 
 def test_view():
-    mesh = fe.Rectangle(n=6)
-    region = fe.RegionQuad(mesh)
-    field = fe.FieldContainer([fe.FieldPlaneStrain(region, dim=2)])
+    mesh = fem.Rectangle(n=6)
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     plotter = field.plot(off_screen=True)
     # img = mesh.screenshot(transparent_background=True)
 

@@ -17,7 +17,7 @@ FElupe
    💯 Python ➡️ easy install and intuitive usage 👌🏻
 
 
-.. image:: https://img.shields.io/pypi/v/fem.svg
+.. image:: https://img.shields.io/pypi/v/felupe.svg
    :target: https://pypi.python.org/pypi/felupe/
    
 .. image:: https://img.shields.io/badge/License-GPLv3-blue.svg

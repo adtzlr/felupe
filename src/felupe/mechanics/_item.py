@@ -20,6 +20,32 @@ from ._helpers import Assemble, Results
 
 
 class FormItem:
+    r"""An item to be used in a :class:`felupe.Step` with bilinear and optional linear
+    form objects based on weak-forms with methods for integration and assembly of
+    vectors / sparse matrices.
+
+    Parameters
+    ----------
+    bilinearform : felupe.Form
+        A bilinear form object.
+    linearform : felupe.Form or None, optional
+        A linear form object (default is None). If None, the resulting vector will be
+        filled with zeros.
+    sym : bool, optional
+        Flag to active symmetric integration/assembly for bilinear forms (default is
+        False).
+    args : tuple or None, optional
+        Tuple with initial optional weakform-arguments (default is None).
+    kwargs : dict or None, optional
+        Dictionary with initial optional weakform-keyword-arguments (default is None).
+
+    See Also
+    --------
+    felupe.Form : A function decorator for a linear- or bilinear-form object.
+    felupe.Step : A Step with multiple substeps.
+
+    """
+
     def __init__(
         self, bilinearform, linearform=None, sym=False, args=None, kwargs=None
     ):

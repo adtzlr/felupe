@@ -26,6 +26,12 @@ Define weak-form expressions on-the-fly for flexible and general form expression
 
    Form
 
+Create an item out of bilinear and linear weak-form expressions for a Step.
+
+.. autosummary::
+
+   FormItem
+
 **Detailed API Reference**
 
 .. autoclass:: felupe.IntegralForm
@@ -34,3 +40,8 @@ Define weak-form expressions on-the-fly for flexible and general form expression
    :inherited-members:
 
 .. autofunction:: felupe.Form
+
+.. autoclass:: felupe.FormItem
+   :members:
+   :undoc-members:
+   :inherited-members:

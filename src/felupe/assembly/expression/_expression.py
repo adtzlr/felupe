@@ -44,20 +44,20 @@ class FormExpression:
     u : Field or FieldMixed
         An object with interpolation or gradients of a field. May be
         updated during integration / assembly.
-    grad_v : bool, optional (default is False)
-        Flag to use the gradient of ``v``.
-    grad_u : bool, optional (default is False)
-        Flag to use the gradient of ``u``.
-    dx : ndarray or None, optional (default is None)
-        Array with (numerical) differential volumes.
-    args : tuple, optional (default is ())
+    grad_v : bool, optional
+        Flag to use the gradient of ``v`` (default is False).
+    grad_u : bool, optional
+        Flag to use the gradient of ``u`` (default is False).
+    dx : ndarray or None, optional
+        Array with (numerical) differential volumes (default is None).
+    args : tuple or None, optional
         Tuple with initial optional weakform-arguments. May be updated during
-        integration / assembly.
-    kwargs : dict, optional (default is {})
+        integration / assembly (default is None).
+    kwargs : dict or None, optional
         Dictionary with initial optional weakform-keyword-arguments. May be updated
-        during integration / assembly.
-    parallel : bool, optional (default is False)
-        Flag to activate parallel (threaded) basis evaluation.
+        during integration / assembly (default is None).
+    parallel : bool, optional
+        Flag to activate parallel (threaded) basis evaluation (default is False).
 
     """
 
@@ -69,8 +69,8 @@ class FormExpression:
         grad_v=False,
         grad_u=False,
         dx=None,
-        args=(),
-        kwargs={},
+        args=None,
+        kwargs=None,
         parallel=False,
     ):
         # set attributes
@@ -80,23 +80,29 @@ class FormExpression:
         self.dx = dx
         self.weakform = weakform
 
+        if args is not None:
+            self.args = args
+        else:
+            self.args = ()
+
+        if kwargs is not None:
+            self.kwargs = kwargs
+        else:
+            self.kwargs = {}
+
         # init underlying linear or bilinear (mixed) form
         self._init_or_update_forms(v, u, args, kwargs, parallel)
 
     def _init_or_update_forms(self, v, u, args, kwargs, parallel):
         "Init or update the underlying form object."
 
-        # update args and kwargs for weakform
-        if args is not None or kwargs is not None:
-            if args is not None:
-                self.args = args
-            else:
-                self.args = ()
+        # update args for weakform
+        if args is not None:
+            self.args = args
 
-            if kwargs is not None:
-                self.kwargs = kwargs
-            else:
-                self.kwargs = {}
+        # update kwargs for weakform
+        if kwargs is not None:
+            self.kwargs = kwargs
 
         # get current form type
         if self.form is not None:

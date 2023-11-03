@@ -1,5 +1,6 @@
 from ._curve import CharacteristicCurve
 from ._helpers import StateNearlyIncompressible
+from ._item import FormItem
 from ._job import Job
 from ._multipoint import MultiPointConstraint, MultiPointContact
 from ._pointload import PointLoad
@@ -11,6 +12,7 @@ from ._step import Step
 
 __all__ = [
     "CharacteristicCurve",
+    "FormItem",
     "StateNearlyIncompressible",
     "Job",
     "PointLoad",

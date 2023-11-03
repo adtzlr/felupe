@@ -71,6 +71,7 @@ from .field import (
 )
 from .mechanics import (
     CharacteristicCurve,
+    FormItem,
     Job,
     MultiPointConstraint,
     MultiPointContact,
@@ -133,6 +134,7 @@ __all__ = [
     "solve",
     "tools",
     "Form",
+    "FormItem",
     "IntegralForm",
     "Basis",
     "Field",

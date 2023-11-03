@@ -48,82 +48,82 @@ This module provides classes for the finite element formulations.
 
 **Detailed API Reference**
 
-.. autoclass:: fem.Line
+.. autoclass:: felupe.Line
    :members:
    :undoc-members:
    :show-inheritance:
    
-.. autoclass:: fem.Quad
+.. autoclass:: felupe.Quad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.Hexahedron
+.. autoclass:: felupe.Hexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.Triangle
+.. autoclass:: felupe.Triangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.Tetra
+.. autoclass:: felupe.Tetra
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.ConstantQuad
+.. autoclass:: felupe.ConstantQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.ConstantHexahedron
+.. autoclass:: felupe.ConstantHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.QuadraticHexahedron
+.. autoclass:: felupe.QuadraticHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.TriQuadraticHexahedron
+.. autoclass:: felupe.TriQuadraticHexahedron
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.QuadraticQuad
+.. autoclass:: felupe.QuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.BiQuadraticQuad
+.. autoclass:: felupe.BiQuadraticQuad
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.QuadraticTriangle
+.. autoclass:: felupe.QuadraticTriangle
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.QuadraticTetra
+.. autoclass:: felupe.QuadraticTetra
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.TriangleMINI
+.. autoclass:: felupe.TriangleMINI
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.TetraMINI
+.. autoclass:: felupe.TetraMINI
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: fem.element.ArbitraryOrderLagrange
+.. autoclass:: felupe.element.ArbitraryOrderLagrange
    :members:
    :undoc-members:
    :show-inheritance:

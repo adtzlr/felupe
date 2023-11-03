@@ -73,99 +73,99 @@ This module provides constitutive material formulations.
 
 **Detailed API Reference**
 
-.. autoclass:: fem.NeoHooke
+.. autoclass:: felupe.NeoHooke
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.OgdenRoxburgh
+.. autoclass:: felupe.OgdenRoxburgh
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.LinearElastic
+.. autoclass:: felupe.LinearElastic
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.LinearElasticLargeStrain
+.. autoclass:: felupe.LinearElasticLargeStrain
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.constitution.LinearElasticTensorNotation
+.. autoclass:: felupe.constitution.LinearElasticTensorNotation
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.LinearElasticPlaneStress
+.. autoclass:: felupe.LinearElasticPlaneStress
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.LinearElasticPlaneStrain
+.. autoclass:: felupe.LinearElasticPlaneStrain
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.LinearElasticPlasticIsotropicHardening
+.. autoclass:: felupe.LinearElasticPlasticIsotropicHardening
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.ThreeFieldVariation
+.. autoclass:: felupe.ThreeFieldVariation
    :members:
    :undoc-members:
    :inherited-members:
 
-   .. autoclass:: fem.Material
+   .. autoclass:: felupe.Material
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.MaterialStrain
+.. autoclass:: felupe.MaterialStrain
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: fem.constitution.linear_elastic
+.. autofunction:: felupe.constitution.linear_elastic
 
-.. autofunction:: fem.constitution.linear_elastic_plastic_isotropic_hardening
+.. autofunction:: felupe.constitution.linear_elastic_plastic_isotropic_hardening
 
-.. autoclass:: fem.Hyperelastic
+.. autoclass:: felupe.Hyperelastic
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: fem.constitution.saint_venant_kirchhoff
+.. autofunction:: felupe.constitution.saint_venant_kirchhoff
 
-.. autofunction:: fem.constitution.neo_hooke
+.. autofunction:: felupe.constitution.neo_hooke
 
-.. autofunction:: fem.constitution.mooney_rivlin
+.. autofunction:: felupe.constitution.mooney_rivlin
 
-.. autofunction:: fem.constitution.yeoh
+.. autofunction:: felupe.constitution.yeoh
 
-.. autofunction:: fem.constitution.third_order_deformation
+.. autofunction:: felupe.constitution.third_order_deformation
 
-.. autofunction:: fem.constitution.ogden
+.. autofunction:: felupe.constitution.ogden
 
-.. autofunction:: fem.constitution.arruda_boyce
+.. autofunction:: felupe.constitution.arruda_boyce
 
-.. autofunction:: fem.constitution.extended_tube
+.. autofunction:: felupe.constitution.extended_tube
 
-.. autofunction:: fem.constitution.van_der_waals
+.. autofunction:: felupe.constitution.van_der_waals
 
-.. autoclass:: fem.LineChange
+.. autoclass:: felupe.LineChange
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.AreaChange
+.. autoclass:: felupe.AreaChange
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: fem.VolumeChange
+.. autoclass:: felupe.VolumeChange
    :members:
    :undoc-members:
    :inherited-members:

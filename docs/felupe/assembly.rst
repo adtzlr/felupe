@@ -28,9 +28,9 @@ Define weak-form expressions on-the-fly for flexible and general form expression
 
 **Detailed API Reference**
 
-.. autoclass:: fem.IntegralForm
+.. autoclass:: felupe.IntegralForm
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: fem.Form
+.. autofunction:: felupe.Form

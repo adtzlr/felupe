@@ -1,14 +1,14 @@
 Tools
 ~~~~~
 
-.. autofunction:: fem.newtonrhapson
+.. autofunction:: felupe.newtonrhapson
 
-.. autofunction:: fem.save
+.. autofunction:: felupe.save
 
-.. autofunction:: fem.topoints
+.. autofunction:: felupe.topoints
 
-.. autofunction:: fem.project
+.. autofunction:: felupe.project
 
-.. autofunction:: fem.tools.force
+.. autofunction:: felupe.tools.force
 
-.. autofunction:: fem.tools.moment
+.. autofunction:: felupe.tools.moment

@@ -32,19 +32,19 @@ This module contains the definition of a boundary condition, tools related to th
 
 **Detailed API Reference**
 
-.. autoclass:: fem.Boundary
+.. autoclass:: felupe.Boundary
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: fem.dof.partition
+.. autofunction:: felupe.dof.partition
 
-.. autofunction:: fem.dof.apply
+.. autofunction:: felupe.dof.apply
 
-.. autofunction:: fem.dof.symmetry
+.. autofunction:: felupe.dof.symmetry
 
-.. autofunction:: fem.dof.uniaxial
+.. autofunction:: felupe.dof.uniaxial
 
-.. autofunction:: fem.dof.biaxial
+.. autofunction:: felupe.dof.biaxial
 
-.. autofunction:: fem.dof.shear
+.. autofunction:: felupe.dof.shear

@@ -7,30 +7,30 @@ Created on Wed Oct 27 15:33:53 2021
 
 import numpy as np
 
+import felupe as fem
+
 
 def test_readme():
-    import felupe
+    mesh = fem.Cube(n=9)
+    element = fem.Hexahedron()
+    quadrature = fem.GaussLegendre(order=1, dim=3)
 
-    mesh = felupe.Cube(n=9)
-    element = felupe.Hexahedron()
-    quadrature = felupe.GaussLegendre(order=1, dim=3)
-
-    region = felupe.Region(mesh, element, quadrature)
+    region = fem.Region(mesh, element, quadrature)
 
     dV = region.dV
     V = dV.sum()
 
-    displacement = felupe.Field(region, dim=3)
+    displacement = fem.Field(region, dim=3)
 
     u = displacement.values
     ui = displacement.interpolate()
     dudX = displacement.grad()
 
-    field = felupe.FieldContainer([displacement])
+    field = fem.FieldContainer([displacement])
 
     F = field.extract(grad=True, sym=False, add_identity=True)
 
-    umat = felupe.constitution.NeoHooke(mu=1.0, bulk=2.0)
+    umat = fem.constitution.NeoHooke(mu=1.0, bulk=2.0)
 
     P = umat.gradient
     A = umat.hessian
@@ -41,15 +41,15 @@ def test_readme():
     f1 = lambda x: np.isclose(x, 1)
 
     boundaries = {}
-    boundaries["left"] = felupe.Boundary(displacement, fx=f0)
-    boundaries["right"] = felupe.Boundary(displacement, fx=f1, skip=(1, 0, 0))
-    boundaries["move"] = felupe.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
+    boundaries["left"] = fem.Boundary(displacement, fx=f0)
+    boundaries["right"] = fem.Boundary(displacement, fx=f1, skip=(1, 0, 0))
+    boundaries["move"] = fem.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 
-    dof0, dof1 = felupe.dof.partition(field, boundaries)
-    ext0 = felupe.dof.apply(field, boundaries, dof0)
+    dof0, dof1 = fem.dof.partition(field, boundaries)
+    ext0 = fem.dof.apply(field, boundaries, dof0)
 
-    linearform = felupe.IntegralForm(P(F)[:-1], field, dV)
-    bilinearform = felupe.IntegralForm(A(F), field, dV, field)
+    linearform = fem.IntegralForm(P(F)[:-1], field, dV)
+    bilinearform = fem.IntegralForm(A(F), field, dV, field)
 
     r = linearform.assemble().toarray()[:, 0]
     K = bilinearform.assemble()
@@ -58,8 +58,8 @@ def test_readme():
 
     # from pypardiso import spsolve
 
-    system = felupe.solve.partition(field, K, dof1, dof0, r)
-    dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
+    system = fem.solve.partition(field, K, dof1, dof0, r)
+    dfield = fem.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
 
     # du = np.split(dfield, offsets)
     # field += du
@@ -67,18 +67,18 @@ def test_readme():
     for iteration in range(8):
         F = field.extract()
 
-        linearform = felupe.IntegralForm(P(F)[:-1], field, dV)
-        bilinearform = felupe.IntegralForm(A(F), field, dV, field)
+        linearform = fem.IntegralForm(P(F)[:-1], field, dV)
+        bilinearform = fem.IntegralForm(A(F), field, dV, field)
 
         r = linearform.assemble()
         K = bilinearform.assemble()
 
-        system = felupe.solve.partition(field, K, dof1, dof0, r)
-        dfield = felupe.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
+        system = fem.solve.partition(field, K, dof1, dof0, r)
+        dfield = fem.solve.solve(*system, ext0, solver=spsolve).reshape(*u.shape)
 
         du = np.split(dfield, field.offsets)
 
-        norm = felupe.math.norm(du)
+        norm = fem.math.norm(du)
         print(iteration, norm[0])
         field += du
 
@@ -90,7 +90,7 @@ def test_readme():
 
     F[0][:, :, 0, 0]
 
-    felupe.save(region, field, filename="result.vtk")
+    fem.save(region, field, filename="result.vtk")
 
     from felupe.math import det, dot, transpose
 
@@ -100,12 +100,12 @@ def test_readme():
     s = dot(PK1, transpose(F)) / det(F)
 
     # stress shifted and averaged to mesh-points
-    cauchy_shifted = felupe.topoints(s, region, sym=True, mode="tensor")
+    cauchy_shifted = fem.topoints(s, region, sym=True, mode="tensor")
 
     # stress projected and averaged to mesh-points
-    cauchy_projected = felupe.project(s, region)
+    cauchy_projected = fem.project(s, region)
 
-    felupe.save(
+    fem.save(
         region,
         field,
         filename="result_with_cauchy.vtk",
@@ -116,5 +116,42 @@ def test_readme():
     )
 
 
+def test_readme_form():
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+
+    from felupe.math import ddot, sym, trace
+
+    @fem.Form(v=field, u=field, grad_v=[True], grad_u=[True])
+    def bilinearform():
+        def a(gradv, gradu, μ=1.0, λ=2.0):
+            δε, ε = sym(gradv), sym(gradu)
+            return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
+
+        return [a]
+
+    @fem.Form(v=field, grad_v=[True])
+    def linearform():
+        def L(gradv, μ=1.0, λ=2.0):
+            δε = sym(gradv)
+            ε = field.extract(grad=True, sym=True, add_identity=False)[0]
+            return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
+
+        return [L]
+
+    item = fem.FormItem(bilinearform)
+    step = fem.Step(items=[item], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    field[0].fill(0)
+
+    item = fem.FormItem(bilinearform, linearform)
+    step = fem.Step(items=[item], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
 if __name__ == "__main__":
     test_readme()
+    test_readme_form()

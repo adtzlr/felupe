@@ -20,7 +20,7 @@ from ._expression import FormExpression
 
 
 def FormExpressionDecorator(
-    v, u=None, grad_v=None, grad_u=None, dx=None, args=(), kwargs={}, parallel=False
+    v, u=None, grad_v=None, grad_u=None, dx=None, args=None, kwargs=None, parallel=False
 ):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
@@ -37,12 +37,12 @@ def FormExpressionDecorator(
         Flag to use the gradient of ``u`` (default is None).
     dx : ndarray or None, optional
         Array with (numerical) differential volumes  (default is None).
-    args : tuple, optional
+    args : tuple or None, optional
         Tuple with initial optional weakform-arguments. May be updated during
-        integration / assembly  (default is ()).
-    kwargs : dict, optional
+        integration / assembly (default is None).
+    kwargs : dict or None, optional
         Dictionary with initial optional weakform-keyword-arguments. May be
-        updated during integration / assembly  (default is {}).
+        updated during integration / assembly (default is None).
 
     Returns
     -------
@@ -120,7 +120,7 @@ def FormExpressionDecorator(
 
     >>> from felupe.math import ddot, trace, sym
 
-    >>> @fe.Form(
+    >>> @fem.Form(
     >>>     v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"μ": 1.0, "λ": 2.0}
     >>> )
     >>> def bilinearform():

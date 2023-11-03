@@ -26,9 +26,9 @@ class FormItem:
 
     Parameters
     ----------
-    bilinearform : felupe.Form
+    bilinearform : Form
         A bilinear form object.
-    linearform : felupe.Form or None, optional
+    linearform : Form or None, optional
         A linear form object (default is None). If None, the resulting vector will be
         filled with zeros.
     sym : bool, optional

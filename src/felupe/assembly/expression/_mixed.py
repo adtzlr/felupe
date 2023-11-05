@@ -176,7 +176,7 @@ class BilinearFormExpression:
             A callable function ``weakform(v, *args, **kwargs)``.
         args : tuple, optional
             Optional arguments for callable weakform
-        kawargs : dict, optional
+        kwargs : dict, optional
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
@@ -201,7 +201,7 @@ class BilinearFormExpression:
             A callable function ``weakform(v, *args, **kwargs)``.
         args : tuple, optional
             Optional arguments for callable weakform
-        kawargs : dict, optional
+        kwargs : dict, optional
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.

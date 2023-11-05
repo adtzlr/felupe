@@ -80,7 +80,7 @@ class FormItem:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
-        self.field = self.bilinearform.form.v.field
+        self.field = self.bilinearform.form.v
 
     def _vector(self, field=None, parallel=False):
         if field is not None:

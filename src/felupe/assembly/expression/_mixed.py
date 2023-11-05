@@ -24,8 +24,7 @@ from ._linear import LinearForm
 
 
 class LinearFormExpression:
-    r"""A linear form object with methods for integration and assembly of
-    vectors where ``v`` is a basis object on a field container.
+    r"""A linear form object with methods for integration and assembly of vectors.
 
     ..  math::
 
@@ -33,8 +32,8 @@ class LinearFormExpression:
 
     Parameters
     ----------
-    v : Basis
-        An object with basis functions (gradients) of a field.
+    v : FieldContainer
+        A field container.
     grad_v : tuple of bool, optional (default is None)
         Flag to use the gradients of ``v``.
 
@@ -43,13 +42,13 @@ class LinearFormExpression:
 
     def __init__(self, v, grad_v=None):
         self.v = v
-        self.dx = self.v.field[0].region.dV
+        self.dx = self.v[0].region.dV
         self._form = IntegralForm(
-            np.zeros(len(v.field.fields)), self.v.field, self.dx, grad_v=grad_v
+            np.zeros(len(v.fields)), self.v, self.dx, grad_v=grad_v
         )
 
         if grad_v is None:
-            self.grad_v = np.zeros_like(self.v.field.fields, dtype=bool)
+            self.grad_v = np.zeros_like(self.v.fields, dtype=bool)
             self.grad_v[0] = True
         else:
             self.grad_v = grad_v
@@ -110,8 +109,7 @@ class LinearFormExpression:
 
 
 class BilinearFormExpression:
-    r"""A bilinear form object with methods for integration and assembly of
-    matrices where ``v`` is a mixed-basis object on mixed-fields.
+    r"""A bilinear form object with methods for integration and assembly of matrices.
 
     ..  math::
 
@@ -119,12 +117,12 @@ class BilinearFormExpression:
 
     Parameters
     ----------
-    v : Basis
-        An object with basis functions (gradients) of a field.
+    v : FieldContainer
+        A field container.
     grad_v : tuple of bool, optional (default is None)
         Tuple of flags to use the gradients of ``v``.
-    u : Basis
-        An object with basis function (gradients) of a field.
+    u : FieldContainer
+        A field container.
     grad_u : tuple of bool, optional (default is None)
         Flag to use the gradients of ``u``.
 
@@ -133,9 +131,9 @@ class BilinearFormExpression:
     def __init__(self, v, u, grad_v=None, grad_u=None):
         self.v = v
         self.u = u
-        self.dx = self.v.field[0].region.dV
+        self.dx = self.v[0].region.dV
 
-        self.nv = len(v.field.fields)
+        self.nv = len(v.fields)
         self.i, self.j = np.triu_indices(self.nv)
 
         def _set_first_grad_true(grad, fields):
@@ -144,14 +142,14 @@ class BilinearFormExpression:
                 grad[0] = True
             return grad
 
-        self.grad_v = _set_first_grad_true(grad_v, self.v.field.fields)
-        self.grad_u = _set_first_grad_true(grad_u, self.u.field.fields)
+        self.grad_v = _set_first_grad_true(grad_v, self.v.fields)
+        self.grad_u = _set_first_grad_true(grad_u, self.u.fields)
 
         self._form = IntegralForm(
             fun=np.zeros(len(self.i)),
-            v=self.v.field,
+            v=self.v,
             dV=self.dx,
-            u=self.u.field,
+            u=self.u,
             grad_v=self.grad_v,
             grad_u=self.grad_u,
         )

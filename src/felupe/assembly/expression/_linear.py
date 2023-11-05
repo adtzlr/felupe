@@ -24,8 +24,7 @@ from .._cartesian import IntegralFormCartesian
 
 
 class LinearForm:
-    r"""A linear form object with methods for integration and assembly of
-    vectors.
+    r"""A linear form object with methods for integration and assembly of vectors.
 
     ..  math::
 
@@ -33,8 +32,8 @@ class LinearForm:
 
     Parameters
     ----------
-    v : BasisField
-        An object with basis functions (gradients) of a field.
+    v : Field
+        A field.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
     dx : ndarray or None, optional (default is None)
@@ -47,9 +46,7 @@ class LinearForm:
         self.grad_v = grad_v
         self.dx = dx
 
-        self._form = IntegralFormCartesian(
-            fun=None, v=v.field, dV=self.dx, grad_v=grad_v
-        )
+        self._form = IntegralFormCartesian(fun=None, v=v, dV=self.dx, grad_v=grad_v)
 
     def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
@@ -72,23 +69,26 @@ class LinearForm:
         """
 
         if self.grad_v:
-            v = self.v.grad
+            v = self.v.region.dhdX
         else:
-            v = self.v.basis
+            v = self.v.region.h
 
-        values = np.zeros((len(v), *v.shape[-3:]))
+        values = np.zeros((len(v), self.v.dim, *v.shape[-2:]))
 
         if not parallel:
-            for a, vbasis in enumerate(v):
-                for i, vb in enumerate(vbasis):
-                    values[a, i] = weakform(vb, *args, **kwargs) * self.dx
+            for a, vb in enumerate(v):
+                for i, vone in enumerate(np.eye(self.v.dim)):
+                    V = np.tensordot(vone, vb, axes=0)
+                    values[a, i] = weakform(V, *args, **kwargs) * self.dx
 
         else:
             idx_a, idx_i = np.indices(values.shape[:2])
             ai = zip(idx_a.ravel(), idx_i.ravel())
+            vone = np.eye(self.v.dim)
 
             def contribution(values, a, i, args, kwargs):
-                values[a, i] = weakform(v[a, i], *args, **kwargs) * self.dx
+                V = np.tensordot(vone[i], v[a], axes=0)
+                values[a, i] = weakform(V, *args, **kwargs) * self.dx
 
             threads = [
                 Thread(target=contribution, args=(values, a, i, args, kwargs))

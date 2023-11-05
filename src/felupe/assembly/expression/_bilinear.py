@@ -33,12 +33,12 @@ class BilinearForm:
 
     Parameters
     ----------
-    v : BasisField
-        An object with basis functions (gradients) of a field.
+    v : Field
+        A field.
     grad_v : bool, optional (default is False)
         Flag to use the gradient of ``v``.
-    u : BasisField
-        An object with basis function (gradients) of a field.
+    u : Field
+        A field.
     grad_u : bool, optional (default is False)
         Flag to use the gradient of ``u``.
     dx : ndarray or None, optional (default is None)
@@ -53,9 +53,7 @@ class BilinearForm:
         self.grad_u = grad_u
         self.dx = dx
 
-        self._form = IntegralFormCartesian(
-            None, v.field, self.dx, u.field, grad_v, grad_u
-        )
+        self._form = IntegralFormCartesian(None, v, self.dx, u, grad_v, grad_u)
 
     def integrate(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
@@ -80,42 +78,46 @@ class BilinearForm:
         """
 
         if self.grad_v:
-            v = self.v.grad
+            v = self.v.region.dhdX
         else:
-            v = self.v.basis
+            v = self.v.region.h
 
         if self.grad_u:
-            u = self.u.grad
+            u = self.u.region.dhdX
         else:
-            u = self.u.basis
+            u = self.u.region.h
 
-        values = np.zeros((len(v), v.shape[-4], len(u), u.shape[-4], *u.shape[-2:]))
+        values = np.zeros((len(v), self.v.dim, len(u), self.u.dim, *u.shape[-2:]))
 
         if not parallel:
-            for a, vbasis in enumerate(v):
-                for i, vb in enumerate(vbasis):
-                    for b, ubasis in enumerate(u):
-                        for j, ub in enumerate(ubasis):
+            for a, vb in enumerate(v):
+                for i, vone in enumerate(np.eye(self.v.dim)):
+                    for b, ub in enumerate(u):
+                        for j, uone in enumerate(np.eye(self.u.dim)):
                             if sym:
-                                if len(vbasis) * a + i <= len(ubasis) * b + j:
+                                if self.v.dim * a + i <= self.u.dim * b + j:
+                                    V = np.tensordot(vone, vb, axes=0)
+                                    U = np.tensordot(uone, ub, axes=0)
                                     values[a, i, b, j] = values[b, j, a, i] = (
-                                        weakform(vb, ub, *args, **kwargs) * self.dx
+                                        weakform(V, U, *args, **kwargs) * self.dx
                                     )
 
                             else:
+                                V = np.tensordot(vone, vb, axes=0)
+                                U = np.tensordot(uone, ub, axes=0)
                                 values[a, i, b, j] = (
-                                    weakform(vb, ub, *args, **kwargs) * self.dx
+                                    weakform(V, U, *args, **kwargs) * self.dx
                                 )
 
         else:
             idx_a, idx_i, idx_b, idx_j = np.indices(values.shape[:4])
             aibj = zip(idx_a.ravel(), idx_i.ravel(), idx_b.ravel(), idx_j.ravel())
 
-            if sym:
-                len_vbasis = values.shape[1]
-                len_ubasis = values.shape[3]
+            vone = np.eye(self.v.dim)
+            uone = np.eye(self.u.dim)
 
-                mask = len_vbasis * idx_a + idx_i <= len_ubasis * idx_b + idx_j
+            if sym:
+                mask = self.v.dim * idx_a + idx_i <= self.u.dim * idx_b + idx_j
                 idx_a, idx_i, idx_b, idx_j = (
                     idx_a[mask],
                     idx_i[mask],
@@ -124,15 +126,15 @@ class BilinearForm:
                 )
 
             def contribution(values, a, i, b, j, sym, args, kwargs):
+                V = np.tensordot(vone[i], v[a], axes=0)
+                U = np.tensordot(uone[j], u[b], axes=0)
                 if sym:
                     values[a, i, b, j] = values[b, j, a, i] = (
-                        weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
+                        weakform(V, U, *args, **kwargs) * self.dx
                     )
 
                 else:
-                    values[a, i, b, j] = (
-                        weakform(v[a, i], u[b, j], *args, **kwargs) * self.dx
-                    )
+                    values[a, i, b, j] = weakform(V, U, *args, **kwargs) * self.dx
 
             threads = [
                 Thread(

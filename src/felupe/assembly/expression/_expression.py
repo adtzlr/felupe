@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ._basis import Basis
 from ._mixed import BilinearFormExpression, LinearFormExpression
 
 
@@ -114,9 +113,7 @@ class FormExpression:
             # linear form
             if u is None:
                 self.u = None
-
-                # mixed-field input
-                self.v = Basis(v, parallel=parallel)
+                self.v = v
                 form = LinearFormExpression(self.v, self.grad_v)
 
                 # evaluate weakform to list of weakforms
@@ -124,8 +121,8 @@ class FormExpression:
                     self.weakform = self.weakform()
 
             else:
-                self.v = Basis(v, parallel=parallel)
-                self.u = Basis(u, parallel=parallel)
+                self.v = v
+                self.u = u
                 form = BilinearFormExpression(self.v, self.u, self.grad_v, self.grad_u)
 
                 # evaluate weakform to list of weakforms

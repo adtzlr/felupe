@@ -37,12 +37,10 @@ class FormExpression:
 
     Parameters
     ----------
-    v : Field or FieldMixed
-        An object with interpolation or gradients of a field. May be
-        updated during integration / assembly.
-    u : Field or FieldMixed
-        An object with interpolation or gradients of a field. May be
-        updated during integration / assembly.
+    v : FieldContainer
+        A container for the ``v`` fields. May be updated during integration / assembly.
+    u : FieldContainer
+        A container for the ``u`` fields. May be updated during integration / assembly.
     grad_v : bool, optional
         Flag to use the gradient of ``v`` (default is False).
     grad_u : bool, optional
@@ -117,7 +115,7 @@ class FormExpression:
                 form = LinearFormExpression(self.v, self.grad_v)
 
                 # evaluate weakform to list of weakforms
-                if isinstance(self.weakform, type(lambda x: x)):
+                if callable(self.weakform):
                     self.weakform = self.weakform()
 
             else:
@@ -126,7 +124,7 @@ class FormExpression:
                 form = BilinearFormExpression(self.v, self.u, self.grad_v, self.grad_u)
 
                 # evaluate weakform to list of weakforms
-                if isinstance(self.weakform, type(lambda x: x)):
+                if callable(self.weakform):
                     self.weakform = self.weakform()
 
             # check if new form type matches initial form type (update-stage)

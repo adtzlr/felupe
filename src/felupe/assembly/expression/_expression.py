@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ._mixed import BilinearFormExpression, LinearFormExpression
+from ._expression_bilinear import BilinearFormExpression
+from ._expression_linear import LinearFormExpression
 
 
 class FormExpression:

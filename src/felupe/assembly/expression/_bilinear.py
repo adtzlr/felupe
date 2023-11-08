@@ -88,6 +88,9 @@ class BilinearForm:
             u = self.u.region.h
 
         values = np.zeros((len(v), self.v.dim, len(u), self.u.dim, *u.shape[-2:]))
+        
+        # V = np.einsum("ik,a...->aik...", np.eye(self.v.dim), v)
+        # U = np.einsum("jl,b...->bjl...", np.eye(self.u.dim), u)
 
         if not parallel:
             for a, vb in enumerate(v):

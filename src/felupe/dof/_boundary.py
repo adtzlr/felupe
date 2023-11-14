@@ -157,7 +157,7 @@ class Boundary:
         mode="or",
     ):
         mesh = field.region.mesh
-        dof = field.indices.dof
+        # dof = field.indices.dof
 
         self.field = field
         self.dim = field.dim  # mesh.dim
@@ -193,18 +193,23 @@ class Boundary:
                 tmp = np.logical_or(mask[0], mask[1])
                 mask = combine(tmp, mask[2])
 
+        self.apply_mask(mask)
+
+    def apply_mask(self, mask):
+        "Apply a boolean mask to the boundary."
+
         # tile the mask
         self.mask = np.tile(mask.reshape(-1, 1), self.dim)
 
         # check if some axes should be skipped
-        if True not in skip:
+        if True not in self.skip:
             pass
         else:
             # exclude mask from axes which should be skipped
             self.mask[:, np.where(self.skip)[0]] = False
 
-        self.dof = dof[self.mask]
-        self.points = np.arange(mesh.npoints)[mask]
+        self.dof = self.field.indices.dof[self.mask]
+        self.points = np.arange(self.field.region.mesh.npoints)[mask]
 
     def update(self, value):
         "Update the value of the boundary in-place."

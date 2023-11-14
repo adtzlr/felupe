@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add plot- and screenshot-methods to `Region` and `Scheme` (base class for quadratures).
 - Add `item = FormItem(bilinearform, linearform=None)` to be used as an item in a `Step(items=[item])`.
+- Add a new method `Boundary.apply_mask(mask)`. This simplifies re-definitions of boundary conditions with a custom `mask`.
 
 ### Changed
 - Refactor the assembly-submodule. Move the weak-form expression-related classes to the `assembly.expression` submodule.

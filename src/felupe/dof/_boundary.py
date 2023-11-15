@@ -213,7 +213,10 @@ class Boundary:
                 # exclude mask from axes which should be skipped
                 self.mask[:, np.where(self.skip)[0]] = False
 
-        elif self.mask.shape[1] != self.dim:
+        elif self.mask.shape[1] == self.dim:
+            self.skip = None
+
+        else:
             raise ValueError(
                 " ".join(
                     [
@@ -225,9 +228,6 @@ class Boundary:
                     ]
                 )
             )
-
-        else:
-            self.skip = None
 
         self.dof = self.field.indices.dof[self.mask]
         self.points = np.arange(self.field.region.mesh.npoints)[self.mask.any(axis=1)]

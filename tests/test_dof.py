@@ -57,7 +57,7 @@ def pre3d():
     e = fem.element.Hexahedron()
     q = fem.quadrature.GaussLegendre(1, 3)
     r = fem.Region(m, e, q)
-    u = fem.Field(r, dim=3)
+    u = fem.Field(r, dim=2)
     v = fem.FieldContainer([u])
     return v
 
@@ -72,8 +72,15 @@ def test_boundary():
     mask = np.ones(u.region.mesh.npoints, dtype=bool)
     bounds = {"boundary-label": fem.Boundary(u[0], mask=mask)}
 
+    mask = np.ones((u.region.mesh.npoints, u[0].dim), dtype=bool)
+    bounds = {"boundary-label": fem.Boundary(u[0], mask=mask)}
+
     v = fem.dof.apply(u, bounds, dof0=None)
     assert np.allclose(u[0].values.ravel(), v)
+
+    with pytest.raises(ValueError):
+        wrong_mask = np.ones((u.region.mesh.npoints, 4), dtype=bool)
+        bounds = {"boundary-label": fem.Boundary(u[0], mask=wrong_mask)}
 
 
 def test_loadcase():

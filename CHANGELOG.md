@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add plot- and screenshot-methods to `Region` and `Scheme` (base class for quadratures).
 - Add `item = FormItem(bilinearform, linearform=None)` to be used as an item in a `Step(items=[item])`.
 - Add a new method `Boundary.apply_mask(mask)`. This simplifies re-definitions of boundary conditions with a custom `mask`.
+- Add support for two-dimensional dof-based masks in `Boundary(mask)` with `mask.shape` of `(mesh.npoints, field.dim)` in addition to point-based masks with `mask.size` of `mesh.npoints`.
 
 ### Changed
 - Refactor the assembly-submodule. Move the weak-form expression-related classes to the `assembly.expression` submodule.
@@ -14,6 +15,10 @@ All notable changes to this project will be documented in this file. The format 
 - Make the `field`-submodule public.
 - Always `import felupe as fem` in docs and tests.
 - Change default optional (keyword) arguments of a weak-form expression decorator from `Form(args=(), kwargs={})` to `Form(args=None, kwargs=None)`.
+- Change default value of the skip-argument `Boundary(skip=None)`. This will be set to `(False, False, False)` during initialization if `mask=None`.
+
+### Fixed
+- Fix `Boundary` and subsequently also `dof.symmetry()` for different dimensions of the mesh and the field.
 
 ### Removed
 - Don't import `Basis` to the global namespace (not necessary as it is used only internally by the weak-`Form` expression decorator).

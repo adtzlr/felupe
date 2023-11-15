@@ -43,9 +43,10 @@ class Boundary:
         passed, this is transformed to ``lambda z: np.isclose(z, fz)``.
     value : ndarray or float, optional
         Value(s) of the selected (prescribed) degrees of freedom (default is 0.0).
-    skip : tuple of bool or int, optional
+    skip : None or tuple of bool or int, optional
         A tuple to define which axes of the selected points should be skipped, i.e.
-        not prescribed (default is ``(False, False, False)``).
+        not prescribed (default is ``None`` and will be set to ``(False, False, False)``
+        if ``mask=None``).
     mask : ndarray
         Boolean mask for the prescribed degrees of freedom. If a mask is passed, ``fx``,
         ``fy`` and ``fz`` are ignored. However, ``skip`` is still applied on the mask.
@@ -160,19 +161,17 @@ class Boundary:
         fy=np.isnan,
         fz=np.isnan,
         value=0.0,
-        skip=(False, False, False),
+        skip=None,
         mask=None,
         mode="or",
     ):
         mesh = field.region.mesh
-        # dof = field.indices.dof
 
         self.field = field
-        self.dim = field.dim  # mesh.dim
+        self.dim = field.dim
         self.name = name
         self.value = value
-        self.skip = np.array(skip).astype(int)[: mesh.dim]  # self.dim
-
+        self.skip = skip
         self.mode = mode
 
         # check if callable
@@ -182,42 +181,56 @@ class Boundary:
 
         self.fun = [_fx, _fy, _fz][: mesh.dim]
 
+        if self.skip is None:
+            self.skip = (False, False, False)
+
         if mask is None:
+            self.skip = np.array(self.skip).astype(int)[: self.dim]
+
             # apply functions on the points per coordinate
             # fx(x), fy(y), fz(z) and create a mask for each coordinate
-            mask = [f(x) for f, x in zip(self.fun, mesh.points.T)]
+            masks = [f(x) for f, x in zip(self.fun, mesh.points.T)]
 
             # select the logical combination function "or" or "and"
             combine = {"or": np.logical_or, "and": np.logical_and}[self.mode]
-
-            # combine the masks with "logical_or" if dim > 1
-            if mesh.dim == 1:
-                mask = mask[0]
-
-            elif mesh.dim == 2:
-                mask = combine(mask[0], mask[1])
-
-            elif mesh.dim == 3:  # and mesh.points.shape[1] == 3:
-                tmp = np.logical_or(mask[0], mask[1])
-                mask = combine(tmp, mask[2])
+            mask = combine.reduce(masks)
 
         self.apply_mask(mask)
 
     def apply_mask(self, mask):
         "Apply a boolean mask to the boundary."
 
-        # tile the mask
-        self.mask = np.tile(mask.reshape(-1, 1), self.dim)
+        # reshape the mask
+        npoints = self.field.region.mesh.npoints
+        self.mask = mask.reshape(npoints, -1)
 
-        # check if some axes should be skipped
-        if True not in self.skip:
-            pass
+        # expand point-based to dof-based mask
+        if self.mask.shape[1] == 1:
+            self.mask = np.tile(self.mask, self.dim)
+
+            # check if some axes should be skipped
+            if True in self.skip:
+                # exclude mask from axes which should be skipped
+                self.mask[:, np.where(self.skip)[0]] = False
+
+        elif self.mask.shape[1] == self.dim:
+            self.skip = None
+
         else:
-            # exclude mask from axes which should be skipped
-            self.mask[:, np.where(self.skip)[0]] = False
+            raise ValueError(
+                " ".join(
+                    [
+                        "The given mask is of wrong shape:",
+                        "for point-based masks it must be",
+                        "(field.region.mesh.npoints, 1)",
+                        "and for dof-based masks this must be",
+                        "(field.region.mesh.npoints, field.dim).",
+                    ]
+                )
+            )
 
         self.dof = self.field.indices.dof[self.mask]
-        self.points = np.arange(self.field.region.mesh.npoints)[mask]
+        self.points = np.arange(self.field.region.mesh.npoints)[self.mask.any(axis=1)]
 
     def update(self, value):
         "Update the value of the boundary in-place."

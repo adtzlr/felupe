@@ -119,6 +119,14 @@ class Boundary:
 
     ..  image:: images/boundary_surface.png
 
+    The application of a new mask allows to change the selected points of an existing
+    boundary condition.
+
+    >>> new_mask = np.logical_and(mask, y >= 0)
+    >>> surface.apply_mask(new_mask)
+    
+    ..  image:: images/boundary_new_surface.png
+
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
     be skipped.

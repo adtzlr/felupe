@@ -124,7 +124,7 @@ class Boundary:
 
     >>> new_mask = np.logical_and(mask, y >= 0)
     >>> surface.apply_mask(new_mask)
-    
+
     ..  image:: images/boundary_new_surface.png
 
     A boundary condition may be skipped on given axes, i.e. if only the x-components

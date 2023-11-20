@@ -88,7 +88,7 @@ class SolidBodyNearlyIncompressible:
 
         \begin{bmatrix}
                         \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
-            \frac{d}{c}~\boldsymbol{b}^T &             0  &            -d  \\
+            \frac{d}{c}~\boldsymbol{b}^T &             0  &            -c  \\
                         \boldsymbol{0}^T &            -c  &             d
         \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
@@ -177,7 +177,7 @@ class SolidBodyNearlyIncompressible:
 
         v &= -\int_V (J - \bar{J}) \ dV = \bar{J} V - v
 
-        z &= -\int_V (\bar{U}' - p) \ dV = p V - \bar{U}' V
+        w &= -\int_V (\bar{U}' - p) \ dV = p V - \bar{U}' V
 
     """
 

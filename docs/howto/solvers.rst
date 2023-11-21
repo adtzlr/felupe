@@ -19,17 +19,6 @@ Solvers from SciPy Sparse:
       # the default solver
       from scipy.sparse.linalg import spsolve as solver
 
-.. tab:: SciPy Sparse (direct, symmetric)
-
-   .. code-block:: python
-      
-      import scipy.sparse.linalg as spla
-      from scipy.sparse import tril
-      
-      def solver(A, b):
-          return spla.spsolve_triangular(tril(A).tocsr(), b).squeeze()
-
-
 .. tab:: SciPy Sparse (iterative)
 
    **Note**: ``minres`` may be replaced by another iterative method.
@@ -80,4 +69,4 @@ Solvers from external packages:
            # mtype =-2: real and symmetric indefinite, 
            #             diagonal or Bunch-Kaufman pivoting
            # mtype = 6: complex and symmetric
-           return PyPardisoSolver(mtype=2).solve(triu(A).tocsr(), b).squeeze()
+           return PyPardisoSolver(mtype=-2).solve(triu(A).tocsr(), b).squeeze()

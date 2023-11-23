@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `item = FormItem(bilinearform, linearform=None)` to be used as an item in a `Step(items=[item])`.
 - Add a new method `Boundary.apply_mask(mask)`. This simplifies re-definitions of boundary conditions with a custom `mask`.
 - Add support for two-dimensional dof-based masks in `Boundary(mask)` with `mask.shape` of `(mesh.npoints, field.dim)` in addition to point-based masks with `mask.size` of `mesh.npoints`.
+- Add a bubble-multiplier argument for `RegionTriangleMINI(mesh, bubble_multiplier=0.1)` and `RegionTetraMINI(mesh, bubble_multiplier=0.1)`.
 
 ### Changed
 - Refactor the assembly-submodule. Move the weak-form expression-related classes to the `assembly.expression` submodule.
@@ -16,9 +17,11 @@ All notable changes to this project will be documented in this file. The format 
 - Always `import felupe as fem` in docs and tests.
 - Change default optional (keyword) arguments of a weak-form expression decorator from `Form(args=(), kwargs={})` to `Form(args=None, kwargs=None)`.
 - Change default value of the skip-argument `Boundary(skip=None)`. This will be set to `(False, False, False)` during initialization if `mask=None`.
+- Change the default bubble-multiplier in `RegionTriangleMINI` and `RegionTetraMINI` from 1.0 to 0.1. This affects only the template regions and not the element formulations `TriangleMINI` and `TetraMINI`, which still default to a bubble-multiplier of 0.1.
 
 ### Fixed
 - Fix `Boundary` and subsequently also `dof.symmetry()` for different dimensions of the mesh and the field.
+- Fix negative cell-volumes error in `RegionTriangleMINI` for meshes like `Rectangle(n=11).triangulate().add_midpoints_faces()` by scaling down the (arbitrary) bubble-multiplier from 1.0 to 0.1.
 
 ### Removed
 - Don't import `Basis` to the global namespace (not necessary as it is used only internally by the weak-`Form` expression decorator).

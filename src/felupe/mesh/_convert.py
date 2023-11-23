@@ -132,15 +132,9 @@ def collect_faces(points, cells, cell_type):
 
     if "triangle" in cell_type:
         # k-th face is (i[k], j[k], k[k])
-        i = [
-            0,
-        ]
-        j = [
-            1,
-        ]
-        k = [
-            2,
-        ]
+        i = [0]
+        j = [1]
+        k = [2]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k]
 
@@ -155,18 +149,10 @@ def collect_faces(points, cells, cell_type):
 
     elif "quad" in cell_type:
         # k-th edge is (i[k], j[k], k[k], m[k])
-        i = [
-            0,
-        ]
-        j = [
-            1,
-        ]
-        k = [
-            2,
-        ]
-        m = [
-            3,
-        ]
+        i = [0]
+        j = [1]
+        k = [2]
+        m = [3]
 
         faces_to_stack = cells[:, i], cells[:, j], cells[:, k], cells[:, m]
 

@@ -492,8 +492,14 @@ class RegionTriangleMINI(Region):
 
     """
 
-    def __init__(self, mesh, quadrature=TriangleQuadrature(order=2), grad=True):
-        element = TriangleMINI()
+    def __init__(
+        self,
+        mesh,
+        quadrature=TriangleQuadrature(order=2),
+        grad=True,
+        bubble_multiplier=0.1,
+    ):
+        element = TriangleMINI(bubble_multiplier=bubble_multiplier)
         super().__init__(mesh, element, quadrature, grad=grad)
 
 
@@ -521,8 +527,14 @@ class RegionTetraMINI(Region):
 
     """
 
-    def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True):
-        element = TetraMINI()
+    def __init__(
+        self,
+        mesh,
+        quadrature=TetraQuadrature(order=2),
+        grad=True,
+        bubble_multiplier=0.1,
+    ):
+        element = TetraMINI(bubble_multiplier=bubble_multiplier)
         super().__init__(mesh, element, quadrature, grad=grad)
 
 

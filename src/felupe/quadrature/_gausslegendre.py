@@ -25,7 +25,18 @@ from . import Scheme
 
 class GaussLegendre(Scheme):
     r"""An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
-    interval [-1, 1].
+    interval ``[-1, 1]``.
+
+    Parameters
+    ----------
+    order : int
+        The number of sample points :math:`n` minus one. The quadrature rule integrates
+        degree :math:`2n-1` polynomials exactly.
+    dim : int
+        The dimension of the quadrature region.
+    permute : bool, optional
+        Permute the quadrature points according to the cell point orderings (default is
+        True).
 
     Notes
     -----
@@ -34,9 +45,9 @@ class GaussLegendre(Scheme):
 
     ..  math::
 
-        \int f(x) dx \approx \sum f(x_a) w_a
+        \int_{-1}^1 f(x) dx \approx \sum f(x_q) w_q
 
-    with quadrature points :math:`x_a` and corresponding weights :math:`w_a`.
+    with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
 
     Examples
     --------
@@ -93,7 +104,18 @@ class GaussLegendre(Scheme):
 
 class GaussLegendreBoundary(GaussLegendre):
     r"""An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
-    interval [-1, 1].
+    interval ``[-1, 1]``.
+
+    Parameters
+    ----------
+    order : int
+        The number of sample points :math:`n` minus one. The quadrature rule integrates
+        degree :math:`2n-1` polynomials exactly.
+    dim : int
+        The dimension of the quadrature region.
+    permute : bool, optional
+        Permute the quadrature points according to the cell point orderings (default is
+        True).
 
     Notes
     -----
@@ -102,9 +124,17 @@ class GaussLegendreBoundary(GaussLegendre):
 
     ..  math::
 
-        \int f(x) dx \approx \sum f(x_a) w_a
+        \int_{-1}^1 f(x) dx \approx \sum f(x_q) w_q
 
-    with quadrature points :math:`x_a` and corresponding weights :math:`w_a`.
+    with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> fem.GaussLegendreBoundary(order=2, dim=3).screenshot()
+
+    .. image:: images/quadrature_boundary.png
 
     """
 
@@ -120,4 +150,4 @@ class GaussLegendreBoundary(GaussLegendre):
             self.points = np.hstack((self.points, -np.ones((len(self.points), 1))))
 
         else:
-            raise ValueError("Wrong dimension.")
+            raise ValueError("Given dimension not implemented (must be 2 or 3).")

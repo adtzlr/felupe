@@ -20,11 +20,24 @@ import numpy as np
 
 
 class Scheme:
-    "A quadrature scheme."
+    r"""A quadrature scheme with integration `points` :math:`x_q` and `weights`
+    :math:`w_q`. It approximates the integral of a function over a region :math:`V` by a
+    weighted sum of function values :math:`f_q = f(x_q)`, evaluated on the quadrature-
+    points.
+
+    Notes
+    -----
+
+    The approximation is given by
+
+    ..  math::
+
+        \int_V f(x) dV \approx \sum f(x_q) w_q
+
+    with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+    """
 
     def __init__(self, points, weights):
-        "Quadrature scheme with integration `points` and `weights`."
-
         self.points = points
         self.weights = weights
 

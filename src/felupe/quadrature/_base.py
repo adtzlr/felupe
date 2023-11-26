@@ -46,10 +46,12 @@ class Scheme:
             plotter = mesh.plot(**kwargs)
 
         for weight, point in zip(self.weights, self.points):
-            scalars = weight / self.weights.max()
+            # plotter requires 3d-point coordinates
+            points = np.pad([point], ((0, 0), (0, 3 - self.dim)))
+
             plotter.add_points(
-                points=np.pad([point], ((0, 0), (0, 3 - self.points.shape[1]))),
-                point_size=point_size * scalars,
+                points=points,
+                point_size=point_size * weight / self.weights.max(),
                 render_points_as_spheres=True,
                 opacity=0.8,
                 color="grey",

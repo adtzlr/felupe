@@ -35,9 +35,7 @@ def identity(A=None, dim=None, shape=None):
             shape = shapeA
 
     ones = (1,) * len(shape)
-    eye = np.eye(dim).reshape(dim, dim, *ones)
-
-    return np.ascontiguousarray(np.broadcast_to(eye, (dim, dim, *shape)))
+    return np.eye(dim).reshape(dim, dim, *ones)
 
 
 def sym(A):
@@ -45,7 +43,7 @@ def sym(A):
     return (A + transpose(A)) / 2
 
 
-def dya(A, B, mode=2, parallel=False):
+def dya(A, B, mode=2, parallel=False, **kwargs):
     "Dyadic (outer or kronecker) product of two tensors."
 
     if parallel:
@@ -54,9 +52,9 @@ def dya(A, B, mode=2, parallel=False):
         einsum = np.einsum
 
     if mode == 2:
-        return einsum("ij...,kl...->ijkl...", A, B)
+        return einsum("ij...,kl...->ijkl...", A, B, **kwargs)
     elif mode == 1:
-        return einsum("i...,j...->ij...", A, B)
+        return einsum("i...,j...->ij...", A, B, **kwargs)
     else:
         raise ValueError("unknown mode. (1 or 2)", mode)
 
@@ -182,27 +180,30 @@ def trace(A):
     return np.trace(A)
 
 
-def cdya_ik(A, B, parallel=False):
+def cdya_ik(A, B, parallel=False, **kwargs):
     "ik - crossed dyadic-product of A and B."
     if parallel:
         einsum = einsumt
     else:
         einsum = np.einsum
-    return einsum("ij...,kl...->ikjl...", A, B)
+    return einsum("ij...,kl...->ikjl...", A, B, **kwargs)
 
 
-def cdya_il(A, B, parallel=False):
+def cdya_il(A, B, parallel=False, **kwargs):
     "il - crossed dyadic-product of A and B."
     if parallel:
         einsum = einsumt
     else:
         einsum = np.einsum
-    return einsum("ij...,kl...->ilkj...", A, B)
+    return einsum("ij...,kl...->ilkj...", A, B, **kwargs)
 
 
-def cdya(A, B, parallel=False):
+def cdya(A, B, parallel=False, **kwargs):
     "symmetric - crossed dyadic-product of A and B."
-    return (cdya_ik(A, B, parallel=parallel) + cdya_il(A, B, parallel=parallel)) * 0.5
+    return (
+        cdya_ik(A, B, parallel=parallel, **kwargs)
+        + cdya_il(A, B, parallel=parallel, **kwargs)
+    ) * 0.5
 
 
 def cross(a, b):

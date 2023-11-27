@@ -18,6 +18,8 @@ All notable changes to this project will be documented in this file. The format 
 - Change default optional (keyword) arguments of a weak-form expression decorator from `Form(args=(), kwargs={})` to `Form(args=None, kwargs=None)`.
 - Change default value of the skip-argument `Boundary(skip=None)`. This will be set to `(False, False, False)` during initialization if `mask=None`.
 - Change the default bubble-multiplier in `RegionTriangleMINI` and `RegionTetraMINI` from 1.0 to 0.1. This affects only the template regions and not the element formulations `TriangleMINI` and `TetraMINI`, which still default to a bubble-multiplier of 0.1.
+- Pass optional keyword-arguments to `math.einsum(**kwargs)`. This enables support for the `out`-argument.
+- Don't broadcast `math.identity()`.
 
 ### Fixed
 - Fix `Boundary` and subsequently also `dof.symmetry()` for different dimensions of the mesh and the field.

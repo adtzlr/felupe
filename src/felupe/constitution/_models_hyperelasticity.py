@@ -29,7 +29,6 @@ from ..math import (
     inv,
     trace,
     transpose,
-    majortranspose,
 )
 
 
@@ -277,59 +276,33 @@ class NeoHooke:
         iFT = transpose(inv(F, J))
         eye = identity(F)
 
-        # temporary fourth-order tensor (will be re-used for performance)
-        temp = -2 / 3 * dya(F, iFT, parallel=self.parallel)
-
-        # init c-contiguous fourth-order tensor for output
-        A4 = np.full(temp.shape, fill_value=cdya_ik(eye, eye))
-
-        A4 = np.add(A4, temp, out=A4)
-        A4 = np.add(A4, majortranspose(temp), out=A4)
-
-        # overwrite values of temporary fourth-order tensor
-        temp = dya(iFT, iFT, out=temp, parallel=self.parallel)
-        FF = ddot(F, F, parallel=self.parallel) / 3
-
-        A4 = np.add(A4, 2 / 3 * FF * temp, out=A4)
-        A4 = np.add(A4, FF * temp.swapaxes(1, 3), out=A4)
-
-        A4 = np.multiply(A4, mu * J ** (-2 / 3), out=A4)
+        # "physical"-deviatoric (not math-deviatoric!) part of A4
+        A4 = (
+            mu
+            * (
+                cdya_ik(eye, eye, parallel=self.parallel)
+                - 2 / 3 * dya(F, iFT, parallel=self.parallel)
+                - 2 / 3 * dya(iFT, F, parallel=self.parallel)
+                + 2
+                / 9
+                * ddot(F, F, parallel=self.parallel)
+                * dya(iFT, iFT, parallel=self.parallel)
+                + 1
+                / 3
+                * ddot(F, F, parallel=self.parallel)
+                * cdya_il(iFT, iFT, parallel=self.parallel)
+            )
+            * J ** (-2 / 3)
+        )
 
         if bulk is not None:
+            p = bulk * (J - 1)
+            q = p + bulk * J
+
             # "physical"-volumetric (not math-volumetric!) part of A4
-
-            pJ = bulk * (J - 1) * J
-            qJ = pJ + bulk * J**2
-
-            A4 = np.add(A4, qJ * temp, out=A4)
-            A4 = np.add(A4, -pJ * temp.swapaxes(1, 3), out=A4)
-
-        # A4 = (
-        #     mu
-        #     * (
-        #         cdya_ik(eye, eye, parallel=self.parallel)
-        #         - 2 / 3 * dya(F, iFT, parallel=self.parallel)
-        #         - 2 / 3 * dya(iFT, F, parallel=self.parallel)
-        #         + 2
-        #         / 9
-        #         * FF
-        #         * dya(iFT, iFT, parallel=self.parallel)
-        #         + 1
-        #         / 3
-        #         * FF
-        #         * cdya_il(iFT, iFT, parallel=self.parallel)
-        #     )
-        #     * J ** (-2 / 3)
-        # )
-
-        # if bulk is not None:
-        #     p = bulk * (J - 1)
-        #     q = p + bulk * J
-
-        #     # "physical"-volumetric (not math-volumetric!) part of A4
-        #     A4 += J * (
-        #         q * dya(iFT, iFT, parallel=self.parallel)
-        #         - p * cdya_il(iFT, iFT, parallel=self.parallel)
-        #     )
+            A4 += J * (
+                q * dya(iFT, iFT, parallel=self.parallel)
+                - p * cdya_il(iFT, iFT, parallel=self.parallel)
+            )
 
         return [A4]

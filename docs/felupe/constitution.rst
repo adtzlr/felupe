@@ -12,7 +12,7 @@ This module provides constitutive material formulations.
    LinearElastic
    LinearElasticPlaneStrain
    LinearElasticPlaneStress
-   LinearElasticTensorNotation
+   constitution.LinearElasticTensorNotation
    LinearElasticLargeStrain
 
 **Plasticity**

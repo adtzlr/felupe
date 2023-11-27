@@ -54,5 +54,5 @@ This module contains math functions.
 
 **Detailed API Reference**
 
-.. automodule:: fem.math
+.. automodule:: felupe.math
    :members: linsteps, rotation_matrix, defgrad, strain, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel

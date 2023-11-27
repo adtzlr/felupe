@@ -23,7 +23,7 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
    Circle
    mesh.Triangle
    mesh.RectangleArbitraryOrderQuad
-   mesh.RectangleArbitraryOrderHexahedron
+   mesh.CubeArbitraryOrderHexahedron
 
 **Tools**
 
@@ -100,5 +100,5 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: fem.mesh
+.. automodule:: felupe.mesh
    :members: expand, rotate, revolve, sweep, mirror, concatenate, runouts, triangulate, convert, collect_edges, collect_faces, collect_volumes, add_midpoints_edges, add_midpoints_faces, add_midpoints_volumes, flip, fill_between, dual

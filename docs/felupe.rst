@@ -3,8 +3,8 @@ FElupe API
 
 FElupe consists of several (sub-) modules. Relevant functions and classes are available in the global namespace of FElupe where posssible. However, some classes or functions are only available in their respective submodule namespace due to naming conflicts, e.g.
 
-- :class:`fem.Line` (:class:`fem.element.Line`) and :class:`fem.mesh.Line` or 
-- :class:`fem.Triangle` (:class:`fem.element.Triangle`) and :class:`fem.mesh.Triangle`.
+- :class:`Line` (:class:`element.Line`) and :class:`mesh.Line` or 
+- :class:`Triangle` (:class:`element.Triangle`) and :class:`mesh.Triangle`.
 
 .. toctree::
    :maxdepth: 1

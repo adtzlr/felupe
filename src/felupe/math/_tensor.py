@@ -35,9 +35,7 @@ def identity(A=None, dim=None, shape=None):
             shape = shapeA
 
     ones = (1,) * len(shape)
-    eye = np.eye(dim).reshape(dim, dim, *ones)
-
-    return np.ascontiguousarray(np.broadcast_to(eye, (dim, dim, *shape)))
+    return np.eye(dim).reshape(dim, dim, *ones)
 
 
 def sym(A):

@@ -138,7 +138,8 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
     # elasticity tensor
     if kwargs["tangent"]:
-        dσdε = λ * dya(eye, eye) + 2 * μ * cdya_ik(eye, eye)
+        dσdε = np.zeros((3, 3, 3, 3, *dε.shape[2:]))
+        dσdε[:] = λ * dya(eye, eye) + 2 * μ * cdya_ik(eye, eye)
     else:
         dσdε = None
 

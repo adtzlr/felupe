@@ -20,6 +20,78 @@ import numpy as np
 
 
 def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
+    """Return a sequence from batches of evenly spaced samples between pairs of
+    milestone points.
+
+    Parameters
+    ----------
+    points : array_like
+        The milestone values of the sequence.
+    num : int, optional
+        Number of samples (without the end point) to generate. Must be non-negative
+        (default is 10).
+    endpoint : bool, optional
+        If True, ``points[-1]`` is the last sample. Otherwise, it is not included
+        (default is True).
+    axis : int or None, optional
+        The axis in the result to store the samples. By default (None), the samples will
+        be concatenated along the existing first axis. If ``axis > 0``, the samples will
+        be inserted at column ``axis``. Only positive integers are supported.
+    axes : int or None, optional
+        Number of output columns if ``axis`` is not None. Requires ``axes > axis`` and
+        will be set to ``axes = axis + 1`` by default (None).
+
+    Returns
+    -------
+    samples : ndarray
+        Concatenated batches of ``num`` equally spaced samples.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2)
+    array([0.  , 0.25, 0.5 , 1.  , 1.5 , 2.5 , 3.5 ])
+
+    Not including the end value of the sequence does not change the step size.
+
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2, endpoint=False)
+    array([0.  , 0.25, 0.5 , 1.  , 1.5 , 2.5 ])
+
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2, axis=1)
+    array([[0.  , 0.  ],
+           [0.  , 0.25],
+           [0.  , 0.5 ],
+           [0.  , 1.  ],
+           [0.  , 1.5 ],
+           [0.  , 2.5 ],
+           [0.  , 3.5 ]])
+
+    Output with four columns:
+
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2, axis=1, axes=4)
+    array([[0.  , 0.  , 0.  , 0.  ],
+           [0.  , 0.25, 0.  , 0.  ],
+           [0.  , 0.5 , 0.  , 0.  ],
+           [0.  , 1.  , 0.  , 0.  ],
+           [0.  , 1.5 , 0.  , 0.  ],
+           [0.  , 2.5 , 0.  , 0.  ],
+           [0.  , 3.5 , 0.  , 0.  ]])
+
+    The ouput degenerates to the end value
+
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=0)
+    array([3.5])
+
+    or an empty array.
+
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=0, endpoint=False)
+    array([], dtype=float64)
+
+    See Also
+    --------
+    numpy.linspace : Return evenly spaced numbers over a specified interval.
+    """
     points = np.array(points).ravel()
     start = points[:-1]
     end = points[1:]

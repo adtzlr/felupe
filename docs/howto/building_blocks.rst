@@ -66,6 +66,7 @@ A region essentially pre-calculates element shape functions and derivatives eval
     region
 
 ..  code-block::
+
     <felupe Region object>
       Element formulation: Hexahedron
       Quadrature rule: GaussLegendre

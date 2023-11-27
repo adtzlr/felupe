@@ -239,7 +239,7 @@ def test_kinematics():
         assert np.allclose(xf, F)
 
         assert xf[0].shape == (3, 3, *F[0].shape[-2:])
-        assert xg[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
+        assert xg[0].shape == (3, 3, 3, 3, 1, 1)
 
         assert yf[0].shape == (3, 3, *F[0].shape[-2:])
         assert yg[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])

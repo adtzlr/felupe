@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file. The format 
 - Change the default bubble-multiplier in `RegionTriangleMINI` and `RegionTetraMINI` from 1.0 to 0.1. This affects only the template regions and not the element formulations `TriangleMINI` and `TetraMINI`, which still default to a bubble-multiplier of 0.1.
 - Pass optional keyword-arguments to `math.einsum(**kwargs)`. This enables support for the `out`-argument.
 - Don't broadcast `math.identity()`.
+- Rename `quadrature/_base.py` to `quadrature/_scheme.py`.
 
 ### Fixed
 - Fix `Boundary` and subsequently also `dof.symmetry()` for different dimensions of the mesh and the field.

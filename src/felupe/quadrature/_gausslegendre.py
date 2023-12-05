@@ -20,7 +20,7 @@ from string import ascii_lowercase
 
 import numpy as np
 
-from . import Scheme
+from ._scheme import Scheme
 
 
 class GaussLegendre(Scheme):

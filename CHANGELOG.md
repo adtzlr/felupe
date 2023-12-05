@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new method `Boundary.apply_mask(mask)`. This simplifies re-definitions of boundary conditions with a custom `mask`.
 - Add support for two-dimensional dof-based masks in `Boundary(mask)` with `mask.shape` of `(mesh.npoints, field.dim)` in addition to point-based masks with `mask.size` of `mesh.npoints`.
 - Add a bubble-multiplier argument for `RegionTriangleMINI(mesh, bubble_multiplier=0.1)` and `RegionTetraMINI(mesh, bubble_multiplier=0.1)`.
+- Add `region.reload(mesh, element, quadrature)` to re-evaluate a region, already linked to a field, with a modified mesh or element class or quadrature.
 
 ### Changed
 - Refactor the assembly-submodule. Move the weak-form expression-related classes to the `assembly.expression` submodule.

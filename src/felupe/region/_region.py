@@ -130,9 +130,31 @@ class Region:
     """
 
     def __init__(self, mesh, element, quadrature, grad=True):
-        self.mesh = mesh
-        self.element = element
-        self.quadrature = quadrature
+        self.evaluate_gradient = grad
+        self.reload(mesh=mesh, element=element, quadrature=quadrature)
+
+    def reload(self, mesh=None, element=None, quadrature=None):
+        """Reload the numeric region.
+
+        Parameters
+        ----------
+        mesh : Mesh or None, optional
+            A mesh with points and cells (default is None).
+        element : Element or None, optional
+            The finite element formulation to be applied on the cells (default is None).
+        quadrature: Quadrature or None, optional
+            An element-compatible numeric integration scheme with points and weights
+            (default is None).
+        """
+
+        if mesh is not None:
+            self.mesh = mesh
+
+        if element is not None:
+            self.element = element
+
+        if quadrature is not None:
+            self.quadrature = quadrature
 
         # element shape function
         self.element.h = np.array(
@@ -146,7 +168,7 @@ class Region:
         ).transpose(1, 2, 0)
         self.dhdr = np.tile(np.expand_dims(self.element.dhdr, -1), self.mesh.ncells)
 
-        if grad:
+        if self.evaluate_gradient:
             # geometric gradient
             self.dXdr = np.einsum(
                 "caI,aJqc->IJqc", self.mesh.points[self.mesh.cells], self.dhdr

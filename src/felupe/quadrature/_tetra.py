@@ -20,7 +20,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from . import Scheme
+from ._scheme import Scheme
 
 
 class Tetrahedron(Scheme):

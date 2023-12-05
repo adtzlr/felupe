@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.12.0] - 2023-12-05
+
 ### Added
 - Add plot- and screenshot-methods to `Region` and `Scheme` (base class for quadratures).
 - Add `item = FormItem(bilinearform, linearform=None)` to be used as an item in a `Step(items=[item])`.

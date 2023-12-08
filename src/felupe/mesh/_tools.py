@@ -57,11 +57,6 @@ def expand(points, cells, cell_type, n=11, z=1):
     points = np.array(points)
     cells = np.array(cells)
 
-    # get dimension of points array
-    # init zero vector of input dimension
-    dim = points.shape[1]
-    zeros = np.zeros(dim)
-
     # set new cell-type and the appropriate slice
     cell_type_new, sl = {
         "line": ("quad", slice(None, None, -1)),
@@ -69,7 +64,7 @@ def expand(points, cells, cell_type, n=11, z=1):
     }[cell_type]
 
     # init new padded points array
-    p = np.pad(points, ((0, 0), (0, 1)))
+    p = np.pad(points, ((0, 0), (0, 1)))[np.newaxis, ...]
 
     # generate new points array for every thickness expansion ``h``
     if np.isscalar(z):
@@ -78,13 +73,21 @@ def expand(points, cells, cell_type, n=11, z=1):
         points_z = z
         n = len(z)
 
-    points_new = np.vstack([p + np.array([*zeros, h]) for h in points_z])
+    # get dimension of points array
+    # init zero vector of input dimension
+    dim = points.shape[1]
+    zeros = np.zeros((n, dim))
+    points_new = p + np.hstack([zeros, points_z[..., np.newaxis]])[:, np.newaxis, ...]
 
     # generate new cells array
-    c = [cells + len(p) * a for a in np.arange(n)]
-    cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+    c = cells[np.newaxis, ...] + len(points) * np.arange(n)[..., np.newaxis, np.newaxis]
+    cells_new = np.concatenate([c[:-1], c[1:, ..., sl]], axis=-1)
 
-    return points_new, cells_new, cell_type_new
+    return (
+        points_new.reshape(-1, points_new.shape[-1]),
+        cells_new.reshape(-1, cells_new.shape[-1]),
+        cell_type_new,
+    )
 
 
 def fill_between(mesh, other_mesh, n=11):

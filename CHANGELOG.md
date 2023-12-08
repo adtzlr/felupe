@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Vectorize `mesh.expand()` which enhances the performance of quad/hex mesh-generators like `Rectangle()` and `Cube()`.
+
 ## [7.12.0] - 2023-12-05
 
 ### Added

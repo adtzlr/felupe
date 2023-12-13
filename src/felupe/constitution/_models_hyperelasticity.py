@@ -356,11 +356,11 @@ class NeoHookeCompressible:
 
     """
 
-    def __init__(self, mu=None, bulk=None, parallel=False):
+    def __init__(self, mu=None, lmbda=None, parallel=False):
         self.parallel = parallel
 
         self.mu = mu
-        self.bulk = bulk
+        self.lmbda = lmbda
 
         # aliases for function, gradient and hessian
         self.energy = self.function

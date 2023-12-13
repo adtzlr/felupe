@@ -310,41 +310,49 @@ class NeoHookeCompressible:
 
     .. math::
 
-        \psi &= \psi(\boldsymbol{C}) + U(J)
+        \psi &= \psi(\boldsymbol{C})
 
-        \psi(\boldsymbol{C}) &= \frac{\mu}{2}(\text{tr}(\boldsymbol{C}) - 3)
+        \psi(\boldsymbol{C}) &= \frac{\mu}{2} \text{tr}(\boldsymbol{C})
+            - \mu \ln(J) + \frac{\lambda}{2} \ln(J)^2
 
     with
 
     .. math::
 
-       J &= \text{det}(\boldsymbol{F})
-
-    The volumetric part of the strain energy density function is a function
-    the volume ratio.
-
-    .. math::
-
-       U(J) = \frac{K}{2} \ln(J)^2
+       J = \text{det}(\boldsymbol{F})
 
     The first Piola-Kirchhoff stress tensor is evaluated as the gradient
-    of the strain energy density function. The hessian of the strain
-    energy density function enables the corresponding elasticity tensor.
+    of the strain energy density function.
 
     .. math::
 
        \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
 
+       \boldsymbol{P} &= \mu \left( \boldsymbol{F} - \boldsymbol{F}^{-T} \right)
+           + \lambda \ln(J) \boldsymbol{F}^{-T}
+
+    The hessian of the strain energy density function enables the corresponding
+    elasticity tensor.
+
+    .. math::
+
        \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial
        \boldsymbol{F}}
+
+       \mathbb{A} &= \mu \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
+           + \left(\mu - \lambda \ln(J) \right)
+               \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
+           + \lambda \boldsymbol{F}^{-T} {\otimes} \boldsymbol{F}^{-T}
+
+
 
 
     Arguments
     ---------
     mu : float
-        Shear modulus
-    bulk : float
-        Bulk modulus
+        Shear modulus (second Lamé constant)
+    lmbda : float
+        First Lamé constant
 
     """
 
@@ -363,9 +371,9 @@ class NeoHookeCompressible:
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def function(self, x, mu=None, bulk=None):
-        """Strain energy density function per unit undeformed volume of the
-        Neo-Hookean material formulation.
+    def function(self, x, mu=None, lmbda=None):
+        """Strain energy density function per unit undeformed volume of the Neo-Hookean
+        material formulation.
 
         Arguments
         ---------
@@ -373,8 +381,8 @@ class NeoHookeCompressible:
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
             Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
+        lmbda : float, optional
+            First Lamé constant (default is None)
         """
 
         F = x[0]
@@ -382,22 +390,22 @@ class NeoHookeCompressible:
         if mu is None:
             mu = self.mu
 
-        if bulk is None:
-            bulk = self.bulk
+        if lmbda is None:
+            lmbda = self.lmbda
 
         lnJ = np.log(det(F))
         C = dot(transpose(F), F, parallel=self.parallel)
 
         W = mu * (trace(C) / 2 - lnJ)
 
-        if bulk is not None:
-            W += bulk * lnJ**2 / 2
+        if lmbda is not None:
+            W += lmbda * lnJ**2 / 2
 
         return [W]
 
-    def gradient(self, x, mu=None, bulk=None):
-        """Gradient of the strain energy density function per unit
-        undeformed volume of the Neo-Hookean material formulation.
+    def gradient(self, x, mu=None, lmbda=None):
+        """Gradient of the strain energy density function per unit undeformed volume of
+        the Neo-Hookean material formulation.
 
         Arguments
         ---------
@@ -405,8 +413,8 @@ class NeoHookeCompressible:
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
             Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
+        lmbda : float, optional
+            First Lamé constant (default is None)
         """
 
         F, statevars = x[0], x[-1]
@@ -414,8 +422,8 @@ class NeoHookeCompressible:
         if mu is None:
             mu = self.mu
 
-        if bulk is None:
-            bulk = self.bulk
+        if lmbda is None:
+            lmbda = self.lmbda
 
         J = det(F)
         lnJ = np.log(J)
@@ -423,15 +431,14 @@ class NeoHookeCompressible:
 
         P = mu * (F - iFT)
 
-        if bulk is not None:
-            # "physical"-volumetric (not math-volumetric!) part of P
-            P += bulk * lnJ * iFT
+        if lmbda is not None:
+            P += lmbda * lnJ * iFT
 
         return [P, statevars]
 
-    def hessian(self, x, mu=None, bulk=None):
-        """Hessian of the strain energy density function per unit
-        undeformed volume of the Neo-Hookean material formulation.
+    def hessian(self, x, mu=None, lmbda=None):
+        """Hessian of the strain energy density function per unit undeformed volume of
+        the Neo-Hookean material formulation.
 
         Arguments
         ---------
@@ -439,8 +446,8 @@ class NeoHookeCompressible:
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
             Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
+        lmbda : float, optional
+            First Lamé constant (default is None)
         """
 
         F = x[0]
@@ -448,8 +455,8 @@ class NeoHookeCompressible:
         if mu is None:
             mu = self.mu
 
-        if bulk is None:
-            bulk = self.bulk
+        if lmbda is None:
+            lmbda = self.lmbda
 
         J = det(F)
         iFT = transpose(inv(F, J))
@@ -458,7 +465,7 @@ class NeoHookeCompressible:
         iFTiFT = cdya_il(iFT, iFT, parallel=self.parallel)
         A4 = mu * (cdya_ik(eye, eye) + iFTiFT)
 
-        if bulk is not None:
-            A4 += bulk * (dya(iFT, iFT, parallel=self.parallel) - np.log(J) * iFTiFT)
+        if lmbda is not None:
+            A4 += lmbda * (dya(iFT, iFT, parallel=self.parallel) - np.log(J) * iFTiFT)
 
         return [A4]

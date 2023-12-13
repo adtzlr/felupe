@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `NeoHookeCompressible` for compressible hyperelastic materials or even as a fast alternative for `NeoHooke` when used in `SolidBodyIncompressible`.
+
 ### Changed
 - Vectorize `mesh.expand()` which enhances the performance of quad/hex mesh-generators like `Rectangle()` and `Cube()`.
 

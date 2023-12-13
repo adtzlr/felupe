@@ -63,7 +63,7 @@ def test_nh():
     for parallel in [False, True]:
         for nh in [
             fem.constitution.NeoHooke(mu=1.0, bulk=2.0, parallel=parallel),
-            fem.constitution.NeoHookeCompressible(mu=1.0, bulk=2.0, parallel=parallel),
+            fem.constitution.NeoHookeCompressible(mu=1.0, lmbda=2.0, parallel=parallel),
             fem.constitution.LinearElasticLargeStrain(E=1.0, nu=0.3, parallel=parallel),
         ]:
             W = nh.function(F)

@@ -19,17 +19,17 @@ pip install felupe[all]
 ```
 
 where `[all]` installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
-* `numpy` for array operations
-* `scipy` for sparse matrices
-* `tensortrax` for automatic differentiation
+* [`numpy`](https://github.com/numpy/numpy) for array operations
+* [`scipy`](https://github.com/scipy/scipy) for sparse matrices
+* [`tensortrax`](https://github.com/adtzlr/tensortrax) for automatic differentiation
 
 In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
-* `einsumt` for parallel assembly
-* `h5py` for XDMF result files
-* `matplotlib` for plotting graphs
-* `meshio` for mesh-related I/O
-* `pyvista` for interactive visualizations
-* `tqdm` for showing progress bars during job evaluations
+* [`einsumt`](https://github.com/mrkwjc/einsumt) for parallel assembly
+* [`h5py`](https://github.com/h5py/h5py) for XDMF result files
+* [`matplotlib`](https://github.com/matplotlib/matplotlib) for plotting graphs
+* [`meshio`](https://github.com/nschloe/meshio) for mesh-related I/O
+* [`pyvista`](https://github.com/pyvista/pyvista) for interactive visualizations
+* [`tqdm`](https://github.com/tqdm/tqdm) for showing progress bars during job evaluations
 
 # Getting Started
 This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. 

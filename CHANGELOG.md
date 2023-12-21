@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.13.0] - 2023-12-22
+
 ### Added
 - Add `NeoHookeCompressible` for compressible hyperelastic materials or even as a fast alternative for `NeoHooke` when used in `SolidBodyIncompressible`.
 

@@ -49,7 +49,7 @@ def log_strain(field, substep=None):
     F = u.extract()
     w, v = eigh(dot(transpose(F), F))
     stretch = np.sqrt(w)
-    strain = np.einsum("a...,ia...,ja...->ij...", np.log(stretch), v, v)
+    strain = np.einsum("a...,ai...,aj...->ij...", np.log(stretch), v, v)
     return [tovoigt(strain.mean(-2), True).T]
 
 

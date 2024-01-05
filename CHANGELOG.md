@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.
+- Enhance the performance of `math.cdya()` by reducing the number of (intermediate) arrays to be created from 4 to 2.
+
 ## [7.13.0] - 2023-12-22
 
 ### Added

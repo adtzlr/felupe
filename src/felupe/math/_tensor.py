@@ -198,12 +198,11 @@ def cdya_il(A, B, parallel=False, **kwargs):
     return einsum("ij...,kl...->ilkj...", A, B, **kwargs)
 
 
-def cdya(A, B, parallel=False, **kwargs):
+def cdya(A, B, parallel=False, out=None, **kwargs):
     "symmetric - crossed dyadic-product of A and B."
-    return (
-        cdya_ik(A, B, parallel=parallel, **kwargs)
-        + cdya_il(A, B, parallel=parallel, **kwargs)
-    ) * 0.5
+    res = cdya_ik(A, B, parallel=parallel, out=out, **kwargs)
+    res = np.add(res, cdya_il(A, B, parallel=parallel, **kwargs), out=res)
+    return np.multiply(res, 0.5)
 
 
 def cross(a, b):
@@ -213,7 +212,7 @@ def cross(a, b):
     )
 
 
-def dot(A, B, mode=(2, 2), parallel=False):
+def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
     "Dot-product of A and B with inputs of n trailing axes.."
 
     if parallel:
@@ -222,37 +221,37 @@ def dot(A, B, mode=(2, 2), parallel=False):
         einsum = np.einsum
 
     if mode == (2, 2):
-        return einsum("ik...,kj...->ij...", A, B)
+        return einsum("ik...,kj...->ij...", A, B, **kwargs)
 
     elif mode == (1, 1):
-        return einsum("i...,i...->...", A, B)
+        return einsum("i...,i...->...", A, B, **kwargs)
 
     elif mode == (4, 4):
-        return einsum("ijkp...,plmn...->ijklmn...", A, B)
+        return einsum("ijkp...,plmn...->ijklmn...", A, B, **kwargs)
 
     elif mode == (2, 1):
-        return einsum("ij...,j...->i...", A, B)
+        return einsum("ij...,j...->i...", A, B, **kwargs)
 
     elif mode == (1, 2):
-        return einsum("i...,ij...->j...", A, B)
+        return einsum("i...,ij...->j...", A, B, **kwargs)
 
     elif mode == (4, 1):
-        return einsum("ijkl...,l...->ijk...", A, B)
+        return einsum("ijkl...,l...->ijk...", A, B, **kwargs)
 
     elif mode == (1, 4):
-        return einsum("i...,ijkl...->jkl...", A, B)
+        return einsum("i...,ijkl...->jkl...", A, B, **kwargs)
 
     elif mode == (2, 4):
-        return einsum("im...,mjkl...->ijkl...", A, B)
+        return einsum("im...,mjkl...->ijkl...", A, B, **kwargs)
 
     elif mode == (4, 2):
-        return einsum("ijkm...,ml...->ijkl...", A, B)
+        return einsum("ijkm...,ml...->ijkl...", A, B, **kwargs)
 
     else:
         raise TypeError("Unknown shape of A and B.")
 
 
-def ddot(A, B, mode=(2, 2), parallel=False):
+def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
     "Double-Dot-product of A and B with inputs of `n` trailing axes."
 
     if parallel:
@@ -261,13 +260,13 @@ def ddot(A, B, mode=(2, 2), parallel=False):
         einsum = np.einsum
 
     if mode == (2, 2):
-        return einsum("ij...,ij...->...", A, B)
+        return einsum("ij...,ij...->...", A, B, **kwargs)
     elif mode == (2, 4):
-        return einsum("ij...,ijkl...->kl...", A, B)
+        return einsum("ij...,ijkl...->kl...", A, B, **kwargs)
     elif mode == (4, 2):
-        return einsum("ijkl...,kl...->ij...", A, B)
+        return einsum("ijkl...,kl...->ij...", A, B, **kwargs)
     elif mode == (4, 4):
-        return einsum("ijkl...,klmn...->ijmn...", A, B)
+        return einsum("ijkl...,klmn...->ijmn...", A, B, **kwargs)
     else:
         raise TypeError("Unknown shape of A and B.")
 

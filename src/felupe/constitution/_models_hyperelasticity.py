@@ -278,16 +278,12 @@ class NeoHooke:
 
         # "physical"-deviatoric (not math-deviatoric!) part of A4
         FF = ddot(F, F, parallel=self.parallel)
-        A4 = (
-            mu
-            * (
-                cdya_ik(eye, eye, parallel=self.parallel)
-                - 2 / 3 * dya(F, iFT, parallel=self.parallel)
-                - 2 / 3 * dya(iFT, F, parallel=self.parallel)
-                + 2 / 9 * FF * dya(iFT, iFT, parallel=self.parallel)
-                + 1 / 3 * FF * cdya_il(iFT, iFT, parallel=self.parallel)
-            )
-            * J ** (-2 / 3)
+        A4 = (mu * J ** (-2 / 3)) * (
+            cdya_ik(eye, eye, parallel=self.parallel)
+            - 2 / 3 * dya(F, iFT, parallel=self.parallel)
+            - 2 / 3 * dya(iFT, F, parallel=self.parallel)
+            + 2 / 9 * FF * dya(iFT, iFT, parallel=self.parallel)
+            + 1 / 3 * FF * cdya_il(iFT, iFT, parallel=self.parallel)
         )
 
         if bulk is not None:

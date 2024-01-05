@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "FElupe"
-copyright = "2023, Andreas Dutzler"
+copyright = "2024, Andreas Dutzler"
 author = "Andreas Dutzler"
 
 
@@ -70,15 +70,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
 html_title = "FElupe"
-
-html_show_sourcelink = True
-html_sourcelink_suffix = ""
 
 html_static_path = ["_static"]
 html_theme_options = {
-    "light_logo": "logo.png",
-    "dark_logo": "logo.png",
-    "sidebar_hide_name": True,
+   "logo": {
+      "text": "FElupe",
+      "image_light": "logo_light.svg",
+      "image_dark": "logo_dark.svg",
+   }
 }

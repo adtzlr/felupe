@@ -27,6 +27,77 @@ from ._cartesian import IntegralFormCartesian
 
 
 class IntegralForm:
+    r"""Mixed-field integral form container constructed by a list of function results
+    ``[fun]``, a list of test fields ``v``, differential volumes ``dV`` and optionally a
+    list of trial fields ``u``. For the lists of fields ``v`` and ``u``, gradients may
+    be passed by setting the list items in ``grad_v`` and ``grad_u`` to True (default is
+    None which enforces True for the first field in the list of fields and False for all
+    the following fields).
+
+    Linearform
+    ----------
+    A linear form is either defined by the dot product of a given (vector-valued)
+    function :math:`\boldsymbol{f}` and the (vector) field :math:`\boldsymbol{v}`
+
+    ..  math::
+
+        L(\boldsymbol{v}) = \int_V \boldsymbol{f} \cdot \boldsymbol{v} ~ dV
+
+
+    or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{F}`
+    and the gradient of the field values :math:`\boldsymbol{\nabla v}`.
+
+    ..  math::
+
+        L(\boldsymbol{v}) = \int_V \boldsymbol{F} : \boldsymbol{\nabla v} ~ dV
+
+    Bilinearform
+    ------------
+    A bilinear form is either defined by the dot products of a given (matrix-valued)
+    function :math:`\boldsymbol{f}` and the (vector) fields :math:`\boldsymbol{v}` and
+    :math:`\boldsymbol{u}`.
+
+    ..  math::
+
+        a(\boldsymbol{v}, \boldsymbol{u}) =
+            \int_V \boldsymbol{v} \cdot \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
+
+
+    or by the double-dot product of a (tensor-valued) function :math:`\boldsymbol{F}`
+    and (the gradient of) the field values :math:`\boldsymbol{\nabla v}` and
+    :math:`\boldsymbol{\nabla u}`.
+
+    ..  math::
+
+        a(\boldsymbol{v}, \boldsymbol{u}) &=
+            \int_V \boldsymbol{\nabla v} : \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
+
+        a(\boldsymbol{v}, \boldsymbol{u}) &=
+            \int_V \boldsymbol{v} \cdot \boldsymbol{F} : \boldsymbol{\nabla u} ~ dV
+
+        a(\boldsymbol{v}, \boldsymbol{u}) &=
+            \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
+
+
+    Arguments
+    ---------
+    fun : list of array
+        The list of pre-evaluated function arrays.
+    v : list of Field, FieldAxisymmetric or FieldPlaneStrain
+        The list of test fields.
+    dV : array
+        The differential volumes.
+    u : list of Field, FieldAxisymmetric or FieldPlaneStrain, optional
+        If a list with fields is passed, bilinear forms are created (default is None).
+    grad_v : list of bool or None, optional
+        List with flags to activate the gradients on the test fields ``v`` (default is
+        None which enforces True for the first field and False for all following fields)
+        .
+    grad_u : list of bool or None, optional
+        Flag to activate the gradient on the trial field ``u`` (default is None which
+        enforces True for the first field and False for all following fields).
+    """
+
     def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):
         self.fun = fun
         self.v = v.fields

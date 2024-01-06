@@ -27,7 +27,7 @@ from scipy.sparse import csr_matrix as sparsematrix
 
 
 class IntegralFormCartesian:
-    r"""Single-Field Integral-Form constructed by a function result ``fun``, a test
+    r"""Single-field integral form constructed by a function result ``fun``, a test
     field ``v``, differential volumes ``dV`` and optionally a trial field ``u``. For
     both fields ``v`` and ``u`` gradients may be passed by setting ``grad_v`` and
     ``grad_u`` to True (default is False for both fields).
@@ -85,12 +85,12 @@ class IntegralFormCartesian:
         The test field.
     dV : array
         The differential volumes.
-    u : Field, optional (default is None)
-        If a field is passed, a bilinear form is created.
-    grad_v : bool, optional (default is False)
-        Flag to activate the gradient on the test field ``v``.
-    grad_u : bool, optional (default is False)
-        Flag to activate the gradient on the trial field ``u``.
+    u : Field, optional
+        If a field is passed, a bilinear form is created (default is None).
+    grad_v : bool, optional
+        Flag to activate the gradient on the test field ``v`` (default is False).
+    grad_u : bool, optional
+        Flag to activate the gradient on the trial field ``u`` (default is False).
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):

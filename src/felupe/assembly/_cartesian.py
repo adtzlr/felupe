@@ -52,8 +52,8 @@ class IntegralFormCartesian:
     Bilinearform
     ------------
     A bilinear form is either defined by the dot products of a given (matrix-valued)
-    function :math:`\boldsymbol{f}` and the (vector) fields :math:`\boldsymbol{v}` and
-    :math:`\boldsymbol{u}`.
+    function :math:`\boldsymbol{F}` and the (vector) fields :math:`\boldsymbol{v}` and
+    :math:`\boldsymbol{u}`
 
     ..  math::
 
@@ -61,9 +61,9 @@ class IntegralFormCartesian:
             \int_V \boldsymbol{v} \cdot \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
 
 
-    or by the double-dot product of a (tensor-valued) function :math:`\boldsymbol{F}`
-    and (the gradient of) the field values :math:`\boldsymbol{\nabla v}` and
-    :math:`\boldsymbol{\nabla u}`.
+    or by the double-dot products of a (tensor-valued) function :math:`\boldsymbol{F}`
+    and the field values :math:`\boldsymbol{v}` and :math:`\boldsymbol{u}` or their
+    gradients :math:`\boldsymbol{\nabla v}` and :math:`\boldsymbol{\nabla u}`.
 
     ..  math::
 

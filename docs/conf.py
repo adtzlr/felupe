@@ -95,9 +95,9 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
-   "logo": {
-      "text": "FElupe",
-      "image_light": "logo_light.svg",
-      "image_dark": "logo_dark.svg",
-   }
+    "logo": {
+        "text": "FElupe",
+        "image_light": "logo_light.svg",
+        "image_dark": "logo_dark.svg",
+    },
 }

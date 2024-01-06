@@ -144,15 +144,15 @@ class IntegralForm:
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
             \boldsymbol{\nabla u} ~ dV
 
-    >>> dWint = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
-    >>> values = dWint.integrate(parallel=False)
+    >>> form = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
+    >>> values = form.integrate(parallel=False)
     >>> values.shape
     (8, 3, 8, 3, 1000)
 
     The cell-wise stiffness matrices are re-used to assemble the system stiffness
     matrix. The parallel keyword argument enables a threaded assembly.
 
-    >>> K = dWint.assemble(values=values, parallel=False)
+    >>> K = form.assemble(values=values, parallel=False)
     >>> K.shape
     (3993, 3993)
 

@@ -83,14 +83,27 @@ class StateNearlyIncompressible:
         self.J = np.ones(field.region.mesh.ncells)
 
     def h(self, parallel=False):
-        "Integrated shape-function gradient w.r.t. the deformed coordinates `x`."
+        """Integrated shape-function gradient w.r.t. the deformed coordinates.
+
+        ..  math::
+
+            \int_V \frac{\partial J}{\partial \boldsymbol{F}} :
+                \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{X}} ~ dV
+
+        """
 
         return IntegralForm(
             fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
         ).integrate(parallel=parallel)[0]
 
     def v(self):
-        "Cell volumes of the deformed configuration."
+        """Cell volumes of the deformed configuration.
+
+        ..  math::
+
+            dv = \int_V J ~ dV
+
+        """
         dV = self.field.region.dV
         if isinstance(self.field[0], FieldAxisymmetric):
             R = self.field[0].radius

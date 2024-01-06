@@ -32,8 +32,26 @@ class IntegralFormCartesian:
     both fields ``v`` and ``u`` gradients may be passed by setting ``grad_v`` and
     ``grad_u`` to True (default is False for both fields).
 
+    Arguments
+    ---------
+    fun : array
+        The pre-evaluated function array.
+    v : Field
+        The test field.
+    dV : array
+        The differential volumes.
+    u : Field, optional
+        If a field is passed, a bilinear form is created (default is None).
+    grad_v : bool, optional
+        Flag to activate the gradient on the test field ``v`` (default is False).
+    grad_u : bool, optional
+        Flag to activate the gradient on the trial field ``u`` (default is False).
+
+    Notes
+    -----
+
     Linearform
-    ----------
+    ~~~~~~~~~~
     A linear form is either defined by the dot product of a given (vector-valued)
     function :math:`\boldsymbol{f}` and the (vector) field :math:`\boldsymbol{v}`
 
@@ -50,7 +68,7 @@ class IntegralFormCartesian:
         L(\boldsymbol{v}) = \int_V \boldsymbol{F} : \boldsymbol{\nabla v} ~ dV
 
     Bilinearform
-    ------------
+    ~~~~~~~~~~~~
     A bilinear form is either defined by the dot products of a given (matrix-valued)
     function :math:`\boldsymbol{F}` and the (vector) fields :math:`\boldsymbol{v}` and
     :math:`\boldsymbol{u}`
@@ -76,21 +94,6 @@ class IntegralFormCartesian:
         a(\boldsymbol{v}, \boldsymbol{u}) &=
             \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
 
-
-    Arguments
-    ---------
-    fun : array
-        The pre-evaluated function array.
-    v : Field
-        The test field.
-    dV : array
-        The differential volumes.
-    u : Field, optional
-        If a field is passed, a bilinear form is created (default is None).
-    grad_v : bool, optional
-        Flag to activate the gradient on the test field ``v`` (default is False).
-    grad_u : bool, optional
-        Flag to activate the gradient on the trial field ``u`` (default is False).
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):

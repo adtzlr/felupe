@@ -121,7 +121,7 @@ class IntegralForm:
 
     ..  math::
 
-        \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} &=
+        \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} =
         2 \mu \ \boldsymbol{I} \odot \boldsymbol{I} + \gamma \ \boldsymbol{I} \otimes
         \boldsymbol{I}
 

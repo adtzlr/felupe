@@ -66,40 +66,40 @@ class IntegralForm:
         L(\boldsymbol{v}) = \int_V \boldsymbol{f} \cdot \boldsymbol{v} ~ dV
 
 
-    or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{F}`
+    or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{f}`
     and the gradient of the field values :math:`\boldsymbol{\nabla v}`.
 
     ..  math::
 
-        L(\boldsymbol{v}) = \int_V \boldsymbol{F} : \boldsymbol{\nabla v} ~ dV
+        L(\boldsymbol{v}) = \int_V \boldsymbol{f} : \boldsymbol{\nabla v} ~ dV
 
     Bilinearform
     ~~~~~~~~~~~~
 
     A bilinear form is either defined by the dot products of a given (matrix-valued)
-    function :math:`\boldsymbol{F}` and the (vector) fields :math:`\boldsymbol{v}` and
+    function :math:`\boldsymbol{f}` and the (vector) fields :math:`\boldsymbol{v}` and
     :math:`\boldsymbol{u}`
 
     ..  math::
 
         a(\boldsymbol{v}, \boldsymbol{u}) =
-            \int_V \boldsymbol{v} \cdot \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
+            \int_V \boldsymbol{v} \cdot \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
 
 
-    or by the double-dot products of a (tensor-valued) function :math:`\boldsymbol{F}`
+    or by the double-dot products of a (tensor-valued) function :math:`\boldsymbol{f}`
     and the field values :math:`\boldsymbol{v}` and :math:`\boldsymbol{u}` or their
     gradients :math:`\boldsymbol{\nabla v}` and :math:`\boldsymbol{\nabla u}`.
 
     ..  math::
 
         a(\boldsymbol{v}, \boldsymbol{u}) &=
-            \int_V \boldsymbol{\nabla v} : \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
+            \int_V \boldsymbol{\nabla v} : \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
 
         a(\boldsymbol{v}, \boldsymbol{u}) &=
-            \int_V \boldsymbol{v} \cdot \boldsymbol{F} : \boldsymbol{\nabla u} ~ dV
+            \int_V \boldsymbol{v} \cdot \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
         a(\boldsymbol{v}, \boldsymbol{u}) &=
-            \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
+            \int_V \boldsymbol{\nabla v} : \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
     Examples
     --------

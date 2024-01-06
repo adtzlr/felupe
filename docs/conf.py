@@ -75,6 +75,26 @@ html_title = "FElupe"
 
 html_static_path = ["_static"]
 html_theme_options = {
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/adtzlr/felupe",
+            "icon": "fa-brands fa-github",
+            "type": "fontawesome",
+        },
+        {
+            "name": "Read the Docs",
+            "url": "https://readthedocs.org/projects/felupe/downloads",
+            "icon": "fa-solid fa-book",
+            "type": "fontawesome",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/felupe/",
+            "icon": "fa-solid fa-box",
+            "type": "fontawesome",
+        },
+    ],
    "logo": {
       "text": "FElupe",
       "image_light": "logo_light.svg",

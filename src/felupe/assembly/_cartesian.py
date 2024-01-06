@@ -27,79 +27,70 @@ from scipy.sparse import csr_matrix as sparsematrix
 
 
 class IntegralFormCartesian:
-    r"""Single-Field Integral-Form constructed by a function result ``fun``,
-    a virtual field ``v``, differential volumes ``dV`` and optionally a
-    field ``u``. For both fields ``v`` and ``u`` gradients may be passed by
-    setting ``grad_v`` and ``grad_u`` to True (default is False for both).
+    r"""Single-Field Integral-Form constructed by a function result ``fun``, a test
+    field ``v``, differential volumes ``dV`` and optionally a trial field ``u``. For
+    both fields ``v`` and ``u`` gradients may be passed by setting ``grad_v`` and
+    ``grad_u`` to True (default is False for both fields).
 
-    **Linearform**
+    Linearform
+    ----------
+    A linear form is either defined by the dot product of a given (vector-valued)
+    function :math:`\boldsymbol{f}` and the (vector) field :math:`\boldsymbol{v}`
 
-    without gradient of ``v``
+    ..  math::
 
-    ..  code-block::
-
-        L(v) = ∫ fun v dV                                      (1)
-
-           (or ∫ fun_i v_i dV)
-
-
-    with gradient of ``v``
-
-    ..  code-block::
-
-        L(v) = ∫ fun grad(v) dV                                (2)
-
-           (or ∫ fun_ij grad(v)_ij dV)
+        L(\boldsymbol{v}) = \int_V \boldsymbol{f} \cdot \boldsymbol{v} ~ dV
 
 
-    **Bilinearform**
+    or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{F}`
+    and the gradient of the field values :math:`\boldsymbol{\nabla v}`.
 
-    without gradient of ``v`` and without gradient of ``u``
+    ..  math::
 
-    ..  code-block::
+        L(\boldsymbol{v}) = \int_V \boldsymbol{F} : \boldsymbol{\nabla v} ~ dV
 
-        b(v, u) = ∫ v fun u dV                                 (3)
+    Bilinearform
+    ------------
+    A bilinear form is either defined by the dot products of a given (matrix-valued)
+    function :math:`\boldsymbol{f}` and the (vector) fields :math:`\boldsymbol{v}` and
+    :math:`\boldsymbol{u}`.
 
-              (or ∫ v_i fun_ij u_j dV)
+    ..  math::
 
-    with gradient of ``v`` and with gradient of ``u``
+        a(\boldsymbol{v}, \boldsymbol{u}) =
+            \int_V \boldsymbol{v} \cdot \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
 
-    ..  code-block::
 
-        b(v, u) = ∫ grad(v) fun grad(u) dV                     (4)
+    or by the double-dot product of a (tensor-valued) function :math:`\boldsymbol{F}`
+    and (the gradient of) the field values :math:`\boldsymbol{\nabla v}` and
+    :math:`\boldsymbol{\nabla u}`.
 
-              (or ∫ grad(v)_ij fun_ijkl grad(u)_kl dV)
+    ..  math::
 
-    with gradient of ``v`` and without gradient of ``u``
+        a(\boldsymbol{v}, \boldsymbol{u}) &=
+            \int_V \boldsymbol{\nabla v} : \boldsymbol{F} \cdot \boldsymbol{u} ~ dV
 
-    ..  code-block::
+        a(\boldsymbol{v}, \boldsymbol{u}) &=
+            \int_V \boldsymbol{v} \cdot \boldsymbol{F} : \boldsymbol{\nabla u} ~ dV
 
-        b(v, u) = ∫ grad(v) fun u dV                           (5)
+        a(\boldsymbol{v}, \boldsymbol{u}) &=
+            \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
 
-              (or ∫ grad(v)_ij fun_ijk u_k dV)
-
-    without gradient of ``v`` and with gradient of ``u``
-
-    ..  code-block::
-
-        b(v, u) = ∫ v fun grad(u) dV                           (6)
-
-              (or ∫ v_i fun_ikl grad(u)_kl dV)
 
     Arguments
     ---------
     fun : array
-        The pre-evaluated function.
+        The pre-evaluated function array.
     v : Field
-        The virtual Field.
+        The test field.
     dV : array
         The differential volumes.
     u : Field, optional (default is None)
-        If a Field is passed, a Bilinear-Form is created.
+        If a field is passed, a bilinear form is created.
     grad_v : bool, optional (default is False)
-        Flag to activate the gradient on Field ``v``.
+        Flag to activate the gradient on the test field ``v``.
     grad_u : bool, optional (default is False)
-        Flag to activate the gradient on Field ``u``.
+        Flag to activate the gradient on the trial field ``u``.
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):

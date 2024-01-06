@@ -100,7 +100,9 @@ class IntegralForm:
         a(\boldsymbol{v}, \boldsymbol{u}) &=
             \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
 
-
+    See Also
+    --------
+    felupe.Form : A weak-form expression decorator.
 
     """
 

@@ -33,8 +33,30 @@ class IntegralForm:
     fields ``[u, ...]``. For the lists of fields, gradients may be passed by setting the
     respective list items in ``grad_v`` and ``grad_u`` to True.
 
+    Arguments
+    ---------
+    fun : list of array
+        The list of pre-evaluated function arrays.
+    v : list of Field, FieldAxisymmetric or FieldPlaneStrain
+        The list of test fields.
+    dV : array
+        The differential volumes.
+    u : list of Field, FieldAxisymmetric or FieldPlaneStrain, optional
+        If a list with fields is passed, bilinear forms are created (default is None).
+    grad_v : list of bool or None, optional
+        List with flags to activate the gradients on the test fields ``v`` (default is
+        None which enforces True for the first field and False for all following fields)
+        .
+    grad_u : list of bool or None, optional
+        Flag to activate the gradient on the trial field ``u`` (default is None which
+        enforces True for the first field and False for all following fields).
+
+    Notes
+    -----
+
     Linearform
-    ----------
+    ~~~~~~~~~~
+
     A linear form is either defined by the dot product of a given (vector-valued)
     function :math:`\boldsymbol{f}` and the (vector) field :math:`\boldsymbol{v}`
 
@@ -51,7 +73,8 @@ class IntegralForm:
         L(\boldsymbol{v}) = \int_V \boldsymbol{F} : \boldsymbol{\nabla v} ~ dV
 
     Bilinearform
-    ------------
+    ~~~~~~~~~~~~
+
     A bilinear form is either defined by the dot products of a given (matrix-valued)
     function :math:`\boldsymbol{F}` and the (vector) fields :math:`\boldsymbol{v}` and
     :math:`\boldsymbol{u}`
@@ -78,23 +101,7 @@ class IntegralForm:
             \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
 
 
-    Arguments
-    ---------
-    fun : list of array
-        The list of pre-evaluated function arrays.
-    v : list of Field, FieldAxisymmetric or FieldPlaneStrain
-        The list of test fields.
-    dV : array
-        The differential volumes.
-    u : list of Field, FieldAxisymmetric or FieldPlaneStrain, optional
-        If a list with fields is passed, bilinear forms are created (default is None).
-    grad_v : list of bool or None, optional
-        List with flags to activate the gradients on the test fields ``v`` (default is
-        None which enforces True for the first field and False for all following fields)
-        .
-    grad_u : list of bool or None, optional
-        Flag to activate the gradient on the trial field ``u`` (default is None which
-        enforces True for the first field and False for all following fields).
+
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):

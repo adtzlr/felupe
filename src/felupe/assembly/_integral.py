@@ -138,6 +138,12 @@ class IntegralForm:
     The integral form object provides methods for cell-wise stiffness matrices via its
     integrate-method and the system stiffness matrix via the assembly-method.
 
+    ..  math::
+
+        -\delta W_{int} = \int_V \boldsymbol{\nabla v} :
+            \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
+            \boldsymbol{\nabla u} ~ dV
+
     >>> dWint = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
     >>> values = dWint.integrate(parallel=False)
     >>> values.shape

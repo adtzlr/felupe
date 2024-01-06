@@ -101,7 +101,7 @@ class StateNearlyIncompressible:
 
         ..  math::
 
-            dv = \int_V J ~ dV
+            v = \int_V J ~ dV
 
         """
         dV = self.field.region.dV

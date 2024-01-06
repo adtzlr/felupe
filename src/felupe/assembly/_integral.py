@@ -37,12 +37,13 @@ class IntegralForm:
     ---------
     fun : list of array
         The list of pre-evaluated function arrays.
-    v : list of Field, FieldAxisymmetric or FieldPlaneStrain
-        The list of test fields.
+    v : FieldContainer
+        The field container for the test fields.
     dV : array
         The differential volumes.
-    u : list of Field, FieldAxisymmetric or FieldPlaneStrain, optional
-        If a list with fields is passed, bilinear forms are created (default is None).
+    u : FieldContainer, optional
+        The field container for the trial fields. If a field container is passed,
+        bilinear forms are created (default is None).
     grad_v : list of bool or None, optional
         List with flags to activate the gradients on the test fields ``v`` (default is
         None which enforces True for the first field and False for all following fields)
@@ -99,6 +100,55 @@ class IntegralForm:
 
         a(\boldsymbol{v}, \boldsymbol{u}) &=
             \int_V \boldsymbol{\nabla v} : \mathbb{F} : \boldsymbol{\nabla u} ~ dV
+
+    Examples
+    --------
+    The stiffness matrix for a linear-elastic solid body on a cube out of hexahedrons
+    is assembled as follows. First, the mesh, the region and the field objects are
+    created.
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Cube(n=11)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> displacement = fem.Field(region, dim=3)
+    >>> field = fem.FieldContainer([displacement])
+
+    The (constant) fourth-order elasticity tensor for linear-elasticity is created with
+    two trailing axes, one for each quadrature point and one for each cell. Due to the
+    fact that the elasticity tensor is constant, broadcasting is used for the trailing
+    axes.
+
+    ..  math::
+
+        \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} &=
+        2 \mu \ \boldsymbol{I} \odot \boldsymbol{I} + \gamma \ \boldsymbol{I} \otimes
+        \boldsymbol{I}
+
+
+    >>> import numpy as np
+    >>> from felupe.math import cdya, dya
+
+    >>> mu, lmbda = 1.0, 2.0
+    >>> I = np.eye(3).reshape(3, 3, 1, 1)
+    >>> dSdE = 2 * mu * cdya(I, I) + lmbda * dya(I, I)
+    >>> dSdE.shape
+    (3, 3, 3, 3, 1, 1)
+
+    The integral form object provides methods for cell-wise stiffness matrices via its
+    integrate-method and the system stiffness matrix via the assembly-method.
+
+    >>> dWint = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
+    >>> values = dWint.integrate(parallel=False)
+    >>> values.shape
+    (8, 3, 8, 3, 1000)
+
+    The cell-wise stiffness matrices are re-used to assemble the system stiffness
+    matrix. The parallel keyword argument enables a threaded assembly.
+
+    >>> K = dWint.assemble(values=values, parallel=False)
+    >>> K.shape
+    (3993, 3993)
 
     See Also
     --------

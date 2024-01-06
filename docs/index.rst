@@ -1,32 +1,8 @@
-FElupe
-======
-
-.. image:: _static/logo_dark.svg
-   :align: right
-   :class: only-dark
-   :width: 100px
-
-.. image:: _static/logo_light.svg
-   :align: right
-   :class: only-light
-   :width: 100px
-
-.. admonition:: Finite Element Analysis
-   :class: tip
-
-   💯 Python ➡️ easy install and intuitive usage 👌🏻
-
+FElupe documentation
+====================
 
 .. image:: https://img.shields.io/pypi/v/felupe.svg
    :target: https://pypi.python.org/pypi/felupe/
-   
-.. image:: https://img.shields.io/badge/License-GPLv3-blue.svg
-   :target: https://www.gnu.org/licenses/gpl-3.0
-
-.. image:: https://madewithlove.now.sh/at?heart=true&colorB=%231f744f&text=Graz+%28Austria%29
-
-.. image:: https://zenodo.org/badge/360657894.svg
-   :target: https://zenodo.org/badge/latestdoi/360657894
 
 Introduction
 ------------
@@ -49,10 +25,7 @@ Another key feature is the easy and straightforward definition of mixed field fo
    + straight-forward definition of mixed-field problems
    
    + nearly-incompressible hyperelastic problems of solid mechanics
-   
-   
-   
-   
+
 
 Installation
 ------------

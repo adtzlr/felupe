@@ -27,12 +27,11 @@ from ._cartesian import IntegralFormCartesian
 
 
 class IntegralForm:
-    r"""Mixed-field integral form container constructed by a list of function results
-    ``[fun]``, a list of test fields ``v``, differential volumes ``dV`` and optionally a
-    list of trial fields ``u``. For the lists of fields ``v`` and ``u``, gradients may
-    be passed by setting the list items in ``grad_v`` and ``grad_u`` to True (default is
-    None which enforces True for the first field in the list of fields and False for all
-    the following fields).
+    r"""Mixed-field integral form container with methods for integration and assembly.
+    It is constructed by a list of function results ``[fun, ...]``, a list of test
+    fields ``[v, ...]``, differential volumes ``dV`` and optionally a list of trial
+    fields ``[u, ...]``. For the lists of fields, gradients may be passed by setting the
+    respective list items in ``grad_v`` and ``grad_u`` to True.
 
     Linearform
     ----------

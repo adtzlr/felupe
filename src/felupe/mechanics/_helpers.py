@@ -83,7 +83,7 @@ class StateNearlyIncompressible:
         self.J = np.ones(field.region.mesh.ncells)
 
     def h(self, parallel=False):
-        """Integrated shape-function gradient w.r.t. the deformed coordinates.
+        r"""Integrated shape-function gradient w.r.t. the deformed coordinates.
 
         ..  math::
 
@@ -97,7 +97,7 @@ class StateNearlyIncompressible:
         ).integrate(parallel=parallel)[0]
 
     def v(self):
-        """Cell volumes of the deformed configuration.
+        r"""Cell volumes of the deformed configuration.
 
         ..  math::
 

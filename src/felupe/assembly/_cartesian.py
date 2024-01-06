@@ -57,7 +57,7 @@ class IntegralFormCartesian:
 
     ..  math::
 
-        L(\boldsymbol{v}) = \int_V \boldsymbol{f} \cdot \boldsymbol{v} ~ dV
+        L(\boldsymbol{v}) = \int_\Omega \boldsymbol{f} \cdot \boldsymbol{v} ~ dV
 
 
     or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{F}`
@@ -65,7 +65,7 @@ class IntegralFormCartesian:
 
     ..  math::
 
-        L(\boldsymbol{v}) = \int_V \boldsymbol{f} : \boldsymbol{\nabla v} ~ dV
+        L(\boldsymbol{v}) = \int_\Omega \boldsymbol{f} : \boldsymbol{\nabla v} ~ dV
 
     Bilinearform
     ~~~~~~~~~~~~
@@ -76,7 +76,7 @@ class IntegralFormCartesian:
     ..  math::
 
         a(\boldsymbol{v}, \boldsymbol{u}) =
-            \int_V \boldsymbol{v} \cdot \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
+            \int_\Omega \boldsymbol{v} \cdot \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
 
 
     or by the double-dot products of a (tensor-valued) function :math:`\boldsymbol{f}`
@@ -86,13 +86,13 @@ class IntegralFormCartesian:
     ..  math::
 
         a(\boldsymbol{v}, \boldsymbol{u}) &=
-            \int_V \boldsymbol{\nabla v} : \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
+            \int_\Omega \boldsymbol{\nabla v} : \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
 
         a(\boldsymbol{v}, \boldsymbol{u}) &=
-            \int_V \boldsymbol{v} \cdot \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
+            \int_\Omega \boldsymbol{v} \cdot \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
-        a(\boldsymbol{v}, \boldsymbol{u}) &=
-            \int_V \boldsymbol{\nabla v} : \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
+        a(\boldsymbol{v}, \boldsymbol{u}) &= \int_\Omega
+            \boldsymbol{\nabla v} : \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
     """
 

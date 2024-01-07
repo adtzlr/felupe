@@ -140,16 +140,16 @@ class IntegralForm:
 
     ..  math::
 
-        \delta W_{int} = -\int_V \boldsymbol{\nabla v} :
+        \delta W_{int} = -\int_v \boldsymbol{\nabla v} :
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
-            \boldsymbol{\nabla u} ~ dV
+            \boldsymbol{\nabla u} ~ dv
 
 
     ..  math::
 
-        K_{aibk(c)} = \left( \frac{\partial h_a}{\partial X_J} \right)_{q(c)}
+        K_{aibk(c)} = \left( \frac{\partial h_a}{\partial x_J} \right)_{q(c)}
             \left( \frac{\partial \sigma_{ij}}{\partial \varepsilon_{kl}} \right)_{q(c)}
-            \left( \frac{\partial h_b}{\partial X_L} \right)_{q(c)} ~ dV_{q(c)}
+            \left( \frac{\partial h_b}{\partial x_L} \right)_{q(c)} ~ dv_{q(c)}
 
 
     >>> form = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)

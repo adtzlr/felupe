@@ -98,7 +98,7 @@ class Field:
 
         return eai, ai
 
-    def grad(self, sym=False):
+    def grad(self, sym=False, out=None):
         """Gradient as partial derivative of field values at points w.r.t.
         undeformed coordinates, evaluated at the integration points of
         all cells in the region. Optionally, the symmetric part of
@@ -106,8 +106,12 @@ class Field:
 
         Arguments
         ---------
-        sym : bool, optional (default is False)
-            Calculate the symmetric part of the gradient.
+        sym : bool, optional
+            Calculate the symmetric part of the gradient (default is False).
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
 
         Returns
         -------
@@ -124,6 +128,7 @@ class Field:
             "ca...,aJqc->...Jqc",
             self.values[self.region.mesh.cells],
             self.region.dhdX,
+            out=out,
         )
 
         if sym:
@@ -131,18 +136,29 @@ class Field:
         else:
             return g
 
-    def interpolate(self):
+    def interpolate(self, out=None):
         """Interpolate field values at points and evaluate them at the
-        integration points of all cells in the region."""
+        integration points of all cells in the region.
+
+        Arguments
+        ---------
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
+        """
 
         # interpolated field values "aI"
         # evaluated at quadrature point "q"
         # for cell "c"
         return np.einsum(
-            "ca...,aqc->...qc", self.values[self.region.mesh.cells], self.region.h
+            "ca...,aqc->...qc",
+            self.values[self.region.mesh.cells],
+            self.region.h,
+            out=None,
         )
 
-    def extract(self, grad=True, sym=False, add_identity=True):
+    def extract(self, grad=True, sym=False, add_identity=True, out=None):
         """Generalized extraction method which evaluates either the gradient
         or the field values at the integration points of all cells
         in the region. Optionally, the symmetric part of the gradient is
@@ -150,13 +166,17 @@ class Field:
 
         Arguments
         ---------
-        grad : bool, optional (default is True)
-            Flag for gradient evaluation.
-        sym : bool, optional (default is False)
-            Flag for symmetric part if the gradient is evaluated.
-        add_identity : bool, optional (default is True)
+        grad : bool, optional
+            Flag for gradient evaluation (default is True).
+        sym : bool, optional
+            Flag for symmetric part if the gradient is evaluated (default is False).
+        add_identity : bool, optional
             Flag for the addition of the identity matrix
-            if the gradient is evaluated.
+            if the gradient is evaluated (default is True).
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
 
         Returns
         -------
@@ -166,17 +186,17 @@ class Field:
         """
 
         if grad:
-            gr = self.grad()
+            gr = self.grad(out=out)
 
             if sym:
-                gr = symmetric(gr)
+                gr = symmetric(gr, out=gr)
 
             if add_identity:
-                gr = identity(gr) + gr
+                gr = np.add(gr, identity(gr), out=gr)
 
             return gr
         else:
-            return self.interpolate()
+            return self.interpolate(out=out)
 
     def copy(self):
         "Return a copy of the field."

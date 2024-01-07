@@ -286,7 +286,7 @@ class SolidBodyNearlyIncompressible:
         dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field
-        self.results.kinematics = self.results.state.F = self.field.extract()
+        self.results.kinematics = self.field.extract(out=self.results.state.F)
 
         # update state variables
         self.results.state.p = p + dp

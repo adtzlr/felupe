@@ -88,7 +88,7 @@ class SolidBody:
 
     def _extract(self, field):
         self.field = field
-        self.results.kinematics = self.field.extract()
+        self.results.kinematics = self.field.extract(out=self.results.kinematics)
 
         return self.results.kinematics
 

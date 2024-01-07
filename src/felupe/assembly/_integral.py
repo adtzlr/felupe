@@ -144,12 +144,20 @@ class IntegralForm:
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
             \boldsymbol{\nabla u} ~ dV
 
+
+    ..  math::
+
+        K_{aibk(c)} = \left( \frac{\partial h_a}{\partial X_J} \right)_{q(c)}
+            \left( \frac{\partial \sigma_{ij}}{\partial \varepsilon_{kl}} \right)_{q(c)}
+            \left( \frac{\partial h_b}{\partial X_L} \right)_{q(c)} ~ dV_{q(c)}
+
+
     >>> form = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
     >>> values = form.integrate(parallel=False)
     >>> values.shape
     (8, 3, 8, 3, 1000)
 
-    The cell-wise stiffness matrices are re-used to assemble the system stiffness
+    The cell-wise stiffness matrices are re-used to assemble the sparse system stiffness
     matrix. The parallel keyword argument enables a threaded assembly.
 
     >>> K = form.assemble(values=values, parallel=False)

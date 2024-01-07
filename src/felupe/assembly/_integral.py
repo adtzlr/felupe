@@ -144,7 +144,6 @@ class IntegralForm:
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
             \boldsymbol{\nabla u} ~ dv
 
-    with
 
     ..  math::
 

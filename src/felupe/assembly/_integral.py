@@ -144,10 +144,19 @@ class IntegralForm:
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
             \boldsymbol{\nabla u} ~ dv
 
+    with
 
     ..  math::
 
-        K_{aibk(c)} = \left( \frac{\partial h_a}{\partial x_J} \right)_{q(c)}
+        \boldsymbol{\nabla v} &= \frac{\partial\boldsymbol{v}}{\partial\boldsymbol{x}}
+
+        \left( \frac{\partial v_i}{\partial x_j} \right)_{q(c)} &= \hat{v}_{ai} 
+            \left( \frac{\partial h_a}{\partial x_j} \right)_{q(c)}
+
+
+    ..  math::
+
+        \hat{K}_{aibk(c)} = \left( \frac{\partial h_a}{\partial x_J} \right)_{q(c)}
             \left( \frac{\partial \sigma_{ij}}{\partial \varepsilon_{kl}} \right)_{q(c)}
             \left( \frac{\partial h_b}{\partial x_L} \right)_{q(c)} ~ dv_{q(c)}
 
@@ -162,7 +171,8 @@ class IntegralForm:
 
     ..  math::
 
-        \delta W_{int} = -\hat{\boldsymbol{v}} : \boldsymbol{K} : \hat{\boldsymbol{u}}
+        \delta W_{int} = -\hat{\boldsymbol{v}} : \hat{\boldsymbol{K}} : 
+            \hat{\boldsymbol{u}}
 
 
     >>> K = form.assemble(values=values, parallel=False)

@@ -38,9 +38,10 @@ def identity(A=None, dim=None, shape=None):
     return np.eye(dim).reshape(dim, dim, *ones)
 
 
-def sym(A):
+def sym(A, out=None):
     "Symmetric part of matrix A."
-    return (A + transpose(A)) / 2
+    out = np.add(A, transpose(A), out=out)
+    return np.multiply(out, 0.5)
 
 
 def dya(A, B, mode=2, parallel=False, **kwargs):

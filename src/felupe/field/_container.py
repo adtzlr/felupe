@@ -46,7 +46,7 @@ class FieldContainer:
 
         return "\n".join([header, size, fields_header, *fields])
 
-    def extract(self, grad=True, sym=False, add_identity=True):
+    def extract(self, grad=True, sym=False, add_identity=True, out=None):
         """Generalized extraction method which evaluates either the gradient
         or the field values at the integration points of all cells
         in the region. Optionally, the symmetric part of the gradient is
@@ -54,27 +54,35 @@ class FieldContainer:
 
         Arguments
         ---------
-        grad : bool, optional (default is True)
-            Flag for gradient evaluation.
-        sym : bool, optional (default is False)
-            Flag for symmetric part if the gradient is evaluated.
-        add_identity : bool, optional (default is True)
-            Flag for the addition of the identity matrix
-            if the gradient is evaluated.
+        grad : bool, optional
+            Flag for gradient evaluation (default is True).
+        sym : bool, optional
+            Flag for symmetric part if the gradient is evaluated (default is False).
+        add_identity : bool, optional
+            Flag for the addition of the identity matrix if the gradient is evaluated
+            (default is True).
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
 
         Returns
         -------
-        array
+        tuple of ndarray
             (Symmetric) gradient or interpolated field values evaluated at
             the integration points of each cell in the region.
         """
 
         if isinstance(grad, bool):
             grad = (grad,)
+        
+        if out is None:
+            out = [None] * len(self.fields)
 
         grads = np.pad(grad, (0, len(self.fields) - 1))
         return tuple(
-            f.extract(g, sym, add_identity) for g, f in zip(grads, self.fields)
+            f.extract(g, sym, add_identity, out=res)
+            for g, f, res in zip(grads, self.fields, out)
         )
 
     def values(self):

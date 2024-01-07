@@ -160,9 +160,15 @@ class IntegralForm:
     The cell-wise stiffness matrices are re-used to assemble the sparse system stiffness
     matrix. The parallel keyword argument enables a threaded assembly.
 
+    ..  math::
+
+        \delta W_{int} = -\hat{\boldsymbol{v}} : \boldsymbol{K} : \hat{\boldsymbol{u}}
+
+
     >>> K = form.assemble(values=values, parallel=False)
     >>> K.shape
     (3993, 3993)
+
 
     See Also
     --------

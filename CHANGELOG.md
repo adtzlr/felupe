@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add optional output location for `FieldContainer.extract(out=None)`.
+
 ### Changed
 - Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.
 - Enhance the performance of `math.cdya()` by reducing the number of (intermediate) arrays to be created from 4 to 2.

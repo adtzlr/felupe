@@ -81,7 +81,7 @@ class FieldContainer:
 
         grads = np.pad(grad, (0, len(self.fields) - 1))
         return tuple(
-            f.extract(g, sym, add_identity, out=res)
+            f.extract(g, sym, add_identity=add_identity, out=res)
             for g, f, res in zip(grads, self.fields, out)
         )
 

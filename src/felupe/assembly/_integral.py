@@ -140,7 +140,7 @@ class IntegralForm:
 
     ..  math::
 
-        \delta W_{int} = -\int_v \boldsymbol{\nabla v} :
+        \Delta\delta W_{int} = -\int_v \boldsymbol{\nabla v} :
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
             \boldsymbol{\nabla u} ~ dv
 

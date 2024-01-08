@@ -77,12 +77,18 @@ class SolidBody:
 
         self.results.elasticity = self._hessian(field, args=args, kwargs=kwargs)
 
-        self.results.stiffness = self._form(
+        form = self._form(
             fun=self.results.elasticity[slice(items)],
             v=self.field,
             u=self.field,
             dV=self.field.region.dV,
-        ).assemble(parallel=parallel)
+        )
+
+        self.results.stiffness_values = form.integrate(
+            parallel=parallel, out=self.results.stiffness_values
+        )
+
+        self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
         return self.results.stiffness
 

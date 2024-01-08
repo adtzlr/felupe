@@ -85,6 +85,8 @@ class FieldPlaneStrain(Field):
 
     def interpolate(self, out=None):
         # extend dimension of in-plane 2d-gradient
+        if out is not None:
+            out = out[:2]
         return np.pad(self._interpolate_2d(out=out), ((0, 1), (0, 0), (0, 0)))
 
     def _grad_2d(self, sym=False, out=None):
@@ -155,6 +157,8 @@ class FieldPlaneStrain(Field):
         """
 
         # extend dimension of in-plane 2d-gradient
+        if out is not None:
+            out = out[:2, :2]
         g = np.pad(self._grad_2d(sym=sym, out=out), ((0, 1), (0, 1), (0, 0), (0, 0)))
 
         return g

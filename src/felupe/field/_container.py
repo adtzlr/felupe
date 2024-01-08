@@ -75,7 +75,7 @@ class FieldContainer:
 
         if isinstance(grad, bool):
             grad = (grad,)
-        
+
         if out is None:
             out = [None] * len(self.fields)
 

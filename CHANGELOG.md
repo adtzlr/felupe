@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.
 - Enhance the performance of `math.cdya()` by reducing the number of (intermediate) arrays to be created from 4 to 2.
+- Use fixed output locations for the extracted field-gradients and the integrated stiffness matrices in `SolidBody` and `SolidBodyNearlyIncompressible`. This enhances the performance.
 
 ## [7.13.0] - 2023-12-22
 

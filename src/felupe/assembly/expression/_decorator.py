@@ -98,7 +98,7 @@ def FormExpressionDecorator(
         a(v, u) = \int_\Omega 2 \mu \
             \delta\boldsymbol{\varepsilon} : \boldsymbol{\varepsilon} +
             \lambda \ \text{tr}(\delta\boldsymbol{\varepsilon}) \
-                \text{tr}(\boldsymbol{\varepsilon}) \ dV
+                \text{tr}(\boldsymbol{\varepsilon}) \ dv
 
     with
 

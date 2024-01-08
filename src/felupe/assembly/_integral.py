@@ -170,7 +170,7 @@ class IntegralForm:
 
     ..  math::
 
-        \delta W_{int} = -\hat{\boldsymbol{v}} : \hat{\boldsymbol{K}} : 
+        \Delta\delta W_{int} = -\hat{\boldsymbol{v}} : \hat{\boldsymbol{K}} : 
             \hat{\boldsymbol{u}}
 
 

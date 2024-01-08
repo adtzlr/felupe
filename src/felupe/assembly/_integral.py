@@ -140,24 +140,30 @@ class IntegralForm:
 
     ..  math::
 
-        \Delta\delta W_{int} = -\int_v \boldsymbol{\nabla v} :
+        \delta W_{int} = -\int_v \delta\boldsymbol{\varepsilon} :
             \frac{\boldsymbol{\partial \sigma}}{\partial \boldsymbol{\varepsilon}} :
-            \boldsymbol{\nabla u} ~ dv
+            \boldsymbol{\varepsilon} ~ dv
 
 
     ..  math::
+
+        \delta\boldsymbol{\varepsilon} &= \text{sym}(\boldsymbol{\nabla v})
+
+        \boldsymbol{\varepsilon} &= \text{sym}(\boldsymbol{\nabla u})
 
         \boldsymbol{\nabla v} &= \frac{\partial\boldsymbol{v}}{\partial\boldsymbol{x}}
 
-        \left( \frac{\partial v_i}{\partial x_j} \right)_{q(c)} &= \hat{v}_{ai}
-            \left( \frac{\partial h_a}{\partial x_j} \right)_{q(c)}
+        \boldsymbol{\nabla u} &= \frac{\partial\boldsymbol{u}}{\partial\boldsymbol{x}}
+
+        \left( \frac{\partial v_i}{\partial x_j} \right)_{(qc)} &= \hat{v}_{ai}
+            \left( \frac{\partial h_a}{\partial x_j} \right)_{(qc)}
 
 
     ..  math::
 
-        \hat{K}_{aibk(c)} = \left( \frac{\partial h_a}{\partial x_J} \right)_{q(c)}
-            \left( \frac{\partial \sigma_{ij}}{\partial \varepsilon_{kl}} \right)_{q(c)}
-            \left( \frac{\partial h_b}{\partial x_L} \right)_{q(c)} ~ dv_{q(c)}
+        \hat{K}_{aibk(c)} = \left( \frac{\partial h_a}{\partial x_J} \right)_{(qc)}
+            \left( \frac{\partial \sigma_{ij}}{\partial \varepsilon_{kl}} \right)_{(qc)}
+            \left( \frac{\partial h_b}{\partial x_L} \right)_{(qc)} ~ dv_{(qc)}
 
 
     >>> form = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
@@ -170,7 +176,7 @@ class IntegralForm:
 
     ..  math::
 
-        \Delta\delta W_{int} = -\hat{\boldsymbol{v}} : \hat{\boldsymbol{K}} : 
+        \Delta\delta W_{int} = -\hat{\boldsymbol{v}} : \hat{\boldsymbol{K}} :
             \hat{\boldsymbol{u}}
 
 

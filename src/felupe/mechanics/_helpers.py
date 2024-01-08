@@ -54,6 +54,9 @@ class Results:
         self.statevars = None
         self._statevars = None
 
+        self.force_values = None
+        self.stiffness_values = None
+
         if stress:
             self.stress = None
 

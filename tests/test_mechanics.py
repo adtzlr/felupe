@@ -141,6 +141,19 @@ def pre_axi(bulk=2):
     return umat, fem.FieldContainer([u])
 
 
+def pre_planestrain(bulk=2):
+    umat = fem.NeoHooke(mu=1, bulk=bulk)
+
+    m = fem.Rectangle(n=3)
+    r = fem.RegionQuad(m)
+    u = fem.FieldPlaneStrain(r)
+
+    np.random.seed(156)
+    u.values = np.random.rand(*u.values.shape) / 10
+
+    return umat, fem.FieldContainer([u])
+
+
 def pre_mixed(dim):
     umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=2))
 
@@ -346,6 +359,51 @@ def test_solidbody_axi_incompressible():
         assert np.allclose(t1, t2)
 
 
+def test_solidbody_planestrain():
+    umat, u = pre_planestrain(bulk=None)
+    b = fem.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
+    b = fem.SolidBodyNearlyIncompressible(
+        umat=umat, field=u, bulk=5000, state=fem.StateNearlyIncompressible(u)
+    )
+
+    for parallel in [False, True]:
+        kwargs = {"parallel": parallel}
+
+        r1 = b.assemble.vector(u, **kwargs)
+        assert r1.shape == (18, 1)
+
+        r2 = b.assemble.vector(**kwargs)
+        assert np.allclose(r1.toarray(), r2.toarray())
+
+        K1 = b.assemble.matrix(u, **kwargs)
+        assert K1.shape == (18, 18)
+
+        K2 = b.assemble.matrix(**kwargs)
+        assert np.allclose(K1.toarray(), K2.toarray())
+
+        P1 = b.results.stress
+        P2 = b.evaluate.gradient()
+        P2 = b.evaluate.gradient(u)
+        assert np.allclose(P1, P2)
+
+        A1 = b.results.elasticity
+        A2 = b.evaluate.hessian()
+        A2 = b.evaluate.hessian(u)
+        assert np.allclose(A1, A2)
+
+        F1 = b.results.kinematics
+        F2 = b._extract(u)
+        assert np.allclose(F1, F2)
+
+        s1 = b.evaluate.cauchy_stress()
+        s2 = b.evaluate.cauchy_stress(u)
+        assert np.allclose(s1, s2)
+
+        t1 = b.evaluate.kirchhoff_stress()
+        t2 = b.evaluate.kirchhoff_stress(u)
+        assert np.allclose(t1, t2)
+
+
 def test_solidbody_mixed():
     umat, u = pre_mixed(dim=3)
     b = fem.SolidBody(umat=umat, field=u)
@@ -439,6 +497,8 @@ if __name__ == "__main__":
     test_solidbody()
     test_solidbody_incompressible()
     test_solidbody_axi()
+    test_solidbody_axi_incompressible()
+    test_solidbody_planestrain()
     test_solidbody_mixed()
     test_pressure()
     test_load()

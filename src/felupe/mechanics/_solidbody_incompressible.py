@@ -242,10 +242,8 @@ class SolidBodyNearlyIncompressible:
         v = self.results.state.v()
         p = self.results.state.p
 
-        values = [
-            form.integrate(parallel=parallel)[0]
-            + h * (self.bulk * (v / self.V - 1) - p)
-        ]
+        values = form.integrate(parallel=parallel)
+        np.add(values[0], h * (self.bulk * (v / self.V - 1) - p), out=values[0])
 
         self.results.force = form.assemble(values=values)
 
@@ -265,7 +263,8 @@ class SolidBodyNearlyIncompressible:
 
         h = self.results.state.h(parallel=parallel)
 
-        values = [form.integrate(parallel=parallel)[0] + self.bulk / self.V * dya(h, h)]
+        values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
+        np.add(values[0], self.bulk / self.V * dya(h, h), out=values[0])
 
         self.results.stiffness = form.assemble(values=values)
 
@@ -286,7 +285,9 @@ class SolidBodyNearlyIncompressible:
         dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field
-        self.results.kinematics = self.results.state.F = self.field.extract()
+        self.results.kinematics = self.results.state.F = self.field.extract(
+            out=self.results.kinematics
+        )
 
         # update state variables
         self.results.state.p = p + dp

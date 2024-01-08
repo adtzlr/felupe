@@ -124,23 +124,23 @@ class IntegralFormCartesian:
             self.indices = (caibk0, caibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
 
-    def assemble(self, values=None, parallel=False):
+    def assemble(self, values=None, parallel=False, out=None):
         "Assembly of sparse region vectors or matrices."
 
         if values is None:
-            values = self.integrate(parallel=parallel)
+            values = self.integrate(parallel=parallel, out=out)
 
         permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
             int
         )
 
-        out = sparsematrix(
+        res = sparsematrix(
             (values.transpose(permute).ravel(), self.indices), shape=self.shape
         )
 
-        return out
+        return res
 
-    def integrate(self, parallel=False):
+    def integrate(self, parallel=False, out=None):
         "Return evaluated (but not assembled) integrals."
 
         grad_v, grad_u = self.grad_v, self.grad_u
@@ -176,20 +176,32 @@ class IntegralFormCartesian:
 
         if u is None:
             if not grad_v:
-                return einsum("aqc,...qc,qc->a...c", vb, fun, dV, optimize=True)
+                return einsum(
+                    "aqc,...qc,qc->a...c", vb, fun, dV, optimize=True, out=out
+                )
             else:
-                return einsum("aJqc,...Jqc,qc->a...c", vb, fun, dV, optimize=True)
+                return einsum(
+                    "aJqc,...Jqc,qc->a...c", vb, fun, dV, optimize=True, out=out
+                )
 
         else:
             if not grad_v and not grad_u:
-                out = einsum("aqc,...qc,bqc,qc->a...bc", vb, fun, ub, dV, optimize=True)
-                if len(out.shape) == 5:
-                    return einsum("aijbc->aibjc", out)
+                res = einsum(
+                    "aqc,...qc,bqc,qc->a...bc", vb, fun, ub, dV, optimize=True, out=out
+                )
+                if len(res.shape) == 5:
+                    return einsum("aijbc->aibjc", res, out=out)
                 else:
-                    return out
+                    return res
             elif grad_v and not grad_u:
                 return einsum(
-                    "aJqc,iJ...qc,bqc,qc->aib...c", vb, fun, ub, dV, optimize=True
+                    "aJqc,iJ...qc,bqc,qc->aib...c",
+                    vb,
+                    fun,
+                    ub,
+                    dV,
+                    optimize=True,
+                    out=out,
                 )
             elif not grad_v and grad_u:
                 return einsum(
@@ -199,8 +211,15 @@ class IntegralFormCartesian:
                     ub,
                     dV,
                     optimize=True,
+                    out=out,
                 )
             else:  # grad_v and grad_u
                 return einsum(
-                    "aJqc,iJkLqc,bLqc,qc->aibkc", vb, fun, ub, dV, optimize=True
+                    "aJqc,iJkLqc,bLqc,qc->aibkc",
+                    vb,
+                    fun,
+                    ub,
+                    dV,
+                    optimize=True,
+                    out=out,
                 )

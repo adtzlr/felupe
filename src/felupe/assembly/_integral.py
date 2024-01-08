@@ -149,7 +149,7 @@ class IntegralForm:
 
         \boldsymbol{\nabla v} &= \frac{\partial\boldsymbol{v}}{\partial\boldsymbol{x}}
 
-        \left( \frac{\partial v_i}{\partial x_j} \right)_{q(c)} &= \hat{v}_{ai} 
+        \left( \frac{\partial v_i}{\partial x_j} \right)_{q(c)} &= \hat{v}_{ai}
             \left( \frac{\partial h_a}{\partial x_j} \right)_{q(c)}
 
 
@@ -250,33 +250,35 @@ class IntegralForm:
         else:
             raise ValueError("Unknown input format.")
 
-    def assemble(self, values=None, parallel=False, block=True):
-        out = []
+    def assemble(self, values=None, parallel=False, block=True, out=None):
+        res = []
 
         if values is None:
             values = [None] * len(self.forms)
 
         for val, form in zip(values, self.forms):
-            out.append(form.assemble(val, parallel=parallel))
+            res.append(form.assemble(val, parallel=parallel, out=out))
 
         if block and self.mode == 2:
             K = np.zeros((self.nv, self.nv), dtype=object)
             for a, (i, j) in enumerate(zip(self.i, self.j)):
-                K[i, j] = out[a]
+                K[i, j] = res[a]
                 if i != j:
-                    K[j, i] = out[a].T
+                    K[j, i] = res[a].T
 
             return bmat(K).tocsr()
 
         if block and self.mode == 1:
-            return vstack(out).tocsr()
+            return vstack(res).tocsr()
 
         else:
-            return out
+            return res
 
-    def integrate(self, parallel=False):
-        out = []
-        for form in self.forms:
-            out.append(form.integrate(parallel=parallel))
+    def integrate(self, parallel=False, out=None):
+        if out is None:
+            out = [None] * len(self.forms)
+
+        for i, form in enumerate(self.forms):
+            out[i] = form.integrate(parallel=parallel, out=out[i])
 
         return out

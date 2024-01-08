@@ -100,12 +100,16 @@ class FieldAxisymmetric(Field):
             "ca...,aqc->...qc",
             self.values[self.region.mesh.cells],
             self.region.h,
-            out=None,
+            out=out,
         )
 
     def interpolate(self, out=None):
+        # out-argument is not supported
+        # if out is not None:
+        #     out = out[:2]
+
         # extend dimension of in-plane 2d-gradient
-        return np.pad(self._interpolate_2d(out=out), ((0, 1), (0, 0), (0, 0)))
+        return np.pad(self._interpolate_2d(out=None), ((0, 1), (0, 0), (0, 0)))
 
     def _grad_2d(self, sym=False, out=None):
         """In-plane 2D gradient as partial derivative of field values at points
@@ -132,7 +136,7 @@ class FieldAxisymmetric(Field):
 
         # gradient as partial derivative of field component "I" at point "a"
         # w.r.t. undeformed coordinate "J" evaluated at quadrature point "q"
-        # for each cell "e"
+        # for each cell "c"
         g = np.einsum(
             "ca...,aJqc->...Jqc",
             self.values[self.region.mesh.cells],
@@ -174,8 +178,12 @@ class FieldAxisymmetric(Field):
             of all cells in the region.
         """
 
+        # out-argument is not supported
+        # if out is not None:
+        #     out = out[:2, :2]
+
         # extend dimension of in-plane 2d-gradient
-        g = np.pad(self._grad_2d(sym=sym, out=out), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        g = np.pad(self._grad_2d(sym=sym, out=None), ((0, 1), (0, 1), (0, 0), (0, 0)))
 
         # set dudX_33 = u_r / R
         g[-1, -1] = self.interpolate()[1] / self.radius

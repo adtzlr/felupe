@@ -86,6 +86,14 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 |  [tensortrax](https://github.com/adtzlr/tensortrax)     |     Math on (Hyper-Dual) Tensors with Trailing Axes     |
 |    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
+# Testing
+
+To run the FElupe unit tests, check out this repository and type
+
+```
+tox
+```
+
 # Scientific Publications
 A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://github.com/adtzlr/felupe) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
 

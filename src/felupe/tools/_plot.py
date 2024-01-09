@@ -114,12 +114,6 @@ class Scene:
         if theme is not None:
             pv.set_plot_theme(theme)
 
-        # try to start a virtual framebuffer on linux
-        # requires ``sudo apt-get install xvfb``
-        if notebook:
-            if os.name == "posix":
-                pv.start_xvfb()
-
         if plotter is None:
             plotter = pv.Plotter(off_screen=off_screen, notebook=notebook)
 

@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance the performance of `math.cdya()` by reducing the number of (intermediate) arrays to be created from 4 to 2.
 - Use fixed output locations for the extracted field-gradients and the integrated stiffness matrices in `SolidBody` and `SolidBodyNearlyIncompressible`. This enhances the performance.
 
+### Removed
+- Do not invoke `pyvista.start_xvfb()` on a posix-os. If required, run it manually.
+
 ## [7.13.0] - 2023-12-22
 
 ### Added

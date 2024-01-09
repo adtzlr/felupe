@@ -490,6 +490,25 @@ def test_view():
     # img = mesh.screenshot(transparent_background=True)
 
 
+def test_mesh_update():
+    import felupe as fem
+
+    mesh = fem.Cube(n=11)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldsMixed(region, n=1)
+
+    boundaries, loadcase = fem.dof.uniaxial(field, axis=0, sym=False, clamped=True)
+
+    new_points = mesh.rotate(angle_deg=-90, axis=2).points
+
+    # either update the mesh and the region via callback
+    mesh.update(points=new_points, callback=region.reload)
+
+    # or update the region separately
+    mesh.update(points=new_points)
+    region.reload(mesh)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -506,3 +525,4 @@ if __name__ == "__main__":
     test_circle()
     test_triangle()
     test_view()
+    test_mesh_update()

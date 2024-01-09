@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add optional output location for `FieldContainer.extract(out=None)`.
+- Add `Mesh.update(callback=None)`. This is especially useful if the points array of a mesh is changed and an already existing instance of a region has to be reloaded: `Mesh.update(points=new_points, callback=region.reload)`.
 
 ### Changed
 - Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.

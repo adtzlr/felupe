@@ -76,7 +76,7 @@ class DiscreteGeometry:
 
         return out
 
-    def update(self, points=None, cells=None, cell_type=None):
+    def update(self, points=None, cells=None, cell_type=None, callback=None):
         "Update the cell and dimension attributes with a given cell array."
 
         if points is not None:
@@ -109,3 +109,6 @@ class DiscreteGeometry:
         else:
             self.points_without_cells = np.array([], dtype=int)
             self.points_with_cells = np.arange(self.npoints)
+
+        if callable(callback):
+            callback(self)

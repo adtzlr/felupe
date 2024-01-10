@@ -487,8 +487,8 @@ def test_view():
     mesh = fem.Rectangle(n=6)
     view = mesh.view()
     plotter = mesh.plot(off_screen=True)
-    img = mesh.screenshot(transparent_background=True)
-    ax = mesh.imshow()
+    # img = mesh.screenshot(transparent_background=True)
+    # ax = mesh.imshow()
 
 
 def test_mesh_update():

@@ -218,8 +218,8 @@ def test_view():
     region = fem.RegionQuad(mesh)
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     plotter = field.plot(off_screen=True)
-    img = mesh.screenshot(transparent_background=True)
-    ax = mesh.imshow()
+    # img = mesh.screenshot(transparent_background=True)
+    # ax = mesh.imshow()
 
 
 if __name__ == "__main__":

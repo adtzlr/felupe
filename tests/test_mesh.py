@@ -488,6 +488,7 @@ def test_view():
     view = mesh.view()
     plotter = mesh.plot(off_screen=True)
     # img = mesh.screenshot(transparent_background=True)
+    # ax = mesh.imshow()
 
 
 def test_mesh_update():

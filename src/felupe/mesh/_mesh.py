@@ -169,7 +169,7 @@ class Mesh(DiscreteGeometry):
     def screenshot(
         self,
         *args,
-        filename="field.png",
+        filename="mesh.png",
         transparent_background=None,
         scale=None,
         **kwargs,
@@ -186,6 +186,19 @@ class Mesh(DiscreteGeometry):
             transparent_background=transparent_background,
             scale=scale,
         )
+
+    def imshow(self, *args, **kwargs):
+        """Take a screenshot of the mesh, show the image data in a figure and return the
+        ax.
+        """
+
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.imshow(self.screenshot(*args, filename=None, **kwargs))
+        ax.set_axis_off()
+
+        return ax
 
     @wraps(dual)
     def dual(

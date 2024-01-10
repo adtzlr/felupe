@@ -155,6 +155,19 @@ class FieldContainer:
             scale=scale,
         )
 
+    def imshow(self, *args, **kwargs):
+        """Take a screenshot of the first field of the container, show the image data in
+        a figure and return the ax.
+        """
+
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.imshow(self.screenshot(*args, filename=None, **kwargs))
+        ax.set_axis_off()
+
+        return ax
+
     def __add__(self, newvalues):
         fields = deepcopy(self)
         if len(newvalues) != len(self.fields):

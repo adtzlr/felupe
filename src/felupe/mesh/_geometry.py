@@ -24,9 +24,41 @@ from ._tools import concatenate
 
 
 class Line(Mesh):
-    "A line shaped 1d-mesh with lines between ``a`` and ``b`` with ``n`` points."
+    """A 1d-mesh with lines between ``a`` and ``b`` with ``n`` points.
 
-    def __init__(self, a=0, b=1, n=2):
+    Parameters
+    ----------
+    a : float, optional
+        Left end point of the mesh (default is 0.0).
+    b : float, optional
+        Right end point of the mesh (default is 1.0).
+    n : int, optional
+        Number of points (default is 2).
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.mesh.Line(a=-2.1, b=3.5, n=3)
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 3
+      Number of cells:
+        line: 2
+
+    >>> mesh.points
+    array([[-2.1],
+           [ 0.7],
+           [ 3.5]])
+
+    >>> mesh.cells
+    array([[0, 1],
+           [1, 2]])
+
+    >>> mesh.imshow()
+    """
+
+    def __init__(self, a=0.0, b=1.0, n=2):
         self.a = a
         self.b = b
         self.n = n
@@ -38,9 +70,49 @@ class Line(Mesh):
 
 class Rectangle(Mesh):
     """A rectangular 2d-mesh with quads between ``a`` and ``b`` with ``n``
-    points per axis."""
+    points per axis.
 
-    def __init__(self, a=(0, 0), b=(1, 1), n=(2, 2)):
+    Parameters
+    ----------
+    a : 2-tuple of float, optional
+        Lower-left end point of the mesh (default is (0.0, 0.0)).
+    b : 2-tuple of float, optional
+        Upper-right end point of the mesh (default is (1.0, 1.0)).
+    n : int or 2-tuple of int, optional
+        Number of points per axis (default is (2, 2)).
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.mesh.Rectangle(a=(-1.2, 0.5), b=(4.5, 7.3), n=3)
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 9
+      Number of cells:
+        quad: 4
+
+    >>> mesh.points
+    array([[-1.2 ,  0.5 ],
+           [ 1.65,  0.5 ],
+           [ 4.5 ,  0.5 ],
+           [-1.2 ,  3.9 ],
+           [ 1.65,  3.9 ],
+           [ 4.5 ,  3.9 ],
+           [-1.2 ,  7.3 ],
+           [ 1.65,  7.3 ],
+           [ 4.5 ,  7.3 ]])
+
+    >>> mesh.cells
+    array([[0, 1, 4, 3],
+           [1, 2, 5, 4],
+           [3, 4, 7, 6],
+           [4, 5, 8, 7]])
+
+    >>> mesh.imshow()
+    """
+
+    def __init__(self, a=(0.0, 0.0), b=(1.0, 1.0), n=(2, 2)):
         self.a = a
         self.b = b
         self.n = n
@@ -52,9 +124,50 @@ class Rectangle(Mesh):
 
 class Cube(Mesh):
     """A cube shaped 3d-mesh with hexahedrons between ``a`` and ``b`` with ``n``
-    points per axis."""
+    points per axis.
 
-    def __init__(self, a=(0, 0, 0), b=(1, 1, 1), n=(2, 2, 2)):
+    Parameters
+    ----------
+    a : 3-tuple of float, optional
+        Lower-left end point of the mesh (default is (0.0, 0.0, 0.0)).
+    b : 3-tuple of float, optional
+        Upper-right end point of the mesh (default is (1.0, 1.0, 1.0)).
+    n : int or 3-tuple of int, optional
+        Number of points per axis (default is (2, 2, 2)).
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.mesh.Cube(a=(-1.2, 0.5, 6.2), b=(4.5, 7.3, 9.3), n=(3, 2, 2))
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 12
+      Number of cells:
+        hexahedron: 2
+
+    >>> mesh.points
+    array([[-1.2 ,  0.5 ,  6.2 ],
+           [ 1.65,  0.5 ,  6.2 ],
+           [ 4.5 ,  0.5 ,  6.2 ],
+           [-1.2 ,  7.3 ,  6.2 ],
+           [ 1.65,  7.3 ,  6.2 ],
+           [ 4.5 ,  7.3 ,  6.2 ],
+           [-1.2 ,  0.5 ,  9.3 ],
+           [ 1.65,  0.5 ,  9.3 ],
+           [ 4.5 ,  0.5 ,  9.3 ],
+           [-1.2 ,  7.3 ,  9.3 ],
+           [ 1.65,  7.3 ,  9.3 ],
+           [ 4.5 ,  7.3 ,  9.3 ]])
+
+    >>> mesh.cells
+    array([[ 0,  1,  4,  3,  6,  7, 10,  9],
+           [ 1,  2,  5,  4,  7,  8, 11, 10]])
+
+    >>> mesh.imshow()
+    """
+
+    def __init__(self, a=(0.0, 0.0, 0.0), b=(1.0, 1.0, 1.0), n=(2, 2, 2)):
         self.a = a
         self.b = b
         self.n = n
@@ -66,7 +179,51 @@ class Cube(Mesh):
 
 class Grid(Mesh):
     """A grid shaped 3d-mesh with hexahedrons. Basically a wrapper for
-    :func:`numpy.meshgrid` with  default ``indexing="ij"``."""
+    :func:`numpy.meshgrid` with  default ``indexing="ij"``.
+
+    Parameters
+    ----------
+    x1, x2,..., xn : array_like
+        1-D arrays representing the coordinates of a grid.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+
+    >>> x1 = np.linspace(0, 2, 3)**2
+    >>> x2 = np.sqrt(np.linspace(0, 1, 3))
+
+    >>> mesh = fem.mesh.Grid(x1, x2)
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 9
+      Number of cells:
+        quad: 4
+
+    >>> mesh.points
+    array([[0.        , 0.        ],
+           [1.        , 0.        ],
+           [4.        , 0.        ],
+           [0.        , 0.70710678],
+           [1.        , 0.70710678],
+           [4.        , 0.70710678],
+           [0.        , 1.        ],
+           [1.        , 1.        ],
+           [4.        , 1.        ]])
+
+    >>> mesh.cells
+    array([[0, 1, 4, 3],
+           [1, 2, 5, 4],
+           [3, 4, 7, 6],
+           [4, 5, 8, 7]])
+
+    >>> mesh.imshow()
+
+    See Also
+    --------
+    numpy.meshgrid : Return a list of coordinate matrices from coordinate vectors.
+    """
 
     def __init__(self, *xi, indexing="ij", **kwargs):
         shape = np.array([len(x) for x in xi])
@@ -90,7 +247,7 @@ class RectangleArbitraryOrderQuad(Mesh):
     """A rectangular 2d-mesh with arbitrary order quads between ``a`` and ``b`` with
     ``n`` points per axis."""
 
-    def __init__(self, a=(0, 0), b=(1, 1), order=2):
+    def __init__(self, a=(0.0, 0.0), b=(1.0, 1.0), order=2):
         yv, xv = np.meshgrid(
             np.linspace(a[1], b[1], order + 1),
             np.linspace(a[0], b[0], order + 1),
@@ -145,7 +302,7 @@ class CubeArbitraryOrderHexahedron(Mesh):
     """A cube shaped 3d-mesh with arbitrary order hexahedrons between ``a`` and ``b``
     with ``n`` points per axis."""
 
-    def __init__(self, a=(0, 0, 0), b=(1, 1, 1), order=2):
+    def __init__(self, a=(0.0, 0.0, 0.0), b=(1.0, 1.0, 1.0), order=2):
         zv, yv, xv = np.meshgrid(
             np.linspace(a[2], b[2], order + 1),
             np.linspace(a[1], b[1], order + 1),
@@ -237,12 +394,79 @@ class CubeArbitraryOrderHexahedron(Mesh):
 class Circle(Mesh):
     """A circular shaped 2d-mesh with quads and ``n`` points on the circumferential
     edge of a 45-degree section. 90-degree ``sections`` are placed at given angles in
-    degree."""
+    degree.
+
+    Parameters
+    ----------
+    radius : float, optional
+        Lower-left end point of the mesh (default is (0.0, 0.0)).
+    centerpoint : 2-list of float, optional
+        Coordinates of the origin where the circle is centered (default is [1.0, 1.0]).
+    n : int, optional
+        Number of points per axis for a quarter of the embedded rectangle
+        (default is 2).
+    sections : list of int or float, optional
+        Rotation angles in deg where quarter circles (sections) are placed (default is
+        [0, 90, 180, 270]).
+    value : float
+        First shape parameter of the embedded rectangle (default is 0.15).
+    exponent : int
+        Second shape parameter of the embedded rectangle (default is 2).
+    decimals : int
+        Decimals used for rounding point coordinates to avoid non-connected sections
+        (default is 10).
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.mesh.Circle()
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 17
+      Number of cells:
+        quad: 12
+
+    >>> mesh.points
+    array([[-1.        ,  0.        ],
+           [-0.70710678, -0.70710678],
+           [-0.70710678,  0.70710678],
+           [-0.5       ,  0.        ],
+           [-0.425     , -0.425     ],
+           [-0.425     ,  0.425     ],
+           [ 0.        , -1.        ],
+           [ 0.        , -0.5       ],
+           [ 0.        ,  0.        ],
+           [ 0.        ,  0.5       ],
+           [ 0.        ,  1.        ],
+           [ 0.425     , -0.425     ],
+           [ 0.425     ,  0.425     ],
+           [ 0.5       ,  0.        ],
+           [ 0.70710678, -0.70710678],
+           [ 0.70710678,  0.70710678],
+           [ 1.        ,  0.        ]])
+
+    >>> mesh.cells
+    array([[12, 13, 16, 15],
+           [15, 10,  9, 12],
+           [ 8, 13, 12,  9],
+           [ 5,  9, 10,  2],
+           [ 2,  0,  3,  5],
+           [ 8,  9,  5,  3],
+           [ 4,  3,  0,  1],
+           [ 1,  6,  7,  4],
+           [ 8,  3,  4,  7],
+           [11,  7,  6, 14],
+           [14, 16, 13, 11],
+           [ 8,  7, 11, 13]])
+
+    >>> mesh.imshow()
+    """
 
     def __init__(
         self,
-        radius=1,
-        centerpoint=[0, 0],
+        radius=1.0,
+        centerpoint=[0.0, 0.0],
         n=2,
         sections=[0, 90, 180, 270],
         value=0.15,
@@ -277,13 +501,76 @@ class Circle(Mesh):
 
 class Triangle(Mesh):
     """A triangular shaped 2d-mesh with quads and ``n`` points at the edges of the three
-    sub-quadrilaterals."""
+    sub-quadrilaterals.
+
+    Parameters
+    ----------
+    a : 2-tuple of float, optional
+        First end point of the mesh (default is (0.0, 0.0)).
+    b : 2-tuple of float, optional
+        Second end point of the mesh (default is (1.0, 0.0)).
+    c : 2-tuple of float, optional
+        Third end point of the mesh (default is (0.0, 1.0)).
+    n : int, optional
+        Number of points per axis (default is 2).
+    decimals : int
+        Decimals used for rounding point coordinates to avoid non-connected sections
+        (default is 10).
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.mesh.Triangle(a=(0.3, 0.2), b=(1.2, 0.1), c=(0.1, 0.9), n=3)
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 19
+      Number of cells:
+        quad: 12
+
+    >>> mesh.points
+    array([[0.1       , 0.9       ],
+           [0.15      , 0.725     ],
+           [0.2       , 0.55      ],
+           [0.25      , 0.375     ],
+           [0.3       , 0.2       ],
+           [0.36666667, 0.475     ],
+           [0.37083333, 0.5875    ],
+           [0.375     , 0.7       ],
+           [0.44583333, 0.325     ],
+           [0.525     , 0.175     ],
+           [0.53333333, 0.4       ],
+           [0.59166667, 0.45      ],
+           [0.64166667, 0.275     ],
+           [0.65      , 0.5       ],
+           [0.75      , 0.15      ],
+           [0.78333333, 0.2875    ],
+           [0.925     , 0.3       ],
+           [0.975     , 0.125     ],
+           [1.2       , 0.1       ]])
+
+    >>> mesh.cells
+    array([[14, 12,  8,  9],
+           [12, 10,  5,  8],
+           [ 9,  8,  3,  4],
+           [ 8,  5,  2,  3],
+           [18, 16, 15, 17],
+           [16, 13, 11, 15],
+           [17, 15, 12, 14],
+           [15, 11, 10, 12],
+           [10, 11,  6,  5],
+           [11, 13,  7,  6],
+           [ 5,  6,  1,  2],
+           [ 6,  7,  0,  1]])
+
+    >>> mesh.imshow()
+    """
 
     def __init__(
         self,
-        a=(0, 0),
-        b=(1, 0),
-        c=(0, 1),
+        a=(0.0, 0.0),
+        b=(1.0, 0.0),
+        c=(0.0, 1.0),
         n=2,
         decimals=10,
     ):

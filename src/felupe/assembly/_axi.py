@@ -207,11 +207,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
                 ]
 
     def integrate(self, parallel=False, out=None):
-        out = [out, *([None] * len(self.forms))]
-        values = [
-            form.integrate(parallel=parallel, out=out[i])
-            for i, form in enumerate(self.forms)
-        ]
+        values = [form.integrate(parallel=parallel) for form in self.forms]
 
         if self.mode == 1:
             values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))

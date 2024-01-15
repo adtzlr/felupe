@@ -1,46 +1,94 @@
 FElupe documentation
 ====================
 
-.. image:: https://img.shields.io/pypi/v/felupe.svg
-   :target: https://pypi.python.org/pypi/felupe/
+FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics 🔧 of solid bodies 🚂. Its name is a combination of FE (finite element) and the german word *Lupe* 🔍 (magnifying glass) as a synonym for getting an insight 📖 how a finite element analysis code 🧮 looks like under the hood 🕳️.
 
-Introduction
-------------
+.. grid::
 
-FElupe is a Python 3.8+ finite element analysis package focussing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. Its name is a combination of FE (finite element) and the german word Lupe (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like under the hood. The user code for defining the integral form of equilibrium equations as well as their linearizations over a region are kept as close as possible to the analytical expressions. FElupe is both written in Python and fast in execution times thanks to NumPy.
+   .. grid-item-card:: 🮲🮳 Getting Started
+      :link: tutorials
+      :link-type: ref
 
-*No complicated installation, just pure Python.*
+      New to FElupe? The Beginner's Guide contains an introduction to the concept of FElupe.
 
-Another key feature is the easy and straightforward definition of mixed field formulations for the treatment of nearly incompressible material behaviour. In combination with `tensortrax <https://github.com/adtzlr/tensortrax>`_ isotropic hyperelastic material formulations are defined in terms of their strain energy density function - gradients (stress) and hessians (elasticity tensor) are evaluated with the help of automatic differentiation. Several useful utilities are available, e.g. the calculation of reaction forces and moments on given boundaries. Finally, results are ready to be exported to VTK or XDMF files (using meshio).
+   .. grid-item-card:: 🕮 API reference
+      :link: felupe-api
+      :link-type: ref
+
+      The reference guide contains a detailed description of the FElupe API. It describes how the methods work and which parameters can be used. Requires you to have an understanding of the key concepts.
+
+.. grid::
+
+   .. grid-item-card:: ☎ How-To
+      :link: how-to
+      :link-type: ref
+
+      Step-by-step guides for specific tasks.
+
+   .. grid-item-card:: 🕮 Examples
+      :link: examples
+      :link-type: ref
+
+      A gallery of examples.
+
+
 
 .. admonition:: Highlights
    :class: admonition
    
-   + basic high-level finite-element-analysis interface
+   + high-level :ref:`finite-element-analysis API <felupe-api>`
 
-   + flexible building blocks for finite element assembly
+   + flexible building blocks for :ref:`finite element assembly <felupe-api-assembly>`
    
-   + fast assembly of hyperelastic integral (weak) forms
+   + hyperelastic :class:`integral (weak) forms <felupe.IntegralForm>`
    
-   + straight-forward definition of mixed-field problems
+   + straight-forward definition of :class:`mixed-fields <felupe.FieldsMixed>`
    
-   + nearly-incompressible hyperelastic problems of solid mechanics
-
+   + :class:`nearly-incompressible hyperelastic solid bodies <felupe.SolidBodyNearlyIncompressible>`
 
 Installation
 ------------
+Install Python, fire up 🔥 a terminal and run 🏃
 
-Install Python, open the terminal and run ``pip install felupe[all]``, where ``[all]`` installs all optional dependencies. By default, FElupe depends on ``numpy``, ``scipy`` and ``tensortrax``. However,  ``einsumt``, ``h5py``, ``matplotlib``, ``meshio``, ``pyvista`` and ``tqdm`` are highly recommended. In order to make use of all features of FElupe, it is suggested to install all optional dependencies. For more flexible constitutive material definitions using Automatic Differentiation consider also installing `matADi <https://github.com/adtzlr/matadi>`_.
+.. image:: https://img.shields.io/pypi/v/felupe.svg
+   :target: https://pypi.python.org/pypi/felupe/
 
 .. code-block:: shell
 
    pip install felupe[all]
 
-*optional:*
+where ``[all]`` installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
 
-.. code-block:: shell
+* `numpy <https://github.com/numpy/numpy>`_ for array operations
+* `scipy <https://github.com/scipy/scipy>`_ for sparse matrices
+* `tensortrax <https://github.com/adtzlr/tensortrax>`_ for automatic differentiation
 
-   pip install matadi
+In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
+
+* `einsumt <https://github.com/mrkwjc/einsumt>`_ for parallel assembly
+* `h5py <https://github.com/h5py/h5py>`_ for XDMF result files
+* `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs
+* `meshio <https://github.com/nschloe/meshio>`_ for mesh-related I/O
+* `pyvista <https://github.com/pyvista/pyvista>`_ for interactive visualizations
+* `tqdm <https://github.com/tqdm/tqdm>`_ for showing progress bars during job evaluations
+
+Extension Packages
+------------------
+
+The capabilities of FElupe may be enhanced with extension packages created by the community.
+
++-----------------------------------------------------------+---------------------------------------------------------+
+| Package                                                   | Description                                             |
++===========================================================+=========================================================+
+| `hyperelastic <https://github.com/adtzlr/hyperelastic>`_  | Constitutive hyperelastic material formulations         |
++-----------------------------------------------------------+---------------------------------------------------------+
+| `matadi <https://github.com/adtzlr/matadi>`_              | Material Definition with Automatic Differentiation (AD) |
++-----------------------------------------------------------+---------------------------------------------------------+
+| `tensortrax <https://github.com/adtzlr/tensortrax>`_      | Math on Hyper-Dual Tensors with Trailing Axes           |
+|                                                           | (bundled with FElupe)                                   |
++-----------------------------------------------------------+---------------------------------------------------------+
+| `feplot <https://github.com/ZAARAOUI999/feplot>`_         | A visualization tool for FElupe                         |
++-----------------------------------------------------------+---------------------------------------------------------+
 
 .. toctree::
    :maxdepth: 1
@@ -59,7 +107,7 @@ Install Python, open the terminal and run ``pip install felupe[all]``, where ``[
 License
 -------
 
-FElupe - Finite Element Analysis (C) 2024 Andreas Dutzler, Graz (Austria).
+FElupe - Finite Element Analysis (C) 2021-2024 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

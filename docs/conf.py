@@ -35,6 +35,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
+    "sphinx_design",
     "myst_nb",
 ]
 

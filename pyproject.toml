@@ -61,6 +61,7 @@ docs = [
     "sphinx-autoapi",
     "sphinx-inline-tabs",
     "sphinx-copybutton",
+    "sphinx-design",
     "myst-nb",
     "panel",
 ]

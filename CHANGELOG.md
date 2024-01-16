@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance the performance of `math.cdya()` by reducing the number of (intermediate) arrays to be created from 4 to 2.
 - Use fixed output locations for the extracted field-gradients and the integrated stiffness matrices in `SolidBody` and `SolidBodyNearlyIncompressible`. This enhances the performance.
 - Change default filename in `Mesh.screenshot()` from `filename="field.png"` to `filename="mesh.png"`.
+- Change the return value on job-evaluation from `None = Job.evaluate()` to `job = Job.evaluate()`.
 
 ### Removed
 - Do not invoke `pyvista.start_xvfb()` on a posix-os. If required, run it manually.

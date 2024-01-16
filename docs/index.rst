@@ -5,13 +5,13 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
 
 .. grid::
 
-   .. grid-item-card:: 🮲🮳 Getting Started
+   .. grid-item-card:: 🏃 Getting Started
       :link: tutorials
       :link-type: ref
 
       New to FElupe? The Beginner's Guide contains an introduction to the concept of FElupe.
 
-   .. grid-item-card:: 🕮 API reference
+   .. grid-item-card:: 📖 API reference
       :link: felupe-api
       :link-type: ref
 
@@ -25,7 +25,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
 
       Step-by-step guides for specific tasks.
 
-   .. grid-item-card:: 🕮 Examples
+   .. grid-item-card:: 📚 Examples
       :link: examples
       :link-type: ref
 

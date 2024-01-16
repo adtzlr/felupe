@@ -15,7 +15,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
       :link: felupe-api
       :link-type: ref
 
-      The reference guide contains a detailed description of the FElupe API. It describes how the methods work and which parameters can be used. Requires you to have an understanding of the key concepts.
+      The reference guide contains a detailed description of the FElupe API. It describes how the methods work and which parameters can be used. Requires an understanding of the key concepts.
 
 .. grid::
 
@@ -23,7 +23,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
       :link: how-to
       :link-type: ref
 
-      Step-by-step guides for specific tasks.
+      Step-by-step guides for specific tasks or problems with a focus on practical usability instead of completeness. Requires an understanding of the key concepts.
 
    .. grid-item-card:: 📚 Examples
       :link: examples

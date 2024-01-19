@@ -173,31 +173,52 @@ def newtonrhapson(
     solver=spsolve,
     verbose=True,
 ):
-    """
-    General-purpose Newton-Rhapson algorithm
+    r"""Find a root of a real function using the Newton-Raphson method.
 
-    (Nonlinear) equilibrium equations `f`, as a function `f(x)` of the
-    unknowns `x`, are solved by linearization of `f` at given unknowns `x0`.
+    Nonlinear equilibrium equations :math:`f(x)` as a function of the unknowns :math:`x`
+    are solved by linearization of :math:`f` at given unknowns :math:`x_0`.
 
-        f(x0) = 0                                          (1)
+    ..  math::
 
-        f(x0 + dx)     =  f(x0) + (df/dx)(x0) dx (= 0)     (2)
-        (df/dx)(x0) dx = -f(x0)
+        f(x_0) = 0
 
-        dx = solve(df/dx(x0), -f(x0))                      (3)
+    The linearization is given by
 
-         x = x0 + dx                                       (4)
+    ..  math::
 
-    Repeated evaluations of Eq.(3) and Eq.(4) lead to an incrementally updated
-    solution of `x` which is shown in equation (4). Herein `xn` refer to the
-    inital unknowns whereas `x` to the updated unknowns (the subscript `n+1`
-    is dropped for readability).
+        f(x_0 + dx) \approx f(x_0) + K(x_0) \ dx \ (= 0)
 
-        dx = solve(df/dx(xn), -f(xn))                      (5)
+    with the jacobian, evaluated at given unknowns :math:`x_0`,
 
-         x = xn + dx                                       (6)
+    ..  math::
 
-    Eq.(5) and Eq.(6) are repeated until `check(dx, x, f)` returns `True`.
+        K(x_0) = \frac{\partial f}{\partial x}(x_0)
+
+    and is rearranged to
+
+    ..  math::
+
+        K(x_0) \ dx &= -f(x_0)
+
+        dx &= \text{solve} \left( K(x_0), -f(x_0) \right)
+
+    Finally, the solution is updated.
+
+    ..  math::
+
+        x = x_0 + dx
+
+    Repeated evaluations lead to an incrementally updated solution of :math:`x`. Herein
+    :math:`x_n` refer to the inital unknowns whereas :math:`x` to the updated unknowns
+    (the subscript ``n+1`` is dropped for readability).
+
+    ..  math::
+
+        dx &= \text{solve} \left( K(x_n), -f(x_n) \right)
+
+         x = x_n + dx
+
+    These two equations are repeated until ``check(dx, x, fun)`` returns ``True``.
 
     """
 

@@ -176,7 +176,8 @@ def newtonrhapson(
     r"""Find a root of a real function using the Newton-Raphson method.
 
     Nonlinear equilibrium equations :math:`f(x)` as a function of the unknowns :math:`x`
-    are solved by linearization of :math:`f` at given unknowns :math:`x_0`.
+    are solved by linearization of :math:`f` at a valid starting point of given unknowns
+    :math:`x_0`.
 
     ..  math::
 
@@ -188,37 +189,39 @@ def newtonrhapson(
 
         f(x_0 + dx) \approx f(x_0) + K(x_0) \ dx \ (= 0)
 
-    with the jacobian, evaluated at given unknowns :math:`x_0`,
+    with the Jacobian, evaluated at given unknowns :math:`x_0`,
 
     ..  math::
 
         K(x_0) = \frac{\partial f}{\partial x}(x_0)
 
-    and is rearranged to
+    and is rearranged to an equation system with left- and right-hand sides.
 
     ..  math::
 
-        K(x_0) \ dx &= -f(x_0)
+        K(x_0) \ dx = -f(x_0)
+
+    After a solution is found, the unknowns are updated.
+
+    ..  math::
 
         dx &= \text{solve} \left( K(x_0), -f(x_0) \right)
-
-    Finally, the solution is updated.
-
-    ..  math::
 
         x = x_0 + dx
 
     Repeated evaluations lead to an incrementally updated solution of :math:`x`. Herein
-    :math:`x_n` refer to the inital unknowns whereas :math:`x` to the updated unknowns
+    :math:`x_n` refer to the inital unknowns whereas :math:`x` are the updated unknowns
     (the subscript ``n+1`` is dropped for readability).
 
     ..  math::
+        :name: eq:newton-solve
 
         dx &= \text{solve} \left( K(x_n), -f(x_n) \right)
 
          x = x_n + dx
 
-    These two equations are repeated until ``check(dx, x, fun)`` returns ``True``.
+    Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
+    :math:`f(x)`. The procedure is repeated until convergence is reached.
 
     """
 

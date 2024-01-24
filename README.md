@@ -66,12 +66,12 @@ fig, ax = job.plot(
     ylabel="Normal Force $F$ in N $\longrightarrow$",
 )
 
-field.plot("Principal Values of Logarithmic Strain").show()
+ax2 = solid.imshow("Principal Values of Cauchy Stress", theme="paraview")
 ```
 
 ![curve](https://user-images.githubusercontent.com/5793153/234382805-d9a56108-9dd7-4f57-a029-571a5a2486a4.svg)
 
-![cube](https://user-images.githubusercontent.com/5793153/234405093-2f5201c1-3bba-46ee-bd91-af87813609d9.png)
+![solidbody](https://github.com/adtzlr/felupe/assets/5793153/2a236f27-53a5-42aa-a45e-85628ecddf72)
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).

@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Mesh.update(callback=None)`. This is especially useful if the points array of a mesh is changed and an already existing instance of a region has to be reloaded: `Mesh.update(points=new_points, callback=region.reload)`.
 - Add `ax = FieldContainer.imshow()` which acts as a wrapper on top of the `img = FieldContainer.screenshot(filename=None)` method. The image data is passed to a matplotlib figure and the `ax` object is returned.
 - Add `ax = Mesh.imshow()` which acts as a wrapper on top of the `img = Mesh.screenshot(filename=None)` method. The image data is passed to a matplotlib figure and the `ax` object is returned.
+- Add view-methods for `SolidBody` and `SolidBodyNearlyIncompressible` (same as already implemented for mesh and fields).
 
 ### Changed
 - Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.

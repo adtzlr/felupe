@@ -492,6 +492,17 @@ def test_load():
         assert res.success
 
 
+def test_view():
+    mesh = fem.Rectangle(n=6)
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+    umat = fem.NeoHooke(mu=1, bulk=2)
+    solid = fem.SolidBody(umat, field)
+    plotter = solid.plot(off_screen=True)
+    # img = solid.screenshot(transparent_background=True)
+    # ax = solid.imshow()
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -502,3 +513,4 @@ if __name__ == "__main__":
     test_solidbody_mixed()
     test_pressure()
     test_load()
+    test_view()

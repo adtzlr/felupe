@@ -23,9 +23,10 @@ from ..constitution import AreaChange
 from ..field import FieldAxisymmetric
 from ..math import ddot, det, dot, dya, transpose
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
+from ._solidbody import Solid
 
 
-class SolidBodyNearlyIncompressible:
+class SolidBodyNearlyIncompressible(Solid):
     r"""A (nearly) incompressible SolidBody with methods for the assembly of sparse
     vectors/matrices for a material with optional state variables.
 

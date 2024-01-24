@@ -188,5 +188,5 @@ class Job:
 
             if verbose == 1:
                 progress_bar.close()
-        
+
         return self

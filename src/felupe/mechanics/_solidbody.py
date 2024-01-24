@@ -21,10 +21,89 @@ import numpy as np
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..math import det, dot, transpose
+from ..tools._plot import ViewSolid
 from ._helpers import Assemble, Evaluate, Results
 
 
-class SolidBody:
+class Solid:
+    "Base class for solid bodies which provides methods for visualisations."
+
+    def view(self, point_data=None, cell_data=None, cell_type=None):
+        """View the solid with optional given dicts of point- and cell-data items.
+
+        Parameters
+        ----------
+        point_data : dict or None, optional
+            Additional point-data dict (default is None).
+        cell_data : dict or None, optional
+            Additional cell-data dict (default is None).
+        cell_type : pyvista.CellType or None, optional
+            Cell-type of PyVista (default is None).
+
+        Returns
+        -------
+        felupe.ViewSolid
+            An object which provides visualization methods for solid bodies,
+            e.g. :class:`felupe.SolidBody`.
+
+        See Also
+        --------
+        felupe.ViewSolid : Visualization methods for :class:`felupe.SolidBody`.
+        """
+
+        return ViewSolid(
+            self.field,
+            solid=self,
+            point_data=point_data,
+            cell_data=cell_data,
+            cell_type=cell_type,
+        )
+
+    def plot(self, *args, **kwargs):
+        """Plot the solid body.
+
+        See Also
+        --------
+        felupe.Scene.plot: Plot method of a scene.
+        """
+        return self.view().plot(*args, **kwargs)
+
+    def screenshot(
+        self,
+        *args,
+        filename="solidbody.png",
+        transparent_background=None,
+        scale=None,
+        **kwargs,
+    ):
+        """Take a screenshot of the solid body.
+
+        See Also
+        --------
+        pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
+        """
+
+        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            scale=scale,
+        )
+
+    def imshow(self, *args, **kwargs):
+        """Take a screenshot of the solid body, show the image data in a figure and
+        return the ax.
+        """
+
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.imshow(self.screenshot(*args, filename=None, **kwargs))
+        ax.set_axis_off()
+
+        return ax
+
+
+class SolidBody(Solid):
     "A SolidBody with methods for the assembly of sparse vectors/matrices."
 
     def __init__(self, umat, field, statevars=None):

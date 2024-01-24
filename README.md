@@ -71,7 +71,7 @@ ax2 = solid.imshow("Principal Values of Cauchy Stress", theme="paraview")
 
 ![curve](https://user-images.githubusercontent.com/5793153/234382805-d9a56108-9dd7-4f57-a029-571a5a2486a4.svg)
 
-![solidbody](https://github.com/adtzlr/felupe/assets/5793153/2a236f27-53a5-42aa-a45e-85628ecddf72)
+<img src="https://github.com/adtzlr/felupe/assets/5793153/2a236f27-53a5-42aa-a45e-85628ecddf72" alt="Solid Body" width="512px">
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).

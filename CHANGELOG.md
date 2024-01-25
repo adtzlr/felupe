@@ -17,8 +17,6 @@ All notable changes to this project will be documented in this file. The format 
 - Change default filename in `Mesh.screenshot()` from `filename="field.png"` to `filename="mesh.png"`.
 - Change the return value on job-evaluation from `None = Job.evaluate()` to `job = Job.evaluate()`.
 - Change implementation of `LinearElasticLargeStrain` from `NeoHooke` to `NeoHookeCompressible`.
-
-### Removed
 - Do not invoke `pyvista.start_xvfb()` on a posix-os. If required, run it manually.
 
 ## [7.13.0] - 2023-12-22

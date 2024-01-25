@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._models_hyperelasticity import NeoHooke
+from ._models_hyperelasticity import NeoHookeCompressible
 from ._models_linear_elasticity import lame_converter
 
 
@@ -54,13 +54,12 @@ class LinearElasticLargeStrain:
         self.x = [np.eye(3), np.zeros(0)]
 
         mu = None
-        bulk = None
+        lmbda = None
 
         if self.E is not None and self.nu is not None:
-            gamma, mu = lame_converter(E, nu)
-            bulk = gamma + 2 * mu / 3
+            lmbda, mu = lame_converter(E, nu)
 
-        self.material = NeoHooke(mu=mu, bulk=bulk, parallel=parallel)
+        self.material = NeoHookeCompressible(mu=mu, lmbda=lmbda, parallel=parallel)
 
     def function(self, x, E=None, nu=None):
         """Evaluate the strain energy (as a function of the deformation gradient).
@@ -87,10 +86,9 @@ class LinearElasticLargeStrain:
         if nu is None:
             nu = self.nu
 
-        gamma, mu = lame_converter(E, nu)
-        bulk = gamma + 2 * mu / 3
+        lmbda, mu = lame_converter(E, nu)
 
-        return self.material.function(x, mu=mu, bulk=bulk)
+        return self.material.function(x, mu=mu, lmbda=lmbda)
 
     def gradient(self, x, E=None, nu=None):
         """Evaluate the stress tensor (as a function of the deformation gradient).
@@ -117,10 +115,9 @@ class LinearElasticLargeStrain:
         if nu is None:
             nu = self.nu
 
-        gamma, mu = lame_converter(E, nu)
-        bulk = gamma + 2 * mu / 3
+        lmbda, mu = lame_converter(E, nu)
 
-        return self.material.gradient(x, mu=mu, bulk=bulk)
+        return self.material.gradient(x, mu=mu, lmbda=lmbda)
 
     def hessian(self, x, E=None, nu=None):
         """Evaluate the elasticity tensor (as a function of the deformation gradient).
@@ -147,7 +144,6 @@ class LinearElasticLargeStrain:
         if nu is None:
             nu = self.nu
 
-        gamma, mu = lame_converter(E, nu)
-        bulk = gamma + 2 * mu / 3
+        lmbda, mu = lame_converter(E, nu)
 
-        return self.material.hessian(x, mu=mu, bulk=bulk)
+        return self.material.hessian(x, mu=mu, lmbda=lmbda)

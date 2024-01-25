@@ -154,7 +154,10 @@ class Mesh(DiscreteGeometry):
         """
 
         return ViewMesh(
-            self, point_data=point_data, cell_data=cell_data, cell_type=cell_type
+            self,
+            point_data=point_data,
+            cell_data=cell_data,
+            cell_type=cell_type,
         )
 
     def plot(self, *args, **kwargs):

@@ -39,7 +39,7 @@ class Result:
 
 
 def fun_items(items, x, parallel=False):
-    "Force residuals from assembly of equilibrium (weak form)."
+    "Assemble the sparse system vector for each item."
 
     # init keyword arguments
     kwargs = {"parallel": parallel}
@@ -66,7 +66,7 @@ def fun_items(items, x, parallel=False):
 
 
 def jac_items(items, x, parallel=False):
-    "Tangent stiffness matrix from assembly of linearized equilibrium."
+    "Assemble the sparse system matrix for each item."
 
     # init keyword arguments
     kwargs = {"parallel": parallel}
@@ -175,6 +175,53 @@ def newtonrhapson(
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
+    Parameters
+    ----------
+    x0 : felupe.Field, ndarray or None (optional)
+        Array or Field with values of unknowns at a valid starting point (default is
+        None).
+    fun : callable, optional
+        Callable which assembles the vector-valued function. Additional args and kwargs
+        are passed.
+    jac : callable, optional
+        Callable which assembles the matrix-valued Jacobian. Additional args and kwargs
+        are passed.
+    solve : callable, optional
+        Callable which prepares (partitions) the linear equation system and solves it.
+        If a keyword-argument from the list ``["x", "dof1", "dof0", "ext0", "solver"]``
+        is found in the function-signature, then these arguments are passed to
+        ``solve``.
+    maxiter : int, optional
+        Maximum number of function iterations (default is 16).
+    update : callable, optional
+        Callable to update the unknowns.
+    check : callable, optional
+        Callable to the check the result.
+    tol : float, optional
+        Tolerance value to check if the function has converged (default is 1.490e-8).
+    items : list or None, optional
+        List with items which provide methods for assembly, e.g. like felupe.SolidBody
+        or felupe.Pressure (default is None).
+    dof1 : ndarray or None, optional
+        1d-array of int with all active degrees of freedom (default is None).
+    dof0 : ndarray or None, optional
+        1d-array of int with all prescribed degress of freedom (default is None).
+    ext0 : ndarray or None, optional
+        Field values at mesh-points for the prescribed components of the unknowns based
+        on ``dof0`` (default is None).
+    solver : callable, optional
+        A sparse or dense solver (default is scipy.sparse.linalg.spsolve).
+    verbose : bool or int, optional
+        Verbosity level: False or 0 for no output, True or 1 for a progress bar and
+        2 for a text-based output.
+
+    Returns
+    -------
+    felupe.tools.Result
+        The result object.
+
+    Notes
+    -----
     Nonlinear equilibrium equations :math:`f(x)` as a function of the unknowns :math:`x`
     are solved by linearization of :math:`f` at a valid starting point of given unknowns
     :math:`x_0`.
@@ -207,18 +254,18 @@ def newtonrhapson(
 
         dx &= \text{solve} \left( K(x_0), -f(x_0) \right)
 
-        x = x_0 + dx
+        x &= x_0 + dx
 
     Repeated evaluations lead to an incrementally updated solution of :math:`x`. Herein
     :math:`x_n` refer to the inital unknowns whereas :math:`x` are the updated unknowns
-    (the subscript ``n+1`` is dropped for readability).
+    (the subscript :math:`(\bullet)_{n+1}` is dropped for readability).
 
     ..  math::
         :name: eq:newton-solve
 
         dx &= \text{solve} \left( K(x_n), -f(x_n) \right)
 
-         x = x_n + dx
+         x &= x_n + dx
 
     Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
     :math:`f(x)`. The procedure is repeated until convergence is reached.
@@ -230,17 +277,14 @@ def newtonrhapson(
         soltimes = []
 
     if x0 is not None:
-        # take x0
         x = x0
 
     else:
-        # obtain field of first body
         x = items[0].field
 
     kwargs_solve = {}
     sig = inspect.signature(solve)
 
-    # pre-evaluate function at given unknowns "x"
     if items is not None:
         f = fun_items(items, x, *args, **kwargs)
     else:
@@ -256,7 +300,6 @@ def newtonrhapson(
 
     # iteration loop
     for iteration in range(maxiter):
-        # evaluate jacobian at unknowns "x"
         if items is not None:
             K = jac_items(items, x, *args, **kwargs)
         else:
@@ -270,7 +313,6 @@ def newtonrhapson(
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
-        # solve linear system and update solution
         if verbose:
             soltime_start = perf_counter()
 
@@ -282,13 +324,11 @@ def newtonrhapson(
 
         x = update(x, dx)
 
-        # evaluate function at unknowns "x"
         if items is not None:
             f = fun_items(items, x, *args, **kwargs)
         else:
             f = fun(x, *args, **kwargs)
 
-        # check success of solution
         xnorm, fnorm, success = check(
             dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
         )

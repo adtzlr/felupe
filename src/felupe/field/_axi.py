@@ -23,10 +23,22 @@ from ._base import Field
 
 
 class FieldAxisymmetric(Field):
-    r"""A axisymmetric Field on points of a two-dimensional
-    `region` with dimension `dim` (default is 2) and initial point
-    `values` (default is 0).
-
+    r"""An axisymmetric :class:`~felupe.Field` on points of a two-dimensional
+    :class:`~felupe.Region` with dimension ``dim`` (default is 2) and initial point
+    ``values`` (default is 0).
+    
+    Parameters
+    ----------
+    region : Region
+        The region on which the field will be created.
+    dim : int, optional
+        The dimension of the field (default is 2).
+    values : float or array, optional
+        A single value for all components of the field or an array of
+        shape (region.mesh.npoints, dim)`. Default is 0.0.
+    
+    Notes
+    -----
     * component 1 =  axial component
     * component 2 = radial component
 
@@ -40,45 +52,25 @@ class FieldAxisymmetric(Field):
         --|-----------------> x_1 (axial rotation axis)
                   \_^
 
-    This is a modified :class:`Field` class in which the radial coordinates
-    are evaluated at the numeric integration points. The :meth:`grad`-method is
-    modified in such a way that it does not only contain the in-plane
-    2d-gradient but also the circumferential stretch as shown in Eq.(1).
-
-    ..  code-block::
-
-                    |  dudX(2d) :   0   |
-        dudX(axi) = | ..................|                  (1)
-                    |     0     : u_r/R |
-
-    Attributes
-    ----------
-    region : Region
-        The region on which the field will be created.
-    dim : int (default is 2)
-        The dimension of the field.
-    values : float (default is 0.0) or array
-        A single value for all components of the field or an array of
-        shape (region.mesh.npoints, dim)`.
+    This is a modified :class:`Field` in which the radial coordinates are evaluated at
+    the numeric integration points ``q``. The :meth:`grad`-method is modified in such a
+    way that it does not only contain the in-plane 2d-gradient but also the
+    circumferential stretch, see :eq:`gradient_axi`.
+    
+    ..  math::
+        :label: gradient_axi
+        
+        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} = 
+            \begin{bmatrix}
+                \left( 
+                    \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} 
+                \right)_{2d} & \boldsymbol{0} \\
+                \boldsymbol{0}^T & \frac{u_r}{R}
+            \end{bmatrix}
 
     """
 
-    def __init__(self, region, dim=2, values=0):
-        """A continuous axisymmetric Field on points of a two-dimensional
-        `region` with dimension `dim` (default is 2) and initial point
-        `values` (default is 0).
-
-        Attributes
-        ----------
-        region : Region
-            The region on which the field will be created.
-        dim : int (default is 2)
-            The dimension of the field.
-        values : float (default is 0.0) or array
-            A single value for all components of the field or an array of
-            shape (region.mesh.npoints, dim)`.
-        """
-
+    def __init__(self, region, dim=2, values=0.0):
         # init base Field
         super().__init__(region, dim=dim, values=values)
 

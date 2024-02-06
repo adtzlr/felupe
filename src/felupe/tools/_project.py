@@ -24,6 +24,8 @@ from ..region import Region
 
 
 def topoints(values, region, sym=True, mode="tensor"):
+    "Shift of scalar or tensorial values at quadrature points to mesh-points."
+
     rows = region.mesh.cells.T.ravel()
     cols = np.zeros_like(rows)
 

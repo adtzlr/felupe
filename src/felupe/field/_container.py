@@ -25,7 +25,13 @@ from ..tools._plot import ViewField
 
 class FieldContainer:
     """A container for fields which holds a list or a tuple of :class:`Field`
-    instances."""
+    instances.
+
+    See Also
+    --------
+    felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
+       and initial point ``values``.
+    """
 
     def __init__(self, fields):
         self.fields = fields

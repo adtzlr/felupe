@@ -49,11 +49,11 @@ class FieldsMixed(FieldContainer):
         RegionQuadraticHexahedron, RegionTriQuadraticHexahedron, RegionQuadraticTetra,
         RegionQuadraticTriangle, RegionTetraMINI, RegionTriangleMINI or RegionLagrange
         A template region.
-    n : int, optional (default is 2)
+    n : int, optional
         Number of fields where the first one is a vector field of mesh-
-        dimension and the following fields are scalar-fields.
-    values : tuple, optional (default is (0, 0, 1, 0))
-        Initial field values.
+        dimension and the following fields are scalar-fields (default is 2).
+    values : tuple, optional
+        Initial field values  (default is (0, 0, 1, 0)).
     axisymmetric : bool, optional
         Flag to initiate a axisymmetric Field (default is False).
     planestrain : bool, optional

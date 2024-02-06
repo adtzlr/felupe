@@ -1,6 +1,8 @@
 Tools
 ~~~~~
 
+.. autoclass:: felupe.tools.NewtonResult
+
 .. autofunction:: felupe.newtonrhapson
 
 .. autofunction:: felupe.save

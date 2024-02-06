@@ -23,49 +23,40 @@ from ._base import Field
 
 
 class FieldPlaneStrain(Field):
-    r"""A plane strain Field on points of a two-dimensional
-    `region` with dimension `dim` (default is 2) and initial point
-    `values` (default is 0).
-
-    This is a modified :class:`Field` class in which the radial coordinates
-    are evaluated at the numeric integration points. The :meth:`grad`-method is
-    modified in such a way that it does not only contain the in-plane
-    2d-gradient but also the circumferential stretch as shown in Eq.(1).
-
-    ..  code-block::
-
-                            |  dudX(2d) :   0   |
-        dudX(planestrain) = | ..................|                  (1)
-                            |     0     :   0   |
-
-    Attributes
+    r"""A plane strain :class:`~felupe.Field` on points of a two-dimensional
+    :class:`~felupe.Region` with dimension ``dim`` (default is 2) and initial point
+    ``values`` (default is 0).
+    
+    Parameters
     ----------
     region : Region
         The region on which the field will be created.
-    dim : int (default is 2)
-        The dimension of the field.
-    values : float (default is 0.0) or array
+    dim : int, optional
+        The dimension of the field (default is 2).
+    values : float or array
         A single value for all components of the field or an array of
-        shape (region.mesh.npoints, dim)`.
+        shape (region.mesh.npoints, dim)`. Default is 0.0.
+    
+    Notes
+    -----
+    This is a modified :class:`~felupe.Field` for plane strain. The :meth:`grad`-method
+    is modified in such a way that the in-plane 2d-gradient is embedded in 3d-space, see
+    Eq. :eq:`gradient_planestrain`.
+
+    ..  math::
+        :label: gradient_planestrain
+        
+        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} = 
+            \begin{bmatrix}
+                \left( 
+                    \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} 
+                \right)_{2d} & \boldsymbol{0} \\
+                \boldsymbol{0}^T & 0
+            \end{bmatrix}
 
     """
 
-    def __init__(self, region, dim=2, values=0):
-        """A plane strain Field on points of a two-dimensional
-        `region` with dimension `dim` (default is 2) and initial point
-        `values` (default is 0).
-
-        Attributes
-        ----------
-        region : Region
-            The region on which the field will be created.
-        dim : int (default is 2)
-            The dimension of the field.
-        values : float (default is 0.0) or array
-            A single value for all components of the field or an array of
-            shape (region.mesh.npoints, dim)`.
-        """
-
+    def __init__(self, region, dim=2, values=0.0):
         # init base Field
         super().__init__(region, dim=dim, values=values)
 

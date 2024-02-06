@@ -267,9 +267,9 @@ Alternatively, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 
-    res = fem.newtonrhapson(
-        field, dof1=dof1, dof0=dof0, ext0=ext0, kwargs={"umat": umat}
-    )
+    solid = fem.SolidBody(umat, field)
+    loadcase = {"dof1": dof1, "dof0": dof0, "ext0": ext0}
+    res = fem.newtonrhapson(items=[solid], **loadcase)
     field = res.x
 
 

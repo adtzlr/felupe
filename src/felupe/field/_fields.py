@@ -40,8 +40,36 @@ from ._planestrain import FieldPlaneStrain
 
 
 class FieldsMixed(FieldContainer):
-    r"""A mixed field based on a region and returns a :class:`FieldContainer`
-    instance."""
+    r"""A container with multiple (mixed) :class:`Fields <felupe.Field>` based on a
+    :class:`Region`.
+
+    Parameters
+    ----------
+    region : Region
+        A template region.
+    n : int, optional (default is 2)
+        Number of fields where the first one is a vector field of mesh-
+        dimension and the following fields are scalar-fields.
+    values : tuple, optional (default is (0, 0, 1, 0))
+        Initial field values.
+    axisymmetric : bool, optional
+        Flag to initiate a axisymmetric Field (default is False).
+    planestrain : bool, optional
+        Flag to initiate a plane strain Field (default is False).
+    offset : int, optional
+        Offset for cell connectivity (default is 0).
+    npoints : int or None, optional
+        Specified number of mesh points (default is None).
+    mesh: Mesh or None, optional
+        A mesh for the dual region (default is None).
+
+    Notes
+    -----
+    The dual region is chosen automatically, i.e. for a
+    :class:`RegionHexahedron` the dual region is :class:`RegionConstantHexahedron`. A
+    total number of ``n`` fields are generated inside a :class:`FieldContainer`.
+
+    """
 
     def __init__(
         self,
@@ -55,32 +83,6 @@ class FieldsMixed(FieldContainer):
         mesh=None,
         **kwargs,
     ):
-        r"""Create a mixed field based on a region. The dual region is chosen
-        automatically, i.e. for a :class:`RegionHexahedron` the dual region
-        is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
-        are generated and passed to :class:`FieldContainer`.
-
-        Arguments
-        ---------
-        region : Region
-            A template region.
-        n : int, optional (default is 2)
-            Number of fields where the first one is a vector field of mesh-
-            dimension and the following fields are scalar-fields.
-        values : tuple, optional (default is (0, 0, 1, 0))
-            Initial field values.
-        axisymmetric : bool, optional
-            Flag to initiate a axisymmetric Field (default is False).
-        planestrain : bool, optional
-            Flag to initiate a plane strain Field (default is False).
-        offset : int, optional
-            Offset for cell connectivity (default is 0).
-        npoints : int or None, optional
-            Specified number of mesh points (default is None).
-        mesh: Mesh or None, optional
-            A mesh for the dual region (default is None).
-        """
-
         if axisymmetric is False and planestrain is False:
             F = Field
         elif axisymmetric is True and planestrain is False:

@@ -29,7 +29,7 @@ class FieldContainer:
 
     Parameters
     ----------
-    fields : list of Field, FieldAxisymmetric or FieldPlaneStrain
+    fields : list or tuple of Field, FieldAxisymmetric or FieldPlaneStrain
         List with fields. The region is linked to the first field.
 
     See Also

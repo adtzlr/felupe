@@ -1,4 +1,5 @@
 from ._misc import logo, runs_on
+from ._newton import NewtonResult
 from ._newton import fun_items as fun
 from ._newton import jac_items as jac
 from ._newton import newtonrhapson
@@ -21,6 +22,7 @@ __all__ = [
     "runs_on",
     "save",
     "solve",
+    "NewtonResult",
     "ViewMesh",
     "ViewField",
     "ViewXdmf",

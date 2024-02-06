@@ -28,9 +28,24 @@ from ..assembly import IntegralForm
 from ..math import norm
 
 
-class Result:
+class NewtonResult:
+    """Represents the result found by Newton's method.
+
+    Parameters
+    ----------
+    x : felupe.FieldContainer or ndarray
+        Array or Field container with values at a solution found by Newton's method.
+    fun : ndarray or None, optional
+        Values of objective function (default is None).
+    jac : ndarray or None, optional
+        Values of the Jacobian of the objective function (default is None).
+    success : bool or None, optional
+        A boolean flag which is True if the solution converged (default is None).
+    iterations : int or None, optional
+        Number of iterations until solution converged (default is None).
+    """
+
     def __init__(self, x, fun=None, jac=None, success=None, iterations=None):
-        "Result class."
         self.x = x
         self.fun = fun
         self.jac = jac
@@ -177,9 +192,9 @@ def newtonrhapson(
 
     Parameters
     ----------
-    x0 : felupe.Field, ndarray or None (optional)
-        Array or Field with values of unknowns at a valid starting point (default is
-        None).
+    x0 : felupe.FieldContainer, ndarray or None (optional)
+        Array or Field container with values of unknowns at a valid starting point
+        (default is None).
     fun : callable, optional
         Callable which assembles the vector-valued function. Additional args and kwargs
         are passed.
@@ -213,11 +228,11 @@ def newtonrhapson(
         A sparse or dense solver (default is scipy.sparse.linalg.spsolve).
     verbose : bool or int, optional
         Verbosity level: False or 0 for no output, True or 1 for a progress bar and
-        2 for a text-based output.
+        2 for a text-based output (default is True).
 
     Returns
     -------
-    felupe.tools.Result
+    felupe.tools.NewtonResult
         The result object.
 
     Notes
@@ -269,6 +284,32 @@ def newtonrhapson(
 
     Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
     :math:`f(x)`. The procedure is repeated until convergence is reached.
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> region = fem.RegionHexahedron(fem.Cube(n=6))
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>> boundaries, loadcase = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
+    >>> res = fem.newtonrhapson(items=[solid], **loadcase)
+
+    Newton's method had success
+
+    >>> res.success
+    True
+
+    and 4 iterations were needed to converge within the specified tolerance.
+
+    >>> res.iterations
+    4
+
+    The norm of the objective function for all active degrees of freedom is lower than
+    3e-15.
+
+    >>> np.linalg.norm(res.fun[loadcase["dof1"]])
+    2.7482611016095555e-15
 
     """
 
@@ -345,7 +386,7 @@ def newtonrhapson(
     if 1 + iteration == maxiter and not success:
         raise ValueError("Maximum number of iterations reached (not converged).\n")
 
-    Res = Result(x=x, fun=f, success=success, iterations=1 + iteration)
+    Res = NewtonResult(x=x, fun=f, success=success, iterations=1 + iteration)
 
     if verbose:
         runtimes.append(perf_counter())

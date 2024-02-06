@@ -45,9 +45,9 @@ class FieldsMixed(FieldContainer):
 
     Parameters
     ----------
-    region : RegionHexahedron, RegionQuad, RegionQuadraticQuad, RegionBiQuadraticQuad,
+    region : (RegionHexahedron, RegionQuad, RegionQuadraticQuad, RegionBiQuadraticQuad,
         RegionQuadraticHexahedron, RegionTriQuadraticHexahedron, RegionQuadraticTetra,
-        RegionQuadraticTriangle, RegionTetraMINI, RegionTriangleMINI or RegionLagrange
+        RegionQuadraticTriangle, RegionTetraMINI, RegionTriangleMINI or RegionLagrange)
         A template region.
     n : int, optional
         Number of fields where the first one is a vector field of mesh-

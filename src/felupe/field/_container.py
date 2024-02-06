@@ -47,15 +47,18 @@ class FieldContainer:
         return "\n".join([header, size, fields_header, *fields])
 
     def extract(self, grad=True, sym=False, add_identity=True, out=None):
-        """Generalized extraction method which evaluates either the gradient
-        or the field values at the integration points of all cells
-        in the region. Optionally, the symmetric part of the gradient is
-        evaluated and/or the identity matrix is added to the gradient.
+        """Generalized extraction method which evaluates either the gradient or the
+        field values at the integration points of all cells in the region. Optionally,
+        the symmetric part of the gradient is evaluated and/or the identity matrix is
+        added to the gradient.
 
         Arguments
         ---------
-        grad : bool, optional
-            Flag for gradient evaluation (default is True).
+        grad : bool or list of bool, optional
+            Flag(s) for gradient evaluation(s). A boolean value is appplied on the first
+            field only and all other fields are extracted with ``grad=False``. To
+            enable or disable gradients per-field, use a list of boolean values instead
+            (default is True).
         sym : bool, optional
             Flag for symmetric part if the gradient is evaluated (default is False).
         add_identity : bool, optional

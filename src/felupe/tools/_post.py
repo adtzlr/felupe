@@ -20,29 +20,39 @@ import numpy as np
 from scipy.interpolate import interp1d
 from scipy.sparse import issparse
 
-
-def force(field, r, boundary):
-    if issparse(r):
-        r = r.toarray()
-    return (
-        ((np.split(r, field.offsets)[0]).reshape(-1, field[0].dim))[boundary.points]
-    ).sum(0)
+from ..math import cross
 
 
-def moment(field, r, boundary, point=np.zeros(3)):
-    if issparse(r):
-        r = r.toarray()
-    point = point.reshape(1, 3)
+def force(field, forces, boundary):
+    "Evaluate the force vector sum on points of a boundary."
 
-    indices = np.array([(1, 2), (2, 0), (0, 1)])
+    if issparse(forces):
+        forces = forces.toarray()
+
+    forces_first_field = np.split(forces, field.offsets)[0]
+    dim = field[0].dim
+
+    return ((forces_first_field.reshape(-1, dim))[boundary.points]).sum(axis=0)
+
+
+def moment(field, forces, boundary, centerpoint=np.zeros(3)):
+    "Evaluate the moment vector sum on points of a boundary at a given center point."
+
+    if issparse(forces):
+        forces = forces.toarray()
+
+    dim = field[0].dim
+    centerpoint = np.asarray(centerpoint).reshape(1, -1)[:, :dim]
 
     displacements = field[0].values
-    force = (np.split(r, field.offsets)[0]).reshape(-1, 3)
+    force = (np.split(forces, field.offsets)[0]).reshape(-1, dim)
 
-    d = ((point + displacements) - point)[boundary.points]
-    f = force[boundary.points]
+    moments = cross(
+        (field.region.mesh.points + displacements - centerpoint)[boundary.points].T,
+        force[boundary.points].T,
+    ).T
 
-    return np.array([(f[:, i] * d[:, i[::-1]]).sum() for i in indices])
+    return moments.sum(axis=0)
 
 
 def curve(x, y):

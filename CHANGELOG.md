@@ -19,6 +19,11 @@ All notable changes to this project will be documented in this file. The format 
 - Change implementation of `LinearElasticLargeStrain` from `NeoHooke` to `NeoHookeCompressible`.
 - Do not invoke `pyvista.start_xvfb()` on a posix-os. If required, run it manually.
 - Rename `tools._newton.Result` to `tools._newton.NewtonResult` and add it to the public API as `tools.NewtonResult` because this class is returned as a result of Newton's method.
+- Rename the `r`-arguments of `tools.force()` and `tools.moment()` to `forces`.
+- Reanme the `point`-argument of `tools.moment()` to `centerpoint`.
+
+### Fixed
+- Fix `tools.moment()`. Use `math.cross()`. The old implementation was completely wrong!
 
 ## [7.13.0] - 2023-12-22
 

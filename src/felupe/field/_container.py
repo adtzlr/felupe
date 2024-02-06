@@ -27,6 +27,11 @@ class FieldContainer:
     """A container for fields which holds a list or a tuple of :class:`Field`
     instances.
 
+    Parameters
+    ----------
+    fields : list of Field, FieldAxisymmetric or FieldPlaneStrain
+        List with fields. The region is linked to the first field.
+
     See Also
     --------
     felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``

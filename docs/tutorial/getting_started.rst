@@ -66,7 +66,7 @@ Results may be viewed in an interactive window.
     
 ..  code-block:: python
 
-    fem.View(field).plot("Displacement", component=0).show()
+    field.plot("Displacement", component=0).show()
 
 
 ..  image:: images/readme.png

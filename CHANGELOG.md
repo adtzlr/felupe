@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `ax = Mesh.imshow()` which acts as a wrapper on top of the `img = Mesh.screenshot(filename=None)` method. The image data is passed to a matplotlib figure and the `ax` object is returned.
 - Add view-methods for `SolidBody` and `SolidBodyNearlyIncompressible` (same as already implemented for mesh and fields).
 - Add lists with norms of values and norms of the objective function in `tools.NewtonResult(xnorms=None, fnorms=None)`.
+- Add lists of norms of the objective function as attribute to `Job.fnorms`.
 
 ### Changed
 - Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.

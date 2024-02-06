@@ -69,6 +69,11 @@ class FieldsMixed(FieldContainer):
     :class:`RegionHexahedron` the dual region is :class:`RegionConstantHexahedron`. A
     total number of ``n`` fields are generated inside a :class:`FieldContainer`.
 
+    See Also
+    --------
+    felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
+       and initial point ``values``.
+
     """
 
     def __init__(

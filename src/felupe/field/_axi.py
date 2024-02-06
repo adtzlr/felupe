@@ -67,6 +67,11 @@ class FieldAxisymmetric(Field):
                 \right)_{2d} & \boldsymbol{0} \\
                 \boldsymbol{0}^T & \frac{u_r}{R}
             \end{bmatrix}
+    
+    See Also
+    --------
+    felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
+       and initial point ``values``.
 
     """
 

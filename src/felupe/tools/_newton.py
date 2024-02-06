@@ -43,14 +43,41 @@ class NewtonResult:
         A boolean flag which is True if the solution converged (default is None).
     iterations : int or None, optional
         Number of iterations until solution converged (default is None).
+    xnorms : array of float or None, optional
+        List with norms of the values of the solution (default is None).
+    fnorms : float or None, optional
+        List with norms of the objective function (default is None).
+
+    Notes
+    -----
+    The objective function's norm is relative based on the function values on the
+    prescribed degrees of freedom :math:`(\bullet)_0`. A small number
+    :math:`\varepsilon` is added to avoid numeric instabilities.
+
+    ..  math::
+
+        \text{norm}(\boldsymbol{f}) = \frac{||\boldsymbol{f}_1||}
+            {\varepsilon + ||\boldsymbol{f}_0||}
+
     """
 
-    def __init__(self, x, fun=None, jac=None, success=None, iterations=None):
+    def __init__(
+        self,
+        x,
+        fun=None,
+        jac=None,
+        success=None,
+        iterations=None,
+        xnorms=None,
+        fnorms=None,
+    ):
         self.x = x
         self.fun = fun
         self.jac = jac
         self.success = success
         self.iterations = iterations
+        self.xnorms = xnorms
+        self.fnorms = fnorms
 
 
 def fun_items(items, x, parallel=False):
@@ -342,6 +369,8 @@ def newtonrhapson(
         print("| # | norm(fun) |  norm(dx) |")
         print("|---|-----------|-----------|")
 
+    xnorms, fnorms = [], []
+
     # iteration loop
     for iteration in range(maxiter):
         if items is not None:
@@ -376,6 +405,8 @@ def newtonrhapson(
         xnorm, fnorm, success = check(
             dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
         )
+        xnorms.append(xnorm)
+        fnorms.append(fnorm)
 
         if verbose:
             print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))
@@ -389,7 +420,14 @@ def newtonrhapson(
     if 1 + iteration == maxiter and not success:
         raise ValueError("Maximum number of iterations reached (not converged).\n")
 
-    Res = NewtonResult(x=x, fun=f, success=success, iterations=1 + iteration)
+    Res = NewtonResult(
+        x=x,
+        fun=f,
+        success=success,
+        iterations=1 + iteration,
+        xnorms=xnorms,
+        fnorms=fnorms,
+    )
 
     if verbose:
         runtimes.append(perf_counter())

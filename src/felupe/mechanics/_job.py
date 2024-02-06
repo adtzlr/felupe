@@ -70,6 +70,7 @@ class Job:
         self.nsteps = len(steps)
         self.callback = callback
         self.timetrack = []
+        self.fnorms = []
 
     def _write(self, writer, time, substep, point_data, cell_data):
         field = substep.x
@@ -159,6 +160,7 @@ class Job:
 
                 substeps = step.generate(verbose=newton_verbose, **kwargs)
                 for i, substep in enumerate(substeps):
+                    self.fnorms.append(substep.fnorms)
                     if verbose == 2:
                         _substep = f"Substep {i + 1}/{step.nsubsteps}"
                         _step = f"Step {j + 1}/{self.nsteps}"

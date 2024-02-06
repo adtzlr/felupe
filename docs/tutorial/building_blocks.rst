@@ -56,7 +56,6 @@ An overview of the mesh-metadata is available in the console.
 
 Region
 ~~~~~~
-
 A :class:`~felupe.Region` essentially pre-calculates element shape/ansatz/basis functions and derivatives evaluated at every quadrature point of every cell w.r.t. the undeformed coordinates (as attribute :attr:`~felupe.Region.dhdX`). An array containing products of quadrature weights multiplied by the determinants of the (geometric) jacobians is stored as the array of (undeformed) differential volumes :attr:`~felupe.Region.dV`. The sum of all differential volumes gives the total (undeformed) volume of the region.
 
 ..  note::
@@ -90,8 +89,7 @@ The scheme of the region, the finite element formulation and the quadrature rule
 
 Field
 ~~~~~
-
-In a second step fields are added to the Region which may be either scalar or vector fields. The values at mesh-points are obtained with the attribute ``values``. Interpolated field values at quadrature points are calculated with the ``interpolate()`` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method ``grad()``. A generalized extraction method ``extract(grad=True, add_identity=True, sym=False)`` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
+In a next step, a :class:`~felupe.Field` is added to the :class:`~felupe.Region`. This may be either a scalar- or a vector-valed field. The values at mesh-points are obtained with the attribute ``values``. Interpolated field values at quadrature points are calculated with the ``interpolate()`` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method ``grad()``. A generalized extraction method ``extract(grad=True, add_identity=True, sym=False)`` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
 
 ..  code-block:: python
 

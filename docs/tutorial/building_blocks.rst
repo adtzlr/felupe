@@ -168,7 +168,7 @@ Next we enforce boundary conditions on the displacement field. Boundary conditio
 
 Partition of deegrees of freedom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The separation of active and inactive degrees of freedom is performed by a so-called :func:`~felupe.dof.partition`. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
+The separation of active and inactive degrees of freedom is performed by a so-called :func:`~felupe.dof.partition`. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values on the displacement field.
 
 ..  code-block:: python
     
@@ -178,8 +178,7 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 Integral forms of equilibrium equations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The integral (or weak) forms of equilibrium equations are defined by the :class:`fem.IntegralForm` class. The pre-evaluated function of interest has to be passed as the `fun` argument whereas the virtual field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the virtual field to the integral form. FElupe assumes a linear form if ``u=None`` (default) or creates a bilinear form if a field is passed to the field argument ``u``.
+The integral (or weak) forms of equilibrium equations are defined by the :class:`fem.IntegralForm` class. The pre-evaluated function of interest has to be passed as the `fun` argument and the test field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the test field to the integral form. FElupe assumes a linear form if ``u=None`` (default) and creates a bilinear form if a field is passed to the trial field argument ``u``.
 
 .. math::
 
@@ -202,8 +201,7 @@ The assembly of both forms lead to the (point-based) internal force vector and t
 
 Prepare (partition) and solve the linearized equation system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In order to solve the linearized equation system a partition into active and inactive degrees of freedom has to be performed. This system may then be passed to the (sparse direct) solver. Given a set of nonlinear equilibrium equations :math:`\boldsymbol{g}` the unknowns :math:`\boldsymbol{u}` are found by linearization at a valid initial state of equilibrium and an iterative Newton-Rhapson solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns. The (linear) solution is equal to the first result of a Newton-Rhapson iterative solution procedure. The resulting point values ``du`` are finally added to the displacement field. 
+In order to solve the linearized equation system a :func:`~felupe.solve.partition` into active and inactive degrees of freedom has to be performed. This system may then be passed to the (sparse direct) solver. Given a set of nonlinear equilibrium equations :math:`\boldsymbol{g}` the unknowns :math:`\boldsymbol{u}` are found by linearization at a valid initial state of equilibrium and an iterative Newton-Rhapson solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns. The (linear) solution is equal to the first result of a Newton-Rhapson iterative solution procedure. The solution ``du`` is finally added to the displacement field.
 
 .. math::
 
@@ -220,7 +218,7 @@ In order to solve the linearized equation system a partition into active and ina
    \boldsymbol{u}_1 &+= d\boldsymbol{u}_1
 
 
-The default solver of FElupe is `SuperLU <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html#scipy.sparse.linalg.spsolve>`_ provided by the sparse package of `SciPy <https://docs.scipy.org>`_. A significantly faster alternative is `pypardiso <https://pypi.org/project/pypardiso/>`_ which may be installed from PyPI with ``pip install pypardiso`` (not included with FElupe). The optional argument ``solver`` of :func:`fem.solve.solve` accepts a user-defined solver.
+The default solver of FElupe is `SuperLU <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html#scipy.sparse.linalg.spsolve>`_ provided by the sparse package of `SciPy <https://docs.scipy.org>`_. A significantly faster alternative is `pypardiso <https://pypi.org/project/pypardiso/>`_ which may be installed from PyPI with ``pip install pypardiso`` (not included with FElupe). The optional argument ``solver`` of :func:`~felupe.solve.solve` accepts any user-defined solver.
 
 ..  code-block:: python
 
@@ -232,7 +230,7 @@ The default solver of FElupe is `SuperLU <https://docs.scipy.org/doc/scipy/refer
     # field += dfield
 
 
-A very simple newton-rhapson code looks like this:
+A very simple Newton-Rhapson code looks like this:
 
 ..  code-block:: python
 
@@ -280,7 +278,7 @@ All 3x3 components of the deformation gradient of integration point 1 of cell 1 
 ..  code-block:: python
 
     F = F[0]
-    F[:,:,0,0]
+    F[:, :, 0, 0]
 
 
 ..  code-block:: shell
@@ -301,7 +299,7 @@ Results are exported as VTK or XDMF files using `meshio <https://pypi.org/projec
 
 
 
-Any tensor at quadrature points shifted or projected to, both averaged at mesh-points is evaluated for ``quad`` and ``hexahedron`` cell types by :class:`fem.topoints` or :class:`fem.project`, respectively. For example, the calculation of the cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the shift or the projection. The stress results at mesh points are passed as a dictionary to the ``point_data`` argument.
+Any tensor at quadrature points, shifted or projected to and averaged at mesh-points, is evaluated for ``quad`` and ``hexahedron`` cell types by :func:`~felupe.topoints` or :func:`~felupe.project`, respectively. For example, the calculation of the Cauchy stress involves the conversion from the first Piola-Kirchhoff stress to the Cauchy stress followed by the shift or the projection. The stress results at mesh points are passed as a dictionary to the ``point_data`` argument.
 
 ..  code-block:: python
 

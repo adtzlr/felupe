@@ -55,8 +55,14 @@ def moment(field, forces, boundary, centerpoint=np.zeros(3)):
     return moments.sum(axis=0)
 
 
-def curve(x, y):
+def curve(x, y, num=50):
+    "Interpolate a curve from given (x, y) data."
+
     kind = [None, "linear", "quadratic", "cubic"][min(len(y), 4) - 1]
+
     f = interp1d(x[: len(y)], y, kind=kind)
-    xx = np.linspace(x[0], x[: len(y)][-1])
-    return np.array([x[: len(y)], y]), np.array([xx, f(xx)])
+
+    xt = x[: len(y)]
+    xx = np.linspace(xt[0], xt[-1], num=num)
+
+    return np.array([xt, y]), np.array([xx, f(xx)])

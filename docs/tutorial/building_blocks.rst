@@ -1,9 +1,9 @@
-.. _howto-building-blocks:
+.. _tutorial-building-blocks:
 
 Building Blocks
 ---------------
 
-.. admonition:: Have a look at the building blocks of FElupe.
+.. admonition:: Learn the building blocks of FElupe.
    :class: note
 
    * create a meshed cube with hexahedron elements
@@ -20,7 +20,7 @@ Building Blocks
    
    * export the displaced mesh along with cauchy stress projected to mesh-points
 
-Start setting up a problem in FElupe by the creation of a numeric **Region** with a geometry (**Mesh**), a finite **Element** and a **Quadrature** rule, e.g. for hexahedrons or tetrahedrons. By using a template region like `RegionHexahedron` (see section **Region**), only the mesh has to be created.
+Start setting up a problem in FElupe by the creation of a numeric :class:`Region` with a geometry :class:`Mesh`, a finite **Element** formulation and a **Quadrature** rule.
 
 .. image:: images/region.svg
    :width: 600px
@@ -57,7 +57,10 @@ An overview of the mesh-metadata is available in the console.
 Region
 ~~~~~~
 
-A region essentially pre-calculates element shape functions and derivatives evaluated at every quadrature point of every cell w.r.t. the undeformed coordinates (as attribute `dhdX`). An array containing products of quadrature weights multiplied by the determinants of the (geometric) jacobians is stored as the differential volume. The sum of all differential volumes gives the total (undeformed) volume of the region. The attributes of a region are used in a `Field`.
+A :class:`Region` essentially pre-calculates element shape/ansatz/basis functions and derivatives evaluated at every quadrature point of every cell w.r.t. the undeformed coordinates (as attribute `dhdX`). An array containing products of quadrature weights multiplied by the determinants of the (geometric) jacobians is stored as the array of (undeformed) differential volumes :attr:`Region.dV`. The sum of all differential volumes gives the total (undeformed) volume of the region.
+
+..  note::
+    By using a template region like `RegionHexahedron`, only the mesh has to be created.
 
 ..  code-block:: python
 

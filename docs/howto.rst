@@ -7,7 +7,6 @@ How-To Guides
    :maxdepth: 1
    :caption: How-To:
    
-   howto/building_blocks
    howto/meshgen
    howto/rbe2
    howto/mixed

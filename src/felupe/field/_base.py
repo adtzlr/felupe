@@ -29,8 +29,8 @@ class Field:
     r"""A Field on points of a :class:`~felupe.Region` with dimension ``dim`` and
     initial point ``values``.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     region : Region
         The region on which the field will be created.
     dim : int, optional

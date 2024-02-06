@@ -44,7 +44,7 @@ This step is now added to a **Job**. The results are exported after each complet
     job = fem.Job(steps=[uniaxial])
     job.evaluate(filename="result.xdmf")
     
-    fem.View(field).plot("Principal Values of Logarithmic Strain").show()
+    field.plot("Principal Values of Logarithmic Strain").show()
 
 
 ..  image:: images/jobs.png

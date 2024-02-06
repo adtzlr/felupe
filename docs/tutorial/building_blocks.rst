@@ -57,7 +57,7 @@ An overview of the mesh-metadata is available in the console.
 Region
 ~~~~~~
 
-A :class:`Region` essentially pre-calculates element shape/ansatz/basis functions and derivatives evaluated at every quadrature point of every cell w.r.t. the undeformed coordinates (as attribute `dhdX`). An array containing products of quadrature weights multiplied by the determinants of the (geometric) jacobians is stored as the array of (undeformed) differential volumes :attr:`Region.dV`. The sum of all differential volumes gives the total (undeformed) volume of the region.
+A :class:`~felupe.Region` essentially pre-calculates element shape/ansatz/basis functions and derivatives evaluated at every quadrature point of every cell w.r.t. the undeformed coordinates (as attribute :attr:`~felupe.Region.dhdX`). An array containing products of quadrature weights multiplied by the determinants of the (geometric) jacobians is stored as the array of (undeformed) differential volumes :attr:`~felupe.Region.dV`. The sum of all differential volumes gives the total (undeformed) volume of the region.
 
 ..  note::
     By using a template region like `RegionHexahedron`, only the mesh has to be created.
@@ -80,8 +80,7 @@ A :class:`Region` essentially pre-calculates element shape/ansatz/basis function
     dV = region.dV
     V = dV.sum()
 
-The scheme of the region, the finite element formulation and the quadrature rule, may be
-visualized by its plot-method.
+The scheme of the region, the finite element formulation and the quadrature rule, may be visualized by its plot-method.
 
 ..  code-block::
     

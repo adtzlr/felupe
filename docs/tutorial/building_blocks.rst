@@ -20,7 +20,7 @@ Building Blocks
    
    * export the displaced mesh along with cauchy stress projected to mesh-points
 
-Start setting up a problem in FElupe by the creation of a numeric :class:`Region` with a geometry :class:`Mesh`, a finite **Element** formulation and a **Quadrature** rule.
+Start setting up a problem in FElupe by the creation of a numeric :class:`~felupe.Region` with a geometry :class:`~felupe.Mesh`, a finite **Element** formulation :class:`~felupe.Hexahedron` and a **Quadrature** rule :class:`~felupe.GaussLegendre`.
 
 .. image:: images/region.svg
    :width: 600px
@@ -79,7 +79,7 @@ A :class:`~felupe.Region` essentially pre-calculates element shape/ansatz/basis 
     dV = region.dV
     V = dV.sum()
 
-The scheme of the region, the finite element formulation and the quadrature rule, may be visualized by its plot-method.
+The scheme of the region, i.e. the finite element formulation and the quadrature rule, may be visualized by its plot-method.
 
 ..  code-block::
     
@@ -89,18 +89,18 @@ The scheme of the region, the finite element formulation and the quadrature rule
 
 Field
 ~~~~~
-In a next step, a :class:`~felupe.Field` is added to the :class:`~felupe.Region`. This may be either a scalar- or a vector-valed field. The values at mesh-points are obtained with the attribute ``values``. Interpolated field values at quadrature points are calculated with the ``interpolate()`` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method ``grad()``. A generalized extraction method ``extract(grad=True, add_identity=True, sym=False)`` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
+In a next step, a displacement :class:`~felupe.Field` is added to the :class:`~felupe.Region`. This may be either a scalar- or a vector-valed field. The values at mesh-points are obtained with the attribute :attr:`~felupe.Field.values`. Interpolated field values at quadrature points are calculated with the :meth:`~felupe.Field.interpolate` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method :meth:`~felupe.Field.grad`. A generalized extraction method :meth:`extract(grad=True, add_identity=True, sym=False) <felupe.Field.extract>` allows several arguments to be passed. This involves or whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).
 
 ..  code-block:: python
 
     displacement = fem.Field(region, dim=3)
 
-    u    = displacement.values
-    ui   = displacement.interpolate()
+    u = displacement.values
+    v = displacement.interpolate()
     dudX = displacement.grad()
 
 
-Next, the field is added to a field container, which handles one or several (vector) fields. Like a field, the field container also provides the ``extract(grad=True, add_identity=True, sym=False)`` method, returning a list of interpolated field values or gradients.
+Next, the field is added to a :class:`~felupe.FieldContainer`, which holds one or more fields. Like a :class:`~felupe.Field`, the :class:`~felupe.FieldContainer` also provides the :meth:`extract(grad=True, add_identity=True, sym=False) <felupe.FieldContainer.extract>` method, returning a list of interpolated field values or gradients.
 
 ..  code-block:: python
 
@@ -123,8 +123,10 @@ The deformation gradient is obtained by a sum of the identity and the displaceme
 
 Constitution
 ~~~~~~~~~~~~
+The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a comprehensive constitutive library including :class:`~felupe.NeoHooke`, :class:`~felupe.LinearElastic` and a generalized Hu-Washizu (u,p,J) :class:`~felupe.ThreeFieldVariation`). By alternative, an isotropic material formulation :class:`~felupe.Hyperelastic` is defined by a strain energy density function where both variation (stress) and linearization (elasticity) are carried out by automatic differentiation. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model formulation.
 
-The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a very basic hard-coded constitutive library (Neo-Hooke, linear elasticity and a generalized Hu-Washizu (u,p,J) three field variation). Alternatively, an isotropic material formulation is defined by a strain energy density function - both variation (stress) and linearization (elasticity) are carried out by automatic differentiation using `tensortrax <https://github.com/adtzlr/tensortrax)>`_. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model.
+.. note::
+   It is important to use only differentiable math-functions from `tensortrax.math <https://github.com/adtzlr/tensortrax>`_.
 
 .. math::
 
@@ -150,8 +152,7 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
 Boundary Conditions
 ~~~~~~~~~~~~~~~~~~~
-
-Next we enforce boundary conditions on the displacement field. Boundaries are stored as a dictionary of multiple boundary instances. First, the left end of the cube is fixed. Displacements on the right end are fixed in directions y and z whereas displacements in direction x are prescribed with a user-defined value. A boundary instance hold useful attributes like ``points`` or ``dof``.
+Next we enforce boundary conditions on the displacement field. Boundary conditions are stored as a dictionary of multiple :class:`~felupe.Boundary` instances. First, the left end of the cube is fixed. Displacements on the right end are fixed in directions y and z whereas displacements in direction x are prescribed with a user-defined ``value=0.5``. A :class:`~felupe.Boundary` holds useful attributes like :attr:`~felupe.Boundary.points` or :attr:`~felupe.Boundary.dof`.
 
 ..  code-block:: python
     
@@ -167,8 +168,7 @@ Next we enforce boundary conditions on the displacement field. Boundaries are st
 
 Partition of deegrees of freedom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The separation of active and inactive degrees of freedom is performed by a so-called **partition**. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
+The separation of active and inactive degrees of freedom is performed by a so-called :func:`~felupe.dof.partition`. External values of prescribed displacement degrees of freedom are obtained by the application of the boundary values to the displacement field.
 
 ..  code-block:: python
     

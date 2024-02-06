@@ -26,16 +26,30 @@ from ._indices import Indices
 
 
 class Field:
-    r"""A Field on points of a `region` with dimension `dim`
-    and initial point `values`. A slice of this field directly
-    accesses the field values as 1d-array.
+    r"""A Field on points of a :class:`~felupe.Region` with dimension ``dim`` and
+    initial point ``values``.
 
-    The interpolation method returns the field values evaluated at the
-    numeric integration points ``q`` of all cells ``c`` in the region.
+    Arguments
+    ---------
+    region : Region
+        The region on which the field will be created.
+    dim : int, optional
+        The dimension of the field  (default is 1).
+    values : float or array
+        A single value for all components of the field or an array of shape
+        `(region.mesh.npoints, dim)`. Default is 0.0.
+    **kwargs : dict, optional
+        Extra class attributes for the field.
+
+    Notes
+    -----
+    A slice of this field directly accesses the field-values as 1d-array. The
+    interpolation method returns the field values evaluated at the numeric integration
+    points ``q`` for each cell ``c`` in the region (so-called *trailing axes*).
 
     ..  math::
 
-        u^i_{(pc)} = \hat{u}_a^i h_{a(pc)}
+        u_{i(qc)} = \hat{u}_{ai} h_{a(qc)}
 
     The gradient method returns the gradient of the field values w.r.t. the
     undeformed mesh point coordinates, evaluated at the integration points of
@@ -43,25 +57,37 @@ class Field:
 
     ..  math::
 
-        \left( \frac{\partial u^i}{\partial X^J} \right)_{(pc)} =
-        \hat{u}^i_{a(pc)}
-        \left( \frac{\partial h_a}{\partial X^J} \right)_{(pc)}
+        \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
+            \hat{u}_{ai(qc)} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
 
-    Arguments
-    ---------
-    region : Region
-        The region on which the field will be created.
-    dim : int (default is 1)
-        The dimension of the field.
-    values : float (default is 0.0) or array
-        A single value for all components of the field or an array of
-        shape (region.mesh.npoints, dim)`.
-    kwargs : dict, optional
-        Optional keyword arguments of the field.
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> displacement = fem.Field(region, dim=3)
+
+    >>> u = displacement.interpolate()
+    >>> dudX = displacement.grad()
+
+    To obtain deformation-related quantities like the right Cauchy-Green deformation
+    tensor or the principal stretches, use the math-helpers from FElupe. These
+    functions operate on arrays with trailing axes.
+
+    ..  math::
+
+        \boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}
+
+    >>> from felupe.math import dot, transpose, eigvalsh, sqrt
+
+    >>> F = displacement.extract(grad=True, add_identity=True)
+    >>> C = dot(transpose(F), F)
+    >>> λ = sqrt(eigvalsh(C))
 
     """
 
-    def __init__(self, region, dim=1, values=0, **kwargs):
+    def __init__(self, region, dim=1, values=0.0, **kwargs):
         self.region = region
         self.dim = dim
         self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
@@ -90,19 +116,18 @@ class Field:
         "Calculate pre-defined indices for sparse matrices."
 
         # index of cell "c", point "a" and component "i"
-        eai = (
+        cai = (
             dim * np.repeat(cells, dim) + np.tile(np.arange(dim), cells.size)
         ).reshape(*cells.shape, dim)
         # store indices as (rows, cols) (note: sparse-matrices are always 2d)
-        ai = (eai.ravel(), np.zeros_like(eai.ravel()))
+        ai = (cai.ravel(), np.zeros_like(cai.ravel()))
 
-        return eai, ai
+        return cai, ai
 
     def grad(self, sym=False, out=None):
-        """Gradient as partial derivative of field values at points w.r.t.
-        undeformed coordinates, evaluated at the integration points of
-        all cells in the region. Optionally, the symmetric part of
-        the gradient is evaluated.
+        """Gradient as partial derivative of field values w.r.t. undeformed coordinates,
+        evaluated at the integration points of all cells in the region. Optionally, the
+        symmetric part the gradient is evaluated.
 
         Arguments
         ---------
@@ -137,8 +162,8 @@ class Field:
             return g
 
     def interpolate(self, out=None):
-        """Interpolate field values at points and evaluate them at the
-        integration points of all cells in the region.
+        """Interpolate field values at points and evaluate them at the integration
+        points of all cells in the region.
 
         Arguments
         ---------
@@ -159,10 +184,10 @@ class Field:
         )
 
     def extract(self, grad=True, sym=False, add_identity=True, out=None):
-        """Generalized extraction method which evaluates either the gradient
-        or the field values at the integration points of all cells
-        in the region. Optionally, the symmetric part of the gradient is
-        evaluated and/or the identity matrix is added to the gradient.
+        """Generalized extraction method which evaluates either the gradient or the
+        field values at the integration points of all cells in the region. Optionally,
+        the symmetric part of the gradient is evaluated and/or the identity matrix is
+        added to the gradient.
 
         Arguments
         ---------

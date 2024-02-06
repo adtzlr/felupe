@@ -196,27 +196,29 @@ def newtonrhapson(
         Array or Field container with values of unknowns at a valid starting point
         (default is None).
     fun : callable, optional
-        Callable which assembles the vector-valued function. Additional args and kwargs
-        are passed.
+        Callable which assembles the vector-valued objective function. Additional args
+        and kwargs are passed. Function signature of a user-defined function has to be
+        ``fun = lambda x, *args, **kwargs: f``.
     jac : callable, optional
         Callable which assembles the matrix-valued Jacobian. Additional args and kwargs
-        are passed.
+        are passed. Function signature of a user-defined Jacobian has to be
+        ``jac = lambda x, *args, **kwargs: K``.
     solve : callable, optional
-        Callable which prepares (partitions) the linear equation system and solves it.
-        If a keyword-argument from the list ``["x", "dof1", "dof0", "ext0", "solver"]``
-        is found in the function-signature, then these arguments are passed to
-        ``solve``.
+        Callable which prepares the linear equation system and solves it. If a keyword-
+        argument from the list ``["x", "dof1", "dof0", "ext0", "solver"]`` is found in
+        the function-signature, then these arguments are passed to ``solve``.
     maxiter : int, optional
         Maximum number of function iterations (default is 16).
     update : callable, optional
-        Callable to update the unknowns.
+        Callable to update the unknowns. Function signature must be
+        ``update = lambda x0, dx: x``.
     check : callable, optional
         Callable to the check the result.
     tol : float, optional
         Tolerance value to check if the function has converged (default is 1.490e-8).
     items : list or None, optional
-        List with items which provide methods for assembly, e.g. like felupe.SolidBody
-        or felupe.Pressure (default is None).
+        List with items which provide methods for assembly, e.g. like
+        :class:`felupe.SolidBody` (default is None).
     dof1 : ndarray or None, optional
         1d-array of int with all active degrees of freedom (default is None).
     dof0 : ndarray or None, optional
@@ -225,10 +227,11 @@ def newtonrhapson(
         Field values at mesh-points for the prescribed components of the unknowns based
         on ``dof0`` (default is None).
     solver : callable, optional
-        A sparse or dense solver (default is scipy.sparse.linalg.spsolve).
+        A sparse or dense solver (default is :func:`scipy.sparse.linalg.spsolve`). For a
+        more performant alternative install PyPardiso and use :func:`pypardiso.spsolve`.
     verbose : bool or int, optional
-        Verbosity level: False or 0 for no output, True or 1 for a progress bar and
-        2 for a text-based output (default is True).
+        Verbosity level: False or 0 for no logging, True or 1 for a progress bar and
+        2 for a text-based logging output (default is True).
 
     Returns
     -------

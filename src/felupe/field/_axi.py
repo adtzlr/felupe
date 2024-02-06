@@ -53,9 +53,9 @@ class FieldAxisymmetric(Field):
                   \_^
 
     This is a modified :class:`Field` in which the radial coordinates are evaluated at
-    the numeric integration points ``q``. The :meth:`grad`-method is modified in such a
-    way that it does not only contain the in-plane 2d-gradient but also the
-    circumferential stretch, see Eq. :eq:`gradient_axi`.
+    the numeric integration points ``q`` for each cell ``c``. The :meth:`grad`-method is
+    modified in such a way that it does not only contain the in-plane 2d-gradient but
+    also the circumferential stretch, see Eq. :eq:`gradient_axi`.
     
     ..  math::
         :label: gradient_axi

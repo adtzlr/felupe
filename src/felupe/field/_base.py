@@ -49,7 +49,7 @@ class Field:
 
     ..  math::
 
-        u_{i(qc)} = \hat{u}_{ai} h_{a(qc)}
+        u_{i(qc)} = \hat{u}_{ai}\ h_{a(qc)}
 
     The gradient method returns the gradient of the field values w.r.t. the
     undeformed mesh point coordinates, evaluated at the integration points of

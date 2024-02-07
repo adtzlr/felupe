@@ -58,7 +58,7 @@ class Field:
     ..  math::
 
         \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
-            \hat{u}_{ai(qc)} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
+            \hat{u}_{ai} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
 
     Examples
     --------

@@ -49,7 +49,7 @@ def save(
     cell_data : dict or None, optional
         Additional dict with cell data (default is None).
     point_data : dict or None, optional
-        Additional dict with point data (default is None)
+        Additional dict with point data (default is None).
 
     Examples
     --------

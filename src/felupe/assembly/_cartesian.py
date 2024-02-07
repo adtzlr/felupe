@@ -94,6 +94,11 @@ class IntegralFormCartesian:
         a(\boldsymbol{v}, \boldsymbol{u}) &= \int_\Omega
             \boldsymbol{\nabla v} : \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
+    See Also
+    --------
+    felupe.IntegralForm : Mixed-field integral form container with methods for integration and assembly.
+    felupe.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
+
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):

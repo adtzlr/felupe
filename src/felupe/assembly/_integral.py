@@ -184,9 +184,10 @@ class IntegralForm:
     >>> K.shape
     (3993, 3993)
 
-
     See Also
     --------
+    felupe.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
+    felupe.IntegralFormCartesian : Single-field integral form.
     felupe.Form : A weak-form expression decorator.
 
     """

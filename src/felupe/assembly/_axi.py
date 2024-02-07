@@ -111,6 +111,12 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
 
         \mathbb{A}_{33,33} &= \frac{\partial \psi}{F^3_{\hphantom{3}3}
             \partial F^3_{\hphantom{3}3}}
+
+    See Also
+    --------
+    felupe.IntegralForm : Mixed-field integral form container with methods for integration and assembly.
+    felupe.IntegralFormCartesian : Single-field integral form.
+
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=True, grad_u=True):

@@ -18,8 +18,8 @@ This module contains quadrature (numeric integration) schemes for different fini
 
    TriangleQuadrature
    TetrahedronQuadrature
-   quadrature.Triangle
-   quadrature.Tetrahedron
+   TriangleQuadrature
+   TetrahedronQuadrature
 
 **Detailed API Reference**
 
@@ -38,12 +38,12 @@ This module contains quadrature (numeric integration) schemes for different fini
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.quadrature.Triangle
+.. autoclass:: felupe.TriangleQuadrature
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.quadrature.Tetrahedron
+.. autoclass:: felupe.TetrahedronQuadrature
    :members:
    :undoc-members:
    :show-inheritance:

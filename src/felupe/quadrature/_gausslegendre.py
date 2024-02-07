@@ -24,8 +24,8 @@ from ._scheme import Scheme
 
 
 class GaussLegendre(Scheme):
-    r"""An arbitrary-`order` Gauss-Legendre quadrature rule of `dim` 1, 2 or 3 on the
-    interval ``[-1, 1]``.
+    r"""An arbitrary-`order` Gauss-Legendre quadrature rule of dimension 1, 2 or 3 on
+    the interval :math:`[-1, 1]`.
 
     Parameters
     ----------
@@ -36,7 +36,8 @@ class GaussLegendre(Scheme):
         The dimension of the quadrature region.
     permute : bool, optional
         Permute the quadrature points according to the cell point orderings (default is
-        True).
+        True). This is supported for two and three dimensions as well as first and
+        second order schemes. Otherwise this flag is silently ignored.
 
     Notes
     -----

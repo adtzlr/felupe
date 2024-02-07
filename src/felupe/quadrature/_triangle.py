@@ -25,7 +25,7 @@ from ._scheme import Scheme
 
 class Triangle(Scheme):
     """A quadrature scheme suitable for Triangles of order 1, 2 or 3 on the interval
-    :math:`[-1, 1]`.
+    :math:`[0, 1]`.
 
     Parameters
     ----------

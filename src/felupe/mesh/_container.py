@@ -25,28 +25,64 @@ from ._tools import sweep
 
 
 class MeshContainer:
-    """A container which operates on a list of meshes with identical
-    dimensions.
+    """A container which operates on a list of meshes with identical dimensions.
 
     Parameters
     ----------
-    meshes : [felupe.Mesh, ...]
-        A list with meshes.
+    meshes : list of Mesh
+        A list of meshes which are organized by the mesh container.
+    merge : bool, optional
+        Flag to merge duplicate mesh points. This changes the cells arrays of the
+        meshes. Default is False.
+    decimals : float or None, optional
+        Precision decimals for merging duplicated mesh points. Only relevant if
+        merge=True. Default is None.
 
-    Attributes
-    ----------
-    dim : int
-        The (identical) dimension of all underlying meshes.
-    points : ndarray
-        Point coordinates.
-    meshes : [felupe.Mesh, ...]
-        A list with meshes.
+    Notes
+    -----
+    All meshes are modified to refer to the same points array. By default, the points
+    arrays from the given list of meshes is concatenated and the cells arrays are
+    modified accordingly. Optionally, the points array may be merged on duplicated
+    points.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> cube = fem.Cube(n=3)
+    >>> cylinder = fem.Circle().expand(n=2)
+    >>> mesh = fem.MeshContainer([cube, cylinder])
+    >>> mesh
+    <felupe mesh container object>
+      Number of points: 61
+      Number of cells:
+        hexahedron: 8
+        hexahedron: 12
+
+    The cells array of the second mesh starts with an offset
+
+    >>> mesh.meshes[1].cells.min()
+    27
+
+    identical to the number of points from the first mesh.
+
+    >>> cube.npoints
+    27
+
+    If the container is created with ``merge=True``, then the number of points is lower
+    than before.
+
+    >>> mesh = fem.MeshContainer([cube, cylinder], merge=True)
+    >>> mesh
+    <felupe mesh container object>
+      Number of points: 51
+      Number of cells:
+        hexahedron: 8
+        hexahedron: 12
+
     """
 
     def __init__(self, meshes, merge=False, decimals=None):
-        """A container which operates on a list of meshes with identical
-        dimensions."""
-
         # obtain the dimension from the first mesh
         self.dim = meshes[0].dim
 

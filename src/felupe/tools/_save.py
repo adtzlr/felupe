@@ -31,7 +31,7 @@ def save(
     cell_data=None,
     point_data=None,
 ):
-    """Write field-data to VTU.
+    """Write field-data to a VTU file.
 
     Parameters
     ----------

@@ -53,15 +53,18 @@ class FieldsMixed(FieldContainer):
     values : tuple, optional
         Initial field values  (default is (0, 0, 1, 0)).
     axisymmetric : bool, optional
-        Flag to initiate a axisymmetric Field (default is False).
+        Flag to initiate a :class:`FieldAxisymmetric` as the first field (default is
+        False).
     planestrain : bool, optional
-        Flag to initiate a plane strain Field (default is False).
+        Flag to initiate a :class:`FieldPlaneStrain` as the first field (default is
+        False).
     offset : int, optional
         Offset for cell connectivity (default is 0).
     npoints : int or None, optional
         Specified number of mesh points (default is None).
     mesh: Mesh or None, optional
-        A mesh for the dual region (default is None).
+        A mesh which is used for the dual region (default is None). If None, the mesh
+        is taken from the region.
 
     Notes
     -----

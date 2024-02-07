@@ -24,31 +24,70 @@ from . import topoints
 
 def save(
     region,
-    fields,
-    r=None,
+    field,
+    forces=None,
     gradient=None,
-    converged=True,
-    filename="result.vtk",
+    filename="result.vtu",
     cell_data=None,
     point_data=None,
 ):
-    u = fields.fields[0]
+    """Write field-data to VTU.
+
+    Parameters
+    ----------
+    region : Region
+        The region to be saved.
+    field : FieldContainer
+        The field container to be saved.
+    forces : ndarray, optional
+        Array with reaction forces to be saved (default is None).
+    gradient : list of ndarray, optional
+        The result of ``umat.gradient()`` with the first Piola-Kirchhoff stress tensor
+        as the first list item (default is None).
+    filename : str, optional
+        The filename for the results (default is "result.vtu").
+    cell_data : dict or None, optional
+        Additional dict with cell data (default is None).
+    point_data : dict or None, optional
+        Additional dict with point data (default is None)
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.3)
+
+    >>> umat = fem.NeoHooke(mu=1)
+    >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+    >>> step = fem.Step(items=[solid], boundaries=boundaries)
+    >>> job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+    >>> job.evaluate()
+
+    >>> fem.save(region, field, forces=job.res.fun, gradient=solid.results.stress)
+
+    """
+
+    u = field.fields[0]
     mesh = region.mesh
 
-    offsets = fields.offsets
+    offsets = field.offsets
 
     if point_data is None:
         point_data = {}
 
     point_data["Displacements"] = u.values
 
-    if r is not None:
-        reactionforces = np.split(r, offsets)[0]
-        point_data["ReactionForce"] = reactionforces.reshape(*u.values.shape)
+    if forces is not None:
+        reactionforces = np.split(forces, offsets)[0]
+        point_data["Reaction Force"] = reactionforces.reshape(*u.values.shape)
 
     if gradient is not None:
         # 1st Piola Kirchhoff stress
-        F = fields.extract()[0]
+        F = field.extract()[0]
         P = gradient[0]
 
         # cauchy stress at integration points
@@ -59,13 +98,15 @@ def save(
         cauchy = topoints(s, region=region, sym=True)
         cauchyprinc = [topoints(sp_i, region=region, mode="scalar") for sp_i in sp]
 
-        point_data["CauchyStress"] = cauchy
+        point_data["Cauchy Stress"] = cauchy
 
-        point_data["MaxPrincipalCauchyStress"] = cauchyprinc[2]
-        point_data["IntPrincipalCauchyStress"] = cauchyprinc[1]
-        point_data["MinPrincipalCauchyStress"] = cauchyprinc[0]
+        point_data["Cauchy Stress (Max. Principal)"] = cauchyprinc[2]
+        point_data["Cauchy Stress (Int. Principal)"] = cauchyprinc[1]
+        point_data["Cauchy Stress (Min. Principal)"] = cauchyprinc[0]
 
-        point_data["MaxPrincipalShearCauchyStress"] = cauchyprinc[2] - cauchyprinc[0]
+        point_data["Cauchy Stress (Max. Principal Shear)"] = (
+            cauchyprinc[2] - cauchyprinc[0]
+        )
 
     import meshio
 

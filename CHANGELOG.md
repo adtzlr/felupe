@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file. The format 
 - Rename `tools._newton.Result` to `tools._newton.NewtonResult` and add it to the public API as `tools.NewtonResult` because this class is returned as a result of Newton's method.
 - Rename the `r`-arguments of `tools.force()` and `tools.moment()` to `forces`.
 - Rename the `point`-argument of `tools.moment()` to `centerpoint`.
+- Rename the `r`-argument in `tools.save()` to `forces`. Remove the unused argument `converged`.
+- Change the default file-extension from `.vtk` to `.vtu` in `tools.save(filename="result.vtu")`.
 
 ### Fixed
 - Fix `tools.moment()`. Use `math.cross()`. The old implementation was completely wrong!

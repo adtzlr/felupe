@@ -29,7 +29,7 @@ from ..math import norm
 
 
 class NewtonResult:
-    """Represents the result found by Newton's method.
+    r"""Represents the result found by Newton's method.
 
     Parameters
     ----------

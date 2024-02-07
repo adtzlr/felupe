@@ -202,9 +202,10 @@ The assembly of both forms lead to the (point-based) internal force vector and t
 
 Prepare (partition) and solve the linearized equation system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In order to solve the linearized equation system a :func:`~felupe.solve.partition` into active and inactive degrees of freedom has to be performed. This system may then be passed to the (sparse direct) solver. Given a set of nonlinear equilibrium equations :math:`\boldsymbol{g}` the unknowns :math:`\boldsymbol{u}` are found by linearization at a valid initial state of equilibrium and an iterative Newton-Rhapson solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns. The (linear) solution is equal to the first result of a Newton-Rhapson iterative solution procedure. The solution ``du`` is finally added to the displacement field.
+In order to solve the linearized equation system a :func:`~felupe.solve.partition` into active and inactive degrees of freedom has to be performed, see Eqs. :eq:`eq_partition`. This system may then be passed to the (sparse direct) solver. Given a set of nonlinear equilibrium equations :math:`\boldsymbol{g}` the unknowns :math:`\boldsymbol{u}` are found by linearization at a valid initial state of equilibrium and an iterative Newton-Rhapson solution prodecure. The incremental values of inactive degrees of freedom are given as the difference of external prescribed and current values of unknowns. The (linear) solution is equal to the first result of a Newton-Rhapson iterative solution procedure. The solution ``du`` is finally added to the displacement field.
 
 .. math::
+   :label: eq_partition
 
    \boldsymbol{g}_1(\boldsymbol{u}) &= -\boldsymbol{r}_1(\boldsymbol{u}) + \boldsymbol{f}_1
 

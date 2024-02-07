@@ -73,46 +73,64 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
     r"""Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm).
 
-    1.  Given state in point x (σn, ζn=[εpn, αn]) (valid).
+    1.  Given state in point :math:`x (\sigma_n, \zeta_n=[\varepsilon^p_n, \alpha_n])`
+        (valid).
 
-    2.  Given strain increment dε, so that ε = εn + dε.
+    2.  Given strain increment :math:`\Delta\varepsilon`, so that
+        :math:`\varepsilon = \varepsilon_n + \Delta\varepsilon`.
 
     3.  Evaluation of the hypothetic trial state:
 
-        dσdε = λ 1 ⊗ 1 + 2μ 1 ⊙ 1
+        ..  math::
 
-        σ = σn + dσdε : dε
+            \mathbb{C} &= \lambda\ \boldsymbol{1} \otimes \boldsymbol{1}
+                + 2 \mu\ \boldsymbol{1} \odot \boldsymbol{1}
 
-        s = dev(σ)
+            \sigma &= \sigma_n + \mathbb{C} : \Delta\varepsilon
 
-        εp = εpn
+            s &= \text{dev}(\sigma)
 
-        α = αn
+            \varepsilon^p &= \varepsilon^p_n
 
-        f = ||s|| - sqrt(2/3) (σy + K α)
+            \alpha &= \alpha_n
 
-    4.  If f ≤ 0, then elastic step:
+            f &= ||s|| - \sqrt{\frac{2}{3}}\ (\sigma_y + K \alpha)
 
-            Set y = yn + dy, y=(σ, ζ=[εp, α]),
+    4.  If :math:`f \le 0`, then elastic step:
 
-            algorithmic consistent tangent modulus dσdε.
+            Set :math:`y = y_n + \Delta y, y=(\sigma, \zeta=[\varepsilon^p, \alpha])`,
+
+            algorithmic consistent tangent modulus :math:`d\sigma d\varepsilon`.
+
+        ..  math::
+
+            d\sigma d\varepsilon = \mathbb{C}
 
         Else:
 
-            dγ = f / (2μ + 2/3 K)
+            ..  math::
 
-            n = s / ||s||
+                d\gamma &= \frac{f}{2\mu + \frac{2}{3} K}
 
-            σ = σ - 2μ dγ n
+                n &= \frac{s}{||s||}
 
-            εp = εpn + dγ n
+                \sigma &= \sigma - 2\mu \Delta\gamma n
 
-            α = αn + sqrt(2 / 3) dγ
+                \varepsilon^p &= \varepsilon^p_n + \Delta\gamma n
+
+                \alpha &= \alpha_n + \sqrt{\frac{2}{3}}\ \Delta\gamma
 
             Algorithmic consistent tangent modulus:
 
-            dσdε = dσdε - 2μ / (1 + K / 3μ) n ⊗ n
-                 - 2μ dγ / ||s|| ((2μ 1 ⊙ 1 - 1/3 1 ⊗ 1) - 2μ n ⊗ n)
+            ..  math::
+
+                d\sigma d\varepsilon = \mathbb{C}
+                    - \frac{2 \mu}{1 + \frac{K}{3 \mu}} n \otimes n
+                    - \frac{2 \mu \Delta\gamma}{||s||} \left[
+                        2 \mu \left( \boldsymbol{1} \odot \boldsymbol{1}
+                         - \frac{1}{3} \boldsymbol{1} \otimes \boldsymbol{1}
+                        - n \otimes n \right)
+                    \right]
 
     Arguments
     ---------

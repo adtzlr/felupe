@@ -18,6 +18,8 @@ them into sparse vectors or matrices.
 .. autosummary::
 
    IntegralForm
+   assembly.IntegralFormCartesian
+   assembly.IntegralFormAxisymmetric
 
 
 **Form Expressions**

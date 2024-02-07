@@ -97,7 +97,7 @@ class MeshContainer:
             self.merge_duplicate_points(decimals=decimals)
 
     def append(self, mesh):
-        "Append a Mesh to the list of meshes."
+        "Append a :class:`Mesh` to the list of meshes."
 
         # number of points
         points = np.vstack([self.points, mesh.points])
@@ -117,7 +117,7 @@ class MeshContainer:
         return [(mesh.cell_type, mesh.cells) for mesh in self.meshes]
 
     def merge_duplicate_points(self, decimals=None):
-        "Merge duplicate points and update meshes."
+        "Merge duplicate points and update the meshes."
 
         # sweep points
         for i, mesh in enumerate(self.meshes):
@@ -129,7 +129,7 @@ class MeshContainer:
             self.meshes[i].points = self.points = points
 
     def as_meshio(self, combined=True, **kwargs):
-        "Export a (combined) mesh object as ``meshio.Mesh``."
+        "Export a (combined) mesh object as :class:`meshio.Mesh`."
 
         import meshio
 

@@ -66,11 +66,11 @@ def test_solve():
     assert dx[0].shape == f[0].values.ravel().shape
 
     fem.tools.save(r, f)
-    fem.tools.save(r, f, r=b)
+    fem.tools.save(r, f, forces=b)
     fem.tools.save(
         r,
         f,
-        r=b,
+        forces=b,
         gradient=W.gradient(F),
     )
 
@@ -124,11 +124,11 @@ def test_solve_mixed():
     assert dx[2].shape == fields[2].values.ravel().shape
 
     fem.tools.save(r, f)
-    fem.tools.save(r, f, r=b)
+    fem.tools.save(r, f, forces=b)
     fem.tools.save(
         r,
         f,
-        r=b,
+        forces=b,
         gradient=W_mixed.gradient([F, p, J]),
     )
 

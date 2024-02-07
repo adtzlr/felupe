@@ -98,9 +98,9 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
     4.  If :math:`f \le 0`, then elastic step:
 
-            Set :math:`y = y_n + \Delta y, y=(\sigma, \zeta=[\varepsilon^p, \alpha])`,
+        Set :math:`y = y_n + \Delta y, y=(\sigma, \zeta=[\varepsilon^p, \alpha])`,
 
-            algorithmic consistent tangent modulus :math:`d\sigma d\varepsilon`.
+        algorithmic consistent tangent modulus :math:`d\sigma d\varepsilon`.
 
         ..  math::
 
@@ -108,29 +108,29 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
         Else:
 
-            ..  math::
+        ..  math::
 
-                d\gamma &= \frac{f}{2\mu + \frac{2}{3} K}
+            d\gamma &= \frac{f}{2\mu + \frac{2}{3} K}
 
-                n &= \frac{s}{||s||}
+            n &= \frac{s}{||s||}
 
-                \sigma &= \sigma - 2\mu \Delta\gamma n
+            \sigma &= \sigma - 2\mu \Delta\gamma n
 
-                \varepsilon^p &= \varepsilon^p_n + \Delta\gamma n
+            \varepsilon^p &= \varepsilon^p_n + \Delta\gamma n
 
-                \alpha &= \alpha_n + \sqrt{\frac{2}{3}}\ \Delta\gamma
+            \alpha &= \alpha_n + \sqrt{\frac{2}{3}}\ \Delta\gamma
 
-            Algorithmic consistent tangent modulus:
+        Algorithmic consistent tangent modulus:
 
-            ..  math::
+        ..  math::
 
-                d\sigma d\varepsilon = \mathbb{C}
-                    - \frac{2 \mu}{1 + \frac{K}{3 \mu}} n \otimes n
-                    - \frac{2 \mu \Delta\gamma}{||s||} \left[
-                        2 \mu \left( \boldsymbol{1} \odot \boldsymbol{1}
-                         - \frac{1}{3} \boldsymbol{1} \otimes \boldsymbol{1}
-                        - n \otimes n \right)
-                    \right]
+            d\sigma d\varepsilon = \mathbb{C}
+                - \frac{2 \mu}{1 + \frac{K}{3 \mu}} n \otimes n
+                - \frac{2 \mu \Delta\gamma}{||s||} \left[
+                    2 \mu \left( \boldsymbol{1} \odot \boldsymbol{1}
+                     - \frac{1}{3} \boldsymbol{1} \otimes \boldsymbol{1}
+                    - n \otimes n \right)
+                \right]
 
     Arguments
     ---------

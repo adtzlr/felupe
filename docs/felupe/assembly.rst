@@ -43,6 +43,16 @@ Create an item out of bilinear and linear weak-form expressions for a Step.
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.assembly.IntegralFormCartesian
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.assembly.IntegralFormAxisymmetric
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autofunction:: felupe.Form
 
 .. autoclass:: felupe.FormItem

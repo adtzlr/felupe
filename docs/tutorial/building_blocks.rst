@@ -265,7 +265,7 @@ A very simple Newton-Rhapson code looks like this:
     4 6.017153213511068e-09
     5 5.675484825228616e-16
 
-Alternatively, one may also use the Newton-Rhapson function of FElupe.
+By alternative, one may also use the Newton-Rhapson function of FElupe.
 
 ..  code-block:: python
 

@@ -178,11 +178,12 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 Integral forms of equilibrium equations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The integral (or weak) forms of equilibrium equations are defined by the :class:`fem.IntegralForm` class. The pre-evaluated function of interest has to be passed as the `fun` argument and the test field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the test field to the integral form. FElupe assumes a linear form if ``u=None`` (default) and creates a bilinear form if a field is passed to the trial field argument ``u``.
+The integral (or weak) forms of equilibrium equations are defined by the :class:`fem.IntegralForm` class, see Eq. :eq:`eq_integral_form`. The pre-evaluated function of interest has to be passed as the ``fun`` argument and the test field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the first test field to the integral form. FElupe assumes a linear form if ``u=None`` (default) and creates a bilinear form if a field is passed to the trial field argument ``u``.
 
 .. math::
+   :label: eq_integral_form
 
-   \int_V P_i^{\ J} : \frac{\partial \delta u^i}{\partial X^J} \ dV \qquad \text{and} \qquad \int_V \frac{\partial \delta u^i}{\partial X^J} : \mathbb{A}_{i\ k\ }^{\ J\ L} : \frac{\partial u^k}{\partial X^L} \ dV
+   \int_V P_{iJ} : \frac{\partial \delta u_i}{\partial X_J} \ dV \qquad \text{and} \qquad \int_V \frac{\partial \delta u_i}{\partial X_J} : \mathbb{A}_{iJkL} : \frac{\partial u_k}{\partial X_L} \ dV
 
 
 ..  code-block:: python

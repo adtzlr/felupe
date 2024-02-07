@@ -24,11 +24,28 @@ from ._scheme import Scheme
 
 
 class Tetrahedron(Scheme):
-    "An integration scheme for Tetrahedrons."
+    """A quadrature scheme suitable for Tetrahedrons of order 1, 2 or 3 on the interval
+    :math:`[-1, 1]`.
+
+    Parameters
+    ----------
+    order : int
+        The order of the quadrature scheme.
+
+    Notes
+    -----
+
+    The approximation is given by
+
+    ..  math::
+
+        \int_{-1}^1 f(x) dx \approx \sum f(x_q) w_q
+
+    with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+
+    """
 
     def __init__(self, order: int):
-        "Integration scheme for Tetrahedrons of `order` 1, 2 or 3."
-
         scheme = SimpleNamespace()
         volume = 1 / 6
 

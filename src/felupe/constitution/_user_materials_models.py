@@ -24,22 +24,6 @@ from ..math import cdya_ik, ddot, dya, identity, sqrt, trace
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     r"""3D linear-elastic material formulation.
 
-    1.  Given state in point :math:`\boldsymbol{x} (\boldsymbol{\sigma}_n)` (valid).
-
-    2.  Given strain increment :math:`\Delta\boldsymbol{}\varepsilon}`, so that
-        :math:`\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_n + \Delta\boldsymbol{\varepsilon}`.
-
-    3.  Evaluation of the stress :math:`\boldsymbol{\sigma}` and the algorithmic
-        consistent tangent modulus :math:`\mathbb{C}` (=``dσdε``).
-
-        ..  math::
-
-            \mathbb{C} &= \lambda \ \boldsymbol{1} \otimes \boldsymbol{1} +
-                2 \mu \ \boldsymbol{1} \odot \boldsymbol{1}
-
-            \boldsymbol{\sigma} &= \boldsymbol{\sigma}_n
-                + \mathbb{C} : \Delta\boldsymbol{\varepsilon}
-
     Arguments
     ---------
     dε : ndarray
@@ -63,6 +47,25 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
         (New) stress tensor.
     ζ : list
         List of new state variables.
+
+    Notes
+    -----
+
+    1.  Given state in point :math:`\boldsymbol{x} (\boldsymbol{\sigma}_n)` (valid).
+
+    2.  Given strain increment :math:`\Delta\boldsymbol{}\varepsilon}`, so that
+        :math:`\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_n + \Delta\boldsymbol{\varepsilon}`.
+
+    3.  Evaluation of the stress :math:`\boldsymbol{\sigma}` and the algorithmic
+        consistent tangent modulus :math:`\mathbb{C}` (=``dσdε``).
+
+        ..  math::
+
+            \mathbb{C} &= \lambda \ \boldsymbol{1} \otimes \boldsymbol{1} +
+                2 \mu \ \boldsymbol{1} \odot \boldsymbol{1}
+
+            \boldsymbol{\sigma} &= \boldsymbol{\sigma}_n
+                + \mathbb{C} : \Delta\boldsymbol{\varepsilon}
 
     """
 
@@ -88,6 +91,37 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
     r"""Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm).
+
+    Arguments
+    ---------
+    dε : ndarray
+        Strain increment.
+    εn : ndarray
+        Old strain tensor.
+    σn : ndarray
+        Old stress tensor.
+    ζn : list
+        List of old state variables.
+    λ : float
+        First Lamé-constant.
+    μ : float
+        Second Lamé-constant (shear modulus).
+    σy : float
+        Initial yield stress.
+    K : float
+        Isotropic hardening modulus.
+
+    Returns
+    -------
+    dσdε : ndarray
+        Algorithmic consistent elasticity tensor.
+    σ : ndarray
+        (New) stress tensor.
+    ζ : list
+        List of new state variables.
+
+    Notes
+    -----
 
     1.  Given state in point :math:`x (\sigma_n, \zeta_n=[\varepsilon^p_n, \alpha_n])`
         (valid).
@@ -148,24 +182,6 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
                     - n \otimes n \right)
                 \right]
 
-    Arguments
-    ---------
-    dε : ndarray
-        Strain increment.
-    εn : ndarray
-        Old strain tensor.
-    σn : ndarray
-        Old stress tensor.
-    ζn : list
-        List of old state variables.
-    λ : float
-        First Lamé-constant.
-    μ : float
-        Second Lamé-constant (shear modulus).
-    σy : float
-        Initial yield stress.
-    K : float
-        Isotropic hardening modulus.
     """
 
     eye = identity(dε)

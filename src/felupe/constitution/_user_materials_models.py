@@ -53,7 +53,7 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 
     1.  Given state in point :math:`\boldsymbol{x} (\boldsymbol{\sigma}_n)` (valid).
 
-    2.  Given strain increment :math:`\Delta\boldsymbol{}\varepsilon}`, so that
+    2.  Given strain increment :math:`\Delta\boldsymbol{\varepsilon}`, so that
         :math:`\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_n + \Delta\boldsymbol{\varepsilon}`.
 
     3.  Evaluation of the stress :math:`\boldsymbol{\sigma}` and the algorithmic

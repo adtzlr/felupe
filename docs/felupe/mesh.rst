@@ -1,3 +1,5 @@
+.. _felupe-api-mesh:
+
 Mesh
 ====
 

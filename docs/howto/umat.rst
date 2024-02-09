@@ -32,7 +32,7 @@ and must return:
     def material(dε, εn, σn, ζn, **kwargs):
         return dσdε, σ, ζ
 
-This function is further added as the ``material`` argument of :class:`~felupe.MaterialStrain`. Optionally, the shapes of internal state variables may be passed.
+This function is further added as the ``material`` argument of :class:`~felupe.MaterialStrain`. If the material makes use of state variables, the shapes of these internal state variables must be provided.
 
 ..  code-block:: python
     

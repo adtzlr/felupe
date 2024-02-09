@@ -6,7 +6,7 @@ The mechanics submodule contains classes for the generation of solid bodies. Sol
 Solid Body
 ----------
 
-The generation of internal force vectors and stiffness matrices of solid bodies are provided as assembly-methods of a :class:`SolidBody` or a :class:`SolidBodyNearlyIncompressible`.
+The generation of internal force vectors and stiffness matrices of solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBody` or a :class:`~felupe.SolidBodyNearlyIncompressible`.
 
 ..  code-block:: python
 
@@ -47,7 +47,7 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
 Body Force (Gravity) on a Solid Body
 ------------------------------------
 
-The generation of internal force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`SolidBodyGravity`.
+The generation of internal force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyGravity`.
 
 
 ..  code-block:: python
@@ -60,7 +60,7 @@ The generation of internal force vectors or stiffness matrices of body forces ac
 Pressure Boundary on a Solid Body
 ---------------------------------
 
-The generation of force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`SolidBodyPressure`.
+The generation of force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyPressure`.
 
 ..  code-block:: python
     

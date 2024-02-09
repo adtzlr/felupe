@@ -1,7 +1,7 @@
 Generate Meshes
 ~~~~~~~~~~~~~~~
 
-FElupe provides a simple mesh generation module `mesh <felupe-api-mesh>`_. A :class:`Mesh` instance contains essentially two arrays: one with :attr:`~Mesh.points` and another one containing the cell connectivities, called :attr:`~Mesh.cells`. Only a single :attr:`~Mesh.cell_type` is supported per :class:`Mesh`. Optionally the :attr:`~Mesh.cell_type` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
+FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A :class:`~felupe.Mesh` instance contains essentially two arrays: one with :attr:`~felupe.Mesh.points` and another one containing the cell connectivities, called :attr:`~felupe.Mesh.cells`. Only a single :attr:`~Mesh.cell_type` is supported per :class:`~felupe.Mesh`. Optionally the :attr:`~felupe.Mesh.cell_type` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
 
 ..  code-block:: python
 
@@ -40,7 +40,7 @@ FElupe provides a simple mesh generation module `mesh <felupe-api-mesh>`_. A :cl
 A cube by hand
 **************
 
-First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`fem.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`fem.mesh.expand`: :func:`fem.mesh.rotate`, :func:`fem.mesh.revolve` and :func:`fem.mesh.sweep`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
+First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`~felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`~felupe.mesh.expand`: :func:`~felupe.mesh.rotate`, :func:`~felupe.mesh.revolve` and :func:`~felupe.mesh.sweep`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
 
 ..  code-block:: python
 
@@ -49,7 +49,7 @@ First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n
     cube = fem.mesh.expand(rect, n=6, z=3)
 
 
-Alternatively, these mesh-related tools are also provided as methods of a :class:`fem.Mesh`.
+Alternatively, these mesh-related tools are also provided as methods of a :class:`~felupe.Mesh`.
 
 ..  code-block:: python
 
@@ -62,7 +62,7 @@ Alternatively, these mesh-related tools are also provided as methods of a :class
 Elementary Shapes
 *****************
 
-Lines, rectangles, cubes, circles and triangles do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`fem.mesh.Line`, :class:`fem.Rectangle` or :class:`fem.Cube`. For non equi-distant points per axis use :class:`fem.Grid`.
+Lines, rectangles, cubes, circles and triangles do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`~felupe.mesh.Line`, :class:`~felupe.Rectangle` or :class:`~felupe.Cube`. For non equi-distant points per axis use :class:`~felupe.Grid`.
 
 ..  code-block:: python
 
@@ -71,7 +71,7 @@ Lines, rectangles, cubes, circles and triangles do not have to be constructed ma
 ..  image:: images/cube.png
     :width: 400px
 
-For circles, there is :class:`fem.Circle` for the creation of a quad-mesh for a circle.
+For circles, there is :class:`~felupe.Circle` for the creation of a quad-mesh for a circle.
 
 ..  code-block:: python
 
@@ -80,7 +80,7 @@ For circles, there is :class:`fem.Circle` for the creation of a quad-mesh for a 
 ..  image:: images/circle.png
     :width: 400px
 
-For triangles, there is :class:`fem.mesh.Triangle` for the creation of a quad-mesh for a triangle. For positive cell volumes, the coordinates of ``a``, ``b`` and ``c`` must be sorted counter-clockwise around the center point.
+For triangles, there is :class:`~felupe.mesh.Triangle` for the creation of a quad-mesh for a triangle. For positive cell volumes, the coordinates of ``a``, ``b`` and ``c`` must be sorted counter-clockwise around the center point.
 
 ..  code-block:: python
 
@@ -258,7 +258,7 @@ Typical indentations (runouts) of the free-rubber surfaces in rubber-metal compo
 Triangle and Tetrahedron meshes
 *******************************
 
-Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of Triangles or Tetrahedrons by :func:`fem.mesh.triangulate`.
+Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of Triangles or Tetrahedrons by :func:`~felupe.mesh.triangulate`.
 
 ..  code-block:: python
 
@@ -284,7 +284,7 @@ Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of T
 Meshes with midpoints
 *********************
 
-If a mesh with midpoints is required by a region, functions for edge, face and volume midpoint insertions are provided in :func:`fem.mesh.add_midpoints_edges`, :func:`fem.mesh.add_midpoints_faces` and :func:`fem.mesh.add_midpoints_volumes`. A low-order mesh, e.g. a mesh with cell-type `quad`, can be converted to a quadratic mesh with :func:`fem.mesh.convert`. By default, only midpoints on edges are inserted. Hence, the resulting cell-type is ``quad8``. If midpoints on faces are also calculated, the resulting cell-type is ``quad9``.
+If a mesh with midpoints is required by a region, functions for edge, face and volume midpoint insertions are provided in :func:`~felupe.mesh.add_midpoints_edges`, :func:`~felupe.mesh.add_midpoints_faces` and :func:`~felupe.mesh.add_midpoints_volumes`. A low-order mesh, e.g. a mesh with cell-type ``quad``, can be converted to a quadratic mesh with :func:`~felupe.mesh.convert`. By default, only midpoints on edges are inserted. Hence, the resulting cell-type is ``quad8``. If midpoints on faces are also calculated, the resulting cell-type is ``quad9``.
 
 ..  code-block:: python
     

@@ -22,17 +22,23 @@ from ..math import cdya_ik, ddot, dya, identity, sqrt, trace
 
 
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
-    """3D linear-elastic material formulation.
+    r"""3D linear-elastic material formulation.
 
-    1.  Given state in point x (σn) (valid).
+    1.  Given state in point :math:`\boldsymbol{x} (\boldsymbol{\sigma}_n)` (valid).
 
-    2.  Given strain increment dε, so that ε = εn + dε.
+    2.  Given strain increment :math:`\Delta\boldsymbol{}\varepsilon}`, so that
+        :math:`\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_n + \Delta\boldsymbol{\varepsilon}`.
 
-    3.  Evaluation of the stress σ and the algorithmic consistent tangent modulus dσdε.
+    3.  Evaluation of the stress :math:`\boldsymbol{\sigma}` and the algorithmic
+        consistent tangent modulus :math:`\mathbb{C}` (=``dσdε``).
 
-        dσdε = λ 1 ⊗ 1 + 2μ 1 ⊙ 1
+        ..  math::
 
-        σ = σn + dσdε : dε
+            \mathbb{C} &= \lambda \ \boldsymbol{1} \otimes \boldsymbol{1} +
+                2 \mu \ \boldsymbol{1} \odot \boldsymbol{1}
+
+            \boldsymbol{\sigma} &= \boldsymbol{\sigma}_n
+                + \mathbb{C} : \Delta\boldsymbol{\varepsilon}
 
     Arguments
     ---------
@@ -48,6 +54,16 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
         First Lamé-constant.
     μ : float
         Second Lamé-constant (shear modulus).
+
+    Returns
+    -------
+    dσdε : ndarray
+        Elasticity tensor.
+    σ : ndarray
+        (New) stress tensor.
+    ζ : list
+        List of new state variables.
+
     """
 
     # change of stress due to change of strain

@@ -1,7 +1,7 @@
 Multi-Point Constraints
 -----------------------
 
-This How-To demonstrates the usage of multi-point constraints (also called MPC or RBE2 rigid-body-elements) with an independent centerpoint and one or more dependent points. First, a centerpoint has to be added to the mesh. MPC objects are supported as ``items`` of a Step and within the Newton-Rhapson procedure.
+This How-To demonstrates the usage of multi-point constraints (also called MPC or RBE2 rigid-body-elements) with an independent centerpoint and one or more dependent points. First, a centerpoint has to be added to the mesh. MPC objects are supported as ``items`` of a :class:`~felupe.Step` and within the :func:`~felupe.newtonrhapson` procedure.
 
 ..  code-block:: python
 
@@ -17,7 +17,7 @@ This How-To demonstrates the usage of multi-point constraints (also called MPC o
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
 
-An instance of :class:`~felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`~felupe.MultiPointConstraint.assemble.vector` and :meth:`~felupe.MultiPointConstraint.assemble.matrix`.
+An instance of :class:`~felupe.MultiPointConstraint` defines the multi-point constraint. This instance provides two methods, :meth:`assemble.vector <felupe.MultiPointConstraint.assemble.vector>` and :meth:`assemble.matrix <felupe.MultiPointConstraint.assemble.matrix>`.
 
 ..  code-block:: python
 

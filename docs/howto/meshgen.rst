@@ -1,7 +1,7 @@
 Generate Meshes
 ~~~~~~~~~~~~~~~
 
-FElupe provides a simple mesh generation module :mod:`fem.mesh`. A :class:`fem.Mesh` instance contains essentially two arrays: one with ``points`` and another one containing the cell connectivities, called ``cells``. Only a single ``cell_type`` is supported per mesh. Optionally the ``cell_type`` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
+FElupe provides a simple mesh generation module `mesh <felupe-api-mesh>`_. A :class:`Mesh` instance contains essentially two arrays: one with :attr:`~Mesh.points` and another one containing the cell connectivities, called :attr:`~Mesh.cells`. Only a single :attr:`~Mesh.cell_type` is supported per :class:`Mesh`. Optionally the :attr:`~Mesh.cell_type` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
 
 ..  code-block:: python
 

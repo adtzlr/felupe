@@ -49,9 +49,9 @@ class FieldsMixed(FieldContainer):
         A template region.
     n : int, optional
         Number of fields where the first one is a vector field of mesh-
-        dimension and the following fields are scalar-fields (default is 2).
+        dimension and the following fields are scalar-fields (default is 3).
     values : tuple, optional
-        Initial field values  (default is (0, 0, 1, 0)).
+        Initial field values  (default is (0.0, 0.0, 1.0, 0.0)).
     axisymmetric : bool, optional
         Flag to initiate a :class:`FieldAxisymmetric` as the first field (default is
         False).
@@ -59,23 +59,31 @@ class FieldsMixed(FieldContainer):
         Flag to initiate a :class:`FieldPlaneStrain` as the first field (default is
         False).
     offset : int, optional
-        Offset for cell connectivity (default is 0).
+        Offset for cell connectivity of the dual mesh (default is 0).
     npoints : int or None, optional
-        Specified number of mesh points (default is None).
+        Specified number of mesh points for the dual mesh (default is None).
     mesh: Mesh or None, optional
         A mesh which is used for the dual region (default is None). If None, the mesh
         is taken from the region.
 
     Notes
     -----
-    The dual region is chosen automatically, i.e. for a
-    :class:`RegionHexahedron` the dual region is :class:`RegionConstantHexahedron`. A
-    total number of ``n`` fields are generated inside a :class:`FieldContainer`.
+    The dual region is chosen automatically, i.e. for a :class:`RegionHexahedron` the
+    dual region is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
+    are generated inside a :class:`FieldContainer`. For compatibility with
+    :class:~felupe.ThreeFieldVariation`, the third field is created with ones, all
+    values of the other fields are initiated with zeros by default.
 
     See Also
     --------
+    felupe.FieldContainer : A container which holds one or multiple (mixed) fields.
     felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
-       and initial point ``values``.
+        and initial point ``values``.
+    felupe.FieldAxisymmetric : Axisymmetric field on points of a
+        :class:`~felupe.Region` with dimension ``dim`` and initial point ``values``.
+    felupe.FieldPlaneStrain : Plane strain field on points of a
+        :class:`~felupe.Region` with dimension ``dim`` and initial point ``values``.
+    felupe.mesh.dual : Create a dual :class:`~felupe.Mesh`.
 
     """
 
@@ -83,7 +91,7 @@ class FieldsMixed(FieldContainer):
         self,
         region,
         n=3,
-        values=(0, 0, 1, 0),
+        values=(0.0, 0.0, 1.0, 0.0),
         axisymmetric=False,
         planestrain=False,
         offset=0,

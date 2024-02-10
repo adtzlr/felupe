@@ -84,6 +84,10 @@ Pressure Boundary on a Solid Body
 
 The generation of force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyPressure`.
 
+..  math::
+
+    \delta W_{ext} = \int_{\partial V} \delta \boldsymbol{u} \cdot p \ J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
+
 ..  code-block:: python
     
     region_pressure = fem.RegionHexahedronBoundary(

@@ -109,7 +109,7 @@ A step generates the consecutive substep-movements of a given boundary condition
 
    ax2 = solid.imshow("Principal Values of Cauchy Stress", theme="paraview")
 
-.. image:: fig_titlepage.png
+.. image:: _static/fig_titlepage.png
 
 Extension Packages
 ------------------
@@ -135,7 +135,7 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
 
 .. tab:: Assembly Runtimes
 
-   .. image:: benchmark.png
+   .. image:: _static/benchmark.png
 
    +----------------+-------------------+
    | Analysis       |        DOF/s      |

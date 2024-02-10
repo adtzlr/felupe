@@ -115,15 +115,25 @@ After defining the load step, the simulation model is ready to be solved. The lo
     job.evaluate(x0=field, parallel=True, solver=spsolve)
 
     # evaluate and plot the log. strain and the Cauchy stresses for all solid bodies
+    plotter = field.plot(
+        "Principal Values of Logarithmic Strain",
+        show_undeformed=False,
+        show_edges=False,
+    )
+    plotter.mesh.clip("y", invert=False, value=0.0, inplace=True)
+    plotter.show()
+
     ax = field.imshow("Principal Values of Logarithmic Strain", show_undeformed=False)
     axes = [
         solid.imshow("Principal Values of Cauchy Stress", show_undeformed=False)
         for solid in solids
     ]
 
-The maximum principal values of the logarithmic strain are plotted on the total simulation model.
+The maximum principal values of the logarithmic strain are plotted on the total simulation model as well as on a clipped view.
 
 ..  image:: images/fig_bushing_solids-logstrain.png
+
+..  image:: images/fig_bushing_solids-logstrain_clipped.png
 
 Cauchy stresses are plotted individually for each solid body.
 

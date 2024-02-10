@@ -110,7 +110,7 @@ A step generates the consecutive substep-movements of a given boundary condition
 
    ax2 = solid.imshow("Principal Values of Cauchy Stress", theme="paraview")
 
-..  image:: https://private-user-images.githubusercontent.com/5793153/299447037-2a236f27-53a5-42aa-a45e-85628ecddf72.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDc1NzMxMzYsIm5iZiI6MTcwNzU3MjgzNiwicGF0aCI6Ii81NzkzMTUzLzI5OTQ0NzAzNy0yYTIzNmYyNy01M2E1LTQyYWEtYTQ1ZS04NTYyOGVjZGRmNzIucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDIxMCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAyMTBUMTM0NzE2WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9M2VlOGRmYTg0NWNlYWQ2MTY3MDQ3NjlkMjc2Y2YxNDM5YWEzZjEyN2VhMDI0OWQ5NzY3MWMyN2FkNDYyZTlkMSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.5u_2QMfyGBqDz1cqZeIHz4V-_pN5VEBEFGEPCrsr_vE
+..  image:: fig_titlepage.png
 
 Extension Packages
 ------------------
@@ -134,127 +134,125 @@ Performance
 -----------
 This is a simple benchmark to compare assembly times for linear elasticity and hyperelasticity on tetrahedrons.
 
-.. tabs::
+.. tab:: Assembly Runtimes
 
-   .. tab:: Assembly Runtimes
+   +---------+---------------------+-------------------+
+   |   DOF   | Linear-Elastic in s | Hyperelastic in s |
+   +=========+=====================+===================+
+   |    1029 |                0.01 |              0.02 |
+   +---------+---------------------+-------------------+
+   |    2187 |                0.02 |              0.04 |
+   +---------+---------------------+-------------------+
+   |    6591 |                0.07 |              0.13 |
+   +---------+---------------------+-------------------+
+   |   14739 |                0.20 |              0.28 |
+   +---------+---------------------+-------------------+
+   |   41472 |                0.51 |              0.98 |
+   +---------+---------------------+-------------------+
+   |   98304 |                1.36 |              2.47 |
+   +---------+---------------------+-------------------+
 
-      +---------+---------------------+-------------------+
-      |   DOF   | Linear-Elastic in s | Hyperelastic in s |
-      +=========+=====================+===================+
-      |    1029 |                0.01 |              0.02 |
-      +---------+---------------------+-------------------+
-      |    2187 |                0.02 |              0.04 |
-      +---------+---------------------+-------------------+
-      |    6591 |                0.07 |              0.13 |
-      +---------+---------------------+-------------------+
-      |   14739 |                0.20 |              0.28 |
-      +---------+---------------------+-------------------+
-      |   41472 |                0.51 |              0.98 |
-      +---------+---------------------+-------------------+
-      |   98304 |                1.36 |              2.47 |
-      +---------+---------------------+-------------------+
+   +----------------+-------------------+
+   | Analysis       |        DOF/s      |
+   +================+===================+
+   | Linear-Elastic |   84523 +/- 9541  |
+   +----------------+-------------------+
+   | Hyperelastic   |   49771 +/- 6781  |
+   +----------------+-------------------+
 
-      +----------------+-------------------+
-      | Analysis       |        DOF/s      |
-      +================+===================+
-      | Linear-Elastic |   84523 +/- 9541  |
-      +----------------+-------------------+
-      | Hyperelastic   |   49771 +/- 6781  |
-      +----------------+-------------------+
-
-      Tested on: KDE Neon (Ubuntu 22.04), Python 3.10, Intel® Core™ i7-6650U CPU @ 2.20GHz, 8GB RAM (Surface Pro 4).
+   Tested on: KDE Neon (Ubuntu 22.04), Python 3.10, Intel® Core™ i7-6650U CPU @ 2.20GHz, 8GB RAM (Surface Pro 4).
 
 
-   .. tab:: Source Code
+.. tab:: Source Code
 
-      .. code-block:: python
+   .. code-block:: python
 
-         from timeit import timeit
+      from timeit import timeit
 
-         import matplotlib.pyplot as plt
-         import numpy as np
+      import matplotlib.pyplot as plt
+      import numpy as np
 
-         import felupe as fem
-
-
-         def pre_linear_elastic(n, **kwargs):
-            mesh = fem.Cube(n=n).triangulate()
-            region = fem.RegionTetra(mesh)
-            field = fem.FieldContainer([fem.Field(region, dim=3)])
-            umat = fem.LinearElastic(E=1, nu=0.3)
-            solid = fem.SolidBody(umat, field)
-            return mesh, solid
+      import felupe as fem
 
 
-         def pre_hyperelastic(n, **kwargs):
-            mesh = fem.Cube(n=n).triangulate()
-            region = fem.RegionTetra(mesh)
-            field = fem.FieldContainer([fem.Field(region, dim=3)])
-            umat = fem.NeoHooke(mu=1.0, bulk=2.0)
-            solid = fem.SolidBody(umat, field)
-            return mesh, solid
+      def pre_linear_elastic(n, **kwargs):
+         mesh = fem.Cube(n=n).triangulate()
+         region = fem.RegionTetra(mesh)
+         field = fem.FieldContainer([fem.Field(region, dim=3)])
+         umat = fem.LinearElastic(E=1, nu=0.3)
+         solid = fem.SolidBody(umat, field)
+         return mesh, solid
 
 
-         print("# Assembly Runtimes")
-         print("")
-         print("|   DOF   | Linear-Elastic in s | Hyperelastic in s |")
-         print("| ------- | ------------------- | ----------------- |")
+      def pre_hyperelastic(n, **kwargs):
+         mesh = fem.Cube(n=n).triangulate()
+         region = fem.RegionTetra(mesh)
+         field = fem.FieldContainer([fem.Field(region, dim=3)])
+         umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+         solid = fem.SolidBody(umat, field)
+         return mesh, solid
 
-         points_per_axis = np.round((np.logspace(3, 5, 6) / 3)**(1 / 3)).astype(int)
 
-         number = 3
-         parallel = False
+      print("# Assembly Runtimes")
+      print("")
+      print("|   DOF   | Linear-Elastic in s | Hyperelastic in s |")
+      print("| ------- | ------------------- | ----------------- |")
 
-         runtimes = np.zeros((len(points_per_axis), 2))
+      points_per_axis = np.round((np.logspace(3, 5, 6) / 3)**(1 / 3)).astype(int)
 
-         for i, n in enumerate(points_per_axis):
-            mesh, solid = pre_linear_elastic(n)
-            matrix = solid.assemble.matrix(parallel=parallel)
-            time_linear_elastic = (
-               timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
-            )
+      number = 3
+      parallel = False
 
-            mesh, solid = pre_hyperelastic(n)
-            matrix = solid.assemble.matrix(parallel=parallel)
-            time_hyperelastic = (
-               timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
-            )
+      runtimes = np.zeros((len(points_per_axis), 2))
 
-            runtimes[i] = time_linear_elastic, time_hyperelastic
+      for i, n in enumerate(points_per_axis):
+         mesh, solid = pre_linear_elastic(n)
+         matrix = solid.assemble.matrix(parallel=parallel)
+         time_linear_elastic = (
+            timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
+         )
 
-            print(
-               f"| {mesh.points.size:7d} | {runtimes[i][0]:19.2f} | {runtimes[i][1]:17.2f} |"
-            )
+         mesh, solid = pre_hyperelastic(n)
+         matrix = solid.assemble.matrix(parallel=parallel)
+         time_hyperelastic = (
+            timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
+         )
 
-         dofs_le = points_per_axis ** 3 * 3 / runtimes[:, 0]
-         dofs_he = points_per_axis ** 3 * 3 / runtimes[:, 1]
+         runtimes[i] = time_linear_elastic, time_hyperelastic
 
-         print("")
-         print("| Analysis       |        DOF/s      |")
-         print("| -------------- | ----------------- |")
          print(
-            f"| Linear-Elastic |   {np.mean(dofs_le):5.0f} +/-{np.std(dofs_le):5.0f}  |"
+            f"| {mesh.points.size:7d} | {runtimes[i][0]:19.2f} | {runtimes[i][1]:17.2f} |"
          )
-         print(f"| Hyperelastic   |   {np.mean(dofs_he):5.0f} +/-{np.std(dofs_he):5.0f}  |")
 
-         plt.figure()
-         plt.loglog(
-            points_per_axis ** 3 * 3,
-            runtimes[:, 1],
-            "C0",
-            label=r"Stiffness Matrix (Hyperelastic)",
-         )
-         plt.loglog(
-            points_per_axis ** 3 * 3,
-            runtimes[:, 0],
-            "C1--",
-            label=r"Stiffness Matrix (Linear-Elastic)",
-         )
-         plt.xlabel(r"Number of degrees of freedom $\longrightarrow$")
-         plt.ylabel(r"Runtime in s $\longrightarrow$")
-         plt.legend()
-         plt.tight_layout()
-         plt.savefig("benchmark.png")
+      dofs_le = points_per_axis ** 3 * 3 / runtimes[:, 0]
+      dofs_he = points_per_axis ** 3 * 3 / runtimes[:, 1]
+
+      print("")
+      print("| Analysis       |        DOF/s      |")
+      print("| -------------- | ----------------- |")
+      print(
+         f"| Linear-Elastic |   {np.mean(dofs_le):5.0f} +/-{np.std(dofs_le):5.0f}  |"
+      )
+      print(f"| Hyperelastic   |   {np.mean(dofs_he):5.0f} +/-{np.std(dofs_he):5.0f}  |")
+
+      plt.figure()
+      plt.loglog(
+         points_per_axis ** 3 * 3,
+         runtimes[:, 1],
+         "C0",
+         label=r"Stiffness Matrix (Hyperelastic)",
+      )
+      plt.loglog(
+         points_per_axis ** 3 * 3,
+         runtimes[:, 0],
+         "C1--",
+         label=r"Stiffness Matrix (Linear-Elastic)",
+      )
+      plt.xlabel(r"Number of degrees of freedom $\longrightarrow$")
+      plt.ylabel(r"Runtime in s $\longrightarrow$")
+      plt.legend()
+      plt.tight_layout()
+      plt.savefig("benchmark.png")
 
 
 

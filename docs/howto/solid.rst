@@ -1,7 +1,7 @@
 Solid Mechanics
 ~~~~~~~~~~~~~~~
 
-The mechanics submodule contains classes for the generation of solid bodies. Solid body objects are supported as items of a Step and the Newton-Rhapson procedure.
+The mechanics submodule contains classes for the generation of solid bodies. Solid body objects are supported as items of a :class:`~felupe.Step` and the :func:`~felupe.newtonrhapson` procedure.
 
 Solid Body
 ----------
@@ -28,6 +28,14 @@ The generation of internal force vectors and stiffness matrices of solid bodies 
 
 During assembly, several results are stored, e.g. the gradient of the strain energy density function per unit undeformed volume w.r.t. the deformation gradient (first Piola-Kirchhoff stress tensor). Other results are the deformation gradient or the fourth-order elasticity tensor associated to the first Piola-Kirchhoff stress tensor.
 
+..  math::
+
+    \boldsymbol{F} &= \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+
+    \boldsymbol{P} &= \frac{\partial \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}}
+
+    \mathbb{A} &= \frac{\partial^2 \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+
 ..  code-block:: python
     
     F = body.results.kinematics
@@ -36,6 +44,15 @@ During assembly, several results are stored, e.g. the gradient of the strain ene
 
 
 The Cauchy stress tensor, as well as the gradient and the hessian of the strain energy density function per unit undeformed volume are obtained by evaluate-methods of the solid body.
+
+..  math::
+
+    \boldsymbol{P} &= \frac{\partial \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}}
+
+    \mathbb{A} &= \frac{\partial^2 \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+
+    \boldsymbol{\sigma} &= \frac{1}{J} \boldsymbol{P} \boldsymbol{F}^T
+
 
 ..  code-block:: python
     
@@ -47,7 +64,12 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
 Body Force (Gravity) on a Solid Body
 ------------------------------------
 
-The generation of internal force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyGravity`.
+The generation of external force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyGravity`.
+
+
+..  math::
+
+    \delta W_{ext} = \int_V \delta \boldsymbol{u} \cdot \rho \boldsymbol{g} \ dV
 
 
 ..  code-block:: python

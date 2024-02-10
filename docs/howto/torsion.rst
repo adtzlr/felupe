@@ -55,7 +55,7 @@ The reaction moment on the centerpoint of the right end face is tracked by a ``c
 .. image:: images/fig_torsion.png
    :width: 400px
 
-Let's plot the reaction moment vs. torsion angle curve.
+Finally, let's plot the reaction moment vs. torsion angle curve.
 
 ..  code-block:: python
 

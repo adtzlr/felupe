@@ -109,7 +109,7 @@ A step generates the consecutive substep-movements of a given boundary condition
 
    ax2 = solid.imshow("Principal Values of Cauchy Stress", theme="paraview")
 
-..  image:: fig_titlepage.png
+.. image:: fig_titlepage.png
 
 Extension Packages
 ------------------

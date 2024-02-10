@@ -84,9 +84,8 @@ An isotropic pseudo-elastic Ogden-Roxburgh Mullins-softening model formulation i
 
 A step generates the consecutive substep-movements of a given boundary condition. The step is further added to a list of steps of a job 👩‍💻 (here, a characteristic-curve 📈 job is used). During evaluation ⏳, each substep of each step is solved by an iterative Newton-Rhapson procedure ⚖️. The solution is exported after each completed substep as a time-series ⌚ XDMF file. Finally, the result of the last completed substep is plotted.
 
-..  code-block:: python
+.. code-block:: python
 
-    python
    import felupe as fem
 
    mesh = fem.Cube(n=6)

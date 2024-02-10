@@ -8,6 +8,7 @@ How-To Guides
    :caption: How-To:
    
    howto/meshgen
+   howto/torsion
    howto/rbe2
    howto/mixed
    howto/axi

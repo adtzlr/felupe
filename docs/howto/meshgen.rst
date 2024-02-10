@@ -89,6 +89,18 @@ For triangles, there is :class:`~felupe.mesh.Triangle` for the creation of a qua
 ..  image:: images/triangle.png
     :width: 400px
 
+Corner Modifications
+********************
+
+For a regular :class:`~felupe.Rectangle` or a :class:`~felupe.Cube`, corners may be modified by :meth:`~felupe.Mesh.modify_corners()`. This is sometimes beneficial for compressive states of deformation.
+
+..  code-block:: python
+
+    rectangle = fem.mesh.Rectangle(n=6).modify_corners()
+
+..  image:: images/rectangle_corners.png
+    :width: 400px
+
 Cylinders
 *********
 

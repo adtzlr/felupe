@@ -203,6 +203,166 @@ class Mesh(DiscreteGeometry):
 
         return ax
 
+    def get_points(self, value, fun=np.isclose, mode=np.all, **kwargs):
+        """Return point ids for points which are close to a given value.
+
+        Parameters
+        ----------
+        value : float, list or ndarray
+            Scalar value or point coordinates.
+        fun : callable, optional
+            The function used to compare the points to the given value, i.e. with a
+            function signature ``fun(mesh.points, value, **kwargs)``. Default is
+            :func:`numpy.isclose`.
+        mode : callable, optional
+            A callable used to combine the search results, either :func:`numpy.any` or
+            :func:`numpy.all`.
+        **kwargs : dict, optional
+            Additional keyword arguments for ``fun(mesh.points, value, **kwargs)``.
+
+        Returns
+        -------
+        ndarray
+            Array with point ids.
+
+        """
+        return np.argwhere(mode(fun(self.points, value, **kwargs), axis=1))[:, 0]
+
+    def get_cells(self, points):
+        """Return cell ids which have the given point ids in their connectivity.
+
+        Parameters
+        ----------
+        points : list or ndarray
+            Array with point ids which are used to search for cells.
+
+        Returns
+        -------
+        ndarray
+            Array with cell ids which have the given point ids in their connectivity.
+
+        """
+        return np.argwhere(np.isin(self.cells, points).any(axis=1))[:, 0]
+
+    def get_cells_neighbours(self, cells):
+        """Return cell ids which share points with given cell ids.
+
+        Parameters
+        ----------
+        cells : list or ndarray
+            Array with cell ids which are used to search for neighbour cells.
+
+        Returns
+        -------
+        ndarray
+            Array with cell ids which are next to the given cells.
+
+        """
+        return self.get_cells(self.cells[cells])
+
+    def get_points_shared(self, cells_neighbours):
+        """Return shared point ids for given cell ids.
+
+        Parameters
+        ----------
+        cells_neighbours : list or ndarray
+            Array with cell ids.
+
+        Returns
+        -------
+        ndarray
+            Array with point ids which are connected to all given cell neighbours.
+
+        """
+
+        neighbours = self.cells[cells_neighbours]
+        cell = neighbours[0]
+        return cell[[np.isin(neighbours, point).any(axis=1).all() for point in cell]]
+
+    def get_points_corners(self):
+        """Return point ids which are located at (xmin, ymin), (xmax, ymin), etc.
+
+        Returns
+        -------
+        ndarray
+            Array with point ids which are located at the corners.
+
+        """
+
+        xmin = np.min(self.points, axis=0)
+        xmax = np.max(self.points, axis=0)
+        corners = np.vstack(
+            [x.ravel() for x in np.meshgrid(*np.vstack([xmin, xmax]).T)]
+        ).T
+
+        return np.concatenate([self.get_points(corner) for corner in corners])
+
+    def modify_corners(self, corners=None):
+        """Modify the corners of a regular rectangle (quad) or cube (hexahedron)
+        inplace. Only the cells array is modified, the points array remains unchanged.
+
+        Parameters
+        ----------
+        corners : ndarray or None, optional
+            Array with point ids located at the corners which are modified (default is
+            None). If None, all corners are modified.
+
+        Notes
+        -----
+        Description of the algorithm:
+
+        1. Get corner point ids.
+
+        For each corner point:
+
+        2. Get attached cell and find cell neighours.
+        3. Get the shared point of the cell and its neighbours.
+        4. Get pair-wise shared points which are located on an edge.
+        5. Replace the shared points with the corner point.
+        6. Delete the cell attached to the corner point.
+
+        """
+
+        if self.cell_type not in ["quad", "hexahedron"]:
+            message = [
+                "Cell type not supported.",
+                "Must be either 'quad' or 'hexahedron'",
+                f"but given cell type is '{self.cell_type}'.",
+            ]
+            raise TypeError(" ".join(message))
+
+        for point in self.get_points_corners():
+            cell = self.get_cells(point)[0]
+            cell_with_neighbours = self.get_cells_neighbours(cell)
+
+            cells_neighbours = cell_with_neighbours[cell_with_neighbours != cell]
+
+            point_shared = self.get_points_shared(cell_with_neighbours)[0]
+            points_shared_individual = [
+                self.get_points_shared([cell, neighbour])
+                for neighbour in cells_neighbours
+            ]
+            if self.cell_type == "hexahedron":
+                edges = np.argwhere(
+                    np.isclose(self.points, self.points[point]).sum(axis=1) >= 2
+                )[:, 0]
+                points_shared_individual = [
+                    p[np.isin(p, edges)] for p in points_shared_individual
+                ]
+            points_shared_individual = [
+                shared[shared != point_shared] for shared in points_shared_individual
+            ]
+
+            for shared, neighbour in zip(points_shared_individual, cells_neighbours):
+                point_replace = np.argwhere(np.isin(self.cells[neighbour], shared))
+                if len(point_replace) > 0:
+                    self.cells[neighbour, point_replace[0][0]] = point
+
+            self.cells = np.delete(self.cells, cell, axis=0)
+            self.update(cells=self.cells)
+
+        return self
+
     @wraps(dual)
     def dual(
         self,

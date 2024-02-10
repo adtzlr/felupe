@@ -11,6 +11,12 @@ All notable changes to this project will be documented in this file. The format 
 - Add view-methods for `SolidBody` and `SolidBodyNearlyIncompressible` (same as already implemented for mesh and fields).
 - Add lists with norms of values and norms of the objective function in `tools.NewtonResult(xnorms=None, fnorms=None)`.
 - Add lists of norms of the objective function as attribute to `Job.fnorms`.
+- Add new method to `Mesh` for getting point ids next to a given point coordinate `Mesh.get_points(value)`.
+- Add new method to `Mesh` for getting cells attached to a given point coordinate `Mesh.get_cells(points)`.
+- Add new method to `Mesh` for getting neighbour cells `Mesh.get_cells_neighbours(cells)`.
+- Add new method to `Mesh` for getting shared points between neighbour cells `Mesh.get_points_shared(cells_neighbours)`.
+- Add new method to `Mesh` for getting points on regular grids which are located at corners `Mesh.get_points_corners()`.
+- Add new method to `Mesh` for modifying the cell connectivity at corners `Mesh.modify_corners()`, supported for regular quad and hexahedron meshes.
 
 ### Changed
 - Pass optional keyword-arguments in `math.dot(**kwargs)` to the underlying einsum-calls.

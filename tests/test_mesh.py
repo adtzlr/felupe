@@ -492,8 +492,6 @@ def test_view():
 
 
 def test_mesh_update():
-    import felupe as fem
-
     mesh = fem.Cube(n=11)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldsMixed(region, n=1)
@@ -508,6 +506,17 @@ def test_mesh_update():
     # or update the region separately
     mesh.update(points=new_points)
     region.reload(mesh)
+
+
+def test_modify_corners():
+    fem.Rectangle(n=6).modify_corners()
+    fem.Cube(n=6).modify_corners()
+
+    with pytest.raises(TypeError):
+        fem.Rectangle(n=6).triangulate().modify_corners()
+
+    with pytest.raises(TypeError):
+        fem.Cube(n=6).triangulate().modify_corners()
 
 
 if __name__ == "__main__":
@@ -527,3 +536,4 @@ if __name__ == "__main__":
     test_triangle()
     test_view()
     test_mesh_update()
+    test_modify_corners()

@@ -330,8 +330,11 @@ class Mesh(DiscreteGeometry):
                 f"but given cell type is '{self.cell_type}'.",
             ]
             raise TypeError(" ".join(message))
+        
+        if corners is None:
+            corners = self.get_points_corners()
 
-        for point in self.get_points_corners():
+        for point in corners:
             cell = self.get_cells(point)[0]
             cell_with_neighbours = self.get_cells_neighbours(cell)
 

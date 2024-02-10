@@ -203,7 +203,7 @@ class Mesh(DiscreteGeometry):
 
         return ax
 
-    def get_points(self, value, fun=np.isclose, mode=np.all, **kwargs):
+    def get_point_ids(self, value, fun=np.isclose, mode=np.all, **kwargs):
         """Return point ids for points which are close to a given value.
 
         Parameters
@@ -228,12 +228,12 @@ class Mesh(DiscreteGeometry):
         """
         return np.argwhere(mode(fun(self.points, value, **kwargs), axis=1))[:, 0]
 
-    def get_cells(self, points):
+    def get_cell_ids(self, point_ids):
         """Return cell ids which have the given point ids in their connectivity.
 
         Parameters
         ----------
-        points : list or ndarray
+        point_ids : list or ndarray
             Array with point ids which are used to search for cells.
 
         Returns
@@ -242,14 +242,14 @@ class Mesh(DiscreteGeometry):
             Array with cell ids which have the given point ids in their connectivity.
 
         """
-        return np.argwhere(np.isin(self.cells, points).any(axis=1))[:, 0]
+        return np.argwhere(np.isin(self.cells, point_ids).any(axis=1))[:, 0]
 
-    def get_cells_neighbours(self, cells):
+    def get_cell_ids_neighbours(self, cell_ids):
         """Return cell ids which share points with given cell ids.
 
         Parameters
         ----------
-        cells : list or ndarray
+        cell_ids : list or ndarray
             Array with cell ids which are used to search for neighbour cells.
 
         Returns
@@ -258,9 +258,9 @@ class Mesh(DiscreteGeometry):
             Array with cell ids which are next to the given cells.
 
         """
-        return self.get_cells(self.cells[cells])
+        return self.get_cell_ids(self.cells[cell_ids])
 
-    def get_points_shared(self, cells_neighbours):
+    def get_point_ids_shared(self, cell_ids_neighbours):
         """Return shared point ids for given cell ids.
 
         Parameters
@@ -275,11 +275,11 @@ class Mesh(DiscreteGeometry):
 
         """
 
-        neighbours = self.cells[cells_neighbours]
+        neighbours = self.cells[cell_ids_neighbours]
         cell = neighbours[0]
         return cell[[np.isin(neighbours, point).any(axis=1).all() for point in cell]]
 
-    def get_points_corners(self):
+    def get_point_ids_corners(self):
         """Return point ids which are located at (xmin, ymin), (xmax, ymin), etc.
 
         Returns
@@ -291,19 +291,19 @@ class Mesh(DiscreteGeometry):
 
         xmin = np.min(self.points, axis=0)
         xmax = np.max(self.points, axis=0)
-        corners = np.vstack(
+        points = np.vstack(
             [x.ravel() for x in np.meshgrid(*np.vstack([xmin, xmax]).T)]
         ).T
 
-        return np.concatenate([self.get_points(corner) for corner in corners])
+        return np.concatenate([self.get_point_ids(point) for point in points])
 
-    def modify_corners(self, corners=None):
+    def modify_corners(self, point_ids=None):
         """Modify the corners of a regular rectangle (quad) or cube (hexahedron)
         inplace. Only the cells array is modified, the points array remains unchanged.
 
         Parameters
         ----------
-        corners : ndarray or None, optional
+        point_ids : ndarray or None, optional
             Array with point ids located at the corners which are modified (default is
             None). If None, all corners are modified.
 
@@ -330,38 +330,43 @@ class Mesh(DiscreteGeometry):
                 f"but given cell type is '{self.cell_type}'.",
             ]
             raise TypeError(" ".join(message))
-        
-        if corners is None:
-            corners = self.get_points_corners()
 
-        for point in corners:
-            cell = self.get_cells(point)[0]
-            cell_with_neighbours = self.get_cells_neighbours(cell)
+        if point_ids is None:
+            point_ids = self.get_point_ids_corners()
 
-            cells_neighbours = cell_with_neighbours[cell_with_neighbours != cell]
+        for point_id in point_ids:
+            cell_id = self.get_cell_ids(point_id)[0]
+            cell_id_with_neighbours = self.get_cell_ids_neighbours(cell_id)
 
-            point_shared = self.get_points_shared(cell_with_neighbours)[0]
-            points_shared_individual = [
-                self.get_points_shared([cell, neighbour])
-                for neighbour in cells_neighbours
+            cell_ids_neighbours = cell_id_with_neighbours[
+                cell_id_with_neighbours != cell_id
+            ]
+
+            point_id_shared = self.get_point_ids_shared(cell_id_with_neighbours)[0]
+            point_ids_shared_individual = [
+                self.get_point_ids_shared([cell_id, neighbour])
+                for neighbour in cell_ids_neighbours
             ]
             if self.cell_type == "hexahedron":
                 edges = np.argwhere(
-                    np.isclose(self.points, self.points[point]).sum(axis=1) >= 2
+                    np.isclose(self.points, self.points[point_id]).sum(axis=1) >= 2
                 )[:, 0]
-                points_shared_individual = [
-                    p[np.isin(p, edges)] for p in points_shared_individual
+                point_ids_shared_individual = [
+                    p[np.isin(p, edges)] for p in point_ids_shared_individual
                 ]
-            points_shared_individual = [
-                shared[shared != point_shared] for shared in points_shared_individual
+            point_ids_shared_individual = [
+                shared[shared != point_id_shared]
+                for shared in point_ids_shared_individual
             ]
 
-            for shared, neighbour in zip(points_shared_individual, cells_neighbours):
-                point_replace = np.argwhere(np.isin(self.cells[neighbour], shared))
-                if len(point_replace) > 0:
-                    self.cells[neighbour, point_replace[0][0]] = point
+            for shared, neighbour in zip(
+                point_ids_shared_individual, cell_ids_neighbours
+            ):
+                point_id_replace = np.argwhere(np.isin(self.cells[neighbour], shared))
+                if len(point_id_replace) > 0:
+                    self.cells[neighbour, point_id_replace[0][0]] = point_id
 
-            self.cells = np.delete(self.cells, cell, axis=0)
+            self.cells = np.delete(self.cells, cell_id, axis=0)
             self.update(cells=self.cells)
 
         return self

@@ -11,6 +11,7 @@ Examples
    examples/platewithhole
    examples/plasticity
    examples/inflation
+   examples/rubberbushing
    examples/rubberspring
    examples/enginemount
    examples/shear

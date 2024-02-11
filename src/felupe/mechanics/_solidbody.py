@@ -104,7 +104,59 @@ class Solid:
 
 
 class SolidBody(Solid):
-    "A SolidBody with methods for the assembly of sparse vectors/matrices."
+    r"""A SolidBody with methods for the assembly of sparse vectors/matrices.
+
+    Parameters
+    ----------
+    umat : class
+        A class which provides methods for evaluating the gradient and the hessian of
+        the strain energy density function per unit undeformed volume. The function
+        signatures must be ``dψdF, ζ_new = umat.gradient([F, ζ])`` for
+        the gradient and ``d2ψdFdF = umat.hessian([F, ζ])`` for the hessian of
+        the strain energy density function :math:`\psi(\boldsymbol{F})`, where
+        :math:`\boldsymbol{F}` is the deformation gradient tensor and :math:`\zeta`
+        holds the array of internal state variables.
+    field : FieldContainer
+        A field container with one or more fields.
+    statevars : ndarray or None, optional
+        Array of initial internal state variables (default is None).
+
+    Notes
+    -----
+    ..  math::
+
+        W_{int} &= -\int_V \psi(\boldsymbol{F}) \ dV
+
+        \delta W_{int} &= -\int_V
+            \delta \boldsymbol{F} : \frac{\partial \psi}{\partial \boldsymbol{F}}\ dV
+
+        \Delta\delta W_{int} &= -\int_V
+            \delta \boldsymbol{F} :
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} :
+            \Delta \boldsymbol{F} \ dV
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    >>>
+    >>> umat = fem.NeoHooke(mu=1, bulk=2)
+    >>> solid = fem.SolidBody(umat, field)
+    >>>
+    >>> table = fem.math.linsteps([0, 1], num=5)
+    >>> step = fem.Step(
+    >>>     items=[solid],
+    >>>     ramp={boundaries["move"]: table},
+    >>>     boundaries=boundaries,
+    >>> )
+    >>>
+    >>> job = fem.Job(steps=[step]).evaluate()
+    >>> ax = solid.imshow("Principal Values of Cauchy Stress")
+    """
 
     def __init__(self, umat, field, statevars=None):
         self.umat = umat

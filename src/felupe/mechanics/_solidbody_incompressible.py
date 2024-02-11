@@ -81,7 +81,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
     **Hu-Washizu Three-Field-Variational Principle**
 
-    The Three-Field-Variation :math:`(\boldsymbol{u},p,J)` leads to a linearized
+    The Three-Field-Variation :math:`(\boldsymbol{u},p,\bar{J})` leads to a linearized
     equation system with nine sub block-matrices. Due to the fact that the equation
     system is derived by a potential, the matrix is symmetric and hence, only six
     independent sub-matrices have to be evaluated. Furthermore, by the application of

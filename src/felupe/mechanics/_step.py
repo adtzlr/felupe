@@ -24,12 +24,41 @@ from ..tools import newtonrhapson
 
 class Step:
     """A Step with multiple substeps, subsequently depending on the solution
-    of the previous substep."""
+    of the previous substep.
+
+    Parameters
+    ----------
+    items : list of SolidBody, SolidBodyNearlyIncompressible, SolidBodyPressure, SolidBodyGravity, PointLoad, MultiPointConstraint or MultiPointContact
+        A list of items with methods for the assembly of sparse vectors/matrices.
+    ramp : dict, optional
+        A dict with :class:`~felupe.Boundary` or ``item``-keys which holds the array of
+        values to ramp (default is None). If None, only one substep is evaluated.
+    boundaries : dict of Boundary, optional
+        A dict holding all :class:`~felupe.Boundary` conditions.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>>
+    >>> boundaries = fem.dof.symmetry(field[0])
+    >>> boundaries["clamped"] = fem.Boundary(field[0], fx=1, skip=(True, False, False))
+    >>> boundaries["move"] = fem.Boundary(field[0], fx=1, skip=(False, True, True))
+    >>>
+    >>> umat = fem.NeoHooke(mu=1, bulk=2)
+    >>> solid = fem.SolidBody(umat, field)
+    >>>
+    >>> move = fem.math.linsteps([0, 1], num=5)
+    >>> step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+    >>>
+    >>> job = fem.Job(steps=[step]).evaluate()
+    >>> ax = solid.imshow("Principal Values of Cauchy Stress")
+    """
 
     def __init__(self, items, ramp=None, boundaries=None):
-        """A Step with multiple substeps, subsequently depending on the solution
-        of the previous substep."""
-
         self.items = items
 
         if ramp is None:
@@ -45,7 +74,7 @@ class Step:
         self.boundaries = boundaries
 
     def generate(self, **kwargs):
-        "Generate all substeps."
+        "Yield all generated substeps."
 
         substeps = np.arange(self.nsubsteps)
 

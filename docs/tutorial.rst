@@ -12,3 +12,4 @@ This section is all about learning. Each tutorial focusses on a some lessons to 
    tutorial/getting_started
    tutorial/jobs
    tutorial/building_blocks
+   tutorial/elementary_deformations

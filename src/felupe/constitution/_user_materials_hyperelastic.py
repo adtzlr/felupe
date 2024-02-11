@@ -24,11 +24,25 @@ from ._user_materials import Material
 
 
 class Hyperelastic(Material):
-    """A user-defined hyperelastic material definition with a given function
-    for the strain energy function with Automatic Differentiation provided by
-    ``tensortrax``.
+    """A hyperelastic material definition with a given function for the strain energy
+    density function per unit undeformed volume with Automatic Differentiation provided
+    by ``tensortrax``. 
 
-    Take this code-block as template
+    Notes
+    -----
+    The strain energy density function :math:`\psi` must be given in terms of the right
+    Cauchy-Green deformation tensor
+    :math:`\boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}`. 
+    
+    ..  warning::
+        It is important to only use differentiable math-functions from
+        ``tensortrax.math``!
+    
+    ..  math::
+        
+        \psi = \psi(\boldsymbol{C}, \boldsymbol{\zeta})
+
+    Take this minimal code-block as template
 
     ..  code-block::
 
@@ -40,7 +54,7 @@ class Hyperelastic(Material):
 
         umat = fem.Hyperelastic(neo_hooke, mu=1)
 
-    and this code-block for material formulations with state variables:
+    and this code-block for material formulations with state variables.
 
     ..  code-block::
 
@@ -68,6 +82,21 @@ class Hyperelastic(Material):
 
     See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
     for further details.
+
+    See Also
+    --------
+    saint_venant_kirchhoff : Strain energy function of the Saint Venant-Kirchhoff
+        material formulation.
+    neo_hooke : Strain energy function of the Neo-Hookean material formulation.
+    mooney_rivlin : Strain energy function of the Mooney-Rivlin material formulation.
+    yeoh : "Strain energy function of the Yeoh material formulation.
+    third_order_deformation : Strain energy function of the Third-Order-Deformation
+        material formulation.
+    ogden : Strain energy function of the Ogden material formulation.
+    arruda_boyce : Strain energy function of the Arruda-Boyce material formulation.
+    extended_tube : Strain energy function of the Extended-Tube material formulation.
+    van_der_waals : Strain energy function of the Van der Waals material formulation.
+    finite_strain_viscoelastic : Finite strain viscoelastic material formulation.
 
     """
 

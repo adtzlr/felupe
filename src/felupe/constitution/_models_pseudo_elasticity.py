@@ -25,6 +25,22 @@ class OgdenRoxburgh:
     r"""A Pseudo-Elastic material formulation for an isotropic treatment of the
     load-history dependent Mullins-softening of rubber-like materials.
 
+    Parameters
+    ----------
+    material : NeoHooke, Hyperelastic, Material or MaterialAD
+        An isotropic hyperelastic (user) material definition.
+    r : float
+        Reciprocal value of the maximum relative amount of softening. i.e. ``r=3`` means
+        the shear modulus of the base material scales down from :math:`1` (no softening)
+        to :math:`1 - 1/3 = 2/3` (maximum softening).
+    m : float
+        The initial Mullins softening modulus.
+    beta : float
+        Maximum deformation-dependent part of the Mullins softening modulus.
+
+    Notes
+    -----
+
     ..  math::
 
         \eta(W, W_{max}) &= 1 - \frac{1}{r} erf\left( \frac{W_{max} - W}
@@ -35,6 +51,13 @@ class OgdenRoxburgh:
         \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F} \partial
         \boldsymbol{F}} + \frac{\partial \eta}{\partial \psi} \frac{\partial \psi}
         {\partial \boldsymbol{F}} \otimes \frac{\partial \psi}{\partial \boldsymbol{F}}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> neo_hooke = fem.NeoHooke(mu=1.0)
+    >>> umat = fem.OgdenRoxburgh(material=neo_hooke, r=3.0, m=1.0, beta=0.0)
 
     """
 

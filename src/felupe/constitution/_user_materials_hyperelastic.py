@@ -27,6 +27,22 @@ class Hyperelastic(Material):
     r"""A hyperelastic material definition with a given function for the strain energy
     density function per unit undeformed volume with Automatic Differentiation provided
     by ``tensortrax``.
+    
+    Parameters
+    ----------
+    fun : callable
+        A strain energy density function in terms of the right Cauchy-Green deformation
+        tensor :math:`\boldsymbol{C}`. Function signature must be 
+        ``fun = lambda C, **kwargs: psi`` for functions without state variables and
+        ``fun = lambda C, statevars, **kwargs: [psi, statevars_new]`` for functions
+        with state variables.
+    nstatevars : int, optional
+        Number of state variables (default is 0).
+    parallel : bool, optional
+        A flag to invoke threaded strain energy density function evaluations (default
+        is False). May introduce additional overhead for small-sized problems.
+    **kwargs : dict, optional
+        Optional keyword-arguments for the strain energy density function.
 
     Notes
     -----

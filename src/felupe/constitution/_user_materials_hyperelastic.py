@@ -85,18 +85,24 @@ class Hyperelastic(Material):
 
     See Also
     --------
-    saint_venant_kirchhoff : Strain energy function of the Saint Venant-Kirchhoff
-        material formulation.
-    neo_hooke : Strain energy function of the Neo-Hookean material formulation.
-    mooney_rivlin : Strain energy function of the Mooney-Rivlin material formulation.
-    yeoh : "Strain energy function of the Yeoh material formulation.
-    third_order_deformation : Strain energy function of the Third-Order-Deformation
-        material formulation.
-    ogden : Strain energy function of the Ogden material formulation.
-    arruda_boyce : Strain energy function of the Arruda-Boyce material formulation.
-    extended_tube : Strain energy function of the Extended-Tube material formulation.
-    van_der_waals : Strain energy function of the Van der Waals material formulation.
-    finite_strain_viscoelastic : Finite strain viscoelastic material formulation.
+    constitution.saint_venant_kirchhoff : Strain energy function of the Saint
+        Venant-Kirchhoff material formulation.
+    constitution.neo_hooke : Strain energy function of the Neo-Hookean material
+        formulation.
+    constitution.mooney_rivlin : Strain energy function of the Mooney-Rivlin material
+        formulation.
+    constitution.yeoh : "Strain energy function of the Yeoh material formulation.
+    constitution.third_order_deformation : Strain energy function of the
+        Third-Order-Deformation material formulation.
+    constitution.ogden : Strain energy function of the Ogden material formulation.
+    constitution.arruda_boyce : Strain energy function of the Arruda-Boyce material
+        formulation.
+    constitution.extended_tube : Strain energy function of the Extended-Tube material
+        formulation.
+    constitution.van_der_waals : Strain energy function of the Van der Waals material
+        formulation.
+    constitution.finite_strain_viscoelastic : Finite strain viscoelastic material
+        formulation.
 
     """
 

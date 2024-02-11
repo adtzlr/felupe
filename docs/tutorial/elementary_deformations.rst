@@ -5,13 +5,13 @@ Elementary Deformations
 
 ..  admonition:: Combine views on deformed meshes and force-displacement curves in a single figure.
     :class: note
+
+    * load a hyperelastic material formulation
     
     * create a meshed cube with hexahedron cells
     
     * define a numeric region along with a displacement field
-    
-    * load a hyperelastic material formulation
-    
+
     * apply uniaxial, planar and biaxial loadcases
     
     * solve the problems

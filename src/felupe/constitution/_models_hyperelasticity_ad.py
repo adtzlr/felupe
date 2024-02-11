@@ -62,7 +62,7 @@ def neo_hooke(C, mu):
     -----
     ..  math::
 
-        \psi = \frac{\mu}{2} \left(\text{tr}\left(\hat\boldsymbol{C}\right) - 3 \right)
+        \psi = \frac{\mu}{2} \left(\text{tr}\left(\hat{\boldsymbol{C}}\right) - 3\right)
 
     Examples
     --------
@@ -156,7 +156,7 @@ def yeoh(C, C10, C20, C30):
 
     ..  math::
 
-        \hat{I}_1 &= J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+        \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 
     The :math:`C_{10}` material parameter is equal to half the shear modulus
     :math:`\mu`.
@@ -203,9 +203,10 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     -----
     ..  math::
 
-        \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
+        \psi &= C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
              + C_{11} \left(\hat{I}_1 - 3 \right) \left(\hat{I}_2 - 3 \right)
-             + C_{20} \left(\hat{I}_1 - 3 \right)^2
+
+            &+ C_{20} \left(\hat{I}_1 - 3 \right)^2
              + C_{30} \left(\hat{I}_1 - 3 \right)^3
 
     With the first and second main invariant of the distortional part of the right
@@ -250,7 +251,42 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
 
 
 def ogden(C, mu, alpha):
-    "Strain energy function of the Ogden material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Ogden <https://en.wikipedia.org/wiki/Ogden_(hyperelastic_model)>`_ material
+    formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    mu : list of float
+        List of moduli.
+    alpha : list of float
+        List of stretch exponents.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = \sum_i \frac{2 \mu_i}{\alpha^2_i} \left(
+            \lambda_1^\alpha_i + \lambda_2^\alpha_i + \lambda_3^\alpha_i - 3
+        \right)
+
+    The sum of the moduli :math:`\mu_i` is equal to the shear modulus :math:`\mu`.
+
+    ..  math::
+
+        \mu = \sum_i \mu_i
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.ogden, mu=[0.9, 0.1], alpha=[2.0, -0.6])
+
+    """
+
     wC = det(C) ** (-1 / 3) * eigvalsh(C)
     return sum1([2 * m / a**2 * (sum1(wC ** (a / 2)) - 3) for m, a in zip(mu, alpha)])
 

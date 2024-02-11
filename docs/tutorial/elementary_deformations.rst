@@ -53,7 +53,7 @@ We also need to initiate a matplotlib :class:`~matplotlib.figure.Figure` with mu
         gridspec_kw=dict(width_ratios=[1, 2]),
     )
 
-The force-displacement curve is tracked and :meth:`plotted <felupe.CharacteristicCurve.plot>` during :meth:`evaluation <felupe.Job.evaluate>` of a :class:`~felupe.CharacteristicCurve`-job for a :func:`~felupe.uniaxial` compression/tension load case.
+The force-displacement curve is tracked and :meth:`plotted <felupe.CharacteristicCurve.plot>` during :meth:`evaluation <felupe.Job.evaluate>` of a :class:`~felupe.CharacteristicCurve`-job for a :func:`~felupe.dof.uniaxial` compression/tension load case.
 
 ..  code-block:: python
 

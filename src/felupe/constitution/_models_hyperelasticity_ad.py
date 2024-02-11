@@ -302,7 +302,7 @@ def ogden(C, mu, alpha):
     ..  math::
 
         \psi = \sum_i \frac{2 \mu_i}{\alpha^2_i} \left(
-            \lambda_1^\alpha_i + \lambda_2^\alpha_i + \lambda_3^\alpha_i - 3
+            \lambda_1^{\alpha_i} + \lambda_2^{\alpha_i} + \lambda_3^{\alpha_i} - 3
         \right)
 
     The sum of the moduli :math:`\mu_i` is equal to the shear modulus :math:`\mu`.

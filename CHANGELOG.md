@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.15.0] - 2024-02-11
+
 ### Added
 - Add optional ax-arguments to `Mesh.imshow(ax=None)`, `FieldContainer.imshow(ax=None)` and `SolidBody.imshow(ax=None)`.
 

@@ -96,7 +96,7 @@ These force-displacement curves are also evaluated for :func:`planar <felupe.dof
 
     fig, ax["right"] = job.plot(ax=ax["right"], label="Planar")
 
-...and equi-:func:`biaxial <felupe.dof.biaxial>` tension.
+...and equi-:func:`biaxial <felupe.dof.biaxial>` tension. When we plot the planar and biaxial force-displacement curves, the ``ax["right"]``-object already has x- and y-labels defined and we only need to set the line labels accordingly.
 
 ..  code-block:: python
 

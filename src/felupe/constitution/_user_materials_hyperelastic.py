@@ -38,11 +38,11 @@ class Hyperelastic(Material):
         It is important to only use differentiable math-functions from
         ``tensortrax.math``!
 
+    Take this minimal code-block as template
+    
     ..  math::
 
-        \psi = \psi(\boldsymbol{C}, \boldsymbol{\zeta})
-
-    Take this minimal code-block as template
+        \psi = \psi(\boldsymbol{C})
 
     ..  code-block::
 
@@ -55,6 +55,10 @@ class Hyperelastic(Material):
         umat = fem.Hyperelastic(neo_hooke, mu=1)
 
     and this code-block for material formulations with state variables.
+    
+    ..  math::
+
+        \psi = \psi(\boldsymbol{C}, \boldsymbol{\zeta})
 
     ..  code-block::
 

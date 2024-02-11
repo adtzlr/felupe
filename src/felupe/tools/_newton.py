@@ -29,7 +29,8 @@ from ..math import norm
 
 
 class NewtonResult:
-    r"""Represents the result found by Newton's method.
+    r"""A data class which represents the result found by Newton's method. All
+    parameters are available as attributes.
 
     Parameters
     ----------

@@ -18,6 +18,9 @@ Elementary Deformations
     
     * plot force-displacement curves
 
+..  image:: images/fig_hyperelastic-deformations.png
+    :width: 600px
+
 In this tutorial you'll learn how to plot multiple force-displacement curves along with views on deformed meshes in one single matplotlib figure. We start with a :class:`Third-Order-Deformation <felupe.third_order_deformation>` isotropic hyperelastic material formulation.
 
 ..  code-block:: python
@@ -130,7 +133,3 @@ Finally, let's add the name and the parameters of the material formulation to th
 
     # fetch the data of the plot lines
     data = [(line.get_xdata(), line.get_ydata()) for line in ax["right"].lines]
-
-
-..  image:: images/fig_hyperelastic-deformations.png
-    :width: 600px

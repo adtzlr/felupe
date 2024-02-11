@@ -24,8 +24,63 @@ from ._job import Job
 
 class CharacteristicCurve(Job):
     r"""A job with a list of steps and a method to evaluate them. Force-displacement
-    curve data is tracked during evaluation for a given :class:`~felupe.Boundary`.
+    curve data is tracked during evaluation for a given :class:`~felupe.Boundary` by
+    a built-in ``callback``.
+
+    Parameters
+    ----------
+    steps : list of Step
+        A list with steps, where each step subsequently depends on the solution of the
+        previous step.
+    items : list of SolidBody, SolidBodyNearlyIncompressible, SolidBodyPressure, SolidBodyGravity, PointLoad, MultiPointConstraint, MultiPointContact or None, optional
+        A list of items with methods for the assembly of sparse vectors/matrices which
+        are used to evaluate the sum of reaction forces. If None, the total reaction
+        forces from the :class:`~felupe.tools.NewtonResult` of the substep are used.
+    callback : callable, optional
+        A callable which is called after each completed substep. Function signature must
+        be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
+        instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
+        completed substep is available as ``substep.x``. Default callback is
+        ``lambda stepnumber, substepnumber, substep: None``.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>>
+    >>> boundaries = dict()
+    >>> boundaries["fixed"] = fem.Boundary(field[0], fx=0, skip=(False, False, False))
+    >>> boundaries["clamped"] = fem.Boundary(field[0], fx=1, skip=(True, False, False))
+    >>> boundaries["move"] = fem.Boundary(field[0], fx=1, skip=(False, True, True))
+    >>>
+    >>> umat = fem.NeoHooke(mu=1, bulk=2)
+    >>> solid = fem.SolidBody(umat, field)
+    >>>
+    >>> move = fem.math.linsteps([0, 1], num=5)
+    >>> step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+    >>>
+    >>> job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+    >>> job.evaluate()
+    >>> fig, ax = job.plot(
+    >>>    xlabel=r"Displacement $u_1$ in mm $\rightarrow$",
+    >>>    ylabel=r"Normal Force in $F_1$ in N $\rightarrow$",
+    >>>    marker="o",
+    >>> )
+    >>> ax2 = solid.imshow("Principal Values of Cauchy Stress")
+
+    See Also
+    --------
+    Step : A Step with multiple substeps, subsequently depending on the solution
+        of the previous substep.
+    Job : A job with a list of steps and a method to evaluate them.
+    tools.NewtonResult : A data class which represents the result found by
+        Newton's method.
+
     """
+
     def __init__(
         self,
         steps,
@@ -62,15 +117,56 @@ class CharacteristicCurve(Job):
         yaxis=0,
         xlabel=None,
         ylabel=None,
-        xscale=1,
-        yscale=1,
+        xscale=1.0,
+        yscale=1.0,
         gradient=False,
         swapaxes=False,
-        fig=None,
         ax=None,
         items=None,
         **kwargs,
     ):
+        """Plot force-displacement characteristic curves on a pre-evaluated job,
+        tracked on a given :class:`~felupe.Boundary`.
+
+        Parameters
+        ----------
+        x : list of ndarray or None, optional
+            A list with arrays of displacement data. If None, the displacement is taken
+            from the first field of the field container from each completed substep. The
+            displacement data is then taken from the first point of the tracked
+            :class:`~felupe.Boundary`. Default is None.
+        y : list of ndarray or None, optional
+            A list with arrays of reaction force data. If None, the force is taken
+            from the :class:`~felupe.tools.NewtonResult` of each completed substep.
+            Default is None.
+        xaxis : int, optional
+            The axis for the displacement data (default is 0).
+        yaxis : int, optional
+            The axis for the reaction force data (default is 0).
+        xlabel : str or None, optional
+            The label of the x-axis (default is None).
+        ylabel : str or None, optional
+            The label of the y-axis (default is None).
+        xscale : float, optional
+            A scaling factor for the displacement data (default is 1.0).
+        yscale : float, optional
+            A scaling factor the reaction force data (default is 1.0).
+        gradient : bool, optional
+            A flag to plot the gradient of the y-data. Uses
+            ``numpy.gradient(edge_order=2)``. The gradient data is set to ``np.nan`` for
+            absolute values greater than the mean value plus two times the standard
+            deviation. Default is False.
+        swapaxes : bool, optional
+            A flag to flip the plot (x, y) to (y, x). Also changes the labels.
+        ax : matplotlib.axes.Axes
+            An axes object where the plot is placed in.
+        items : slice, ndarray or None
+            Indices or a range of data points to plot. If None, all data points are
+            plotted (default is None).
+        **kwargs : dict
+            Additional keyword arguments for plotting in ``ax.plot(**kwags)``.
+        """
+
         if self.res is None:
             raise ValueError(
                 "Results are empty. Run `job.evaluate()` and call `job.plot()` again."
@@ -95,8 +191,10 @@ class CharacteristicCurve(Job):
             cuttoff = np.mean(abs(z[:, yaxis])) + 2 * np.std(abs(z[:, yaxis]))
             y[abs(z) > cuttoff] = np.nan
 
-        if fig is None or ax is None:
+        if ax is None:
             fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
 
         if swapaxes:
             x, y = y, x

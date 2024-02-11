@@ -112,8 +112,10 @@ def test_curve_custom_items():
         steps=[step], items=step.items, boundary=step.boundaries["move"]
     )
     curve.evaluate()
-    curve.plot(xaxis=0, yaxis=0, gradient=True, swapaxes=True, xlabel="x", ylabel="y")
-    curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
+    fig, ax = curve.plot(
+        xaxis=0, yaxis=0, gradient=True, swapaxes=True, xlabel="x", ylabel="y"
+    )
+    curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0, ax=ax)
 
     stretch = 1 + np.array(curve.x)[:, 0]
     area = 1**2 * np.pi

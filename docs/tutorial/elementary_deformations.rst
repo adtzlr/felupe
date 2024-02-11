@@ -33,7 +33,7 @@ In this tutorial you'll learn how to plot multiple force-displacement curves alo
     umat = fem.Hyperelastic(fun, **kwargs)
 
 
-We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :class:`~felupe.dof.uniaxial`, :class:`planar <felupe.dof.biaxial>` and :class:`~felupe.dof.biaxial`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`.
+We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :func:`~felupe.dof.uniaxial`, :func:`planar <felupe.dof.biaxial>` and :func:`~felupe.dof.biaxial`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`.
 
 ..  code-block:: python
 
@@ -53,7 +53,7 @@ We also need to initiate a :class:`~matplotlib.figure.Figure` with multiple subp
         gridspec_kw=dict(width_ratios=[1, 2]),
     )
 
-The force-displacement curve is tracked in a :class:`~felupe.CharacteristicCurve`-job for an uniaxial compression/tension load case.
+The force-displacement curve is tracked and :meth:`plotted <felupe.CharacteristicCurve.plot>` during :meth:`evaluation <felupe.Job.evaluate>` of a :class:`~felupe.CharacteristicCurve`-job for a :func:`~felupe.uniaxial` compression/tension load case.
 
 ..  code-block:: python
 

@@ -76,7 +76,7 @@ The force-displacement curve is tracked and :meth:`plotted <felupe.Characteristi
         ax=ax["right"],
     )
 
-These force-displacement curves are also evaluated for planar (shear) tension...
+These force-displacement curves are also evaluated for :func:`planar <felupe.dof.biaxial>` (shear) tension...
 
 ..  code-block:: python
 
@@ -96,7 +96,7 @@ These force-displacement curves are also evaluated for planar (shear) tension...
 
     fig, ax["right"] = job.plot(ax=ax["right"], label="Planar")
 
-...and equi-biaxial tension.
+...and equi-:func:`~felupe.dof.biaxial` tension.
 
 ..  code-block:: python
 

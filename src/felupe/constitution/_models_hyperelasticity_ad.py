@@ -60,6 +60,7 @@ def mooney_rivlin(C, C10, C01):
 
 
 def yeoh(C, C10, C20, C30):
+    "Strain energy function of the Yeoh material formulation."
     I1 = det(C) ** (-1 / 3) * trace(C)
     return C10 * (I1 - 3) + C20 * (I1 - 3) ** 2 + C30 * (I1 - 3) ** 3
 

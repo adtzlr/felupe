@@ -35,7 +35,9 @@ class Hyperelastic(Material):
         tensor :math:`\boldsymbol{C}`. Function signature must be 
         ``fun = lambda C, **kwargs: psi`` for functions without state variables and
         ``fun = lambda C, statevars, **kwargs: [psi, statevars_new]`` for functions
-        with state variables.
+        with state variables. The right Cauchy-Green deformation tensor will be a
+        :class:`tensortrax.Tensor` when the function is evaluated. It is important to
+        only use differentiable math-functions from ``tensortrax.math``!
     nstatevars : int, optional
         Number of state variables (default is 0).
     parallel : bool, optional

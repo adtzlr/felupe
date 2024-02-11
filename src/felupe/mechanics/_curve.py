@@ -23,6 +23,9 @@ from ._job import Job
 
 
 class CharacteristicCurve(Job):
+    r"""A job with a list of steps and a method to evaluate them. Force-displacement
+    curve data is tracked during evaluation for a given :class:`~felupe.Boundary`.
+    """
     def __init__(
         self,
         steps,

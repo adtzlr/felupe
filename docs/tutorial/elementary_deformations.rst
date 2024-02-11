@@ -131,5 +131,8 @@ Finally, let's add the name and the parameters of the material formulation to th
     ax["right"].legend()
     ax["right"].grid()
 
-    # fetch the data of the plot lines
+If the data of the force-displacement curves is needed for the calibration of the material parameters on given experimentally determined force-displacement curves, the data may be extracted from the figure.
+
+..  code-block:: python
+
     data = [(line.get_xdata(), line.get_ydata()) for line in ax["right"].lines]

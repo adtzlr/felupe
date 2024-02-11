@@ -33,8 +33,7 @@ class SolidBodyGravity:
     gravity : ndarray or None, optional
         The prescribed values of gravity :math:`\boldsymbol{g}` (default is None). If
         None, the gravity vector is set to zero (the dimension of the gravity vector is
-        derived from the first field of the field container). If necessary, the array is
-        trimmed to the dimension of the first field of the field container.
+        derived from the first field of the field container).
     density : float, optional
         The density :math:`\rho` of the solid body (default is 1.0).
 
@@ -78,7 +77,7 @@ class SolidBodyGravity:
 
         self.results.gravity = np.zeros(self.field[0].dim)
         if gravity is not None:
-            self.results.gravity = np.array(gravity)[: self.field[0].dim]
+            self.results.gravity = np.array(gravity)
 
         self.results.density = density
 

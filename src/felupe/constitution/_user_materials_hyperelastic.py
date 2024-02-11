@@ -26,20 +26,20 @@ from ._user_materials import Material
 class Hyperelastic(Material):
     """A hyperelastic material definition with a given function for the strain energy
     density function per unit undeformed volume with Automatic Differentiation provided
-    by ``tensortrax``. 
+    by ``tensortrax``.
 
     Notes
     -----
     The strain energy density function :math:`\psi` must be given in terms of the right
     Cauchy-Green deformation tensor
-    :math:`\boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}`. 
-    
+    :math:`\boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}`.
+
     ..  warning::
         It is important to only use differentiable math-functions from
         ``tensortrax.math``!
-    
+
     ..  math::
-        
+
         \psi = \psi(\boldsymbol{C}, \boldsymbol{\zeta})
 
     Take this minimal code-block as template
@@ -160,6 +160,22 @@ class MaterialAD(Material):
     """A user-defined material definition with a given function for the partial
     derivative of the strain energy function w.r.t. the deformation gradient tensor
     with Automatic Differentiation provided by ``tensortrax``.
+
+    Notes
+    -----
+    The gradient of the strain energy density function
+    :math:`\frac{\partial \psi}{\partial \boldsymbol{F}}` must be given in terms of the
+    right Cauchy-Green deformation tensor
+    :math:`\boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}`.
+
+    ..  warning::
+        It is important to only use differentiable math-functions from
+        ``tensortrax.math``!
+
+    ..  math::
+
+        \boldsymbol{P} = \frac{\partial \psi(\boldsymbol{F}, \boldsymbol{\zeta})}{
+            \partial \boldsymbol{F}}
 
     Take this code-block as template
 

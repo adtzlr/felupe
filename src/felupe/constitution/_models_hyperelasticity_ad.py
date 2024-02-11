@@ -38,8 +38,41 @@ def isochoric_volumetric_split(fun):
 
 
 def saint_venant_kirchhoff(C, mu, lmbda):
-    """Strain energy function of the Saint Venant-Kirchhoff material formulation.
-    Here, ``I1`` and ``I2`` are strain invariants of the Green-Lagrange strain tensor.
+    r"""Strain energy function of the isotropic hyperelastic
+    `Saint-Venant Kirchhoff <https://en.wikipedia.org/wiki/Hyperelastic_material#Saint_Venant-Kirchhoff_model>`_
+    material formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    mu : float
+        Second Lamé constant (shear modulus).
+    lmbda : float
+        First Lamé constant (shear modulus).
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = \mu I_2 + \lambda \frac{I_1^2}{2}
+
+    With the first and second invariant of the Green-Lagrange strain tensor
+    :math:`\boldsymbol{E} = \frac{1}{2} (\boldsymbol{C} - \boldsymbol{1})`.
+
+    ..  math::
+
+        \hat{I}_1 &= \text{tr}\left( \boldsymbol{E} \right)
+
+        \hat{I}_2 &= \boldsymbol{E} : \boldsymbol{E}
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.saint_venant_kirchhoff, mu=1.0, lambda=2.0)
+
     """
     I1 = trace(C) / 2 - 3 / 2
     I2 = trace(C @ C) / 4 - trace(C) / 2 + 3 / 4

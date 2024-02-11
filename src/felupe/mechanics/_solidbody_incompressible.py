@@ -57,7 +57,7 @@ class SolidBodyNearlyIncompressible(Solid):
     -----
     ..  math::
         
-        W_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(J) \ dV + 
+        W_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(\bar{J}) \ dV + 
             \int_V p (J - \bar{J}) \ dV
 
         \hat{W}_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV
@@ -76,7 +76,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
     ..  math::
 
-        U(J) = \frac{K}{2} (J - 1)^2
+        U(\bar{J}) = \frac{K}{2} (\bar{J} - 1)^2
 
 
     **Hu-Washizu Three-Field-Variation Principle**

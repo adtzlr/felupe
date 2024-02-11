@@ -22,7 +22,7 @@ from ._helpers import Assemble, Results
 
 
 class SolidBodyPressure:
-    """A hydrostatic pressure boundary on a solid body.
+    r"""A hydrostatic pressure boundary on a solid body.
 
     Parameters
     ----------

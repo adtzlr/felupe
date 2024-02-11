@@ -22,7 +22,8 @@ from ..math import cdya_ik, ddot, dya, identity, sqrt, trace
 
 
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
-    r"""3D linear-elastic material formulation.
+    r"""3D linear-elastic material formulation to be used in
+    :class:`~felupe.MaterialStrain`.
 
     Arguments
     ---------
@@ -67,6 +68,17 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
             \boldsymbol{\sigma} &= \boldsymbol{\sigma}_n
                 + \mathbb{C} : \Delta\boldsymbol{\varepsilon}
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0)
+
+    See Also
+    --------
+    MaterialStrain : A strain-based user-defined material definition with a given
+        function for the stress tensor and the (fourth-order) elasticity tensor.
+
     """
 
     # change of stress due to change of strain
@@ -90,7 +102,7 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 
 def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
     r"""Linear-elastic-plastic material formulation with linear isotropic
-    hardening (return mapping algorithm).
+    hardening (return mapping algorithm) to be used in :class:`~felupe.MaterialStrain`.
 
     Arguments
     ---------
@@ -181,6 +193,23 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
                      - \frac{1}{3} \boldsymbol{1} \otimes \boldsymbol{1}
                     - n \otimes n \right)
                 \right]
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.MaterialStrain(
+    >>>     material=fem.linear_elastic_plastic_isotropic_hardening,
+    >>>     λ=2.0,
+    >>>     μ=1.0,
+    >>>     σy=1.0,
+    >>>     K=0.1,
+    >>> )
+
+    See Also
+    --------
+    MaterialStrain : A strain-based user-defined material definition with a given
+        function for the stress tensor and the (fourth-order) elasticity tensor.
 
     """
 

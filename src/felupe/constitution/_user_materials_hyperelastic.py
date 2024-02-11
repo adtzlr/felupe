@@ -24,7 +24,7 @@ from ._user_materials import Material
 
 
 class Hyperelastic(Material):
-    """A hyperelastic material definition with a given function for the strain energy
+    r"""A hyperelastic material definition with a given function for the strain energy
     density function per unit undeformed volume with Automatic Differentiation provided
     by ``tensortrax``.
 
@@ -157,7 +157,7 @@ class Hyperelastic(Material):
 
 
 class MaterialAD(Material):
-    """A user-defined material definition with a given function for the partial
+    r"""A user-defined material definition with a given function for the partial
     derivative of the strain energy function w.r.t. the deformation gradient tensor
     with Automatic Differentiation provided by ``tensortrax``.
 

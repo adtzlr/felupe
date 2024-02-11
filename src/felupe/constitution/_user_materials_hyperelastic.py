@@ -84,8 +84,9 @@ class Hyperelastic(Material):
             viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6
         )
 
-    See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
-    for further details.
+    ..  note::
+        See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
+        for further details.
 
     See Also
     --------

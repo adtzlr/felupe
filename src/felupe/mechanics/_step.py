@@ -34,7 +34,7 @@ class Step:
         A dict with :class:`~felupe.Boundary` or ``item``-keys which holds the array of
         values to ramp (default is None). If None, only one substep is evaluated.
     boundaries : dict of Boundary, optional
-        A dict with :class:`~felupe.Boundary` conditions.
+        A dict with :class:`~felupe.Boundary` conditions (default is None).
 
     Examples
     --------

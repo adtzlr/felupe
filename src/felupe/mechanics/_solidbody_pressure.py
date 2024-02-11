@@ -22,14 +22,15 @@ from ._helpers import Assemble, Results
 
 
 class SolidBodyPressure:
-    """A hydrostatic pressure boundary on a SolidBody.
+    """A hydrostatic pressure boundary on a solid body.
 
     Parameters
     ----------
     field : FieldContainer
         A field container with fields created on a boundary region.
     pressure : float or ndarray or None, optional
-        A scaling factor for the prescribed pressure.
+        A scaling factor for the prescribed pressure :math:`p` (default is None). If
+        None, the pressure is set to zero.
 
     Notes
     -----
@@ -64,7 +65,7 @@ class SolidBodyPressure:
     >>> )
     >>>
     >>> job = fem.Job(steps=[step]).evaluate()
-    >>> ax2 = solid.imshow("Principal Values of Cauchy Stress", component=2, theme="paraview")
+    >>> ax2 = solid.imshow("Principal Values of Cauchy Stress", component=2)
     """
 
     def __init__(self, field, pressure=None):

@@ -201,8 +201,8 @@ class Job:
 
         Notes
         -----
-        Requires ``meshio`` if filename is not None. Also requires ``tqdm`` for an
-        interactive progress bar.
+        Requires ``meshio`` if ``filename`` is not None. Also requires ``tqdm`` for an
+        interactive progress bar if ``verbose=True``.
 
         See Also
         --------

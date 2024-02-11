@@ -96,7 +96,6 @@ The generation of force vectors or stiffness matrices of pressure boundaries on 
         mask=mesh.points[:, 0] == 0, # select a subset of faces on the surface
     )
     
-    displacement_boundary = 
     field_boundary = fem.FieldContainer([fem.Field(region_pressure, dim=3)])
     field_boundary.link(field)
     

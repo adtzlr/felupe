@@ -47,7 +47,7 @@ class SolidBodyNearlyIncompressible(Solid):
         A field container with one or more fields.
     bulk : float
         The bulk modulus of the volumetric material behaviour
-        (:math:`U(J)=K(J-1)^2/2`).
+        (:math:`U(\bar{J})=K(\bar{J}-1)^2/2`).
     state : StateNearlyIncompressible or None, optional
         A valid initial state for a (nearly) incompressible solid (default is None).
     statevars : ndarray or None, optional

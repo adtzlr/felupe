@@ -191,7 +191,7 @@ def yeoh(C, C10, C20, C30):
 
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 
-    The :math:`C_{10}` material parameter is equal to half the shear modulus
+    The :math:`C_{10}` material parameter is equal to half the initial shear modulus
     :math:`\mu`.
 
     ..  math::
@@ -255,7 +255,7 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
         \right)
 
     The doubled sum of the material parameters :math:`C_{10}` and :math:`C_{01}` is
-    equal to the shear modulus :math:`\mu`.
+    equal to the initial shear modulus :math:`\mu`.
 
     ..  math::
 
@@ -305,7 +305,8 @@ def ogden(C, mu, alpha):
             \lambda_1^{\alpha_i} + \lambda_2^{\alpha_i} + \lambda_3^{\alpha_i} - 3
         \right)
 
-    The sum of the moduli :math:`\mu_i` is equal to the shear modulus :math:`\mu`.
+    The sum of the moduli :math:`\mu_i` is equal to the initial shear modulus
+    :math:`\mu`.
 
     ..  math::
 
@@ -325,16 +326,73 @@ def ogden(C, mu, alpha):
 
 
 def arruda_boyce(C, C1, limit):
-    "Strain energy function of the Arruda-Boyce material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Arruda-Boyce <https://en.wikipedia.org/wiki/Arruda-Boyce_model>`_ material
+    formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    C1 : list of float
+        Initial shear modulus.
+    limit : list of float
+        Limiting stretch at which the polymer chain network becomes locked 
+        :math:`\lambda_m`.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = C_1 \sum_{i=1}^5 \alpha_i \beta^{i-1} \left( \hat{I}_1^i - 3^i \right)
+
+    With the first main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor
+    
+    ..  math::
+    
+        \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+    
+    and :math_`\alpha_i` and :math`\beta`.
+    
+    ..  math::
+        
+        \alpha &= \begin{bmatrix} 
+            \frac{1}{2} \\ 
+            \frac{1}{20} \\
+            \frac{11}{1050} \\
+            \frac{19}{7000} \\
+            \frac{519}{673750}
+        \end{bmatrix}
+        
+        \beta &= \frac{1}{\lambda_m^2}
+    
+    The initial shear modulus is a function of both material parameters.
+    
+    ..  math::
+        
+        \mu = C_1 \left( 
+            1 + \frac{3}{5 \lambda_m^2} + \frac{99}{175 \lambda_m^4} 
+              + \frac{513}{875 \lambda_m^6} + \frac{42039}{67375 \lambda_m^8} 
+        \right)
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.arruda_boyce, C1=1.0, limit=3)
+
+    """
     I1 = det(C) ** (-1 / 3) * trace(C)
 
-    alpha = [1 / 2, 1 / 20, 11 / 1050, 19 / 7000, 519 / 673750]
+    alphas = [1 / 2, 1 / 20, 11 / 1050, 19 / 7000, 519 / 673750]
     beta = 1 / limit**2
 
     out = []
-    for i, a in enumerate(alpha):
-        j = i + 1
-        out.append(a * beta ** (2 * j - 2) * (I1**j - 3**j))
+    for j, alpha in enumerate(alphas):
+        i = j + 1
+        out.append(alpha * beta ** (i - 1) * (I1**i - 3**i))
 
     return C1 * sum1(out)
 

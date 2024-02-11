@@ -58,13 +58,80 @@ def print_header():
 
 
 class Job:
-    "A job with a list of steps."
+    r"""A job with a list of steps and a method to evaluate them.
+
+    Parameters
+    ----------
+    steps : list of Step
+        A list with steps, where each step subsequently depends on the solution of the
+        previous step.
+    callback : callable, optional
+        A callable which is called after each completed substep. Function signature must
+        be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
+        instance of class:`~felupe.tools.NewtonResult`. THe field container of the
+        completed substep is available as ``substep.x``. Default callback is
+        ``lambda stepnumber, substepnumber, substep: None``.
+    filename : str or None, optional
+        A filename for a XDMF time series result file. The file name must include the
+        file extension ``.xdmf``. If None, no result file is written during evaluation
+        (default is None).
+
+    Attributes
+    ----------
+    steps : list of Step
+        A list with steps, where each step subsequently depends on the solution of the
+        previous step.
+    nsteps : int
+        The number of steps.
+    callback : callable, optional
+        A callable which is called after each completed substep. Function signature must
+        be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
+        instance of class:`~felupe.tools.NewtonResult`. THe field container of the
+        completed substep is available as ``substep.x``. Default callback is
+        ``lambda stepnumber, substepnumber, substep: None``.
+    timetrack : list of int
+        A list with times at which the results are written to the XDMF result file.
+    fnorms : list of list of float
+        List with norms of the objective function for each completed substep of each
+        step. See also class:`~felupe.tools.NewtonResult`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>>
+    >>> boundaries = fem.dof.symmetry(field[0])
+    >>> boundaries["clamped"] = fem.Boundary(field[0], fx=1, skip=(True, False, False))
+    >>> boundaries["move"] = fem.Boundary(field[0], fx=1, skip=(False, True, True))
+    >>>
+    >>> umat = fem.NeoHooke(mu=1, bulk=2)
+    >>> solid = fem.SolidBody(umat, field)
+    >>>
+    >>> move = fem.math.linsteps([0, 1], num=5)
+    >>> step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+    >>>
+    >>> job = fem.Job(steps=[step]).evaluate()
+    >>> ax = solid.imshow("Principal Values of Cauchy Stress")
+
+    See Also
+    --------
+    Step : A Step with multiple substeps, subsequently depending on the solution
+        of the previous substep.
+    CharacteristicCurve : A job with a list of steps and a method to evaluate them.
+        Force-displacement curve data is tracked during evaluation for a given
+        :class:`~felupe.Boundary`.
+    tools.NewtonResult : A data class which represents the result found by
+        Newton's method.
+
+    """
 
     def __init__(
         self,
         steps,
         callback=lambda stepnumber, substepnumber, substep: None,
-        filename=None,
     ):
         self.steps = steps
         self.nsteps = len(steps)
@@ -93,6 +160,61 @@ class Job:
         parallel=False,
         **kwargs,
     ):
+        """Evaluate the steps.
+
+        Parameters
+        ----------
+        filename : str or None, optional
+            The filename of the XDMF result file. Must include the file extension
+            ``my_result.xdmf``. If None, no result file is writte during evaluation.
+            Default is None.
+        mesh : Mesh or None, optional
+            A mesh which is used for the XDMF time series writer. If None, it is taken
+            from the field of the first item of the first step if no keyword argument
+            ``x0`` is given. If None and ``x0=field``, the mesh is taken from the ``x0``
+            field container. Default is None.
+        point_data : dict or None, optional
+            Additional dict of point-data for the meshio XDMF time series writer.
+        cell_data : dict or None, optional
+            Additional dict of cell-data for the meshio XDMF time series writer.
+        point_data_default : bool, optional
+            Flag to write default point-data to the XDMF result file. This includes
+            ``"Displacement"``. Default is True.
+        cell_data_default : bool, optional
+            Flag to write default cell-data to the XDMF result file. This includes
+            ``"Principal Values of Logarithmic Strain"``, ``"Logarithmic Strain"`` and
+            ``"Deformation Gradient"``. Default is True.
+        verbose : bool or int, optional
+            Verbosity level to control how messages are printed during evaluation. If
+            1 or True and ``tqdm`` is installed, a progress bar is shown. If ``tqdm`` is
+            missing or verbose is 2, more detailed text-based messages are printed.
+            Default is True.
+        parallel : bool, optional
+            Flag to use a threaded version of :func:`numpy.einsum` during assembly.
+            Requires ``einsumt``. This may add additional overhead to small-sized
+            problems. Default is False.
+        **kwargs : dict
+            Optional keyword arguments for :meth:`~felupe.Step.generate`. If
+            ``parallel=True``, it is added as ``kwargs["parallel"] = True`` to the dict
+            of additional keyword arguments. If ``x0`` is present in ``kwargs.keys()``,
+            it is used as the mesh for the XDMF time series writer.
+
+        Notes
+        -----
+        Requires ``meshio`` if filename is not None. Also requires ``tqdm`` for an
+        interactive progress bar.
+
+        See Also
+        --------
+        Step : A Step with multiple substeps, subsequently depending on the solution
+            of the previous substep.
+        CharacteristicCurve : A job with a list of steps and a method to evaluate them.
+            Force-displacement curve data is tracked during evaluation for a given
+            :class:`~felupe.Boundary` condition.
+        tools.NewtonResult : A data class which represents the result found by
+            Newton's method.
+        """
+        
         try:
             from tqdm import tqdm
         except ModuleNotFoundError:
@@ -106,7 +228,7 @@ class Job:
                 kwargs["kwargs"] = {}
             kwargs["kwargs"]["parallel"] = True
 
-        increment = 0
+        time = 0
 
         if filename is not None:
             from meshio.xdmf import TimeSeriesWriter
@@ -173,17 +295,18 @@ class Job:
                     if "x0" in kwargs.keys():
                         kwargs["x0"].link(substep.x)
 
+                    self.timetrack.append(time)
+
                     if filename is not None:
-                        self.timetrack.append(increment)
                         self._write(
                             writer=writer,
-                            time=increment,
+                            time=time,
                             substep=substep,
                             point_data={**pdata, **point_data},
                             cell_data={**cdata, **cell_data},
                         )
 
-                    increment += 1
+                    time += 1
 
                     if verbose == 1:
                         progress_bar.update(1)

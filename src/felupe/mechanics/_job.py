@@ -68,7 +68,7 @@ class Job:
     callback : callable, optional
         A callable which is called after each completed substep. Function signature must
         be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
-        instance of class:`~felupe.tools.NewtonResult`. THe field container of the
+        instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
         completed substep is available as ``substep.x``. Default callback is
         ``lambda stepnumber, substepnumber, substep: None``.
     filename : str or None, optional
@@ -86,7 +86,7 @@ class Job:
     callback : callable, optional
         A callable which is called after each completed substep. Function signature must
         be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
-        instance of class:`~felupe.tools.NewtonResult`. THe field container of the
+        instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
         completed substep is available as ``substep.x``. Default callback is
         ``lambda stepnumber, substepnumber, substep: None``.
     timetrack : list of int
@@ -198,6 +198,11 @@ class Job:
             ``parallel=True``, it is added as ``kwargs["parallel"] = True`` to the dict
             of additional keyword arguments. If ``x0`` is present in ``kwargs.keys()``,
             it is used as the mesh for the XDMF time series writer.
+        
+        Returns
+        -------
+        Job
+            The job object.
 
         Notes
         -----

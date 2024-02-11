@@ -33,14 +33,14 @@ In this tutorial you'll learn how to plot multiple force-displacement curves alo
     umat = fem.Hyperelastic(fun, **kwargs)
 
 
-We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :func:`~felupe.dof.uniaxial`, :func:`planar <felupe.dof.biaxial>` and :func:`~felupe.dof.biaxial`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`.
+We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :func:`~felupe.dof.uniaxial`, :func:`planar <felupe.dof.biaxial>` and :func:`~felupe.dof.biaxial`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`. One cell is enough because the deformation is identical inside the solid body, i.e. it is said to be homogeneous.
 
 ..  code-block:: python
 
     mesh = fem.Cube(n=2)
     region = fem.RegionHexahedron(mesh)
 
-We also need to initiate a :class:`~matplotlib.figure.Figure` with multiple subplots.
+We also need to initiate a matplotlib :class:`~matplotlib.figure.Figure` with multiple subplots.
 
 ..  code-block:: python
 

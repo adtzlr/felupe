@@ -24,7 +24,7 @@ from ._helpers import Assemble, Results
 
 
 class SolidBodyGravity:
-    """A gravity (body) force on a solid body.
+    r"""A gravity (body) force on a solid body.
 
     Parameters
     ----------

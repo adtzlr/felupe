@@ -50,8 +50,8 @@ class FieldsMixed(FieldContainer):
     n : int, optional
         Number of fields where the first one is a vector field of mesh-
         dimension and the following fields are scalar-fields (default is 3).
-    values : tuple, optional
-        Initial field values  (default is (0.0, 0.0, 1.0, 0.0)).
+    values : tuple of float or tuple of ndarray, optional
+        Initial field values (default is (0.0, 0.0, 1.0, 0.0)).
     axisymmetric : bool, optional
         Flag to initiate a :class:`FieldAxisymmetric` as the first field (default is
         False).

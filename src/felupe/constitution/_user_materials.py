@@ -130,6 +130,12 @@ class MaterialStrain:
 
         umat = MaterialStrain(material=fun, **kwargs)
 
+    See Also
+    --------
+    linear_elastic : 3D linear-elastic material formulation
+    linear_elastic_plastic_isotropic_hardening : Linear-elastic-plastic material
+        formulation with linear isotropic hardening (return mapping algorithm).
+
     """
 
     def __init__(self, material, dim=3, statevars=(0,), **kwargs):
@@ -218,24 +224,29 @@ class MaterialStrain:
 
 class LinearElasticPlasticIsotropicHardening(MaterialStrain):
     """Linear-elastic-plastic material formulation with linear isotropic
-    hardening (return mapping algorithm)."""
+    hardening (return mapping algorithm).
+
+    Parameters
+    ----------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+    sy : float
+        Initial yield stress.
+    K : float
+        Isotropic hardening modulus.
+
+    See Also
+    --------
+    MaterialStrain : A strain-based user-defined material definition with a given
+        function for the stress tensor and the (fourth-order) elasticity tensor.
+    linear_elastic_plastic_isotropic_hardening : Linear-elastic-plastic material
+        formulation with linear isotropic hardening (return mapping algorithm).
+
+    """
 
     def __init__(self, E, nu, sy, K):
-        """Linear-elastic-plastic material formulation with linear isotropic
-        hardening (return mapping algorithm).
-
-        Arguments
-        ---------
-        E : float
-            Young's modulus.
-        nu : float
-            Poisson ratio.
-        sy : float
-            Initial yield stress.
-        K : float
-            Isotropic hardening modulus.
-        """
-
         lmbda, mu = lame_converter(E, nu)
 
         super().__init__(

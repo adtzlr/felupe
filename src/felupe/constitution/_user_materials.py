@@ -24,11 +24,24 @@ from ._user_materials_models import linear_elastic_plastic_isotropic_hardening
 
 
 class Material:
-    """A user-defined material definition with given functions for the (first
-    Piola-Kirchhoff) stress tensor and the according fourth-order elasticity
-    tensor. Both functions take a list of the deformation gradient and optional
-    state variables as the first input argument. The stress-function also
-    returns the updated state variables.
+    r"""A user-defined material definition with given functions for the (first
+    Piola-Kirchhoff) stress tensor :math:`\boldsymbol{P}` and the according fourth-order
+    elasticity tensor :math:`\mathbb{A}`. Both functions take a list of the deformation
+    gradient :math:`\boldsymbol{F}` and optional state variables
+    :math:`\boldsymbol{\zeta}_n` as the first input argument. The stress-function also
+    returns the updated state variables :math:`\boldsymbol{\zeta}`.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi &= \psi(\boldsymbol{F}, \boldsymbol{\zeta})
+
+        \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
+
+        \mathbb{A} &= \frac{\partial^2 \psi}{
+            \partial \boldsymbol{F}\ \partial \boldsymbol{F}
+        }
 
     Take this code-block as template:
 

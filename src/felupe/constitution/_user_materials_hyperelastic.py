@@ -39,7 +39,7 @@ class Hyperelastic(Material):
         ``tensortrax.math``!
 
     Take this minimal code-block as template
-    
+
     ..  math::
 
         \psi = \psi(\boldsymbol{C})
@@ -55,7 +55,7 @@ class Hyperelastic(Material):
         umat = fem.Hyperelastic(neo_hooke, mu=1)
 
     and this code-block for material formulations with state variables.
-    
+
     ..  math::
 
         \psi = \psi(\boldsymbol{C}, \boldsymbol{\zeta})

@@ -30,7 +30,7 @@ In this tutorial you'll learn how to plot multiple force-displacement curves alo
     umat = fem.Hyperelastic(fun, **kwargs)
 
 
-We'd like to generate force-displacement curves for the elementary homogeneous deformations **uniaxial**, **planar** and **biaxial**. Therefore, let's define a mesh with one cell and a region.
+We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :class:`~felupe.dof.uniaxial`, :class:`planar <felupe.dof.biaxial>` and :class:`~felupe.dof.biaxial`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`.
 
 ..  code-block:: python
 
@@ -73,7 +73,7 @@ The force-displacement curve is tracked in a :class:`~felupe.CharacteristicCurve
         ax=ax["right"],
     )
 
-The force-displacement curves are also evaluated for planar (shear) tension
+These force-displacement curves are also evaluated for planar (shear) tension...
 
 ..  code-block:: python
 
@@ -93,7 +93,7 @@ The force-displacement curves are also evaluated for planar (shear) tension
 
     fig, ax["right"] = job.plot(ax=ax["right"], label="Planar")
 
-and biaxial tension.
+...and equi-biaxial tension.
 
 ..  code-block:: python
 

@@ -33,7 +33,7 @@ from ..math import (
 
 
 class NeoHooke:
-    r"""Nearly-incompressible isotropic hyperelastic Neo-Hooke material
+    r"""Nearly-incompressible isotropic hyperelastic Neo-Hookean material
     formulation. The strain energy density function of the Neo-Hookean
     material formulation is a linear function of the trace of the
     isochoric part of the right Cauchy-Green deformation tensor.
@@ -160,8 +160,8 @@ class NeoHooke:
        \boldsymbol{F}^{-T} \right)
 
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     mu : float
         Shear modulus
     bulk : float
@@ -188,8 +188,8 @@ class NeoHooke:
         """Strain energy density function per unit undeformed volume of the
         Neo-Hookean material formulation.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
@@ -220,8 +220,8 @@ class NeoHooke:
         """Gradient of the strain energy density function per unit
         undeformed volume of the Neo-Hookean material formulation.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
@@ -254,8 +254,8 @@ class NeoHooke:
         """Hessian of the strain energy density function per unit
         undeformed volume of the Neo-Hookean material formulation.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
@@ -300,7 +300,7 @@ class NeoHooke:
 
 
 class NeoHookeCompressible:
-    r"""Compressible isotropic hyperelastic Neo-Hooke material formulation. The strain
+    r"""Compressible isotropic hyperelastic Neo-Hookean material formulation. The strain
     energy density function of the Neo-Hookean material formulation is a linear function
     of the trace of the right Cauchy-Green deformation tensor.
 
@@ -343,8 +343,8 @@ class NeoHookeCompressible:
 
 
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     mu : float
         Shear modulus (second Lamé constant)
     lmbda : float
@@ -371,8 +371,8 @@ class NeoHookeCompressible:
         """Strain energy density function per unit undeformed volume of the Neo-Hookean
         material formulation.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
@@ -403,8 +403,8 @@ class NeoHookeCompressible:
         """Gradient of the strain energy density function per unit undeformed volume of
         the Neo-Hookean material formulation.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional
@@ -436,8 +436,8 @@ class NeoHookeCompressible:
         """Hessian of the strain energy density function per unit undeformed volume of
         the Neo-Hookean material formulation.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
         mu : float, optional

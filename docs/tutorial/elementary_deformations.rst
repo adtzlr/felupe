@@ -33,7 +33,7 @@ In this tutorial you'll learn how to plot multiple force-displacement curves alo
     umat = fem.Hyperelastic(fun, **kwargs)
 
 
-We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :func:`~felupe.dof.uniaxial`, :func:`planar <felupe.dof.biaxial>` and :func:`~felupe.dof.biaxial`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`. One cell is enough because the deformation is identical inside the solid body, i.e. it is said to be homogeneous.
+We'd like to generate force-displacement characteristic curves for the elementary homogeneous deformations :func:`uniaxial <felupe.dof.uniaxial>`, :func:`planar <felupe.dof.biaxial>` and :func:`biaxial <felupe.dof.biaxial>`. Therefore, let's define a meshed :class:`~felupe.Cube` with one :class:`hexahedron <felupe.Hexahedron>` cell and a :class:`region <felupe.RegionHexahedron>`. One cell is enough because the deformation is identical inside the solid body, i.e. it is said to be homogeneous.
 
 ..  code-block:: python
 
@@ -53,7 +53,7 @@ We also need to initiate a matplotlib :class:`~matplotlib.figure.Figure` with mu
         gridspec_kw=dict(width_ratios=[1, 2]),
     )
 
-The force-displacement curve is tracked and :meth:`plotted <felupe.CharacteristicCurve.plot>` during :meth:`evaluation <felupe.Job.evaluate>` of a :class:`~felupe.CharacteristicCurve`-job for a :func:`~felupe.dof.uniaxial` compression/tension load case.
+The force-displacement curve is tracked and :meth:`plotted <felupe.CharacteristicCurve.plot>` during :meth:`evaluation <felupe.Job.evaluate>` of a :class:`~felupe.CharacteristicCurve`-job for a :func:`uniaxial <felupe.dof.uniaxial>` compression/tension load case.
 
 ..  code-block:: python
 
@@ -96,7 +96,7 @@ These force-displacement curves are also evaluated for :func:`planar <felupe.dof
 
     fig, ax["right"] = job.plot(ax=ax["right"], label="Planar")
 
-...and equi-:func:`~felupe.dof.biaxial` tension.
+...and equi-:func:`biaxial <felupe.dof.biaxial>` tension.
 
 ..  code-block:: python
 
@@ -118,7 +118,7 @@ These force-displacement curves are also evaluated for :func:`planar <felupe.dof
 
     fig, ax["right"] = job.plot(ax=ax["right"], label="Biaxial")
 
-Finally, let's add the name and the parameters of the material formulation to the title of the figure.
+Finally, let's add the name and the parameters of the :class:`Third-Order-Deformation <felupe.third_order_deformation>` material formulation to the title of the figure.
 
 ..  code-block:: python
 

@@ -50,6 +50,7 @@ This module provides constitutive material formulations.
    constitution.arruda_boyce
    constitution.extended_tube
    constitution.van_der_waals
+   constitution.finite_strain_viscoelastic
 
 **(Small) Strain-based User Materials**
 
@@ -156,6 +157,8 @@ This module provides constitutive material formulations.
 .. autofunction:: felupe.constitution.extended_tube
 
 .. autofunction:: felupe.constitution.van_der_waals
+
+.. autofunction:: felupe.constitution.finite_strain_viscoelastic
 
 .. autoclass:: felupe.LineChange
    :members:

@@ -22,8 +22,9 @@ from ..math import dya
 
 
 class OgdenRoxburgh:
-    r"""A Pseudo-Elastic material formulation for an isotropic treatment of the
-    load-history dependent Mullins-softening of rubber-like materials.
+    r"""`Ogden-Roxburgh <https://doi.org/10.1098%2Frspa.1999.0431>`_ Pseudo-Elastic
+    material formulation for an isotropic treatment of the load-history dependent
+    Mullins-softening of rubber-like materials.
 
     Parameters
     ----------

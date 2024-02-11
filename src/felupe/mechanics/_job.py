@@ -202,8 +202,8 @@ class Job:
 
         Notes
         -----
-        Requires ``meshio`` if ``filename`` is not None. Also requires ``tqdm`` for an
-        interactive progress bar if ``verbose=True``.
+        Requires ``meshio`` and ``h5py`` if ``filename`` is not None. Also requires
+        ``tqdm`` for an interactive progress bar if ``verbose=True``.
 
         See Also
         --------

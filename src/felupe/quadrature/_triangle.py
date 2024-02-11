@@ -39,7 +39,7 @@ class Triangle(Scheme):
 
     ..  math::
 
-        \int_{-1}^1 f(x) dx \approx \sum f(x_q) w_q
+        \int_V f(x) dV \approx \sum f(x_q) w_q
 
     with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
 

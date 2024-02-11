@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file. The format 
 - Rename the `point`-argument of `tools.moment()` to `centerpoint`.
 - Rename the `r`-argument in `tools.save()` to `forces`. Remove the unused argument `converged`.
 - Change the default file-extension from `.vtk` to `.vtu` in `tools.save(filename="result.vtu")`.
+- Change the default values of the gravity vector to zeros if ``gravity=None`` in `SolidBodyGravity(field, gravity=None, density=1.0)`.
 
 ### Fixed
 - Fix `tools.moment()`. Use `math.cross()`. The old implementation was completely wrong!

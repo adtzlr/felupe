@@ -85,9 +85,9 @@ def mooney_rivlin(C, C10, C01):
     C : tensortrax.Tensor
         Right Cauchy-Green deformation tensor.
     C10 : float
-        First material parameter associated to the first main invariant.
+        First material parameter associated to the first invariant.
     C01 : float
-        Second material parameter associated to the second main invariant.
+        Second material parameter associated to the second invariant.
 
     Notes
     -----
@@ -95,7 +95,20 @@ def mooney_rivlin(C, C10, C01):
 
         \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
 
-    The doubled sum of both material parameters is equal to the shear modulus.
+    With the first and second main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor.
+
+    ..  math::
+
+        \hat{I}_1 &= J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+
+        \hat{I}_2 &= J^{-4/3} \frac{1}{2} \left(
+            \text{tr}\left(\boldsymbol{C}\right)^2 -
+            \text{tr}\left(\boldsymbol{C}^2\right)
+        \right)
+
+    The doubled sum of both material parameters is equal to the shear modulus
+    :math:`\mu`.
 
     ..  math::
 
@@ -116,13 +129,114 @@ def mooney_rivlin(C, C10, C01):
 
 
 def yeoh(C, C10, C20, C30):
-    "Strain energy function of the Yeoh material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Yeoh <https://en.wikipedia.org/wiki/Yeoh_(hyperelastic_model)>`_
+    material formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    C10 : float
+        Material parameter associated to the linear term of the first invariant.
+    C20 : float
+        Material parameter associated to the quadratic term of the first invariant.
+    C30 : float
+        Material parameter associated to the cubic term of the first invariant.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{20} \left(\hat{I}_1 - 3 \right)^2
+             + C_{30} \left(\hat{I}_1 - 3 \right)^3
+
+    With the first main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor.
+
+    ..  math::
+
+        \hat{I}_1 &= J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+
+    The :math:`C_{10}` material parameter is equal to half the shear modulus
+    :math:`\mu`.
+
+    ..  math::
+
+        \mu = 2 C_{10}
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.yeoh, C10=0.5, C20=-0.05, C30=0.02)
+
+    """
+
     I1 = det(C) ** (-1 / 3) * trace(C)
     return C10 * (I1 - 3) + C20 * (I1 - 3) ** 2 + C30 * (I1 - 3) ** 3
 
 
 def third_order_deformation(C, C10, C01, C11, C20, C30):
-    "Strain energy function of the Third-Order-Deformation material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Third-Order-Deformation <https://onlinelibrary.wiley.com/doi/abs/10.1002/app.1975.070190723>`_ material
+    formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    C10 : float
+        Material parameter associated to the linear term of the first invariant.
+    C01 : float
+        Material parameter associated to the linear term of the second invariant.
+    C11 : float
+        Material parameter associated to the mixed term of the first and second
+        invariant.
+    C20 : float
+        Material parameter associated to the quadratic term of the first invariant.
+    C30 : float
+        Material parameter associated to the cubic term of the first invariant.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
+             + C_{11} \left(\hat{I}_1 - 3 \right) \left(\hat{I}_2 - 3 \right)
+             + C_{20} \left(\hat{I}_1 - 3 \right)^2
+             + C_{30} \left(\hat{I}_1 - 3 \right)^3
+
+    With the first and second main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor.
+
+    ..  math::
+
+        \hat{I}_1 &= J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+
+        \hat{I}_2 &= J^{-4/3} \frac{1}{2} \left(
+            \text{tr}\left(\boldsymbol{C}\right)^2 -
+            \text{tr}\left(\boldsymbol{C}^2\right)
+        \right)
+
+    The doubled sum of the material parameters :math:`C_{10}` and :math:`C_{01}` is
+    equal to the shear modulus :math:`\mu`.
+
+    ..  math::
+
+        \mu = 2 \left( C_{10} + C_{01} \right)
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(
+    >>>     fem.third_order_deformation, C10=0.5, C01=0.2, C11=0.1, C20=-0.05, C30=0.02
+    >>> )
+
+    """
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
     I2 = (I1**2 - J3**2 * trace(C @ C)) / 2

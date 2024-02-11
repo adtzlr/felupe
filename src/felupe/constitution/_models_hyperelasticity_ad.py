@@ -47,12 +47,68 @@ def saint_venant_kirchhoff(C, mu, lmbda):
 
 
 def neo_hooke(C, mu):
-    "Strain energy function of the Neo-Hookean material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Neo-Hookean <https://en.wikipedia.org/wiki/Neo-Hookean_solid>`_ material
+    formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    mu : float
+        Shear modulus.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = \frac{\mu}{2} \left(\text{tr}\left(\hat\boldsymbol{C}\right) - 3 \right)
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.neo_hooke, mu=1.0)
+
+    """
     return mu / 2 * (det(C) ** (-1 / 3) * trace(C) - 3)
 
 
 def mooney_rivlin(C, C10, C01):
-    "Strain energy function of the Mooney-Rivlin material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Mooney-Rivlin <https://en.wikipedia.org/wiki/Mooney-Rivlin_solid>`_ material
+    formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    C10 : float
+        First material parameter associated to the first main invariant.
+    C01 : float
+        Second material parameter associated to the second main invariant.
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
+
+    The doubled sum of both material parameters is equal to the shear modulus.
+
+    ..  math::
+
+        \mu = 2 \left( C_{10} + C_{01} \right)
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.mooney_rivlin, C10=0.5, C01=0.2)
+
+    """
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
     I2 = (I1**2 - J3**2 * trace(C @ C)) / 2

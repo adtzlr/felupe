@@ -71,10 +71,6 @@ class Job:
         instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
         completed substep is available as ``substep.x``. Default callback is
         ``lambda stepnumber, substepnumber, substep: None``.
-    filename : str or None, optional
-        A filename for a XDMF time series result file. The file name must include the
-        file extension ``.xdmf``. If None, no result file is written during evaluation
-        (default is None).
 
     Attributes
     ----------

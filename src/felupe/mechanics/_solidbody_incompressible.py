@@ -79,7 +79,7 @@ class SolidBodyNearlyIncompressible(Solid):
         U(\bar{J}) = \frac{K}{2} (\bar{J} - 1)^2
 
 
-    **Hu-Washizu Three-Field-Variation Principle**
+    **Hu-Washizu Three-Field-Variational Principle**
 
     The Three-Field-Variation :math:`(\boldsymbol{u},p,J)` leads to a linearized
     equation system with nine sub block-matrices. Due to the fact that the equation

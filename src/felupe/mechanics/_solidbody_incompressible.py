@@ -27,26 +27,48 @@ from ._solidbody import Solid
 
 
 class SolidBodyNearlyIncompressible(Solid):
-    r"""A (nearly) incompressible SolidBody with methods for the assembly of sparse
-    vectors/matrices for a material with optional state variables.
+    r"""A (nearly) incompressible solid body with methods for the assembly of sparse
+    vectors/matrices.
 
     Parameters
     ----------
-    umat : A constitutive material formulation with methods for the evaluation
-        of the gradient ``P = umat.gradient(F)`` as well as the hessian
-        ``A = umat.hessian(F)`` of the strain energy function w.r.t. the
-        deformation gradient.
+    umat : class
+        A class which provides methods for evaluating the gradient and the hessian of
+        the isochoric part of the strain energy density function per unit undeformed
+        volume :math:`\hat\psi(\boldsymbol{F})`. The function signatures must be
+        ``dψdF, ζ_new = umat.gradient([F, ζ])`` for the gradient and
+        ``d2ψdFdF = umat.hessian([F, ζ])`` for the hessian of
+        the strain energy density function :math:`\psi(\boldsymbol{F})`, where
+        :math:`\boldsymbol{F}` is the deformation gradient tensor and :math:`\zeta`
+        holds the array of internal state variables.
     field : FieldContainer
-        The field (and its underlying region) on which the solid body will
-        be created on.
+        A field container with one or more fields.
     bulk : float
         The bulk modulus of the volumetric material behaviour
         (:math:`U(J)=K(J-1)^2/2`).
-    state : StateNearlyIncompressible
-        A valid initial state for a (nearly) incompressible solid.
+    state : StateNearlyIncompressible or None, optional
+        A valid initial state for a (nearly) incompressible solid (default is None).
+    statevars : ndarray or None, optional
+        Array of initial internal state variables (default is None).
 
     Notes
     -----
+    ..  math::
+        
+        W_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(J) \ dV + 
+            \int_V p (J - \bar{J}) \ dV
+
+        \hat{W}_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV
+
+        \delta \hat{W}_{int} &= -\int_V
+            \delta \boldsymbol{F} : \frac{\partial \hat\psi}{\partial \boldsymbol{F}}
+            \ dV
+
+        \Delta\delta \hat{W}_{int} &= -\int_V
+            \delta \boldsymbol{F} :
+            \frac{\partial^2 \hat\psi}{\partial\boldsymbol{F}\ \partial\boldsymbol{F}} :
+            \Delta \boldsymbol{F} \ dV
+            
     The volumetric material behaviour is hard-coded and is defined by the strain energy
     function.
 
@@ -179,6 +201,28 @@ class SolidBodyNearlyIncompressible(Solid):
         v &= -\int_V (J - \bar{J}) \ dV = \bar{J} V - v
 
         w &= -\int_V (\bar{U}' - p) \ dV = p V - \bar{U}' V
+    
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    >>>
+    >>> umat = fem.NeoHooke(mu=1)
+    >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+    >>>
+    >>> table = fem.math.linsteps([0, 1], num=5)
+    >>> step = fem.Step(
+    >>>     items=[solid],
+    >>>     ramp={boundaries["move"]: table},
+    >>>     boundaries=boundaries,
+    >>> )
+    >>>
+    >>> job = fem.Job(steps=[step]).evaluate()
+    >>> ax = solid.imshow("Principal Values of Cauchy Stress")
 
     """
 

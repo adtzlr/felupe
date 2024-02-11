@@ -165,6 +165,14 @@ class CharacteristicCurve(Job):
             plotted (default is None).
         **kwargs : dict
             Additional keyword arguments for plotting in ``ax.plot(**kwags)``.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The figure object where the plot is placed in.
+        ax : matplotlib.axes.Axes
+            The axes object where the plot is placed in.
+
         """
 
         if self.res is None:

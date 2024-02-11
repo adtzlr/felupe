@@ -71,7 +71,7 @@ class FieldsMixed(FieldContainer):
     The dual region is chosen automatically, i.e. for a :class:`RegionHexahedron` the
     dual region is :class:`RegionConstantHexahedron`. A total number of ``n`` fields
     are generated inside a :class:`FieldContainer`. For compatibility with
-    :class:~felupe.ThreeFieldVariation`, the third field is created with ones, all
+    :class:`~felupe.ThreeFieldVariation`, the third field is created with ones, all
     values of the other fields are initiated with zeros by default.
 
     See Also

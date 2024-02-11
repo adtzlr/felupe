@@ -41,24 +41,25 @@ This module provides constitutive material formulations.
 .. autosummary::
    
    Hyperelastic
-   constitution.saint_venant_kirchhoff
-   constitution.neo_hooke
-   constitution.mooney_rivlin
-   constitution.yeoh
-   constitution.third_order_deformation
-   constitution.ogden
-   constitution.arruda_boyce
-   constitution.extended_tube
-   constitution.van_der_waals
-   constitution.finite_strain_viscoelastic
+   MaterialAD
+   saint_venant_kirchhoff
+   neo_hooke
+   mooney_rivlin
+   yeoh
+   third_order_deformation
+   ogden
+   arruda_boyce
+   extended_tube
+   van_der_waals
+   finite_strain_viscoelastic
 
 **(Small) Strain-based User Materials**
 
 .. autosummary::
 
    MaterialStrain
-   constitution.linear_elastic
-   constitution.linear_elastic_plastic_isotropic_hardening
+   linear_elastic
+   linear_elastic_plastic_isotropic_hardening
 
 **Deformation-Gradient-based User Materials**
 
@@ -131,34 +132,39 @@ This module provides constitutive material formulations.
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: felupe.constitution.linear_elastic
+.. autofunction:: felupe.linear_elastic
 
-.. autofunction:: felupe.constitution.linear_elastic_plastic_isotropic_hardening
+.. autofunction:: felupe.linear_elastic_plastic_isotropic_hardening
+
+.. autoclass:: felupe.MaterialAD
+   :members:
+   :undoc-members:
+   :inherited-members:
 
 .. autoclass:: felupe.Hyperelastic
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: felupe.constitution.saint_venant_kirchhoff
+.. autofunction:: felupe.saint_venant_kirchhoff
 
-.. autofunction:: felupe.constitution.neo_hooke
+.. autofunction:: felupe.neo_hooke
 
-.. autofunction:: felupe.constitution.mooney_rivlin
+.. autofunction:: felupe.mooney_rivlin
 
-.. autofunction:: felupe.constitution.yeoh
+.. autofunction:: felupe.yeoh
 
-.. autofunction:: felupe.constitution.third_order_deformation
+.. autofunction:: felupe.third_order_deformation
 
-.. autofunction:: felupe.constitution.ogden
+.. autofunction:: felupe.ogden
 
-.. autofunction:: felupe.constitution.arruda_boyce
+.. autofunction:: felupe.arruda_boyce
 
-.. autofunction:: felupe.constitution.extended_tube
+.. autofunction:: felupe.extended_tube
 
-.. autofunction:: felupe.constitution.van_der_waals
+.. autofunction:: felupe.van_der_waals
 
-.. autofunction:: felupe.constitution.finite_strain_viscoelastic
+.. autofunction:: felupe.finite_strain_viscoelastic
 
 .. autoclass:: felupe.LineChange
    :members:

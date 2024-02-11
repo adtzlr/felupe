@@ -14,7 +14,7 @@ Elementary Deformations
     
     * apply uniaxial, planar and biaxial loadcases
     
-    * solve the problem
+    * solve the problems
     
     * plot force-displacement curves
 

@@ -357,7 +357,7 @@ def arruda_boyce(C, C1, limit):
     
     ..  math::
         
-        \alpha &= \begin{bmatrix} 
+        \boldsymbol{\alpha} &= \begin{bmatrix} 
             \frac{1}{2} \\ 
             \frac{1}{20} \\
             \frac{11}{1050} \\

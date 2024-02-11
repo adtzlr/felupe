@@ -75,10 +75,9 @@ class SolidBodyPressure:
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
 
+        self.results.pressure = 0
         if pressure is not None:
             self.results.pressure = pressure
-        else:
-            self.results.pressure = 0
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self._area_change = AreaChange()

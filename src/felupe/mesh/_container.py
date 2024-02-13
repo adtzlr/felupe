@@ -21,7 +21,7 @@ from copy import deepcopy
 import numpy as np
 
 from ._mesh import Mesh
-from ._tools import sweep
+from ._tools import merge_duplicate_points as sweep
 
 
 class MeshContainer:

@@ -37,10 +37,11 @@ from ._tools import (
     fill_between,
     flip,
     mirror,
+    merge_duplicate_cells,
     revolve,
     rotate,
     runouts,
-    sweep,
+    merge_duplicate_points,
     translate,
     triangulate,
 )
@@ -83,6 +84,9 @@ class Mesh(DiscreteGeometry):
         super().__init__(points=points, cells=cells, cell_type=cell_type)
 
         self.__mesh__ = Mesh
+
+        # alias
+        self.sweep = self.merge_duplicate_points
 
     def __repr__(self):
         header = "<felupe Mesh object>"
@@ -513,8 +517,8 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
 
-    def sweep(self, decimals=None):
-        """Merge duplicated points and update cells of a Mesh.
+    def merge_duplicate_points(self, decimals=None):
+        """Merge duplicate points and update cells of a Mesh.
 
         Parameters
         ----------
@@ -524,7 +528,7 @@ class Mesh(DiscreteGeometry):
         Returns
         -------
         Mesh
-            The mesh with merged duplicated points and updated cells.
+            The mesh with merged duplicate points and updated cells.
 
         Notes
         -----
@@ -532,7 +536,7 @@ class Mesh(DiscreteGeometry):
             This function re-sorts points.
 
         ..  note::
-            This function does not merge duplicated cells.
+            This function does not merge duplicate cells.
 
         Examples
         --------
@@ -559,7 +563,7 @@ class Mesh(DiscreteGeometry):
           Number of cells:
             quad: 100
             quad: 100
-        
+
         ..  image:: images/mesh_container.png
             :width: 400px
 
@@ -575,22 +579,22 @@ class Mesh(DiscreteGeometry):
         After merging the duplicated points and cells, the number of points is reduced but
         the number of cells is unchanged.
 
-        >>> mesh = fem.mesh.sweep(stack)
+        >>> mesh = stack.merge_duplicate_points()
         >>> mesh
         <felupe Mesh object>
           Number of points: 220
           Number of cells:
             quad: 200
-        
+
         >>> ax = mesh.imshow(opacity=0.6)
-        
+
         ..  image:: images/mesh_sweep.png
             :width: 400px
 
         ..  note::
             The :class:`~felupe.MeshContainer` may be directly created with
-            ``merge=True``. This enforces :func:`~felupe.mesh.sweep` for the shared
-            points array of the container.
+            ``merge=True``. This enforces :func:`~felupe.mesh.merge_duplicate_points`
+            for the shared points array of the container.
 
         See Also
         --------
@@ -598,7 +602,100 @@ class Mesh(DiscreteGeometry):
         MeshContainer : A container which operates on a list of meshes with identical
             dimensions.
         """
-        return as_mesh(sweep(self, decimals=decimals))
+        return as_mesh(merge_duplicate_points(self, decimals=decimals))
+
+    @wraps(merge_duplicate_cells)
+    def merge_duplicate_cells(self):
+        """Merge duplicate cells of a Mesh.
+
+        Returns
+        -------
+        Mesh
+            The mesh with merged duplicate cells.
+
+        Notes
+        -----
+        ..  warning::
+            This function re-sorts cells.
+
+        ..  note::
+            This function does not merge duplicate points.
+
+        Examples
+        --------
+        Two quad meshes to be merged overlap some cells. Merge these duplicated
+        points and update the cells.
+
+        >>> import felupe as fem
+
+        >>> rect1 = fem.Rectangle(n=11)
+        >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+        >>> rect2
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 100
+
+        Each mesh contains 121 points and 100 cells. These two meshes are now stored in
+        a :class:`~felupe.MeshContainer`.
+
+        >>> container = fem.MeshContainer([rect1, rect2])
+        >>> container
+        <felupe mesh container object>
+          Number of points: 242
+          Number of cells:
+            quad: 100
+            quad: 100
+
+        The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
+
+        >>> stack = fem.mesh.stack(container.meshes)
+        >>> stack
+        <felupe Mesh object>
+          Number of points: 242
+          Number of cells:
+            quad: 200
+
+        After merging the duplicated points and cells, the number of points is reduced
+        but the number of cells is unchanged.
+
+        >>> mesh = stack.merge_duplicate_points()
+        >>> mesh
+        <felupe Mesh object>
+          Number of points: 220
+          Number of cells:
+            quad: 200
+
+        >>> ax = mesh.imshow(opacity=0.6)
+
+        ..  image:: images/mesh_sweep.png
+            :width: 400px
+
+        ..  note::
+            The :class:`~felupe.MeshContainer` may be directly created with
+            ``merge=True``. This enforces :func:`~felupe.mesh.merge_duplicate_points`
+            for the shared points array of the container.
+
+        The duplicate cells are merged in a second step.
+
+        >>> merged = mesh.merge_duplicate_cells()
+        >>> merged
+        <felupe Mesh object>
+          Number of points: 220
+          Number of cells:
+            quad: 190
+
+        ..  image:: images/mesh_merged.png
+            :width: 400px
+
+        See Also
+        --------
+        mesh.merge_duplicate_points : Merge duplicate points of a Mesh.
+        mesh.merge_duplicate_cells : Merge duplicate cells of a Mesh.
+        MeshContainer : A container which operates on a list of meshes with identical
+            dimensions.
+        """
+        return as_mesh(merge_duplicate_cells(self))
 
     @wraps(fill_between)
     def fill_between(self, other_mesh, n=11):

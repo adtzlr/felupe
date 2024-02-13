@@ -167,6 +167,13 @@ def test_meshes():
     fem.mesh.sweep(m)
     fem.mesh.sweep(m.points, m.cells, m.cell_type, decimals=4)
     m.sweep()
+    
+    fem.mesh.merge_duplicate_points(m)
+    fem.mesh.merge_duplicate_points(m.points, m.cells, m.cell_type, decimals=4)
+    m.merge_duplicate_points()
+    
+    fem.mesh.merge_duplicate_cells(m)
+    m.merge_duplicate_cells()
 
     m.as_meshio(point_data={"data": m.points}, cell_data={"cell_data": [m.cells[:, 0]]})
     m.save()

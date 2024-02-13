@@ -59,7 +59,7 @@ def expand(points, cells, cell_type, n=11, z=1):
     >>> import felupe as fem
 
     >>> rect = fem.Rectangle(n=4)
-    >>> rect.expand(n=7, z=2)
+    >>> fem.mesh.expand(rect, n=7, z=2)
     <felupe Mesh object>
       Number of points: 112
       Number of cells:
@@ -67,6 +67,10 @@ def expand(points, cells, cell_type, n=11, z=1):
 
     ..  image:: images/mesh_expand.png
         :width: 400px
+    
+    See Also
+    --------
+    Mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.
     """
 
     # ensure points, cells as ndarray
@@ -172,6 +176,26 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
         Original point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    Rotate a rectangle in the xy-plane by 35 degree.
+
+    >>> import felupe as fem
+
+    >>> rect = fem.Rectangle(b=(3, 1), n=(10, 4))
+    >>> fem.mesh.rotate(rect, angle_deg=35, axis=2, center=[1.5, 0.5])
+    <felupe Mesh object>
+      Number of points: 40
+      Number of cells:
+        quad: 27
+
+    ..  image:: images/mesh_rotate.png
+        :width: 400px
+
+    See Also
+    --------
+    Mesh.rotate : Rotate a Mesh.
     """
 
     points = np.array(points)

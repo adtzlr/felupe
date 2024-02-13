@@ -426,11 +426,51 @@ class Mesh(DiscreteGeometry):
 
         ..  image:: images/mesh_expand.png
             :width: 400px
+
+        See Also
+        --------
+        mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron
+            Mesh.
         """
         return as_mesh(expand(self, n=n, z=z))
 
-    @wraps(rotate)
     def rotate(self, angle_deg, axis, center=None):
+        """Rotate a Mesh.
+
+        Parameters
+        ----------
+        angle_deg : int
+            Rotation angle in degree.
+        axis : int
+            Rotation axis.
+        center : list or ndarray or None, optional
+            Center point coordinates (default is None).
+
+        Returns
+        -------
+        Mesh
+            The rotated mesh.
+
+        Examples
+        --------
+        Rotate a rectangle in the xy-plane by 35 degree.
+
+        >>> import felupe as fem
+
+        >>> rect = fem.Rectangle(b=(3, 1), n=(10, 4))
+        >>> rect.rotate(angle_deg=35, axis=2, center=[1.5, 0.5])
+        <felupe Mesh object>
+          Number of points: 40
+          Number of cells:
+            quad: 27
+
+        ..  image:: images/mesh_rotate.png
+            :width: 400px
+
+        See Also
+        --------
+        mesh.rotate : Rotate a Mesh.
+        """
         return as_mesh(rotate(self, angle_deg=angle_deg, axis=axis, center=center))
 
     @wraps(revolve)

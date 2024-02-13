@@ -169,7 +169,7 @@ class FieldContainer:
             scale=scale,
         )
 
-    def imshow(self, ax=None, *args, **kwargs):
+    def imshow(self, *args, ax=None, **kwargs):
         """Take a screenshot of the first field of the container, show the image data in
         a figure and return the ax.
         """

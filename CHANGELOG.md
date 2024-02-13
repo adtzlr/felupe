@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Mesh.merge_duplicate_points(decimals=None)` and make `Mesh.sweep(decimals=None)` an alias of it.
 - Add `Mesh.merge_duplicate_cells()`.
 
+### Fixed
+- Fix `Mesh.imshow(ax=None)`, `FieldContainer.imshow(ax=None)` and `SolidBody.imshow(ax=None)` from v7.15.
+
 ## [7.15.0] - 2024-02-11
 
 ### Added

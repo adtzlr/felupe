@@ -51,6 +51,22 @@ def expand(points, cells, cell_type, n=11, z=1):
         Modified point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    Expand a rectangle to a cube.
+
+    >>> import felupe as fem
+
+    >>> rect = fem.Rectangle(n=4)
+    >>> rect.expand(n=7, z=2)
+    <felupe Mesh object>
+      Number of points: 112
+      Number of cells:
+        hexahedron: 54
+
+    ..  image:: images/mesh_expand.png
+        :width: 400px
     """
 
     # ensure points, cells as ndarray

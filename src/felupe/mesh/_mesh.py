@@ -393,8 +393,40 @@ class Mesh(DiscreteGeometry):
             )
         )
 
-    @wraps(expand)
     def expand(self, n=11, z=1):
+        """Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of n-point repetitions or (n-1)-cell repetitions,
+            default is 11.
+        z : float or ndarray, optional
+            Total expand dimension as float (edge length in expand direction is z / n),
+            default is 1. Optionally, if an array is passed these entries are
+            taken as expansion and `n` is ignored.
+
+        Returns
+        -------
+        Mesh
+            The expanded mesh.
+
+        Examples
+        --------
+        Expand a rectangle to a cube.
+
+        >>> import felupe as fem
+
+        >>> rect = fem.Rectangle(n=4)
+        >>> rect.expand(n=7, z=2)
+        <felupe Mesh object>
+          Number of points: 112
+          Number of cells:
+            hexahedron: 54
+
+        ..  image:: images/mesh_expand.png
+            :width: 400px
+        """
         return as_mesh(expand(self, n=n, z=z))
 
     @wraps(rotate)

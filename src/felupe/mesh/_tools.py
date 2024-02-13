@@ -378,9 +378,16 @@ def sweep(points, cells, cell_type, decimals=None):
       Number of cells:
         quad: 200
 
+    ..  note::
+        The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
+        This enforces :func:`~felupe.mesh.sweep` for the shared points array of the
+        container.
+
     See Also
     --------
     Mesh.sweep : Merge duplicated points and update cells of a Mesh.
+    MeshContainer : A container which operates on a list of meshes with identical
+        dimensions.
     """
 
     if decimals is None:

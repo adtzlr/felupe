@@ -108,8 +108,6 @@ class Material:
             # upper-triangle items of the hessian
             return [d2WdFdF, d2WdFdp, d2Wdpdp]
 
-        import numpy as np
-
         umat = Material(gradient, hessian, **kwargs)
 
     """

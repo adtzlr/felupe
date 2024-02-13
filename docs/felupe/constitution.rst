@@ -128,7 +128,7 @@ This module provides constitutive material formulations.
    :undoc-members:
    :inherited-members:
 
-   .. autoclass:: felupe.Material
+.. autoclass:: felupe.Material
    :members:
    :undoc-members:
    :inherited-members:

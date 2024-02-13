@@ -154,6 +154,93 @@ class MeshContainer:
         "Return a deepcopy of the mesh container."
         return deepcopy(self)
 
+    def plot(self, *args, colors=None, **kwargs):
+        """Plot the meshes of the mesh container.
+
+        See Also
+        --------
+        felupe.Scene.plot: Plot method of a scene.
+        """
+
+        if colors is None:
+            import pyvista
+            import matplotlib.colors as mcolors
+
+            colors = [
+                pyvista.global_theme.color,
+                *list(mcolors.TABLEAU_COLORS.values())[1:],
+            ]
+
+        plotter = None
+        for mesh, color in zip(self.meshes, colors):
+            plotter = mesh.view().plot(
+                *args,
+                show_undeformed=False,
+                color=color,
+                plotter=plotter,
+                opacity=0.99,
+                **kwargs,
+            )
+
+        return plotter
+
+    def screenshot(
+        self,
+        *args,
+        filename="mesh.png",
+        transparent_background=None,
+        scale=None,
+        colors=None,
+        **kwargs,
+    ):
+        """Take a screenshot of the meshes of the mesh container.
+
+        See Also
+        --------
+        pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
+        """
+
+        if colors is None:
+            import pyvista
+            import matplotlib.colors as mcolors
+
+            colors = [
+                pyvista.global_theme.color,
+                *list(mcolors.TABLEAU_COLORS.values())[1:],
+            ]
+
+        plotter = None
+        for mesh, color in zip(self.meshes, colors):
+            plotter = mesh.plot(
+                *args,
+                off_screen=True,
+                color=color,
+                plotter=plotter,
+                opacity=0.99,
+                **kwargs,
+            )
+
+        return plotter.screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            scale=scale,
+        )
+
+    def imshow(self, ax=None, *args, **kwargs):
+        """Take a screenshot of the meshes of the mesh container, show the image data in
+        a figure and return the ax.
+        """
+
+        if ax is None:
+            import matplotlib.pyplot as plt
+
+            fig, ax = plt.subplots()
+
+        ax.imshow(self.screenshot(*args, filename=None, **kwargs))
+        ax.set_axis_off()
+
+        return ax
+
     def __iadd__(self, mesh):
         self.append(mesh)
         return self

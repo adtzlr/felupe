@@ -490,6 +490,12 @@ def test_view():
     # img = mesh.screenshot(transparent_background=True)
     # ax = mesh.imshow()
 
+    mesh2 = mesh.translate(move=0.8, axis=0)
+    container = fem.MeshContainer([mesh, mesh2])
+    plotter = container.plot(off_screen=True)
+    # img = container.screenshot(transparent_background=True)
+    # ax = container.imshow()
+
 
 def test_mesh_update():
     mesh = fem.Cube(n=11)

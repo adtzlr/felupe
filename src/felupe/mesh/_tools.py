@@ -372,7 +372,7 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
     After merging the duplicated points and cells, the number of points is reduced but
     the number of cells is unchanged.
 
-    >>> mesh = fem.mesh.sweep(stack)
+    >>> mesh = fem.mesh.merge_duplicate_points(stack)
     >>> mesh
     <felupe Mesh object>
       Number of points: 220
@@ -386,12 +386,12 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 
     ..  note::
         The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
-        This enforces :func:`~felupe.mesh.sweep` for the shared points array of the
-        container.
+        This enforces :func:`~felupe.mesh.merge_duplicate_points` for the shared points
+        array of the container.
 
     See Also
     --------
-    Mesh.sweep : Merge duplicated points and update cells of a Mesh.
+    Mesh.merge_duplicate_points : Merge duplicated points and update cells of a Mesh.
     MeshContainer : A container which operates on a list of meshes with identical
         dimensions.
     """

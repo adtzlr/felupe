@@ -89,7 +89,7 @@ class Solid:
             scale=scale,
         )
 
-    def imshow(self, ax=None, *args, **kwargs):
+    def imshow(self, *args, ax=None, **kwargs):
         """Take a screenshot of the solid body, show the image data in a figure and
         return the ax.
         """

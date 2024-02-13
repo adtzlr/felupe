@@ -110,11 +110,7 @@ class Material:
 
         import numpy as np
 
-        umat = Material(
-            stress=gradient,
-            elasticity=hessian,
-            **kwargs
-        )
+        umat = Material(gradient, hessian, **kwargs)
 
     """
 

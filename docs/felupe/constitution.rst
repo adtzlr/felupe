@@ -28,6 +28,7 @@ This module provides constitutive material formulations.
 .. autosummary::
 
    NeoHooke
+   NeoHookeCompressible
    ThreeFieldVariation
 
 **Pseudo-Elasticity (Isotropic Damage)**
@@ -78,6 +79,11 @@ This module provides constitutive material formulations.
 **Detailed API Reference**
 
 .. autoclass:: felupe.NeoHooke
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.NeoHookeCompressible
    :members:
    :undoc-members:
    :inherited-members:

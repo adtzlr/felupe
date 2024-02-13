@@ -578,9 +578,16 @@ class Mesh(DiscreteGeometry):
           Number of cells:
             quad: 200
 
+        ..  note::
+            The :class:`~felupe.MeshContainer` may be directly created with
+            ``merge=True``. This enforces :func:`~felupe.mesh.sweep` for the shared
+            points array of the container.
+
         See Also
         --------
         mesh.sweep : Merge duplicated points and update cells of a Mesh.
+        MeshContainer : A container which operates on a list of meshes with identical
+            dimensions.
         """
         return as_mesh(sweep(self, decimals=decimals))
 

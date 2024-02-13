@@ -110,24 +110,19 @@ class Material:
 
         import numpy as np
 
-        nstatevars = 0
         umat = Material(
             stress=gradient,
             elasticity=hessian,
-            x=[np.eye(3), np.zeros(1), np.zeros(nstatevars)],  # shape of variables
             **kwargs
         )
 
     """
 
-    def __init__(self, stress, elasticity, nstatevars=0, x=None, **kwargs):
+    def __init__(self, stress, elasticity, nstatevars=0, **kwargs):
         self.umat = {"stress": stress, "elasticity": elasticity}
         self.kwargs = kwargs
         self.nstatevars = nstatevars
-
-        self.x = x
-        if self.x is None:
-            self.x = [np.eye(3), np.zeros(nstatevars)]
+        self.x = [np.eye(3), np.zeros(nstatevars)]
 
     def gradient(self, x):
         return self.umat["stress"](x, **self.kwargs)

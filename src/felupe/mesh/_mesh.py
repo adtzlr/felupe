@@ -576,10 +576,16 @@ class Mesh(DiscreteGeometry):
         the number of cells is unchanged.
 
         >>> mesh = fem.mesh.sweep(stack)
+        >>> mesh
         <felupe Mesh object>
           Number of points: 220
           Number of cells:
             quad: 200
+        
+        >>> ax = mesh.imshow(opacity=0.6)
+        
+        ..  image:: images/mesh_sweep.png
+            :width: 400px
 
         ..  note::
             The :class:`~felupe.MeshContainer` may be directly created with

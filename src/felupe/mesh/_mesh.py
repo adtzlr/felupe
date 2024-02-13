@@ -560,7 +560,7 @@ class Mesh(DiscreteGeometry):
             quad: 100
             quad: 100
 
-        The meshes of the mesh container are stacked.
+        The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
 
         >>> stack = fem.mesh.stack(container.meshes)
         >>> stack

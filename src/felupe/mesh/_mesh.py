@@ -513,8 +513,75 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
 
-    @wraps(sweep)
     def sweep(self, decimals=None):
+        """Merge duplicated points and update cells of a Mesh.
+
+        Parameters
+        ----------
+        decimals : int or None, optional
+            Number of decimals for point coordinate comparison (default is None).
+
+        Returns
+        -------
+        Mesh
+            The mesh with merged duplicated points and updated cells.
+
+        Notes
+        -----
+        ..  warning::
+            This function re-sorts points.
+
+        ..  note::
+            This function does not merge duplicated cells.
+
+        Examples
+        --------
+        Two quad meshes to be merged overlap some points. Merge these duplicated
+        points and update the cells.
+
+        >>> import felupe as fem
+
+        >>> rect1 = fem.Rectangle(n=11)
+        >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+        >>> rect2
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 100
+
+        Each mesh contains 121 points and 100 cells. These two meshes are now stored in a
+        :class:`~felupe.MeshContainer`.
+
+        >>> container = fem.MeshContainer([rect1, rect2])
+        >>> container
+        <felupe mesh container object>
+          Number of points: 242
+          Number of cells:
+            quad: 100
+            quad: 100
+
+        The meshes of the mesh container are stacked.
+
+        >>> stack = fem.mesh.stack(container.meshes)
+        >>> stack
+        <felupe Mesh object>
+          Number of points: 242
+          Number of cells:
+            quad: 200
+
+        After merging the duplicated points and cells, the number of points is reduced but
+        the number of cells is unchanged.
+
+        >>> mesh = fem.mesh.sweep(stack)
+        <felupe Mesh object>
+          Number of points: 220
+          Number of cells:
+            quad: 200
+
+        See Also
+        --------
+        mesh.sweep : Merge duplicated points and update cells of a Mesh.
+        """
         return as_mesh(sweep(self, decimals=decimals))
 
     @wraps(fill_between)

@@ -242,20 +242,20 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         Modified point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
-    
+
     Examples
     --------
     Revolve a cylinder from a rectangle.
-    
+
     >>> import felupe as fem
-    
+
     >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
     >>> fem.mesh.revolve(rect, n=11, phi=180, axis=0)
     <felupe Mesh object>
       Number of points: 440
       Number of cells:
         hexahedron: 270
-    
+
     ..  image:: images/mesh_revolve.png
         :width: 400px
 
@@ -306,8 +306,6 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 def sweep(points, cells, cell_type, decimals=None):
     """Merge duplicated points and update cells of a Mesh.
 
-    **WARNING**: This function re-sorts points.
-
     Parameters
     ----------
     points : list or ndarray
@@ -327,6 +325,62 @@ def sweep(points, cells, cell_type, decimals=None):
         Modified point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+
+    Notes
+    -----
+    ..  warning::
+        This function re-sorts points.
+
+    ..  note::
+        This function does not merge duplicated cells.
+
+    Examples
+    --------
+    Two quad meshes to be merged overlap some points. Merge these duplicated
+    points and update the cells.
+
+    >>> import felupe as fem
+
+    >>> rect1 = fem.Rectangle(n=11)
+    >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+    >>> rect2
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 100
+
+    Each mesh contains 121 points and 100 cells. These two meshes are now stored in a
+    :class:`~felupe.MeshContainer`.
+
+    >>> container = fem.MeshContainer([rect1, rect2])
+    >>> container
+    <felupe mesh container object>
+      Number of points: 242
+      Number of cells:
+        quad: 100
+        quad: 100
+
+    The meshes of the mesh container are stacked.
+
+    >>> stack = fem.mesh.stack(container.meshes)
+    >>> stack
+    <felupe Mesh object>
+      Number of points: 242
+      Number of cells:
+        quad: 200
+
+    After merging the duplicated points and cells, the number of points is reduced but
+    the number of cells is unchanged.
+
+    >>> mesh = fem.mesh.sweep(stack)
+    <felupe Mesh object>
+      Number of points: 220
+      Number of cells:
+        quad: 200
+
+    See Also
+    --------
+    Mesh.sweep : Merge duplicated points and update cells of a Mesh.
     """
 
     if decimals is None:

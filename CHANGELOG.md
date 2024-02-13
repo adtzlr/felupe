@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.16.0] - 2024-02-13
+
 ### Added
 - Add `MeshContainer.plot()`, `img = MeshContainer.screenshot()` and `ax = MeshContainer.imshow()`. The default list of colors contains PyVista's default color as first item and then the list of matplotlib's named colors *C1*, *C2*, etc (excluding *C0*).
 - Add `Mesh.merge_duplicate_points(decimals=None)` and make `Mesh.sweep(decimals=None)` an alias of it.

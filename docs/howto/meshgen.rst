@@ -40,7 +40,7 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
 A cube by hand
 **************
 
-First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`~felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`~felupe.mesh.expand`: :func:`~felupe.mesh.rotate`, :func:`~felupe.mesh.revolve` and :func:`~felupe.mesh.sweep`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
+First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`~felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`~felupe.mesh.expand`: :func:`~felupe.mesh.rotate`, :func:`~felupe.mesh.revolve` and :func:`~felupe.mesh.merge_duplicate_points`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
 
 ..  code-block:: python
 
@@ -135,7 +135,9 @@ Meshed boundaries may be used to fill the area or volume in between for line and
     )
     
     face = bottom.fill_between(top, n=n[1])
-    mesh = fem.mesh.concatenate([face, face.mirror(normal=[-1, 1, 0])]).sweep()
+    mesh = fem.mesh.concatenate(
+        [face, face.mirror(normal=[-1, 1, 0])]
+    ).merge_duplicate_points()
 
 ..  image:: images/plate-with-hole.png
     :width: 400px
@@ -179,7 +181,7 @@ The elementary shapes are combined to create more complex shapes, e.g. a planar 
     center = triangle.points.mean(axis=0)
     arms = [arm.rotate(phi, axis=2, center=center) for phi in [0, 120, 240]]
     
-    mesh = fem.mesh.concatenate([triangle, *arms]).sweep(decimals=8)
+    mesh = fem.mesh.concatenate([triangle, *arms]).merge_duplicate_points(decimals=8)
     
 ..  image:: images/fidget_spinner.png
     :width: 400px
@@ -229,7 +231,7 @@ A three-dimensional example demonstrates a combination of two different expansio
     mesh = fem.mesh.concatenate([
         face.expand(n=6, z=0.5),
         circle.expand(n=11, z=1),
-    ]).sweep(decimals=8)
+    ]).merge_duplicate_points(decimals=8)
 
 ..  image:: images/solid.png
     :width: 400px

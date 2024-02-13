@@ -559,6 +559,9 @@ class Mesh(DiscreteGeometry):
           Number of cells:
             quad: 100
             quad: 100
+        
+        ..  image:: images/mesh_container.png
+            :width: 400px
 
         The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
 

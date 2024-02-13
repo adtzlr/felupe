@@ -75,13 +75,59 @@ class Material:
 
         umat = Material(stress, elasticity, **kwargs)
 
+    For (u, p) mixed-field formulations, take this code-block as template:
+
+    ..  code-block::
+
+        def gradient(x, **kwargs):
+            "Gradient of the strain energy density function."
+
+            # extract variables
+            F, p, statevars = x[0], x[1], x[-1]
+
+            # user code
+            dWdF = None  # first Piola-Kirchhoff stress tensor
+            dWdp = None
+
+            # update state variables
+            statevars_new = None
+
+            return [dWdF, dWdp, statevars_new]
+
+        def hessian(x, **kwargs):
+            "Hessian of the strain energy density function."
+
+            # extract variables
+            F, p, statevars = x[0], x[1], x[-1]
+
+            # user code
+            d2WdFdF = None  # fourth-order elasticity tensor
+            d2WdFdp = None
+            d2Wdpdp = None
+
+            # upper-triangle items of the hessian
+            return [d2WdFdF, d2WdFdp, d2Wdpdp]
+
+        import numpy as np
+
+        nstatevars = 0
+        umat = Material(
+            stress=gradient,
+            elasticity=hessian,
+            x=[np.eye(3), np.zeros(1), np.zeros(nstatevars)],  # shape of variables
+            **kwargs
+        )
+
     """
 
-    def __init__(self, stress, elasticity, nstatevars=0, **kwargs):
+    def __init__(self, stress, elasticity, nstatevars=0, x=None, **kwargs):
         self.umat = {"stress": stress, "elasticity": elasticity}
         self.kwargs = kwargs
         self.nstatevars = nstatevars
-        self.x = [np.eye(3), np.zeros(nstatevars)]
+
+        self.x = x
+        if self.x is None:
+            self.x = [np.eye(3), np.zeros(nstatevars)]
 
     def gradient(self, x):
         return self.umat["stress"](x, **self.kwargs)

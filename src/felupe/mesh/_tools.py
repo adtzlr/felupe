@@ -67,7 +67,7 @@ def expand(points, cells, cell_type, n=11, z=1):
 
     ..  image:: images/mesh_expand.png
         :width: 400px
-    
+
     See Also
     --------
     Mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.

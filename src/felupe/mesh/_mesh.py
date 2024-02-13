@@ -598,7 +598,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        mesh.sweep : Merge duplicated points and update cells of a Mesh.
+        mesh.merge_duplicate_points : Merge duplicated points and update cells of a Mesh.
         MeshContainer : A container which operates on a list of meshes with identical
             dimensions.
         """

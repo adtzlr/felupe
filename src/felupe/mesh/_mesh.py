@@ -473,8 +473,44 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(rotate(self, angle_deg=angle_deg, axis=axis, center=center))
 
-    @wraps(revolve)
     def revolve(self, n=11, phi=180, axis=0):
+        """Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of n-point revolutions (or (n-1) cell revolutions),
+            default is 11.
+        phi : float or ndarray, optional
+            Revolution angle in degree (default is 180).
+        axis : int, optional
+            Revolution axis (default is 0).
+
+        Returns
+        -------
+        Mesh
+            The revolved mesh.
+
+        Examples
+        --------
+        Revolve a cylinder from a rectangle.
+
+        >>> import felupe as fem
+
+        >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
+        >>> rect.revolve(n=11, phi=180, axis=0)
+        <felupe Mesh object>
+          Number of points: 440
+          Number of cells:
+            hexahedron: 270
+
+        ..  image:: images/mesh_revolve.png
+            :width: 400px
+
+        See Also
+        --------
+        mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+        """
         return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
 
     @wraps(sweep)

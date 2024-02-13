@@ -242,6 +242,26 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         Modified point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+    
+    Examples
+    --------
+    Revolve a cylinder from a rectangle.
+    
+    >>> import felupe as fem
+    
+    >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
+    >>> fem.mesh.revolve(rect, n=11, phi=180, axis=0)
+    <felupe Mesh object>
+      Number of points: 440
+      Number of cells:
+        hexahedron: 270
+    
+    ..  image:: images/mesh_revolve.png
+        :width: 400px
+
+    See Also
+    --------
+    Mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
     """
 
     points = np.array(points)

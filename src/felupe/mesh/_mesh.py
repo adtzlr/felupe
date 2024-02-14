@@ -1053,7 +1053,7 @@ class Mesh(DiscreteGeometry):
 
         ..  image:: images/mesh_runouts_3d.png
             :width: 400px
-        
+
         See Also
         --------
         felupe.mesh.runouts : Add simple rubber-runouts for realistic rubber-metal
@@ -1102,8 +1102,46 @@ class Mesh(DiscreteGeometry):
     def collect_volumes(self):
         return collect_volumes(self)
 
-    @wraps(add_midpoints_edges)
     def add_midpoints_edges(self, cell_type=None):
+        """ "Add midpoints on edges for given points and cells and update cell_type
+        accordingly.
+
+        Parameters
+        ----------
+        cell_type: str or None, optional
+            A string in VTK-convention that specifies the new cell type (default is None).
+            If None, the cell type is chosen automatically.
+
+        Returns
+        -------
+        Mesh
+            A new mesh with inserted midpoints on cell edges.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=6)
+        >>> mesh_with_midpoints_edges = mesh.add_midpoints_edges()
+        >>> mesh_with_midpoints_edges
+        <felupe Mesh object>
+          Number of points: 96
+          Number of cells:
+            quad8: 25
+
+        >>> plotter = mesh_with_midpoints_edges.plot(
+        >>>     plotter=mesh.plot(), style="points", color="black"
+        >>> ).show()
+
+        ..  image:: images/mesh_midpoints_edges.png
+            :width: 400px
+
+        See Also
+        --------
+        felupe.mesh.add_midpoints_edges : Add midpoints on edges for given points and
+            cells and update cell_type accordingly.
+
+        """
         return add_midpoints_edges(self, cell_type_new=cell_type)
 
     @wraps(add_midpoints_faces)

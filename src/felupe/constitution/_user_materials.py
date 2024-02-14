@@ -75,8 +75,9 @@ class Material:
             \boldsymbol{\zeta}
         \end{bmatrix}
         
-        \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) &=
-            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}
+        \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+        \end{bmatrix}
     
     Take this code-block as template:
 

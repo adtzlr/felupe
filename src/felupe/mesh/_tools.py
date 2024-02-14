@@ -711,11 +711,6 @@ def mirror(
 def concatenate(meshes):
     """Join a sequence of meshes with identical cell types.
 
-    Notes
-    -----
-    The ``points``-arrays are vertically stacked. Offsets are added to the  ``cells``-
-    arrays of the meshes to refer to the original points.
-
     Parameters
     ----------
     meshes : list of Mesh
@@ -725,6 +720,11 @@ def concatenate(meshes):
     -------
     Mesh
         The joined mesh.
+
+    Notes
+    -----
+    The ``points``-arrays are vertically stacked. Offsets are added to the  ``cells``-
+    arrays of the meshes to refer to the original points.
 
     Examples
     --------
@@ -771,7 +771,47 @@ def concatenate(meshes):
 
 
 def stack(meshes):
-    "Stack cell-blocks from meshes with identical points-array and cell-types."
+    """Stack cell-blocks from meshes with identical points-array and cell-types.
+
+    Parameters
+    ----------
+    meshes : list of Mesh
+        A list with meshes. The ``points``-array is taken from the first mesh in the
+        list.
+
+    Returns
+    -------
+    Mesh
+        The stacked mesh.
+
+    Notes
+    -----
+    The ``points``-array is taken from the first mesh. The ``points``-arrays of all
+    meshes must be identical. The ``cells``-array of the stacked mesh is created by
+    a vertical stack of the ``cells``-arrays.
+
+    Examples
+    --------
+    Two quad meshes with identical point arrays should be stacked into a single mesh.
+
+    >>> import felupe as fem
+
+    >>> mesh = fem.Rectangle(n=11)
+    >>> rect1, rect2 = mesh.copy(), mesh.copy()
+    >>> rect1.update(cells=mesh.cells[: 40])
+    >>> rect2.update(cells=mesh.cells[-50:])
+
+    >>> mesh = fem.mesh.stack([rect1, rect2])
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 90
+
+    ..  image:: images/mesh_stack.png
+        :width: 400px
+
+    """
 
     Mesh = meshes[0].__mesh__
 

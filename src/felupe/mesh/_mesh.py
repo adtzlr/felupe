@@ -1144,8 +1144,45 @@ class Mesh(DiscreteGeometry):
         """
         return add_midpoints_edges(self, cell_type_new=cell_type)
 
-    @wraps(add_midpoints_faces)
     def add_midpoints_faces(self, cell_type=None):
+        """ Add midpoints on faces for given points and cells
+        and update cell_type accordingly.
+        
+        Parameters
+        ----------
+        cell_type: str or None, optional
+            A string in VTK-convention that specifies the new cell type (default is 
+            None). If None, the cell type is chosen automatically.
+
+        Returns
+        -------
+        Mesh
+            A new mesh with inserted midpoints on cell faces.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=6)
+        >>> mesh_with_midpoints_faces = mesh.add_midpoints_faces(cell_type="quad")
+        >>> mesh_with_midpoints_faces
+        <felupe Mesh object>
+          Number of points: 36
+          Number of cells:
+            quad: 25
+
+        >>> plotter = mesh_with_midpoints_faces.plot(
+        >>>     plotter=mesh.plot(), style="points", color="black"
+        >>> ).show()
+
+        ..  image:: images/mesh_midpoints_faces.png
+            :width: 400px
+        
+        See Also
+        --------
+        felupe.mesh.add_midpoints_faces : Add midpoints on faces for given points and
+            cells and update cell_type accordingly.
+        """
         return add_midpoints_faces(self, cell_type_new=cell_type)
 
     @wraps(add_midpoints_volumes)

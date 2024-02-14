@@ -63,20 +63,20 @@ class Material:
         \boldsymbol{1} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}`. All
         other fields are provided as interpolated values (no gradients evaluated).
     
-     For :math:`(\boldsymbol{u})` single-field formulations, the callables for
-     ``stress`` and ``elasticity`` must return the gradient and hessian of the strain
-     energy density function :math:`\psi(\boldsymbol{F})` w.r.t. the deformation
-     gradient :math:`\boldsymbol{F}`.
+    For :math:`(\boldsymbol{u})` single-field formulations, the callables for
+    ``stress`` and ``elasticity`` must return the gradient and hessian of the strain
+    energy density function :math:`\psi(\boldsymbol{F})` w.r.t. the deformation
+    gradient :math:`\boldsymbol{F}`.
     
     ..  math::
 
-        \psi &= \psi(\boldsymbol{F}, \boldsymbol{\zeta})
-
-        \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
-
-        \mathbb{A} &= \frac{\partial^2 \psi}{
-            \partial \boldsymbol{F}\ \partial \boldsymbol{F}
-        }
+        \text{stress}(\boldsymbol{F}, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+            \frac{\partial \psi}{\partial \boldsymbol{F}} \\
+            \boldsymbol{\zeta}
+        \end{bmatrix}
+        
+        \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) &=
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}
     
     Take this code-block as template:
 
@@ -122,7 +122,7 @@ class Material:
             \frac{\partial \psi}{\partial p} \\
             \frac{\partial \psi}{\partial J} \\
             \boldsymbol{\zeta}
-        \begin{bmatrix}
+        \end{bmatrix}
         
         \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}
@@ -131,7 +131,7 @@ class Material:
             \frac{\partial^2 \psi}{\partial p\ \partial p \\
             \frac{\partial^2 \psi}{\partial p\ \partial J \\
             \frac{\partial^2 \psi}{\partial J\ \partial J
-        \begin{bmatrix}
+        \end{bmatrix}
 
     For :math:`(\boldsymbol{u}, p, J)` mixed-field formulations, take this code-block as
     template:

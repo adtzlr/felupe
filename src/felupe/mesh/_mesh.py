@@ -555,7 +555,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        felupe.mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+        felupe.mesh.revolve : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
         """
         return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
 
@@ -748,12 +748,77 @@ class Mesh(DiscreteGeometry):
     def flip(self, mask=None):
         return as_mesh(flip(self, mask=mask))
 
-    @wraps(mirror)
     def mirror(self, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):
+        """Mirror points by plane normal and ensure positive cell volumes for
+        `tria`, `tetra`, `quad` and `hexahedron` cell types.
+
+        Parameters
+        ----------
+        normal: list or ndarray, optional
+            Mirror-plane normal vector (default is [1, 0, 0]).
+        centerpoint: list or ndarray, optional
+            Center-point coordinates on the mirror plane (default is [0, 0, 0]).
+        axis: int or None, optional
+            Mirror axis (default is None).
+
+        Returns
+        -------
+        Mesh
+            The mirrored mesh.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+
+        ..  image:: images/mesh_mirror_before.png
+            :width: 400px
+
+        >>> mesh.mirror(normal=[0, 1, 0])
+
+        ..  image:: images/mesh_mirror_after.png
+            :width: 400px
+
+        See Also
+        --------
+        felupe.Mesh.mirror : Mirror points by plane normal and ensure positive cell
+            volumes for `tria`, `tetra`, `quad` and `hexahedron` cell types.
+        """
         return as_mesh(mirror(self, normal=normal, centerpoint=centerpoint, axis=axis))
 
-    @wraps(translate)
     def translate(self, move, axis):
+        """Translate (move) a Mesh along a given axis.
+
+        Parameters
+        ----------
+        move : float
+            Translation along given axis.
+        axis : int
+            Translation axis.
+
+        Returns
+        -------
+        Mesh
+            The translated mesh.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Circle(n=6)
+        >>> mesh.points.min(axis=0), mesh.points.max(axis=0)
+        (array([0., 0., 0.]), array([1., 1., 1.]))
+
+        >>> translated = mesh.translate(0.3, axis=1)
+        >>> translated.points.min(axis=0), translated.points.max(axis=0)
+        (array([0. , 0.3, 0. ]), array([1. , 1.3, 1. ]))
+
+        See Also
+        --------
+        felupe.mesh.translate : Translate (move) a Mesh along a given axis.
+        """
+
         return as_mesh(translate(self, move=move, axis=axis))
 
     @wraps(triangulate)

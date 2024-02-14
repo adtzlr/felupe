@@ -268,7 +268,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 
     See Also
     --------
-    felupe.Mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+    felupe.Mesh.revolve : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
     """
 
     points = np.array(points)
@@ -537,7 +537,7 @@ def merge_duplicate_cells(points, cells, cell_type):
 
 @mesh_or_data
 def translate(points, cells, cell_type, move, axis):
-    """Translate (move) a Mesh.
+    """Translate (move) a Mesh along a given axis.
 
     Parameters
     ----------
@@ -560,6 +560,22 @@ def translate(points, cells, cell_type, move, axis):
         Original point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Circle(n=6)
+    >>> mesh.points.min(axis=0), mesh.points.max(axis=0)
+    (array([0., 0., 0.]), array([1., 1., 1.]))
+
+    >>> translated = fem.mesh.translate(mesh, 0.3, axis=1)
+    >>> translated.points.min(axis=0), translated.points.max(axis=0)
+    (array([0. , 0.3, 0. ]), array([1. , 1.3, 1. ]))
+
+    See Also
+    --------
+    felupe.Mesh.translate : Translate (move) a Mesh along a given axis.
     """
 
     points_new = np.array(points)
@@ -646,6 +662,25 @@ def mirror(
         Modified point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+
+    ..  image:: images/mesh_mirror_before.png
+        :width: 400px
+
+    >>> fem.mesh.mirror(mesh, normal=[0, 1, 0])
+
+    ..  image:: images/mesh_mirror_after.png
+        :width: 400px
+
+    See Also
+    --------
+    felupe.Mesh.mirror : Mirror points by plane normal and ensure positive cell volumes
+        for `tria`, `tetra`, `quad` and `hexahedron` cell types.
 
     """
 

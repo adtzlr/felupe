@@ -250,8 +250,8 @@ class Material:
     >>>     iFT = transpose(inv(F, J))
     >>>     eye = identity(F)
     >>>     return [
-    >>>         mu * (cdya_ik(eye, eye) + cdya_il(iFT, iFT)) + 
-    >>>         lmbda * (dya(iFT, iFT) - np.log(J) * cdya_il(iFT, iFT))
+    >>>         mu * cdya_ik(eye, eye) + lmbda * dya(iFT, iFT) +
+    >>>         (mu - lmbda * np.log(J)) * cdya_il(iFT, iFT)
     >>>     ]
     
     >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)

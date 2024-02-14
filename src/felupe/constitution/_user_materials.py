@@ -182,6 +182,95 @@ class Material:
             return [d2WdFdF, d2WdFdp, d2WdFdJ, d2Wdpdp, d2WdpdJ, d2WdJdJ]
 
         umat = Material(gradient, hessian, **kwargs)
+    
+    Examples
+    --------
+    The compressible isotropic hyperelastic Neo-Hookean material formulation is given
+    by the strain energy density function.
+    
+    .. math::
+
+        \psi &= \psi(\boldsymbol{C})
+
+        \psi(\boldsymbol{C}) &= \frac{\mu}{2} \text{tr}(\boldsymbol{C})
+            - \mu \ln(J) + \frac{\lambda}{2} \ln(J)^2
+
+    with
+
+    .. math::
+
+       J = \text{det}(\boldsymbol{F})
+      
+    The first Piola-Kirchhoff stress tensor is evaluated as the gradient
+    of the strain energy density function.
+
+    .. math::
+
+       \boldsymbol{P} &= \frac{\partial \psi}{\partial \boldsymbol{F}}
+
+       \boldsymbol{P} &= \mu \left( \boldsymbol{F} - \boldsymbol{F}^{-T} \right)
+           + \lambda \ln(J) \boldsymbol{F}^{-T}
+
+    The hessian of the strain energy density function enables the corresponding
+    elasticity tensor.
+
+    .. math::
+
+       \mathbb{A} &= \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial
+       \boldsymbol{F}}
+
+       \mathbb{A} &= \mu \boldsymbol{I} \overset{ik}{\otimes} \boldsymbol{I}
+           + \left(\mu - \lambda \ln(J) \right)
+               \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
+           + \lambda \boldsymbol{F}^{-T} {\otimes} \boldsymbol{F}^{-T}
+    
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>> from felupe.math import (
+    >>>     cdya_ik,
+    >>>     cdya_il,
+    >>>     det,
+    >>>     dya,
+    >>>     identity,
+    >>>     inv,
+    >>>     transpose
+    >>> )
+    
+    >>> def stress(x, mu, lmbda):
+    >>>     F, statevars = x[0], x[-1]
+    >>>     J = det(F)
+    >>>     lnJ = np.log(J)
+    >>>     iFT = transpose(inv(F, J))
+    >>>     dWdF = mu * (F - iFT) + lmbda * lnJ * iFT
+    >>>     return [dWdF, statevars]
+    
+    >>> def elasticity(x, mu, lmbda):
+    >>>     F = x[0]
+    >>>     J = det(F)
+    >>>     iFT = transpose(inv(F, J))
+    >>>     eye = identity(F)
+    >>>     return [
+    >>>         mu * (cdya_ik(eye, eye) + cdya_il(iFT, iFT)) + 
+    >>>         lmbda * (dya(iFT, iFT) - np.log(J) * cdya_il(iFT, iFT))
+    >>>     ]
+    
+    >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)
+    
+    The material formulation is tested in a minimal example of non-homogeneous uniaxial
+    tension.
+
+    >>> mesh = fem.Cube(n=6)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.5)
+    >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+    >>> step = fem.Step(items=[solid], boundaries=boundaries)
+    >>> job = fem.Job(steps=[step]).evaluate()
+    
+    See Also
+    --------
+    felupe.NeoHookeCompressible : Nearly-incompressible isotropic hyperelastic
+        Neo-Hookean material formulation.
 
     """
 

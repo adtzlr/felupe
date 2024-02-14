@@ -75,6 +75,41 @@ class Material:
 
         umat = Material(stress, elasticity, **kwargs)
 
+    For (u, p) mixed-field formulations, take this code-block as template:
+
+    ..  code-block::
+
+        def gradient(x, **kwargs):
+            "Gradient of the strain energy density function."
+
+            # extract variables
+            F, p, statevars = x[0], x[1], x[-1]
+
+            # user code
+            dWdF = None  # first Piola-Kirchhoff stress tensor
+            dWdp = None
+
+            # update state variables
+            statevars_new = None
+
+            return [dWdF, dWdp, statevars_new]
+
+        def hessian(x, **kwargs):
+            "Hessian of the strain energy density function."
+
+            # extract variables
+            F, p, statevars = x[0], x[1], x[-1]
+
+            # user code
+            d2WdFdF = None  # fourth-order elasticity tensor
+            d2WdFdp = None
+            d2Wdpdp = None
+
+            # upper-triangle items of the hessian
+            return [d2WdFdF, d2WdFdp, d2Wdpdp]
+
+        umat = Material(gradient, hessian, **kwargs)
+
     """
 
     def __init__(self, stress, elasticity, nstatevars=0, **kwargs):

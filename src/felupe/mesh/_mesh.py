@@ -101,6 +101,8 @@ class Mesh(DiscreteGeometry):
 
     See Also
     --------
+    felupe.MeshContainer : A container which operates on a list of meshes with identical
+        dimensions.
     felupe.Rectangle : A rectangular 2d-mesh with quads between ``a`` and ``b`` with
         ``n`` points per axis.
     felupe.Cube : A cube shaped 3d-mesh with hexahedrons between ``a`` and ``b`` with

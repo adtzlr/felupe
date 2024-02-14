@@ -204,6 +204,8 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
     >>>     μ=1.0,
     >>>     σy=1.0,
     >>>     K=0.1,
+    >>>     dim=3,
+    >>>     statevars=(1, (3, 3)),
     >>> )
 
     See Also

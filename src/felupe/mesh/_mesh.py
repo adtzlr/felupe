@@ -1145,13 +1145,13 @@ class Mesh(DiscreteGeometry):
         return add_midpoints_edges(self, cell_type_new=cell_type)
 
     def add_midpoints_faces(self, cell_type=None):
-        """ Add midpoints on faces for given points and cells
-        and update cell_type accordingly.
-        
+        """Add midpoints on faces for given points and cells and update cell_type
+        accordingly.
+
         Parameters
         ----------
         cell_type: str or None, optional
-            A string in VTK-convention that specifies the new cell type (default is 
+            A string in VTK-convention that specifies the new cell type (default is
             None). If None, the cell type is chosen automatically.
 
         Returns
@@ -1177,7 +1177,7 @@ class Mesh(DiscreteGeometry):
 
         ..  image:: images/mesh_midpoints_faces.png
             :width: 400px
-        
+
         See Also
         --------
         felupe.mesh.add_midpoints_faces : Add midpoints on faces for given points and
@@ -1185,6 +1185,45 @@ class Mesh(DiscreteGeometry):
         """
         return add_midpoints_faces(self, cell_type_new=cell_type)
 
-    @wraps(add_midpoints_volumes)
     def add_midpoints_volumes(self, cell_type=None):
+        """Add midpoints on volumes for given points and cells and update cell_type
+        accordingly.
+
+        Parameters
+        ----------
+        cell_type: str or None, optional
+            A string in VTK-convention that specifies the new cell type (default is None).
+            If None, the cell type is chosen automatically.
+
+        Returns
+        -------
+        Mesh
+            A new mesh with inserted midpoints on cell volumes.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=6)
+        >>> mesh_with_midpoints_volumes = mesh.add_midpoints_volumes(
+        >>>     cell_type_new="hexahedron9"
+        >>> )
+        >>> mesh_with_midpoints_volumes
+        <felupe Mesh object>
+          Number of points: 341
+          Number of cells:
+            hexahedron9: 125
+
+        >>> plotter=mesh.plot(opacity=0.5)
+        >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
+        >>> plotter.show()
+
+        ..  image:: images/mesh_midpoints_volumes.png
+            :width: 400px
+
+        See Also
+        --------
+        felupe.mesh.add_midpoints_volumes : Add midpoints on volumes for given points
+            and cells and update cell_type accordingly.
+        """
         return add_midpoints_volumes(self, cell_type_new=cell_type)

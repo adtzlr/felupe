@@ -88,6 +88,31 @@ class Mesh(DiscreteGeometry):
     cells_per_point : ndarray
         Array which counts connected cells per point. Used for averaging results.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> points = np.array(
+    >>>     [[0.0, 0.0], [0.5, 0.0], [1.0, 0.0], [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]]
+    >>> )
+    >>> cells = np.array([[0, 1, 4, 3], [1, 2, 5, 4]])
+    >>> mesh = fem.Mesh(points, cells, cell_type="quad")
+
+    See Also
+    --------
+    felupe.Rectangle : A rectangular 2d-mesh with quads between ``a`` and ``b`` with
+        ``n`` points per axis.
+    felupe.Cube : A cube shaped 3d-mesh with hexahedrons between ``a`` and ``b`` with
+        ``n`` points per axis.
+    felupe.Grid : A grid shaped 3d-mesh with hexahedrons. Basically a wrapper for
+        :func:`numpy.meshgrid` with  default ``indexing="ij"``.
+    felupe.Circle : A circular shaped 2d-mesh with quads and ``n`` points on the
+        circumferential edge of a 45-degree section. 90-degree ``sections`` are placed
+        at given angles in degree.
+    felupe.mesh.Triangle : A triangular shaped 2d-mesh with quads and ``n`` points at
+        the edges of the three sub-quadrilaterals.
+
     """
 
     def __init__(self, points, cells, cell_type=None):

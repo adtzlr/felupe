@@ -125,12 +125,12 @@ class Material:
         \end{bmatrix}
         
         \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
-            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}
-            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial p \\
-            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial J \\
-            \frac{\partial^2 \psi}{\partial p\ \partial p \\
-            \frac{\partial^2 \psi}{\partial p\ \partial J \\
-            \frac{\partial^2 \psi}{\partial J\ \partial J
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial p} \\
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial J} \\
+            \frac{\partial^2 \psi}{\partial p\ \partial p} \\
+            \frac{\partial^2 \psi}{\partial p\ \partial J} \\
+            \frac{\partial^2 \psi}{\partial J\ \partial J}
         \end{bmatrix}
 
     For :math:`(\boldsymbol{u}, p, J)` mixed-field formulations, take this code-block as

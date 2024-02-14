@@ -66,16 +66,19 @@ class Material:
     For :math:`(\boldsymbol{u})` single-field formulations, the callables for
     ``stress`` and ``elasticity`` must return the gradient and hessian of the strain
     energy density function :math:`\psi(\boldsymbol{F})` w.r.t. the deformation
-    gradient :math:`\boldsymbol{F}`.
+    gradient tensor :math:`\boldsymbol{F}`.
     
     ..  math::
 
-        \text{stress}(\boldsymbol{F}, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+        \text{stress}(\boldsymbol{F}, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial \psi}{\partial \boldsymbol{F}} \\
             \boldsymbol{\zeta}
         \end{bmatrix}
+    
+    The callable for ``elasticity`` (hessian) must not return the updated state
+    variables.
         
-        \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+        \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
         \end{bmatrix}
     
@@ -118,7 +121,7 @@ class Material:
     
     ..  math::
 
-        \text{stress}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+        \text{stress}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial \psi}{\partial \boldsymbol{F}} \\
             \frac{\partial \psi}{\partial p} \\
             \frac{\partial \psi}{\partial J} \\
@@ -129,7 +132,7 @@ class Material:
 
     ..  math::
 
-        \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+        \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} \\
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial p} \\
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial J} \\

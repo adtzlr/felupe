@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.17.0] - 2024-02-15
+
 ### Added
 - Add a mesh for a single vertex point `vertex = Point(a=0)`.
 - Add expansion of a vertex point to a line mesh `vertex.expand(n=11, z=1)`.

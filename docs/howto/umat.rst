@@ -1,31 +1,23 @@
 Small-Strain based Materials
 ----------------------------
 
-User materials (Umat) based on the incremental small-strain tensor, suitable for elastic-plastic material formulations, are to be created with :class:`~felupe.MaterialStrain`. A user-defined function must be created with the arguments
+User materials (Umat) based on the incremental small-strain tensor, e.g. suitable for linear elastic-plastic material formulations, are to be created with :class:`~felupe.MaterialStrain`. A user-defined function must be created with the arguments and must return:
 
-+---------------+-----------------------------+
-| **Arguments** | **Description**             |
-+---------------+-----------------------------+
-|      dε       | strain increment            |
-+---------------+-----------------------------+
-|      εn       | old strain tensor           |
-+---------------+-----------------------------+
-|      σn       | old stress tensor           |
-+---------------+-----------------------------+
-|      ζn       | list of old state variables |
-+---------------+-----------------------------+
-
-and must return:
-
-+-------------+-----------------------------+
-| **Returns** | **Description**             |
-+-------------+-----------------------------+
-|     dσdε    | tangent modulus             |
-+-------------+-----------------------------+
-|      σ      | new stress tensor           |
-+-------------+-----------------------------+
-|      ζ      | list of new state variables |
-+-------------+-----------------------------+
++----------+---------------+---------------------------------------+
+| **Kind** |  **Symbol**   | **Description**                       |
++==========+===============+=======================================+
+| Argument |      dε       | strain increment                      |
++----------|---------------+---------------------------------------+
+| Argument |      εn       | old strain tensor                     |
++----------|---------------+---------------------------------------+
+| Argument |      σn       | old stress tensor                     |
++----------|---------------+---------------------------------------+
+| Argument |      ζn       | list of old state variables           |
++----------|---------------+---------------------------------------+
+| Return   |      σ        | tangent modulus                       |
++----------|---------------+---------------------------------------+
+| Return   |      ζ        | list of new state variables           |
++----------|---------------+---------------------------------------+
 
 ..  code-block:: python
 
@@ -42,5 +34,5 @@ This function is further added as the ``material`` argument of :class:`~felupe.M
 
 FElupe contains two reference user materials, one for linear elastic materials and another one for linear elastic-plastic materials with isotropic hardening:
 
-* :func:`~felupe.constitution.linear_elastic`
-* :func:`~felupe.constitution.linear_elastic_plastic_isotropic_hardening`
+* :func:`~felupe.linear_elastic`
+* :func:`~felupe.linear_elastic_plastic_isotropic_hardening`

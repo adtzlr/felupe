@@ -291,8 +291,8 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
 
 @mesh_or_data
 def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
-    """Add midpoints on faces for given points and cells
-    and update cell_type accordingly.
+    """Add midpoints on faces for given points and cells and update cell_type
+    accordingly.
 
     Parameters
     ----------
@@ -374,8 +374,56 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
 
 @mesh_or_data
 def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
-    """ "Add midpoints on volumes for given points and cells
-    and update cell_type accordingly."""
+    """ Add midpoints on volumes for given points and cells and update cell_type
+    accordingly.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    cell_type_new: str or None, optional
+        A string in VTK-convention that specifies the new cell type (default is None).
+        If None, the cell type is chosen automatically.
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> mesh_with_midpoints_volumes = fem.mesh.add_midpoints_volumes(
+    >>>     mesh, cell_type_new="hexahedron9"
+    >>> )
+    >>> mesh_with_midpoints_volumes
+    <felupe Mesh object>
+      Number of points: 341
+      Number of cells:
+        hexahedron9: 125
+
+    >>> plotter=mesh.plot(opacity=0.5)
+    >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
+    >>> plotter.show()
+
+    ..  image:: images/mesh_midpoints_volumes.png
+        :width: 400px
+
+    See Also
+    --------
+    felupe.Mesh.add_midpoints_volumes : Add midpoints on volumes for given points and
+        cells and update cell_type accordingly.
+    """
 
     # collect volumes
     points_volumes, cells_volumes, _ = collect_volumes(

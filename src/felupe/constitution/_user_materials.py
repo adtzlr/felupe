@@ -199,7 +199,7 @@ class Material:
         x : list of ndarray
             The list with input arguments. These contain the extracted fields of a
             :class:`~felupe.FieldContainer` along with the old vector of state
-            variables, ``[*[field.extract() for field in fields], statevars_old]``.
+            variables, ``[*field.extract(), statevars_old]``.
 
         Returns
         -------
@@ -219,7 +219,7 @@ class Material:
         x : list of ndarray
             The list with input arguments. These contain the extracted fields of a
             :class:`~felupe.FieldContainer` along with the old vector of state
-            variables, ``[*[field.extract() for field in fields], statevars_old]``.
+            variables, ``[*field.extract(), statevars_old]``.
 
         Returns
         -------

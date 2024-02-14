@@ -25,11 +25,14 @@ from ._user_materials_models import linear_elastic_plastic_isotropic_hardening
 
 class Material:
     r"""A user-defined material definition with given functions for the (first
-    Piola-Kirchhoff) stress tensor :math:`\boldsymbol{P}` and the according fourth-order
-    elasticity tensor :math:`\mathbb{A}`. Both functions take a list of the 3x3
-    deformation gradient :math:`\boldsymbol{F}` and optional vector of state variables
-    :math:`\boldsymbol{\zeta}_n` as the first input argument. The stress-function must
-    return the updated state variables :math:`\boldsymbol{\zeta}`.
+    Piola-Kirchhoff) stress tensor :math:`\boldsymbol{P}`, optional constraints on
+    additional fields (e.g. :math:`p` and :math`J`), updated state variables
+    :math:`\boldsymbol{\zeta}` as well as the according fourth-order elasticity tensor
+    :math:`\mathbb{A}` and the linearizations of the constraint equations. Both
+    functions take a list of the 3x3 deformation gradient :math:`\boldsymbol{F}` and
+    optional vector of state variables :math:`\boldsymbol{\zeta}_n` as the first input
+    argument. The stress-function must return the updated state variables
+    :math:`\boldsymbol{\zeta}`.
     
     Parameters
     ----------

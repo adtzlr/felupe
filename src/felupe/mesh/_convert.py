@@ -72,7 +72,7 @@ def convert(
 
 @mesh_or_data
 def collect_edges(points, cells, cell_type):
-    """ "Collect all unique edges,
+    """Collect all unique edges,
     calculate and return midpoints on edges as well as the additional
     cells array."""
 
@@ -112,7 +112,7 @@ def collect_edges(points, cells, cell_type):
 
 @mesh_or_data
 def collect_faces(points, cells, cell_type):
-    """ "Collect all unique faces,
+    """Collect all unique faces,
     calculate and return midpoints on faces as well as the additional
     cells array."""
 
@@ -182,7 +182,7 @@ def collect_faces(points, cells, cell_type):
 
 @mesh_or_data
 def collect_volumes(points, cells, cell_type):
-    """ "Collect all volumes,
+    """Collect all volumes,
     calculate and return midpoints on volumes as well as the additional
     cells array."""
 

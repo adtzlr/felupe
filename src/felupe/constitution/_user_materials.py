@@ -114,7 +114,7 @@ class Material:
     For :math:`(\boldsymbol{u}, p, J)` mixed-field formulations, the callables for
     ``stress`` and ``elasticity`` must return the gradients and hessians of the
     (augmented) strain energy density function w.r.t. the deformation gradient and the
-    other fields. For the hessians, the upper-triangle blocks have to be provided.
+    other fields.
     
     ..  math::
 
@@ -124,7 +124,11 @@ class Material:
             \frac{\partial \psi}{\partial J} \\
             \boldsymbol{\zeta}
         \end{bmatrix}
-        
+
+    For the hessians, the upper-triangle blocks have to be provided.
+
+    ..  math::
+
         \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} \\
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial p} \\

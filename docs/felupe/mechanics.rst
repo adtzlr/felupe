@@ -1,5 +1,39 @@
 Mechanics
 ~~~~~~~~~
+
+.. currentmodule:: felupe
+
+**Solid Bodies**
+
+.. autosummary::
+
+   SolidBody
+   SolidBodyNearlyIncompressible
+   SolidBodyPressure
+   SolidBodyGravity
+
+**State Variables**
+
+.. autosummary::
+
+   StateNearlyIncompressible
+
+**Steps and Jobs**
+
+.. autosummary::
+
+   Step
+   Job
+   CharacteristicCurve
+
+**Point Load and Multi-Point Constraints**
+
+.. autosummary::
+
+   PointLoad
+   MultiPointConstraint
+   MultiPointContact
+
    
 .. autoclass:: felupe.SolidBody
    :members:

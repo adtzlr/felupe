@@ -77,6 +77,8 @@ class Material:
     
     The callable for ``elasticity`` (hessian) must not return the updated state
     variables.
+    
+    ..  math::
         
         \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}

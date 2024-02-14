@@ -26,13 +26,45 @@ from ._user_materials_models import linear_elastic_plastic_isotropic_hardening
 class Material:
     r"""A user-defined material definition with given functions for the (first
     Piola-Kirchhoff) stress tensor :math:`\boldsymbol{P}` and the according fourth-order
-    elasticity tensor :math:`\mathbb{A}`. Both functions take a list of the deformation
-    gradient :math:`\boldsymbol{F}` and optional state variables
-    :math:`\boldsymbol{\zeta}_n` as the first input argument. The stress-function also
-    returns the updated state variables :math:`\boldsymbol{\zeta}`.
+    elasticity tensor :math:`\mathbb{A}`. Both functions take a list of the 3x3
+    deformation gradient :math:`\boldsymbol{F}` and optional vector of state variables
+    :math:`\boldsymbol{\zeta}_n` as the first input argument. The stress-function must
+    return the updated state variables :math:`\boldsymbol{\zeta}`.
+    
+    Parameters
+    ----------
+    stress : callable
+        A constitutive material definition which returns a list containting the (first
+        Piola-Kirchhoff) stress tensor, optional additional constraints as well as the
+        state variables. The state variables must always be included even if they are
+        None. See template code-blocks for the required function signature.
+    elasticity : callable
+        A constitutive material definition which returns a list containing the fourth-
+        order elasticity tensor as the jacobian of the (first Piola-Kirchhoff) stress
+        tensor w.r.t. the deformation gradient, optional linearizations of the
+        additional constraints. The state variables must not be returned. See template
+        code-blocks for the required function signature.
+    nstatevars : int, optional
+        Number of internal state variable components (default is 0). State variable
+        components must always be concatenated into a 1d-array.
 
     Notes
     -----
+    
+    ..  note::
+        The first item in the list of the input arguments always contains the
+        gradient of the (displacement) field :math:`\boldsymbol{u}` w.r.t. the
+        undeformed coordinates  :math:`\boldsymbol{X}`. The identity matrix
+        :math:`\boldsymbol{1}` is added to this gradient, i.e. the first item of the
+        list ``x`` contains the deformation gradient :math:`\boldsymbol{F} =
+        \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}`. All
+        other fields are provided as interpolated values (no gradients evaluated).
+    
+     For :math:`(\boldsymbol{u})` single-field formulations, the callables for
+     ``stress`` and ``elasticity`` must return the gradient and hessian of the strain
+     energy density function :math:`\psi(\boldsymbol{F})` w.r.t. the deformation
+     gradient :math:`\boldsymbol{F}`.
+    
     ..  math::
 
         \psi &= \psi(\boldsymbol{F}, \boldsymbol{\zeta})
@@ -42,7 +74,7 @@ class Material:
         \mathbb{A} &= \frac{\partial^2 \psi}{
             \partial \boldsymbol{F}\ \partial \boldsymbol{F}
         }
-
+    
     Take this code-block as template:
 
     ..  code-block::
@@ -74,55 +106,85 @@ class Material:
             return [dPdF]
 
         umat = Material(stress, elasticity, **kwargs)
+        
+    For :math:`(\boldsymbol{u}, p, J)` mixed-field formulations, the callables for
+    ``stress`` and ``elasticity`` must return the gradients and hessians of the
+    (augmented) strain energy density function w.r.t. the deformation gradient and the
+    other fields. For the hessians, the upper-triangle blocks have to be provided.
+    
+    ..  math::
 
-    For (u, p) mixed-field formulations, take this code-block as template:
+        \text{stress}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+            \frac{\partial \psi}{\partial \boldsymbol{F}} \\
+            \frac{\partial \psi}{\partial p} \\
+            \frac{\partial \psi}{\partial J} \\
+            \boldsymbol{\zeta}
+        \begin{bmatrix}
+        
+        \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial p \\
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial J \\
+            \frac{\partial^2 \psi}{\partial p\ \partial p \\
+            \frac{\partial^2 \psi}{\partial p\ \partial J \\
+            \frac{\partial^2 \psi}{\partial J\ \partial J
+        \begin{bmatrix}
+
+    For :math:`(\boldsymbol{u}, p, J)` mixed-field formulations, take this code-block as
+    template:
 
     ..  code-block::
 
         def gradient(x, **kwargs):
-            "Gradient of the strain energy density function."
+            "Gradients of the strain energy density function."
 
             # extract variables
-            F, p, statevars = x[0], x[1], x[-1]
+            F, p, J, statevars = x[0], x[1], x[2], x[-1]
 
             # user code
             dWdF = None  # first Piola-Kirchhoff stress tensor
             dWdp = None
+            dWdJ = None
 
             # update state variables
             statevars_new = None
 
-            return [dWdF, dWdp, statevars_new]
+            return [dWdF, dWdp, dWdJ, statevars_new]
 
         def hessian(x, **kwargs):
-            "Hessian of the strain energy density function."
+            "Hessians of the strain energy density function."
 
             # extract variables
-            F, p, statevars = x[0], x[1], x[-1]
+            F, p, J, statevars = x[0], x[1], x[2], x[-1]
 
             # user code
             d2WdFdF = None  # fourth-order elasticity tensor
             d2WdFdp = None
+            d2WdFdJ = None
             d2Wdpdp = None
+            d2WdpdJ = None
+            d2WdJdJ = None
 
             # upper-triangle items of the hessian
-            return [d2WdFdF, d2WdFdp, d2Wdpdp]
+            return [d2WdFdF, d2WdFdp, d2WdFdJ, d2Wdpdp, d2WdpdJ, d2WdJdJ]
 
         umat = Material(gradient, hessian, **kwargs)
 
     """
 
     def __init__(self, stress, elasticity, nstatevars=0, **kwargs):
-        self.umat = {"stress": stress, "elasticity": elasticity}
+        self.umat = {"gradient": stress, "hessian": elasticity}
         self.kwargs = kwargs
         self.nstatevars = nstatevars
         self.x = [np.eye(3), np.zeros(nstatevars)]
 
     def gradient(self, x):
-        return self.umat["stress"](x, **self.kwargs)
+        "Return the evaluated gradient."
+
+        return self.umat["gradient"](x, **self.kwargs)
 
     def hessian(self, x):
-        return self.umat["elasticity"](x, **self.kwargs)
+        return self.umat["hessian"](x, **self.kwargs)
 
 
 class MaterialStrain:

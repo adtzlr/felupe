@@ -125,7 +125,7 @@ class Material:
         \end{bmatrix}
         
         \text{elasticity}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) &= \begin{bmatrix}
-            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} \\
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial p} \\
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial J} \\
             \frac{\partial^2 \psi}{\partial p\ \partial p} \\

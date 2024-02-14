@@ -740,8 +740,51 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(merge_duplicate_cells(self))
 
-    @wraps(fill_between)
     def fill_between(self, other_mesh, n=11):
+        """Fill a 2d-Quad Mesh between two 1d-Line Meshes, embedded in 2d-space, or a
+        3d-Hexahedron Mesh between two 2d-Quad Meshes, embedded in 3d-space, by expansion.
+        Both meshes must have equal number of points and cells. The cells-array is taken
+        from the first mesh.
+
+        Parameters
+        ----------
+        other_mesh : felupe.Mesh
+            The other line- or quad-mesh.
+        n : int or ndarray
+            Number of n-point repetitions or (n-1)-cell repetitions,
+            (default is 11). If an array is given, then its values are used for the
+            relative positions in a reference configuration (-1, 1) between the two meshes.
+
+        Returns
+        -------
+        felupe.Mesh
+            The expanded mesh.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> inner = point.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
+        >>> outer = point.revolve(fem.Point(2), phi=160).rotate(
+        >>>     axis=2, angle_deg=20
+        >>> ).expand(z=1.2)
+        >>> container = fem.MeshContainer([inner, outer])
+
+        ..  image:: images/faces_fill_between.png
+            :width: 400px
+
+        >>> mesh = inner.fill_between(outer, n=6)
+
+        ..  image:: images/mesh_fill_between.png
+            :width: 400px
+
+        See Also
+        --------
+        felupe.mesh.fill_between : Fill a 2d-Quad Mesh between two 1d-Line Meshes, embedded
+            in 2d-space, or a 3d-Hexahedron Mesh between two 2d-Quad Meshes, embedded in
+            3d-space, by expansion.
+
+        """
         return as_mesh(fill_between(self, other_mesh=other_mesh, n=n))
 
     @wraps(flip)

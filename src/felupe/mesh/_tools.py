@@ -873,11 +873,30 @@ def triangulate(points, cells, cell_type, mode=3):
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=6)
+    >>> fem.mesh.triangulate(mesh, mode=0)
+
+    ..  image:: images/mesh_cube_triangulate_mode0.png
+        :width: 400px
+
+    >>> fem.mesh.triangulate(mesh, mode=3)
+
+    ..  image:: images/mesh_cube_triangulate_mode3.png
+        :width: 400px
+
     References
     ----------
     [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
     How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
     IMR, 99, 195.
+
+    See Also
+    --------
+    felupe.Mesh.triangulate : Triangulate a quad or a hex mesh.
     """
 
     if cell_type == "quad":

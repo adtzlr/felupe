@@ -864,8 +864,44 @@ class Mesh(DiscreteGeometry):
 
         return as_mesh(translate(self, move=move, axis=axis))
 
-    @wraps(triangulate)
     def triangulate(self, mode=3):
+        """Triangulate a quad or a hex mesh.
+
+        Parameters
+        ----------
+        mode: int, optional
+            Choose a mode how to convert hexahedrons to tets [1] (default is 3).
+
+        Returns
+        -------
+        Mesh
+            The triangulated mesh.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=6)
+        >>> mesh.triangulate(mode=0)
+
+        ..  image:: images/mesh_cube_triangulate_mode0.png
+            :width: 400px
+
+        >>> mesh.triangulate(mode=3)
+
+        ..  image:: images/mesh_cube_triangulate_mode3.png
+            :width: 400px
+
+        References
+        ----------
+        [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
+        How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
+        IMR, 99, 195.
+
+        See Also
+        --------
+        felupe.mesh.triangulate : Triangulate a quad or a hex mesh.
+        """
         return as_mesh(triangulate(self, mode=mode))
 
     @wraps(runouts)

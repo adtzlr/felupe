@@ -34,6 +34,7 @@ Mechanics
    MultiPointConstraint
    MultiPointContact
 
+**Detailed API Reference**
    
 .. autoclass:: felupe.SolidBody
    :members:

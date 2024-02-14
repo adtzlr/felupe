@@ -183,6 +183,8 @@ class MaterialStrain:
     linear_elastic : 3D linear-elastic material formulation
     linear_elastic_plastic_isotropic_hardening : Linear-elastic-plastic material
         formulation with linear isotropic hardening (return mapping algorithm).
+    LinearElasticPlasticIsotropicHardening : Linear-elastic-plastic material
+        formulation with linear isotropic hardening (return mapping algorithm).
 
     """
 

@@ -255,6 +255,11 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
 
     ..  image:: images/mesh_midpoints_edges.png
         :width: 400px
+    
+    See Also
+    --------
+    felupe.Mesh.add_midpoints_edges : Add midpoints on edges for given points and cells
+        and update cell_type accordingly.
 
     """
 

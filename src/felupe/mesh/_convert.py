@@ -374,7 +374,7 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
 
 @mesh_or_data
 def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
-    """ Add midpoints on volumes for given points and cells and update cell_type
+    """Add midpoints on volumes for given points and cells and update cell_type
     accordingly.
 
     Parameters

@@ -111,7 +111,7 @@ class DiscreteGeometry:
         >>>
         >>> new_points = mesh.rotate(angle_deg=-90, axis=2).points
         >>> mesh.update(points=new_points, callback=region.reload)
-        
+
         See Also
         --------
         felupe.Region.reload : Reload the numeric region.

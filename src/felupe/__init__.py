@@ -84,7 +84,7 @@ from .mechanics import (
     StateNearlyIncompressible,
     Step,
 )
-from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Rectangle, Point
+from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .quadrature import GaussLegendre, GaussLegendreBoundary
 from .quadrature import Tetrahedron as TetrahedronQuadrature
 from .quadrature import Triangle as TriangleQuadrature

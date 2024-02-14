@@ -166,8 +166,8 @@ class MeshContainer:
         """
 
         if colors is None:
-            import pyvista
             import matplotlib.colors as mcolors
+            import pyvista
 
             colors = [
                 pyvista.global_theme.color,
@@ -204,8 +204,8 @@ class MeshContainer:
         """
 
         if colors is None:
-            import pyvista
             import matplotlib.colors as mcolors
+            import pyvista
 
             colors = [
                 pyvista.global_theme.color,

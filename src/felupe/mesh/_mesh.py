@@ -433,8 +433,8 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron
-            Mesh.
+        felupe.mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a
+            3d-Hexahedron Mesh.
         """
         return as_mesh(expand(self, n=n, z=z))
 
@@ -473,7 +473,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        mesh.rotate : Rotate a Mesh.
+        felupe.mesh.rotate : Rotate a Mesh.
         """
         return as_mesh(rotate(self, angle_deg=angle_deg, axis=axis, center=center))
 
@@ -513,7 +513,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+        felupe.mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
         """
         return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
 
@@ -598,9 +598,10 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        mesh.merge_duplicate_points : Merge duplicated points and update cells of a Mesh.
-        MeshContainer : A container which operates on a list of meshes with identical
-            dimensions.
+        felupe.mesh.merge_duplicate_points : Merge duplicated points and update cells of
+            a Mesh.
+        felupe.MeshContainer : A container which operates on a list of meshes with
+            identical dimensions.
         """
         return as_mesh(merge_duplicate_points(self, decimals=decimals))
 

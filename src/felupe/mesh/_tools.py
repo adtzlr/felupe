@@ -138,6 +138,26 @@ def fill_between(mesh, other_mesh, n=11):
     -------
     mesh : felupe.Mesh
         The expanded mesh.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> point = fem.Point(a=1)
+    >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
+    >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
+    >>>     axis=2, angle_deg=20
+    >>> ).expand(z=1.2)
+    >>> container = fem.MeshContainer([inner, outer])
+
+    ..  image:: images/faces_fill_between.png
+        :width: 400px
+
+    >>> mesh = fem.mesh.fill_between(inner, outer, n=6)
+
+    ..  image:: images/mesh_fill_between.png
+        :width: 400px
+
     """
 
     if not hasattr(n, "__len__"):
@@ -223,7 +243,8 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
 
 @mesh_or_data
 def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
-    """Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+    """Revolve a 0d-Point to a 1d-Line, a 1d-Line to 2d-Quad or a 2d-Quad to a
+    3d-Hexahedron Mesh.
 
     Parameters
     ----------
@@ -278,6 +299,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 
     # set new cell-type and the appropriate slice
     cell_type_new, sl = {
+        "vertex": ("line", slice(None, None, None)),
         "line": ("quad", slice(None, None, -1)),
         "quad": ("hexahedron", slice(None, None, None)),
     }[cell_type]

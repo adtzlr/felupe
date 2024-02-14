@@ -255,7 +255,7 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
 
     ..  image:: images/mesh_midpoints_edges.png
         :width: 400px
-    
+
     See Also
     --------
     felupe.Mesh.add_midpoints_edges : Add midpoints on edges for given points and cells
@@ -291,8 +291,56 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
 
 @mesh_or_data
 def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
-    """ "Add midpoints on faces for given points and cells
-    and update cell_type accordingly."""
+    """Add midpoints on faces for given points and cells
+    and update cell_type accordingly.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    cell_type_new: str or None, optional
+        A string in VTK-convention that specifies the new cell type (default is None).
+        If None, the cell type is chosen automatically.
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Rectangle(n=6)
+    >>> mesh_with_midpoints_faces = fem.mesh.add_midpoints_faces(
+    >>>     mesh, cell_type_new="quad"
+    >>> )
+    >>> mesh_with_midpoints_faces
+    <felupe Mesh object>
+      Number of points: 36
+      Number of cells:
+        quad: 25
+
+    >>> plotter = mesh_with_midpoints_faces.plot(
+    >>>     plotter=mesh.plot(), style="points", color="black"
+    >>> ).show()
+
+    ..  image:: images/mesh_midpoints_faces.png
+        :width: 400px
+
+    See Also
+    --------
+    felupe.Mesh.add_midpoints_faces : Add midpoints on faces for given points and cells
+        and update cell_type accordingly.
+    """
 
     # collect faces
     points_faces, cells_faces, _ = collect_faces(

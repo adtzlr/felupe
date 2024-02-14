@@ -5,8 +5,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add a mesh for a single vertex point `vertex = Point(a=0)`.
-- Add expansion from a vertex point to a line mesh `mesh.expand(vertex, n=11, z=1)`.
-- Add revolve from a vertex point to a line mesh `mesh.revolve(vertex, n=11, phi=180)`.
+- Add expansion from a vertex point to a line mesh `vertex.expand(n=11, z=1)`.
+- Add revolve from a vertex point to a line mesh `vertex.revolve(n=11, phi=180)`.
 
 ### Changed
 - Assume that no state variables are used in an `umat` if it has no attribute `umat.x`. Set the shape of the state variables by default to `(0, q, c)` in `SolidBody` and `SolidBodyNearlyIncompressible`.

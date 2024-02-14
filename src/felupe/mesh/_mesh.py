@@ -73,6 +73,20 @@ class Mesh(DiscreteGeometry):
         Point-connectivity of cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
+    npoints : int
+        Amount of points.
+    dim : int
+        Dimension of mesh point coordinates.
+    ndof : int
+        Amount of degrees of freedom.
+    ncells : int
+        Amount of cells.
+    points_with_cells : ndarray
+        Array with points connected to cells.
+    points_without_cells : ndarray
+        Array with points not connected to cells.
+    cells_per_point : ndarray
+        Array which counts connected cells per point. Used for averaging results.
 
     """
 

@@ -81,7 +81,41 @@ class DiscreteGeometry:
         return out
 
     def update(self, points=None, cells=None, cell_type=None, callback=None):
-        "Update the cell and dimension attributes with a given cell array."
+        """Update the mesh with given points and cells arrays inplace. Optionally, a
+        callback is evaluated.
+
+        Parameters
+        ----------
+        points : ndarray or None
+            New point coordinates (default is None). If None, it is unchanged.
+        cells : ndarray
+            New point-connectivity of cells (default is None). If None, it is unchanged.
+        cell_type : str or None, optional
+            New string in VTK-convention that specifies the cell type (default is
+            None). If None, it is unchanged.
+        callback : callable or None, optional
+            A callable which is called after the mesh is updated (default is None).
+
+        Examples
+        --------
+        ..  warning::
+            If the points of a mesh are modified and a region was already created with
+            the mesh, it is important to re-evaluate (reload) the
+            :class:`~felupe.Region`.
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=6)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+        >>>
+        >>> new_points = mesh.rotate(angle_deg=-90, axis=2).points
+        >>> mesh.update(points=new_points, callback=region.reload)
+        
+        See Also
+        --------
+        felupe.Region.reload : Reload the numeric region.
+        """
 
         if points is not None:
             self.points = points

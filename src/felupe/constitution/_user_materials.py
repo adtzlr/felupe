@@ -182,11 +182,42 @@ class Material:
         self.x = [np.eye(3), np.zeros(nstatevars)]
 
     def gradient(self, x):
-        "Return the evaluated gradient."
+        """Return the evaluated gradient of the strain energy density function.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            The list with input arguments. These contain the extracted fields of a
+            :class:`~felupe.FieldContainer` along with the old vector of state
+            variables, ``[*[field.extract() for field in fields], statevars_old]``.
+
+        Returns
+        -------
+        list of ndarray
+            A list with the evaluated gradient(s) of the strain energy density function
+            and the updated vector of state variables.
+        """
 
         return self.umat["gradient"](x, **self.kwargs)
 
     def hessian(self, x):
+        """Return the evaluated upper-triangle components of the hessian(s) of the
+        strain energy density function.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            The list with input arguments. These contain the extracted fields of a
+            :class:`~felupe.FieldContainer` along with the old vector of state
+            variables, ``[*[field.extract() for field in fields], statevars_old]``.
+
+        Returns
+        -------
+        list of ndarray
+            A list with the evaluated upper-triangle components of the hessian(s) of the
+            strain energy density function.
+        """
+
         return self.umat["hessian"](x, **self.kwargs)
 
 

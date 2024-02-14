@@ -439,7 +439,8 @@ class Mesh(DiscreteGeometry):
         )
 
     def expand(self, n=11, z=1):
-        """Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.
+        """Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a 2d-Quad to a
+        3d-Hexahedron Mesh.
 
         Parameters
         ----------
@@ -474,8 +475,8 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        felupe.mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a
-            3d-Hexahedron Mesh.
+        felupe.mesh.expand : Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a
+            2d-Quad to a 3d-Hexahedron Mesh.
         """
         return as_mesh(expand(self, n=n, z=z))
 

@@ -10,6 +10,7 @@ from ._convert import (
 )
 from ._dual import dual
 from ._geometry import (
+    Point,
     Circle,
     Cube,
     CubeArbitraryOrderHexahedron,
@@ -59,6 +60,7 @@ __all__ = [
     "CubeArbitraryOrderHexahedron",
     "Grid",
     "Line",
+    "Point",
     "Rectangle",
     "RectangleArbitraryOrderQuad",
     "Triangle",

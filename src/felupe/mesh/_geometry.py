@@ -23,6 +23,44 @@ from ._mesh import Mesh
 from ._tools import concatenate
 
 
+class Point(Mesh):
+    """A mesh with a single vertex point located at ``a``.
+
+    Parameters
+    ----------
+    a : float, optional
+        Vertex point coordinate of the mesh (default is 0.0).
+
+    Examples
+    --------
+    >>> import felupe as fem
+
+    >>> mesh = fem.Point(a=-2.1)
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 1
+      Number of cells:
+        vertex: 1
+
+    >>> mesh.points
+    array([-2.1])
+
+    >>> mesh.cells
+    array([[0]])
+
+    >>> mesh.imshow()
+    """
+
+    def __init__(self, a=0.0):
+        self.a = a
+
+        points = np.array([a]).reshape(1, -1)
+        cells = np.array([[0]])
+        cell_type = "vertex"
+
+        super().__init__(points, cells, cell_type)
+
+
 class Line(Mesh):
     """A 1d-mesh with lines between ``a`` and ``b`` with ``n`` points.
 

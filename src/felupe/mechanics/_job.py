@@ -194,7 +194,7 @@ class Job:
             ``parallel=True``, it is added as ``kwargs["parallel"] = True`` to the dict
             of additional keyword arguments. If ``x0`` is present in ``kwargs.keys()``,
             it is used as the mesh for the XDMF time series writer.
-        
+
         Returns
         -------
         Job
@@ -215,7 +215,7 @@ class Job:
         tools.NewtonResult : A data class which represents the result found by
             Newton's method.
         """
-        
+
         try:
             from tqdm import tqdm
         except ModuleNotFoundError:

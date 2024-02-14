@@ -25,7 +25,8 @@ from ._helpers import mesh_or_data
 
 @mesh_or_data
 def expand(points, cells, cell_type, n=11, z=1):
-    """Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.
+    """Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a 2d-Quad to a
+    3d-Hexahedron Mesh.
 
     Parameters
     ----------
@@ -39,9 +40,9 @@ def expand(points, cells, cell_type, n=11, z=1):
         Number of n-point repetitions or (n-1)-cell repetitions,
         default is 11.
     z : float or ndarray, optional
-        Total expand dimension as float (edge length in expand direction is z / n),
-        default is 1. Optionally, if an array is passed these entries are
-        taken as expansion and `n` is ignored.
+        Total expand dimension as float (edge length in expand direction is
+        ``z / (n - 1)``), default is 1. Optionally, if an array is passed these entries
+        are taken as expansion and `n` is ignored.
 
     Returns
     -------
@@ -70,8 +71,8 @@ def expand(points, cells, cell_type, n=11, z=1):
 
     See Also
     --------
-    felupe.Mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron
-        Mesh.
+    felupe.Mesh.expand : Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a
+        2d-Quad to a 3d-Hexahedron Mesh.
     """
 
     # ensure points, cells as ndarray
@@ -80,6 +81,7 @@ def expand(points, cells, cell_type, n=11, z=1):
 
     # set new cell-type and the appropriate slice
     cell_type_new, sl = {
+        "vertex": ("line", slice(None, None, None)),
         "line": ("quad", slice(None, None, -1)),
         "quad": ("hexahedron", slice(None, None, None)),
     }[cell_type]
@@ -103,6 +105,10 @@ def expand(points, cells, cell_type, n=11, z=1):
     # generate new cells array
     c = cells[np.newaxis, ...] + len(points) * np.arange(n)[..., np.newaxis, np.newaxis]
     cells_new = np.concatenate([c[:-1], c[1:, ..., sl]], axis=-1)
+
+    # expand vertex point to line in first direction
+    if cell_type_new == "line":
+        points_new = points_new[..., 1:]
 
     return (
         points_new.reshape(-1, points_new.shape[-1]),
@@ -379,9 +385,9 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
       Number of points: 220
       Number of cells:
         quad: 200
-    
+
     >>> ax = mesh.imshow(opacity=0.6)
-    
+
     ..  image:: images/mesh_sweep.png
         :width: 400px
 
@@ -424,7 +430,7 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 @mesh_or_data
 def merge_duplicate_cells(points, cells, cell_type):
     """Merge duplicate cells of a Mesh.
-    
+
     Parameters
     ----------
     points : list or ndarray
@@ -433,7 +439,7 @@ def merge_duplicate_cells(points, cells, cell_type):
         Original point-connectivity of cells.
     cell_type : str
         A string in VTK-convention that specifies the cell type.
-    
+
     Returns
     -------
     points : ndarray
@@ -442,7 +448,7 @@ def merge_duplicate_cells(points, cells, cell_type):
         Cells with merged duplicate cells.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
-    
+
     Notes
     -----
     ..  warning::
@@ -450,7 +456,7 @@ def merge_duplicate_cells(points, cells, cell_type):
 
     ..  note::
         This function does not merge duplicate points.
-    
+
     Examples
     --------
     Two quad meshes to be merged overlap some cells. Merge these duplicated
@@ -495,26 +501,26 @@ def merge_duplicate_cells(points, cells, cell_type):
       Number of points: 220
       Number of cells:
         quad: 200
-    
+
     >>> ax = mesh.imshow(opacity=0.6)
-    
+
     ..  image:: images/mesh_sweep.png
         :width: 400px
-    
+
     ..  note::
         The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
         This enforces :func:`~felupe.mesh.merge_duplicate_points` for the shared points
         array of the container.
-    
+
     The duplicate cells are merged in a second step.
-    
+
     >>> merged = fem.mesh.merge_duplicate_cells(mesh)
     >>> merged
     <felupe Mesh object>
       Number of points: 220
       Number of cells:
         quad: 190
-    
+
     ..  image:: images/mesh_merged.png
         :width: 400px
 
@@ -525,8 +531,9 @@ def merge_duplicate_cells(points, cells, cell_type):
     felupe.MeshContainer : A container which operates on a list of meshes with identical
         dimensions.
     """
-    
+
     return points, np.unique(cells, axis=0), cell_type
+
 
 @mesh_or_data
 def translate(points, cells, cell_type, move, axis):

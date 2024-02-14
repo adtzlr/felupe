@@ -1056,7 +1056,7 @@ class Mesh(DiscreteGeometry):
         
         See Also
         --------
-        felupe.mesh.add_runouts : Add simple rubber-runouts for realistic rubber-metal
+        felupe.mesh.runouts : Add simple rubber-runouts for realistic rubber-metal
             structures.
 
         """

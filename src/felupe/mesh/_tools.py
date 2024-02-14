@@ -709,7 +709,54 @@ def mirror(
 
 
 def concatenate(meshes):
-    "Join a sequence of meshes with identical cell types."
+    """Join a sequence of meshes with identical cell types.
+
+    Notes
+    -----
+    The ``points``-arrays are vertically stacked. Offsets are added to the  ``cells``-
+    arrays of the meshes to refer to the original points.
+
+    Parameters
+    ----------
+    meshes : list of Mesh
+        A list with meshes.
+
+    Returns
+    -------
+    Mesh
+        The joined mesh.
+
+    Examples
+    --------
+    Two quad meshes should be joined (merged) into a single mesh.
+
+    >>> import felupe as fem
+
+    >>> rect1 = fem.Rectangle(n=11)
+    >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+    >>> rect2
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 100
+
+    Each mesh contains 121 points and 100 cells. These two meshes are now stored in a
+    :class:`~felupe.Mesh`. Note that there are duplicate points and cells in the joined
+    mesh.
+
+    >>> mesh = fem.mesh.concatenate([rect1, rect2])
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 242
+      Number of cells:
+        quad: 200
+
+    >>> ax = mesh.imshow(opacity=0.6)
+
+    ..  image:: images/mesh_sweep.png
+        :width: 400px
+
+    """
 
     Mesh = meshes[0].__mesh__
 

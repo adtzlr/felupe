@@ -70,7 +70,8 @@ def expand(points, cells, cell_type, n=11, z=1):
 
     See Also
     --------
-    Mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh.
+    felupe.Mesh.expand : Expand a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron
+        Mesh.
     """
 
     # ensure points, cells as ndarray
@@ -195,7 +196,7 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
 
     See Also
     --------
-    Mesh.rotate : Rotate a Mesh.
+    felupe.Mesh.rotate : Rotate a Mesh.
     """
 
     points = np.array(points)
@@ -261,7 +262,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
 
     See Also
     --------
-    Mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+    felupe.Mesh.rotate : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
     """
 
     points = np.array(points)
@@ -391,8 +392,9 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 
     See Also
     --------
-    Mesh.merge_duplicate_points : Merge duplicated points and update cells of a Mesh.
-    MeshContainer : A container which operates on a list of meshes with identical
+    felupe.Mesh.merge_duplicate_points : Merge duplicated points and update cells of a
+        Mesh.
+    felupe.MeshContainer : A container which operates on a list of meshes with identical
         dimensions.
     """
 
@@ -518,9 +520,9 @@ def merge_duplicate_cells(points, cells, cell_type):
 
     See Also
     --------
-    Mesh.merge_duplicate_points : Merge duplicate points of a Mesh.
-    Mesh.merge_duplicate_cells : Merge duplicate cells of a Mesh.
-    MeshContainer : A container which operates on a list of meshes with identical
+    felupe.Mesh.merge_duplicate_points : Merge duplicate points of a Mesh.
+    felupe.Mesh.merge_duplicate_cells : Merge duplicate cells of a Mesh.
+    felupe.MeshContainer : A container which operates on a list of meshes with identical
         dimensions.
     """
     

@@ -213,8 +213,50 @@ def collect_volumes(points, cells, cell_type):
 
 @mesh_or_data
 def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
-    """ "Add midpoints on edges for given points and cells
-    and update cell_type accordingly."""
+    """ "Add midpoints on edges for given points and cells and update cell_type
+    accordingly.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    cell_type_new: str or None, optional
+        A string in VTK-convention that specifies the new cell type (default is None).
+        If None, the cell type is chosen automatically.
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Rectangle(n=6)
+    >>> mesh_with_midpoints_edges = fem.mesh.add_midpoints_edges(mesh)
+    >>> mesh_with_midpoints_edges
+    <felupe Mesh object>
+      Number of points: 96
+      Number of cells:
+        quad8: 25
+
+    >>> plotter = mesh_with_midpoints_edges.plot(
+    >>>     plotter=mesh.plot(), style="points", color="black"
+    >>> ).show()
+
+    ..  image:: images/mesh_midpoints_edges.png
+        :width: 400px
+
+    """
 
     # collect edges
     points_edges, cells_edges, _ = collect_edges(

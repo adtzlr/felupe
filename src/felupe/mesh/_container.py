@@ -100,7 +100,7 @@ class MeshContainer:
             self.merge_duplicate_points(decimals=decimals)
 
     def append(self, mesh):
-        "Append a :class:`Mesh` to the list of meshes."
+        "Append a :class:`~felupe.Mesh` to the list of meshes."
 
         # number of points
         points = np.vstack([self.points, mesh.points])

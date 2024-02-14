@@ -1,7 +1,7 @@
 Small-Strain based Materials
 ----------------------------
 
-User materials (Umat) based on the incremental small-strain tensor, e.g. suitable for linear elastic-plastic material formulations, are to be created with :class:`~felupe.MaterialStrain`. A user-defined function must be created with the arguments and must return:
+A user material (``umat``) based on the incremental small-strain tensor, e.g. suitable for linear elastic-plastic material formulations, is provided by :class:`~felupe.MaterialStrain`. A user-defined function must be created with the arguments and must return:
 
 +----------+---------------+---------------------------------------+
 | **Kind** |  **Symbol**   | **Description**                       |
@@ -32,7 +32,7 @@ This function is further added as the ``material`` argument of :class:`~felupe.M
     
     umat = fem.MaterialStrain(material=material, statevars=(0,), **kwargs)
 
-FElupe contains two reference user materials, one for linear elastic materials and another one for linear elastic-plastic materials with isotropic hardening:
+FElupe contains two reference small-strain user materials, one for linear elastic materials and another one for linear elastic-plastic materials with isotropic hardening:
 
 * :func:`~felupe.linear_elastic`
 * :func:`~felupe.linear_elastic_plastic_isotropic_hardening`

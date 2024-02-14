@@ -51,6 +51,7 @@ A rubber-metal bushing is subjected to combined multiaxial radial-torsional-card
 
 
 ..  image:: images/fig_bushing-mesh.png
+    :width: 400px
 
 A global region as well as sub-regions for all materials are generated. The same applies to the fields, the material formulations as well as the solid bodies.
 
@@ -132,13 +133,18 @@ After defining the load step, the simulation model is ready to be solved. The lo
 The maximum principal values of the logarithmic strain are plotted on the total simulation model as well as on a clipped view.
 
 ..  image:: images/fig_bushing_solids-logstrain.png
+    :width: 400px
 
 ..  image:: images/fig_bushing_solids-logstrain_clipped.png
+    :width: 400px
 
 Cauchy stresses are plotted individually for each solid body.
 
 ..  image:: images/fig_bushing_solid0-stress.png
+    :width: 400px
 
 ..  image:: images/fig_bushing_solid1-stress.png
+    :width: 400px
 
 ..  image:: images/fig_bushing_solid2-stress.png
+    :width: 400px

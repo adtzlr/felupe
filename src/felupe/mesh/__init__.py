@@ -10,12 +10,12 @@ from ._convert import (
 )
 from ._dual import dual
 from ._geometry import (
-    Point,
     Circle,
     Cube,
     CubeArbitraryOrderHexahedron,
     Grid,
     Line,
+    Point,
     Rectangle,
     RectangleArbitraryOrderQuad,
     Triangle,
@@ -25,22 +25,10 @@ from ._line_rectangle_cube import line_line as _line_line
 from ._line_rectangle_cube import rectangle_quad as _rectangle_quad
 from ._mesh import Mesh
 from ._read import read
-from ._tools import (
-    concatenate,
-    expand,
-    fill_between,
-    flip,
-    mirror,
-    revolve,
-    rotate,
-    runouts,
-    stack,
-    merge_duplicate_points,
-    merge_duplicate_points as sweep,
-    merge_duplicate_cells,
-    translate,
-    triangulate,
-)
+from ._tools import concatenate, expand, fill_between, flip, merge_duplicate_cells
+from ._tools import merge_duplicate_points
+from ._tools import merge_duplicate_points as sweep
+from ._tools import mirror, revolve, rotate, runouts, stack, translate, triangulate
 
 __all__ = [
     "_cube_hexa",

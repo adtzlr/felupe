@@ -250,9 +250,12 @@ class SolidBodyNearlyIncompressible(Solid):
         if statevars is not None:
             self.results.statevars = statevars
         else:
+            statevars_shape = (0,)
+            if hasattr(umat, "x"):
+                statevars_shape = umat.x[-1].shape
             self.results.statevars = np.zeros(
                 (
-                    *umat.x[-1].shape,
+                    *statevars_shape,
                     field.region.quadrature.npoints,
                     field.region.mesh.ncells,
                 )

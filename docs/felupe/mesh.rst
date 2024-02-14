@@ -33,6 +33,7 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
 .. autosummary::
 
    mesh.expand
+   mesh.translate
    mesh.rotate
    mesh.revolve
    mesh.sweep
@@ -112,4 +113,4 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
    :show-inheritance:
 
 .. automodule:: felupe.mesh
-   :members: expand, rotate, revolve, sweep, mirror, concatenate, runouts, triangulate, convert, collect_edges, collect_faces, collect_volumes, add_midpoints_edges, add_midpoints_faces, add_midpoints_volumes, flip, fill_between, dual, stack, merge_duplicate_points, merge_duplicate_cells
+   :members: expand, translate, rotate, revolve, sweep, mirror, concatenate, runouts, triangulate, convert, collect_edges, collect_faces, collect_volumes, add_midpoints_edges, add_midpoints_faces, add_midpoints_volumes, flip, fill_between, dual, stack, merge_duplicate_points, merge_duplicate_cells

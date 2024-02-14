@@ -195,7 +195,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        felupe.ViewMesh : Visualization methods for :class:`felupe.Mesh`.
+        felupe.ViewMesh : Visualization methods for :class:`~felupe.Mesh`.
         """
 
         return ViewMesh(
@@ -210,7 +210,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        felupe.Scene.plot: Plot method of a scene.
+        felupe.Scene.plot : Plot method of a scene.
         """
         return self.view().plot(*args, show_undeformed=False, **kwargs)
 
@@ -226,7 +226,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
+        pyvista.Plotter.screenshot : Take a screenshot of a PyVista plotter.
         """
 
         return self.plot(*args, off_screen=True, **kwargs).screenshot(
@@ -272,6 +272,23 @@ class Mesh(DiscreteGeometry):
         ndarray
             Array with point ids.
 
+        Examples
+        --------
+        Get point ids at given coordinates for a mesh with duplicate points.
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=11)
+        >>> mesh.update(points=np.vstack([mesh.points, mesh.points]))
+        >>> point_ids = mesh.get_point_ids([0, 1, 1])
+        >>> point_ids
+        array([1320, 2651], dtype=int64)
+
+        >>> mesh.points[point_ids]
+        array([[0., 1., 1.],
+               [0., 1., 1.]])
+
         """
         return np.argwhere(mode(fun(self.points, value, **kwargs), axis=1))[:, 0]
 
@@ -287,6 +304,20 @@ class Mesh(DiscreteGeometry):
         -------
         ndarray
             Array with cell ids which have the given point ids in their connectivity.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=11)
+        >>> point_ids = mesh.get_point_ids([0, 1, 1])
+        >>> point_ids
+        array([1320], dtype=int64)
+
+        >>> cell_ids = mesh.get_cell_ids(point_ids)
+        >>> cell_ids
+        array([990], dtype=int64)
 
         """
         return np.argwhere(np.isin(self.cells, point_ids).any(axis=1))[:, 0]
@@ -304,6 +335,25 @@ class Mesh(DiscreteGeometry):
         ndarray
             Array with cell ids which are next to the given cells.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=11)
+        >>> point_ids = mesh.get_point_ids([0, 1, 1])
+        >>> point_ids
+        array([1320], dtype=int64)
+
+        >>> cell_ids = mesh.get_cell_ids(point_ids)
+        >>> cell_ids
+        array([990], dtype=int64)
+
+        Find the cell ids which share at least one point with the given cell id(s).
+
+        >>> cell_ids_neighbours = mesh.get_cell_ids_neighbours(cell_ids)
+        array([880, 881, 890, 891, 980, 981, 990, 991], dtype=int64)
+
         """
         return self.get_cell_ids(self.cells[cell_ids])
 
@@ -320,6 +370,31 @@ class Mesh(DiscreteGeometry):
         ndarray
             Array with point ids which are connected to all given cell neighbours.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=11)
+        >>> point_ids = mesh.get_point_ids([0, 1, 1])
+        >>> point_ids
+        array([1320], dtype=int64)
+
+        >>> cell_ids = mesh.get_cell_ids(point_ids)
+        >>> cell_ids
+        array([990], dtype=int64)
+
+        Find the cell ids which share at least one point with the given cell id(s).
+
+        >>> cell_ids_neighbours = mesh.get_cell_ids_neighbours(cell_ids)
+        array([880, 881, 890, 891, 980, 981, 990, 991], dtype=int64)
+
+        Find the shared point ids for the list of cell ids.
+
+        >>> point_ids_shared = mesh.get_point_ids_shared(cell_ids_neighbours)
+        >>> point_ids_shared
+        array([1189])
+
         """
 
         neighbours = self.cells[cell_ids_neighbours]
@@ -333,6 +408,16 @@ class Mesh(DiscreteGeometry):
         -------
         ndarray
             Array with point ids which are located at the corners.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=11)
+        >>> point_ids_corners = mesh.get_point_ids_corners()
+        >>> point_ids_corners
+        array([   0, 1210,   10, 1220,  110, 1320,  120, 1330], dtype=int64)
 
         """
 
@@ -367,6 +452,21 @@ class Mesh(DiscreteGeometry):
         4. Get pair-wise shared points which are located on an edge.
         5. Replace the shared points with the corner point.
         6. Delete the cell attached to the corner point.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(b=(3, 1), n=(16, 6))
+
+        ..  image:: images/mesh_corners_before.png
+            :width: 400px
+
+        >>> mesh = mesh.modify_corners()  # inplace
+
+        ..  image:: images/mesh_corners_after.png
+            :width: 400px
 
         """
 

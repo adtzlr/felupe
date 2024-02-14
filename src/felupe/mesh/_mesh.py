@@ -690,10 +690,10 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        mesh.merge_duplicate_points : Merge duplicate points of a Mesh.
-        mesh.merge_duplicate_cells : Merge duplicate cells of a Mesh.
-        MeshContainer : A container which operates on a list of meshes with identical
-            dimensions.
+        felupe.mesh.merge_duplicate_points : Merge duplicate points of a Mesh.
+        felupe.mesh.merge_duplicate_cells : Merge duplicate cells of a Mesh.
+        felupe.MeshContainer : A container which operates on a list of meshes with
+            identical dimensions.
         """
         return as_mesh(merge_duplicate_cells(self))
 

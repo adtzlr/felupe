@@ -143,7 +143,6 @@ def fill_between(mesh, other_mesh, n=11):
     --------
     >>> import felupe as fem
     >>>
-    >>> point = fem.Point(a=1)
     >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
     >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
     >>>     axis=2, angle_deg=20
@@ -157,6 +156,12 @@ def fill_between(mesh, other_mesh, n=11):
 
     ..  image:: images/mesh_fill_between.png
         :width: 400px
+
+    See Also
+    --------
+    felupe.Mesh.fill_between : Fill a 2d-Quad Mesh between two 1d-Line Meshes, embedded
+        in 2d-space, or a 3d-Hexahedron Mesh between two 2d-Quad Meshes, embedded in
+        3d-space, by expansion.
 
     """
 

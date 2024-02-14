@@ -80,6 +80,9 @@ class MeshContainer:
         hexahedron: 8
         hexahedron: 12
 
+    ..  image:: images/container.png
+        :width: 400px
+
     """
 
     def __init__(self, meshes, merge=False, decimals=None):

@@ -40,13 +40,14 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
 A cube by hand
 **************
 
-First let's start with the generation of a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`~felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`~felupe.mesh.expand`: :func:`~felupe.mesh.rotate`, :func:`~felupe.mesh.revolve` and :func:`~felupe.mesh.merge_duplicate_points`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
+First let's start with the generation of a point at ``x=0``, expanded to a line from ``x=1`` to ``x=3`` with ``n=2`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`~felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`~felupe.mesh.expand`: :func:`~felupe.mesh.rotate`, :func:`~felupe.mesh.revolve` and :func:`~felupe.mesh.merge_duplicate_points`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
 
 ..  code-block:: python
 
-    line = fem.mesh.Line(a=1, b=3, n=7)
-    rect = fem.mesh.expand(line, n=5, z=5)
-    cube = fem.mesh.expand(rect, n=6, z=3)
+    vert = fem.Point(a=1)
+    line = vert.expand(n=7, z=2)
+    rect = line.expand(n=5, z=5)
+    cube = rect.expand(n=6, z=3)
 
 
 Alternatively, these mesh-related tools are also provided as methods of a :class:`~felupe.Mesh`.

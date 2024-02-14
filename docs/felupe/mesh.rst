@@ -18,6 +18,7 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
 
 .. autosummary::
 
+   Point
    mesh.Line
    Rectangle
    Cube
@@ -64,6 +65,11 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autoclass:: felupe.Point
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autoclass:: felupe.mesh.Line
    :members:

@@ -167,11 +167,11 @@ def test_meshes():
     fem.mesh.sweep(m)
     fem.mesh.sweep(m.points, m.cells, m.cell_type, decimals=4)
     m.sweep()
-    
+
     fem.mesh.merge_duplicate_points(m)
     fem.mesh.merge_duplicate_points(m.points, m.cells, m.cell_type, decimals=4)
     m.merge_duplicate_points()
-    
+
     fem.mesh.merge_duplicate_cells(m)
     m.merge_duplicate_cells()
 
@@ -532,6 +532,15 @@ def test_modify_corners():
         fem.Cube(n=6).triangulate().modify_corners()
 
 
+def test_expand():
+    point = fem.Point(a=0.0)
+    line = point.expand(n=6, z=1)
+    rect = line.expand(n=11, z=2)
+    cube = rect.expand(n=16, z=3)
+
+    assert np.allclose(cube.points.max(axis=0), [1, 2, 3])
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -550,3 +559,4 @@ if __name__ == "__main__":
     test_view()
     test_mesh_update()
     test_modify_corners()
+    test_expand()

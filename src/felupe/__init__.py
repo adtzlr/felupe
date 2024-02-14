@@ -84,7 +84,7 @@ from .mechanics import (
     StateNearlyIncompressible,
     Step,
 )
-from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Rectangle
+from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Rectangle, Point
 from .quadrature import GaussLegendre, GaussLegendreBoundary
 from .quadrature import Tetrahedron as TetrahedronQuadrature
 from .quadrature import Triangle as TriangleQuadrature
@@ -194,6 +194,7 @@ __all__ = [
     "Grid",
     "Mesh",
     "MeshContainer",
+    "Point",
     "Rectangle",
     "CharacteristicCurve",
     "Job",

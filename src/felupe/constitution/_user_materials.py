@@ -57,7 +57,7 @@ class Material:
         undeformed coordinates  :math:`\boldsymbol{X}`. The identity matrix
         :math:`\boldsymbol{1}` is added to this gradient, i.e. the first item of the
         list ``x`` contains the deformation gradient :math:`\boldsymbol{F} =
-        \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}`. All
+        \boldsymbol{1} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}`. All
         other fields are provided as interpolated values (no gradients evaluated).
     
      For :math:`(\boldsymbol{u})` single-field formulations, the callables for

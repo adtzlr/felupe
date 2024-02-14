@@ -57,6 +57,10 @@ class DiscreteGeometry:
     cells_per_point : array
         Array which counts connected cells per point. Used for averaging results.
 
+    See Also
+    --------
+    felupe.Mesh : A mesh with points, cells and optional a specified cell type.
+
     """
 
     def __init__(self, points, cells, cell_type=None):

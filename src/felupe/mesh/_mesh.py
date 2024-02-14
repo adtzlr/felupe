@@ -1004,7 +1004,6 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(triangulate(self, mode=mode))
 
-    @wraps(runouts)
     def add_runouts(
         self,
         values=[0.1, 0.1],
@@ -1014,6 +1013,53 @@ class Mesh(DiscreteGeometry):
         mask=slice(None),
         normalize=False,
     ):
+        """Add simple rubber-runouts for realistic rubber-metal structures.
+
+        Parameters
+        ----------
+        values : list or ndarray, optional
+            Relative amount of runouts (per coordinate) perpendicular to the axis
+            (default is 10% per coordinate, i.e. [0.1, 0.1]).
+        centerpoint : list or ndarray, optional
+            Center-point coordinates (default is [0, 0, 0]).
+        axis : int or None, optional
+            Axis (default is 0).
+        exponent : int, optional
+            Positive exponent to control the shape of the runout. The higher
+            the exponent, the steeper the transition (default is 5).
+        mask : list or None, optional
+            List of points to be considered (default is None).
+        normalize : bool, optional
+            Normalize the runouts to create indents, i.e. maintain the original shape at the
+            ends (default is False).
+
+        Returns
+        -------
+        Mesh
+            The mesh with the modified point coordinates.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(a=(-3, -1), b=(3, 1), n=(31, 11))
+        >>> mesh.add_runouts(axis=1, values=[0.2], normalize=True)
+
+        ..  image:: images/mesh_runouts.png
+            :width: 400px
+
+        >>> mesh = fem.Cube(a=(-3, -2, -1), b=(3, 2, 1), n=(31, 21, 11))
+        >>> mesh.add_runouts(axis=2, values=[0.1, 0.3], normalize=True)
+
+        ..  image:: images/mesh_runouts_3d.png
+            :width: 400px
+        
+        See Also
+        --------
+        felupe.mesh.add_runouts : Add simple rubber-runouts for realistic rubber-metal
+            structures.
+
+        """
         return as_mesh(
             runouts(
                 self,

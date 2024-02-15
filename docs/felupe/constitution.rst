@@ -3,7 +3,7 @@
 Constitution
 ~~~~~~~~~~~~
 
-This module provides constitutive material formulations. In FElupe, a constitutive material definition, or so-called ``umat`` (user material), is a class with methods for evaluating gradients and hessians of the strain energy density function with respect to the defined fields in the field container, where the gradient of the first (displacement) field is passed as the deformation gradient. For all following fields, the field values (no gradients) are provided. If state variables are to be included, an attribute ``x=[np.zeros(statevars_shape)]`` has to be added to the class. For reasons of performance, FElupe passes the field gradients and values *all at once*, e.g. the deformation gradient is of shape ``(3, 3, q, c)``, where ``q`` refers to the number of quadrature points per cell and ``c`` to the number of cells. These last two axes are the so-called *trailing axes*. Math-functions from :ref:`felupe.math <felupe-api-math>` all support the operation on trailing axes. Take this code-block as a template for a two-field :math:`(\boldsymbol{u}, p)` formulation with the old displacement gradient as a state variable:
+This module provides constitutive material formulations. In FElupe, a constitutive material definition, or so-called ``umat`` (user material), is a class with methods for evaluating gradients and hessians of the strain energy density function with respect to the defined fields in the field container, where the gradient of the first (displacement) field is passed as the deformation gradient. For all following fields, the field values (no gradients) are provided. If state variables are to be included, an attribute ``x=[np.zeros(statevars_shape)]`` has to be added to the class. For reasons of performance, FElupe passes the field gradients and values *all at once*, e.g. the deformation gradient is of shape ``(3, 3, q, c)``, where ``q`` refers to the number of quadrature points per cell and ``c`` to the number of cells. These last two axes are the so-called *trailing axes*. Math-functions from :ref:`felupe.math <felupe-api-math>` all support the operation on trailing axes. The constitutive material definition class should be inherited from :class:`~felupe.ConstitutiveMaterial` in order to provide force-stretch curves for elementary deformations. Take this code-block as a template for a two-field :math:`(\boldsymbol{u}, p)` formulation with the old displacement gradient as a state variable:
 
 ..  code-block:: python
 
@@ -13,7 +13,7 @@ This module provides constitutive material formulations. In FElupe, a constituti
     # math-functions which support trailing axes
     from felupe.math import det, dya, identity, transpose, inv
 
-    class MyConstitutiveMaterialFormulation:
+    class MyConstitutiveMaterialFormulation(fem.ConstitutiveMaterial):
 
         def __init__(self):
             # provide the shape of state variables without trailing axes
@@ -60,6 +60,8 @@ There are many different pre-defined constitutive material formulations availabl
 
 .. autosummary::
 
+   ConstitutiveMaterial
+   ViewMaterial
    ViewMaterialIncompressible
 
 **Linear-Elasticity**
@@ -132,6 +134,16 @@ There are many different pre-defined constitutive material formulations availabl
    VolumeChange
 
 **Detailed API Reference**
+
+.. autoclass:: felupe.ConstitutiveMaterial
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.ViewMaterial
+   :members:
+   :undoc-members:
+   :inherited-members:
 
 .. autoclass:: felupe.ViewMaterialIncompressible
    :members:

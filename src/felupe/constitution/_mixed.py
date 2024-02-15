@@ -19,9 +19,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
+from ._preview import ConstitutiveMaterial
 
 
-class ThreeFieldVariation:
+class ThreeFieldVariation(ConstitutiveMaterial):
     r"""Hu-Washizu hydrostatic-volumetric selective
     :math:`(\boldsymbol{u},p,J)` - three-field variation for nearly-
     incompressible material formulations. The total potential energy

@@ -19,9 +19,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import dya
+from ._preview import ConstitutiveMaterial
 
 
-class OgdenRoxburgh:
+class OgdenRoxburgh(ConstitutiveMaterial):
     r"""`Ogden-Roxburgh <https://doi.org/10.1098%2Frspa.1999.0431>`_ Pseudo-Elastic
     material formulation for an isotropic treatment of the load-history dependent
     Mullins-softening of rubber-like materials.
@@ -70,6 +71,8 @@ class OgdenRoxburgh:
         self.r = r
         self.m = m
         self.beta = beta
+
+        self.kwargs = {"r": self.r, "m": self.m, "beta": self.beta}
 
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``

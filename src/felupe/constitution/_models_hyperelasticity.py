@@ -30,9 +30,10 @@ from ..math import (
     trace,
     transpose,
 )
+from ._preview import ConstitutiveMaterial
 
 
-class NeoHooke:
+class NeoHooke(ConstitutiveMaterial):
     r"""Nearly-incompressible isotropic hyperelastic Neo-Hookean material
     formulation. The strain energy density function of the Neo-Hookean
     material formulation is a linear function of the trace of the
@@ -175,6 +176,10 @@ class NeoHooke:
         self.mu = mu
         self.bulk = bulk
 
+        self.kwargs = {"mu": self.mu}
+        if self.bulk is not None:
+            self.kwargs["bulk"] = self.bulk
+
         # aliases for function, gradient and hessian
         self.energy = self.function
         self.stress = self.gradient
@@ -299,7 +304,7 @@ class NeoHooke:
         return [A4]
 
 
-class NeoHookeCompressible:
+class NeoHookeCompressible(ConstitutiveMaterial):
     r"""Compressible isotropic hyperelastic Neo-Hookean material formulation. The strain
     energy density function of the Neo-Hookean material formulation is a linear function
     of the trace of the right Cauchy-Green deformation tensor.
@@ -357,6 +362,10 @@ class NeoHookeCompressible:
 
         self.mu = mu
         self.lmbda = lmbda
+
+        self.kwargs = {"mu": self.mu}
+        if self.lmbda is not None:
+            self.kwargs["lmbda"] = self.lmbda
 
         # aliases for function, gradient and hessian
         self.energy = self.function

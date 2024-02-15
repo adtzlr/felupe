@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add expansion of a vertex point to a line mesh `vertex.expand(n=11, z=1)`.
 - Add revolution of a vertex point to a line mesh `vertex.revolve(n=11, phi=180)`.
 - Create a `FieldContainer` by logical-and operations between fields and field containers, i.e. `field = displacement & pressure`, where `displacement = Field(region, dim=2)` and `pressure = Field(region)`. This also works for `field & pressure` as well as `pressure & field`.
+- Add a method to create a field container from a field, i.e. `Field(region, dim=3).as_container()` is equal to `FieldContainer([Field(region, dim=3)])`.
 
 ### Changed
 - Assume that no state variables are used in an `umat` if it has no attribute `umat.x`. Set the shape of the state variables by default to `(0, q, c)` in `SolidBody` and `SolidBodyNearlyIncompressible`.

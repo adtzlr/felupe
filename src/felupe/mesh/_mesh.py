@@ -156,7 +156,7 @@ class Mesh(DiscreteGeometry):
         )
 
     def as_meshio(self, **kwargs):
-        "Export the mesh as ``meshio.Mesh``."
+        "Export the mesh as class:`meshio.Mesh`."
 
         import meshio
 

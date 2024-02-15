@@ -12,8 +12,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Assume that no state variables are used in an `umat` if it has no attribute `umat.x`. Set the shape of the state variables by default to `(0, q, c)` in `SolidBody` and `SolidBodyNearlyIncompressible`.
-- Automatically add additional points in `mesh.dual()` if necessary.
 - Don't disconnect the dual mesh by default for regions `RegionQuadraticTriangle` and `RegionQuadraticTetra` in `FieldsMixed`.
+
+### Fixed
+- Automatically add additional points in `mesh.dual()` if necessary.
 
 ## [7.16.0] - 2024-02-13
 

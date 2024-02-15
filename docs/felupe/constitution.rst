@@ -54,9 +54,15 @@ This module provides constitutive material formulations. In FElupe, a constituti
 
 There are many different pre-defined constitutive material formulations available, including definitions for linear-elasticity, small-strain plasticity, hyperelasticity or pseudo-elasticity. The generation of user materials may be simplified when using frameworks for user-defined functions, like hyperelasticity (with automatic differentiation) or a small-strain based framework with state variables. The most general case is given by a framework with functions for the evaluation of stress and elasticity tensors in terms of the deformation gradient.
 
-**Linear-Elasticity**
+**View Force-Stretch Curves on Incompressible Deformations**
 
 .. currentmodule:: felupe
+
+.. autosummary::
+
+   ViewMaterialIncompressible
+
+**Linear-Elasticity**
 
 .. autosummary::
 
@@ -126,6 +132,11 @@ There are many different pre-defined constitutive material formulations availabl
    VolumeChange
 
 **Detailed API Reference**
+
+.. autoclass:: felupe.ViewMaterialIncompressible
+   :members:
+   :undoc-members:
+   :inherited-members:
 
 .. autoclass:: felupe.NeoHooke
    :members:

@@ -23,6 +23,7 @@ from ._models_linear_elasticity import (
 )
 from ._models_linear_elasticity_large_strain import LinearElasticLargeStrain
 from ._models_pseudo_elasticity import OgdenRoxburgh
+from ._preview import ViewMaterialIncompressible
 from ._user_materials import (
     LinearElasticPlasticIsotropicHardening,
     Material,
@@ -66,4 +67,5 @@ __all__ = [
     "ThreeFieldVariation",
     "linear_elastic",
     "linear_elastic_plastic_isotropic_hardening",
+    "ViewMaterialIncompressible",
 ]

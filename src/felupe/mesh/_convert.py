@@ -31,8 +31,79 @@ def convert(
     calc_midfaces=False,
     calc_midvolumes=False,
 ):
-    """Convert mesh to a given order (only order=0 and order=2
-    from order=1 are supported)."""
+    """Convert a mesh to a given order. Only conversions to ``order=0`` and ``order=2``
+    are supported. This function supports meshes with cell types ``"triangle"``,
+    ``"tetra"``, ``"quad"`` and ``"hexahedron"``.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type. Must be one of
+        ``"triangle"``, ``"tetra"``, ``"quad"`` or ``"hexahedron"``.
+    order : int, optional
+        The order of the converted mesh (default is 0). If 0, the points-array will be
+        of shape ``(ncells, dim)``. If 0 and ``calc_points`` is True, the mean of all
+        points per cell is evaluated. If 0 and ``calc_points`` is False, the points
+        array is filled with zeros. If 2, at least midpoints on cell edges are added to
+        the mesh. If 2 and ``calc_midfaces`` is True, midpoints on cell faces are also
+        added. If 2 and ``calc_midvolumes`` is True, midpoints on cell volumes are also
+        added. Raises an error if not 0 or 2.
+    calc_points : bool, optional
+        Flag to return the mean of all points per cell if ``order=0`` (default is
+        False). If False, the points-array is filled with zeros.
+    calc_midfaces : bool, optional
+        Flag to add midpoints on cell faces if ``order=2`` (default is False).
+    calc_midvolumes : bool, optional
+        Flag to add midpoints on cell volumes if ``order=2`` (default is False).
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : list or ndarray
+        Converted cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Rectangle(n=6)
+    >>> mesh2 = fem.mesh.convert(mesh, order=2)
+    >>> mesh2
+    <felupe Mesh object>
+      Number of points: 96
+      Number of cells:
+        quad8: 25
+
+    >>> plotter = mesh2.plot(
+    >>>     plotter=mesh.plot(), style="points", color="black"
+    >>> ).show()
+
+    ..  image:: images/mesh_midpoints_edges.png
+        :width: 400px
+
+    See Also
+    --------
+    felupe.mesh.add_midpoints_edges : Add midpoints on edges for given points and cells
+        and update cell_type accordingly.
+    felupe.mesh.add_midpoints_faces : Add midpoints on faces for given points and cells
+        and update cell_type accordingly.
+    felupe.mesh.add_midpoints_volumes : Add midpoints on volumes for given points and
+        cells and update cell_type accordingly.
+    felupe.Mesh.add_midpoints_edges : Add midpoints on edges for given points and cells
+        and update cell_type accordingly.
+    felupe.Mesh.add_midpoints_faces : Add midpoints on faces for given points and cells
+        and update cell_type accordingly.
+    felupe.Mesh.add_midpoints_volumes : Add midpoints on volumes for given points and
+        cells and update cell_type accordingly.
+
+    """
 
     ncells = len(cells)
     dim = points.shape[1]
@@ -213,7 +284,7 @@ def collect_volumes(points, cells, cell_type):
 
 @mesh_or_data
 def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
-    """ "Add midpoints on edges for given points and cells and update cell_type
+    """Add midpoints on edges for given points and cells and update cell_type
     accordingly.
 
     Parameters

@@ -398,7 +398,62 @@ def arruda_boyce(C, C1, limit):
 
 
 def extended_tube(C, Gc, delta, Ge, beta):
-    "Strain energy function of the Extended-Tube material formulation."
+    r"""Strain energy function of the isotropic hyperelastic
+    `Extended Tube <https://www.doi.org/10.5254/1.3538822>`_ [1] material formulation.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    Gc : float
+        Cross-link contribution to the initial shear modulus.
+    delta : float
+         Finite extension parameter of the polymer strands.
+    Ge : float
+        Constraint contribution to the initial shear modulus.
+    beta : float
+        Global rearrangements of cross-links upon deformation (release of topological
+        constraints).
+
+    Notes
+    -----
+    ..  math::
+
+        \psi = \frac{G_c}{2} \left[ \frac{\left( 1 - \delta^2 \right)
+            \left( \hat{I}_1 - 3 \right)}{1 - \delta^2 \left( \hat{I}_1 - 3 \right)} +
+            \ln \left( 1 - \delta^2 \left( \hat{I}_1 - 3 \right) \right) \right] +
+            \frac{2 G_e}{\beta^2} \left( \lambda_1^{-\beta} + \lambda_2^{-\beta} +
+            \lambda_3^{-\beta} - 3 \right)
+
+    With the first main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor
+
+    ..  math::
+
+        \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+
+    The initial shear modulus results from the sum of the cross-link and the constraint
+    contributions to the total initial shear modulus.
+
+    ..  math::
+
+        \mu = G_e + G_c
+
+    Examples
+    --------
+
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.Hyperelastic(fem.extended_tube, Gc=0.2, Ge=0.2, beta=0.2, delta=0.1)
+
+    References
+    ----------
+    [1] M. Kaliske and G. Heinrich, "An Extended Tube-Model for Rubber Elasticity:
+    Statistical-Mechanical Theory and Finite Element Implementation", Rubber Chemistry
+    and Technology, vol. 72, no. 4. Rubber Division, ACS, pp. 602–632, Sep. 01, 1999.
+    doi: 10.5254/1.3538822.
+
+    """
     J3 = det(C) ** (-1 / 3)
     D = J3 * trace(C)
     wC = J3 * eigvalsh(C)

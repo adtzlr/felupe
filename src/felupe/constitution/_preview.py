@@ -40,6 +40,12 @@ class ViewMaterialIncompressible:
         Array with stretches for incompressible equi-biaxial tension. Default is
         ``np.linspace(1.0, 1.75)``.
 
+    Notes
+    -----
+    ..  note::
+        :class:`~felupe.ViewMaterialIncompressible` does not support constitutive
+        material definitions with state variables.
+
     Examples
     --------
     >>> import felupe as fem

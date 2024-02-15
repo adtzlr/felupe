@@ -168,7 +168,7 @@ class ViewMaterial(PlotMaterial):
 
         from scipy.optimize import root
 
-        λ2 = λ3 = root(fun, np.ones_like(λ1)).x
+        λ2 = λ3 = root(fun, λ3).x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         P, statevars = self.umat.gradient([F, None])
@@ -205,7 +205,7 @@ class ViewMaterial(PlotMaterial):
 
         from scipy.optimize import root
 
-        λ3 = root(fun, np.ones_like(λ1)).x
+        λ3 = root(fun, λ3).x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         P, statevars = self.umat.gradient([F, None])
@@ -241,7 +241,7 @@ class ViewMaterial(PlotMaterial):
 
         from scipy.optimize import root
 
-        λ3 = root(fun, np.ones_like(λ1)).x
+        λ3 = root(fun, λ3).x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         P, statevars = self.umat.gradient([F, None])

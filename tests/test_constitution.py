@@ -104,6 +104,9 @@ def test_nh():
             assert P[0].shape == (3, 3, *F[0].shape[-2:])
             assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
+    preview = fem.ViewMaterialIncompressible(nh)
+    ax = preview.plot()
+
 
 def test_linear():
     r, F = pre(sym=False, add_identity=True)
@@ -327,6 +330,13 @@ def test_umat_hyperelastic():
 
         s, statevars_new = umat.gradient([F, None])
         dsde = umat.hessian([F, None])
+
+    import matplotlib.pyplot as plt
+
+    view = umat.view()
+    ax = umat.plot()
+    ax = umat.imshow()
+    ax = umat.screenshot()
 
 
 def test_umat_hyperelastic2():

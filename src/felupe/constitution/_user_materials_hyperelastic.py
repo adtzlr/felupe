@@ -20,6 +20,7 @@ import numpy as np
 import tensortrax as tr
 
 from ..math import cdya_ik, dot, transpose
+from ._preview import ViewMaterialIncompressible
 from ._user_materials import Material
 
 
@@ -86,14 +87,14 @@ class Hyperelastic(Material):
             "Finite strain viscoelastic material formulation."
 
             # unimodular part of the right Cauchy-Green deformation tensor
-            Cu = det(C) ** (-1 / 3) * C
+            Cu = tm.linalg.det(C) ** (-1 / 3) * C
 
             # update of state variables by evolution equation
             Ci = tm.special.from_triu_1d(Cin, like=C) + mu / eta * dtime * Cu
-            Ci = det(Ci) ** (-1 / 3) * Ci
+            Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
 
             # first invariant of elastic part of right Cauchy-Green deformation tensor
-            I1 = tm.trace(Cu @ inv(Ci))
+            I1 = tm.trace(Cu @ tm.linalg.inv(Ci))
 
             # strain energy function and state variable
             return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
@@ -105,6 +106,23 @@ class Hyperelastic(Material):
     ..  note::
         See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
         for further details.
+
+    Examples
+    --------
+    View force-stretch curves on elementary incompressible deformations.
+
+    >>> import felupe as fem
+    >>> import tensortrax.math as tm
+    >>>
+    >>> def neo_hooke(C, mu):
+    >>>     "Strain energy function of the Neo-Hookean material formulation."
+    >>>     return mu / 2 * (tm.linalg.det(C) ** (-1/3) * tm.trace(C) - 3)
+    >>>
+    >>> umat = fem.Hyperelastic(neo_hooke, mu=1)
+    >>> ax = umat.plot()
+
+    ..  image:: images/umat.png
+        :width: 400px
 
     See Also
     --------
@@ -132,6 +150,7 @@ class Hyperelastic(Material):
             self.fun = fun
 
         self.parallel = parallel
+        self.imshow = self.plot
 
         super().__init__(
             stress=self._stress,
@@ -139,6 +158,22 @@ class Hyperelastic(Material):
             nstatevars=nstatevars,
             **kwargs,
         )
+
+    def view(self):
+        return ViewMaterialIncompressible(self)
+
+    def plot(self):
+        return self.view().plot()
+
+    def screenshot(self, filename="umat.png", **kwargs):
+        import matplotlib.pyplot as plt
+
+        ax = self.plot()
+        fig = ax.get_figure()
+        fig.savefig(filename, **kwargs)
+        plt.close(fig)
+
+        return ax
 
     def _stress(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])

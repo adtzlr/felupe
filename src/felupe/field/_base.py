@@ -22,8 +22,8 @@ import numpy as np
 
 from ..math import identity
 from ..math import sym as symmetric
-from ._indices import Indices
 from ._container import FieldContainer
+from ._indices import Indices
 
 
 class Field:

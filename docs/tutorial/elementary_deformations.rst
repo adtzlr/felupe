@@ -27,10 +27,10 @@ In this tutorial you'll learn how to plot multiple force-displacement curves alo
 
     import felupe as fem
 
-    fun = fem.third_order_deformation
+    strain_energy_function = fem.third_order_deformation
     kwargs = dict(C10=0.5, C01=0.1, C11=0.0, C20=-0.1, C30=0.02)
 
-    umat = fem.Hyperelastic(fun, **kwargs)
+    umat = fem.Hyperelastic(strain_energy_function, **kwargs)
     ax = umat.plot()
 
 ..  image:: images/umat.png

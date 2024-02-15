@@ -173,6 +173,8 @@ class Hyperelastic(Material):
         fig.savefig(filename, **kwargs)
         plt.close(fig)
 
+        return ax
+
     def _stress(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])
 

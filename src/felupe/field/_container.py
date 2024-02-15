@@ -74,10 +74,10 @@ class FieldContainer:
     felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
         and initial point ``values``.
     felupe.FieldAxisymmetric : An axisymmetric :class:`~felupe.Field` on points of a
-        two-dimensional :class:`~felupe.Region` with dimension ``dim`` (default is 2) and
-        initial point ``values`` (default is 0).
+        two dimensional :class:`~felupe.Region` with dimension ``dim`` (default is 2)
+        and initial point ``values`` (default is 0).
     felupe.FieldPlaneStrain : A plane strain :class:`~felupe.Field` on points of a
-        two-dimensional :class:`~felupe.Region` with dimension ``dim`` (default is 2)
+        two dimensional :class:`~felupe.Region` with dimension ``dim`` (default is 2)
         and initial point ``values`` (default is 0).
 
     """

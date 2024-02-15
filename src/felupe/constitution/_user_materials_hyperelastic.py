@@ -20,7 +20,6 @@ import numpy as np
 import tensortrax as tr
 
 from ..math import cdya_ik, dot, transpose
-from ._preview import ViewMaterialIncompressible
 from ._user_materials import Material
 
 
@@ -119,7 +118,7 @@ class Hyperelastic(Material):
     >>>     return mu / 2 * (tm.linalg.det(C) ** (-1/3) * tm.trace(C) - 3)
     >>>
     >>> umat = fem.Hyperelastic(neo_hooke, mu=1)
-    >>> ax = umat.plot()
+    >>> ax = umat.plot(incompressible=True)
 
     ..  image:: images/umat.png
         :width: 400px
@@ -150,7 +149,6 @@ class Hyperelastic(Material):
             self.fun = fun
 
         self.parallel = parallel
-        self.imshow = self.plot
 
         super().__init__(
             stress=self._stress,
@@ -158,22 +156,6 @@ class Hyperelastic(Material):
             nstatevars=nstatevars,
             **kwargs,
         )
-
-    def view(self):
-        return ViewMaterialIncompressible(self)
-
-    def plot(self):
-        return self.view().plot()
-
-    def screenshot(self, filename="umat.png", **kwargs):
-        import matplotlib.pyplot as plt
-
-        ax = self.plot()
-        fig = ax.get_figure()
-        fig.savefig(filename, **kwargs)
-        plt.close(fig)
-
-        return ax
 
     def _stress(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])

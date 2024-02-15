@@ -20,10 +20,11 @@ import numpy as np
 
 from ..math import identity, ravel, reshape, sym
 from ._models_linear_elasticity import lame_converter
+from ._preview import ConstitutiveMaterial
 from ._user_materials_models import linear_elastic_plastic_isotropic_hardening
 
 
-class Material:
+class Material(ConstitutiveMaterial):
     r"""A user-defined material definition with given functions for the (first
     Piola-Kirchhoff) stress tensor :math:`\boldsymbol{P}`, optional constraints on
     additional fields (e.g. :math:`p` and :math:`J`), updated state variables
@@ -320,7 +321,7 @@ class Material:
         return self.umat["hessian"](x, **self.kwargs)
 
 
-class MaterialStrain:
+class MaterialStrain(ConstitutiveMaterial):
     """A strain-based user-defined material definition with a given function
     for the stress tensor and the (fourth-order) elasticity tensor.
 

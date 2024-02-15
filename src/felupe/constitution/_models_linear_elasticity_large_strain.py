@@ -20,9 +20,10 @@ import numpy as np
 
 from ._models_hyperelasticity import NeoHookeCompressible
 from ._models_linear_elasticity import lame_converter
+from ._preview import ConstitutiveMaterial
 
 
-class LinearElasticLargeStrain:
+class LinearElasticLargeStrain(ConstitutiveMaterial):
     r"""Linear-elastic material formulation suitable for large-rotation analyses based
     on the nearly-incompressible Neo-Hookean material formulation.
 
@@ -43,6 +44,8 @@ class LinearElasticLargeStrain:
     def __init__(self, E=None, nu=None, parallel=False):
         self.E = E
         self.nu = nu
+
+        self.kwargs = {"E": self.E, "nu": self.nu}
 
         # aliases for gradient and hessian
         self.energy = self.function

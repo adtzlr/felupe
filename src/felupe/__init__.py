@@ -15,6 +15,7 @@ from .assembly import IntegralForm
 from .assembly.expression import Form
 from .constitution import (
     AreaChange,
+    ConstitutiveMaterial,
     Hyperelastic,
     LinearElastic,
     LinearElasticLargeStrain,
@@ -29,6 +30,7 @@ from .constitution import (
     NeoHookeCompressible,
     OgdenRoxburgh,
     ThreeFieldVariation,
+    ViewMaterial,
     ViewMaterialIncompressible,
     VolumeChange,
     arruda_boyce,
@@ -159,7 +161,9 @@ __all__ = [
     "MaterialStrain",
     "Hyperelastic",
     "MaterialAD",
+    "ViewMaterial",
     "ViewMaterialIncompressible",
+    "ConstitutiveMaterial",
     "VolumeChange",
     "linear_elastic",
     "linear_elastic_plastic_isotropic_hardening",

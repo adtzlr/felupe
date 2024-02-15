@@ -95,6 +95,8 @@ class LinearElastic:
         self.E = E
         self.nu = nu
 
+        self.kwargs = {"E": self.E, "nu": self.nu}
+
         # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
@@ -234,6 +236,8 @@ class LinearElasticTensorNotation:
         self.E = E
         self.nu = nu
 
+        self.kwargs = {"E": self.E, "nu": self.nu}
+
         # aliases for gradient and hessian
         self.stress = self.gradient
         self.elasticity = self.hessian
@@ -335,6 +339,8 @@ class LinearElasticPlaneStrain:
     def __init__(self, E, nu):
         self.E = E
         self.nu = nu
+
+        self.kwargs = {"E": self.E, "nu": self.nu}
 
         self._umat = LinearElasticPlaneStress(*self._convert(self.E, self.nu))
 
@@ -509,6 +515,8 @@ class LinearElasticPlaneStress:
     def __init__(self, E, nu):
         self.E = E
         self.nu = nu
+
+        self.kwargs = {"E": self.E, "nu": self.nu}
 
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``

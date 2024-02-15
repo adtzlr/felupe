@@ -31,7 +31,7 @@ In this tutorial you'll learn how to plot multiple force-displacement curves alo
     kwargs = dict(C10=0.5, C01=0.1, C11=0.0, C20=-0.1, C30=0.02)
 
     umat = fem.Hyperelastic(strain_energy_function, **kwargs)
-    ax = umat.plot()
+    ax = umat.plot(incompressible=True)
 
 ..  image:: images/umat.png
     :width: 400px

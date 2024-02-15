@@ -422,7 +422,7 @@ def extended_tube(C, Gc, delta, Ge, beta):
         \psi = \frac{G_c}{2} \left[ \frac{\left( 1 - \delta^2 \right)
             \left( \hat{I}_1 - 3 \right)}{1 - \delta^2 \left( \hat{I}_1 - 3 \right)} +
             \ln \left( 1 - \delta^2 \left( \hat{I}_1 - 3 \right) \right) \right] +
-            \frac{2 G_e}{\beta^2} \left( \hat{\lambda}_1^{-\beta} + 
+            \frac{2 G_e}{\beta^2} \left( \hat{\lambda}_1^{-\beta} +
             \hat{\lambda}_2^{-\beta} + \hat{\lambda}_3^{-\beta} - 3 \right)
 
     With the first main invariant of the distortional part of the right
@@ -431,10 +431,10 @@ def extended_tube(C, Gc, delta, Ge, beta):
     ..  math::
 
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
-    
+
     and the principal stretches, obtained from the distortional part of the right
     Cauchy-Green deformation tensor
-    
+
     ..  math::
 
         \hat{\lambda}_\alpha = J^{-1/3} \lambda_\alpha

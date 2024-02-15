@@ -104,7 +104,7 @@ def test_nh():
             assert P[0].shape == (3, 3, *F[0].shape[-2:])
             assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
-    preview = fem.MaterialViewIncompressible(nh)
+    preview = fem.ViewMaterialIncompressible(nh)
     ax = preview.plot()
 
 

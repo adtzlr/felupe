@@ -145,6 +145,10 @@ class Mesh(DiscreteGeometry):
         points-per-cell may be specified (must be lower or equal the number of points-
         per-cell of the original Mesh). If the Mesh is to be used as a *dual* Mesh, then
         the point-coordinates do not have to be re-created because they are not used.
+
+        See Also
+        --------
+        felupe.Mesh.dual : Create a new dual mesh with given points per cell.
         """
 
         return self.dual(

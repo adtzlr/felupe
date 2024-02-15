@@ -66,8 +66,14 @@ def pre_mixed():
     p = fem.Field(r)
     J = fem.Field(r, values=1)
 
-    f = fem.FieldContainer((u, p, J))
+    f = fem.FieldContainer([u, p, J])
     g = fem.FieldsMixed(fem.RegionHexahedron(m), n=3)
+    f2 = u & p & J
+    f3 = (u & p) & J
+    f4 = u & (p & J)
+    assert [np.allclose(fi, f2i) for fi, f2i in zip(f.extract(), f2.extract())]
+    assert [np.allclose(fi, f3i) for fi, f3i in zip(f.extract(), f3.extract())]
+    assert [np.allclose(fi, f4i) for fi, f4i in zip(f.extract(), f4.extract())]
 
     print(m), print(r), print(f)
 

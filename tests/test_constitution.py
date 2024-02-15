@@ -331,14 +331,12 @@ def test_umat_hyperelastic():
         s, statevars_new = umat.gradient([F, None])
         dsde = umat.hessian([F, None])
 
-        import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-        view = umat.view()
-        ax = umat.plot()
-        plt.close(ax.get_figure())
-
-        ax = umat.imshow()
-        plt.close(ax.get_figure())
+    view = umat.view()
+    ax = umat.plot()
+    ax = umat.imshow()
+    ax = umat.screenshot()
 
 
 def test_umat_hyperelastic2():

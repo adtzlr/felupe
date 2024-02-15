@@ -887,8 +887,72 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(fill_between(self, other_mesh=other_mesh, n=n))
 
-    @wraps(flip)
     def flip(self, mask=None):
+        """Ensure positive cell volumes for `tria`, `tetra`, `quad` and `hexahedron`
+        cell types.
+
+        Parameters
+        ----------
+        mask: list, ndarray or None, optional
+            Boolean mask for selected cells to flip (default is None). If None, all
+            cells are selected to be flipped.
+
+        Returns
+        -------
+        Mesh
+            The mesh with a rearranged cells array to ensure positive cell volumes.
+
+        Examples
+        --------
+        A quad mesh with negative cell volumes occurs if one coordinate axis is multiplied
+        by -1. The error pops up if a region is created with this mesh.
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=3)
+        >>> mesh.update(points=mesh.points * np.array([[-1, 1]]))
+        >>> region = fem.RegionQuad(mesh)
+        UserWarning: Negative volumes for cells
+         [0 1 2 3]
+        Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` and re-create the region.
+          warnings.warn(message_negative_volumes)
+
+        The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is evaluated
+        to -1.0.
+
+        >>> region.dV.sum()
+        -1.0
+
+        Let's try to fix the mesh.
+
+        >>> mesh.cells
+        array([[0, 1, 4, 3],
+               [1, 2, 5, 4],
+               [3, 4, 7, 6],
+               [4, 5, 8, 7]])
+
+        The cells array is rearranged to ensure positive cell volumes.
+
+        >>> mesh_fixed = mesh.flip()
+        >>> mesh_fixed.cells
+        array([[3, 4, 1, 0],
+               [4, 5, 2, 1],
+               [6, 7, 4, 3],
+               [7, 8, 5, 4]])
+
+        A region now correctly evaluates the total volume of the mesh to 1.0.
+
+        >>> region_fixed = fem.RegionQuad(mesh_fixed)
+        >>> region_fixed.dV.sum()
+        1.0
+
+        See Also
+        --------
+        felupe.mesh.flip : Ensure positive cell volumes for `tria`, `tetra`, `quad` and
+            `hexahedron` cell types.
+
+        """
         return as_mesh(flip(self, mask=mask))
 
     def mirror(self, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):

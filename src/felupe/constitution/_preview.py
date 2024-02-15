@@ -30,6 +30,15 @@ class ViewMaterialIncompressible:
         A class with methods for the gradient and hessian of the strain energy density
         function w.r.t. the deformation gradient. See :class:`~felupe.Material` for
         further details.
+    ux : ndarray, optional
+        Array with stretches for incompressible uniaxial tension/compression. Default is
+        ``np.linspace(0.7, 2.5)``.
+    ps : ndarray, optional
+        Array with stretches for incompressible planar shear. Default is
+        ``np.linspace(1.0, 2.5)``.
+    bx : ndarray, optional
+        Array with stretches for incompressible equi-biaxial tension. Default is
+        ``np.linspace(1.0, 1.75)``.
 
     Examples
     --------
@@ -44,14 +53,38 @@ class ViewMaterialIncompressible:
 
     """
 
-    def __init__(self, umat):
+    def __init__(
+        self,
+        umat,
+        ux=np.linspace(0.7, 2.5),
+        ps=np.linspace(1, 2.5),
+        bx=np.linspace(1, 1.75),
+    ):
         self.umat = umat
+        self.ux = ux
+        self.ps = ps
+        self.bx = bx
 
-    def uniaxial(self):
+    def uniaxial(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a uniaxial
-        incompressible deformation."""
+        incompressible deformation.
 
-        λ1 = np.linspace(0.7, 2.5)
+        Parameters
+        ----------
+        stretches : ndarray or None, optional
+            Array with stretches at which the forces are evaluated (default is None). If
+            None, the stretches from initialization are used.
+
+        Returns
+        -------
+        tuple of ndarray
+            2-tuple with array of stretches and array of forces.
+        """
+
+        if stretches is None:
+            stretches = self.ux
+
+        λ1 = stretches
         λ2 = λ3 = 1 / np.sqrt(λ1)
         eye = np.eye(3).reshape(3, 3, 1, 1)
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
@@ -59,11 +92,26 @@ class ViewMaterialIncompressible:
         P, statevars = self.umat.gradient([F, None])
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel()
 
-    def planar(self):
+    def planar(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a planar shear
-        incompressible deformation."""
+        incompressible deformation.
 
-        λ1 = np.linspace(1, 2.5)
+        Parameters
+        ----------
+        stretches : ndarray or None, optional
+            Array with stretches at which the forces are evaluated (default is None). If
+            None, the stretches from initialization are used.
+
+        Returns
+        -------
+        tuple of ndarray
+            2-tuple with array of stretches and array of forces.
+        """
+
+        if stretches is None:
+            stretches = self.ps
+
+        λ1 = stretches
         λ2 = np.ones_like(λ1)
         λ3 = 1 / λ1
         eye = np.eye(3).reshape(3, 3, 1, 1)
@@ -72,11 +120,26 @@ class ViewMaterialIncompressible:
         P, statevars = self.umat.gradient([F, None])
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel()
 
-    def biaxial(self):
+    def biaxial(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a equi-biaxial
-        incompressible deformation."""
+        incompressible deformation.
 
-        λ1 = λ2 = np.linspace(1, 1.75)
+        Parameters
+        ----------
+        stretches : ndarray or None, optional
+            Array with stretches at which the forces are evaluated (default is None). If
+            None, the stretches from initialization are used.
+
+        Returns
+        -------
+        tuple of ndarray
+            2-tuple with array of stretches and array of forces.
+        """
+
+        if stretches is None:
+            stretches = self.bx
+
+        λ1 = λ2 = stretches
         λ3 = 1 / λ1**2
         eye = np.eye(3).reshape(3, 3, 1, 1)
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)

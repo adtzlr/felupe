@@ -110,7 +110,7 @@ class ViewMaterialIncompressible:
             ax.plot(*loadcase, label=label)
 
         ax.set_xlabel(r"Stretch $l/L$ $\rightarrow$")
-        ax.set_ylabel("Normal force per \n undeformed area" + r" $N/A$ $\rightarrow$")
+        ax.set_ylabel("Normal force per undeformed area" + r" $N/A$ $\rightarrow$")
         ax.legend()
 
         xlim = ax.get_xlim()

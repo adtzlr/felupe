@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from ..math._math import linsteps
 
 
 class PlotMaterial:
@@ -29,12 +30,23 @@ class PlotMaterial:
 
         Returns
         -------
-        tuple of 3-tuple
+        list of 3-tuple
             Tuple with 3-tuple of stretch and force arrays and the label string for each
             load case.
         """
 
-        return self.uniaxial(), self.planar(), self.biaxial()
+        data = []
+
+        if self.ux is not None:
+            data.append(self.uniaxial())
+
+        if self.ps is not None:
+            data.append(self.planar())
+
+        if self.bx is not None:
+            data.append(self.biaxial())
+
+        return data
 
     def plot(self, ax=None, show_title=True, show_kwargs=True, **kwargs):
         """Plot normal force per undeformed area vs. stretch curves for the elementary
@@ -106,18 +118,17 @@ class ViewMaterial(PlotMaterial):
         Array with stretches for equi-biaxial tension. Default is
         ``np.linspace(1.0, 1.75)``.
 
-    Notes
-    -----
-    ..  note::
-        :class:`~felupe.ViewMaterial` does not support constitutive
-        material definitions with state variables.
-
     Examples
     --------
     >>> import felupe as fem
     >>>
-    >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
-    >>> preview = fem.ViewMaterial(umat)
+    >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=2), r=3, m=1, beta=0)
+    >>> preview = fem.ViewMaterial(
+    >>>     umat,
+    >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+    >>>     ps=None,
+    >>>     bx=None,
+    >>> )
     >>> ax = preview.plot(show_title=True, show_kwargs=True)
 
     .. image:: images/umat_neohooke.png
@@ -136,6 +147,7 @@ class ViewMaterial(PlotMaterial):
         self.ux = ux
         self.ps = ps
         self.bx = bx
+        self.statevars_included = self.umat.x[-1].size > 0
 
     def uniaxial(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a uniaxial
@@ -163,7 +175,15 @@ class ViewMaterial(PlotMaterial):
         def fun(λ3):
             λ2 = λ3
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
-            P, statevars = self.umat.gradient([F, None])
+            if self.statevars_included:
+                statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                P = np.zeros_like(F)
+                for increment, defgrad in enumerate(F.T):
+                    P[..., [increment]], statevars = self.umat.gradient(
+                        [F[..., [increment]], statevars]
+                    )
+            else:
+                P, statevars = self.umat.gradient([F, None])
             return P[2, 2].ravel()
 
         from scipy.optimize import root
@@ -171,7 +191,16 @@ class ViewMaterial(PlotMaterial):
         λ2 = λ3 = root(fun, λ3).x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
-        P, statevars = self.umat.gradient([F, None])
+        if self.statevars_included:
+            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            P = np.zeros_like(F)
+            for increment, defgrad in enumerate(F.T):
+                P[..., [increment]], statevars = self.umat.gradient(
+                    [F[..., [increment]], statevars]
+                )
+        else:
+            P, statevars = self.umat.gradient([F, None])
+
         return λ1, P[0, 0].ravel(), "Uniaxial"
 
     def planar(self, stretches=None):
@@ -200,7 +229,15 @@ class ViewMaterial(PlotMaterial):
 
         def fun(λ3):
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
-            P, statevars = self.umat.gradient([F, None])
+            if self.statevars_included:
+                statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                P = np.zeros_like(F)
+                for increment, defgrad in enumerate(F.T):
+                    P[..., [increment]], statevars = self.umat.gradient(
+                        [F[..., [increment]], statevars]
+                    )
+            else:
+                P, statevars = self.umat.gradient([F, None])
             return P[2, 2].ravel()
 
         from scipy.optimize import root
@@ -208,7 +245,16 @@ class ViewMaterial(PlotMaterial):
         λ3 = root(fun, λ3).x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
-        P, statevars = self.umat.gradient([F, None])
+        if self.statevars_included:
+            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            P = np.zeros_like(F)
+            for increment, defgrad in enumerate(F.T):
+                P[..., [increment]], statevars = self.umat.gradient(
+                    [F[..., [increment]], statevars]
+                )
+        else:
+            P, statevars = self.umat.gradient([F, None])
+
         return λ1, P[0, 0].ravel(), "Planar Shear"
 
     def biaxial(self, stretches=None):
@@ -236,7 +282,15 @@ class ViewMaterial(PlotMaterial):
 
         def fun(λ3):
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
-            P, statevars = self.umat.gradient([F, None])
+            if self.statevars_included:
+                statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                P = np.zeros_like(F)
+                for increment, defgrad in enumerate(F.T):
+                    P[..., [increment]], statevars = self.umat.gradient(
+                        [F[..., [increment]], statevars]
+                    )
+            else:
+                P, statevars = self.umat.gradient([F, None])
             return P[2, 2].ravel()
 
         from scipy.optimize import root
@@ -244,7 +298,16 @@ class ViewMaterial(PlotMaterial):
         λ3 = root(fun, λ3).x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
-        P, statevars = self.umat.gradient([F, None])
+        if self.statevars_included:
+            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            P = np.zeros_like(F)
+            for increment, defgrad in enumerate(F.T):
+                P[..., [increment]], statevars = self.umat.gradient(
+                    [F[..., [increment]], statevars]
+                )
+        else:
+            P, statevars = self.umat.gradient([F, None])
+
         return λ1, P[0, 0].ravel(), "Biaxial"
 
 
@@ -261,13 +324,13 @@ class ViewMaterialIncompressible(PlotMaterial):
         further details.
     ux : ndarray, optional
         Array with stretches for incompressible uniaxial tension/compression. Default is
-        ``np.linspace(0.7, 2.5)``.
+        ``linsteps([0.7, 2.5], num=36)``.
     ps : ndarray, optional
         Array with stretches for incompressible planar shear. Default is
-        ``np.linspace(1.0, 2.5)``.
+        ``linsteps([1, 2.5], num=30)``.
     bx : ndarray, optional
         Array with stretches for incompressible equi-biaxial tension. Default is
-        ``np.linspace(1.0, 1.75)``.
+        ``linsteps([1, 1.75], num=15)``.
 
     Notes
     -----
@@ -291,9 +354,9 @@ class ViewMaterialIncompressible(PlotMaterial):
     def __init__(
         self,
         umat,
-        ux=np.linspace(0.7, 2.5),
-        ps=np.linspace(1, 2.5),
-        bx=np.linspace(1, 1.75),
+        ux=linsteps([0.7, 2.5], num=36),
+        ps=linsteps([1, 2.5], num=30),
+        bx=linsteps([1, 1.75], num=15),
     ):
         self.umat = umat
         self.ux = ux
@@ -388,7 +451,7 @@ class ViewMaterialIncompressible(PlotMaterial):
 
 
 class ConstitutiveMaterial:
-    def view(self, incompressible=False):
+    def view(self, incompressible=False, **kwargs):
         """Create views on normal force per undeformed area vs. stretch curves for the
         elementary homogeneous deformations uniaxial tension/compression, planar shear
         and biaxial tension of a given isotropic material formulation.
@@ -397,6 +460,9 @@ class ConstitutiveMaterial:
         ----------
         incompressible : bool, optional
             A flag to enforce views on incompressible deformations (default is False).
+        **kwargs : dict, optional
+            Optional keyword-arguments for :class:`~felupe.ViewMaterial` or
+            :class:`~felupe.ViewMaterialIncompressible`.
 
         Returns
         -------
@@ -418,9 +484,9 @@ class ConstitutiveMaterial:
         if incompressible:
             View = ViewMaterialIncompressible
 
-        return View(self)
+        return View(self, **kwargs)
 
-    def plot(self, incompressible=False):
+    def plot(self, incompressible=False, **kwargs):
         """Return a plot with normal force per undeformed area vs. stretch curves for
         the elementary homogeneous deformations uniaxial tension/compression, planar
         shear and biaxial tension of a given isotropic material formulation.
@@ -429,6 +495,9 @@ class ConstitutiveMaterial:
         ----------
         incompressible : bool, optional
             A flag to enforce views on incompressible deformations (default is False).
+        **kwargs : dict, optional
+            Optional keyword-arguments for :class:`~felupe.ViewMaterial` or
+            :class:`~felupe.ViewMaterialIncompressible`.
 
         Returns
         -------
@@ -446,7 +515,7 @@ class ConstitutiveMaterial:
             of a given isotropic material formulation.
         """
 
-        return self.view(incompressible=incompressible).plot()
+        return self.view(incompressible=incompressible, **kwargs).plot()
 
     def screenshot(self, filename="umat.png", incompressible=False, **kwargs):
         """Save a screenshot with normal force per undeformed area vs. stretch curves
@@ -459,6 +528,9 @@ class ConstitutiveMaterial:
             The filename of the screenshot (default is "umat.png").
         incompressible : bool, optional
             A flag to enforce views on incompressible deformations (default is False).
+        **kwargs : dict, optional
+            Optional keyword-arguments for :class:`~felupe.ViewMaterial` or
+            :class:`~felupe.ViewMaterialIncompressible`.
 
         Returns
         -------
@@ -478,9 +550,9 @@ class ConstitutiveMaterial:
 
         import matplotlib.pyplot as plt
 
-        ax = self.plot(incompressible=incompressible)
+        ax = self.plot(incompressible=incompressible, **kwargs)
         fig = ax.get_figure()
-        fig.savefig(filename, **kwargs)
+        fig.savefig(filename)
         plt.close(fig)
 
         return ax

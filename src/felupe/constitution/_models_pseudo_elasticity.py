@@ -72,7 +72,12 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         self.m = m
         self.beta = beta
 
-        self.kwargs = {"r": self.r, "m": self.m, "beta": self.beta}
+        self.kwargs = {
+            "r": self.r,
+            "m": self.m,
+            "beta": self.beta,
+            **self.material.kwargs,
+        }
 
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``

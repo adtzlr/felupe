@@ -71,9 +71,11 @@ def pre_mixed():
     f2 = u & p & J
     f3 = (u & p) & J
     f4 = u & (p & J)
+    f5 = fem.FieldContainer([u]) & (p & J)
     assert [np.allclose(fi, f2i) for fi, f2i in zip(f.extract(), f2.extract())]
     assert [np.allclose(fi, f3i) for fi, f3i in zip(f.extract(), f3.extract())]
     assert [np.allclose(fi, f4i) for fi, f4i in zip(f.extract(), f4.extract())]
+    assert [np.allclose(fi, f5i) for fi, f5i in zip(f.extract(), f5.extract())]
 
     print(m), print(r), print(f)
 

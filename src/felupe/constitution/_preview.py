@@ -131,7 +131,7 @@ class ViewMaterial(PlotMaterial):
     >>> )
     >>> ax = preview.plot(show_title=True, show_kwargs=True)
 
-    .. image:: images/umat_neohooke.png
+    .. image:: images/umat.png
        :width: 400px
 
     """

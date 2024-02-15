@@ -62,8 +62,10 @@ The force-displacement curve is tracked and :meth:`plotted <felupe.Characteristi
 
     field = fem.FieldContainer([fem.Field(region, dim=3)])
     boundaries, loadcase = fem.dof.uniaxial(field)
+
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
     uniaxial = fem.math.linsteps([-0.3, 0, 1.5], num=[3, 15])
+
     step = fem.Step(
         items=[solid], ramp={boundaries["move"]: uniaxial}, boundaries=boundaries
     )
@@ -85,8 +87,10 @@ These force-displacement curves are also evaluated for :func:`planar <felupe.dof
 
     field = fem.FieldContainer([fem.Field(region, dim=3)])
     boundaries, loadcase = fem.dof.biaxial(field, moves=(0, 0))
+
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
     planar = fem.math.linsteps([0, 1.5], num=15)
+
     step = fem.Step(
         items=[solid], ramp={boundaries["move-right-0"]: planar}, boundaries=boundaries
     )
@@ -105,8 +109,10 @@ These force-displacement curves are also evaluated for :func:`planar <felupe.dof
 
     field = fem.FieldContainer([fem.Field(region, dim=3)])
     boundaries, loadcase = fem.dof.biaxial(field)
+
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
     biaxial = fem.math.linsteps([0, 0.8], num=8)
+
     step = fem.Step(
         items=[solid],
         ramp={boundaries["move-right-0"]: biaxial, boundaries["move-right-1"]: biaxial},
@@ -126,11 +132,14 @@ Finally, let's add the name and the parameters of the :class:`Third-Order-Deform
 ..  code-block:: python
 
     title = " ".join([name.title() for name in fun.__name__.split("_")])
+
     ax["right"].set_title(
         ", ".join([f"{key}={value}" for key, value in kwargs.items()]),
         fontdict=dict(fontsize="small"),
     )
+
     fig.suptitle(title, weight="bold")
+
     ax["right"].legend()
     ax["right"].grid()
 

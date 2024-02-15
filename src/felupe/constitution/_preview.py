@@ -111,12 +111,13 @@ class ViewMaterial(PlotMaterial):
         further details.
     ux : ndarray, optional
         Array with stretches for uniaxial tension/compression. Default is
-        ``np.linspace(0.7, 2.5)``.
+        ``linsteps([0.7, 2.5], num=36)``.
     ps : ndarray, optional
-        Array with stretches for planar shear. Default is ``np.linspace(1.0, 2.5)``.
+        Array with stretches for planar shear. Default is
+        ``linsteps([1.0, 2.5], num=30)``.
     bx : ndarray, optional
         Array with stretches for equi-biaxial tension. Default is
-        ``np.linspace(1.0, 1.75)``.
+        ``linsteps([1.0, 1.75], num=15)```.
 
     Examples
     --------

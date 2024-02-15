@@ -65,7 +65,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     def __init__(self, material, r, m, beta):
         # isotropic hyperelastic material formulation
-        self.material = material
+        self.material = self.fun = material
 
         # ogden-roxburgh material parameters
         self.r = r

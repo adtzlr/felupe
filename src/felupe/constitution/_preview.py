@@ -452,6 +452,8 @@ class ViewMaterialIncompressible(PlotMaterial):
 
 
 class ConstitutiveMaterial:
+    "Base class for constitutive materials."
+    
     def view(self, incompressible=False, **kwargs):
         """Create views on normal force per undeformed area vs. stretch curves for the
         elementary homogeneous deformations uniaxial tension/compression, planar shear

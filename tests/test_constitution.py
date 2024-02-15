@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
@@ -74,6 +75,9 @@ def test_nh():
             Px = nh.stress(F)[:-1]
             Ax = nh.elasticity(F)
 
+            ax = nh.plot(incompressible=False)
+            plt.close(ax.get_figure())
+
             assert np.allclose(W, Wx)
             assert np.allclose(P, Px)
             assert np.allclose(A, Ax)
@@ -103,9 +107,6 @@ def test_nh():
             assert W[0].shape == F[0].shape[-2:]
             assert P[0].shape == (3, 3, *F[0].shape[-2:])
             assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
-
-    preview = fem.ViewMaterialIncompressible(nh)
-    ax = preview.plot(incompressible=False)
 
 
 def test_linear():

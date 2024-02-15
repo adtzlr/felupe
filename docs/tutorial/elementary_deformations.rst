@@ -21,7 +21,7 @@ Elementary Deformations
 ..  image:: images/fig_hyperelastic-deformations.png
     :width: 600px
 
-In this tutorial you'll learn how to plot multiple force-displacement curves along with views on deformed meshes in one single matplotlib figure. We start with a :class:`Third-Order-Deformation <felupe.third_order_deformation>` isotropic hyperelastic material formulation.
+In this tutorial you'll learn how to plot multiple force-displacement curves along with views on deformed meshes in one single matplotlib figure. We start with a :class:`Third-Order-Deformation <felupe.third_order_deformation>` isotropic hyperelastic material formulation. :class:`~felupe.Hyperelastic` provides a :meth:`~felupe.Hyperelastic.plot`-method to preview force-stretch curves on incompressible elementary deformations.
 
 ..  code-block:: python
 

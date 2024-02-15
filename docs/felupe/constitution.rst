@@ -13,7 +13,7 @@ This module provides constitutive material formulations. In FElupe, a constituti
     # math-functions which support trailing axes
     from felupe.math import det, dya, identity, transpose, inv
 
-    class MyConstitutiveMaterialFormulation(fem.ConstitutiveMaterial):
+    class MyMaterialFormulation(fem.ConstitutiveMaterial):
 
         def __init__(self):
             # provide the shape of state variables without trailing axes
@@ -50,11 +50,11 @@ This module provides constitutive material formulations. In FElupe, a constituti
             # upper-triangle items of the hessian
             return [d2WdFdF, d2WdFdp, d2Wdpdp]
 
-    umat = MyConstitutiveMaterialFormulation()
+    umat = MyMaterialFormulation()
 
 There are many different pre-defined constitutive material formulations available, including definitions for linear-elasticity, small-strain plasticity, hyperelasticity or pseudo-elasticity. The generation of user materials may be simplified when using frameworks for user-defined functions, like hyperelasticity (with automatic differentiation) or a small-strain based framework with state variables. The most general case is given by a framework with functions for the evaluation of stress and elasticity tensors in terms of the deformation gradient.
 
-**View Force-Stretch Curves on Incompressible Deformations**
+**View Force-Stretch Curves on Elementary Deformations**
 
 .. currentmodule:: felupe
 

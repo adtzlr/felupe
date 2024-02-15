@@ -26,12 +26,13 @@ class PlotMaterial:
     def evaluate(self):
         """Evaluate normal force per undeformed area vs. stretch curves for the
         elementary homogeneous incompressible deformations uniaxial tension/compression,
-        planar shear and biaxial tension.
+        planar shear and biaxial tension. A load case is not included if its array of
+        stretches  (attribute ``ux``, ``ps`` or ``bx``) is None.
 
         Returns
         -------
         list of 3-tuple
-            Tuple with 3-tuple of stretch and force arrays and the label string for each
+            List with 3-tuple of stretch and force arrays and the label string for each
             load case.
         """
 

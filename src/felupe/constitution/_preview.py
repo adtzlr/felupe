@@ -139,9 +139,9 @@ class ViewMaterial(PlotMaterial):
     def __init__(
         self,
         umat,
-        ux=np.linspace(0.7, 2.5),
-        ps=np.linspace(1, 2.5),
-        bx=np.linspace(1, 1.75),
+        ux=linsteps([0.7, 2.5], num=36),
+        ps=linsteps([1, 2.5], num=30),
+        bx=linsteps([1, 1.75], num=15),
     ):
         self.umat = umat
         self.ux = ux

@@ -232,6 +232,11 @@ class Field:
         "Fill all field values with a scalar value."
         self.values.fill(a)
 
+    def as_container(self):
+        "Create a :class:`~felupe.FieldContainer` with the field."
+
+        return FieldContainer([self])
+
     def __add__(self, newvalues):
         if isinstance(newvalues, np.ndarray):
             field = deepcopy(self)
@@ -341,11 +346,10 @@ class Field:
         a list of degrees of freedom `dof`."""
 
         return self.values.ravel()[dof]
-    
+
     def __and__(self, field):
-        
         fields = [field]
         if isinstance(field, FieldContainer):
             fields = field.fields
-            
+
         return FieldContainer([self, *fields])

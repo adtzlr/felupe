@@ -79,14 +79,6 @@ A :class:`~felupe.Region` essentially pre-calculates element shape/ansatz/basis 
     dV = region.dV
     V = dV.sum()
 
-The scheme of the region, i.e. the finite element formulation and the quadrature rule, may be visualized by its plot-method.
-
-..  code-block::
-    
-    region.plot().show()
-    
-..  image:: ../felupe/images/region-hexahedron.png
-
 Field
 ~~~~~
 In a next step, a displacement :class:`~felupe.Field` is added to the :class:`~felupe.Region`. This may be either a scalar- or a vector-valed field. The values at mesh-points are obtained with the attribute :attr:`~felupe.Field.values`. Interpolated field values at quadrature points are calculated with the :meth:`~felupe.Field.interpolate` method. Additionally, the displacement gradient w.r.t. the undeformed coordinates is calculated for every quadrature point of every cell in the region with the field method :meth:`~felupe.Field.grad`. A generalized extraction method :meth:`extract(grad=True, add_identity=True, sym=False) <felupe.Field.extract>` allows several arguments to be passed. This involves whether the gradient or the values are extracted. If the gradient is extracted, the identity matrix may be added to the gradient (useful for the calculation of the deformation gradient). Optionally, the symmetric part is returned (small strain tensor).

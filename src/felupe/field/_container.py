@@ -310,5 +310,7 @@ class FieldContainer:
         fields = [field]
         if isinstance(field, FieldContainer):
             fields = field.fields
+        elif field is None:
+            fields = []
 
         return FieldContainer([*self.fields, *fields])

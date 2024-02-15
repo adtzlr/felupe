@@ -77,6 +77,8 @@ def pre_mixed():
     assert [np.allclose(fi, f4i) for fi, f4i in zip(f.extract(), f4.extract())]
     assert [np.allclose(fi, f5i) for fi, f5i in zip(f.extract(), f5.extract())]
 
+    f & None, u & None
+
     print(m), print(r), print(f)
 
     u.values[0] = np.ones(3)

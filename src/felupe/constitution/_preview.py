@@ -20,9 +20,9 @@ import numpy as np
 
 
 class ViewMaterialIncompressible:
-    """View on normal force per undeformed area vs. stretch curves for the elementary
-    homogeneous incompressible deformations uniaxial tension/compression, planar
-    shear and biaxial tension of a given isotropic material formulation.
+    """Create views on normal force per undeformed area vs. stretch curves for the
+    elementary homogeneous incompressible deformations uniaxial tension/compression,
+    planar shear and biaxial tension of a given isotropic material formulation.
 
     Parameters
     ----------

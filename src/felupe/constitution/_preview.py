@@ -504,7 +504,7 @@ class ConstitutiveMaterial:
 
         Returns
         -------
-        felupe.ViewMaterial or felupe.ViewMaterialIncompressible
+        matplotlib.axes.Axes
 
         See Also
         --------
@@ -537,7 +537,7 @@ class ConstitutiveMaterial:
 
         Returns
         -------
-        felupe.ViewMaterial or felupe.ViewMaterialIncompressible
+        matplotlib.axes.Axes
 
         See Also
         --------

@@ -80,7 +80,7 @@ def dual(
     >>> region = fem.RegionQuadraticQuad(mesh=mesh)
     >>>
     >>> mesh_dual = fem.mesh.dual(mesh, points_per_cell=1, disconnect=False)
-    >>> region_dual = fem.RegionQuad(
+    >>> region_dual = fem.RegionConstantQuad(
     >>>     mesh_dual, quadrature=region.quadrature, grad=False
     >>> )
     >>>

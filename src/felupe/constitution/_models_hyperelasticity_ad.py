@@ -431,6 +431,12 @@ def extended_tube(C, Gc, delta, Ge, beta):
     ..  math::
 
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+    
+    and the principal stretches of the isochoric part of the deformation
+    
+    ..  math::
+
+        \hat{\lambda}_\alpha = J^{-1/3} \lambda_\alpha
 
     The initial shear modulus results from the sum of the cross-link and the constraint
     contributions to the total initial shear modulus.

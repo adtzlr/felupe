@@ -23,6 +23,7 @@ import numpy as np
 from ..math import identity
 from ..math import sym as symmetric
 from ._indices import Indices
+from ._container import FieldContainer
 
 
 class Field:
@@ -340,3 +341,11 @@ class Field:
         a list of degrees of freedom `dof`."""
 
         return self.values.ravel()[dof]
+    
+    def __and__(self, field):
+        
+        fields = [field]
+        if isinstance(field, FieldContainer):
+            fields = field.fields
+            
+        return FieldContainer([self, *fields])

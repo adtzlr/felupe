@@ -32,10 +32,54 @@ class FieldContainer:
     fields : list or tuple of Field, FieldAxisymmetric or FieldPlaneStrain
         List with fields. The region is linked to the first field.
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=3)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> region_dual = fem.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
+    >>> displacement = fem.Field(region, dim=3)
+    >>> pressure = fem.Field(region_dual)
+    >>> field = fem.FieldContainer([displacement, pressure])
+    >>> field
+    <felupe FieldContainer object>
+      Number of fields: 2
+      Dimension of fields:
+        Field: 3
+        Field: 1
+
+    A new :class:`~felupe.FieldContainer` is also created by one of the logical-and
+    combinations of a :class:`~felupe.Field`, :class:`~felupe.FieldAxisymmetric`,
+    :class:`~felupe.FieldPlanestrain` or :class:`~felupe.FieldContainer`.
+
+    >>> displacement & pressure
+    <felupe FieldContainer object>
+      Number of fields: 2
+      Dimension of fields:
+        Field: 3
+        Field: 1
+
+    >>> volume_ratio = fem.Field(region_dual)
+    >>> field & volume_ratio  # displacement & pressure & volume_ratio
+    <felupe FieldContainer object>
+      Number of fields: 3
+      Dimension of fields:
+        Field: 2
+        Field: 1
+        Field: 1
+
     See Also
     --------
     felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
-       and initial point ``values``.
+        and initial point ``values``.
+    felupe.FieldAxisymmetric : An axisymmetric :class:`~felupe.Field` on points of a
+        two-dimensional :class:`~felupe.Region` with dimension ``dim`` (default is 2) and
+        initial point ``values`` (default is 0).
+    felupe.FieldPlaneStrain : A plane strain :class:`~felupe.Field` on points of a
+        two-dimensional :class:`~felupe.Region` with dimension ``dim`` (default is 2)
+        and initial point ``values`` (default is 0).
+
     """
 
     def __init__(self, fields):
@@ -261,3 +305,10 @@ class FieldContainer:
         "Number of fields inside the container."
 
         return len(self.fields)
+
+    def __and__(self, field):
+        fields = [field]
+        if isinstance(field, FieldContainer):
+            fields = field.fields
+
+        return FieldContainer([*self.fields, *fields])

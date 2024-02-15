@@ -51,7 +51,7 @@ class FieldContainer:
 
     A new :class:`~felupe.FieldContainer` is also created by one of the logical-and
     combinations of a :class:`~felupe.Field`, :class:`~felupe.FieldAxisymmetric`,
-    :class:`~felupe.FieldPlanestrain` or :class:`~felupe.FieldContainer`.
+    :class:`~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`.
 
     >>> displacement & pressure
     <felupe FieldContainer object>

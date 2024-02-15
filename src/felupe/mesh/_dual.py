@@ -32,8 +32,66 @@ def dual(
     offset=0,
     npoints=None,
 ):
-    """Create a new dual mesh with given points per cell. The point coordinates are not
-    used in a dual mesh and hence, by default they are all zero.
+    """Create a new dual mesh with given points per cell.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+    points_per_cell : int or None, optional
+        Number of points per cell, must be equal or lower than ``cells.shape[1]`` (
+        default is None). If None, all points per cell are considered for the dual mesh.
+    disconnect : bool, optional
+        A flag to disconnect the mesh (each cell has its own points). Default is True.
+    calc_points : bool, optional
+        A flag to calculate the point coordinates for the dual mesh (default is False).
+        If False, the points array is filled with zeros.
+    offset : int, optional
+        An offset to be added to the cells array (default is 0).
+    npoints : int or None, optional
+        Number of points for the dual mesh. If the given number of points is greater
+        than ``npoints * points_per_cell``, then the missing points are added to the
+        points array (filled with zeros). Default is None.
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : list or ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    Notes
+    -----
+    ..  note::
+        The points array of the dual mesh always has a shape of
+        ``(npoints * points_per_cell, dim)``.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Rectangle(n=5).add_midpoints_edges()
+    >>> region = fem.RegionQuadraticQuad(mesh=mesh)
+    >>>
+    >>> mesh_dual = fem.mesh.dual(mesh, points_per_cell=1, disconnect=False)
+    >>> region_dual = fem.RegionQuad(
+    >>>     mesh_dual, quadrature=region.quadrature, grad=False
+    >>> )
+    >>>
+    >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+    >>> pressure = fem.Field(region_dual)
+    >>> field = fem.FieldContainer([displacement, pressure])
+
+    See Also
+    --------
+    felupe.Mesh.dual : Create a new dual mesh with given points per cell.
+
     """
 
     ncells = len(cells)
@@ -62,5 +120,9 @@ def dual(
 
     if npoints is not None and npoints > len(points_new):
         points_new = np.pad(points_new, ((npoints - len(points_new), 0), (0, 0)))
+    elif npoints is None and cells_new.max() > len(points_new):
+        points_new = np.pad(
+            points_new, ((1 + cells_new.max() - len(points_new), 0), (0, 0))
+        )
 
     return points_new, cells_new, cell_type_new

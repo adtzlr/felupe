@@ -64,6 +64,10 @@ def test_meshes():
     fem.mesh.dual(m, disconnect=False)
     fem.mesh.dual(m, calc_points=True)
 
+    rect = fem.Rectangle(n=5).add_midpoints_edges()
+    rect_dual = rect.dual(points_per_cell=1, disconnect=False)
+    assert rect_dual.npoints == 19
+
     fem.mesh.convert(m, order=0)
     fem.mesh.convert(m, order=0, calc_points=True)
     fem.mesh.convert(m, order=2)

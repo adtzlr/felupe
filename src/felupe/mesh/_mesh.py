@@ -518,7 +518,6 @@ class Mesh(DiscreteGeometry):
 
         return self
 
-    @wraps(dual)
     def dual(
         self,
         points_per_cell=None,
@@ -527,6 +526,59 @@ class Mesh(DiscreteGeometry):
         offset=0,
         npoints=None,
     ):
+        """Create a new dual mesh with given points per cell.
+
+        Parameters
+        ----------
+        points_per_cell : int or None, optional
+            Number of points per cell, must be equal or lower than ``cells.shape[1]`` (
+            default is None). If None, all points per cell are considered for the dual
+            mesh.
+        disconnect : bool, optional
+            A flag to disconnect the mesh (each cell has its own points). Default is
+            True.
+        calc_points : bool, optional
+            A flag to calculate the point coordinates for the dual mesh (default is
+            False). If False, the points array is filled with zeros.
+        offset : int, optional
+            An offset to be added to the cells array (default is 0).
+        npoints : int or None, optional
+            Number of points for the dual mesh. If the given number of points is greater
+            than ``npoints * points_per_cell``, then the missing points are added to the
+            points array (filled with zeros). Default is None.
+
+        Returns
+        -------
+        Mesh
+            The dual mesh.
+
+        Notes
+        -----
+        ..  note::
+            The points array of the dual mesh always has a shape of
+            ``(npoints * points_per_cell, dim)``.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=5).add_midpoints_edges()
+        >>> region = fem.RegionQuadraticQuad(mesh=mesh)
+        >>>
+        >>> mesh_dual = mesh.dual(points_per_cell=1, disconnect=False)
+        >>> region_dual = fem.RegionQuad(
+        >>>     mesh_dual, quadrature=region.quadrature, grad=False
+        >>> )
+        >>>
+        >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+        >>> pressure = fem.Field(region_dual)
+        >>> field = fem.FieldContainer([displacement, pressure])
+
+        See Also
+        --------
+        felupe.mesh.dual : Create a new dual mesh with given points per cell.
+
+        """
         return as_mesh(
             dual(
                 self,

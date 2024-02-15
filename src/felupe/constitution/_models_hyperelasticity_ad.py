@@ -432,7 +432,8 @@ def extended_tube(C, Gc, delta, Ge, beta):
 
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
     
-    and the principal stretches of the isochoric part of the deformation
+    and the principal stretches, obtained from the distortional part of the right
+    Cauchy-Green deformation tensor
     
     ..  math::
 

@@ -25,7 +25,35 @@ from ._mesh import Mesh
 def read(
     filename, file_format=None, cellblock=None, dim=None, merge=False, decimals=None
 ):
-    "Read a mesh-file using meshio and create a felupe mesh-container."
+    """Read a mesh from a file using :func:`meshio.read` and create a
+    :class:`~felupe.MeshContainer`.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the mesh file.
+    cellblock : list of int or None, optional
+        Read only a subset of the cellblocks from the mesh file (default is None). If
+        None, all cell blocks are added to the :class:`~felupe.MeshContainer`.
+    dim : int or None, optional
+        If provided, the dimension to trim the points array to (default is None). If
+        None, the points array is unchanged.
+    merge : bool, optional
+        Flag to merge duplicate mesh points. This changes the cells arrays of the
+        meshes. Default is False.
+    decimals : float or None, optional
+        Precision decimals for merging duplicated mesh points. Only relevant if
+        merge=True. Default is None.
+
+    Returns
+    -------
+    MeshContainer
+        A mesh container created with :func:`meshio.read`.
+
+    See Also
+    --------
+    meshio.read : Reads an unstructured mesh with added data.
+    """
 
     from meshio import read as meshio_read
 

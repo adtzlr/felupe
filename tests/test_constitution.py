@@ -338,6 +338,8 @@ def test_umat_hyperelastic(savefig=False):
                 filename=f"../docs/felupe/images/umat_{umat.fun.__name__}.png",
                 incompressible=True,
             )
+    
+    ax = umat.plot()
 
 
 def test_umat_hyperelastic2():
@@ -494,11 +496,10 @@ def test_elpliso():
 
 
 def test_composite():
-    
     nh = fem.NeoHooke(mu=1.0)
     vol = fem.Volumetric(bulk=2.0)
     umat = nh & vol
-    
+
     ax = umat.plot()
 
 

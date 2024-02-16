@@ -128,6 +128,7 @@ class Mesh(DiscreteGeometry):
 
         # alias
         self.sweep = self.merge_duplicate_points
+        self.save = self.write
 
     def __repr__(self):
         header = "<felupe Mesh object>"
@@ -178,14 +179,34 @@ class Mesh(DiscreteGeometry):
         cells = {self.cell_type: self.cells}
         return meshio.Mesh(self.points, cells, **kwargs)
 
-    def save(self, filename="mesh.vtk", **kwargs):
-        """Export the mesh as VTK file. For XDMF-export please ensure to have
-        ``h5py`` (as an optional dependancy of ``meshio``) installed.
+    def write(self, filename="mesh.vtk", **kwargs):
+        """Write the mesh to a file.
 
         Parameters
         ----------
         filename : str, optional
             The filename of the mesh (default is ``mesh.vtk``).
+        **kwargs : dict, optional
+            Additional keyword arguments for :meth:`meshio.Mesh.write`.
+
+        Notes
+        -----
+        ..  note::
+            For XDMF-export please ensure to have ``h5py`` (as an optional dependency of
+            ``meshio``) installed.
+
+        Examples
+        --------
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=3)
+        >>> mesh.write(filename="mesh.vtk")
+
+        See Also
+        --------
+        felupe.mesh.read : Read a mesh from a file using :func:`meshio.read` and create
+            a :class:`~felupe.MeshContainer`.
+        felupe.Mesh.write : Write the mesh to a file.
 
         """
 

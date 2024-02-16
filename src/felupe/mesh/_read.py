@@ -52,9 +52,30 @@ def read(
     MeshContainer
         A mesh container created with :func:`meshio.read`.
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Rectangle(n=3)
+    >>> mesh.write(filename="mesh.xdmf")
+
+    >>> container = fem.mesh.read("mesh.xdmf")
+    >>> container
+    <felupe mesh container object>
+      Number of points: 9
+      Number of cells:
+        quad: 4
+
+    >>> container.meshes[0]
+    <felupe Mesh object>
+      Number of points: 9
+      Number of cells:
+        quad: 4
+
     See Also
     --------
     meshio.read : Reads an unstructured mesh with added data.
+    felupe.Mesh.write : Write the mesh to a file.
     """
 
     from meshio import read as meshio_read

@@ -143,9 +143,16 @@ def convert(
 
 @mesh_or_data
 def collect_edges(points, cells, cell_type):
-    """Collect all unique edges,
-    calculate and return midpoints on edges as well as the additional
-    cells array."""
+    """Collect all unique edges, calculate and return midpoints on edges as well as the
+    additional cells array.
+
+    See Also
+    --------
+    felupe.mesh.add_midpoints_edges : Add midpoints on cell edges for given points and
+        cells and update cell_type accordingly.
+    felupe.Mesh.add_midpoints_edges : Add midpoints on cell edges for given points and
+        cells and update cell_type accordingly.
+    """
 
     supported_cell_types = ["triangle", "tetra", "quad", "hexahedron"]
 
@@ -183,9 +190,16 @@ def collect_edges(points, cells, cell_type):
 
 @mesh_or_data
 def collect_faces(points, cells, cell_type):
-    """Collect all unique faces,
-    calculate and return midpoints on faces as well as the additional
-    cells array."""
+    """Collect all unique faces, calculate and return midpoints on faces as well as the
+    additional cells array.
+
+    See Also
+    --------
+    felupe.mesh.add_midpoints_faces : Add midpoints on cell faces for given points and
+        cells and update cell_type accordingly.
+    felupe.Mesh.add_midpoints_faces : Add midpoints on cell faces for given points and
+        cells and update cell_type accordingly.
+    """
 
     supported_cell_types = [
         "triangle",
@@ -253,9 +267,17 @@ def collect_faces(points, cells, cell_type):
 
 @mesh_or_data
 def collect_volumes(points, cells, cell_type):
-    """Collect all volumes,
-    calculate and return midpoints on volumes as well as the additional
-    cells array."""
+    """Collect all volumes, calculate and return midpoints on volumes as well as the
+    additional cells array.
+
+    See Also
+    --------
+    felupe.mesh.add_midpoints_volumes : Add midpoints on cell volumes for given points
+        and cells and update cell_type accordingly.
+    felupe.Mesh.add_midpoints_volumes : Add midpoints on cell volumes for given points
+        and cells and update cell_type accordingly.
+
+    """
 
     supported_cell_types = [
         "tetra",

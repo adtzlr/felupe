@@ -492,6 +492,15 @@ def test_elpliso():
     dsde = umat.hessian([F, statevars])
 
 
+def test_composite():
+    
+    nh = fem.NeoHooke(mu=1.0)
+    vol = fem.Volumetric(bulk=2.0)
+    umat = nh & vol
+    
+    ax = umat.plot()
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -506,3 +515,4 @@ if __name__ == "__main__":
     test_umat_strain()
     test_umat_strain_plasticity()
     test_elpliso()
+    test_composite()

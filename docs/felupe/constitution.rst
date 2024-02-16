@@ -64,6 +64,12 @@ There are many different pre-defined constitutive material formulations availabl
    ViewMaterial
    ViewMaterialIncompressible
 
+**Merge Constitutive Materials**
+
+.. autosummary::
+
+   CompositeMaterial
+
 **Linear-Elasticity**
 
 .. autosummary::
@@ -146,6 +152,11 @@ There are many different pre-defined constitutive material formulations availabl
    :inherited-members:
 
 .. autoclass:: felupe.ViewMaterialIncompressible
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.CompositeMaterial
    :members:
    :undoc-members:
    :inherited-members:

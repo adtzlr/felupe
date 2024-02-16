@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add `ViewMaterialIncompressible(umat)` to view force-stretch curves for incompressible uniaxial tension/compression, planar shear and equi-biaxial tension.
 - Add a base class for constitutive materials with methods `ConstitutiveMaterial.view(incompressible=False)`, `ConstitutiveMaterial.plot(incompressible=False)` and `ConstitutiveMaterial.screenshot(incompressible=False)`.
 - Add a dict-attribute with material parameters to all built-in materials, e.g. `NeoHooke.kwargs = {"mu": self.mu, "bulk": self.bulk}`.
+- Add `umat = CompositeMaterial(material, other_material)`.
+- Add `&`-operator to combine constitutive materials `umat = material & other_material`. Note that only the first material must contain state variables.
 
 ### Changed
 - Don't disconnect the dual mesh by default for regions `RegionQuadraticTriangle` and `RegionQuadraticTetra` in `FieldsMixed`.

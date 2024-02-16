@@ -584,7 +584,7 @@ class LinearElasticPlaneStress:
 
         return [stress, statevars]
 
-    def hessian(self, x, E=None, nu=None, shape=(1, 1)):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
         """Evaluate the elasticity tensor from the deformation gradient.
 
         Parameters

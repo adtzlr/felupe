@@ -188,7 +188,11 @@ class NeoHooke(ConstitutiveMaterial):
         self.mu = mu
         self.bulk = bulk
 
-        self.kwargs = {"mu": self.mu}
+        self.kwargs = {}
+
+        if self.mu is not None:
+            self.kwargs["mu"] = self.mu
+
         if self.bulk is not None:
             self.kwargs["bulk"] = self.bulk
 
@@ -225,8 +229,10 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         C = dot(transpose(F), F, parallel=self.parallel)
+        W = np.zeros_like(J)
 
-        W = mu / 2 * (J ** (-2 / 3) * trace(C) - 3)
+        if mu is not None:
+            W += mu / 2 * (J ** (-2 / 3) * trace(C) - 3)
 
         if bulk is not None:
             W += bulk * (J - 1) ** 2 / 2
@@ -257,9 +263,11 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
+        P = np.zeros_like(F)
 
-        # "physical"-deviatoric (not math-deviatoric!) part of P
-        P = mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
+        if mu is not None:
+            # "physical"-deviatoric (not math-deviatoric!) part of P
+            P += mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
 
         if bulk is not None:
             # "physical"-volumetric (not math-volumetric!) part of P
@@ -291,17 +299,20 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
-        eye = identity(F)
+        A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
 
-        # "physical"-deviatoric (not math-deviatoric!) part of A4
-        FF = ddot(F, F, parallel=self.parallel)
-        A4 = (mu * J ** (-2 / 3)) * (
-            cdya_ik(eye, eye, parallel=self.parallel)
-            - 2 / 3 * dya(F, iFT, parallel=self.parallel)
-            - 2 / 3 * dya(iFT, F, parallel=self.parallel)
-            + 2 / 9 * FF * dya(iFT, iFT, parallel=self.parallel)
-            + 1 / 3 * FF * cdya_il(iFT, iFT, parallel=self.parallel)
-        )
+        if mu is not None:
+            eye = identity(F)
+
+            # "physical"-deviatoric (not math-deviatoric!) part of A4
+            FF = ddot(F, F, parallel=self.parallel)
+            A4 += (mu * J ** (-2 / 3)) * (
+                cdya_ik(eye, eye, parallel=self.parallel)
+                - 2 / 3 * dya(F, iFT, parallel=self.parallel)
+                - 2 / 3 * dya(iFT, F, parallel=self.parallel)
+                + 2 / 9 * FF * dya(iFT, iFT, parallel=self.parallel)
+                + 1 / 3 * FF * cdya_il(iFT, iFT, parallel=self.parallel)
+            )
 
         if bulk is not None:
             p = bulk * (J - 1)
@@ -496,3 +507,10 @@ class NeoHookeCompressible(ConstitutiveMaterial):
             A4 += lmbda * (dya(iFT, iFT, parallel=self.parallel) - np.log(J) * iFTiFT)
 
         return [A4]
+
+
+class Volumetric(NeoHooke):
+    "Neo-Hookean material formulation with deactivated shear modulus."
+
+    def __init__(self, bulk, parallel=False):
+        super().__init__(mu=None, bulk=bulk, parallel=parallel)

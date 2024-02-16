@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Added
-- Create a `FieldContainer` by logical-and operations between fields and field containers, i.e. `field = displacement & pressure`, where `displacement = Field(region, dim=2)` and `pressure = Field(region)`. This also works for `field & pressure` as well as `pressure & field`.
+- Create a `FieldContainer` by the `&`-operator between fields and field containers, i.e. `field = displacement & pressure`, where `displacement = Field(region, dim=2)` and `pressure = Field(region)`. This also works for `field & pressure` as well as `pressure & field`.
 - Add a method to create a field container from a field, i.e. `Field(region, dim=3).as_container()` is equal to `FieldContainer([Field(region, dim=3)])`.
 - Add `ViewMaterial(umat)` to view force-stretch curves for uniaxial tension/compression, planar shear and equi-biaxial tension.
 - Add `ViewMaterialIncompressible(umat)` to view force-stretch curves for incompressible uniaxial tension/compression, planar shear and equi-biaxial tension.

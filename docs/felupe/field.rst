@@ -11,19 +11,6 @@ A :class:`~felupe.FieldContainer` with pre-defined fields is created with:
 
 A :class:`~felupe.FieldContainer` is created with a list of one or more fields.
 
-..  code-block:: python
-    
-    import felupe as fem
-    
-    region = fem.RegionHexahedron(fem.Cube())
-    displacement = fem.Field(region)
-    pressure = fem.FieldDual(region)
-    
-    field = fem.FieldContainer([displacement, pressure])
-    
-    # equivalent way to create a field container
-    field = displacement & pressure
-
 .. autosummary::
 
    FieldContainer

@@ -160,7 +160,18 @@ class Mesh(DiscreteGeometry):
         )
 
     def as_meshio(self, **kwargs):
-        "Export the mesh as class:`meshio.Mesh`."
+        """Export the mesh as :class:`meshio.Mesh`.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Additional keyword-arguments for ``meshio.Mesh(points, cells, **kwargs)``.
+
+        Returns
+        -------
+        meshio.Mesh
+            The mesh as :class:`meshio.Mesh`.
+        """
 
         import meshio
 

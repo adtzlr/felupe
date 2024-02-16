@@ -546,7 +546,7 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     >>>    bx=None,
     >>> )
 
-    ..  image:: images/umat_finite_strain_viscoelastics.png
+    ..  image:: images/umat_finite_strain_viscoelastic.png
         :width: 400px
     """
 

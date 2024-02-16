@@ -705,7 +705,7 @@ def flip(points, cells, cell_type, mask=None):
     cells_new = cells.copy()
 
     for face in faces_to_flip:
-        cells_new[:, face] = cells[:, face[::-1]]
+        cells_new[mask, face] = cells[mask, face[::-1]]
 
     return points, cells_new, cell_type
 

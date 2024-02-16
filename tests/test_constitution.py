@@ -369,7 +369,7 @@ def test_umat_hyperelastic2():
     assert np.allclose(dsde, dsde2)
 
 
-def test_umat_viscoelastic():
+def test_umat_viscoelastic(savefig=False):
     r, x = pre(sym=False, add_identity=True, add_random=True)
     F = x[0]
 
@@ -396,13 +396,14 @@ def test_umat_viscoelastic():
     umat = fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
-    ax = umat.screenshot(
-        filename="../docs/felupe/images/umat_finite_strain_viscoelastic.png",
-        ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
-        ps=None,
-        bx=None,
-        incompressible=True,
-    )
+    if savefig:
+        ax = umat.screenshot(
+            filename="../docs/felupe/images/umat_finite_strain_viscoelastic.png",
+            ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+            ps=None,
+            bx=None,
+            incompressible=True,
+        )
 
     s2, statevars_new = umat.gradient([F, statevars])
     dsde2 = umat.hessian([F, statevars])
@@ -510,7 +511,7 @@ if __name__ == "__main__":
     test_umat()
     test_umat_hyperelastic(savefig=True)
     test_umat_hyperelastic2()
-    test_umat_viscoelastic()
+    test_umat_viscoelastic(savefig=True)
     test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_plasticity()

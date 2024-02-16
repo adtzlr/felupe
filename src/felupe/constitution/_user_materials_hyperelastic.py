@@ -199,7 +199,8 @@ class Hyperelastic(Material):
 class MaterialAD(Material):
     r"""A user-defined material definition with a given function for the partial
     derivative of the strain energy function w.r.t. the deformation gradient tensor
-    with Automatic Differentiation provided by ``tensortrax``.
+    with Automatic Differentiation provided by
+    `tensortrax <https://github.com/adtzlr/tensortrax>`_.
 
     Parameters
     ----------

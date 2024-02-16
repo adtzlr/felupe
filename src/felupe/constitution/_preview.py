@@ -334,12 +334,6 @@ class ViewMaterialIncompressible(PlotMaterial):
         Array with stretches for incompressible equi-biaxial tension. Default is
         ``linsteps([1, 1.75], num=15)``.
 
-    Notes
-    -----
-    ..  note::
-        :class:`~felupe.ViewMaterialIncompressible` does not support constitutive
-        material definitions with state variables.
-
     Examples
     --------
     >>> import felupe as fem
@@ -349,6 +343,18 @@ class ViewMaterialIncompressible(PlotMaterial):
     >>> ax = preview.plot(show_title=True, show_kwargs=True)
 
     .. image:: images/preview_hyperelastic.png
+       :width: 400px
+
+    >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
+    >>> view = fem.ViewMaterialIncompressible(
+    >>>     umat,
+    >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+    >>>     ps=None,
+    >>>     bx=None,
+    >>> )
+    >>> ax = view.plot(show_title=True, show_kwargs=True)
+
+    .. image:: images/umat_incompressible.png
        :width: 400px
 
     """
@@ -364,6 +370,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         self.ux = ux
         self.ps = ps
         self.bx = bx
+        self.statevars_included = self.umat.x[-1].size > 0
 
     def uniaxial(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a uniaxial
@@ -389,7 +396,16 @@ class ViewMaterialIncompressible(PlotMaterial):
         eye = np.eye(3).reshape(3, 3, 1, 1)
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
-        P, statevars = self.umat.gradient([F, None])
+        if self.statevars_included:
+            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            P = np.zeros_like(F)
+            for increment, defgrad in enumerate(F.T):
+                P[..., [increment]], statevars = self.umat.gradient(
+                    [F[..., [increment]], statevars]
+                )
+        else:
+            P, statevars = self.umat.gradient([F, None])
+
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Uniaxial (Incompressible)"
 
     def planar(self, stretches=None):
@@ -417,7 +433,16 @@ class ViewMaterialIncompressible(PlotMaterial):
         eye = np.eye(3).reshape(3, 3, 1, 1)
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
-        P, statevars = self.umat.gradient([F, None])
+        if self.statevars_included:
+            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            P = np.zeros_like(F)
+            for increment, defgrad in enumerate(F.T):
+                P[..., [increment]], statevars = self.umat.gradient(
+                    [F[..., [increment]], statevars]
+                )
+        else:
+            P, statevars = self.umat.gradient([F, None])
+
         return (
             λ1,
             (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(),
@@ -448,7 +473,16 @@ class ViewMaterialIncompressible(PlotMaterial):
         eye = np.eye(3).reshape(3, 3, 1, 1)
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
-        P, statevars = self.umat.gradient([F, None])
+        if self.statevars_included:
+            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            P = np.zeros_like(F)
+            for increment, defgrad in enumerate(F.T):
+                P[..., [increment]], statevars = self.umat.gradient(
+                    [F[..., [increment]], statevars]
+                )
+        else:
+            P, statevars = self.umat.gradient([F, None])
+
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Biaxial (Incompressible)"
 
 

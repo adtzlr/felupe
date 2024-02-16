@@ -297,11 +297,12 @@ def test_umat():
     dsde = linear_elastic.hessian([F, None])
 
 
-def test_umat_hyperelastic():
+def test_umat_hyperelastic(savefig=False):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
     import tensortrax.math as tm
+    import matplotlib.pyplot as plt
 
     def neo_hooke(C, mu=1):
         return mu / 2 * (tm.linalg.det(C) ** (-1 / 3) * tm.trace(C) - 3)
@@ -332,11 +333,11 @@ def test_umat_hyperelastic():
         s, statevars_new = umat.gradient([F, None])
         dsde = umat.hessian([F, None])
 
-    import matplotlib.pyplot as plt
-
-    view = umat.view(incompressible=True)
-    ax = umat.plot(incompressible=True)
-    ax = umat.screenshot(incompressible=True)
+        if savefig:
+            ax = umat.screenshot(
+                filename=f"../docs/felupe/images/umat_{umat.fun.__name__}.png",
+                incompressible=True,
+            )
 
 
 def test_umat_hyperelastic2():
@@ -394,6 +395,13 @@ def test_umat_viscoelastic():
 
     umat = fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
+    )
+    ax = umat.screenshot(
+        filename="../docs/felupe/images/umat_finite_strain_viscoelastic.png",
+        ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ps=None,
+        bx=None,
+        incompressible=True,
     )
 
     s2, statevars_new = umat.gradient([F, statevars])
@@ -491,7 +499,7 @@ if __name__ == "__main__":
     test_linear_planestrain()
     test_kinematics()
     test_umat()
-    test_umat_hyperelastic()
+    test_umat_hyperelastic(savefig=True)
     test_umat_hyperelastic2()
     test_umat_viscoelastic()
     test_umat_viscoelastic2()

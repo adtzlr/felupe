@@ -80,10 +80,10 @@ class PlotMaterial:
         if show_title:
             title = self.umat.__class__.__name__
             if hasattr(self.umat, "fun"):
+                
                 fun = self.umat.fun
-                if hasattr(self.umat, "__class__"):
-                    label = [fun.__class__.__name__]
-                else:
+                label = [fun.__class__.__name__]
+                if callable(fun):
                     label = [name.title() for name in fun.__name__.split("_")]
                 title += " (" + " ".join(label) + ")"
             fig.suptitle(title)

@@ -62,7 +62,6 @@ class OgdenRoxburgh(ConstitutiveMaterial):
     >>> umat = fem.OgdenRoxburgh(material=neo_hooke, r=3.0, m=1.0, beta=0.0)
     >>> 
     >>> ax = umat.plot(
-    >>>     umat,
     >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
     >>>     ps=None,
     >>>     bx=None,

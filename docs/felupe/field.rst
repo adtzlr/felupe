@@ -9,7 +9,7 @@ A :class:`~felupe.FieldContainer` with pre-defined fields is created with:
 
    FieldsMixed
 
-A :class:`~felupe.FieldContainer` is created with a list of one or more fields.
+A field container is created with a list of one or more fields.
 
 .. autosummary::
 

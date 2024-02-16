@@ -27,8 +27,8 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
     r"""Linear-elastic material formulation suitable for large-rotation analyses based
     on the nearly-incompressible Neo-Hookean material formulation.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     E : float
         Young's modulus.
     nu : float
@@ -36,8 +36,18 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
 
     See Also
     --------
-    NeoHooke: Nearly-incompressible isotropic hyperelastic Neo-Hooke material
+    NeoHookeCompressible: Compressible isotropic hyperelastic Neo-Hooke material
         formulation.
+    
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.LinearElasticLargeStrain(E=1.0, nu=0.3)
+    >>> ax = umat.plot()
+    
+    ..  image:: images/umat_linearelasticlargestrain.png
+        :width: 400px
 
     """
 

@@ -39,6 +39,16 @@ class NeoHooke(ConstitutiveMaterial):
     material formulation is a linear function of the trace of the
     isochoric part of the right Cauchy-Green deformation tensor.
 
+    Parameters
+    ----------
+    mu : float
+        Shear modulus
+    bulk : float
+        Bulk modulus
+
+    Notes
+    -----
+
     In a nearly-incompressible constitutive framework the strain energy
     density is an additive composition of an isochoric and a volumetric
     part. While the isochoric part is defined on the distortional part of
@@ -160,13 +170,15 @@ class NeoHooke(ConstitutiveMaterial):
        \boldsymbol{F}^{-T} - (J - 1) \boldsymbol{F}^{-T} \overset{il}{\otimes}
        \boldsymbol{F}^{-T} \right)
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    >>> ax = umat.plot()
 
-    Parameters
-    ----------
-    mu : float
-        Shear modulus
-    bulk : float
-        Bulk modulus
+    ..  image:: images/umat_neohooke_nearlyincompressible.png
+        :width: 400px
 
     """
 
@@ -309,6 +321,16 @@ class NeoHookeCompressible(ConstitutiveMaterial):
     energy density function of the Neo-Hookean material formulation is a linear function
     of the trace of the right Cauchy-Green deformation tensor.
 
+    Parameters
+    ----------
+    mu : float
+        Shear modulus (second Lamé constant)
+    lmbda : float
+        First Lamé constant
+
+    Notes
+    -----
+
     .. math::
 
         \psi &= \psi(\boldsymbol{C})
@@ -345,15 +367,15 @@ class NeoHookeCompressible(ConstitutiveMaterial):
                \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
            + \lambda \boldsymbol{F}^{-T} {\otimes} \boldsymbol{F}^{-T}
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
+    >>> ax = umat.plot()
 
-
-
-    Parameters
-    ----------
-    mu : float
-        Shear modulus (second Lamé constant)
-    lmbda : float
-        First Lamé constant
+    ..  image:: images/umat_neohooke_compressible.png
+        :width: 400px
 
     """
 

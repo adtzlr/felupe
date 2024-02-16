@@ -1,7 +1,7 @@
 Field
 =====
 
-A field container with pre-defined fields is created with:
+A :class:`~felupe.FieldContainer` with pre-defined fields is created with:
 
 .. currentmodule:: felupe
 
@@ -9,7 +9,20 @@ A field container with pre-defined fields is created with:
 
    FieldsMixed
 
-A Field-container holds one or more fields.
+A :class:`~felupe.FieldContainer` is created with a list of one or more fields.
+
+..  code-block:: python
+    
+    import felupe as fem
+    
+    region = fem.RegionHexahedron(fem.Cube())
+    displacement = fem.Field(region)
+    pressure = fem.FieldDual(region)
+    
+    field = fem.FieldContainer([displacement, pressure])
+    
+    # equivalent way to create a field container
+    field = displacement & pressure
 
 .. autosummary::
 
@@ -22,6 +35,7 @@ Available kinds of fields:
    Field
    FieldAxisymmetric
    FieldPlaneStrain
+   FieldDual
 
 **Detailed API Reference**
 
@@ -50,3 +64,7 @@ Available kinds of fields:
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.FieldDual
+   :members:
+   :undoc-members:
+   :inherited-members:

@@ -19,13 +19,14 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import cdya, dya, identity, trace, transpose
+from ._preview import ConstitutiveMaterial
 
 
 def lame_converter(E, nu):
     """Convert material parameters to first and second Lamé - constants.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     E : float
         Young's modulus.
     nu : float
@@ -45,9 +46,18 @@ def lame_converter(E, nu):
     return lmbda, mu
 
 
-class LinearElastic:
+class LinearElastic(ConstitutiveMaterial):
     r"""Isotropic linear-elastic material formulation.
 
+    Parameters
+    ---------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+    
+    Notes
+    -----
     ..  math::
 
         \begin{bmatrix}
@@ -80,14 +90,16 @@ class LinearElastic:
         \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} \right)^T \right)
+    
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> 
+    >>> umat = fem.LinearElastic(E=1, nu=0.3)
+    >>> ax = umat.plot()
 
-
-    Arguments
-    ---------
-    E : float
-        Young's modulus.
-    nu : float
-        Poisson ratio.
+    ..  image:: images/umat_linearelastic.png
+        :width: 400px
 
     """
 
@@ -200,9 +212,18 @@ class LinearElastic:
         return [E / (1 + nu) / (1 - 2 * nu) * elast]
 
 
-class LinearElasticTensorNotation:
+class LinearElasticTensorNotation(ConstitutiveMaterial):
     r"""Isotropic linear-elastic material formulation.
 
+    Parameters
+    ----------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+
+    Notes
+    -----
     ..  math::
 
         \boldsymbol{\sigma} &= 2 \mu \ \boldsymbol{\varepsilon} + \gamma \
@@ -220,13 +241,15 @@ class LinearElasticTensorNotation:
         {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} \right)^T \right)
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> 
+    >>> umat = fem.constitution.LinearElasticTensorNotation(E=1, nu=0.3)
+    >>> ax = umat.plot()
 
-    Arguments
-    ---------
-    E : float
-        Young's modulus.
-    nu : float
-        Poisson ratio.
+    ..  image:: images/umat_linearelastic.png
+        :width: 400px
 
     """
 

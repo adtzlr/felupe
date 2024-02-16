@@ -16,9 +16,12 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import warnings
+
 import numpy as np
 
 from ..math._math import linsteps
+from ..math._tensor import det
 
 
 class PlotMaterial:
@@ -202,6 +205,11 @@ class ViewMaterial(PlotMaterial):
         else:
             P, statevars = self.umat.gradient([F, None])
 
+        valid = det(F) > np.sqrt(np.finfo(float).eps)
+        if not np.all(valid):
+            warnings.warn("Uniaxial data with volume ratio det(F) <= 0 included.")
+            P[0, 0][~valid] = np.nan
+
         return λ1, P[0, 0].ravel(), "Uniaxial"
 
     def planar(self, stretches=None):
@@ -256,6 +264,11 @@ class ViewMaterial(PlotMaterial):
         else:
             P, statevars = self.umat.gradient([F, None])
 
+        valid = det(F) > np.sqrt(np.finfo(float).eps)
+        if not np.all(valid):
+            warnings.warn("Planar Shear data with volume ratio det(F) <= 0 included.")
+            P[0, 0][~valid] = np.nan
+
         return λ1, P[0, 0].ravel(), "Planar Shear"
 
     def biaxial(self, stretches=None):
@@ -308,6 +321,11 @@ class ViewMaterial(PlotMaterial):
                 )
         else:
             P, statevars = self.umat.gradient([F, None])
+
+        valid = det(F) > np.sqrt(np.finfo(float).eps)
+        if not np.all(valid):
+            warnings.warn("Biaxial data with volume ratio det(F) <= 0 included.")
+            P[0, 0][~valid] = np.nan
 
         return λ1, P[0, 0].ravel(), "Biaxial"
 

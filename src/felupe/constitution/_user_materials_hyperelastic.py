@@ -201,12 +201,30 @@ class MaterialAD(Material):
     derivative of the strain energy function w.r.t. the deformation gradient tensor
     with Automatic Differentiation provided by ``tensortrax``.
 
+    Parameters
+    ----------
+    fun : callable
+        A gradient of the strain energy density function w.r.t. the deformation gradient
+        tensor :math:`\boldsymbol{F}`. Function signature must be
+        ``fun = lambda F, **kwargs: P`` for functions without state variables and
+        ``fun = lambda F, statevars, **kwargs: [P, statevars_new]`` for functions
+        with state variables. The deformation gradient tensor will be a
+        :class:`tensortrax.Tensor` when the function is evaluated. It is important to
+        only use differentiable math-functions from ``tensortrax.math``!
+    nstatevars : int, optional
+        Number of state variables (default is 0).
+    parallel : bool, optional
+        A flag to invoke threaded gradient of strain energy density function evaluations
+        (default is False). May introduce additional overhead for small-sized problems.
+    **kwargs : dict, optional
+        Optional keyword-arguments for the gradient of the strain energy density
+        function.
+
     Notes
     -----
     The gradient of the strain energy density function
     :math:`\frac{\partial \psi}{\partial \boldsymbol{F}}` must be given in terms of the
-    right Cauchy-Green deformation tensor
-    :math:`\boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}`.
+    deformation gradient tensor :math:`\boldsymbol{F}`.
 
     ..  warning::
         It is important to only use differentiable math-functions from
@@ -260,8 +278,9 @@ class MaterialAD(Material):
             viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6
         )
 
-    See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
-    for further details.
+    ..  note::
+        See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
+        for further details.
 
     """
 

@@ -1,3 +1,4 @@
+from ._base import CompositeMaterial, ConstitutiveMaterial
 from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._mixed import ThreeFieldVariation
 from ._models_hyperelasticity import NeoHooke, NeoHookeCompressible, Volumetric
@@ -23,12 +24,6 @@ from ._models_linear_elasticity import (
 )
 from ._models_linear_elasticity_large_strain import LinearElasticLargeStrain
 from ._models_pseudo_elasticity import OgdenRoxburgh
-from ._preview import (
-    ConstitutiveMaterial,
-    ViewMaterial,
-    ViewMaterialIncompressible,
-    CompositeMaterial,
-)
 from ._user_materials import (
     LinearElasticPlasticIsotropicHardening,
     Material,
@@ -39,6 +34,7 @@ from ._user_materials_models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
 )
+from ._view import ViewMaterial, ViewMaterialIncompressible
 
 __all__ = [
     "NeoHooke",
@@ -76,4 +72,5 @@ __all__ = [
     "ViewMaterialIncompressible",
     "ConstitutiveMaterial",
     "CompositeMaterial",
+    "Volumetric",
 ]

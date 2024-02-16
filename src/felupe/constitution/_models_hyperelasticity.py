@@ -30,7 +30,7 @@ from ..math import (
     trace,
     transpose,
 )
-from ._preview import ConstitutiveMaterial
+from ._base import ConstitutiveMaterial
 
 
 class NeoHooke(ConstitutiveMaterial):

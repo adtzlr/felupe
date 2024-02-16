@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import dya
-from ._preview import ConstitutiveMaterial
+from ._base import ConstitutiveMaterial
 
 
 class OgdenRoxburgh(ConstitutiveMaterial):
@@ -60,14 +60,14 @@ class OgdenRoxburgh(ConstitutiveMaterial):
     >>>
     >>> neo_hooke = fem.NeoHooke(mu=1.0)
     >>> umat = fem.OgdenRoxburgh(material=neo_hooke, r=3.0, m=1.0, beta=0.0)
-    >>> 
+    >>>
     >>> ax = umat.plot(
     >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
     >>>     ps=None,
     >>>     bx=None,
     >>>     incompressible=True,
     >>> )
-    
+
     .. image:: images/umat.png
        :width: 400px
 

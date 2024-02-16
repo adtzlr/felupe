@@ -15,6 +15,7 @@ from .assembly import IntegralForm
 from .assembly.expression import Form
 from .constitution import (
     AreaChange,
+    CompositeMaterial,
     ConstitutiveMaterial,
     Hyperelastic,
     LinearElastic,
@@ -28,13 +29,12 @@ from .constitution import (
     MaterialStrain,
     NeoHooke,
     NeoHookeCompressible,
-    Volumetric,
     OgdenRoxburgh,
     ThreeFieldVariation,
     ViewMaterial,
     ViewMaterialIncompressible,
-    CompositeMaterial,
     VolumeChange,
+    Volumetric,
     arruda_boyce,
     extended_tube,
     finite_strain_viscoelastic,

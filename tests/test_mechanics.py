@@ -223,6 +223,13 @@ def test_solidbody_incompressible():
         umat=umat, field=u, bulk=5000, statevars=np.ones(5)
     )
 
+    umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=5000), r=3, m=1, beta=0)
+    ax = umat.plot(
+        ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ps=None,
+        bx=None,
+    )
+
     umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
     b = fem.SolidBodyNearlyIncompressible(
         umat=umat, field=u, bulk=5000, state=fem.StateNearlyIncompressible(u)

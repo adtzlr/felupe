@@ -339,7 +339,8 @@ def test_umat_hyperelastic(savefig=False):
                 incompressible=True,
             )
 
-    ax = umat.plot()
+    for incompressible in [False, True]:
+        ax = umat.screenshot(incompressible=incompressible)
 
 
 def test_umat_hyperelastic2():

@@ -37,7 +37,10 @@ class Region:
     quadrature: Quadrature
         An element-compatible numeric integration scheme with points and weights.
     grad : bool, optional
-        A flag to invoke gradient evaluation (default is True).
+        A flag to invoke gradient evaluation (default is True). If True, the partial
+        derivatives of the element shape functions w.r.t. undeformed coordinates
+        :math:`\frac{\partial \boldsymbol{h}(\boldsymbol{r})}{\partial \boldsymbol{X}}`
+        and the differential volumes :math:`dV` are evaluated.
 
     Attributes
     ----------

@@ -283,6 +283,22 @@ class MaterialAD(Material):
         See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
         for further details.
 
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import tensortrax.math as tm
+    >>>
+    >>> def neo_hooke(F, mu):
+    >>>     C = tm.dot(tm.transpose(F), F)
+    >>>     S = mu * tm.special.dev(tm.linalg.det(C)**(-1/3) * C) @ tm.linalg.inv(C)
+    >>>     return F @ S
+    >>>
+    >>> umat = fem.MaterialAD(neo_hooke, mu=1)
+    >>> ax = umat.plot(incompressible=True)
+
+    ..  image:: images/umat_materialad_neohooke.png
+        :width: 400px
+
     """
 
     def __init__(self, fun, nstatevars=0, parallel=False, **kwargs):

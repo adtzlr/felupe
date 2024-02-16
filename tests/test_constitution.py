@@ -496,11 +496,17 @@ def test_elpliso():
 
 
 def test_composite():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+    
     nh = fem.NeoHooke(mu=1.0)
     vol = fem.Volumetric(bulk=2.0)
     umat = nh & vol
 
     ax = umat.plot()
+    
+    dWdF, statevars_new = umat.gradient([F, None])
+    d2WdFdF, = umat.hessian([F, None])
 
 
 if __name__ == "__main__":

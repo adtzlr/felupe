@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+
 from ..math._math import linsteps
 
 
@@ -79,13 +80,12 @@ class PlotMaterial:
         if show_title:
             title = self.umat.__class__.__name__
             if hasattr(self.umat, "fun"):
-                title += (
-                    " ("
-                    + " ".join(
-                        [name.title() for name in self.umat.fun.__name__.split("_")]
-                    )
-                    + ")"
-                )
+                fun = self.umat.fun
+                if hasattr(self.umat, "__class__"):
+                    label = [fun.__class__.__name__]
+                else:
+                    label = [name.title() for name in fun.__name__.split("_")]
+                title += " (" + " ".join(label) + ")"
             fig.suptitle(title)
 
         if show_kwargs:
@@ -125,13 +125,13 @@ class ViewMaterial(PlotMaterial):
     >>> import felupe as fem
     >>>
     >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=2), r=3, m=1, beta=0)
-    >>> preview = fem.ViewMaterial(
+    >>> view = fem.ViewMaterial(
     >>>     umat,
     >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
     >>>     ps=None,
     >>>     bx=None,
     >>> )
-    >>> ax = preview.plot(show_title=True, show_kwargs=True)
+    >>> ax = view.plot(show_title=True, show_kwargs=True)
 
     .. image:: images/umat.png
        :width: 400px
@@ -454,7 +454,7 @@ class ViewMaterialIncompressible(PlotMaterial):
 
 class ConstitutiveMaterial:
     "Base class for constitutive materials."
-    
+
     def view(self, incompressible=False, **kwargs):
         """Create views on normal force per undeformed area vs. stretch curves for the
         elementary homogeneous deformations uniaxial tension/compression, planar shear

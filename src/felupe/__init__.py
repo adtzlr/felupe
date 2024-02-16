@@ -72,6 +72,7 @@ from .field import (
     Field,
     FieldAxisymmetric,
     FieldContainer,
+    FieldDual,
     FieldPlaneStrain,
     FieldsMixed,
 )
@@ -144,6 +145,7 @@ __all__ = [
     "IntegralForm",
     "Basis",
     "Field",
+    "FieldDual",
     "FieldAxisymmetric",
     "FieldContainer",
     "FieldPlaneStrain",

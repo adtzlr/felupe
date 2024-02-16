@@ -99,6 +99,15 @@ class FieldsMixed(FieldContainer):
         fields = [F(region, dim=region.mesh.dim, values=values[0])]
 
         for a in range(1, n):
-            fields.append(FieldDual(region, values=values[a]))
+            fields.append(
+                FieldDual(
+                    region,
+                    values=values[a],
+                    offset=offset,
+                    npoints=npoints,
+                    mesh=mesh,
+                    **kwargs,
+                )
+            )
 
         super().__init__(fields=fields)

@@ -16,23 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..region._templates import (
-    RegionBiQuadraticQuad,
-    RegionConstantHexahedron,
-    RegionConstantQuad,
-    RegionHexahedron,
-    RegionLagrange,
-    RegionQuad,
-    RegionQuadraticHexahedron,
-    RegionQuadraticQuad,
-    RegionQuadraticTetra,
-    RegionQuadraticTriangle,
-    RegionTetra,
-    RegionTetraMINI,
-    RegionTriangle,
-    RegionTriangleMINI,
-    RegionTriQuadraticHexahedron,
-)
 from ._axi import FieldAxisymmetric
 from ._base import Field
 from ._container import FieldContainer

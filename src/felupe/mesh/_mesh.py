@@ -204,8 +204,7 @@ class Mesh(DiscreteGeometry):
 
         See Also
         --------
-        felupe.mesh.read : Read a mesh from a file using :func:`meshio.read` and create
-            a :class:`~felupe.MeshContainer`.
+        felupe.mesh.read : Read a mesh from a file using :func:`meshio.read`.
         felupe.Mesh.write : Write the mesh to a file.
 
         """

@@ -36,6 +36,7 @@ from ..region._templates import (
 from ._axi import FieldAxisymmetric
 from ._base import Field
 from ._container import FieldContainer
+from ._dual import FieldDual
 from ._planestrain import FieldPlaneStrain
 
 
@@ -79,6 +80,8 @@ class FieldsMixed(FieldContainer):
     felupe.FieldContainer : A container which holds one or multiple (mixed) fields.
     felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
         and initial point ``values``.
+    felupe.FieldDual : A dual field on points of a :class:`~felupe.Region` with
+        dimension ``dim`` and initial point ``values``.
     felupe.FieldAxisymmetric : Axisymmetric field on points of a
         :class:`~felupe.Region` with dimension ``dim`` and initial point ``values``.
     felupe.FieldPlaneStrain : Plane strain field on points of a
@@ -105,70 +108,14 @@ class FieldsMixed(FieldContainer):
             F = FieldAxisymmetric
         elif axisymmetric is False and planestrain is True:
             F = FieldPlaneStrain
+        else:
+            raise ValueError(
+                "Choose between ``axisymmetric=True`` or ``planestrain=True``."
+            )
 
         fields = [F(region, dim=region.mesh.dim, values=values[0])]
 
-        # create dual regions
-        if n > 1:
-            regions = {
-                RegionHexahedron: RegionConstantHexahedron,
-                RegionQuad: RegionConstantQuad,
-                RegionQuadraticQuad: RegionConstantQuad,
-                RegionBiQuadraticQuad: RegionQuad,
-                RegionQuadraticHexahedron: RegionConstantHexahedron,
-                RegionTriQuadraticHexahedron: RegionHexahedron,
-                RegionQuadraticTetra: RegionTetra,
-                RegionQuadraticTriangle: RegionTriangle,
-                RegionTetraMINI: RegionTetra,
-                RegionTriangleMINI: RegionTriangle,
-                RegionLagrange: RegionLagrange,
-            }
-            mesh_kwargs = {
-                RegionHexahedron: {},
-                RegionQuad: {},
-                RegionQuadraticQuad: {},
-                RegionBiQuadraticQuad: {},
-                RegionQuadraticHexahedron: {},
-                RegionTriQuadraticHexahedron: {},
-                RegionQuadraticTetra: {"disconnect": False},
-                RegionQuadraticTriangle: {"disconnect": False},
-                RegionTetraMINI: {"disconnect": False},
-                RegionTriangleMINI: {"disconnect": False},
-                RegionLagrange: {},
-            }
-            points_per_cell = {
-                RegionConstantHexahedron: 1,
-                RegionConstantQuad: 1,
-                RegionQuad: 4,
-                RegionHexahedron: 8,
-                RegionTriangle: 3,
-                RegionTetra: 4,
-                RegionLagrange: None,
-            }
-
-            kwargs0 = {"quadrature": region.quadrature, "grad": False}
-
-            if isinstance(region, RegionLagrange):
-                kwargs0["order"] = region.order - 1
-                kwargs0["dim"] = region.mesh.dim
-                points_per_cell[RegionLagrange] = region.order**region.element.dim
-
-            RegionDual = regions[type(region)]
-
-            if mesh is None and points_per_cell[RegionDual] is not None:
-                mesh = region.mesh.dual(
-                    points_per_cell=points_per_cell[RegionDual],
-                    offset=offset,
-                    npoints=npoints,
-                    **mesh_kwargs[type(region)],
-                )
-
-            region_dual = RegionDual(
-                mesh,
-                **{**kwargs0, **kwargs},
-            )
-
         for a in range(1, n):
-            fields.append(Field(region_dual, values=values[a]))
+            fields.append(FieldDual(region, values=values[a]))
 
-        super().__init__(fields=tuple(fields))
+        super().__init__(fields=fields)

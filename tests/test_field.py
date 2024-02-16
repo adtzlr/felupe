@@ -102,6 +102,12 @@ def pre_axi_mixed():
 
     f = fem.FieldContainer((u, p, J))
 
+    region = fem.RegionQuad(m)
+    fem.FieldsMixed(region, axisymmetric=True)
+    fem.FieldsMixed(region, planestrain=True)
+    with pytest.raises(ValueError):
+        fem.FieldsMixed(region, axisymmetric=True, planestrain=True)
+
     u.values[0] = np.ones(2)
     assert np.all(f.values()[0][0] == 1)
 

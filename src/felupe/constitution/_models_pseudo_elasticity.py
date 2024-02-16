@@ -45,8 +45,8 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     ..  math::
 
-        \eta(W, W_{max}) &= 1 - \frac{1}{r} erf\left( \frac{W_{max} - W}
-        {m + \beta~W_{max}} \right)
+        \eta(\psi, \psi_{max}) &= 1 - \frac{1}{r} erf\left( \frac{\psi_{max} - \psi}
+        {m + \beta~\psi_{max}} \right)
 
         \boldsymbol{P} &= \eta \frac{\partial \psi}{\partial \boldsymbol{F}}
 
@@ -60,6 +60,17 @@ class OgdenRoxburgh(ConstitutiveMaterial):
     >>>
     >>> neo_hooke = fem.NeoHooke(mu=1.0)
     >>> umat = fem.OgdenRoxburgh(material=neo_hooke, r=3.0, m=1.0, beta=0.0)
+    >>> 
+    >>> ax = umat.plot(
+    >>>     umat,
+    >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+    >>>     ps=None,
+    >>>     bx=None,
+    >>>     incompressible=True,
+    >>> )
+    
+    .. image:: images/umat.png
+       :width: 400px
 
     """
 

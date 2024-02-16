@@ -16,6 +16,9 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Don't disconnect the dual mesh by default for regions `RegionQuadraticTriangle` and `RegionQuadraticTetra` in `FieldsMixed`.
 
+### Fixed
+- Fix `Mesh.flip(mask=None)`: Take care of the mask (it wasn't applied to the cells-array of the mesh).
+
 ## [7.17.0] - 2024-02-15
 
 ### Added

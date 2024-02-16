@@ -301,8 +301,8 @@ def test_umat_hyperelastic(savefig=False):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
-    import tensortrax.math as tm
     import matplotlib.pyplot as plt
+    import tensortrax.math as tm
 
     def neo_hooke(C, mu=1):
         return mu / 2 * (tm.linalg.det(C) ** (-1 / 3) * tm.trace(C) - 3)
@@ -338,8 +338,9 @@ def test_umat_hyperelastic(savefig=False):
                 filename=f"../docs/felupe/images/umat_{umat.fun.__name__}.png",
                 incompressible=True,
             )
-    
-    ax = umat.plot()
+
+    for incompressible in [False, True]:
+        ax = umat.screenshot(incompressible=incompressible)
 
 
 def test_umat_hyperelastic2():
@@ -498,15 +499,15 @@ def test_elpliso():
 def test_composite():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
-    
+
     nh = fem.NeoHooke(mu=1.0)
     vol = fem.Volumetric(bulk=2.0)
     umat = nh & vol
 
     ax = umat.plot()
-    
+
     dWdF, statevars_new = umat.gradient([F, None])
-    d2WdFdF, = umat.hessian([F, None])
+    (d2WdFdF,) = umat.hessian([F, None])
 
 
 if __name__ == "__main__":

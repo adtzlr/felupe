@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
-from ._preview import ConstitutiveMaterial
+from ._base import ConstitutiveMaterial
 
 
 class ThreeFieldVariation(ConstitutiveMaterial):

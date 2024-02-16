@@ -18,9 +18,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._base import ConstitutiveMaterial
 from ._models_hyperelasticity import NeoHookeCompressible
 from ._models_linear_elasticity import lame_converter
-from ._preview import ConstitutiveMaterial
 
 
 class LinearElasticLargeStrain(ConstitutiveMaterial):
@@ -38,14 +38,14 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
     --------
     NeoHookeCompressible: Compressible isotropic hyperelastic Neo-Hooke material
         formulation.
-    
+
     Examples
     --------
     >>> import felupe as fem
     >>>
     >>> umat = fem.LinearElasticLargeStrain(E=1.0, nu=0.3)
     >>> ax = umat.plot()
-    
+
     ..  image:: images/umat_linearelasticlargestrain.png
         :width: 400px
 

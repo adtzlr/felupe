@@ -80,7 +80,6 @@ class PlotMaterial:
         if show_title:
             title = self.umat.__class__.__name__
             if hasattr(self.umat, "fun"):
-                
                 fun = self.umat.fun
                 label = [fun.__class__.__name__]
                 if callable(fun):
@@ -594,3 +593,56 @@ class ConstitutiveMaterial:
         plt.close(fig)
 
         return ax
+
+    def __and__(self, other_material):
+        return CompositeMaterial(self, other_material)
+
+
+class CompositeMaterial(ConstitutiveMaterial):
+    """A composite material with two constitutive materials merged. State variables are
+    only considered for the first material.
+
+    Parameters
+    ----------
+    material : ConstitutiveMaterial
+        First constitutive material.
+    other_material : ConstitutiveMaterial
+        Second constitutive material.
+
+    Notes
+    -----
+    ..  warning::
+        Do not merge two constitutive materials with the same keys of material
+        parameters. In this case, the values of these material parameters are taken from
+        the first constitutive material.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>>
+    >>> nh = fem.NeoHooke(mu=1.0)
+    >>> vol = fem.Volumetric(bulk=2.0)
+    >>> umat = nh & vol
+    >>> ax = umat.plot()
+
+    ..  image:: images/umat_composite.png
+        :width: 400px
+
+    """
+
+    def __init__(self, material, other_material):
+        self.materials = [material, other_material]
+        self.kwargs = {**other_material.kwargs, **material.kwargs}
+        self.x = material.x
+
+    def gradient(self, x, **kwargs):
+        gradients = [material.gradient(x, **kwargs) for material in self.materials]
+        nfields = len(x) - 1
+        P = [np.sum([grad[i] for grad in gradients], axis=0) for i in range(nfields)]
+        statevars_new = gradients[0][-1]
+        return [*P, statevars_new]
+
+    def hessian(self, x, **kwargs):
+        hessians = [material.hessian(x, **kwargs) for material in self.materials]
+        nfields = len(x) - 1
+        return [np.sum([hess[i] for hess in hessians], axis=0) for i in range(nfields)]

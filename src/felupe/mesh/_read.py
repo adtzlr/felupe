@@ -32,6 +32,8 @@ def read(
     ----------
     filename : str
         The filename of the mesh file.
+    file_format : str or None, optional
+        The file format of the mesh file (default is None).
     cellblock : list of int or None, optional
         Read only a subset of the cellblocks from the mesh file (default is None). If
         None, all cell blocks are added to the :class:`~felupe.MeshContainer`.

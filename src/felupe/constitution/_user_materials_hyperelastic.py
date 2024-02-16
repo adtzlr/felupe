@@ -120,7 +120,7 @@ class Hyperelastic(Material):
     >>> umat = fem.Hyperelastic(neo_hooke, mu=1)
     >>> ax = umat.plot(incompressible=True)
 
-    ..  image:: images/umat.png
+    ..  image:: images/umat_neo_hooke.png
         :width: 400px
 
     See Also

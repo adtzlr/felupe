@@ -122,7 +122,7 @@ The material behavior has to be provided by the first Piola-Kirchhoff stress ten
 
 .. math::
 
-   \psi = \frac{\mu}{2} \left( J^{-2/3} \text{tr}(\boldsymbol{C}) - 3 \right)
+   \psi = \frac{\mu}{2} \left( J^{-2/3}\ \text{tr}(\boldsymbol{C}) - 3 \right)
         + \frac{K}{2} \left( J - 1 \right)^2
 
 

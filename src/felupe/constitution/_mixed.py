@@ -54,23 +54,26 @@ class NearlyIncompressible(ConstitutiveMaterial):
     Parameters
     ----------
     material : ConstitutiveMaterial
-        A hyperelastic material definition for the strain energy density function with
-        methods for the ``gradient`` and the ``hessian`` w.r.t the deformation gradient
-        tensor.
+        A hyperelastic material definition for the distortional part of the strain
+        energy density function :math:`\hat{\psi}(\boldsymbol{F})` with methods for the
+        ``gradient`` :math:`\partial_\boldsymbol{F}(\hat{\psi})` and the ``hessian``
+        :math:`\partial_\boldsymbol{F}[\partial_\boldsymbol{F}(\hat{\psi})]` w.r.t the
+        deformation gradient tensor :math:`\boldsymbol{F}`.
     bulk : float
-        The bulk modulus for the volumetric part of the strain energy function.
+        The bulk modulus :math:`K` for the volumetric part of the strain energy
+        function.
     parallel : bool, optional
         A flag to invoke parallel (threaded) math operations (default is False).
     dUdJ : callable, optional
-        A function which evaluates the gradient of the volumetric part of the strain
-        energy function w.r.t. the determinant of the deformation gradient. Function
-        signature must be ``lambda J, bulk: dUdJ``. Default is
-        ``lambda J, bulk: bulk * (J - 1)``.
+        A function which evaluates the derivative of the volumetric part of the strain
+        energy function :math:`\bar{U}'` w.r.t. the volume ratio :math:`\bar{J}`.
+        Function signature must be ``lambda J, bulk: dUdJ``. Default is
+        :math:`\bar{U}' = K (\bar{J} - 1)` or ``lambda J, bulk: bulk * (J - 1)``.
     d2UdJdJ : callable, optional
-        A function which evaluates the hessian of the volumetric part of the strain
-        energy function w.r.t. the determinant of the deformation gradient. Function
-        signature must be ``lambda J, bulk: d2UdJdJ``. Default is
-        ``lambda J, bulk: bulk``.
+        A function which evaluates the second derivative of the volumetric part of the
+        strain energy function :math:`\bar{U}''` w.r.t. the volume ratio
+        :math:`\bar{J}`. Function signature must be ``lambda J, bulk: d2UdJdJ``.
+        Default is :math:`\bar{U}'' = K` or ``lambda J, bulk: bulk``.
 
     Examples
     --------

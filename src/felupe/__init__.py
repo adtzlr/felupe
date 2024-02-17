@@ -31,6 +31,7 @@ from .constitution import (
     NeoHookeCompressible,
     OgdenRoxburgh,
     ThreeFieldVariation,
+    NearlyIncompressible,
     ViewMaterial,
     ViewMaterialIncompressible,
     VolumeChange,
@@ -91,13 +92,9 @@ from .mechanics import (
     Step,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
-from .quadrature import (
-    GaussLegendre,
-    GaussLegendreBoundary,
-    Tetrahedron as TetrahedronQuadrature,
-    Triangle as TriangleQuadrature,
-    BazantOh,
-)
+from .quadrature import BazantOh, GaussLegendre, GaussLegendreBoundary
+from .quadrature import Tetrahedron as TetrahedronQuadrature
+from .quadrature import Triangle as TriangleQuadrature
 from .region import (
     Region,
     RegionBiQuadraticQuad,
@@ -161,10 +158,13 @@ __all__ = [
     "LinearElasticPlaneStress",
     "LinearElasticPlasticIsotropicHardening",
     "LineChange",
+    "CompositeMaterial",
+    "Volumetric",
     "NeoHooke",
     "NeoHookeCompressible",
     "OgdenRoxburgh",
     "ThreeFieldVariation",
+    "NearlyIncompressible",
     "Material",
     "MaterialStrain",
     "Hyperelastic",

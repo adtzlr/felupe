@@ -22,6 +22,44 @@ from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
 from ._base import ConstitutiveMaterial
 
 
+class NearlyIncompressible(ConstitutiveMaterial):
+    def __init__(
+        self,
+        material,
+        bulk,
+        parallel=False,
+        dUdJ=lambda J, bulk: bulk * (J - 1),
+        d2UdJdJ=lambda J, bulk: bulk,
+    ):
+        self.material = self.fun = material
+        self.parallel = parallel
+        self.bulk = bulk
+        self.dUdJ = dUdJ
+        self.d2UdJdJ = d2UdJdJ
+        self.x = [material.x[0], np.ones(1), np.ones(1), material.x[-1]]
+
+    def gradient(self, x):
+        [F, p, J], statevars = x[:3], x[-1]
+        dWdF, statevars_new = self.material.gradient([F, statevars])
+        dWdF += p * transpose(inv(F, determinant=1.0))
+        dWdp = det(F) - J
+        dWdJ = self.dUdJ(J, self.bulk) - p
+        return [dWdF, dWdp, dWdJ, statevars_new]
+
+    def hessian(self, x):
+        [F, p, J], statevars = x[:3], x[-1]
+        detF = det(F)
+        iFT = transpose(inv(F, determinant=detF))
+        d2WdFdF = self.material.hessian([F, statevars])[0]
+        d2WdFdF += p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
+        d2WdFdp = transpose(inv(F, determinant=1.0))
+        d2WdFdJ = np.zeros_like(F)
+        d2Wdpdp = np.zeros_like(p)
+        d2WdpdJ = -np.ones_like(J)
+        d2WdJdJ = self.d2UdJdJ(J, self.bulk) * np.ones_like(J)
+        return [d2WdFdF, d2WdFdp, d2WdFdJ, d2Wdpdp, d2WdpdJ, d2WdJdJ]
+
+
 class ThreeFieldVariation(ConstitutiveMaterial):
     r"""Hu-Washizu hydrostatic-volumetric selective
     :math:`(\boldsymbol{u},p,J)` - three-field variation for nearly-

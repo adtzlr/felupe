@@ -92,7 +92,14 @@ There are many different pre-defined constitutive material formulations availabl
 
    NeoHooke
    NeoHookeCompressible
+   Volumetric
+
+**Hyperelastic Three-Field-Formulations** :math:`(\boldsymbol{u}, p, \bar{J})`
+
+.. autosummary::
+
    ThreeFieldVariation
+   NearlyIncompressible
 
 **Pseudo-Elasticity (Isotropic Damage)**
 
@@ -106,6 +113,11 @@ There are many different pre-defined constitutive material formulations availabl
    
    Hyperelastic
    MaterialAD
+
+**Material Model Formulations (Strain Energy Functions) for** :class:`~felupe.Hyperelastic`
+
+.. autosummary::
+
    saint_venant_kirchhoff
    neo_hooke
    mooney_rivlin
@@ -171,6 +183,11 @@ There are many different pre-defined constitutive material formulations availabl
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.Volumetric
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.OgdenRoxburgh
    :members:
    :undoc-members:
@@ -207,6 +224,11 @@ There are many different pre-defined constitutive material formulations availabl
    :inherited-members:
 
 .. autoclass:: felupe.ThreeFieldVariation
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.NearlyIncompressible
    :members:
    :undoc-members:
    :inherited-members:

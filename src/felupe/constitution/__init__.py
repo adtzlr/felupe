@@ -1,6 +1,6 @@
 from ._base import CompositeMaterial, ConstitutiveMaterial
 from ._kinematics import AreaChange, LineChange, VolumeChange
-from ._mixed import ThreeFieldVariation
+from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._models_hyperelasticity import NeoHooke, NeoHookeCompressible, Volumetric
 from ._models_hyperelasticity_ad import (
     arruda_boyce,
@@ -66,6 +66,7 @@ __all__ = [
     "LineChange",
     "VolumeChange",
     "ThreeFieldVariation",
+    "NearlyIncompressible",
     "linear_elastic",
     "linear_elastic_plastic_isotropic_hardening",
     "ViewMaterial",

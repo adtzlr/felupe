@@ -510,6 +510,24 @@ def test_view():
     # ax = solid.imshow()
 
 
+def test_threefield():
+    field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
+    solid = fem.SolidBody(umat, field)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    job = fem.Job(steps=[step]).evaluate()
+    assert np.isclose(job.fnorms[0][-1], 0)
+
+    field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
+    solid = fem.SolidBody(umat, field)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    job = fem.Job(steps=[step]).evaluate()
+    assert np.isclose(job.fnorms[0][-1], 0)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -521,3 +539,4 @@ if __name__ == "__main__":
     test_pressure()
     test_load()
     test_view()
+    test_threefield()

@@ -23,7 +23,7 @@ from ._base import ConstitutiveMaterial
 
 
 class NearlyIncompressible(ConstitutiveMaterial):
-    """A nearly-incompressible material formulation to augment the distortional part of
+    r"""A nearly-incompressible material formulation to augment the distortional part of
     the strain energy function by a volumetric part and a constraint equation.
 
     Notes
@@ -38,6 +38,18 @@ class NearlyIncompressible(ConstitutiveMaterial):
             \int_V \hat{\psi}(\boldsymbol{F})\ dV +
             \int_V U(\bar{J})\ dV +
             \int_V p (J - \bar{J})\ dV
+
+    The volumetric part of the strain energy density function is denoted in Eq.
+    :eq:`nearlyincompressible-volumetric`.
+
+    ..  math::
+        :label: nearlyincompressible-volumetric
+
+        U(\bar{J}) &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
+
+        U'(\bar{J}) &= K \left( \bar{J} - 1 \right)
+
+        U''(\bar{J}) &= K
 
     Parameters
     ----------
@@ -94,6 +106,39 @@ class NearlyIncompressible(ConstitutiveMaterial):
         self.x = [material.x[0], np.ones(1), np.ones(1), material.x[-1]]
 
     def gradient(self, x):
+        r"""Return a list with the gradient of the strain energy density function
+        w.r.t. the fields displacements, pressure and volume ratio.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            List of extracted field values with the deformation gradient tensor
+            :math:`\boldsymbol{F}` as first, the pressure :math:`p` as
+            second and the volume ratio :math:`\bar{J}` as third list item. Initial
+            state variables are stored in the last (fourth) list item.
+
+        Returns
+        -------
+        list of ndarrays
+            List of gradients w.r.t. the input variables :math:`\boldsymbol{F}`,
+            :math:`p` and :math:`\bar{J}`. The last item of the list contains the
+            updated state variables.
+
+        Notes
+        -----
+        ..  math::
+
+            \delta_\boldsymbol{u}(\Pi_{int}) &=
+                \int_V \left( \frac{\partial \psi}{\partial \boldsymbol{F}} +
+                p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
+
+            \delta_p(\Pi_{int}) &=
+                \int_V \left( J - \bar{J} \right)\ \delta p\ dV
+
+            \delta_\bar{J}(\Pi_{int}) &=
+                \int_V \left( U'(\bar{J}) - p \right)\ \delta \bar{J}\ dV
+
+        """
         [F, p, J], statevars = x[:3], x[-1]
         dWdF, statevars_new = self.material.gradient([F, statevars])
         dWdF += p * transpose(inv(F, determinant=1.0))
@@ -102,6 +147,50 @@ class NearlyIncompressible(ConstitutiveMaterial):
         return [dWdF, dWdp, dWdJ, statevars_new]
 
     def hessian(self, x):
+        r"""Return a list with the hessian of the strain energy density function
+        w.r.t. the fields displacements, pressure and volume ratio.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            List of extracted field values with the deformation gradient tensor
+            :math:`\boldsymbol{F}` as first, the pressure :math:`p` as
+            second and the volume ratio :math:`\bar{J}` as third list item. Initial
+            state variables are stored in the last (fourth) list item.
+
+        Returns
+        -------
+        list of ndarrays
+            List of the hessian w.r.t. the input variables :math:`\boldsymbol{F}`,
+            :math:`p` and :math:`\bar{J}`. The upper-triangle items of the hessian are
+            returned as the items of the list.
+
+        Notes
+        -----
+        ..  math::
+
+            \Delta_\boldsymbol{u}\delta_\boldsymbol{u}(\Pi_{int}) &= \int_V
+                \delta\boldsymbol{F} : \left[
+                \frac{\partial^2 \psi}{\partial\boldsymbol{F}\ \partial\boldsymbol{F}} +
+                p\ J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} -
+                \boldsymbol{F}^{-T} \overset{ik}{\odot} \boldsymbol{F}^{-T} \right)
+                \right] : \Delta\boldsymbol{F}\ dV
+
+            \Delta_p\delta_\boldsymbol{u}(\Pi_{int}) &= \int_V
+                \delta\boldsymbol{F} : J \boldsymbol{F}^{-T}\ \Delta p\ dV
+
+            \Delta_\bar{J}\delta_\boldsymbol{u}(\Pi_{int}) &= \int_V
+                \delta\boldsymbol{F} : \boldsymbol{0}\ \Delta \bar{J}\ dV
+
+            \Delta_p\delta_p(\Pi_{int}) &= \int_V \delta p\ 0\ \Delta p\ dV
+
+            \Delta_p\delta_\bar{J}(\Pi_{int}) &= \int_V
+                \delta \bar{J}\ (-1)\ \Delta p\ dV
+
+            \Delta_\bar{J}\delta_\bar{J}(\Pi_{int}) &= \int_V
+                \delta \bar{J}\ U''(\bar{J})\ \Delta \bar{J}\ dV
+
+        """
         [F, p, J], statevars = x[:3], x[-1]
         detF = det(F)
         iFT = transpose(inv(F, determinant=detF))
@@ -354,26 +443,21 @@ class ThreeFieldVariation(ConstitutiveMaterial):
         return self._PbbF / (3 * J) - p
 
     def gradient(self, x):
-        r"""List of variations of total potential energy w.r.t
+        r"""Return a list of variations of the total potential energy w.r.t. the fields
         displacements, pressure and volume ratio.
 
-        ..  code-block::
-
-            δ_u(Π_int) = ∫_V (∂ψ/∂F + p cof(F)) : δF dV
-            δ_p(Π_int) = ∫_V (det(F) - J) δp dV
-            δ_J(Π_int) = ∫_V (∂U/∂J - p) δJ dV
-
-        Arguments
-        ---------
+        Parameters
+        ----------
         x : list of ndarray
-            List of extracted field values with Deformation gradient ``F``
-            as first, the hydrostatic pressure ``p`` as second and the
-            volume ratio ``J`` as third item.
+            List of extracted field values with the Deformation gradient tensor
+            :math:`\boldsymbol{F}` as first, the hydrostatic pressure :math:`p` as
+            second and the volume ratio :math:`\bar{J}` as third list item.
 
         Returns
         -------
         list of ndarrays
-            List of gradients w.r.t. the input variables F, p and J
+            List of gradients w.r.t. the input variables :math:`\boldsymbol{F}`,
+            :math:`p` and :math:`\bar{J}`.
 
         """
 

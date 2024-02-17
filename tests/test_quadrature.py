@@ -119,8 +119,15 @@ def test_tetra():
         fem.TetrahedronQuadrature(order=4)
 
 
+def test_sphere():
+    q = fem.BazantOh(n=21)
+    assert q.points.shape == (21, 3)
+    assert np.isclose(q.weights.sum(), 1)
+
+
 if __name__ == "__main__":
     test_gausslegendre()
     test_gausslegendre_boundary()
     test_triangle()
     test_tetra()
+    test_sphere()

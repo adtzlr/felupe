@@ -2,6 +2,7 @@ from ._gausslegendre import GaussLegendre, GaussLegendreBoundary
 from ._scheme import Scheme
 from ._tetra import Tetrahedron
 from ._triangle import Triangle
+from ._sphere import BazantOh
 
 __all__ = [
     "Scheme",
@@ -9,4 +10,5 @@ __all__ = [
     "GaussLegendreBoundary",
     "Tetrahedron",
     "Triangle",
+    "BazantOh",
 ]

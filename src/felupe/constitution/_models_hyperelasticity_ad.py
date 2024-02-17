@@ -62,9 +62,9 @@ def saint_venant_kirchhoff(C, mu, lmbda):
 
     ..  math::
 
-        \hat{I}_1 &= \text{tr}\left( \boldsymbol{E} \right)
+        I_1 &= \text{tr}\left( \boldsymbol{E} \right)
 
-        \hat{I}_2 &= \boldsymbol{E} : \boldsymbol{E}
+        I_2 &= \boldsymbol{E} : \boldsymbol{E}
 
     Examples
     --------

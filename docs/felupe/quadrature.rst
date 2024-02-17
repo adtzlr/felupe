@@ -54,7 +54,7 @@ This module contains quadrature (numeric integration) schemes for different fini
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.quadrature.BazantOh
+.. autoclass:: felupe.BazantOh
    :members:
    :undoc-members:
    :show-inheritance:

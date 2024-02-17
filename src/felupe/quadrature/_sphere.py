@@ -42,7 +42,7 @@ class BazantOh:
     --------
     >>> import felupe as fem
     >>>
-    >>> quadrature = fem.BazantOh(npoints=21)
+    >>> quadrature = fem.BazantOh(n=21)
 
     References
     ----------

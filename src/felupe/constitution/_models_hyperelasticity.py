@@ -41,13 +41,16 @@ class NeoHooke(ConstitutiveMaterial):
 
     Parameters
     ----------
-    mu : float
+    mu : float or None, optional
         Shear modulus
-    bulk : float
+    bulk : float or None, optional
         Bulk modulus
 
     Notes
     -----
+
+    ..  note::
+        At least one of the two material parameters must not be None.
 
     In a nearly-incompressible constitutive framework the strain energy
     density is an additive composition of an isochoric and a volumetric

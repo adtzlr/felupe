@@ -76,9 +76,7 @@ def saint_venant_kirchhoff(C, mu, lmbda):
     >>> umat = fem.Hyperelastic(fem.saint_venant_kirchhoff, mu=1.0, lmbda=20.0)
     >>> ax = umat.plot(incompressible=False)
     UserWarning: Uniaxial data with volume ratio det(F) <= 0 included.
-      warnings.warn("Data points with volume ratio det(F) <= 0 included.")
     UserWarning: Planar Shear data with volume ratio det(F) <= 0 included.
-      return λ1, P[0, 0].ravel(), "Planar Shear"
     UserWarning: Biaxial data with volume ratio det(F) <= 0 included.
 
     ..  image:: images/umat_saint_venant_kirchhoff.png

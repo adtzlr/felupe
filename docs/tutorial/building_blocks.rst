@@ -171,7 +171,7 @@ The separation of active and inactive degrees of freedom is performed by a so-ca
 
 Integral forms of equilibrium equations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The integral (or weak) forms of equilibrium equations are defined by the :class:`fem.IntegralForm` class, see Eq. :eq:`eq_integral_form`. The pre-evaluated function of interest has to be passed as the ``fun`` argument and the test field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the first test field to the integral form. FElupe assumes a linear form if ``u=None`` (default) and creates a bilinear form if a field is passed to the trial field argument ``u``.
+The integral (or weak) forms of equilibrium equations are defined by the :class:`~felupe.IntegralForm` class, see Eq. :eq:`eq_integral_form`. The pre-evaluated function of interest has to be passed as the ``fun`` argument and the test field as the ``v`` argument. By setting ``grad_v=[True]`` (default), FElupe passes the gradient of the first test field to the integral form. FElupe assumes a linear form if ``u=None`` (default) and creates a bilinear form if a field is passed to the trial field argument ``u``.
 
 .. math::
    :label: eq_integral_form

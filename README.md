@@ -24,8 +24,8 @@ where `[all]` installs all optional dependencies. FElupe has minimal requirement
 * [`tensortrax`](https://github.com/adtzlr/tensortrax) for automatic differentiation
 
 In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
-* [`einsumt`](https://github.com/mrkwjc/einsumt) for parallel assembly
-* [`h5py`](https://github.com/h5py/h5py) for XDMF result files
+* [`einsumt`](https://github.com/mrkwjc/einsumt) for parallel (threaded) assembly
+* [`h5py`](https://github.com/h5py/h5py) for writing XDMF result files
 * [`matplotlib`](https://github.com/matplotlib/matplotlib) for plotting graphs
 * [`meshio`](https://github.com/nschloe/meshio) for mesh-related I/O
 * [`pyvista`](https://github.com/pyvista/pyvista) for interactive visualizations

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add `FieldDual` for the dual (secondary) fields in mixed fields.
+- Add a quadrature scheme for integrating the surface of a unit hemisphere `BazantOh(n=21)`.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.

@@ -1,6 +1,6 @@
 from ._base import CompositeMaterial, ConstitutiveMaterial
 from ._kinematics import AreaChange, LineChange, VolumeChange
-from ._mixed import ThreeFieldVariation, NearlyIncompressible
+from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._models_hyperelasticity import NeoHooke, NeoHookeCompressible, Volumetric
 from ._models_hyperelasticity_ad import (
     arruda_boyce,

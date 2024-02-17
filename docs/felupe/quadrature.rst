@@ -21,6 +21,12 @@ This module contains quadrature (numeric integration) schemes for different fini
    TriangleQuadrature
    TetrahedronQuadrature
 
+**Sphere**
+
+.. autosummary::
+
+   BazantOh
+
 **Detailed API Reference**
 
 .. autoclass:: felupe.quadrature.Scheme
@@ -44,6 +50,11 @@ This module contains quadrature (numeric integration) schemes for different fini
    :show-inheritance:
 
 .. autoclass:: felupe.quadrature.Tetrahedron
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.quadrature.BazantOh
    :members:
    :undoc-members:
    :show-inheritance:

@@ -142,12 +142,12 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
    +----------------+-------------------+
    | Analysis       |        DOF/s      |
    +================+===================+
-   | Linear-Elastic |   84523 +/- 9541  |
+   | Linear-Elastic |  136567 +/-22592  |
    +----------------+-------------------+
-   | Hyperelastic   |   49771 +/- 6781  |
+   | Hyperelastic   |   61790 +/-16060  |
    +----------------+-------------------+
 
-   Tested on: KDE Neon (Ubuntu 22.04), Python 3.10, Intel® Core™ i7-6650U CPU @ 2.20GHz, 8GB RAM (Surface Pro 4).
+   Tested on: Windows 10, Python 3.11, Intel® Core™ i7-11850H @ 2.50GHz, 32GB RAM.
 
 
 .. tab:: Source Code

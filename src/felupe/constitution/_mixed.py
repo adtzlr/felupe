@@ -40,16 +40,16 @@ class NearlyIncompressible(ConstitutiveMaterial):
             \int_V p (J - \bar{J})\ dV
 
     The volumetric part of the strain energy density function is denoted in Eq.
-    :eq:`nearlyincompressible-volumetric`.
+    :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.
 
     ..  math::
         :label: nearlyincompressible-volumetric
 
-        U(\bar{J}) &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
+        \bar{U} &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
 
-        U'(\bar{J}) &= K \left( \bar{J} - 1 \right)
+        \bar{U}' &= K \left( \bar{J} - 1 \right)
 
-        U''(\bar{J}) &= K
+        \bar{U}'' &= K
 
     Parameters
     ----------
@@ -84,9 +84,8 @@ class NearlyIncompressible(ConstitutiveMaterial):
 
     See Also
     --------
-    ThreeFieldVariation : Hu-Washizu hydrostatic-volumetric selective
-        :math:`(\boldsymbol{u},p,J)` - three-field variation for nearly-incompressible
-        material formulations.
+    ThreeFieldVariation : Hu-Washizu hydrostatic-volumetric selective three-field
+        variation for nearly-incompressible material formulations.
 
     """
 
@@ -129,14 +128,14 @@ class NearlyIncompressible(ConstitutiveMaterial):
         ..  math::
 
             \delta_\boldsymbol{u}(\Pi_{int}) &=
-                \int_V \left( \frac{\partial \psi}{\partial \boldsymbol{F}} +
+                \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
                 p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
 
             \delta_p(\Pi_{int}) &=
                 \int_V \left( J - \bar{J} \right)\ \delta p\ dV
 
             \delta_\bar{J}(\Pi_{int}) &=
-                \int_V \left( U'(\bar{J}) - p \right)\ \delta \bar{J}\ dV
+                \int_V \left( \bar{U}' - p \right)\ \delta \bar{J}\ dV
 
         """
         [F, p, J], statevars = x[:3], x[-1]
@@ -171,9 +170,10 @@ class NearlyIncompressible(ConstitutiveMaterial):
 
             \Delta_\boldsymbol{u}\delta_\boldsymbol{u}(\Pi_{int}) &= \int_V
                 \delta\boldsymbol{F} : \left[
-                \frac{\partial^2 \psi}{\partial\boldsymbol{F}\ \partial\boldsymbol{F}} +
+                \frac{\partial^2 \hat{\psi}}
+                {\partial\boldsymbol{F}\ \partial\boldsymbol{F}} +
                 p\ J \left( \boldsymbol{F}^{-T} \otimes \boldsymbol{F}^{-T} -
-                \boldsymbol{F}^{-T} \overset{ik}{\odot} \boldsymbol{F}^{-T} \right)
+                \boldsymbol{F}^{-T} \overset{il}{\odot} \boldsymbol{F}^{-T} \right)
                 \right] : \Delta\boldsymbol{F}\ dV
 
             \Delta_p\delta_\boldsymbol{u}(\Pi_{int}) &= \int_V
@@ -182,13 +182,13 @@ class NearlyIncompressible(ConstitutiveMaterial):
             \Delta_\bar{J}\delta_\boldsymbol{u}(\Pi_{int}) &= \int_V
                 \delta\boldsymbol{F} : \boldsymbol{0}\ \Delta \bar{J}\ dV
 
-            \Delta_p\delta_p(\Pi_{int}) &= \int_V \delta p\ 0\ \Delta p\ dV
+            \Delta_p\delta_p(\Pi_{int}) &= \int_V \delta p\ (0)\ \Delta p\ dV
 
             \Delta_p\delta_\bar{J}(\Pi_{int}) &= \int_V
                 \delta \bar{J}\ (-1)\ \Delta p\ dV
 
             \Delta_\bar{J}\delta_\bar{J}(\Pi_{int}) &= \int_V
-                \delta \bar{J}\ U''(\bar{J})\ \Delta \bar{J}\ dV
+                \delta \bar{J}\ \bar{U}''\ \Delta \bar{J}\ dV
 
         """
         [F, p, J], statevars = x[:3], x[-1]

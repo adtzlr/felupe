@@ -17,9 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
 
-from ..assembly import IntegralForm
+from ..assembly import IntegralForm, IntegralFormCartesian
 from ..constitution import AreaChange
-from ..field import FieldAxisymmetric
+from ..field import FieldAxisymmetric, FieldDual
 from ..math import det
 
 
@@ -73,43 +73,71 @@ class StateNearlyIncompressible:
 
     def __init__(self, field):
         self.field = field
+        self.displacement = self.field[0].copy()
+        self.pressure = FieldDual(field.region)
+        self.volume_ratio = FieldDual(field.region, values=1)
         self.dJdF = AreaChange().function
-
-        # initial values (on mesh-points) of the displacement field
-        self.u = field[0].values
 
         # deformation gradient
         self.F = field.extract()
 
-        # cell-values of the internal pressure and volume-ratio fields
-        self.p = np.zeros(field.region.mesh.ncells)
-        self.J = np.ones(field.region.mesh.ncells)
+        # displacements u, (dual) pressure p and (dual) volume-ratio J
+        # field-values at mesh-point p per cell c: u_pic, p_pc, J_pc
+        # mesh = self.field.region.mesh
+        # self.u = field[0].values[mesh.cells].transpose([1, 2, 0]).copy()
+        # self.p = np.zeros_like(self.field_dual.values[mesh.cells]).transpose([1, 2, 0])
+        # self.J = np.ones_like(self.field_dual.values[mesh.cells]).transpose([1, 2, 0])
+        
 
-    def h(self, parallel=False):
-        r"""Integrated shape-function gradient w.r.t. the deformed coordinates.
+    def int_tr_dhudx_hp_dv(self, parallel=False):
+        r"""Symmetric sub-block integrated (but not assembled) matrix values.
 
+        Notes
+        -----
         ..  math::
 
-            \int_V \frac{\partial J}{\partial \boldsymbol{F}} :
-                \delta \boldsymbol{F} ~ dV
+            \int_V \delta \boldsymbol{F} : \frac{\partial J}{\partial \boldsymbol{F}}
+                \ \Delta p ~ dV
 
         """
-
         return IntegralForm(
-            fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
+            fun=self.dJdF(self.F),
+            v=self.field,
+            u=self.pressure & None,
+            dV=self.field.region.dV,
+            grad_v=[True],
+            grad_u=[False],
         ).integrate(parallel=parallel)[0]
 
-    def v(self):
-        r"""Cell volumes of the deformed configuration.
+    def int_hJ_hJ_dv(self, parallel=False):
+        r"""Symmetric sub-block integrated (but not assembled) matrix values.
 
+        Notes
+        -----
         ..  math::
 
-            v = \int_V J ~ dV
+            \int_V \delta \bar{J} \Delta \bar{J} ~ dV
 
         """
+        return IntegralFormCartesian(
+            fun=np.ones((1, 1)),
+            v=self.volume_ratio,
+            dV=self.field.region.dV,
+            u=self.volume_ratio,
+            grad_v=False,
+            grad_u=False,
+        ).integrate(parallel=parallel)
+
+    def fp(self, parallel=False):
         dV = self.field.region.dV
-        if isinstance(self.field[0], FieldAxisymmetric):
-            R = self.field[0].radius
-            dA = self.field.region.dV
-            dV = 2 * np.pi * R * dA
-        return (det(self.F[0]) * dV).sum(0)
+        J = self.volume_ratio.interpolate()
+        return IntegralFormCartesian(
+            fun=det(self.F[0]) - J, v=self.pressure, dV=dV, grad_v=False
+        ).integrate(parallel=parallel)[0]
+
+    def fJ(self, bulk, parallel=False):
+        dV = self.field.region.dV
+        p = self.pressure.interpolate()
+        return IntegralFormCartesian(
+            fun=-p + bulk, v=self.volume_ratio, dV=dV, grad_v=False
+        ).integrate(parallel=parallel)[0]

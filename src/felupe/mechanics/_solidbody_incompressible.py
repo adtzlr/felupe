@@ -21,9 +21,10 @@ import numpy as np
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..field import FieldAxisymmetric
-from ..math import ddot, det, dot, dya, transpose
+from ..math import ddot, det, dot, inv, dya, transpose
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._solidbody import Solid
+from ..assembly import IntegralForm, IntegralFormCartesian
 
 
 class SolidBodyNearlyIncompressible(Solid):
@@ -232,19 +233,7 @@ class SolidBodyNearlyIncompressible(Solid):
         self.umat = umat
         self.field = field
         self.bulk = bulk
-
         self._area_change = AreaChange()
-        self._form = IntegralForm
-
-        # volume of undeformed configuration
-        if isinstance(self.field[0], FieldAxisymmetric):
-            R = self.field[0].radius
-            dA = self.field.region.dV
-            dV = 2 * np.pi * R * dA
-        else:
-            dV = self.field.region.dV
-        self.V = dV.sum(0)
-
         self.results = Results(stress=True, elasticity=True)
 
         if statevars is not None:
@@ -261,11 +250,9 @@ class SolidBodyNearlyIncompressible(Solid):
                 )
             )
 
-        if state is None:
-            # init state of internal fields
+        self.results.state = state
+        if self.results.state is None:
             self.results.state = StateNearlyIncompressible(field)
-        else:
-            self.results.state = state
 
         self.results.kinematics = self._extract(self.field)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
@@ -282,18 +269,29 @@ class SolidBodyNearlyIncompressible(Solid):
             field, parallel=parallel, args=args, kwargs=kwargs
         )
 
-        form = self._form(
+        form = IntegralForm(
             fun=self.results.stress,
             v=self.field,
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h(parallel=parallel)
-        v = self.results.state.v()
-        p = self.results.state.p
+        huhp = self.results.state.int_tr_dhudx_hp_dv(parallel=parallel)
+        ihJhJ = inv(self.results.state.int_hJ_hJ_dv(parallel=parallel))
+
+        fp = self.results.state.fp()
+        fJ = self.results.state.fJ(self.bulk)
 
         values = form.integrate(parallel=parallel)
-        np.add(values[0], h * (self.bulk * (v / self.V - 1) - p), out=values[0])
+        np.add(
+            values[0],
+            np.einsum("aib...,bc...,c...->ai...", huhp, self.bulk * ihJhJ, fp),
+            out=values[0],
+        )
+        np.add(
+            values[0],
+            np.einsum("aib...,bc...,c...->ai...", huhp, -ihJhJ, fJ),
+            out=values[0],
+        )
 
         self.results.force = form.assemble(values=values)
 
@@ -304,35 +302,52 @@ class SolidBodyNearlyIncompressible(Solid):
             field, parallel=parallel, args=args, kwargs=kwargs
         )
 
-        form = self._form(
+        form = IntegralForm(
             fun=self.results.elasticity,
             v=self.field,
             u=self.field,
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h(parallel=parallel)
+        huhp = self.results.state.int_tr_dhudx_hp_dv(parallel=parallel)
+        ihJhJ = inv(self.results.state.int_hJ_hJ_dv(parallel=parallel))
 
         values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
-        np.add(values[0], self.bulk / self.V * dya(h, h), out=values[0])
+        np.add(
+            values[0],
+            np.einsum("aib...,bc...,djc...->aidj...", huhp, self.bulk * ihJhJ, huhp),
+            out=values[0],
+        )
 
         self.results.stiffness = form.assemble(values=values)
 
         return self.results.stiffness
 
     def _extract(self, field, parallel=False):
-        u = field[0].values
-        u0 = self.results.state.u
-        h = self.results.state.h(parallel=parallel)
-        v = self.results.state.v()
-        J = self.results.state.J
-        p = self.results.state.p
+        mesh = self.field.region.mesh
 
-        du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
+        u = self.field[0].values[mesh.cells].transpose([1, 2, 0])
+        un = self.results.state.displacement.values[mesh.cells].transpose([1, 2, 0])
 
-        # change of state variables due to change of displacement field
-        dJ = ddot(h, du, mode=(2, 2)) / self.V + (v / self.V - J)
-        dp = self.bulk * (dJ + J - 1) - p
+        huhp = self.results.state.int_tr_dhudx_hp_dv(parallel=parallel)
+        ihJhJ = inv(self.results.state.int_hJ_hJ_dv(parallel=parallel))
+
+        fp = self.results.state.fp()
+        fJ = self.results.state.fJ(self.bulk)
+
+        # change of internal field values due to change of displacement field
+        du = u - un
+        dJ = np.einsum("ab...,cib...,ci...->a...", ihJhJ, huhp, du) - np.einsum(
+            "ab...,b...->a...", ihJhJ, fp
+        )
+        dp = self.bulk * dJ + np.einsum("ab...,b...->a...", ihJhJ, fJ)
+
+        form = IntegralFormCartesian(
+            fun=np.ones((1, 1)),
+            v=self.results.state.pressure,
+            dV=self.field.region.dV,
+            grad_v=False,
+        )
 
         self.field = field
         self.results.kinematics = self.results.state.F = self.field.extract(
@@ -340,9 +355,9 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
         # update state variables
-        self.results.state.p = p + dp
-        self.results.state.J = J + dJ
-        self.results.state.u = u
+        self.results.state.pressure.values += form.assemble(dp)
+        self.results.state.volume_ratio.values += form.assemble(dJ)
+        self.results.state.displacement.values[:] = self.field[0].values
 
         return self.results.kinematics
 
@@ -354,7 +369,7 @@ class SolidBodyNearlyIncompressible(Solid):
         F = self.results.kinematics[0]
         statevars = self.results.statevars
 
-        p = self.results.state.p
+        p = self.results.state.pressure.interpolate()
 
         gradient = self.umat.gradient([F, statevars], *args, **kwargs)
 
@@ -370,7 +385,7 @@ class SolidBodyNearlyIncompressible(Solid):
         d2JdF2 = self._area_change.gradient
         F = self.results.kinematics[0]
         statevars = self.results.statevars
-        p = self.results.state.p
+        p = self.results.state.pressure.interpolate()
 
         self.results.elasticity = [
             self.umat.hessian([F, statevars], *args, **kwargs)[0] + p * d2JdF2([F])[0]

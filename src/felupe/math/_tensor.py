@@ -95,6 +95,12 @@ def inv(A, determinant=None, full_output=False, sym=False):
         detAinvA[0, 1] = -A[0, 1]
         detAinvA[1, 0] = -A[1, 0]
         detAinvA[1, 1] = A[0, 0]
+    
+    elif A.shape[0] == 1:
+        detAinvA[0, 0] = np.ones_like(A[0, 0])
+        
+    else:
+        raise ValueError("Input must be 1d, 2d or 3d.")
 
     if full_output:
         return detAinvA / detA, detA

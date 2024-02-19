@@ -21,6 +21,7 @@ from scipy.sparse import bmat, vstack
 
 from ..field._axi import FieldAxisymmetric
 from ..field._base import Field
+from ..field._dual import FieldDual
 from ..field._planestrain import FieldPlaneStrain
 from ._axi import IntegralFormAxisymmetric
 from ._cartesian import IntegralFormCartesian

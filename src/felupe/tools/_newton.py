@@ -215,6 +215,7 @@ def newtonrhapson(
     ext0=None,
     solver=spsolve,
     verbose=True,
+    proceed=False,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -419,7 +420,8 @@ def newtonrhapson(
             raise ValueError("Norm of unknowns is NaN.")
 
     if 1 + iteration == maxiter and not success:
-        raise ValueError("Maximum number of iterations reached (not converged).\n")
+        if not proceed:
+            raise ValueError("Maximum number of iterations reached (not converged).\n")
 
     Res = NewtonResult(
         x=x,

@@ -254,8 +254,6 @@ class SolidBodyNearlyIncompressible(Solid):
         if self.results.state is None:
             self.results.state = StateNearlyIncompressible(field)
 
-        self.V = self.field.region.dV.sum(axis=0)
-
         self.results.kinematics = self._extract(self.field)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
@@ -278,15 +276,16 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
         Kup = self.results.state.integrate_dF_JiFT_Dp()
-        iKJJ = inv(self.results.state.integrate_dJ_DJ())
+        iKJJ = np.linalg.inv(self.results.state.integrate_dJ_DJ().T).T
 
-        fp = self.results.state.fp()
-        fJ = self.results.state.fJ(self.bulk)
+        # fp = self.results.state.fp()
+        # fJ = self.results.state.fJ(self.bulk)
+        Kfp_fJ = self.results.state.Kfp_fJ(self.bulk)
 
         values = form.integrate(parallel=parallel)
         np.add(
             values[0],
-            np.einsum("aib...,bc...,c...->ai...", Kup, iKJJ, self.bulk * fp + fJ),
+            np.einsum("aib...,bc...,c...->ai...", Kup, iKJJ, Kfp_fJ),
             out=values[0],
         )
 
@@ -307,12 +306,12 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
         Kup = self.results.state.integrate_dF_JiFT_Dp()
-        KJJ = inv(self.results.state.integrate_dJ_DJ())
+        iKJJ = np.linalg.inv(self.results.state.integrate_dJ_DJ().T).T
 
         values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
         np.add(
             values[0],
-            np.einsum("aib...,bc...,djc...->aidj...", Kup, inv(KJJ), Kup) * self.bulk,
+            np.einsum("aib...,bc...,djc...->aidj...", Kup, iKJJ, Kup) * self.bulk,
             out=values[0],
         )
 
@@ -331,7 +330,7 @@ class SolidBodyNearlyIncompressible(Solid):
         J = self.results.state.volume_ratio.values[mesh_dual.cells][..., 0].T
 
         Kup = self.results.state.integrate_dF_JiFT_Dp()
-        iKJJ = inv(self.results.state.integrate_dJ_DJ())
+        iKJJ = np.linalg.inv(self.results.state.integrate_dJ_DJ().T).T
 
         # change of internal field values due to change of displacement field
         du = u - un

@@ -138,6 +138,15 @@ class StateNearlyIncompressible:
     def fJ(self, bulk, parallel=False):
         dV = self.field.region.dV
         p = self.pressure.interpolate()
+        J = self.volume_ratio.interpolate()
         return IntegralFormCartesian(
-            fun=bulk - p, v=self.volume_ratio, dV=dV, grad_v=False
+            fun=bulk * (J - 1) - p, v=self.volume_ratio, dV=dV, grad_v=False
+        ).integrate(parallel=parallel)[0]
+    
+    def Kfp_fJ(self, bulk, parallel=False):
+        dV = self.field.region.dV
+        p = self.pressure.interpolate()
+        detF = det(self.F[0])
+        return IntegralFormCartesian(
+            fun=bulk * (detF - 1) - p, v=self.pressure, dV=dV, grad_v=False
         ).integrate(parallel=parallel)[0]

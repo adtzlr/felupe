@@ -207,6 +207,7 @@ class IntegralForm:
 
         IntForm = {
             Field: IntegralFormCartesian,
+            FieldDual: IntegralFormCartesian,
             FieldPlaneStrain: IntegralFormCartesian,
             FieldAxisymmetric: IntegralFormAxisymmetric,
         }[type(self.v[0])]

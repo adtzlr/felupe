@@ -89,7 +89,7 @@ class StateNearlyIncompressible:
         # self.J = np.ones_like(self.field_dual.values[mesh.cells]).transpose([1, 2, 0])
         
 
-    def int_tr_dhudx_hp_dv(self, parallel=False):
+    def integrate_dF_JiFT_Dp(self, parallel=False):
         r"""Symmetric sub-block integrated (but not assembled) matrix values.
 
         Notes
@@ -109,7 +109,7 @@ class StateNearlyIncompressible:
             grad_u=[False],
         ).integrate(parallel=parallel)[0]
 
-    def int_hJ_hJ_dv(self, parallel=False):
+    def integrate_dJ_DJ(self, parallel=False):
         r"""Symmetric sub-block integrated (but not assembled) matrix values.
 
         Notes
@@ -119,14 +119,14 @@ class StateNearlyIncompressible:
             \int_V \delta \bar{J} \Delta \bar{J} ~ dV
 
         """
-        return IntegralFormCartesian(
-            fun=np.ones((1, 1)),
-            v=self.volume_ratio,
+        return IntegralForm(
+            fun=[np.ones((1, 1))],
+            v=self.volume_ratio & None,
             dV=self.field.region.dV,
-            u=self.volume_ratio,
-            grad_v=False,
-            grad_u=False,
-        ).integrate(parallel=parallel)
+            u=self.volume_ratio & None,
+            grad_v=[False],
+            grad_u=[False],
+        ).integrate(parallel=parallel)[0]
 
     def fp(self, parallel=False):
         dV = self.field.region.dV
@@ -139,5 +139,5 @@ class StateNearlyIncompressible:
         dV = self.field.region.dV
         p = self.pressure.interpolate()
         return IntegralFormCartesian(
-            fun=-p + bulk, v=self.volume_ratio, dV=dV, grad_v=False
+            fun=bulk - p, v=self.volume_ratio, dV=dV, grad_v=False
         ).integrate(parallel=parallel)[0]

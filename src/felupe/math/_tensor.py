@@ -72,7 +72,7 @@ def inv(A, determinant=None, full_output=False, sym=False):
     else:
         detA = determinant
 
-    if A.shape[0] == 3:
+    if A.shape[:2] == (3, 3):
         detAinvA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
         detAinvA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
         detAinvA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
@@ -90,11 +90,17 @@ def inv(A, determinant=None, full_output=False, sym=False):
             detAinvA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
             detAinvA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
 
-    elif A.shape[0] == 2:
+    elif A.shape[:2] == (2, 2):
         detAinvA[0, 0] = A[1, 1]
         detAinvA[0, 1] = -A[0, 1]
         detAinvA[1, 0] = -A[1, 0]
         detAinvA[1, 1] = A[0, 0]
+
+    elif A.shape[:2] == (1, 1):
+        detAinvA[0, 0] = 1
+
+    else:
+        raise ValueError("Not-suüüp")
 
     if full_output:
         return detAinvA / detA, detA

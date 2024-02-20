@@ -120,6 +120,7 @@ def test_math():
     fem.math.inv(C, determinant=detC)
     fem.math.inv(C, full_output=True)
     fem.math.inv(C, sym=True)
+    assert np.allclose(fem.math.inv(C[:1, :1]), 1 / C[:1, :1])
 
     fem.math.dev(C)
     fem.math.cof(C)

@@ -223,28 +223,24 @@ def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
 
     if mode == (2, 2):
         return einsum("ik...,kj...->ij...", A, B, **kwargs)
-
     elif mode == (1, 1):
         return einsum("i...,i...->...", A, B, **kwargs)
-
     elif mode == (4, 4):
         return einsum("ijkp...,plmn...->ijklmn...", A, B, **kwargs)
-
     elif mode == (2, 1):
         return einsum("ij...,j...->i...", A, B, **kwargs)
-
     elif mode == (1, 2):
         return einsum("i...,ij...->j...", A, B, **kwargs)
-
+    elif mode == (2, 3):
+        return einsum("im...,mjk...->ijk...", A, B, **kwargs)
+    elif mode == (3, 2):
+        return einsum("ijm...,mk...->ijk...", A, B, **kwargs)
     elif mode == (4, 1):
         return einsum("ijkl...,l...->ijk...", A, B, **kwargs)
-
     elif mode == (1, 4):
         return einsum("i...,ijkl...->jkl...", A, B, **kwargs)
-
     elif mode == (2, 4):
         return einsum("im...,mjkl...->ijkl...", A, B, **kwargs)
-
     elif mode == (4, 2):
         return einsum("ijkm...,ml...->ijkl...", A, B, **kwargs)
 
@@ -262,6 +258,10 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
 
     if mode == (2, 2):
         return einsum("ij...,ij...->...", A, B, **kwargs)
+    if mode == (2, 3):
+        return einsum("ij...,ijk...->k...", A, B, **kwargs)
+    if mode == (3, 2):
+        return einsum("ijk...,ij...->k...", A, B, **kwargs)
     elif mode == (2, 4):
         return einsum("ij...,ijkl...->kl...", A, B, **kwargs)
     elif mode == (4, 2):

@@ -85,9 +85,8 @@ def test_math():
     with pytest.raises(ValueError):
         fem.math.transpose(F, mode=3)
 
-    with pytest.raises(TypeError):
-        fem.math.dot(C, B, mode=(2, 3))
-        fem.math.dot(B, C, mode=(3, 2))
+    fem.math.dot(C, B, mode=(2, 3))
+    fem.math.dot(B, C, mode=(3, 2))
 
     assert fem.math.dot(C, a, mode=(2, 1)).shape == (3, 8, 200)
     assert fem.math.dot(a, C, mode=(1, 2)).shape == (3, 8, 200)
@@ -106,7 +105,9 @@ def test_math():
     with pytest.raises(TypeError):
         fem.math.ddot(A, B, mode=(4, 3))
         fem.math.ddot(B, B, mode=(3, 3))
-        fem.math.ddot(C, B, mode=(2, 3))
+
+    fem.math.ddot(C, B, mode=(2, 3))
+    fem.math.ddot(B, C, mode=(3, 2))
 
     detC = fem.math.det(C)
     fem.math.det(C[:2, :2])

@@ -137,7 +137,6 @@ class StateNearlyIncompressibleX:
 
         # inverse of volume matrix
         self.inv_V = np.linalg.inv(self.volume().T).T
-        self.h = self.integrate_shape_function_gradient()
 
     def integrate_shape_function_gradient(self, parallel=False):
         r"""Return the Integrated shape function gradient matrix w.r.t. the deformed
@@ -151,7 +150,7 @@ class StateNearlyIncompressibleX:
                 \ \Delta p ~ dV
 
         """
-        self.h = IntegralForm(
+        return IntegralForm(
             fun=self.dJdF(self.F),
             v=self.field,
             u=self.pressure & None,
@@ -159,7 +158,6 @@ class StateNearlyIncompressibleX:
             grad_v=[True],
             grad_u=[False],
         ).integrate(parallel=parallel)[0]
-        return self.h
 
     def volume(self, parallel=False):
         r"""Return integrated differential (undeformed) volumes matrix with dual-trial

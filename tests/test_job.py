@@ -42,14 +42,21 @@ def pre():
     return field, step
 
 
+def weather(i, j, res, outside):
+    assert outside == "rainy"
+
+
 def test_job():
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
-
     field, step = pre()
-    job = fem.Job(steps=[step])
-    job.evaluate(parallel=True, kwargs={"parallel": False}, verbose=0)
+    job = fem.Job(steps=[step], callback=weather, outside="rainy")
+    job.evaluate(
+        parallel=True,
+        kwargs={"parallel": False},
+        verbose=0,
+    )
 
 
 def test_job_xdmf():
@@ -75,7 +82,12 @@ def test_job_xdmf_global_field():
 def test_curve():
     field, step = pre()
 
-    curve = fem.CharacteristicCurve(steps=[step], boundary=step.boundaries["move"])
+    curve = fem.CharacteristicCurve(
+        steps=[step],
+        boundary=step.boundaries["move"],
+        callback=weather,
+        outside="rainy",
+    )
 
     with pytest.raises(ValueError):
         curve.plot()

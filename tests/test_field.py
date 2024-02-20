@@ -67,7 +67,7 @@ def pre_mixed():
     J = fem.Field(r, values=1)
 
     f = fem.FieldContainer([u, p, J])
-    g = fem.FieldsMixed(fem.RegionHexahedron(m), n=3)
+    g = fem.FieldsMixed(fem.RegionHexahedron(m), n=3, disconnect=True)
     f2 = u & p & J
     f3 = (u & p) & J
     f4 = u & (p & J)

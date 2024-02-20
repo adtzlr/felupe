@@ -208,7 +208,7 @@ class SolidBodyNearlyIncompressible(Solid):
     
     ..  math::
         
-        \frac{K~v}{c} + \frac{w}{c} = K (\frac{v}{V} - 1) - p
+        \frac{K~v}{c} + \frac{w}{c} = K \left( \frac{v}{V} - 1 \right) - p
 
 
     Examples

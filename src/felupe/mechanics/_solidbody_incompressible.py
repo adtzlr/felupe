@@ -55,8 +55,8 @@ class SolidBodyNearlyIncompressible(Solid):
 
     Notes
     -----
-    The variations of the total potential energy of internal forces w.r.t.
-    :math:`(\boldsymbol{u},p,J)` lead to the following expressions.
+    The variation of the total potential energy of internal forces w.r.t. the
+    displacements :math:`\boldsymbol{u}` lead to the following expressions.
     
     ..  math::
         

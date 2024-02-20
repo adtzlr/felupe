@@ -56,6 +56,10 @@ class FieldDual(Field):
     mesh: Mesh or None, optional
         A mesh which is used for the dual region (default is None). If None, the mesh
         is taken from the region.
+    disconnect : bool or None, optional
+        A flag to disconnect the dual mesh (default is None). If None, a disconnected
+        mesh is used except for regions with quadratic-triangle or -tetra or MINI
+        element formulations.
     **kwargs : dict, optional
         Optional keyword arguments for the dual region.
 
@@ -92,6 +96,7 @@ class FieldDual(Field):
         offset=0,
         npoints=None,
         mesh=None,
+        disconnect=None,
         **kwargs,
     ):
         # create dual regions
@@ -108,6 +113,7 @@ class FieldDual(Field):
             RegionTriangleMINI: RegionTriangle,
             RegionLagrange: RegionLagrange,
         }
+
         mesh_kwargs = {
             RegionHexahedron: {},
             RegionQuad: {},
@@ -120,7 +126,11 @@ class FieldDual(Field):
             RegionTetraMINI: {"disconnect": False},
             RegionTriangleMINI: {"disconnect": False},
             RegionLagrange: {},
-        }
+        }[type(region)]
+
+        if disconnect is not None:
+            mesh_kwargs["disconnect"] = disconnect
+
         points_per_cell = {
             RegionConstantHexahedron: 1,
             RegionConstantQuad: 1,
@@ -145,7 +155,7 @@ class FieldDual(Field):
                 points_per_cell=points_per_cell[RegionDual],
                 offset=offset,
                 npoints=npoints,
-                **mesh_kwargs[type(region)],
+                **mesh_kwargs,
             )
 
         region_dual = RegionDual(mesh, **{**kwargs0, **kwargs})

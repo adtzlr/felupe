@@ -38,10 +38,12 @@ class CharacteristicCurve(Job):
         forces from the :class:`~felupe.tools.NewtonResult` of the substep are used.
     callback : callable, optional
         A callable which is called after each completed substep. Function signature must
-        be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
-        instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
-        completed substep is available as ``substep.x``. Default callback is
-        ``lambda stepnumber, substepnumber, substep: None``.
+        be ``lambda stepnumber, substepnumber, substep, **kwargs: None``, where
+        ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
+        container of the completed substep is available as ``substep.x``. Default
+        is ``callback=lambda stepnumber, substepnumber, substep, **kwargs: None``.
+    **kwargs : dict, optional
+        Optional keyword-arguments for the ``callback`` function.
 
     Examples
     --------
@@ -86,9 +88,10 @@ class CharacteristicCurve(Job):
         steps,
         boundary,
         items=None,
-        callback=lambda stepnumber, substepnumber, substep: None,
+        callback=lambda stepnumber, substepnumber, substep, **kwargs: None,
+        **kwargs,
     ):
-        super().__init__(steps, self._callback)
+        super().__init__(steps, self._callback, **kwargs)
 
         self.items = items
         self.boundary = boundary
@@ -97,7 +100,7 @@ class CharacteristicCurve(Job):
         self.res = None
         self._cb = callback
 
-    def _callback(self, stepnumber, substepnumber, substep):
+    def _callback(self, stepnumber, substepnumber, substep, **kwargs):
         if self.items is not None:
             fun = sum([item.results.force for item in self.items])
         else:
@@ -107,7 +110,7 @@ class CharacteristicCurve(Job):
         self.y.append(force(substep.x, fun, self.boundary))
         self.res = substep
 
-        self._cb(stepnumber, substepnumber, substep)
+        self._cb(stepnumber, substepnumber, substep, **kwargs)
 
     def plot(
         self,

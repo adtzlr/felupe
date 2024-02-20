@@ -67,10 +67,12 @@ class Job:
         previous step.
     callback : callable, optional
         A callable which is called after each completed substep. Function signature must
-        be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
-        instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
-        completed substep is available as ``substep.x``. Default callback is
-        ``lambda stepnumber, substepnumber, substep: None``.
+        be ``lambda stepnumber, substepnumber, substep, **kwargs: None``, where
+        ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
+        container of the completed substep is available as ``substep.x``. Default
+        is ``callback=lambda stepnumber, substepnumber, substep, **kwargs: None``.
+    **kwargs : dict, optional
+        Optional keyword-arguments for the ``callback`` function.
 
     Attributes
     ----------
@@ -79,17 +81,18 @@ class Job:
         previous step.
     nsteps : int
         The number of steps.
-    callback : callable, optional
+    callback : callable
         A callable which is called after each completed substep. Function signature must
         be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
         instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
-        completed substep is available as ``substep.x``. Default callback is
-        ``lambda stepnumber, substepnumber, substep: None``.
+        completed substep is available as ``substep.x``.
     timetrack : list of int
         A list with times at which the results are written to the XDMF result file.
     fnorms : list of list of float
         List with norms of the objective function for each completed substep of each
         step. See also class:`~felupe.tools.NewtonResult`.
+    kwargs : dict
+        Optional keyword-arguments for the ``callback`` function.
 
     Examples
     --------
@@ -127,13 +130,15 @@ class Job:
     def __init__(
         self,
         steps,
-        callback=lambda stepnumber, substepnumber, substep: None,
+        callback=lambda stepnumber, substepnumber, substep, **kwargs: None,
+        **kwargs,
     ):
         self.steps = steps
         self.nsteps = len(steps)
         self.callback = callback
         self.timetrack = []
         self.fnorms = []
+        self.kwargs = kwargs
 
     def _write(self, writer, time, substep, point_data, cell_data):
         field = substep.x
@@ -290,7 +295,7 @@ class Job:
 
                         print(f"{_substep} of {_step} successful.")
 
-                    self.callback(j, i, substep)
+                    self.callback(j, i, substep, **self.kwargs)
 
                     # update x0 after each completed substep
                     if "x0" in kwargs.keys():

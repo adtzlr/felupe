@@ -162,9 +162,9 @@ class SolidBodyNearlyIncompressible(Solid):
 
     ..  math::
 
-        z &= \frac{1}{c}~\boldsymbol{b}^T \boldsymbol{x} - \frac{1}{c}~v
+        z &= \frac{1}{c}~\boldsymbol{b}^T \boldsymbol{x} - \frac{v}{c}
 
-        y &= K~z - \frac{1}{c}~w
+        y &= K~z - \frac{w}{c}
 
     For the mean-dilatation technique, the variables, equations as well as sub-matrices
     are evaluated. Note that the pairs of indices :math:`(ai)` and :math:`(bk)` have to
@@ -200,9 +200,15 @@ class SolidBodyNearlyIncompressible(Solid):
             \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} +
             p \frac{\partial J}{\partial F_{iJ}} \right) \ dV
 
-        \frac{1}{c} v &= -\frac{1}{V} \int_V (J - \bar{J}) \ dV = \frac{v}{V} - \bar{J}
+        \frac{v}{c} &= -\frac{1}{V} \int_V (J - \bar{J}) \ dV = \frac{v}{V} - \bar{J}
 
-        \frac{1}{c} w &= -\frac{1}{V} \int_V (\bar{U}' - p) \ dV = K (\bar{J} - 1) - p
+        \frac{w}{c} &= -\frac{1}{V} \int_V (\bar{U}' - p) \ dV = K (\bar{J} - 1) - p
+    
+    with
+    
+    ..  math::
+        
+        \frac{K~v}{c} + \frac{w}{c} = K (J - 1) - p
 
 
     Examples

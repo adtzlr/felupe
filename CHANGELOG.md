@@ -4,11 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Added
-- Add `FieldDual` for the dual (secondary) fields in mixed fields.
+- Add `FieldDual(disconnect=True)` for a dual (secondary) field with an optionally disconnected mesh. This also enables `FieldsMixed(disconnect=True)` in mixed fields.
 - Add a quadrature scheme for integrating the surface of a unit hemisphere `BazantOh(n=21)`.
 - Add `NearlyIncompressible` as a simplified version of `ThreeFieldVariation`. A constitutive material formulation on the distortional part of a strain energy function in terms of the deformation gradient has to be provided, e.g. by `umat = NearlyIncompressible(NeoHooke(mu=1), bulk=5000)`.
-- Add optional kwargs to job-callback `Job(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)` and `CharacteristicCurve(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)`.
-- Add `FieldDual(disconnect=None)` for an optional disconnected mesh on the dual field. This also enables `FieldsMixed(disconnect=True)`.
+- Add optional kwargs to a job-callback `Job(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)` and `CharacteristicCurve(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)`.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.

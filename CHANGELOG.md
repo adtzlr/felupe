@@ -7,12 +7,15 @@ All notable changes to this project will be documented in this file. The format 
 - Add `FieldDual` for the dual (secondary) fields in mixed fields.
 - Add a quadrature scheme for integrating the surface of a unit hemisphere `BazantOh(n=21)`.
 - Add `NearlyIncompressible` as a simplified version of `ThreeFieldVariation`. A constitutive material formulation on the distortional part of a strain energy function in terms of the deformation gradient has to be provided, e.g. by `umat = NearlyIncompressible(NeoHooke(mu=1), bulk=5000)`.
-- Add support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.
 - Add optional kwargs to job-callback `Job(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)` and `CharacteristicCurve(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)`.
-- Add support for `FieldDual` in `IntegralForm`.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.
+
+# Fixed
+- Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.
+- Fix error if `FieldDual` is in the fields of a `FieldContainer` for `IntegralForm`.
+- Fix `math.inv(A)` for arrays with shape ``A.shape = (1, 1, ...)``. Also raise an error if ``shape[:2]`` not in ``[(3, 3), (2, 2), (1, 1)]``.
 
 ## [7.18.0] - 2024-02-16
 

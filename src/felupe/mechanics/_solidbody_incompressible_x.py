@@ -72,7 +72,7 @@ class SolidBodyNearlyIncompressibleX(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h
+        h = self.results.state.integrate_shape_function_gradient()
         inv_V = self.results.state.inv_V
         constraint = self.results.state.constraint(bulk=self.bulk)
 
@@ -99,7 +99,7 @@ class SolidBodyNearlyIncompressibleX(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h
+        h = self.results.state.integrate_shape_function_gradient()
         inv_V = self.results.state.inv_V
 
         values = form.integrate(parallel=parallel, out=self.results.stiffness_values)

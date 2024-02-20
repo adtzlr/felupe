@@ -17,9 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
 
-from ..assembly import IntegralForm
+from ..assembly import IntegralForm, IntegralFormCartesian
 from ..constitution import AreaChange
-from ..field import FieldAxisymmetric
+from ..field import FieldAxisymmetric, FieldDual
 from ..math import det
 
 
@@ -113,3 +113,94 @@ class StateNearlyIncompressible:
             dA = self.field.region.dV
             dV = 2 * np.pi * R * dA
         return (det(self.F[0]) * dV).sum(0)
+
+
+class StateNearlyIncompressibleX:
+    "A State with internal fields for (nearly) incompressible solid bodies."
+
+    def __init__(self, field, pressure=None, volume_ratio=None, **kwargs):
+        self.field = field
+        self.u = self.field[0].values
+
+        self.pressure = pressure
+        self.volume_ratio = volume_ratio
+
+        if self.pressure is None:
+            self.pressure = FieldDual(field.region, **kwargs)
+        if self.volume_ratio is None:
+            self.volume_ratio = FieldDual(field.region, values=1, **kwargs)
+
+        self.dJdF = AreaChange().function
+
+        # deformation gradient
+        self.F = field.extract()
+
+        # inverse of volume matrix
+        self.inv_V = np.linalg.inv(self.volume().T).T
+
+    def integrate_shape_function_gradient(self, parallel=False):
+        r"""Return the Integrated shape function gradient matrix w.r.t. the deformed
+        coordinates.
+
+        Notes
+        -----
+        ..  math::
+
+            h = \int_V \delta \boldsymbol{F} : \frac{\partial J}{\partial\boldsymbol{F}}
+                \ \Delta p ~ dV
+
+        """
+        return IntegralForm(
+            fun=self.dJdF(self.F),
+            v=self.field,
+            u=self.pressure & None,
+            dV=self.field.region.dV,
+            grad_v=[True],
+            grad_u=[False],
+        ).integrate(parallel=parallel)[0]
+
+    def volume(self, parallel=False):
+        r"""Return integrated differential (undeformed) volumes matrix with dual-trial
+        and dual-test fields.
+
+        Notes
+        -----
+        ..  math::
+
+            V = \int_V \delta p \Delta p ~ dV
+
+        """
+        return IntegralForm(
+            fun=[np.ones((1, 1))],
+            v=self.pressure & None,
+            dV=self.field.region.dV,
+            u=self.pressure & None,
+            grad_v=[False],
+            grad_u=[False],
+        ).integrate(parallel=parallel)[0]
+
+    def fp(self, parallel=False):
+        dV = self.field.region.dV
+        J = self.volume_ratio.interpolate()
+        v = self.pressure & None
+        return IntegralForm(
+            fun=[det(self.F[0]) - J], v=v, dV=dV, grad_v=[False]
+        ).integrate(parallel=parallel)[0]
+
+    def fJ(self, bulk, parallel=False):
+        dV = self.field.region.dV
+        p = self.pressure.interpolate()
+        J = self.volume_ratio.interpolate()
+        v = self.pressure & None
+        return IntegralForm(
+            fun=[bulk * (J - 1) - p], v=v, dV=dV, grad_v=[False]
+        ).integrate(parallel=parallel)[0]
+
+    def constraint(self, bulk, parallel=False):
+        dV = self.field.region.dV
+        p = self.pressure.interpolate()
+        detF = det(self.F[0])
+        v = self.pressure & None
+        return IntegralForm(
+            fun=[bulk * (detF - 1) - p], v=v, dV=dV, grad_v=[False]
+        ).integrate(parallel=parallel)[0]

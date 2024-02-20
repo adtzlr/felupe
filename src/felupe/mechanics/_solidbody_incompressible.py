@@ -281,7 +281,6 @@ class SolidBodyNearlyIncompressible(Solid):
         self.results.stress = self._gradient(
             field, parallel=parallel, args=args, kwargs=kwargs
         )
-
         form = self._form(
             fun=self.results.stress,
             v=self.field,
@@ -294,7 +293,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
         values = form.integrate(parallel=parallel)
         np.add(values[0], h * (self.bulk * (v / self.V - 1) - p), out=values[0])
-
+        
         self.results.force = form.assemble(values=values)
 
         return self.results.force
@@ -333,7 +332,7 @@ class SolidBodyNearlyIncompressible(Solid):
         # change of state variables due to change of displacement field
         dJ = ddot(h, du, mode=(2, 2)) / self.V + (v / self.V - J)
         dp = self.bulk * (dJ + J - 1) - p
-
+        
         self.field = field
         self.results.kinematics = self.results.state.F = self.field.extract(
             out=self.results.kinematics
@@ -366,7 +365,7 @@ class SolidBodyNearlyIncompressible(Solid):
     def _hessian(self, field=None, parallel=False, args=(), kwargs={}):
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
-
+        
         d2JdF2 = self._area_change.gradient
         F = self.results.kinematics[0]
         statevars = self.results.statevars

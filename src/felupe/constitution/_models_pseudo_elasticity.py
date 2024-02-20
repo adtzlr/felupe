@@ -29,7 +29,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     Parameters
     ----------
-    material : NeoHooke, Hyperelastic, Material or constitution.MaterialAD
+    material : NeoHooke, Hyperelastic, Material or MaterialAD
         An isotropic hyperelastic (user) material definition.
     r : float
         Reciprocal value of the maximum relative amount of softening. i.e. ``r=3`` means

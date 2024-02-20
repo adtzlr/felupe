@@ -136,7 +136,8 @@ class StateNearlyIncompressibleX:
         self.F = field.extract()
 
         # inverse of volume matrix
-        self.inv_V = np.linalg.inv(self.volume().T).T
+        from scipy.sparse.linalg import inv
+        self.inv_V = inv(self.volume())
 
     def integrate_shape_function_gradient(self, parallel=False):
         r"""Return the Integrated shape function gradient matrix w.r.t. the deformed
@@ -157,7 +158,7 @@ class StateNearlyIncompressibleX:
             dV=self.field.region.dV,
             grad_v=[True],
             grad_u=[False],
-        ).integrate(parallel=parallel)[0]
+        ).assemble(parallel=parallel)
 
     def volume(self, parallel=False):
         r"""Return integrated differential (undeformed) volumes matrix with dual-trial
@@ -177,7 +178,7 @@ class StateNearlyIncompressibleX:
             u=self.pressure & None,
             grad_v=[False],
             grad_u=[False],
-        ).integrate(parallel=parallel)[0]
+        ).assemble(parallel=parallel)
 
     def fp(self, parallel=False):
         dV = self.field.region.dV
@@ -185,7 +186,7 @@ class StateNearlyIncompressibleX:
         v = self.pressure & None
         return IntegralForm(
             fun=[det(self.F[0]) - J], v=v, dV=dV, grad_v=[False]
-        ).integrate(parallel=parallel)[0]
+        ).assemble(parallel=parallel)
 
     def fJ(self, bulk, parallel=False):
         dV = self.field.region.dV
@@ -194,7 +195,7 @@ class StateNearlyIncompressibleX:
         v = self.pressure & None
         return IntegralForm(
             fun=[bulk * (J - 1) - p], v=v, dV=dV, grad_v=[False]
-        ).integrate(parallel=parallel)[0]
+        ).assemble(parallel=parallel)
 
     def constraint(self, bulk, parallel=False):
         dV = self.field.region.dV
@@ -203,4 +204,4 @@ class StateNearlyIncompressibleX:
         v = self.pressure & None
         return IntegralForm(
             fun=[bulk * (detF - 1) - p], v=v, dV=dV, grad_v=[False]
-        ).integrate(parallel=parallel)[0]
+        ).assemble(parallel=parallel)

@@ -76,14 +76,8 @@ class SolidBodyNearlyIncompressibleX(Solid):
         inv_V = self.results.state.inv_V
         constraint = self.results.state.constraint(bulk=self.bulk)
 
-        values = form.integrate(parallel=parallel)
-        np.add(
-            values[0],
-            np.einsum("aib...,bc...,cj...->ai...", h, inv_V, constraint),
-            out=values[0],
-        )
-
-        self.results.force = form.assemble(values=values)
+        self.results.force = form.assemble()
+        self.results.force += h @ inv_V @ constraint
 
         return self.results.force
 
@@ -102,37 +96,24 @@ class SolidBodyNearlyIncompressibleX(Solid):
         h = self.results.state.integrate_shape_function_gradient()
         inv_V = self.results.state.inv_V
 
-        values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
-        np.add(
-            values[0],
-            np.einsum("aic...,bjd...,cd...->aibj...", h, h, inv_V, optimize=True)
-            * self.bulk,
-            out=values[0],
-        )
-
-        self.results.stiffness = form.assemble(values=values)
-
+        self.results.stiffness = form.assemble(parallel=parallel)
+        self.results.stiffness += self.bulk * h @ inv_V @ h.T
+        
         return self.results.stiffness
 
     def _extract(self, field, parallel=False):
-        mesh = self.field.region.mesh
-
         u = field[0].values
         u0 = self.results.state.u
 
-        mesh_dual = self.results.state.volume_ratio.region.mesh
-        p = self.results.state.pressure.values[mesh_dual.cells].transpose([1, 2, 0])
-        J = self.results.state.volume_ratio.values[mesh_dual.cells].transpose([1, 2, 0])
+        p = self.results.state.pressure.values.ravel()
+        J = self.results.state.volume_ratio.values.ravel()
 
         h = self.results.state.integrate_shape_function_gradient()
         inv_V = self.results.state.inv_V
 
         # change of internal field values due to change of displacement field
-        du = (u - u0)[mesh.cells].transpose([1, 2, 0])
-        dJ = np.einsum(
-            "ai...,aib...,bc...,j->cj...", du, h, inv_V, np.ones(1), optimize=True
-        )
-        dJ = np.add(dJ, dot(inv_V, self.results.state.fp()), out=dJ)
+        du = (u - u0).ravel()
+        dJ = du @ h @ inv_V + inv_V @ self.results.state.fp().toarray().ravel()
         dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field
@@ -140,18 +121,10 @@ class SolidBodyNearlyIncompressibleX(Solid):
             out=self.results.kinematics
         )
 
-        form = IntegralForm(
-            fun=[np.ones(1)],
-            v=FieldContainer([self.results.state.pressure]),
-            dV=self.field.region.dV,
-            grad_v=[False],
-        )
-        assemble = lambda values: form.assemble([np.asarray(values)]).toarray()
-
         # update state variables
         self.results.state.u = u
-        self.results.state.pressure.values[:] += assemble(dp)
-        self.results.state.volume_ratio.values[:] += assemble(dJ)
+        self.results.state.pressure.values[:] += dp.reshape(-1, 1)
+        self.results.state.volume_ratio.values[:] += dp.reshape(-1, 1)
 
         return self.results.kinematics
 

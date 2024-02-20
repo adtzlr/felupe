@@ -59,13 +59,14 @@ class SolidBodyNearlyIncompressible(Solid):
     :math:`(\boldsymbol{u},p,J)` lead to the following expressions.
     
     ..  math::
+        :label: 
         
         \Pi_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(\bar{J}) \ dV + 
             \int_V p (J - \bar{J}) \ dV
 
         \hat{\Pi}_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV
 
-        \delta_\boldsymbol{u} \hat{W}_{int} &= -\int_V
+        \delta_\boldsymbol{u} \hat{W}_{int} &= \int_V
             \delta \boldsymbol{F} : \frac{\partial \hat\psi}{\partial \boldsymbol{F}}
             \ dV
 
@@ -200,13 +201,13 @@ class SolidBodyNearlyIncompressible(Solid):
 
     ..  math::
 
-        u_{ai} (= -r_{ai}) &= -\int_V \frac{\partial h_a}{\partial X_J} \left(
+        u_{ai} &= -\int_V \frac{\partial h_a}{\partial X_J} \left(
             \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} +
             p \frac{\partial J}{\partial F_{iJ}} \right) \ dV
 
         \frac{1}{c} v &= -\frac{1}{V} \int_V (J - \bar{J}) \ dV = \frac{v}{V} - \bar{J}
 
-        \frac{1}{c} w &= -\frac{1}{V} int_V (\bar{U}' - p) \ dV = \bar{U}' - p
+        \frac{1}{c} w &= -\frac{1}{V} int_V (\bar{U}' - p) \ dV = K (\bar{J} - 1) - p
 
 
     Examples

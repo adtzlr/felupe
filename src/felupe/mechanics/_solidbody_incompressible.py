@@ -55,18 +55,21 @@ class SolidBodyNearlyIncompressible(Solid):
 
     Notes
     -----
+    The variations of the total potential energy of internal forces w.r.t.
+    :math:`(\boldsymbol{u},p,J)` lead to the following expressions.
+    
     ..  math::
         
-        W_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(\bar{J}) \ dV + 
+        \Pi_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(\bar{J}) \ dV + 
             \int_V p (J - \bar{J}) \ dV
 
-        \hat{W}_{int} &= -\int_V \hat\psi(\boldsymbol{F}) \ dV
+        \hat{\Pi}_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV
 
-        \delta \hat{W}_{int} &= -\int_V
+        \delta_\boldsymbol{u} \hat{W}_{int} &= -\int_V
             \delta \boldsymbol{F} : \frac{\partial \hat\psi}{\partial \boldsymbol{F}}
             \ dV
 
-        \Delta\delta \hat{W}_{int} &= -\int_V
+        \Delta_\boldsymbol{u}\delta_\boldsymbol{u} \hat{\Pi}_{int} &= \int_V
             \delta \boldsymbol{F} :
             \frac{\partial^2 \hat\psi}{\partial\boldsymbol{F}\ \partial\boldsymbol{F}} :
             \Delta \boldsymbol{F} \ dV
@@ -76,7 +79,11 @@ class SolidBodyNearlyIncompressible(Solid):
 
     ..  math::
 
-        U(\bar{J}) = \frac{K}{2} (\bar{J} - 1)^2
+        U(\bar{J}) &= \frac{K}{2} (\bar{J} - 1)^2
+        
+        U'(\bar{J}) &= K (\bar{J} - 1)
+        
+        U''(\bar{J}) &= K
 
 
     **Hu-Washizu Three-Field-Variational Principle**
@@ -93,8 +100,8 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \begin{bmatrix}
             \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
-            \boldsymbol{b}^T &             0  &            -c  \\
-            \boldsymbol{0}^T &            -c  &             d
+            \boldsymbol{b}^T &             0  &             -c \\
+            \boldsymbol{0}^T &            -c  &           K\ c
         \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
                         y  \\
@@ -107,51 +114,51 @@ class SolidBodyNearlyIncompressible(Solid):
 
     An alternative representation of the equation system, only dependent on the primary
     unknowns :math:`\boldsymbol{u}` is carried out. To do so, the second line is
-    multiplied by :math:`\frac{d}{c}`.
+    multiplied by the bulk modulus :math:`K`.
 
     ..  math::
 
         \begin{bmatrix}
                         \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
-            \frac{d}{c}~\boldsymbol{b}^T &             0  &            -c  \\
-                        \boldsymbol{0}^T &            -c  &             d
+                      K~\boldsymbol{b}^T &             0  &         -K\ c  \\
+                        \boldsymbol{0}^T &            -c  &          K\ c
         \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
                         y  \\
                         z
         \end{bmatrix} = \begin{bmatrix}
             \boldsymbol{u} \\
-            \frac{d}{c}~v  \\
-            -w
+            K~v  \\
+            w
         \end{bmatrix}
 
-    Now, equations two and three are summed up. This eliminates one of the three
+    Lines two and three are contracted by summation. This eliminates one of the three
     unknowns.
 
     ..  math::
 
         \begin{bmatrix}
                         \boldsymbol{A}   & \boldsymbol{b} \\
-            \frac{d}{c}~\boldsymbol{b}^T &    -c
+                      K~\boldsymbol{b}^T &    -c
         \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x} \\
                 y
         \end{bmatrix} = \begin{bmatrix}
             \boldsymbol{u} \\
-            \frac{d}{c}~v + w
+            K~v + w
         \end{bmatrix}
 
-    Next, the second equation is left-multiplied by :math:`\frac{1}{c}~\boldsymbol{b}`
+    Next, the second line is left-multiplied by :math:`\frac{1}{c}~\boldsymbol{b}`
     and both equations are summed up again.
 
     ..  math::
 
         \begin{bmatrix}
-            \boldsymbol{A} + \frac{d}{c^2}~\boldsymbol{b} \otimes \boldsymbol{b}
+            \boldsymbol{A} + \frac{K}{c}~\boldsymbol{b} \otimes \boldsymbol{b}
         \end{bmatrix} \cdot \begin{bmatrix}
             \boldsymbol{x}
         \end{bmatrix} = \begin{bmatrix}
-            \boldsymbol{u} + \frac{d}{c^2}~\boldsymbol{b}~v +
+            \boldsymbol{u} + \frac{K}{c}~\boldsymbol{b}~v +
                 \frac{1}{c}~\boldsymbol{b}~w
         \end{bmatrix}
 
@@ -161,7 +168,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
         z &= \frac{1}{c}~\boldsymbol{b}^T \boldsymbol{x} - \frac{1}{c}~v
 
-        y &= \frac{d}{c}~z - \frac{1}{c}~w
+        y &= K~z - \frac{1}{c}~w
 
     For the mean-dilatation technique, the variables, equations as well as sub-matrices
     are evaluated. Note that the pairs of indices :math:`(ai)` and :math:`(bk)` have to
@@ -178,9 +185,6 @@ class SolidBodyNearlyIncompressible(Solid):
             \frac{\partial J}{\partial F_{iJ}} \ dV
 
         c &= \int_V \ dV = V
-
-        d &= \int_V \frac{\partial^2 U(\bar{J})}{\partial \bar{J} \partial \bar{J}} \ dV
-           = \bar{U}'' V
 
     and
 
@@ -200,10 +204,11 @@ class SolidBodyNearlyIncompressible(Solid):
             \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} +
             p \frac{\partial J}{\partial F_{iJ}} \right) \ dV
 
-        v &= -\int_V (J - \bar{J}) \ dV = \bar{J} V - v
+        \frac{1}{c} v &= -\frac{1}{V} \int_V (J - \bar{J}) \ dV = \frac{v}{V} - \bar{J}
 
-        w &= -\int_V (\bar{U}' - p) \ dV = p V - \bar{U}' V
-    
+        \frac{1}{c} w &= -\frac{1}{V} int_V (\bar{U}' - p) \ dV = \bar{U}' - p
+
+
     Examples
     --------
     >>> import felupe as fem

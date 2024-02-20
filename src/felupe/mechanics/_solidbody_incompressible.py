@@ -59,7 +59,6 @@ class SolidBodyNearlyIncompressible(Solid):
     :math:`(\boldsymbol{u},p,J)` lead to the following expressions.
     
     ..  math::
-        :label: 
         
         \Pi_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(\bar{J}) \ dV + 
             \int_V p (J - \bar{J}) \ dV
@@ -154,14 +153,10 @@ class SolidBodyNearlyIncompressible(Solid):
 
     ..  math::
 
-        \begin{bmatrix}
+        \left(
             \boldsymbol{A} + \frac{K}{c}~\boldsymbol{b} \otimes \boldsymbol{b}
-        \end{bmatrix} \cdot \begin{bmatrix}
-            \boldsymbol{x}
-        \end{bmatrix} = \begin{bmatrix}
-            \boldsymbol{u} + \frac{K}{c}~\boldsymbol{b}~v +
-                \frac{1}{c}~\boldsymbol{b}~w
-        \end{bmatrix}
+        \right) \cdot \boldsymbol{x} =
+        \boldsymbol{u} + \frac{1}{c} \left( K~v + w \right) \boldsymbol{b}
 
     The secondary unknowns are evaluated after solving the primary unknowns.
 

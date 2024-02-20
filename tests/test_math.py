@@ -84,6 +84,8 @@ def test_math():
 
     with pytest.raises(ValueError):
         fem.math.transpose(F, mode=3)
+        fem.math.dot(A, B, mode=(4, 3))
+        fem.math.dot(B, B, mode=(3, 3))
 
     fem.math.dot(C, B, mode=(2, 3))
     fem.math.dot(B, C, mode=(3, 2))

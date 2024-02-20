@@ -57,13 +57,14 @@ def test_math_field():
 
 
 def test_math():
-    H = (np.random.rand(3, 3, 8, 200) - 0.5) / 10
+    H = (np.random.rand(3, 3, 5, 7) - 0.5) / 10
     F = fem.math.identity(H) + H
     C = fem.math.dot(fem.math.transpose(F), F)
-    A = np.random.rand(3, 3, 3, 3, 8, 200)
-    B = np.random.rand(3, 3, 3, 8, 200)
+    A = np.random.rand(3, 3, 3, 3, 5, 7)
+    B = np.random.rand(3, 3, 3, 5, 7)
+    D = np.random.rand(4, 4, 5, 7)
 
-    a = np.random.rand(3, 8, 200)
+    a = np.random.rand(3, 5, 7)
 
     fem.math.identity(A=None, dim=3, shape=(8, 20))
 
@@ -90,19 +91,19 @@ def test_math():
     fem.math.dot(C, B, mode=(2, 3))
     fem.math.dot(B, C, mode=(3, 2))
 
-    assert fem.math.dot(C, a, mode=(2, 1)).shape == (3, 8, 200)
-    assert fem.math.dot(a, C, mode=(1, 2)).shape == (3, 8, 200)
-    assert fem.math.dot(a, a, mode=(1, 1)).shape == (8, 200)
+    assert fem.math.dot(C, a, mode=(2, 1)).shape == (3, 5, 7)
+    assert fem.math.dot(a, C, mode=(1, 2)).shape == (3, 5, 7)
+    assert fem.math.dot(a, a, mode=(1, 1)).shape == (5, 7)
 
-    assert fem.math.dot(a, A, mode=(1, 4)).shape == (3, 3, 3, 8, 200)
-    assert fem.math.dot(A, a, mode=(4, 1)).shape == (3, 3, 3, 8, 200)
-    assert fem.math.dot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 3, 3, 8, 200)
+    assert fem.math.dot(a, A, mode=(1, 4)).shape == (3, 3, 3, 5, 7)
+    assert fem.math.dot(A, a, mode=(4, 1)).shape == (3, 3, 3, 5, 7)
+    assert fem.math.dot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 3, 3, 5, 7)
 
-    assert fem.math.ddot(C, C, mode=(2, 2)).shape == (8, 200)
-    assert fem.math.ddot(C, A, mode=(2, 4)).shape == (3, 3, 8, 200)
-    assert fem.math.ddot(A, C, mode=(4, 2)).shape == (3, 3, 8, 200)
+    assert fem.math.ddot(C, C, mode=(2, 2)).shape == (5, 7)
+    assert fem.math.ddot(C, A, mode=(2, 4)).shape == (3, 3, 5, 7)
+    assert fem.math.ddot(A, C, mode=(4, 2)).shape == (3, 3, 5, 7)
 
-    assert fem.math.ddot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 8, 200)
+    assert fem.math.ddot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 5, 7)
 
     with pytest.raises(TypeError):
         fem.math.ddot(A, B, mode=(4, 3))
@@ -121,6 +122,10 @@ def test_math():
     fem.math.inv(C, full_output=True)
     fem.math.inv(C, sym=True)
     assert np.allclose(fem.math.inv(C[:1, :1]), 1 / C[:1, :1])
+
+    with pytest.raises(ValueError):
+        fem.math.inv(D)
+        fem.math.inv(D, determinant=1)
 
     fem.math.dev(C)
     fem.math.cof(C)

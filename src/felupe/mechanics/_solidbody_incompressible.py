@@ -202,7 +202,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \frac{1}{c} v &= -\frac{1}{V} \int_V (J - \bar{J}) \ dV = \frac{v}{V} - \bar{J}
 
-        \frac{1}{c} w &= -\frac{1}{V} int_V (\bar{U}' - p) \ dV = K (\bar{J} - 1) - p
+        \frac{1}{c} w &= -\frac{1}{V} \int_V (\bar{U}' - p) \ dV = K (\bar{J} - 1) - p
 
 
     Examples

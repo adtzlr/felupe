@@ -99,11 +99,10 @@ class SolidBodyNearlyIncompressible(Solid):
     The Three-Field-Variation :math:`(\boldsymbol{u},p,\bar{J})` leads to a linearized
     equation system with nine sub block-matrices, see Eq. :eq:`nearlyinc-hu-washizu`.
     Due to the fact that the equation system is derived by a potential, the matrix is
-     symmetric and hence, only six independent sub-matrices have to be evaluated.
-     Furthermore, by the application of the mean dilatation technique, two of the
-     remaining six sub-matrices are identified to be zero. That means four sub-matrices
-     are left to be evaluated, where two non-zero sub-matrices are scalar-valued
-     entries.
+    symmetric and hence, only six independent sub-matrices have to be evaluated.
+    Furthermore, by the application of the mean dilatation technique, two of the
+    remaining six sub-matrices are identified to be zero. That means four sub-matrices
+    are left to be evaluated, where two non-zero sub-matrices are scalar-valued entries.
 
     ..  math::
         :label: nearlyinc-hu-washizu

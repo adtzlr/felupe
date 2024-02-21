@@ -227,7 +227,11 @@ class SolidBodyNearlyIncompressible(Solid):
     >>>
     >>> job = fem.Job(steps=[step]).evaluate()
     >>> ax = solid.imshow("Principal Values of Cauchy Stress")
-
+    
+    See Also
+    --------
+    felupe.StateNearlyIncompressible : A State with internal cell-wise constant fields
+        for (nearly) incompressible solid bodies.
     """
 
     def __init__(self, umat, field, bulk, state=None, statevars=None):

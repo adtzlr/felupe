@@ -74,20 +74,12 @@ class SolidBodyNearlyIncompressible(Solid):
         \delta_\boldsymbol{u}(\Pi_{int}) &=
             \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
             p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
-            \longrightarrow \left( =
-                -\boldsymbol{f}_\boldsymbol{u} 
-            \right)
 
         \delta_p(\Pi_{int}) &=
-            \int_V \left( J - \bar{J} \right)\ \delta p\ dV \longrightarrow \left( =
-                -f_p
-            \right)
+            \int_V \left( J - \bar{J} \right)\ \delta p\ dV
 
         \delta_\bar{J}(\Pi_{int}) &=
             \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
-            \longrightarrow \left( =
-                -f_{\bar{J}}
-            \right)
 
     The volumetric part of the strain energy density function is denoted in Eq.
     :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.
@@ -201,7 +193,7 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-constraint
         
-        \frac{K~f_p + f_{\bar{J}}}{V} = K \left( \frac{v}{V} - 1 \right) - p
+        \frac{K~f_p + f_{\bar{J}}}{V} = p - K \left( \frac{v}{V} - 1 \right)
     
     and the deformed volume is evaluated by Eq. :eq:`nearlyinc-deformed-volume`.
     

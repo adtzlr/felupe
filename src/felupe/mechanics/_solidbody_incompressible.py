@@ -208,7 +208,7 @@ class SolidBodyNearlyIncompressible(Solid):
             p \frac{\partial^2 J}{\partial F_{iJ} \partial F_{kL}} \right)
             \frac{\partial h_b}{\partial X_L} \ dV
 
-        \left(K_{up}\right)__{ai} &= \int_V \frac{\partial h_a}{\partial X_J}
+        \left(K_{up}\right)_{ai} &= \int_V \frac{\partial h_a}{\partial X_J}
             \frac{\partial J}{\partial F_{iJ}} \ dV
 
         V &= \int_V \ dV

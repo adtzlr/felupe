@@ -125,17 +125,45 @@ class SolidBody(Solid):
 
     Notes
     -----
+    The total potential energy of internal forces is given in Eq.
+    :eq:`solidbody`
+
     ..  math::
+        :label: solidbody
 
-        W_{int} &= -\int_V \psi(\boldsymbol{F}) \ dV
+        \Pi_{int}(\boldsymbol{F}) = \int_V \psi(\boldsymbol{F})\ dV
 
-        \delta W_{int} &= -\int_V
-            \delta \boldsymbol{F} : \frac{\partial \psi}{\partial \boldsymbol{F}}\ dV
+    with its variation, see Eq. :eq:`solidbody-variation`
 
-        \Delta\delta W_{int} &= -\int_V
-            \delta \boldsymbol{F} :
-            \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}} :
-            \Delta \boldsymbol{F} \ dV
+    ..  math::
+        :label: solidbody-variation
+
+        \delta_\boldsymbol{u}(\Pi_{int}) =
+            \int_V \frac{\partial \psi}{\partial \boldsymbol{F}} \ dV
+        \longrightarrow \boldsymbol{f}_\boldsymbol{u}
+
+    and linearization, see Eq. :eq:`solidbody-linearization`. The right-arrows in
+    Eq. :eq:`solidbody-variation` and Eq. :eq:`solidbody-linearization`
+    represent the assembly into system scalars, vectors or matrices.
+
+    ..  math::
+        :label: solidbody-linearization
+
+        \delta_\boldsymbol{u}\Delta_\boldsymbol{u}(\Pi_{int}) &=
+            \int_V \delta\boldsymbol{F} :
+                \frac{\partial^2 \psi}{
+                    \partial \boldsymbol{F}\ \partial \boldsymbol{F}
+                } : \Delta\boldsymbol{F}\ dV
+        \longrightarrow \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}}
+
+    The displacement-based formulation leads to a linearized equation system as given in
+    Eq. :eq:`solidbody-final`.
+
+    ..  math::
+        :label: solidbody-final
+
+        \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} \cdot \delta \boldsymbol{u} +
+            \boldsymbol{f}_\boldsymbol{u} = \boldsymbol{0}
 
     Examples
     --------

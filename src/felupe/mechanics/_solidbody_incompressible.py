@@ -169,8 +169,8 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-final
 
-        \delta \bar{J} &= \frac{1}{V}~\delta \boldsymbol{u} : 
-            \boldsymbol{K}_{\boldsymbol{u}p} - \frac{p}{V}
+        \delta \bar{J} &= \frac{1}{V} \left( \delta \boldsymbol{u} : 
+            \boldsymbol{K}_{\boldsymbol{u}p} - p \right)
 
         \delta p &= K~\delta \bar{J} - \frac{f_\bar{J}}{V}
 

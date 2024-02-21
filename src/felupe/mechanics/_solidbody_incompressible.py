@@ -140,7 +140,7 @@ class SolidBodyNearlyIncompressible(Solid):
     **Hu-Washizu Three-Field-Variational Principle**
 
     The Three-Field-Variation :math:`(\boldsymbol{u},p,\bar{J})` leads to a linearized
-    equation system with nine sub block-matrices, see Eq. :eq:`hu-washizu` [1].
+    equation system with nine sub block-matrices, see Eq. :eq:`hu-washizu` [1, 2].
     Due to the fact that the equation system is derived by a potential, the matrix is
     symmetric and hence, only six independent sub-matrices have to be evaluated.
     Furthermore, by the application of the mean dilatation technique, two of the
@@ -276,6 +276,11 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  [1] J. Bonet, A. J. Gil, and R. D. Wood, "Nonlinear Solid Mechanics for Finite
         Element Analysis: Statics". Cambridge University Press, Jun. 05, 2016. 
         doi: 10.1017/cbo9781316336144.
+
+    ..  [2] J. A. Schönherr, P. Schneider, and C. Mittelstedt, "Robust hybrid/mixed
+        finite elements for rubber-like materials under severe compression",
+        Computational Mechanics, vol. 70, no. 1. Springer Science and Business Media
+        LLC, pp. 101–122, Mar. 31, 2022. doi: 10.1007/s00466-022-02157-y.
     
     See Also
     --------

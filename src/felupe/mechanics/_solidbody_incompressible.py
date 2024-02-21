@@ -290,8 +290,8 @@ class SolidBodyNearlyIncompressible(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h(parallel=parallel)
-        v = self.results.state.v()
+        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        v = self.results.state.volume()
         p = self.results.state.p
 
         values = form.integrate(parallel=parallel)
@@ -313,7 +313,7 @@ class SolidBodyNearlyIncompressible(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.h(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
 
         values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
         np.add(values[0], self.bulk / self.V * dya(h, h), out=values[0])
@@ -325,15 +325,15 @@ class SolidBodyNearlyIncompressible(Solid):
     def _extract(self, field, parallel=False):
         u = field[0].values
         u0 = self.results.state.u
-        h = self.results.state.h(parallel=parallel)
-        v = self.results.state.v()
+        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        v = self.results.state.volume()
         J = self.results.state.J
         p = self.results.state.p
 
         du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
 
         # change of state variables due to change of displacement field
-        dJ = ddot(h, du, mode=(2, 2)) / self.V + (v / self.V - J)
+        dJ = ddot(du, h, mode=(2, 2)) / self.V + v / self.V - J
         dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field

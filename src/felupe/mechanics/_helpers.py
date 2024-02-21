@@ -104,8 +104,8 @@ class StateNearlyIncompressible:
         self.J = np.ones(field.region.mesh.ncells)
 
     def integrate_shape_function_gradient(self, parallel=False):
-        r"""Integrated vector of shape-functions gradient w.r.t. the deformed
-        coordinates :math:`\boldsymbol{K}_{\boldsymbol{u}p}`.
+        r"""Integrated sub-block matrix containing the shape-functions gradient w.r.t.
+        the deformed coordinates :math:`\boldsymbol{K}_{\boldsymbol{u}p}`.
 
         ..  math::
 

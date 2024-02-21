@@ -121,9 +121,9 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-constraints
 
-        f_p &= -\left( \frac{v}{V} - \bar{J} \right) V
+        f_p &= \left( \frac{v}{V} - \bar{J} \right) V
 
-        f_{\bar{J}} &= -\left( K (\bar{J} - 1) - p \right) V
+        f_{\bar{J}} &= \left( K (\bar{J} - 1) - p \right) V
 
 
     The volumetric part of the strain energy density function is denoted in Eq.

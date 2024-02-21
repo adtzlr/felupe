@@ -150,3 +150,18 @@ class DiscreteGeometry:
 
         if callable(callback):
             callback(self)
+
+    @property
+    def x(self):
+        "Return the first column (x-component) of the points array."
+        return self.points[:, 0]
+
+    @property
+    def y(self):
+        "Return the second column (y-component) of the points array."
+        return self.points[:, 1]
+
+    @property
+    def z(self):
+        "Return the third column (z-component) of the points array."
+        return self.points[:, 2]

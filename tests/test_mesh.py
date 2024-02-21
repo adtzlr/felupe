@@ -232,6 +232,7 @@ def test_mirror():
             assert np.isclose(r.dV.sum(), s.dV.sum())
 
         m = fem.Cube()
+        m.x, m.y, m.z
         r = fem.RegionHexahedron(m)
         n = fem.mesh.mirror(m, **kwargs)
         s = fem.RegionHexahedron(n)

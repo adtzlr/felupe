@@ -149,7 +149,7 @@ class SolidBody(Solid):
     ..  math::
         :label: solidbody-linearization
 
-        \delta_\boldsymbol{u}\Delta_\boldsymbol{u}(\Pi_{int}) &=
+        \delta_\boldsymbol{u}\Delta_\boldsymbol{u}(\Pi_{int}) =
             \int_V \delta\boldsymbol{F} :
                 \frac{\partial^2 \psi}{
                     \partial \boldsymbol{F}\ \partial \boldsymbol{F}

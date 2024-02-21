@@ -188,7 +188,8 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \delta p &= K \left(\bar{J} + \delta \bar{J} - 1 \right) - p
 
-    The condensed constraint equation is given in Eq. :eq:`nearlyinc-constraint`)
+    The condensed constraint equation in Eq. :eq:`nearlyinc-contracted-sum-final` is
+    given in Eq. :eq:`nearlyinc-constraint`
     
     ..  math::
         :label: nearlyinc-constraint

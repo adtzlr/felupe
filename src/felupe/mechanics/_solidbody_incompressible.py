@@ -110,6 +110,16 @@ class SolidBodyNearlyIncompressible(Solid):
         \delta_{\bar{J}}\Delta_{\bar{J}}(\Pi_{int}) &= 
             \int_V \delta \bar{J}\ K\ \Delta \bar{J}\ dV 
         \longrightarrow K\ V
+    
+    The assembled constraint equations for the variations w.r.t. the dual fields
+    :math:`p` and :math:`\bar{J}` are given in Eq. :eq:`nearlyinc-constraints`.
+    
+    ..  math::
+        :label: nearlyinc-constraints
+
+        f_p &= -\left( v - \bar{J} V \right)
+
+        f_{\bar{J}} &= -\left( K (\bar{J} - 1) V - p\ V \right)
 
 
     The volumetric part of the strain energy density function is denoted in Eq.

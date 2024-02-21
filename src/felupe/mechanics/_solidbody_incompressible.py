@@ -76,17 +76,19 @@ class SolidBodyNearlyIncompressible(Solid):
             \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
             p\ \frac{\partial J}{\partial \boldsymbol{F}} \right) : 
             \delta\boldsymbol{F}\ dV
-        \longrightarrow -\boldsymbol{f}_\boldsymbol{u}
+        \longrightarrow \boldsymbol{f}_\boldsymbol{u}
 
         \delta_p(\Pi_{int}) &=
             \int_V \left( J - \bar{J} \right)\ \delta p\ dV
-        \longrightarrow -f_p
+        \longrightarrow f_p
 
         \delta_\bar{J}(\Pi_{int}) &=
             \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
-        \longrightarrow -f_{\bar{J}}
+        \longrightarrow f_{\bar{J}}
     
-    and linearizations, see Eq. :eq:`nearlyinc-linearizations`.
+    and linearizations, see Eq. :eq:`nearlyinc-linearizations`. The right-arrows in
+    Eq. :eq:`nearlyinc-variations` and Eq. :eq:`nearlyinc-linearizations`
+    represent the assembly into system scalars, vectors or matrices.
     
     ..  math::
         :label: nearlyinc-linearizations
@@ -159,10 +161,15 @@ class SolidBodyNearlyIncompressible(Solid):
             \delta \boldsymbol{u} \\
             \delta p \\
             \delta \bar{J}
-        \end{bmatrix} = \begin{bmatrix}
+        \end{bmatrix} + \begin{bmatrix}
             \boldsymbol{f}_\boldsymbol{u} \\
             f_p \\
             f_\bar{J}
+        \end{bmatrix} = 
+        \begin{bmatrix}
+            \boldsymbol{0}\\
+            0 \\
+            0
         \end{bmatrix}
 
     A condensed representation of the equation system, only dependent on the primary
@@ -181,10 +188,15 @@ class SolidBodyNearlyIncompressible(Solid):
             \delta \boldsymbol{u} \\
             \delta p \\
             \delta \bar{J}
-        \end{bmatrix} = \begin{bmatrix}
+        \end{bmatrix} + \begin{bmatrix}
             \boldsymbol{f}_\boldsymbol{u} \\
             K\ f_p \\
             f_\bar{J}
+        \end{bmatrix} = 
+        \begin{bmatrix}
+            \boldsymbol{0}\\
+            0 \\
+            0
         \end{bmatrix}
 
     Lines two and three are contracted by summation as given in Eq.
@@ -200,9 +212,13 @@ class SolidBodyNearlyIncompressible(Solid):
         \end{bmatrix} \cdot \begin{bmatrix}
             \delta \boldsymbol{u} \\
             \delta p
-        \end{bmatrix} = \begin{bmatrix}
+        \end{bmatrix} + \begin{bmatrix}
             \boldsymbol{f}_\boldsymbol{u} \\
             K\ f_p + f_\bar{J}
+        \end{bmatrix} = 
+        \begin{bmatrix}
+            \boldsymbol{0}\\
+            0
         \end{bmatrix}
 
     Next, the second line is left-expanded by 
@@ -216,9 +232,9 @@ class SolidBodyNearlyIncompressible(Solid):
             \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} 
                 + \frac{K}{V}~\boldsymbol{K}_{\boldsymbol{u}p} \otimes 
                     \boldsymbol{K}_{\boldsymbol{u}p}
-        \right) \cdot \delta \boldsymbol{u} =
+        \right) \cdot \delta \boldsymbol{u} +
         \boldsymbol{f}_\boldsymbol{u} + \frac{K~f_p + f_\bar{J}}{V}
-            \boldsymbol{K}_{\boldsymbol{u}p}
+            \boldsymbol{K}_{\boldsymbol{u}p} = \boldsymbol{0}
 
     The secondary unknowns are evaluated after solving the primary unknowns, see
     Eq. :eq:`nearlyinc-final`.
@@ -237,9 +253,7 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-constraint
         
-        \frac{K~f_p + f_{\bar{J}}}{V} = -\left(
-            K \left( \frac{v}{V} - 1 \right) - p
-        \right)
+        \frac{K~f_p + f_{\bar{J}}}{V} = K \left( \frac{v}{V} - 1 \right) - p
     
     and the deformed volume is evaluated by Eq. :eq:`nearlyinc-deformed-volume`.
     

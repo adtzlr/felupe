@@ -402,14 +402,8 @@ class SolidBodyNearlyIncompressible(Solid):
         u0 = self.results.state.u
         h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
         v = self.results.state.volume()
-        J = self.results.state.J
-        p = self.results.state.p
 
         du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
-
-        # change of state variables due to change of displacement field
-        dJ = ddot(du, h, mode=(2, 2)) / self.V + v / self.V - J
-        dp = self.bulk * (dJ + J - 1) - p
 
         self.field = field
         self.results.kinematics = self.results.state.F = self.field.extract(
@@ -417,9 +411,9 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
         # update state variables
-        self.results.state.p = p + dp
-        self.results.state.J = J + dJ
-        self.results.state.u = u
+        self.results.state.J[:] = ddot(du, h, mode=(2, 2)) / self.V + v / self.V
+        self.results.state.p[:] = self.bulk * (self.results.state.J - 1)
+        self.results.state.u[:] = u
 
         return self.results.kinematics
 
@@ -434,8 +428,8 @@ class SolidBodyNearlyIncompressible(Solid):
         p = self.results.state.p
 
         gradient = self.umat.gradient([F, statevars], *args, **kwargs)
+        self.results.stress = [np.add(gradient[0], p * dJdF([F])[0], out=gradient[0])]
 
-        self.results.stress = [gradient[0] + p * dJdF([F])[0]]
         self.results._statevars = gradient[-1]
 
         return self.results.stress
@@ -449,8 +443,9 @@ class SolidBodyNearlyIncompressible(Solid):
         statevars = self.results.statevars
         p = self.results.state.p
 
+        hessian = self.umat.hessian([F, statevars], *args, **kwargs)[0]
         self.results.elasticity = [
-            self.umat.hessian([F, statevars], *args, **kwargs)[0] + p * d2JdF2([F])[0]
+            np.add(hessian, p * d2JdF2([F])[0], out=hessian)
         ]
 
         return self.results.elasticity

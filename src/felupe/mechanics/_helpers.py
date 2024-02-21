@@ -69,7 +69,19 @@ class Results:
 
 
 class StateNearlyIncompressible:
-    "A State with internal fields for (nearly) incompressible solid bodies."
+    """A State with internal cell-wise constant fields :math:`p` and :math:`\bar{J}` for
+    (nearly) incompressible solid bodies.
+
+    Parameters
+    ----------
+    field : FieldContainer
+        A field container with the displacement field.
+    
+    See Also
+    --------
+    felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
+        methods for the assembly of sparse vectors/matrices.
+    """
 
     def __init__(self, field):
         self.field = field

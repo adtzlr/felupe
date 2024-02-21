@@ -69,14 +69,20 @@ class Results:
 
 
 class StateNearlyIncompressible:
-    """A State with internal cell-wise constant fields :math:`p` and :math:`\bar{J}` for
-    (nearly) incompressible solid bodies.
+    r"""A State with internal cell-wise constant dual fields for (nearly) incompressible
+    solid bodies.
+
+    Notes
+    -----
+    The internal fields :math:`p` and :math:`\bar{J}` are treated as state variables,
+    directly derived from the displacement field. Hence, these dual fields are not
+    exported to the global degrees of freedom.
 
     Parameters
     ----------
     field : FieldContainer
         A field container with the displacement field.
-    
+
     See Also
     --------
     felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
@@ -104,7 +110,7 @@ class StateNearlyIncompressible:
         ..  math::
 
             \int_V \delta \boldsymbol{F} : \frac{\partial J}{\partial \boldsymbol{F}}
-                ~ dV\ \delta p
+                ~ dV\ \Delta p
             \longrightarrow \boldsymbol{K}_{\boldsymbol{u}p}
 
         """

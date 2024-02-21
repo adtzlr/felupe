@@ -194,7 +194,9 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-constraint
         
-        \frac{K~f_p + f_{\bar{J}}}{V} = p - K \left( \frac{v}{V} - 1 \right)
+        \frac{K~f_p + f_{\bar{J}}}{V} = -\left(
+            K \left( \frac{v}{V} - 1 \right) - p
+        \right)
     
     and the deformed volume is evaluated by Eq. :eq:`nearlyinc-deformed-volume`.
     

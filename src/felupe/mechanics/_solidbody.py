@@ -186,6 +186,11 @@ class SolidBody(Solid):
     >>>
     >>> job = fem.Job(steps=[step]).evaluate()
     >>> ax = solid.imshow("Principal Values of Cauchy Stress")
+
+    See Also
+    --------
+    felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
+        methods for the assembly of sparse vectors/matrices.
     """
 
     def __init__(self, umat, field, statevars=None):

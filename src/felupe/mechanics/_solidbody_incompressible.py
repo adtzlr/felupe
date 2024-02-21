@@ -41,7 +41,7 @@ class SolidBodyNearlyIncompressible(Solid):
         volume :math:`\hat\psi(\boldsymbol{F})`. The function signatures must be
         ``dψdF, ζ_new = umat.gradient([F, ζ])`` for the gradient and
         ``d2ψdFdF = umat.hessian([F, ζ])`` for the hessian of
-        the strain energy density function :math:`\psi(\boldsymbol{F})`, where
+        the strain energy density function :math:`\hat{\psi}(\boldsymbol{F})`, where
         :math:`\boldsymbol{F}` is the deformation gradient tensor and :math:`\zeta`
         holds the array of internal state variables.
     field : FieldContainer

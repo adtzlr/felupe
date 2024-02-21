@@ -196,33 +196,6 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \delta p &= K~\delta \bar{J} - \frac{f_\bar{J}}{V}
 
-    For the mean-dilatation technique, the variables, equations as well as sub-matrices
-    are evaluated as given in Eq. :eq:`nearlyinc-mean-dilatation`. Note that the pairs
-    of indices :math:`(ai)` and :math:`(bk)` have to be treated as 1d-vectors.
-
-    ..  math::
-        :label: nearlyinc-mean-dilatation
-
-        \left(K_{uu}\right)_{aibk} &= \int_V \frac{\partial h_a}{\partial X_J}  \left(
-            \frac{\partial^2 \overset{\wedge}{\psi}}{\partial F_{iJ} \partial F_{kL}} +
-            p \frac{\partial^2 J}{\partial F_{iJ} \partial F_{kL}} \right)
-            \frac{\partial h_b}{\partial X_L} \ dV
-
-        \left(K_{up}\right)_{ai} &= \int_V \frac{\partial h_a}{\partial X_J}
-            \frac{\partial J}{\partial F_{iJ}} \ dV
-
-        V &= \int_V \ dV
-        
-        \left( f_u \right)_{ai} = -\int_V \left(
-            \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} 
-            + p \frac{\partial J}{\partial F_{iJ}}
-        \right)\ dV
-        
-        f_p &= -\int_V \left( J - \bar{J} \right)\ dV
-        
-        f_{\bar{J}} &= -\int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ dV
-
-
     The condensed constraint equation is given in Eq. :eq:`nearlyinc-constraint`)
     
     ..  math::

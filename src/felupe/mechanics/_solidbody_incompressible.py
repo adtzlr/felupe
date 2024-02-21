@@ -216,6 +216,10 @@ class SolidBodyNearlyIncompressible(Solid):
             \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} 
             + p \frac{\partial J}{\partial F_{iJ}}
         \right)\ dV
+        
+        -f_p &= \int_V \left( J - \bar{J} \right)\ dV
+        
+        -f_{\bar{J}} &= \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ dV
 
 
     The condensed constraint equation is given in Eq. :eq:`nearlyinc-constraint`)

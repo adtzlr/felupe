@@ -98,6 +98,7 @@ class SolidBodyNearlyIncompressible(Solid):
                 } +
                 p \frac{\partial^2 J}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
             \right) : \Delta\boldsymbol{F}\ dV
+        \longrightarrow \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}}
 
         
         \delta_\boldsymbol{u}\Delta_p(\Pi_{int}) &= \int_V \delta \boldsymbol{F} : 

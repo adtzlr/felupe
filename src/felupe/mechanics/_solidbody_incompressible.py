@@ -164,7 +164,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
     Next, the second line is left-expanded by 
     :math:`\frac{1}{V}~\boldsymbol{K}_{\boldsymbol{u}p}` and both equations are summed
-    up again, see :eq: `nearlyinc-contracted-sum-final`.
+    up again, see :eq:`nearlyinc-contracted-sum-final`.
 
     ..  math::
         :label: nearlyinc-contracted-sum-final

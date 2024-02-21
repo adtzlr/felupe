@@ -55,160 +55,156 @@ class SolidBodyNearlyIncompressible(Solid):
 
     Notes
     -----
-    The variation of the total potential energy of internal forces w.r.t. the
-    displacements :math:`\boldsymbol{u}` lead to the following expressions.
-    
-    ..  math::
-        
-        \Pi_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV + \int_V U(\bar{J}) \ dV + 
-            \int_V p (J - \bar{J}) \ dV
-
-        \hat{\Pi}_{int} &= \int_V \hat\psi(\boldsymbol{F}) \ dV
-
-        \delta_\boldsymbol{u} \hat{W}_{int} &= \int_V
-            \delta \boldsymbol{F} : \frac{\partial \hat\psi}{\partial \boldsymbol{F}}
-            \ dV
-
-        \Delta_\boldsymbol{u}\delta_\boldsymbol{u} \hat{\Pi}_{int} &= \int_V
-            \delta \boldsymbol{F} :
-            \frac{\partial^2 \hat\psi}{\partial\boldsymbol{F}\ \partial\boldsymbol{F}} :
-            \Delta \boldsymbol{F} \ dV
-            
-    The volumetric material behaviour is hard-coded and is defined by the strain energy
-    function.
+    The total potential energy of internal forces is given in Eq.
+    :eq:`nearlyincompressible`.
 
     ..  math::
+        :label: nearlyincompressible
 
-        U(\bar{J}) &= \frac{K}{2} (\bar{J} - 1)^2
-        
-        U'(\bar{J}) &= K (\bar{J} - 1)
-        
-        U''(\bar{J}) &= K
+        \Pi_{int}(\boldsymbol{F}, p, \bar{J}) =
+            \int_V \hat{\psi}(\boldsymbol{F})\ dV +
+            \int_V U(\bar{J})\ dV +
+            \int_V p (J - \bar{J})\ dV
+
+    The volumetric part of the strain energy density function is denoted in Eq.
+    :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.
+
+    ..  math::
+        :label: nearlyincompressible-volumetric
+
+        \bar{U} &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
+
+        \bar{U}' &= K \left( \bar{J} - 1 \right)
+
+        \bar{U}'' &= K
 
 
     **Hu-Washizu Three-Field-Variational Principle**
 
     The Three-Field-Variation :math:`(\boldsymbol{u},p,\bar{J})` leads to a linearized
-    equation system with nine sub block-matrices. Due to the fact that the equation
-    system is derived by a potential, the matrix is symmetric and hence, only six
-    independent sub-matrices have to be evaluated. Furthermore, by the application of
-    the mean dilatation technique, two of the remaining six sub-matrices are identified
-    to be zero. That means four sub-matrices are left to be evaluated, where two
-    non-zero sub-matrices are scalar-valued entries.
+    equation system with nine sub block-matrices, see Eq. :eq:`nearlyinc-hu-washizu`.
+    Due to the fact that the equation system is derived by a potential, the matrix is
+     symmetric and hence, only six independent sub-matrices have to be evaluated.
+     Furthermore, by the application of the mean dilatation technique, two of the
+     remaining six sub-matrices are identified to be zero. That means four sub-matrices
+     are left to be evaluated, where two non-zero sub-matrices are scalar-valued
+     entries.
 
     ..  math::
+        :label: nearlyinc-hu-washizu
 
         \begin{bmatrix}
-            \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
-            \boldsymbol{b}^T &             0  &             -c \\
-            \boldsymbol{0}^T &            -c  &           K\ c
+            \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} 
+                & \boldsymbol{K}_{\boldsymbol{u}p} & \boldsymbol{0} \\
+            \boldsymbol{K}_{\boldsymbol{u}p}^T & 0 & -V \\
+            \boldsymbol{0}^T & -V  & K\ V
         \end{bmatrix} \cdot \begin{bmatrix}
-            \boldsymbol{x} \\
-                        y  \\
-                        z
+            \delta \boldsymbol{u} \\
+            \delta p \\
+            \delta \bar{J}
         \end{bmatrix} = \begin{bmatrix}
-            \boldsymbol{u} \\
-                        v  \\
-                        w
+            \boldsymbol{f}_\boldsymbol{u} \\
+            f_p \\
+            f_\bar{J}
         \end{bmatrix}
 
-    An alternative representation of the equation system, only dependent on the primary
+    A condensed representation of the equation system, only dependent on the primary
     unknowns :math:`\boldsymbol{u}` is carried out. To do so, the second line is
-    multiplied by the bulk modulus :math:`K`.
+    multiplied by the bulk modulus :math:`K`, see Eq. :eq:`nearlyinc-condensed`.
 
     ..  math::
+        :label: nearlyinc-condensed
 
         \begin{bmatrix}
-                        \boldsymbol{A}   & \boldsymbol{b} & \boldsymbol{0} \\
-                      K~\boldsymbol{b}^T &             0  &         -K\ c  \\
-                        \boldsymbol{0}^T &            -c  &          K\ c
+            \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} 
+                & \boldsymbol{K}_{\boldsymbol{u}p} & \boldsymbol{0} \\
+            K \boldsymbol{K}_{\boldsymbol{u}p}^T & 0 & -K\ V \\
+            \boldsymbol{0}^T & -V  & K\ V
         \end{bmatrix} \cdot \begin{bmatrix}
-            \boldsymbol{x} \\
-                        y  \\
-                        z
+            \delta \boldsymbol{u} \\
+            \delta p \\
+            \delta \bar{J}
         \end{bmatrix} = \begin{bmatrix}
-            \boldsymbol{u} \\
-            K~v  \\
-            w
+            \boldsymbol{f}_\boldsymbol{u} \\
+            K\ f_p \\
+            f_\bar{J}
         \end{bmatrix}
 
-    Lines two and three are contracted by summation. This eliminates one of the three
-    unknowns.
+    Lines two and three are contracted by summation as given in Eq.
+    :eq:`nearlyinc-contracted-sum`. This eliminates :math:`\bar{J}` from the unknowns.
 
     ..  math::
+        :label: nearlyinc-contracted-sum
 
         \begin{bmatrix}
-                        \boldsymbol{A}   & \boldsymbol{b} \\
-                      K~\boldsymbol{b}^T &    -c
+            \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} 
+                & \boldsymbol{K}_{\boldsymbol{u}p} \\
+            K \boldsymbol{K}_{\boldsymbol{u}p}^T & -V
         \end{bmatrix} \cdot \begin{bmatrix}
-            \boldsymbol{x} \\
-                y
+            \delta \boldsymbol{u} \\
+            \delta p
         \end{bmatrix} = \begin{bmatrix}
-            \boldsymbol{u} \\
-            K~v + w
+            \boldsymbol{f}_\boldsymbol{u} \\
+            K\ f_p + f_\bar{J}
         \end{bmatrix}
 
-    Next, the second line is left-multiplied by :math:`\frac{1}{c}~\boldsymbol{b}`
-    and both equations are summed up again.
+    Next, the second line is left-expanded by 
+    :math:`\frac{1}{V}~\boldsymbol{K}_{\boldsymbol{u}p}` and both equations are summed
+    up again, see :eq: `nearlyinc-contracted-sum-final`.
 
     ..  math::
+        :label: nearlyinc-contracted-sum-final
 
         \left(
-            \boldsymbol{A} + \frac{K}{c}~\boldsymbol{b} \otimes \boldsymbol{b}
-        \right) \cdot \boldsymbol{x} =
-        \boldsymbol{u} + \frac{1}{c} \left( K~v + w \right) \boldsymbol{b}
+            \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} 
+                + \frac{K}{V}~\boldsymbol{K}_{\boldsymbol{u}p} \otimes 
+                    \boldsymbol{K}_{\boldsymbol{u}p}
+        \right) \cdot \delta \boldsymbol{u} =
+        \boldsymbol{f}_\boldsymbol{u} + \frac{K~f_p + f_\bar{J}}{V}
+            \boldsymbol{K}_{\boldsymbol{u}p}
 
-    The secondary unknowns are evaluated after solving the primary unknowns.
+    The secondary unknowns are evaluated after solving the primary unknowns, see
+    Eq. :eq:`nearlyinc-final`.
 
     ..  math::
+        :label: nearlyinc-final
 
-        z &= \frac{1}{c}~\boldsymbol{b}^T \boldsymbol{x} - \frac{v}{c}
+        \delta \bar{J} &= \frac{1}{V}~\delta \boldsymbol{u} : 
+            \boldsymbol{K}_{\boldsymbol{u}p} - \frac{p}{V}
 
-        y &= K~z - \frac{w}{c}
+        \delta p &= K~\delta \bar{J} - \frac{f_\bar{J}}{V}
 
     For the mean-dilatation technique, the variables, equations as well as sub-matrices
-    are evaluated. Note that the pairs of indices :math:`(ai)` and :math:`(bk)` have to
-    be treated as 1d-vectors.
+    are evaluated as given in Eq. :eq:`nearlyinc-mean-dilatation`. Note that the pairs
+    of indices :math:`(ai)` and :math:`(bk)` have to be treated as 1d-vectors.
 
     ..  math::
+        :label: nearlyinc-mean-dilatation
 
-        A_{aibk} &= \int_V \frac{\partial h_a}{\partial X_J}  \left(
+        \left(K_{uu}\right)_{aibk} &= \int_V \frac{\partial h_a}{\partial X_J}  \left(
             \frac{\partial^2 \overset{\wedge}{\psi}}{\partial F_{iJ} \partial F_{kL}} +
             p \frac{\partial^2 J}{\partial F_{iJ} \partial F_{kL}} \right)
             \frac{\partial h_b}{\partial X_L} \ dV
 
-        b_{ai} &= \int_V \frac{\partial h_a}{\partial X_J}
+        \left(K_{up}\right)__{ai} &= \int_V \frac{\partial h_a}{\partial X_J}
             \frac{\partial J}{\partial F_{iJ}} \ dV
 
-        c &= \int_V \ dV = V
+        V &= \int_V \ dV
 
-    and
 
-    ..  math::
-
-        x_{ai} &= \delta {u}_{ai}
-
-        y &= \delta p
-
-        z &= \delta \bar{J}
-
-    as well as
-
-    ..  math::
-
-        u_{ai} &= -\int_V \frac{\partial h_a}{\partial X_J} \left(
-            \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} +
-            p \frac{\partial J}{\partial F_{iJ}} \right) \ dV
-
-        \frac{v}{c} &= -\frac{1}{V} \int_V (J - \bar{J}) \ dV = \frac{v}{V} - \bar{J}
-
-        \frac{w}{c} &= -\frac{1}{V} \int_V (\bar{U}' - p) \ dV = K (\bar{J} - 1) - p
-    
-    with
+    The condensed constraint equation is given in Eq. :eq:`nearlyinc-constraint`)
     
     ..  math::
+        :label: nearlyinc-constraint
         
-        \frac{K~v}{c} + \frac{w}{c} = K \left( \frac{v}{V} - 1 \right) - p
+        \frac{K~f_p + f_\bar{J}}{V}= K \left( \frac{v}{V} - 1 \right) - p
+    
+    and the deformed volume is evaluated by Eq. :eq:`nearlyinc-deformed-volume`.
+    
+    ..  math::
+        :label: nearlyinc-deformed-volume
+        
+        v &= \int_V J\ dV
 
 
     Examples

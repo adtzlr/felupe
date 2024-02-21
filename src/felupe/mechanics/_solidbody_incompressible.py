@@ -138,7 +138,7 @@ class SolidBodyNearlyIncompressible(Solid):
     **Hu-Washizu Three-Field-Variational Principle**
 
     The Three-Field-Variation :math:`(\boldsymbol{u},p,\bar{J})` leads to a linearized
-    equation system with nine sub block-matrices, see Eq. :eq:`nearlyinc-hu-washizu`.
+    equation system with nine sub block-matrices, see Eq. :eq:`hu-washizu`. [1]
     Due to the fact that the equation system is derived by a potential, the matrix is
     symmetric and hence, only six independent sub-matrices have to be evaluated.
     Furthermore, by the application of the mean dilatation technique, two of the
@@ -146,7 +146,7 @@ class SolidBodyNearlyIncompressible(Solid):
     are left to be evaluated, where two non-zero sub-matrices are scalar-valued entries.
 
     ..  math::
-        :label: nearlyinc-hu-washizu
+        :label: hu-washizu
 
         \begin{bmatrix}
             \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} 
@@ -268,6 +268,12 @@ class SolidBodyNearlyIncompressible(Solid):
     >>>
     >>> job = fem.Job(steps=[step]).evaluate()
     >>> ax = solid.imshow("Principal Values of Cauchy Stress")
+    
+    References
+    ----------
+    ..  [1] J. Bonet, A. J. Gil, and R. D. Wood, "Nonlinear Solid Mechanics for Finite
+        Element Analysis: Statics". Cambridge University Press, Jun. 05, 2016. 
+        doi: 10.1017/cbo9781316336144.
     
     See Also
     --------

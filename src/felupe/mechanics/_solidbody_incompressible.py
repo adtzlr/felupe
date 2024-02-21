@@ -56,7 +56,7 @@ class SolidBodyNearlyIncompressible(Solid):
     Notes
     -----
     The total potential energy of internal forces is given in Eq.
-    :eq:`nearlyincompressible`.
+    :eq:`nearlyincompressible`
 
     ..  math::
         :label: nearlyincompressible
@@ -65,6 +65,21 @@ class SolidBodyNearlyIncompressible(Solid):
             \int_V \hat{\psi}(\boldsymbol{F})\ dV +
             \int_V U(\bar{J})\ dV +
             \int_V p (J - \bar{J})\ dV
+    
+    with its variations, see Eq. :eq:`nearlyinc-variations`.
+    
+    ..  math::
+        :label: nearlyinc-variations
+
+        \delta_\boldsymbol{u}(\Pi_{int}) &=
+            \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
+            p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
+
+        \delta_p(\Pi_{int}) &=
+            \int_V \left( J - \bar{J} \right)\ \delta p\ dV
+
+        \delta_\bar{J}(\Pi_{int}) &=
+            \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
 
     The volumetric part of the strain energy density function is denoted in Eq.
     :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.

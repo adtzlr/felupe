@@ -47,8 +47,8 @@ class SolidBodyNearlyIncompressible(Solid):
     field : FieldContainer
         A field container with one or more fields.
     bulk : float
-        The bulk modulus of the volumetric material behaviour
-        (:math:`U(\bar{J})=K(\bar{J}-1)^2/2`).
+        The bulk modulus of the volumetric part of the strain energy function
+        :math:`U(\bar{J})=K(\bar{J}-1)^2/2`.
     state : StateNearlyIncompressible or None, optional
         A valid initial state for a (nearly) incompressible solid (default is None).
     statevars : ndarray or None, optional
@@ -94,7 +94,7 @@ class SolidBodyNearlyIncompressible(Solid):
         :label: nearlyinc-linearizations
 
         \delta_\boldsymbol{u}\Delta_\boldsymbol{u}(\Pi_{int}) &=
-            \int_V \left( \delta\boldsymbol{F} : 
+            \int_V \delta\boldsymbol{F} : \left(
                 \frac{\partial^2 \hat{\psi}}{
                     \partial \boldsymbol{F}\ \partial \boldsymbol{F}
                 } +

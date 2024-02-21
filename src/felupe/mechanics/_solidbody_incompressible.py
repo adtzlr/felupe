@@ -30,7 +30,8 @@ class SolidBodyNearlyIncompressible(Solid):
     r"""A (nearly) incompressible solid body with methods for the assembly of sparse
     vectors/matrices. The constitutive material definition must provide the distortional
     part of the strain energy density function per unit undeformed volume only. The
-    volumetric part of the strain energy density function is automatically added.
+    volumetric part of the strain energy density function is automatically added on
+    additonal internal (dual) cell-wise constant fields.
 
     Parameters
     ----------

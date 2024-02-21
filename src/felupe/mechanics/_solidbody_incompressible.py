@@ -73,13 +73,20 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \delta_\boldsymbol{u}(\Pi_{int}) &=
             \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
-            p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
+            p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV \qquad \left( =
+                -\boldsymbol{f}_\boldsymbol{u} 
+            \right)
 
         \delta_p(\Pi_{int}) &=
-            \int_V \left( J - \bar{J} \right)\ \delta p\ dV
+            \int_V \left( J - \bar{J} \right)\ \delta p\ dV \qquad \left( =
+                -f_p
+            \right)
 
         \delta_\bar{J}(\Pi_{int}) &=
             \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
+            \qquad \left( =
+                -f_{\bar{J}}
+            \right)
 
     The volumetric part of the strain energy density function is denoted in Eq.
     :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.
@@ -204,6 +211,11 @@ class SolidBodyNearlyIncompressible(Solid):
             \frac{\partial J}{\partial F_{iJ}} \ dV
 
         V &= \int_V \ dV
+        
+        -\left( f_u \right)_{ai} = \int_V \left(
+            \frac{\partial \overset{\wedge}{\psi}}{\partial F_{iJ}} 
+            + p \frac{\partial J}{\partial F_{iJ}}
+        \right)\ dV
 
 
     The condensed constraint equation is given in Eq. :eq:`nearlyinc-constraint`)
@@ -211,7 +223,7 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-constraint
         
-        \frac{K~f_p + f_\bar{J}}{V} = K \left( \frac{v}{V} - 1 \right) - p
+        \frac{K~f_p + f_{\bar{J}}}{V} = K \left( \frac{v}{V} - 1 \right) - p
     
     and the deformed volume is evaluated by Eq. :eq:`nearlyinc-deformed-volume`.
     

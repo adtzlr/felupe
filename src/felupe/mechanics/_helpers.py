@@ -103,8 +103,8 @@ class StateNearlyIncompressible:
 
         ..  math::
 
-            \int_V \frac{\partial J}{\partial \boldsymbol{F}} :
-                \delta \boldsymbol{F} ~ dV
+            \int_V \delta \boldsymbol{F} : \frac{\partial J}{\partial \boldsymbol{F}}
+                ~ dV\ \delta p
             \longrightarrow \boldsymbol{K}_{\boldsymbol{u}p}
 
         """

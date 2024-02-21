@@ -89,18 +89,27 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-linearizations
 
-        \delta_\boldsymbol{u}(\Pi_{int}) &=
-            \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
-            p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
-        \longrightarrow -\boldsymbol{f}_\boldsymbol{u}
+        \delta_\boldsymbol{u}\Delta_\boldsymbol{u}(\Pi_{int}) &=
+            \int_V \left( \delta\boldsymbol{F} : 
+                \frac{\partial^2 \hat{\psi}}{
+                    \partial \boldsymbol{F}\ \partial \boldsymbol{F}
+                } +
+                p \frac{\partial^2 J}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+            \right) : \Delta\boldsymbol{F}\ dV
 
-        \delta_p(\Pi_{int}) &=
-            \int_V \left( J - \bar{J} \right)\ \delta p\ dV
-        \longrightarrow -f_p
+        
+        \delta_\boldsymbol{u}\Delta_p(\Pi_{int}) &= \int_V \delta \boldsymbol{F} : 
+            \frac{\partial J}{\partial \boldsymbol{F}}\ \Delta p\ dV
+        \longrightarrow \boldsymbol{K}_{\boldsymbol{u}p}
+        
+        \delta_p\Delta_{\bar{J}}(\Pi_{int}) &= 
+            \int_V \delta p\ (-1)\ \Delta \bar{J}\ dV 
+        \longrightarrow -V
+        
+        \delta_{\bar{J}}\Delta_{\bar{J}}(\Pi_{int}) &= 
+            \int_V \delta \bar{J}\ K\ \Delta \bar{J}\ dV 
+        \longrightarrow K\ V
 
-        \delta_\bar{J}(\Pi_{int}) &=
-            \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
-        \longrightarrow -f_{\bar{J}}
 
     The volumetric part of the strain energy density function is denoted in Eq.
     :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.

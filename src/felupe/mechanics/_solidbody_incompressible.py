@@ -74,7 +74,8 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \delta_\boldsymbol{u}(\Pi_{int}) &=
             \int_V \left( \frac{\partial \hat{\psi}}{\partial \boldsymbol{F}} +
-            p\ J \boldsymbol{F}^{-T} \right) : \delta\boldsymbol{F}\ dV
+            p\ \frac{\partial J}{\partial \boldsymbol{F}} \right) : 
+            \delta\boldsymbol{F}\ dV
         \longrightarrow -\boldsymbol{f}_\boldsymbol{u}
 
         \delta_p(\Pi_{int}) &=

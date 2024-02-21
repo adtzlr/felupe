@@ -194,7 +194,7 @@ class SolidBodyNearlyIncompressible(Solid):
         \delta \bar{J} &= \frac{1}{V} \left( \delta \boldsymbol{u} \cdot 
             \boldsymbol{K}_{\boldsymbol{u}p} - f_p \right)
 
-        \delta p &= K~\delta \bar{J} - \frac{f_\bar{J}}{V}
+        \delta p &= K \left(\bar{J} + \delta \bar{J} - 1 \right) - p
 
     The condensed constraint equation is given in Eq. :eq:`nearlyinc-constraint`)
     

@@ -167,7 +167,7 @@ class SolidBody(Solid):
     
     ..  note::
         This class also supports ``umat`` with mixed-field formulations like
-        :class:`~felupe.NearlyIncompressible` or :class:`~felupe.ThreeFieldVariation.`
+        :class:`~felupe.NearlyIncompressible` or :class:`~felupe.ThreeFieldVariation`.
 
     Examples
     --------

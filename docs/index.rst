@@ -142,9 +142,9 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
    +----------------+-------------------+
    | Analysis       |        DOF/s      |
    +================+===================+
-   | Linear-Elastic |  136567 +/-22592  |
+   | Linear-Elastic |  133545 +/-22707  |
    +----------------+-------------------+
-   | Hyperelastic   |   61790 +/-16060  |
+   | Hyperelastic   |   90694 +/-20180  |
    +----------------+-------------------+
 
    Tested on: Windows 10, Python 3.11, Intel® Core™ i7-11850H @ 2.50GHz, 32GB RAM.
@@ -175,7 +175,7 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
          mesh = fem.Cube(n=n).triangulate()
          region = fem.RegionTetra(mesh)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
-         umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+         umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
          solid = fem.SolidBody(umat, field)
          return mesh, solid
 

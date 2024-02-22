@@ -239,7 +239,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
 
     ..  math::
 
-        \delta_{\boldsymbol{u}} \Pi_{int} &= \int_V \boldsymbol{f}_{\boldsymbol{u}} :
+        \delta_{\boldsymbol{u}} \Pi_{int} &= \int_V \boldsymbol{P} :
         \delta \boldsymbol{F} \ dV = \int_V \left( \frac{\partial \psi}
         {\partial \overline{\boldsymbol{F}}} : \frac{\partial \overline{\boldsymbol{F}}}
         {\partial \boldsymbol{F}} + p J \boldsymbol{F}^{-T} \right) :
@@ -285,7 +285,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
 
     ..  math::
 
-        \boldsymbol{f}_{\boldsymbol{u}} (= \boldsymbol{P}) &=
+        \boldsymbol{P} &=
         \overline{\overline{\boldsymbol{P}}} - \frac{1}{3} \left(
         \overline{\overline{\boldsymbol{P}}} : \boldsymbol{F} \right)
         \boldsymbol{F}^{-T}

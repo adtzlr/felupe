@@ -41,6 +41,7 @@ This module contains math functions.
    math.eigh
    math.eigvals
    math.eigvalsh
+   math.equivalent_von_mises
    math.transpose
    math.majortranspose
    math.trace
@@ -57,4 +58,4 @@ This module contains math functions.
 **Detailed API Reference**
 
 .. automodule:: felupe.math
-   :members: linsteps, rotation_matrix, defgrad, strain, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel
+   :members: linsteps, rotation_matrix, defgrad, strain, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, equivalent_von_mises, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel

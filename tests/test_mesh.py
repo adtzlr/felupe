@@ -350,6 +350,9 @@ def test_container():
     container.append(mesh_3)
     print(container.as_meshio())
 
+    with pytest.raises(TypeError):
+        container.stack()
+
     m_1 = container.pop(0)
 
     assert m_1.ncells == 1
@@ -504,6 +507,7 @@ def test_view():
 
     mesh2 = mesh.translate(move=0.8, axis=0)
     container = fem.MeshContainer([mesh, mesh2])
+    mesh_stacked = container.stack()
     plotter = container.plot(off_screen=True)
     # img = container.screenshot(transparent_background=True)
     # ax = container.imshow()

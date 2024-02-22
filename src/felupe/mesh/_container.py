@@ -22,6 +22,7 @@ import numpy as np
 
 from ._mesh import Mesh
 from ._tools import merge_duplicate_points as sweep
+from ._tools import stack
 
 
 class MeshContainer:
@@ -130,6 +131,55 @@ class MeshContainer:
         points = self.meshes[0].points
         for i, m in enumerate(self.meshes):
             self.meshes[i].points = self.points = points
+
+    def stack(self):
+        """Stack cell-blocks with same cell-types into a single mesh.
+
+        Returns
+        -------
+        Mesh
+            The stacked mesh.
+
+        Notes
+        -----
+        The ``points``-array is taken from the first mesh. The ``cells``-array of the
+        stacked mesh is created by a vertical stack of the ``cells``-arrays.
+
+        Examples
+        --------
+        Two quad meshes with identical point arrays should be stacked into a single mesh.
+
+        >>> import felupe as fem
+
+        >>> mesh = fem.Rectangle(n=11)
+        >>> rect1, rect2 = mesh.copy(), mesh.copy()
+        >>> rect1.update(cells=mesh.cells[: 40])
+        >>> rect2.update(cells=mesh.cells[-50:])
+        >>> container = fem.MeshContainer([rect1, rect2])
+
+        >>> mesh = container.stack()
+        >>> mesh
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 90
+
+        ..  image:: images/mesh_stack.png
+            :width: 400px
+
+        See Also
+        --------
+        felupe.mesh.stack : Stack cell-blocks from meshes with identical points-array
+            and cell-types.
+        """
+        if all(mesh.cell_type == self.meshes[0].cell_type for mesh in self.meshes):
+            return stack(self.meshes)
+        else:
+            message = [
+                "Meshes of the MeshContainer can't be stacked.",
+                "List of meshes must have same cell-types.",
+            ]
+            raise TypeError(" ".join(message))
 
     def as_meshio(self, combined=True, **kwargs):
         "Export a (combined) mesh object as :class:`meshio.Mesh`."

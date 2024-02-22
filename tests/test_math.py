@@ -104,6 +104,7 @@ def test_math():
     assert fem.math.ddot(A, C, mode=(4, 2)).shape == (3, 3, 5, 7)
 
     assert fem.math.ddot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 5, 7)
+    assert fem.math.equivalent_von_mises(C).shape == (5, 7)
 
     with pytest.raises(TypeError):
         fem.math.ddot(A, B, mode=(4, 3))

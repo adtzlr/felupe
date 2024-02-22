@@ -316,3 +316,27 @@ def reshape(A, shape, trailing_axes=2):
 def ravel(A, trailing_axes=2):
     ij, shape = np.split(A.shape, [-trailing_axes])
     return reshape(A, shape=np.prod(ij))
+
+
+def equivalent_von_mises(A):
+    r"""Return the Equivalent von Mises values of symmetric matrices.
+
+    ..  math::
+
+        \boldsymbol{A}_{v} = \sqrt{
+            \frac{3}{2} \text{dev}(\boldsymbol{A}) : \text{dev}(\boldsymbol{A})
+        }
+
+    Parameters
+    ----------
+    A : (M, M, ...) ndarray
+        Symmetric matrices for which the equivalent von Mises value will be computed.
+
+    Returns
+    -------
+    AvM : (...) ndarray
+        The equivalent von Mises values.
+    """
+
+    devA = dev(A)
+    return np.sqrt(3 / 2 * ddot(devA, devA))

@@ -319,7 +319,7 @@ def ravel(A, trailing_axes=2):
 
 
 def equivalent_von_mises(A):
-    r"""Return the Equivalent von Mises values of symmetric matrices.
+    r"""Return the Equivalent von Mises values of square matrices.
 
     ..  math::
 
@@ -337,6 +337,18 @@ def equivalent_von_mises(A):
     AvM : (...) ndarray
         The equivalent von Mises values.
     """
+
+    if A.shape[:2] == (3, 3):
+        pass
+
+    elif A.shape[:2] == (2, 2):
+        zeros = len(A.shape[2:]) * [(0, 0)]
+        A = np.pad(A, ((0, 1), (0, 1), *zeros))
+
+    else:
+        raise TypeError(
+            "Square matrices must be two- or three-dimensional on the first two axes."
+        )
 
     devA = dev(A)
     return np.sqrt(3 / 2 * ddot(devA, devA))

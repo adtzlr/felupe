@@ -889,6 +889,10 @@ def stack(meshes):
     ..  image:: images/mesh_stack.png
         :width: 400px
 
+    See Also
+    --------
+    felupe.MeshContainer.stack : Stack cell-blocks with same cell-types into a single
+        mesh.
     """
 
     Mesh = meshes[0].__mesh__

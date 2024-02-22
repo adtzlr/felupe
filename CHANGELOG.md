@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `DiscreteGeometry` properties `x`, `y` and `z` to access the colums of the points-array.
 - Add new math-function `math.equivalent_von_mises(A)`.
 - Add the evaluation of the equivalent von Mises Cauchy stress as cell-data in `ViewSolid`, available as `Solid.plot("Equivalent of Cauchy Stress")`.
+- Add `mesh.stack(meshes)` as method to `MeshContainer.stack()`. Note that this only supports mesh containers with meshes of same cell-types.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.

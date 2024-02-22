@@ -164,7 +164,7 @@ class SolidBody(Solid):
 
         \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}} \cdot \delta \boldsymbol{u} +
             \boldsymbol{f}_\boldsymbol{u} = \boldsymbol{0}
-    
+
     ..  note::
         This class also supports ``umat`` with mixed-field formulations like
         :class:`~felupe.NearlyIncompressible` or :class:`~felupe.ThreeFieldVariation`.

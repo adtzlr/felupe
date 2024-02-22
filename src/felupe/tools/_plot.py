@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import eigvalsh, tovoigt
+from ..math import eigvalsh, equivalent_von_mises, tovoigt
 from ..mechanics._job import (
     deformation_gradient,
     displacement,
@@ -168,6 +168,9 @@ class Scene:
                         "(Min. Principal)",
                     ]
                     data_label = data_label[20:]
+
+                if "Equivalent of " in data_label:
+                    component_labels_dict[1] = [""]
 
                 component_labels = np.arange(dim)
                 if dim in component_labels_dict.keys():
@@ -447,6 +450,9 @@ class ViewSolid(ViewField):
             cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
             cell_data_from_solid[f"Principal Values of {stress_label}"] = (
                 eigvalsh(stress).mean(-2)[::-1].T
+            )
+            cell_data_from_solid[f"Equivalent of {stress_label}"] = (
+                equivalent_von_mises(stress).mean(-2).T
             )
 
         super().__init__(

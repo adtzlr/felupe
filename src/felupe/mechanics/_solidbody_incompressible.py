@@ -87,9 +87,10 @@ class SolidBodyNearlyIncompressible(Solid):
             \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
         \longrightarrow r_{\bar{J}}
     
-    and linearizations, see Eq. :eq:`nearlyinc-linearizations` [1-3]_. The right-arrows in
-    Eq. :eq:`nearlyinc-variations` and Eq. :eq:`nearlyinc-linearizations`
-    represent the assembly into system scalars, vectors or matrices.
+    and linearizations, see Eq. :eq:`nearlyinc-linearizations` [1]_ [2]_ [3]_. The
+    right-arrows in Eq. :eq:`nearlyinc-variations` and Eq.
+    :eq:`nearlyinc-linearizations` represent the assembly into system scalars, vectors
+    or matrices.
     
     ..  math::
         :label: nearlyinc-linearizations

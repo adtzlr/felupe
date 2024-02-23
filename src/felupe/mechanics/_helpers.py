@@ -56,6 +56,9 @@ class Results:
 
         self.force_values = None
         self.stiffness_values = None
+        
+        self._force_values = None
+        self._stiffness_values = None
 
         if stress:
             self.stress = None
@@ -103,7 +106,7 @@ class StateNearlyIncompressible:
         self.p = np.zeros(field.region.mesh.ncells)
         self.J = np.ones(field.region.mesh.ncells)
 
-    def integrate_shape_function_gradient(self, parallel=False):
+    def integrate_shape_function_gradient(self, parallel=False, out=None):
         r"""Integrated sub-block matrix containing the shape-functions gradient w.r.t.
         the deformed coordinates :math:`\boldsymbol{K}_{\boldsymbol{u}p}`.
 
@@ -117,7 +120,7 @@ class StateNearlyIncompressible:
 
         return IntegralForm(
             fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
-        ).integrate(parallel=parallel)[0]
+        ).integrate(parallel=parallel, out=out)[0]
 
     def volume(self):
         r"""Return the cell volumes of the deformed configuration.

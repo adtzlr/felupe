@@ -393,10 +393,15 @@ class SolidBodyNearlyIncompressible(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(
+            parallel=parallel, out=self.results._force_values
+        )
+        H = dya(h, h, out=self.results._stiffness_values)
+        bulk_H = np.multiply(H, self.bulk, out=H)
+        constraint = np.divide(bulk_H, self.V, out=bulk_H)
 
         values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
-        np.add(values[0], self.bulk / self.V * dya(h, h), out=values[0])
+        np.add(values[0], constraint, out=values[0])
 
         self.results.stiffness = form.assemble(values=values)
 
@@ -405,7 +410,7 @@ class SolidBodyNearlyIncompressible(Solid):
     def _extract(self, field, parallel=False):
         u = field[0].values
         u0 = self.results.state.u
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(parallel=parallel, out=self.results._force_values)
         v = self.results.state.volume()
 
         du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
@@ -416,7 +421,7 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
         # update state variables
-        self.results.state.J[:] = ddot(du, h, mode=(2, 2)) / self.V + v / self.V
+        self.results.state.J[:] = (ddot(du, h, mode=(2, 2)) + v) / self.V
         self.results.state.p[:] = self.bulk * (self.results.state.J - 1)
         self.results.state.u[:] = u
 

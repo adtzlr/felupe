@@ -268,11 +268,11 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
-        
+
         P = out
         if out is None:
             out = np.zeros_like(F)
-            
+
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P
             trC = ddot(F, F, parallel=self.parallel)
@@ -320,7 +320,7 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
-        
+
         A4 = out
         if A4 is None:
             A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
@@ -504,7 +504,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         J = det(F)
         iFT = transpose(inv(F, J))
         lnJ = np.log(J, out=J)
-        
+
         P = np.multiply(mu, F, out=out)
 
         if lmbda is None:

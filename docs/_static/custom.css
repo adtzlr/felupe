@@ -1,0 +1,5 @@
+.bd-sidebar-primary div#rtd-footer-container {
+    bottom:-1rem;
+    margin:-1rem;
+    position:fixed;
+}

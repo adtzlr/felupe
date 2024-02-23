@@ -270,11 +270,23 @@ class NeoHooke(ConstitutiveMaterial):
 
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P
-            P += mu * (F - ddot(F, F, parallel=self.parallel) / 3 * iFT) * J ** (-2 / 3)
+            # mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
+            trC = ddot(F, F, parallel=self.parallel)
+            np.multiply(trC / 3, iFT, out=P)
+            np.add(F, -P, out=P)
+
+            Jm23 = np.power(J, -2 / 3, out=trC)
+            np.multiply(P, Jm23, out=P)
+            np.multiply(P, mu, out=P)
 
         if bulk is not None:
             # "physical"-volumetric (not math-volumetric!) part of P
-            P += bulk * (J - 1) * J * iFT
+            # bulk * (J - 1) * J * iFT
+            JiFT = np.multiply(J, iFT, out=iFT)
+            J_1 = np.add(J, -1, out=J)
+            dUdJ = np.multiply(bulk, J_1, out=J_1)
+            dUdF = np.multiply(dUdJ, JiFT, out=JiFT)
+            np.add(P, dUdF, out=dUdF)
 
         return [P, statevars]
 
@@ -304,28 +316,41 @@ class NeoHooke(ConstitutiveMaterial):
         iFT = transpose(inv(F, J))
         A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
 
+        trC = None
+        A4b = None
+        A4c = None
+
         if mu is not None:
             eye = identity(F)
 
             # "physical"-deviatoric (not math-deviatoric!) part of A4
-            FF = ddot(F, F, parallel=self.parallel)
-            A4 += (mu * J ** (-2 / 3)) * (
-                cdya_ik(eye, eye, parallel=self.parallel)
-                - 2 / 3 * dya(F, iFT, parallel=self.parallel)
-                - 2 / 3 * dya(iFT, F, parallel=self.parallel)
-                + 2 / 9 * FF * dya(iFT, iFT, parallel=self.parallel)
-                + 1 / 3 * FF * cdya_il(iFT, iFT, parallel=self.parallel)
-            )
+            trC = ddot(F, F, parallel=self.parallel, out=trC)
+            np.add(A4, cdya_ik(eye, eye), out=A4)
+            A4b = dya(F, iFT, parallel=self.parallel, out=A4b)
+            np.multiply(-2 / 3, A4b, out=A4b)
+            np.add(A4, A4b, out=A4)
+            np.add(A4, np.transpose(A4b, [2, 3, 0, 1, 4, 5]), out=A4)
+            A4b = dya(iFT, iFT, parallel=self.parallel, out=A4b)
+            trC_3 = np.divide(trC, 3, out=trC)
+            A4c = np.multiply(A4b, trC_3, out=A4c)
+            np.add(A4, np.transpose(A4c, [0, 3, 2, 1, 4, 5]), out=A4)
+            np.multiply(A4c, 2 / 3, out=A4c)
+            np.add(A4, A4c, out=A4)
 
         if bulk is not None:
-            p = bulk * (J - 1)
-            q = p + bulk * J
+            if A4b is None:
+                dya(iFT, iFT, parallel=self.parallel, out=A4b)
 
-            # "physical"-volumetric (not math-volumetric!) part of A4
-            A4 += J * (
-                q * dya(iFT, iFT, parallel=self.parallel)
-                - p * cdya_il(iFT, iFT, parallel=self.parallel)
-            )
+            J_1 = np.add(J, -1, out=trC)
+            p = np.multiply(bulk, J_1, out=J_1)
+            pJ = np.multiply(p, J, out=p)
+            J2 = np.power(J, 2, out=J)
+            bulk_J2 = np.multiply(J2, bulk, out=J2)
+            qJ = np.add(pJ, bulk_J2, out=bulk_J2)
+            np.multiply(pJ, A4b, out=A4c)
+            np.add(A4, A4c, out=A4)
+            np.multiply(-qJ, np.transpose(A4b, [0, 3, 2, 1, 4, 5]), out=A4c)
+            np.add(A4, A4c, out=A4)
 
         return [A4]
 
@@ -467,13 +492,19 @@ class NeoHookeCompressible(ConstitutiveMaterial):
             lmbda = self.lmbda
 
         J = det(F)
-        lnJ = np.log(J)
         iFT = transpose(inv(F, J))
+        lnJ = np.log(J, out=J)
 
-        P = mu * (F - iFT)
+        P = mu * F
+
+        if lmbda is None:
+            Pb = np.multiply(iFT, -mu, out=iFT)
+        else:
+            lmbda_lnJ = np.multiply(lmbda, lnJ, out=lnJ)
+            Pb = np.multiply(iFT, -mu + lmbda_lnJ, out=iFT)
 
         if lmbda is not None:
-            P += lmbda * lnJ * iFT
+            np.add(P, Pb, out=P)
 
         return [P, statevars]
 
@@ -501,13 +532,23 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
+        lnJ = np.log(J, out=J)
         eye = identity(F)
 
         iFTiFT = cdya_il(iFT, iFT, parallel=self.parallel)
-        A4 = mu * (cdya_ik(eye, eye) + iFTiFT)
+        A4a = cdya_ik(eye, eye)
+        np.multiply(mu, A4a, out=A4a)
 
         if lmbda is not None:
-            A4 += lmbda * (dya(iFT, iFT, parallel=self.parallel) - np.log(J) * iFTiFT)
+            lmbda_lnJ = np.multiply(lmbda, lnJ, out=lnJ)
+            A4b = np.multiply(mu - lmbda_lnJ, iFTiFT, out=iFTiFT)
+            iFT_iFT = dya(iFT, iFT, parallel=self.parallel)
+            A4c = np.multiply(lmbda, iFT_iFT, out=iFT_iFT)
+            np.add(A4a, A4b, out=A4b)
+            A4 = np.add(A4b, A4c, out=A4b)
+        else:
+            A4b = np.multiply(mu, iFTiFT, out=iFTiFT)
+            A4 = np.add(A4a, A4b, out=A4b)
 
         return [A4]
 

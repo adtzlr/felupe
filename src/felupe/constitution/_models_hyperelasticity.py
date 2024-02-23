@@ -272,7 +272,8 @@ class NeoHooke(ConstitutiveMaterial):
             # "physical"-deviatoric (not math-deviatoric!) part of P
             # mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
             trC = ddot(F, F, parallel=self.parallel)
-            np.multiply(trC / 3, iFT, out=P)
+            trC_3 = np.divide(trC, 3, out=trC)
+            np.multiply(trC_3, iFT, out=P)
             np.add(F, -P, out=P)
 
             Jm23 = np.power(J, -2 / 3, out=trC)

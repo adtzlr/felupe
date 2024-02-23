@@ -9,7 +9,8 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
 
 <p align="center">
   <a href="https://felupe.readthedocs.io/en/latest/examples/rubberspring.html"><img src="https://user-images.githubusercontent.com/5793153/230604246-5a416081-6777-4f33-afdf-efdb51338722.png" height="70px"/></a> <a href="https://felupe.readthedocs.io/en/latest/examples/platewithhole.html"><img src="https://user-images.githubusercontent.com/5793153/230604587-42e3e339-e08c-4cc8-8000-f7046a8d95df.png" height="70px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/rubberbushing.html"><img src="https://github.com/adtzlr/felupe/assets/5793153/4562c1d1-a94f-4e6d-a823-0f9351a2ea0e" height="70px"/></a>
+  href="https://felupe.readthedocs.io/en/latest/examples/rubberbushing.html"><img src="https://github.com/adtzlr/felupe/assets/5793153/4562c1d1-a94f-4e6d-a823-0f9351a2ea0e" height="70px"/></a> <a 
+  href="https://felupe.readthedocs.io/en/latest/examples/shear.html"><img src="https://github.com/adtzlr/felupe/assets/5793153/197c7f83-9c42-42c0-9d1d-60be519690da" height="70px"/></a>
 </p>
 
 # Installation

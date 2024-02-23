@@ -8,7 +8,7 @@ into dense or sparse vectors and matrices. The integration algorithm switches
 automatically between general cartesion, plane strain or axisymmetric routines, 
 dependent on the given fields.
 
-..  info::
+..  hint::
     :class:`IntegralForm` is used in a :class:`~felupe.SolidBody` in the
     `felupe-api-mechanics`_ module, which serves a constitutive material formulation
     :class:`~felupe.ConstitutiveMaterial` as an ``item`` for a :class:`~felupe.Step`

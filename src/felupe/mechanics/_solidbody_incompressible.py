@@ -56,7 +56,8 @@ class SolidBodyNearlyIncompressible(Solid):
 
     Notes
     -----
-    The total potential energy of internal forces is given in Eq.
+    The total potential energy of internal forces for a three-field variational
+    approach, suitable for nearly-incompressible material behaviour, is given in Eq.
     :eq:`nearlyincompressible`
 
     ..  math::
@@ -86,7 +87,7 @@ class SolidBodyNearlyIncompressible(Solid):
             \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
         \longrightarrow f_{\bar{J}}
     
-    and linearizations, see Eq. :eq:`nearlyinc-linearizations`. The right-arrows in
+    and linearizations, see Eq. :eq:`nearlyinc-linearizations` [1-3]_. The right-arrows in
     Eq. :eq:`nearlyinc-variations` and Eq. :eq:`nearlyinc-linearizations`
     represent the assembly into system scalars, vectors or matrices.
     
@@ -142,7 +143,7 @@ class SolidBodyNearlyIncompressible(Solid):
     **Hu-Washizu Three-Field-Variational Principle**
 
     The Three-Field-Variation :math:`(\boldsymbol{u},p,\bar{J})` leads to a linearized
-    equation system with nine sub block-matrices, see Eq. :eq:`hu-washizu` [1-4]_.
+    equation system with nine sub block-matrices, see Eq. :eq:`hu-washizu` [4]_.
     Due to the fact that the equation system is derived by a potential, the matrix is
     symmetric and hence, only six independent sub-matrices have to be evaluated.
     Furthermore, by the application of the mean dilatation technique, two of the
@@ -291,16 +292,16 @@ class SolidBodyNearlyIncompressible(Solid):
         Element Analysis: Statics". Cambridge University Press, Jun. 05, 2016. 
         doi: 10.1017/cbo9781316336144.
 
-    ..  [2] J. A. Schönherr, P. Schneider, and C. Mittelstedt, "Robust hybrid/mixed
+    ..  [2] O. C. Zienkiewicz, R. L. Taylor and J.Z. Zhu, "The Finite Element Method:
+        its Basis and Fundamentals". Elsevier, 2013. doi: 10.1016/c2009-0-24909-9.
+    
+    ..  [3] G. A. Holzapfel, "Nonlinear Solid Mechanics. A Continuum Approach for
+        Engineering". Wiley, 2000. isbn: 047182304X.
+    
+    ..  [4] J. A. Schönherr, P. Schneider, and C. Mittelstedt, "Robust hybrid/mixed
         finite elements for rubber-like materials under severe compression",
         Computational Mechanics, vol. 70, no. 1. Springer Science and Business Media
         LLC, pp. 101–122, Mar. 31, 2022. doi: 10.1007/s00466-022-02157-y.
-    
-    ..  [3] O. C. Zienkiewicz, R. L. Taylor and J.Z. Zhu, "The Finite Element Method:
-        its Basis and Fundamentals". Elsevier, 2013. doi: 10.1016/c2009-0-24909-9.
-    
-    ..  [4] G. A. Holzapfel, "Nonlinear Solid Mechanics. A Continuum Approach for
-        Engineering". Wiley, 2000. isbn: 047182304X.
     
     See Also
     --------

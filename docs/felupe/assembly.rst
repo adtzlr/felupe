@@ -9,7 +9,7 @@ automatically between general cartesion, plane strain or axisymmetric routines,
 dependent on the given fields.
 
 ..  hint::
-    :class:`IntegralForm` is used in the `felupe-api-mechanics`_ module (e.g. in a
+    :class:`IntegralForm` is used in the :ref:`felupe-api-mechanics` module (e.g. in a
     :class:`~felupe.SolidBody`) to integrate and/or assemble a 
     :class:`constitutive material formulation <felupe.ConstitutiveMaterial>`
     and to provide an ``item`` for a :class:`~felupe.Step`

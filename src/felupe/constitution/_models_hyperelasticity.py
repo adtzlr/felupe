@@ -270,7 +270,6 @@ class NeoHooke(ConstitutiveMaterial):
 
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P
-            # mu * (F - ddot(F, F) / 3 * iFT) * J ** (-2 / 3)
             trC = ddot(F, F, parallel=self.parallel)
             trC_3 = np.divide(trC, 3, out=trC)
             np.multiply(trC_3, iFT, out=P)
@@ -282,7 +281,6 @@ class NeoHooke(ConstitutiveMaterial):
 
         if bulk is not None:
             # "physical"-volumetric (not math-volumetric!) part of P
-            # bulk * (J - 1) * J * iFT
             JiFT = np.multiply(J, iFT, out=iFT)
             J_1 = np.add(J, -1, out=J)
             dUdJ = np.multiply(bulk, J_1, out=J_1)
@@ -322,9 +320,8 @@ class NeoHooke(ConstitutiveMaterial):
         A4c = None
 
         if mu is not None:
-            eye = identity(F)
-
             # "physical"-deviatoric (not math-deviatoric!) part of A4
+            eye = identity(F)
             trC = ddot(F, F, parallel=self.parallel, out=trC)
             np.add(A4, cdya_ik(eye, eye), out=A4)
             A4b = dya(F, iFT, parallel=self.parallel, out=A4b)

@@ -360,7 +360,10 @@ class SolidBodyNearlyIncompressible(Solid):
             kirchhoff_stress=self._kirchhoff_stress,
         )
 
-    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
+    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         self.results.stress = self._gradient(
             field, parallel=parallel, args=args, kwargs=kwargs
         )
@@ -371,18 +374,25 @@ class SolidBodyNearlyIncompressible(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(
+            parallel=parallel, out=self.results._force_values
+        )
         v = self.results.state.volume()
         p = self.results.state.p
 
+        constraint = np.multiply(h, self.bulk * (v / self.V - 1) - p, out=h)
+
         values = form.integrate(parallel=parallel)
-        np.add(values[0], h * (self.bulk * (v / self.V - 1) - p), out=values[0])
+        np.add(values[0], constraint, out=values[0])
 
         self.results.force = form.assemble(values=values)
 
         return self.results.force
 
-    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
+    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         self.results.elasticity = self._hessian(
             field, parallel=parallel, args=args, kwargs=kwargs
         )

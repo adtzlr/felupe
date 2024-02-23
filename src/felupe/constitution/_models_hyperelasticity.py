@@ -254,6 +254,8 @@ class NeoHooke(ConstitutiveMaterial):
             Shear modulus (default is None)
         bulk : float, optional
             Bulk modulus (default is None)
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
         """
 
         F, statevars = x[0], x[-1]
@@ -304,6 +306,8 @@ class NeoHooke(ConstitutiveMaterial):
             Shear modulus (default is None)
         bulk : float, optional
             Bulk modulus (default is None)
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
         """
 
         F = x[0]
@@ -473,7 +477,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
         return [W]
 
-    def gradient(self, x, mu=None, lmbda=None):
+    def gradient(self, x, mu=None, lmbda=None, out=None):
         """Gradient of the strain energy density function per unit undeformed volume of
         the Neo-Hookean material formulation.
 
@@ -485,6 +489,8 @@ class NeoHookeCompressible(ConstitutiveMaterial):
             Shear modulus (default is None)
         lmbda : float, optional
             First Lamé constant (default is None)
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
         """
 
         F, statevars = x[0], x[-1]
@@ -498,8 +504,8 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         J = det(F)
         iFT = transpose(inv(F, J))
         lnJ = np.log(J, out=J)
-
-        P = mu * F
+        
+        P = np.multiply(mu, F, out=out)
 
         if lmbda is None:
             Pb = np.multiply(iFT, -mu, out=iFT)
@@ -512,7 +518,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
         return [P, statevars]
 
-    def hessian(self, x, mu=None, lmbda=None):
+    def hessian(self, x, mu=None, lmbda=None, out=None):
         """Hessian of the strain energy density function per unit undeformed volume of
         the Neo-Hookean material formulation.
 
@@ -524,6 +530,8 @@ class NeoHookeCompressible(ConstitutiveMaterial):
             Shear modulus (default is None)
         lmbda : float, optional
             First Lamé constant (default is None)
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
         """
 
         F = x[0]
@@ -539,17 +547,17 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         lnJ = np.log(J, out=J)
         eye = identity(F)
 
-        iFTiFT = cdya_il(iFT, iFT, parallel=self.parallel)
+        iFTiFT = cdya_il(iFT, iFT, out=out)
         A4a = cdya_ik(eye, eye)
         np.multiply(mu, A4a, out=A4a)
 
         if lmbda is not None:
             lmbda_lnJ = np.multiply(lmbda, lnJ, out=lnJ)
             A4b = np.multiply(mu - lmbda_lnJ, iFTiFT, out=iFTiFT)
-            iFT_iFT = dya(iFT, iFT, parallel=self.parallel)
+            iFT_iFT = dya(iFT, iFT)
             A4c = np.multiply(lmbda, iFT_iFT, out=iFT_iFT)
             np.add(A4a, A4b, out=A4b)
-            A4 = np.add(A4b, A4c, out=A4b)
+            A4 = np.add(A4b, A4c, out=A4c)
         else:
             A4b = np.multiply(mu, iFTiFT, out=iFTiFT)
             A4 = np.add(A4a, A4b, out=A4b)

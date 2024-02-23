@@ -115,7 +115,7 @@ The deformation gradient is obtained by a sum of the identity and the displaceme
 
 Constitution
 ~~~~~~~~~~~~
-The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a comprehensive constitutive library (see :ref:`<felupe.constitution <felupe-api-constitution>`) including :class:`~felupe.NeoHooke`, :class:`~felupe.LinearElastic` and a generalized Hu-Washizu (u,p,J) :class:`~felupe.ThreeFieldVariation`. By alternative, an isotropic material formulation :class:`~felupe.Hyperelastic` is defined by a strain energy density function where both variation (stress) and linearization (elasticity) are carried out by automatic differentiation. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model formulation.
+The material behavior has to be provided by the first Piola-Kirchhoff stress tensor as a function of the deformation gradient. FElupe provides a comprehensive constitutive library (see :ref:`felupe.constitution <felupe-api-constitution>`) including :class:`~felupe.NeoHooke`, :class:`~felupe.LinearElastic` and a generalized Hu-Washizu (u,p,J) :class:`~felupe.ThreeFieldVariation`. By alternative, an isotropic material formulation :class:`~felupe.Hyperelastic` is defined by a strain energy density function where both variation (stress) and linearization (elasticity) are carried out by automatic differentiation. The latter one is demonstrated here with a nearly-incompressible version of the Neo-Hookean material model formulation.
 
 .. note::
    It is important to use only differentiable math-functions from `tensortrax.math <https://github.com/adtzlr/tensortrax>`_.

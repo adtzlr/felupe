@@ -54,6 +54,9 @@ class Results:
         self.statevars = None
         self._statevars = None
 
+        self.gradient = None
+        self.hessian = None
+
         self.force_values = None
         self.stiffness_values = None
 
@@ -95,12 +98,14 @@ class StateNearlyIncompressible:
     def __init__(self, field):
         self.field = field
         self.dJdF = AreaChange().function
+        self.v = None
 
         # initial values (on mesh-points) of the displacement field
         self.u = field[0].values
 
         # deformation gradient
         self.F = field.extract()
+        self.detF = None
 
         # cell-values of the internal pressure and volume-ratio fields
         self.p = np.zeros(field.region.mesh.ncells)
@@ -135,4 +140,5 @@ class StateNearlyIncompressible:
             R = self.field[0].radius
             dA = self.field.region.dV
             dV = 2 * np.pi * R * dA
-        return (det(self.F[0]) * dV).sum(0)
+        dv = det(self.F[0]) * dV
+        return dv.sum(0, out=self.v)

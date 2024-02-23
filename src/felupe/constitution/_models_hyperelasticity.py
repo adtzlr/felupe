@@ -242,7 +242,7 @@ class NeoHooke(ConstitutiveMaterial):
 
         return [W]
 
-    def gradient(self, x, mu=None, bulk=None):
+    def gradient(self, x, mu=None, bulk=None, out=None):
         """Gradient of the strain energy density function per unit
         undeformed volume of the Neo-Hookean material formulation.
 
@@ -266,8 +266,11 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
-        P = np.zeros_like(F)
-
+        
+        P = out
+        if out is None:
+            out = np.zeros_like(F)
+            
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P
             trC = ddot(F, F, parallel=self.parallel)
@@ -289,7 +292,7 @@ class NeoHooke(ConstitutiveMaterial):
 
         return [P, statevars]
 
-    def hessian(self, x, mu=None, bulk=None):
+    def hessian(self, x, mu=None, bulk=None, out=None):
         """Hessian of the strain energy density function per unit
         undeformed volume of the Neo-Hookean material formulation.
 
@@ -313,7 +316,10 @@ class NeoHooke(ConstitutiveMaterial):
 
         J = det(F)
         iFT = transpose(inv(F, J))
-        A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
+        
+        A4 = out
+        if A4 is None:
+            A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
 
         trC = None
         A4b = None

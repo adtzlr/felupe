@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
 import numpy as np
 
 from ..assembly import IntegralForm
@@ -429,7 +430,10 @@ class SolidBodyNearlyIncompressible(Solid):
 
         return self.results.kinematics
 
-    def _gradient(self, field=None, parallel=False, args=(), kwargs={}):
+    def _gradient(self, field=None, parallel=False, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
 
@@ -439,6 +443,9 @@ class SolidBodyNearlyIncompressible(Solid):
 
         p = self.results.state.p
 
+        if "out" in inspect.signature(self.umat.gradient).parameters:
+            kwargs["out"] = self.results.gradient
+
         gradient = self.umat.gradient([F, statevars], *args, **kwargs)
         self.results.stress = [np.add(gradient[0], p * dJdF([F])[0], out=gradient[0])]
 
@@ -446,7 +453,10 @@ class SolidBodyNearlyIncompressible(Solid):
 
         return self.results.stress
 
-    def _hessian(self, field=None, parallel=False, args=(), kwargs={}):
+    def _hessian(self, field=None, parallel=False, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
 
@@ -454,6 +464,9 @@ class SolidBodyNearlyIncompressible(Solid):
         F = self.results.kinematics[0]
         statevars = self.results.statevars
         p = self.results.state.p
+
+        if "out" in inspect.signature(self.umat.hessian).parameters:
+            kwargs["out"] = self.results.hessian
 
         hessian = self.umat.hessian([F, statevars], *args, **kwargs)[0]
         self.results.elasticity = [np.add(hessian, p * d2JdF2([F])[0], out=hessian)]

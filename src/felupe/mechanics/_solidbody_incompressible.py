@@ -410,7 +410,9 @@ class SolidBodyNearlyIncompressible(Solid):
     def _extract(self, field, parallel=False):
         u = field[0].values
         u0 = self.results.state.u
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel, out=self.results._force_values)
+        h = self.results.state.integrate_shape_function_gradient(
+            parallel=parallel, out=self.results._force_values
+        )
         v = self.results.state.volume()
 
         du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])

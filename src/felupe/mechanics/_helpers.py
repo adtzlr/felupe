@@ -56,7 +56,7 @@ class Results:
 
         self.force_values = None
         self.stiffness_values = None
-        
+
         self._force_values = None
         self._stiffness_values = None
 

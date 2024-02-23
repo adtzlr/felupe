@@ -270,8 +270,8 @@ class NeoHooke(ConstitutiveMaterial):
         iFT = transpose(inv(F, J))
 
         P = out
-        if out is None:
-            out = np.zeros_like(F)
+        if P is None:
+            P = np.zeros_like(F)
 
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P

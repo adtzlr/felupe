@@ -68,39 +68,34 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
     detAinvA = out
     if detAinvA is None:
         detAinvA = np.zeros_like(A)
-    else:
-        detAinvA.fill(0)
 
-    if determinant is None:
-        detA = det(A)
-    else:
-        detA = determinant
-
+    x1 = None
+    x2 = None
     if A.shape[:2] == (3, 3):
         # diagonal items
-        x1 = np.multiply(A[1, 2], A[2, 1])
-        x2 = np.multiply(A[1, 1], A[2, 2])
+        x1 = np.multiply(A[1, 2], A[2, 1], out=x1)
+        x2 = np.multiply(A[1, 1], A[2, 2], out=x2)
         np.add(-x1, x2, out=detAinvA[0, 0])
 
-        x1 = np.multiply(A[0, 2], A[2, 0])
-        x2 = np.multiply(A[0, 0], A[2, 2])
+        x1 = np.multiply(A[0, 2], A[2, 0], out=x1)
+        x2 = np.multiply(A[0, 0], A[2, 2], out=x2)
         np.add(-x1, x2, out=detAinvA[1, 1])
 
-        x1 = np.multiply(A[0, 1], A[1, 0])
-        x2 = np.multiply(A[0, 0], A[1, 1])
+        x1 = np.multiply(A[0, 1], A[1, 0], out=x1)
+        x2 = np.multiply(A[0, 0], A[1, 1], out=x2)
         np.add(-x1, x2, out=detAinvA[2, 2])
 
         # upper-triangle off-diagonal
-        x1 = np.multiply(A[0, 1], A[2, 2])
-        x2 = np.multiply(A[0, 2], A[2, 1])
+        x1 = np.multiply(A[0, 1], A[2, 2], out=x1)
+        x2 = np.multiply(A[0, 2], A[2, 1], out=x2)
         np.add(-x1, x2, out=detAinvA[0, 1])
 
-        x1 = np.multiply(A[0, 2], A[1, 1])
-        x2 = np.multiply(A[0, 1], A[1, 2])
+        x1 = np.multiply(A[0, 2], A[1, 1], out=x1)
+        x2 = np.multiply(A[0, 1], A[1, 2], out=x2)
         np.add(-x1, x2, out=detAinvA[0, 2])
 
-        x1 = np.multiply(A[0, 0], A[1, 2])
-        x2 = np.multiply(A[0, 2], A[1, 0])
+        x1 = np.multiply(A[0, 0], A[1, 2], out=x1)
+        x2 = np.multiply(A[0, 2], A[1, 0], out=x2)
         np.add(-x1, x2, out=detAinvA[1, 2])
 
         if sym:
@@ -109,16 +104,16 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
             detAinvA[2, 1] = detAinvA[1, 2]
         else:
             # lower-triangle off-diagonal
-            x1 = np.multiply(A[1, 0], A[2, 2])
-            x2 = np.multiply(A[2, 0], A[1, 2])
+            x1 = np.multiply(A[1, 0], A[2, 2], out=x1)
+            x2 = np.multiply(A[2, 0], A[1, 2], out=x2)
             np.add(-x1, x2, out=detAinvA[1, 0])
 
-            x1 = np.multiply(A[2, 0], A[1, 1])
-            x2 = np.multiply(A[1, 0], A[2, 1])
+            x1 = np.multiply(A[2, 0], A[1, 1], out=x1)
+            x2 = np.multiply(A[1, 0], A[2, 1], out=x2)
             np.add(-x1, x2, out=detAinvA[2, 0])
 
-            x1 = np.multiply(A[0, 0], A[2, 1])
-            x2 = np.multiply(A[2, 0], A[0, 1])
+            x1 = np.multiply(A[0, 0], A[2, 1], out=x1)
+            x2 = np.multiply(A[2, 0], A[0, 1], out=x2)
             np.add(-x1, x2, out=detAinvA[2, 1])
 
     elif A.shape[:2] == (2, 2):
@@ -139,6 +134,11 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
                 ]
             )
         )
+
+    if determinant is None:
+        detA = det(A, out=x1)
+    else:
+        detA = determinant
 
     if full_output:
         return np.divide(detAinvA, detA, out=detAinvA), detA

@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import inspect
+
 import numpy as np
 
 from ..assembly import IntegralForm
@@ -235,7 +236,7 @@ class SolidBody(Solid):
     def _vector(self, field=None, parallel=False, items=None, args=(), kwargs=None):
         if kwargs is None:
             kwargs = {}
-            
+
         if field is not None:
             self.field = field
 
@@ -251,7 +252,7 @@ class SolidBody(Solid):
     def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs=None):
         if kwargs is None:
             kwargs = {}
-            
+
         if field is not None:
             self.field = field
 

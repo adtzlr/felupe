@@ -5,7 +5,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
 
 .. grid::
 
-   .. grid-item-card:: 🏃 Getting Started
+   .. grid-item-card:: 🏃 Beginner's Guide
       :link: tutorials
       :link-type: ref
 

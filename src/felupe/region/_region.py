@@ -198,11 +198,12 @@ class Region:
                 "caI,aJqc->IJqc", self.mesh.points[self.mesh.cells], self.dhdr
             )
 
-            # inverse of dXdr
-            self.drdX = inv(self.dXdr)
+            # determinant and inverse of dXdr
+            J = det(self.dXdr)
+            self.drdX = inv(self.dXdr, determinant=J)
 
             # numeric **differential volume element**
-            self.dV = det(self.dXdr) * self.quadrature.weights.reshape(-1, 1)
+            self.dV = np.multiply(J, self.quadrature.weights.reshape(-1, 1), out=J)
 
             # check for negative **differential volume elements**
             if np.any(self.dV < 0):

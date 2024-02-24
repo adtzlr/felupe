@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import inspect
+
 import numpy as np
 
 from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
@@ -530,10 +531,6 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             List of hessians in upper triangle order
 
         """
-        kwargs_gradient = {}
-        if "out" in inspect.signature(self.material.gradient).parameters:
-            kwargs_gradient["out"] = out
-
         kwargs = {}
         if "out" in inspect.signature(self.material.hessian).parameters:
             kwargs["out"] = out
@@ -543,9 +540,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
         self._detF = det(F)
         self._iFT = transpose(inv(F))
         self._Fb = (J / self._detF) ** (1 / 3) * F
-        self._Pbb = (J / self._detF) ** (1 / 3) * self._fun_P(
-            [self._Fb, statevars], **kwargs_gradient
-        )[0]
+        self._Pbb = (J / self._detF) ** (1 / 3) * self._fun_P([self._Fb, statevars])[0]
 
         self._eye = identity(F)
         self._P4 = cdya_ik(self._eye, self._eye, parallel=self.parallel) - 1 / 3 * dya(

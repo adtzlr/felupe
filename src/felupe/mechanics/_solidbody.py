@@ -293,6 +293,7 @@ class SolidBody(Solid):
         gradient = self.umat.gradient(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+        self.results.gradient = gradient[0]
 
         self.results.stress, self.results._statevars = gradient[:-1], gradient[-1]
 
@@ -312,6 +313,7 @@ class SolidBody(Solid):
         self.results.elasticity = self.umat.hessian(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+        self.results.hessian = self.results.elasticity[0]
 
         return self.results.elasticity
 

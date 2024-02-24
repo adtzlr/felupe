@@ -457,10 +457,12 @@ class SolidBodyNearlyIncompressible(Solid):
         if "out" in inspect.signature(self.umat.gradient).parameters:
             kwargs["out"] = self.results.gradient
 
-        gradient = self.umat.gradient([F, statevars], *args, **kwargs)
-        self.results.stress = [np.add(gradient[0], p * dJdF([F])[0], out=gradient[0])]
-
-        self.results._statevars = gradient[-1]
+        [self.results.gradient, self.results._statevars] = self.umat.gradient(
+            [F, statevars], *args, **kwargs
+        )
+        self.results.stress = [
+            np.add(self.results.gradient, p * dJdF([F])[0], out=self.results.gradient)
+        ]
 
         return self.results.stress
 
@@ -479,8 +481,10 @@ class SolidBodyNearlyIncompressible(Solid):
         if "out" in inspect.signature(self.umat.hessian).parameters:
             kwargs["out"] = self.results.hessian
 
-        hessian = self.umat.hessian([F, statevars], *args, **kwargs)[0]
-        self.results.elasticity = [np.add(hessian, p * d2JdF2([F])[0], out=hessian)]
+        self.results.hessian = self.umat.hessian([F, statevars], *args, **kwargs)[0]
+        self.results.elasticity = [
+            np.add(self.results.hessian, p * d2JdF2([F])[0], out=self.results.hessian)
+        ]
 
         return self.results.elasticity
 

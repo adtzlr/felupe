@@ -459,7 +459,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
 
         return self._PbbF / (3 * J) - p
 
-    def gradient(self, x, out=None):
+    def gradient(self, x):
         r"""Return a list of variations of the total potential energy w.r.t. the fields
         displacements, pressure and volume ratio.
 
@@ -478,15 +478,13 @@ class ThreeFieldVariation(ConstitutiveMaterial):
 
         """
         kwargs = {}
-        if "out" in inspect.signature(self.material.gradient).parameters:
-            kwargs["out"] = out
 
         [F, p, J], statevars = x[:3], x[-1]
 
         self._detF = det(F)
         self._iFT = transpose(inv(F))
         self._Fb = (J / self._detF) ** (1 / 3) * F
-        self._Pb, statevars_new = self._fun_P([self._Fb, statevars], **kwargs)
+        self._Pb, statevars_new = self._fun_P([self._Fb, statevars])
         self._Pbb = (J / self._detF) ** (1 / 3) * self._Pb
         self._PbbF = ddot(self._Pbb, F, mode=(2, 2), parallel=self.parallel)
 
@@ -497,7 +495,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             statevars_new,
         ]
 
-    def hessian(self, x, out=None):
+    def hessian(self, x):
         r"""List of linearized variations of total potential energy w.r.t
         displacements, pressure and volume ratio (these expressions are
         symmetric; ``A_up = A_pu`` if derived from a total potential energy
@@ -531,9 +529,6 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             List of hessians in upper triangle order
 
         """
-        kwargs = {}
-        if "out" in inspect.signature(self.material.hessian).parameters:
-            kwargs["out"] = out
 
         [F, p, J], statevars = x[:3], x[-1]
 
@@ -546,7 +541,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
         self._P4 = cdya_ik(self._eye, self._eye, parallel=self.parallel) - 1 / 3 * dya(
             F, self._iFT, parallel=self.parallel
         )
-        self._A4b = self._fun_A([self._Fb, statevars], **kwargs)[0]
+        self._A4b = self._fun_A([self._Fb, statevars])[0]
         self._A4bb = (J / self._detF) ** (2 / 3) * self._A4b
 
         self._PbbF = ddot(self._Pbb, F, mode=(2, 2), parallel=self.parallel)

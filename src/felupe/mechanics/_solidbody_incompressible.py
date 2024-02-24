@@ -383,10 +383,14 @@ class SolidBodyNearlyIncompressible(Solid):
 
         constraint = np.multiply(h, self.bulk * (v / self.V - 1) - p, out=h)
 
-        values = form.integrate(parallel=parallel)
-        np.add(values[0], constraint, out=values[0])
+        self.results.force_values = form.integrate(
+            parallel=parallel, out=self.results.force_values
+        )
+        np.add(
+            self.results.force_values[0], constraint, out=self.results.force_values[0]
+        )
 
-        self.results.force = form.assemble(values=values)
+        self.results.force = form.assemble(values=self.results.force_values)
 
         return self.results.force
 
@@ -412,10 +416,16 @@ class SolidBodyNearlyIncompressible(Solid):
         bulk_H = np.multiply(H, self.bulk, out=H)
         constraint = np.divide(bulk_H, self.V, out=bulk_H)
 
-        values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
-        np.add(values[0], constraint, out=values[0])
+        self.results.stiffness_values = form.integrate(
+            parallel=parallel, out=self.results.stiffness_values
+        )
+        np.add(
+            self.results.stiffness_values[0],
+            constraint,
+            out=self.results.stiffness_values[0],
+        )
 
-        self.results.stiffness = form.assemble(values=values)
+        self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
         return self.results.stiffness
 

@@ -69,36 +69,33 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
     if detAinvA is None:
         detAinvA = np.zeros_like(A)
 
-    if determinant is None:
-        detA = det(A)
-    else:
-        detA = determinant
-
+    x1 = None
+    x2 = None
     if A.shape[:2] == (3, 3):
         # diagonal items
-        x1 = np.multiply(A[1, 2], A[2, 1])
-        x2 = np.multiply(A[1, 1], A[2, 2])
+        x1 = np.multiply(A[1, 2], A[2, 1], out=x1)
+        x2 = np.multiply(A[1, 1], A[2, 2], out=x2)
         np.add(-x1, x2, out=detAinvA[0, 0])
-        
-        x1 = np.multiply(A[0, 2], A[2, 0])
-        x2 = np.multiply(A[0, 0], A[2, 2])
+
+        x1 = np.multiply(A[0, 2], A[2, 0], out=x1)
+        x2 = np.multiply(A[0, 0], A[2, 2], out=x2)
         np.add(-x1, x2, out=detAinvA[1, 1])
-        
-        x1 = np.multiply(A[0, 1], A[1, 0])
-        x2 = np.multiply(A[0, 0], A[1, 1])
+
+        x1 = np.multiply(A[0, 1], A[1, 0], out=x1)
+        x2 = np.multiply(A[0, 0], A[1, 1], out=x2)
         np.add(-x1, x2, out=detAinvA[2, 2])
-        
+
         # upper-triangle off-diagonal
-        x1 = np.multiply(A[0, 1], A[2, 2])
-        x2 = np.multiply(A[0, 2], A[2, 1])
+        x1 = np.multiply(A[0, 1], A[2, 2], out=x1)
+        x2 = np.multiply(A[0, 2], A[2, 1], out=x2)
         np.add(-x1, x2, out=detAinvA[0, 1])
-        
-        x1 = np.multiply(A[0, 2], A[1, 1])
-        x2 = np.multiply(A[0, 1], A[1, 2])
+
+        x1 = np.multiply(A[0, 2], A[1, 1], out=x1)
+        x2 = np.multiply(A[0, 1], A[1, 2], out=x2)
         np.add(-x1, x2, out=detAinvA[0, 2])
-        
-        x1 = np.multiply(A[0, 0], A[1, 2])
-        x2 = np.multiply(A[0, 2], A[1, 0])
+
+        x1 = np.multiply(A[0, 0], A[1, 2], out=x1)
+        x2 = np.multiply(A[0, 2], A[1, 0], out=x2)
         np.add(-x1, x2, out=detAinvA[1, 2])
 
         if sym:
@@ -107,16 +104,16 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
             detAinvA[2, 1] = detAinvA[1, 2]
         else:
             # lower-triangle off-diagonal
-            x1 = np.multiply(A[1, 0], A[2, 2])
-            x2 = np.multiply(A[2, 0], A[1, 2])
+            x1 = np.multiply(A[1, 0], A[2, 2], out=x1)
+            x2 = np.multiply(A[2, 0], A[1, 2], out=x2)
             np.add(-x1, x2, out=detAinvA[1, 0])
-            
-            x1 = np.multiply(A[2, 0], A[1, 1])
-            x2 = np.multiply(A[1, 0], A[2, 1])
+
+            x1 = np.multiply(A[2, 0], A[1, 1], out=x1)
+            x2 = np.multiply(A[1, 0], A[2, 1], out=x2)
             np.add(-x1, x2, out=detAinvA[2, 0])
-            
-            x1 = np.multiply(A[0, 0], A[2, 1])
-            x2 = np.multiply(A[2, 0], A[0, 1])
+
+            x1 = np.multiply(A[0, 0], A[2, 1], out=x1)
+            x2 = np.multiply(A[2, 0], A[0, 1], out=x2)
             np.add(-x1, x2, out=detAinvA[2, 1])
 
     elif A.shape[:2] == (2, 2):
@@ -138,27 +135,61 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
             )
         )
 
+    if determinant is None:
+        detA = det(A, out=x1)
+    else:
+        detA = determinant
+
     if full_output:
         return np.divide(detAinvA, detA, out=detAinvA), detA
     else:
         return np.divide(detAinvA, detA, out=detAinvA)
 
 
-def det(A):
-    "Determinant of matrix A."
+def det(A, out=None):
+    "Return the determinant of symmetric matrices A."
+
+    detA = out
+    if detA is None:
+        detA = np.zeros_like(A[0, 0])
+    else:
+        detA.fill(0)
+
     if A.shape[:2] == (3, 3):
-        detA = (
-            A[0, 0] * A[1, 1] * A[2, 2]
-            + A[0, 1] * A[1, 2] * A[2, 0]
-            + A[0, 2] * A[1, 0] * A[2, 1]
-            - A[2, 0] * A[1, 1] * A[0, 2]
-            - A[2, 1] * A[1, 2] * A[0, 0]
-            - A[2, 2] * A[1, 0] * A[0, 1]
-        )
+        tmp = np.multiply(A[0, 0], A[1, 1])
+        np.multiply(tmp, A[2, 2], out=tmp)
+        np.add(detA, tmp, out=detA)
+
+        tmp = np.multiply(A[0, 1], A[1, 2], out=tmp)
+        np.multiply(tmp, A[2, 0], out=tmp)
+        np.add(detA, tmp, out=detA)
+
+        tmp = np.multiply(A[0, 2], A[1, 0], out=tmp)
+        np.multiply(tmp, A[2, 1], out=tmp)
+        np.add(detA, tmp, out=detA)
+
+        tmp = np.multiply(A[2, 0], A[1, 1], out=tmp)
+        np.multiply(tmp, A[0, 2], out=tmp)
+        np.add(detA, -tmp, out=detA)
+
+        tmp = np.multiply(A[2, 1], A[1, 2], out=tmp)
+        np.multiply(tmp, A[0, 0], out=tmp)
+        np.add(detA, -tmp, out=detA)
+
+        tmp = np.multiply(A[2, 2], A[1, 0], out=tmp)
+        np.multiply(tmp, A[0, 1], out=tmp)
+        np.add(detA, -tmp, out=detA)
+
     elif A.shape[:2] == (2, 2):
-        detA = A[0, 0] * A[1, 1] - A[0, 1] * A[1, 0]
+        tmp = np.multiply(A[0, 0], A[1, 1])
+        np.add(detA, tmp, out=detA)
+
+        tmp = np.multiply(A[1, 0], A[0, 1], out=tmp)
+        np.add(detA, -tmp, out=detA)
+
     elif A.shape[:2] == (1, 1):
-        detA = A[0, 0]
+        np.add(detA, A[0, 0], out=detA)
+
     else:
         raise ValueError(
             " ".join(

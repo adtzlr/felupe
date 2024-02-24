@@ -79,6 +79,12 @@ html_css_files = ["custom.css"]
 html_theme_options = {
     "icon_links": [
         {
+            "name": "Discussions",
+            "url": "https://github.com/adtzlr/felupe/discussions",
+            "icon": "fa-brands fa-comment",
+            "type": "fontawesome",
+        },
+        {
             "name": "GitHub",
             "url": "https://github.com/adtzlr/felupe",
             "icon": "fa-brands fa-github",

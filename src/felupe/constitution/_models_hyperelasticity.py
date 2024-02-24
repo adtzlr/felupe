@@ -290,7 +290,7 @@ class NeoHooke(ConstitutiveMaterial):
             J_1 = np.add(J, -1, out=J)
             dUdJ = np.multiply(bulk, J_1, out=J_1)
             dUdF = np.multiply(dUdJ, JiFT, out=JiFT)
-            np.add(P, dUdF, out=dUdF)
+            np.add(P, dUdF, out=P)
 
         return [P, statevars]
 
@@ -324,6 +324,8 @@ class NeoHooke(ConstitutiveMaterial):
         A4 = out
         if A4 is None:
             A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
+        else:
+            np.multiply(A4, 0, out=A4)
 
         trC = None
         A4b = None
@@ -344,10 +346,14 @@ class NeoHooke(ConstitutiveMaterial):
             np.add(A4, np.transpose(A4c, [0, 3, 2, 1, 4, 5]), out=A4)
             np.multiply(A4c, 2 / 3, out=A4c)
             np.add(A4, A4c, out=A4)
+            np.multiply(mu, A4, out=A4)
+            Jm23 = np.power(J, -2 / 3, out=trC)
+            np.multiply(Jm23, A4, out=A4)
 
         if bulk is not None:
+            # "physical"-volumetric (not math-volumetric!) part of A4
             if A4b is None:
-                A4b = dya(iFT, iFT, parallel=self.parallel, out=A4b)
+                A4b = dya(iFT, iFT, out=A4b)
 
             J_1 = np.add(J, -1, out=trC)
             p = np.multiply(bulk, J_1, out=J_1)
@@ -355,9 +361,9 @@ class NeoHooke(ConstitutiveMaterial):
             J2 = np.power(J, 2, out=J)
             bulk_J2 = np.multiply(J2, bulk, out=J2)
             qJ = np.add(pJ, bulk_J2, out=bulk_J2)
-            A4c = np.multiply(pJ, A4b, out=A4c)
+            A4c = np.multiply(qJ, A4b, out=A4c)
             np.add(A4, A4c, out=A4)
-            np.multiply(-qJ, np.transpose(A4b, [0, 3, 2, 1, 4, 5]), out=A4c)
+            np.multiply(-pJ, np.transpose(A4b, [0, 3, 2, 1, 4, 5]), out=A4c)
             np.add(A4, A4c, out=A4)
 
         return [A4]

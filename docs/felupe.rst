@@ -1,7 +1,7 @@
 .. _felupe-api:
 
-FElupe API
-==========
+API Reference
+=============
 
 FElupe consists of several (sub-) modules. Relevant functions and classes are available in the global namespace of FElupe where posssible. However, some classes or functions are only available in their respective submodule namespace due to naming conflicts, e.g.
 

@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.
 - Enhance the performance of `NeoHooke`, `NeoHookeCompressible`, `SolidBody` and `SolidBodyNearlyIncompressible`.
+- Enhance the performance of `math.inv(out=None)`.
 
 # Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.

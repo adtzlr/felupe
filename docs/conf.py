@@ -81,7 +81,7 @@ html_theme_options = {
         {
             "name": "Discussions",
             "url": "https://github.com/adtzlr/felupe/discussions",
-            "icon": "fa-brands fa-comment",
+            "icon": "fa-solid fa-comment",
             "type": "fontawesome",
         },
         {

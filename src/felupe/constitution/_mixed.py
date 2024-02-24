@@ -199,7 +199,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
         iFT = transpose(inv(F, determinant=detF))
         d2WdFdF = self.material.hessian([F, statevars])[0]
         d2WdFdF += p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
-        d2WdFdp = transpose(inv(F, determinant=1.0))
+        d2WdFdp = detF * iFT
         d2WdFdJ = np.zeros_like(F)
         d2Wdpdp = np.zeros_like(p)
         d2WdpdJ = -np.ones_like(J)

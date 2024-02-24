@@ -60,12 +60,14 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
         raise ValueError("unknown mode. (1 or 2)", mode)
 
 
-def inv(A, determinant=None, full_output=False, sym=False):
+def inv(A, determinant=None, full_output=False, sym=False, out=None):
     """ "Inverse of A with optionally pre-calculated determinant,
     optional additional output of the calculated determinant or
     a simplified calculation of the inverse for sym. matrices."""
 
-    detAinvA = np.zeros_like(A)
+    detAinvA = out
+    if detAinvA is None:
+        detAinvA = np.zeros_like(A)
 
     if determinant is None:
         detA = det(A)
@@ -73,22 +75,49 @@ def inv(A, determinant=None, full_output=False, sym=False):
         detA = determinant
 
     if A.shape[:2] == (3, 3):
-        detAinvA[0, 0] = -A[1, 2] * A[2, 1] + A[1, 1] * A[2, 2]
-        detAinvA[1, 1] = -A[0, 2] * A[2, 0] + A[0, 0] * A[2, 2]
-        detAinvA[2, 2] = -A[0, 1] * A[1, 0] + A[0, 0] * A[1, 1]
-
-        detAinvA[0, 1] = A[0, 2] * A[2, 1] - A[0, 1] * A[2, 2]
-        detAinvA[0, 2] = -A[0, 2] * A[1, 1] + A[0, 1] * A[1, 2]
-        detAinvA[1, 2] = A[0, 2] * A[1, 0] - A[0, 0] * A[1, 2]
+        # diagonal items
+        x1 = np.multiply(A[1, 2], A[2, 1])
+        x2 = np.multiply(A[1, 1], A[2, 2])
+        np.add(-x1, x2, out=detAinvA[0, 0])
+        
+        x1 = np.multiply(A[0, 2], A[2, 0])
+        x2 = np.multiply(A[0, 0], A[2, 2])
+        np.add(-x1, x2, out=detAinvA[1, 1])
+        
+        x1 = np.multiply(A[0, 1], A[1, 0])
+        x2 = np.multiply(A[0, 0], A[1, 1])
+        np.add(-x1, x2, out=detAinvA[2, 2])
+        
+        # upper-triangle off-diagonal
+        x1 = np.multiply(A[0, 1], A[2, 2])
+        x2 = np.multiply(A[0, 2], A[2, 1])
+        np.add(-x1, x2, out=detAinvA[0, 1])
+        
+        x1 = np.multiply(A[0, 2], A[1, 1])
+        x2 = np.multiply(A[0, 1], A[1, 2])
+        np.add(-x1, x2, out=detAinvA[0, 2])
+        
+        x1 = np.multiply(A[0, 0], A[1, 2])
+        x2 = np.multiply(A[0, 2], A[1, 0])
+        np.add(-x1, x2, out=detAinvA[1, 2])
 
         if sym:
             detAinvA[1, 0] = detAinvA[0, 1]
             detAinvA[2, 0] = detAinvA[0, 2]
             detAinvA[2, 1] = detAinvA[1, 2]
         else:
-            detAinvA[1, 0] = A[1, 2] * A[2, 0] - A[1, 0] * A[2, 2]
-            detAinvA[2, 0] = -A[1, 1] * A[2, 0] + A[1, 0] * A[2, 1]
-            detAinvA[2, 1] = A[0, 1] * A[2, 0] - A[0, 0] * A[2, 1]
+            # lower-triangle off-diagonal
+            x1 = np.multiply(A[1, 0], A[2, 2])
+            x2 = np.multiply(A[2, 0], A[1, 2])
+            np.add(-x1, x2, out=detAinvA[1, 0])
+            
+            x1 = np.multiply(A[2, 0], A[1, 1])
+            x2 = np.multiply(A[1, 0], A[2, 1])
+            np.add(-x1, x2, out=detAinvA[2, 0])
+            
+            x1 = np.multiply(A[0, 0], A[2, 1])
+            x2 = np.multiply(A[2, 0], A[0, 1])
+            np.add(-x1, x2, out=detAinvA[2, 1])
 
     elif A.shape[:2] == (2, 2):
         detAinvA[0, 0] = A[1, 1]
@@ -110,9 +139,9 @@ def inv(A, determinant=None, full_output=False, sym=False):
         )
 
     if full_output:
-        return detAinvA / detA, detA
+        return np.divide(detAinvA, detA, out=detAinvA), detA
     else:
-        return detAinvA / detA
+        return np.divide(detAinvA, detA, out=detAinvA)
 
 
 def det(A):

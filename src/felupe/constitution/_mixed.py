@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
+
 import numpy as np
 
 from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
@@ -107,7 +109,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
         self.d2UdJdJ = d2UdJdJ
         self.x = [material.x[0], np.ones(1), np.ones(1), material.x[-1]]
 
-    def gradient(self, x):
+    def gradient(self, x, out=None):
         r"""Return a list with the gradient of the strain energy density function
         w.r.t. the fields displacements, pressure and volume ratio.
 
@@ -118,6 +120,8 @@ class NearlyIncompressible(ConstitutiveMaterial):
             :math:`\boldsymbol{F}` as first, the pressure :math:`p` as
             second and the volume ratio :math:`\bar{J}` as third list item. Initial
             state variables are stored in the last (fourth) list item.
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
 
         Returns
         -------
@@ -141,14 +145,18 @@ class NearlyIncompressible(ConstitutiveMaterial):
                 \int_V \left( \bar{U}' - p \right)\ \delta \bar{J}\ dV
 
         """
+        kwargs = {}
+        if "out" in inspect.signature(self.material.gradient).parameters:
+            kwargs["out"] = out
+
         [F, p, J], statevars = x[:3], x[-1]
-        dWdF, statevars_new = self.material.gradient([F, statevars])
+        dWdF, statevars_new = self.material.gradient([F, statevars], **kwargs)
         dWdF += p * transpose(inv(F, determinant=1.0))
         dWdp = det(F) - J
         dWdJ = self.dUdJ(J, self.bulk) - p
         return [dWdF, dWdp, dWdJ, statevars_new]
 
-    def hessian(self, x):
+    def hessian(self, x, out=None):
         r"""Return a list with the hessian of the strain energy density function
         w.r.t. the fields displacements, pressure and volume ratio.
 
@@ -159,6 +167,8 @@ class NearlyIncompressible(ConstitutiveMaterial):
             :math:`\boldsymbol{F}` as first, the pressure :math:`p` as
             second and the volume ratio :math:`\bar{J}` as third list item. Initial
             state variables are stored in the last (fourth) list item.
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
 
         Returns
         -------
@@ -194,12 +204,16 @@ class NearlyIncompressible(ConstitutiveMaterial):
                 \delta \bar{J}\ \bar{U}''\ \Delta \bar{J}\ dV
 
         """
+        kwargs = {}
+        if "out" in inspect.signature(self.material.hessian).parameters:
+            kwargs["out"] = out
+
         [F, p, J], statevars = x[:3], x[-1]
         detF = det(F)
         iFT = transpose(inv(F, determinant=detF))
-        d2WdFdF = self.material.hessian([F, statevars])[0]
+        d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
         d2WdFdF += p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
-        d2WdFdp = transpose(inv(F, determinant=1.0))
+        d2WdFdp = detF * iFT
         d2WdFdJ = np.zeros_like(F)
         d2Wdpdp = np.zeros_like(p)
         d2WdpdJ = -np.ones_like(J)
@@ -463,6 +477,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             :math:`p` and :math:`\bar{J}`.
 
         """
+        kwargs = {}
 
         [F, p, J], statevars = x[:3], x[-1]
 

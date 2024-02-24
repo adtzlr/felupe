@@ -12,15 +12,19 @@ All notable changes to this project will be documented in this file. The format 
 - Add new math-function `math.equivalent_von_mises(A)`.
 - Add the evaluation of the equivalent von Mises Cauchy stress as cell-data in `ViewSolid`, available as `Solid.plot("Equivalent of Cauchy Stress")`.
 - Add `mesh.stack(meshes)` as method to `MeshContainer.stack()`. Note that this only supports mesh containers with meshes of same cell-types.
+- Add `NeoHooke.gradient(out=None)` and `NeoHooke.hessian(out=None)` for a location to store the results. Also for `NeoHookeCompressible`.
+- Add `out`-keyword to `gradient()` and `hessian` of `NearlyIncompressible` and `ThreeFieldVariation`.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.
+- Enhance the performance of `NeoHooke`, `NeoHookeCompressible`, `SolidBody` and `SolidBodyNearlyIncompressible`.
 
 # Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.
 - Fix error if `FieldDual` is in the fields of a `FieldContainer` for `IntegralForm`.
 - Fix `math.inv(A)` for arrays with shape `A.shape = (1, 1, ...)`. Also raise an error if `shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.
 - Raise an error in `math.det(A)` if `A.shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.
+- Fix mutable keyword-arguments in `SolidBody._vector(kwargs={})` by `SolidBody._vector(kwargs=None)`. Also for `._matrix()` and for `SolidBodyNearlyIncompressible`.
 
 ## [7.18.0] - 2024-02-16
 

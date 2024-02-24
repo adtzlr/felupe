@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
+
 import numpy as np
 
 from ..assembly import IntegralForm
@@ -231,7 +233,10 @@ class SolidBody(Solid):
 
         self._form = IntegralForm
 
-    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
+    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.field = field
 
@@ -244,7 +249,10 @@ class SolidBody(Solid):
 
         return self.results.force
 
-    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
+    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.field = field
 
@@ -271,27 +279,41 @@ class SolidBody(Solid):
 
         return self.results.kinematics
 
-    def _gradient(self, field=None, args=(), kwargs={}):
+    def _gradient(self, field=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
 
+        if "out" in inspect.signature(self.umat.gradient).parameters:
+            kwargs["out"] = self.results.gradient
+
         gradient = self.umat.gradient(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+        self.results.gradient = gradient[0]
 
         self.results.stress, self.results._statevars = gradient[:-1], gradient[-1]
 
         return self.results.stress
 
-    def _hessian(self, field=None, args=(), kwargs={}):
+    def _hessian(self, field=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
 
+        if "out" in inspect.signature(self.umat.hessian).parameters:
+            kwargs["out"] = self.results.hessian
+
         self.results.elasticity = self.umat.hessian(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+        self.results.hessian = self.results.elasticity[0]
 
         return self.results.elasticity
 

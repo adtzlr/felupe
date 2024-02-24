@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import inspect
+
 import numpy as np
 
 from ..assembly import IntegralForm
@@ -359,7 +361,10 @@ class SolidBodyNearlyIncompressible(Solid):
             kirchhoff_stress=self._kirchhoff_stress,
         )
 
-    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs={}):
+    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         self.results.stress = self._gradient(
             field, parallel=parallel, args=args, kwargs=kwargs
         )
@@ -370,18 +375,25 @@ class SolidBodyNearlyIncompressible(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(
+            parallel=parallel, out=self.results._force_values
+        )
         v = self.results.state.volume()
         p = self.results.state.p
 
+        constraint = np.multiply(h, self.bulk * (v / self.V - 1) - p, out=h)
+
         values = form.integrate(parallel=parallel)
-        np.add(values[0], h * (self.bulk * (v / self.V - 1) - p), out=values[0])
+        np.add(values[0], constraint, out=values[0])
 
         self.results.force = form.assemble(values=values)
 
         return self.results.force
 
-    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs={}):
+    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         self.results.elasticity = self._hessian(
             field, parallel=parallel, args=args, kwargs=kwargs
         )
@@ -393,10 +405,15 @@ class SolidBodyNearlyIncompressible(Solid):
             dV=self.field.region.dV,
         )
 
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(
+            parallel=parallel, out=self.results._force_values
+        )
+        H = dya(h, h, out=self.results._stiffness_values)
+        bulk_H = np.multiply(H, self.bulk, out=H)
+        constraint = np.divide(bulk_H, self.V, out=bulk_H)
 
         values = form.integrate(parallel=parallel, out=self.results.stiffness_values)
-        np.add(values[0], self.bulk / self.V * dya(h, h), out=values[0])
+        np.add(values[0], constraint, out=values[0])
 
         self.results.stiffness = form.assemble(values=values)
 
@@ -405,7 +422,9 @@ class SolidBodyNearlyIncompressible(Solid):
     def _extract(self, field, parallel=False):
         u = field[0].values
         u0 = self.results.state.u
-        h = self.results.state.integrate_shape_function_gradient(parallel=parallel)
+        h = self.results.state.integrate_shape_function_gradient(
+            parallel=parallel, out=self.results._force_values
+        )
         v = self.results.state.volume()
 
         du = (u - u0)[field.region.mesh.cells].transpose([1, 2, 0])
@@ -416,13 +435,16 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
         # update state variables
-        self.results.state.J[:] = ddot(du, h, mode=(2, 2)) / self.V + v / self.V
+        self.results.state.J[:] = (ddot(du, h, mode=(2, 2)) + v) / self.V
         self.results.state.p[:] = self.bulk * (self.results.state.J - 1)
         self.results.state.u[:] = u
 
         return self.results.kinematics
 
-    def _gradient(self, field=None, parallel=False, args=(), kwargs={}):
+    def _gradient(self, field=None, parallel=False, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
 
@@ -432,14 +454,22 @@ class SolidBodyNearlyIncompressible(Solid):
 
         p = self.results.state.p
 
-        gradient = self.umat.gradient([F, statevars], *args, **kwargs)
-        self.results.stress = [np.add(gradient[0], p * dJdF([F])[0], out=gradient[0])]
+        if "out" in inspect.signature(self.umat.gradient).parameters:
+            kwargs["out"] = self.results.gradient
 
-        self.results._statevars = gradient[-1]
+        [self.results.gradient, self.results._statevars] = self.umat.gradient(
+            [F, statevars], *args, **kwargs
+        )
+        self.results.stress = [
+            np.add(self.results.gradient, p * dJdF([F])[0], out=self.results.gradient)
+        ]
 
         return self.results.stress
 
-    def _hessian(self, field=None, parallel=False, args=(), kwargs={}):
+    def _hessian(self, field=None, parallel=False, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+
         if field is not None:
             self.results.kinematics = self._extract(field, parallel=parallel)
 
@@ -448,8 +478,13 @@ class SolidBodyNearlyIncompressible(Solid):
         statevars = self.results.statevars
         p = self.results.state.p
 
-        hessian = self.umat.hessian([F, statevars], *args, **kwargs)[0]
-        self.results.elasticity = [np.add(hessian, p * d2JdF2([F])[0], out=hessian)]
+        if "out" in inspect.signature(self.umat.hessian).parameters:
+            kwargs["out"] = self.results.hessian
+
+        self.results.hessian = self.umat.hessian([F, statevars], *args, **kwargs)[0]
+        self.results.elasticity = [
+            np.add(self.results.hessian, p * d2JdF2([F])[0], out=self.results.hessian)
+        ]
 
         return self.results.elasticity
 

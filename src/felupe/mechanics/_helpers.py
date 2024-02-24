@@ -54,8 +54,14 @@ class Results:
         self.statevars = None
         self._statevars = None
 
+        self.gradient = None
+        self.hessian = None
+
         self.force_values = None
         self.stiffness_values = None
+
+        self._force_values = None
+        self._stiffness_values = None
 
         if stress:
             self.stress = None
@@ -92,18 +98,20 @@ class StateNearlyIncompressible:
     def __init__(self, field):
         self.field = field
         self.dJdF = AreaChange().function
+        self.v = None
 
         # initial values (on mesh-points) of the displacement field
         self.u = field[0].values
 
         # deformation gradient
         self.F = field.extract()
+        self.detF = None
 
         # cell-values of the internal pressure and volume-ratio fields
         self.p = np.zeros(field.region.mesh.ncells)
         self.J = np.ones(field.region.mesh.ncells)
 
-    def integrate_shape_function_gradient(self, parallel=False):
+    def integrate_shape_function_gradient(self, parallel=False, out=None):
         r"""Integrated sub-block matrix containing the shape-functions gradient w.r.t.
         the deformed coordinates :math:`\boldsymbol{K}_{\boldsymbol{u}p}`.
 
@@ -117,7 +125,7 @@ class StateNearlyIncompressible:
 
         return IntegralForm(
             fun=self.dJdF(self.F), v=self.field, dV=self.field.region.dV
-        ).integrate(parallel=parallel)[0]
+        ).integrate(parallel=parallel, out=out)[0]
 
     def volume(self):
         r"""Return the cell volumes of the deformed configuration.
@@ -132,4 +140,5 @@ class StateNearlyIncompressible:
             R = self.field[0].radius
             dA = self.field.region.dV
             dV = 2 * np.pi * R * dA
-        return (det(self.F[0]) * dV).sum(0)
+        dv = det(self.F[0]) * dV
+        return dv.sum(0, out=self.v)

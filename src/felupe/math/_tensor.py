@@ -285,7 +285,7 @@ def cdya(A, B, parallel=False, out=None, **kwargs):
     "symmetric - crossed dyadic-product of A and B."
     res = cdya_ik(A, B, parallel=parallel, out=out, **kwargs)
     res = np.add(res, cdya_il(A, B, parallel=parallel, **kwargs), out=res)
-    return np.multiply(res, 0.5)
+    return np.multiply(res, 0.5, out=res)
 
 
 def cross(a, b):

@@ -47,15 +47,10 @@ def sym(A, out=None):
 def dya(A, B, mode=2, parallel=False, **kwargs):
     "Dyadic (outer or kronecker) product of two tensors."
 
-    if parallel:
-        einsum = einsumt
-    else:
-        einsum = np.einsum
-
     if mode == 2:
-        return einsum("ij...,kl...->ijkl...", A, B, **kwargs)
+        return np.multiply(A[:, :, None, None], B[None, None, :, :], **kwargs)
     elif mode == 1:
-        return einsum("i...,j...->ij...", A, B, **kwargs)
+        return np.multiply(A[:, None], B[None, :], **kwargs)
     else:
         raise ValueError("unknown mode. (1 or 2)", mode)
 

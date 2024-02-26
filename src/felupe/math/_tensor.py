@@ -25,7 +25,74 @@ except ModuleNotFoundError:
 
 
 def identity(A=None, dim=None, shape=None):
-    "Identity according to matrix A with optional specified dim."
+    """Return identity matrices with ones on the diagonal of the first two axes and
+    zeros elsewhere. 
+    
+    Parameters
+    ----------
+    A : ndarray or None, optional
+        The array of input matrices. If provided, the dimension and the shape of the
+        trailing axes are taken from this array. If None, ``dim`` and ``shape`` are
+        required. Default is None.
+    dim : int or None, optional
+        The dimension of the matrix axes. If None, it is taken from ``A`` (default is
+        None).
+    shape : tuple of int or None, optional
+        A tuple containing the shape of the trailing axes (batch dimensions). Default is
+        None.
+    
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions. As the identity matrix is idependent of the input
+    matrices ``A``, the size of the trailing axes is reduced to one.
+    
+    The identity matrix is defined by Eq. :eq:`math-identity`
+    
+    ..  math::
+        :label: math-identity
+        
+        \boldsymbol{1} = \boldsymbol{A} \boldsymbol{A}^{-1} 
+            = \boldsymbol{A}^{-1} \boldsymbol{A}
+    
+    and it is shown in Eq. :eq:`math-identity-items`.
+    
+    ..  math::
+        :label: math-identity-items
+        
+        \boldsymbol{1} = \begin{bmatrix}
+                1 & 0 & 0 \\
+                0 & 1 & 0 \\
+                0 & 0 & 1
+            \end{bmatrix}
+    
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>> 
+    >>> A = np.random.rand(3, 3, 8, 20)
+    >>> I = fem.math.identity(A)
+    >>> I.shape
+    (3, 3, 1, 1)
+    
+    With given dimension of the matrix axes the shape of the output is different.
+    
+    >>> I = fem.math.identity(A, dim=2)
+    >>> I.shape
+    (2, 2, 1, 1)
+    
+    Note how the number of batch axes change if a ``shape`` is given.
+    
+    >>> I = fem.math.identity(A, shape=(4, 7, 3))
+    >>> I.shape
+    (3, 3, 1, 1, 1)
+    
+    See Also
+    --------
+    numpy.eye : Return a 2-D array with ones on the diagonal and zeros elsewhere.
+    """
+
     if A is not None:
         dimA = A.shape[0]
         shapeA = A.shape[2:]

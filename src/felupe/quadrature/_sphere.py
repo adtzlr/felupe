@@ -20,7 +20,8 @@ import numpy as np
 
 
 class BazantOh:
-    r"""Quadrature scheme for a numeric integration of the surface of a unit sphere [1].
+    r"""Quadrature scheme for a numeric integration of the surface of a unit sphere
+    [1]_.
 
     Parameters
     ----------

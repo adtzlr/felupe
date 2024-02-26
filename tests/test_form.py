@@ -224,7 +224,7 @@ def test_bilinearform_broadcast():
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
         q = p.extract(grad=False)
-        f = fem.math.dya(q, q, mode=1)
+        f = fem.math.dya(q[0], q[0], mode=1)
         a = fem.IntegralForm(f, p, r.dV, p, [False], [False])
         y = a.integrate(parallel=parallel)
         K = a.assemble(y, parallel=parallel).toarray()

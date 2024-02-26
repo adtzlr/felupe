@@ -186,7 +186,7 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
     -----
     The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions. The definition of the dyadic product is given in Eq.
-    :eq:`math-dya2` for second-order tensors
+    :eq:`math-dya2` for two second-order tensors
 
     ..  math::
         :label: math-dya2

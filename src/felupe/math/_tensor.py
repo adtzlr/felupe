@@ -25,7 +25,7 @@ except ModuleNotFoundError:
 
 
 def identity(A=None, dim=None, shape=None):
-    """Return identity matrices with ones on the diagonal of the first two axes and
+    r"""Return identity matrices with ones on the diagonal of the first two axes and
     zeros elsewhere. 
     
     Parameters
@@ -40,6 +40,11 @@ def identity(A=None, dim=None, shape=None):
     shape : tuple of int or None, optional
         A tuple containing the shape of the trailing axes (batch dimensions). Default is
         None.
+    
+    Returns
+    -------
+    ndarray
+        The identity matrix.
     
     Notes
     -----
@@ -71,21 +76,19 @@ def identity(A=None, dim=None, shape=None):
     >>> import felupe as fem
     >>> import numpy as np
     >>> 
-    >>> A = np.random.rand(3, 3, 8, 20)
+    >>> A = np.random.rand(3, 2, 8, 20)
     >>> I = fem.math.identity(A)
     >>> I.shape
     (3, 3, 1, 1)
     
     With given dimension of the matrix axes the shape of the output is different.
     
-    >>> I = fem.math.identity(A, dim=2)
-    >>> I.shape
+    >>> fem.math.identity(A, dim=2).shape
     (2, 2, 1, 1)
     
     Note how the number of batch axes change if a ``shape`` is given.
     
-    >>> I = fem.math.identity(A, shape=(4, 7, 3))
-    >>> I.shape
+    >>> fem.math.identity(A, shape=(4, 7, 3)).shape
     (3, 3, 1, 1, 1)
     
     See Also
@@ -93,22 +96,71 @@ def identity(A=None, dim=None, shape=None):
     numpy.eye : Return a 2-D array with ones on the diagonal and zeros elsewhere.
     """
 
+    M = None
     if A is not None:
-        dimA = A.shape[0]
+        N, M = A.shape[:2]
         shapeA = A.shape[2:]
         if dim is None:
-            dim = dimA
+            dim = N
         if shape is None:
             shape = shapeA
 
     ones = (1,) * len(shape)
-    return np.eye(dim).reshape(dim, dim, *ones)
+    eye = np.eye(N=dim, M=M)
+    return eye.reshape(*eye.shape, *ones)
 
 
 def sym(A, out=None):
-    "Symmetric part of matrix A."
+    r"""Return the symmetric parts of matrices.
+
+    Parameters
+    ----------
+    A : ndarray
+        The array of input matrices.
+    out : ndarray or None, optional
+        If provided, the calculation is done into this array.
+
+    Returns
+    -------
+    ndarray
+        The symmetric parts of matrices for array ``A``.
+
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The symmetric part of a matrix is obtained by Eq. :eq:`math-symmetric`.
+
+    ..  math::
+        :label: math-symmetric
+
+        \text{sym} \left( \boldsymbol{A} \right) = \frac{1}{2} \left(
+                \boldsymbol{A} + \boldsymbol{A}^T
+            \right)
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(18, dtype=float).reshape(2, 3, 3).T)
+    >>> A[..., 0]
+    array([[0., 1., 2.],
+           [3., 4., 5.],
+           [6., 7., 8.]])
+
+    >>> fem.math.sym(A)[..., 0]
+    array([[0., 2., 4.],
+           [2., 4., 6.],
+           [4., 6., 8.]])
+
+    See Also
+    --------
+    numpy.eye : Return a 2-D array with ones on the diagonal and zeros elsewhere.
+    """
     out = np.add(A, transpose(A), out=out)
-    return np.multiply(out, 0.5)
+    return np.multiply(out, 0.5, out=out)
 
 
 def dya(A, B, mode=2, parallel=False, **kwargs):

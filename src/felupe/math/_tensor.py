@@ -164,7 +164,7 @@ def sym(A, out=None):
 
 
 def dya(A, B, mode=2, parallel=False, **kwargs):
-    """Return the dyadic product of two second-order tensors.
+    r"""Return the dyadic product of two second-order tensors.
 
     Parameters
     ----------

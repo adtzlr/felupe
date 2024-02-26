@@ -30,7 +30,7 @@ def identity(A=None, dim=None, shape=None):
     
     Parameters
     ----------
-    A : ndarray or None, optional
+    A : ndarray of shape (N, M, ...) or None, optional
         The array of input matrices. If provided, the dimension and the shape of the
         trailing axes are taken from this array. If None, ``dim`` and ``shape`` are
         required. Default is None.
@@ -43,7 +43,7 @@ def identity(A=None, dim=None, shape=None):
     
     Returns
     -------
-    ndarray
+    ndarray of shape (N, M, *np.ones_like(...)) or (dim, dim, *np.ones_like(...))
         The identity matrix.
     
     Notes
@@ -111,26 +111,26 @@ def identity(A=None, dim=None, shape=None):
 
 
 def sym(A, out=None):
-    r"""Return the symmetric parts of matrices.
+    r"""Return the symmetric parts of second-order tensors.
 
     Parameters
     ----------
-    A : ndarray
-        The array of input matrices.
+    A : ndarray of shape (M, M, ...)
+        The array of second-order tensors.
     out : ndarray or None, optional
         If provided, the calculation is done into this array.
 
     Returns
     -------
-    ndarray
-        The symmetric parts of matrices for array ``A``.
+    ndarray of shape (M, M, ...)
+        Array with the symmetric parts of the second-order tensors.
 
     Notes
     -----
-    The first two axes are the matrix dimensions and all remaining trailing axes are
+    The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
 
-    The symmetric part of a matrix is obtained by Eq. :eq:`math-symmetric`.
+    The symmetric part of a second-order tensor is obtained by Eq. :eq:`math-symmetric`.
 
     ..  math::
         :label: math-symmetric
@@ -155,9 +155,6 @@ def sym(A, out=None):
            [2., 4., 6.],
            [4., 6., 8.]])
 
-    See Also
-    --------
-    numpy.eye : Return a 2-D array with ones on the diagonal and zeros elsewhere.
     """
     out = np.add(A, transpose(A), out=out)
     return np.multiply(out, 0.5, out=out)
@@ -168,9 +165,9 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
 
     Parameters
     ----------
-    A : ndarray
+    A : ndarray of shape (N, ...) or (N, N, ...)
         The first second-order tensors.
-    B : ndarray
+    B : ndarray of shape (M, ...) or (M, M, ...)
         The second second-order tensors.
     mode : int, optional
         Mode of operation. Return the dyadic products of two second-order tensors with
@@ -182,8 +179,8 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
 
     Returns
     -------
-    ndarray
-        The array of dyadic products-
+    ndarray of shape (N, M, ...) or (N, N, M, M, ...)
+        The array of dyadic products.
 
     Notes
     -----
@@ -386,14 +383,14 @@ def dev(A, out=None):
 
     Parameters
     ----------
-    A : ndarray
+    A : ndarray of shape (M, M, ...)
         The array of second-order tensors.
     out : ndarray or None, optional
         If provided, the calculation is done into this array.
 
     Returns
     -------
-    ndarray
+    ndarray of shape (M, M, ...)
         The deviatoric parts of matrices for array ``A``.
 
     Notes
@@ -585,7 +582,7 @@ def tovoigt(A, strain=False):
 
     Parameters
     ----------
-    A : np.ndarray
+    A : ndarray of shape (2, 2, ...) or (3, 3, ...)
         Array with three-dimensional second-order tensors.
     strain : bool, optional
         A flag to double the off-diagonal (shear) values for strain-like tensors.
@@ -593,13 +590,13 @@ def tovoigt(A, strain=False):
 
     Returns
     -------
-    np.ndarray
+    ndarray of shape (3, ...) or (6, ...)
         A three-dimensional second-order tensor in reduced symmetric (Voigt) vector/
         matrix storage.
 
     Notes
     -----
-    The first two axes are the matrix dimensions and all remaining trailing axes are
+    The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
     
     For a symmetric three-dimensional second-order tensor :math:`C_{ij} = C_{ji}`, the
@@ -631,17 +628,19 @@ def tovoigt(A, strain=False):
     array([1. , 1.1, 1.2, 1.3, 1.4, 1.5])
 
     """
-    dim = A.shape[0]
-    if dim == 2:
+    dim = A.shape[:2]
+    if dim == (2, 2):
         B = np.zeros((3, *A.shape[2:]))
         ij = [(0, 0), (1, 1), (0, 1)]
-    else:
+    elif dim == (3, 3):
         B = np.zeros((6, *A.shape[2:]))
         ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
+    else:
+        raise TypeError("Input shape must be (2, 2, ...) or (3, 3, ...).")
     for i6, (i, j) in enumerate(ij):
         B[i6] = A[i, j]
     if strain:
-        B[dim:] *= 2
+        B[dim[0]:] *= 2
     return B
 
 
@@ -655,36 +654,50 @@ def ravel(A, trailing_axes=2):
 
 
 def equivalent_von_mises(A):
-    r"""Return the Equivalent von Mises values of square matrices.
+    r"""Return the Equivalent von Mises values of symmetric second order-tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (3, 3, ...)
+        Symmetric second-order tensors for which the equivalent von Mises values will be
+        computed. The shape
+
+    Returns
+    -------
+    ndarray of shape (...)
+        The equivalent von Mises values.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The equivalent von Mises value of a three-dimensional symmetric second order-tensor
+    is given in Eq. :eq:`math-vonmises`.
 
     ..  math::
+        :label: math-vonmises
 
         \boldsymbol{A}_{v} = \sqrt{
             \frac{3}{2} \text{dev}(\boldsymbol{A}) : \text{dev}(\boldsymbol{A})
         }
 
-    Parameters
-    ----------
-    A : (M, M, ...) ndarray
-        Symmetric matrices for which the equivalent von Mises value will be computed.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> stress = np.array([1, 1.1, 1.2, 1.1, 1.3, 1.4, 1.2, 1.4, 1.5]).reshape(3, 3, 1)
+    >>> fem.math.equivalent_von_mises(stress)
+    array([3.74432905])
 
-    Returns
-    -------
-    AvM : (...) ndarray
-        The equivalent von Mises values.
+    >>> stress = np.diag([3, 1, 1]).reshape(3, 3, 1)
+    >>> fem.math.equivalent_von_mises(stress)
+    array([2.])
     """
 
-    if A.shape[:2] == (3, 3):
-        pass
-
-    elif A.shape[:2] == (2, 2):
-        zeros = len(A.shape[2:]) * [(0, 0)]
-        A = np.pad(A, ((0, 1), (0, 1), *zeros))
-
-    else:
-        raise TypeError(
-            "Square matrices must be two- or three-dimensional on the first two axes."
-        )
+    if A.shape[:2] != (3, 3):
+        raise TypeError("Only three-dimensional second-order tensors are supported.")
 
     devA = dev(A)
     return np.sqrt(3 / 2 * ddot(devA, devA))

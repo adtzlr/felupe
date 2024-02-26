@@ -105,10 +105,9 @@ def test_math():
 
     assert fem.math.ddot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 5, 7)
     assert fem.math.equivalent_von_mises(C).shape == (5, 7)
-    assert fem.math.equivalent_von_mises(C[:2, :2, ...]).shape == (5, 7)
 
     with pytest.raises(TypeError):
-        fem.math.equivalent_von_mises(C[:2, ...])
+        fem.math.equivalent_von_mises(C[:2, :2, ...])
         fem.math.ddot(A, B, mode=(4, 3))
         fem.math.ddot(B, B, mode=(3, 3))
 
@@ -139,6 +138,9 @@ def test_math():
 
     fem.math.tovoigt(C)
     fem.math.tovoigt(C[:2, :2])
+    with pytest.raises(TypeError):
+        fem.math.tovoigt(C[:, :2])
+
     fem.math.eigvals(C)
     fem.math.eigvals(C[:2, :2])
     fem.math.eigvals(C, shear=True)

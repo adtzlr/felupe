@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `NearlyIncompressible` as a simplified version of `ThreeFieldVariation`. A constitutive material formulation on the distortional part of a strain energy function in terms of the deformation gradient has to be provided, e.g. by `umat = NearlyIncompressible(NeoHooke(mu=1), bulk=5000)`.
 - Add optional kwargs to a job-callback `Job(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)` and `CharacteristicCurve(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)`.
 - Add `DiscreteGeometry` properties `x`, `y` and `z` to access the colums of the points-array.
-- Add new math-function `math.equivalent_von_mises(A)`.
+- Add new math-function `math.equivalent_von_mises(A)` for three-dimensional second-order tensors.
 - Add the evaluation of the equivalent von Mises Cauchy stress as cell-data in `ViewSolid`, available as `Solid.plot("Equivalent of Cauchy Stress")`.
 - Add `mesh.stack(meshes)` as method to `MeshContainer.stack()`. Note that this only supports mesh containers with meshes of same cell-types.
 - Add `NeoHooke.gradient(out=None)` and `NeoHooke.hessian(out=None)` for a location to store the results. Also for `NeoHookeCompressible`.

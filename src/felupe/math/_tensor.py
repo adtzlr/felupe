@@ -381,10 +381,57 @@ def det(A, out=None):
     return detA
 
 
-def dev(A):
-    "Deviator of matrix A."
+def dev(A, out=None):
+    r"""Return the deviatoric parts of second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray
+        The array of second-order tensors.
+    out : ndarray or None, optional
+        If provided, the calculation is done into this array.
+
+    Returns
+    -------
+    ndarray
+        The deviatoric parts of matrices for array ``A``.
+
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The deviatoric part of a three-dimensional second-order tensor is obtained by Eq.
+    :eq:`math-dev`.
+
+    ..  math::
+        :label: math-dev
+
+        \text{dev} \left( \boldsymbol{A} \right) = \boldsymbol{A}
+            - \frac{\text{tr}(\boldsymbol{A})}{3} \boldsymbol{1}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(18, dtype=float).reshape(2, 3, 3).T)
+    >>> A[..., 0]
+    array([[0., 1., 2.],
+           [3., 4., 5.],
+           [6., 7., 8.]])
+
+    >>> fem.math.sym(A)[..., 0]
+    array([[0., 2., 4.],
+           [2., 4., 6.],
+           [4., 6., 8.]])
+
+    See Also
+    --------
+    numpy.eye : Return a 2-D array with ones on the diagonal and zeros elsewhere.
+    """
     dim = A.shape[0]
-    return A - trace(A) / dim * identity(A)
+    return np.add(A, -trace(A) / dim * identity(A), out=out)
 
 
 def cof(A):

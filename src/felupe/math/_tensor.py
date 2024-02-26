@@ -580,7 +580,57 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
 
 
 def tovoigt(A, strain=False):
-    "Convert (3, 3) tensor to (6, ) voigt notation."
+    r"""Return a three-dimensional second-order tensor in reduced symmetric (Voigt-
+    notation) vector/matrix storage.
+
+    Parameters
+    ----------
+    A : np.ndarray
+        Array with three-dimensional second-order tensors.
+    strain : bool, optional
+        A flag to double the off-diagonal (shear) values for strain-like tensors.
+        Default is False.
+
+    Returns
+    -------
+    np.ndarray
+        A three-dimensional second-order tensor in reduced symmetric (Voigt) vector/
+        matrix storage.
+
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+    
+    For a symmetric three-dimensional second-order tensor :math:`C_{ij} = C_{ji}`, the
+    upper triangle entries are inserted into a 6x1 vector, starting from the main
+    diagonal, followed by the consecutive next upper diagonals.
+
+    ..  math::
+
+        \boldsymbol{C} = \begin{bmatrix}
+            C_{11} & C_{12} & C_{13} \\
+            C_{12} & C_{22} & C_{23} \\
+            C_{13} & C_{23} & C_{33}
+        \end{bmatrix} \qquad \longrightarrow \boldsymbol{C} = \begin{bmatrix}
+            C_{11} \\ C_{22} \\ C_{33} \\ C_{12} \\ C_{23} \\ C_{13}
+        \end{bmatrix}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+
+    >>> C = np.array([1.0, 1.3, 1.5, 1.3, 1.1, 1.4, 1.5, 1.4, 1.2]).reshape(3, 3, 1)
+    >>> C[..., 0]
+    array([[1. , 1.3, 1.5],
+           [1.3, 1.1, 1.4],
+           [1.5, 1.4, 1.2]])
+    
+    >>> fem.math.tovoigt(C)[..., 0]
+    array([1. , 1.1, 1.2, 1.3, 1.4, 1.5])
+
+    """
     dim = A.shape[0]
     if dim == 2:
         B = np.zeros((3, *A.shape[2:]))

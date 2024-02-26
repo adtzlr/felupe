@@ -164,7 +164,72 @@ def sym(A, out=None):
 
 
 def dya(A, B, mode=2, parallel=False, **kwargs):
-    "Dyadic (outer or kronecker) product of two tensors."
+    """Return the dyadic product of two second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray
+        The first second-order tensors.
+    B : ndarray
+        The second second-order tensors.
+    mode : int, optional
+        Mode of operation. Return the dyadic products of two second-order tensors with
+        2 and the dyadic products of two first-order tensors with 1. Default is 2.
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    ** kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray
+        The array of dyadic products-
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions. The definition of the dyadic product is given in Eq.
+    :eq:`math-dya2` for second-order tensors
+
+    ..  math::
+        :label: math-dya2
+
+        \mathbb{C} &= \boldsymbol{A} \otimes \boldsymbol{B}
+
+        \mathbb{C}_{ijkl} &= A_{ij} \otimes B_{kl}
+
+    and in Eq. :eq:`math-dya1` for two first-order tensors.
+
+    ..  math::
+        :label: math-dya1
+
+        \boldsymbol{C} &= \boldsymbol{a} \otimes \boldsymbol{b}
+
+        C_{ij} &= a_{i} \otimes b_{j}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(18, dtype=float).reshape(2, 3, 3).T)
+    >>> B = fem.math.transpose(np.arange(100, 118, dtype=float).reshape(2, 3, 3).T)
+    >>> C = fem.math.dya(A, B)
+    >>> C.shape
+    (3, 3, 3, 3, 2)
+
+    >>> C[..., 0].reshape(9, 9)
+    array([[  0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.],
+           [100., 101., 102., 103., 104., 105., 106., 107., 108.],
+           [200., 202., 204., 206., 208., 210., 212., 214., 216.],
+           [300., 303., 306., 309., 312., 315., 318., 321., 324.],
+           [400., 404., 408., 412., 416., 420., 424., 428., 432.],
+           [500., 505., 510., 515., 520., 525., 530., 535., 540.],
+           [600., 606., 612., 618., 624., 630., 636., 642., 648.],
+           [700., 707., 714., 721., 728., 735., 742., 749., 756.],
+           [800., 808., 816., 824., 832., 840., 848., 856., 864.]])
+
+    """
 
     if mode == 2:
         return np.multiply(A[:, :, None, None], B[None, None, :, :], **kwargs)

@@ -598,7 +598,7 @@ def cof(A, sym=False, out=None):
 
         \text{cof}(\boldsymbol{A}) &= \det (\boldsymbol{A}) \boldsymbol{A}^{-T}
 
-        \text{cof}(\boldsymbol{A}) &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
+        \text{cof}(\boldsymbol{A}) &= \begin{bmatrix}
                 \boldsymbol{A}_2 \times \boldsymbol{A}_3 &
                 \boldsymbol{A}_3 \times \boldsymbol{A}_1 &
                 \boldsymbol{A}_1 \times \boldsymbol{A}_2

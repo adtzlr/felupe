@@ -762,7 +762,7 @@ def cdya(A, B, parallel=False, out=None, **kwargs):
             \boldsymbol{A} \overset{il}{\otimes} \boldsymbol{B}
         \right)
 
-        \mathbb{C}_{ijkl} &= \frac{1}{2} \left( A_{ik} B_{jl} + A_{il} B_{kj} \right)
+        \mathbb{C}_{ijkl} &= \frac{1}{2} \left( A_{ik}~B_{jl} + A_{il}~B_{kj} \right)
 
     Examples
     --------

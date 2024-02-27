@@ -283,9 +283,9 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
             \text{cof}(\boldsymbol{A})^T
 
         \boldsymbol{A}^{-1} &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
-                \left( \boldsymbol{A}_2 \cross \boldsymbol{A}_3 \right)^T \\
-                \left( \boldsymbol{A}_3 \cross \boldsymbol{A}_1 \right)^T \\
-                \left( \boldsymbol{A}_1 \cross \boldsymbol{A}_2 \right)^T
+                \left( \boldsymbol{A}_2 \times \boldsymbol{A}_3 \right)^T \\
+                \left( \boldsymbol{A}_3 \times \boldsymbol{A}_1 \right)^T \\
+                \left( \boldsymbol{A}_1 \times \boldsymbol{A}_2 \right)^T
             \end{bmatrix}
 
     with the column (grid) vectors :math:`\boldsymbol{A}_j`, see Eq. :eq:`math-gridvec`.
@@ -599,9 +599,9 @@ def cof(A, sym=False, out=None):
         \text{cof}(\boldsymbol{A}) &= \det (\boldsymbol{A}) \boldsymbol{A}^{-T}
 
         \text{cof}(\boldsymbol{A}) &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
-                \boldsymbol{A}_2 \cross \boldsymbol{A}_3 &
-                \boldsymbol{A}_3 \cross \boldsymbol{A}_1 &
-                \boldsymbol{A}_1 \cross \boldsymbol{A}_2
+                \boldsymbol{A}_2 \times \boldsymbol{A}_3 &
+                \boldsymbol{A}_3 \times \boldsymbol{A}_1 &
+                \boldsymbol{A}_1 \times \boldsymbol{A}_2
             \end{bmatrix}
 
     with the column (grid) vectors :math:`\boldsymbol{A}_j`, see Eq. :eq:`math-gridv`.

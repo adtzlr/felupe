@@ -348,7 +348,7 @@ def det(A, out=None):
     The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
 
-    The determinat of a second-order tensor is obtained by Eq. :eq:`math-det`.
+    The determinant of a second-order tensor is obtained by Eq. :eq:`math-det`.
 
     ..  math::
         :label: math-det

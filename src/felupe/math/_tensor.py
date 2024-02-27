@@ -905,7 +905,7 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
 
         \qquad c_{i} &= \mathcal{A}_{ijk} : B_{jk}
 
-    by Eq. :eq:`math-ddot24` for a second-order and a fourth-order tensor,
+    by Eq. :eq:`math-ddot24` for a second-order and a fourth-order tensor
 
     ..  math::
         :label: math-ddot24

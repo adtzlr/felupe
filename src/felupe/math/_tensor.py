@@ -193,7 +193,7 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
 
         \mathbb{C} &= \boldsymbol{A} \otimes \boldsymbol{B}
 
-        \mathbb{C}_{ijkl} &= A_{ij} B_{kl}
+        \mathbb{C}_{ijkl} &= A_{ij}\ B_{kl}
 
     and in Eq. :eq:`math-dya1` for two first-order tensors.
 
@@ -623,7 +623,7 @@ def cdya_ik(A, B, parallel=False, **kwargs):
 
         \mathbb{C} &= \boldsymbol{A} \overset{ik}{\otimes} \boldsymbol{B}
 
-        \mathbb{C}_{ijkl} &= A_{ik} B_{jl}
+        \mathbb{C}_{ijkl} &= A_{ik}\ B_{jl}
 
     Examples
     --------
@@ -691,7 +691,7 @@ def cdya_il(A, B, parallel=False, **kwargs):
 
         \mathbb{C} &= \boldsymbol{A} \overset{il}{\otimes} \boldsymbol{B}
 
-        \mathbb{C}_{ijkl} &= A_{il} B_{kj}
+        \mathbb{C}_{ijkl} &= A_{il}\ B_{kj}
 
     Examples
     --------

@@ -329,7 +329,58 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
 
 
 def det(A, out=None):
-    "Return the determinant of symmetric matrices A."
+    r"""Return the determinants of second order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, M, ...)
+        The array of second-order tensors.
+    out : ndarray or None, optional
+        If provided, the calculation is done into this array.
+
+    Returns
+    -------
+    ndarray of shape (...)
+        Array with the determinants.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The determinat of a second-order tensor is obtained by Eq. :eq:`math-det`.
+
+    ..  math::
+        :label: math-det
+
+        \det \left( \boldsymbol{A} \right) &=
+            A_{11}~A_{22}~A_{33} +
+            A_{12}~A_{23}~A_{31} +
+            A_{13}~A_{21}~A_{32} -
+            A_{31}~A_{22}~A_{13} -
+            A_{32}~A_{23}~A_{11} -
+            A_{33}~A_{21}~A_{12}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T) / 10
+    >>> A += np.eye(3).reshape(3, 3, 1)
+    >>> A[..., 0]
+    >>> A.shape
+    (3, 3, 1)
+
+    >>> A[..., 0]
+    array([[1. , 0.1, 0.2],
+           [0.3, 1.4, 0.5],
+           [0.6, 0.7, 1.8]])
+
+    >>> fem.math.det(A)[..., 0]
+    array(2.02)
+
+    """
 
     detA = out
     if detA is None:
@@ -526,6 +577,7 @@ def trace(A, out=None):
     >>> A.shape
     (3, 3, 1)
 
+    >>> A[..., 0]
     array([[0., 1., 2.],
            [3., 4., 5.],
            [6., 7., 8.]])

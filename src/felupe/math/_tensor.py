@@ -174,7 +174,7 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
         2 and the dyadic products of two first-order tensors with 1. Default is 2.
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
-    ** kwargs : dict, optional
+    **kwargs : dict, optional
         Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
 
     Returns
@@ -604,7 +604,7 @@ def cdya_ik(A, B, parallel=False, **kwargs):
         Array with second-order tensors.
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
-    ** kwargs : dict, optional
+    **kwargs : dict, optional
         Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
 
     Returns
@@ -672,7 +672,7 @@ def cdya_il(A, B, parallel=False, **kwargs):
         Array with second-order tensors.
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
-    ** kwargs : dict, optional
+    **kwargs : dict, optional
         Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
 
     Returns
@@ -740,7 +740,7 @@ def cdya(A, B, parallel=False, out=None, **kwargs):
         Array with second-order tensors.
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
-    ** kwargs : dict, optional
+    **kwargs : dict, optional
         Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
 
     Returns
@@ -840,7 +840,66 @@ def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
 
 
 def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
-    "Double-Dot-product of A and B with inputs of `n` trailing axes."
+    r"""Return the double-dot products of first-, second-, third- or fourth-order
+    tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, M, ...)
+        Array with first-, second-, third- or fourth-order tensors.
+    B : ndarray of shape (M, M, ...)
+        Array with first-, second-, third- or fourth-order tensors.
+    mode : tuple of int, optional
+        Mode of operation. Return the double-dot products of two second-order tensors
+        with (2, 2), of a second-order and a fourth-order tensor with (2, 4) and so on.
+        Default is (2, 2).
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray of shape (...)
+        Array with the sums along the diagonals.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The trace of a second-order tensor is obtained by Eq. :eq:`math-trace`.
+
+    ..  math::
+        :label: math-trace
+
+        \text{tr} \left( \boldsymbol{A} \right) &= \boldsymbol{A} : \boldsymbol{1}
+
+        A_{ii} &= A_{ij} : \delta_{ij}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
+    >>> A[..., 0]
+    >>> A.shape
+    (3, 3, 1)
+
+    >>> A[..., 0]
+    array([[0., 1., 2.],
+           [3., 4., 5.],
+           [6., 7., 8.]])
+
+    >>> fem.math.trace(A)[..., 0]
+    array(12.)
+
+    See Also
+    --------
+    numpy.trace : Return the sum along diagonals of the array.
+
+    """
 
     if parallel:
         einsum = einsumt

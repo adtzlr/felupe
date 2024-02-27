@@ -267,7 +267,7 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
 
     Notes
     -----
-    The first two axes are the matrix dimensions and all remaining trailing axes are
+    The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
 
     The inverse of a three-dimensional second-order tensor is obtained by Eq.

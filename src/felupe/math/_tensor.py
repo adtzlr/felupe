@@ -883,7 +883,7 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
     ..  math::
         :label: math-ddot44
 
-        \boldsymbol{C} &= \mathbb{A} : \mathbb{B}
+        \mathbb{C} &= \mathbb{A} : \mathbb{B}
 
         \mathbb{C}_{ijmn} &=  \mathbb{A}_{ijkl} : \mathbb{B}_{klmn}
 

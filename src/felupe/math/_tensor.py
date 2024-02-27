@@ -243,9 +243,87 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
 
 
 def inv(A, determinant=None, full_output=False, sym=False, out=None):
-    """ "Inverse of A with optionally pre-calculated determinant,
-    optional additional output of the calculated determinant or
-    a simplified calculation of the inverse for sym. matrices."""
+    r"""Return the inverses of second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (1, 1, ...), (2, 2, ...) or (3, 3, ...)
+        The array of second-order tensors.
+    determinant : ndarray or None, optional
+        The array with the pre-evaluated determinants of the second-order tensors (
+        default is None).
+    full_output : bool, optional
+        A flag to return the array of inverses and the determinants (default is False).
+    sym : bool, optional
+        A flag to assume symmetric second-order tensors. Only the upper-triangle
+        elements are taken into account. Default is False.
+    out : ndarray or None, optional
+        If provided, the calculation is done into this array.
+
+    Returns
+    -------
+    ndarray of shape (1, 1, ...), (2, 2, ...) or (3, 3, ...)
+        The inverses of second-order tensors.
+
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The inverse of a three-dimensional second-order tensor is obtained by Eq.
+    :eq:`math-inv`
+
+    ..  math::
+        :label: math-inv
+
+        \boldsymbol{A}^{-1} \boldsymbol{A} &= \boldsymbol{A} \boldsymbol{A}^{-1} =
+            \boldsymbol{1}
+
+        \boldsymbol{A}^{-1} &= \frac{1}{\det(\boldsymbol{A})}
+            \text{cof}(\boldsymbol{A})^T
+
+        \boldsymbol{A}^{-1} &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
+                \left( \boldsymbol{A}_2 \cross \boldsymbol{A}_3 \right)^T \\
+                \left( \boldsymbol{A}_3 \cross \boldsymbol{A}_1 \right)^T \\
+                \left( \boldsymbol{A}_1 \cross \boldsymbol{A}_2 \right)^T
+            \end{bmatrix}
+
+    with the column (grid) vectors :math:`\boldsymbol{A}_j`, see Eq. :eq:`math-gridvec`.
+
+    ..  math::
+        :label: math-gridvec
+
+        \boldsymbol{A} &= \begin{bmatrix}
+                \boldsymbol{A}_1 & \boldsymbol{A}_2 & \boldsymbol{A}_3
+            \end{bmatrix}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.array([1.0, 1.3, 1.5, 1.3, 1.1, 1.4, 1.5, 1.4, 1.2]).reshape(3, 3, 1)
+    >>> A[..., 0]
+    array([[1. , 1.3, 1.5],
+           [1.3, 1.1, 1.4],
+           [1.5, 1.4, 1.2]])
+    
+    >>> invA = fem.math.inv(A)
+    >>> invA[..., 0]
+    array([[-2.01892744,  1.70347003,  0.5362776 ],
+           [ 1.70347003, -3.31230284,  1.73501577],
+           [ 0.5362776 ,  1.73501577, -1.86119874]])
+    
+    >>> fem.math.dot(A, invA)[..., 0].round(3)
+    array([[ 1., -0.,  0.],
+           [-0.,  1.,  0.],
+           [-0., -0.,  1.]])
+
+    See Also
+    --------
+    felupe.math.det : Return the determinants of second order tensors.
+    felupe.math.cof : Return the cofactors of second order tensors.
+    """
 
     detAinvA = out
     if detAinvA is None:
@@ -449,11 +527,11 @@ def dev(A, out=None):
     Returns
     -------
     ndarray of shape (M, M, ...)
-        The deviatoric parts of matrices for array ``A``.
+        The deviatoric parts of second-order tensors.
 
     Notes
     -----
-    The first two axes are the matrix dimensions and all remaining trailing axes are
+    The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
 
     The deviatoric part of a three-dimensional second-order tensor is obtained by Eq.
@@ -489,9 +567,80 @@ def dev(A, out=None):
     return np.add(A, -trace(A) / dim * identity(A), out=out)
 
 
-def cof(A):
-    "Cofactor matrix of A (as a wrapper for the inverse of A)."
-    return transpose(inv(A, determinant=1.0))
+def cof(A, sym=False, out=None):
+    r"""Return the cofactors of second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (1, 1, ...), (2, 2, ...) or (3, 3, ...)
+        The array of second-order tensors.
+    sym : bool, optional
+        A flag to assume symmetric second-order tensors. Only the upper-triangle
+        elements are taken into account. Default is False.
+    out : ndarray or None, optional
+        If provided, the calculation is done into this array.
+
+    Returns
+    -------
+    ndarray of shape (1, 1, ...), (2, 2, ...) or (3, 3, ...)
+        The cofactors of second-order tensors.
+
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The inverse of a three-dimensional second-order tensor is obtained by Eq.
+    :eq:`math-cof`
+
+    ..  math::
+        :label: math-cof
+
+        \text{cof}(\boldsymbol{A}) &= \det (\boldsymbol{A}) \boldsymbol{A}^{-T}
+
+        \text{cof}(\boldsymbol{A})} &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
+                \boldsymbol{A}_2 \cross \boldsymbol{A}_3 &
+                \boldsymbol{A}_3 \cross \boldsymbol{A}_1 &
+                \boldsymbol{A}_1 \cross \boldsymbol{A}_2
+            \end{bmatrix}
+
+    with the column (grid) vectors :math:`\boldsymbol{A}_j`, see Eq. :eq:`math-gridv`.
+
+    ..  math::
+        :label: math-gridv
+
+        \boldsymbol{A} &= \begin{bmatrix}
+                \boldsymbol{A}_1 & \boldsymbol{A}_2 & \boldsymbol{A}_3
+            \end{bmatrix}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.array([1.0, 1.3, 1.5, 1.3, 1.1, 1.4, 1.5, 1.4, 1.2]).reshape(3, 3, 1)
+    >>> A[..., 0]
+    array([[1. , 1.3, 1.5],
+           [1.3, 1.1, 1.4],
+           [1.5, 1.4, 1.2]])
+
+    >>> cofA = fem.math.cof(A)
+    >>> cofA[..., 0]
+    array([[-0.64,  0.54,  0.17],
+           [ 0.54, -1.05,  0.55],
+           [ 0.17,  0.55, -0.59]])
+
+    >>> (fem.math.det(A) * fem.math.transpose(fem.math.inv(A)))[..., 0]
+    array([[-0.64,  0.54,  0.17],
+           [ 0.54, -1.05,  0.55],
+           [ 0.17,  0.55, -0.59]])
+
+    See Also
+    --------
+    felupe.math.det : Return the determinants of second order tensors.
+    felupe.math.inv : Return the inverses of second order tensors.
+    """
+    return transpose(inv(A, determinant=1.0, sym=sym, out=out))
 
 
 def eig(A, eig=np.linalg.eig):

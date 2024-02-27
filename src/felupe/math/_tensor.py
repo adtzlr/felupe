@@ -904,7 +904,7 @@ def tovoigt(A, strain=False):
     --------
     >>> import felupe as fem
     >>> import numpy as np
-
+    >>>
     >>> C = np.array([1.0, 1.3, 1.5, 1.3, 1.1, 1.4, 1.5, 1.4, 1.2]).reshape(3, 3, 1)
     >>> C[..., 0]
     array([[1. , 1.3, 1.5],

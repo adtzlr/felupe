@@ -293,7 +293,7 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
     ..  math::
         :label: math-gridvec
 
-        \boldsymbol{A} &= \begin{bmatrix}
+        \boldsymbol{A} = \begin{bmatrix}
                 \boldsymbol{A}_1 & \boldsymbol{A}_2 & \boldsymbol{A}_3
             \end{bmatrix}
 
@@ -598,7 +598,7 @@ def cof(A, sym=False, out=None):
 
         \text{cof}(\boldsymbol{A}) &= \det (\boldsymbol{A}) \boldsymbol{A}^{-T}
 
-        \text{cof}(\boldsymbol{A})} &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
+        \text{cof}(\boldsymbol{A}) &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
                 \boldsymbol{A}_2 \cross \boldsymbol{A}_3 &
                 \boldsymbol{A}_3 \cross \boldsymbol{A}_1 &
                 \boldsymbol{A}_1 \cross \boldsymbol{A}_2
@@ -609,7 +609,7 @@ def cof(A, sym=False, out=None):
     ..  math::
         :label: math-gridv
 
-        \boldsymbol{A} &= \begin{bmatrix}
+        \boldsymbol{A} = \begin{bmatrix}
                 \boldsymbol{A}_1 & \boldsymbol{A}_2 & \boldsymbol{A}_3
             \end{bmatrix}
 

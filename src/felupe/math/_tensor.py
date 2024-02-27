@@ -161,14 +161,14 @@ def sym(A, out=None):
 
 
 def dya(A, B, mode=2, parallel=False, **kwargs):
-    r"""Return the dyadic product of two second-order tensors.
+    r"""Return the dyadic product of two first-order or two second-order tensors.
 
     Parameters
     ----------
     A : ndarray of shape (N, ...) or (N, N, ...)
-        The first second-order tensors.
+        Array with first-order or second-order tensors.
     B : ndarray of shape (M, ...) or (M, M, ...)
-        The second second-order tensors.
+        Array with first-order or second-order tensors.
     mode : int, optional
         Mode of operation. Return the dyadic products of two second-order tensors with
         2 and the dyadic products of two first-order tensors with 1. Default is 2.
@@ -193,7 +193,7 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
 
         \mathbb{C} &= \boldsymbol{A} \otimes \boldsymbol{B}
 
-        \mathbb{C}_{ijkl} &= A_{ij} \otimes B_{kl}
+        \mathbb{C}_{ijkl} &= A_{ij} B_{kl}
 
     and in Eq. :eq:`math-dya1` for two first-order tensors.
 
@@ -209,11 +209,11 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
     >>> import felupe as fem
     >>> import numpy as np
     >>>
-    >>> A = fem.math.transpose(np.arange(18, dtype=float).reshape(2, 3, 3).T)
-    >>> B = fem.math.transpose(np.arange(100, 118, dtype=float).reshape(2, 3, 3).T)
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
+    >>> B = fem.math.transpose(np.arange(100, 109, dtype=float).reshape(1, 3, 3).T)
     >>> C = fem.math.dya(A, B)
     >>> C.shape
-    (3, 3, 3, 3, 2)
+    (3, 3, 3, 3, 1)
 
     >>> C[..., 0].reshape(9, 9)
     array([[  0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.,   0.],
@@ -225,6 +225,12 @@ def dya(A, B, mode=2, parallel=False, **kwargs):
            [600., 606., 612., 618., 624., 630., 636., 642., 648.],
            [700., 707., 714., 721., 728., 735., 742., 749., 756.],
            [800., 808., 816., 824., 832., 840., 848., 856., 864.]])
+
+    See Also
+    --------
+    felupe.math.cdya : Crossed-dyadic product of two second-order tensors.
+    felupe.math.cdya_ik : ik-crossed dyadic product of two second-order tensors.
+    felupe.math.cdya_il : il-crossed dyadic product of two second-order tensors.
 
     """
 
@@ -487,7 +493,66 @@ def trace(A):
 
 
 def cdya_ik(A, B, parallel=False, **kwargs):
-    "ik - crossed dyadic-product of A and B."
+    r"""Return the ik-crossed dyadic product of two second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape ((N, N, ...)
+        Array with second-order tensors.
+    B : ndarray of shape (M, M, ...)
+        Array with second-order tensors.
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    ** kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray of shape  (N, M, N, M, ...)
+        The array of ik-crossed dyadic products.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions. The definition of the ik-crossed dyadic product is
+    given in Eq. :eq:`math-cdya-ik`.
+
+    ..  math::
+        :label: math-cdya-ik
+
+        \mathbb{C} &= \boldsymbol{A} \overset{ik}{\otimes} \boldsymbol{B}
+
+        \mathbb{C}_{ijkl} &= A_{ik} B_{jl}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
+    >>> B = fem.math.transpose(np.arange(100, 109, dtype=float).reshape(1, 3, 3).T)
+    >>> C = fem.math.cdya_ik(A, B)
+    >>> C.shape
+    (3, 3, 3, 3, 1)
+
+    >>> C[..., 0].reshape(9, 9)
+    array([[  0.,   0.,   0., 100., 101., 102., 200., 202., 204.],
+           [  0.,   0.,   0., 103., 104., 105., 206., 208., 210.],
+           [  0.,   0.,   0., 106., 107., 108., 212., 214., 216.],
+           [300., 303., 306., 400., 404., 408., 500., 505., 510.],
+           [309., 312., 315., 412., 416., 420., 515., 520., 525.],
+           [318., 321., 324., 424., 428., 432., 530., 535., 540.],
+           [600., 606., 612., 700., 707., 714., 800., 808., 816.],
+           [618., 624., 630., 721., 728., 735., 824., 832., 840.],
+           [636., 642., 648., 742., 749., 756., 848., 856., 864.]])
+
+    See Also
+    --------
+    felupe.math.dya : Dyadic product of two first-order or two second-order tensors.
+    felupe.math.cdya : Crossed dyadic product of two second-order tensors.
+    felupe.math.cdya_il : il-crossed dyadic product of two second-order tensors.
+
+    """
     if parallel:
         einsum = einsumt
     else:
@@ -496,7 +561,66 @@ def cdya_ik(A, B, parallel=False, **kwargs):
 
 
 def cdya_il(A, B, parallel=False, **kwargs):
-    "il - crossed dyadic-product of A and B."
+    r"""Return the il-crossed dyadic product of two second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape ((N, N, ...)
+        Array with second-order tensors.
+    B : ndarray of shape (M, M, ...)
+        Array with second-order tensors.
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    ** kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray of shape  (N, M, N, M, ...)
+        The array of ik-crossed dyadic products.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions. The definition of the il-crossed dyadic product is
+    given in Eq. :eq:`math-cdya-il`.
+
+    ..  math::
+        :label: math-cdya-il
+
+        \mathbb{C} &= \boldsymbol{A} \overset{il}{\otimes} \boldsymbol{B}
+
+        \mathbb{C}_{ijkl} &= A_{il} B_{kj}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
+    >>> B = fem.math.transpose(np.arange(100, 109, dtype=float).reshape(1, 3, 3).T)
+    >>> C = fem.math.cdya_il(A, B)
+    >>> C.shape
+    (3, 3, 3, 3, 1)
+
+    >>> C[..., 0].reshape(9, 9)
+    array([[  0., 100., 200.,   0., 103., 206.,   0., 106., 212.],
+           [  0., 101., 202.,   0., 104., 208.,   0., 107., 214.],
+           [  0., 102., 204.,   0., 105., 210.,   0., 108., 216.],
+           [300., 400., 500., 309., 412., 515., 318., 424., 530.],
+           [303., 404., 505., 312., 416., 520., 321., 428., 535.],
+           [306., 408., 510., 315., 420., 525., 324., 432., 540.],
+           [600., 700., 800., 618., 721., 824., 636., 742., 848.],
+           [606., 707., 808., 624., 728., 832., 642., 749., 856.],
+           [612., 714., 816., 630., 735., 840., 648., 756., 864.]])
+
+    See Also
+    --------
+    felupe.math.dya : Dyadic product of two first-order or two second-order tensors.
+    felupe.math.cdya_ik : ik-crossed dyadic product of two second-order tensors.
+    felupe.math.cdya : Crossed dyadic product of two second-order tensors.
+
+    """
     if parallel:
         einsum = einsumt
     else:
@@ -505,7 +629,69 @@ def cdya_il(A, B, parallel=False, **kwargs):
 
 
 def cdya(A, B, parallel=False, out=None, **kwargs):
-    "symmetric - crossed dyadic-product of A and B."
+    r"""Return the crossed dyadic product of two second-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape ((M, M, ...)
+        Array with second-order tensors.
+    B : ndarray of shape (M, M, ...)
+        Array with second-order tensors.
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    ** kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray of shape  (M, M, M, M, ...)
+        The array of ik-crossed dyadic products.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions. The definition of the crossed dyadic product is
+    given in Eq. :eq:`math-cdya`.
+
+    ..  math::
+        :label: math-cdya
+
+        \mathbb{C} &= \boldsymbol{A} \odot \boldsymbol{B} = \frac{1}{2} \left(
+            \boldsymbol{A} \overset{ik}{\otimes} \boldsymbol{B} +
+            \boldsymbol{A} \overset{il}{\otimes} \boldsymbol{B}
+        \right)
+
+        \mathbb{C}_{ijkl} &= \frac{1}{2} \left( A_{ik} B_{jl} + A_{il} B_{kj} \right)
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
+    >>> B = fem.math.transpose(np.arange(100, 109, dtype=float).reshape(1, 3, 3).T)
+    >>> C = fem.math.cdya(A, B)
+    >>> C.shape
+    (3, 3, 3, 3, 1)
+
+    >>> C[..., 0].reshape(9, 9)
+    array([[  0. ,  50. , 100. ,  50. , 102. , 154. , 100. , 154. , 208. ],
+           [  0. ,  50.5, 101. ,  51.5, 104. , 156.5, 103. , 157.5, 212. ],
+           [  0. ,  51. , 102. ,  53. , 106. , 159. , 106. , 161. , 216. ],
+           [300. , 351.5, 403. , 354.5, 408. , 461.5, 409. , 464.5, 520. ],
+           [306. , 358. , 410. , 362. , 416. , 470. , 418. , 474. , 530. ],
+           [312. , 364.5, 417. , 369.5, 424. , 478.5, 427. , 483.5, 540. ],
+           [600. , 653. , 706. , 659. , 714. , 769. , 718. , 775. , 832. ],
+           [612. , 665.5, 719. , 672.5, 728. , 783.5, 733. , 790.5, 848. ],
+           [624. , 678. , 732. , 686. , 742. , 798. , 748. , 806. , 864. ]])
+
+    See Also
+    --------
+    felupe.math.dya : Dyadic product of two first-order or two second-order tensors.
+    felupe.math.cdya_ik : ik-crossed dyadic product of two second-order tensors.
+    felupe.math.cdya_il : il-crossed dyadic product of two second-order tensors.
+
+    """
     res = cdya_ik(A, B, parallel=parallel, out=out, **kwargs)
     res = np.add(res, cdya_il(A, B, parallel=parallel, **kwargs), out=res)
     return np.multiply(res, 0.5, out=res)
@@ -640,7 +826,7 @@ def tovoigt(A, strain=False):
     for i6, (i, j) in enumerate(ij):
         B[i6] = A[i, j]
     if strain:
-        B[dim[0]:] *= 2
+        B[dim[0] :] *= 2
     return B
 
 

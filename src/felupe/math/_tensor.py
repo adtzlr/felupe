@@ -605,7 +605,7 @@ def cdya_ik(A, B, parallel=False, **kwargs):
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
     ** kwargs : dict, optional
-        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
 
     Returns
     -------
@@ -673,7 +673,7 @@ def cdya_il(A, B, parallel=False, **kwargs):
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
     ** kwargs : dict, optional
-        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
 
     Returns
     -------
@@ -741,7 +741,7 @@ def cdya(A, B, parallel=False, out=None, **kwargs):
     parallel : bool, optional
         A flag to enable a threaded evaluation of the results (default is False).
     ** kwargs : dict, optional
-        Optional keyword-arguments for :func:`numpy.multiply`, e.g. ``out=None``.
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
 
     Returns
     -------

@@ -861,21 +861,68 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
     Returns
     -------
     ndarray of shape (...)
-        Array with the sums along the diagonals.
+        Array with the double-dot products.
 
     Notes
     -----
     The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
 
-    The trace of a second-order tensor is obtained by Eq. :eq:`math-trace`.
+    The double-dot product is obtained by Eq. :eq:`math-ddot22` for two second-order
+    tensors,
 
     ..  math::
-        :label: math-trace
+        :label: math-ddot22
 
-        \text{tr} \left( \boldsymbol{A} \right) &= \boldsymbol{A} : \boldsymbol{1}
+        c &= \boldsymbol{A} : \boldsymbol{B}
 
-        A_{ii} &= A_{ij} : \delta_{ij}
+        c &= A_{ij} : B_{ij}
+
+    by Eq. :eq:`math-ddot44` for two fourth-order tensors,
+
+    ..  math::
+        :label: math-ddot44
+
+        \boldsymbol{C} &= \mathbb{A} : \mathbb{B}
+
+        \mathbb{C}_{ijmn} &=  \mathbb{A}_{ijkl} : \mathbb{B}_{klmn}
+
+    by Eq. :eq:`math-ddot23` for a second-order and a third-order tensor,
+
+    ..  math::
+        :label: math-ddot23
+
+        \boldsymbol{c} = \boldsymbol{A} : \mathcal{B}
+
+        \qquad c_{k} &= A_{ij} : \mathcal{B}_{ijk}
+
+    by Eq. :eq:`math-ddot32` for a third-order and a second-order tensor,
+
+    ..  math::
+        :label: math-ddot32
+
+        \boldsymbol{c} = \mathcal{A} : \boldsymbol{A}
+
+        \qquad c_{i} &= \mathcal{A}_{ijk} : B_{jk}
+
+    by Eq. :eq:`math-ddot24` for a second-order and a fourth-order tensor,
+
+    ..  math::
+        :label: math-ddot24
+
+        \boldsymbol{C} &= \boldsymbol{A} : \mathbb{B}
+
+        C_{kl} &= A_{ij} : \mathbb{B}_{ijkl}
+
+    and by Eq. :eq:`math-ddot42` for a fourth-order and a second-order tensor.
+
+    ..  math::
+        :label: math-ddot42
+
+        \boldsymbol{C} &= \mathbb{A} : \boldsymbol{A}
+
+        C_{ij} &= \mathbb{A}_{ijkl} : B_{kl}
+
 
     Examples
     --------
@@ -883,21 +930,15 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
     >>> import numpy as np
     >>>
     >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
-    >>> A[..., 0]
-    >>> A.shape
-    (3, 3, 1)
+    >>> B = A + 10
 
-    >>> A[..., 0]
-    array([[0., 1., 2.],
-           [3., 4., 5.],
-           [6., 7., 8.]])
+    >>> fem.math.ddot(A, B)[..., 0]
+    array(564.)
 
-    >>> fem.math.trace(A)[..., 0]
-    array(12.)
-
-    See Also
-    --------
-    numpy.trace : Return the sum along diagonals of the array.
+    >>> fem.math.ddot(fem.math.dya(A, A), B, mode=(4, 2))[..., 0]
+    array([[   0.,  564., 1128.],
+           [1692., 2256., 2820.],
+           [3384., 3948., 4512.]])
 
     """
 

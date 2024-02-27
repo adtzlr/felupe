@@ -418,7 +418,7 @@ def dev(A, out=None):
     >>> import felupe as fem
     >>> import numpy as np
     >>>
-    >>> A = fem.math.transpose(np.arange(18, dtype=float).reshape(2, 3, 3).T)
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
     >>> A[..., 0]
     array([[0., 1., 2.],
            [3., 4., 5.],
@@ -487,9 +487,58 @@ def majortranspose(A):
     return transpose(A, mode=2)
 
 
-def trace(A):
-    "The sum of the diagonal elements of A."
-    return np.trace(A)
+def trace(A, out=None):
+    r"""Return the sums along the diagonals of second order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, M, ...)
+        The array of second-order tensors.
+    out : ndarray or None, optional
+        If provided, the calculation is done into this array.
+
+    Returns
+    -------
+    ndarray of shape (...)
+        Array with the sums along the diagonals.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The trace of a second-order tensor is obtained by Eq. :eq:`math-trace`.
+
+    ..  math::
+        :label: math-trace
+
+        \text{tr} \left( \boldsymbol{A} \right) &= \boldsymbol{A} : \boldsymbol{1}
+
+        A_{ii} &= A_{ij} : \delta_{ij}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
+    >>> A[..., 0]
+    >>> A.shape
+    (3, 3, 1)
+
+    array([[0., 1., 2.],
+           [3., 4., 5.],
+           [6., 7., 8.]])
+
+    >>> fem.math.trace(A)[..., 0]
+    array(12.)
+
+    See Also
+    --------
+    numpy.trace : Return the sum along diagonals of the array.
+
+    """
+    return np.trace(A, out=out)
 
 
 def cdya_ik(A, B, parallel=False, **kwargs):

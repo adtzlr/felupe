@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `mesh.stack(meshes)` as method to `MeshContainer.stack()`. Note that this only supports mesh containers with meshes of same cell-types.
 - Add `NeoHooke.gradient(out=None)` and `NeoHooke.hessian(out=None)` for a location to store the results. Also for `NeoHookeCompressible`.
 - Add `out`-keyword to `gradient()` and `hessian` of `NearlyIncompressible` and `ThreeFieldVariation`.
+- Add optional initial state variables in `ViewMaterial(statevars=None)` and `ViewMaterialIncompressible(statevars=None)`.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.

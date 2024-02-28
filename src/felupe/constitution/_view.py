@@ -155,7 +155,7 @@ class ViewMaterial(PlotMaterial):
         self.ux = ux
         self.ps = ps
         self.bx = bx
-        self.statevars_included = (self.umat.x[-1].size > 0,)
+        self.statevars_included = np.prod(self.umat.x[-1].shape) > 0
         self.statevars = statevars
 
     def uniaxial(self, stretches=None):
@@ -402,7 +402,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         self.ux = ux
         self.ps = ps
         self.bx = bx
-        self.statevars_included = self.umat.x[-1].size > 0
+        self.statevars_included = np.prod(self.umat.x[-1].shape) > 0
         self.statevars = statevars
 
     def uniaxial(self, stretches=None):

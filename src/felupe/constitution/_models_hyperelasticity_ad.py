@@ -19,11 +19,16 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 from functools import wraps
 
 import numpy as np
-from tensortrax.math import log, sqrt
+from tensortrax.math import linalg, log, special, sqrt
 from tensortrax.math import sum as sum1
 from tensortrax.math import trace
-from tensortrax.math._linalg import det, eigvalsh, inv
-from tensortrax.math._special import from_triu_1d, triu_1d
+
+det = linalg.det
+inv = linalg.inv
+eigvalsh = linalg.eigvalsh
+
+from_triu_1d = special.from_triu_1d
+triu_1d = special.triu_1d
 
 
 def isochoric_volumetric_split(fun):

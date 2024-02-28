@@ -14,11 +14,13 @@ All notable changes to this project will be documented in this file. The format 
 - Add `mesh.stack(meshes)` as method to `MeshContainer.stack()`. Note that this only supports mesh containers with meshes of same cell-types.
 - Add `NeoHooke.gradient(out=None)` and `NeoHooke.hessian(out=None)` for a location to store the results. Also for `NeoHookeCompressible`.
 - Add `out`-keyword to `gradient()` and `hessian` of `NearlyIncompressible` and `ThreeFieldVariation`.
+- Add optional initial state variables in `ViewMaterial(statevars=None)` and `ViewMaterialIncompressible(statevars=None)`.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.
 - Enhance the performance of `NeoHooke`, `NeoHookeCompressible`, `SolidBody` and `SolidBodyNearlyIncompressible`.
 - Enhance the performance of `math.inv(out=None)` and `math.det(out=None)`.
+- Use only the offical API of `tensortrax`. A workaround is used to ensure compatibility with `tensortrax` <= v0.17.1.
 
 # Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.

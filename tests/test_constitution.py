@@ -307,25 +307,28 @@ def test_umat_hyperelastic(savefig=False):
     def neo_hooke(C, mu=1):
         return mu / 2 * (tm.linalg.det(C) ** (-1 / 3) * tm.trace(C) - 3)
 
-    for model, kwargs in [
-        (neo_hooke, {"mu": 1}),
-        (fem.constitution.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}),
-        (fem.constitution.neo_hooke, {"mu": 1}),
-        (fem.constitution.mooney_rivlin, {"C10": 0.3, "C01": 0.8}),
-        (fem.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}),
+    for model, kwargs, incompressible in [
+        (neo_hooke, {"mu": 1}, True),
+        (fem.constitution.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}, False),
+        (fem.constitution.neo_hooke, {"mu": 1}, True),
+        (fem.constitution.mooney_rivlin, {"C10": 0.3, "C01": 0.8}, True),
+        (fem.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}, True),
         (
             fem.constitution.third_order_deformation,
             {"C10": 0.5, "C01": 0.1, "C11": 0.01, "C20": -0.1, "C30": 0.02},
+            True,
         ),
-        (fem.constitution.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}),
-        (fem.constitution.arruda_boyce, {"C1": 1.0, "limit": 3.2}),
+        (fem.constitution.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}, True),
+        (fem.constitution.arruda_boyce, {"C1": 1.0, "limit": 3.2}, True),
         (
             fem.constitution.extended_tube,
             {"Gc": 0.1867, "Ge": 0.2169, "beta": 0.2, "delta": 0.09693},
+            True,
         ),
         (
             fem.constitution.van_der_waals,
             {"mu": 1.0, "beta": 0.1, "a": 0.5, "limit": 5.0},
+            True,
         ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
@@ -336,7 +339,7 @@ def test_umat_hyperelastic(savefig=False):
         if savefig:
             ax = umat.screenshot(
                 filename=f"../docs/felupe/images/umat_{umat.fun.__name__}.png",
-                incompressible=True,
+                incompressible=incompressible,
             )
 
     for incompressible in [False, True]:

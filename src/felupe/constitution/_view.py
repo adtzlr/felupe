@@ -121,6 +121,9 @@ class ViewMaterial(PlotMaterial):
     bx : ndarray, optional
         Array with stretches for equi-biaxial tension. Default is
         ``linsteps([1.0, 1.75], num=15)```.
+    statevars : ndarray or None, optional
+        Array with state variables (default is None). If None, the state variables are
+        assumed to be initially zero.
 
     Examples
     --------
@@ -146,12 +149,14 @@ class ViewMaterial(PlotMaterial):
         ux=linsteps([0.7, 2.5], num=36),
         ps=linsteps([1, 2.5], num=30),
         bx=linsteps([1, 1.75], num=15),
+        statevars=None,
     ):
         self.umat = umat
         self.ux = ux
         self.ps = ps
         self.bx = bx
-        self.statevars_included = self.umat.x[-1].size > 0
+        self.statevars_included = (self.umat.x[-1].size > 0,)
+        self.statevars = statevars
 
     def uniaxial(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a uniaxial
@@ -180,11 +185,12 @@ class ViewMaterial(PlotMaterial):
             λ2 = λ3
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
             if self.statevars_included:
-                statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                if self.statevars is None:
+                    self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
                 P = np.zeros_like(F)
                 for increment, defgrad in enumerate(F.T):
                     P[..., [increment]], statevars = self.umat.gradient(
-                        [F[..., [increment]], statevars]
+                        [F[..., [increment]], self.statevars]
                     )
             else:
                 P, statevars = self.umat.gradient([F, None])
@@ -196,14 +202,15 @@ class ViewMaterial(PlotMaterial):
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
-            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            if self.statevars is None:
+                self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
             P = np.zeros_like(F)
             for increment, defgrad in enumerate(F.T):
-                P[..., [increment]], statevars = self.umat.gradient(
-                    [F[..., [increment]], statevars]
+                P[..., [increment]], self.statevars = self.umat.gradient(
+                    [F[..., [increment]], self.statevars]
                 )
         else:
-            P, statevars = self.umat.gradient([F, None])
+            P, self.statevars = self.umat.gradient([F, None])
 
         valid = det(F) > np.sqrt(np.finfo(float).eps)
         if not np.all(valid):
@@ -239,11 +246,12 @@ class ViewMaterial(PlotMaterial):
         def fun(λ3):
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
             if self.statevars_included:
-                statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                if self.statevars is None:
+                    self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
                 P = np.zeros_like(F)
                 for increment, defgrad in enumerate(F.T):
                     P[..., [increment]], statevars = self.umat.gradient(
-                        [F[..., [increment]], statevars]
+                        [F[..., [increment]], self.statevars]
                     )
             else:
                 P, statevars = self.umat.gradient([F, None])
@@ -255,14 +263,15 @@ class ViewMaterial(PlotMaterial):
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
-            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            if self.statevars is None:
+                self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
             P = np.zeros_like(F)
             for increment, defgrad in enumerate(F.T):
-                P[..., [increment]], statevars = self.umat.gradient(
-                    [F[..., [increment]], statevars]
+                P[..., [increment]], self.statevars = self.umat.gradient(
+                    [F[..., [increment]], self.statevars]
                 )
         else:
-            P, statevars = self.umat.gradient([F, None])
+            P, self.statevars = self.umat.gradient([F, None])
 
         valid = det(F) > np.sqrt(np.finfo(float).eps)
         if not np.all(valid):
@@ -297,14 +306,15 @@ class ViewMaterial(PlotMaterial):
         def fun(λ3):
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
             if self.statevars_included:
-                statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                if self.statevars is None:
+                    self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
                 P = np.zeros_like(F)
                 for increment, defgrad in enumerate(F.T):
                     P[..., [increment]], statevars = self.umat.gradient(
-                        [F[..., [increment]], statevars]
+                        [F[..., [increment]], self.statevars]
                     )
             else:
-                P, statevars = self.umat.gradient([F, None])
+                P, self.statevars = self.umat.gradient([F, None])
             return P[2, 2].ravel()
 
         from scipy.optimize import root
@@ -313,14 +323,15 @@ class ViewMaterial(PlotMaterial):
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
-            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            if self.statevars is None:
+                self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
             P = np.zeros_like(F)
             for increment, defgrad in enumerate(F.T):
-                P[..., [increment]], statevars = self.umat.gradient(
-                    [F[..., [increment]], statevars]
+                P[..., [increment]], self.statevars = self.umat.gradient(
+                    [F[..., [increment]], self.statevars]
                 )
         else:
-            P, statevars = self.umat.gradient([F, None])
+            P, self.statevars = self.umat.gradient([F, None])
 
         valid = det(F) > np.sqrt(np.finfo(float).eps)
         if not np.all(valid):
@@ -350,6 +361,9 @@ class ViewMaterialIncompressible(PlotMaterial):
     bx : ndarray, optional
         Array with stretches for incompressible equi-biaxial tension. Default is
         ``linsteps([1, 1.75], num=15)``.
+    statevars : ndarray or None, optional
+        Array with state variables (default is None). If None, the state variables are
+        assumed to be initially zero.
 
     Examples
     --------
@@ -382,12 +396,14 @@ class ViewMaterialIncompressible(PlotMaterial):
         ux=linsteps([0.7, 2.5], num=36),
         ps=linsteps([1, 2.5], num=30),
         bx=linsteps([1, 1.75], num=15),
+        statevars=None,
     ):
         self.umat = umat
         self.ux = ux
         self.ps = ps
         self.bx = bx
         self.statevars_included = self.umat.x[-1].size > 0
+        self.statevars = statevars
 
     def uniaxial(self, stretches=None):
         """Normal force per undeformed area vs. stretch curve for a uniaxial
@@ -414,14 +430,15 @@ class ViewMaterialIncompressible(PlotMaterial):
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
-            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            if self.statevars is None:
+                self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
             P = np.zeros_like(F)
             for increment, defgrad in enumerate(F.T):
-                P[..., [increment]], statevars = self.umat.gradient(
-                    [F[..., [increment]], statevars]
+                P[..., [increment]], self.statevars = self.umat.gradient(
+                    [F[..., [increment]], self.statevars]
                 )
         else:
-            P, statevars = self.umat.gradient([F, None])
+            P, self.statevars = self.umat.gradient([F, None])
 
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Uniaxial (Incompressible)"
 
@@ -451,14 +468,15 @@ class ViewMaterialIncompressible(PlotMaterial):
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
-            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            if self.statevars is None:
+                self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
             P = np.zeros_like(F)
             for increment, defgrad in enumerate(F.T):
-                P[..., [increment]], statevars = self.umat.gradient(
-                    [F[..., [increment]], statevars]
+                P[..., [increment]], self.statevars = self.umat.gradient(
+                    [F[..., [increment]], self.statevars]
                 )
         else:
-            P, statevars = self.umat.gradient([F, None])
+            P, self.statevars = self.umat.gradient([F, None])
 
         return (
             λ1,
@@ -491,13 +509,14 @@ class ViewMaterialIncompressible(PlotMaterial):
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
-            statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+            if self.statevars is None:
+                self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
             P = np.zeros_like(F)
             for increment, defgrad in enumerate(F.T):
-                P[..., [increment]], statevars = self.umat.gradient(
-                    [F[..., [increment]], statevars]
+                P[..., [increment]], self.statevars = self.umat.gradient(
+                    [F[..., [increment]], self.statevars]
                 )
         else:
-            P, statevars = self.umat.gradient([F, None])
+            P, self.statevars = self.umat.gradient([F, None])
 
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Biaxial (Incompressible)"

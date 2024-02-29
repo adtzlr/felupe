@@ -65,7 +65,7 @@ class PlotMaterial:
 
         data = self.evaluate()
         for stretch, force, label in data:
-            ax.plot(stretch, force, label=label)
+            ax.plot(stretch, force, label=label, **kwargs)
 
         ax.set_xlabel(r"Stretch $l/L$ $\rightarrow$")
         ax.set_ylabel("Normal force per undeformed area" + r" $N/A$ $\rightarrow$")

@@ -22,12 +22,6 @@ from ._boundary import Boundary
 from ._tools import apply, partition
 
 
-def _get_first_field(field):
-    "Get first field of FieldContainer."
-
-    return field.fields[0]
-
-
 def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     """Return a dict of boundaries for the symmetry axes on the x-, y- and
     z-coordinates.
@@ -201,7 +195,7 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
 
     """
 
-    f = _get_first_field(field)
+    f = field[0]
 
     fx = ["fx", "fy", "fz"][axis]
 
@@ -376,7 +370,7 @@ def biaxial(
         )
         moves = (move, move)
 
-    f = _get_first_field(field)
+    f = field[0]
 
     fxyz = ["fx", "fy", "fz"]
 
@@ -560,7 +554,7 @@ def shear(
         moves[1] = compression[0]
         moves[2] = -compression[1]
 
-    f = _get_first_field(field)
+    f = field[0]
 
     if bottom is None:
         bottom = f.region.mesh.points[:, axes[1]].min()

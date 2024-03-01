@@ -118,7 +118,7 @@ class Scene:
                 plotter_kwargs["off_screen"] = off_screen
             if notebook:
                 plotter_kwargs["notebook"] = notebook
-            plotter = pv.Plotter(**kwargs)
+            plotter = pv.Plotter(**plotter_kwargs)
 
         if scalar_bar_args is None:
             scalar_bar_args = {}

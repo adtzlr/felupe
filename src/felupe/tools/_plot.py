@@ -113,7 +113,12 @@ class Scene:
             pv.set_plot_theme(theme)
 
         if plotter is None:
-            plotter = pv.Plotter(off_screen=off_screen, notebook=notebook)
+            plotter_kwargs = dict()
+            if off_screen:
+                plotter_kwargs["off_screen"] = off_screen
+            if notebook:
+                plotter_kwargs["notebook"] = notebook
+            plotter = pv.Plotter(**kwargs)
 
         if scalar_bar_args is None:
             scalar_bar_args = {}

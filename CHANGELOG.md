@@ -8,8 +8,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add a quadrature scheme for integrating the surface of a unit hemisphere `BazantOh(n=21)`.
 - Add `NearlyIncompressible` as a simplified version of `ThreeFieldVariation`. A constitutive material formulation on the distortional part of a strain energy function in terms of the deformation gradient has to be provided, e.g. by `umat = NearlyIncompressible(NeoHooke(mu=1), bulk=5000)`.
 - Add optional kwargs to a job-callback `Job(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)` and `CharacteristicCurve(callback=lambda stepnumber, substepnumber, substep, **kwargs: None, **kwargs)`.
-- Add `DiscreteGeometry` properties `x`, `y` and `z` to access the colums of the points-array.
-- Add new math-function `math.equivalent_von_mises(A)` for three-dimensional second-order tensors.
+- Add `DiscreteGeometry` properties `x`, `y` and `z` to access the columns of the points-array.
+- Add a new math-function `math.equivalent_von_mises(A)` for three-dimensional second-order tensors.
 - Add the evaluation of the equivalent von Mises Cauchy stress as cell-data in `ViewSolid`, available as `Solid.plot("Equivalent of Cauchy Stress")`.
 - Add `mesh.stack(meshes)` as method to `MeshContainer.stack()`. Note that this only supports mesh containers with meshes of same cell-types.
 - Add `NeoHooke.gradient(out=None)` and `NeoHooke.hessian(out=None)` for a location to store the results. Also for `NeoHookeCompressible`.
@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance the performance of `NeoHooke`, `NeoHookeCompressible`, `SolidBody` and `SolidBodyNearlyIncompressible`.
 - Enhance the performance of `math.inv(out=None)` and `math.det(out=None)`.
 - Use only the offical API of `tensortrax`. A workaround is used to ensure compatibility with `tensortrax` <= v0.17.1.
+- Pass optional keyword-arguments in the plot-methods `ViewMaterial.plot(**kwargs)` and `ViewMaterialIncompressible.plot(**kwargs)` to the matplotlib axes object `ax.plot(**kwargs)`.
 
 # Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.

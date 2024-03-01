@@ -159,8 +159,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add `element.Element.view()`, `element.Element.plot()` and `element.Element.screenshot()`. This enables an interactive plot of the element in the reference configuration with its point ids, e.g. `Hexahedron().plot().show()`.
 
 ### Changed
-- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example. The old-style input `move` defaults to `None`, is deprecated and will be removed in the next major release.
-- Change function signature and enhance `dof.shear(field, bottom=None, top=None, moves=(0.2, 0.0, 0.0), axes=(0, 1), sym=True)`. Now with a full-featured docstring including an example. The old-style `move`, `axis_compression`, `axis_shear` and `compression` all default to `None`, are deprecated and will be removed in the next major relase.
+- Change function signature and enhance `dof.biaxial(field, lefts=(None, None), rights=(None, None), moves=(0.2, 0.2), axes=(0, 1), clampes=(False, False), sym=True)`. Now with a full-featured docstring including an example.
+- Change function signature and enhance `dof.shear(field, bottom=None, top=None, moves=(0.2, 0.0, 0.0), axes=(0, 1), sym=True)`. Now with a full-featured docstring including an example.
 - Merge keyword-arguments for the dual-regions with hard-coded arguments in `FieldsMixed(region, **kwargs)`.
 - Replace `np.product()` (will be removed in NumPy 2.0) with the equivalent `np.prod()`.
 
@@ -169,6 +169,10 @@ All notable changes to this project will be documented in this file. The format 
 - Fix `dof.shear(sym=True)` which was previously ignored due to a wrong setup of the symmetry boundaries.
 - Fix the install command on Python 3.12 by adding an extra-index-url for VTK wheels if they are not yet available on PyPI (the extra index is provided by Kitware).
 - Fix a warning because the timings of the Newton-Rhapson solver are printed from a one-dimensional array. Take the first item of the runtime-array to resolve this warning.
+
+### Deprecated
+- Deprecate the old-style argument `move` in `dof.biaxial()`, which defaults to `None`.
+- Deprecate the old-style arguments `move`, `axis_compression`, `axis_shear` and `compression` in `dof.shear()`, which all default to `None`.
 
 ### Removed
 - Remove the undocumented `dof.planar()` because this is a special case of the biaxial load case `dof.biaxial(field, clampes=(True, False), moves=(0.2, 0), sym=False, axes=(0, 1))`.

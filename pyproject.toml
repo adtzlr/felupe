@@ -62,8 +62,12 @@ docs = [
     "sphinx-inline-tabs",
     "sphinx-copybutton",
     "sphinx-design",
-    "myst-nb",
-    "panel",
+    "sphinx-gallery",
+    "pyvista[jupyter, trame]",
+    "pypandoc",
+    "matadi",
+    "contique",
+    "pypardiso",
 ]
 test = [
     "h5py",

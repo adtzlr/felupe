@@ -3,3 +3,12 @@
     margin:-1rem;
     position:fixed;
 }
+
+div.sphx-glr-download-link-note {
+    display: none;
+}
+
+.sphx-glr-thumbcontainer[tooltip]:hover::before,
+.sphx-glr-thumbcontainer[tooltip]:hover::after {
+    display: none;
+}

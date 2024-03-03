@@ -13,8 +13,23 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
+import pyvista
+from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
 
+# Manage errors
+pyvista.set_error_output_file("errors.txt")
+# Ensure that offscreen rendering is used for docs generation
+pyvista.OFF_SCREEN = True  # Not necessary - simply an insurance policy
+# Preferred plotting style for documentation
+pyvista.set_plot_theme("document")
+
+# necessary when building the sphinx gallery
+pyvista.BUILDING_GALLERY = True
+os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
+
+# start a virtual framebuffer
+if os.environ.get("READTHEDOCS") or os.environ.get("CI"):
+    pyvista.start_xvfb()
 
 # -- Project information -----------------------------------------------------
 
@@ -33,27 +48,36 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
     "sphinx_design",
-    "myst_nb",
+    "sphinx_gallery.gen_gallery",
+    "pyvista.ext.plot_directive",
+    "pyvista.ext.viewer_directive",
 ]
-
 source_suffix = {
     ".rst": "restructuredtext",
-    ".ipynb": "myst-nb",
-    ".myst": "myst-nb",
 }
-myst_enable_extensions = [
-    "amsmath",
-    "colon_fence",
-    "deflist",
-    "dollarmath",
-    "html_image",
-]
-myst_url_schemes = ("http", "https", "mailto")
-
-nb_execution_mode = "off"
+sphinx_gallery_conf = {
+    "examples_dirs": "../examples",
+    "gallery_dirs": "examples",
+    "image_scrapers": (DynamicScraper(), "matplotlib"),
+    "download_all_examples": False,
+    "remove_config_comments": True,
+    "reset_modules_order": "both",
+    "min_reported_time": 3600,
+    "filename_pattern": "ex.*\\.py",
+    "backreferences_dir": None,
+    "pypandoc": True,
+    "capture_repr": ("_repr_html_",),
+}
+intersphinx_mapping = {
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "pyvista": ("https://docs.pyvista.org/version/stable/", None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

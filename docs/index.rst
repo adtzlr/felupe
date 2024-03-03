@@ -248,13 +248,8 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
    :caption: Contents:
    
    tutorial
-   examples
+   examples/index
    howto
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Reference:
-   
    felupe
 
 License

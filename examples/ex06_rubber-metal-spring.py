@@ -18,6 +18,7 @@ a rubber-metal spring is loaded by an external axial and lateral displacement.
 Simplified elastic-to-rigid contact definitions simulate the end stops caused by steel
 plates at the bottom and the top in direction :math:`z`.
 """
+# sphinx_gallery_thumbnail_number = -3
 import numpy as np
 import pypardiso
 

@@ -26,6 +26,7 @@ First, setup a problem in FElupe as usual (mesh, region, field, boundaries, umat
 and a pressure boundary). For the material definition we use the **Neo-Hooke** built-in
 hyperelastic material formulation.
 """
+# sphinx_gallery_thumbnail_number = -1
 import contique
 import numpy as np
 

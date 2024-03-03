@@ -22,6 +22,7 @@ over the hole.
 .. image:: ../../examples/ex02_plate-with-hole_sketch.svg
    :width: 400px
 """
+# sphinx_gallery_thumbnail_number = -2
 h = 1
 L = 2
 r = 0.3

@@ -63,8 +63,9 @@ docs = [
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
-    "pyvista[jupyter, trame]",
     "pypandoc",
+]
+examples = [
     "matadi",
     "contique",
     "pypardiso",
@@ -81,7 +82,7 @@ all = [
     "matplotlib",
     "meshio",
     "tensortrax",
-    "pyvista",
+    "pyvista[jupyter, trame]",
     "tqdm",
 ]
 

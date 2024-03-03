@@ -15,6 +15,7 @@ import sys
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
+from sphinx_gallery.sorting import ExampleTitleSortKey
 
 # Manage errors
 pyvista.set_error_output_file("errors.txt")
@@ -74,6 +75,7 @@ sphinx_gallery_conf = {
     "backreferences_dir": None,
     "pypandoc": True,
     "capture_repr": ("_repr_html_",),
+    "within_subsection_order": ExampleTitleSortKey,
 }
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),

@@ -15,8 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import inspect
+import os
 from time import perf_counter
 
 import numpy as np
@@ -259,7 +259,9 @@ def newtonrhapson(
         more performant alternative install PyPardiso and use :func:`pypardiso.spsolve`.
     verbose : bool or int, optional
         Verbosity level: False or 0 for no logging, True or 1 for a progress bar and
-        2 for a text-based logging output (default is True).
+        2 for a text-based logging output (default is True).If the environmental
+        variable FELUPE_VERBOSE is set and its value is ``false``, then this argument is
+        ignored and logging is turned off.
 
     Returns
     -------
@@ -343,6 +345,11 @@ def newtonrhapson(
     2.7482611016095555e-15
 
     """
+    VERBOSE = os.environ.get("FELUPE_VERBOSE") == "true"
+    if VERBOSE:
+        verbose = verbose
+    else:
+        verbose = VERBOSE
 
     if verbose:
         runtimes = [perf_counter()]

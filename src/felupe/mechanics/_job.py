@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 
 import numpy as np
 
@@ -189,7 +190,9 @@ class Job:
             Verbosity level to control how messages are printed during evaluation. If
             1 or True and ``tqdm`` is installed, a progress bar is shown. If ``tqdm`` is
             missing or verbose is 2, more detailed text-based messages are printed.
-            Default is True.
+            Default is True. If the environmental variable FELUPE_VERBOSE is set and
+            its value is ``false``, then this argument is ignored and logging is turned
+            off.
         parallel : bool, optional
             Flag to use a threaded version of :func:`numpy.einsum` during assembly.
             Requires ``einsumt``. This may add additional overhead to small-sized
@@ -220,11 +223,17 @@ class Job:
         tools.NewtonResult : A data class which represents the result found by
             Newton's method.
         """
+        VERBOSE = os.environ.get("FELUPE_VERBOSE") == "true"
+        if VERBOSE:
+            verbose = verbose
+        else:
+            verbose = VERBOSE
 
-        try:
-            from tqdm import tqdm
-        except ModuleNotFoundError:
-            verbose = 2
+        if verbose:
+            try:
+                from tqdm import tqdm
+            except ModuleNotFoundError:
+                verbose = 2
 
         if verbose == 2:
             print_header()

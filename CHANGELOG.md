@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file. The format 
 - Use only the offical API of `tensortrax`. A workaround is used to ensure compatibility with `tensortrax` <= v0.17.1.
 - Pass optional keyword-arguments in the plot-methods `ViewMaterial.plot(**kwargs)` and `ViewMaterialIncompressible.plot(**kwargs)` to the matplotlib axes object `ax.plot(**kwargs)`.
 - Only add `off_screen` and `notebook` keyword-arguments to `pyvista.Plotter(**kwargs)` if they are `True`. This is needed for not ignoring a global variable like `pyvista.OFF_SCREEN = True`.
+- Enforce `verbose=0` if the environmental variable `"FELUPE_VERBOSE"` is `"false"`. This is useful for running the examples when building the documentation.
 
 # Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.

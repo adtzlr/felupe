@@ -31,6 +31,9 @@ os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 if os.environ.get("READTHEDOCS") or os.environ.get("CI"):
     pyvista.start_xvfb()
 
+# FElupe: turn off logging
+os.environ["FELUPE_VERBOSE"] = "false"
+
 # -- Project information -----------------------------------------------------
 
 project = "FElupe"

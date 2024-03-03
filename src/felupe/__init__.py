@@ -125,9 +125,9 @@ from .tools import ViewSolid
 from .tools import ViewSolid as View
 from .tools import ViewXdmf, newtonrhapson, project, runs_on, save, topoints
 
-UserMaterial = Material  # to be removed in v8.0.0
-UserMaterialStrain = MaterialStrain  # to be removed in v8.0.0
-UserMaterialHyperelastic = Hyperelastic  # to be removed in v8.0.0
+UserMaterial = Material  # alias to be removed in v8.0.0
+UserMaterialStrain = MaterialStrain  # alias to be removed in v8.0.0
+UserMaterialHyperelastic = Hyperelastic  # alias to be removed in v8.0.0
 
 __all__ = [
     "__version__",

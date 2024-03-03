@@ -4,13 +4,19 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.11"
+  apt_packages:
+    - libgl1-mesa-dev
+    - xvfb
 
 sphinx:
   configuration: docs/conf.py
+  fail_on_warning: false
 
 python:
   install:
     - method: pip
       path: .
       extra_requirements:
+        - all
         - docs
+        - examples

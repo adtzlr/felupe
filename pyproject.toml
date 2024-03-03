@@ -62,8 +62,13 @@ docs = [
     "sphinx-inline-tabs",
     "sphinx-copybutton",
     "sphinx-design",
-    "myst-nb",
-    "panel",
+    "sphinx-gallery",
+    "pypandoc",
+]
+examples = [
+    "matadi",
+    "contique",
+    "pypardiso",
 ]
 test = [
     "h5py",
@@ -77,7 +82,7 @@ all = [
     "matplotlib",
     "meshio",
     "tensortrax",
-    "pyvista",
+    "pyvista[jupyter, trame]",
     "tqdm",
 ]
 

@@ -115,3 +115,7 @@ dmypy.json
 
 # Jupyter notebooks
 .virtual_documents/
+
+# Sphinx gallery
+docs/examples/
+sg_execution_times.rst

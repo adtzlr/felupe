@@ -70,7 +70,6 @@ sphinx_gallery_conf = {
     "download_all_examples": False,
     "remove_config_comments": True,
     "reset_modules_order": "both",
-    "min_reported_time": 3600,
     "filename_pattern": "ex.*\\.py",
     "backreferences_dir": None,
     "pypandoc": True,

@@ -2,12 +2,12 @@ r"""
 Engine Mount
 ------------
 
-.. admonition:: A rubber-metal component used as an engine-mount.
+.. admonition:: A rubberlike-metal component used as an engine-mount.
    :class: note
 
    * read and combine mesh files
    
-   * define a nearly-incompressible isotropic hyperelastic solid body
+   * define an isotropic hyperelastic solid body
    
    * create consecutive steps and add them to a job
    
@@ -18,9 +18,7 @@ An engine-mount is loaded by a combined vertical and horizontal displacement. Wh
 being looked for are the characteristic force-displacement curves in vertical and
 horizontal directions as well as the logarithmic strain distribution inside the rubber.
 The air inside the structure is meshed as a hyperelastic solid with no volumetric part
-of the strain energy function for a simplified treatment of the rubber contact. A
-reduced bulk modulus is used for the rubber in order to provide realistic results of the
-plane-strain analysis model compared to the three-dimensional real-world component. The
+of the strain energy function for a simplified treatment of the rubber contact. The
 metal parts are simplified as rigid bodies. Three mesh files are provided for this
 example: 
 
@@ -74,9 +72,8 @@ boundaries = dict(
 )
 
 # %%
-# The material behaviour of the rubber is defined through a built-in hyperelastic
-# isotropic Neo-Hookean material formulation. A solid body, suitable for nearly-
-# incompressible material formulations, applies the material formulation on the
+# The material behaviour of the rubberlike solid is defined through a built-in hyperelastic
+# isotropic compressible Neo-Hookean material formulation. A solid body applies the material formulation on the
 # displacement field. The air is also simulated by a Neo-Hookean material formulation
 # but with no volumetric contribution and hence, no special mixed-field treatment is
 # necessary here. A crucial parameter is the shear modulus which is used for the

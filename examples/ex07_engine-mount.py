@@ -95,80 +95,81 @@ air = fem.SolidBody(umat=fem.NeoHooke(mu=shear_modulus / 25), field=fields[2])
 # %%
 # After defining the consecutive load steps, the simulation model is ready to be solved.
 # As we are not interested in the strains of the simulated air, a trimmed mesh is
-# specified during the evaluation of the characteristic-curve job.
+# specified during the evaluation of the characteristic-curve job. The lateral force-
+# displacement curves are plotted for the two different levels of vertical displacement.
+thickness = 100
 vertical = fem.Step(
     items=[rubber, air],
-    ramp={boundaries["u_y"]: fem.math.linsteps([0, -9, -6], num=[9, 6])},
+    ramp={boundaries["u_y"]: fem.math.linsteps([0, 3], num=3)},
     boundaries=boundaries,
 )
 job = fem.CharacteristicCurve(steps=[vertical], boundary=boundaries["u_y"]).evaluate(
     x0=field, tol=1e-1
 )
-fig, ax = job.plot(
+figv, axv = job.plot(
     xlabel="Displacement $u_y$ in mm $\longrightarrow$",
     ylabel="Normal Force $F_y$ in kN $\longrightarrow$",
     xaxis=1,
     yaxis=1,
-    yscale=1 / 1000 * 100,  # multiplied by the thickness
+    yscale=1 / 1000 * thickness,
     ls="-",
     lw=3,
 )
 
-# %%
-# The lateral force-displacement curves are plotted for the two different levels of
-# vertical displacement.
 horizontal = fem.Step(
     items=[rubber, air],
-    ramp={boundaries["u_x"]: 5.5 * fem.math.linsteps([0, 1, 0, -1, 0], num=10)},
+    ramp={boundaries["u_x"]: 8 * fem.math.linsteps([0, 1, 0, -1, 0], num=8)},
     boundaries=boundaries,
 )
 job = fem.CharacteristicCurve(steps=[horizontal], boundary=boundaries["u_y"]).evaluate(
     x0=field, tol=1e-1
 )
-fig2, ax2 = job.plot(
+figh, axh = job.plot(
     xlabel="Displacement $u_x$ in mm $\longrightarrow$",
     ylabel="Normal Force $F_x$ in kN $\longrightarrow$",
-    yscale=1 / 1000 * 100,  # multiplied by the thickness
+    yscale=1 / 1000 * thickness,
     lw=3,
     color="C0",
-    label=r"$u_y=-7$ mm",
+    label=r"$u_y=+3$ mm",
 )
 
 vertical = fem.Step(
     items=[rubber, air],
-    ramp={boundaries["u_y"]: fem.math.linsteps([-6, 0, 7, 0], num=[6, 7, 7])},
+    ramp={boundaries["u_y"]: fem.math.linsteps([3, 0, -6], num=[7, 6])},
     boundaries=boundaries,
 )
 job = fem.CharacteristicCurve(steps=[vertical], boundary=boundaries["u_y"]).evaluate(
     x0=field, tol=1e-1
 )
-fig, ax = job.plot(
+figv, axv = job.plot(
     xaxis=1,
     yaxis=1,
-    yscale=1 / 1000 * 100,  # multiplied by the thickness
+    yscale=1 / 1000 * thickness,
     ls="-",
     lw=3,
     color="C0",
-    ax=ax,
+    ax=axv,
 )
-
 horizontal = fem.Step(
     items=[rubber, air],
-    ramp={boundaries["u_x"]: 9.5 * fem.math.linsteps([0, 1, 0, -1], num=10)},
+    ramp={boundaries["u_x"]: 5 * fem.math.linsteps([0, 1, 0, -1], num=5)},
     boundaries=boundaries,
 )
 job = fem.CharacteristicCurve(steps=[horizontal], boundary=boundaries["u_y"]).evaluate(
     x0=field, tol=1e-1
 )
-fig2, ax2 = job.plot(
-    yscale=1 / 1000 * 100,  # multiplied by the thickness
+figh, axh = job.plot(
+    yscale=1 / 1000 * thickness,
     lw=3,
     color="C1",
-    label=r"$u_y=+3$ mm",
-    ax=ax,
+    label=r"$u_y=-6$ mm",
+    ax=axh,
 )
-ax2.legend()
+axh.legend()
 
-plotter = fields[0].plot("Principal Values of Logarithmic Strain")
+# %%
+# The maximum principal values of the logarithmic strain tensors are plotted on the
+# deformed configuration.
+plotter = fields[0].plot(color="grey", show_edges=False)
 plotter = fields[1].plot("Principal Values of Logarithmic Strain", plotter=plotter)
 plotter.show()

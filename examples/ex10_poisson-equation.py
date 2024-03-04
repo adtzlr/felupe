@@ -40,7 +40,9 @@ field = fem.FieldContainer([scalar])
 #        = \int_\Omega  f \cdot v \ d\Omega
 #
 # For the :func:`~felupe.newtonrhapson` to converge, the *linear form* of the Poisson
-# equation is also required.
+# equation is also required. FElupe does not support the gradient of the test field
+# and the test field itself inside a single form. Hence, two linear form objects have
+# to be created.
 
 
 @fem.Form(v=field, u=field, grad_v=[True], grad_u=[True])

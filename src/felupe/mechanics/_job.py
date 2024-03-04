@@ -223,11 +223,12 @@ class Job:
         tools.NewtonResult : A data class which represents the result found by
             Newton's method.
         """
-        VERBOSE = os.environ.get("FELUPE_VERBOSE") == "true"
-        if VERBOSE:
+        VERBOSE = os.environ.get("FELUPE_VERBOSE")
+        if VERBOSE is None:
             verbose = verbose
         else:
-            verbose = VERBOSE
+            verbose = VERBOSE == "true"
+        print(verbose)
 
         if verbose:
             try:

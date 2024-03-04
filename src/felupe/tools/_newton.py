@@ -345,11 +345,11 @@ def newtonrhapson(
     2.7482611016095555e-15
 
     """
-    VERBOSE = os.environ.get("FELUPE_VERBOSE") == "true"
-    if VERBOSE:
+    VERBOSE = os.environ.get("FELUPE_VERBOSE")
+    if VERBOSE is None:
         verbose = verbose
     else:
-        verbose = VERBOSE
+        verbose = VERBOSE == "true"
 
     if verbose:
         runtimes = [perf_counter()]

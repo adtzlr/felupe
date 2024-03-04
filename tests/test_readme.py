@@ -151,6 +151,16 @@ def test_readme_form():
     step = fem.Step(items=[item], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
+    item = fem.FormItem(linearform=linearform)
+    item.assemble.vector(field)
+    assert item.assemble.matrix(field).nnz == 0
+
+    item = fem.FormItem()
+    item.assemble.vector(field)
+    item.assemble.matrix(field)
+    assert item.assemble.vector(field).nnz == 0
+    assert item.assemble.matrix(field).nnz == 0
+
 
 if __name__ == "__main__":
     test_readme()

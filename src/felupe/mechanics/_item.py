@@ -26,8 +26,9 @@ class FormItem:
 
     Parameters
     ----------
-    bilinearform : Form
-        A bilinear form object.
+    bilinearform : Form or None, optional
+        A bilinear form object (default is None). If None, the resulting matrix will be
+        filled with zeros.
     linearform : Form or None, optional
         A linear form object (default is None). If None, the resulting vector will be
         filled with zeros.
@@ -68,7 +69,7 @@ class FormItem:
     """
 
     def __init__(
-        self, bilinearform, linearform=None, sym=False, args=None, kwargs=None
+        self, bilinearform=None, linearform=None, sym=False, args=None, kwargs=None
     ):
         self.bilinearform = bilinearform
         self.linearform = linearform
@@ -80,7 +81,11 @@ class FormItem:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
-        self.field = self.bilinearform.form.v.field
+        if self.bilinearform is not None:
+            self.field = self.bilinearform.form.v.field
+        else:
+            if self.linearform is not None:
+                self.field = self.linearform.form.v.field
 
     def _vector(self, field=None, parallel=False):
         if field is not None:
@@ -94,7 +99,7 @@ class FormItem:
         else:
             from scipy.sparse import csr_matrix
 
-            self.results.force = csr_matrix(self.field.fields[0].values.shape)
+            self.results.force = csr_matrix((sum(self.field.fieldsizes), 1))
 
         return self.results.force
 
@@ -102,13 +107,20 @@ class FormItem:
         if field is not None:
             self.field = field
 
-        self.results.stiffness = self.bilinearform.assemble(
-            v=self.field,
-            u=self.field,
-            parallel=parallel,
-            sym=self.sym,
-            args=self.args,
-            kwargs=self.kwargs,
-        )
+        if self.bilinearform is not None:
+            self.results.stiffness = self.bilinearform.assemble(
+                v=self.field,
+                u=self.field,
+                parallel=parallel,
+                sym=self.sym,
+                args=self.args,
+                kwargs=self.kwargs,
+            )
+
+        else:
+            from scipy.sparse import csr_matrix
+
+            size = sum(self.field.fieldsizes)
+            self.results.stiffness = csr_matrix((size, size))
 
         return self.results.stiffness

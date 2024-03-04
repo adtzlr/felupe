@@ -76,7 +76,7 @@ class LinearForm:
         else:
             v = self.v.basis
 
-        values = np.zeros((len(v), *v.shape[-3:]))
+        values = np.zeros((len(v), v.shape[-4], *v.shape[-2:]))
 
         if not parallel:
             for a, vbasis in enumerate(v):

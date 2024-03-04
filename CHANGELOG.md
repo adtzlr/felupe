@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file. The format 
 - Pass optional keyword-arguments in the plot-methods `ViewMaterial.plot(**kwargs)` and `ViewMaterialIncompressible.plot(**kwargs)` to the matplotlib axes object `ax.plot(**kwargs)`.
 - Only add `off_screen` and `notebook` keyword-arguments to `pyvista.Plotter(**kwargs)` if they are `True`. This is needed for not ignoring a global variable like `pyvista.OFF_SCREEN = True`.
 - Enforce `verbose=0` if the environmental variable `"FELUPE_VERBOSE"` is `"false"`. This is useful for running the examples when building the documentation.
+- Don't require a `bilinearform` in `FormItem(bilinearform=None)`. An empty `FormItem` is now a valid item in a `Step`. For empty vectors/matrices, the shape is inferred from `sum(FieldContainer.fieldsizes)` instead of `FieldContainer.fields[0].values.size`.
 
 # Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.
@@ -31,6 +32,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix `math.inv(A)` for arrays with shape `A.shape = (1, 1, ...)`. Also raise an error if `shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.
 - Raise an error in `math.det(A)` if `A.shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.
 - Fix mutable keyword-arguments in `SolidBody._vector(kwargs={})` by `SolidBody._vector(kwargs=None)`. Also for `._matrix()` and for `SolidBodyNearlyIncompressible`.
+- Fix wrong shape and the resulting error during assembly in `fem.assembly.expression.Form` for the integration of a linear form with different mesh- and field-dimensions.
 
 ## [7.18.0] - 2024-02-16
 

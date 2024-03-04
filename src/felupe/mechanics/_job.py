@@ -228,7 +228,6 @@ class Job:
             verbose = verbose
         else:
             verbose = VERBOSE == "true"
-        print(verbose)
 
         if verbose:
             try:

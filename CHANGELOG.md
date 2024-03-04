@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix `math.inv(A)` for arrays with shape `A.shape = (1, 1, ...)`. Also raise an error if `shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.
 - Raise an error in `math.det(A)` if `A.shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.
 - Fix mutable keyword-arguments in `SolidBody._vector(kwargs={})` by `SolidBody._vector(kwargs=None)`. Also for `._matrix()` and for `SolidBodyNearlyIncompressible`.
+- Fix wrong shape and the resulting error during assembly in `fem.assembly.expression.Form` for the integration of a linear form with different mesh- and field-dimensions.
 
 ## [7.18.0] - 2024-02-16
 

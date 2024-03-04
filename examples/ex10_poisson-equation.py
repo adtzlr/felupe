@@ -52,7 +52,7 @@ def a():
 @fem.Form(v=field, grad_v=[True])
 def L():
     "Container for a linear form."
-    return [lambda gradv: fem.math.ddot(gradv, field[0].grad())]
+    return [lambda gradv: fem.math.ddot(gradv, scalar.grad())]
 
 
 @fem.Form(v=field, grad_v=[False])
@@ -72,5 +72,5 @@ boundaries = {
 step = fem.Step([poisson, load], boundaries=boundaries)
 job = fem.Job([step]).evaluate()
 
-view = mesh.view(point_data={"Field": field[0].values})
+view = mesh.view(point_data={"Field": scalar.values})
 view.plot("Field", show_undeformed=False).show()

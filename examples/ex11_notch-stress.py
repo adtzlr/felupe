@@ -19,15 +19,11 @@ Notch Stress
       
       pip install pypardiso
 
-A linear-elastic notched plate is subjected to uniaxial tension. The stress tensor is
-projected to the mesh-points and the longitudinal normal component :math:`\sigma_{xx}`
-is plotted. FElupe has no quadratic wedge element formulation implemented and hence, the
-wedges in the mesh are converted to hexahedrons.
-
-A mesh file is provided for this example (taken from the docs of
-`pyvista <https://docs.pyvista.org/>`_): 
-    
-* `mesh <../_static/ex11_notch-stress_mesh.vtu>`_
+A linear-elastic notched plate is subjected to uniaxial tension. The cell-based mean of
+the stress tensor is projected to the mesh-points and the longitudinal normal component
+:math:`\sigma_{xx}` is plotted. FElupe has no quadratic wedge element formulation
+implemented and hence, the quadratic wedges in the mesh are converted to quadratic
+hexahedrons.
 """
 # sphinx_gallery_thumbnail_number = -1
 import numpy as np
@@ -43,8 +39,7 @@ mesh = fem.Mesh(
     np.vstack([m.cells_dict[25], m.cells_dict[26][:, hex20]]),
     "hexahedron20",
 )
-mesh = mesh.add_midpoints_faces().add_midpoints_volumes()
-region = fem.RegionTriQuadraticHexahedron(mesh)
+region = fem.RegionQuadraticHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, move=0.03375)
@@ -52,6 +47,6 @@ solid = fem.SolidBody(umat=fem.LinearElastic(E=2.1e5, nu=0.30), field=field)
 step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(parallel=True, solver=pypardiso.spsolve)
 
-solid.view(point_data={"Stress": fem.project(solid.results.gradient, region)}).plot(
-    "Stress", component=0, show_edges=False, show_undeformed=False, view="xy"
-).show()
+solid.view(
+    point_data={"Stress": fem.project(solid.results.gradient, region, mean=True)}
+).plot("Stress", component=0, show_edges=False, show_undeformed=False, view="xy").show()

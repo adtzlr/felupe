@@ -26,7 +26,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enforce `verbose=0` if the environmental variable `"FELUPE_VERBOSE"` is `"false"`. This is useful for running the examples when building the documentation.
 - Don't require a `bilinearform` in `FormItem(bilinearform=None)`. An empty `FormItem` is now a valid item in a `Step`. For empty vectors/matrices, the shape is inferred from `sum(FieldContainer.fieldsizes)` instead of `FieldContainer.fields[0].values.size`.
 
-# Fixed
+### Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.
 - Fix error if `FieldDual` is in the fields of a `FieldContainer` for `IntegralForm`.
 - Fix `math.inv(A)` for arrays with shape `A.shape = (1, 1, ...)`. Also raise an error if `shape[:2]` not in `[(3, 3), (2, 2), (1, 1)]`.

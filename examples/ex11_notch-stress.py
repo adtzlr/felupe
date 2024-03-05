@@ -29,21 +29,8 @@ A mesh file is provided for this example (taken from the docs of
 * `mesh <../_static/ex11_notch-stress_mesh.vtu>`_
 """
 # sphinx_gallery_thumbnail_number = -1
-import numpy as np
-import pyvista as pv
-import pypardiso
 import felupe as fem
-
-m = pv.examples.download_notch_displacement()
-
-hex20 = [0, 2, 1, 1, 3, 5, 4, 4, 8, 7, 1, 6, 11, 10, 4, 9, 12, 14, 13, 13]
-mesh = fem.Mesh(
-    m.points * 250,
-    np.vstack([m.cells_dict[25][:, :20], m.cells_dict[26][:, hex20]]),
-    "hexahedron20",
-)
-mesh = mesh.add_midpoints_faces().add_midpoints_volumes()
-mesh.write("ex11_notch-stress_mesh.vtu")
+import pypardiso
 
 mesh = fem.mesh.read("ex11_notch-stress_mesh.vtu")[0]
 region = fem.RegionTriQuadraticHexahedron(mesh)

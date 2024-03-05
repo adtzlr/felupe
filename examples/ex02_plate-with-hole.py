@@ -2,8 +2,7 @@ r"""
 Plate with a Hole
 -----------------
 
-.. admonition:: Plane stress linear analysis.
-   :class: topic
+.. topic:: Plane stress linear analysis.
 
    * create and mesh a plate with a hole
    

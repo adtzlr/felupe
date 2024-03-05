@@ -2,8 +2,7 @@ r"""
 Non-homogeneous shear loadcase
 ------------------------------
 
-.. admonition:: Plane strain hyperelastic non-homogenous shear loadcase
-   :class: topic
+.. topic:: Plane strain hyperelastic non-homogenous shear loadcase
 
    * define a non-homogeneous shear loadcase
    

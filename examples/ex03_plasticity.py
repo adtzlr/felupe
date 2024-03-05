@@ -2,8 +2,7 @@ r"""
 Plasticity with Isotropic Hardening
 -----------------------------------
 
-.. admonition:: Small-strain Plasticity
-   :class: topic
+.. topic:: Small-strain Plasticity
 
    * linear-elastic plastic material formulation with isotropic hardening
 

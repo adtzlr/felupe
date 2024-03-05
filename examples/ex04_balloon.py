@@ -2,8 +2,7 @@ r"""
 Inflation of a hyperelastic balloon
 -----------------------------------
 
-.. admonition:: Numeric continuation of a hyperelastic balloon under inner pressure.
-   :class: topic
+.. topic:: Numeric continuation of a hyperelastic balloon under inner pressure.
 
    * use FElupe with contique
 

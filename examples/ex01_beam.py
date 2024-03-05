@@ -2,8 +2,7 @@ r"""
 Cantilever beam under gravity
 -----------------------------
 
-.. admonition:: Apply a gravity load on a solid body.
-   :class: topic
+.. topic:: Apply a gravity load on a solid body.
 
    * create a solid body and apply the gravity load
    

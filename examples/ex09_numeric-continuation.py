@@ -4,8 +4,7 @@ Numeric Continuation
 
 With the help of `contique <https://github.com/adtzlr/contique>`_ (install with ``pip install contique``) it is possible to apply a numerical parameter continuation algorithm on any system of equilibrium equations. This advanced tutorial demonstrates the usage of FElupe in conjunction with contique. An unstable isotropic hyperelastic material formulation is applied on a single hexahedron. The model will be visualized by the XDMF-output (of meshio) and the resulting force - displacement curve will be plotted.
 
-.. admonition:: Numeric continuation of a hyperelastic cube.
-   :class: topic
+.. topic:: Numeric continuation of a hyperelastic cube.
 
    * use FElupe with contique
    

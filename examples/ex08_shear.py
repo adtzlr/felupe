@@ -17,6 +17,13 @@ Non-homogeneous shear loadcase
    
    * plot force - displacement curves
 
+.. admonition::
+   :class: hint
+   
+   This example requires external packages.
+   .. code-block::
+      
+      pip install matadi
 
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
 rigid plate on their top and bottom faces, are subjected to a displacement 
@@ -73,23 +80,9 @@ dof0, dof1 = fem.dof.partition(field, boundaries)
 
 # %%
 # The micro-sphere material formulation is used for the rubber. It is defined
-# as a hyperelastic material in matADi. The material formulation is finally applied on
-# the plane-strain field, resulting in a hyperelastic solid body.
-#
-# .. admonition:: **MatADi** - Material Definition with Automatic Differentiation
-#    :class: note
-#
-#    MatADi is a powerful and lightweight Python package for the definition of
-#    hyperelastic material model formulations. Do not use
-#    :class:`matadi.MaterialHyperelasticPlaneStrain` and
-#    :class:`matadi.ThreeFieldVariationPlaneStrain` classes of matADi in combination
-#    with a plane-strain field of FElupe. These classes are designed to be used on
-#    default two dimensional fields (i.e. use it only with
-#    ``fem.FieldsMixed(region, n=3, planestrain=False``). Get matADi on PyPI:
-#
-#    .. code-block::
-#
-#       pip install matadi
+# as a hyperelastic material in `matADi <https://github.com/adtzlr/matadi>`_. The
+# material formulation is finally applied on the plane-strain field, resulting in a
+# hyperelastic solid body.
 
 import matadi as mat
 

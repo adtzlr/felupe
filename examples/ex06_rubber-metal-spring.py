@@ -13,6 +13,14 @@ Rubber Spring
    
    * export and plot the log. strain
 
+.. admonition::
+   :class: hint
+   
+   This example requires external packages.
+   .. code-block::
+      
+      pip install pypardiso
+
 A `meshed three-dimensional geometry <../_static/ex06_rubber-metal-spring_mesh.vtk>`_ of
 a rubber-metal spring is loaded by an external axial and lateral displacement.
 Simplified elastic-to-rigid contact definitions simulate the end stops caused by steel

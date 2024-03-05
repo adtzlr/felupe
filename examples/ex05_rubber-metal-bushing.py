@@ -15,6 +15,13 @@ Rubber bushing with torsional loading
    
    * plot strains and stresses
 
+.. admonition::
+   :class: hint
+   
+   This example requires external packages.
+   .. code-block::
+      
+      pip install pypardiso
 
 A rubber-metal bushing is subjected to combined multiaxial radial-torsional-cardanic
 loading. First the meshes for the rubber and the metal sheet rings are created.

@@ -11,10 +11,17 @@ Inflation of a hyperelastic balloon
     
    * view the deformed balloon
 
-With the help of `contique <https://github.com/adtzlr/contique>`_ (install with
-``pip install contique``) it is possible to apply a numerical parameter continuation
-algorithm on any system of equilibrium equations. This advanced tutorial demonstrates
-the usage of FElupe in conjunction with
+.. admonition::
+   :class: hint
+   
+   This example requires external packages.
+   .. code-block::
+      
+      pip install contique
+
+With the help of `contique <https://github.com/adtzlr/contique>`_ it is possible to
+apply a numerical parameter continuation algorithm on any system of equilibrium
+equations. This advanced tutorial demonstrates the usage of FElupe in conjunction with
 `contique <https://github.com/adtzlr/contique>`_. The unstable inflation of a
 rectangular hyperelastic balloon demonstrates this powerful approach. The deformed model
 and the pressure - displacement curve is plotted.

@@ -12,6 +12,14 @@ With the help of `contique <https://github.com/adtzlr/contique>`_ (install with 
    * on-the-fly XDMF-file export
    
    * plot force-displacement curve
+
+.. admonition::
+   :class: hint
+   
+   This example requires external packages.
+   .. code-block::
+      
+      pip install contique matadi
 """
 
 import contique

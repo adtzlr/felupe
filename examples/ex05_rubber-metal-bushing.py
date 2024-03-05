@@ -14,10 +14,9 @@ Rubber bushing with torsional loading
    
    * plot strains and stresses
 
-.. admonition::
+.. admonition:: This example requires external packages.
    :class: hint
    
-   This example requires external packages.
    .. code-block::
       
       pip install pypardiso

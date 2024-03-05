@@ -16,10 +16,9 @@ Non-homogeneous shear loadcase
    
    * plot force - displacement curves
 
-.. admonition::
+.. admonition:: This example requires external packages.
    :class: hint
    
-   This example requires external packages.
    .. code-block::
       
       pip install matadi

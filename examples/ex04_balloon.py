@@ -10,10 +10,9 @@ Inflation of a hyperelastic balloon
     
    * view the deformed balloon
 
-.. admonition::
+.. admonition:: This example requires external packages.
    :class: hint
    
-   This example requires external packages.
    .. code-block::
       
       pip install contique

@@ -1,5 +1,5 @@
 r"""
-Engine Mount
+Notch Stress
 ------------
 
 .. topic:: Three-dimensional linear-elastic analysis.
@@ -12,10 +12,9 @@ Engine Mount
    
    * plot the longitudinal stress component
 
-.. admonition::
+.. admonition:: This example requires external packages.
    :class: hint
    
-   This example requires external packages.
    .. code-block::
       
       pip install pypardiso

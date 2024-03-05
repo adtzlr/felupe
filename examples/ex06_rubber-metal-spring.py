@@ -12,10 +12,9 @@ Rubber Spring
    
    * export and plot the log. strain
 
-.. admonition::
+.. admonition:: This example requires external packages.
    :class: hint
    
-   This example requires external packages.
    .. code-block::
       
       pip install pypardiso

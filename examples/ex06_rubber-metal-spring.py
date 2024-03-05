@@ -3,7 +3,7 @@ Rubber Spring
 -------------
 
 .. admonition:: A rubber-metal spring with a simplified frictionless contact.
-   :class: note
+   :class: topic
 
    * read a mesh file
    

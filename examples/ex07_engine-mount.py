@@ -3,7 +3,7 @@ Engine Mount
 ------------
 
 .. admonition:: A rubberlike-metal component used as an engine-mount.
-   :class: note
+   :class: topic
 
    * read and combine mesh files
    

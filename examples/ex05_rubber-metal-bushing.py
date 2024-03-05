@@ -3,7 +3,7 @@ Rubber bushing with torsional loading
 -------------------------------------
 
 .. admonition:: A rubber-metal bushing with combined multiaxial loading.
-   :class: note
+   :class: topic
 
    * create and stack meshes
 

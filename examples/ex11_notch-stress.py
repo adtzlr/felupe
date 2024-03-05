@@ -21,7 +21,8 @@ Notch Stress
 
 A linear-elastic notched plate is subjected to uniaxial tension. The stress tensor is
 projected to the mesh-points and the longitudinal normal component :math:`\sigma_{xx}`
-is plotted.
+is plotted. FElupe has no quadratic wedge element formulation implemented and hence, the
+wedges in the mesh are converted to hexahedrons.
 
 A mesh file is provided for this example (taken from the docs of
 `pyvista <https://docs.pyvista.org/>`_): 
@@ -29,10 +30,20 @@ A mesh file is provided for this example (taken from the docs of
 * `mesh <../_static/ex11_notch-stress_mesh.vtu>`_
 """
 # sphinx_gallery_thumbnail_number = -1
-import felupe as fem
+import numpy as np
+import pyvista as pv
 import pypardiso
+import felupe as fem
 
-mesh = fem.mesh.read("ex11_notch-stress_mesh.vtu")[0]
+m = pv.examples.download_notch_displacement()
+
+hex20 = [0, 2, 1, 1, 3, 5, 4, 4, 8, 7, 1, 6, 11, 10, 4, 9, 12, 14, 13, 13]
+mesh = fem.Mesh(
+    m.points * 250,
+    np.vstack([m.cells_dict[25], m.cells_dict[26][:, hex20]]),
+    "hexahedron20",
+)
+mesh = mesh.add_midpoints_faces().add_midpoints_volumes()
 region = fem.RegionTriQuadraticHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 

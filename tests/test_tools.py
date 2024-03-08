@@ -397,6 +397,7 @@ def test_project():
 def test_extrapolate():
     # rectangle (triangle)
     mesh = fem.Rectangle(n=2)
+    mesh.update(points=np.vstack([mesh.points, [1000, 1000]]))
     region = fem.RegionQuad(mesh)
     field = fem.FieldAxisymmetric(region, dim=2)
     values = field.extract()
@@ -404,17 +405,17 @@ def test_extrapolate():
     projected = fem.tools.extrapolate(values, region, average=False)
     assert projected.shape == (mesh.cells.size, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected[:-1]])
 
     projected = fem.tools.extrapolate(values, region, average=True)
     assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected[:-1]])
 
     projected = fem.tools.extrapolate(values, region, average=True, mean=True)
     assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected[:-1]])
 
     # rectangle (quadratic triangle)
     mesh = fem.Rectangle(n=2).add_midpoints_edges()

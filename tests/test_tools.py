@@ -299,6 +299,86 @@ def test_newton_body():
     )
 
 
+def test_project():
+    # rectangle (triangle)
+    mesh = fem.Rectangle(n=2).triangulate()
+    region = fem.RegionTriangle(mesh)
+    field = fem.FieldAxisymmetric(region, dim=2)
+    values = field.extract()
+
+    projected = fem.project(values, region, average=False)
+    assert projected.shape == (mesh.cells.size, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    projected = fem.project(values, region, average=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    projected = fem.project(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    # rectangle (quadratic triangle)
+    mesh = fem.Rectangle(n=2).triangulate().add_midpoints_edges()
+    region = fem.RegionQuadraticTriangle(mesh)
+    field = fem.FieldAxisymmetric(region, dim=2)
+    values = field.extract()
+
+    projected = fem.project(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    
+    # this is wrong
+    projected = fem.project(values, region, average=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    with pytest.raises(AssertionError):
+        assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    # cube (tetra)
+    mesh = fem.Cube(n=2).triangulate()
+    region = fem.RegionTetra(mesh)
+    field = fem.Field(region, dim=3)
+    values = field.extract()
+
+    projected = fem.project(values, region, average=False)
+    assert projected.shape == (mesh.cells.size, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    projected = fem.project(values, region, average=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    projected = fem.project(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    # cube (quadratic tetra)
+    mesh = fem.Cube(n=2).triangulate().add_midpoints_edges()
+    region = fem.RegionQuadraticTetra(mesh)
+    field = fem.Field(region, dim=3)
+    values = field.extract()
+
+    projected = fem.project(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+    # this is wrong
+    projected = fem.project(values, region, average=True)
+    assert projected.shape == (mesh.npoints, 3, 3)
+    assert not np.any(np.isnan(projected))
+    with pytest.raises(AssertionError):
+        assert np.all([np.allclose(np.eye(3), res) for res in projected])
+
+
 if __name__ == "__main__":
     test_solve()
     test_solve_mixed()
@@ -308,3 +388,4 @@ if __name__ == "__main__":
     test_newton_plane()
     test_newton_linearelastic()
     test_newton_body()
+    test_project()

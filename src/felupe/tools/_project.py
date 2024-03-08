@@ -21,7 +21,7 @@ from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse.linalg import spsolve
 
 from ..assembly import IntegralFormCartesian
-from ..element import Tetra, Triangle
+from ..element import Tetra, Triangle, QuadraticTriangle, QuadraticTetra
 from ..field import Field
 from ..quadrature import Tetrahedron as TetrahedronQuadrature
 from ..quadrature import Triangle as TriangleQuadrature
@@ -292,13 +292,14 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
     # triangles and tetrahedrons require quadratic quadratures for projection
     element = None
     quadrature = None
-
     if values.shape[-2] == 1:
-        if isinstance(region.element, Triangle):
-            quadrature = TriangleQuadrature(order=2)
-
-        if isinstance(region.element, Tetra):
-            quadrature = TetrahedronQuadrature(order=2)
+        scheme = {
+            Triangle: TriangleQuadrature(order=2),
+            Tetra: TetrahedronQuadrature(order=2),
+            QuadraticTriangle: TriangleQuadrature(order=5),
+            QuadraticTetra: TetrahedronQuadrature(order=5),
+        }
+        quadrature = scheme.get(type(region.element))
 
     # copy and reload the region if necessary
     if mesh is not None or element is not None or quadrature is not None:

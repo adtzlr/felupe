@@ -38,8 +38,7 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     Returns
     -------
     FormExpression
-        A form object based on LinearForm, LinearFormExpression, BilinearForm or
-        BilinearFormExpression with methods for integration and assembly.
+        A form object with methods for integration and assembly.
 
     Notes
     -----

@@ -59,7 +59,7 @@ class Tetrahedron(Scheme):
         elif order == 2:
             a = 0.13819660
             b = 0.58541020
-            scheme.points = np.array([[a, a, a], [b, a, a], [a, b, a], [b, b, a]])
+            scheme.points = np.array([[a, a, a], [b, a, a], [a, b, a], [a, a, b]])
             scheme.weights = np.ones(4) / 24
 
         elif order == 3:

@@ -97,9 +97,7 @@ class BilinearForm:
                             else:
                                 v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
                                 u = type(self.u.basis)(ub, self.u.basis.grad[b, j])
-                                values[a, i, b, j] = (
-                                    weakform(v, u, **kwargs) * self.dx
-                                )
+                                values[a, i, b, j] = weakform(v, u, **kwargs) * self.dx
 
         else:
             idx_a, idx_i, idx_b, idx_j = np.indices(values.shape[:4])
@@ -129,9 +127,7 @@ class BilinearForm:
                     values[a, i, b, j] = weakform(v, u, **kwargs) * self.dx
 
             threads = [
-                Thread(
-                    target=contribution, args=(values, a, i, b, j, sym, kwargs)
-                )
+                Thread(target=contribution, args=(values, a, i, b, j, sym, kwargs))
                 for a, i, b, j in aibj
             ]
 

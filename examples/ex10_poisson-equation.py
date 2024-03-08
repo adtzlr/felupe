@@ -22,13 +22,6 @@ and a unit load
 is solved on a unit rectangle with triangles.
 """
 
-import felupe as fem
-
-mesh = fem.Rectangle(n=2**5).triangulate()
-region = fem.RegionTriangle(mesh)
-scalar = fem.Field(region)
-field = fem.FieldContainer([scalar])
-
 
 # %%
 # The Poisson equation is transformed into integral form representation by the
@@ -42,7 +35,13 @@ field = fem.FieldContainer([scalar])
 # For the :func:`~felupe.newtonrhapson` to converge, the *linear form* of the Poisson
 # equation is also required.
 
+import felupe as fem
 from felupe.math import ddot, grad
+
+mesh = fem.Rectangle(n=2**5).triangulate()
+region = fem.RegionTriangle(mesh)
+scalar = fem.Field(region)
+field = fem.FieldContainer([scalar])
 
 
 @fem.Form(v=field, u=field)

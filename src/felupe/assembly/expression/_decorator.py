@@ -19,9 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 from ._expression import FormExpression
 
 
-def FormExpressionDecorator(
-    v, u=None, dx=None, kwargs=None, parallel=False
-):
+def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
 

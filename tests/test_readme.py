@@ -122,7 +122,7 @@ def test_readme_form():
     field = fem.FieldContainer([fem.Field(region, dim=3)])
     boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-    from felupe.math import ddot, sym, trace, grad
+    from felupe.math import ddot, grad, sym, trace
 
     @fem.Form(v=field, u=field)
     def bilinearform():

@@ -70,11 +70,7 @@ class FormExpression:
         self.form = None
         self.dx = dx
         self.weakform = weakform
-
-        if kwargs is not None:
-            self.kwargs = kwargs
-        else:
-            self.kwargs = {}
+        self.kwargs = kwargs
 
         # init underlying linear or bilinear (mixed) form
         self._init_or_update_forms(v, u, kwargs, parallel)

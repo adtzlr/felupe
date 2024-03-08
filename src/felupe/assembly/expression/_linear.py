@@ -77,14 +77,10 @@ class LinearForm:
 
             def contribution(values, a, i, kwargs):
                 v = type(self.v.basis)(self.v.basis[a, i], self.v.basis.grad[a, i])
-                values[a, i] = (
-                    weakform(v, **kwargs)
-                    * self.dx
-                )
+                values[a, i] = weakform(v, **kwargs) * self.dx
 
             threads = [
-                Thread(target=contribution, args=(values, a, i, kwargs))
-                for a, i in ai
+                Thread(target=contribution, args=(values, a, i, kwargs)) for a, i in ai
             ]
 
             for t in threads:

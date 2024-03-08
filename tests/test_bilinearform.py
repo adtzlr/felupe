@@ -108,7 +108,7 @@ def test_linear_elastic():
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
 
-    from felupe.math import ddot, sym, trace, grad
+    from felupe.math import ddot, grad, sym, trace
 
     @fem.Form(v=field, u=field, kwargs={"mu": 1.0, "lmbda": 2.0})
     def bilinearform():

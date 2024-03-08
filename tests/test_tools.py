@@ -97,6 +97,12 @@ def test_solve():
 
     cauchy = fem.tools.topoints(s, region=r, sym=True)
     assert cauchy.shape == (r.mesh.npoints, 6)
+    
+    cauchy = fem.tools.topoints(s[:2, :2], region=r, sym=True)
+    assert cauchy.shape == (r.mesh.npoints, 3)
+    
+    cauchy = fem.tools.topoints(s[:2, :2], region=r, sym=False)
+    assert cauchy.shape == (r.mesh.npoints, 4)
 
     cauchy = fem.tools.topoints(s[0, 0], region=r, mode="scalar")
     assert cauchy.shape == (r.mesh.npoints,)
@@ -390,82 +396,76 @@ def test_project():
 
 def test_extrapolate():
     # rectangle (triangle)
-    mesh = fem.Rectangle(n=2).triangulate()
-    region = fem.RegionTriangle(mesh)
+    mesh = fem.Rectangle(n=2)
+    region = fem.RegionQuad(mesh)
     field = fem.FieldAxisymmetric(region, dim=2)
     values = field.extract()
 
-    projected = fem.project(values, region, average=False)
-    assert projected.shape == (mesh.cells.size, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=False)
+    assert projected.shape == (mesh.cells.size, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
-    projected = fem.project(values, region, average=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=True)
+    assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
-    projected = fem.project(values, region, average=True, mean=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
     # rectangle (quadratic triangle)
-    mesh = fem.Rectangle(n=2).triangulate().add_midpoints_edges()
-    region = fem.RegionQuadraticTriangle(mesh)
+    mesh = fem.Rectangle(n=2).add_midpoints_edges()
+    region = fem.RegionQuadraticQuad(mesh)
     field = fem.FieldAxisymmetric(region, dim=2)
     values = field.extract()
 
-    projected = fem.project(values, region, average=True, mean=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
     # this is wrong
-    projected = fem.project(values, region, average=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
-    assert not np.any(np.isnan(projected))
-    with pytest.raises(AssertionError):
-        assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    with pytest.raises(ValueError):
+        projected = fem.tools.extrapolate(values, region, average=True)
 
     # cube (tetra)
-    mesh = fem.Cube(n=2).triangulate()
-    region = fem.RegionTetra(mesh)
+    mesh = fem.Cube(n=2)
+    region = fem.RegionHexahedron(mesh)
     field = fem.Field(region, dim=3)
     values = field.extract()
 
-    projected = fem.project(values, region, average=False)
-    assert projected.shape == (mesh.cells.size, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=False)
+    assert projected.shape == (mesh.cells.size, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
-    projected = fem.project(values, region, average=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=True)
+    assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
-    projected = fem.project(values, region, average=True, mean=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
     # cube (quadratic tetra)
-    mesh = fem.Cube(n=2).triangulate().add_midpoints_edges()
-    region = fem.RegionQuadraticTetra(mesh)
+    mesh = fem.Cube(n=2).add_midpoints_edges()
+    region = fem.RegionQuadraticHexahedron(mesh)
     field = fem.Field(region, dim=3)
     values = field.extract()
 
-    projected = fem.project(values, region, average=True, mean=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
+    projected = fem.tools.extrapolate(values, region, average=True, mean=True)
+    assert projected.shape == (mesh.npoints, 9)
     assert not np.any(np.isnan(projected))
-    assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    assert np.all([np.allclose(np.eye(3).ravel(), res) for res in projected])
 
     # this is wrong
-    projected = fem.project(values, region, average=True)
-    assert projected.shape == (mesh.npoints, 3, 3)
-    assert not np.any(np.isnan(projected))
-    with pytest.raises(AssertionError):
-        assert np.all([np.allclose(np.eye(3), res) for res in projected])
+    with pytest.raises(ValueError):
+        projected = fem.tools.extrapolate(values, region, average=True)
 
 
 if __name__ == "__main__":

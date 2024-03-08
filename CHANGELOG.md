@@ -15,6 +15,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add `NeoHooke.gradient(out=None)` and `NeoHooke.hessian(out=None)` for a location to store the results. Also for `NeoHookeCompressible`.
 - Add `out`-keyword to `gradient()` and `hessian` of `NearlyIncompressible` and `ThreeFieldVariation`.
 - Add optional initial state variables in `ViewMaterial(statevars=None)` and `ViewMaterialIncompressible(statevars=None)`.
+- Add the L2-projection as `tools.project(values, region, average=True, mean=False, dV=None, solver=scipy.sparse.linalg.spsolve)` to project given values at quadrature points to mesh-points. This replaces the old `tools.project(values, region, average=True, mean=False)` in a backward-compatible way. The new method is computationally more expensive but is also much more flexible.
+- Add fifth-order quadrature schemes `quadrature.Triangle(order=5)` and `quadrature.Tetrahedron(order=5)`.
+- Add `Region.copy(mesh=None, element=None, quadrature=None)` to copy a region and re-evaluate this copy if necessary.
 
 ### Changed
 - Rename `Mesh.save()` to `Mesh.write()` and add `Mesh.save()` as an alias to `Mesh.write()`.
@@ -25,6 +28,9 @@ All notable changes to this project will be documented in this file. The format 
 - Only add `off_screen` and `notebook` keyword-arguments to `pyvista.Plotter(**kwargs)` if they are `True`. This is needed for not ignoring a global variable like `pyvista.OFF_SCREEN = True`.
 - Enforce `verbose=0` if the environmental variable `"FELUPE_VERBOSE"` is `"false"`. This is useful for running the examples when building the documentation.
 - Don't require a `bilinearform` in `FormItem(bilinearform=None)`. An empty `FormItem` is now a valid item in a `Step`. For empty vectors/matrices, the shape is inferred from `sum(FieldContainer.fieldsizes)` instead of `FieldContainer.fields[0].values.size`.
+- Rename the old-project method to `tools.extrapolate(values, region, average=True, mean=False)` which extrapolates values at quadrature points to mesh-points.
+- Change the sorting of quadrature points for triangles and tetrahedrons (due to internal code simplifications).
+- The reload-method of a region does only re-evaluate it if at least one of the arguments are not None `Region.reload(mesh, element, quadrature)`.
 
 ### Fixed
 - Fix missing support for third-order- and second-order tensor combinations to `math.dot(A, B, mode=(2,3))` and `math.ddot(A, B, mode=(2,3))`.

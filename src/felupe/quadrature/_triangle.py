@@ -39,37 +39,55 @@ class Triangle(Scheme):
 
     ..  math::
 
-        \int_V f(x) dV \approx \sum f(x_q) w_q
+        \int_A f(x) dA \approx \sum f(x_q) w_q
 
-    with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+    with quadrature points :math:`x_q` and corresponding weights :math:`w_q` [1]_ [2]_.
 
+    References
+    ----------
+    .. [1] K. J. Bathe, Finite element procedures, 2nd ed. K. J. Bathe, Watertown, MA,
+       2014.
+    .. [2] O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, The Finite Element Method: Its
+       Basis and Fundamentals, 7th ed., Elsevier, 2013.
     """
 
     def __init__(self, order: int):
         scheme = SimpleNamespace()
-        area = 1 / 2
 
         if order == 1:
-            scheme.points = np.ones((1, 3)) / 3
-            scheme.weights = np.ones(1)
+            scheme.points = np.ones((1, 2)) / 3
+            scheme.weights = np.ones(1) / 2
 
         elif order == 2:
-            a = 2 / 3
-            b = 1 / 6
-            scheme.points = np.array([[a, b, b], [b, a, b], [b, b, a]])
-            scheme.weights = np.ones(3) / 3
+            a = 1 / 6
+            b = 2 / 3
+            scheme.points = np.array([[a, a], [b, a], [a, b]])
+            scheme.weights = np.ones(3) / 6
 
         elif order == 3:
-            a = 0.6
-            b = 0.2
+            a = 3 / 5
+            b = 1 / 5
+
             c = 1 / 3
-            scheme.points = np.array([[c, c, c], [b, a, a], [a, b, a], [a, a, b]])
-            scheme.weights = np.array([-27 / 48, 25 / 48, 25 / 48, 25 / 48])
+            d = 25 / 96
+            scheme.points = np.array([[c, c], [a, b], [b, a], [b, b]])
+            scheme.weights = np.array([-9 / 32, d, d, d])
+
+        elif order == 5:
+            a = 0.1012865073235
+            b = 0.7974269853531
+            c = 0.4701420641051
+            d = 0.0597158717898
+            e = 0.3333333333333
+            f = 0.1259391805448
+            g = 0.1323941527885
+            h = 0.225
+            scheme.points = np.array(
+                [[a, a], [b, a], [a, b], [c, d], [c, c], [d, c], [e, e]]
+            )
+            scheme.weights = np.array([f, f, f, g, g, g, h]) / 2
 
         else:
-            raise NotImplementedError("order must be either 1, 2 or 3.")
+            raise NotImplementedError("order must be 1, 2, 3 or 5.")
 
-        triangle = np.array([[0, 0], [1, 0], [0, 1]])
-        points = np.dot(triangle.T, scheme.points.T).T
-
-        super().__init__(points, scheme.weights * area)
+        super().__init__(scheme.points, scheme.weights)

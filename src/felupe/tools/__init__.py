@@ -5,7 +5,7 @@ from ._newton import jac_items as jac
 from ._newton import newtonrhapson
 from ._plot import ViewField, ViewMesh, ViewSolid, ViewXdmf
 from ._post import curve, force, moment
-from ._project import project, topoints
+from ._project import extrapolate, project, topoints
 from ._save import save
 from ._solve import solve
 
@@ -16,6 +16,7 @@ __all__ = [
     "curve",
     "force",
     "moment",
+    "extrapolate",
     "project",
     "topoints",
     "logo",

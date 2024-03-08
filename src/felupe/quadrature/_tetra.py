@@ -41,39 +41,56 @@ class Tetrahedron(Scheme):
 
         \int_V f(x) dV \approx \sum f(x_q) w_q
 
-    with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+    with quadrature points :math:`x_q` and corresponding weights :math:`w_q` [1]_.
 
+    References
+    ----------
+    .. [1] O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, The Finite Element Method: Its
+       Basis and Fundamentals, 7th ed., Elsevier, 2013.
     """
 
     def __init__(self, order: int):
         scheme = SimpleNamespace()
-        volume = 1 / 6
 
         if order == 1:
-            scheme.points = np.ones((1, 4)) / 4
-            scheme.weights = np.ones(1)
+            scheme.points = np.ones((1, 3)) / 4
+            scheme.weights = np.ones(1) / 6
 
         elif order == 2:
-            a = 0.58541020
-            b = 0.13819660
-            scheme.points = np.array(
-                [[a, b, b, b], [b, a, b, b], [b, b, a, b], [b, b, b, a]]
-            )
-            scheme.weights = np.ones(4) / 4
+            a = 0.13819660
+            b = 0.58541020
+            scheme.points = np.array([[a, a, a], [b, a, a], [a, b, a], [a, a, b]])
+            scheme.weights = np.ones(4) / 24
 
         elif order == 3:
             a = 1 / 6
             b = 1 / 2
             c = 1 / 4
+            d = 9 / 120
             scheme.points = np.array(
-                [[c, c, c, c], [b, a, a, a], [a, b, a, a], [a, a, b, a], [a, a, a, b]]
+                [[a, a, a], [b, a, a], [a, b, a], [b, b, a], [c, c, c]]
             )
-            scheme.weights = np.array([-4 / 5, 9 / 20, 9 / 20, 9 / 20, 9 / 20])
+            scheme.weights = np.array([d, d, d, d, -4 / 30])
+
+        elif order == 5:
+            a = 1 / 2
+            b = 0.6984197043243866
+            c = 0.1005267652252045
+            d = 0.0568813795204234
+            e = 0.31437287349319221
+            f = 0.019047619047619
+            g = 0.0885898247429807
+            h = 0.1328387466855907
+            scheme.points = np.array(
+                [
+                    [0, a, a, a, 0, 0, b, c, c, c, d, e, e, e],
+                    [a, 0, a, 0, a, 0, c, c, c, b, e, e, e, d],
+                    [a, a, 0, 0, 0, a, c, c, b, c, e, e, d, e],
+                ]
+            ).T
+            scheme.weights = np.array([f, f, f, f, f, f, g, g, g, g, h, h, h, h]) / 6
 
         else:
-            raise NotImplementedError("order must be either 1, 2 or 3.")
+            raise NotImplementedError("order must be either 1, 2, 3 or 5.")
 
-        tetra = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
-
-        points = np.dot(tetra.T, scheme.points.T).T
-        super().__init__(points, scheme.weights * volume)
+        super().__init__(scheme.points, scheme.weights)

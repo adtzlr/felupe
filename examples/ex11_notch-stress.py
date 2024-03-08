@@ -27,8 +27,9 @@ hexahedrons.
 """
 # sphinx_gallery_thumbnail_number = -1
 import numpy as np
-import pyvista as pv
 import pypardiso
+import pyvista as pv
+
 import felupe as fem
 
 m = pv.examples.download_notch_displacement()
@@ -48,5 +49,5 @@ step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(parallel=True, solver=pypardiso.spsolve)
 
 solid.view(
-    point_data={"Stress": fem.project(solid.results.gradient, region, mean=True)}
+    point_data={"Stress": fem.project(solid.results.gradient, region)}
 ).plot("Stress", component=0, show_edges=False, show_undeformed=False, view="xy").show()

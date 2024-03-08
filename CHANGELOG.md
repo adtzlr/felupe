@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.19.1] - 2024-03-08
+
+### Fixed
+- Fix `tools.project()` for meshes where some points are not connected to cells.
+
 ## [7.19.0] - 2024-03-08
 
 ### Added

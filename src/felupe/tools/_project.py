@@ -316,6 +316,13 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
     v = u = Field(region, dim=1)  # 1d-field for lhs
     A = IntegralFormCartesian(np.ones((1, 1)), v=v, dV=dV, u=u).assemble()
 
+    # fix diagonal items of the matrix for points not connected to cells
+    zeros_on_diagonal = A.diagonal() == 0
+    if np.any(zeros_on_diagonal):
+        A = A.tolil()
+        A[zeros_on_diagonal, zeros_on_diagonal] = 1
+        A = A.tocsr()
+
     # field of unknowns with projected values
     x = Field(region, dim=size)
 

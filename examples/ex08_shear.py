@@ -50,8 +50,7 @@ n = 11
 a = min(L / n, H / n)
 
 mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
-mesh.points = np.vstack((mesh.points, [0, 2 * H]))
-mesh.update(cells=mesh.cells)
+mesh.update(points=np.vstack((mesh.points, [0, 2 * H])))
 mesh.points_without_cells = np.array([], dtype=bool)
 mesh.plot().show()
 

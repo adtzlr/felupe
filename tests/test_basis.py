@@ -50,22 +50,22 @@ def test_basis():
         r, u = pre(dim=3)
         b = fem.assembly.expression.Basis(u, parallel=parallel)
 
-        assert b[0].grad is not None
+        assert not np.any(b[0].basis.grad == None)
 
         r, u = pre(dim=1)
         b = fem.assembly.expression.Basis(u, parallel=parallel)
 
-        assert b[0].grad is not None
+        assert not np.any(b[0].basis.grad == None)
 
         r, u = pre_constant(dim=3)
         b = fem.assembly.expression.Basis(u, parallel=parallel)
 
-        assert b[0].grad is None
+        assert np.all(b[0].basis.grad == None)
 
         r, u = pre_constant(dim=1)
         b = fem.assembly.expression.Basis(u, parallel=parallel)
 
-        assert b[0].grad is None
+        assert np.all(b[0].basis.grad == None)
 
 
 if __name__ == "__main__":

@@ -24,6 +24,25 @@ except ModuleNotFoundError:
     from numpy import einsum as einsumt
 
 
+class BasisArray(np.ndarray):
+    """Add the grad-attribute to an existing array [1]_.
+
+    References
+    ----------
+    ..  [1] https://numpy.org/doc/stable/user/basics.subclassing.html
+    """
+
+    def __new__(cls, input_array, grad=None):
+        obj = np.asarray(input_array).view(cls)
+        obj.grad = grad
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        self.grad = getattr(obj, "grad", None)
+
+
 class BasisField:
     r"""A basis and its gradient built on top of a scalar- or vector-valued
     field. *Basis* refers to the trial and test field, either values or
@@ -67,19 +86,21 @@ class BasisField:
 
         einsum = einsumt if parallel else np.einsum
 
-        self.basis = einsum(
+        basis = einsum(
             "ij,aqc->aijqc",
             np.eye(self.field.dim),
             self.field.region.h,
         )
 
-        if hasattr(self.field.region, "dhdX"):
-            self.grad = einsum(
+        if self.field.region.evaluate_gradient:
+            grad = einsum(
                 "ij,akqc->aijkqc", np.eye(self.field.dim), self.field.region.dhdX
             )
 
         else:
-            self.grad = None
+            grad = np.full(basis.shape[:2], None)
+
+        self.basis = BasisArray(basis, grad=grad)
 
 
 class Basis:

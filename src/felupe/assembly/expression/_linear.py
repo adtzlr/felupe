@@ -24,8 +24,7 @@ from .._cartesian import IntegralFormCartesian
 
 
 class LinearForm:
-    r"""A linear form object with methods for integration and assembly of
-    vectors.
+    r"""A linear form object with methods for integration and assembly of vectors.
 
     ..  math::
 
@@ -34,22 +33,15 @@ class LinearForm:
     Parameters
     ----------
     v : BasisField
-        An object with basis functions (gradients) of a field.
-    grad_v : bool, optional (default is False)
-        Flag to use the gradient of ``v``.
-    dx : ndarray or None, optional (default is None)
-        Array with (numerical) differential volumes.
-
+        Basis (shape) functions and gradients of a field.
+    dx : ndarray or None, optional
+        Array with differential volumes (default is None).
     """
 
-    def __init__(self, v, grad_v=False, dx=None):
+    def __init__(self, v, dx=None, **kwargs):
         self.v = v
-        self.grad_v = grad_v
         self.dx = dx
-
-        self._form = IntegralFormCartesian(
-            fun=None, v=v.field, dV=self.dx, grad_v=grad_v
-        )
+        self._form = IntegralFormCartesian(fun=None, v=v.field, dV=self.dx, **kwargs)
 
     def integrate(self, weakform, args=(), kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
@@ -71,24 +63,26 @@ class LinearForm:
             Integrated (but not assembled) vector values.
         """
 
-        if self.grad_v:
-            v = self.v.grad
-        else:
-            v = self.v.basis
-
-        values = np.zeros((len(v), v.shape[-4], *v.shape[-2:]))
+        values = np.zeros(
+            (len(self.v.basis), self.v.basis.shape[-4], *self.v.basis.shape[-2:])
+        )
 
         if not parallel:
-            for a, vbasis in enumerate(v):
+            for a, vbasis in enumerate(self.v.basis):
                 for i, vb in enumerate(vbasis):
-                    values[a, i] = weakform(vb, *args, **kwargs) * self.dx
+                    v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
+                    values[a, i] = weakform(v, *args, **kwargs) * self.dx
 
         else:
             idx_a, idx_i = np.indices(values.shape[:2])
             ai = zip(idx_a.ravel(), idx_i.ravel())
 
             def contribution(values, a, i, args, kwargs):
-                values[a, i] = weakform(v[a, i], *args, **kwargs) * self.dx
+                v = type(self.v.basis)(self.v.basis[a, i], self.v.basis.grad[a, i])
+                values[a, i] = (
+                    weakform(v, *args, **kwargs)
+                    * self.dx
+                )
 
             threads = [
                 Thread(target=contribution, args=(values, a, i, args, kwargs))

@@ -34,32 +34,19 @@ class LinearFormExpression:
     Parameters
     ----------
     v : Basis
-        An object with basis functions (gradients) of a field.
-    grad_v : tuple of bool, optional (default is None)
-        Flag to use the gradients of ``v``.
+        Basis (shape) functions and gradients of a field.
 
 
     """
 
-    def __init__(self, v, grad_v=None):
+    def __init__(self, v):
         self.v = v
         self.dx = self.v.field[0].region.dV
-        self._form = IntegralForm(
-            np.zeros(len(v.field.fields)), self.v.field, self.dx, grad_v=grad_v
-        )
+        self._form = IntegralForm(np.zeros(len(v.field.fields)), self.v.field, self.dx)
 
-        if grad_v is None:
-            self.grad_v = np.zeros_like(self.v.field.fields, dtype=bool)
-            self.grad_v[0] = True
-        else:
-            self.grad_v = grad_v
+        self._linearform = [LinearForm(v=vi, dx=self.dx) for vi in self.v]
 
-        self._linearform = [
-            LinearForm(v=vi, grad_v=gvi, dx=self.dx)
-            for vi, gvi in zip(self.v, self.grad_v)
-        ]
-
-    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
+    def integrate(self, weakform, args=(), kwargs=None, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
@@ -67,11 +54,11 @@ class LinearFormExpression:
         weakform : callable
             A callable function ``weakform(v, *args, **kwargs)``.
         args : tuple, optional
-            Optional arguments for callable weakform
-        kwargs : dict, optional
-            Optional named arguments for callable weakform
-        parallel : bool, optional (default is False)
-            Flag to activate parallel threading.
+            Optional arguments for callable weakform.
+        kwargs : dict or None, optional
+            Optional named arguments for callable weakform (default is None).
+        parallel : bool, optional
+            Flag to activate parallel threading (default is False).
 
         Returns
         -------
@@ -79,12 +66,15 @@ class LinearFormExpression:
             Integrated (but not assembled) vector values.
         """
 
+        if kwargs is None:
+            kwargs = {}
+
         return [
             form.integrate(fun, args, kwargs, parallel=parallel)
             for form, fun in zip(self._linearform, weakform)
         ]
 
-    def assemble(self, weakform, args=(), kwargs={}, parallel=False):
+    def assemble(self, weakform, args=(), kwargs=None, parallel=False):
         r"""Return the assembled integral as vector.
 
         Parameters
@@ -93,10 +83,10 @@ class LinearFormExpression:
             A callable function ``weakform(v, *args, **kwargs)``.
         args : tuple, optional
             Optional arguments for callable weakform
-        kwargs : dict, optional
-            Optional named arguments for callable weakform
-        parallel : bool, optional (default is False)
-            Flag to activate parallel threading.
+        kwargs : dict or None, optional
+            Optional named arguments for callable weakform (default is None).
+        parallel : bool, optional
+            Flag to activate parallel threading (default is False).
 
         Returns
         -------
@@ -120,17 +110,13 @@ class BilinearFormExpression:
     Parameters
     ----------
     v : Basis
-        An object with basis functions (gradients) of a field.
-    grad_v : tuple of bool, optional (default is None)
-        Tuple of flags to use the gradients of ``v``.
+        Basis (shape) functions and gradients of a field.
     u : Basis
-        An object with basis function (gradients) of a field.
-    grad_u : tuple of bool, optional (default is None)
-        Flag to use the gradients of ``u``.
+        Basis (shape) functions and gradients of a field.
 
     """
 
-    def __init__(self, v, u, grad_v=None, grad_u=None):
+    def __init__(self, v, u):
         self.v = v
         self.u = u
         self.dx = self.v.field[0].region.dV
@@ -138,22 +124,11 @@ class BilinearFormExpression:
         self.nv = len(v.field.fields)
         self.i, self.j = np.triu_indices(self.nv)
 
-        def _set_first_grad_true(grad, fields):
-            if grad is None:
-                grad = np.zeros_like(fields, dtype=bool)
-                grad[0] = True
-            return grad
-
-        self.grad_v = _set_first_grad_true(grad_v, self.v.field.fields)
-        self.grad_u = _set_first_grad_true(grad_u, self.u.field.fields)
-
         self._form = IntegralForm(
             fun=np.zeros(len(self.i)),
             v=self.v.field,
             dV=self.dx,
             u=self.u.field,
-            grad_v=self.grad_v,
-            grad_u=self.grad_u,
         )
 
         self._bilinearform = []
@@ -163,23 +138,21 @@ class BilinearFormExpression:
                 BilinearForm(
                     v=self.v[i],
                     u=self.u[j],
-                    grad_v=self.grad_v[i],
-                    grad_u=self.grad_u[j],
                     dx=self.dx,
                 )
             )
 
-    def integrate(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
+    def integrate(self, weakform, args=(), kwargs=None, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
+            A callable function ``weakform(v, u, *args, **kwargs)``.
         args : tuple, optional
-            Optional arguments for callable weakform
-        kawargs : dict, optional
-            Optional named arguments for callable weakform
+            Optional arguments for callable weakform.
+        kwargs : dict or None, optional
+            Optional named arguments for callable weakform (default is None).
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
 
@@ -189,29 +162,32 @@ class BilinearFormExpression:
             Integrated (but not assembled) matrix values.
         """
 
+        if kwargs is None:
+            kwargs = {}
+
         return [
             form.integrate(fun, args, kwargs, parallel=parallel, sym=sym)
             for form, fun in zip(self._bilinearform, weakform)
         ]
 
-    def assemble(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
+    def assemble(self, weakform, args=(), kwargs=None, parallel=False, sym=False):
         r"""Return the assembled integral as matrix.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
+            A callable function ``weakform(v, u, *args, **kwargs)``.
         args : tuple, optional
-            Optional arguments for callable weakform
-        kawargs : dict, optional
-            Optional named arguments for callable weakform
-        parallel : bool, optional (default is False)
-            Flag to activate parallel threading.
+            Optional arguments for callable weakform.
+        kawargs : dict or None, optional
+            Optional named arguments for callable weakform (default is None).
+        parallel : bool, optional
+            Flag to activate parallel threading (default is False).
 
         Returns
         -------
         values : csr_matrix
-            The assembled matrix.
+            The assembled sparse matrix.
         """
 
         values = self.integrate(weakform, args, kwargs, parallel=parallel, sym=sym)

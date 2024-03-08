@@ -43,20 +43,20 @@ class FormItem:
     Examples
     --------
     >>> import felupe as fem
-    >>> from felupe.math import ddot, sym, trace
-
+    >>> from felupe.math import ddot, sym, trace, grad
+    >>> 
     >>> mesh = fem.Cube(n=11)
     >>> region = fem.RegionHexahedron(mesh)
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
     >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-
-    >>> @fem.Form(v=field, u=field, grad_v=[True], grad_u=[True])
+    >>> 
+    >>> @fem.Form(v=field, u=field)
     >>> def bilinearform():
-    >>>     def a(gradv, gradu, μ=1.0, λ=2.0):
-    >>>         δε, ε = sym(gradv), sym(gradu)
+    >>>     def a(v, u, μ=1.0, λ=2.0):
+    >>>         δε, ε = sym(grad(v)), sym(grad(u))
     >>>         return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
     >>>     return [a]
-
+    >>> 
     >>> item = fem.FormItem(bilinearform, linearform=None, sym=True)
     >>> step = fem.Step(items=[item], boundaries=boundaries)
     >>> fem.Job(steps=[step]).evaluate()

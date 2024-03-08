@@ -47,10 +47,13 @@ def norm(array, axis=None):
 
 
 def interpolate(field):
-    "Interpolate method of field A."
+    "Interpolate method of a field."
     return field.interpolate()
 
 
-def grad(field, sym=False):
-    "Gradient method of field A."
-    return field.grad(sym=sym)
+def grad(x, **kwargs):
+    "Return the gradient of a field or the gradient of a basis-array."
+    if callable(x.grad):
+        return x.grad(**kwargs)
+    else:
+        return x.grad

@@ -40,38 +40,31 @@ field = fem.FieldContainer([scalar])
 #        = \int_\Omega  f \cdot v \ d\Omega
 #
 # For the :func:`~felupe.newtonrhapson` to converge, the *linear form* of the Poisson
-# equation is also required. FElupe does not support the gradient of the test field
-# and the test field itself inside a single form. Hence, two linear form objects have
-# to be created.
+# equation is also required.
+
+from felupe.math import grad
 
 
-@fem.Form(v=field, u=field, grad_v=[True], grad_u=[True])
+@fem.Form(v=field, u=field)
 def a():
     "Container for a bilinear form."
-    return [lambda gradv, gradu: fem.math.ddot(gradv, gradu)]
+    return [lambda v, u: fem.math.ddot(grad(v), grad(u))]
 
 
-@fem.Form(v=field, grad_v=[True])
+@fem.Form(v=field)
 def L():
     "Container for a linear form."
-    return [lambda gradv: fem.math.ddot(gradv, scalar.grad())]
-
-
-@fem.Form(v=field, grad_v=[False])
-def Lext():
-    "Container for a linear form."
-    return [lambda v: -1.0 * v]
+    return [lambda v: fem.math.ddot(grad(v), grad(scalar)) - 1.0 * v]
 
 
 poisson = fem.FormItem(bilinearform=a, linearform=L)
-load = fem.FormItem(linearform=Lext)
 
 boundaries = {
     "bottom-or-left": fem.Boundary(field[0], fx=0, fy=0, mode="or"),
     "top-or-right": fem.Boundary(field[0], fx=1, fy=1, mode="or"),
 }
 
-step = fem.Step([poisson, load], boundaries=boundaries)
+step = fem.Step([poisson], boundaries=boundaries)
 job = fem.Job([step]).evaluate()
 
 view = mesh.view(point_data={"Field": scalar.values})

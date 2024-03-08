@@ -122,20 +122,20 @@ def test_readme_form():
     field = fem.FieldContainer([fem.Field(region, dim=3)])
     boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-    from felupe.math import ddot, sym, trace
+    from felupe.math import ddot, sym, trace, grad
 
-    @fem.Form(v=field, u=field, grad_v=[True], grad_u=[True])
+    @fem.Form(v=field, u=field)
     def bilinearform():
-        def a(gradv, gradu, μ=1.0, λ=2.0):
-            δε, ε = sym(gradv), sym(gradu)
+        def a(v, u, μ=1.0, λ=2.0):
+            δε, ε = sym(grad(v)), sym(grad(u))
             return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
 
         return [a]
 
-    @fem.Form(v=field, grad_v=[True])
+    @fem.Form(v=field)
     def linearform():
-        def L(gradv, μ=1.0, λ=2.0):
-            δε = sym(gradv)
+        def L(v, μ=1.0, λ=2.0):
+            δε = sym(grad(v))
             ε = field.extract(grad=True, sym=True, add_identity=False)[0]
             return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
 

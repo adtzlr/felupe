@@ -74,12 +74,12 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     stiffness matrix is assembled for a unit cube out of hexahedrons.
 
     >>> import felupe as fem
-
+    >>> 
     >>> mesh = fem.Cube(n=11)
     >>> region = fem.RegionHexahedron(mesh)
     >>> displacement = fem.Field(region, dim=3)
     >>> field = fem.FieldContainer([displacement])
-
+    >>> 
     >>> boundaries, loadcase = fem.dof.uniaxial(field, move=0.5, clamped=True)
 
     The bilinear form of linear elasticity is defined as
@@ -110,7 +110,7 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     of the assembly arguments.
 
     >>> from felupe.math import ddot, trace, sym, grad
-
+    >>> 
     >>> @fem.Form(
     >>>     v=field, u=field, kwargs={"μ": 1.0, "λ": 2.0}
     >>> )
@@ -124,9 +124,9 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     >>>         return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
     >>>
     >>>     return [linear_elasticity,]
-
+    >>> 
     >>> stiffness_matrix = bilinearform.assemble(v=field, u=field, parallel=False)
-
+    >>> 
     >>> system = fem.solve.partition(
     >>>     field, stiffness_matrix, dof1=loadcase["dof1"], dof0=loadcase["dof0"]
     >>> )

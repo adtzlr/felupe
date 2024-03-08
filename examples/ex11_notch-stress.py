@@ -48,6 +48,6 @@ solid = fem.SolidBody(umat=fem.LinearElastic(E=2.1e5, nu=0.30), field=field)
 step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(parallel=True, solver=pypardiso.spsolve)
 
-solid.view(
-    point_data={"Stress": fem.project(solid.results.gradient, region)}
-).plot("Stress", component=0, show_edges=False, show_undeformed=False, view="xy").show()
+solid.view(point_data={"Stress": fem.project(solid.results.gradient, region)}).plot(
+    "Stress", component=0, show_edges=False, show_undeformed=False, view="xy"
+).show()

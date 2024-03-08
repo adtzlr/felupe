@@ -19,9 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 from ._expression import FormExpression
 
 
-def FormExpressionDecorator(
-    v, u=None, grad_v=None, grad_u=None, dx=None, args=None, kwargs=None, parallel=False
-):
+def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
 
@@ -31,15 +29,8 @@ def FormExpressionDecorator(
         A container for the ``v`` fields. May be updated during integration / assembly.
     u : FieldContainer
         A container for the ``u`` fields. May be updated during integration / assembly.
-    grad_v : bool, optional
-        Flag to use the gradient of ``v`` (default is None).
-    grad_u : bool, optional
-        Flag to use the gradient of ``u`` (default is None).
     dx : ndarray or None, optional
         Array with (numerical) differential volumes  (default is None).
-    args : tuple or None, optional
-        Tuple with initial optional weakform-arguments. May be updated during
-        integration / assembly (default is None).
     kwargs : dict or None, optional
         Dictionary with initial optional weakform-keyword-arguments. May be
         updated during integration / assembly (default is None).
@@ -118,18 +109,18 @@ def FormExpressionDecorator(
     as keyword arguments of the weak-form may be defined inside the decorator or as part
     of the assembly arguments.
 
-    >>> from felupe.math import ddot, trace, sym
+    >>> from felupe.math import ddot, trace, sym, grad
 
     >>> @fem.Form(
-    >>>     v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"μ": 1.0, "λ": 2.0}
+    >>>     v=field, u=field, kwargs={"μ": 1.0, "λ": 2.0}
     >>> )
     >>> def bilinearform():
     >>>     "A container for a bilinear form."
     >>>
-    >>>     def linear_elasticity(gradv, gradu, μ, λ):
+    >>>     def linear_elasticity(v, u, μ, λ):
     >>>         "Linear elasticity."
     >>>
-    >>>         δε, ε = sym(gradv), sym(gradu)
+    >>>         δε, ε = sym(grad(v)), sym(grad(u))
     >>>         return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
     >>>
     >>>     return [linear_elasticity,]
@@ -149,10 +140,7 @@ def FormExpressionDecorator(
             weakform=weakform,
             v=v,
             u=u,
-            grad_v=grad_v,
-            grad_u=grad_u,
             dx=dx,
-            args=args,
             kwargs=kwargs,
             parallel=parallel,
         )

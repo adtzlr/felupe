@@ -22,13 +22,6 @@ and a unit load
 is solved on a unit rectangle with triangles.
 """
 
-import felupe as fem
-
-mesh = fem.Rectangle(n=2**5).triangulate()
-region = fem.RegionTriangle(mesh)
-scalar = fem.Field(region)
-field = fem.FieldContainer([scalar])
-
 
 # %%
 # The Poisson equation is transformed into integral form representation by the
@@ -40,38 +33,37 @@ field = fem.FieldContainer([scalar])
 #        = \int_\Omega  f \cdot v \ d\Omega
 #
 # For the :func:`~felupe.newtonrhapson` to converge, the *linear form* of the Poisson
-# equation is also required. FElupe does not support the gradient of the test field
-# and the test field itself inside a single form. Hence, two linear form objects have
-# to be created.
+# equation is also required.
+
+import felupe as fem
+from felupe.math import ddot, grad
+
+mesh = fem.Rectangle(n=2**5).triangulate()
+region = fem.RegionTriangle(mesh)
+scalar = fem.Field(region)
+field = fem.FieldContainer([scalar])
 
 
-@fem.Form(v=field, u=field, grad_v=[True], grad_u=[True])
+@fem.Form(v=field, u=field)
 def a():
     "Container for a bilinear form."
-    return [lambda gradv, gradu: fem.math.ddot(gradv, gradu)]
+    return [lambda v, u, **kwargs: ddot(grad(v), grad(u))]
 
 
-@fem.Form(v=field, grad_v=[True])
+@fem.Form(v=field)
 def L():
     "Container for a linear form."
-    return [lambda gradv: fem.math.ddot(gradv, scalar.grad())]
+    return [lambda v, **kwargs: ddot(grad(v), grad(scalar)) - kwargs["scale"] * v]
 
 
-@fem.Form(v=field, grad_v=[False])
-def Lext():
-    "Container for a linear form."
-    return [lambda v: -1.0 * v]
-
-
-poisson = fem.FormItem(bilinearform=a, linearform=L)
-load = fem.FormItem(linearform=Lext)
+poisson = fem.FormItem(bilinearform=a, linearform=L, kwargs={"scale": 1.0})
 
 boundaries = {
     "bottom-or-left": fem.Boundary(field[0], fx=0, fy=0, mode="or"),
     "top-or-right": fem.Boundary(field[0], fx=1, fy=1, mode="or"),
 }
 
-step = fem.Step([poisson, load], boundaries=boundaries)
+step = fem.Step([poisson], boundaries=boundaries)
 job = fem.Job([step]).evaluate()
 
 view = mesh.view(point_data={"Field": scalar.values})

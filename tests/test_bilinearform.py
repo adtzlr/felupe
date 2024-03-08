@@ -25,10 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import pytest
-
 import felupe as fem
-from felupe.math import ddot, dot, dya
+from felupe.math import ddot, dot, dya, grad
 
 
 def lform(v, w):
@@ -40,27 +38,19 @@ def lform_grad(v, F):
 
 
 def lformu(v, F, p):
-    return ddot(F, v)
+    return ddot(F, grad(v))
 
 
 def lformp(q, F, p):
     return dot(p, q)
 
 
-def bform(v, u, w):
-    return dot(w, v) * dot(w, u)
-
-
-def bform_grad(v, u, F):
-    return ddot(F, v) * ddot(F, u)
-
-
 def a_uu(v, u, F, p):
-    return ddot(u, ddot(dya(F, F), v))
+    return ddot(grad(u), ddot(dya(F, F), grad(v)))
 
 
 def a_up(v, r, F, p):
-    return dot(p, r) * ddot(F, v)
+    return dot(p, r) * ddot(F, grad(v))
 
 
 def a_pp(q, r, F, p):
@@ -82,40 +72,34 @@ def test_form_decorator():
     field = pre(dim=3)
     F, p = field.extract()
 
-    @fem.Form(v=field, u=field, grad_v=(True, False), grad_u=(True, False))
+    @fem.Form(v=field, u=field)
     def a():
         return (a_uu, a_up, a_pp)
 
-    a.assemble(field, field, args=(F, p))
+    a.assemble(field, field, kwargs=dict(F=F, p=p))
 
-    @fem.Form(v=field, u=field, grad_v=None, grad_u=None)
-    def a():
-        return (a_uu, a_up, a_pp)
-
-    a.assemble(field, field, args=(F, p))
-
-    @fem.Form(v=field, grad_v=(True, False))
+    @fem.Form(v=field)
     def L():
         return (lformu, lformp)
 
-    L.assemble(field, args=(F, p), parallel=False)
-    L.assemble(field, args=(F, p), parallel=True)
-    L.assemble(field, args=(F, p), parallel=False, sym=True)
-    L.assemble(field, args=(F, p), parallel=True, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
 
-    @fem.Form(v=field, grad_v=None)
+    @fem.Form(v=field)
     def L():
         return (lformu, lformp)
 
-    L.integrate(field, args=(F, p), parallel=False)
-    L.integrate(field, args=(F, p), parallel=True)
-    L.integrate(field, args=(F, p), parallel=False, sym=True)
-    L.integrate(field, args=(F, p), parallel=True, sym=True)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=False)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=True)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
 
-    L.assemble(field, args=(F, p), parallel=False)
-    L.assemble(field, args=(F, p), parallel=True)
-    L.assemble(field, args=(F, p), parallel=False, sym=True)
-    L.assemble(field, args=(F, p), parallel=True, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
 
 
 def test_linear_elastic():
@@ -124,23 +108,17 @@ def test_linear_elastic():
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
 
-    from felupe.math import ddot, sym, trace
+    from felupe.math import ddot, grad, sym, trace
 
-    @fem.Form(
-        v=field, u=field, grad_v=[True], grad_u=[True], kwargs={"mu": 1.0, "lmbda": 2.0}
-    )
+    @fem.Form(v=field, u=field, kwargs={"mu": 1.0, "lmbda": 2.0})
     def bilinearform():
         "A container for a bilinear form."
 
-        def linear_elasticity(gradv, gradu, mu, lmbda):
-            "Linear elasticity."
-
-            de, e = sym(gradv), sym(gradu)
+        def linear_elasticity(v, u, mu, lmbda):
+            de, e = sym(grad(v)), sym(grad(u))
             return 2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)
 
-        return [
-            linear_elasticity,
-        ]
+        return [linear_elasticity]
 
     bilinearform.integrate(v=field, u=field, parallel=False)
     bilinearform.integrate(v=field, u=field, parallel=True)

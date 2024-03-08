@@ -21,7 +21,7 @@ from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse.linalg import spsolve
 
 from ..assembly import IntegralFormCartesian
-from ..element import Tetra, Triangle, QuadraticTriangle, QuadraticTetra
+from ..element import QuadraticTetra, QuadraticTriangle, Tetra, Triangle
 from ..field import Field
 from ..quadrature import Tetrahedron as TetrahedronQuadrature
 from ..quadrature import Triangle as TriangleQuadrature

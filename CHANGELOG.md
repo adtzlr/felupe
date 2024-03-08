@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- The internal `BasisField.basis` is now a subclassed array `BasisArray` with a `grad`-attribute.
+- `math.grad(x, **kwargs)` is enhanced to return gradients of fields (like before) and the gradient-attribute of basis-arrays (added).
+- The `grad_v` and `grad_u` arguments are removed from the form-expression decorator `Form`. This changes the required function signature of the weakform-callable to `weakform(v, u, **kwargs)`. The tuple of optional arguments is also removed. Gradients of `v` and `u` are now obtained by `math.grad(v)` or `v.grad`.
+
 ## [7.19.1] - 2024-03-08
 
 ### Fixed

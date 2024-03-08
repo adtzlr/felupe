@@ -29,7 +29,7 @@ class Triangle(Element):
     The triangle element is defined by three points (0-2). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
-    :math:`(r,s)`.
+    :math:`(r,s)` [2]_.
 
     .. math::
 
@@ -51,6 +51,8 @@ class Triangle(Element):
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
        Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    .. [2] K. J. Bathe, Finite element procedures, 2nd ed. K. J. Bathe, Watertown, MA,
+       2014.
     """
 
     def __init__(self):
@@ -143,7 +145,7 @@ class QuadraticTriangle(Element):
     the mid-edge point between points (2,0). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
-    :math:`(r,s)`.
+    :math:`(r,s)` [2]_.
 
     .. math::
 
@@ -168,6 +170,8 @@ class QuadraticTriangle(Element):
     ----------
     .. [1] W. Schroeder, K. Martin and B. Lorensen. The Visualization
        Toolkit, 4th ed. Kitware, 2006. ISBN: 978-1-930934-19-1.
+    .. [2] K. J. Bathe, Finite element procedures, 2nd ed. K. J. Bathe, Watertown, MA,
+       2014.
     """
 
     def __init__(self):

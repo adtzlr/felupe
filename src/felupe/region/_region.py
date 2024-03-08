@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import warnings
+from copy import deepcopy
 
 import numpy as np
 
@@ -136,8 +137,36 @@ class Region:
         self.evaluate_gradient = grad
         self.reload(mesh=mesh, element=element, quadrature=quadrature)
 
+    def copy(self, mesh=None, element=None, quadrature=None):
+        """Return a copy of the region and reload it if necessary.
+
+        Parameters
+        ----------
+        mesh : Mesh or None, optional
+            A mesh with points and cells (default is None).
+        element : Element or None, optional
+            The finite element formulation to be applied on the cells (default is None).
+        quadrature: Quadrature or None, optional
+            An element-compatible numeric integration scheme with points and weights
+            (default is None).
+
+        Returns
+        -------
+        Region
+            A copy of the reloaded region.
+
+        See Also
+        --------
+        felupe.Region.reload : Reload the numeric region inplace.
+        """
+
+        region = deepcopy(self)
+        region.reload(mesh=mesh, element=element, quadrature=quadrature)
+
+        return region
+
     def reload(self, mesh=None, element=None, quadrature=None):
-        """Reload the numeric region.
+        """Reload the numeric region inplace.
 
         Parameters
         ----------
@@ -154,7 +183,7 @@ class Region:
         ..  warning::
             If the points of a mesh are modified and a region was already created with
             the mesh, it is important to re-evaluate (reload) the
-            :class:`~felupe.Region`.
+            :class:`~felupe.Region` inplace.
 
         >>> import felupe as fem
         >>>
@@ -171,55 +200,62 @@ class Region:
             Optionally, a callback is evaluated.
         """
 
+        region = self
+
         if mesh is not None:
-            self.mesh = mesh
+            region.mesh = mesh
 
         if element is not None:
-            self.element = element
+            region.element = element
 
         if quadrature is not None:
-            self.quadrature = quadrature
+            region.quadrature = quadrature
 
-        # element shape function
-        self.element.h = np.array(
-            [self.element.function(q) for q in self.quadrature.points]
-        ).T
-        self.h = np.tile(np.expand_dims(self.element.h, -1), self.mesh.ncells)
+        if mesh is not None or element is not None or quadrature is not None:
+            # element shape function
+            region.element.h = np.array(
+                [region.element.function(q) for q in region.quadrature.points]
+            ).T
+            region.h = np.tile(np.expand_dims(region.element.h, -1), region.mesh.ncells)
 
-        # partial derivative of element shape function
-        self.element.dhdr = np.array(
-            [self.element.gradient(q) for q in self.quadrature.points]
-        ).transpose(1, 2, 0)
-        self.dhdr = np.tile(np.expand_dims(self.element.dhdr, -1), self.mesh.ncells)
-
-        if self.evaluate_gradient:
-            # geometric gradient
-            self.dXdr = np.einsum(
-                "caI,aJqc->IJqc", self.mesh.points[self.mesh.cells], self.dhdr
+            # partial derivative of element shape function
+            region.element.dhdr = np.array(
+                [region.element.gradient(q) for q in region.quadrature.points]
+            ).transpose(1, 2, 0)
+            region.dhdr = np.tile(
+                np.expand_dims(region.element.dhdr, -1), region.mesh.ncells
             )
 
-            # determinant and inverse of dXdr
-            J = det(self.dXdr)
-            self.drdX = inv(self.dXdr, determinant=J)
-
-            # numeric **differential volume element**
-            self.dV = np.multiply(J, self.quadrature.weights.reshape(-1, 1), out=J)
-
-            # check for negative **differential volume elements**
-            if np.any(self.dV < 0):
-                cells_negative_volume = np.where(np.any(self.dV < 0, axis=0))[0]
-                message_negative_volumes = "".join(
-                    [
-                        f"Negative volumes for cells \n {cells_negative_volume}\n",
-                        "Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` ",
-                        "and re-create the region.",
-                    ]
+            if region.evaluate_gradient:
+                # geometric gradient
+                region.dXdr = np.einsum(
+                    "caI,aJqc->IJqc", region.mesh.points[region.mesh.cells], region.dhdr
                 )
-                warnings.warn(message_negative_volumes)
 
-            # Partial derivative of element shape function
-            # w.r.t. undeformed coordinates
-            self.dhdX = np.einsum("aIqc,IJqc->aJqc", self.dhdr, self.drdX)
+                # determinant and inverse of dXdr
+                J = det(region.dXdr)
+                region.drdX = inv(region.dXdr, determinant=J)
+
+                # numeric **differential volume element**
+                region.dV = np.multiply(
+                    J, region.quadrature.weights.reshape(-1, 1), out=J
+                )
+
+                # check for negative **differential volume elements**
+                if np.any(region.dV < 0):
+                    cells_negative_volume = np.where(np.any(region.dV < 0, axis=0))[0]
+                    message_negative_volumes = "".join(
+                        [
+                            f"Negative volumes for cells \n {cells_negative_volume}\n",
+                            "Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` ",
+                            "and re-create the region.",
+                        ]
+                    )
+                    warnings.warn(message_negative_volumes)
+
+                # Partial derivative of element shape function
+                # w.r.t. undeformed coordinates
+                region.dhdX = np.einsum("aIqc,IJqc->aJqc", region.dhdr, region.drdX)
 
     def __repr__(self):
         header = "<felupe Region object>"

@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file. The format 
 - `math.grad(x, **kwargs)` is enhanced to return gradients of fields (like before) and the gradient-attribute of basis-arrays (added).
 - The `grad_v` and `grad_u` arguments are removed from the form-expression decorator `Form`. This changes the required function signature of the weakform-callable to `weakform(v, u, **kwargs)`. The tuple of optional arguments is also removed. Gradients of `v` and `u` are now obtained by `math.grad(v)` or `v.grad`.
 
+### Removed
+- Remove the deprecated old-style argument `move` in `dof.biaxial()`.
+- Remove the deprecated old-style arguments `move`, `axis_compression`, `axis_shear` and `compression` in `dof.shear()`.
+
 ## [7.19.1] - 2024-03-08
 
 ### Fixed

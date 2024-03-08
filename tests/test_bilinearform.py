@@ -108,21 +108,17 @@ def test_linear_elastic():
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
 
-    from felupe.math import ddot, sym, trace
+    from felupe.math import ddot, sym, trace, grad
 
     @fem.Form(v=field, u=field, kwargs={"mu": 1.0, "lmbda": 2.0})
     def bilinearform():
         "A container for a bilinear form."
 
         def linear_elasticity(v, u, mu, lmbda):
-            "Linear elasticity."
-
             de, e = sym(grad(v)), sym(grad(u))
             return 2 * mu * ddot(de, e) + lmbda * trace(de) * trace(e)
 
-        return [
-            linear_elasticity,
-        ]
+        return [linear_elasticity]
 
     bilinearform.integrate(v=field, u=field, parallel=False)
     bilinearform.integrate(v=field, u=field, parallel=True)

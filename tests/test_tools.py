@@ -331,7 +331,7 @@ def test_project():
     assert projected.shape == (mesh.npoints, 3, 3)
     assert not np.any(np.isnan(projected))
     assert np.all([np.allclose(np.eye(3), res) for res in projected])
-    
+
     # this is wrong
     projected = fem.project(values, region, average=True)
     assert projected.shape == (mesh.npoints, 3, 3)

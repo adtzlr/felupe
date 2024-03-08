@@ -120,7 +120,7 @@ html_theme_options = {
         },
         {
             "name": "Read the Docs",
-            "url": "https://readthedocs.org/projects/felupe/downloads",
+            "url": "https://readthedocs.org/projects/felupe",
             "icon": "fa-solid fa-book",
             "type": "fontawesome",
         },

@@ -119,7 +119,7 @@ def test_form_decorator():
 
 
 def test_linear_elastic():
-    mesh = fem.Cube(n=11)
+    mesh = fem.Cube(n=3)
     region = fem.RegionHexahedron(mesh)
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])

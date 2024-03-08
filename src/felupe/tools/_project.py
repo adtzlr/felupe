@@ -281,6 +281,7 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
         values_projected = project(values, region2)
     """
 
+    mesh = None
     if not average:
         mesh = region.mesh.disconnect()  # for non-continuous results
 
@@ -289,7 +290,6 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
 
     # quadrature schemes for projection
     # triangles and tetrahedrons require quadratic quadratures for projection
-    mesh = None
     element = None
     quadrature = None
 

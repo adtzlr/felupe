@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [7.19.0] - 2024-03-08
+
 ### Added
 - Add `FieldDual(disconnect=True)` for a dual (secondary) field with an optionally disconnected mesh. This also enables `FieldsMixed(disconnect=True)` in mixed fields.
 - Add a quadrature scheme for integrating the surface of a unit hemisphere `BazantOh(n=21)`.

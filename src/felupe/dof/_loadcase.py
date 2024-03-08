@@ -241,7 +241,6 @@ def biaxial(
     axes=(0, 1),
     clampes=(False, False),
     sym=True,
-    move=None,
 ):
     """Return a dict of boundaries for biaxial loading between a left (applied or
     symmetry face) and a right (applied) end face along a given pair of axes with
@@ -361,15 +360,6 @@ def biaxial(
 
     """
 
-    if move is not None:
-        from warnings import warn
-
-        warn(
-            "The `move` argument is deprecated, use `moves=(move, move)` instead.",
-            DeprecationWarning,
-        )
-        moves = (move, move)
-
     f = field[0]
 
     fxyz = ["fx", "fy", "fz"]
@@ -430,10 +420,6 @@ def shear(
     moves=(0.2, 0.0, 0.0),
     axes=(0, 1),
     sym=True,
-    move=None,
-    axis_shear=None,
-    axis_compression=None,
-    compression=None,
 ):
     """Return a dict of boundaries for shear loading with optional combined compression
     between a rigid bottom and a rigid top end face along a given pair of axes. The
@@ -512,47 +498,6 @@ def shear(
     felupe.dof.symmetry : Return a dict of boundaries for the symmetry axes.
 
     """
-
-    if move is not None:
-        from warnings import warn
-
-        warn(
-            "The `move` argument is deprecated, use `moves` instead.",
-            DeprecationWarning,
-        )
-        moves = list(moves)
-        moves[0] = move
-
-    if axis_compression is not None:
-        from warnings import warn
-
-        warn(
-            "The `axis_compression` argument is deprecated, use `axes` instead.",
-            DeprecationWarning,
-        )
-        axes = list(axes)
-        axes[1] = axis_compression
-
-    if axis_shear is not None:
-        from warnings import warn
-
-        warn(
-            "The `axis_shear` argument is deprecated, use `axes` instead.",
-            DeprecationWarning,
-        )
-        axes = list(axes)
-        axes[0] = axis_shear
-
-    if compression is not None:
-        from warnings import warn
-
-        warn(
-            "The `compression` argument is deprecated, use `moves` instead.",
-            DeprecationWarning,
-        )
-        moves = list(moves)
-        moves[1] = compression[0]
-        moves[2] = -compression[1]
 
     f = field[0]
 

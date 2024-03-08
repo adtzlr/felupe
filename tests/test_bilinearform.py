@@ -76,30 +76,30 @@ def test_form_decorator():
     def a():
         return (a_uu, a_up, a_pp)
 
-    a.assemble(field, field, args=(F, p))
+    a.assemble(field, field, kwargs=dict(F=F, p=p))
 
     @fem.Form(v=field)
     def L():
         return (lformu, lformp)
 
-    L.assemble(field, args=(F, p), parallel=False)
-    L.assemble(field, args=(F, p), parallel=True)
-    L.assemble(field, args=(F, p), parallel=False, sym=True)
-    L.assemble(field, args=(F, p), parallel=True, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
 
     @fem.Form(v=field)
     def L():
         return (lformu, lformp)
 
-    L.integrate(field, args=(F, p), parallel=False)
-    L.integrate(field, args=(F, p), parallel=True)
-    L.integrate(field, args=(F, p), parallel=False, sym=True)
-    L.integrate(field, args=(F, p), parallel=True, sym=True)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=False)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=True)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
+    L.integrate(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
 
-    L.assemble(field, args=(F, p), parallel=False)
-    L.assemble(field, args=(F, p), parallel=True)
-    L.assemble(field, args=(F, p), parallel=False, sym=True)
-    L.assemble(field, args=(F, p), parallel=True, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
+    L.assemble(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
 
 
 def test_linear_elastic():

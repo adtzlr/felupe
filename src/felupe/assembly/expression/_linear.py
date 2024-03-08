@@ -43,15 +43,13 @@ class LinearForm:
         self.dx = dx
         self._form = IntegralFormCartesian(fun=None, v=v.field, dV=self.dx, **kwargs)
 
-    def integrate(self, weakform, args=(), kwargs={}, parallel=False):
+    def integrate(self, weakform, kwargs={}, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform
+            A callable function ``weakform(v, **kwargs)``.
         kawargs : dict, optional
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
@@ -71,21 +69,21 @@ class LinearForm:
             for a, vbasis in enumerate(self.v.basis):
                 for i, vb in enumerate(vbasis):
                     v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
-                    values[a, i] = weakform(v, *args, **kwargs) * self.dx
+                    values[a, i] = weakform(v, **kwargs) * self.dx
 
         else:
             idx_a, idx_i = np.indices(values.shape[:2])
             ai = zip(idx_a.ravel(), idx_i.ravel())
 
-            def contribution(values, a, i, args, kwargs):
+            def contribution(values, a, i, kwargs):
                 v = type(self.v.basis)(self.v.basis[a, i], self.v.basis.grad[a, i])
                 values[a, i] = (
-                    weakform(v, *args, **kwargs)
+                    weakform(v, **kwargs)
                     * self.dx
                 )
 
             threads = [
-                Thread(target=contribution, args=(values, a, i, args, kwargs))
+                Thread(target=contribution, args=(values, a, i, kwargs))
                 for a, i in ai
             ]
 

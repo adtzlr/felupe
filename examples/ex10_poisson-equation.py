@@ -42,22 +42,22 @@ field = fem.FieldContainer([scalar])
 # For the :func:`~felupe.newtonrhapson` to converge, the *linear form* of the Poisson
 # equation is also required.
 
-from felupe.math import grad
+from felupe.math import ddot, grad
 
 
 @fem.Form(v=field, u=field)
 def a():
     "Container for a bilinear form."
-    return [lambda v, u: fem.math.ddot(grad(v), grad(u))]
+    return [lambda v, u, **kwargs: ddot(grad(v), grad(u))]
 
 
 @fem.Form(v=field)
 def L():
     "Container for a linear form."
-    return [lambda v: fem.math.ddot(grad(v), grad(scalar)) - 1.0 * v]
+    return [lambda v, **kwargs: ddot(grad(v), grad(scalar)) - kwargs["scale"] * v]
 
 
-poisson = fem.FormItem(bilinearform=a, linearform=L)
+poisson = fem.FormItem(bilinearform=a, linearform=L, kwargs={"scale": 1.0})
 
 boundaries = {
     "bottom-or-left": fem.Boundary(field[0], fx=0, fy=0, mode="or"),

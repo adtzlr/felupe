@@ -46,15 +46,13 @@ class LinearFormExpression:
 
         self._linearform = [LinearForm(v=vi, dx=self.dx) for vi in self.v]
 
-    def integrate(self, weakform, args=(), kwargs=None, parallel=False):
+    def integrate(self, weakform, kwargs=None, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform.
+            A callable function ``weakform(v, **kwargs)``.
         kwargs : dict or None, optional
             Optional named arguments for callable weakform (default is None).
         parallel : bool, optional
@@ -70,19 +68,17 @@ class LinearFormExpression:
             kwargs = {}
 
         return [
-            form.integrate(fun, args, kwargs, parallel=parallel)
+            form.integrate(fun, kwargs, parallel=parallel)
             for form, fun in zip(self._linearform, weakform)
         ]
 
-    def assemble(self, weakform, args=(), kwargs=None, parallel=False):
+    def assemble(self, weakform, kwargs=None, parallel=False):
         r"""Return the assembled integral as vector.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform
+            A callable function ``weakform(v, **kwargs)``.
         kwargs : dict or None, optional
             Optional named arguments for callable weakform (default is None).
         parallel : bool, optional
@@ -94,7 +90,7 @@ class LinearFormExpression:
             The assembled vector.
         """
 
-        values = self.integrate(weakform, args, kwargs, parallel=parallel)
+        values = self.integrate(weakform, kwargs, parallel=parallel)
 
         return self._form.assemble(values)
 
@@ -142,15 +138,13 @@ class BilinearFormExpression:
                 )
             )
 
-    def integrate(self, weakform, args=(), kwargs=None, parallel=False, sym=False):
+    def integrate(self, weakform, kwargs=None, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, u, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform.
+            A callable function ``weakform(v, u, **kwargs)``.
         kwargs : dict or None, optional
             Optional named arguments for callable weakform (default is None).
         parallel : bool, optional (default is False)
@@ -166,19 +160,17 @@ class BilinearFormExpression:
             kwargs = {}
 
         return [
-            form.integrate(fun, args, kwargs, parallel=parallel, sym=sym)
+            form.integrate(fun, kwargs, parallel=parallel, sym=sym)
             for form, fun in zip(self._bilinearform, weakform)
         ]
 
-    def assemble(self, weakform, args=(), kwargs=None, parallel=False, sym=False):
+    def assemble(self, weakform, kwargs=None, parallel=False, sym=False):
         r"""Return the assembled integral as matrix.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, u, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform.
+            A callable function ``weakform(v, u, **kwargs)``.
         kawargs : dict or None, optional
             Optional named arguments for callable weakform (default is None).
         parallel : bool, optional
@@ -190,6 +182,6 @@ class BilinearFormExpression:
             The assembled sparse matrix.
         """
 
-        values = self.integrate(weakform, args, kwargs, parallel=parallel, sym=sym)
+        values = self.integrate(weakform, kwargs, parallel=parallel, sym=sym)
 
         return self._form.assemble(values)

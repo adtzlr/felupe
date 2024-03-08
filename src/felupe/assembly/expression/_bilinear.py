@@ -51,15 +51,13 @@ class BilinearForm:
             fun=None, v=v.field, dV=self.dx, u=u.field, **kwargs
         )
 
-    def integrate(self, weakform, args=(), kwargs={}, parallel=False, sym=False):
+    def integrate(self, weakform, kwargs={}, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
-            A callable function ``weakform(v, u, *args, **kwargs)``.
-        args : tuple, optional
-            Optional arguments for callable weakform
+            A callable function ``weakform(v, u, **kwargs)``.
         kwargs : dict, optional
             Optional named arguments for callable weakform
         parallel : bool, optional
@@ -93,14 +91,14 @@ class BilinearForm:
                                 u = type(self.u.basis)(ub, self.u.basis.grad[b, j])
                                 if len(vbasis) * a + i <= len(ubasis) * b + j:
                                     values[a, i, b, j] = values[b, j, a, i] = (
-                                        weakform(v, u, *args, **kwargs) * self.dx
+                                        weakform(v, u, **kwargs) * self.dx
                                     )
 
                             else:
                                 v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
                                 u = type(self.u.basis)(ub, self.u.basis.grad[b, j])
                                 values[a, i, b, j] = (
-                                    weakform(v, u, *args, **kwargs) * self.dx
+                                    weakform(v, u, **kwargs) * self.dx
                                 )
 
         else:
@@ -119,20 +117,20 @@ class BilinearForm:
                     idx_j[mask],
                 )
 
-            def contribution(values, a, i, b, j, sym, args, kwargs):
+            def contribution(values, a, i, b, j, sym, kwargs):
                 v = type(self.v.basis)(self.v.basis[a, i], self.v.basis.grad[a, i])
                 u = type(self.u.basis)(self.u.basis[b, j], self.u.basis.grad[b, j])
                 if sym:
                     values[a, i, b, j] = values[b, j, a, i] = (
-                        weakform(v, u, *args, **kwargs) * self.dx
+                        weakform(v, u, **kwargs) * self.dx
                     )
 
                 else:
-                    values[a, i, b, j] = weakform(v, u, *args, **kwargs) * self.dx
+                    values[a, i, b, j] = weakform(v, u, **kwargs) * self.dx
 
             threads = [
                 Thread(
-                    target=contribution, args=(values, a, i, b, j, sym, args, kwargs)
+                    target=contribution, args=(values, a, i, b, j, sym, kwargs)
                 )
                 for a, i, b, j in aibj
             ]

@@ -63,7 +63,6 @@ class FormExpression:
         v,
         u=None,
         dx=None,
-        args=None,
         kwargs=None,
         parallel=False,
     ):
@@ -72,25 +71,16 @@ class FormExpression:
         self.dx = dx
         self.weakform = weakform
 
-        if args is not None:
-            self.args = args
-        else:
-            self.args = ()
-
         if kwargs is not None:
             self.kwargs = kwargs
         else:
             self.kwargs = {}
 
         # init underlying linear or bilinear (mixed) form
-        self._init_or_update_forms(v, u, args, kwargs, parallel)
+        self._init_or_update_forms(v, u, kwargs, parallel)
 
-    def _init_or_update_forms(self, v, u, args, kwargs, parallel):
+    def _init_or_update_forms(self, v, u, kwargs, parallel):
         "Init or update the underlying form object."
-
-        # update args for weakform
-        if args is not None:
-            self.args = args
 
         # update kwargs for weakform
         if kwargs is not None:
@@ -135,9 +125,7 @@ class FormExpression:
             else:
                 self.form = form
 
-    def integrate(
-        self, v=None, u=None, args=None, kwargs=None, parallel=False, sym=False
-    ):
+    def integrate(self, v=None, u=None, kwargs=None, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
@@ -146,8 +134,6 @@ class FormExpression:
             An object with interpolation and gradients of a field (default is None).
         u : Field, FieldMixed or None, optional
             An object with interpolation and gradients of a field (default is None).
-        args : tuple, optional (default is ())
-            Tuple with optional weakform-arguments.
         kwargs : dict, optional (default is {})
             Dictionary with optional weakform-keyword-arguments.
         parallel : bool, optional (default is False)
@@ -162,20 +148,16 @@ class FormExpression:
             Integrated (but not assembled) vector / matrix values.
         """
 
-        self._init_or_update_forms(v, u, args, kwargs, parallel)
+        self._init_or_update_forms(v, u, kwargs, parallel)
 
         kwargs = dict(parallel=parallel, sym=sym)
 
         if self.u is None:
             kwargs.pop("sym")
 
-        return self.form.integrate(
-            self.weakform, args=self.args, kwargs=self.kwargs, **kwargs
-        )
+        return self.form.integrate(self.weakform, kwargs=self.kwargs, **kwargs)
 
-    def assemble(
-        self, v=None, u=None, args=None, kwargs=None, parallel=False, sym=False
-    ):
+    def assemble(self, v=None, u=None, kwargs=None, parallel=False, sym=False):
         r"""Return the assembled integral as vector / sparse matrix.
 
         Parameters
@@ -184,8 +166,6 @@ class FormExpression:
             An object with interpolation and gradients of a field (default is None).
         u : Field, FieldMixed or None, optional
             An object with interpolation and gradients of a field (default is None).
-        args : tuple, optional (default is ())
-            Tuple with optional weakform-arguments.
         kwargs : dict, optional (default is {})
             Dictionary with optional weakform-keyword-arguments.
         parallel : bool, optional (default is False)
@@ -200,13 +180,11 @@ class FormExpression:
             The assembled vector / sparse matrix.
         """
 
-        self._init_or_update_forms(v, u, args, kwargs, parallel)
+        self._init_or_update_forms(v, u, kwargs, parallel)
 
         kwargs = dict(parallel=parallel, sym=sym)
 
         if self.u is None:
             kwargs.pop("sym")
 
-        return self.form.assemble(
-            self.weakform, args=self.args, kwargs=self.kwargs, **kwargs
-        )
+        return self.form.assemble(self.weakform, kwargs=self.kwargs, **kwargs)

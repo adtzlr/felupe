@@ -44,19 +44,19 @@ class FormItem:
     --------
     >>> import felupe as fem
     >>> from felupe.math import ddot, sym, trace, grad
-    >>> 
+    >>>
     >>> mesh = fem.Cube(n=11)
     >>> region = fem.RegionHexahedron(mesh)
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
     >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-    >>> 
+    >>>
     >>> @fem.Form(v=field, u=field)
     >>> def bilinearform():
     >>>     def a(v, u, μ=1.0, λ=2.0):
     >>>         δε, ε = sym(grad(v)), sym(grad(u))
     >>>         return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
     >>>     return [a]
-    >>> 
+    >>>
     >>> item = fem.FormItem(bilinearform, linearform=None, sym=True)
     >>> step = fem.Step(items=[item], boundaries=boundaries)
     >>> fem.Job(steps=[step]).evaluate()
@@ -68,14 +68,11 @@ class FormItem:
 
     """
 
-    def __init__(
-        self, bilinearform=None, linearform=None, sym=False, args=None, kwargs=None
-    ):
+    def __init__(self, bilinearform=None, linearform=None, sym=False, kwargs=None):
         self.bilinearform = bilinearform
         self.linearform = linearform
 
         self.sym = sym
-        self.args = args
         self.kwargs = kwargs
 
         self.results = Results(stress=False, elasticity=False)
@@ -93,7 +90,7 @@ class FormItem:
 
         if self.linearform is not None:
             self.results.force = self.linearform.assemble(
-                v=self.field, parallel=parallel, args=self.args, kwargs=self.kwargs
+                v=self.field, parallel=parallel, kwargs=self.kwargs
             )
 
         else:
@@ -113,7 +110,6 @@ class FormItem:
                 u=self.field,
                 parallel=parallel,
                 sym=self.sym,
-                args=self.args,
                 kwargs=self.kwargs,
             )
 

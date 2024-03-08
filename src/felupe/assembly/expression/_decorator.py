@@ -20,7 +20,7 @@ from ._expression import FormExpression
 
 
 def FormExpressionDecorator(
-    v, u=None, dx=None, args=None, kwargs=None, parallel=False
+    v, u=None, dx=None, kwargs=None, parallel=False
 ):
     r"""A linear or bilinear form object as function decorator on a weak-form
     with methods for integration and assembly of vectors or sparse matrices.
@@ -33,9 +33,6 @@ def FormExpressionDecorator(
         A container for the ``u`` fields. May be updated during integration / assembly.
     dx : ndarray or None, optional
         Array with (numerical) differential volumes  (default is None).
-    args : tuple or None, optional
-        Tuple with initial optional weakform-arguments. May be updated during
-        integration / assembly (default is None).
     kwargs : dict or None, optional
         Dictionary with initial optional weakform-keyword-arguments. May be
         updated during integration / assembly (default is None).
@@ -146,7 +143,6 @@ def FormExpressionDecorator(
             v=v,
             u=u,
             dx=dx,
-            args=args,
             kwargs=kwargs,
             parallel=parallel,
         )

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add axis of expansion in `mesh.expand(axis=-1)` (ignored for `n=1`).
+
 ### Changed
 - The internal `BasisField.basis` is now a subclassed array `BasisArray` with a `grad`-attribute.
 - `math.grad(x, **kwargs)` is enhanced to return gradients of fields (like before) and the gradient-attribute of basis-arrays (added).
@@ -10,6 +13,9 @@ All notable changes to this project will be documented in this file. The format 
 - Enforce quadrature schemes with minimal order for projections in `project()` for `Triangle`, `Tetra` as well as their MINI- and Quadratic-variants.
 - Fall-back to `extrapolate(mean=True)` in `project(mean=True)`.
 - Don't ravel the results of `res = extrapolate(values, region)`, i.e. `values.shape = (3, 3, 4, 100)` will be returned as `res.shape = (121, 3, 3)` instead of `res.shape = (121, 9)`.
+
+### Fixed
+- Fix mesh-expansion with one layer `mesh.expand(n=1)`. This expands the dimension of the points-array.
 
 ### Removed
 - Remove the deprecated old-style argument `move` in `dof.biaxial()`.

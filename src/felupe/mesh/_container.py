@@ -308,6 +308,8 @@ class MeshContainer:
         if hasattr(index, "__len__"):
             return [self.meshes[i] for i in index]
         else:
+            if index is None:
+                index = slice(None)
             return self.meshes[index]
 
     def __repr__(self):

@@ -313,7 +313,15 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
         if region.quadrature.npoints == 1:
             quadrature = scheme
         else:
-            raise ValueError("Quadrature not supported (order is too low).")
+            raise ValueError(
+                " ".join(
+                    [
+                        "Quadrature not supported (order is too low).",
+                        "Take the cell-means with `project(mean=True)` or use a",
+                        "higher-order quadrature scheme.",
+                    ]
+                )
+            )
 
     # copy and reload the region if necessary
     if mesh is not None or element is not None or quadrature is not None:

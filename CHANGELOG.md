@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file. The format 
 - Enforce quadrature schemes with minimal order for projections in `project()` for `Triangle`, `Tetra` as well as their MINI- and Quadratic-variants.
 - Fall-back to `extrapolate(mean=True)` in `project(mean=True)`.
 - Don't ravel the results of `res = extrapolate(values, region)`, i.e. `values.shape = (3, 3, 4, 100)` will be returned as `res.shape = (121, 3, 3)` instead of `res.shape = (121, 9)`.
+- Stack only a selection of meshes in `MeshContainer.stack([idx])`.
+- Enable list-based indexing in `MeshContainer[idx]`.
+- Add the `opacity=0.99` argument to `MeshContainer.plot()` and `MeshContainer.screenshot()`.
 
 ### Fixed
 - Fix mesh-expansion with one layer `mesh.expand(n=1)`. This expands the dimension of the points-array.

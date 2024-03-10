@@ -132,8 +132,13 @@ class MeshContainer:
         for i, m in enumerate(self.meshes):
             self.meshes[i].points = self.points = points
 
-    def stack(self):
+    def stack(self, idx):
         """Stack cell-blocks with same cell-types into a single mesh.
+
+        Parameters
+        ----------
+        idx : list of int or None, optional
+            List of mesh-indices to be stacked (default is None).
 
         Returns
         -------
@@ -172,8 +177,8 @@ class MeshContainer:
         felupe.mesh.stack : Stack cell-blocks from meshes with identical points-array
             and cell-types.
         """
-        if all(mesh.cell_type == self.meshes[0].cell_type for mesh in self.meshes):
-            return stack(self.meshes)
+        if all(mesh.cell_type == self.meshes[0].cell_type for mesh in self[idx]):
+            return stack(self[idx])
         else:
             message = [
                 "Meshes of the MeshContainer can't be stacked.",
@@ -207,7 +212,7 @@ class MeshContainer:
         "Return a deepcopy of the mesh container."
         return deepcopy(self)
 
-    def plot(self, *args, colors=None, **kwargs):
+    def plot(self, *args, colors=None, opacity=0.99, **kwargs):
         """Plot the meshes of the mesh container.
 
         See Also
@@ -231,7 +236,7 @@ class MeshContainer:
                 show_undeformed=False,
                 color=color,
                 plotter=plotter,
-                opacity=0.99,
+                opacity=opacity,
                 **kwargs,
             )
 
@@ -244,6 +249,7 @@ class MeshContainer:
         transparent_background=None,
         scale=None,
         colors=None,
+        opacity=0.99,
         **kwargs,
     ):
         """Take a screenshot of the meshes of the mesh container.
@@ -269,7 +275,7 @@ class MeshContainer:
                 off_screen=True,
                 color=color,
                 plotter=plotter,
-                opacity=0.99,
+                opacity=opacity,
                 **kwargs,
             )
 
@@ -299,7 +305,10 @@ class MeshContainer:
         return self
 
     def __getitem__(self, index):
-        return self.meshes[index]
+        if hasattr(index, "__len__"):
+            return [self.meshes[i] for i in index]
+        else:
+            return self.meshes[index]
 
     def __repr__(self):
         header = "<felupe mesh container object>"

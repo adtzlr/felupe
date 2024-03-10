@@ -70,21 +70,17 @@ examples = [
     "contique",
     "pypardiso",
 ]
-test = [
-    "h5py",
-    "matplotlib",
+io = [
+    "h5py,
     "meshio",
-    "tensortrax",
 ]
-all = [
-    "einsumt",
-    "h5py",
-    "matplotlib",
-    "meshio",
-    "tensortrax",
-    "pyvista[jupyter, trame]",
-    "tqdm",
-]
+parallel = ["einsumt"]
+progress = ["tqdm"]
+plot = ["matplotlib"]
+view = ["pyvista[jupyter]"]
+
+test = ["felupe[io,plot]"]
+all = ["felupe[io,parallel,plot,progress,view]"]
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

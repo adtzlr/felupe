@@ -2,7 +2,7 @@ r"""
 Rubber Spring
 -------------
 
-.. topic:: A rubber-metal spring with a simplified frictionless contact.
+.. topic:: A rubberlike-metal spring with a simplified frictionless contact.
 
    * read a mesh file
    
@@ -55,8 +55,8 @@ boundaries["move-z"] = fem.Boundary(field[0], fz=Z.min(), skip=(1, 1, 0))
 
 # %%
 # The material behavior is defined through a built-in hyperelastic isotropic Neo-Hookean
-# material formulation. A solid body, suitable for nearly-incompressible material
-# formulations, applies the material formulation on the displacement field.
+# material formulation. A solid body applies the material formulation on the displacement
+# field.
 umat = fem.NeoHookeCompressible(mu=1, lmbda=5)
 solid = fem.SolidBody(umat, field)
 

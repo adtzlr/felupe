@@ -507,6 +507,10 @@ def test_view():
 
     mesh2 = mesh.translate(move=0.8, axis=0)
     container = fem.MeshContainer([mesh, mesh2])
+    assert container[0] is container[[0]][0]
+    assert container[0] is container[None][0]
+
+    mesh_stacked = container.stack([0])
     mesh_stacked = container.stack()
     plotter = container.plot(off_screen=True)
     # img = container.screenshot(transparent_background=True)

@@ -71,7 +71,7 @@ examples = [
     "pypardiso",
 ]
 io = [
-    "h5py,
+    "h5py",
     "meshio",
 ]
 parallel = ["einsumt"]

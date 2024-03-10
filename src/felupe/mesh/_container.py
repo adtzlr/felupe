@@ -132,7 +132,7 @@ class MeshContainer:
         for i, m in enumerate(self.meshes):
             self.meshes[i].points = self.points = points
 
-    def stack(self, idx):
+    def stack(self, idx=None):
         """Stack cell-blocks with same cell-types into a single mesh.
 
         Parameters

@@ -27,7 +27,7 @@ Install Python, fire up 🔥 a terminal and run 🏃
 pip install felupe[all]
 ```
 
-where `[all]` installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
+where `[all]` is a combination of `[io,parallel,plot,progress,view]` and installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
 * [`numpy`](https://github.com/numpy/numpy) for array operations
 * [`scipy`](https://github.com/scipy/scipy) for sparse matrices
 * [`tensortrax`](https://github.com/adtzlr/tensortrax) for automatic differentiation

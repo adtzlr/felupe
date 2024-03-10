@@ -42,6 +42,8 @@ Tools
 
 .. autofunction:: felupe.project
 
+.. autofunction:: felupe.tools.extrapolate
+
 .. autofunction:: felupe.tools.force
 
 .. autofunction:: felupe.tools.moment

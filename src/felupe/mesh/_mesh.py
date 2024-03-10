@@ -625,19 +625,21 @@ class Mesh(DiscreteGeometry):
             )
         )
 
-    def expand(self, n=11, z=1):
+    def expand(self, n=11, z=1, axis=-1):
         """Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a 2d-Quad to a
         3d-Hexahedron Mesh.
 
         Parameters
         ----------
         n : int, optional
-            Number of n-point repetitions or (n-1)-cell repetitions,
-            default is 11.
+            Number of n-point repetitions or (n-1)-cell repetitions, default is 11. Must
+            be greater than 0.
         z : float or ndarray, optional
             Total expand dimension as float (edge length in expand direction is z / n),
-            default is 1. Optionally, if an array is passed these entries are
-            taken as expansion and `n` is ignored.
+            default is 1. Optionally, if an array is passed these entries are taken as
+            expansion and ``n`` is ignored.
+        axis : int, optional
+            Axis of expansion (default is -1).
 
         Returns
         -------
@@ -665,7 +667,7 @@ class Mesh(DiscreteGeometry):
         felupe.mesh.expand : Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a
             2d-Quad to a 3d-Hexahedron Mesh.
         """
-        return as_mesh(expand(self, n=n, z=z))
+        return as_mesh(expand(self, n=n, z=z, axis=axis))
 
     def rotate(self, angle_deg, axis, center=None):
         """Rotate a Mesh.

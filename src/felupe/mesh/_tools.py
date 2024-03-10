@@ -24,7 +24,7 @@ from ._helpers import mesh_or_data
 
 
 @mesh_or_data
-def expand(points, cells, cell_type, n=11, z=1):
+def expand(points, cells, cell_type, n=11, z=1, axis=-1):
     """Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a 2d-Quad to a
     3d-Hexahedron Mesh.
 
@@ -37,12 +37,14 @@ def expand(points, cells, cell_type, n=11, z=1):
     cell_type : str
         A string in VTK-convention that specifies the cell type.
     n : int, optional
-        Number of n-point repetitions or (n-1)-cell repetitions,
-        default is 11.
+        Number of n-point repetitions or (n-1)-cell repetitions, default is 11. Must be
+        greater than 0.
     z : float or ndarray, optional
-        Total expand dimension as float (edge length in expand direction is
+        Total expansion as float (edge length in expand direction is
         ``z / (n - 1)``), default is 1. Optionally, if an array is passed these entries
-        are taken as expansion and `n` is ignored.
+        are taken as expansion and ``n`` is ignored.
+    axis : int, optional
+        Axis of expansion (default is -1).
 
     Returns
     -------
@@ -75,40 +77,49 @@ def expand(points, cells, cell_type, n=11, z=1):
         2d-Quad to a 3d-Hexahedron Mesh.
     """
 
+    thickness = z
+
     # ensure points, cells as ndarray
     points = np.array(points)
     cells = np.array(cells)
 
-    # set new cell-type and the appropriate slice
-    cell_type_new, sl = {
-        "vertex": ("line", slice(None, None, None)),
-        "line": ("quad", slice(None, None, -1)),
-        "quad": ("hexahedron", slice(None, None, None)),
-    }[cell_type]
-
     # init new padded points array
-    p = np.pad(points, ((0, 0), (0, 1)))[np.newaxis, ...]
+    points_new = np.pad(points, ((0, 0), (0, 1)))[np.newaxis, ...]
+    cells_new = cells
+    cell_type_new = cell_type
 
-    # generate new points array for every thickness expansion ``h``
-    if np.isscalar(z):
-        points_z = np.linspace(0, z, n)
-    else:
-        points_z = z
-        n = len(z)
+    # set new cell-type and the appropriate slice
+    if n > 1:
+        cell_type_new, sl = {
+            "vertex": ("line", slice(None, None, None)),
+            "line": ("quad", slice(None, None, -1)),
+            "quad": ("hexahedron", slice(None, None, None)),
+        }[cell_type]
 
-    # get dimension of points array
-    # init zero vector of input dimension
-    dim = points.shape[1]
-    zeros = np.zeros((n, dim))
-    points_new = p + np.hstack([zeros, points_z[..., np.newaxis]])[:, np.newaxis, ...]
+        if np.isscalar(thickness):
+            points_thickness = np.linspace(0, thickness, n)
+        else:
+            points_thickness = thickness
+            n = len(thickness)
 
-    # generate new cells array
-    c = cells[np.newaxis, ...] + len(points) * np.arange(n)[..., np.newaxis, np.newaxis]
-    cells_new = np.concatenate([c[:-1], c[1:, ..., sl]], axis=-1)
+        # get dimension of points array
+        # init zero vector of input dimension
+        dim = points.shape[1]
+        layers = np.zeros((n, dim + 1))
+        layers[:, axis] = points_thickness
 
-    # expand vertex point to line in first direction
-    if cell_type_new == "line":
-        points_new = points_new[..., 1:]
+        points_new = points_new + layers[:, np.newaxis, ...]
+
+        # generate new cells array
+        cells_new = (
+            cells[np.newaxis, ...]
+            + len(points) * np.arange(n)[..., np.newaxis, np.newaxis]
+        )
+        cells_new = np.concatenate([cells_new[:-1], cells_new[1:, ..., sl]], axis=-1)
+
+        # expand vertex point to line in first direction
+        if cell_type_new == "line":
+            points_new = points_new[..., 1:]
 
     return (
         points_new.reshape(-1, points_new.shape[-1]),

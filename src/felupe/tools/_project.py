@@ -21,7 +21,14 @@ from scipy.sparse import csr_matrix as sparsematrix
 from scipy.sparse.linalg import spsolve
 
 from ..assembly import IntegralFormCartesian
-from ..element import QuadraticTetra, QuadraticTriangle, Tetra, Triangle
+from ..element import (
+    QuadraticTetra,
+    QuadraticTriangle,
+    Tetra,
+    Triangle,
+    TetraMINI,
+    TriangleMINI,
+)
 from ..field import Field
 from ..quadrature import Tetrahedron as TetrahedronQuadrature
 from ..quadrature import Triangle as TriangleQuadrature
@@ -78,8 +85,8 @@ def topoints(values, region, sym=True, mode="tensor"):
 
 
 def extrapolate(values, region, average=True, mean=False):
-    """Extrapolate (and optionally averaging) scalar or vectorial values
-    at quadrature points to mesh-points by inversion.
+    """Extrapolate (and optionally average) an array with values at quadrature points to
+    mesh-points.
 
     Parameters
     ----------
@@ -167,9 +174,9 @@ def extrapolate(values, region, average=True, mean=False):
         ).toarray().reshape(-1, size) / region.mesh.cells_per_point.reshape(-1, 1)
 
     else:
-        w = v.T.reshape(-1, size)
+        w = v.T
 
-    return w
+    return w.reshape(-1, *dim)
 
 
 def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
@@ -186,7 +193,8 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
         region is not already disconnected or to return values on a disconnected mesh
         with discontinuous values at cell transitions if False (default is True).
     mean : bool, optional
-        A flag to take the cell-means of the values. Quadrature weights are ignored.
+        A flag to extrapolate the cell-means of the values to the mesh-points, see
+        :func:`felupe.tools.extrapolate`. If True, ``dV`` and ``solver`` are ignored.
         Default is False.
     dV : ndarray of shape (q, c) or None, optional
         Differential volumes located at the quadrature points of the cells. If None,
@@ -209,9 +217,9 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
     ..  math::
         :label: project
 
-        \Pi &= \int_V \frac{1}{2} (v - u)^2 \delta u\ dV \quad \rightarrow \quad \min
+        \Pi &= \int_V \frac{1}{2} (u - v)^2\ dV \quad \rightarrow \quad \min
 
-        \delta \Pi &= \int_V (v - u) \delta u\ dV = 0
+        \delta \Pi &= \int_V (u - v) \cdot \delta u\ dV = 0
 
     This leads to assembled system-matrix and -vector(s) as shown in
     Eq. :eq:`project-forms`
@@ -224,7 +232,7 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
         \int_V u\ \delta u\ dV &\qquad \rightarrow \qquad \hat{\boldsymbol{b}}
 
     of an equation system to be solved, see Eq. :eq:`project-solve`. The right-arrows
-    in Eq. :eq:`project-forms` represent the assembly if the integral forms into the
+    in Eq. :eq:`project-forms` represent the assembly of the integral forms into the
     system matrix or vectors.
 
     ..  math::
@@ -281,25 +289,31 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
         values_projected = project(values, region2)
     """
 
+    if mean:
+        return extrapolate(values, region, average=average, mean=mean)
+
     mesh = None
     if not average:
         mesh = region.mesh.disconnect()  # for non-continuous results
-
-    if mean:
-        values = np.mean(values, axis=-2, keepdims=True)  # cell-based means
 
     # quadrature schemes for projection
     # triangles and tetrahedrons require quadratic quadratures for projection
     element = None
     quadrature = None
-    if values.shape[-2] == 1:
-        scheme = {
-            Triangle: TriangleQuadrature(order=2),
-            Tetra: TetrahedronQuadrature(order=2),
-            QuadraticTriangle: TriangleQuadrature(order=5),
-            QuadraticTetra: TetrahedronQuadrature(order=5),
-        }
-        quadrature = scheme.get(type(region.element))
+    schemes = {
+        Triangle: TriangleQuadrature(order=2),
+        Tetra: TetrahedronQuadrature(order=2),
+        TriangleMINI: TriangleQuadrature(order=5),
+        TetraMINI: TetrahedronQuadrature(order=5),
+        QuadraticTriangle: TriangleQuadrature(order=5),
+        QuadraticTetra: TetrahedronQuadrature(order=5),
+    }
+    scheme = schemes.get(type(region.element))
+    if scheme is not None and region.quadrature.npoints < scheme.npoints:
+        if region.quadrature.npoints == 1:
+            quadrature = scheme
+        else:
+            raise ValueError("Quadrature not supported (order is too low).")
 
     # copy and reload the region if necessary
     if mesh is not None or element is not None or quadrature is not None:

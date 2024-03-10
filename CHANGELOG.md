@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file. The format 
 - The internal `BasisField.basis` is now a subclassed array `BasisArray` with a `grad`-attribute.
 - `math.grad(x, **kwargs)` is enhanced to return gradients of fields (like before) and the gradient-attribute of basis-arrays (added).
 - The `grad_v` and `grad_u` arguments are removed from the form-expression decorator `Form`. This changes the required function signature of the weakform-callable to `weakform(v, u, **kwargs)`. The tuple of optional arguments is also removed. Gradients of `v` and `u` are now obtained by `math.grad(v)` or `v.grad`.
+- Enforce quadrature schemes with minimal order for projections in `project()` for `Triangle`, `Tetra` as well as their MINI- and Quadratic-variants.
+- Fall-back to `extrapolate(mean=True)` in `project(mean=True)`.
+- Don't ravel the results of `res = extrapolate(values, region)`, i.e. `values.shape = (3, 3, 4, 100)` will be returned as `res.shape = (121, 3, 3)` instead of `res.shape = (121, 9)`.
 
 ### Removed
 - Remove the deprecated old-style argument `move` in `dof.biaxial()`.

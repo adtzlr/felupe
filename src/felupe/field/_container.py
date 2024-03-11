@@ -213,7 +213,7 @@ class FieldContainer:
             scale=scale,
         )
 
-    def imshow(self, *args, ax=None, **kwargs):
+    def imshow(self, *args, ax=None, dpi=None, **kwargs):
         """Take a screenshot of the first field of the container, show the image data in
         a figure and return the ax.
         """
@@ -221,7 +221,7 @@ class FieldContainer:
         if ax is None:
             import matplotlib.pyplot as plt
 
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(dpi=dpi)
 
         ax.imshow(self.screenshot(*args, filename=None, **kwargs))
         ax.set_axis_off()

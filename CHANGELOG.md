@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Stack only a selection of meshes in `MeshContainer.stack([idx])`.
 - Enable list-based indexing in `MeshContainer[idx]`.
 - Add the `opacity=0.99` argument to `MeshContainer.plot()` and `MeshContainer.screenshot()`.
+- Pass the dpi-argument to the matplotlib figure in `imshow(dpi=None)` for solids, field- and mesh-containers.
 
 ### Fixed
 - Fix mesh-expansion with one layer `mesh.expand(n=1)`. This expands the dimension of the points-array.

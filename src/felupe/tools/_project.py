@@ -25,8 +25,8 @@ from ..element import (
     QuadraticTetra,
     QuadraticTriangle,
     Tetra,
-    Triangle,
     TetraMINI,
+    Triangle,
     TriangleMINI,
 )
 from ..field import Field

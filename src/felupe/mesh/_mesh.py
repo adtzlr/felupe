@@ -640,6 +640,8 @@ class Mesh(DiscreteGeometry):
             expansion and ``n`` is ignored.
         axis : int, optional
             Axis of expansion (default is -1).
+        mask : ndarray or None, optional
+            A boolean mask to select points which are rotated (default is None).
 
         Returns
         -------
@@ -669,7 +671,7 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(expand(self, n=n, z=z, axis=axis))
 
-    def rotate(self, angle_deg, axis, center=None):
+    def rotate(self, angle_deg, axis, center=None, mask=None):
         """Rotate a Mesh.
 
         Parameters
@@ -680,6 +682,8 @@ class Mesh(DiscreteGeometry):
             Rotation axis.
         center : list or ndarray or None, optional
             Center point coordinates (default is None).
+        mask : ndarray or None, optional
+            A boolean mask to select points which are rotated (default is None).
 
         Returns
         -------
@@ -706,7 +710,9 @@ class Mesh(DiscreteGeometry):
         --------
         felupe.mesh.rotate : Rotate a Mesh.
         """
-        return as_mesh(rotate(self, angle_deg=angle_deg, axis=axis, center=center))
+        return as_mesh(
+            rotate(self, angle_deg=angle_deg, axis=axis, center=center, mask=mask)
+        )
 
     def revolve(self, n=11, phi=180, axis=0):
         """Revolve a 2d-Quad to a 3d-Hexahedron Mesh.

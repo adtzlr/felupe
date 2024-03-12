@@ -193,7 +193,7 @@ def fill_between(mesh, other_mesh, n=11):
 
 
 @mesh_or_data
-def rotate(points, cells, cell_type, angle_deg, axis, center=None):
+def rotate(points, cells, cell_type, angle_deg, axis, center=None, mask=None):
     """Rotate a Mesh.
 
     Parameters
@@ -210,6 +210,8 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
         Rotation axis.
     center : list or ndarray or None, optional
         Center point coordinates (default is None).
+    mask : ndarray or None, optional
+        A boolean mask to select points which are rotated (default is None).
 
     Returns
     -------
@@ -250,9 +252,15 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None):
         center = np.array(center)
     center = center.reshape(1, -1)
 
-    points_new = (
+    if mask is None:
+        mask = slice(None)
+
+    points_rotated = (
         rotation_matrix(angle_deg, dim, axis) @ (points - center).T
     ).T + center
+
+    points_new = points.copy()
+    points_new[mask] = points_rotated[mask]
 
     return points_new, cells, cell_type
 

@@ -110,7 +110,7 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
       )
       solid.plot("Principal Values of Cauchy Stress").show()
 
-.. tab:: Axisymmetric
+.. tab:: Plane Strain
 
    .. code-block:: python
 
@@ -136,7 +136,7 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
       )
       solid.plot("Principal Values of Cauchy Stress").show()
 
-.. tab:: Plane Strain
+.. tab:: Axisymmetric
 
    .. code-block:: python
 

@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enable list-based indexing in `MeshContainer[idx]`.
 - Add the `opacity=0.99` argument to `MeshContainer.plot()` and `MeshContainer.screenshot()`.
 - Pass the dpi-argument to the matplotlib figure in `imshow(dpi=None)` for solids, field- and mesh-containers.
+- Permute `GaussLegendre(order=2, dim=2)` according to the points of the `BiQuadraticQuad` element by default.
 
 ### Fixed
 - Fix mesh-expansion with one layer `mesh.expand(n=1)`. This expands the dimension of the points-array.

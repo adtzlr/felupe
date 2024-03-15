@@ -388,7 +388,7 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
 class RegionLagrange(Region):
     "A region with an arbitrary order lagrange element."
 
-    def __init__(self, mesh, order, dim, quadrature=None, grad=True, permute=False):
+    def __init__(self, mesh, order, dim, quadrature=None, grad=True, permute=True):
         if quadrature is None:
             quadrature = GaussLegendre(order=order, dim=dim, permute=False)
 

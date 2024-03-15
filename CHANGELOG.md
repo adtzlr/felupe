@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add axis of expansion in `mesh.expand(axis=-1)` (ignored for `n=1`).
 - Add an optional mask-argument to select points for rotation in `mesh.rotate(mask=None)`.
+- Add Lagrange quad/hex cell-types in `ViewMesh`.
 
 ### Changed
 - The internal `BasisField.basis` is now a subclassed array `BasisArray` with a `grad`-attribute.

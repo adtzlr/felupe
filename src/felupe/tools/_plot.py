@@ -313,7 +313,7 @@ class ViewMesh(Scene):
         )
 
         if cell_type is None:
-            meshio_to_pyvista_cell_types = {
+            pyvista_cell_types = {
                 "line": pv.CellType.LINE,
                 "triangle": pv.CellType.TRIANGLE,
                 "triangle6": pv.CellType.QUADRATIC_TRIANGLE,
@@ -325,8 +325,10 @@ class ViewMesh(Scene):
                 "hexahedron": pv.CellType.HEXAHEDRON,
                 "hexahedron20": pv.CellType.QUADRATIC_HEXAHEDRON,
                 "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
+                "VTK_LAGRANGE_HEXAHEDRON": pv.CellType.LAGRANGE_HEXAHEDRON,
+                "VTK_LAGRANGE_QUADRILATERAL": pv.CellType.LAGRANGE_QUADRILATERAL,
             }
-            cell_type = meshio_to_pyvista_cell_types[mesh.cell_type]
+            cell_type = pyvista_cell_types[mesh.cell_type]
 
         cell_types = cell_type * np.ones(mesh.ncells, dtype=int)
 

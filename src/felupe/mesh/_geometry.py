@@ -402,9 +402,9 @@ class CubeArbitraryOrderHexahedron(Mesh):
 
         e9 = search_edge(points, 0, 1, xmin, ymin)
         e10 = search_edge(points, 0, 1, xmax, ymin)
-        e11 = search_edge(points, 0, 1, xmin, ymax)
-        e12 = search_edge(points, 0, 1, xmax, ymax)
-
+        e11 = search_edge(points, 0, 1, xmax, ymax)
+        e12 = search_edge(points, 0, 1, xmin, ymax)
+        
         edges = np.hstack((e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12))
 
         mask2 = np.ones_like(points[:, 0], dtype=bool)

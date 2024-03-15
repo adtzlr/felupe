@@ -138,7 +138,7 @@ class ArbitraryOrderLagrange(Element):
         return np.einsum(self._subscripts, *h).ravel("F")
 
     def gradient(self, r):
-        "Return the grgadient of shape functions at given coordinate vector r."
+        "Return the gradient of shape functions at given coordinate vector r."
         n = self._nshape
 
         # 1d - basis function vectors per axis

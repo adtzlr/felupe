@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix mesh-expansion with one layer `mesh.expand(n=1)`. This expands the dimension of the points-array.
+- Fix VTK-compatible cells in `CubeArbitraryOrderHexahedron`.
 
 ### Removed
 - Remove the deprecated old-style argument `move` in `dof.biaxial()`.

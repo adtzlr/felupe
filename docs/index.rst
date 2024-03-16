@@ -162,6 +162,31 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
       )
       solid.plot("Principal Values of Cauchy Stress").show()
 
+.. tab:: 3D (Quadratic)
+
+   .. code-block:: python
+
+      import felupe as fem
+
+      mesh = fem.Cube(n=(5, 3, 3)).add_midpoints_edges()
+      region = fem.RegionQuadraticHexahedron(mesh)
+      field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+      boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+
+      umat = material = fem.NeoHooke(mu=1, bulk=50)
+      solid = fem.SolidBody(umat, field)
+
+      move = fem.math.linsteps([0, 2], num=10)
+      step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+      job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+      job.evaluate()
+      fig, ax = job.plot(
+         xlabel="Displacement $u$ in mm $\longrightarrow$",
+         ylabel="Normal Force $F$ in N $\longrightarrow$",
+      )
+      field.plot("Displacement", nonlinear_subdivision=4).show()
 
 Extension Packages
 ------------------

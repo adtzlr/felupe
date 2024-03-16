@@ -131,7 +131,20 @@ def test_region():
     points = np.vstack((x.ravel(), y.ravel(), z.ravel())).T
     cells = np.arange(len(points)).reshape(1, -1)
     mesh = fem.Mesh(points, cells, "lagrange")
+    r = fem.RegionLagrange(mesh, order, dim, permute=False)
+    assert not np.any(r.dV <= 0)
+
+    order = 5
+    dim = 2
+    mesh = fem.mesh.RectangleArbitraryOrderQuad(order=order)
     r = fem.RegionLagrange(mesh, order, dim)
+    assert not np.any(r.dV <= 0)
+
+    order = 5
+    dim = 3
+    mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=order)
+    r = fem.RegionLagrange(mesh, order, dim)
+    assert not np.any(r.dV <= 0)
 
 
 if __name__ == "__main__":

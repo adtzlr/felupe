@@ -186,7 +186,7 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
          xlabel="Displacement $u$ in mm $\longrightarrow$",
          ylabel="Normal Force $F$ in N $\longrightarrow$",
       )
-      field.plot("Displacement", nonlinear_subdivision=4).show()
+      solid.plot("Principal Values of Cauchy Stress", nonlinear_subdivision=4).show()
 
 Extension Packages
 ------------------

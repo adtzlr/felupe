@@ -55,7 +55,7 @@ class Scene:
         off_screen=False,
         plotter=None,
         notebook=False,
-        extract_surface=True,
+        extract_surface=False,
         nonlinear_subdivision=1,
         smooth_shading=True,
         split_sharp_edges=True,
@@ -108,16 +108,19 @@ class Scene:
             False).
         extract_surface : bool, optional
             Extract the surface mesh. Required to hide internal edges of quadratic
-            cells (default is True). If True and ``show_edges=True``, the feature edges
+            cells (default is False). If True and ``show_edges=True``, the feature edges
             of a separated mesh are plotted.
         nonlinear_subdivision : int, optional
             Number of subdivisions to generate a smooth surface based on the mid-edge
-            points (default is 1, no subdivision).
+            points (default is 1, no subdivision). If greater than 1, the surface of
+            the mesh is extracted.
         smooth_shading : bool, optional
-            A flag to enable smooth shading (default is True).
+            A flag to enable smooth shading (default is True). Only considered if
+            number of subdivisions is greater than 1.
         split_sharp_edges : bool, optional
             A flag to split sharp edges (default is True). Use this flag in combination
-            with smooth shading.
+            with smooth shading. Only considered if number of subdivisions is greater
+            than 1.
         edge_color : str, optional
             The color of the edge lines (default is "black").
         line_width : float, optional
@@ -146,7 +149,7 @@ class Scene:
             if notebook:
                 plotter_kwargs["notebook"] = notebook
             plotter = pv.Plotter(**plotter_kwargs)
-            plotter.ren_win
+            # plotter.ren_win
 
         if scalar_bar_args is None:
             scalar_bar_args = {}
@@ -224,14 +227,16 @@ class Scene:
             mesh = mesh.warp_by_vector("Displacement", factor=factor)
 
         surface = mesh
+        show_edges_surface = show_edges
         if mesh.number_of_cells > 0:
-            if extract_surface:
+            if extract_surface or nonlinear_subdivision > 1:
                 surface = surface.extract_surface(
                     nonlinear_subdivision=nonlinear_subdivision
                 )
+                show_edges_surface = False
 
         # disable surface-related arguments if the mesh contains no cells
-        if mesh.number_of_cells == 0 or not extract_surface:
+        if mesh.number_of_cells == 0 or nonlinear_subdivision == 1:
             smooth_shading = None
             split_sharp_edges = None
 
@@ -241,7 +246,7 @@ class Scene:
             mesh=surface,
             scalars=name,
             component=component,
-            show_edges=False,
+            show_edges=show_edges_surface,
             cmap=cmap,
             scalar_bar_args={
                 "title": label,
@@ -255,7 +260,11 @@ class Scene:
         )
 
         # extract the feature edges (without cell-internal edges)
-        if mesh.number_of_cells > 0 and show_edges:
+        if (
+            mesh.number_of_cells > 0
+            and show_edges
+            and (extract_surface or nonlinear_subdivision > 1)
+        ):
             edges = (
                 mesh.separate_cells()
                 .extract_surface(nonlinear_subdivision=nonlinear_subdivision)

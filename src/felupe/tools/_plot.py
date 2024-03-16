@@ -223,10 +223,15 @@ class Scene:
             mesh = mesh.warp_by_vector("Displacement", factor=factor)
 
         surface = mesh
-        if extract_surface:
-            surface = surface.extract_surface(
-                nonlinear_subdivision=nonlinear_subdivision
-            )
+        if mesh.number_of_cells > 0:
+            if extract_surface:
+                surface = surface.extract_surface(
+                    nonlinear_subdivision=nonlinear_subdivision
+                )
+        else:
+            # disable surface-related arguments if the mesh contains no cells
+            smooth_shading = None
+            split_sharp_edges = None
 
         # don't show edges for the base (surface) mesh to hide internal edges of
         # quadratic / Lagrange cell-types
@@ -248,7 +253,7 @@ class Scene:
         )
 
         # extract the feature edges (without cell-internal edges)
-        if show_edges:
+        if mesh.number_of_cells > 0 and show_edges:
             edges = (
                 mesh.separate_cells()
                 .extract_surface(nonlinear_subdivision=nonlinear_subdivision)

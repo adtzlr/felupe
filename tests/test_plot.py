@@ -162,7 +162,7 @@ def test_mesh():
 def test_model():
     try:
         mesh, field, solid = pre(n=3)
-        view = fem.View(field, solid=solid)
+        view = fem.View(field, solid=solid, project=fem.project)
         plotter = view.plot(
             "Equivalent of Cauchy Stress",
             off_screen=True,

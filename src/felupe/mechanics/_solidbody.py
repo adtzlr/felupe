@@ -30,7 +30,7 @@ from ._helpers import Assemble, Evaluate, Results
 class Solid:
     "Base class for solid bodies which provides methods for visualisations."
 
-    def view(self, point_data=None, cell_data=None, cell_type=None):
+    def view(self, point_data=None, cell_data=None, cell_type=None, project=False):
         """View the solid with optional given dicts of point- and cell-data items.
 
         Parameters
@@ -41,6 +41,8 @@ class Solid:
             Additional cell-data dict (default is None).
         cell_type : pyvista.CellType or None, optional
             Cell-type of PyVista (default is None).
+        project : bool, optional
+            Project stress at quadrature-points to mesh-points (default is False).
 
         Returns
         -------
@@ -59,16 +61,17 @@ class Solid:
             point_data=point_data,
             cell_data=cell_data,
             cell_type=cell_type,
+            project=project,
         )
 
-    def plot(self, *args, **kwargs):
+    def plot(self, *args, project=None, **kwargs):
         """Plot the solid body.
 
         See Also
         --------
         felupe.Scene.plot: Plot method of a scene.
         """
-        return self.view().plot(*args, **kwargs)
+        return self.view(project=project).plot(*args, **kwargs)
 
     def screenshot(
         self,

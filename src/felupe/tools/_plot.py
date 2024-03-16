@@ -481,6 +481,10 @@ class ViewSolid(ViewField):
         Additional cell-data dict (default is None).
     cell_type : pyvista.CellType or None, optional
         Cell-type of PyVista (default is None).
+    project : callable or None, optional
+        Callable to project stress at quadrature-points to mesh-points (default is
+        None). Valid callables are :class:`~felupe.project` or
+        :class:`~felupe.tools.extrapolate`.
 
     Attributes
     ----------
@@ -488,6 +492,9 @@ class ViewSolid(ViewField):
         A generalized Dataset with the mesh as well as point- and cell-data. This is
         not an instance of :class:`felupe.Mesh`.
 
+    See Also
+    --------
+    felupe.project: Project given values at quadrature-points to mesh-points.
     """
 
     def __init__(
@@ -498,10 +505,16 @@ class ViewSolid(ViewField):
         point_data=None,
         cell_data=None,
         cell_type=None,
+        project=None,
+        **kwargs,
     ):
+        if point_data is None:
+            point_data = {}
+
         if cell_data is None:
             cell_data = {}
 
+        point_data_from_solid = {}
         cell_data_from_solid = {}
 
         if solid is not None:
@@ -512,17 +525,29 @@ class ViewSolid(ViewField):
             stress = stress_from_field[stress_type.lower()](field)
             stress_label = f"{stress_type.title()} Stress"
 
-            cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
-            cell_data_from_solid[f"Principal Values of {stress_label}"] = (
-                eigvalsh(stress).mean(-2)[::-1].T
-            )
-            cell_data_from_solid[f"Equivalent of {stress_label}"] = (
-                equivalent_von_mises(stress).mean(-2).T
-            )
+            if not callable(project):
+                cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
+                cell_data_from_solid[f"Principal Values of {stress_label}"] = (
+                    eigvalsh(stress).mean(-2)[::-1].T
+                )
+                cell_data_from_solid[f"Equivalent of {stress_label}"] = (
+                    equivalent_von_mises(stress).mean(-2).T
+                )
+
+            else:
+                point_data_from_solid[stress_label] = project(
+                    tovoigt(stress), solid.field.region
+                )
+                point_data_from_solid[f"Principal Values of {stress_label}"] = project(
+                    eigvalsh(stress)[::-1], solid.field.region
+                )
+                point_data_from_solid[f"Equivalent of {stress_label}"] = project(
+                    equivalent_von_mises(stress), solid.field.region
+                )
 
         super().__init__(
             field=field,
-            point_data=point_data,
+            point_data={**point_data_from_solid, **point_data},
             cell_data={**cell_data_from_solid, **cell_data},
             cell_type=cell_type,
         )

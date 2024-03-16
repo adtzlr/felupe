@@ -180,7 +180,7 @@ def extrapolate(values, region, average=True, mean=False):
 
 
 def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
-    r"""Project given values at quadrature-points projected to mesh-points.
+    r"""Project given values at quadrature-points to mesh-points.
 
     Parameters
     ----------

@@ -177,7 +177,7 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
       umat = material = fem.NeoHooke(mu=1, bulk=50)
       solid = fem.SolidBody(umat, field)
 
-      move = fem.math.linsteps([0, 2], num=10)
+      move = fem.math.linsteps([0, 1], num=5)
       step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
       job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])

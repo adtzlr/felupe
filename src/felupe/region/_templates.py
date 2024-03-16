@@ -390,7 +390,7 @@ class RegionLagrange(Region):
 
     def __init__(self, mesh, order, dim, quadrature=None, grad=True, permute=True):
         if quadrature is None:
-            quadrature = GaussLegendre(order=order, dim=dim, permute=False)
+            quadrature = GaussLegendre(order=order, dim=dim, permute=permute)
 
         element = ArbitraryOrderLagrange(order, dim, permute=permute)
         self.order = order

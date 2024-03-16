@@ -30,7 +30,7 @@ def lagrange_quad(order):
 
     # points on a unit rectangle
     x = np.linspace(0, 1, order + 1)
-    points = np.vstack([p.ravel() for p in np.meshgrid(x, x, indexing="ij")]).T
+    points = np.vstack([p.ravel() for p in np.meshgrid(x, x, indexing="ij")][::-1]).T
 
     # search vertices
     xmin = min(points[:, 0])
@@ -73,7 +73,7 @@ def lagrange_hexahedron(order):
     "Return the cell-connectivity for an arbitrary-order Lagrange hexahedron."
 
     x = np.linspace(0, 1, order + 1)
-    points = np.vstack([p.ravel() for p in np.meshgrid(x, x, x, indexing="ij")]).T
+    points = np.vstack([p.ravel() for p in np.meshgrid(x, x, x, indexing="ij")][::-1]).T
 
     # search vertices
     xmin = min(points[:, 0])

@@ -20,6 +20,7 @@ from string import ascii_lowercase
 
 import numpy as np
 
+from ..element._lagrange import lagrange_hexahedron, lagrange_quad
 from ._scheme import Scheme
 
 
@@ -72,29 +73,34 @@ class GaussLegendre(Scheme):
 
         idx = list(ascii_lowercase)[:dim]
         weights = np.einsum(", ".join(idx), *([w] * dim)).ravel()
+        sort = None
 
         if permute and order == 1 and dim == 2:
-            points = points[[0, 1, 3, 2]]
-            weights = weights[[0, 1, 3, 2]]
+            sort = [0, 1, 3, 2]
 
-        if permute and order == 1 and dim == 3:
-            points = points[[0, 1, 3, 2, 4, 5, 7, 6]]
-            weights = weights[[0, 1, 3, 2, 4, 5, 7, 6]]
+        elif permute and order == 1 and dim == 3:
+            sort = [0, 1, 3, 2, 4, 5, 7, 6]
 
-        if permute and order == 2 and dim == 2:
-            points = points[[0, 2, 8, 6, 1, 5, 7, 3, 4]]
-            weights = weights[[0, 2, 8, 6, 1, 5, 7, 3, 4]]
+        elif permute and order == 2 and dim == 2:
+            sort = [0, 2, 8, 6, 1, 5, 7, 3, 4]
 
-        if permute and order == 2 and dim == 3:
+        elif permute and order == 2 and dim == 3:
             vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
             edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])
             faces = np.array([12, 14, 10, 16, 4, 22])
             volume = np.array([13])
 
-            permute = np.concatenate((vertices, edges, faces, volume))
+            sort = np.concatenate((vertices, edges, faces, volume))
 
-            points = points[permute]
-            weights = weights[permute]
+        elif permute and order > 2 and dim == 2:
+            sort = lagrange_quad(order=order)
+
+        elif permute and order > 2 and dim == 3:
+            sort = lagrange_hexahedron(order=order)
+
+        if sort is not None:
+            points = points[sort]
+            weights = weights[sort]
 
         super().__init__(points, weights)
 

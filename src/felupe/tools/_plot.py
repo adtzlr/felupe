@@ -55,6 +55,12 @@ class Scene:
         off_screen=False,
         plotter=None,
         notebook=False,
+        extract_surface=True,
+        nonlinear_subdivision=1,
+        smooth_shading=True,
+        split_sharp_edges=True,
+        edge_color="black",
+        line_width=2.0,
         **kwargs,
     ):
         """Plot scalars, selected by name and component.
@@ -100,11 +106,32 @@ class Scene:
             When True, the resulting plot is placed inline a jupyter notebook. Assumes a
             jupyter console is active. Automatically enables off_screen (default is
             False).
+        extract_surface : bool, optional
+            Extract the surface mesh. Required to hide internal edges of quadratic
+            cells (default is True). If True and ``show_edges=True``, the feature edges
+            of a separated mesh are plotted.
+        nonlinear_subdivision : int, optional
+            Number of subdivisions to generate a smooth surface based on the mid-edge
+            points (default is 1, no subdivision).
+        smooth_shading : bool, optional
+            A flag to enable smooth shading (default is True).
+        split_sharp_edges : bool, optional
+            A flag to split sharp edges (default is True). Use this flag in combination
+            with smooth shading.
+        edge_color : str, optional
+            The color of the edge lines (default is "black").
+        line_width : float, optional
+            The line-width of the edge lines (default is 2.0).
+
 
         Returns
         -------
         plotter : pyvista.Plotter
             A Plotter object with methods ``plot()``, ``screenshot()``, etc.
+
+        See Also
+        --------
+        pyvista.Plotter : Plotting object to display vtk meshes or numpy arrays.
         """
 
         import pyvista as pv
@@ -189,22 +216,30 @@ class Scene:
             label = f"{data_label} {component_label}"
 
         if show_undeformed:
-            show_edges_undeformed = False
-            opacity_undeformed = 0.2
-
-            plotter.add_mesh(
-                self.mesh, show_edges=show_edges_undeformed, opacity=opacity_undeformed
-            )
+            plotter.add_mesh(self.mesh, show_edges=False, opacity=0.2)
 
         mesh = self.mesh
         if "Displacement" in self.mesh.point_data.keys():
             mesh = mesh.warp_by_vector("Displacement", factor=factor)
 
+        surface = mesh
+        if mesh.number_of_cells > 0:
+            if extract_surface:
+                surface = surface.extract_surface(
+                    nonlinear_subdivision=nonlinear_subdivision
+                )
+        else:
+            # disable surface-related arguments if the mesh contains no cells
+            smooth_shading = None
+            split_sharp_edges = None
+
+        # don't show edges for the base (surface) mesh to hide internal edges of
+        # quadratic / Lagrange cell-types
         plotter.add_mesh(
-            mesh=mesh,
+            mesh=surface,
             scalars=name,
             component=component,
-            show_edges=show_edges,
+            show_edges=False,
             cmap=cmap,
             scalar_bar_args={
                 "title": label,
@@ -212,8 +247,20 @@ class Scene:
                 "vertical": scalar_bar_vertical,
                 **scalar_bar_args,
             },
+            smooth_shading=smooth_shading,
+            split_sharp_edges=split_sharp_edges,
             **kwargs,
         )
+
+        # extract the feature edges (without cell-internal edges)
+        if mesh.number_of_cells > 0 and show_edges:
+            edges = (
+                mesh.separate_cells()
+                .extract_surface(nonlinear_subdivision=nonlinear_subdivision)
+                .extract_feature_edges()
+            )
+            actor = plotter.add_mesh(edges, color=edge_color, line_width=line_width)
+            actor.mapper.SetResolveCoincidentTopologyToPolygonOffset()
 
         if view == "default":
             if np.allclose(self.mesh.points[:, 2], 0):

@@ -122,7 +122,6 @@ plotter = field.plot(
     "Principal Values of Logarithmic Strain",
     show_undeformed=False,
     show_edges=False,
-    extract_surface=False,
 )
 plotter.mesh.clip("y", invert=False, value=0.0, inplace=True)
 plotter.show()

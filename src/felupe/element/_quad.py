@@ -241,7 +241,7 @@ class BiQuadraticQuad(Element):
     def __init__(self):
         super().__init__(shape=(9, 2))
 
-        self._lagrange = ArbitraryOrderLagrange(order=2, dim=2)
+        self._lagrange = ArbitraryOrderLagrange(order=2, dim=2, permute=False)
 
         self._vertices = np.array([0, 2, 8, 6])
         self._edges = np.array([1, 5, 7, 3])

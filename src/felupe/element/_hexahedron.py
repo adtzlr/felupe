@@ -483,7 +483,7 @@ class TriQuadraticHexahedron(Element):
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "hexahedron27"
 
-        self._lagrange = ArbitraryOrderLagrange(order=2, dim=3)
+        self._lagrange = ArbitraryOrderLagrange(order=2, dim=3, permute=False)
 
         self._vertices = np.array([0, 2, 8, 6, 18, 20, 26, 24])
         self._edges = np.array([1, 5, 7, 3, 19, 23, 25, 21, 9, 11, 17, 15])

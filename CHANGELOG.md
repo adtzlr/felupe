@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add axis of expansion in `mesh.expand(axis=-1)` (ignored for `n=1`).
 - Add an optional mask-argument to select points for rotation in `mesh.rotate(mask=None)`.
 - Add Lagrange quad/hex cell-types in `ViewMesh`.
+- Add optional projection of stresses from quadrature-points to mesh.points in `SolidBody.plot(project=None)`, where `project` has to be a callable like `felupe.project()`.
 
 ### Changed
 - The internal `BasisField.basis` is now a subclassed array `BasisArray` with a `grad`-attribute.

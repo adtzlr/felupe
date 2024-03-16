@@ -228,8 +228,9 @@ class Scene:
                 surface = surface.extract_surface(
                     nonlinear_subdivision=nonlinear_subdivision
                 )
-        else:
-            # disable surface-related arguments if the mesh contains no cells
+
+        # disable surface-related arguments if the mesh contains no cells
+        if mesh.number_of_cells == 0 or not extract_surface:
             smooth_shading = None
             split_sharp_edges = None
 

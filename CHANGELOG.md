@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. The format 
 - Permute `GaussLegendre(order=2, dim=2)` according to the points of the `BiQuadraticQuad` element by default.
 - Permute the 2- and 3-dimensional `GaussLegendre` quadrature schemes for order > 2 according to the VTK-Lagrange element formulations. That means for linear and quadratic quads and hexahedrons, the points of `GaussLegendre` are sorted according to the default VTK elements and for all higher-order elements according to the Lagrange-elements.
 - Enable default point-permutations in `RegionLagrange(permute=True)` by default.
+- Hide internal edges of higher-order cell-types in `ViewScene.plot()` by default.
 
 ### Fixed
 - Fix mesh-expansion with one layer `mesh.expand(n=1)`. This expands the dimension of the points-array.

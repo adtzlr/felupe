@@ -30,7 +30,7 @@ from ._helpers import Assemble, Evaluate, Results
 class Solid:
     "Base class for solid bodies which provides methods for visualisations."
 
-    def view(self, point_data=None, cell_data=None, cell_type=None, project=False):
+    def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the solid with optional given dicts of point- and cell-data items.
 
         Parameters

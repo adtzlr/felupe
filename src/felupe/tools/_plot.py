@@ -451,7 +451,7 @@ class ViewField(ViewMesh):
         point_data_from_field = {}
         cell_data_from_field = {}
 
-        if not callable(project):
+        if project is None:
             cell_data_from_field = {
                 "Deformation Gradient": deformation_gradient(field).mean(-2).T,
                 "Logarithmic Strain": strain(field, tensor=True, asvoigt=True)
@@ -461,7 +461,7 @@ class ViewField(ViewMesh):
                 .mean(-2)[::-1]
                 .T,
             }
-        elif project is None:
+        elif callable(project):
             point_data_from_field = {
                 "Deformation Gradient": project(
                     deformation_gradient(field), field.region
@@ -559,7 +559,7 @@ class ViewSolid(ViewField):
             stress = stress_from_field[stress_type.lower()](field)
             stress_label = f"{stress_type.title()} Stress"
 
-            if not callable(project):
+            if project is None:
                 cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
                 cell_data_from_solid[f"Principal Values of {stress_label}"] = (
                     eigvalsh(stress).mean(-2)[::-1].T
@@ -568,7 +568,7 @@ class ViewSolid(ViewField):
                     equivalent_von_mises(stress).mean(-2).T
                 )
 
-            elif project is None:
+            elif callable(project):
                 point_data_from_solid[stress_label] = project(
                     tovoigt(stress), solid.field.region
                 )

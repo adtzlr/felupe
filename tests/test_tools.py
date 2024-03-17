@@ -383,6 +383,26 @@ def test_project():
         projected = fem.project(values, region, average=True)
 
 
+def test_topoints():
+    mesh = fem.Rectangle(n=2).triangulate()
+    region = fem.RegionTriangle(mesh)
+    field = fem.FieldAxisymmetric(region, dim=2)
+    values = field.extract()
+
+    # single quadrature-point values
+    data = fem.topoints(values, region)
+    assert data.shape == (mesh.npoints, 3, 3)
+
+    mesh = fem.Rectangle(n=2).convert(2, 1)
+    region = fem.RegionQuadraticQuad(mesh)
+    field = fem.FieldAxisymmetric(region, dim=2)
+    values = field.extract()
+
+    # trim values array to number of points-per-cell
+    data = fem.topoints(values, region)
+    assert data.shape == (mesh.npoints, 3, 3)
+
+
 def test_extrapolate():
     # rectangle (triangle)
     mesh = fem.Rectangle(n=2)
@@ -468,4 +488,5 @@ if __name__ == "__main__":
     test_newton_linearelastic()
     test_newton_body()
     test_project()
+    test_topoints()
     test_extrapolate()

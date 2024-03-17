@@ -35,53 +35,52 @@ from ..quadrature import Triangle as TriangleQuadrature
 from ..region import Region
 
 
-def topoints(values, region, sym=True, mode="tensor"):
-    "Shift of scalar or tensorial values at quadrature points to mesh-points."
+def topoints(values, region):
+    """Shift array of values located at quadrature points of cells to mesh-points.
 
-    rows = region.mesh.cells.T.ravel()
-    cols = np.zeros_like(rows)
+    Parameters
+    ----------
+    values : ndarray of shape (..., q, c)
+        Array with values located at the quadrature points ``q`` of cells ``c``.
+    region : Region
+        A region used to extrapolate the values to the mesh-points.
 
-    if mode == "tensor":
-        dim = values.shape[0]
-        if sym:
-            if dim == 3:
-                ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
-            elif dim == 2:
-                ij = [(0, 0), (1, 1), (0, 1)]
-        else:
-            if dim == 3:
-                ij = [
-                    (0, 0),
-                    (0, 1),
-                    (0, 2),
-                    (1, 0),
-                    (1, 1),
-                    (1, 2),
-                    (2, 0),
-                    (2, 1),
-                    (2, 2),
-                ]
-            elif dim == 2:
-                ij = [(0, 0), (0, 1), (1, 0), (1, 1)]
+    Returns
+    -------
+    Field.values : ndarray of shape (p, ...)
+        Array of values projected to the mesh-points ``p``.
 
-        out = Field(region, dim=len(ij)).values
+    Notes
+    -----
+    If the number of quadrature points is greater than the number of cell-points, then
+    the shift fails.
+    """
 
-        for a, (i, j) in enumerate(ij):
-            out[:, a] = (
-                sparsematrix(
-                    (values.reshape(dim, dim, -1)[i, j], (rows, cols)),
-                    shape=(region.mesh.npoints, 1),
-                ).toarray()[:, 0]
-                / region.mesh.cells_per_point
-            )
+    shape = values.shape[:-2]  # tensor-components
+    size = np.prod(shape).astype(int)  # tensor-size (enforce int for empty tuple)
+    points_per_cell = region.mesh.cells.shape[1]
 
-    elif mode == "scalar":
-        out = sparsematrix(
-            (values.ravel(), (rows, cols)), shape=(region.mesh.npoints, 1)
-        ).toarray()[:, 0]
-        out = out / region.mesh.cells_per_point
+    if values.shape[-2] == 1:
+        # broadcast single quadrature-point values to number of points-per-cell
+        values = np.broadcast_to(values, (*shape, points_per_cell, values.shape[-1]))
 
-    return out
+    elif values.shape[-2] > points_per_cell:
+        # trim the values to the number of points-per-cell
+        values = values[..., :points_per_cell, :]
+
+    axes = values.shape[-2:]  # trailing axes (of broadcasted and trimmed values)
+
+    field = Field(region, dim=size)
+    field.values = field.values.reshape(-1, 1)
+    field.values = sparsematrix(
+        (values.reshape(-1, *axes).T.ravel(), field.indices.ai),
+        shape=field.indices.shape,
+    ).toarray(out=field.values)
+    field.values = field.values.reshape(-1, *shape)
+
+    return np.einsum(
+        "a...,a->a...", field.values, 1 / region.mesh.cells_per_point, out=field.values
+    )
 
 
 def extrapolate(values, region, average=True, mean=False):

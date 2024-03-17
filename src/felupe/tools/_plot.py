@@ -446,12 +446,12 @@ class ViewField(ViewMesh):
     """
 
     def __init__(
-        self, field, point_data=None, cell_data=None, cell_type=None, project=False
+        self, field, point_data=None, cell_data=None, cell_type=None, project=None
     ):
         point_data_from_field = {}
         cell_data_from_field = {}
 
-        if not callable(project):
+        if project is None:
             cell_data_from_field = {
                 "Deformation Gradient": deformation_gradient(field).mean(-2).T,
                 "Logarithmic Strain": strain(field, tensor=True, asvoigt=True)
@@ -461,7 +461,7 @@ class ViewField(ViewMesh):
                 .mean(-2)[::-1]
                 .T,
             }
-        else:
+        elif callable(project):
             point_data_from_field = {
                 "Deformation Gradient": project(
                     deformation_gradient(field), field.region
@@ -473,6 +473,8 @@ class ViewField(ViewMesh):
                     strain(field, tensor=False)[::-1], field.region
                 ),
             }
+        else:
+            raise TypeError("The project-argument must be callable or None.")
 
         point_data_from_field["Displacement"] = displacement(field)
 
@@ -557,7 +559,7 @@ class ViewSolid(ViewField):
             stress = stress_from_field[stress_type.lower()](field)
             stress_label = f"{stress_type.title()} Stress"
 
-            if not callable(project):
+            if project is None:
                 cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
                 cell_data_from_solid[f"Principal Values of {stress_label}"] = (
                     eigvalsh(stress).mean(-2)[::-1].T
@@ -566,7 +568,7 @@ class ViewSolid(ViewField):
                     equivalent_von_mises(stress).mean(-2).T
                 )
 
-            else:
+            elif callable(project):
                 point_data_from_solid[stress_label] = project(
                     tovoigt(stress), solid.field.region
                 )
@@ -576,6 +578,8 @@ class ViewSolid(ViewField):
                 point_data_from_solid[f"Equivalent of {stress_label}"] = project(
                     equivalent_von_mises(stress), solid.field.region
                 )
+            else:
+                raise TypeError("The project-argument must be callable or None.")
 
         super().__init__(
             field=field,

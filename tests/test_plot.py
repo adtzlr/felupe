@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import pytest
+
 import felupe as fem
 
 
@@ -162,6 +164,10 @@ def test_mesh():
 def test_model():
     try:
         mesh, field, solid = pre(n=3)
+        with pytest.raises(TypeError):
+            fem.ViewField(field, project=True)
+        with pytest.raises(TypeError):
+            fem.View(field, solid=solid, project=True)
         view = fem.View(field, solid=solid, project=fem.project)
         plotter = view.plot(
             "Equivalent of Cauchy Stress",

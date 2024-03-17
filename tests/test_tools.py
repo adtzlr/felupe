@@ -92,19 +92,13 @@ def test_solve():
     cauchy = fem.tools.project(fem.math.tovoigt(s), region=r, mean=True)
     assert cauchy.shape == (r.mesh.npoints, 6)
 
-    cauchy = fem.tools.topoints(s, region=r, sym=False)
-    assert cauchy.shape == (r.mesh.npoints, 9)
+    cauchy = fem.tools.topoints(s, region=r)
+    assert cauchy.shape == (r.mesh.npoints, 3, 3)
 
-    cauchy = fem.tools.topoints(s, region=r, sym=True)
-    assert cauchy.shape == (r.mesh.npoints, 6)
+    cauchy = fem.tools.topoints(s[:2, :2], region=r)
+    assert cauchy.shape == (r.mesh.npoints, 2, 2)
 
-    cauchy = fem.tools.topoints(s[:2, :2], region=r, sym=True)
-    assert cauchy.shape == (r.mesh.npoints, 3)
-
-    cauchy = fem.tools.topoints(s[:2, :2], region=r, sym=False)
-    assert cauchy.shape == (r.mesh.npoints, 4)
-
-    cauchy = fem.tools.topoints(s[0, 0], region=r, mode="scalar")
+    cauchy = fem.tools.topoints(s[0, 0], region=r)
     assert cauchy.shape == (r.mesh.npoints,)
 
 
@@ -389,6 +383,26 @@ def test_project():
         projected = fem.project(values, region, average=True)
 
 
+def test_topoints():
+    mesh = fem.Rectangle(n=2).triangulate()
+    region = fem.RegionTriangle(mesh)
+    field = fem.FieldAxisymmetric(region, dim=2)
+    values = field.extract()
+
+    # single quadrature-point values
+    data = fem.topoints(values, region)
+    assert data.shape == (mesh.npoints, 3, 3)
+
+    mesh = fem.Rectangle(n=2).convert(2, 1)
+    region = fem.RegionQuadraticQuad(mesh)
+    field = fem.FieldAxisymmetric(region, dim=2)
+    values = field.extract()
+
+    # trim values array to number of points-per-cell
+    data = fem.topoints(values, region)
+    assert data.shape == (mesh.npoints, 3, 3)
+
+
 def test_extrapolate():
     # rectangle (triangle)
     mesh = fem.Rectangle(n=2)
@@ -474,4 +488,5 @@ if __name__ == "__main__":
     test_newton_linearelastic()
     test_newton_body()
     test_project()
+    test_topoints()
     test_extrapolate()

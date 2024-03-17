@@ -184,7 +184,11 @@ class FieldContainer:
         """
 
         return ViewField(
-            self, point_data=point_data, cell_data=cell_data, cell_type=cell_type, project=project
+            self,
+            point_data=point_data,
+            cell_data=cell_data,
+            cell_type=cell_type,
+            project=project,
         )
 
     def plot(self, *args, project=None, **kwargs):

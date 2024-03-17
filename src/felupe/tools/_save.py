@@ -95,17 +95,17 @@ def save(
         sp = np.sort(eigvalsh(s), axis=0)
 
         # shift stresses to points and average nodal values
-        cauchy = topoints(s, region=region, sym=True)
-        cauchyprinc = [topoints(sp_i, region=region, mode="scalar") for sp_i in sp]
+        cauchy = topoints(s, region=region)
+        cauchyprinc = topoints(sp, region=region)
 
         point_data["Cauchy Stress"] = cauchy
 
-        point_data["Cauchy Stress (Max. Principal)"] = cauchyprinc[2]
-        point_data["Cauchy Stress (Int. Principal)"] = cauchyprinc[1]
-        point_data["Cauchy Stress (Min. Principal)"] = cauchyprinc[0]
+        point_data["Cauchy Stress (Max. Principal)"] = cauchyprinc[:, 2]
+        point_data["Cauchy Stress (Int. Principal)"] = cauchyprinc[:, 1]
+        point_data["Cauchy Stress (Min. Principal)"] = cauchyprinc[:, 0]
 
         point_data["Cauchy Stress (Max. Principal Shear)"] = (
-            cauchyprinc[2] - cauchyprinc[0]
+            cauchyprinc[:, 2] - cauchyprinc[:, 0]
         )
 
     import meshio

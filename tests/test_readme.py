@@ -100,7 +100,7 @@ def test_readme():
     s = dot(PK1, transpose(F)) / det(F)
 
     # stress shifted and averaged to mesh-points
-    cauchy_shifted = fem.topoints(s, region, sym=True, mode="tensor")
+    cauchy_shifted = fem.topoints(fem.math.tovoigt(s), region)
 
     # stress projected and averaged to mesh-points
     cauchy_projected = fem.project(s, region)

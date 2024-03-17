@@ -43,17 +43,17 @@ def topoints(values, region):
     values : ndarray of shape (..., q, c)
         Array with values located at the quadrature points ``q`` of cells ``c``.
     region : Region
-        A region used to extrapolate the values to the mesh-points.
+        A region used to shift the values to the mesh-points.
 
     Returns
     -------
     Field.values : ndarray of shape (p, ...)
-        Array of values projected to the mesh-points ``p``.
+        Array of values shifted to the mesh-points ``p``.
 
     Notes
     -----
-    If the number of quadrature points is greater than the number of cell-points, then
-    the shift fails.
+    If the number of quadrature-points per cell is greater than the number of points-per-cell, then
+    the values are trimmed.
     """
 
     shape = values.shape[:-2]  # tensor-components

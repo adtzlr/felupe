@@ -92,19 +92,13 @@ def test_solve():
     cauchy = fem.tools.project(fem.math.tovoigt(s), region=r, mean=True)
     assert cauchy.shape == (r.mesh.npoints, 6)
 
-    cauchy = fem.tools.topoints(s, region=r, sym=False)
-    assert cauchy.shape == (r.mesh.npoints, 9)
+    cauchy = fem.tools.topoints(s, region=r)
+    assert cauchy.shape == (r.mesh.npoints, 3, 3)
 
-    cauchy = fem.tools.topoints(s, region=r, sym=True)
-    assert cauchy.shape == (r.mesh.npoints, 6)
+    cauchy = fem.tools.topoints(s[:2, :2], region=r)
+    assert cauchy.shape == (r.mesh.npoints, 2, 2)
 
-    cauchy = fem.tools.topoints(s[:2, :2], region=r, sym=True)
-    assert cauchy.shape == (r.mesh.npoints, 3)
-
-    cauchy = fem.tools.topoints(s[:2, :2], region=r, sym=False)
-    assert cauchy.shape == (r.mesh.npoints, 4)
-
-    cauchy = fem.tools.topoints(s[0, 0], region=r, mode="scalar")
+    cauchy = fem.tools.topoints(s[0, 0], region=r)
     assert cauchy.shape == (r.mesh.npoints,)
 
 

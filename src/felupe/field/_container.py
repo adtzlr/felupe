@@ -156,7 +156,7 @@ class FieldContainer:
         for field, newfield in zip(self.fields, other_field.fields):
             field.values = newfield.values
 
-    def view(self, point_data=None, cell_data=None, cell_type=None):
+    def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.
 
         Parameters
@@ -167,6 +167,9 @@ class FieldContainer:
             Additional cell-data dict (default is None).
         cell_type : pyvista.CellType or None, optional
             Cell-type of PyVista (default is None).
+        project : callable or None, optional
+            Project internal cell-data at quadrature-points to mesh-points (default is
+            None).
 
         Returns
         -------
@@ -177,20 +180,22 @@ class FieldContainer:
         See Also
         --------
         felupe.ViewField : Visualization methods for :class:`felupe.FieldContainer`.
+        felupe.project: Project given values at quadrature-points to mesh-points.
         """
 
         return ViewField(
-            self, point_data=point_data, cell_data=cell_data, cell_type=cell_type
+            self, point_data=point_data, cell_data=cell_data, cell_type=cell_type, project=project
         )
 
-    def plot(self, *args, **kwargs):
+    def plot(self, *args, project=None, **kwargs):
         """Plot the first field of the container.
 
         See Also
         --------
         felupe.Scene.plot: Plot method of a scene.
+        felupe.project: Project given values at quadrature-points to mesh-points.
         """
-        return self.view().plot(*args, **kwargs)
+        return self.view(project=project).plot(*args, **kwargs)
 
     def screenshot(
         self,

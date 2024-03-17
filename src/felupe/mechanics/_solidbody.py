@@ -41,8 +41,8 @@ class Solid:
             Additional cell-data dict (default is None).
         cell_type : pyvista.CellType or None, optional
             Cell-type of PyVista (default is None).
-        project : bool, optional
-            Project stress at quadrature-points to mesh-points (default is False).
+        project : callable or None, optional
+            Project stress at quadrature-points to mesh-points (default is None).
 
         Returns
         -------

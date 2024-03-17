@@ -18,13 +18,40 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._tensor import dot, eigh, eigvalsh
+from ._tensor import tovoigt as tensor_to_vector
+from ._tensor import transpose
 
-def defgrad(field):
-    return field.extract(grad=True, sym=False, add_identity=True)
+
+def displacement(field, dim=3):
+    "Return the values of the first field."
+
+    u = field[0].values
+    return np.pad(u, ((0, 0), (0, dim - u.shape[1])))
 
 
-def strain(field):
-    return field.grad(sym=True)
+def deformation_gradient(field):
+    "Return the deformation gradient of the first field."
+    return field[0].extract(grad=True, sym=False, add_identity=True)
+
+
+def strain(field, fun=lambda stretch: np.log(stretch), tensor=True, asvoigt=False):
+    "Return a Lagrangian strain tensor or its principal values of the first field."
+
+    F = deformation_gradient(field)
+    C = dot(transpose(F), F)
+
+    if tensor:
+        w, N = eigh(C)
+        stretch = np.sqrt(w)
+        tensor = np.einsum("a...,ai...,aj...->ij...", fun(stretch), N, N)
+        if asvoigt:
+            # double the off-diagonal items in Voigt-notation for strain tensors
+            tensor = tensor_to_vector(tensor, strain=True)
+        return tensor
+    else:
+        stretch = np.sqrt(eigvalsh(C))
+        return fun(stretch)
 
 
 def extract(field, grad=True, sym=False, add_identity=True):

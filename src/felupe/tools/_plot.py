@@ -18,12 +18,13 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import eigvalsh, equivalent_von_mises, tovoigt
-from ..mechanics._job import (
+from ..math import (
     deformation_gradient,
     displacement,
-    log_strain,
-    log_strain_principal,
+    eigvalsh,
+    equivalent_von_mises,
+    strain,
+    tovoigt,
 )
 
 
@@ -427,6 +428,10 @@ class ViewField(ViewMesh):
         Additional cell-data dict (default is None).
     cell_type : pyvista.CellType or None, optional
         Cell-type of PyVista (default is None).
+    project : callable or None, optional
+        Callable to project internal cell-data at quadrature-points to mesh-points
+        (default is None). Valid callables are :class:`~felupe.project` or
+        :class:`~felupe.tools.extrapolate`.
 
     Attributes
     ----------
@@ -434,15 +439,42 @@ class ViewField(ViewMesh):
         A generalized Dataset with the mesh as well as point- and cell-data. This is
         not an instance of :class:`felupe.Mesh`.
 
+    See Also
+    --------
+    felupe.project: Project given values at quadrature-points to mesh-points.
+
     """
 
-    def __init__(self, field, point_data=None, cell_data=None, cell_type=None):
-        point_data_from_field = {"Displacement": displacement(field)}
-        cell_data_from_field = {
-            "Deformation Gradient": deformation_gradient(field)[0],
-            "Logarithmic Strain": log_strain(field)[0],
-            "Principal Values of Logarithmic Strain": log_strain_principal(field)[0],
-        }
+    def __init__(
+        self, field, point_data=None, cell_data=None, cell_type=None, project=False
+    ):
+        point_data_from_field = {}
+        cell_data_from_field = {}
+
+        if not callable(project):
+            cell_data_from_field = {
+                "Deformation Gradient": deformation_gradient(field).mean(-2).T,
+                "Logarithmic Strain": strain(field, tensor=True, asvoigt=True)
+                .mean(-2)
+                .T,
+                "Principal Values of Logarithmic Strain": strain(field, tensor=False)
+                .mean(-2)[::-1]
+                .T,
+            }
+        else:
+            point_data_from_field = {
+                "Deformation Gradient": project(
+                    deformation_gradient(field), field.region
+                ),
+                "Logarithmic Strain": project(
+                    strain(field, tensor=True, asvoigt=True), field.region
+                ),
+                "Principal Values of Logarithmic Strain": project(
+                    strain(field, tensor=False)[::-1], field.region
+                ),
+            }
+
+        point_data_from_field["Displacement"] = displacement(field)
 
         if point_data is None:
             point_data = {}
@@ -550,4 +582,5 @@ class ViewSolid(ViewField):
             point_data={**point_data_from_solid, **point_data},
             cell_data={**cell_data_from_solid, **cell_data},
             cell_type=cell_type,
+            project=project,
         )

@@ -17,41 +17,30 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 
-import numpy as np
-
-from ..math import dot, eigh, eigvalsh, tovoigt, transpose
+from ..math import deformation_gradient as defgrad
+from ..math import displacement as disp
+from ..math import strain
 from ..tools._misc import logo, runs_on
 
 
 def displacement(field, substep=None):
-    "Displacement Vector"
-    u = field[0].values
-    return np.pad(u, ((0, 0), (0, 3 - u.shape[1])))
+    "Return the displacement vvectors."
+    return disp(field, dim=3)
 
 
 def deformation_gradient(field, substep=None):
-    "Deformation Gradient"
-    F = field[0].extract()
-    return [F.mean(-2).transpose([2, 0, 1])]
+    "Return the Deformation Gradient tensors."
+    return [defgrad(field).mean(-2).transpose([2, 0, 1])]
 
 
 def log_strain_principal(field, substep=None):
-    "Principal Values of Logarithmic Strain"
-    u = field[0]
-    F = u.extract()
-    stretch = np.sqrt(eigvalsh(dot(transpose(F), F)))[::-1]
-    strain = np.log(stretch).mean(-2)
-    return [strain.T]
+    "Return principal values of logarithmic strain tensors."
+    return [strain(field, tensor=False)[::-1].mean(-2).T]
 
 
 def log_strain(field, substep=None):
-    "Lagrangian Logarithmic Strain Tensor"
-    u = field[0]
-    F = u.extract()
-    w, v = eigh(dot(transpose(F), F))
-    stretch = np.sqrt(w)
-    strain = np.einsum("a...,ai...,aj...->ij...", np.log(stretch), v, v)
-    return [tovoigt(strain.mean(-2), True).T]
+    "Return Lagrangian logarithmic strain tensors."
+    return [strain(field, tensor=True, asvoigt=True).mean(-2).T]
 
 
 def print_header():

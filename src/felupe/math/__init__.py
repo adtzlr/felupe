@@ -1,6 +1,15 @@
 from numpy import sqrt
 
-from ._field import defgrad, extract, grad, interpolate, norm, strain, values
+from ._field import (
+    deformation_gradient,
+    displacement,
+    extract,
+    grad,
+    interpolate,
+    norm,
+    strain,
+    values,
+)
 from ._math import linsteps
 from ._spatial import rotation_matrix
 from ._tensor import (
@@ -32,7 +41,6 @@ from ._tensor import (
 
 __all__ = [
     "sqrt",
-    "defgrad",
     "extract",
     "grad",
     "interpolate",
@@ -47,8 +55,10 @@ __all__ = [
     "cof",
     "cross",
     "ddot",
+    "deformation_gradient",
     "det",
     "dev",
+    "displacement",
     "dot",
     "dya",
     "eig",

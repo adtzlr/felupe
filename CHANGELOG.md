@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.0.0] - 2024-03-18
+
 ### Added
 - Add axis of expansion in `mesh.expand(axis=-1)` (ignored for `n=1`).
 - Add an optional mask-argument to select points for rotation in `mesh.rotate(mask=None)`.

@@ -393,7 +393,7 @@ def test_topoints():
     data = fem.topoints(values, region)
     assert data.shape == (mesh.npoints, 3, 3)
 
-    mesh = fem.Rectangle(n=2).convert(2, 1)
+    mesh = fem.Rectangle(n=3).convert(2, 1)
     region = fem.RegionQuadraticQuad(mesh)
     field = fem.FieldAxisymmetric(region, dim=2)
     values = field.extract()
@@ -401,6 +401,15 @@ def test_topoints():
     # trim values array to number of points-per-cell
     data = fem.topoints(values, region)
     assert data.shape == (mesh.npoints, 3, 3)
+
+    data = fem.topoints(values, region, average=False)
+    assert data.shape == (mesh.cells.size, 3, 3)
+
+    data = fem.topoints(values, region, mean=True)
+    assert data.shape == (mesh.npoints, 3, 3)
+
+    data = fem.topoints(values, region, average=False, mean=True)
+    assert data.shape == (mesh.cells.size, 3, 3)
 
 
 def test_extrapolate():

@@ -35,7 +35,7 @@ from ..quadrature import Triangle as TriangleQuadrature
 from ..region import Region
 
 
-def topoints(values, region):
+def topoints(values, region, average=True, mean=False):
     """Shift array of values located at quadrature points of cells to mesh-points.
 
     Parameters
@@ -44,6 +44,13 @@ def topoints(values, region):
         Array with values located at the quadrature points ``q`` of cells ``c``.
     region : Region
         A region used to shift the values to the mesh-points.
+    average : bool, optional
+        A flag to return values averaged at mesh-points if True and the mesh of the
+        region is not already disconnected or to return values on a disconnected mesh
+        with discontinuous values at cell transitions if False (default is True).
+    mean : bool, optional
+        A flag to shift the cell-means of the values to the mesh-points (default is
+        False).
 
     Returns
     -------
@@ -52,9 +59,16 @@ def topoints(values, region):
 
     Notes
     -----
-    If the number of quadrature-points per cell is greater than the number of points-per-cell, then
-    the values are trimmed.
+    If the number of quadrature-points per cell is greater than the number of points-
+    per-cell, then the values are trimmed.
     """
+
+    if mean:
+        weights = region.quadrature.weights
+
+        # np.average(keepdims=True) requires numpy >= 1.23.0
+        values = np.average(values, axis=-2, weights=weights)
+        values = np.expand_dims(values, axis=-2)
 
     shape = values.shape[:-2]  # tensor-components
     size = np.prod(shape).astype(int)  # tensor-size (enforce int for empty tuple)
@@ -68,19 +82,35 @@ def topoints(values, region):
         # trim the values to the number of points-per-cell
         values = values[..., :points_per_cell, :]
 
-    axes = values.shape[-2:]  # trailing axes (of broadcasted and trimmed values)
+    if average:
+        # trailing axes (of broadcasted and trimmed values)
+        axes = values.shape[-2:]
 
-    field = Field(region, dim=size)
-    field.values = field.values.reshape(-1, 1)
-    field.values = sparsematrix(
-        (values.reshape(-1, *axes).T.ravel(), field.indices.ai),
-        shape=field.indices.shape,
-    ).toarray(out=field.values)
-    field.values = field.values.reshape(-1, *shape)
+        # create a field to output the values at mesh-points
+        field = Field(region, dim=size)
 
-    return np.einsum(
-        "a...,a->a...", field.values, 1 / region.mesh.cells_per_point, out=field.values
-    )
+        # field-values as column vector for result of sparse-matrix
+        field.values = field.values.reshape(-1, 1)
+        field.values = sparsematrix(
+            (values.reshape(-1, *axes).T.ravel(), field.indices.ai),
+            shape=field.indices.shape,
+        ).toarray(out=field.values)
+
+        # reshape field-values to original shape
+        field.values = field.values.reshape(-1, *shape)
+
+        # divide the result by the number of cells per mesh-point
+        out = np.einsum(
+            "a...,a->a...",
+            field.values,
+            1 / region.mesh.cells_per_point,
+            out=field.values,
+        )
+    else:
+        out = np.einsum("...qc->cq...", values)
+        out = out.reshape(-1, *shape)
+
+    return out
 
 
 def extrapolate(values, region, average=True, mean=False):
@@ -111,27 +141,21 @@ def extrapolate(values, region, average=True, mean=False):
     size = int(np.prod(dim))
     weights = region.quadrature.weights
 
+    if mean:
+        weights = region.quadrature.weights
+
+        # np.average(keepdims=True) requires numpy >= 1.23.0
+        values = np.average(values, axis=-2, weights=weights)
+        values = np.expand_dims(values, axis=-2)
+
+        # broadcast mean values to number of points-per-cell
+        points_per_cell = region.mesh.cells.shape[1]
+        values = np.broadcast_to(values, (*dim, points_per_cell, values.shape[-1]))
+
     # transpose values
     idx = np.arange(len(values.shape))
     idx[: len(dim)] = idx[: len(dim)][::-1]
     values = values.transpose(idx)
-
-    if mean:
-        # evaluate how often the values must be repeated to match the number
-        # of element-points
-        reps = np.ones(len(values.shape), dtype=int)
-        reps[-2] = len(region.element.points)
-
-        # np.average(keepdims=True) requires numpy >= 1.23.0
-        values = np.average(values, axis=-2, weights=weights)
-
-        # workaround for np.average(keepdims=True)
-        shape = values.shape
-        shape = np.insert(shape, -1, 1)
-        values = values.reshape(*shape)
-
-        # broadcast averaged values to match the number of element-points
-        values = np.broadcast_to(values, shape=np.broadcast_shapes(shape, reps))
 
     # reshape from (shape, nint.points, nelements) to 1d-values
     u = values.T.reshape(-1, size)

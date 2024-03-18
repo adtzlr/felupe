@@ -1,8 +1,8 @@
 r"""
-Rubber Spring
--------------
+Hyperelastic Spring
+-------------------
 
-.. topic:: A rubberlike-metal spring with a simplified frictionless contact.
+.. topic:: A hyperelastic spring with a simplified frictionless contact.
 
    * read a mesh file
    
@@ -37,10 +37,10 @@ mesh.plot().show()
 
 # %%
 # A numeric hexahedron-region created on the mesh in combination with a vector-valued
-# displacement field represents the rubber volume. Imported meshes may contain cells
-# with negative volumes. This is fixed as proposed in the warning message. The Boundary
-# conditions for the :math:`y`-symmetry plane as well as the fixed faces on the bottom
-# and the top of the solid are generated on the displacement field.
+# displacement field represents the volume of the solid. Imported meshes may contain
+# cells with negative volumes. This is fixed as proposed in the warning message. The
+# Boundary conditions for the :math:`y`-symmetry plane as well as the fixed faces on the
+# bottom and the top of the solid are generated on the displacement field.
 region = fem.RegionHexahedron(mesh)
 mesh = mesh.flip(np.any(region.dV < 0, axis=0))
 

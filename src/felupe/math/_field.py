@@ -36,7 +36,63 @@ def deformation_gradient(field):
 
 
 def strain(field, fun=lambda stretch: np.log(stretch), tensor=True, asvoigt=False):
-    "Return a Lagrangian strain tensor or its principal values of the first field."
+    r"""Return Lagrangian strain tensors or their principal values of the first field.
+
+    Parameters
+    ----------
+    field : FieldContainer
+        A field container with the displacement as first field.
+    fun : callable, optional
+        A callable for the one-dimensional strain-stretch relation. Function signature
+        must be ``lambda stretch: strain`` (default is the logarithmic strain-stretch
+        relation ``lambda stretch: np.log(stretch)``).
+    tensor : bool, optional
+        Assemble and return the strain tensors if True or return their principal values
+        only if False. Default is True.
+    asvoigt : bool, optional
+        Return the symmetric strain tensors in reduced vector (Voigt) storage. Default
+        is False.
+
+    Returns
+    -------
+    ndarray of shape (N, N, ...) tensor, (N!, ...) asvoigt or (N, ...) princ. values
+        The strain tensors or their principal values.
+
+    Notes
+    -----
+    The right Cauchy-Green deformation tensor is defined by the dot-products of the
+    column vectors of the deformation gradient tensor and enables a quadratic length
+    measure, see Eq. :eq:`right-cauchy-green-deformation-tensor`.
+
+    .. math::
+       :label: right-cauchy-green-deformation-tensor
+
+       \boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}
+
+    The principal stretches are obtained as the square-roots of the eigenvalues of the
+    right Cauchy-Green deformation tensor, see Eq. :eq:`principal-stretches`.
+
+    .. math::
+       :label: principal-stretches
+
+       \lambda^2_\alpha, \boldsymbol{N}_\alpha = \text{eig}\left( \boldsymbol{C} \right)
+
+    The Lagrangian strain tensor is assembled with the one-dimensional strain-stretch
+    relation from Eq. :eq:`principal-strain` and the eigenbases as dyadic products of
+    the eigenvectors, see Eq. :eq:`strain-tensor`.
+
+    .. math::
+       :label: principal-strain
+
+       E_\alpha = \text{f}\left( \lambda_\alpha \right)
+
+    .. math::
+       :label: strain-tensor
+
+       \boldsymbol{E} = \sum_\alpha E_\alpha \
+           \boldsymbol{N}_\alpha \otimes \boldsymbol{N}_\alpha
+
+    """
 
     F = deformation_gradient(field)
     C = dot(transpose(F), F)

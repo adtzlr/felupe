@@ -74,7 +74,7 @@ In order to make use of all features of FElupe 💎💰💍👑💎, it is sugge
 
 Getting Started
 ---------------
-This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid :class:`cube <felupe.Cube>` with hyperelastic material behaviour is subjected to a :func:`~felupe.dof.uniaxial` elongation applied at a clamped end-face.
+This minimal code-block covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid :class:`cube <felupe.Cube>` with hyperelastic material behaviour is subjected to a :func:`~felupe.dof.uniaxial` elongation applied at a clamped end-face.
 
 First, let’s import FElupe and create a meshed :class:`cube <felupe.Cube>` out of :class:`hexahedron <felupe.Hexahedron>` cells with a given number of points per axis. A numeric :class:`region <felupe.RegionHexahedron>`, pre-defined for hexahedrons, is created on the mesh. A vector-valued displacement :class:`field <felupe.Field>` is initiated on the region. Next, a :class:`field container <felupe.FieldContainer>` is created on top of this field.
 

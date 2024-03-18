@@ -511,7 +511,7 @@ def test_view():
     # ax = solid.imshow()
 
     field = fem.FieldContainer([fem.Field(region, dim=2)])
-    umat = Fem.LinearElasticPlaneStress(E=1, nu=0.3)
+    umat = fem.LinearElasticPlaneStress(E=1, nu=0.3)
 
     solid = fem.SolidBody(umat, field)
     plotter = solid.plot(off_screen=True)

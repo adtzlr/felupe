@@ -41,7 +41,7 @@ line = fem.mesh.Line(n=21)
 curve = line.copy(points=r * np.vstack([np.cos(phi), np.sin(phi)]).T)
 top = line.copy(points=np.vstack([np.linspace(0, h, 21), np.linspace(h, h, 21)]).T)
 
-face = curve.fill_between(top, n=21)
+face = curve.fill_between(top, n=np.linspace(0, 1, 21)**1.3 * 2 - 1)
 rect = fem.mesh.Rectangle(a=(h, 0), b=(L, h), n=21)
 mesh = fem.mesh.concatenate([face, face.mirror(normal=[-1, 1, 0]), rect])
 mesh = mesh.sweep(decimals=5)

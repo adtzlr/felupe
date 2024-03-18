@@ -240,7 +240,7 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
     ..  math::
         :label: project
 
-        \Pi &= \int_V \frac{1}{2} (u - v)^2\ dV \quad \rightarrow \quad \min
+        \Pi &= \int_V \frac{1}{2} (u - v) \cdot (u - v)\ dV \quad \rightarrow \quad \min
 
         \delta \Pi &= \int_V (u - v) \cdot \delta u\ dV = 0
 
@@ -250,9 +250,9 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
     ..  math::
         :label: project-forms
 
-        \int_V v\ \delta u\ dV &\qquad \rightarrow \qquad \hat{\boldsymbol{A}}
+        \int_V v\ \cdot \delta u\ dV &\qquad \rightarrow \qquad \hat{\boldsymbol{A}}
 
-        \int_V u\ \delta u\ dV &\qquad \rightarrow \qquad \hat{\boldsymbol{b}}
+        \int_V u\ \cdot \delta u\ dV &\qquad \rightarrow \qquad \hat{\boldsymbol{b}}
 
     of an equation system to be solved, see Eq. :eq:`project-solve`. The right-arrows
     in Eq. :eq:`project-forms` represent the assembly of the integral forms into the

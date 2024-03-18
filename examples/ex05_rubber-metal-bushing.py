@@ -1,8 +1,8 @@
 r"""
-Rubber bushing with torsional loading
--------------------------------------
+Elastic bearing with torsional loading
+--------------------------------------
 
-.. topic:: A rubber-metal bushing with combined multiaxial loading.
+.. topic:: An elastic bearing with combined multiaxial loading.
 
    * create and stack meshes
 
@@ -21,7 +21,7 @@ Rubber bushing with torsional loading
       
       pip install pypardiso
 
-A rubber-metal bushing is subjected to combined multiaxial radial-torsional-cardanic
+An elastic bearing is subjected to combined multiaxial radial-torsional-cardanic
 loading. First the meshes for the rubber and the metal sheet rings are created.
 """
 # sphinx_gallery_thumbnail_number = -2

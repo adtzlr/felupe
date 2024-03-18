@@ -1236,8 +1236,11 @@ def equivalent_von_mises(A):
     array([2.])
     """
 
-    if A.shape[:2] != (3, 3):
-        raise TypeError("Only three-dimensional second-order tensors are supported.")
+    pad_width = len(A.shape) * [(0, 0)]
+    pad_width[0] = (0, 3 - A.shape[0])
+    pad_width[1] = (0, 3 - A.shape[1])
+    
+    A = np.pad(A, pad_width)
 
     devA = dev(A)
     return np.sqrt(3 / 2 * ddot(devA, devA))

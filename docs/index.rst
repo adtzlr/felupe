@@ -118,7 +118,7 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
 
          import felupe as fem
 
-         mesh = fem.Cube(n=(5, 3, 3)).add_midpoints_edges()
+         mesh = fem.Cube(n=(9, 5, 5)).add_midpoints_edges()
          region = fem.RegionQuadraticHexahedron(mesh)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
@@ -131,14 +131,16 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
          step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-         job.evaluate()
+         job.evaluate(parallel=True)
          fig, ax = job.plot(
             xlabel="Displacement $u$ in mm $\longrightarrow$",
             ylabel="Normal Force $F$ in N $\longrightarrow$",
          )
-         solid.plot("Principal Values of Cauchy Stress", nonlinear_subdivision=4).show()
+         solid.plot(
+             "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=4
+         ).show()
 
-   .. tab:: Lagrange
+   .. tab:: Lagrange Hexahedron
 
       .. code-block:: python
 

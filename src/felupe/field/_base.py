@@ -130,6 +130,11 @@ class Field:
         evaluated at the integration points of all cells in the region. Optionally, the
         symmetric part the gradient is evaluated.
 
+        ..  math::
+
+            \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
+                \hat{u}_{ai} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
+
         Arguments
         ---------
         sym : bool, optional
@@ -141,13 +146,13 @@ class Field:
 
         Returns
         -------
-        array
-            Gradient as partial derivative of field values at points w.r.t.
-            undeformed coordinates, evaluated at the integration points of
-            all cells in the region.
+        ndarray of shape (i, j, q, c)
+            Gradient as partial derivative of field value components ``i`` at points
+            w.r.t. the undeformed coordinates ``j``, evaluated at the quadrature points
+            ``q`` of cells ``c`` in the region.
         """
 
-        # gradient dudX_IJpe as partial derivative of field values at points "aI"
+        # gradient dudX_IJqc as partial derivative of field values at points "aI"
         # w.r.t. undeformed coordinates "J" evaluated at quadrature point "q"
         # for each cell "c"
         g = np.einsum(
@@ -163,8 +168,12 @@ class Field:
             return g
 
     def interpolate(self, out=None):
-        """Interpolate field values at points and evaluate them at the integration
-        points of all cells in the region.
+        """Interpolate field values located at mesh-points to the quadrature points
+        ``q`` of cells ``c`` in the region.
+
+        ..  math::
+
+            u_{i(qc)} = \hat{u}_{ai}\ h_{a(qc)}
 
         Arguments
         ---------
@@ -172,6 +181,12 @@ class Field:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+
+        Returns
+        -------
+        ndarray of shape (i, q, c)
+            Interpolated field value components ``i``, evaluated at the quadrature
+            points ``q`` of each cell ``c`` in the region.
         """
 
         # interpolated field values "aI"
@@ -206,9 +221,14 @@ class Field:
 
         Returns
         -------
-        array
+        ndarray
             (Symmetric) gradient or interpolated field values evaluated at
             the integration points of each cell in the region.
+
+        See Also
+        --------
+        Field.interpolate :
+        Field.grad :
         """
 
         if grad:

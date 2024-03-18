@@ -968,7 +968,15 @@ def cross(a, b):
 
     Notes
     -----
-    This is :func:`numpy.cross` with ``axisa = axisb = axisc = 0``.
+    The first axis is the vector dimension and all remaining trailing axes are
+    treated as batch dimensions.
+
+    .. math::
+
+       \boldsymbol{c} = \boldsymbol{a} \times \boldsymbol{b}
+
+    .. note::
+       This is :func:`numpy.cross` with ``axisa = axisb = axisc = 0``.
 
     Examples
     --------
@@ -980,10 +988,8 @@ def cross(a, b):
     >>> fem.math.cross(a, b)
     array([[[-800., -682., -564., -446., -328.],
             [-750., -632., -514., -396., -278.]],
-
            [[1600., 1364., 1128.,  892.,  656.],
             [1500., 1264., 1028.,  792.,  556.]],
-
            [[-800., -682., -564., -446., -328.],
             [-750., -632., -514., -396., -278.]]])
 

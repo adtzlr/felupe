@@ -271,7 +271,7 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
     treated as batch dimensions.
 
     The inverse of a three-dimensional second-order tensor is obtained by Eq.
-    :eq:`math-inv`
+    :eq:`math-inv` and Eq. :eq:`math-inv-items`
 
     ..  math::
         :label: math-inv
@@ -281,8 +281,11 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
 
         \boldsymbol{A}^{-1} &= \frac{1}{\det(\boldsymbol{A})}
             \text{cof}(\boldsymbol{A})^T
+    
+    ..  math::
+        :label: math-inv-matrix
 
-        \boldsymbol{A}^{-1} &= \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
+        \boldsymbol{A}^{-1} = \frac{1}{\det(\boldsymbol{A})} \begin{bmatrix}
                 \left( \boldsymbol{A}_2 \times \boldsymbol{A}_3 \right)^T \\
                 \left( \boldsymbol{A}_3 \times \boldsymbol{A}_1 \right)^T \\
                 \left( \boldsymbol{A}_1 \times \boldsymbol{A}_2 \right)^T

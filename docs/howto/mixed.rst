@@ -48,13 +48,15 @@ The Step and Job definitions are identical to ones used with single field formul
 
     step = fem.Step(
         items=[solid], 
-        ramp={boundaries["move"]: fem.math.linsteps([0, -0.4], num=12)},
+        ramp={boundaries["move"]: fem.math.linsteps([0, -0.35], num=10)},
         boundaries=boundaries
     )
     job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
     job.evaluate(filename="result.xdmf")
+    
+    ax = field.imshow("Principal Values of Logarithmic Strain", nonlinear_subdivision=4)
 
-The deformed cube is finally visualized by a XDMF output file with the help of Paraview. The cell-based means of the maximum principal values of the logarithmic strain tensor are shown.
+The deformed cube is finally visualized by PyVista. The cell-based means of the maximum principal values of the logarithmic strain tensor are shown.
 
 .. image:: images/threefield_cube.png
    :width: 600px

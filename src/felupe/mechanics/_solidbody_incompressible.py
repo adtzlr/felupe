@@ -511,6 +511,18 @@ class SolidBodyNearlyIncompressible(Solid):
 
         P = self.results.stress[0]
         F = self.results.kinematics[0]
-        J = det(F)
+
+        if P.shape[:2] == (2, 2):
+            warnings.warn(
+                "\n".join(
+                    [
+                        "Cauchy stress tensor can't be evaluated for 2d-Field.",
+                        "Fall-back to the Kirchhoff stress tensor.",
+                    ]
+                )
+            )
+            J = 1
+        else:
+            J = det(F)
 
         return dot(P, transpose(F)) / J

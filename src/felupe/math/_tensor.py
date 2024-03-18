@@ -751,7 +751,7 @@ def cdya_ik(A, B, parallel=False, **kwargs):
 
     Parameters
     ----------
-    A : ndarray of shape ((N, N, ...)
+    A : ndarray of shape (N, N, ...)
         Array with second-order tensors.
     B : ndarray of shape (M, M, ...)
         Array with second-order tensors.
@@ -819,7 +819,7 @@ def cdya_il(A, B, parallel=False, **kwargs):
 
     Parameters
     ----------
-    A : ndarray of shape ((N, N, ...)
+    A : ndarray of shape (N, N, ...)
         Array with second-order tensors.
     B : ndarray of shape (M, M, ...)
         Array with second-order tensors.
@@ -887,7 +887,7 @@ def cdya(A, B, parallel=False, out=None, **kwargs):
 
     Parameters
     ----------
-    A : ndarray of shape ((M, M, ...)
+    A : ndarray of shape (M, M, ...)
         Array with second-order tensors.
     B : ndarray of shape (M, M, ...)
         Array with second-order tensors.
@@ -952,10 +952,46 @@ def cdya(A, B, parallel=False, out=None, **kwargs):
 
 
 def cross(a, b):
-    "Cross product of two vectors a and b."
-    return np.einsum(
-        "...i->i...", np.cross(np.einsum("i...->...i", a), np.einsum("i...->...i", b))
-    )
+    r"""Return the cross product of two vectors.
+
+    Parameters
+    ----------
+    a : ndarray of shape (N, ...)
+        First array of vectors.
+    b : ndarray of shape (N, ...)
+        Second array of vectors.
+
+    Returns
+    -------
+    c : ndarray of shape (N, ...)
+        Vector cross-products.
+
+    Notes
+    -----
+    This is :func:`numpy.cross` with ``axisa = axisb = axisc = 0``.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> a = np.arange(30, dtype=float).reshape(3, 2, 5)
+    >>> b = np.arange(80, 20, -2, dtype=float).reshape(5, 2, 3).T
+    >>> fem.math.cross(a, b)
+    array([[[-800., -682., -564., -446., -328.],
+            [-750., -632., -514., -396., -278.]],
+
+           [[1600., 1364., 1128.,  892.,  656.],
+            [1500., 1264., 1028.,  792.,  556.]],
+
+           [[-800., -682., -564., -446., -328.],
+            [-750., -632., -514., -396., -278.]]])
+
+    See Also
+    --------
+    numpy.cross : Return the cross product of two (arrays of) vectors.
+    """
+    return np.cross(a, b, axisa=0, axisb=0, axisc=0)
 
 
 def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
@@ -1239,7 +1275,7 @@ def equivalent_von_mises(A):
     pad_width = len(A.shape) * [(0, 0)]
     pad_width[0] = (0, 3 - A.shape[0])
     pad_width[1] = (0, 3 - A.shape[1])
-    
+
     A = np.pad(A, pad_width)
 
     devA = dev(A)

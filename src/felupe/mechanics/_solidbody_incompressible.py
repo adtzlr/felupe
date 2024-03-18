@@ -517,8 +517,8 @@ class SolidBodyNearlyIncompressible(Solid):
             warnings.warn(
                 "\n".join(
                     [
-                        "Cauchy stress tensor can't be evaluated for 2d-Field.",
-                        "Fall-back to the Kirchhoff stress tensor.",
+                        "Cauchy stress tensor can't be evaluated on a 2d-Field.",
+                        "Falling-back to the Kirchhoff stress tensor.",
                     ]
                 )
             )

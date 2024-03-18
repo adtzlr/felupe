@@ -86,107 +86,141 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
 
 .. tab:: 3D
 
-   .. code-block:: python
+   .. tab:: Hexahedron
 
-      import felupe as fem
+      .. code-block:: python
 
-      mesh = fem.Cube(n=6)
-      region = fem.RegionHexahedron(mesh)
-      field = fem.FieldContainer([fem.Field(region, dim=3)])
+         import felupe as fem
 
-      boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         mesh = fem.Cube(n=6)
+         region = fem.RegionHexahedron(mesh)
+         field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-      umat = fem.NeoHooke(mu=1)
-      solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-      move = fem.math.linsteps([0, 1], num=5)
-      step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         umat = fem.NeoHooke(mu=1)
+         solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
-      job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-      job.evaluate(filename="result.xdmf")
-      fig, ax = job.plot(
-          xlabel="Displacement $d_1$ in mm $\longrightarrow$",
-          ylabel="Normal Force $F_1$ in N $\longrightarrow$",
-      )
-      solid.plot("Principal Values of Cauchy Stress").show()
+         move = fem.math.linsteps([0, 1], num=5)
+         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         job.evaluate(filename="result.xdmf")
+         fig, ax = job.plot(
+             xlabel="Displacement $d_1$ in mm $\longrightarrow$",
+             ylabel="Normal Force $F_1$ in N $\longrightarrow$",
+         )
+         solid.plot("Principal Values of Cauchy Stress").show()
+   
+   .. tab:: Quadratic Hexahedron
+
+      .. code-block:: python
+
+         import felupe as fem
+
+         mesh = fem.Cube(n=(5, 3, 3)).add_midpoints_edges()
+         region = fem.RegionQuadraticHexahedron(mesh)
+         field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+
+         umat = material = fem.NeoHooke(mu=1, bulk=50)
+         solid = fem.SolidBody(umat, field)
+
+         move = fem.math.linsteps([0, 1], num=5)
+         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         job.evaluate()
+         fig, ax = job.plot(
+            xlabel="Displacement $u$ in mm $\longrightarrow$",
+            ylabel="Normal Force $F$ in N $\longrightarrow$",
+         )
+         solid.plot("Principal Values of Cauchy Stress", nonlinear_subdivision=4).show()
+
+   .. tab:: Lagrange
+
+      .. code-block:: python
+
+         import felupe as fem
+
+         mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=6)
+         region = fem.RegionLagrange(mesh, order=6, dim=3)
+         field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+
+         umat = material = fem.NeoHooke(mu=1, bulk=50)
+         solid = fem.SolidBody(umat, field)
+
+         move = fem.math.linsteps([0, 1], num=5)
+         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         job.evaluate(parallel=True)
+         fig, ax = job.plot(
+            xlabel="Displacement $u$ in mm $\longrightarrow$",
+            ylabel="Normal Force $F$ in N $\longrightarrow$",
+         )
+         solid.plot(
+             "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=4
+         ).show()
 
 .. tab:: Plane Strain
 
-   .. code-block:: python
+   .. tab:: Quad
 
-      import felupe as fem
+      .. code-block:: python
 
-      mesh = fem.Rectangle(n=6)
-      region = fem.RegionQuad(mesh)
-      field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+         import felupe as fem
 
-      boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         mesh = fem.Rectangle(n=6)
+         region = fem.RegionQuad(mesh)
+         field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
-      umat = fem.NeoHooke(mu=1)
-      solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-      move = fem.math.linsteps([0, 1], num=5)
-      step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         umat = fem.NeoHooke(mu=1)
+         solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
-      job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-      job.evaluate(filename="result.xdmf")
-      fig, ax = job.plot(
-          xlabel="Displacement $d_1$ in mm $\longrightarrow$",
-          ylabel="Normal Force $F_1$ in N $\longrightarrow$",
-      )
-      solid.plot("Principal Values of Cauchy Stress").show()
+         move = fem.math.linsteps([0, 1], num=5)
+         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         job.evaluate(filename="result.xdmf")
+         fig, ax = job.plot(
+             xlabel="Displacement $d_1$ in mm $\longrightarrow$",
+             ylabel="Normal Force $F_1$ in N $\longrightarrow$",
+         )
+         solid.plot("Principal Values of Cauchy Stress").show()
 
 .. tab:: Axisymmetric
 
-   .. code-block:: python
+   .. tab:: Quad
 
-      import felupe as fem
+      .. code-block:: python
 
-      mesh = fem.Rectangle(n=6)
-      region = fem.RegionQuad(mesh)
-      field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
+         import felupe as fem
 
-      boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         mesh = fem.Rectangle(n=6)
+         region = fem.RegionQuad(mesh)
+         field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
 
-      umat = fem.NeoHooke(mu=1)
-      solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-      move = fem.math.linsteps([0, 1], num=5)
-      step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         umat = fem.NeoHooke(mu=1)
+         solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
-      job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-      job.evaluate(filename="result.xdmf")
-      fig, ax = job.plot(
-          xlabel="Displacement $d_1$ in mm $\longrightarrow$",
-          ylabel="Normal Force $F_1$ in N $\longrightarrow$",
-      )
-      solid.plot("Principal Values of Cauchy Stress").show()
+         move = fem.math.linsteps([0, 1], num=5)
+         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
-.. tab:: 3D (Quadratic)
-
-   .. code-block:: python
-
-      import felupe as fem
-
-      mesh = fem.Cube(n=(5, 3, 3)).add_midpoints_edges()
-      region = fem.RegionQuadraticHexahedron(mesh)
-      field = fem.FieldContainer([fem.Field(region, dim=3)])
-
-      boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-
-      umat = material = fem.NeoHooke(mu=1, bulk=50)
-      solid = fem.SolidBody(umat, field)
-
-      move = fem.math.linsteps([0, 1], num=5)
-      step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
-
-      job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-      job.evaluate()
-      fig, ax = job.plot(
-         xlabel="Displacement $u$ in mm $\longrightarrow$",
-         ylabel="Normal Force $F$ in N $\longrightarrow$",
-      )
-      solid.plot("Principal Values of Cauchy Stress", nonlinear_subdivision=4).show()
+         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         job.evaluate(filename="result.xdmf")
+         fig, ax = job.plot(
+             xlabel="Displacement $d_1$ in mm $\longrightarrow$",
+             ylabel="Normal Force $F_1$ in N $\longrightarrow$",
+         )
+         solid.plot("Principal Values of Cauchy Stress").show()
 
 Extension Packages
 ------------------

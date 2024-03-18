@@ -110,7 +110,9 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
              xlabel="Displacement $d_1$ in mm $\longrightarrow$",
              ylabel="Normal Force $F_1$ in N $\longrightarrow$",
          )
-         solid.plot("Principal Values of Cauchy Stress").show()
+         solid.plot(
+             "Principal Values of Cauchy Stress"
+         ).show()
    
    .. tab:: Quadratic Hexahedron
 
@@ -194,7 +196,9 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
              xlabel="Displacement $d_1$ in mm $\longrightarrow$",
              ylabel="Normal Force $F_1$ in N $\longrightarrow$",
          )
-         solid.plot("Principal Values of Cauchy Stress").show()
+         solid.plot(
+             "Principal Values of Cauchy Stress"
+         ).show()
 
 .. tab:: Axisymmetric
 
@@ -222,7 +226,9 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
              xlabel="Displacement $d_1$ in mm $\longrightarrow$",
              ylabel="Normal Force $F_1$ in N $\longrightarrow$",
          )
-         solid.plot("Principal Values of Cauchy Stress").show()
+         solid.plot(
+             "Principal Values of Cauchy Stress"
+         ).show()
 
 Extension Packages
 ------------------

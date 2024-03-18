@@ -401,6 +401,9 @@ def test_topoints():
     # trim values array to number of points-per-cell
     data = fem.topoints(values, region)
     assert data.shape == (mesh.npoints, 3, 3)
+    
+    data = fem.topoints(values, region, average=False)
+    assert data.shape == (mesh.npoints, 3, 3)
 
 
 def test_extrapolate():

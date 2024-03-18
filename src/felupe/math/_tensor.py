@@ -1240,9 +1240,9 @@ def equivalent_von_mises(A):
 
     Parameters
     ----------
-    A : ndarray of shape (3, 3, ...)
+    A : ndarray of shape (2, 2, ...) or (3, 3, ...)
         Symmetric second-order tensors for which the equivalent von Mises values will be
-        computed. The shape
+        computed.
 
     Returns
     -------

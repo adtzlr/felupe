@@ -163,8 +163,8 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
          job.evaluate(parallel=True)
          fig, ax = job.plot(
-            xlabel="Displacement $u$ in mm $\longrightarrow$",
-            ylabel="Normal Force $F$ in N $\longrightarrow$",
+             xlabel="Displacement $u$ in mm $\longrightarrow$",
+             ylabel="Normal Force $F$ in N $\longrightarrow$",
          )
          solid.plot(
              "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=4

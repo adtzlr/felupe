@@ -181,6 +181,7 @@ class FieldContainer:
         --------
         felupe.ViewField : Visualization methods for :class:`felupe.FieldContainer`.
         felupe.project: Project given values at quadrature-points to mesh-points.
+        felupe.topoints: Shift given values at quadrature-points to mesh-points.
         """
 
         return ViewField(
@@ -198,6 +199,7 @@ class FieldContainer:
         --------
         felupe.Scene.plot: Plot method of a scene.
         felupe.project: Project given values at quadrature-points to mesh-points.
+        felupe.topoints: Shift given values at quadrature-points to mesh-points.
         """
         return self.view(project=project).plot(*args, **kwargs)
 

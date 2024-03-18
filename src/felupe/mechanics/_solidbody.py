@@ -53,6 +53,8 @@ class Solid:
         See Also
         --------
         felupe.ViewSolid : Visualization methods for :class:`felupe.SolidBody`.
+        felupe.project: Project given values at quadrature-points to mesh-points.
+        felupe.topoints: Shift given values at quadrature-points to mesh-points.
         """
 
         return ViewSolid(
@@ -70,6 +72,8 @@ class Solid:
         See Also
         --------
         felupe.Scene.plot: Plot method of a scene.
+        felupe.project: Project given values at quadrature-points to mesh-points.
+        felupe.topoints: Shift given values at quadrature-points to mesh-points.
         """
         return self.view(project=project).plot(*args, **kwargs)
 

@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import inspect
+import warnings
 
 import numpy as np
 

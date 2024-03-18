@@ -96,7 +96,7 @@ plotter.plot("Cauchy Stress (von Mises)", show_edges=False).show()
 import matplotlib.pyplot as plt
 
 plt.plot(
-    fem.tools.project(solid.evaluate.cauchy_stress(), region)[:, 0][mesh.x == 0],
+    fem.tools.project(solid.evaluate.cauchy_stress(), region)[:, 0, 0][mesh.x == 0],
     mesh.points[:, 1][mesh.x == 0] / h,
     "o-",
 )

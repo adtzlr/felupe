@@ -84,6 +84,8 @@ An isotropic pseudo-elastic :class:`Ogden-Roxburgh <felupe.OgdenRoxburgh>` Mulli
 
 A :class:`step <felupe.Step>` generates the consecutive substep-movements of a given :class:`boundary <felupe.Boundary>` condition. The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>` 👩‍💻 (here, a :class:`characteristic curve <felupe.CharacteristicCurve>` 📈 job is used). During :meth:`evaluation <felupe.Job.evaluate>` ⏳, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Rhapson <felupe.newtonrhapson>` procedure ⚖️. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series ⌚ XDMF file. Finally, the result of the last completed substep is plotted.
 
+Slightly modified code-blocks are provided for different kind of analyses and element formulations.
+
 .. tab:: 3D
 
    .. tab:: Hexahedron

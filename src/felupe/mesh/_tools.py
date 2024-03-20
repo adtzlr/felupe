@@ -334,9 +334,6 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         points_phi = phi
         n = len(points_phi)
 
-    if abs(points_phi[-1]) > 360:
-        raise ValueError("phi must be within |phi| <= 360 degree.")
-
     p = np.pad(points, ((0, 0), (0, 1)))
     R = rotation_matrix
 

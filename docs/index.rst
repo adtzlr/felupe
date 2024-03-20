@@ -128,7 +128,7 @@ Slightly modified code-blocks are provided for different kind of analyses and el
 
          boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-         umat = material = fem.NeoHooke(mu=1, bulk=50)
+         umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
@@ -156,7 +156,7 @@ Slightly modified code-blocks are provided for different kind of analyses and el
 
          boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-         umat = material = fem.NeoHooke(mu=1, bulk=50)
+         umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)

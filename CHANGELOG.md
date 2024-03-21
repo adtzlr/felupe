@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add an argument to disable the (default) expansion of the points-array of a mesh in `mesh.expand(expand_dim=True)` and `mesh.revolve(expand_dim=True)`. E.g., this allows the expansion and / or revolution of a quad-mesh with points in 3d-space.
+
 ### Changed
 - Don't raise an error if the total angle of revolution is greater than 360 degree in `mesh.revolve(phi=361)`.
 

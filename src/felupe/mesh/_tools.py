@@ -24,7 +24,7 @@ from ._helpers import mesh_or_data
 
 
 @mesh_or_data
-def expand(points, cells, cell_type, n=11, z=1, axis=-1):
+def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
     """Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a 2d-Quad to a
     3d-Hexahedron Mesh.
 
@@ -45,6 +45,8 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1):
         are taken as expansion and ``n`` is ignored.
     axis : int, optional
         Axis of expansion (default is -1).
+    expand_dim : bool, optional
+        Expand the dimension of the point coordinates (default is True).
 
     Returns
     -------
@@ -83,8 +85,15 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1):
     points = np.array(points)
     cells = np.array(cells)
 
+    # get dimension of points array
+    dim = points.shape[1]
+
     # init new padded points array
-    points_new = np.pad(points, ((0, 0), (0, 1)))[np.newaxis, ...]
+    dim_new = dim
+    if expand_dim:
+        dim_new += 1
+
+    points_new = np.pad(points, ((0, 0), (0, dim_new - dim)))[np.newaxis, ...]
     cells_new = cells
     cell_type_new = cell_type
 
@@ -102,10 +111,8 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1):
             points_thickness = thickness
             n = len(thickness)
 
-        # get dimension of points array
         # init zero vector of input dimension
-        dim = points.shape[1]
-        layers = np.zeros((n, dim + 1))
+        layers = np.zeros((n, dim_new))
         layers[:, axis] = points_thickness
 
         points_new = points_new + layers[:, np.newaxis, ...]
@@ -266,7 +273,7 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None, mask=None):
 
 
 @mesh_or_data
-def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
+def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
     """Revolve a 0d-Point to a 1d-Line, a 1d-Line to 2d-Quad or a 2d-Quad to a
     3d-Hexahedron Mesh.
 
@@ -285,6 +292,8 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         Revolution angle in degree (default is 180).
     axis : int, optional
         Revolution axis (default is 0).
+    expand_dim : bool, optional
+        Expand the dimension of the point coordinates (default is True).
 
     Returns
     -------
@@ -334,11 +343,15 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0):
         points_phi = phi
         n = len(points_phi)
 
-    p = np.pad(points, ((0, 0), (0, 1)))
+    dim_new = dim
+    if expand_dim:
+        dim_new = dim + 1
+
+    p = np.pad(points, ((0, 0), (0, dim_new - dim)))
     R = rotation_matrix
 
     points_new = np.vstack(
-        [(R(angle, dim + 1, axis=axis) @ p.T).T for angle in points_phi]
+        [(R(angle, dim_new, axis=axis) @ p.T).T for angle in points_phi]
     )
 
     c = [cells + len(p) * a for a in np.arange(n)]

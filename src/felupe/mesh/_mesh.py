@@ -625,7 +625,7 @@ class Mesh(DiscreteGeometry):
             )
         )
 
-    def expand(self, n=11, z=1, axis=-1):
+    def expand(self, n=11, z=1, axis=-1, expand_dim=True):
         """Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a 2d-Quad to a
         3d-Hexahedron Mesh.
 
@@ -642,6 +642,8 @@ class Mesh(DiscreteGeometry):
             Axis of expansion (default is -1).
         mask : ndarray or None, optional
             A boolean mask to select points which are rotated (default is None).
+        expand_dim : bool, optional
+            Expand the dimension of the point coordinates (default is True).
 
         Returns
         -------
@@ -669,7 +671,7 @@ class Mesh(DiscreteGeometry):
         felupe.mesh.expand : Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a
             2d-Quad to a 3d-Hexahedron Mesh.
         """
-        return as_mesh(expand(self, n=n, z=z, axis=axis))
+        return as_mesh(expand(self, n=n, z=z, axis=axis, expand_dim=expand_dim))
 
     def rotate(self, angle_deg, axis, center=None, mask=None):
         """Rotate a Mesh.
@@ -714,7 +716,7 @@ class Mesh(DiscreteGeometry):
             rotate(self, angle_deg=angle_deg, axis=axis, center=center, mask=mask)
         )
 
-    def revolve(self, n=11, phi=180, axis=0):
+    def revolve(self, n=11, phi=180, axis=0, expand_dim=True):
         """Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
 
         Parameters
@@ -726,6 +728,8 @@ class Mesh(DiscreteGeometry):
             Revolution angle in degree (default is 180).
         axis : int, optional
             Revolution axis (default is 0).
+        expand_dim : bool, optional
+            Expand the dimension of the point coordinates (default is True).
 
         Returns
         -------
@@ -752,7 +756,7 @@ class Mesh(DiscreteGeometry):
         --------
         felupe.mesh.revolve : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
         """
-        return as_mesh(revolve(self, n=n, phi=phi, axis=axis))
+        return as_mesh(revolve(self, n=n, phi=phi, axis=axis, expand_dim=expand_dim))
 
     def merge_duplicate_points(self, decimals=None):
         """Merge duplicate points and update cells of a Mesh.

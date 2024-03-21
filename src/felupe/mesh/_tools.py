@@ -38,7 +38,7 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1):
         A string in VTK-convention that specifies the cell type.
     n : int, optional
         Number of n-point repetitions or (n-1)-cell repetitions, default is 11. Must be
-        greater than 0.
+        greater or equal 0.
     z : float or ndarray, optional
         Total expansion as float (edge length in expand direction is
         ``z / (n - 1)``), default is 1. Optionally, if an array is passed these entries

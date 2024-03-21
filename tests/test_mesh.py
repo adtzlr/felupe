@@ -107,8 +107,7 @@ def test_meshes():
 
     assert np.allclose(mr1.points, mr2.points)
 
-    with pytest.raises(ValueError):
-        fem.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=361, axis=0)
+    fem.mesh.revolve(m.points, m.cells, m.cell_type, n=11, phi=361, axis=0)
 
     fem.mesh.expand(m.points, m.cells, m.cell_type)
     fem.mesh.expand(m.points, m.cells, cell_type=m.cell_type)

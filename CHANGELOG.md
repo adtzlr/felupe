@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Don't raise an error if the total angle of revolution is greater than 360 degree in `mesh.revolve(phi=361)`.
+
 ## [8.0.0] - 2024-03-18
 
 ### Added

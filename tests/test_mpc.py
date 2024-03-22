@@ -248,6 +248,13 @@ def test_mpc_plot_2d():
     except ModuleNotFoundError:
         pass
 
+    mpc = fem.MultiPointConstraint(field, [0, 1], -1)
+
+    try:
+        mpc.plot()
+    except ModuleNotFoundError:
+        pass
+
 
 if __name__ == "__main__":
     test_mpc()

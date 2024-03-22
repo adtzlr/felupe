@@ -38,6 +38,22 @@ class MultiPointConstraint:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
+    def plot(self, plotter=None, color="black", **kwargs):
+        import pyvista as pv
+
+        if plotter is None:
+            plotter = pv.Plotter()
+
+        # get deformed points
+        x = self.mesh.points + self.field[0].values
+        x = np.pad(x, ((0, 0), (0, 3 - x.shape[1])))
+        pointa = x[self.centerpoint]
+
+        for pointb in x[self.points]:
+            plotter.add_mesh(pv.Line(pointa, pointb), color=color, **kwargs)
+
+        return plotter
+
     def _vector(self, field=None, parallel=False):
         "Calculate vector of residuals with RBE2 contributions."
 

@@ -52,7 +52,6 @@ a = min(L / n, H / n)
 mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
 mesh.update(points=np.vstack((mesh.points, [0, 2 * H])))
 mesh.points_without_cells = np.array([], dtype=bool)
-mesh.plot().show()
 
 # %%
 # A numeric quad-region created on the mesh in combination with a vector-valued
@@ -106,6 +105,10 @@ mpc = fem.MultiPointConstraint(
     centerpoint=mesh.npoints - 1,
 )
 
+plotter = mesh.plot()
+plotter = mpc.plot(plotter=plotter)
+plotter.show()
+
 # %%
 # The shear movement is applied in substeps, which are each solved with an iterative
 # newton-rhapson procedure. Inside an iteration, the force residual vector and the
@@ -145,8 +148,10 @@ C = dot(transpose(F), F)
 
 stretches = fem.project(np.sqrt(eigh(C)[0]), region)
 
-plotter = field.view(point_data={"Principal Values of Stretches": stretches})
-plotter.plot("Principal Values of Stretches", component=0).show()
+view = field.view(point_data={"Principal Values of Stretches": stretches})
+plotter = view.plot("Principal Values of Stretches", component=0)
+plotter = mpc.plot(plotter=plotter)
+plotter.show()
 
 # %%
 # The shear force :math:`F_x` vs. the displacements :math:`u_x` and :math:`u_y`, all

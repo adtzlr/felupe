@@ -237,7 +237,20 @@ def test_mpc_isolated():
     )
 
 
+def test_mpc_plot_2d():
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2)])
+    plane = fem.MultiPointContact(field, [0, 1], -1, skip=(0, 1))
+
+    try:
+        plotter = mesh.plot(off_screen=True)
+        plane.plot(plotter=plotter, line_width=8)
+    except ModuleNotFoundError:
+        pass
+
+
 if __name__ == "__main__":
     test_mpc()
     test_mpc_mixed()
     test_mpc_isolated()
+    test_mpc_plot_2d()

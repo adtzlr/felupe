@@ -251,8 +251,7 @@ def test_mpc_plot_2d():
     mpc = fem.MultiPointConstraint(field, [0, 1], -1)
 
     try:
-        plotter = mesh.plot(off_screen=True)
-        mpc.plot(plotter=plotter)
+        mpc.plot()
     except ModuleNotFoundError:
         pass
 

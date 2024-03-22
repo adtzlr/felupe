@@ -116,9 +116,13 @@ job.evaluate(
     point_data={"Logarithmic Strain (Max. Principal)": log_strain},
     tol=1e-1,
 )
-field.view(
+view = field.view(
     point_data={"Logarithmic Strain (Max. Principal)": log_strain(field)},
-).plot("Logarithmic Strain (Max. Principal)").show()
+)
+plotter = view.plot("Logarithmic Strain (Max. Principal)")
+plotter = top.plot(plotter=plotter, offset=1e-1)
+plotter = bottom.plot(plotter=plotter, offset=-1e-1)
+plotter.show()
 
 # %%
 # The axial-compressive and lateral-shear force-displacement curves are obtained from

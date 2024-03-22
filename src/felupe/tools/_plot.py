@@ -150,7 +150,6 @@ class Scene:
             if notebook:
                 plotter_kwargs["notebook"] = notebook
             plotter = pv.Plotter(**plotter_kwargs)
-            # plotter.ren_win
 
         if scalar_bar_args is None:
             scalar_bar_args = {}

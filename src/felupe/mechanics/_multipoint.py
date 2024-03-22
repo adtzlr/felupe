@@ -93,6 +93,35 @@ class MultiPointContact:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
+    def plot(self, plotter=None, color="lightgrey", **kwargs):
+        import pyvista as pv
+
+        if plotter is None:
+            plotter = pv.Plotter()
+
+        # get edge lengths of deformed enclosing box
+        x = self.mesh.points + self.field[0].values
+        edges = np.diag((x.max(axis=0) - x.min(axis=0)))
+
+        # plot a line or a rectangle for each active contact plane
+        for ax in self.axes:
+            # fill the point values of the normal axis with the centerpoint values
+            points = edges.copy()
+            points[:, ax] = x[self.centerpoint, ax]
+
+            # scale the line or rectangle at the origin
+            origin = points.mean(axis=0)
+            points = (points - origin) * 1.05 + origin
+
+            # plot a line or a rectangle
+            if len(points) == 3:
+                plotter.add_mesh(pv.Rectangle(points), **kwargs)
+            else:
+                points = np.pad(points, ((0, 0), (0, 3 - points.shape[1])))
+                plotter.add_mesh(pv.Line(*points), color=color, **kwargs)
+
+        return plotter
+
     def _vector(self, field=None, parallel=False):
         "Calculate vector of residuals with RBE2 contributions."
 

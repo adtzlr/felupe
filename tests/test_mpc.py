@@ -100,6 +100,11 @@ def pre_mpc_mixed(point, values):
     RBE2 = fem.MultiPointConstraint(fields, points=mpc, centerpoint=cpoint)
     CONT = fem.MultiPointContact(fields, points=mpc, centerpoint=cpoint)
 
+    try:
+        CONT.plot()
+    except ModuleNotFoundError:
+        pass
+
     for f in [None, fields]:
         K_RBE2 = RBE2.assemble.matrix(f)
         r_RBE2 = RBE2.assemble.vector(f)

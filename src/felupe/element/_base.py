@@ -57,7 +57,7 @@ class Element:
             cell_type=cell_type,
         )
 
-    def plot(self, *args, **kwargs):
+    def plot(self, *args, style="wireframe", color="black", **kwargs):
         """Plot the element.
 
         See Also
@@ -66,19 +66,35 @@ class Element:
         """
 
         view = self.view()
+        view.mesh = view.mesh.extract_surface().extract_feature_edges()
         plotter = view.plot(
             *args,
             show_undeformed=False,
             opacity=0.8,
             add_axes=False,
             show_edges=False,
+            style=style,
+            color=color,
             **kwargs,
         )
         plotter.add_point_labels(
             points=np.pad(self.points, ((0, 0), (0, 3 - self.shape[1]))),
             labels=[f"{a}" for a in np.arange(len(self.points))],
+            font_size=26,
+            show_points=True,
+            point_size=20,
+            point_color="black",
+            shape=None,
+            fill_shape=False,
+            render_points_as_spheres=True,
+            always_visible=True,
         )
-        plotter.add_axes(xlabel="r", ylabel="s", zlabel="t")
+
+        zlabel = ""
+        if self.shape[1] == 3:
+            zlabel = "t"
+
+        plotter.add_axes_at_origin(xlabel="r", ylabel="s", zlabel=zlabel)
 
         if self.shape[1] == 3:
             plotter.camera.azimuth = -17

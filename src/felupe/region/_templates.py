@@ -59,22 +59,23 @@ class RegionQuad(Region):
 
     Examples
     --------
-    >>> import felupe as fem
-
-    >>> mesh = fem.Rectangle()
-    >>> region = fem.RegionQuad(mesh)
-    >>> region
-    <felupe Region object>
-      Element formulation: Quad
-      Quadrature rule: GaussLegendre
-      Gradient evaluated: True
-
     Plot the element with its point-ids and the applied quadrature rule (quadrature
     points are shown as spheres, scaled by their weights).
 
-    >>> region.plot().show() # or region.screenshot()
+    .. pyvista-plot::
+       :include-source: True
 
-    .. image:: images/region-quad.png
+       >>> import felupe as fem
+
+       >>> mesh = fem.Rectangle()
+       >>> region = fem.RegionQuad(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: Quad
+         Quadrature rule: GaussLegendre
+         Gradient evaluated: True
+
+       >>> region.plot().show()
 
     """
 

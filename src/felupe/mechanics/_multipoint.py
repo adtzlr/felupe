@@ -116,7 +116,7 @@ class MultiPointContact:
         show_edges=True,
         color="black",
         opacity=0.5,
-        **kwargs
+        **kwargs,
     ):
         import pyvista as pv
 

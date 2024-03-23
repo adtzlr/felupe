@@ -276,6 +276,8 @@ class Scene:
         if view == "default":
             if np.allclose(self.mesh.points[:, 2], 0):
                 view = "xy"
+                plotter.enable_parallel_projection()
+                # plotter.enable_image_style()
 
             else:
                 view = None

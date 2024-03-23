@@ -260,6 +260,16 @@ class ArbitraryOrderLagrange(Element):
         if self.permute is not None:
             self.points = self.points[self.permute]
 
+        self.cells = np.arange(len(self.points)).reshape(1, -1)
+        self.cell_type = "VTK_LAGRANGE"
+
+        if dim == 1:
+            self.cell_type += "_LINE"
+        elif dim == 2:
+            self.cell_type += "_QUAD"
+        elif dim == 3:
+            self.cell_type += "_HEXAHEDRON"
+
     def function(self, r):
         "Return the shape functions at given coordinate vector r."
         n = self._nshape

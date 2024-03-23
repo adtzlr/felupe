@@ -57,7 +57,9 @@ class Element:
             cell_type=cell_type,
         )
 
-    def plot(self, *args, style="wireframe", color="black", **kwargs):
+    def plot(
+        self, *args, style="wireframe", color="black", add_axes_at_origin=True, **kwargs
+    ):
         """Plot the element.
 
         See Also
@@ -90,20 +92,25 @@ class Element:
             always_visible=True,
         )
 
-        actor = plotter.add_axes_at_origin(xlabel="r", ylabel="s", zlabel="t")
-        actor.SetNormalizedShaftLength((0.9, 0.9, 0.9))
-        actor.SetNormalizedTipLength((0.1, 0.1, 0.1))
+        if add_axes_at_origin:
+            actor = plotter.add_axes_at_origin(xlabel="r", ylabel="s", zlabel="t")
+            actor.SetNormalizedShaftLength((0.9, 0.9, 0.9))
+            actor.SetNormalizedTipLength((0.1, 0.1, 0.1))
 
-        if self.shape[1] == 3:
-            actor.SetTotalLength([1.3, 1.3, 1.3])
-        elif self.shape[1] == 2:
-            actor.SetZAxisLabelText("")
-            actor.SetTotalLength([1.3, 1.3, 0])
+            if self.shape[1] == 3:
+                actor.SetTotalLength([1.3, 1.3, 1.3])
+            elif self.shape[1] == 2:
+                actor.SetZAxisLabelText("")
+                actor.SetTotalLength([1.3, 1.3, 0])
+            elif self.shape[1] == 1:
+                actor.SetYAxisLabelText("")
+                actor.SetZAxisLabelText("")
+                actor.SetTotalLength([1.3, 0, 0])
+
+            plotter.camera.zoom(0.7)
 
         if self.shape[1] == 3:
             plotter.camera.azimuth = -17
-
-        plotter.camera.zoom(0.7)
 
         return plotter
 

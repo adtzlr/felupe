@@ -42,11 +42,13 @@ class Tetra(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.Tetra().screenshot()
-
-    ..  image:: images/tetra.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Tetra()
+       >>> element.plot().show()
 
     References
     ----------
@@ -96,11 +98,13 @@ class TetraMINI(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.TetraMINI().screenshot(filename="tetra-mini.png")
-
-    ..  image:: images/tetra-mini.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.TetraMINI()
+       >>> element.plot().show()
 
     References
     ----------
@@ -187,11 +191,13 @@ class QuadraticTetra(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.QuadraticTetra().screenshot()
-
-    ..  image:: images/tetra10.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticTetra()
+       >>> element.plot().show()
 
     References
     ----------

@@ -539,23 +539,22 @@ class RegionTriangle(Region):
 
     Examples
     --------
-    >>> import felupe as fem
+    Plot the element with its point-ids and the applied quadrature rule.
 
-    >>> mesh = fem.Rectangle().triangulate()
-    >>> region = fem.RegionTriangle(mesh)
-    >>> region
-    <felupe Region object>
-      Element formulation: Triangle
-      Quadrature rule: Triangle
-      Gradient evaluated: True
+    .. pyvista-plot::
+       :include-source: True
 
-    Plot the element with its point-ids and the applied quadrature rule (quadrature
-    points are shown as spheres, scaled by their weights).
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Rectangle().triangulate()
+       >>> region = fem.RegionTriangle(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: Triangle
+         Quadrature rule: Triangle
+         Gradient evaluated: True
 
-    >>> region.plot().show() # or region.screenshot()
-
-    .. image:: images/region-triangle.png
-
+       >>> region.plot().show()
     """
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=1), grad=True):
@@ -574,23 +573,22 @@ class RegionTetra(Region):
 
     Examples
     --------
-    >>> import felupe as fem
+    Plot the element with its point-ids and the applied quadrature rule.
 
-    >>> mesh = fem.Cube().triangulate()
-    >>> region = fem.RegionTetra(mesh)
-    >>> region
-    <felupe Region object>
-      Element formulation: Tetra
-      Quadrature rule: Tetrahedron
-      Gradient evaluated: True
+    .. pyvista-plot::
+       :include-source: True
 
-    Plot the element with its point-ids and the applied quadrature rule (quadrature
-    points are shown as spheres, scaled by their weights).
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Cube().triangulate()
+       >>> region = fem.RegionTetra(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: Tetra
+         Quadrature rule: Tetrahedron
+         Gradient evaluated: True
 
-    >>> region.plot().show() # or region.screenshot()
-
-    .. image:: images/region-triangle.png
-
+       >>> region.plot().show()
     """
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True):
@@ -609,23 +607,22 @@ class RegionTriangleMINI(Region):
 
     Examples
     --------
-    >>> import felupe as fem
+    Plot the element with its point-ids and the applied quadrature rule.
 
-    >>> mesh = fem.Rectangle().triangulate().add_midpoints_faces()
-    >>> region = fem.RegionTriangleMINI(mesh)
-    >>> region
-    <felupe Region object>
-      Element formulation: TriangleMINI
-      Quadrature rule: Triangle
-      Gradient evaluated: True
+    .. pyvista-plot::
+       :include-source: True
 
-    Plot the element with its point-ids and the applied quadrature rule (quadrature
-    points are shown as spheres, scaled by their weights).
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Rectangle().triangulate().add_midpoints_faces()
+       >>> region = fem.RegionTriangleMINI(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: TriangleMINI
+         Quadrature rule: Triangle
+         Gradient evaluated: True
 
-    >>> region.plot().show() # or region.screenshot(filename="region-triangle-mini.png")
-
-    .. image:: images/region-triangle-mini.png
-
+       >>> region.plot().show()
     """
 
     def __init__(
@@ -644,23 +641,22 @@ class RegionTetraMINI(Region):
 
     Examples
     --------
-    >>> import felupe as fem
+    Plot the element with its point-ids and the applied quadrature rule.
 
-    >>> mesh = fem.Cube().triangulate().add_midpoints_volumes()
-    >>> region = fem.RegionTetraMINI(mesh)
-    >>> region
-    <felupe Region object>
-      Element formulation: TetraMINI
-      Quadrature rule: Tetrahedron
-      Gradient evaluated: True
+    .. pyvista-plot::
+       :include-source: True
 
-    Plot the element with its point-ids and the applied quadrature rule (quadrature
-    points are shown as spheres, scaled by their weights).
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Cube().triangulate().add_midpoints_volumes()
+       >>> region = fem.RegionTetraMINI(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: TetraMINI
+         Quadrature rule: Tetrahedron
+         Gradient evaluated: True
 
-    >>> region.plot().show() # or region.screenshot(filename="region-tetra-mini.png")
-
-    .. image:: images/region-tetra-mini.png
-
+       >>> region.plot().show()
     """
 
     def __init__(
@@ -675,7 +671,27 @@ class RegionTetraMINI(Region):
 
 
 class RegionQuadraticTriangle(Region):
-    "A region with a quadratic triangle element."
+    """A region with a quadratic triangle element.
+
+    Examples
+    --------
+    Plot the element with its point-ids and the applied quadrature rule.
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Rectangle().triangulate().add_midpoints_edges()
+       >>> region = fem.RegionQuadraticTriangle(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: QuadraticTriangle
+         Quadrature rule: Triangle
+         Gradient evaluated: True
+
+       >>> region.plot().show()
+    """
 
     def __init__(self, mesh, quadrature=TriangleQuadrature(order=2), grad=True):
         element = QuadraticTriangle()
@@ -683,7 +699,27 @@ class RegionQuadraticTriangle(Region):
 
 
 class RegionQuadraticTetra(Region):
-    "A region with a quadratic tetra element."
+    """A region with a quadratic tetra element.
+
+    Examples
+    --------
+    Plot the element with its point-ids and the applied quadrature rule.
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Cube().triangulate().add_midpoints_edges()
+       >>> region = fem.RegionQuadraticTetra(mesh)
+       >>> region
+       <felupe Region object>
+         Element formulation: QuadraticTetra
+         Quadrature rule: Tetrahedron
+         Gradient evaluated: True
+
+       >>> region.plot().show()
+    """
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True):
         element = QuadraticTetra()

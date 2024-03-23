@@ -18,7 +18,7 @@ from pyvista import examples
 import felupe as fem
 
 surface = examples.download_foot_bones()
-voxels = pv.voxelize(surface, density=surface.length / 100)
+voxels = pv.voxelize(surface, density=surface.length / 50)
 
 mesh = fem.Mesh(
     points=voxels.points,

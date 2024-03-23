@@ -58,7 +58,13 @@ class Element:
         )
 
     def plot(
-        self, *args, style="wireframe", color="black", add_axes_at_origin=True, **kwargs
+        self,
+        *args,
+        style="wireframe",
+        color="black",
+        add_axes_at_origin=True,
+        font_size=26,
+        **kwargs,
     ):
         """Plot the element.
 
@@ -82,7 +88,7 @@ class Element:
         plotter.add_point_labels(
             points=np.pad(self.points, ((0, 0), (0, 3 - self.shape[1]))),
             labels=[f"{a}" for a in np.arange(len(self.points))],
-            font_size=26,
+            font_size=font_size,
             show_points=True,
             point_size=20,
             point_color="black",

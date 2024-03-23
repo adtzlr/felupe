@@ -50,6 +50,7 @@ def test_gausslegendre():
 
     q23 = fem.GaussLegendre(order=2, dim=3)
     q23.plot(off_screen=True)
+    q23.plot(off_screen=True, weighted=True)
 
     assert q23.inv().points.shape == q23.points.shape
     assert np.allclose(q23.weights, q23.inv().weights)

@@ -102,10 +102,6 @@ class Element:
             elif self.shape[1] == 2:
                 actor.SetZAxisLabelText("")
                 actor.SetTotalLength([1.3, 1.3, 0])
-            elif self.shape[1] == 1:
-                actor.SetYAxisLabelText("")
-                actor.SetZAxisLabelText("")
-                actor.SetTotalLength([1.3, 0, 0])
 
             plotter.camera.zoom(0.7)
 

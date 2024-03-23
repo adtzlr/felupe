@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.1.0] - 2024-03-23
+
 ### Added
 - Add an argument to disable the (default) expansion of the points-array of a mesh in `mesh.expand(expand_dim=True)` and `mesh.revolve(expand_dim=True)`. E.g., this allows the expansion and / or revolution of a quad-mesh with points in 3d-space.
 - Add `MultiPointContact.plot(offset=0, **kwargs)` to plot the rigid contact plane(s) or line(s) at a given offset.

@@ -64,9 +64,10 @@ class RegionQuad(Region):
 
     .. pyvista-plot::
        :include-source: True
+       :force-static: True
 
        >>> import felupe as fem
-
+       >>>
        >>> mesh = fem.Rectangle()
        >>> region = fem.RegionQuad(mesh)
        >>> region

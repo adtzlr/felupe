@@ -41,11 +41,13 @@ class Triangle(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.Triangle().screenshot()
-
-    ..  image:: images/triangle.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Triangle()
+       >>> element.plot().show()
 
     References
     ----------
@@ -93,11 +95,13 @@ class TriangleMINI(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.TriangleMINI().screenshot(filename="triangle-mini.png")
-
-    ..  image:: images/triangle-mini.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.TriangleMINI()
+       >>> element.plot().show()
 
     References
     ----------
@@ -160,11 +164,13 @@ class QuadraticTriangle(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.QuadraticTriangle().screenshot()
-
-    ..  image:: images/triangle6.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticTriangle()
+       >>> element.plot().show()
 
     References
     ----------

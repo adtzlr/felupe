@@ -226,6 +226,24 @@ class ArbitraryOrderLagrange(Element):
 
         \boldsymbol{H}_{3D}(r,s,t) &= \boldsymbol{h}(r) \otimes \boldsymbol{h}(s)
             \otimes \boldsymbol{h}(t)
+
+    Examples
+    --------
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ArbitraryOrderLagrangeElement(order=4, dim=2)
+       >>> element.plot().show()
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ArbitraryOrderLagrangeElement(order=3, dim=3)
+       >>> element.plot().show()
     """
 
     def __init__(self, order, dim, interval=(-1, 1), permute=True):
@@ -266,7 +284,7 @@ class ArbitraryOrderLagrange(Element):
         if dim == 1:
             self.cell_type += "_LINE"
         elif dim == 2:
-            self.cell_type += "_QUAD"
+            self.cell_type += "_QUADRILATERAL"
         elif dim == 3:
             self.cell_type += "_HEXAHEDRON"
 

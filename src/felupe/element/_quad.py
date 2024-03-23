@@ -37,11 +37,13 @@ class ConstantQuad(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.ConstantQuad().screenshot()
-
-    ..  image:: images/quad.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ConstantQuad()
+       >>> element.plot().show()
 
     References
     ----------
@@ -85,11 +87,13 @@ class Quad(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.Quad().screenshot()
-
-    ..  image:: images/quad.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Quad()
+       >>> element.plot().show()
 
     References
     ----------
@@ -149,11 +153,13 @@ class QuadraticQuad(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.QuadraticQuad().screenshot()
-
-    ..  image:: images/quad8.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticQuad()
+       >>> element.plot().show()
 
     References
     ----------
@@ -226,11 +232,13 @@ class BiQuadraticQuad(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.BiQuadraticQuad().screenshot()
-
-    ..  image:: images/quad9.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.BiQuadraticQuad()
+       >>> element.plot().show()
 
     References
     ----------

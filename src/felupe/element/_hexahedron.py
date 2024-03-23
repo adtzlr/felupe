@@ -39,11 +39,13 @@ class ConstantHexahedron(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.ConstantHexahedron().screenshot(transparent_background=True)
-
-    ..  image:: images/hexahedron.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ConstantHexahedron()
+       >>> element.plot().show()
 
     References
     ----------
@@ -104,11 +106,13 @@ class Hexahedron(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.Hexahedron().screenshot()
-
-    ..  image:: images/hexahedron.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Hexahedron()
+       >>> element.plot().show()
 
     References
     ----------
@@ -190,11 +194,13 @@ class QuadraticHexahedron(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.QuadraticHexahedron().screenshot()
-
-    ..  image:: images/hexahedron20.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticHexahedron()
+       >>> element.plot().show()
 
     References
     ----------
@@ -427,11 +433,13 @@ class TriQuadraticHexahedron(Element):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> img = fem.TriQuadraticHexahedron().screenshot()
-
-    ..  image:: images/hexahedron27.png
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.TriQuadraticHexahedron()
+       >>> element.plot().show()
 
     References
     ----------

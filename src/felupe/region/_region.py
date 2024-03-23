@@ -108,8 +108,8 @@ class Region:
       Gradient evaluated: True
 
     The numeric differential volumes are the products of the determinant of the
-    geometric gradient :math:`\partial X_I / \partial r_J` and the weights `w` of the
-    quadrature points. The differential volume array is of shape
+    geometric gradient :math:`\frac{\partial X_I}{\partial r_J}` and the weights `w` of
+    the quadrature points. The differential volume array is of shape
     ``(nquadraturepoints, ncells)``.
 
     >>> region.dV

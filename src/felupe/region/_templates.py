@@ -64,7 +64,6 @@ class RegionQuad(Region):
 
     .. pyvista-plot::
        :include-source: True
-       :force-static: True
 
        >>> import felupe as fem
        >>>

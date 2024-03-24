@@ -43,6 +43,45 @@ class Tetrahedron(Scheme):
 
     with quadrature points :math:`x_q` and corresponding weights :math:`w_q` [1]_.
 
+    Examples
+    --------
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Tetra()
+       >>> quadrature = fem.TetrahedronQuadrature(order=1)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticTetra()
+       >>> quadrature = fem.TetrahedronQuadrature(order=2)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticTetra()
+       >>> quadrature = fem.TetrahedronQuadrature(order=5)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
     References
     ----------
     .. [1] O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, The Finite Element Method: Its

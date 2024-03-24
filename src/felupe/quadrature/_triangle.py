@@ -43,6 +43,45 @@ class Triangle(Scheme):
 
     with quadrature points :math:`x_q` and corresponding weights :math:`w_q` [1]_ [2]_.
 
+    Examples
+    --------
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Triangle()
+       >>> quadrature = fem.TriangleQuadrature(order=1)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticTriangle()
+       >>> quadrature = fem.TriangleQuadrature(order=2)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticTriangle()
+       >>> quadrature = fem.TriangleQuadrature(order=5)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
     References
     ----------
     .. [1] K. J. Bathe, Finite element procedures, 2nd ed. K. J. Bathe, Watertown, MA,

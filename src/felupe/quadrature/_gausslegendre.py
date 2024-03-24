@@ -170,11 +170,41 @@ class GaussLegendreBoundary(GaussLegendre):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> fem.GaussLegendreBoundary(order=2, dim=3).screenshot()
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticQuad()
+       >>> quadrature = fem.GaussLegendreBoundary(order=2, dim=2)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
 
-    .. image:: images/quadrature_boundary.png
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticHexahedron()
+       >>> quadrature = fem.GaussLegendreBoundary(order=2, dim=3)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ArbitraryOrderLagrangeElement(order=5, dim=3)
+       >>> quadrature = fem.GaussLegendreBoundary(order=5, dim=3)
+       >>> quadrature.plot(
+       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
+       >>>     weighted=True,
+       >>> ).show()
 
     """
 

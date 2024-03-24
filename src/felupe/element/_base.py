@@ -63,6 +63,8 @@ class Element:
         style="wireframe",
         color="black",
         add_axes_at_origin=True,
+        add_point_labels=True,
+        show_points=True,
         font_size=26,
         **kwargs,
     ):
@@ -85,18 +87,19 @@ class Element:
             color=color,
             **kwargs,
         )
-        plotter.add_point_labels(
-            points=np.pad(self.points, ((0, 0), (0, 3 - self.shape[1]))),
-            labels=[f"{a}" for a in np.arange(len(self.points))],
-            font_size=font_size,
-            show_points=True,
-            point_size=20,
-            point_color="black",
-            shape=None,
-            fill_shape=False,
-            render_points_as_spheres=True,
-            always_visible=True,
-        )
+        if add_point_labels:
+            plotter.add_point_labels(
+                points=np.pad(self.points, ((0, 0), (0, 3 - self.shape[1]))),
+                labels=[f"{a}" for a in np.arange(len(self.points))],
+                font_size=font_size,
+                show_points=show_points,
+                point_size=20,
+                point_color="black",
+                shape=None,
+                fill_shape=False,
+                render_points_as_spheres=True,
+                always_visible=True,
+            )
 
         if add_axes_at_origin:
             actor = plotter.add_axes_at_origin(xlabel="r", ylabel="s", zlabel="t")

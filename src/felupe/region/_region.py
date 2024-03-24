@@ -269,7 +269,7 @@ class Region:
         """Plot the element with point-ids and the quadrature points,
         scaled by their weights."""
 
-        return self.quadrature.plot(plotter=self.element.plot(**kwargs), add_axes=False)
+        return self.quadrature.plot(plotter=self.element.plot(**kwargs))
 
     def screenshot(
         self,

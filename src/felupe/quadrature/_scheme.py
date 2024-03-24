@@ -42,9 +42,7 @@ class Scheme:
 
         self.npoints, self.dim = self.points.shape
 
-    def plot(
-        self, plotter=None, add_axes=True, point_size=20, weighted=False, **kwargs
-    ):
+    def plot(self, plotter=None, point_size=20, weighted=False, **kwargs):
         """Plot the quadrature points, scaled by their weights, into a (optionally
         provided) PyVista plotter.
 
@@ -73,9 +71,6 @@ class Scheme:
                 point_size=point_size * point_weight,
                 color="grey",
             )
-
-        if add_axes:
-            plotter.add_axes(xlabel="r", ylabel="s", zlabel="t")
 
         return plotter
 

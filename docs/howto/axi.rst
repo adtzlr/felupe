@@ -12,7 +12,7 @@ For axisymmetric analyses an axisymmetric vector-valued field has to be created 
     u = fem.FieldAxisymmetric(region, dim=2)
     field = fem.FieldContainer([u])
 
-Now it gets important: The 3x3 deformation gradient for an axisymmetric problem is obtained with :meth:`~felupe.FieldAxisymmetric.grad` or :meth:`~felupe.FieldAxisymmetric.extract` methods. For instances of :class:`~felupe.FieldAxisymmetric` the gradient is modified to return a 3x3 gradient as described in :ref:`theory-axi`.
+Now it gets important: The 3x3 deformation gradient for an axisymmetric problem is obtained with :meth:`~felupe.FieldAxisymmetric.grad` or :meth:`~felupe.FieldAxisymmetric.extract` methods. For instances of :class:`~felupe.FieldAxisymmetric` the gradient is modified to return a 3x3 gradient.
 
 ..  code-block:: python
 

@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.2.0] - 2024-03-25
+
 ### Added
 - Add methods to evaluate different strain measures of a field container, i.e. `FieldContainer.evaluate.strain(tensor=True, asvoigt=False, k=0)`, `FieldContainer.evaluate.log_strain(tensor=True, asvoigt=False)` or `FieldContainer.evaluate.green_lagrange_strain(tensor=True, asvoigt=False)`. These methods refer to `math.strain(k=0)` which uses `math.strain_stretch_1d(k=0)` by default with the strain exponent `k` of the Seth-Hill strain formulation.
 

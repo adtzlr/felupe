@@ -161,25 +161,37 @@ class MeshContainer:
 
         Examples
         --------
-        Two quad meshes with identical point arrays should be stacked into a single mesh.
+        Two quad meshes with identical point arrays should be stacked into a single
+        mesh.
 
         >>> import felupe as fem
-
+        >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> rect1, rect2 = mesh.copy(), mesh.copy()
         >>> rect1.update(cells=mesh.cells[: 40])
         >>> rect2.update(cells=mesh.cells[-50:])
         >>> container = fem.MeshContainer([rect1, rect2])
-
+        >>>
         >>> mesh = container.stack()
         >>> mesh
         <felupe Mesh object>
           Number of points: 121
           Number of cells:
             quad: 90
-
-        ..  image:: images/mesh_stack.png
-            :width: 400px
+        
+        >>> mesh.plot().show()
+        
+        .. pyvista-plot::
+           :include-source: False
+           
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Rectangle(n=11)
+           >>> rect1, rect2 = mesh.copy(), mesh.copy()
+           >>> rect1.update(cells=mesh.cells[: 40])
+           >>> rect2.update(cells=mesh.cells[-50:])
+           >>> container = fem.MeshContainer([rect1, rect2])
+           >>> container.stack().plot().show()
 
         See Also
         --------

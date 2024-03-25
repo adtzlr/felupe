@@ -902,12 +902,12 @@ def stack(meshes):
     Two quad meshes with identical point arrays should be stacked into a single mesh.
 
     >>> import felupe as fem
-
+    >>>
     >>> mesh = fem.Rectangle(n=11)
     >>> rect1, rect2 = mesh.copy(), mesh.copy()
     >>> rect1.update(cells=mesh.cells[: 40])
     >>> rect2.update(cells=mesh.cells[-50:])
-
+    >>>
     >>> mesh = fem.mesh.stack([rect1, rect2])
     >>> mesh
     <felupe Mesh object>
@@ -915,8 +915,20 @@ def stack(meshes):
       Number of cells:
         quad: 90
 
-    ..  image:: images/mesh_stack.png
-        :width: 400px
+    >>> mesh.plot().show()
+
+    .. pyvista-plot::
+       :include-source: False
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Rectangle(n=11)
+       >>> rect1, rect2 = mesh.copy(), mesh.copy()
+       >>> rect1.update(cells=mesh.cells[: 40])
+       >>> rect2.update(cells=mesh.cells[-50:])
+       >>>
+       >>> mesh = fem.mesh.stack([rect1, rect2])
+       >>> mesh.plot().show()
 
     See Also
     --------

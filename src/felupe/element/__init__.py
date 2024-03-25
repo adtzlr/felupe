@@ -8,8 +8,8 @@ from ._hexahedron import (
 from ._lagrange import (
     ArbitraryOrderLagrange,
     lagrange_hexahedron,
-    lagrange_quad,
     lagrange_line,
+    lagrange_quad,
 )
 from ._line import Line
 from ._quad import BiQuadraticQuad, ConstantQuad, Quad, QuadraticQuad

@@ -18,8 +18,9 @@ This module contains math functions.
 
 .. autosummary::
 
-   math.defgrad
+   math.deformation_gradient
    math.strain
+   math.strain_stretch_1d
    math.extract
    math.values
    math.norm
@@ -58,4 +59,4 @@ This module contains math functions.
 **Detailed API Reference**
 
 .. automodule:: felupe.math
-   :members: linsteps, rotation_matrix, defgrad, strain, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, equivalent_von_mises, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel
+   :members: linsteps, rotation_matrix, deformation_gradient, strain, strain_stretch_1d, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, equivalent_von_mises, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel

@@ -139,6 +139,9 @@ def test_mixed_lagrange():
         cells=np.arange(md.npoints).reshape(1, -1), cell_type="VTK_LAGRANGE_HEXAHEDRON"
     )
 
+    m = fem.mesh.CubeArbitraryOrderHexahedron(order=order)
+    md = fem.mesh.CubeArbitraryOrderHexahedron(order=order - 1)
+
     r = fem.RegionLagrange(m, order=order, dim=3)
     g = fem.FieldsMixed(r, mesh=md)
 
@@ -155,6 +158,11 @@ def test_3d():
 
 def test_3d_mixed():
     r, f, u, p, J = pre_mixed()
+
+    f.evaluate.deformation_gradient()
+    f.evaluate.strain()
+    f.evaluate.log_strain()
+    f.evaluate.green_lagrange_strain()
 
     f.extract()
     f.extract(grad=False)

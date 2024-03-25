@@ -386,6 +386,7 @@ class ViewMesh(Scene):
                 "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
                 "VTK_LAGRANGE_HEXAHEDRON": pv.CellType.LAGRANGE_HEXAHEDRON,
                 "VTK_LAGRANGE_QUADRILATERAL": pv.CellType.LAGRANGE_QUADRILATERAL,
+                "VTK_LAGRANGE_LINE": pv.CellType.LAGRANGE_CURVE,
             }
             cell_type = pyvista_cell_types[mesh.cell_type]
 

@@ -5,7 +5,12 @@ from ._hexahedron import (
     QuadraticHexahedron,
     TriQuadraticHexahedron,
 )
-from ._lagrange import ArbitraryOrderLagrange
+from ._lagrange import (
+    ArbitraryOrderLagrange,
+    lagrange_hexahedron,
+    lagrange_line,
+    lagrange_quad,
+)
 from ._line import Line
 from ._quad import BiQuadraticQuad, ConstantQuad, Quad, QuadraticQuad
 from ._tetra import QuadraticTetra, Tetra, TetraMINI
@@ -29,4 +34,7 @@ __all__ = [
     "QuadraticTriangle",
     "Triangle",
     "TriangleMINI",
+    "lagrange_line",
+    "lagrange_quad",
+    "lagrange_hexahedron",
 ]

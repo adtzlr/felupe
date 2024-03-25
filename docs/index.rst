@@ -367,7 +367,7 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
    :maxdepth: 1
    :caption: Contents:
    
-   tutorial
+   tutorial/index
    examples/index
    howto
    felupe

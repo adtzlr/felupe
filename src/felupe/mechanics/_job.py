@@ -19,7 +19,6 @@ import os
 
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
-from ..math import strain
 from ..tools._misc import logo, runs_on
 
 
@@ -35,12 +34,12 @@ def deformation_gradient(field, substep=None):
 
 def log_strain_principal(field, substep=None):
     "Return principal values of logarithmic strain tensors."
-    return [strain(field, tensor=False)[::-1].mean(-2).T]
+    return [field.evaluate.log_strain(tensor=False)[::-1].mean(-2).T]
 
 
 def log_strain(field, substep=None):
     "Return Lagrangian logarithmic strain tensors."
-    return [strain(field, tensor=True, asvoigt=True).mean(-2).T]
+    return [field.evaluate.log_strain(tensor=True, asvoigt=True).mean(-2).T]
 
 
 def print_header():

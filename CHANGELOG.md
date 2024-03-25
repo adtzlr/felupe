@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add methods to evaluate different strain measures of a field container, i.e. `FieldContainer.evaluate.strain(tensor=True, asvoigt=False, k=0)`, `FieldContainer.evaluate.log_strain(tensor=True, asvoigt=False)` or `FieldContainer.evaluate.green_lagrange_strain(tensor=True, asvoigt=False)`. These methods refer to `math.strain(k=0)` which uses `math.strain_stretch_1d(k=0)` by default with the strain exponent `k` of the Seth-Hill strain formulation.
+
+### Changed
+- Change the return type of `math.eig()` which returns a namedtuple with attributes `eigenvalues` and `eigenvectors`. Now consistent with NumPy. This also affects `math.eigh()`.
+- Change the shape of the array of eigenvectors returned by `math.eig()` from `(a, i, ...)` to `(i, a, ...)`. Now consistent with NumPy. This also affects `math.eigh()`.
+- Switch from a hard-coded logarithmic strain evaluation to a more generalized Seth-Hill strain-stretch relation in `math.strain(fun=math.strain_stretch_1d, k=0)` with a default strain-exponent of `k=0` which returns the logarithmic strain.
+
 ## [8.1.0] - 2024-03-23
 
 ### Added

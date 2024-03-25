@@ -23,35 +23,70 @@ from ._tensor import tovoigt as tensor_to_vector
 from ._tensor import transpose
 
 
-def displacement(field, dim=3):
-    "Return the values of the first field."
+def displacement(field, dim=3, n=0):
+    "Return the 3d-values of the n-th field."
 
-    u = field[0].values
+    u = field[n].values
     return np.pad(u, ((0, 0), (0, dim - u.shape[1])))
 
 
-def deformation_gradient(field):
-    "Return the deformation gradient of the first field."
-    return field[0].extract(grad=True, sym=False, add_identity=True)
+def deformation_gradient(field, n=0):
+    "Return the deformation gradient of the n-th field."
+    return field[n].extract(grad=True, sym=False, add_identity=True)
 
 
-def strain(field, fun=lambda stretch: np.log(stretch), tensor=True, asvoigt=False):
-    r"""Return Lagrangian strain tensors or their principal values of the first field.
+def strain_stretch_1d(stretch, k=0):
+    r"""Compute the Seth-Hill strains.
+
+    Parameters
+    ----------
+    stretch : ndarray of shape (M, ...)
+        The array of stretches.
+    k : float, optional
+        The strain-exponent of the Seth-Hill strain-stretch relation (default is 0).
+        If 0, the logarithmic strains are computed.
+
+    Returns
+    -------
+    ndarray of shape (M, ...)
+        The computed strains.
+
+    Notes
+    -----
+    .. math::
+
+       E(\lambda, k) = \frac{1}{k} \left( \lambda^k - 1 \right)
+    """
+
+    if k == 0:
+        strain = np.log(stretch)
+    else:
+        strain = (stretch**k - 1) / k
+
+    return strain
+
+
+def strain(field, fun=strain_stretch_1d, tensor=True, asvoigt=False, n=0, **kwargs):
+    r"""Return Lagrangian strain tensor or its principal values of the n-th field.
 
     Parameters
     ----------
     field : FieldContainer
-        A field container with the displacement as first field.
+        A field container with a displacement field.
     fun : callable, optional
         A callable for the one-dimensional strain-stretch relation. Function signature
-        must be ``lambda stretch: strain`` (default is the logarithmic strain-stretch
-        relation ``lambda stretch: np.log(stretch)``).
+        must be ``lambda stretch, **kwargs: strain`` (default is the log. strain,
+        :func:`~felupe.math.strain_stretch_1d` with ``k=0``).
     tensor : bool, optional
         Assemble and return the strain tensors if True or return their principal values
         only if False. Default is True.
     asvoigt : bool, optional
         Return the symmetric strain tensors in reduced vector (Voigt) storage. Default
         is False.
+    n : int, optional
+        The index of the displacement field (default is 0).
+    **kwargs : dict, optional
+        Optional keyword-arguments are passed to ``fun(stretch, **kwargs)``.
 
     Returns
     -------
@@ -91,7 +126,10 @@ def strain(field, fun=lambda stretch: np.log(stretch), tensor=True, asvoigt=Fals
 
        \boldsymbol{E} = \sum_\alpha E_\alpha \
            \boldsymbol{N}_\alpha \otimes \boldsymbol{N}_\alpha
-
+    
+    See Also
+    -------
+    math.strain_stretch_1d : Compute the Seth-Hill strains.
     """
 
     F = deformation_gradient(field)
@@ -100,14 +138,14 @@ def strain(field, fun=lambda stretch: np.log(stretch), tensor=True, asvoigt=Fals
     if tensor:
         w, N = eigh(C)
         stretch = np.sqrt(w)
-        tensor = np.einsum("a...,ai...,aj...->ij...", fun(stretch), N, N)
+        tensor = np.einsum("a...,ia...,ja...->ij...", fun(stretch, **kwargs), N, N)
         if asvoigt:
             # double the off-diagonal items in Voigt-notation for strain tensors
             tensor = tensor_to_vector(tensor, strain=True)
         return tensor
     else:
         stretch = np.sqrt(eigvalsh(C))
-        return fun(stretch)
+        return fun(stretch, **kwargs)
 
 
 def extract(field, grad=True, sym=False, add_identity=True):

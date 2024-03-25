@@ -25,9 +25,17 @@ from scipy.special import factorial
 from ._base import Element
 
 
+def lagrange_line(order):
+    "Return the cell-connectivity for an arbitrary-order Lagrange line."
+
+    vertices = np.array([0, order])
+    edge = np.arange(order + 1)[1:-1]
+
+    return np.concatenate([vertices, edge])
+
+
 def lagrange_quad(order):
     "Return the cell-connectivity for an arbitrary-order Lagrange quad."
-
     # points on a unit rectangle
     x = np.linspace(0, 1, order + 1)
     points = np.vstack([p.ravel() for p in np.meshgrid(x, x, indexing="ij")][::-1]).T
@@ -255,7 +263,9 @@ class ArbitraryOrderLagrange(Element):
 
         self.permute = None
         if permute:
-            self.permute = [None, None, lagrange_quad, lagrange_hexahedron][dim](order)
+            self.permute = [None, lagrange_line, lagrange_quad, lagrange_hexahedron][
+                dim
+            ](order)
 
         super().__init__(shape=(self._npoints, dim))
 

@@ -46,7 +46,7 @@ class Line(Element):
 
     def __init__(self):
         super().__init__(shape=(2, 1))
-        self.points = np.array([-1, 1], dtype=float)
+        self.points = np.array([-1, 1], dtype=float).reshape(-1, 1)
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "line"
 

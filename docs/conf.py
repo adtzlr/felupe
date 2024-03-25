@@ -64,8 +64,8 @@ source_suffix = {
     ".rst": "restructuredtext",
 }
 sphinx_gallery_conf = {
-    "examples_dirs": "../examples",
-    "gallery_dirs": "examples",
+    "examples_dirs": ["../examples", "tutorial/examples"],
+    "gallery_dirs": ["examples", "tutorial"],
     "image_scrapers": (DynamicScraper(), "matplotlib"),
     "download_all_examples": False,
     "remove_config_comments": True,

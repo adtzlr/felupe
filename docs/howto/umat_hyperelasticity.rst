@@ -7,9 +7,9 @@ User materials (Umat) based on the right Cauchy-Green deformation tensor, suitab
 | **Kind** |  **Symbol**   | **Description**                       |
 +==========+===============+=======================================+
 | Argument |       C       | right Cauchy-Green deformation tensor |
-+----------|---------------+---------------------------------------+
++----------+---------------+---------------------------------------+
 | Return   |       W       | strain energy function                |
-+----------|---------------+---------------------------------------+
++----------+---------------+---------------------------------------+
 
 ..  code-block:: python
 

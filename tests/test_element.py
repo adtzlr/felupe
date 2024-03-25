@@ -42,6 +42,8 @@ def test_line2():
     assert np.all(dhdr[0] == -0.5)
 
     assert line2.shape == dhdr.shape
+    
+    line2.plot(off_screen=True)
 
 
 def test_quad0():

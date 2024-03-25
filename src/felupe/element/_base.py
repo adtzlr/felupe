@@ -76,7 +76,9 @@ class Element:
         """
 
         view = self.view()
-        view.mesh = view.mesh.extract_surface().extract_feature_edges()
+        if self.points.shape[1] > 1:
+            view.mesh = view.mesh.extract_surface().extract_feature_edges()
+
         plotter = view.plot(
             *args,
             show_undeformed=False,
@@ -111,6 +113,10 @@ class Element:
             elif self.shape[1] == 2:
                 actor.SetZAxisLabelText("")
                 actor.SetTotalLength([1.3, 1.3, 0])
+            elif self.shape[1] == 1:
+                actor.SetYAxisLabelText("")
+                actor.SetZAxisLabelText("")
+                actor.SetTotalLength([1.3, 0, 0])
 
             plotter.camera.zoom(0.7)
 

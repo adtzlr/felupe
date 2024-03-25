@@ -46,6 +46,22 @@ def test_line2():
     line2.plot(off_screen=True)
 
 
+def test_line_lagrange():
+    line6 = fem.element.ArbitraryOrderLagrange(order=5, dim=1)
+
+    r = [-1]
+
+    h = line6.function(r)
+    dhdr = line6.gradient(r)
+
+    assert np.isclose(h[0], 1)
+    assert np.isclose(dhdr[0, 0], -5.70833333)
+
+    assert line6.shape == dhdr.shape
+
+    line6.plot(off_screen=True)
+
+
 def test_quad0():
     quad0 = fem.element.ConstantQuad()
 
@@ -273,6 +289,7 @@ def test_aol():
 
 if __name__ == "__main__":
     test_line2()
+    test_line_lagrange()
 
     test_quad0()
     test_quad4()

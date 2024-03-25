@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from collections import namedtuple
+
 import numpy as np
 
 try:
@@ -271,7 +273,7 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
     treated as batch dimensions.
 
     The inverse of a three-dimensional second-order tensor is obtained by Eq.
-    :eq:`math-inv` and Eq. :eq:`math-inv-items`
+    :eq:`math-inv` and Eq. :eq:`math-inv-matrix`
 
     ..  math::
         :label: math-inv
@@ -646,35 +648,168 @@ def cof(A, sym=False, out=None):
     return transpose(inv(A, determinant=1.0, sym=sym, out=out))
 
 
-def eig(A, eig=np.linalg.eig):
-    "Eigenvalues and -vectors of matrix A."
-    wA, vA = eig(A.T)
-    return wA.T, vA.T
+def eig(a, eig=np.linalg.eig, **kwargs):
+    """Compute the eigenvalues and right eigenvectors of a square array.
+
+    Parameters
+    ----------
+    a : ndarray of shape (M, M, ...)
+        Matrices for which the eigenvalues and right eigenvectors will be computed.
+    eig : callable, optional
+        A callable for the eigenvalue and eigenvector evaluation compatible with
+        :func:`numpy.linalg.eig` (default is :func:`numpy.linalg.eig`).
+    **kwargs : dict, optional
+        Optional keyword-arguments are passed to ``eig(a, **kwargs)``.
+
+    Returns
+    -------
+    A namedtuple with the following attributes:
+    eigenvalues : ndarray of shape (M, ...)
+        The eigenvalues, each repeated according to its multiplicity. The eigenvalues
+        are not necessarily ordered. The resulting array will be of complex type,
+        unless the imaginary part is zero in which case it will be cast to a real type.
+        When a is real the resulting eigenvalues will be real (0 imaginary part) or
+        occur in conjugate pairs.
+    eigenvectors : ndarray of shape (M, M, ...)
+        The normalized (unit "length") eigenvectors, such that the column
+        ``eigenvectors[:, i]`` is the eigenvector corresponding to the eigenvalue
+        ``eigenvalues[i]``.
+
+    Notes
+    -----
+    ..  note::
+        The first two axes are the tensor dimensions and all remaining trailing axes are
+        treated as batch dimensions.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> x = np.array([1, 0, 0.3, 0, 1.3, 0, 0, 0, 0.7]).reshape(3, 3)
+    >>> y = np.array([1, 0, 0, 0, 0.4, 0.1, 0, 0, 1.6]).reshape(3, 3)
+    >>> F = np.stack([x, y], axis=2)
+    >>>
+    >>> C = fem.math.dot(fem.math.transpose(F), F)
+    >>> w, v = fem.math.eig(C)
+    >>>
+    >>> w[0]
+    array([1.15619667, 2.57066372])
+
+    The associated eigenvectors are extracted. The first column is the eigenvector
+    for the first right Cauchy-Green deformation tensor and the second column for the
+    second right Cauchy-Green deformation tensor.
+
+    >>> v[:, 0]
+    array([[0.88697868, 0.        ],
+           [0.        , 0.01659066],
+           [0.46181038, 0.99986237]])
+
+    See Also
+    --------
+    felupe.math.eigh : Return the eigenvalues and eigenvectors of a complex Hermitian
+        (conjugate symmetric) or a real symmetric matrix.
+    numpy.linalg.eig : Compute the eigenvalues and right eigenvectors of a square array.
+    numpy.linalg.eigh : Return the eigenvalues and eigenvectors of a complex Hermitian
+        (conjugate symmetric) or a real symmetric matrix.
+    """
+
+    res = namedtuple("EigResult", ["eigenvalues", "eigenvectors"])
+    eigenvalues, eigenvectors = eig(np.einsum("ij...->...ij", a), **kwargs)
+
+    return res(
+        eigenvalues=np.einsum("...a->a...", eigenvalues),
+        eigenvectors=np.einsum("...ia->ia...", eigenvectors),
+    )
 
 
-def eigh(A):
-    "Eigenvalues and -vectors of a symmetric matrix A."
-    return eig(A, eig=np.linalg.eigh)
+def eigh(a, UPLO="L"):
+    """Return the eigenvalues and eigenvectors of a complex Hermitian (conjugate
+    symmetric) or a real symmetric matrix.
+
+    Returns two objects, a 1-D array containing the eigenvalues of a, and a 2-D square
+    array or matrix (depending on the input type) of the corresponding eigenvectors (in
+    columns).
+
+    Parameters
+    ----------
+    a : ndarray of shape (M, M, ...)
+        Matrices for which the eigenvalues and right eigenvectors will be computed.
+    UPLO : {"L", "U"}, optional
+        Specifies whether the calculation is done with the lower triangular part of `a`
+        ('L', default) or the upper triangular part ('U'). Irrespective of this value
+        only the real parts of the diagonal will be considered in the computation to
+        preserve the notion of a Hermitian matrix. It therefore follows that the
+        imaginary part of the diagonal will always be treated as zero.
+
+    Returns
+    -------
+    A namedtuple with the following attributes:
+    eigenvalues : (M, ...) ndarray
+        The eigenvalues in ascending order, each repeated according to its multiplicity.
+    eigenvectors : (M, M, ...) ndarray
+        The normalized (unit "length") eigenvectors, such that the column
+        ``eigenvectors[:, i]`` is the eigenvector corresponding to the eigenvalue
+        ``eigenvalues[i]``.
+
+    Notes
+    -----
+    ..  note::
+        The first two axes are the tensor dimensions and all remaining trailing axes are
+        treated as batch dimensions.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> x = np.array([1, 0, 0.3, 0, 1.3, 0, 0, 0, 0.7]).reshape(3, 3)
+    >>> y = np.array([1, 0, 0, 0, 0.4, 0.1, 0, 0, 1.6]).reshape(3, 3)
+    >>> F = np.stack([x, y], axis=2)
+    >>>
+    >>> C = fem.math.dot(fem.math.transpose(F), F)
+    >>> w, v = fem.math.eigh(C)
+    >>>
+    >>> w[-1]
+    array([1.69      , 2.57066372])
+
+    The associated eigenvectors are extracted. The first column is the eigenvector,
+    associated to the greated eigenvalue, for the first right Cauchy-Green deformation
+    tensor and the second column for the second right Cauchy-Green deformation tensor.
+
+    >>> v[:, 0]
+    array([[ 4.92775421e-17,  0.00000000e+00],
+           [-1.00000000e+00,  1.65906569e-02],
+           [ 1.11022302e-16,  9.99862366e-01]])
+
+    See Also
+    --------
+    felupe.math.eig : Compute the eigenvalues and right eigenvectors of a square array.
+    numpy.linalg.eig : Compute the eigenvalues and right eigenvectors of a square array.
+    numpy.linalg.eigh : Return the eigenvalues and eigenvectors of a complex Hermitian
+        (conjugate symmetric) or a real symmetric matrix.
+    """
+    return eig(a, eig=np.linalg.eigh)
 
 
-def eigvals(A, shear=False, eig=np.linalg.eig):
+def eigvals(a, shear=False, eigvals=np.linalg.eigvals, **kwargs):
     "Eigenvalues (and optional principal shear values) of a matrix A."
-    wA = eig(A.T)[0].T
+    eigenvalues = eigvals(a.T, **kwargs).T
     if shear:
-        dim = wA.shape[0]
+        dim = eigenvalues.shape[0]
         if dim == 3:
             ij = [(1, 0), (2, 0), (2, 1)]
         elif dim == 2:
             ij = [(1, 0)]
-        dwA = np.array([wA[i] - wA[j] for i, j in ij])
-        return np.vstack((wA, dwA))
+        eigenvalues_diff = np.array([eigenvalues[i] - eigenvalues[j] for i, j in ij])
+        return np.vstack((eigenvalues, eigenvalues_diff))
     else:
-        return wA
+        return eigenvalues
 
 
 def eigvalsh(A, shear=False):
     "Eigenvalues (and optional principal shear values) of a symmetric matrix A."
-    return eigvals(A, shear=shear, eig=np.linalg.eigh)
+    return eigvals(A, shear=shear, eigvals=np.linalg.eigvalsh)
 
 
 def transpose(A, mode=1):

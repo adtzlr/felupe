@@ -8,6 +8,7 @@ from ._field import (
     interpolate,
     norm,
     strain,
+    strain_stretch_1d,
     values,
 )
 from ._math import linsteps
@@ -46,6 +47,7 @@ __all__ = [
     "interpolate",
     "norm",
     "strain",
+    "strain_stretch_1d",
     "values",
     "linsteps",
     "rotation_matrix",

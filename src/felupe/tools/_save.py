@@ -92,7 +92,7 @@ def save(
 
         # cauchy stress at integration points
         s = dot(P, transpose(F)) / det(F)
-        sp = np.sort(eigvalsh(s), axis=0)
+        sp = eigvalsh(s)
 
         # shift stresses to points and average nodal values
         cauchy = topoints(s, region=region)

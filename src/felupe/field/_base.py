@@ -126,9 +126,9 @@ class Field:
         return cai, ai
 
     def grad(self, sym=False, out=None):
-        """Gradient as partial derivative of field values w.r.t. undeformed coordinates,
-        evaluated at the integration points of all cells in the region. Optionally, the
-        symmetric part the gradient is evaluated.
+        r"""Gradient as partial derivative of field values w.r.t. undeformed
+        coordinates, evaluated at the integration points of all cells in the region.
+        Optionally, the symmetric part the gradient is evaluated.
 
         ..  math::
 

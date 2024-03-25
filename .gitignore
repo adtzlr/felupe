@@ -117,5 +117,9 @@ dmypy.json
 .virtual_documents/
 
 # Sphinx gallery
+examples/result.h5
+examples/result.xdmf
 docs/examples/
+docs/tutorial/*
+!docs/tutorial/examples
 sg_execution_times.rst

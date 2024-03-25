@@ -73,25 +73,23 @@ class MeshContainer:
     If the container is created with ``merge=True``, then the number of points is lower
     than before.
 
-    >>> mesh = fem.MeshContainer([cube, cylinder], merge=True)
-    >>> mesh
-    <felupe mesh container object>
-      Number of points: 51
-      Number of cells:
-        hexahedron: 8
-        hexahedron: 12
-
-    >>> mesh.plot().show()
-
     .. pyvista-plot::
-       :include-source: False
+       :include-source: True
 
        >>> import felupe as fem
        >>>
        >>> cube = fem.Cube(n=3)
        >>> cylinder = fem.Circle().expand(n=2)
        >>> mesh = fem.MeshContainer([cube, cylinder], merge=True)
+       >>>
        >>> mesh.plot.show()
+
+    >>> mesh
+    <felupe mesh container object>
+      Number of points: 51
+      Number of cells:
+        hexahedron: 8
+        hexahedron: 12
 
     """
 
@@ -164,26 +162,9 @@ class MeshContainer:
         Two quad meshes with identical point arrays should be stacked into a single
         mesh.
 
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Rectangle(n=11)
-        >>> rect1, rect2 = mesh.copy(), mesh.copy()
-        >>> rect1.update(cells=mesh.cells[: 40])
-        >>> rect2.update(cells=mesh.cells[-50:])
-        >>> container = fem.MeshContainer([rect1, rect2])
-        >>>
-        >>> mesh = container.stack()
-        >>> mesh
-        <felupe Mesh object>
-          Number of points: 121
-          Number of cells:
-            quad: 90
-        
-        >>> mesh.plot().show()
-        
         .. pyvista-plot::
-           :include-source: False
-           
+           :include-source: True
+
            >>> import felupe as fem
            >>>
            >>> mesh = fem.Rectangle(n=11)
@@ -191,7 +172,15 @@ class MeshContainer:
            >>> rect1.update(cells=mesh.cells[: 40])
            >>> rect2.update(cells=mesh.cells[-50:])
            >>> container = fem.MeshContainer([rect1, rect2])
-           >>> container.stack().plot().show()
+           >>> mesh = container.stack()
+           >>>
+           >>> mesh.plot().show()
+
+        >>> mesh
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 90
 
         See Also
         --------

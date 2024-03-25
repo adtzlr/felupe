@@ -61,17 +61,21 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
     --------
     Expand a rectangle to a cube.
 
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> rect = fem.Rectangle(n=4)
-    >>> fem.mesh.expand(rect, n=7, z=2)
+       >>> import felupe as fem
+       >>>
+       >>> rect = fem.Rectangle(n=4)
+       >>> cube = fem.mesh.expand(rect, n=7, z=2)
+       >>>
+       >>> cube.plot().show()
+
+    >>> cube
     <felupe Mesh object>
       Number of points: 112
       Number of cells:
         hexahedron: 54
-
-    ..  image:: images/mesh_expand.png
-        :width: 400px
 
     See Also
     --------
@@ -159,21 +163,31 @@ def fill_between(mesh, other_mesh, n=11):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
-    >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
-    >>>     axis=2, angle_deg=20
-    >>> ).expand(z=1.2)
-    >>> container = fem.MeshContainer([inner, outer])
-
-    ..  image:: images/faces_fill_between.png
-        :width: 400px
-
-    >>> mesh = fem.mesh.fill_between(inner, outer, n=6)
-
-    ..  image:: images/mesh_fill_between.png
-        :width: 400px
+    .. pyvista-plot::
+       :include-source: True
+       
+       >>> import felupe as fem
+       >>>
+       >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
+       >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
+       >>>     axis=2, angle_deg=20
+       >>> ).expand(z=1.2)
+       >>> container = fem.MeshContainer([inner, outer])
+       >>>
+       >>> container.plot().show()
+       
+    .. pyvista-plot::
+       :include-source: True
+       
+       >>> import felupe as fem
+       >>>
+       >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
+       >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
+       >>>     axis=2, angle_deg=20
+       >>> ).expand(z=1.2)
+       >>> mesh = fem.mesh.fill_between(inner, outer, n=6)
+       >>>
+       >>> mesh.plot().show()
 
     See Also
     --------
@@ -901,24 +915,8 @@ def stack(meshes):
     --------
     Two quad meshes with identical point arrays should be stacked into a single mesh.
 
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Rectangle(n=11)
-    >>> rect1, rect2 = mesh.copy(), mesh.copy()
-    >>> rect1.update(cells=mesh.cells[: 40])
-    >>> rect2.update(cells=mesh.cells[-50:])
-    >>>
-    >>> mesh = fem.mesh.stack([rect1, rect2])
-    >>> mesh
-    <felupe Mesh object>
-      Number of points: 121
-      Number of cells:
-        quad: 90
-
-    >>> mesh.plot().show()
-
     .. pyvista-plot::
-       :include-source: False
+       :include-source: True
 
        >>> import felupe as fem
        >>>
@@ -929,6 +927,12 @@ def stack(meshes):
        >>>
        >>> mesh = fem.mesh.stack([rect1, rect2])
        >>> mesh.plot().show()
+
+    >>> mesh
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 90
 
     See Also
     --------

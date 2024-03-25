@@ -654,17 +654,21 @@ class Mesh(DiscreteGeometry):
         --------
         Expand a rectangle to a cube.
 
-        >>> import felupe as fem
+        .. pyvista-plot::
+           :include-source: True
 
-        >>> rect = fem.Rectangle(n=4)
-        >>> rect.expand(n=7, z=2)
+           >>> import felupe as fem
+           >>>
+           >>> rect = fem.Rectangle(n=4)
+           >>> cube = rect.expand(n=7, z=2)
+           >>>
+           >>> cube.plot().show()
+
+        >>> cube
         <felupe Mesh object>
           Number of points: 112
           Number of cells:
             hexahedron: 54
-
-        ..  image:: images/mesh_expand.png
-            :width: 400px
 
         See Also
         --------
@@ -961,21 +965,31 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> inner = point.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
-        >>> outer = point.revolve(fem.Point(2), phi=160).rotate(
-        >>>     axis=2, angle_deg=20
-        >>> ).expand(z=1.2)
-        >>> container = fem.MeshContainer([inner, outer])
+        .. pyvista-plot::
+           :include-source: True
 
-        ..  image:: images/faces_fill_between.png
-            :width: 400px
+           >>> import felupe as fem
+           >>>
+           >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
+           >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
+           >>>     axis=2, angle_deg=20
+           >>> ).expand(z=1.2)
+           >>> container = fem.MeshContainer([inner, outer])
+           >>>
+           >>> container.plot().show()
 
-        >>> mesh = inner.fill_between(outer, n=6)
+        .. pyvista-plot::
+           :include-source: True
 
-        ..  image:: images/mesh_fill_between.png
-            :width: 400px
+           >>> import felupe as fem
+           >>>
+           >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
+           >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
+           >>>     axis=2, angle_deg=20
+           >>> ).expand(z=1.2)
+           >>> mesh = inner.fill_between(outer, n=6)
+           >>>
+           >>> mesh.plot().show()
 
         See Also
         --------

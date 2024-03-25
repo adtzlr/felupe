@@ -81,8 +81,17 @@ class MeshContainer:
         hexahedron: 8
         hexahedron: 12
 
-    ..  image:: images/container.png
-        :width: 400px
+    >>> mesh.plot().show()
+
+    .. pyvista-plot::
+       :include-source: False
+
+       >>> import felupe as fem
+       >>>
+       >>> cube = fem.Cube(n=3)
+       >>> cylinder = fem.Circle().expand(n=2)
+       >>> mesh = fem.MeshContainer([cube, cylinder], merge=True)
+       >>> mesh.plot.show()
 
     """
 

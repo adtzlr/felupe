@@ -1341,7 +1341,7 @@ class Mesh(DiscreteGeometry):
         return collect_volumes(self)
 
     def add_midpoints_edges(self, cell_type=None):
-        """ "Add midpoints on edges for given points and cells and update cell_type
+        """Add midpoints on edges for given points and cells and update cell_type
         accordingly.
 
         Parameters

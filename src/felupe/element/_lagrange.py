@@ -36,7 +36,7 @@ def lagrange_line(order):
 
 def lagrange_quad(order):
     "Return the cell-connectivity for an arbitrary-order Lagrange quad."
-# points on a unit rectangle
+    # points on a unit rectangle
     x = np.linspace(0, 1, order + 1)
     points = np.vstack([p.ravel() for p in np.meshgrid(x, x, indexing="ij")][::-1]).T
 

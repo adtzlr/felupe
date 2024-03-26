@@ -1387,9 +1387,9 @@ class Mesh(DiscreteGeometry):
            >>> mesh = fem.Rectangle(n=6)
            >>> mesh_with_midpoints_edges = mesh.add_midpoints_edges()
            >>>
-           >>> plotter = mesh_with_midpoints_edges.plot(
-           >>>     plotter=mesh.plot(), style="points", color="black")
-           >>> plotter.show()
+           >>> mesh_with_midpoints_edges.plot(
+           >>>     plotter=mesh.plot(), style="points", color="black"
+           >>> ).show()
 
         >>> mesh_with_midpoints_edges
         <felupe Mesh object>
@@ -1430,7 +1430,7 @@ class Mesh(DiscreteGeometry):
            >>> mesh = fem.Rectangle(n=6)
            >>> mesh_with_midpoints_faces = mesh.add_midpoints_faces(cell_type="quad")
            >>>
-           >>> plotter = mesh_with_midpoints_faces.plot(
+           >>> mesh_with_midpoints_faces.plot(
            >>>     plotter=mesh.plot(), style="points", color="black"
            >>> ).show()
 
@@ -1470,11 +1470,11 @@ class Mesh(DiscreteGeometry):
            >>> import felupe as fem
            >>>
            >>> mesh = fem.Cube(n=6)
-           >>> mesh_with_midpoints_volumes = mesh.add_midpoints_volumes(
-           >>>     cell_type="hexahedron9"
+           >>> mesh_with_midpoints_volumes = fem.mesh.add_midpoints_volumes(
+           >>>     mesh, cell_type_new="hexahedron9"
            >>> )
            >>>
-           >>> plotter=mesh.plot(opacity=0.5)
+           >>> plotter = mesh.plot(opacity=0.5)
            >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
            >>> plotter.show()
 

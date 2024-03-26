@@ -71,22 +71,25 @@ def convert(
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Rectangle(n=6)
-    >>> mesh2 = fem.mesh.convert(mesh, order=2)
+    Convert a mesh of hexahedrons to quadratic hexahedrons by inserting midpoints on
+    the cell edges.
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Rectangle(n=6)
+       >>> mesh2 = fem.mesh.convert(mesh, order=2)
+       >>>
+       >>> plotter = mesh2.plot(plotter=mesh.plot(), style="points", color="black")
+       >>> plotter.show()
+
     >>> mesh2
     <felupe Mesh object>
       Number of points: 96
       Number of cells:
         quad8: 25
-
-    >>> plotter = mesh2.plot(
-    >>>     plotter=mesh.plot(), style="points", color="black"
-    >>> ).show()
-
-    ..  image:: images/mesh_midpoints_edges.png
-        :width: 400px
 
     See Also
     --------
@@ -332,22 +335,26 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Rectangle(n=6)
-    >>> mesh_with_midpoints_edges = fem.mesh.add_midpoints_edges(mesh)
+    Convert a mesh of hexahedrons to quadratic hexahedrons by inserting midpoints on
+    the cell edges.
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Rectangle(n=6)
+       >>> mesh_with_midpoints_edges = fem.mesh.add_midpoints_edges(mesh)
+       >>>
+       >>> plotter = mesh_with_midpoints_edges.plot(
+       >>>     plotter=mesh.plot(), style="points", color="black")
+       >>> plotter.show()
+
     >>> mesh_with_midpoints_edges
     <felupe Mesh object>
       Number of points: 96
       Number of cells:
         quad8: 25
-
-    >>> plotter = mesh_with_midpoints_edges.plot(
-    >>>     plotter=mesh.plot(), style="points", color="black"
-    >>> ).show()
-
-    ..  image:: images/mesh_midpoints_edges.png
-        :width: 400px
 
     See Also
     --------
@@ -410,24 +417,25 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Rectangle(n=6)
-    >>> mesh_with_midpoints_faces = fem.mesh.add_midpoints_faces(
-    >>>     mesh, cell_type_new="quad"
-    >>> )
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Rectangle(n=6)
+       >>> mesh_with_midpoints_faces = fem.mesh.add_midpoints_faces(
+       >>>     mesh, cell_type_new="quad"
+       >>> )
+       >>>
+       >>> plotter = mesh_with_midpoints_faces.plot(
+       >>>     plotter=mesh.plot(), style="points", color="black"
+       >>> ).show()
+
     >>> mesh_with_midpoints_faces
     <felupe Mesh object>
       Number of points: 36
       Number of cells:
         quad: 25
-
-    >>> plotter = mesh_with_midpoints_faces.plot(
-    >>>     plotter=mesh.plot(), style="points", color="black"
-    >>> ).show()
-
-    ..  image:: images/mesh_midpoints_faces.png
-        :width: 400px
 
     See Also
     --------
@@ -493,24 +501,25 @@ def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Cube(n=6)
-    >>> mesh_with_midpoints_volumes = fem.mesh.add_midpoints_volumes(
-    >>>     mesh, cell_type_new="hexahedron9"
-    >>> )
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Cube(n=6)
+       >>> mesh_with_midpoints_volumes = fem.mesh.add_midpoints_volumes(
+       >>>     mesh, cell_type_new="hexahedron9"
+       >>> )
+       >>>
+       >>> plotter=mesh.plot(opacity=0.5)
+       >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
+       >>> plotter.show()
+
     >>> mesh_with_midpoints_volumes
     <felupe Mesh object>
       Number of points: 341
       Number of cells:
         hexahedron9: 125
-
-    >>> plotter=mesh.plot(opacity=0.5)
-    >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
-    >>> plotter.show()
-
-    ..  image:: images/mesh_midpoints_volumes.png
-        :width: 400px
 
     See Also
     --------

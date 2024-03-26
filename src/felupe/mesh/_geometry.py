@@ -76,9 +76,14 @@ class Line(Mesh):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> mesh = fem.mesh.Line(a=-2.1, b=3.5, n=3)
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Line(a=-2.1, b=3.5, n=3)
+       >>> mesh.plot().show()
+
     >>> mesh
     <felupe Mesh object>
       Number of points: 3
@@ -93,8 +98,6 @@ class Line(Mesh):
     >>> mesh.cells
     array([[0, 1],
            [1, 2]])
-
-    >>> mesh.imshow()
     """
 
     def __init__(self, a=0.0, b=1.0, n=2):
@@ -122,9 +125,14 @@ class Rectangle(Mesh):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> mesh = fem.mesh.Rectangle(a=(-1.2, 0.5), b=(4.5, 7.3), n=3)
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Rectangle(a=(-1.2, 0.5), b=(4.5, 7.3), n=3)
+       >>> mesh.plot().show()
+
     >>> mesh
     <felupe Mesh object>
       Number of points: 9
@@ -147,8 +155,6 @@ class Rectangle(Mesh):
            [1, 2, 5, 4],
            [3, 4, 7, 6],
            [4, 5, 8, 7]])
-
-    >>> mesh.imshow()
     """
 
     def __init__(self, a=(0.0, 0.0), b=(1.0, 1.0), n=(2, 2)):
@@ -176,9 +182,14 @@ class Cube(Mesh):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> mesh = fem.mesh.Cube(a=(-1.2, 0.5, 6.2), b=(4.5, 7.3, 9.3), n=(3, 2, 2))
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Cube(a=(-1.2, 0.5, 6.2), b=(4.5, 7.3, 9.3), n=(3, 2, 2))
+       >>> mesh.plot().show()
+
     >>> mesh
     <felupe Mesh object>
       Number of points: 12
@@ -202,8 +213,6 @@ class Cube(Mesh):
     >>> mesh.cells
     array([[ 0,  1,  4,  3,  6,  7, 10,  9],
            [ 1,  2,  5,  4,  7,  8, 11, 10]])
-
-    >>> mesh.imshow()
     """
 
     def __init__(self, a=(0.0, 0.0, 0.0), b=(1.0, 1.0, 1.0), n=(2, 2, 2)):
@@ -227,13 +236,18 @@ class Grid(Mesh):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> x1 = np.linspace(0, 2, 3)**2
-    >>> x2 = np.sqrt(np.linspace(0, 1, 3))
+       >>> import numpy as np
+       >>> import felupe as fem
+       >>>
+       >>> x1 = np.linspace(0, 2, 3)**2
+       >>> x2 = np.sqrt(np.linspace(0, 1, 3))
+       >>>
+       >>> mesh = fem.mesh.Grid(x1, x2)
+       >>> mesh.plot().show()
 
-    >>> mesh = fem.mesh.Grid(x1, x2)
     >>> mesh
     <felupe Mesh object>
       Number of points: 9
@@ -256,8 +270,6 @@ class Grid(Mesh):
            [1, 2, 5, 4],
            [3, 4, 7, 6],
            [4, 5, 8, 7]])
-
-    >>> mesh.imshow()
 
     See Also
     --------
@@ -335,9 +347,14 @@ class Circle(Mesh):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> mesh = fem.mesh.Circle()
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Circle()
+       >>> mesh.plot().show()
+
     >>> mesh
     <felupe Mesh object>
       Number of points: 17
@@ -376,8 +393,6 @@ class Circle(Mesh):
            [11,  7,  6, 14],
            [14, 16, 13, 11],
            [ 8,  7, 11, 13]])
-
-    >>> mesh.imshow()
     """
 
     def __init__(
@@ -436,9 +451,14 @@ class Triangle(Mesh):
 
     Examples
     --------
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> mesh = fem.mesh.Triangle(a=(0.3, 0.2), b=(1.2, 0.1), c=(0.1, 0.9), n=3)
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Triangle(a=(0.3, 0.2), b=(1.2, 0.1), c=(0.1, 0.9), n=3)
+       >>> mesh.plot().show()
+
     >>> mesh
     <felupe Mesh object>
       Number of points: 19
@@ -479,8 +499,6 @@ class Triangle(Mesh):
            [11, 13,  7,  6],
            [ 5,  6,  1,  2],
            [ 6,  7,  0,  1]])
-
-    >>> mesh.imshow()
     """
 
     def __init__(

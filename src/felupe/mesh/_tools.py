@@ -165,20 +165,7 @@ def fill_between(mesh, other_mesh, n=11):
     --------
     .. pyvista-plot::
        :include-source: True
-       
-       >>> import felupe as fem
-       >>>
-       >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
-       >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
-       >>>     axis=2, angle_deg=20
-       >>> ).expand(z=1.2)
-       >>> container = fem.MeshContainer([inner, outer])
-       >>>
-       >>> container.plot().show()
-       
-    .. pyvista-plot::
-       :include-source: True
-       
+
        >>> import felupe as fem
        >>>
        >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
@@ -247,17 +234,20 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None, mask=None):
     --------
     Rotate a rectangle in the xy-plane by 35 degree.
 
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> rect = fem.Rectangle(b=(3, 1), n=(10, 4))
-    >>> fem.mesh.rotate(rect, angle_deg=35, axis=2, center=[1.5, 0.5])
+       >>> import felupe as fem
+       >>>
+       >>> rect = fem.Rectangle(b=(3, 1), n=(10, 4))
+       >>> mesh = fem.mesh.rotate(rect, angle_deg=35, axis=2, center=[1.5, 0.5])
+       >>> mesh.plot().show()
+
+    >>> mesh
     <felupe Mesh object>
       Number of points: 40
       Number of cells:
         quad: 27
-
-    ..  image:: images/mesh_rotate.png
-        :width: 400px
 
     See Also
     --------
@@ -322,17 +312,20 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
     --------
     Revolve a cylinder from a rectangle.
 
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
-    >>> fem.mesh.revolve(rect, n=11, phi=180, axis=0)
+       >>> import felupe as fem
+       >>>
+       >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
+       >>> mesh = fem.mesh.revolve(rect, n=11, phi=180, axis=0)
+       >>> mesh.plot().show()
+
+    >>> mesh
     <felupe Mesh object>
       Number of points: 440
       Number of cells:
         hexahedron: 270
-
-    ..  image:: images/mesh_revolve.png
-        :width: 400px
 
     See Also
     --------
@@ -415,21 +408,37 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
     --------
     Two quad meshes to be merged overlap some points. Merge these duplicated
     points and update the cells.
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> import felupe as fem
+       >>> import felupe as fem
+       >>>
+       >>> rect1 = fem.Rectangle(n=11)
+       >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+       >>>
+       >>> container = fem.MeshContainer([rect1, rect2])
+       >>> stack = fem.mesh.stack(container.meshes)
+       >>> mesh = fem.mesh.merge_duplicate_points(stack)
+       >>>
+       >>> mesh.plot(opacity=0.6).show()
 
-    >>> rect1 = fem.Rectangle(n=11)
-    >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+    Each mesh contains 121 points and 100 cells.
+
+    >>> rect1
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 100
+
     >>> rect2
     <felupe Mesh object>
       Number of points: 121
       Number of cells:
         quad: 100
 
-    Each mesh contains 121 points and 100 cells. These two meshes are now stored in a
+    These two meshes are now stored in a
     :class:`~felupe.MeshContainer`.
 
-    >>> container = fem.MeshContainer([rect1, rect2])
     >>> container
     <felupe mesh container object>
       Number of points: 242
@@ -439,7 +448,6 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 
     The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
 
-    >>> stack = fem.mesh.stack(container.meshes)
     >>> stack
     <felupe Mesh object>
       Number of points: 242
@@ -449,17 +457,11 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
     After merging the duplicated points and cells, the number of points is reduced but
     the number of cells is unchanged.
 
-    >>> mesh = fem.mesh.merge_duplicate_points(stack)
     >>> mesh
     <felupe Mesh object>
       Number of points: 220
       Number of cells:
         quad: 200
-
-    >>> ax = mesh.imshow(opacity=0.6)
-
-    ..  image:: images/mesh_sweep.png
-        :width: 400px
 
     ..  note::
         The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
@@ -532,20 +534,36 @@ def merge_duplicate_cells(points, cells, cell_type):
     Two quad meshes to be merged overlap some cells. Merge these duplicated
     points and update the cells.
 
-    >>> import felupe as fem
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> rect1 = fem.Rectangle(n=11)
-    >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+       >>> import felupe as fem
+       >>>
+       >>> rect1 = fem.Rectangle(n=11)
+       >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+       >>>
+       >>> container = fem.MeshContainer([rect1, rect2])
+       >>> stack = fem.mesh.stack(container.meshes)
+       >>> mesh = fem.mesh.merge_duplicate_points(stack)
+       >>>
+       >>> mesh.plot(opacity=0.6).show()
+
+    Each mesh contains 121 points and 100 cells.
+
+    >>> rect1
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 100
+
     >>> rect2
     <felupe Mesh object>
       Number of points: 121
       Number of cells:
         quad: 100
 
-    Each mesh contains 121 points and 100 cells. These two meshes are now stored in a
-    :class:`~felupe.MeshContainer`.
+    These two meshes are now stored in a :class:`~felupe.MeshContainer`.
 
-    >>> container = fem.MeshContainer([rect1, rect2])
     >>> container
     <felupe mesh container object>
       Number of points: 242
@@ -555,7 +573,6 @@ def merge_duplicate_cells(points, cells, cell_type):
 
     The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
 
-    >>> stack = fem.mesh.stack(container.meshes)
     >>> stack
     <felupe Mesh object>
       Number of points: 242
@@ -565,17 +582,11 @@ def merge_duplicate_cells(points, cells, cell_type):
     After merging the duplicated points and cells, the number of points is reduced but
     the number of cells is unchanged.
 
-    >>> mesh = fem.mesh.merge_duplicate_points(stack)
     >>> mesh
     <felupe Mesh object>
       Number of points: 220
       Number of cells:
         quad: 200
-
-    >>> ax = mesh.imshow(opacity=0.6)
-
-    ..  image:: images/mesh_sweep.png
-        :width: 400px
 
     ..  note::
         The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
@@ -786,17 +797,21 @@ def mirror(
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+    .. pyvista-plot::
+       :include-source: True
 
-    ..  image:: images/mesh_mirror_before.png
-        :width: 400px
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+       >>> mesh.plot().show()
 
-    >>> fem.mesh.mirror(mesh, normal=[0, 1, 0])
+    .. pyvista-plot::
+       :include-source: True
 
-    ..  image:: images/mesh_mirror_after.png
-        :width: 400px
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+       >>> fem.mesh.mirror(mesh, normal=[0, 1, 0]).plot().show()
 
     See Also
     --------
@@ -852,31 +867,35 @@ def concatenate(meshes):
     Two quad meshes should be joined (merged) into a single mesh.
 
     >>> import felupe as fem
-
+    >>>
     >>> rect1 = fem.Rectangle(n=11)
     >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+    >>>
+    >>> mesh = fem.mesh.concatenate([rect1, rect2])
+    >>> mesh.plot(opacity=0.6).show()
+
+    Each mesh contains 121 points and 100 cells.
+
+    >>> rect1
+    <felupe Mesh object>
+      Number of points: 121
+      Number of cells:
+        quad: 100
+
     >>> rect2
     <felupe Mesh object>
       Number of points: 121
       Number of cells:
         quad: 100
 
-    Each mesh contains 121 points and 100 cells. These two meshes are now stored in a
-    :class:`~felupe.Mesh`. Note that there are duplicate points and cells in the joined
-    mesh.
+    These two meshes are stored in a :class:`~felupe.Mesh`. Note that there are
+    duplicate points and cells in the joined mesh.
 
-    >>> mesh = fem.mesh.concatenate([rect1, rect2])
     >>> mesh
     <felupe Mesh object>
       Number of points: 242
       Number of cells:
         quad: 200
-
-    >>> ax = mesh.imshow(opacity=0.6)
-
-    ..  image:: images/mesh_sweep.png
-        :width: 400px
-
     """
 
     Mesh = meshes[0].__mesh__
@@ -962,7 +981,7 @@ def triangulate(points, cells, cell_type, mode=3):
     cell_type : str
         A string in VTK-convention that specifies the cell type.
     mode: int, optional
-        Choose a mode how to convert hexahedrons to tets [1] (default is 3).
+        Choose a mode how to convert hexahedrons to tets [1]_ (default is 3).
 
     Returns
     -------
@@ -975,24 +994,33 @@ def triangulate(points, cells, cell_type, mode=3):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Cube(n=6)
-    >>> fem.mesh.triangulate(mesh, mode=0)
+    Use ``mode=0`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
 
-    ..  image:: images/mesh_cube_triangulate_mode0.png
-        :width: 400px
+    .. pyvista-plot::
+       :include-source: True
 
-    >>> fem.mesh.triangulate(mesh, mode=3)
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Cube(n=6)
+       >>> triangulated = fem.mesh.triangulate(mesh, mode=0)
+       >>> triangulated.plot().show()
 
-    ..  image:: images/mesh_cube_triangulate_mode3.png
-        :width: 400px
+    Use ``mode=3`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
+
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.Cube(n=6)
+       >>> triangulated = fem.mesh.triangulate(mesh, mode=3)
+       >>> triangulated.plot().show()
 
     References
     ----------
-    [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
-    How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
-    IMR, 99, 195.
+    .. [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
+       How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
+       IMR, 99, 195.
 
     See Also
     --------
@@ -1098,19 +1126,25 @@ def runouts(
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Rectangle(a=(-3, -1), b=(3, 1), n=(31, 11))
-    >>> fem.mesh.runouts(mesh, axis=1, values=[0.2], normalize=True)
+    .. pyvista-plot::
+       :include-source: True
 
-    ..  image:: images/mesh_runouts.png
-        :width: 400px
+       >>> import felupe as fem
+       >>>
+       >>> rect = fem.Rectangle(a=(-3, -1), b=(3, 1), n=(31, 11))
+       >>> mesh = fem.mesh.runouts(rect, axis=1, values=[0.2], normalize=True)
+       >>>
+       >>> mesh.plot().show()
 
-    >>> mesh = fem.Cube(a=(-3, -2, -1), b=(3, 2, 1), n=(31, 21, 11))
-    >>> fem.mesh.runouts(mesh, axis=2, values=[0.1, 0.3], normalize=True)
+    .. pyvista-plot::
+       :include-source: True
 
-    ..  image:: images/mesh_runouts_3d.png
-        :width: 400px
+       >>> import felupe as fem
+       >>>
+       >>> cube = fem.Cube(a=(-3, -2, -1), b=(3, 2, 1), n=(31, 21, 11))
+       >>> mesh = fem.mesh.runouts(cube, axis=2, values=[0.1, 0.3], normalize=True)
+       >>>
+       >>> mesh.plot().show()
 
     See Also
     --------

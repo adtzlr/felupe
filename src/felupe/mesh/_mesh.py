@@ -90,14 +90,20 @@ class Mesh(DiscreteGeometry):
 
     Examples
     --------
-    >>> import numpy as np
-    >>> import felupe as fem
-    >>>
-    >>> points = np.array(
-    >>>     [[0.0, 0.0], [0.5, 0.0], [1.0, 0.0], [0.0, 1.0], [0.5, 1.0], [1.0, 1.0]]
-    >>> )
-    >>> cells = np.array([[0, 1, 4, 3], [1, 2, 5, 4]])
-    >>> mesh = fem.Mesh(points, cells, cell_type="quad")
+    .. pyvista-plot::
+       :include-source: True
+
+       >>> import numpy as np
+       >>> import felupe as fem
+       >>>
+       >>> points = np.array(
+       >>>     [[0.0, 0.0], [0.5, 0.1], [1.0, 0.2], [0.0, 1.0], [0.5, 0.9], [1.0, 0.8]]
+       >>> )
+       >>> cells = np.array([[0, 1, 4, 3], [1, 2, 5, 4]])
+       >>> mesh = fem.Mesh(points, cells, cell_type="quad")
+       >>>
+       >>> mesh.plot().show()
+
 
     See Also
     --------
@@ -700,17 +706,20 @@ class Mesh(DiscreteGeometry):
         --------
         Rotate a rectangle in the xy-plane by 35 degree.
 
-        >>> import felupe as fem
+        .. pyvista-plot::
+           :include-source: True
 
-        >>> rect = fem.Rectangle(b=(3, 1), n=(10, 4))
-        >>> rect.rotate(angle_deg=35, axis=2, center=[1.5, 0.5])
+           >>> import felupe as fem
+           >>>
+           >>> rect = fem.Rectangle(b=(3, 1), n=(10, 4))
+           >>> mesh = rect.rotate(angle_deg=35, axis=2, center=[1.5, 0.5])
+           >>> mesh.plot().show()
+
+        >>> mesh
         <felupe Mesh object>
           Number of points: 40
           Number of cells:
             quad: 27
-
-        ..  image:: images/mesh_rotate.png
-            :width: 400px
 
         See Also
         --------
@@ -744,17 +753,20 @@ class Mesh(DiscreteGeometry):
         --------
         Revolve a cylinder from a rectangle.
 
-        >>> import felupe as fem
+        .. pyvista-plot::
+           :include-source: True
 
-        >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
-        >>> rect.revolve(n=11, phi=180, axis=0)
+           >>> import felupe as fem
+           >>>
+           >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
+           >>> mesh = rect.revolve(n=11, phi=180, axis=0)
+           >>> mesh.plot().show()
+
+        >>> mesh
         <felupe Mesh object>
           Number of points: 440
           Number of cells:
             hexahedron: 270
-
-        ..  image:: images/mesh_revolve.png
-            :width: 400px
 
         See Also
         --------
@@ -974,19 +986,6 @@ class Mesh(DiscreteGeometry):
            >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
            >>>     axis=2, angle_deg=20
            >>> ).expand(z=1.2)
-           >>> container = fem.MeshContainer([inner, outer])
-           >>>
-           >>> container.plot().show()
-
-        .. pyvista-plot::
-           :include-source: True
-
-           >>> import felupe as fem
-           >>>
-           >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
-           >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
-           >>>     axis=2, angle_deg=20
-           >>> ).expand(z=1.2)
            >>> mesh = inner.fill_between(outer, n=6)
            >>>
            >>> mesh.plot().show()
@@ -1088,17 +1087,21 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+        .. pyvista-plot::
+           :include-source: True
 
-        ..  image:: images/mesh_mirror_before.png
-            :width: 400px
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+           >>> mesh.plot().show()
 
-        >>> mesh.mirror(normal=[0, 1, 0])
+        .. pyvista-plot::
+           :include-source: True
 
-        ..  image:: images/mesh_mirror_after.png
-            :width: 400px
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Circle(sections=[0, 90, 180], n=5)
+           >>> mesh.mirror(normal=[0, 1, 0]).plot().show()
 
         See Also
         --------
@@ -1147,7 +1150,7 @@ class Mesh(DiscreteGeometry):
         Parameters
         ----------
         mode: int, optional
-            Choose a mode how to convert hexahedrons to tets [1] (default is 3).
+            Choose a mode how to convert hexahedrons to tets [1]_ (default is 3).
 
         Returns
         -------
@@ -1156,24 +1159,31 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Cube(n=6)
-        >>> mesh.triangulate(mode=0)
+        Use ``mode=0`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
 
-        ..  image:: images/mesh_cube_triangulate_mode0.png
-            :width: 400px
+        .. pyvista-plot::
+           :include-source: True
 
-        >>> mesh.triangulate(mode=3)
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Cube(n=6)
+           >>> mesh.triangulate(mode=0).plot().show()
 
-        ..  image:: images/mesh_cube_triangulate_mode3.png
-            :width: 400px
+        Use ``mode=3`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
+
+        .. pyvista-plot::
+           :include-source: True
+
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Cube(n=6)
+           >>> mesh.triangulate(mode=3).plot().show()
 
         References
         ----------
-        [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
-        How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
-        IMR, 99, 195.
+        .. [1] Dompierre, J., Labbé, P., Vallet, M. G., & Camarero, R. (1999).
+           How to Subdivide Pyramids, Prisms, and Hexahedra into Tetrahedra.
+           IMR, 99, 195.
 
         See Also
         --------
@@ -1217,19 +1227,25 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Rectangle(a=(-3, -1), b=(3, 1), n=(31, 11))
-        >>> mesh.add_runouts(axis=1, values=[0.2], normalize=True)
+        .. pyvista-plot::
+           :include-source: True
 
-        ..  image:: images/mesh_runouts.png
-            :width: 400px
+           >>> import felupe as fem
+           >>>
+           >>> rect = fem.Rectangle(a=(-3, -1), b=(3, 1), n=(31, 11))
+           >>> mesh = rect.add_runouts(axis=1, values=[0.2], normalize=True)
+           >>>
+           >>> mesh.plot().show()
 
-        >>> mesh = fem.Cube(a=(-3, -2, -1), b=(3, 2, 1), n=(31, 21, 11))
-        >>> mesh.add_runouts(axis=2, values=[0.1, 0.3], normalize=True)
+        .. pyvista-plot::
+           :include-source: True
 
-        ..  image:: images/mesh_runouts_3d.png
-            :width: 400px
+           >>> import felupe as fem
+           >>>
+           >>> cube = fem.Cube(a=(-3, -2, -1), b=(3, 2, 1), n=(31, 21, 11))
+           >>> mesh = cube.add_runouts(axis=2, values=[0.1, 0.3], normalize=True)
+           >>>
+           >>> mesh.plot().show()
 
         See Also
         --------
@@ -1285,22 +1301,25 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Rectangle(n=6)
-        >>> mesh2 = mesh.convert(order=2)
+        Convert a mesh of hexahedrons to quadratic hexahedrons by inserting midpoints on
+        the cell edges.
+
+        .. pyvista-plot::
+           :include-source: True
+
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Rectangle(n=6)
+           >>> mesh2 = mesh.convert(order=2)
+           >>>
+           >>> plotter = mesh2.plot(plotter=mesh.plot(), style="points", color="black")
+           >>> plotter.show()
+
         >>> mesh2
         <felupe Mesh object>
           Number of points: 96
           Number of cells:
             quad8: 25
-
-        >>> plotter = mesh2.plot(
-        >>>     plotter=mesh.plot(), style="points", color="black"
-        >>> ).show()
-
-        ..  image:: images/mesh_midpoints_edges.png
-            :width: 400px
 
         See Also
         --------
@@ -1357,22 +1376,26 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Rectangle(n=6)
-        >>> mesh_with_midpoints_edges = mesh.add_midpoints_edges()
+        Convert a mesh of hexahedrons to quadratic hexahedrons by inserting midpoints on
+        the cell edges.
+
+        .. pyvista-plot::
+           :include-source: True
+
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Rectangle(n=6)
+           >>> mesh_with_midpoints_edges = mesh.add_midpoints_edges()
+           >>>
+           >>> plotter = mesh_with_midpoints_edges.plot(
+           >>>     plotter=mesh.plot(), style="points", color="black")
+           >>> plotter.show()
+
         >>> mesh_with_midpoints_edges
         <felupe Mesh object>
           Number of points: 96
           Number of cells:
             quad8: 25
-
-        >>> plotter = mesh_with_midpoints_edges.plot(
-        >>>     plotter=mesh.plot(), style="points", color="black"
-        >>> ).show()
-
-        ..  image:: images/mesh_midpoints_edges.png
-            :width: 400px
 
         See Also
         --------
@@ -1399,22 +1422,23 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Rectangle(n=6)
-        >>> mesh_with_midpoints_faces = mesh.add_midpoints_faces(cell_type="quad")
+        .. pyvista-plot::
+           :include-source: True
+
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Rectangle(n=6)
+           >>> mesh_with_midpoints_faces = mesh.add_midpoints_faces(cell_type="quad")
+           >>>
+           >>> plotter = mesh_with_midpoints_faces.plot(
+           >>>     plotter=mesh.plot(), style="points", color="black"
+           >>> ).show()
+
         >>> mesh_with_midpoints_faces
         <felupe Mesh object>
           Number of points: 36
           Number of cells:
             quad: 25
-
-        >>> plotter = mesh_with_midpoints_faces.plot(
-        >>>     plotter=mesh.plot(), style="points", color="black"
-        >>> ).show()
-
-        ..  image:: images/mesh_midpoints_faces.png
-            :width: 400px
 
         See Also
         --------
@@ -1440,24 +1464,25 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Cube(n=6)
-        >>> mesh_with_midpoints_volumes = mesh.add_midpoints_volumes(
-        >>>     cell_type_new="hexahedron9"
-        >>> )
+        .. pyvista-plot::
+           :include-source: True
+
+           >>> import felupe as fem
+           >>>
+           >>> mesh = fem.Cube(n=6)
+           >>> mesh_with_midpoints_volumes = mesh.add_midpoints_volumes(
+           >>>     cell_type="hexahedron9"
+           >>> )
+           >>>
+           >>> plotter=mesh.plot(opacity=0.5)
+           >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
+           >>> plotter.show()
+
         >>> mesh_with_midpoints_volumes
         <felupe Mesh object>
           Number of points: 341
           Number of cells:
             hexahedron9: 125
-
-        >>> plotter=mesh.plot(opacity=0.5)
-        >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
-        >>> plotter.show()
-
-        ..  image:: images/mesh_midpoints_volumes.png
-            :width: 400px
 
         See Also
         --------

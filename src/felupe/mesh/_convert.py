@@ -511,7 +511,7 @@ def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
        >>>     mesh, cell_type_new="hexahedron9"
        >>> )
        >>>
-       >>> plotter=mesh.plot(opacity=0.5)
+       >>> plotter = mesh.plot(opacity=0.5)
        >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
        >>> plotter.show()
 

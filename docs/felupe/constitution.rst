@@ -20,7 +20,7 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
             # values are ignored - state variables are always initiated with zeros
             self.x = [np.zeros((3, 3))]
 
-        def gradient(x):
+        def gradient(self, x):
             "Gradients of the strain energy density function."
 
             # extract variables
@@ -36,7 +36,7 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
 
             return [dWdF, dWdp, statevars_new]
 
-        def hessian(x, **kwargs):
+        def hessian(self, x, **kwargs):
             "Hessians of the strain energy density function."
 
             # extract variables

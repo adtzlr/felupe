@@ -38,7 +38,17 @@ class EvaluateFieldContainer:
         self.field = field
 
     def deformation_gradient(self):
-        "Return the Deformation gradient tensor."
+        r"""Return the Deformation gradient tensor.
+        
+        .. math::
+           :label: deformation-gradient-tensor
+           
+           \boldsymbol{F} &= \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+
+           \boldsymbol{F} &= \sum_\alpha \lambda_\alpha
+               \ \boldsymbol{n}_\alpha \otimes \boldsymbol{N}_\alpha
+        
+        """
         return self.field[0].extract()
 
     def strain(self, fun=strain_stretch_1d, tensor=True, asvoigt=False, n=0, **kwargs):

@@ -26,12 +26,12 @@ Available kinds of fields:
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.FieldsMixed
+.. autoclass:: felupe.FieldContainer
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.FieldContainer
+.. autoclass:: felupe.EvaluateFieldContainer
    :members:
    :undoc-members:
    :inherited-members:
@@ -52,6 +52,11 @@ Available kinds of fields:
    :inherited-members:
 
 .. autoclass:: felupe.FieldDual
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.FieldsMixed
    :members:
    :undoc-members:
    :inherited-members:

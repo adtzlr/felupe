@@ -55,6 +55,15 @@ class EvaluateFieldContainer:
         r"""Return the Lagrangian strain tensor or its principal values.
 
         .. math::
+           :label: lagrangian-strain-tensor
+
+           \boldsymbol{E} = \sum_\alpha f_\alpha \left( \lambda_\alpha \right)
+               \ \boldsymbol{N}_\alpha \otimes \boldsymbol{N}_\alpha
+
+        By default, the Seth-Hill strain-stretch relation with a strain exponent of
+        zero is used, see Eq. :eq:`seth-hill-strain-tensor`.
+
+        .. math::
            :label: seth-hill-strain-tensor
 
            \boldsymbol{E} = \sum_\alpha \frac{1}{k} \left( \lambda_\alpha^k - 1 \right)

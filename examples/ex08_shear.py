@@ -50,7 +50,7 @@ n = 11
 a = min(L / n, H / n)
 
 mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
-mesh.update(points=np.vstack((mesh.points, [0, 2 * H])))
+mesh.update(points=np.vstack((mesh.points, [0, 1.3 * H])))
 mesh.points_without_cells = np.array([], dtype=bool)
 
 # %%
@@ -64,12 +64,9 @@ mesh.points_without_cells = np.array([], dtype=bool)
 region = fem.RegionQuad(mesh)
 field = fem.FieldsMixed(region, n=3, planestrain=True)
 
-f0 = lambda y: np.isclose(y, 0)
-f2 = lambda y: np.isclose(y, 2 * H)
-
 boundaries = {
-    "fixed": fem.Boundary(field[0], fy=f0),
-    "control": fem.Boundary(field[0], fy=f2, skip=(0, 1)),
+    "fixed": fem.Boundary(field[0], fy=mesh.y.min()),
+    "control": fem.Boundary(field[0], fy=mesh.y.max(), skip=(0, 1)),
 }
 
 dof0, dof1 = fem.dof.partition(field, boundaries)

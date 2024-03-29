@@ -23,6 +23,7 @@ Start setting up a problem in FElupe by the creation of a numeric :class:`~felup
 .. image:: examples/extut03_building_blocks_sketch.svg
    :width: 600px
 """
+# sphinx_gallery_thumbnail_number = -1
 import felupe as fem
 
 mesh = fem.Cube(n=9)
@@ -96,7 +97,10 @@ print(field)
 
 # %%
 # The deformation gradient is obtained by a sum of the identity and the displacement
-# gradient.
+# gradient. The :meth:`~felupe.FieldContainer.extract`-method generates a list with
+# extracted values at the integration points for each field in the field container.
+# To evaluate the deformation gradient tensor of the first field of a container, the
+# identity matrix is added to the gradient of the field.
 F = field.extract(grad=True, sym=False, add_identity=True)
 
 # %%

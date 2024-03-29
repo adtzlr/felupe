@@ -20,12 +20,12 @@ Notch Stress
       pip install pypardiso
 
 A linear-elastic notched plate is subjected to uniaxial tension. The cell-based mean of
-the stress tensor is projected to the mesh-points and the longitudinal normal component
-:math:`\sigma_{xx}` is plotted. FElupe has no quadratic wedge element formulation
+the stress tensor is projected to the mesh-points and its maximum principal value
+:math:`\sigma_I` is plotted. FElupe has no quadratic wedge element formulation
 implemented and hence, the quadratic wedges in the mesh are converted to quadratic
 hexahedrons.
 """
-# sphinx_gallery_thumbnail_number = -1
+# sphinx_gallery_thumbnail_number = 0
 import numpy as np
 import pypardiso
 import pyvista as pv
@@ -43,11 +43,45 @@ mesh = fem.Mesh(
 region = fem.RegionQuadraticHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, move=0.03375)
+boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, move=0.02)
 solid = fem.SolidBody(umat=fem.LinearElastic(E=2.1e5, nu=0.30), field=field)
 step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(parallel=True, solver=pypardiso.spsolve)
 
-solid.view(point_data={"Stress": fem.project(solid.results.stress[0], region)}).plot(
-    "Stress", component=0, show_edges=False, show_undeformed=False, view="xy"
+solid.plot(
+    "Principal Values of Cauchy Stress",
+    show_edges=False,
+    view="xy",
+    project=fem.topoints,
+    show_undeformed=False,
 ).show()
+
+# %%
+# The number of maximum endurable cycles between zero and the applied displacement is
+# evaluated with a SN-curve as denoted in Eq. :eq:`sn-curve`. The range of the maximum
+# principal value of the Cauchy stress tensor is used to evaluate the fatigue life.
+#
+# .. math::
+#    :label: sn-curve
+#
+#    \frac{N}{N_D} = \left( \frac{S}{S_D} \right)^{-k}
+#
+S_D = 100  # MPa
+N_D = 2e6  # cycles
+k = 5  # slope
+
+S = fem.topoints(fem.math.eigvalsh(solid.evaluate.cauchy_stress())[-1], region)
+N = N_D * (abs(S) / S_D) ** -k
+
+view = solid.view(point_data={"Endurable Cycles": N})
+plotter = view.plot(
+    "Endurable Cycles",
+    show_undeformed=False,
+    show_edges=False,
+    log_scale=True,
+    flip_scalars=True,
+    clim=[N.min(), 2e6],
+    above_color="lightgrey",
+)
+plotter.camera.zoom(6)
+plotter.show()

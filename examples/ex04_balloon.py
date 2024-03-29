@@ -29,7 +29,12 @@ and the pressure - displacement curve is plotted.
 
 First, setup a problem in FElupe as usual (mesh, region, field, boundaries, umat, solid
 and a pressure boundary). For the material definition we use the **Neo-Hooke** built-in
-hyperelastic material formulation.
+hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
+
+.. math::
+   :label: neo-hookean-strain-energy
+
+   \psi = \frac{\mu}{2} \left( J^{-2/3}\ \text{tr}(\boldsymbol{C}) - 3 \right)
 """
 # sphinx_gallery_thumbnail_number = -1
 import contique

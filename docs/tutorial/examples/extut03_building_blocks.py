@@ -50,6 +50,11 @@ region = fem.Region(mesh, element, quadrature)
 print(region)
 
 # %%
+# The scheme of the region, i.e. the element with its point labels and the integration
+# points of the quadrature rule may be plotted.
+region.plot().show()
+
+# %%
 # An array containing products of quadrature weights multiplied by the determinants of
 # the (geometric) jacobians is stored as the array of (undeformed) differential volumes
 # :attr:`~felupe.Region.dV`. The sum of all differential volumes gives the total
@@ -267,10 +272,10 @@ field = res.x
 
 
 # %%
-# All 3x3 components of the deformation gradient of integration point 1 of cell 1
+# All 3x3 components of the deformation gradient of integration point 2 of cell 1
 # (Python is 0-indexed) are obtained with
-defgrad = F[0]
-print(defgrad[:, :, 0, 0])
+defgrad = field.evaluate.deformation_gradient()
+print(defgrad[:, :, 1, 0])
 
 # %%
 # Export and plot of results
@@ -307,7 +312,7 @@ fem.save(
 # like our stress results at mesh points are passed as a dictionary to the
 # ``point_data`` argument of the :meth:`~felupe.SolidBody.view`-method. Cauchy stresses
 # on solid bodies are also pre-defined in FElupe and may be plotted as cell- or
-# (projected) point-data.
+# (shifted / projected) point-data.
 view = solid.view(
     point_data={
         "Cauchy Stress (Shifted)": fem.topoints(s, region),
@@ -316,5 +321,6 @@ view = solid.view(
 )
 
 view.plot("Cauchy Stress (Shifted)", component=0).show()
+solid.plot("Cauchy Stress", component=0).show()
 # solid.plot("Cauchy Stress", component=0, project=fem.topoints).show()
 # solid.plot("Cauchy Stress", component=0, project=fem.project).show()

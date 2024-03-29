@@ -155,7 +155,7 @@ class FieldContainer:
 
     Attributes
     ----------
-    evaluate : EvaluateFieldContainer
+    evaluate : field.EvaluateFieldContainer
         Methods to evaluate the deformation gradient and strain measures.
 
     Examples

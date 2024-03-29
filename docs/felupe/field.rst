@@ -31,7 +31,7 @@ Available kinds of fields:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.EvaluateFieldContainer
+.. autoclass:: felupe.field.EvaluateFieldContainer
    :members:
    :undoc-members:
    :inherited-members:

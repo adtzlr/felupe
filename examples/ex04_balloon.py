@@ -36,6 +36,7 @@ hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
 
    \psi = \frac{\mu}{2} \left( J^{-2/3}\ \text{tr}(\boldsymbol{C}) - 3 \right)
 """
+# sphinx_gallery_thumbnail_number = -1
 import contique
 import numpy as np
 

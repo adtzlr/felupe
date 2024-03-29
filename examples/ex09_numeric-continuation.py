@@ -19,7 +19,7 @@ With the help of `contique <https://github.com/adtzlr/contique>`_ (install with 
       
       pip install contique matadi
 """
-
+# sphinx_gallery_thumbnail_number = -1
 import contique
 import matadi as mat
 import matplotlib.pyplot as plt

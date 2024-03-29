@@ -39,15 +39,15 @@ class EvaluateFieldContainer:
 
     def deformation_gradient(self):
         r"""Return the Deformation gradient tensor.
-        
+
         .. math::
            :label: deformation-gradient-tensor
-           
+
            \boldsymbol{F} &= \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
 
            \boldsymbol{F} &= \sum_\alpha \lambda_\alpha
                \ \boldsymbol{n}_\alpha \otimes \boldsymbol{N}_\alpha
-        
+
         """
         return self.field[0].extract()
 
@@ -166,7 +166,9 @@ class FieldContainer:
     Attributes
     ----------
     evaluate : field.EvaluateFieldContainer
-        Methods to evaluate the deformation gradient and strain measures.
+        Methods to evaluate the deformation gradient and strain measures, see
+        :class:`~felupe.field.EvaluateFieldContainer` for details on the provided
+        methods.
 
     Examples
     --------

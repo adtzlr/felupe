@@ -60,6 +60,10 @@ solid.plot(
 # The number of maximum endurable cycles between zero and the applied displacement is
 # evaluated with a SN-curve as denoted in Eq. :eq:`sn-curve`. The range of the maximum
 # principal value of the Cauchy stress tensor is used to evaluate the fatigue life.
+# For simplicity, the stress is evaluated for the total solid body. To consider only
+# stresses on points which lie on the surface of the solid body, the cells on faces
+# :meth:`~felupe.RegionQuadraticHexahedronBoundary.mesh.cells_faces` must be determined
+# first.
 #
 # .. math::
 #    :label: sn-curve

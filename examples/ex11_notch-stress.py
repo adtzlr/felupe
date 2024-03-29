@@ -10,7 +10,9 @@ Notch Stress
    
    * project the linear-elastic stress tensor to the mesh-points
    
-   * plot the longitudinal stress component
+   * plot the max. principal stress component
+
+   * evaluate the fatigue life
 
 .. admonition:: This example requires external packages.
    :class: hint
@@ -20,8 +22,7 @@ Notch Stress
       pip install pypardiso
 
 A linear-elastic notched plate is subjected to uniaxial tension. The cell-based mean of
-the stress tensor is projected to the mesh-points and its maximum principal value
-:math:`\sigma_I` is plotted. FElupe has no quadratic wedge element formulation
+the stress tensor is projected to the mesh-points and its maximum principal value is plotted. FElupe has no quadratic wedge element formulation
 implemented and hence, the quadratic wedges in the mesh are converted to quadratic
 hexahedrons.
 """

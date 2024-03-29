@@ -37,7 +37,7 @@ import numpy as np
 
 import felupe as fem
 
-mesh = fem.Cube(b=(25, 25, 1), n=(6, 6, 2))
+mesh = fem.Cube(b=(25, 25, 1), n=(4, 4, 2))
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 bounds = fem.dof.symmetry(field[0], axes=(True, True, False))
@@ -92,10 +92,9 @@ Res = contique.solve(
     jac=[dfundx, dfundl],
     x0=field[0][dof1],
     lpf0=0,
-    dxmax=1e-2,
-    dlpfmax=1e-5,
-    high=500,
-    maxsteps=400,
+    dxmax=1,
+    dlpfmax=1e-3,
+    maxsteps=150,
     rebalance=True,
 )
 X = np.array([res.x for res in Res])

@@ -45,7 +45,8 @@ print(mesh)
 #
 # ..  note::
 #     By using a template region like :class:`~felupe.RegionHexahedron`, only the mesh
-#     has to be created.
+#     has to be created. The element formulation and the appropriate quadrature scheme
+#     are chosen automatically.
 region = fem.Region(mesh, element, quadrature)
 # region = fem.RegionHexahedron(mesh)
 print(region)

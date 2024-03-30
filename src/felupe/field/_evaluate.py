@@ -91,7 +91,9 @@ class EvaluateFieldContainer:
         math.strain : Compute a Lagrangian strain tensor.
         math.strain_stretch_1d : Compute the Seth-Hill strains.
         """
-        return strain(self.field, tensor=tensor, asvoigt=asvoigt, n=0, **kwargs)
+        return strain(
+            self.field, fun=fun, tensor=tensor, asvoigt=asvoigt, n=0, **kwargs
+        )
 
     def log_strain(self, tensor=True, asvoigt=False, n=0):
         r"""Return the logarithmic Lagrangian strain tensor or its principal values.

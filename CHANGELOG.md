@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.2.1] - 2024-03-30
+
+### Fixed
+- Fix `FieldContainer.evaluate.strain(fun=lambda stretch: stretch)` for custom strain-stretch callables. The `fun`-argument was previously ignored.
+
 ## [8.2.0] - 2024-03-25
 
 ### Added

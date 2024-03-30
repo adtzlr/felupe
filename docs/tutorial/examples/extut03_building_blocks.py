@@ -25,8 +25,9 @@ Start setting up a problem in FElupe by the creation of a numeric :class:`~felup
 """
 # sphinx_gallery_thumbnail_number = -1
 import felupe as fem
+import numpy as np
 
-mesh = fem.Cube(n=9)
+mesh = fem.Cube(n=6)
 element = fem.Hexahedron()
 quadrature = fem.GaussLegendre(order=1, dim=3)
 
@@ -103,6 +104,12 @@ print(field)
 # To evaluate the deformation gradient tensor of the first field of a container, the
 # identity matrix is added to the gradient of the field.
 F = field.extract(grad=True, sym=False, add_identity=True)
+
+# %%
+# Methods to evaluate the deformation gradient as well as strain measures are
+# provided in :class:`FieldContainer.evaluate <felupe.field.EvaluateFieldContainer>`.
+log_strain = field.evaluate.strain(fun=lambda stretch: np.log(stretch), tensor=True)
+principal_stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=False)
 
 # %%
 # Constitution

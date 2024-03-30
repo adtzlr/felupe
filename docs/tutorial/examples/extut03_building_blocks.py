@@ -44,7 +44,7 @@ print(mesh)
 # undeformed coordinates (as attribute :attr:`~felupe.Region.dhdX`).
 #
 # ..  note::
-#     By using a template region like class:`~felupe.RegionHexahedron`, only the mesh
+#     By using a template region like :class:`~felupe.RegionHexahedron`, only the mesh
 #     has to be created.
 region = fem.Region(mesh, element, quadrature)
 # region = fem.RegionHexahedron(mesh)

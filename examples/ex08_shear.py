@@ -135,18 +135,28 @@ job = fem.Job(steps=[step], callback=callback)
 res = job.evaluate()
 
 # %%
-# For the maximum deformed model the principal stretches, projected to mesh points, are
-# plotted.
+# The principal stretches are evaluated for the maximum deformed configuration. This may
+# be done manually, starting from the deformation gradient tensor, or by modifying the
+# :meth:`FieldContainer.evaluate.strain <felupe.field.EvaluateFieldContainer.strain>`-
+# method to return the principal stretches. For plotting, these values are projected
+# from quadrature-points to mesh-points.
 
 from felupe.math import dot, eigh, transpose
 
 F = field[0].extract()
 C = dot(transpose(F), F)
 
-stretches = fem.project(np.sqrt(eigh(C)[0]), region)
+stretches = np.sqrt(eigh(C)[0])
+# stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=False)
 
-view = field.view(point_data={"Principal Values of Stretches": stretches})
-plotter = view.plot("Principal Values of Stretches", component=0)
+view = field.view(
+    point_data={"Principal Values of Stretches": fem.project(stretches[::-1], region)}
+)
+plotter = view.plot(
+    "Principal Values of Stretches",
+    component=0,
+    clim=[stretches[-1].min(), stretches[-1].max()],
+)
 plotter = mpc.plot(plotter=plotter)
 plotter.show()
 

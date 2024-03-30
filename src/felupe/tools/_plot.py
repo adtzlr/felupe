@@ -18,14 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import (
-    deformation_gradient,
-    displacement,
-    eigvalsh,
-    equivalent_von_mises,
-    strain,
-    tovoigt,
-)
+from ..math import displacement, eigvalsh, equivalent_von_mises, tovoigt
 
 
 class Scene:
@@ -454,24 +447,28 @@ class ViewField(ViewMesh):
 
         if project is None:
             cell_data_from_field = {
-                "Deformation Gradient": deformation_gradient(field).mean(-2).T,
-                "Logarithmic Strain": strain(field, tensor=True, asvoigt=True)
+                "Deformation Gradient": field.evaluate.deformation_gradient()
                 .mean(-2)
                 .T,
-                "Principal Values of Logarithmic Strain": strain(field, tensor=False)
+                "Logarithmic Strain": field.evaluate.strain(tensor=True, asvoigt=True)
+                .mean(-2)
+                .T,
+                "Principal Values of Logarithmic Strain": field.evaluate.strain(
+                    tensor=False
+                )
                 .mean(-2)[::-1]
                 .T,
             }
         elif callable(project):
             point_data_from_field = {
                 "Deformation Gradient": project(
-                    deformation_gradient(field), field.region
+                    field.evaluate.deformation_gradient(), field.region
                 ),
                 "Logarithmic Strain": project(
-                    strain(field, tensor=True, asvoigt=True), field.region
+                    field.evaluate.strain(tensor=True, asvoigt=True), field.region
                 ),
                 "Principal Values of Logarithmic Strain": project(
-                    strain(field, tensor=False)[::-1], field.region
+                    field.evaluate.strain(tensor=False)[::-1], field.region
                 ),
             }
         else:

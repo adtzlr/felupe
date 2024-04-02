@@ -1,6 +1,6 @@
 r"""
-Non-homogeneous shear loadcase
-------------------------------
+Non-homogeneous shear
+---------------------
 
 .. topic:: Plane strain hyperelastic non-homogeneous shear loadcase
 

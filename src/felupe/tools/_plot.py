@@ -54,7 +54,7 @@ class Scene:
         smooth_shading=True,
         split_sharp_edges=True,
         edge_color="black",
-        line_width=2.0,
+        line_width=1.0,
         **kwargs,
     ):
         """Plot scalars, selected by name and component.
@@ -118,7 +118,7 @@ class Scene:
         edge_color : str, optional
             The color of the edge lines (default is "black").
         line_width : float, optional
-            The line-width of the edge lines (default is 2.0).
+            The line-width of the edge lines (default is 1.0).
 
 
         Returns
@@ -213,7 +213,9 @@ class Scene:
             label = f"{data_label} {component_label}"
 
         if show_undeformed:
-            plotter.add_mesh(self.mesh, show_edges=False, opacity=0.2)
+            plotter.add_mesh(
+                self.mesh, show_edges=False, opacity=0.2, line_width=line_width
+            )
 
         mesh = self.mesh
         if "Displacement" in self.mesh.point_data.keys():
@@ -221,12 +223,16 @@ class Scene:
 
         surface = mesh
         show_edges_surface = show_edges
+        kwargs_with_line_width = {**kwargs}
+
         if mesh.number_of_cells > 0:
             if extract_surface or nonlinear_subdivision > 1:
                 surface = surface.extract_surface(
                     nonlinear_subdivision=nonlinear_subdivision
                 )
                 show_edges_surface = False
+            else:
+                kwargs_with_line_width["line_width"] = line_width
 
         # disable surface-related arguments if the mesh contains no cells
         if mesh.number_of_cells == 0 or nonlinear_subdivision == 1:
@@ -249,7 +255,7 @@ class Scene:
             },
             smooth_shading=smooth_shading,
             split_sharp_edges=split_sharp_edges,
-            **kwargs,
+            **kwargs_with_line_width,
         )
 
         # extract the feature edges (without cell-internal edges)
@@ -357,35 +363,7 @@ class ViewMesh(Scene):
     """
 
     def __init__(self, mesh, point_data=None, cell_data=None, cell_type=None):
-        import pyvista as pv
-
-        points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.points.shape[1])))
-        cells = np.pad(
-            mesh.cells, ((0, 0), (1, 0)), constant_values=mesh.cells.shape[1]
-        )
-
-        if cell_type is None:
-            pyvista_cell_types = {
-                "line": pv.CellType.LINE,
-                "triangle": pv.CellType.TRIANGLE,
-                "triangle6": pv.CellType.QUADRATIC_TRIANGLE,
-                "tetra": pv.CellType.TETRA,
-                "tetra10": pv.CellType.QUADRATIC_TETRA,
-                "quad": pv.CellType.QUAD,
-                "quad8": pv.CellType.QUADRATIC_QUAD,
-                "quad9": pv.CellType.BIQUADRATIC_QUAD,
-                "hexahedron": pv.CellType.HEXAHEDRON,
-                "hexahedron20": pv.CellType.QUADRATIC_HEXAHEDRON,
-                "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
-                "VTK_LAGRANGE_HEXAHEDRON": pv.CellType.LAGRANGE_HEXAHEDRON,
-                "VTK_LAGRANGE_QUADRILATERAL": pv.CellType.LAGRANGE_QUADRILATERAL,
-                "VTK_LAGRANGE_LINE": pv.CellType.LAGRANGE_CURVE,
-            }
-            cell_type = pyvista_cell_types[mesh.cell_type]
-
-        cell_types = cell_type * np.ones(mesh.ncells, dtype=int)
-
-        self.mesh = pv.UnstructuredGrid(cells, cell_types, points)
+        self.mesh = mesh.as_pyvista(cell_type=cell_type)
 
         if point_data is None:
             point_data = {}

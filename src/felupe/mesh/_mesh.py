@@ -182,8 +182,53 @@ class Mesh(DiscreteGeometry):
 
         import meshio
 
-        cells = {self.cell_type: self.cells}
-        return meshio.Mesh(self.points, cells, **kwargs)
+        points = np.pad(self.points, ((0, 0), (0, 3 - self.points.shape[1])))
+
+        return meshio.Mesh(points=points, cells={self.cell_type: self.cells}, **kwargs)
+
+    def as_pyvista(self, cell_type=None, **kwargs):
+        """Export the mesh as :class:`pyvista.UnstructuredGrid`.
+
+        Parameters
+        ----------
+        cell_type : pyvista.CellType or None, optional
+            Cell-type of PyVista (default is None).
+        **kwargs : dict, optional
+            Additional keyword-arguments for :class:`pyvista.UnstructuredGrid`.
+
+        Returns
+        -------
+        pyvista.UnstructuredGrid
+            The mesh as :class:`pyvista.UnstructuredGrid`.
+        """
+
+        import pyvista as pv
+
+        if cell_type is None:
+            cell_type = {
+                "line": pv.CellType.LINE,
+                "triangle": pv.CellType.TRIANGLE,
+                "triangle6": pv.CellType.QUADRATIC_TRIANGLE,
+                "tetra": pv.CellType.TETRA,
+                "tetra10": pv.CellType.QUADRATIC_TETRA,
+                "quad": pv.CellType.QUAD,
+                "quad8": pv.CellType.QUADRATIC_QUAD,
+                "quad9": pv.CellType.BIQUADRATIC_QUAD,
+                "hexahedron": pv.CellType.HEXAHEDRON,
+                "hexahedron20": pv.CellType.QUADRATIC_HEXAHEDRON,
+                "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
+                "VTK_LAGRANGE_HEXAHEDRON": pv.CellType.LAGRANGE_HEXAHEDRON,
+                "VTK_LAGRANGE_QUADRILATERAL": pv.CellType.LAGRANGE_QUADRILATERAL,
+                "VTK_LAGRANGE_LINE": pv.CellType.LAGRANGE_CURVE,
+            }[self.cell_type]
+
+        points = np.pad(self.points, ((0, 0), (0, 3 - self.points.shape[1])))
+        cells = np.pad(
+            self.cells, ((0, 0), (1, 0)), constant_values=self.cells.shape[1]
+        )
+        cell_types = cell_type * np.ones(self.ncells, dtype=int)
+
+        return pv.UnstructuredGrid(cells, cell_types, points)
 
     def write(self, filename="mesh.vtk", **kwargs):
         """Write the mesh to a file.

@@ -1346,7 +1346,10 @@ def tovoigt(A, strain=False):
 
     """
     dim = A.shape[:2]
-    if dim == (2, 2):
+    if dim == (1, 1):
+        B = np.zeros((1, *A.shape[2:]))
+        ij = [(0, 0)]
+    elif dim == (2, 2):
         B = np.zeros((3, *A.shape[2:]))
         ij = [(0, 0), (1, 1), (0, 1)]
     elif dim == (3, 3):
@@ -1354,8 +1357,8 @@ def tovoigt(A, strain=False):
         ij = [(0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (0, 2)]
     else:
         raise TypeError("Input shape must be (2, 2, ...) or (3, 3, ...).")
-    for i6, (i, j) in enumerate(ij):
-        B[i6] = A[i, j]
+    for a, (i, j) in enumerate(ij):
+        B[a] = A[i, j]
     if strain:
         B[dim[0] :] *= 2
     return B

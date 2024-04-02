@@ -46,6 +46,7 @@ def test_math_field():
     fem.math.interpolate(u)
     fem.math.grad(u)
     fem.math.grad(u, sym=True)
+    fem.math.tovoigt(fem.math.strain(v)[:1, :1])
     fem.math.tovoigt(fem.math.strain(v), strain=False)
     fem.math.tovoigt(fem.math.strain(v), strain=True)
     fem.math.strain(v)
@@ -84,7 +85,11 @@ def test_math():
 
     with pytest.raises(ValueError):
         fem.math.transpose(F, mode=3)
+
+    with pytest.raises(TypeError):
         fem.math.dot(A, B, mode=(4, 3))
+
+    with pytest.raises(TypeError):
         fem.math.dot(B, B, mode=(3, 3))
 
     fem.math.dot(C, B, mode=(2, 3))
@@ -108,6 +113,8 @@ def test_math():
 
     with pytest.raises(TypeError):
         fem.math.ddot(A, B, mode=(4, 3))
+
+    with pytest.raises(TypeError):
         fem.math.ddot(B, B, mode=(3, 3))
 
     fem.math.ddot(C, B, mode=(2, 3))

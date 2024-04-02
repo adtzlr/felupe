@@ -223,8 +223,12 @@ class Mesh(DiscreteGeometry):
             }[self.cell_type]
 
         points = np.pad(self.points, ((0, 0), (0, 3 - self.points.shape[1])))
+        cells = np.pad(
+            self.cells, ((0, 0), (1, 0)), constant_values=self.cells.shape[1]
+        )
+        cell_types = cell_type * np.ones(self.ncells, dtype=int)
 
-        return pv.UnstructuredGrid({cell_type: self.cells}, points)
+        return pv.UnstructuredGrid(cells, cell_types, points)
 
     def write(self, filename="mesh.vtk", **kwargs):
         """Write the mesh to a file.

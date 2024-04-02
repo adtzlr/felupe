@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.3.0] - 2024-04-02
+
 ### Added
 - Add a method to convert a mesh to a PyVista unstructured grid `Mesh.as_pyvista(cell_type=None)`.
 

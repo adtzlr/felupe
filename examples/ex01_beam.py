@@ -9,9 +9,9 @@ Cantilever beam under gravity
    * linear-elastic analysis
 
 The displacement due to gravity of a cantilever beam with young's modulus
-:math:`E=206000 N/mm^2`, poisson ratio :math:`\nu=0.3`, length :math:`L=2000 mm` and
-cross section area :math:`A=a \cdot a` with :math:`a=100 mm` is to be evaluated within
-a linear-elastic analysis[1]_.
+:math:`E=206000` MPa, poisson ratio :math:`\nu=0.3`, length :math:`L=2000` mm and
+cross section area :math:`A=a \cdot a` with :math:`a=100` mm is to be evaluated within
+a linear-elastic analysis [1]_.
 
 .. image:: ../../examples/ex01_beam_sketch.png
 

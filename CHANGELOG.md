@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add a method to convert a mesh to a PyVista unstructured grid `Mesh.as_pyvista(cell_type=None)`.
+
+### Changed
+- Change default line-width from `1.0` to `2.0` in `ViewMesh.plot(line_width=2.0)`.
+- Enforce a 3d points-array in `Mesh.as_meshio()`.
+
+### Fixed
+- Fix previously ignored line-width in the plot of a mesh `ViewMesh.plot(line_width=1.0)`.
+- Fix `math.tovoigt()` for one-dimensional tensors.
+
 ## [8.2.1] - 2024-03-30
 
 ### Fixed

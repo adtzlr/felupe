@@ -363,30 +363,7 @@ class ViewMesh(Scene):
     """
 
     def __init__(self, mesh, point_data=None, cell_data=None, cell_type=None):
-        import pyvista as pv
-
-        points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.points.shape[1])))
-
-        if cell_type is None:
-            pyvista_cell_types = {
-                "line": pv.CellType.LINE,
-                "triangle": pv.CellType.TRIANGLE,
-                "triangle6": pv.CellType.QUADRATIC_TRIANGLE,
-                "tetra": pv.CellType.TETRA,
-                "tetra10": pv.CellType.QUADRATIC_TETRA,
-                "quad": pv.CellType.QUAD,
-                "quad8": pv.CellType.QUADRATIC_QUAD,
-                "quad9": pv.CellType.BIQUADRATIC_QUAD,
-                "hexahedron": pv.CellType.HEXAHEDRON,
-                "hexahedron20": pv.CellType.QUADRATIC_HEXAHEDRON,
-                "hexahedron27": pv.CellType.TRIQUADRATIC_HEXAHEDRON,
-                "VTK_LAGRANGE_HEXAHEDRON": pv.CellType.LAGRANGE_HEXAHEDRON,
-                "VTK_LAGRANGE_QUADRILATERAL": pv.CellType.LAGRANGE_QUADRILATERAL,
-                "VTK_LAGRANGE_LINE": pv.CellType.LAGRANGE_CURVE,
-            }
-            cell_type = pyvista_cell_types[mesh.cell_type]
-
-        self.mesh = pv.UnstructuredGrid({cell_type: mesh.cells}, points)
+        self.mesh = mesh.as_pyvista(cell_type=cell_type)
 
         if point_data is None:
             point_data = {}

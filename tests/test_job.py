@@ -4,6 +4,7 @@ Created on Sun Aug 21 00:27:38 2022
 
 @author: z0039mte
 """
+import os
 
 import numpy as np
 import pytest
@@ -92,6 +93,8 @@ def test_curve():
     with pytest.raises(ValueError):
         curve.plot()
 
+    os.environ["FELUPE_VERBOSE"] = "true"
+
     curve.evaluate()
     curve.plot(xaxis=0, yaxis=0)
     curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
@@ -99,6 +102,8 @@ def test_curve():
     stretch = 1 + np.array(curve.x)[:, 0]
     area = 1**2 * np.pi
     force = (stretch - 1 / stretch**2) * area
+
+    os.environ.pop("FELUPE_VERBOSE")
 
     assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
 

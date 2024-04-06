@@ -146,7 +146,7 @@ class Job:
         cell_data=None,
         point_data_default=True,
         cell_data_default=True,
-        verbose=True,
+        verbose=None,
         parallel=False,
         **kwargs,
     ):
@@ -174,13 +174,13 @@ class Job:
             Flag to write default cell-data to the XDMF result file. This includes
             ``"Principal Values of Logarithmic Strain"``, ``"Logarithmic Strain"`` and
             ``"Deformation Gradient"``. Default is True.
-        verbose : bool or int, optional
+        verbose : bool or int or None, optional
             Verbosity level to control how messages are printed during evaluation. If
             1 or True and ``tqdm`` is installed, a progress bar is shown. If ``tqdm`` is
             missing or verbose is 2, more detailed text-based messages are printed.
-            Default is True. If the environmental variable FELUPE_VERBOSE is set and
-            its value is ``false``, then this argument is ignored and logging is turned
-            off.
+            Default is None. If None, verbosity is set to True. If None and the
+            environmental variable FELUPE_VERBOSE is set and its value is not ``true``,
+            then logging is turned off.
         parallel : bool, optional
             Flag to use a threaded version of :func:`numpy.einsum` during assembly.
             Requires ``einsumt``. This may add additional overhead to small-sized
@@ -211,11 +211,12 @@ class Job:
         tools.NewtonResult : A data class which represents the result found by
             Newton's method.
         """
-        VERBOSE = os.environ.get("FELUPE_VERBOSE")
-        if VERBOSE is None:
-            verbose = verbose
-        else:
-            verbose = VERBOSE == "true"
+        if verbose is None:
+            FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
+            if FELUPE_VERBOSE is None:
+                verbose = True
+            else:
+                verbose = FELUPE_VERBOSE == "true"
 
         if verbose:
             try:

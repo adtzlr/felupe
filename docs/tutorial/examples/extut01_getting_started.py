@@ -50,8 +50,8 @@ solid = fem.SolidBody(umat=umat, field=field)
 
 # %%
 # The problem is solved by an iterative :func:`Newton-Rhapson <felupe.newtonrhapson>`
-# procedure.
-res = fem.newtonrhapson(items=[solid], **loadcase)
+# procedure. A verbosity level of 2 enables a detailed text-based logging.
+res = fem.newtonrhapson(items=[solid], verbose=2, **loadcase)
 
 # %%
 # Results may be viewed in an interactive window.

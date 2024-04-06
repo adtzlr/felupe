@@ -51,9 +51,9 @@ step = fem.Step(items=[solid, gravity], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate()
 
 # %%
-# The magnitude of the displacement field are plotted on a 100x scaled deformed
+# The magnitude of the displacement field are plotted on a 300x scaled deformed
 # configuration.
-field.plot("Displacement", component=None, factor=100).show()
+field.plot("Displacement", component=None, factor=300).show()
 
 # %%
 # References

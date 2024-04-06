@@ -214,7 +214,7 @@ def newtonrhapson(
     dof0=None,
     ext0=None,
     solver=spsolve,
-    verbose=True,
+    verbose=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -257,11 +257,13 @@ def newtonrhapson(
     solver : callable, optional
         A sparse or dense solver (default is :func:`scipy.sparse.linalg.spsolve`). For a
         more performant alternative install PyPardiso and use :func:`pypardiso.spsolve`.
-    verbose : bool or int, optional
-        Verbosity level: False or 0 for no logging, True or 1 for a progress bar and
-        2 for a text-based logging output (default is True).If the environmental
-        variable FELUPE_VERBOSE is set and its value is ``false``, then this argument is
-        ignored and logging is turned off.
+    verbose : bool or int or None, optional
+        Verbosity level to control how messages are printed during evaluation. If
+        1 or True and ``tqdm`` is installed, a progress bar is shown. If ``tqdm`` is
+        missing or verbose is 2, more detailed text-based messages are printed.
+        Default is None. If None, verbosity is set to True. If None and the
+        environmental variable FELUPE_VERBOSE is set and its value is not ``true``,
+        then logging is turned off.
 
     Returns
     -------
@@ -345,11 +347,12 @@ def newtonrhapson(
     2.7482611016095555e-15
 
     """
-    VERBOSE = os.environ.get("FELUPE_VERBOSE")
-    if VERBOSE is None:
-        verbose = verbose
-    else:
-        verbose = VERBOSE == "true"
+    if verbose is None:
+        FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
+        if FELUPE_VERBOSE is None:
+            verbose = True
+        else:
+            verbose = FELUPE_VERBOSE == "true"
 
     if verbose:
         runtimes = [perf_counter()]

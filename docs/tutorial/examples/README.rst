@@ -3,5 +3,4 @@
 Tutorials
 =========
 
-This section is all about learning. Each tutorial focusses on a some lessons to learn
-with straightforward code blocks.
+This section is all about learning. Each tutorial focusses on some lessons to learn.

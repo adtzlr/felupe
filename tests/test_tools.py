@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+import os
 
 import numpy as np
 import pytest
@@ -157,9 +158,13 @@ def test_newton_simple():
 
     x0 = np.array([3.1])
 
+    os.environ["FELUPE_VERBOSE"] = "true"
+
     res = fem.tools.newtonrhapson(
         x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True
     )
+
+    os.environ.pop("FELUPE_VERBOSE")
 
     assert abs(res.fun) < 1e-6
     assert np.isclose(res.x, 3, rtol=1e-2)

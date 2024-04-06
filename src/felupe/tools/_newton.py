@@ -214,7 +214,7 @@ def newtonrhapson(
     dof0=None,
     ext0=None,
     solver=spsolve,
-    verbose=True,
+    verbose=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -257,7 +257,7 @@ def newtonrhapson(
     solver : callable, optional
         A sparse or dense solver (default is :func:`scipy.sparse.linalg.spsolve`). For a
         more performant alternative install PyPardiso and use :func:`pypardiso.spsolve`.
-    verbose : bool or int, optional
+    verbose : bool or int or None, optional
         Verbosity level to control how messages are printed during evaluation. If
         1 or True and ``tqdm`` is installed, a progress bar is shown. If ``tqdm`` is
         missing or verbose is 2, more detailed text-based messages are printed.

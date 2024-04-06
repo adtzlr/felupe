@@ -160,9 +160,7 @@ def test_newton_simple():
 
     os.environ["FELUPE_VERBOSE"] = "true"
 
-    res = fem.tools.newtonrhapson(
-        x0, fun, jac, solve=np.linalg.solve, maxiter=32, verbose=True
-    )
+    res = fem.tools.newtonrhapson(x0, fun, jac, solve=np.linalg.solve, maxiter=32)
 
     os.environ.pop("FELUPE_VERBOSE")
 

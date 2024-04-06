@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-### Changed
-- Set the default verbosity level to None in `newtonrhapson(verbose=None)` and `Job.evaluate(verbose=None)`. If None, this defaults to True (as before) but evaluates the environmental variable `FELUPE_VERBOSE` if present with `FELUPE_VERBOSE == "true"`.
+## [8.3.1] - 2024-04-06
+
+### Fixed
+- Set the default verbosity level to None in `newtonrhapson(verbose=None)` and `Job.evaluate(verbose=None)`. If None, this defaults to True (as before) but evaluates the environmental variable `FELUPE_VERBOSE` if present with `FELUPE_VERBOSE == "true"`. This does not ignore custom verbosity levels.
 
 ## [8.3.0] - 2024-04-02
 

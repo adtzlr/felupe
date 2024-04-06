@@ -278,9 +278,10 @@ for iteration in range(8):
 # %%
 # By alternative, one may also use the :func:`Newton-Rhapson <felupe.newtonrhapson>`
 # function of FElupe.
+field[0].fill(0)
 solid = fem.SolidBody(umat, field)
 loadcase = {"dof1": dof1, "dof0": dof0, "ext0": ext0}
-res = fem.newtonrhapson(items=[solid], **loadcase)
+res = fem.newtonrhapson(items=[solid], verbose=2, tol=1e-12, **loadcase)
 field = res.x
 
 

@@ -43,6 +43,6 @@ uniaxial = fem.Step(
 # This step is now added to a **Job**. The results are exported after each completed and
 # successful substep as a time-series XDMF-file.
 job = fem.Job(steps=[uniaxial])
-job.evaluate(filename="result.xdmf")
+job.evaluate(filename="result.xdmf", verbose=True)
 
 field.plot("Principal Values of Logarithmic Strain").show()

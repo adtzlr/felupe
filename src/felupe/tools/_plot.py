@@ -187,6 +187,7 @@ class Scene:
                 }
 
                 if "Principal Values of " in data_label:
+                    data[:] = np.flip(np.sort(data, axis=-1), axis=-1)
                     component_labels_dict[2] = [
                         "(Max. Principal)",
                         "(Min. Principal)",
@@ -434,7 +435,7 @@ class ViewField(ViewMesh):
                 "Principal Values of Logarithmic Strain": field.evaluate.strain(
                     tensor=False
                 )
-                .mean(-2)[::-1]
+                .mean(-2)
                 .T,
             }
         elif callable(project):
@@ -446,7 +447,7 @@ class ViewField(ViewMesh):
                     field.evaluate.strain(tensor=True, asvoigt=True), field.region
                 ),
                 "Principal Values of Logarithmic Strain": project(
-                    field.evaluate.strain(tensor=False)[::-1], field.region
+                    field.evaluate.strain(tensor=False), field.region
                 ),
             }
         else:
@@ -538,7 +539,7 @@ class ViewSolid(ViewField):
             if project is None:
                 cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T
                 cell_data_from_solid[f"Principal Values of {stress_label}"] = (
-                    eigvalsh(stress).mean(-2)[::-1].T
+                    eigvalsh(stress).mean(-2).T
                 )
                 cell_data_from_solid[f"Equivalent of {stress_label}"] = (
                     equivalent_von_mises(stress).mean(-2).T
@@ -549,7 +550,7 @@ class ViewSolid(ViewField):
                     tovoigt(stress), solid.field.region
                 )
                 point_data_from_solid[f"Principal Values of {stress_label}"] = project(
-                    eigvalsh(stress)[::-1], solid.field.region
+                    eigvalsh(stress), solid.field.region
                 )
                 point_data_from_solid[f"Equivalent of {stress_label}"] = project(
                     equivalent_von_mises(stress), solid.field.region

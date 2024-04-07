@@ -149,13 +149,13 @@ C = dot(transpose(F), F)
 stretches = np.sqrt(eigh(C)[0])
 # stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=False)
 
-view = field.view(
-    point_data={"Principal Values of Stretches": fem.project(stretches[::-1], region)}
-)
+stretches_at_points = fem.project(stretches, region)
+stretches_at_points[-1] = 1  # mpc centerpoint
+
+view = field.view(point_data={"Principal Values of Stretches": stretches_at_points})
 plotter = view.plot(
     "Principal Values of Stretches",
     component=0,
-    clim=[stretches[-1].min(), stretches[-1].max()],
 )
 plotter = mpc.plot(plotter=plotter)
 plotter.show()

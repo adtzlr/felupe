@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Sort array of principal values in descending order before plotting in `Scene.plot("Principal Values of ...")`. This ensures that the labels are matching user-defined arrays of principal values.
+
 ## [8.3.1] - 2024-04-06
 
 ### Fixed

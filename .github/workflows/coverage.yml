@@ -25,5 +25,7 @@ jobs:
         pip install tox
         tox -- --cov felupe --cov-report xml --cov-report term
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       if: ${{ matrix.python-version == '3.12' }}
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

@@ -122,6 +122,8 @@ class CharacteristicCurve(Job):
         ylabel=None,
         xscale=1.0,
         yscale=1.0,
+        xoffset=0.0,
+        yoffset=0.0,
         gradient=False,
         swapaxes=False,
         ax=None,
@@ -154,6 +156,10 @@ class CharacteristicCurve(Job):
             A scaling factor for the displacement data (default is 1.0).
         yscale : float, optional
             A scaling factor the reaction force data (default is 1.0).
+        xoffset : float, optional
+            An offset for the displacement data (default is 0.0).
+        yoffset : float, optional
+            An offset for the reaction force data (default is 0.0).
         gradient : bool, optional
             A flag to plot the gradient of the y-data. Uses
             ``numpy.gradient(edge_order=2)``. The gradient data is set to ``np.nan`` for
@@ -213,7 +219,9 @@ class CharacteristicCurve(Job):
             xaxis, yaxis = yaxis, xaxis
             xscale, yscale = yscale, xscale
 
-        ax.plot(x[:, xaxis] * xscale, y[:, yaxis] * yscale, **kwargs)
+        ax.plot(
+            xoffset + x[:, xaxis] * xscale, yoffset + y[:, yaxis] * yscale, **kwargs
+        )
 
         if xlabel is not None:
             ax.set_xlabel(xlabel)

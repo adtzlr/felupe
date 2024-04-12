@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add `math.solve_2d(A, b, solver=np.linalg.solve, **kwargs)` to be used in `newtonrhapson(solve=solve_2d, ...)` for two-dimensional unknowns. This is useful for local Newton-iterations related to viscoelastic evolution equations inside constitutive material formulations.
+- Add x- and y-offsets in `Job.plot(xoffset=0.0, yoffset=0.0)`.
 
 ### Changed
 - Wrap the ax-title with the parameters of the material model in `ConstitutiveMaterial.plot()`.

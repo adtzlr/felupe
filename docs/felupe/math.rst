@@ -56,7 +56,13 @@ This module contains math functions.
    math.reshape
    math.ravel
 
+** Equation system**
+
+.. autosummary::
+
+   math.solve_2d
+
 **Detailed API Reference**
 
 .. automodule:: felupe.math
-   :members: linsteps, rotation_matrix, deformation_gradient, strain, strain_stretch_1d, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, equivalent_von_mises, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel
+   :members: linsteps, rotation_matrix, deformation_gradient, strain, strain_stretch_1d, extract, values, norm, interpolate, grad, identity, sym, dya, inv, det, dev,cof, eig, eigh, eigvals, eigvalsh, equivalent_von_mises, transpose, majortranspose, trace, cdya_ik, cdya_il, cdya, cross, dot, ddot, tovoigt, reshape, ravel, solve_2d

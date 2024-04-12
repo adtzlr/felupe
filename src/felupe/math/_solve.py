@@ -73,7 +73,8 @@ def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
 
     """
 
-    size = np.prod(b.shape[:2])
+    shape = b.shape[:2]
+    size = np.prod(shape)
     trax = b.shape[2:]
 
     # flatten and reshape A to a 2d-matrix of shape (..., M * N, M * N) and
@@ -82,4 +83,4 @@ def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
     A_1d = np.einsum("ij...->...ij", A.reshape(size, size, np.prod(trax)))
 
     # move the batch-dimensions to the back and reshape x
-    return np.einsum("i...->...i", solve(A_1d, b_1d, **kwargs)).reshape(b.shape)
+    return np.einsum("i...->...i", solve(A_1d, b_1d, **kwargs)).reshape(*shape, *trax)

@@ -48,8 +48,6 @@ class Point(Mesh):
 
     >>> mesh.cells
     array([[0]])
-
-    >>> mesh.imshow()
     """
 
     def __init__(self, a=0.0):

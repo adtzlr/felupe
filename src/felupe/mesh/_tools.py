@@ -170,8 +170,8 @@ def fill_between(mesh, other_mesh, n=11):
        >>>
        >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
        >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
-       >>>     axis=2, angle_deg=20
-       >>> ).expand(z=1.2)
+       ...     axis=2, angle_deg=20
+       ... ).expand(z=1.2)
        >>> mesh = fem.mesh.fill_between(inner, outer, n=6)
        >>>
        >>> mesh.plot().show()
@@ -648,11 +648,11 @@ def translate(points, cells, cell_type, move, axis):
     >>>
     >>> mesh = fem.Circle(n=6)
     >>> mesh.points.min(axis=0), mesh.points.max(axis=0)
-    (array([0., 0., 0.]), array([1., 1., 1.]))
+    (array([-1., -1.]), array([1., 1.]))
 
     >>> translated = fem.mesh.translate(mesh, 0.3, axis=1)
     >>> translated.points.min(axis=0), translated.points.max(axis=0)
-    (array([0. , 0.3, 0. ]), array([1. , 1.3, 1. ]))
+    (array([-1. , -0.7]), array([1. , 1.3]))
 
     See Also
     --------
@@ -702,10 +702,6 @@ def flip(points, cells, cell_type, mask=None):
     >>> mesh = fem.Rectangle(n=3)
     >>> mesh.update(points=mesh.points * np.array([[-1, 1]]))
     >>> region = fem.RegionQuad(mesh)
-    UserWarning: Negative volumes for cells
-     [0 1 2 3]
-    Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` and re-create the region.
-      warnings.warn(message_negative_volumes)
 
     The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is evaluated
     to -1.0.

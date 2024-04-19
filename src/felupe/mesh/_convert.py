@@ -435,7 +435,7 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
 
     >>> mesh_with_midpoints_faces
     <felupe Mesh object>
-      Number of points: 36
+      Number of points: 61
       Number of cells:
         quad: 25
 

@@ -97,8 +97,8 @@ class Mesh(DiscreteGeometry):
        >>> import felupe as fem
        >>>
        >>> points = np.array(
-       >>>     [[0.0, 0.0], [0.5, 0.1], [1.0, 0.2], [0.0, 1.0], [0.5, 0.9], [1.0, 0.8]]
-       >>> )
+       ...     [[0.0, 0.0], [0.5, 0.1], [1.0, 0.2], [0.0, 1.0], [0.5, 0.9], [1.0, 0.8]]
+       ... )
        >>> cells = np.array([[0, 1, 4, 3], [1, 2, 5, 4]])
        >>> mesh = fem.Mesh(points, cells, cell_type="quad")
        >>>
@@ -369,7 +369,7 @@ class Mesh(DiscreteGeometry):
         >>> mesh.update(points=np.vstack([mesh.points, mesh.points]))
         >>> point_ids = mesh.get_point_ids([0, 1, 1])
         >>> point_ids
-        array([1320, 2651], dtype=int64)
+        array([1320, 2651])
 
         >>> mesh.points[point_ids]
         array([[0., 1., 1.],
@@ -438,6 +438,7 @@ class Mesh(DiscreteGeometry):
         Find the cell ids which share at least one point with the given cell id(s).
 
         >>> cell_ids_neighbours = mesh.get_cell_ids_neighbours(cell_ids)
+        >>> cell_ids_neighbours
         array([880, 881, 890, 891, 980, 981, 990, 991])
 
         """
@@ -464,15 +465,16 @@ class Mesh(DiscreteGeometry):
         >>> mesh = fem.Cube(n=11)
         >>> point_ids = mesh.get_point_ids([0, 1, 1])
         >>> point_ids
-        array([1320], dtype=int64)
+        array([1320])
 
         >>> cell_ids = mesh.get_cell_ids(point_ids)
         >>> cell_ids
-        array([990], dtype=int64)
+        array([990])
 
         Find the cell ids which share at least one point with the given cell id(s).
 
         >>> cell_ids_neighbours = mesh.get_cell_ids_neighbours(cell_ids)
+        >>> cell_ids_neighbours
         array([880, 881, 890, 891, 980, 981, 990, 991])
 
         Find the shared point ids for the list of cell ids.
@@ -541,18 +543,20 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        >>> import numpy as np
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Rectangle(b=(3, 1), n=(16, 6))
+        ..  pyvista-plot::
+            :context:
 
-        ..  image:: images/mesh_corners_before.png
-            :width: 400px
+            >>> import numpy as np
+            >>> import felupe as fem
+            >>>
+            >>> mesh = fem.Rectangle(b=(3, 1), n=(16, 6))
+            >>> mesh.plot().show()
 
-        >>> mesh = mesh.modify_corners()  # inplace
+        ..  pyvista-plot::
+            :context:
 
-        ..  image:: images/mesh_corners_after.png
-            :width: 400px
+            >>> mesh = mesh.modify_corners()  # inplace
+            >>> mesh.plot().show()
 
         """
 
@@ -1172,11 +1176,11 @@ class Mesh(DiscreteGeometry):
         >>>
         >>> mesh = fem.Circle(n=6)
         >>> mesh.points.min(axis=0), mesh.points.max(axis=0)
-        (array([0., 0., 0.]), array([1., 1., 1.]))
+        (array([-1., -1.]), array([1., 1.]))
 
         >>> translated = mesh.translate(0.3, axis=1)
         >>> translated.points.min(axis=0), translated.points.max(axis=0)
-        (array([0. , 0.3, 0. ]), array([1. , 1.3, 1. ]))
+        (array([-1. , -0.7]), array([1. , 1.3]))
 
         See Also
         --------
@@ -1477,7 +1481,7 @@ class Mesh(DiscreteGeometry):
 
         >>> mesh_with_midpoints_faces
         <felupe Mesh object>
-          Number of points: 36
+          Number of points: 61
           Number of cells:
             quad: 25
 
@@ -1516,7 +1520,7 @@ class Mesh(DiscreteGeometry):
            ... )
            >>>
            >>> plotter = mesh.plot(opacity=0.5)
-           >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
+           >>> actor = plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
            >>> plotter.show()
 
         >>> mesh_with_midpoints_volumes

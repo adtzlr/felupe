@@ -93,13 +93,12 @@ class LinearElastic(ConstitutiveMaterial):
     
     Examples
     --------
-    >>> import felupe as fem
-    >>> 
-    >>> umat = fem.LinearElastic(E=1, nu=0.3)
-    >>> ax = umat.plot()
-
-    ..  image:: images/umat_linearelastic.png
-        :width: 400px
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>> 
+        >>> umat = fem.LinearElastic(E=1, nu=0.3)
+        >>> ax = umat.plot()
 
     """
 
@@ -243,13 +242,12 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>> 
-    >>> umat = fem.constitution.LinearElasticTensorNotation(E=1, nu=0.3)
-    >>> ax = umat.plot()
-
-    ..  image:: images/umat_linearelastic.png
-        :width: 400px
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>> 
+        >>> umat = fem.constitution.LinearElasticTensorNotation(E=1, nu=0.3)
+        >>> ax = umat.plot()
 
     """
 

@@ -76,16 +76,12 @@ def saint_venant_kirchhoff(C, mu, lmbda):
     ..  warning::
         The Saint-Venant Kirchhoff material formulation is unstable for large strains.
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.saint_venant_kirchhoff, mu=1.0, lmbda=20.0)
-    >>> ax = umat.plot(incompressible=False)
-    UserWarning: Uniaxial data with volume ratio det(F) <= 0 included.
-    UserWarning: Planar Shear data with volume ratio det(F) <= 0 included.
-    UserWarning: Biaxial data with volume ratio det(F) <= 0 included.
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_saint_venant_kirchhoff.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.saint_venant_kirchhoff, mu=1.0, lmbda=20.0)
+        >>> ax = umat.plot(incompressible=False)
 
     """
     I1 = trace(C) / 2 - 3 / 2
@@ -114,13 +110,12 @@ def neo_hooke(C, mu):
     Examples
     --------
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.neo_hooke, mu=1.0)
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_neo_hooke.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.neo_hooke, mu=1.0)
+        >>> ax = umat.plot(incompressible=True)
 
     """
     return mu / 2 * (det(C) ** (-1 / 3) * trace(C) - 3)
@@ -168,13 +163,12 @@ def mooney_rivlin(C, C10, C01):
     Examples
     --------
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.mooney_rivlin, C10=0.3, C01=0.8)
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_mooney_rivlin.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.mooney_rivlin, C10=0.3, C01=0.8)
+        >>> ax = umat.plot(incompressible=True)
 
     """
     J3 = det(C) ** (-1 / 3)
@@ -223,13 +217,12 @@ def yeoh(C, C10, C20, C30):
     Examples
     --------
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.yeoh, C10=0.5, C20=-0.1, C30=0.02)
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_yeoh.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.yeoh, C10=0.5, C20=-0.1, C30=0.02)
+        >>> ax = umat.plot(incompressible=True)
 
     """
 
@@ -290,15 +283,14 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     Examples
     --------
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(
-    >>>     fem.third_order_deformation, C10=0.5, C01=0.1, C11=0.01, C20=-0.1, C30=0.02
-    >>> )
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_third_order_deformation.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(
+        ...     fem.third_order_deformation, C10=0.5, C01=0.1, C11=0.01, C20=-0.1, C30=0.02
+        ... )
+        >>> ax = umat.plot(incompressible=True)
 
     """
     J3 = det(C) ** (-1 / 3)
@@ -345,13 +337,12 @@ def ogden(C, mu, alpha):
     Examples
     --------
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.ogden, mu=[1, 0.2], alpha=[1.7, -1.5])
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_ogden.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.ogden, mu=[1, 0.2], alpha=[1.7, -1.5])
+        >>> ax = umat.plot(incompressible=True)
 
     """
 
@@ -412,14 +403,13 @@ def arruda_boyce(C, C1, limit):
 
     Examples
     --------
-
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.arruda_boyce, C1=1.0, limit=3.2)
-    >>> ax = umat.plot(incompressible=True)
     
-    ..  image:: images/umat_arruda_boyce.png
-        :width: 400px
+    ..  pyvista-plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.arruda_boyce, C1=1.0, limit=3.2)
+        >>> ax = umat.plot(incompressible=True)
 
     """
     I1 = det(C) ** (-1 / 3) * trace(C)
@@ -487,15 +477,14 @@ def extended_tube(C, Gc, delta, Ge, beta):
     Examples
     --------
 
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(
-    >>>     fem.extended_tube, Gc=0.1867, Ge=0.2169, beta=0.2, delta=0.09693
-    >>> )
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_extended_tube.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(
+        ...     fem.extended_tube, Gc=0.1867, Ge=0.2169, beta=0.2, delta=0.09693
+        ... )
+        >>> ax = umat.plot(incompressible=True)
 
     References
     ----------
@@ -519,13 +508,13 @@ def van_der_waals(C, mu, limit, a, beta):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.van_der_waals, mu=1.0, beta=0.1, a=0.5, limit=5.0)
-    >>> ax = umat.plot(incompressible=True)
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_van_der_waals.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.van_der_waals, mu=1.0, beta=0.1, a=0.5, limit=5.0)
+        >>> ax = umat.plot(incompressible=True)
+
     """
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
@@ -544,20 +533,19 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(
-    >>>     fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, dtime=1.0, nstatevars=6
-    >>> )
-    >>> ax = umat.plot(
-    >>>    incompressible=True,
-    >>>    ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
-    >>>    ps=None,
-    >>>    bx=None,
-    >>> )
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_finite_strain_viscoelastic.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(
+        ...     fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, dtime=1.0, nstatevars=6
+        ... )
+        >>> ax = umat.plot(
+        ...    incompressible=True,
+        ...    ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ...    ps=None,
+        ...    bx=None,
+        ... )
     """
 
     # update of state variables by evolution equation

@@ -175,13 +175,12 @@ class NeoHooke(ConstitutiveMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
-    >>> ax = umat.plot()
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_neohooke_nearlyincompressible.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+        >>> ax = umat.plot()
 
     """
 
@@ -422,13 +421,12 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
-    >>> ax = umat.plot()
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_neohooke_compressible.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
+        >>> ax = umat.plot()
 
     """
 

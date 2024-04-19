@@ -154,15 +154,14 @@ class CompositeMaterial(ConstitutiveMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> nh = fem.NeoHooke(mu=1.0)
-    >>> vol = fem.Volumetric(bulk=2.0)
-    >>> umat = nh & vol
-    >>> ax = umat.plot()
+    ..  pyvista-plot::
 
-    ..  image:: images/umat_composite.png
-        :width: 400px
+        >>> import felupe as fem
+        >>>
+        >>> nh = fem.NeoHooke(mu=1.0)
+        >>> vol = fem.Volumetric(bulk=2.0)
+        >>> umat = nh & vol
+        >>> ax = umat.plot()
 
     """
 

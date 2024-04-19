@@ -126,19 +126,18 @@ class ViewMaterial(PlotMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=2), r=3, m=1, beta=0)
-    >>> view = fem.ViewMaterial(
-    >>>     umat,
-    >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
-    >>>     ps=None,
-    >>>     bx=None,
-    >>> )
-    >>> ax = view.plot(show_title=True, show_kwargs=True)
-
-    .. image:: images/umat.png
-       :width: 400px
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=2), r=3, m=1, beta=0)
+        >>> view = fem.ViewMaterial(
+        ...     umat,
+        ...     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ...     ps=None,
+        ...     bx=None,
+        ... )
+        >>> ax = view.plot(show_title=True, show_kwargs=True)
 
     """
 
@@ -366,26 +365,24 @@ class ViewMaterialIncompressible(PlotMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> umat = fem.Hyperelastic(fem.extended_tube, Gc=0.2, Ge=0.2, beta=0.2, delta=0.1)
-    >>> preview = fem.ViewMaterialIncompressible(umat)
-    >>> ax = preview.plot(show_title=True, show_kwargs=True)
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(fem.extended_tube, Gc=0.2, Ge=0.2, beta=0.2, delta=0.1)
+        >>> preview = fem.ViewMaterialIncompressible(umat)
+        >>> ax = preview.plot(show_title=True, show_kwargs=True)
+    
+    ..  pyvista-plot::
 
-    .. image:: images/preview_hyperelastic.png
-       :width: 400px
-
-    >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
-    >>> view = fem.ViewMaterialIncompressible(
-    >>>     umat,
-    >>>     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
-    >>>     ps=None,
-    >>>     bx=None,
-    >>> )
-    >>> ax = view.plot(show_title=True, show_kwargs=True)
-
-    .. image:: images/umat_incompressible.png
-       :width: 400px
+        >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
+        >>> view = fem.ViewMaterialIncompressible(
+        ...     umat,
+        ...     ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ...     ps=None,
+        ...     bx=None,
+        ... )
+        >>> ax = view.plot(show_title=True, show_kwargs=True)
 
     """
 

@@ -176,6 +176,8 @@ class NeoHooke(ConstitutiveMaterial):
     Examples
     --------
     ..  plot::
+        :include-source: True
+        :nofigs: False
 
         >>> import felupe as fem
         >>>
@@ -422,6 +424,8 @@ class NeoHookeCompressible(ConstitutiveMaterial):
     Examples
     --------
     ..  plot::
+        :include-source: True
+        :nofigs: False
 
         >>> import felupe as fem
         >>>

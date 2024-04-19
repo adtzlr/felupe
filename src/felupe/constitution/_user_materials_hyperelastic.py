@@ -111,6 +111,8 @@ class Hyperelastic(Material):
     View force-stretch curves on elementary incompressible deformations.
     
     ..  plot::
+        :include-source: True
+        :nofigs: False
 
         >>> import felupe as fem
         >>> import tensortrax.math as tm

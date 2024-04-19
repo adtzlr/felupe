@@ -57,6 +57,8 @@ class OgdenRoxburgh(ConstitutiveMaterial):
     Examples
     --------
     ..  plot::
+        :include-source: True
+        :nofigs: False
         
         >>> import felupe as fem
         >>>

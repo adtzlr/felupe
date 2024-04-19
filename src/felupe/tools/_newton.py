@@ -328,7 +328,20 @@ def newtonrhapson(
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
     >>> boundaries, loadcase = fem.dof.uniaxial(field, move=0.2, clamped=True)
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
-    >>> res = fem.newtonrhapson(items=[solid], **loadcase)
+    >>> res = fem.newtonrhapson(items=[solid], **loadcase)  # doctest: +ELLIPSIS
+    <BLANKLINE>
+    Newton-Rhapson solver
+    =====================
+    <BLANKLINE>
+    | # | norm(fun) |  norm(dx) |
+    |---|-----------|-----------|
+    | 1 | 7.553e-02 | 1.898e+00 |
+    | 2 | 1.310e-03 | 5.091e-02 |
+    | 3 | 3.086e-07 | 6.698e-04 |
+    | 4 | 2.255e-14 | 1.527e-07 |
+    <BLANKLINE>
+    Converged in 4 iterations ...
+    <BLANKLINE>
 
     Newton's method had success
 
@@ -344,7 +357,7 @@ def newtonrhapson(
     3e-15.
 
     >>> np.linalg.norm(res.fun[loadcase["dof1"]])
-    2.7482611016095555e-15
+    2.7384964752762237e-15
 
     """
     if verbose is None:

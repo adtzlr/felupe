@@ -61,9 +61,9 @@ class GaussLegendre(Scheme):
        >>> element = fem.Line()
        >>> quadrature = fem.GaussLegendre(order=2, dim=1)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -73,9 +73,9 @@ class GaussLegendre(Scheme):
        >>> element = fem.QuadraticQuad()
        >>> quadrature = fem.GaussLegendre(order=2, dim=2)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -85,9 +85,9 @@ class GaussLegendre(Scheme):
        >>> element = fem.QuadraticHexahedron()
        >>> quadrature = fem.GaussLegendre(order=2, dim=3)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -97,9 +97,9 @@ class GaussLegendre(Scheme):
        >>> element = fem.ArbitraryOrderLagrangeElement(order=5, dim=2)
        >>> quadrature = fem.GaussLegendre(order=5, dim=2)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
     """
 
     def __init__(self, order: int, dim: int, permute: bool = True):
@@ -190,9 +190,9 @@ class GaussLegendreBoundary(GaussLegendre):
        >>> element = fem.QuadraticQuad()
        >>> quadrature = fem.GaussLegendreBoundary(order=2, dim=2)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -202,9 +202,9 @@ class GaussLegendreBoundary(GaussLegendre):
        >>> element = fem.QuadraticHexahedron()
        >>> quadrature = fem.GaussLegendreBoundary(order=2, dim=3)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -214,9 +214,9 @@ class GaussLegendreBoundary(GaussLegendre):
        >>> element = fem.ArbitraryOrderLagrangeElement(order=5, dim=3)
        >>> quadrature = fem.GaussLegendreBoundary(order=5, dim=3)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     """
 

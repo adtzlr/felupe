@@ -64,8 +64,7 @@ def save(
     >>> umat = fem.NeoHooke(mu=1)
     >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
     >>> step = fem.Step(items=[solid], boundaries=boundaries)
-    >>> job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-    >>> job.evaluate()
+    >>> job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"]).evaluate()
 
     >>> fem.save(region, field, forces=job.res.fun, gradient=solid.results.stress)
 

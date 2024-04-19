@@ -53,9 +53,9 @@ class Triangle(Scheme):
        >>> element = fem.Triangle()
        >>> quadrature = fem.TriangleQuadrature(order=1)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
 
     .. pyvista-plot::
@@ -66,9 +66,9 @@ class Triangle(Scheme):
        >>> element = fem.QuadraticTriangle()
        >>> quadrature = fem.TriangleQuadrature(order=2)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -78,9 +78,9 @@ class Triangle(Scheme):
        >>> element = fem.QuadraticTriangle()
        >>> quadrature = fem.TriangleQuadrature(order=5)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     References
     ----------

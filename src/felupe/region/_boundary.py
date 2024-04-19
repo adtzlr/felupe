@@ -338,7 +338,7 @@ class RegionBoundary(Region):
     >>> region.dA
     array([[[ 0.  , -0.5 ,  0.  ,  0.5 ,  0.  ,  0.  ],
             [ 0.  , -0.5 ,  0.  ,  0.5 ,  0.  ,  0.  ]],
-
+    <BLANKLINE>
            [[-0.25, -0.  , -0.25, -0.  ,  0.25,  0.25],
             [-0.25, -0.  , -0.25, -0.  ,  0.25,  0.25]]])
 
@@ -355,7 +355,7 @@ class RegionBoundary(Region):
     >>> region.dA / region.dV  ## this is equal to ``region.normals``
     array([[[ 0., -1.,  0.,  1.,  0.,  0.],
             [ 0., -1.,  0.,  1.,  0.,  0.]],
-
+    <BLANKLINE>
            [[-1., -0., -1., -0.,  1.,  1.],
             [-1., -0., -1., -0.,  1.,  1.]]])
 

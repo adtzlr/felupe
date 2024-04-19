@@ -53,9 +53,9 @@ class Tetrahedron(Scheme):
        >>> element = fem.Tetra()
        >>> quadrature = fem.TetrahedronQuadrature(order=1)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
 
     .. pyvista-plot::
@@ -66,9 +66,9 @@ class Tetrahedron(Scheme):
        >>> element = fem.QuadraticTetra()
        >>> quadrature = fem.TetrahedronQuadrature(order=2)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     .. pyvista-plot::
        :include-source: True
@@ -78,9 +78,9 @@ class Tetrahedron(Scheme):
        >>> element = fem.QuadraticTetra()
        >>> quadrature = fem.TetrahedronQuadrature(order=5)
        >>> quadrature.plot(
-       >>>     plotter=element.plot(add_point_labels=False, show_points=False),
-       >>>     weighted=True,
-       >>> ).show()
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=True,
+       ... ).show()
 
     References
     ----------

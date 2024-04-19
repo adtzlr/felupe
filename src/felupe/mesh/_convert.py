@@ -347,7 +347,8 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
        >>> mesh_with_midpoints_edges = fem.mesh.add_midpoints_edges(mesh)
        >>>
        >>> plotter = mesh_with_midpoints_edges.plot(
-       >>>     plotter=mesh.plot(), style="points", color="black")
+       ...     plotter=mesh.plot(), style="points", color="black"
+       ... )
        >>> plotter.show()
 
     >>> mesh_with_midpoints_edges
@@ -424,12 +425,13 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
        >>>
        >>> mesh = fem.Rectangle(n=6)
        >>> mesh_with_midpoints_faces = fem.mesh.add_midpoints_faces(
-       >>>     mesh, cell_type_new="quad"
-       >>> )
+       ...     mesh, cell_type_new="quad"
+       ... )
        >>>
        >>> plotter = mesh_with_midpoints_faces.plot(
-       >>>     plotter=mesh.plot(), style="points", color="black"
-       >>> ).show()
+       ...     plotter=mesh.plot(), style="points", color="black"
+       ... )
+       >>> plotter.show()
 
     >>> mesh_with_midpoints_faces
     <felupe Mesh object>
@@ -508,11 +510,11 @@ def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
        >>>
        >>> mesh = fem.Cube(n=6)
        >>> mesh_with_midpoints_volumes = fem.mesh.add_midpoints_volumes(
-       >>>     mesh, cell_type_new="hexahedron9"
-       >>> )
+       ...     mesh, cell_type_new="hexahedron9"
+       ... )
        >>>
        >>> plotter = mesh.plot(opacity=0.5)
-       >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
+       >>> actor = plotter.add_points(mesh_with_midpoints_volumes.points, color="black")
        >>> plotter.show()
 
     >>> mesh_with_midpoints_volumes

@@ -399,11 +399,11 @@ class Mesh(DiscreteGeometry):
         >>> mesh = fem.Cube(n=11)
         >>> point_ids = mesh.get_point_ids([0, 1, 1])
         >>> point_ids
-        array([1320], dtype=int64)
+        array([1320])
 
         >>> cell_ids = mesh.get_cell_ids(point_ids)
         >>> cell_ids
-        array([990], dtype=int64)
+        array([990])
 
         """
         return np.argwhere(np.isin(self.cells, point_ids).any(axis=1))[:, 0]
@@ -429,16 +429,16 @@ class Mesh(DiscreteGeometry):
         >>> mesh = fem.Cube(n=11)
         >>> point_ids = mesh.get_point_ids([0, 1, 1])
         >>> point_ids
-        array([1320], dtype=int64)
+        array([1320])
 
         >>> cell_ids = mesh.get_cell_ids(point_ids)
         >>> cell_ids
-        array([990], dtype=int64)
+        array([990])
 
         Find the cell ids which share at least one point with the given cell id(s).
 
         >>> cell_ids_neighbours = mesh.get_cell_ids_neighbours(cell_ids)
-        array([880, 881, 890, 891, 980, 981, 990, 991], dtype=int64)
+        array([880, 881, 890, 891, 980, 981, 990, 991])
 
         """
         return self.get_cell_ids(self.cells[cell_ids])
@@ -473,7 +473,7 @@ class Mesh(DiscreteGeometry):
         Find the cell ids which share at least one point with the given cell id(s).
 
         >>> cell_ids_neighbours = mesh.get_cell_ids_neighbours(cell_ids)
-        array([880, 881, 890, 891, 980, 981, 990, 991], dtype=int64)
+        array([880, 881, 890, 891, 980, 981, 990, 991])
 
         Find the shared point ids for the list of cell ids.
 
@@ -503,7 +503,7 @@ class Mesh(DiscreteGeometry):
         >>> mesh = fem.Cube(n=11)
         >>> point_ids_corners = mesh.get_point_ids_corners()
         >>> point_ids_corners
-        array([   0, 1210,   10, 1220,  110, 1320,  120, 1330], dtype=int64)
+        array([   0, 1210,   10, 1220,  110, 1320,  120, 1330])
 
         """
 
@@ -653,8 +653,8 @@ class Mesh(DiscreteGeometry):
         >>>
         >>> mesh_dual = mesh.dual(points_per_cell=1, disconnect=False)
         >>> region_dual = fem.RegionConstantQuad(
-        >>>     mesh_dual, quadrature=region.quadrature, grad=False
-        >>> )
+        ...     mesh_dual, quadrature=region.quadrature, grad=False
+        ... )
         >>>
         >>> displacement = fem.FieldPlaneStrain(region, dim=2)
         >>> pressure = fem.Field(region_dual)
@@ -1029,8 +1029,8 @@ class Mesh(DiscreteGeometry):
            >>>
            >>> inner = fem.mesh.revolve(fem.Point(1)).expand(z=0.4).translate(0.2, axis=2)
            >>> outer = fem.mesh.revolve(fem.Point(2), phi=160).rotate(
-           >>>     axis=2, angle_deg=20
-           >>> ).expand(z=1.2)
+           ...     axis=2, angle_deg=20
+           ... ).expand(z=1.2)
            >>> mesh = inner.fill_between(outer, n=6)
            >>>
            >>> mesh.plot().show()
@@ -1070,10 +1070,6 @@ class Mesh(DiscreteGeometry):
         >>> mesh = fem.Rectangle(n=3)
         >>> mesh.update(points=mesh.points * np.array([[-1, 1]]))
         >>> region = fem.RegionQuad(mesh)
-        UserWarning: Negative volumes for cells
-         [0 1 2 3]
-        Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` and re-create the region.
-          warnings.warn(message_negative_volumes)
 
         The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is evaluated
         to -1.0.
@@ -1433,8 +1429,8 @@ class Mesh(DiscreteGeometry):
            >>> mesh_with_midpoints_edges = mesh.add_midpoints_edges()
            >>>
            >>> mesh_with_midpoints_edges.plot(
-           >>>     plotter=mesh.plot(), style="points", color="black"
-           >>> ).show()
+           ...     plotter=mesh.plot(), style="points", color="black"
+           ... ).show()
 
         >>> mesh_with_midpoints_edges
         <felupe Mesh object>
@@ -1476,8 +1472,8 @@ class Mesh(DiscreteGeometry):
            >>> mesh_with_midpoints_faces = mesh.add_midpoints_faces(cell_type="quad")
            >>>
            >>> mesh_with_midpoints_faces.plot(
-           >>>     plotter=mesh.plot(), style="points", color="black"
-           >>> ).show()
+           ...     plotter=mesh.plot(), style="points", color="black"
+           ... ).show()
 
         >>> mesh_with_midpoints_faces
         <felupe Mesh object>
@@ -1516,8 +1512,8 @@ class Mesh(DiscreteGeometry):
            >>>
            >>> mesh = fem.Cube(n=6)
            >>> mesh_with_midpoints_volumes = fem.mesh.add_midpoints_volumes(
-           >>>     mesh, cell_type_new="hexahedron9"
-           >>> )
+           ...     mesh, cell_type_new="hexahedron9"
+           ... )
            >>>
            >>> plotter = mesh.plot(opacity=0.5)
            >>> plotter.add_points(mesh_with_midpoints_volumes.points, color="black")

@@ -57,9 +57,9 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    # "matplotlib.sphinxext.plot_directive",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
+    # "matplotlib.sphinxext.plot_directive",
 ]
 source_suffix = {
     ".rst": "restructuredtext",

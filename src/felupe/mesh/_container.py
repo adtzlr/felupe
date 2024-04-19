@@ -184,7 +184,7 @@ class MeshContainer:
 
         >>> mesh
         <felupe Mesh object>
-          Number of points: 121
+          Number of points: 242
           Number of cells:
             quad: 90
 

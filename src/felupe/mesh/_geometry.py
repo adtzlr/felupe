@@ -44,7 +44,7 @@ class Point(Mesh):
         vertex: 1
 
     >>> mesh.points
-    array([-2.1])
+    array([[-2.1]])
 
     >>> mesh.cells
     array([[0]])

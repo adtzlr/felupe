@@ -72,73 +72,135 @@ class Boundary:
     field (**not** a field container). This is demonstrated for a plane-strain
     vector field on a quad-mesh of a circle.
 
-    >>> import felupe as fem
+    ..  pyvista-plot::
+        :context:
 
-    >>> mesh = fem.Circle(radius=1, n=6)
-    >>> x, y = mesh.points.T
-    >>> region = fem.RegionQuad(mesh)
-    >>> displacement = fem.FieldPlaneStrain(region, dim=2)
-    >>> field = fem.FieldContainer([displacement])
+        >>> import felupe as fem
+
+        >>> mesh = fem.Circle(radius=1, n=6)
+        >>> x, y = mesh.points.T
+        >>> region = fem.RegionQuad(mesh)
+        >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+        >>> field = fem.FieldContainer([displacement])
 
     A boundary on the displacement field which prescribes all components of the field
     on the outermost left point of the circle is created. The easiest way is to pass the
     desired value to ``fx``. The same result is obtained if a callable function is
     passed to ``fx``.
 
-    >>> left = fem.Boundary(displacement, fx=x.min())
-    >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
+    ..  pyvista-plot::
+        :context:
 
-    >>> plotter = mesh.plot(off_screen=True)
-    >>> plotter.add_points(
-    >>>     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
-    >>>     point_size=20,
-    >>>     color="red",
-    >>> )
-    >>> img = plotter.screenshot("boundary_left.png", transparent_background=True)
-
-    ..  image:: images/boundary_left.png
+        >>> left = fem.Boundary(displacement, fx=x.min())
+        >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 
-    >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
+    ..  pyvista-plot::
+        :context:
 
-    ..  image:: images/boundary_axes.png
+        >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[axes.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     This may be changed to *logical-and* if desired.
 
-    >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
+    ..  pyvista-plot::
+        :context:
 
-    ..  image:: images/boundary_center.png
+        >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[center.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     For the most-general case, a user-defined boolean mask for the selection of the
     mesh-points is provided. While the two upper methods are useful to select
     points separated per point-coordinates, providing a mask is more flexible as
     it may involve all three coordinates (or any other quantities of interest).
 
-    >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x <= 0)
-    >>> surface = fem.Boundary(displacement, mask=mask)
+    ..  pyvista-plot::
+        :context:
 
-    ..  image:: images/boundary_surface.png
+        >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x <= 0)
+        >>> surface = fem.Boundary(displacement, mask=mask)
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[surface.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     The application of a new mask allows to change the selected points of an existing
     boundary condition.
 
-    >>> new_mask = np.logical_and(mask, y >= 0)
-    >>> surface.apply_mask(new_mask)
+    ..  pyvista-plot::
+        :context:
 
-    ..  image:: images/boundary_new_surface.png
+        >>> new_mask = np.logical_and(mask, y >= 0)
+        >>> surface.apply_mask(new_mask)
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[surface.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
     be skipped.
 
-    >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
+    ..  pyvista-plot::
+        :context:
+
+        >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[axes_x.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     Values for the prescribed degress of freedom are either applied during creation
     or by the update-method.
 
-    >>> left = fem.Boundary(displacement, fx=x.min(), value=-0.2)
-    >>> left.update(-0.3)
+    ..  pyvista-plot::
+        :context:
+
+        >>> left = fem.Boundary(displacement, fx=x.min(), value=-0.2)
+        >>> left.update(-0.3)
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     Sometimes it is useful to create a boundary with all axes skipped. This
     boundary has no prescribed degrees of freedom and hence, is without effect.

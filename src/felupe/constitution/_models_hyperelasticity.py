@@ -175,7 +175,7 @@ class NeoHooke(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -421,7 +421,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>

@@ -93,7 +93,7 @@ class LinearElastic(ConstitutiveMaterial):
     
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>> 
@@ -242,7 +242,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>> 

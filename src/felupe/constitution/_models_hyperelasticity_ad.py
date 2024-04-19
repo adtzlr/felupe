@@ -76,7 +76,7 @@ def saint_venant_kirchhoff(C, mu, lmbda):
     ..  warning::
         The Saint-Venant Kirchhoff material formulation is unstable for large strains.
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -110,7 +110,7 @@ def neo_hooke(C, mu):
     Examples
     --------
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -163,7 +163,7 @@ def mooney_rivlin(C, C10, C01):
     Examples
     --------
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -217,7 +217,7 @@ def yeoh(C, C10, C20, C30):
     Examples
     --------
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -283,7 +283,7 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     Examples
     --------
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -337,7 +337,7 @@ def ogden(C, mu, alpha):
     Examples
     --------
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -404,7 +404,7 @@ def arruda_boyce(C, C1, limit):
     Examples
     --------
     
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -477,7 +477,7 @@ def extended_tube(C, Gc, delta, Ge, beta):
     Examples
     --------
 
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -508,7 +508,7 @@ def van_der_waals(C, mu, limit, a, beta):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -533,7 +533,7 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>

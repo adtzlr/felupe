@@ -66,25 +66,25 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     given x-coordinate. The degrees of freedom are prescribed except for the symmetry
     x-axis.
 
-    >>> import numpy as np
-    >>> import felupe as fem
+    ..  pyvista-plot::
 
-    >>> mesh = fem.Circle(radius=1, n=6, sections=[0, 270])
-    >>> x, y = mesh.points.T
-    >>> region = fem.RegionQuad(mesh)
-    >>> displacement = fem.FieldPlaneStrain(region, dim=2)
-
-    >>> boundaries = fem.dof.symmetry(displacement, axes=(True, False), x=0.0)
-
-    >>> plotter = mesh.plot(off_screen=True)
-    >>> plotter.add_points(
-    >>>     np.pad(mesh.points[boundaries["symx"].points], ((0, 0), (0, 1))),
-    >>>     point_size=20,
-    >>>     color="red",
-    >>> )
-    >>> img = plotter.screenshot("boundary_symx.png", transparent_background=True)
-
-    ..  image:: images/boundary_symx.png
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Circle(radius=1, n=6, sections=[0, 270])
+        >>> x, y = mesh.points.T
+        >>> region = fem.RegionQuad(mesh)
+        >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+        >>>
+        >>> boundaries = fem.dof.symmetry(displacement, axes=(True, False), x=0.0)
+        >>>
+        >>> plotter = mesh.plot()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[boundaries["symx"].points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> plotter.show()
 
     See Also
     --------
@@ -165,26 +165,29 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
     A quarter of a solid hyperelastic cube is subjected to uniaxial displacement-
     controlled compression on a rigid end face.
 
-    >>> import felupe as fem
+    ..  pyvista-plot::
+        :context:
 
-    >>> region = fem.RegionHexahedron(fem.Cube(a=(0, 0, 0), b=(2, 3, 1), n=(11, 16, 6)))
-    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-
-    >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)[0]
+        >>> import felupe as fem
+        >>>
+        >>> region = fem.RegionHexahedron(fem.Cube(a=(0, 0, 0), b=(2, 3, 1), n=(6, 11, 5)))
+        >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+        >>>
+        >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)[0]
 
     The longitudinal displacement is applied incrementally.
 
-    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
-    >>> step = fem.Step(
-    >>>     items=[solid],
-    >>>     ramp={boundaries["move"]: fem.math.linsteps([0, -0.3], num=5)},
-    >>>     boundaries=boundaries
-    >>> )
+    ..  pyvista-plot::
+        :context:
 
-    >>> fem.Job(steps=[step]).evaluate()
-    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
-
-    ..  image:: images/loadcase_ux.png
+        >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+        >>> step = fem.Step(
+        ...     items=[solid],
+        ...     ramp={boundaries["move"]: fem.math.linsteps([0, -0.3], num=5)},
+        ...     boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
+        >>> field.plot("Principal Values of Logarithmic Strain").show()
 
     See Also
     --------
@@ -295,61 +298,89 @@ def biaxial(
     A cross-like planar specimen of a hyperelastic solid is subjected to biaxial
     displacement-controlled tension on rigid end faces.
 
-    >>> import numpy as np
-    >>> import felupe as fem
+    ..  pyvista-plot::
+        :context:
 
-    >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(21, 21))
-    >>> x, y = mesh.points.T
-    >>> points = np.arange(mesh.npoints)[np.logical_or.reduce([x <= 0.6, y <= 0.6])]
-    >>> mesh.update(cells=mesh.cells[np.all(np.isin(mesh.cells, points), axis=1)])
-
-    >>> region = fem.RegionQuad(mesh)
-    >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
-
-    >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))[0]
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(21, 21))
+        >>> x, y = mesh.points.T
+        >>> points = np.arange(mesh.npoints)[np.logical_or.reduce([x <= 0.6, y <= 0.6])]
+        >>> mesh.update(cells=mesh.cells[np.all(np.isin(mesh.cells, points), axis=1)])
+        >>>
+        >>> region = fem.RegionQuad(mesh)
+        >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+        >>>
+        >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))[0]
 
     The longitudinal displacements are applied incrementally.
 
-    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
-    >>> step = fem.Step(
-    >>>     items=[solid],
-    >>>     ramp={
-    >>>         boundaries["move-right-0"]: fem.math.linsteps([0, 0.1], num=5),
-    >>>         boundaries["move-right-1"]: fem.math.linsteps([0, 0.1], num=5),
-    >>>     },
-    >>>     boundaries=boundaries
-    >>> )
+    ..  pyvista-plot::
+        :context:
 
-    >>> fem.Job(steps=[step]).evaluate()
-    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
-
-    ..  image:: images/loadcase_bx.png
+        >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+        >>> step = fem.Step(
+        ...     items=[solid],
+        ...     ramp={
+        ...         boundaries["move-right-0"]: fem.math.linsteps([0, 0.1], num=5),
+        ...         boundaries["move-right-1"]: fem.math.linsteps([0, 0.1], num=5),
+        ...     },
+        ...     boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
+        >>> field.plot("Principal Values of Logarithmic Strain").show()
 
     Repeating the above example with ``fem.dof.biaxial(field, clampes=(False, False)``
     results in a different deformation at the end faces.
 
-    ..  image:: images/loadcase_bx_free.png
+    ..  pyvista-plot::
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(a=(0, 0), b=(1, 1), n=(21, 21))
+        >>> x, y = mesh.points.T
+        >>> points = np.arange(mesh.npoints)[np.logical_or.reduce([x <= 0.6, y <= 0.6])]
+        >>> mesh.update(cells=mesh.cells[np.all(np.isin(mesh.cells, points), axis=1)])
+        >>>
+        >>> region = fem.RegionQuad(mesh)
+        >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+        >>>
+        >>> boundaries = fem.dof.biaxial(field, clampes=(False, False))[0]
+        >>>
+        >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+        >>> step = fem.Step(
+        ...     items=[solid],
+        ...     ramp={
+        ...         boundaries["move-right-0"]: fem.math.linsteps([0, 0.1], num=5),
+        ...         boundaries["move-right-1"]: fem.math.linsteps([0, 0.1], num=5),
+        ...     },
+        ...     boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
+        >>> field.plot("Principal Values of Logarithmic Strain").show()
 
     The biaxial load case may also invoke a planar loading, where one of the
     longitudinal axes is fixed with no displacements at the end plates. The clampling
     must at least be deactivated on the fixed longitudinal axis.
 
-    >>> mesh = fem.Cube(n=2)
-    >>> region = fem.RegionHexahedron(mesh)
-    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-    >>> boundaries = fem.dof.biaxial(
-    >>>     field, clampes=(True, False), moves=(0, 0), sym=False, axes=(0, 1)
-    >>> )[0]
-    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
-    >>> step = fem.Step(
-    >>>     items=[solid],
-    >>>     ramp={boundaries["move-right-0"]: fem.math.linsteps([0, 0.3], num=5),},
-    >>>     boundaries=boundaries
-    >>> )
-    >>> fem.Job(steps=[step]).evaluate()
-    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
+    ..  pyvista-plot::
 
-    ..  image:: images/loadcase_ps.png
+        >>> mesh = fem.Cube(n=5)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+        >>> boundaries = fem.dof.biaxial(
+        ...     field, clampes=(True, False), moves=(0, 0), sym=False, axes=(0, 1)
+        ... )[0]
+        >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+        >>> step = fem.Step(
+        ...     items=[solid],
+        ...     ramp={boundaries["move-right-0"]: fem.math.linsteps([0, 0.3], num=5),},
+        ...     boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
+        >>> field.plot("Principal Values of Logarithmic Strain").show()
 
     See Also
     --------
@@ -466,29 +497,35 @@ def shear(
     A rectangular planar specimen of a hyperelastic solid is subjected to a
     displacement-controlled combined shear-compression loading on rigid end faces.
 
-    >>> import felupe as fem
+    ..  pyvista-plot::
+        :context:
 
-    >>> mesh = fem.Rectangle(a=(0, 0), b=(4, 1), n=(41, 11))
-    >>> region = fem.RegionQuad(mesh)
-    >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(a=(0, 0), b=(4, 1), n=(41, 11))
+        >>> region = fem.RegionQuad(mesh)
+        >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
     The top edge is moved by ``-0.1`` to add a 10% constant compressive loading.
 
-    >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))[0]
+    ..  pyvista-plot::
+        :context:
+
+        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))[0]
 
     The shear displacement is applied incrementally.
 
-    >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
-    >>> step = fem.Step(
-    >>>     items=[solid],
-    >>>     ramp={boundaries["move"]: fem.math.linsteps([0, 1], num=5)},
-    >>>     boundaries=boundaries
-    >>> )
+    ..  pyvista-plot::
+        :context:
 
-    >>> fem.Job(steps=[step]).evaluate()
-    >>> img = field.screenshot("Principal Values of Logarithmic Strain")
-
-    ..  image:: images/loadcase_shear.png
+        >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
+        >>> step = fem.Step(
+        ...     items=[solid],
+        ...     ramp={boundaries["move"]: fem.math.linsteps([0, 1], num=5)},
+        ...     boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
+        >>> field.plot("Principal Values of Logarithmic Strain").show()
 
     See Also
     --------

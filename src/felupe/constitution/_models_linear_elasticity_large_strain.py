@@ -41,7 +41,7 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>>

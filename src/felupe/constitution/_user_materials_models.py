@@ -70,7 +70,7 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
             
         >>> import felupe as fem
         >>>
@@ -199,7 +199,7 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>>

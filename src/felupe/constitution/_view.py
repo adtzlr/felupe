@@ -126,7 +126,7 @@ class ViewMaterial(PlotMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>>
@@ -365,7 +365,7 @@ class ViewMaterialIncompressible(PlotMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>>
@@ -373,7 +373,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         >>> preview = fem.ViewMaterialIncompressible(umat)
         >>> ax = preview.plot(show_title=True, show_kwargs=True)
     
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
         >>> view = fem.ViewMaterialIncompressible(

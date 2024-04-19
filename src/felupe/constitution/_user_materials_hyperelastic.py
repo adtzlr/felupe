@@ -110,7 +110,7 @@ class Hyperelastic(Material):
     --------
     View force-stretch curves on elementary incompressible deformations.
     
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>> import tensortrax.math as tm
@@ -284,7 +284,7 @@ class MaterialAD(Material):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
         
         >>> import felupe as fem
         >>> import tensortrax.math as tm

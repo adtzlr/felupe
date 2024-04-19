@@ -96,7 +96,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # nb_execution_mode = "force"
 
 # plot directives
-plot_include_source = True
 plot_html_show_source_link = False
 plot_formats = ["png"]
 

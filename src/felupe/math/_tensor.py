@@ -81,7 +81,7 @@ def identity(A=None, dim=None, shape=None):
     >>> A = np.random.rand(3, 2, 8, 20)
     >>> I = fem.math.identity(A)
     >>> I.shape
-    (3, 3, 1, 1)
+    (3, 2, 1, 1)
     
     With given dimension of the matrix axes the shape of the output is different.
     
@@ -91,7 +91,7 @@ def identity(A=None, dim=None, shape=None):
     Note how the number of batch axes change if a ``shape`` is given.
     
     >>> fem.math.identity(A, shape=(4, 7, 3)).shape
-    (3, 3, 1, 1, 1)
+    (3, 2, 1, 1, 1)
     
     See Also
     --------
@@ -452,7 +452,7 @@ def det(A, out=None):
     >>>
     >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T) / 10
     >>> A += np.eye(3).reshape(3, 3, 1)
-    >>> A[..., 0]
+
     >>> A.shape
     (3, 3, 1)
 
@@ -778,9 +778,10 @@ def eigh(a, UPLO="L"):
     tensor and the second column for the second right Cauchy-Green deformation tensor.
 
     >>> v[:, 0]
-    array([[ 4.92775421e-17,  0.00000000e+00],
-           [-1.00000000e+00,  1.65906569e-02],
-           [ 1.11022302e-16,  9.99862366e-01]])
+    array([[-4.61810381e-01,  0.00000000e+00],
+           [ 1.11022302e-16, -9.99862366e-01],
+           [ 8.86978676e-01,  1.65906569e-02]])
+
 
     See Also
     --------
@@ -861,7 +862,6 @@ def trace(A, out=None):
     >>> import numpy as np
     >>>
     >>> A = fem.math.transpose(np.arange(9, dtype=float).reshape(1, 3, 3).T)
-    >>> A[..., 0]
     >>> A.shape
     (3, 3, 1)
 
@@ -1123,8 +1123,10 @@ def cross(a, b):
     >>> fem.math.cross(a, b)
     array([[[-800., -682., -564., -446., -328.],
             [-750., -632., -514., -396., -278.]],
+    <BLANKLINE>
            [[1600., 1364., 1128.,  892.,  656.],
             [1500., 1264., 1028.,  792.,  556.]],
+    <BLANKLINE>
            [[-800., -682., -564., -446., -328.],
             [-750., -632., -514., -396., -278.]]])
 

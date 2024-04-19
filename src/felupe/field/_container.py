@@ -73,7 +73,7 @@ class FieldContainer:
     <felupe FieldContainer object>
       Number of fields: 3
       Dimension of fields:
-        Field: 2
+        Field: 3
         Field: 1
         Field: 1
 

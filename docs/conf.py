@@ -57,7 +57,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    "matplotlib.sphinxext.plot_directive",
+    # "matplotlib.sphinxext.plot_directive",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
 ]
@@ -96,6 +96,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # nb_execution_mode = "force"
 
 # plot directives
+plot_include_source = True
 plot_html_show_source_link = False
 plot_formats = ["png"]
 

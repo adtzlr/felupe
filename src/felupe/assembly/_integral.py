@@ -109,7 +109,7 @@ class IntegralForm:
     created.
 
     >>> import felupe as fem
-
+    >>>
     >>> mesh = fem.Cube(n=11)
     >>> region = fem.RegionHexahedron(mesh)
     >>> displacement = fem.Field(region, dim=3)
@@ -129,7 +129,7 @@ class IntegralForm:
 
     >>> import numpy as np
     >>> from felupe.math import cdya, dya
-
+    >>>
     >>> mu, lmbda = 1.0, 2.0
     >>> I = np.eye(3).reshape(3, 3, 1, 1)
     >>> dSdE = 2 * mu * cdya(I, I) + lmbda * dya(I, I)
@@ -169,7 +169,7 @@ class IntegralForm:
 
     >>> form = fem.IntegralForm([dSdE], v=field, dV=region.dV, u=field)
     >>> values = form.integrate(parallel=False)
-    >>> values.shape
+    >>> values[0].shape
     (8, 3, 8, 3, 1000)
 
     The cell-wise stiffness matrices are re-used to assemble the sparse system stiffness

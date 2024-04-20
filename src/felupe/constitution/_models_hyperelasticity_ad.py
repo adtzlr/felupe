@@ -90,7 +90,8 @@ def saint_venant_kirchhoff(C, mu, lmbda):
 
         >>> import pyvista as pv
         >>>
-        >>> pv.ChartMPL(ax.get_figure())
+        >>> chart = pv.ChartMPL(ax.get_figure())
+        >>> chart.show()
 
     """
     I1 = trace(C) / 2 - 3 / 2

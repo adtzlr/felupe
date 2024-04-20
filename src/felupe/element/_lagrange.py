@@ -238,7 +238,7 @@ class ArbitraryOrderLagrange(Element):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -246,7 +246,7 @@ class ArbitraryOrderLagrange(Element):
        >>> element.plot().show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

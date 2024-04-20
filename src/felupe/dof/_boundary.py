@@ -76,7 +76,7 @@ class Boundary:
         :context:
 
         >>> import felupe as fem
-
+        >>>
         >>> mesh = fem.Circle(radius=1, n=6)
         >>> x, y = mesh.points.T
         >>> region = fem.RegionQuad(mesh)
@@ -91,6 +91,8 @@ class Boundary:
     ..  pyvista-plot::
         :context:
 
+        >>> import numpy as np
+        >>>
         >>> left = fem.Boundary(displacement, fx=x.min())
         >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
         >>>

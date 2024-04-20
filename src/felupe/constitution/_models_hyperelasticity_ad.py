@@ -88,6 +88,7 @@ def saint_venant_kirchhoff(C, mu, lmbda):
     ..  pyvista-plot::
         :include-source: False
         :context:
+        :force_static: True
 
         >>> import pyvista as pv
         >>>

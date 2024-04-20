@@ -291,3 +291,5 @@ There are many different pre-defined constitutive material formulations availabl
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autofunction:: felupe.constitution.lame_converter

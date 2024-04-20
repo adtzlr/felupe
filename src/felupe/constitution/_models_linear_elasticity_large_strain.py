@@ -25,7 +25,7 @@ from ._models_linear_elasticity import lame_converter
 
 class LinearElasticLargeStrain(ConstitutiveMaterial):
     r"""Linear-elastic material formulation suitable for large-rotation analyses based
-    on the nearly-incompressible Neo-Hookean material formulation.
+    on the compressible Neo-Hookean material formulation.
 
     Parameters
     ----------

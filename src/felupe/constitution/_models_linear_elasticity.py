@@ -23,7 +23,18 @@ from ._base import ConstitutiveMaterial
 
 
 def lame_converter(E, nu):
-    """Convert material parameters to first and second Lamé - constants.
+    r"""Convert the pair of given material parameters Young's modulus :math:`E` and
+    Poisson ratio :math:`\nu` to first and second Lamé - constants :math:`\lambda` and
+    :math:`\mu`.
+
+    Notes
+    -----
+
+    ..  math::
+
+        \lambda &= \frac{E \nu}{(1 + \nu) (1 - 2 \nu)}
+
+        \mu &= \frac{E}{2 (1 + \nu)}
 
     Parameters
     ----------

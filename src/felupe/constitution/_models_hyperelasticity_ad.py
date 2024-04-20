@@ -78,17 +78,23 @@ def saint_venant_kirchhoff(C, mu, lmbda):
 
     ..  pyvista-plot::
         :include-source: True
-        :force_static: True
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.saint_venant_kirchhoff, mu=1.0, lmbda=20.0)
         >>> ax = umat.plot(incompressible=False)
-        >>>
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+
         >>> import pyvista as pv
         >>>
-        >>> chart = pv.ChartMPL(ax.get_figure())
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
         >>> chart.show()
+
 
     """
     I1 = trace(C) / 2 - 3 / 2

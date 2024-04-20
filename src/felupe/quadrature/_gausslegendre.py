@@ -54,7 +54,7 @@ class GaussLegendre(Scheme):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -66,7 +66,7 @@ class GaussLegendre(Scheme):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -78,7 +78,7 @@ class GaussLegendre(Scheme):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -90,7 +90,7 @@ class GaussLegendre(Scheme):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

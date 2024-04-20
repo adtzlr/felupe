@@ -18,8 +18,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._scheme import Scheme
 
-class BazantOh:
+
+class BazantOh(Scheme):
     r"""Quadrature scheme for a numeric integration of the surface of a unit sphere
     [1]_.
 
@@ -44,6 +46,18 @@ class BazantOh:
     >>>
     >>> quadrature = fem.BazantOh(n=21)
 
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>> import pyvista as pv
+       >>>
+       >>> sphere = pv.Sphere(radius=1).clip(normal="z", invert=False)
+       >>> quadrature = fem.BazantOh(n=21)
+       >>> plotter = quadrature.plot(weighted=True)
+       >>> plotter.add_mesh(sphere, opacity=0.3, color="white")
+       >>> plotter.show()
+
     References
     ----------
     .. [1] Bazant, Z. P., & Oh, B. H. (1986). Efficient Numerical Integration on
@@ -56,7 +70,8 @@ class BazantOh:
         schemes = {
             21: self._scheme_21,
         }
-        self.points, self.weights = schemes[n]()
+        points, weights = schemes[n]()
+        super().__init__(points=points, weights=weights)
 
     def _scheme_21(self):
         "2x21-point scheme (degree 9, orthogonal symmetries)."

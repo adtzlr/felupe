@@ -46,7 +46,7 @@ class Triangle(Scheme):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -59,7 +59,7 @@ class Triangle(Scheme):
 
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -71,7 +71,7 @@ class Triangle(Scheme):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

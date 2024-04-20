@@ -46,7 +46,7 @@ class Tetrahedron(Scheme):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -59,7 +59,7 @@ class Tetrahedron(Scheme):
 
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -71,7 +71,7 @@ class Tetrahedron(Scheme):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

@@ -77,6 +77,7 @@ def saint_venant_kirchhoff(C, mu, lmbda):
         The Saint-Venant Kirchhoff material formulation is unstable for large strains.
 
     ..  pyvista-plot::
+        :force_static: True
 
         >>> import felupe as fem
         >>>

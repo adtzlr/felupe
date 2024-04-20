@@ -77,7 +77,6 @@ def saint_venant_kirchhoff(C, mu, lmbda):
         The Saint-Venant Kirchhoff material formulation is unstable for large strains.
 
     ..  pyvista-plot::
-        :include-source: True
         :context:
 
         >>> import felupe as fem
@@ -123,14 +122,24 @@ def neo_hooke(C, mu):
     Examples
     --------
 
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.neo_hooke, mu=1.0)
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
     return mu / 2 * (det(C) ** (-1 / 3) * trace(C) - 3)
@@ -178,14 +187,24 @@ def mooney_rivlin(C, C10, C01):
     Examples
     --------
 
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.mooney_rivlin, C10=0.3, C01=0.8)
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
     J3 = det(C) ** (-1 / 3)
@@ -234,14 +253,24 @@ def yeoh(C, C10, C20, C30):
     Examples
     --------
 
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.yeoh, C10=0.5, C20=-0.1, C30=0.02)
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
 
@@ -302,9 +331,8 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     Examples
     --------
 
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
@@ -312,6 +340,17 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
         ...     fem.third_order_deformation, C10=0.5, C01=0.1, C11=0.01, C20=-0.1, C30=0.02
         ... )
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
     J3 = det(C) ** (-1 / 3)
@@ -358,14 +397,24 @@ def ogden(C, mu, alpha):
     Examples
     --------
 
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.ogden, mu=[1, 0.2], alpha=[1.7, -1.5])
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
 
@@ -427,14 +476,24 @@ def arruda_boyce(C, C1, limit):
     Examples
     --------
     
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.arruda_boyce, C1=1.0, limit=3.2)
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
     I1 = det(C) ** (-1 / 3) * trace(C)
@@ -502,9 +561,8 @@ def extended_tube(C, Gc, delta, Ge, beta):
     Examples
     --------
 
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
@@ -512,6 +570,17 @@ def extended_tube(C, Gc, delta, Ge, beta):
         ...     fem.extended_tube, Gc=0.1867, Ge=0.2169, beta=0.2, delta=0.09693
         ... )
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     References
     ----------
@@ -535,14 +604,24 @@ def van_der_waals(C, mu, limit, a, beta):
 
     Examples
     --------
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.van_der_waals, mu=1.0, beta=0.1, a=0.5, limit=5.0)
         >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
     J3 = det(C) ** (-1 / 3)
@@ -562,9 +641,8 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
 
     Examples
     --------
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
 
         >>> import felupe as fem
         >>>
@@ -577,6 +655,17 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
         ...    ps=None,
         ...    bx=None,
         ... )
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
     """
 
     # update of state variables by evolution equation

@@ -23,7 +23,7 @@ jobs:
     - name: Test with tox
       run: |
         pip install tox
-        tox -- --doctest-modules --cov felupe --cov-report xml --cov-report term
+        tox
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       if: ${{ matrix.python-version == '3.12' }}

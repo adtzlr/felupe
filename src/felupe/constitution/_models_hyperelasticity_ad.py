@@ -512,7 +512,7 @@ def arruda_boyce(C, C1, limit):
 
 def extended_tube(C, Gc, delta, Ge, beta):
     r"""Strain energy function of the isotropic hyperelastic
-    `Extended Tube <https://www.doi.org/10.5254/1.3538822>`_ [1] material formulation.
+    `Extended Tube <https://www.doi.org/10.5254/1.3538822>`_ [1]_ material formulation.
 
     Parameters
     ----------
@@ -585,10 +585,11 @@ def extended_tube(C, Gc, delta, Ge, beta):
 
     References
     ----------
-    [1] M. Kaliske and G. Heinrich, "An Extended Tube-Model for Rubber Elasticity:
-    Statistical-Mechanical Theory and Finite Element Implementation", Rubber Chemistry
-    and Technology, vol. 72, no. 4. Rubber Division, ACS, pp. 602–632, Sep. 01, 1999.
-    doi: 10.5254/1.3538822.
+    ..  [1] M. Kaliske and G. Heinrich, "An Extended Tube-Model for Rubber Elasticity:
+        Statistical-Mechanical Theory and Finite Element Implementation", Rubber
+        Chemistry and Technology, vol. 72, no. 4. Rubber Division, ACS, pp. 602–632,
+        Sep. 01, 1999. doi:
+        `10.5254/1.3538822 <https://www.doi.org/10.5254/1.3538822>`_.
 
     """
     J3 = det(C) ** (-1 / 3)
@@ -601,7 +602,9 @@ def extended_tube(C, Gc, delta, Ge, beta):
 
 
 def van_der_waals(C, mu, limit, a, beta):
-    """Strain energy function of the Van der Waals material formulation.
+    r"""Strain energy function of the
+    `Van der Waals <https://doi.org/10.1016/0032-3861(81)90200-7>`_ [1]_ material
+    formulation.
 
     Examples
     --------
@@ -624,6 +627,12 @@ def van_der_waals(C, mu, limit, a, beta):
         >>> chart = pv.ChartMPL(fig)
         >>> chart.show()
 
+    References
+    ----------
+    ..  [1] H.-G. Kilian, "Equation of state of real networks", Polymer, vol. 22, no. 2.
+        Elsevier BV, pp. 209–217, Feb. 1981. doi:
+        `10.1016/0032-3861(81)90200-7 <https://www.doi.org/10.1016/0032-3861(81)90200-7>`_.
+
     """
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)
@@ -638,7 +647,9 @@ def van_der_waals(C, mu, limit, a, beta):
 
 @isochoric_volumetric_split
 def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
-    """Finite strain viscoelastic material formulation.
+    r"""Multiplicative
+    `finite strain viscoelastic <https://doi.org/10.1016/j.cma.2013.07.004>`_ [1]_
+    material formulation.
 
     Examples
     --------
@@ -667,6 +678,15 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
         >>> fig = ax.get_figure()
         >>> chart = pv.ChartMPL(fig)
         >>> chart.show()
+
+    References
+    ----------
+    ..  [1] A. V. Shutov, R. Landgraf, and J. Ihlemann, "An explicit solution for
+        implicit time stepping in multiplicative finite strain viscoelasticity",
+        Computer Methods in Applied Mechanics and Engineering, vol. 265. Elsevier BV,
+        pp. 213–225, Oct. 2013. doi:
+        `10.1016/j.cma.2013.07.004 <https://doi.org/10.1016/j.cma.2013.07.004>`_.
+
     """
 
     # update of state variables by evolution equation

@@ -42,9 +42,6 @@ class BazantOh(Scheme):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> quadrature = fem.BazantOh(n=21)
 
     .. pyvista-plot::
        :force_static:
@@ -52,10 +49,11 @@ class BazantOh(Scheme):
        >>> import felupe as fem
        >>> import pyvista as pv
        >>>
-       >>> sphere = pv.Sphere(radius=1).clip(normal="z", invert=False)
        >>> quadrature = fem.BazantOh(n=21)
+       >>>
        >>> plotter = quadrature.plot(weighted=True)
-       >>> plotter.add_mesh(sphere, opacity=0.3, color="white")
+       >>> sphere = pv.Sphere(radius=1).clip(normal="z", invert=False)
+       >>> actor = plotter.add_mesh(sphere, opacity=0.3, color="white")
        >>> plotter.show()
 
     References

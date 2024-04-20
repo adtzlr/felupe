@@ -67,7 +67,9 @@ class SolidBodyPressure:
         ... )
         >>>
         >>> job = fem.Job(steps=[step]).evaluate()
-        >>> solid.plot("Principal Values of Cauchy Stress", component=2).show()
+        >>> solid.plot(
+        ...     "Principal Values of Cauchy Stress", component=2, clim=[-1.01, -0.99]
+        ... ).show()
     """
 
     def __init__(self, field, pressure=None):

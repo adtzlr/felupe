@@ -70,14 +70,24 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 
     Examples
     --------
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
             
         >>> import felupe as fem
         >>>
         >>> umat = fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0)
         >>> ax = umat.plot()
+    
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     See Also
     --------
@@ -201,9 +211,8 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
     Examples
     --------
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
         
         >>> import felupe as fem
         >>>
@@ -216,6 +225,17 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
         ...     dim=3,
         ...     statevars=(1, (3, 3)),
         ... )
+    
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     See Also
     --------

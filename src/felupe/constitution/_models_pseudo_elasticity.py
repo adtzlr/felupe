@@ -56,9 +56,8 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  plot::
-        :include-source: True
-        :nofigs: False
+    ..  pyvista-plot::
+        :context:
         
         >>> import felupe as fem
         >>>
@@ -71,6 +70,17 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         ...     bx=None,
         ...     incompressible=True,
         ... )
+    
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
 

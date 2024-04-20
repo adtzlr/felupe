@@ -41,12 +41,24 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  plot::
-        
+    ..  pyvista-plot::
+        :context:
+
         >>> import felupe as fem
         >>>
         >>> umat = fem.LinearElasticLargeStrain(E=1.0, nu=0.3)
         >>> ax = umat.plot()
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
 

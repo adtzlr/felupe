@@ -126,7 +126,8 @@ class ViewMaterial(PlotMaterial):
 
     Examples
     --------
-    ..  plot::
+    ..  pyvista-plot::
+        :context:
         
         >>> import felupe as fem
         >>>
@@ -138,6 +139,17 @@ class ViewMaterial(PlotMaterial):
         ...     bx=None,
         ... )
         >>> ax = view.plot(show_title=True, show_kwargs=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
 
@@ -365,15 +377,28 @@ class ViewMaterialIncompressible(PlotMaterial):
 
     Examples
     --------
-    ..  plot::
+    ..  pyvista-plot::
+        :context:
         
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.extended_tube, Gc=0.2, Ge=0.2, beta=0.2, delta=0.1)
         >>> preview = fem.ViewMaterialIncompressible(umat)
         >>> ax = preview.plot(show_title=True, show_kwargs=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
     
-    ..  plot::
+    ..  pyvista-plot::
+        :context:
 
         >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
         >>> view = fem.ViewMaterialIncompressible(
@@ -383,6 +408,17 @@ class ViewMaterialIncompressible(PlotMaterial):
         ...     bx=None,
         ... )
         >>> ax = view.plot(show_title=True, show_kwargs=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
 
     """
 

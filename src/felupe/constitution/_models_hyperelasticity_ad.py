@@ -701,12 +701,12 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
 
 
 # default material parameters
-saint_venant_kirchhoff.kwargs = dict(mu=1.0, lmbda=2.0)
-neo_hooke.kwargs = dict(mu=1.0)
-mooney_rivlin.kwargs = dict(C10=0.4, C01=0.1)
-yeoh.kwargs = dict(C10=0.5, C20=-0.05, C30=0.02)
-third_order_deformation.kwargs = dict(C10=0.4, C01=0.1, C11=0.02, C20=-0.05, C30=0.02)
-ogden.kwargs = dict(mu=[1, 0.2], alpha=[1.7, -1.5])
-arruda_boyce.kwargs = dict(C1=1.0, limit=3.2)
-extended_tube.kwargs = dict(Gc=0.1867, Ge=0.2169, beta=0.2, delta=0.09693)
-van_der_waals.kwargs = dict(mu=1.0, beta=0.1, a=0.5, limit=5.0)
+saint_venant_kirchhoff.kwargs = dict(mu=0.0, lmbda=0.0)
+neo_hooke.kwargs = dict(mu=0)
+mooney_rivlin.kwargs = dict(C10=0, C01=0)
+yeoh.kwargs = dict(C10=0, C20=0, C30=0)
+third_order_deformation.kwargs = dict(C10=0, C01=0, C11=0, C20=0, C30=0)
+ogden.kwargs = dict(mu=[1], alpha=[2])
+arruda_boyce.kwargs = dict(C1=0, limit=0)
+extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
+van_der_waals.kwargs = dict(mu=0, beta=0, a=0, limit=100)

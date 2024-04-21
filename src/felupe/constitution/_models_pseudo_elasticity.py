@@ -58,7 +58,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
     --------
     ..  pyvista-plot::
         :context:
-        
+
         >>> import felupe as fem
         >>>
         >>> neo_hooke = fem.NeoHooke(mu=1.0)
@@ -70,7 +70,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         ...     bx=None,
         ...     incompressible=True,
         ... )
-    
+
     ..  pyvista-plot::
         :include-source: False
         :context:

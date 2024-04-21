@@ -128,7 +128,7 @@ class ViewMaterial(PlotMaterial):
     --------
     ..  pyvista-plot::
         :context:
-        
+
         >>> import felupe as fem
         >>>
         >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=2), r=3, m=1, beta=0)
@@ -379,7 +379,7 @@ class ViewMaterialIncompressible(PlotMaterial):
     --------
     ..  pyvista-plot::
         :context:
-        
+
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.extended_tube, Gc=0.2, Ge=0.2, beta=0.2, delta=0.1)
@@ -396,7 +396,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         >>> fig = ax.get_figure()
         >>> chart = pv.ChartMPL(fig)
         >>> chart.show()
-    
+
     ..  pyvista-plot::
         :context:
 

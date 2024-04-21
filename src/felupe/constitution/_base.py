@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from copy import deepcopy as copy
+
 import numpy as np
 
 from ._view import ViewMaterial, ViewMaterialIncompressible

@@ -182,7 +182,7 @@ class SolidBody(Solid):
     Examples
     --------
     ..  pyvista-plot::
-        
+
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Cube(n=6)

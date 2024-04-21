@@ -137,13 +137,13 @@ class ConstitutiveMaterial:
 
         Parameters
         ----------
-        ux : array of shape (2, n) or None, optional
+        ux : array of shape (2, ...) or None, optional
             Experimental uniaxial stretch and force-per-undeformed-area data (default is
             None).
-        ps : array of shape (2, n) or None, optional
+        ps : array of shape (2, ...) or None, optional
             Experimental planar-shear stretch and force-per-undeformed-area data
             (default is None).
-        bx : array of shape (2, n) or None, optional
+        bx : array of shape (2, ...) or None, optional
             Experimental biaxial stretch and force-per-undeformed-area data (default is
             None).
         incompressible : bool, optional
@@ -158,35 +158,70 @@ class ConstitutiveMaterial:
             A copy of the constitutive material with the optimized material parameters.
         scipy.optimize.OptimizeResult
             Represents the optimization result.
+
+
+        Notes
+        -----
+        ..  warning::
+            At least one load case, i.e. one of the arguments ``ux``, ``ps`` or ``bx``
+            must not be ``None``.
+
+        See Also
+        --------
+        scipy.optimize.least_squares : Solve a nonlinear least-squares problem with
+            bounds on the variables.
+
         """
         from scipy.optimize import least_squares
 
-        experiment = [(None, None) if lc is None else lc for lc in [ux, bx, ps]]
+        experiments = []
+        for lc in [ux, bx, ps]:
+            experiment = (None, None)
+            if lc is not None:
+                experiment = np.asarray(lc).reshape(2, -1)
+            experiments.append(experiment)
 
-        def fun(values):
-            for key, value in zip(self.kwargs.keys(), values):
+        def fun(x):
+            "Return the vector of residuals for given material parameters x."
+
+            # update the material parameters
+            for key, value in zip(self.kwargs.keys(), x):
                 self.kwargs[key] = value
+
+            # evaluate the load cases by the material model formulation
             model = self.view(
                 incompressible=incompressible,
-                ux=experiment[0][0],
-                bx=experiment[1][0],
-                ps=experiment[2][0],
+                ux=experiments[0][0],
+                bx=experiments[1][0],
+                ps=experiments[2][0],
             ).evaluate()
+
+            # calculate a list of residuals for each loadcase
             residuals = [
                 predicted[1] - observed[1]
-                for predicted, observed in zip(model, experiment)
+                for predicted, observed in zip(model, experiments)
                 if observed[1] is not None
             ]
 
             return np.concatenate(residuals)
 
+        # optimize the initial material parameters
         res = least_squares(fun=fun, x0=list(self.kwargs.values()), **kwargs)
 
-        out = copy(self)
-        for key, value in zip(self.kwargs.keys(), res.x):
-            out.kwargs[key] = value
+        def std(hessian, residuals_variance):
+            "Return the estimated errors (standard deviations) of parameters."
+            return np.sqrt(np.diag(np.linalg.inv(hessian) * residuals_variance))
 
-        return out, res
+        # estimate the optimization errors for each material parameter
+        hess = res.jac.T @ res.jac
+        res.dx = std(hess, 2 * res.cost / (len(res.fun) - len(res.x)))
+
+        # copy and update the material parameters of the material model formulation
+        umat = copy(self)
+        for key, value in zip(self.kwargs.keys(), res.x):
+            umat.kwargs[key] = value
+
+        return umat, res
 
     def __and__(self, other_material):
         return CompositeMaterial(self, other_material)

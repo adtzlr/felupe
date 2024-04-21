@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from copy import deepcopy as copy
 import numpy as np
 
 from ._view import ViewMaterial, ViewMaterialIncompressible
@@ -129,6 +130,36 @@ class ConstitutiveMaterial:
         plt.close(fig)
 
         return ax
+
+    def optimize(self, ux=None, bx=None, ps=None, incompressible=False, **kwargs):
+        from scipy.optimize import least_squares
+
+        experiment = [(None, None) if lc is None else lc for lc in [ux, bx, ps]]
+
+        def fun(values):
+            for key, value in zip(self.kwargs.keys(), values):
+                self.kwargs[key] = value
+            model = self.view(
+                incompressible=incompressible,
+                ux=experiment[0][0],
+                bx=experiment[1][0],
+                ps=experiment[2][0],
+            ).evaluate()
+            residuals = [
+                predicted[1] - observed[1]
+                for predicted, observed in zip(model, experiment)
+                if observed[1] is not None
+            ]
+
+            return np.concatenate(residuals)
+
+        res = least_squares(fun=fun, x0=list(self.kwargs.values()), **kwargs)
+        
+        out = copy(self)
+        for key, value in zip(self.kwargs.keys(), res.x):
+            out.kwargs[key] = value
+
+        return out, res
 
     def __and__(self, other_material):
         return CompositeMaterial(self, other_material)

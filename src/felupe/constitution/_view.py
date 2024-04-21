@@ -92,9 +92,15 @@ class PlotMaterial:
 
         if show_kwargs:
             if hasattr(self.umat, "kwargs"):
-                parameters = ", ".join(
-                    [f"{key}={value:.3g}" for key, value in self.umat.kwargs.items()]
-                )
+                p = []
+                for key, value in self.umat.kwargs.items():
+                    if hasattr(value, "__len__"):
+                        val = "[" + " ".join([f"{v:.3g}" for v in value]) + "]"
+                    else:
+                        val = f"{value:.3g}"
+                    p.append(f"{key}={val}")
+                parameters = ", ".join(p)
+
                 ax.set_title(parameters, fontdict=dict(fontsize="small"), wrap=True)
 
         return ax

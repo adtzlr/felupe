@@ -131,7 +131,34 @@ class ConstitutiveMaterial:
 
         return ax
 
-    def optimize(self, ux=None, bx=None, ps=None, incompressible=False, **kwargs):
+    def optimize(self, ux=None, ps=None, bx=None, incompressible=False, **kwargs):
+        """Optimize the material parameters by a least-squares fit on experimental
+        stretch-stress data.
+
+        Parameters
+        ----------
+        ux : array of shape (2, n) or None, optional
+            Experimental uniaxial stretch and force-per-undeformed-area data (default is
+            None).
+        ps : array of shape (2, n) or None, optional
+            Experimental planar-shear stretch and force-per-undeformed-area data
+            (default is None).
+        bx : array of shape (2, n) or None, optional
+            Experimental biaxial stretch and force-per-undeformed-area data (default is
+            None).
+        incompressible : bool, optional
+            A flag to enforce incompressible deformations (default is False).
+        **kwargs : dict, optional
+            Optional keyword arguments are passed to
+            :func:`scipy.optimize.least_squares`.
+
+        Returns
+        -------
+        ConstitutiveMaterial
+            A copy of the constitutive material with the optimized material parameters.
+        scipy.optimize.OptimizeResult
+            Represents the optimization result.
+        """
         from scipy.optimize import least_squares
 
         experiment = [(None, None) if lc is None else lc for lc in [ux, bx, ps]]
@@ -154,7 +181,7 @@ class ConstitutiveMaterial:
             return np.concatenate(residuals)
 
         res = least_squares(fun=fun, x0=list(self.kwargs.values()), **kwargs)
-        
+
         out = copy(self)
         for key, value in zip(self.kwargs.keys(), res.x):
             out.kwargs[key] = value

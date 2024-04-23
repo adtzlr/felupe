@@ -182,11 +182,14 @@ class ConstitutiveMaterial:
                 experiment = np.asarray(lc).reshape(2, -1)
             experiments.append(experiment)
 
+        # get sizes of material parameters and offsets as cumulative sum
+        offsets = np.cumsum([np.asarray(y).size for y in self.kwargs.values()])[:-1]
+
         def fun(x):
             "Return the vector of residuals for given material parameters x."
 
             # update the material parameters
-            for key, value in zip(self.kwargs.keys(), x):
+            for key, value in zip(self.kwargs.keys(), np.split(x, offsets)):
                 self.kwargs[key] = value
 
             # evaluate the load cases by the material model formulation
@@ -207,7 +210,8 @@ class ConstitutiveMaterial:
             return np.concatenate(residuals)
 
         # optimize the initial material parameters
-        res = least_squares(fun=fun, x0=list(self.kwargs.values()), **kwargs)
+        x0 = [np.asarray(value).ravel() for value in self.kwargs.values()]
+        res = least_squares(fun=fun, x0=np.concatenate(x0), **kwargs)
 
         def std(hessian, residuals_variance):
             "Return the estimated errors (standard deviations) of parameters."
@@ -219,7 +223,7 @@ class ConstitutiveMaterial:
 
         # copy and update the material parameters of the material model formulation
         umat = copy(self)
-        for key, value in zip(self.kwargs.keys(), res.x):
+        for key, value in zip(self.kwargs.keys(), np.split(res.x, offsets)):
             umat.kwargs[key] = value
 
         return umat, res

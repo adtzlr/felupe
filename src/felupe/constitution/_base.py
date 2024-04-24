@@ -169,6 +169,9 @@ class ConstitutiveMaterial:
 
         Examples
         --------
+        The :func:`felupe.ogden <Ogden>` material model formulation is fitted on
+        Treloar's uniaxial tension data [1]_.
+        
         ..  pyvista-plot::
             :context:
 
@@ -177,29 +180,33 @@ class ConstitutiveMaterial:
             >>>
             >>> stretches, stresses = np.array(
             ...     [
-            ...         [1.000, 0.000],
-            ...         [1.427, 0.286],
-            ...         [1.616, 0.383],
-            ...         [1.882, 0.466],
-            ...         [2.160, 0.594],
-            ...         [2.438, 0.661],
-            ...         [3.058, 0.841],
-            ...         [3.615, 1.006],
-            ...         [4.121, 1.209],
-            ...         [4.852, 1.562],
-            ...         [5.405, 1.915],
-            ...         [5.792, 2.298],
-            ...         [6.180, 2.652],
-            ...         [6.479, 3.02],
-            ...         [6.663, 3.382],
-            ...         [6.936, 3.735],
-            ...         [7.133, 4.081],
-            ...         [7.177, 4.450],
-            ...         [7.271, 4.841],
-            ...         [7.442, 5.203],
-            ...         [7.512, 5.564],
+            ...         [1.000, 0.00],
+            ...         [1.020, 0.26],
+            ...         [1.125, 1.37],
+            ...         [1.240, 2.30],
+            ...         [1.390, 3.23],
+            ...         [1.585, 4.16],
+            ...         [1.900, 5.10],
+            ...         [2.180, 6.00],
+            ...         [2.420, 6.90],
+            ...         [3.020, 8.80],
+            ...         [3.570, 10.7],
+            ...         [4.030, 12.5],
+            ...         [4.760, 16.2],
+            ...         [5.360, 19.9],
+            ...         [5.750, 23.6],
+            ...         [6.150, 27.4],
+            ...         [6.400, 31.0],
+            ...         [6.600, 34.8],
+            ...         [6.850, 38.5],
+            ...         [7.050, 42.1],
+            ...         [7.150, 45.8],
+            ...         [7.250, 49.6],
+            ...         [7.400, 53.3],
+            ...         [7.500, 57.0],
+            ...         [7.600, 64.4],
             ...     ]
-            ... ).T
+            ... ).T * 0.0980665
             >>>
             >>> umat = fem.Hyperelastic(fem.ogden)
             >>> umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
@@ -223,7 +230,13 @@ class ConstitutiveMaterial:
         --------
         scipy.optimize.least_squares : Solve a nonlinear least-squares problem with
             bounds on the variables.
-
+        
+        References
+        ----------
+        .. [1] L. R. G. Treloar, "Stress-strain data for vulcanised rubber under various
+           types of deformation,” Transactions of the Faraday Society, vol. 40. Royal
+           Society of Chemistry (RSC), p. 59, 1944. doi: 10.1039/tf9444000059. Data
+           available at https://www.uni-due.de/mathematik/ag_neff/neff_hencky.
         """
         from scipy.optimize import least_squares
 

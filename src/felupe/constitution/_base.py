@@ -171,7 +171,7 @@ class ConstitutiveMaterial:
         --------
         The :func:`felupe.ogden <Ogden>` material model formulation is fitted on
         Treloar's uniaxial tension data [1]_.
-        
+
         ..  pyvista-plot::
             :context:
 
@@ -230,7 +230,7 @@ class ConstitutiveMaterial:
         --------
         scipy.optimize.least_squares : Solve a nonlinear least-squares problem with
             bounds on the variables.
-        
+
         References
         ----------
         .. [1] L. R. G. Treloar, "Stress-strain data for vulcanised rubber under various

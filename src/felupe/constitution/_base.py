@@ -234,8 +234,9 @@ class ConstitutiveMaterial:
         References
         ----------
         .. [1] L. R. G. Treloar, "Stress-strain data for vulcanised rubber under various
-           types of deformation,” Transactions of the Faraday Society, vol. 40. Royal
-           Society of Chemistry (RSC), p. 59, 1944. doi: 10.1039/tf9444000059. Data
+           types of deformation", Transactions of the Faraday Society, vol. 40. Royal
+           Society of Chemistry (RSC), p. 59, 1944. doi:
+           `10.1039/tf9444000059 <https://doi.org/10.1039/tf9444000059>`_. Data
            available at https://www.uni-due.de/mathematik/ag_neff/neff_hencky.
         """
         from scipy.optimize import least_squares

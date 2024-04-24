@@ -92,9 +92,15 @@ class PlotMaterial:
 
         if show_kwargs:
             if hasattr(self.umat, "kwargs"):
-                parameters = ", ".join(
-                    [f"{key}={value}" for key, value in self.umat.kwargs.items()]
-                )
+                p = []
+                for key, value in self.umat.kwargs.items():
+                    if hasattr(value, "__len__"):
+                        val = "[" + " ".join([f"{v:.3g}" for v in value]) + "]"
+                    else:
+                        val = f"{value:.3g}"
+                    p.append(f"{key}={val}")
+                parameters = ", ".join(p)
+
                 ax.set_title(parameters, fontdict=dict(fontsize="small"), wrap=True)
 
         return ax
@@ -128,7 +134,7 @@ class ViewMaterial(PlotMaterial):
     --------
     ..  pyvista-plot::
         :context:
-        
+
         >>> import felupe as fem
         >>>
         >>> umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1, bulk=2), r=3, m=1, beta=0)
@@ -379,7 +385,7 @@ class ViewMaterialIncompressible(PlotMaterial):
     --------
     ..  pyvista-plot::
         :context:
-        
+
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.extended_tube, Gc=0.2, Ge=0.2, beta=0.2, delta=0.1)
@@ -396,7 +402,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         >>> fig = ax.get_figure()
         >>> chart = pv.ChartMPL(fig)
         >>> chart.show()
-    
+
     ..  pyvista-plot::
         :context:
 

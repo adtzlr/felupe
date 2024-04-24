@@ -698,3 +698,15 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
 
     # strain energy function and state variable
     return mu / 2 * (I1 - 3), triu_1d(Ci)
+
+
+# default material parameters
+saint_venant_kirchhoff.kwargs = dict(mu=0.0, lmbda=0.0)
+neo_hooke.kwargs = dict(mu=0)
+mooney_rivlin.kwargs = dict(C10=0, C01=0)
+yeoh.kwargs = dict(C10=0, C20=0, C30=0)
+third_order_deformation.kwargs = dict(C10=0, C01=0, C11=0, C20=0, C30=0)
+ogden.kwargs = dict(mu=[1, 1], alpha=[2, -2])
+arruda_boyce.kwargs = dict(C1=0, limit=1000)
+extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
+van_der_waals.kwargs = dict(mu=0, beta=0, a=0, limit=1000)

@@ -297,7 +297,7 @@ def test_umat():
     dsde = linear_elastic.hessian([F, None])
 
 
-def test_umat_hyperelastic(savefig=False):
+def test_umat_hyperelastic():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
@@ -336,13 +336,8 @@ def test_umat_hyperelastic(savefig=False):
         s, statevars_new = umat.gradient([F, None])
         dsde = umat.hessian([F, None])
 
-        if savefig:
-            ax = umat.screenshot(
-                filename=f"../docs/felupe/images/umat_{umat.fun.__name__}.png",
-                incompressible=incompressible,
-            )
-
     for incompressible in [False, True]:
+        ax = umat.plot(incompressible=incompressible)
         ax = umat.screenshot(incompressible=incompressible)
 
 
@@ -375,7 +370,7 @@ def test_umat_hyperelastic2():
     assert np.allclose(dsde, dsde2)
 
 
-def test_umat_viscoelastic(savefig=False):
+def test_umat_viscoelastic():
     r, x = pre(sym=False, add_identity=True, add_random=True)
     F = x[0]
 
@@ -402,14 +397,12 @@ def test_umat_viscoelastic(savefig=False):
     umat = fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
-    if savefig:
-        ax = umat.screenshot(
-            filename="../docs/felupe/images/umat_finite_strain_viscoelastic.png",
-            ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
-            ps=None,
-            bx=None,
-            incompressible=True,
-        )
+    umat.plot(
+        ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ps=None,
+        bx=None,
+        incompressible=True,
+    )
 
     s2, statevars_new = umat.gradient([F, statevars])
     dsde2 = umat.hessian([F, statevars])
@@ -513,6 +506,47 @@ def test_composite():
     (d2WdFdF,) = umat.hessian([F, None])
 
 
+def test_optimize():
+    stretches, stresses = np.array(
+        [
+            [1.0, 0.0],
+            [1.427, 0.286],
+            [1.616, 0.383],
+            [1.882, 0.466],
+            [2.16, 0.594],
+            [2.438, 0.661],
+            [3.058, 0.841],
+            [3.615, 1.006],
+            [4.121, 1.209],
+            [4.852, 1.562],
+            [5.405, 1.915],
+            [5.792, 2.298],
+            [6.18, 2.652],
+            [6.479, 3.02],
+            [6.663, 3.382],
+            [6.936, 3.735],
+            [7.133, 4.081],
+            [7.177, 4.45],
+            [7.271, 4.841],
+            [7.442, 5.203],
+            [7.512, 5.564],
+        ]
+    ).T
+
+    for model in [
+        fem.neo_hooke,
+        fem.ogden,
+        fem.third_order_deformation,
+        fem.extended_tube,
+    ]:
+        umat = fem.Hyperelastic(model)
+        umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
+
+        ux = np.linspace(stretches.min(), stretches.max(), num=20)
+        ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
+        ax.plot(stretches, stresses, "C0x")
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -520,11 +554,12 @@ if __name__ == "__main__":
     test_linear_planestrain()
     test_kinematics()
     test_umat()
-    test_umat_hyperelastic(savefig=True)
+    test_umat_hyperelastic()
     test_umat_hyperelastic2()
-    test_umat_viscoelastic(savefig=True)
+    test_umat_viscoelastic()
     test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_plasticity()
     test_elpliso()
     test_composite()
+    test_optimize()

@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from copy import deepcopy as copy
+
 import numpy as np
 
 from ._view import ViewMaterial, ViewMaterialIncompressible
@@ -129,6 +131,154 @@ class ConstitutiveMaterial:
         plt.close(fig)
 
         return ax
+
+    def optimize(self, ux=None, ps=None, bx=None, incompressible=False, **kwargs):
+        """Optimize the material parameters by a least-squares fit on experimental
+        stretch-stress data.
+
+        Parameters
+        ----------
+        ux : array of shape (2, ...) or None, optional
+            Experimental uniaxial stretch and force-per-undeformed-area data (default is
+            None).
+        ps : array of shape (2, ...) or None, optional
+            Experimental planar-shear stretch and force-per-undeformed-area data
+            (default is None).
+        bx : array of shape (2, ...) or None, optional
+            Experimental biaxial stretch and force-per-undeformed-area data (default is
+            None).
+        incompressible : bool, optional
+            A flag to enforce incompressible deformations (default is False).
+        **kwargs : dict, optional
+            Optional keyword arguments are passed to
+            :func:`scipy.optimize.least_squares`.
+
+        Returns
+        -------
+        ConstitutiveMaterial
+            A copy of the constitutive material with the optimized material parameters.
+        scipy.optimize.OptimizeResult
+            Represents the optimization result.
+
+
+        Notes
+        -----
+        ..  warning::
+            At least one load case, i.e. one of the arguments ``ux``, ``ps`` or ``bx``
+            must not be ``None``.
+
+        Examples
+        --------
+        ..  pyvista-plot::
+            :context:
+
+            >>> import numpy as np
+            >>> import felupe as fem
+            >>>
+            >>> stretches, stresses = np.array(
+            ...     [
+            ...         [1.000, 0.000],
+            ...         [1.427, 0.286],
+            ...         [1.616, 0.383],
+            ...         [1.882, 0.466],
+            ...         [2.160, 0.594],
+            ...         [2.438, 0.661],
+            ...         [3.058, 0.841],
+            ...         [3.615, 1.006],
+            ...         [4.121, 1.209],
+            ...         [4.852, 1.562],
+            ...         [5.405, 1.915],
+            ...         [5.792, 2.298],
+            ...         [6.180, 2.652],
+            ...         [6.479, 3.02],
+            ...         [6.663, 3.382],
+            ...         [6.936, 3.735],
+            ...         [7.133, 4.081],
+            ...         [7.177, 4.450],
+            ...         [7.271, 4.841],
+            ...         [7.442, 5.203],
+            ...         [7.512, 5.564],
+            ...     ]
+            ... ).T
+            >>>
+            >>> umat = fem.Hyperelastic(fem.ogden)
+            >>> umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
+            >>>
+            >>> ux = np.linspace(stretches.min(), stretches.max(), num=200)
+            >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
+            >>> ax.plot(stretches, stresses, "C0x")
+
+        ..  pyvista-plot::
+            :include-source: False
+            :context:
+            :force_static:
+
+            >>> import pyvista as pv
+            >>>
+            >>> fig = ax.get_figure()
+            >>> chart = pv.ChartMPL(fig)
+            >>> chart.show()
+
+        See Also
+        --------
+        scipy.optimize.least_squares : Solve a nonlinear least-squares problem with
+            bounds on the variables.
+
+        """
+        from scipy.optimize import least_squares
+
+        experiments = []
+        for lc in [ux, bx, ps]:
+            experiment = (None, None)
+            if lc is not None:
+                experiment = np.asarray(lc).reshape(2, -1)
+            experiments.append(experiment)
+
+        # get sizes of material parameters and offsets as cumulative sum
+        offsets = np.cumsum([np.asarray(y).size for y in self.kwargs.values()])[:-1]
+
+        def fun(x):
+            "Return the vector of residuals for given material parameters x."
+
+            # update the material parameters
+            for key, value in zip(self.kwargs.keys(), np.split(x, offsets)):
+                self.kwargs[key] = value
+
+            # evaluate the load cases by the material model formulation
+            model = self.view(
+                incompressible=incompressible,
+                ux=experiments[0][0],
+                bx=experiments[1][0],
+                ps=experiments[2][0],
+            ).evaluate()
+
+            # calculate a list of residuals for each loadcase
+            residuals = [
+                predicted[1] - observed[1]
+                for predicted, observed in zip(model, experiments)
+                if observed[1] is not None
+            ]
+
+            return np.concatenate(residuals)
+
+        # optimize the initial material parameters
+        x0 = [np.asarray(value).ravel() for value in self.kwargs.values()]
+        res = least_squares(fun=fun, x0=np.concatenate(x0), **kwargs)
+
+        def std(hessian, residuals_variance):
+            "Return the estimated errors (standard deviations) of parameters."
+            return np.sqrt(np.diag(np.linalg.inv(hessian) * residuals_variance))
+
+        # estimate the optimization errors for each material parameter
+        hess = res.jac.T @ res.jac
+        res.dx = std(hess, 2 * res.cost / (len(res.fun) - len(res.x)))
+
+        # copy and update the material parameters of the material model formulation
+        umat = copy(self)
+        for key, value in zip(self.kwargs.keys(), np.split(res.x, offsets)):
+            umat.kwargs[key] = value
+
+        return umat, res
 
     def __and__(self, other_material):
         return CompositeMaterial(self, other_material)

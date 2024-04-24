@@ -171,6 +171,7 @@ class ConstitutiveMaterial:
         --------
         ..  pyvista-plot::
             :context:
+
             >>> import numpy as np
             >>> import felupe as fem
             >>>

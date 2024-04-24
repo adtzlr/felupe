@@ -200,10 +200,10 @@ class ConstitutiveMaterial:
             ...         [7.512, 5.564],
             ...     ]
             ... ).T
-
+            >>>
             >>> umat = fem.Hyperelastic(fem.ogden)
             >>> umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
-
+            >>>
             >>> ux = np.linspace(stretches.min(), stretches.max(), num=200)
             >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
             >>> ax.plot(stretches, stresses, "C0x")

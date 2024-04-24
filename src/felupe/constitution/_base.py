@@ -167,6 +167,57 @@ class ConstitutiveMaterial:
             At least one load case, i.e. one of the arguments ``ux``, ``ps`` or ``bx``
             must not be ``None``.
 
+        Examples
+        --------
+        ..  pyvista-plot::
+            :context:
+            >>> import numpy as np
+            >>> import felupe as fem
+            >>>
+            >>> stretches, stresses = np.array(
+            ...     [
+            ...         [1.000, 0.000],
+            ...         [1.427, 0.286],
+            ...         [1.616, 0.383],
+            ...         [1.882, 0.466],
+            ...         [2.160, 0.594],
+            ...         [2.438, 0.661],
+            ...         [3.058, 0.841],
+            ...         [3.615, 1.006],
+            ...         [4.121, 1.209],
+            ...         [4.852, 1.562],
+            ...         [5.405, 1.915],
+            ...         [5.792, 2.298],
+            ...         [6.180, 2.652],
+            ...         [6.479, 3.02],
+            ...         [6.663, 3.382],
+            ...         [6.936, 3.735],
+            ...         [7.133, 4.081],
+            ...         [7.177, 4.450],
+            ...         [7.271, 4.841],
+            ...         [7.442, 5.203],
+            ...         [7.512, 5.564],
+            ...     ]
+            ... ).T
+
+            >>> umat = fem.Hyperelastic(fem.ogden)
+            >>> umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
+
+            >>> ux = np.linspace(stretches.min(), stretches.max(), num=200)
+            >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
+            >>> ax.plot(stretches, stresses, "C0x")
+
+        ..  pyvista-plot::
+            :include-source: False
+            :context:
+            :force_static:
+
+            >>> import pyvista as pv
+            >>>
+            >>> fig = ax.get_figure()
+            >>> chart = pv.ChartMPL(fig)
+            >>> chart.show()
+
         See Also
         --------
         scipy.optimize.least_squares : Solve a nonlinear least-squares problem with

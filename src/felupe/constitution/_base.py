@@ -169,7 +169,7 @@ class ConstitutiveMaterial:
 
         Examples
         --------
-        The :func:`felupe.ogden <Ogden>` material model formulation is fitted on
+        The :func:`Ogden <felupe.ogden>` material model formulation is fitted on
         Treloar's uniaxial tension data [1]_.
 
         ..  pyvista-plot::

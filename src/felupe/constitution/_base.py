@@ -206,7 +206,7 @@ class ConstitutiveMaterial:
             ...         [7.500, 57.0],
             ...         [7.600, 64.4],
             ...     ]
-            ... ).T * 0.0980665
+            ... ).T * np.array([[1.0], [0.0980665]])
             >>>
             >>> umat = fem.Hyperelastic(fem.ogden)
             >>> umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)

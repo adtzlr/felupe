@@ -536,9 +536,9 @@ def test_optimize():
                 [7.500, 57.0],
                 [7.600, 64.4],
             ]
-        ).T
-        * 0.0980665
-    )
+        )
+        * np.array([1.0, 0.0980665])
+    ).T
 
     for model in [
         fem.neo_hooke,

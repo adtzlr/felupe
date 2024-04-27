@@ -432,9 +432,9 @@ def arruda_boyce(C, C1, limit):
     ----------
     C : tensortrax.Tensor
         Right Cauchy-Green deformation tensor.
-    C1 : list of float
+    C1 : float
         Initial shear modulus.
-    limit : list of float
+    limit : float
         Limiting stretch :math:`\lambda_m` at which the polymer chain network becomes
         locked.
 
@@ -604,7 +604,21 @@ def extended_tube(C, Gc, delta, Ge, beta):
 def van_der_waals(C, mu, limit, a, beta):
     r"""Strain energy function of the
     `Van der Waals <https://doi.org/10.1016/0032-3861(81)90200-7>`_ [1]_ material
-    formulation.
+    formulation.,
+    
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    mu : float
+        Initial shear modulus.
+    limit : float
+        Limiting stretch :math:`\lambda_m` at which the polymer chain network becomes
+        locked.
+    a : float
+        Attractive interactions between the quasi-particles.
+    beta : float
+        Mixed-Invariant factor: 0 for pure I1- and 1 for pure I2-contribution.
 
     Examples
     --------

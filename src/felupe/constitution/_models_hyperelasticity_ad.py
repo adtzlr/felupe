@@ -435,8 +435,8 @@ def arruda_boyce(C, C1, limit):
     C1 : list of float
         Initial shear modulus.
     limit : list of float
-        Limiting stretch at which the polymer chain network becomes locked 
-        :math:`\lambda_m`.
+        Limiting stretch :math:`\lambda_m` at which the polymer chain network becomes
+        locked.
 
     Notes
     -----
@@ -451,7 +451,7 @@ def arruda_boyce(C, C1, limit):
     
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
     
-    and :math_`\alpha_i` and :math`\beta`.
+    and :math:`\alpha_i` and :math:`\beta`.
     
     ..  math::
         

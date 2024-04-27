@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.5.0] - 2024-04-27
+
 ### Added
 - Add `umat_new, res = ConstitutiveMaterial.optimize(ux=[stretches, stresses], ps=None, bx=None)` to optimize the material parameters on given experimental data for incompressible uniaxial, biaxial and / or planar tension / compression data by `scipy.optimize.least_squares()`.
 - Add initial default material parameters for the hyperelastic material model formulations.

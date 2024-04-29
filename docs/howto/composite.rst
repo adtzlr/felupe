@@ -3,7 +3,8 @@ Composite Regions with Solid Bodies
 
 This section demonstrates how to set up a problem with two regions, each associated to a seperated solid body.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     import felupe as fem
     import numpy as np
@@ -13,7 +14,8 @@ This section demonstrates how to set up a problem with two regions, each associa
 
 In a second step, sub-meshes are created.
     
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     # take some points from the inside for the fiber-reinforced area
     eps = 1e-3
@@ -33,7 +35,8 @@ In a second step, sub-meshes are created.
 
 This is followed by the creation of a global region/field and two sub-regions/sub-fields.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
     
     # a global and two sub-regions
     region = fem.RegionQuad(m)
@@ -48,7 +51,8 @@ This is followed by the creation of a global region/field and two sub-regions/su
     
 The displacement boundaries are created on the total field.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     boundaries = dict(
         fixed=fem.Boundary(field[0], fx=0),
@@ -58,7 +62,8 @@ The displacement boundaries are created on the total field.
 
 The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     # two material model formulations
     neo_hooke = fem.NeoHooke(mu=1, bulk=1)
@@ -71,7 +76,9 @@ The rubber is associated to a Neo-Hookean material formulation whereas the steel
 
 A step is created and further added to a job. The global field must be passed to the ``x0`` argument during the evaluation of the job. Internally, all field values are linked automatically, i.e. they share their ``values`` attribute.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     # prepare a step with substeps
     move = fem.math.linsteps([0, 0.5], num=10)
@@ -85,6 +92,4 @@ A step is created and further added to a job. The global field must be passed to
     job = fem.Job(steps=[step])
     job.evaluate(x0=field, filename="result.xdmf")
 
-
-.. image:: images/composite.png
-   :width: 600px
+    field.plot("Principal Values of Logarithmic Strain").show()

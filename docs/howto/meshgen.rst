@@ -3,7 +3,8 @@ Generate Meshes
 
 FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A :class:`~felupe.Mesh` instance contains essentially two arrays: one with :attr:`~felupe.Mesh.points` and another one containing the cell connectivities, called :attr:`~felupe.Mesh.cells`. Only a single :attr:`~Mesh.cell_type` is supported per :class:`~felupe.Mesh`. Optionally the :attr:`~felupe.Mesh.cell_type` is specified which is used if the mesh is saved as a VTK or a XDMF file. These cell types are identical to cell types used in meshio (`VTK types <https://vtk.org/doc/nightly/html/vtkCellType_8h_source.html>`_): ``line``, ``quad`` and ``hexahedron`` for linear lagrange elements or ``triangle`` and  ``tetra`` for 2- and 3-simplices or ``VTK_LAGRANGE_HEXAHEDRON`` for 3d lagrange-cells with polynomial shape functions of arbitrary order.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     import numpy as np
     import felupe as fem
@@ -24,17 +25,14 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
     # if needed, convert a FElupe mesh to a meshio-mesh
     mesh_meshio = mesh.as_meshio()
 
-    # view the mesh in an interactive window
-    mesh.plot().show()
-    
     # take a screenshot of an off-screen view
     img = mesh.screenshot(
         filename="mesh.png", 
         transparent_background=True,
     )
 
-.. image:: images/quad.png
-   :width: 400px
+    # view the mesh in an interactive window
+    mesh.plot().show()
 
 
 A cube by hand
@@ -42,22 +40,26 @@ A cube by hand
 
 First let's start with the generation of a point at ``x=0``, expanded to a line from ``x=1`` to ``x=3`` with ``n=7`` points. Next, the line is expanded into a rectangle. The ``z`` argument of :func:`~felupe.mesh.expand` represents the total expansion. Again, an expansion of our rectangle leads to a hexahedron. Several other useful functions are available beside :func:`~felupe.mesh.expand`: :func:`~felupe.mesh.rotate`, :func:`~felupe.mesh.revolve` and :func:`~felupe.mesh.merge_duplicate_points`. With these simple tools at hand, rectangles, cubes or cylinders may be constructed with ease.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     vert = fem.Point(a=1)
     line = vert.expand(n=7, z=2)
     rect = line.expand(n=5, z=5)
     cube = rect.expand(n=6, z=3)
 
+    cube.plot().show()
+
 
 Alternatively, these mesh-related tools are also provided as methods of a :class:`~felupe.Mesh`.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     cube = fem.mesh.Line(a=1, b=3, n=7).expand(n=5, z=5).expand(n=6, z=3)
-
-..  image:: images/cube.png
-    :width: 400px
+    cube.plot().show()
 
 
 Elementary Shapes
@@ -65,49 +67,51 @@ Elementary Shapes
 
 Lines, rectangles, cubes, circles and triangles do not have to be constructed manually each time. Instead, some easier to use classes are povided by FElupe like :class:`~felupe.mesh.Line`, :class:`~felupe.Rectangle` or :class:`~felupe.Cube`. For non equi-distant points per axis use :class:`~felupe.Grid`.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     cube = fem.Cube(a=(1, 0, 0), b=(3, 5, 3), n=(7, 5, 6))
-
-..  image:: images/cube.png
-    :width: 400px
+    cube.plot().show()
 
 For circles, there is :class:`~felupe.Circle` for the creation of a quad-mesh for a circle.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     circle = fem.Circle(radius=1.5, centerpoint=[1, 2], n=6, sections=[0, 90, 180, 270])
-
-..  image:: images/circle.png
-    :width: 400px
+    circle.plot().show()
 
 For triangles, there is :class:`~felupe.mesh.Triangle` for the creation of a quad-mesh for a triangle. For positive cell volumes, the coordinates of ``a``, ``b`` and ``c`` must be sorted counter-clockwise around the center point.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     triangle = fem.mesh.Triangle(a=(0, 0), b=(1, 0), c=(0, 1), n=5)
-
-..  image:: images/triangle.png
-    :width: 400px
+    triangle.plot().show()
 
 Corner Modifications
 ********************
 
 For a regular :class:`~felupe.Rectangle` or a :class:`~felupe.Cube`, corners may be modified by :meth:`~felupe.Mesh.modify_corners()`. This is sometimes beneficial for compressive states of deformation.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     rectangle = fem.mesh.Rectangle(n=6).modify_corners()
-
-..  image:: images/rectangle_corners.png
-    :width: 400px
+    rectangle.plot().show()
 
 Cylinders
 *********
 
 Cylinders are created by a revolution of a rectangle.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     r = 25
     R = 50
@@ -115,16 +119,16 @@ Cylinders are created by a revolution of a rectangle.
     
     rect = fem.Rectangle(a=(-r, 0), b=(-R, H), n=(11, 41))
     cylinder = rect.revolve(n=19, phi=-180, axis=1)
-
-..  image:: images/cylinder.png
-    :width: 400px
+    cylinder.plot().show()
 
 Fill between boundaries
 ***********************
 
 Meshed boundaries may be used to fill the area or volume in between for line and quad meshes. A plate with a hole is initiated by a line mesh, which is copied two times for the boundaries. The points arrays are updated for the hole and the upper edge. The face is filled by a quad mesh.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     n = (11, 9)
     phi = np.linspace(1, 0.5, n[0]) * np.pi / 2
@@ -140,12 +144,13 @@ Meshed boundaries may be used to fill the area or volume in between for line and
         [face, face.mirror(normal=[-1, 1, 0])]
     ).merge_duplicate_points()
 
-..  image:: images/plate-with-hole.png
-    :width: 400px
+    mesh.plot().show()
 
 Connect two quad-meshed faces by hexahedrons:
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     x = np.linspace(0, 1, 11)
     y = np.linspace(0, 1, 11)
@@ -163,16 +168,16 @@ Connect two quad-meshed faces by hexahedrons:
     bottom.points *= 0.75
     
     mesh = bottom.fill_between(top, n=6)
-
-..  image:: images/fill-between.png
-    :width: 400px
+    mesh.plot().show()
 
 Combinations of elementary shapes
 *********************************
 
 The elementary shapes are combined to create more complex shapes, e.g. a planar triangular shaped face connected to three arms with rounded ends.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
     
     rectangle = fem.Rectangle(a=(-1, 0), b=(1, 5), n=(13, 26))
     circle = fem.Circle(radius=1, centerpoint=(0, 5), sections=(0, 90), n=4)
@@ -183,30 +188,28 @@ The elementary shapes are combined to create more complex shapes, e.g. a planar 
     arms = [arm.rotate(phi, axis=2, center=center) for phi in [0, 120, 240]]
     
     mesh = fem.mesh.concatenate([triangle, *arms]).merge_duplicate_points(decimals=8)
-    
-..  image:: images/fidget_spinner.png
-    :width: 400px
+    mesh.plot().show()
 
 For quad- and hexahedron-meshes it is possible to extract the boundaries of the mesh by a boundary region. The boundary-mesh consists of the quad-cells which have their **first edge** located at the boundary. Hence, these are not the original cells connected to the boundary. The boundary line-mesh is available as a method. In FElupe, boundaries of cell (volumes) are considered as faces and hence, the line-mesh for the edges of a quad-mesh is obtained by a mesh-*face* method of the boundary region.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     boundary = fem.RegionQuadBoundary(mesh)
-    boundary.mesh
-
-..  image:: images/fidget_spinner_boundary.png
-    :width: 400px
+    boundary.mesh.plot().show()
     
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
-    boundary.mesh_faces()
-
-..  image:: images/fidget_spinner_boundary_faces.png
-    :width: 400px
+    boundary.mesh_faces().plot().show()
 
 A three-dimensional example demonstrates a combination of two different expansions of a rectangle, fill-betweens of two lines and a circle.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     circle = fem.Circle(radius=1, centerpoint=(0, 0), sections=(0, 90, 180, 270), n=6)
 
@@ -234,26 +237,26 @@ A three-dimensional example demonstrates a combination of two different expansio
         circle.expand(n=11, z=1),
     ]).merge_duplicate_points(decimals=8)
 
-..  image:: images/solid.png
-    :width: 400px
+    mesh.plot().show()
 
 The boundary mesh isn't visualized correctly in PyVista and in ParaView because there are two duplicated cells at the edges. However, this is not a bug - it's a feature. Each face on the surface has one attached cell - with the surface face as its first face. Hence, at edges, there are two overlapping cells with different point connectivity.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     boundary = fem.RegionQuadBoundary(mesh)
-    boundary.mesh
-
-..  image:: images/solid-boundary.png
-    :width: 400px
+    boundary.mesh.plot().show()
 
 
-Indentations for rubber-metal parts
-***********************************
+Boundary modification (runouts)
+*******************************
 
-Typical indentations (runouts) of the free-rubber surfaces in rubber-metal components are defined by a centerpoint, an axis and their relative amounts (values) per axis. Optionally, the transformation of the point coordinates is restricted to a list of given points.
+Indentations (runouts) of the boundary edges or faces are defined by a centerpoint, an axis and their relative amounts (values) per axis. Optionally, the transformation of the point coordinates is restricted to a list of given points.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     block = mesh.expand(z=0.5)
     x, y, z = block.points.T
@@ -266,42 +269,42 @@ Typical indentations (runouts) of the free-rubber surfaces in rubber-metal compo
         normalize=True,
         mask=np.arange(solid.npoints)[np.sqrt(x**2 + y**2) > 0.5]
     )
+    solid.plot().show()
 
-..  image:: images/runouts.png
-    :width: 400px
 
 Triangle and Tetrahedron meshes
 *******************************
 
 Any quad or tetrahedron mesh may be subdivided (triangulated) to meshes out of Triangles or Tetrahedrons by :func:`~felupe.mesh.triangulate`.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     rectangle = fem.Rectangle(n=5).triangulate()
+    rectangle.plot().show()
 
-..  image:: images/rectangle-triangle.png
-    :width: 400px
-
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     cube = fem.Cube(n=5).triangulate()
+    cube.plot().show()
 
-..  image:: images/cube-tetra.png
-    :width: 400px
-
-..  code-block:: python
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     cube = fem.Cube(n=5).triangulate(mode=0)
-
-..  image:: images/cube-tetra-mode.png
-    :width: 400px
+    cube.plot().show()
 
 Meshes with midpoints
 *********************
 
 If a mesh with midpoints is required by a region, functions for edge, face and volume midpoint insertions are provided in :func:`~felupe.mesh.add_midpoints_edges`, :func:`~felupe.mesh.add_midpoints_faces` and :func:`~felupe.mesh.add_midpoints_volumes`. A low-order mesh, e.g. a mesh with cell-type ``quad``, can be converted to a quadratic mesh with :func:`~felupe.mesh.convert`. By default, only midpoints on edges are inserted. Hence, the resulting cell-type is ``quad8``. If midpoints on faces are also calculated, the resulting cell-type is ``quad9``.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
     
     rectangle_quad4 = fem.Rectangle(n=6)
     rectangle_quad8 = rectangle_quad4.convert(order=2)
@@ -309,7 +312,8 @@ If a mesh with midpoints is required by a region, functions for edge, face and v
 
 The same also applies on meshes with triangles.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     rectangle_triangle3 = fem.Rectangle(n=6).triangulate()
     rectangle_triangle6 = rectangle_triangle3.add_midpoints_edges()

@@ -3,7 +3,8 @@ Torsion Boundary
 
 This section demonstrates how to create a :class:`~felupe.Boundary` for torsional loading. This is somewhat more complicated than a simple boundary condition with identical mesh-point values because the values of the mesh-points are different. However, this is not a problem. FElupe supports arrays to be passed as the ``value``-argument of a :class:`~felupe.Boundary`. This is even possible in a :class:`~felupe.Step` with the ``ramp``-argument.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     import numpy as np
     import felupe as fem
@@ -36,7 +37,8 @@ This section demonstrates how to create a :class:`~felupe.Boundary` for torsiona
 
 The reaction moment on the centerpoint of the right end face is tracked by a ``callback()`` function when we :meth:`~felupe.Job.evaluate` the :class:`~felupe.Job`.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     moment = []
 
@@ -52,12 +54,10 @@ The reaction moment on the centerpoint of the right end face is tracked by a ``c
     job.evaluate()
     solid.plot("Principal Values of Cauchy Stress", show_undeformed=False).show()
 
-.. image:: images/fig_torsion.png
-   :width: 400px
-
 Finally, let's plot the reaction moment vs. torsion angle curve.
 
-..  code-block:: python
+..  pyvista-plot::
+    :context:
 
     import matplotlib.pyplot as plt
 
@@ -66,6 +66,13 @@ Finally, let's plot the reaction moment vs. torsion angle curve.
     ax.set_xlabel(r"Torsion Angle $\phi$ in deg $\rightarrow$")
     ax.set_ylabel(r"Torsion Moment $M_1$ in Nm $\rightarrow$")
 
+..  pyvista-plot::
+    :include-source: False
+    :context:
+    :force_static:
 
-.. image:: images/fig_torsion-moment.png
-   :width: 400px
+    import pyvista as pv
+
+    fig = ax.get_figure()
+    chart = pv.ChartMPL(fig)
+    chart.show()

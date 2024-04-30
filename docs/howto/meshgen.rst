@@ -25,14 +25,24 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
     # if needed, convert a FElupe mesh to a meshio-mesh
     mesh_meshio = mesh.as_meshio()
 
+    # view the mesh in an interactive window
+    mesh.plot().show()
+
     # take a screenshot of an off-screen view
     img = mesh.screenshot(
         filename="mesh.png", 
         transparent_background=True,
     )
 
-    # view the mesh in an interactive window
-    mesh.plot().show()
+..  pyvista-plot::
+    :context:
+    :nofigs:
+
+    # take a screenshot of an off-screen view
+    img = mesh.screenshot(
+        filename="mesh.png", 
+        transparent_background=True,
+    )
 
 
 A cube by hand

@@ -36,7 +36,7 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
 
 ..  pyvista-plot::
     :context:
-    :nofigs:
+    :nofigs: True
 
     # take a screenshot of an off-screen view
     img = mesh.screenshot(

@@ -42,6 +42,9 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     Notes
     -----
+    ..  note::
+        This implementation uses the hyperbolic tangent instead of the Gauss error
+        function.
 
     ..  math::
 

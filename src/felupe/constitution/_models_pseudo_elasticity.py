@@ -45,8 +45,9 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     ..  math::
 
-        \eta(\psi, \psi_{max}) &= 1 - \frac{1}{r} erf\left( \frac{\psi_{max} - \psi}
-        {m + \beta~\psi_{max}} \right)
+        \eta(\psi, \psi_\text{max}) &= 1 - \frac{1}{r} \tanh \left(
+            \frac{\psi_\text{max} - \psi}{m + \beta~\psi_\text{max}}
+        \right)
 
         \boldsymbol{P} &= \eta \frac{\partial \psi}{\partial \boldsymbol{F}}
 

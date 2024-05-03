@@ -254,5 +254,5 @@ solid.plot(
 #    vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
 #    `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
 # .. [2] M. Freund, "Generalization of one-dimensional material models for the finite
-#    element method", PhD-thesis, Chemnitz, 20213.
+#    element method", PhD thesis, Chemnitz, 2013.
 #    https://nbn-resolving.org/urn:nbn:de:bsz:ch1-qucosa-114428

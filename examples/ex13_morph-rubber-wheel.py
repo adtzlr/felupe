@@ -2,19 +2,19 @@ r"""
 Rotating Rubber Wheel
 ---------------------
 This example contains a simulation of a rotating rubber wheel in plane strain with the
-MORPH material model formulation [1, 2]. While the rotation is applied, a vertical
-compression is applied to the rubber wheel by a frictionless contact on the bottom. The
-vertical reaction force is then carried out for the rotation angles.
-
-The MORPH material model is implemented as a second Piola-Kirchhoff stress-based
-formulation with automatic differentiation. The tresca invariant of the distortional
-part of the right Cauchy-Green deformation tensor is used as internal state variable,
-see Eq. :eq:`morph-state`.
+`MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ material model formulation
+[1, 2]_. While the rotation is applied, a vertical compression is applied to the rubber
+wheel by a frictionless contact on the bottom. The vertical reaction force is then
+carried out for the rotation angles. The MORPH material model is implemented as a second
+Piola-Kirchhoff stress-based formulation with automatic differentiation. The tresca
+invariant of the distortional part of the right Cauchy-Green deformation tensor is used
+as internal state variable, see Eq. :eq:`morph-state`.
 
 ..  warning::
-    While the MORPH-material formulation captures the Mullins effect and quasi-static
-    hysteresis effects very nicely for rubber mixtures, it is observed to be unstable
-    for medium- to highly-distorted states of deformation.
+    While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
+    formulation captures the Mullins effect and quasi-static hysteresis effects very
+    nicely for rubber mixtures, it has been observed to be unstable for medium- to
+    highly-distorted states of deformation.
 
 ..  math::
     :label: morph-state

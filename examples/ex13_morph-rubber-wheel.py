@@ -82,8 +82,8 @@ this example [1].
         \boldsymbol{S}_{Z,n} + \beta\ \hat{L}_T\ \boldsymbol{S}_H
     }{1 + \beta\ \hat{L}_T}
     
-    \boldsymbol{S} &= 2 \alpha \text{dev}\left( \hat{\boldsymbol{C}} \right)
-        \boldsymbol{C}^{-1} + \text{dev}\left( \boldsymbol{S}_Z \boldsymbol{C} \right)
+    \boldsymbol{S} &= 2 \alpha\ \text{dev}( \hat{\boldsymbol{C}} )
+        \boldsymbol{C}^{-1} + \text{dev}\left( \boldsymbol{S}_Z\ \boldsymbol{C} \right)
         \boldsymbol{C}^{-1}
 
 ..  note::

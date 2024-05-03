@@ -90,6 +90,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :nofigs:
 
         >>> import numpy as np
         >>>

@@ -102,7 +102,11 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.screenshot()
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> plotter.show()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 

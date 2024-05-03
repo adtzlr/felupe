@@ -9,7 +9,7 @@ vertical reaction force is then carried out for the rotation angles.
 The MORPH material model is implemented as a second Piola-Kirchhoff stress-based
 formulation with automatic differentiation. The tresca invariant of the distortional
 part of the right Cauchy-Green deformation tensor is used as internal state variable,
-see Eq. \eqref{eq:morph-state}.
+see Eq. :eq:`morph-state`.
 
 ..  warning::
     While the MORPH-material formulation captures the Mullins effect and quasi-static
@@ -32,7 +32,7 @@ see Eq. \eqref{eq:morph-state}.
     \hat{C}_T^S &= \max \left( \hat{C}_T, \hat{C}_{T,n}^S \right)
 
 A sigmoid-function is used inside the deformation-dependent variables :math:`\alpha`,
-:math:`\beta` and :math:`\gamma`, see Eq. \eqref{morph-sigmoid}.
+:math:`\beta` and :math:`\gamma`, see Eq. :eq:`morph-sigmoid`.
 
 ..  math::
     :label: morph-sigmoid
@@ -46,7 +46,7 @@ A sigmoid-function is used inside the deformation-dependent variables :math:`\al
     \gamma &= p_5\ C_T^S\ \left( 1 - f(\frac{C_T^S}{p_6} \right)
 
 The rate of deformation is described by the Lagrangian tensor and its tresca-invariant,
-see Eq. \eqref{morph-rate-of-deformation}.
+see Eq. :eq:`morph-rate-of-deformation`.
 
 ..  math::
     :label: morph-rate-of-deformation
@@ -63,7 +63,7 @@ see Eq. \eqref{morph-rate-of-deformation}.
         \right)
 
 The additional stresses evolve between the limiting stresses, see Eq.
-\eqref{morph-stresses}. The additional deviatoric-enforcement terms are neglected in
+:eq:`morph-stresses`. The additional deviatoric-enforcement terms are neglected in
 this example [1].
 
 ..  math::

@@ -46,7 +46,9 @@ A sigmoid-function is used inside the deformation-dependent variables :math:`\al
     \gamma &= p_5\ C_T^S\ \left( 1 - f(\frac{C_T^S}{p_6} \right)
 
 The rate of deformation is described by the Lagrangian tensor and its tresca-invariant,
-see Eq. :eq:`morph-rate-of-deformation`.
+see Eq. :eq:`morph-rate-of-deformation`. It is important to evaluate the incremental
+right Cauchy-Green tensor by the difference of the final and the previous state of
+deformation, not by its variation with respect to the deformation gradient tensor.
 
 ..  math::
     :label: morph-rate-of-deformation
@@ -60,6 +62,8 @@ see Eq. :eq:`morph-rate-of-deformation`.
     \hat{L}_T &= \max \left(
         \lambda_{\hat{\boldsymbol{L}}, \alpha} - \lambda_{\hat{\boldsymbol{L}}, \beta}
     \right)
+    
+    \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
 
 The additional stresses evolve between the limiting stresses, see Eq.
 :eq:`morph-stresses`. The additional deviatoric-enforcement terms are neglected in

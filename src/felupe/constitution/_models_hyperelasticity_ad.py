@@ -695,10 +695,10 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
             \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1}
         \right) \boldsymbol{C}_i
 
-        \boldsymbol{X}_i &= \boldsymbol{C}_{i,n}
+        \boldsymbol{X} &= \boldsymbol{C}_{i,n}
             + \frac{\Delta t \mu}{\eta} \hat{\boldsymbol{C}}
 
-        \boldsymbol{C}_i &= \det(\boldsymbol{X}_i)^{-1/3}\ \boldsymbol{X}_i
+        \boldsymbol{C}_i &= \det(\boldsymbol{X})^{-1/3}\ \boldsymbol{X}
 
     The distortional part of the strain energy density per unit undeformed volume is
     assumed to be of a Neo-Hookean form, see Eq. :eq:`nh-w`.

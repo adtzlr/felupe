@@ -3,7 +3,7 @@ Rotating Rubber Wheel
 ---------------------
 This example contains a simulation of a rotating rubber wheel in plane strain with the
 `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ material model formulation
-[1, 2]_. While the rotation is applied, a vertical compression is applied to the rubber
+[1]_ [2]_. While the rotation is applied, a vertical compression is applied to the rubber
 wheel by a frictionless contact on the bottom. The vertical reaction force is then
 carried out for the rotation angles. The MORPH material model is implemented as a second
 Piola-Kirchhoff stress-based formulation with automatic differentiation. The tresca

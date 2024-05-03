@@ -189,6 +189,11 @@ mesh.plot().show()
 # rotation of the wheel are evaluated for each rotation angle. The center-point of
 # the bottom-edge is moved vertically upwards by ``0.2`` to enforce a vertical reaction
 # force in the rubber wheel.
+#
+# .. note::
+#    Try to simulate more rotation angles and obtain the vertical reaction force of the
+#    wheel, e.g. run two full rotations of the wheel with
+#    ``angles_deg = fem.math.linsteps([0, 360, 720], num=[18, 18])``.
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
@@ -199,7 +204,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 360, 540], num=[18, 9])
+angles_deg = fem.math.linsteps([0, 120], num=6)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]

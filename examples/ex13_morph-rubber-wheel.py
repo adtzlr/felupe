@@ -55,12 +55,11 @@ see Eq. :eq:`morph-rate-of-deformation`.
             \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C}) 
         \right) \hat{\boldsymbol{C}}
     
-    \hat{\lambda}_{\hat{\boldsymbol{L}}, \alpha} &= \text{eigvals}(\hat{\boldsymbol{L}})
+    \lambda_{\hat{\boldsymbol{L}}, \alpha} &= \text{eigvals}(\hat{\boldsymbol{L}})
     
     \hat{L}_T &= \max \left(
-            \hat{\lambda}_{\hat{\boldsymbol{L}}, \alpha} 
-                - \hat{\lambda}_{\hat{\boldsymbol{L}}, \beta}
-        \right)
+        \lambda_{\hat{\boldsymbol{L}}, \alpha} - \lambda_{\hat{\boldsymbol{L}}, \beta}
+    \right)
 
 The additional stresses evolve between the limiting stresses, see Eq.
 :eq:`morph-stresses`. The additional deviatoric-enforcement terms are neglected in

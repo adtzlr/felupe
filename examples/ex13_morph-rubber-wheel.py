@@ -43,7 +43,7 @@ A sigmoid-function is used inside the deformation-dependent variables :math:`\al
     
     \beta &= p_4\ f(p_3\ C_T^S)
     
-    \gamma &= p_5\ C_T^S\ \left( 1 - f(\frac{C_T^S}{p_6} \right)
+    \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
 
 The rate of deformation is described by the Lagrangian tensor and its tresca-invariant,
 see Eq. :eq:`morph-rate-of-deformation`. It is important to evaluate the incremental

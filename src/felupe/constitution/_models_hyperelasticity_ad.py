@@ -706,9 +706,9 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     ..  math::
         :label: nh-w
 
-        \hat{I}_1 &= \text{tr}\left( \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1} \right)
-
-        \hat{\psi} &= \frac{\mu}{2} \left( \hat{I}_1 - 3 \right)
+        \hat{\psi} = \frac{\mu}{2} \left( \text{tr}\left(
+            \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1}
+        \right) - 3 \right)
 
     Examples
     --------

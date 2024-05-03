@@ -102,7 +102,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> plotter.screenshot()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 

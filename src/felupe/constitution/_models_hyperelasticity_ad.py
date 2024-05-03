@@ -605,7 +605,7 @@ def van_der_waals(C, mu, limit, a, beta):
     r"""Strain energy function of the
     `Van der Waals <https://doi.org/10.1016/0032-3861(81)90200-7>`_ [1]_ material
     formulation.,
-    
+
     Parameters
     ----------
     C : tensortrax.Tensor
@@ -659,11 +659,56 @@ def van_der_waals(C, mu, limit, a, beta):
     )
 
 
-@isochoric_volumetric_split
 def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     r"""Multiplicative
     `finite strain viscoelastic <https://doi.org/10.1016/j.cma.2013.07.004>`_ [1]_
     material formulation.
+
+    Notes
+    -----
+    The material formulation is built upon the multiplicative decomposition of the
+    deformation gradient tensor into an elastic and an inelastic part, see Eq.
+    :eq:`multiplicative-split`.
+
+    ..  math::
+        :label: multiplicative-split
+
+        \boldsymbol{F} &= \boldsymbol{F}_e \boldsymbol{F}_i
+
+        \boldsymbol{C}_e &= \boldsymbol{F}_e^T \boldsymbol{F}_e
+
+        \boldsymbol{C}_i &= \boldsymbol{F}_i^T \boldsymbol{F}_i
+
+        \text{tr}\left( \boldsymbol{C}_e \right) &= \text{tr}\left(
+            \boldsymbol{C} \boldsymbol{C}_i^{-1}
+        \right)
+
+    The components of the inelastic right Cauchy-Green deformation tensor are used as
+    state variables with the evolution equation and its explicit update formula as given
+    in Eq. :eq:`evolution` [1]_. Here, the inelastic right Cauchy-Green deformation
+    tensor is enforced to be an unimodular tensor.
+
+    ..  math::
+        :label: evolution
+
+        \dot{\boldsymbol{C}}_i &= \frac{\mu}{\eta} \text{dev}\left(
+            \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1}
+        \right) \boldsymbol{C}_i
+
+        \boldsymbol{X}_i &= \boldsymbol{C}_{i,n}
+            + \frac{\Delta t \mu}{\eta} \hat{\boldsymbol{C}}
+
+        \boldsymbol{C}_i &= \det(\boldsymbol{X}_i)^{-1/3}\ \boldsymbol{X}_i
+
+    The distortional part of the strain energy density per unit undeformed volume is
+    assumed to be of a Neo-Hookean form, see Eq. :eq:`nh-w`.
+
+    ..  math::
+        :label: nh-w
+
+        \hat{I}_1 &= \text{tr}\left( \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1} \right)
+
+        \hat{\psi} &= \frac{\mu}{2} \left( \hat{I}_1 - 3 \right)
 
     Examples
     --------
@@ -702,13 +747,14 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
         `10.1016/j.cma.2013.07.004 <https://doi.org/10.1016/j.cma.2013.07.004>`_.
 
     """
+    J3 = det(C) ** (-1 / 3)
 
     # update of state variables by evolution equation
-    Ci = from_triu_1d(Cin, like=C) + mu / eta * dtime * C
+    Ci = from_triu_1d(Cin, like=C) + (mu / eta * dtime) * (J3 * C)
     Ci = det(Ci) ** (-1 / 3) * Ci
 
     # first invariant of elastic part of right Cauchy-Green deformation tensor
-    I1 = trace(C @ inv(Ci))
+    I1 = J3 * trace(C @ inv(Ci))
 
     # strain energy function and state variable
     return mu / 2 * (I1 - 3), triu_1d(Ci)

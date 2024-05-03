@@ -25,9 +25,9 @@ is used as internal state variable, see Eq. :eq:`morph-state`.
     
     \hat{\boldsymbol{C}} &= I_3^{-1/3} \boldsymbol{C}
     
-    \hat{\lambda^2_\alpha} &= \text{eigvals}(\hat{\boldsymbol{C}})
+    \hat{\lambda}^2_\alpha &= \text{eigvals}(\hat{\boldsymbol{C}})
     
-    \hat{C}_T &= \max \left( \hat{\lambda^2_\alpha} - \hat{\lambda^2_\beta} \right)
+    \hat{C}_T &= \max \left( \hat{\lambda}^2_\alpha - \hat{\lambda}^2_\beta \right)
     
     \hat{C}_T^S &= \max \left( \hat{C}_T, \hat{C}_{T,n}^S \right)
 

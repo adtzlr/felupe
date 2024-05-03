@@ -2,18 +2,18 @@ r"""
 Rotating Rubber Wheel
 ---------------------
 This example contains a simulation of a rotating rubber wheel in plane strain with the
-`MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ material model formulation [1]_
-[2]_. While the rotation is increased, a constant vertical compression is applied to the rubber
-wheel by a frictionless contact on the bottom. The vertical reaction force is then
-carried out for the rotation angles. The MORPH material model is implemented as a first
-Piola-Kirchhoff stress-based formulation with automatic differentiation. The tresca
-invariant of the distortional part of the right Cauchy-Green deformation tensor is used
-as internal state variable, see Eq. :eq:`morph-state`.
+`MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ material model formulation
+[1]_. While the rotation is increased, a constant vertical compression is applied to the
+rubber wheel by a frictionless contact on the bottom. The vertical reaction force is
+then carried out for the rotation angles. The MORPH material model is implemented as a
+first Piola-Kirchhoff stress-based formulation with automatic differentiation. The
+Tresca invariant of the distortional part of the right Cauchy-Green deformation tensor
+is used as internal state variable, see Eq. :eq:`morph-state`.
 
 ..  warning::
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
-    formulation captures the Mullins effect and quasi-static hysteresis effects very
-    nicely for rubber mixtures, it has been observed to be unstable for medium- to
+    formulation captures the Mullins effect and quasi-static hysteresis effects of
+    rubber mixtures very nicely, it has been observed to be unstable for medium- to
     highly-distorted states of deformation.
 
 ..  math::
@@ -45,10 +45,13 @@ A sigmoid-function is used inside the deformation-dependent variables :math:`\al
     
     \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
 
-The rate of deformation is described by the Lagrangian tensor and its tresca-invariant,
-see Eq. :eq:`morph-rate-of-deformation`. It is important to evaluate the incremental
-right Cauchy-Green tensor by the difference of the final and the previous state of
-deformation, not by its variation with respect to the deformation gradient tensor.
+The rate of deformation is described by the Lagrangian tensor and its Tresca-invariant,
+see Eq. :eq:`morph-rate-of-deformation`.
+
+..  note::
+    It is important to evaluate the incremental right Cauchy-Green tensor by the
+    difference of the final and the previous state of deformation, not by its variation
+    with respect to the deformation gradient tensor.
 
 ..  math::
     :label: morph-rate-of-deformation
@@ -66,24 +69,24 @@ deformation, not by its variation with respect to the deformation gradient tenso
     \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
 
 The additional stresses evolve between the limiting stresses, see Eq.
-:eq:`morph-stresses`. The additional deviatoric-enforcement terms are neglected in
-this example [1].
+:eq:`morph-stresses`. The additional deviatoric-enforcement terms [1]_ are neglected in
+this example.
 
 ..  math::
     :label: morph-stresses
     
-    \boldsymbol{S}_H &= \left(
+    \boldsymbol{S}_L &= \left(
         \gamma \exp \left(p_7 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
             \frac{\hat{C}_T}{\hat{C}_T^S} \right) +
             p8 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
     \right) \boldsymbol{C}^{-1}
     
-    \boldsymbol{S}_Z &= \frac{
-        \boldsymbol{S}_{Z,n} + \beta\ \hat{L}_T\ \boldsymbol{S}_H
+    \boldsymbol{S}_A &= \frac{
+        \boldsymbol{S}_{A,n} + \beta\ \hat{L}_T\ \boldsymbol{S}_L
     }{1 + \beta\ \hat{L}_T}
     
     \boldsymbol{S} &= 2 \alpha\ \text{dev}( \hat{\boldsymbol{C}} )
-        \boldsymbol{C}^{-1} + \text{dev}\left( \boldsymbol{S}_Z\ \boldsymbol{C} \right)
+        \boldsymbol{C}^{-1} + \text{dev}\left( \boldsymbol{S}_A\ \boldsymbol{C} \right)
         \boldsymbol{C}^{-1}
 
 ..  note::
@@ -107,7 +110,7 @@ def morph(F, statevars_old, p):
     # extract old state variables
     CTSn = tm.array(statevars_old[0], like=C[0, 0])
     Cn = tm.special.from_triu_1d(statevars_old[1:7], like=C)
-    SZn = tm.special.from_triu_1d(statevars_old[7:], like=C)
+    SAn = tm.special.from_triu_1d(statevars_old[7:], like=C)
 
     # distortional part of right Cauchy-Green deformation tensor
     I3 = tm.linalg.det(C)
@@ -120,10 +123,10 @@ def morph(F, statevars_old, p):
     # eigenvalues of right Cauchy-Green deformation tensor (sorted in ascending order)
     λCG = tm.linalg.eigvalsh(CG)
 
-    # tresca invariant of distortional part of right Cauchy-Green deformation tensor
+    # Tresca invariant of distortional part of right Cauchy-Green deformation tensor
     CTG = λCG[-1] - λCG[0]
 
-    # maximum tresca invariant in load history
+    # maximum Tresca invariant in load history
     CTS = tm.maximum(CTG, CTSn)
 
     def f(x):
@@ -140,15 +143,15 @@ def morph(F, statevars_old, p):
     LTG = λLG[-1] - λLG[0]
     LG_LTG = tm.if_else(LTG > 0, LG / LTG, LG)
 
-    # limiting stress "H" and additional stress "Z"
-    SH = (γ * tm.linalg.expm(p[6] * LG_LTG * CTG / CTS) + p[7] * LG_LTG) @ invC
-    SZ = (SZn + β * LTG * SH) / (1 + β * LTG)
+    # limiting stresses "L" and additional stresses "A"
+    SL = (γ * tm.linalg.expm(p[6] * LG_LTG * CTG / CTS) + p[7] * LG_LTG) @ invC
+    SA = (SAn + β * LTG * SL) / (1 + β * LTG)
 
     # second Piola-Kirchhoff stress tensor
-    S = 2 * α * tm.special.dev(CG) @ invC + tm.special.dev(SZ @ C) @ invC
+    S = 2 * α * tm.special.dev(CG) @ invC + tm.special.dev(SA @ C) @ invC
 
     try:  # update state variables
-        statevars_new = tm.stack([CTS, *tm.special.triu_1d(C), *tm.special.triu_1d(SZ)])
+        statevars_new = tm.stack([CTS, *tm.special.triu_1d(C), *tm.special.triu_1d(SA)])
     except:
         # not possible (and not necessary) during AD-based hessian evaluation
         statevars_new = statevars_old
@@ -184,8 +187,8 @@ mesh.plot().show()
 # A quad-region and a plane-strain displacement field are created. Mesh-points at
 # :math:`r` are added to the ``move``-boundary condition. The displacements due to the
 # rotation of the wheel are evaluated for each rotation angle. The center-point of
-# the bottom-edge is moved vertically by ``0.2`` to enforce a vertical reaction force in
-# the rubber wheel.
+# the bottom-edge is moved vertically upwards by ``0.2`` to enforce a vertical reaction
+# force in the rubber wheel.
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
@@ -213,7 +216,8 @@ for phi in angles_deg:
 # %%
 # A nearly-incompressible solid body is created for the rubber. At the bottom, a
 # frictionless contact edge is created. Both items are added to a step, which is further
-# evaluated in a job. The reaction force vs. the rotation angle is plotted.
+# evaluated in a job. The reaction forces are plotted for the successive rotation angles
+# of the wheel.
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 bottom = fem.MultiPointContact(
     field,
@@ -253,6 +257,3 @@ solid.plot(
 #    materials and its numerical applications", International Journal of Plasticity,
 #    vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
 #    `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
-# .. [2] M. Freund, "Generalization of one-dimensional material models for the finite
-#    element method", PhD thesis, Chemnitz, 2013.
-#    https://nbn-resolving.org/urn:nbn:de:bsz:ch1-qucosa-114428

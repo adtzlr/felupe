@@ -96,13 +96,16 @@ class Boundary:
         >>> left = fem.Boundary(displacement, fx=x.min())
         >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
         >>>
-        >>> plotter = mesh.plot()
-        >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> plotter.show()
+        >>> def plot():
+        >>>     plotter = mesh.plot()
+        >>>     actor = plotter.add_points(
+        ...         np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+        ...         point_size=20,
+        ...         color="red",
+        ...     )
+        >>>     return plotter
+        >>>
+        >>> plot().show()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 

@@ -112,13 +112,13 @@ class Boundary:
 
         >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[axes.points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     This may be changed to *logical-and* if desired.
 
@@ -127,13 +127,13 @@ class Boundary:
 
         >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[center.points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     For the most-general case, a user-defined boolean mask for the selection of the
     mesh-points is provided. While the two upper methods are useful to select
@@ -146,13 +146,13 @@ class Boundary:
         >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x <= 0)
         >>> surface = fem.Boundary(displacement, mask=mask)
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[surface.points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     The application of a new mask allows to change the selected points of an existing
     boundary condition.
@@ -163,13 +163,13 @@ class Boundary:
         >>> new_mask = np.logical_and(mask, y >= 0)
         >>> surface.apply_mask(new_mask)
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[surface.points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
@@ -180,13 +180,13 @@ class Boundary:
 
         >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[axes_x.points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     Values for the prescribed degress of freedom are either applied during creation
     or by the update-method.
@@ -197,13 +197,13 @@ class Boundary:
         >>> left = fem.Boundary(displacement, fx=x.min(), value=-0.2)
         >>> left.update(-0.3)
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     Sometimes it is useful to create a boundary with all axes skipped. This
     boundary has no prescribed degrees of freedom and hence, is without effect.

@@ -103,7 +103,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 
@@ -118,7 +118,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     This may be changed to *logical-and* if desired.
 
@@ -133,7 +133,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     For the most-general case, a user-defined boolean mask for the selection of the
     mesh-points is provided. While the two upper methods are useful to select
@@ -152,7 +152,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     The application of a new mask allows to change the selected points of an existing
     boundary condition.
@@ -169,7 +169,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
@@ -186,7 +186,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     Values for the prescribed degress of freedom are either applied during creation
     or by the update-method.
@@ -203,7 +203,7 @@ class Boundary:
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> mesh.plot(plotter=plotter).show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     Sometimes it is useful to create a boundary with all axes skipped. This
     boundary has no prescribed degrees of freedom and hence, is without effect.

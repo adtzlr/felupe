@@ -541,8 +541,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
             lmbda_lnJ = np.multiply(lmbda, lnJ, out=lnJ)
             Pb = np.multiply(iFT, -mu + lmbda_lnJ, out=iFT)
 
-        if lmbda is not None:
-            np.add(P, Pb, out=P)
+        np.add(P, Pb, out=P)
 
         return [P, statevars]
 

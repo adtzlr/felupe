@@ -69,18 +69,18 @@ class Boundary:
     Examples
     --------
     A boundary condition prescribes values for chosen degrees of freedom of a given
-    field (**not** a field container). This is demonstrated for a plane-strain
-    vector field on a quad-mesh of a circle.
+    field (**not** a field container). This is demonstrated for a vector field on a
+    hex-mesh of a cylinder.
 
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
         >>>
-        >>> mesh = fem.Circle(radius=1, n=6)
-        >>> x, y = mesh.points.T
-        >>> region = fem.RegionQuad(mesh)
-        >>> displacement = fem.FieldPlaneStrain(region, dim=2)
+        >>> mesh = fem.Circle(radius=1, n=6).expand(n=6)
+        >>> x, y, z = mesh.points.T
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> displacement = fem.Field(region, dim=3)
         >>> field = fem.FieldContainer([displacement])
 
     A boundary on the displacement field which prescribes all components of the field
@@ -91,7 +91,6 @@ class Boundary:
     ..  pyvista-plot::
         :context:
 
-        >>> import numpy as np
         >>> import pyvista as pv
         >>>
         >>> left = fem.Boundary(displacement, fx=x.min())
@@ -99,7 +98,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+        ...     mesh.points[left.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -114,7 +113,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[axes.points], ((0, 0), (0, 1))),
+        ...     mesh.points[axes.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -129,7 +128,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[center.points], ((0, 0), (0, 1))),
+        ...     mesh.points[center.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -148,7 +147,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[surface.points], ((0, 0), (0, 1))),
+        ...     mesh.points[surface.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -165,7 +164,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[surface.points], ((0, 0), (0, 1))),
+        ...     mesh.points[surface.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -182,7 +181,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[axes_x.points], ((0, 0), (0, 1))),
+        ...     mesh.points[axes_x.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -199,7 +198,7 @@ class Boundary:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+        ...     mesh.points[left.points],
         ...     point_size=20,
         ...     color="red",
         ... )

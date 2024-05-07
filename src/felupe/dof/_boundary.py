@@ -84,8 +84,8 @@ class Boundary:
         >>> field = fem.FieldContainer([displacement])
 
     A boundary on the displacement field which prescribes all components of the field
-    on the outermost left point of the circle is created. The easiest way is to pass the
-    desired value to ``fx``. The same result is obtained if a callable function is
+    on the outermost right point of the circle is created. The easiest way is to pass
+    the desired value to ``fx``. The same result is obtained if a callable function is
     passed to ``fx``.
 
     ..  pyvista-plot::
@@ -93,12 +93,12 @@ class Boundary:
 
         >>> import pyvista as pv
         >>>
-        >>> left = fem.Boundary(displacement, fx=x.min())
-        >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
+        >>> right = fem.Boundary(displacement, fx=x.max())
+        >>> right = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.max()))
         >>>
         >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
-        ...     mesh.points[left.points],
+        ...     mesh.points[right.points],
         ...     point_size=20,
         ...     color="red",
         ... )
@@ -142,7 +142,7 @@ class Boundary:
     ..  pyvista-plot::
         :context:
 
-        >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x <= 0)
+        >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x >= 0)
         >>> surface = fem.Boundary(displacement, mask=mask)
         >>>
         >>> plotter = pv.Plotter()
@@ -159,7 +159,7 @@ class Boundary:
     ..  pyvista-plot::
         :context:
 
-        >>> new_mask = np.logical_and(mask, y >= 0)
+        >>> new_mask = np.logical_and(mask, y <= 0)
         >>> surface.apply_mask(new_mask)
         >>>
         >>> plotter = pv.Plotter()

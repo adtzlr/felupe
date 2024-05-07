@@ -58,14 +58,19 @@ def saint_venant_kirchhoff(C, mu, lmbda):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-svk`
+
     ..  math::
+        :label: psi-svk
 
         \psi = \mu I_2 + \lambda \frac{I_1^2}{2}
 
-    With the first and second invariant of the Green-Lagrange strain tensor
-    :math:`\boldsymbol{E} = \frac{1}{2} (\boldsymbol{C} - \boldsymbol{1})`.
+    with the first and second invariant of the Green-Lagrange strain tensor
+    :math:`\boldsymbol{E} = \frac{1}{2} (\boldsymbol{C} - \boldsymbol{1})`, see Eq.
+    :eq:`invariants-svk`.
 
     ..  math::
+        :label: invariants-svk
 
         I_1 &= \text{tr}\left( \boldsymbol{E} \right)
 
@@ -116,7 +121,10 @@ def neo_hooke(C, mu):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-nh`.
+
     ..  math::
+        :label: psi-nh
 
         \psi = \frac{\mu}{2} \left(\text{tr}\left(\hat{\boldsymbol{C}}\right) - 3\right)
 
@@ -162,14 +170,18 @@ def mooney_rivlin(C, C10, C01):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-mr`
+
     ..  math::
+        :label: psi-mr
 
         \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
 
-    With the first and second main invariant of the distortional part of the right
-    Cauchy-Green deformation tensor.
+    with the first and second main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor, see Eq. :eq:`invariants-mr`.
 
     ..  math::
+        :label: invariants-mr
 
         \hat{I}_1 &= J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 
@@ -179,9 +191,10 @@ def mooney_rivlin(C, C10, C01):
         \right)
 
     The doubled sum of both material parameters is equal to the shear modulus
-    :math:`\mu`.
+    :math:`\mu` as denoted in Eq. :eq:`shear-modulus-mr`.
 
     ..  math::
+        :label: shear-modulus-mr
 
         \mu = 2 \left( C_{10} + C_{01} \right)
 
@@ -232,22 +245,27 @@ def yeoh(C, C10, C20, C30):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-yeoh`
+
     ..  math::
+        :label: psi-yeoh
 
         \psi = C_{10} \left(\hat{I}_1 - 3 \right) + C_{20} \left(\hat{I}_1 - 3 \right)^2
              + C_{30} \left(\hat{I}_1 - 3 \right)^3
 
-    With the first main invariant of the distortional part of the right
-    Cauchy-Green deformation tensor.
+    with the first main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor, see Eq. :eq:`invariants-yeoh`.
 
     ..  math::
+        :label: invariants-yeoh
 
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 
     The :math:`C_{10}` material parameter is equal to half the initial shear modulus
-    :math:`\mu`.
+    :math:`\mu` as denoted in Eq. :eq:`shear-modulus-yeoh`.
 
     ..  math::
+        label: shear-modulus-yeoh
 
         \mu = 2 C_{10}
 
@@ -302,7 +320,10 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-tod`
+
     ..  math::
+        :label: psi-tod
 
         \psi &= C_{10} \left(\hat{I}_1 - 3 \right) + C_{01} \left(\hat{I}_2 - 3 \right)
              + C_{11} \left(\hat{I}_1 - 3 \right) \left(\hat{I}_2 - 3 \right)
@@ -310,10 +331,11 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
             &+ C_{20} \left(\hat{I}_1 - 3 \right)^2
              + C_{30} \left(\hat{I}_1 - 3 \right)^3
 
-    With the first and second main invariant of the distortional part of the right
-    Cauchy-Green deformation tensor.
+    with the first and second main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor, see Eq. :eq:`invariants-tod`.
 
     ..  math::
+        :label: invariants-tod
 
         \hat{I}_1 &= J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 
@@ -323,9 +345,11 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
         \right)
 
     The doubled sum of the material parameters :math:`C_{10}` and :math:`C_{01}` is
-    equal to the initial shear modulus :math:`\mu`.
+    equal to the initial shear modulus :math:`\mu` as denoted in Eq.
+    :eq:`shear-modulus-tod`.
 
     ..  math::
+        :label: shear-modulus-tod
 
         \mu = 2 \left( C_{10} + C_{01} \right)
 
@@ -382,16 +406,20 @@ def ogden(C, mu, alpha):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-ogden`
+
     ..  math::
+        :label: psi-ogden
 
         \psi = \sum_i \frac{2 \mu_i}{\alpha^2_i} \left(
             \lambda_1^{\alpha_i} + \lambda_2^{\alpha_i} + \lambda_3^{\alpha_i} - 3
         \right)
 
     The sum of the moduli :math:`\mu_i` is equal to the initial shear modulus
-    :math:`\mu`.
+    :math:`\mu`, see Eq. :eq:`shear-modulus-ogden`.
 
     ..  math::
+        :label: shear-modulus-ogden
 
         \mu = \sum_i \mu_i
 
@@ -440,20 +468,25 @@ def arruda_boyce(C, C1, limit):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-ab`
+    
     ..  math::
+        :label: psi-ab
 
         \psi = C_1 \sum_{i=1}^5 \alpha_i \beta^{i-1} \left( \hat{I}_1^i - 3^i \right)
 
-    With the first main invariant of the distortional part of the right
-    Cauchy-Green deformation tensor
+    with the first main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor as given in Eq. :eq:`invariants-ab`
     
     ..  math::
+        :label: invariants-ab
     
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
     
-    and :math:`\alpha_i` and :math:`\beta`.
+    and :math:`\alpha_i` and :math:`\beta` as denoted in Eq. :eq:`ab-param`.
     
     ..  math::
+        :label: ab-param
         
         \boldsymbol{\alpha} &= \begin{bmatrix} 
             \frac{1}{2} \\ 
@@ -465,9 +498,11 @@ def arruda_boyce(C, C1, limit):
         
         \beta &= \frac{1}{\lambda_m^2}
     
-    The initial shear modulus is a function of both material parameters.
+    The initial shear modulus is a function of both material parameters, see Eq.
+    :eq:`shear-modulus-ab`.
     
     ..  math::
+        :label: shear-modulus-ab
         
         \mu = C_1 \left( 
             1 + \frac{3}{5 \lambda_m^2} + \frac{99}{175 \lambda_m^4} 
@@ -530,7 +565,10 @@ def extended_tube(C, Gc, delta, Ge, beta):
 
     Notes
     -----
+    The strain energy function is given in Eq. :eq:`psi-et`
+
     ..  math::
+        :label: psi-et
 
         \psi = \frac{G_c}{2} \left[ \frac{\left( 1 - \delta^2 \right)
             \left( \hat{I}_1 - 3 \right)}{1 - \delta^2 \left( \hat{I}_1 - 3 \right)} +
@@ -538,24 +576,30 @@ def extended_tube(C, Gc, delta, Ge, beta):
             \frac{2 G_e}{\beta^2} \left( \hat{\lambda}_1^{-\beta} +
             \hat{\lambda}_2^{-\beta} + \hat{\lambda}_3^{-\beta} - 3 \right)
 
-    With the first main invariant of the distortional part of the right
-    Cauchy-Green deformation tensor
+    with the first main invariant of the distortional part of the right
+    Cauchy-Green deformation tensor as given in Eq. :eq:`invariants-et`
 
     ..  math::
+        :label: invariants-et
 
         \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 
     and the principal stretches, obtained from the distortional part of the right
-    Cauchy-Green deformation tensor
+    Cauchy-Green deformation tensor, see Eq. :eq:`stretches-et`.
 
     ..  math::
+        :label: stretches-et
 
-        \hat{\lambda}_\alpha = J^{-1/3} \lambda_\alpha
+        \lambda^2_\alpha &= \text{eigvals}\left \boldsymbol{C} \right)
+
+        \hat{\lambda}_\alpha &= J^{-1/3} \lambda_\alpha
 
     The initial shear modulus results from the sum of the cross-link and the constraint
-    contributions to the total initial shear modulus.
+    contributions to the total initial shear modulus as denoted in Eq.
+    :eq:`shear-modulus-et`.
 
     ..  math::
+        :label: shear-modulus-et
 
         \mu = G_e + G_c
 

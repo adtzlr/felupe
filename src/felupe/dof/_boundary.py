@@ -92,20 +92,18 @@ class Boundary:
         :context:
 
         >>> import numpy as np
+        >>> import pyvista as pv
         >>>
         >>> left = fem.Boundary(displacement, fx=x.min())
         >>> left = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.min()))
         >>>
-        >>> def plot():
-        >>>     plotter = mesh.plot()
-        >>>     actor = plotter.add_points(
-        ...         np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
-        ...         point_size=20,
-        ...         color="red",
-        ...     )
-        >>>     return plotter
-        >>>
-        >>> plot().show()
+        >>> plotter = pv.Plotter()
+        >>> actor = plotter.add_points(
+        ...     np.pad(mesh.points[left.points], ((0, 0), (0, 1))),
+        ...     point_size=20,
+        ...     color="red",
+        ... )
+        >>> mesh.plot(plotter=plotter).show()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 

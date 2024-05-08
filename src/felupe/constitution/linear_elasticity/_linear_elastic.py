@@ -18,43 +18,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import cdya, dya, identity, trace, transpose
-from ._base import ConstitutiveMaterial
-
-
-def lame_converter(E, nu):
-    r"""Convert the pair of given material parameters Young's modulus :math:`E` and
-    Poisson ratio :math:`\nu` to first and second Lamé - constants :math:`\lambda` and
-    :math:`\mu`.
-
-    Notes
-    -----
-
-    ..  math::
-
-        \lambda &= \frac{E \nu}{(1 + \nu) (1 - 2 \nu)}
-
-        \mu &= \frac{E}{2 (1 + \nu)}
-
-    Parameters
-    ----------
-    E : float
-        Young's modulus.
-    nu : float
-        Poisson ratio.
-
-    Returns
-    -------
-    lmbda : float
-        First Lamé - constant.
-    mu : float
-        Second Lamé - constant (shear modulus).
-    """
-
-    lmbda = E * nu / ((1 + nu) * (1 - 2 * nu))
-    mu = E / (2 * (1 + nu))
-
-    return lmbda, mu
+from ...math import cdya, dya, identity, trace, transpose
+from .._base import ConstitutiveMaterial
+from ._lame_converter import lame_converter
 
 
 class LinearElastic(ConstitutiveMaterial):

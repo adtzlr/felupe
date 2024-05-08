@@ -18,101 +18,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math import cdya_ik, ddot, dya, identity, sqrt, trace
-
-
-def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
-    r"""3D linear-elastic material formulation to be used in
-    :class:`~felupe.MaterialStrain`.
-
-    Arguments
-    ---------
-    dε : ndarray
-        Strain increment.
-    εn : ndarray
-        Old strain tensor.
-    σn : ndarray
-        Old stress tensor.
-    ζn : list
-        List of old state variables.
-    λ : float
-        First Lamé-constant.
-    μ : float
-        Second Lamé-constant (shear modulus).
-
-    Returns
-    -------
-    dσdε : ndarray
-        Elasticity tensor.
-    σ : ndarray
-        (New) stress tensor.
-    ζ : list
-        List of new state variables.
-
-    Notes
-    -----
-
-    1.  Given state in point :math:`\boldsymbol{x} (\boldsymbol{\sigma}_n)` (valid).
-
-    2.  Given strain increment :math:`\Delta\boldsymbol{\varepsilon}`, so that
-        :math:`\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_n + \Delta\boldsymbol{\varepsilon}`.
-
-    3.  Evaluation of the stress :math:`\boldsymbol{\sigma}` and the algorithmic
-        consistent tangent modulus :math:`\mathbb{C}` (=``dσdε``).
-
-        ..  math::
-
-            \mathbb{C} &= \lambda \ \boldsymbol{1} \otimes \boldsymbol{1} +
-                2 \mu \ \boldsymbol{1} \odot \boldsymbol{1}
-
-            \boldsymbol{\sigma} &= \boldsymbol{\sigma}_n
-                + \mathbb{C} : \Delta\boldsymbol{\varepsilon}
-
-    Examples
-    --------
-    ..  pyvista-plot::
-        :context:
-
-        >>> import felupe as fem
-        >>>
-        >>> umat = fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0)
-        >>> ax = umat.plot()
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
-
-    See Also
-    --------
-    MaterialStrain : A strain-based user-defined material definition with a given
-        function for the stress tensor and the (fourth-order) elasticity tensor.
-
-    """
-
-    # change of stress due to change of strain
-    eye = identity(dim=3, shape=(1, 1))
-    dσ = 2 * μ * dε + λ * trace(dε) * eye
-
-    # update stress
-    σ = σn + dσ
-
-    # evaluate elasticity tensor
-    if kwargs["tangent"]:
-        dσdε = 2 * μ * cdya_ik(eye, eye) + λ * dya(eye, eye)
-    else:
-        dσdε = None
-
-    # update state variables (not used here)
-    ζ = ζn
-
-    return dσdε, σ, ζ
+from ....math import cdya_ik, ddot, dya, identity, sqrt, trace
+from ...linear_elasticity import lame_converter
+from .._material_strain import MaterialStrain
 
 
 def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
@@ -300,3 +208,41 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
         ζ[1][..., mask] = εp[..., mask]
 
     return dσdε, σ, ζ
+
+
+class LinearElasticPlasticIsotropicHardening(MaterialStrain):
+    """Linear-elastic-plastic material formulation with linear isotropic
+    hardening (return mapping algorithm).
+
+    Parameters
+    ----------
+    E : float
+        Young's modulus.
+    nu : float
+        Poisson ratio.
+    sy : float
+        Initial yield stress.
+    K : float
+        Isotropic hardening modulus.
+
+    See Also
+    --------
+    MaterialStrain : A strain-based user-defined material definition with a given
+        function for the stress tensor and the (fourth-order) elasticity tensor.
+    linear_elastic_plastic_isotropic_hardening : Linear-elastic-plastic material
+        formulation with linear isotropic hardening (return mapping algorithm).
+
+    """
+
+    def __init__(self, E, nu, sy, K):
+        lmbda, mu = lame_converter(E, nu)
+
+        super().__init__(
+            material=linear_elastic_plastic_isotropic_hardening,
+            λ=lmbda,
+            μ=mu,
+            σy=sy,
+            K=K,
+            dim=3,
+            statevars=(1, (3, 3)),
+        )

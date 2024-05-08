@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add the isotropic-hyperelastic `alexander(C1, C2, C2, gamma)` model.
 
+### Changed
+- Recfactor the `constitution` module.
+
 ## [8.5.1] - 2024-05-08
 
 ### Fixed

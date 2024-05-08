@@ -18,9 +18,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._base import ConstitutiveMaterial
-from ._models_hyperelasticity import NeoHookeCompressible
-from ._models_linear_elasticity import lame_converter
+from .._base import ConstitutiveMaterial
+from ..hyperelasticity import NeoHookeCompressible
+from ._lame_converter import lame_converter
 
 
 class LinearElasticLargeStrain(ConstitutiveMaterial):

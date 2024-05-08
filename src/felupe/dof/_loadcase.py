@@ -70,6 +70,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
 
         >>> import numpy as np
         >>> import felupe as fem
+        >>> import pyvista as pv
         >>>
         >>> mesh = fem.Circle(radius=1, n=6, sections=[0, 270])
         >>> x, y = mesh.points.T
@@ -78,13 +79,13 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
         >>>
         >>> boundaries = fem.dof.symmetry(displacement, axes=(True, False), x=0.0)
         >>>
-        >>> plotter = mesh.plot()
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_points(
         ...     np.pad(mesh.points[boundaries["symx"].points], ((0, 0), (0, 1))),
         ...     point_size=20,
         ...     color="red",
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
 
     See Also
     --------

@@ -201,12 +201,13 @@ class ViewMaterial(PlotMaterial):
             λ2 = λ3
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
             if self.statevars_included:
-                if self.statevars is None:
-                    self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                statevars = self.statevars
+                if statevars is None:
+                    statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
                 P = np.zeros_like(F)
                 for increment, defgrad in enumerate(F.T):
                     P[..., [increment]], statevars = self.umat.gradient(
-                        [F[..., [increment]], self.statevars]
+                        [F[..., [increment]], statevars]
                     )
             else:
                 P, statevars = self.umat.gradient([F, None])
@@ -262,12 +263,13 @@ class ViewMaterial(PlotMaterial):
         def fun(λ3):
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
             if self.statevars_included:
-                if self.statevars is None:
-                    self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                statevars = self.statevars
+                if statevars is None:
+                    statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
                 P = np.zeros_like(F)
                 for increment, defgrad in enumerate(F.T):
                     P[..., [increment]], statevars = self.umat.gradient(
-                        [F[..., [increment]], self.statevars]
+                        [F[..., [increment]], statevars]
                     )
             else:
                 P, statevars = self.umat.gradient([F, None])
@@ -322,12 +324,13 @@ class ViewMaterial(PlotMaterial):
         def fun(λ3):
             F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
             if self.statevars_included:
-                if self.statevars is None:
-                    self.statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
+                statevars = self.statevars
+                if statevars is None:
+                    statevars = np.zeros((*self.umat.x[-1].shape, 1, 1))
                 P = np.zeros_like(F)
                 for increment, defgrad in enumerate(F.T):
                     P[..., [increment]], statevars = self.umat.gradient(
-                        [F[..., [increment]], self.statevars]
+                        [F[..., [increment]], statevars]
                     )
             else:
                 P, self.statevars = self.umat.gradient([F, None])

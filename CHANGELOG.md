@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix the gradient evaluation in `NeoHookeCompressible(mu=1, lmbda=None)`.
+- Fix `MaterialStrain.plot()`.
 
 ## [8.5.0] - 2024-04-27
 

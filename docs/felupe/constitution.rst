@@ -127,6 +127,7 @@ There are many different pre-defined constitutive material formulations availabl
    arruda_boyce
    extended_tube
    van_der_waals
+   alexander
    finite_strain_viscoelastic
 
 **(Small) Strain-based User Materials**
@@ -274,6 +275,8 @@ There are many different pre-defined constitutive material formulations availabl
 .. autofunction:: felupe.extended_tube
 
 .. autofunction:: felupe.van_der_waals
+
+.. autofunction:: felupe.alexander
 
 .. autofunction:: felupe.finite_strain_viscoelastic
 

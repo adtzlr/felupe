@@ -330,6 +330,7 @@ def test_umat_hyperelastic():
             {"mu": 1.0, "beta": 0.1, "a": 0.5, "limit": 5.0},
             True,
         ),
+        (fem.constitution.alexander, fem.constitution.alexander.kwargs, True),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 

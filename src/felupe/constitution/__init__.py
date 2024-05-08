@@ -3,6 +3,7 @@ from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._models_hyperelasticity import NeoHooke, NeoHookeCompressible, Volumetric
 from ._models_hyperelasticity_ad import (
+    alexander,
     arruda_boyce,
     extended_tube,
     finite_strain_viscoelastic,
@@ -39,6 +40,7 @@ from ._view import ViewMaterial, ViewMaterialIncompressible
 __all__ = [
     "NeoHooke",
     "NeoHookeCompressible",
+    "alexander",
     "arruda_boyce",
     "extended_tube",
     "finite_strain_viscoelastic",

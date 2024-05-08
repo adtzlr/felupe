@@ -97,8 +97,9 @@ this example.
 """
 # sphinx_gallery_thumbnail_number = -1
 import numpy as np
-import felupe as fem
 import tensortrax.math as tm
+
+import felupe as fem
 
 
 def morph(F, statevars_old, p):

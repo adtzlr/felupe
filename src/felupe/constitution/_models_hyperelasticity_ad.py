@@ -718,6 +718,8 @@ def alexander(C, C1, C2, C3, gamma):
         Second material parameter associated to the second invariant.
     C3 : float
         Third material parameter associated to the second invariant.
+    gamma : float
+        Dimensionless material parameter associated to the second invariant.
 
     Notes
     -----

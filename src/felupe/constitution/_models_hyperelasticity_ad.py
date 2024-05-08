@@ -779,8 +779,8 @@ def alexander(C, C1, C2, C3, gamma):
     ----------
     .. [1] H. Alexander, "A constitutive relation for rubber-like materials",
        International Journal of Engineering Science, vol. 6, no. 9. Elsevier BV, pp.
-       549–563, Sep. 1968. doi: 10.1016/0020-7225(68)90006-2.
-
+       549–563, Sep. 1968. doi:
+       `10.1016/0020-7225(68)90006-2 <https://doi.org/10.1016/0020-7225(68)90006-2>`_.
     """
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)

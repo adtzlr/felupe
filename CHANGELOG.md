@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add the isotropic-hyperelastic `alexander(C1, C2, C2, gamma)` model.
+
 ## [8.5.1] - 2024-05-08
 
 ### Fixed

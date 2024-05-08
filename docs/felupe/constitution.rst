@@ -118,17 +118,17 @@ There are many different pre-defined constitutive material formulations availabl
 
 .. autosummary::
 
-   saint_venant_kirchhoff
-   neo_hooke
-   mooney_rivlin
-   yeoh
-   third_order_deformation
-   ogden
+   alexander
    arruda_boyce
    extended_tube
-   van_der_waals
-   alexander
    finite_strain_viscoelastic
+   mooney_rivlin
+   neo_hooke
+   ogden
+   saint_venant_kirchhoff
+   third_order_deformation
+   van_der_waals
+   yeoh
 
 **(Small) Strain-based User Materials**
 
@@ -258,27 +258,27 @@ There are many different pre-defined constitutive material formulations availabl
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: felupe.saint_venant_kirchhoff
-
-.. autofunction:: felupe.neo_hooke
-
-.. autofunction:: felupe.mooney_rivlin
-
-.. autofunction:: felupe.yeoh
-
-.. autofunction:: felupe.third_order_deformation
-
-.. autofunction:: felupe.ogden
+.. autofunction:: felupe.alexander
 
 .. autofunction:: felupe.arruda_boyce
 
 .. autofunction:: felupe.extended_tube
 
+.. autofunction:: felupe.finite_strain_viscoelastic
+
+.. autofunction:: felupe.mooney_rivlin
+
+.. autofunction:: felupe.neo_hooke
+
+.. autofunction:: felupe.ogden
+
+.. autofunction:: felupe.saint_venant_kirchhoff
+
+.. autofunction:: felupe.third_order_deformation
+
 .. autofunction:: felupe.van_der_waals
 
-.. autofunction:: felupe.alexander
-
-.. autofunction:: felupe.finite_strain_viscoelastic
+.. autofunction:: felupe.yeoh
 
 .. autoclass:: felupe.LineChange
    :members:

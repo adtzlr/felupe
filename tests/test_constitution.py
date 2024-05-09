@@ -332,7 +332,7 @@ def test_umat_hyperelastic():
         ),
         (
             fem.constitution.alexander,
-            dict(C1=0.117, C2=0.137, C3=0.00690, gamma=0.735),
+            dict(C1=0.117, C2=0.137, C3=0.00690, gamma=0.735, k=0.00015),
             True,
         ),
     ]:
@@ -550,6 +550,7 @@ def test_optimize():
         fem.ogden,
         fem.third_order_deformation,
         fem.extended_tube,
+        fem.alexander,
     ]:
         umat = fem.Hyperelastic(model)
         umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)

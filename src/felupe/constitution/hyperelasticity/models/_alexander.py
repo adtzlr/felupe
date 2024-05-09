@@ -15,11 +15,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-from tensortrax.math import log, trace
+import numpy as np
+from tensortrax import Tensor, Δ, Δδ, f, δ
+from tensortrax.math import exp, log, trace
 from tensortrax.math.linalg import det
 
 
-def alexander(C, C1, C2, C3, gamma):
+def alexander(C, C1, C2, C3, gamma, k):
     r"""Strain energy function of the isotropic hyperelastic
     `Alexander <https://doi.org/10.1016/0020-7225(68)90006-2>`_ material
     formulation [1]_.
@@ -29,23 +31,34 @@ def alexander(C, C1, C2, C3, gamma):
     C : tensortrax.Tensor
         Right Cauchy-Green deformation tensor.
     C1 : float
-        First material parameter associated to the first invariant.
+        Scale factor for the first invariant term.
     C2 : float
-        Second material parameter associated to the second invariant.
+        Scale factor for the second invariant term.
     C3 : float
-        Third material parameter associated to the second invariant.
+        Scale factor for the logarithmic second invariant term.
     gamma : float
-        Dimensionless material parameter associated to the second invariant.
+        Offset-normalization parameter for the logarithmic second invariant term.
+    k : float
+        Scale factor for the exponential first invariant term.
 
     Notes
     -----
+    ..  warning::
+        The strain energy function of the Alexander model formulation is not directly
+        implemented. Only its gradient and hessian w.r.t. the right Cauchy-Green
+        deformation tensor are defined. This is because the imaginary error-function
+        :math:`\text{erfi}(x)` is not included in NumPy - this would require SciPy as a
+        dependency.
+
     The strain energy function is given in Eq. :eq:`psi-alexander`
 
     ..  math::
         :label: psi-alexander
 
-        \psi = C_1 \left(\hat{I}_1 - 3 \right)
-             + C_2 \ln{\frac{\hat{I}_2 - 3 + \gamma}{\gamma}}
+        \psi = C_1 \int_{\hat{I}_1} \exp \left(
+                   k \left(\hat{I}_1 - 3 \right)^2
+               \right) \ d\hat{I}_1
+             + C_2 \ln \left(\frac{\hat{I}_2 - 3 + \gamma}{\gamma} \right)
              + C_3 \left(\hat{I}_2 - 3 \right)
 
     with the first and second main invariant of the distortional part of the right
@@ -78,7 +91,7 @@ def alexander(C, C1, C2, C3, gamma):
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(
-        ...    fem.alexander, C1=0.117, C2=0.137, C3=0.00690, gamma=0.735
+        ...    fem.alexander, C1=17, C2=19.85, C3=1, gamma=0.735, k=0.00015
         ... )
         >>> ax = umat.plot(incompressible=True)
 
@@ -104,4 +117,16 @@ def alexander(C, C1, C2, C3, gamma):
     I1 = J3 * trace(C)
     I2 = (I1**2 - J3**2 * trace(C @ C)) / 2
 
-    return C1 * (I1 - 3) + C2 * log(((I2 - 3) + gamma) / gamma) + C3 * (I2 - 3)
+    def W(I1):
+        "A non-evaluated function with defined first- and second derivatives."
+
+        dWdI1 = exp(k * (I1 - 3) ** 2)
+        return Tensor(
+            x=np.full_like(f(I1), fill_value=np.nan),
+            δx=f(dWdI1) * δ(I1),
+            Δx=f(dWdI1) * Δ(I1),
+            Δδx=δ(dWdI1) * Δ(I1) + f(dWdI1) * Δδ(I1),
+            ntrax=I1.ntrax,
+        )
+
+    return C1 * W(I1) + C2 * log(((I2 - 3) + gamma) / gamma) + C3 * (I2 - 3)

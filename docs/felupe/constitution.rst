@@ -125,6 +125,7 @@ There are many different pre-defined constitutive material formulations availabl
    mooney_rivlin
    neo_hooke
    ogden
+   ogden_roxburgh
    saint_venant_kirchhoff
    third_order_deformation
    van_der_waals
@@ -271,6 +272,8 @@ There are many different pre-defined constitutive material formulations availabl
 .. autofunction:: felupe.neo_hooke
 
 .. autofunction:: felupe.ogden
+
+.. autofunction:: felupe.ogden_roxburgh
 
 .. autofunction:: felupe.saint_venant_kirchhoff
 

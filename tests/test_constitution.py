@@ -335,6 +335,11 @@ def test_umat_hyperelastic():
             dict(C1=0.117, C2=0.137, C3=0.00690, gamma=0.735, k=0.00015),
             True,
         ),
+        (
+            fem.constitution.ogden_roxburgh,
+            dict(r=3, m=1, beta=0, material=fem.neo_hooke, mu=1, nstatevars=1),
+            True,
+        ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 

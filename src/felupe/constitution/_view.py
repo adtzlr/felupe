@@ -99,7 +99,11 @@ class PlotMaterial:
                         if len(value) > 1:
                             val = f"[{val}]"
                     else:
-                        val = f"{value:.3g}"
+                        if callable(value):
+                            name = [v.title() for v in value.__name__.split("_")]
+                            val = f'"{" ".join(name)}"'
+                        else:
+                            val = f"{value:.3g}"
                     p.append(f"{key}={val}")
                 parameters = ", ".join(p)
 

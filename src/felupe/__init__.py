@@ -46,6 +46,7 @@ from .constitution import (
     mooney_rivlin,
     neo_hooke,
     ogden,
+    ogden_roxburgh,
     saint_venant_kirchhoff,
     third_order_deformation,
     van_der_waals,

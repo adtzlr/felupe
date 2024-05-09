@@ -95,7 +95,9 @@ class PlotMaterial:
                 p = []
                 for key, value in self.umat.kwargs.items():
                     if hasattr(value, "__len__"):
-                        val = "[" + " ".join([f"{v:.3g}" for v in value]) + "]"
+                        val = " ".join([f"{v:.3g}" for v in value])
+                        if len(value) > 1:
+                            val = f"[{val}]"
                     else:
                         val = f"{value:.3g}"
                     p.append(f"{key}={val}")

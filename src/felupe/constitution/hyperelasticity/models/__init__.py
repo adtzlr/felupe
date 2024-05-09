@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 # default (stable) material parameters
-alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100)
+alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100, k=0)
 arruda_boyce.kwargs = dict(C1=0, limit=100)
 extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
 mooney_rivlin.kwargs = dict(C10=0, C01=0)

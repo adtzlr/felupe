@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Added
-- Add the isotropic-hyperelastic `alexander(C1, C2, C2, gamma, k)` model.
+- Add the isotropic-hyperelastic `alexander(C1, C2, C2, gamma, k)` material model formulation to be used in `Hyperelastic()`.
+- Add the pseudo-elastic `ogden_roxburgh(r, m, beta, material, **kwargs)` material model formulation to be used in `Hyperelastic()`.
 
 ### Changed
 - Recfactor the `constitution` module.

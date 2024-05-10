@@ -14,6 +14,7 @@ from ._arruda_boyce import arruda_boyce
 from ._extended_tube import extended_tube
 from ._finite_strain_viscoelastic import finite_strain_viscoelastic
 from ._helpers import isochoric_volumetric_split
+from ._miehe_goektepe_lulei import miehe_goektepe_lulei
 from ._mooney_rivlin import mooney_rivlin
 from ._neo_hooke import neo_hooke
 from ._ogden import ogden
@@ -29,6 +30,7 @@ __all__ = [
     "extended_tube",
     "finite_strain_viscoelastic",
     "isochoric_volumetric_split",
+    "miehe_goektepe_lulei",
     "mooney_rivlin",
     "neo_hooke",
     "ogden",

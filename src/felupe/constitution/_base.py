@@ -132,7 +132,9 @@ class ConstitutiveMaterial:
 
         return ax
 
-    def optimize(self, ux=None, ps=None, bx=None, incompressible=False, **kwargs):
+    def optimize(
+        self, ux=None, ps=None, bx=None, incompressible=False, relative=False, **kwargs
+    ):
         """Optimize the material parameters by a least-squares fit on experimental
         stretch-stress data.
 
@@ -149,6 +151,10 @@ class ConstitutiveMaterial:
             None).
         incompressible : bool, optional
             A flag to enforce incompressible deformations (default is False).
+        relative : bool, optional
+            A flag to optimize relative instead of absolute residuals, i.e.
+            ``(predicted - observed) / observed`` instead of ``predicted - observed``
+            (default is False).
         **kwargs : dict, optional
             Optional keyword arguments are passed to
             :func:`scipy.optimize.least_squares`.
@@ -166,6 +172,41 @@ class ConstitutiveMaterial:
         ..  warning::
             At least one load case, i.e. one of the arguments ``ux``, ``ps`` or ``bx``
             must not be ``None``.
+
+        The vector of residuals is given in Eq. :eq:`material-optimize-residuals` in
+        case of absolute residuals
+
+        ..  math::
+            :label: material-optimize-residuals
+
+            \boldsymbol{r} &= \begin{\bmatrix}
+                \boldsymbol{f}^T & \boldsymbol{g}^T & \boldsymbol{h}^T
+            \end{bmatrix}^T
+
+            f_i &= P_\text{ux}(\lambda_i) - P_\text{ux, observed}(\lambda_i)
+
+            g_i &= P_\text{ps}(\lambda_i) - P_\text{ps, observed}(\lambda_i)
+
+            h_i &= P_\text{bx}(\lambda_i) - P_\text{bx, observed}(\lambda_i)
+
+        and in Eq. :eq:`material-optimize-residuals-relative` in case of relative
+        residuals.
+
+        ..  math::
+            :label: material-optimize-residuals-relative
+
+            \boldsymbol{r} &= \begin{\bmatrix}
+                \boldsymbol{f}^T & \boldsymbol{g}^T & \boldsymbol{h}^T
+            \end{bmatrix}^T
+
+            f_i &= \frac{(P_\text{ux}(\lambda_i) - P_\text{ux, observed}(\lambda_i)}
+                        {P_\text{ux, observed}(\lambda_i)}
+
+            g_i &= \frac{(P_\text{ps}(\lambda_i) - P_\text{ps, observed}(\lambda_i)}
+                        {P_\text{ps, observed}(\lambda_i)}
+
+            h_i &= \frac{(P_\text{bx}(\lambda_i) - P_\text{bx, observed}(\lambda_i)}
+                        {P_\text{bx, observed}(\lambda_i)}
 
         Examples
         --------
@@ -267,11 +308,15 @@ class ConstitutiveMaterial:
             ).evaluate()
 
             # calculate a list of residuals for each loadcase
-            residuals = [
-                predicted[1] - observed[1]
-                for predicted, observed in zip(model, experiments)
-                if observed[1] is not None
-            ]
+            residuals = []
+            for predicted, observed in zip(model, experiments):
+                if observed[1] is not None:
+                    res = predicted[1] - observed[1]
+                    if relative:
+                        observed_reference = np.array(observed[1])
+                        observed_reference[observed_reference == 0] = 1
+                        res /= observed_reference
+                    residuals.append(res)
 
             return np.concatenate(residuals)
 

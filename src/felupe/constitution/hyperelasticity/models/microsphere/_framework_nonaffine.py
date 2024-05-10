@@ -11,11 +11,10 @@ def nonaffine_stretch(C, p, f, kwargs, quadrature=BazantOh(n=21)):
     w = quadrature.weights
 
     # affine stretches
-    Ciso = det(C) ** (-1 / 3) * C
-    λ = sqrt(einsum("ai,ij...,aj->a...", r, Ciso, r))
+    λ = sqrt(einsum("ai,ij...,aj->a...", r, C, r))
 
-    # non-affine stretch
-    Λ = einsum("a...,a->...", λ**p, w) ** (1 / p)
+    # non-affine stretch (distortional part)
+    Λ = det(C) ** (-1 / 6) * einsum("a...,a->...", λ**p, w) ** (1 / p)
 
     return f(Λ, **kwargs)
 
@@ -27,10 +26,9 @@ def nonaffine_tube(C, q, f, kwargs, quadrature=BazantOh(n=21)):
     w = quadrature.weights
 
     # affine area-stretches
-    Ciso = det(C) ** (-1 / 3) * C
-    λa = sqrt(einsum("ai,ij...,aj->a...", r, inv(Ciso), r))
+    λa = sqrt(einsum("ai,ij...,aj->a...", r, inv(C), r))
 
-    # non-affine tube contraction
-    Λt = einsum("a...,a->...", λa**q, w)
+    # non-affine tube contraction (distortional part)
+    Λt = det(C) ** (q / 6) * einsum("a...,a->...", λa**q, w)
 
     return f(Λt, **kwargs)

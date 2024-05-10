@@ -10,9 +10,8 @@ def affine_stretch(C, f, kwargs, quadrature=BazantOh(n=21)):
     r = quadrature.points
     w = quadrature.weights
 
-    # affine stretches
-    Ciso = det(C) ** (-1 / 3) * C
-    λ = sqrt(einsum("ai,ij...,aj->a...", r, Ciso, r))
+    # affine stretches (distortional part)
+    λ = det(C) ** (-1 / 6) * sqrt(einsum("ai,ij...,aj->a...", r, C, r))
 
     return einsum("a...,a->...", f(λ, **kwargs), w)
 
@@ -23,8 +22,7 @@ def affine_tube(C, f, kwargs, quadrature=BazantOh(n=21)):
     r = quadrature.points
     w = quadrature.weights
 
-    # affine area-stretches
-    Ciso = det(C) ** (-1 / 3) * C
-    λa = sqrt(einsum("ai,ij...,aj->a...", r, inv(Ciso), r))
+    # affine area-stretches (distortional part)
+    λa = det(C) ** (1 / 6) * sqrt(einsum("ai,ij...,aj->a...", r, inv(C), r))
 
     return einsum("a...,a->...", f(λa, **kwargs), w)

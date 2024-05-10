@@ -12,6 +12,16 @@ def miehe_goektepe_lulei(C, mu, N, U, p, q):
     ----------
     C : tensortrax.Tensor
         Right Cauchy-Green deformation tensor.
+    mu : float
+        Shear modulus (ground state stifness).
+    N : float
+        Number of chain segments (chain locking response).
+    U : float
+        Tube geometry parameter (3D locking characteristics).
+    p : float
+        Non-ane stretch parameter (additional constraint stifness).
+    q : float
+        Non-ane tube parameter (shape of constraint stress).
 
     Examples
     --------

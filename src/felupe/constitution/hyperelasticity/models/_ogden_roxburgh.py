@@ -20,7 +20,7 @@ from tensortrax.math import array, maximum, tanh
 
 
 def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
-    r"""Ogden-Roxburgh <https://doi.org/10.1098%2Frspa.1999.0431>`_ Pseudo-Elastic
+    r"""`Ogden-Roxburgh <https://doi.org/10.1098%2Frspa.1999.0431>`_ Pseudo-Elastic
     material formulation for an isotropic treatment of the load-history dependent
     Mullins-softening of rubber-like materials.
 
@@ -33,7 +33,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         the previous solution.
     material : callable
         Isotropic strain-energy density function. Optional keyword arguments are passed
-        to :func:`material(C, **kwargs)`.
+        to :func:`material <material(C, **kwargs)>`.
     r : float
         Reciprocal value of the maximum relative amount of softening. i.e. ``r=3`` means
         the shear modulus of the base material scales down from :math:`1` (no softening)
@@ -44,7 +44,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         Maximum deformation-dependent part of the Mullins softening modulus.
     **kwargs : dict
         Optional keyword arguments are passed to the isotropic strain energy density
-        function :func:`material(C, **kwargs)`.
+        function :func:`material <material(C, **kwargs)>`.
 
     Notes
     -----

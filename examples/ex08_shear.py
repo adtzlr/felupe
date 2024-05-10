@@ -6,9 +6,9 @@ Non-homogeneous shear
 
    * define a non-homogeneous shear loadcase
    
-   * use a mixed hyperelastic formulation in plane strain
+   * use a hyperelastic material formulation in plane strain
    
-   * assign a micro-sphere material formulation
+   * assign the micro-sphere material model
 
    * define a step and a job along with a callback-function
    
@@ -48,11 +48,9 @@ mesh.points_without_cells = np.array([], dtype=bool)
 
 # %%
 # A numeric quad-region created on the mesh in combination with a vector-valued
-# displacement field for plane-strain as well as scalar-valued fields for the
-# hydrostatic pressure and the volume ratio represents the rubber numerically. A shear
-# load case is applied on the displacement field. This involves setting up a y-symmetry
-# plane as well as the absolute value of the prescribed shear movement in direction
-# :math:`x` at the MPC-centerpoint.
+# displacement field for plane-strain. A shear load case is applied on the displacement
+# field. This involves setting up a y-symmetry plane as well as the absolute value of
+# the prescribed shear movement in direction :math:`x` at the MPC-centerpoint.
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
@@ -75,7 +73,7 @@ umat = fem.Hyperelastic(
     p=9.31,
     U=9.94,
     q=0.567,
-    parallel=True,
+    # parallel=False,  # enable threaded automatic-differentiation
 )
 ux = ps = fem.math.linsteps([1, 2], num=50)
 bx = fem.math.linsteps([1, 1.5], num=50)
@@ -122,13 +120,13 @@ step = fem.Step(
     items=[rubber, mpc], ramp={boundaries["control"]: UX}, boundaries=boundaries
 )
 job = fem.Job(steps=[step], callback=callback)
-res = job.evaluate()
+res = job.evaluate(tol=1e-2)
 
 # %%
 # The principal stretches are evaluated for the maximum deformed configuration. This may
 # be done manually, starting from the deformation gradient tensor, or by modifying the
 # :meth:`FieldContainer.evaluate.strain <felupe.field.EvaluateFieldContainer.strain>`-
-# method to return the principal stretches. For plotting, these values are projected
+# method to return the principal stretches. For plotting, these values are shifted
 # from quadrature-points to mesh-points.
 from felupe.math import dot, eigh, transpose
 
@@ -136,9 +134,9 @@ F = field[0].extract()
 C = dot(transpose(F), F)
 
 stretches = np.sqrt(eigh(C)[0])
-# stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=False)
+stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=False)
 
-stretches_at_points = fem.project(stretches, region)
+stretches_at_points = fem.topoints(stretches, region)
 stretches_at_points[-1] = 1  # mpc centerpoint
 
 view = field.view(point_data={"Principal Values of Stretches": stretches_at_points})

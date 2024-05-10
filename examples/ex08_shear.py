@@ -16,13 +16,6 @@ Non-homogeneous shear
    
    * plot force - displacement curves
 
-.. admonition:: This example requires external packages.
-   :class: hint
-   
-   .. code-block::
-      
-      pip install matadi
-
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
 rigid plate on their top and bottom faces, are subjected to a displacement 
 controlled non-homogeneous shear deformation by :math:`u_{ext}` in combination 
@@ -60,9 +53,8 @@ mesh.points_without_cells = np.array([], dtype=bool)
 # load case is applied on the displacement field. This involves setting up a y-symmetry
 # plane as well as the absolute value of the prescribed shear movement in direction
 # :math:`x` at the MPC-centerpoint.
-
 region = fem.RegionQuad(mesh)
-field = fem.FieldsMixed(region, n=3, planestrain=True)
+field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
 boundaries = {
     "fixed": fem.Boundary(field[0], fy=mesh.y.min()),
@@ -73,29 +65,28 @@ dof0, dof1 = fem.dof.partition(field, boundaries)
 
 # %%
 # The micro-sphere material formulation is used for the rubber. It is defined
-# as a hyperelastic material in `matADi <https://github.com/adtzlr/matadi>`_. The
-# material formulation is finally applied on the plane-strain field, resulting in a
-# hyperelastic solid body.
-
-import matadi as mat
-
-umat = mat.MaterialHyperelastic(
-    mat.models.miehe_goektepe_lulei,
+# as a hyperelastic material. Force-stretch curves are plotted for incompressible
+# uniaxial, planar and equi-biaxial tension. The material formulation is finally applied
+# on the plane-strain field, resulting in a hyperelastic solid body.
+umat = fem.Hyperelastic(
+    fem.miehe_goektepe_lulei,
     mu=0.1475,
     N=3.273,
     p=9.31,
     U=9.94,
     q=0.567,
-    bulk=5000.0,
+    parallel=True,
 )
+ux = ps = fem.math.linsteps([1, 2], num=50)
+bx = fem.math.linsteps([1, 1.5], num=50)
+ax = umat.plot(ux=ux, ps=ps, bx=bx, incompressible=True)
 
-rubber = fem.SolidBody(umat=mat.ThreeFieldVariation(umat), field=field)
+rubber = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
 
 # %%
 # At the centerpoint of a multi-point constraint (MPC) the external shear
 # movement is prescribed. It also ensures a force-free top plate in direction
 # :math:`y`.
-
 mpc = fem.MultiPointConstraint(
     field=field,
     points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
@@ -117,7 +108,6 @@ plotter.show()
 # a callback-function which is called after each successful substep. A step combines all
 # active items along with constant and ramped boundary conditions. Finally, the step is
 # added to a job. A job returns a generator object with the results of all substeps.
-
 UX = fem.math.linsteps([0, 15], 15)
 UY = []
 FX = []
@@ -140,7 +130,6 @@ res = job.evaluate()
 # :meth:`FieldContainer.evaluate.strain <felupe.field.EvaluateFieldContainer.strain>`-
 # method to return the principal stretches. For plotting, these values are projected
 # from quadrature-points to mesh-points.
-
 from felupe.math import dot, eigh, transpose
 
 F = field[0].extract()
@@ -163,7 +152,6 @@ plotter.show()
 # %%
 # The shear force :math:`F_x` vs. the displacements :math:`u_x` and :math:`u_y`, all
 # located at the top plate, are plotted.
-
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots(1, 2, sharey=True)

@@ -45,6 +45,7 @@ __all__ = [
 alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100, k=0)
 arruda_boyce.kwargs = dict(C1=0, limit=100)
 extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
+miehe_goektepe_lulei.kwargs = dict(mu=0, N=100, U=0, p=2, q=2)
 mooney_rivlin.kwargs = dict(C10=0, C01=0)
 neo_hooke.kwargs = dict(mu=0)
 ogden.kwargs = dict(mu=[0, 0], alpha=[2, -2])

@@ -39,7 +39,7 @@ H = 10
 L = 20
 T = 10
 
-n = 11
+n = 8
 a = min(L / n, H / n)
 
 mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))

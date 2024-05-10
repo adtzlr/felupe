@@ -122,6 +122,7 @@ There are many different pre-defined constitutive material formulations availabl
    arruda_boyce
    extended_tube
    finite_strain_viscoelastic
+   miehe_goektepe_lulei
    mooney_rivlin
    neo_hooke
    ogden
@@ -266,6 +267,8 @@ There are many different pre-defined constitutive material formulations availabl
 .. autofunction:: felupe.extended_tube
 
 .. autofunction:: felupe.finite_strain_viscoelastic
+
+.. autofunction:: felupe.miehe_goektepe_lulei
 
 .. autofunction:: felupe.mooney_rivlin
 

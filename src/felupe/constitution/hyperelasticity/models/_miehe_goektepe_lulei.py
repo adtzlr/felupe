@@ -6,8 +6,7 @@ from .microsphere import langevin, linear, nonaffine_stretch, nonaffine_tube
 
 def miehe_goektepe_lulei(C, mu, N, U, p, q):
     """Strain energy function of the isotropic hyperelastic
-    `micro-sphere <https://doi.org/10.1016/j.jmps.2004.03.011>`_ model formulation with
-    a combined non-affine stretch and tube model.
+    `micro-sphere <https://doi.org/10.1016/j.jmps.2004.03.011>`_ model formulation [1]_.
 
     Parameters
     ----------

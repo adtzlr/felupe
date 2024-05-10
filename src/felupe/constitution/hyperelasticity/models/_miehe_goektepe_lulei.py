@@ -16,9 +16,9 @@ def miehe_goektepe_lulei(C, mu, N, U, p, q):
     U : float
         Tube geometry parameter (3D locking characteristics).
     p : float
-        Non-ane stretch parameter (additional constraint stifness).
+        Non-affine stretch parameter (additional constraint stifness).
     q : float
-        Non-ane tube parameter (shape of constraint stress).
+        Non-affine tube parameter (shape of constraint stress).
 
     Examples
     --------

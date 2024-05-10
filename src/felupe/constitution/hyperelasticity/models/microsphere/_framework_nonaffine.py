@@ -1,9 +1,9 @@
 import numpy as np
-from tensortrax.math import einsum, sqrt
+from tensortrax.math import diagonal, einsum, sqrt
 from tensortrax.math import sum as tsum
 from tensortrax.math.linalg import det, inv
 
-from ......quadrature import BazantOh
+from .....quadrature import BazantOh
 
 
 def nonaffine_stretch(C, p, f, kwargs, quadrature=BazantOh(n=21)):
@@ -12,11 +12,14 @@ def nonaffine_stretch(C, p, f, kwargs, quadrature=BazantOh(n=21)):
     r = quadrature.points
     w = quadrature.weights
 
-    M = np.einsum("ai,aj->aij", r, r)
-    affine_stretch = sqrt(einsum("ij,aij->a", C, M))
-    nonaffine_stretch = tsum(affine_stretch**p * w) ** (1 / p)
+    # affine stretches
+    Ciso = det(C) ** (-1 / 3) * C
+    λ = sqrt(einsum("ai,ij...,aj->a...", r, Ciso, r))
 
-    return f(nonaffine_stretch, **kwargs)
+    # non-affine stretch
+    Λ = einsum("a...,a->...", λ**p, w) ** (1 / p)
+
+    return f(Λ, **kwargs)
 
 
 def nonaffine_tube(C, q, f, kwargs, quadrature=BazantOh(n=21)):
@@ -25,11 +28,11 @@ def nonaffine_tube(C, q, f, kwargs, quadrature=BazantOh(n=21)):
     r = quadrature.points
     w = quadrature.weights
 
-    Cs = det(C) * inv(C)
-    M = np.einsum("ai,aj->aij", r, r)
-    affine_areastretch = sqrt(einsum("ij,aij->a", Cs, M))
+    # affine area-stretches
+    Ciso = det(C) ** (-1 / 3) * C
+    λa = sqrt(einsum("ai,ij...,aj->a...", r, inv(Ciso), r))
 
-    nonaffine_tubecontraction = tsum(affine_areastretch**q * w)
-    # nonaffine_areastretch = nonaffine_tube_contraction ** (1 / q)
+    # non-affine tube contraction
+    Λt = einsum("a...,a->...", λa**q, w)
 
-    return f(nonaffine_tubecontraction, **kwargs)
+    return f(Λt, **kwargs)

@@ -3,7 +3,7 @@ from tensortrax.math import einsum, sqrt
 from tensortrax.math import sum as tsum
 from tensortrax.math.linalg import det, inv
 
-from ......quadrature import BazantOh
+from .....quadrature import BazantOh
 
 
 def affine_stretch(C, f, kwargs, quadrature=BazantOh(n=21)):
@@ -12,10 +12,11 @@ def affine_stretch(C, f, kwargs, quadrature=BazantOh(n=21)):
     r = quadrature.points
     w = quadrature.weights
 
-    M = np.einsum("ai,aj->aij", r, r)
-    affine_stretch = sqrt(einsum("ij,aij->a", C, M))
+    # affine stretches
+    Ciso = det(C) ** (-1 / 3) * C
+    λ = sqrt(einsum("ai,ij...,aj->a...", r, Ciso, r))
 
-    return tsum(f(affine_stretch, **kwargs) * w)
+    return einsum("a...,a->...", f(λ, **kwargs), w)
 
 
 def affine_tube(C, f, kwargs, quadrature=BazantOh(n=21)):
@@ -24,8 +25,8 @@ def affine_tube(C, f, kwargs, quadrature=BazantOh(n=21)):
     r = quadrature.points
     w = quadrature.weights
 
-    Cs = det(C) * inv(C)
-    M = np.einsum("ai,aj->aij", r, r)
-    affine_areastretch = sqrt(einsum("ij,aij->a", Cs, M))
+    # affine area-stretches
+    Ciso = det(C) ** (-1 / 3) * C
+    λa = sqrt(einsum("ai,ij...,aj->a...", r, inv(Ciso), r))
 
-    return tsum(f(affine_areastretch, **kwargs) * w)
+    return einsum("a...,a->...", f(λa, **kwargs), w)

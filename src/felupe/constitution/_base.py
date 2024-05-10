@@ -179,7 +179,7 @@ class ConstitutiveMaterial:
         ..  math::
             :label: material-optimize-residuals
 
-            \boldsymbol{r} &= \begin{\bmatrix}
+            \boldsymbol{r} &= \begin{bmatrix}
                 \boldsymbol{f}^T & \boldsymbol{g}^T & \boldsymbol{h}^T
             \end{bmatrix}^T
 
@@ -195,7 +195,7 @@ class ConstitutiveMaterial:
         ..  math::
             :label: material-optimize-residuals-relative
 
-            \boldsymbol{r} &= \begin{\bmatrix}
+            \boldsymbol{r} &= \begin{bmatrix}
                 \boldsymbol{f}^T & \boldsymbol{g}^T & \boldsymbol{h}^T
             \end{bmatrix}^T
 

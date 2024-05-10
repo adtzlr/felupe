@@ -135,7 +135,7 @@ class ConstitutiveMaterial:
     def optimize(
         self, ux=None, ps=None, bx=None, incompressible=False, relative=False, **kwargs
     ):
-        """Optimize the material parameters by a least-squares fit on experimental
+        r"""Optimize the material parameters by a least-squares fit on experimental
         stretch-stress data.
 
         Parameters

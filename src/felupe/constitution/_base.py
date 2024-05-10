@@ -180,14 +180,19 @@ class ConstitutiveMaterial:
             :label: material-optimize-residuals
 
             \boldsymbol{r} &= \begin{bmatrix}
-                \boldsymbol{f}^T & \boldsymbol{g}^T & \boldsymbol{h}^T
-            \end{bmatrix}^T
+                \boldsymbol{r}_\text{ux} \\
+                \boldsymbol{r}_\text{ps} \\
+                \boldsymbol{r}_\text{bx}
+            \end{bmatrix}
 
-            f_i &= P_\text{ux}(\lambda_i) - P_\text{ux, observed}(\lambda_i)
+            r_\text{ux}(\lambda_i) &= P_\text{ux}(\lambda_i)
+                - P_\text{ux, observed}(\lambda_i)
 
-            g_i &= P_\text{ps}(\lambda_i) - P_\text{ps, observed}(\lambda_i)
+            r_\text{ps}(\lambda_i) &= P_\text{ps}(\lambda_i)
+                - P_\text{ps, observed}(\lambda_i)
 
-            h_i &= P_\text{bx}(\lambda_i) - P_\text{bx, observed}(\lambda_i)
+            r_\text{bx}(\lambda_i) &= P_\text{bx}(\lambda_i)
+                - P_\text{bx, observed}(\lambda_i)
 
         and in Eq. :eq:`material-optimize-residuals-relative` in case of relative
         residuals.
@@ -196,17 +201,25 @@ class ConstitutiveMaterial:
             :label: material-optimize-residuals-relative
 
             \boldsymbol{r} &= \begin{bmatrix}
-                \boldsymbol{f}^T & \boldsymbol{g}^T & \boldsymbol{h}^T
-            \end{bmatrix}^T
+                \boldsymbol{r}_\text{ux} \\
+                \boldsymbol{r}_\text{ps} \\
+                \boldsymbol{r}_\text{bx}
+            \end{bmatrix}
 
-            f_i &= \frac{P_\text{ux}(\lambda_i) - P_\text{ux, observed}(\lambda_i)}
-                        {P_\text{ux, observed}(\lambda_i)}
+            r_\text{ux}(\lambda_i)  &= \frac{
+                P_\text{ux}(\lambda_i) - P_\text{ux, observed}(\lambda_i)}{
+                    P_\text{ux, observed}(\lambda_i)
+                }
 
-            g_i &= \frac{P_\text{ps}(\lambda_i) - P_\text{ps, observed}(\lambda_i)}
-                        {P_\text{ps, observed}(\lambda_i)}
+            r_\text{ps}(\lambda_i)  &= \frac{
+                P_\text{ps}(\lambda_i) - P_\text{ps, observed}(\lambda_i)}{
+                    P_\text{ps, observed}(\lambda_i)
+                }
 
-            h_i &= \frac{P_\text{bx}(\lambda_i) - P_\text{bx, observed}(\lambda_i)}
-                        {P_\text{bx, observed}(\lambda_i)}
+            r_\text{bx}(\lambda_i)  &= \frac{
+                P_\text{bx}(\lambda_i) - P_\text{bx, observed}(\lambda_i)}{
+                    P_\text{bx, observed}(\lambda_i)
+                }
 
         Examples
         --------

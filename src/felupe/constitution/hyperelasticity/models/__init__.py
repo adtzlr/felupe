@@ -1,3 +1,14 @@
+"""
+Models
+======
+This module contains strain energy density functions for material model formulations to
+be used as the ``fun``-argument in :func:`~felupe.Hyperelastic`. A strain energy density
+function must be formulated in terms of the right Cauchy-Green deformation tensor. The
+gradient as well as the hessian of the strain energy density function is carried out
+by automatic differentiation using :mod:`tensortrax`. Hence, all math-functions must be
+taken from :mod:`tensortrax.math`.
+"""
+
 from ._alexander import alexander
 from ._arruda_boyce import arruda_boyce
 from ._extended_tube import extended_tube

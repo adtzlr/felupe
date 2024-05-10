@@ -584,6 +584,18 @@ def test_optimize():
         ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
         ax.plot(stretches, stresses, "C0x")
 
+    for model in [
+        fem.neo_hooke,
+    ]:
+        umat = fem.Hyperelastic(model)
+        umat_new, res = umat.optimize(
+            ux=[stretches, stresses], incompressible=True, relative=True
+        )
+
+        ux = np.linspace(stretches.min(), stretches.max(), num=200)
+        ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
+        ax.plot(stretches, stresses, "C0x")
+
 
 if __name__ == "__main__":
     test_nh()

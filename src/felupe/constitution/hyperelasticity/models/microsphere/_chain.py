@@ -1,4 +1,4 @@
-from ...math import log, sinh, sqrt
+from tensortrax.math import log, sinh, sqrt
 
 
 def langevin(stretch, mu, N):

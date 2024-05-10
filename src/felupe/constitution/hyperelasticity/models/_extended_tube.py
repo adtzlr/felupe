@@ -67,7 +67,7 @@ def extended_tube(C, Gc, delta, Ge, beta):
     ..  math::
         :label: stretches-et
 
-        \lambda^2_\alpha &= \text{eigvals}\left \boldsymbol{C} \right)
+        \lambda^2_\alpha &= \text{eigvals}\left( \boldsymbol{C} \right)
 
         \hat{\lambda}_\alpha &= J^{-1/3} \lambda_\alpha
 

@@ -586,6 +586,7 @@ def test_optimize():
 
     for model in [
         fem.neo_hooke,
+        fem.miehe_goektepe_lulei,
     ]:
         umat = fem.Hyperelastic(model)
         umat_new, res = umat.optimize(

@@ -14,6 +14,7 @@ from ._arruda_boyce import arruda_boyce
 from ._extended_tube import extended_tube
 from ._finite_strain_viscoelastic import finite_strain_viscoelastic
 from ._helpers import isochoric_volumetric_split
+from ._miehe_goektepe_lulei import miehe_goektepe_lulei
 from ._mooney_rivlin import mooney_rivlin
 from ._neo_hooke import neo_hooke
 from ._ogden import ogden
@@ -29,6 +30,7 @@ __all__ = [
     "extended_tube",
     "finite_strain_viscoelastic",
     "isochoric_volumetric_split",
+    "miehe_goektepe_lulei",
     "mooney_rivlin",
     "neo_hooke",
     "ogden",
@@ -43,6 +45,7 @@ __all__ = [
 alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100, k=0)
 arruda_boyce.kwargs = dict(C1=0, limit=100)
 extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
+miehe_goektepe_lulei.kwargs = dict(mu=0, N=100, U=0, p=2, q=2)
 mooney_rivlin.kwargs = dict(C10=0, C01=0)
 neo_hooke.kwargs = dict(mu=0)
 ogden.kwargs = dict(mu=[0, 0], alpha=[2, -2])

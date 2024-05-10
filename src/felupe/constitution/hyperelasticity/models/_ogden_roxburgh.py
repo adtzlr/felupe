@@ -52,17 +52,19 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         This implementation uses the hyperbolic tangent instead of the Gauss error
         function.
 
-    The Mullins-effect related evolution and the first Piola-Kirchhoff stress tensor are
+    The strain energy density function and the Mullins-effect related evolution are
     given in Eq. :eq:`psi-ogden-roxburgh`.
 
     ..  math::
         :label: psi-ogden-roxburgh
 
+        \psi &= \eta \hat{\psi} + \phi
+
         \eta(\psi, \psi_\text{max}) &= 1 - \frac{1}{r} \tanh \left(
             \frac{\psi_\text{max} - \psi}{m + \beta~\psi_\text{max}}
         \right)
 
-        \boldsymbol{P} &= \eta \frac{\partial \psi}{\partial \boldsymbol{F}}
+        \delta \phi &= -\delta \eta \hat{\psi}
 
     Examples
     --------

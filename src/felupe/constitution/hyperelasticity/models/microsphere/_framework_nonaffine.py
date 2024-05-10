@@ -1,6 +1,4 @@
-import numpy as np
-from tensortrax.math import diagonal, einsum, sqrt
-from tensortrax.math import sum as tsum
+from tensortrax.math import einsum, sqrt
 from tensortrax.math.linalg import det, inv
 
 from .....quadrature import BazantOh

@@ -1,3 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+This file is part of FElupe.
+
+FElupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+FElupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
+"""
 from .microsphere import langevin, linear, nonaffine_stretch, nonaffine_tube
 
 
@@ -16,9 +33,9 @@ def miehe_goektepe_lulei(C, mu, N, U, p, q):
     U : float
         Tube geometry parameter (3D locking characteristics).
     p : float
-        Non-affine stretch parameter (additional constraint stifness).
+        Non-affine stretch parameter (additional constraint stifness).
     q : float
-        Non-affine tube parameter (shape of constraint stress).
+        Non-affine tube parameter (shape of constraint stress).
 
     Examples
     --------

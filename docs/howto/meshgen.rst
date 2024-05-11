@@ -150,11 +150,11 @@ Meshed boundaries may be used to fill the area or volume in between for line and
     )
     
     face = bottom.fill_between(top, n=n[1])
-    mesh = fem.mesh.concatenate(
+    plate_with_hole = fem.mesh.concatenate(
         [face, face.mirror(normal=[-1, 1, 0])]
     ).merge_duplicate_points()
 
-    mesh.plot().show()
+    plate_with_hole.plot().show()
 
 Connect two quad-meshed faces by hexahedrons:
 
@@ -255,7 +255,7 @@ The boundary mesh isn't visualized correctly in PyVista and in ParaView because 
     :context:
     :force_static:
 
-    boundary = fem.RegionQuadBoundary(mesh)
+    boundary = fem.RegionHexahedronBoundary(mesh)
     boundary.mesh.plot().show()
 
 
@@ -268,7 +268,7 @@ Indentations (runouts) of the boundary edges or faces are defined by a centerpoi
     :context:
     :force_static:
 
-    block = mesh.expand(z=0.5)
+    block = plate_with_hole.expand(z=0.5)
     x, y, z = block.points.T
     
     solid = block.add_runouts(
@@ -277,7 +277,7 @@ Indentations (runouts) of the boundary edges or faces are defined by a centerpoi
         values=[0.07, 0.02],
         exponent=5,  # shape parameter
         normalize=True,
-        mask=np.arange(solid.npoints)[np.sqrt(x**2 + y**2) > 0.5]
+        mask=np.arange(block.npoints)[np.sqrt(x**2 + y**2) > 0.5]
     )
     solid.plot().show()
 

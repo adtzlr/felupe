@@ -1,4 +1,4 @@
-from ._base import CompositeMaterial, ConstitutiveMaterial
+from ._base import CompositeMaterial, ConstitutiveMaterial, constitutive_material
 from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
 from ._material_ad import MaterialAD
@@ -77,6 +77,7 @@ __all__ = [
     "ViewMaterial",
     "ViewMaterialIncompressible",
     "ConstitutiveMaterial",
+    "constitutive_material",
     "CompositeMaterial",
     "Volumetric",
 ]

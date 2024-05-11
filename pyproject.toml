@@ -64,7 +64,6 @@ docs = [
     "sphinx-design",
     "sphinx-gallery",
     "pypandoc",
-    "matadi",
 ]
 examples = [
     "matadi",

@@ -24,7 +24,7 @@ from ._view import ViewMaterial, ViewMaterialIncompressible
 
 
 class ConstitutiveMaterial:
-    """Base class for constitutive materials.
+    r"""Base class for constitutive materials.
 
     A constitutive material definition, or so-called ``umat`` (user material), is a
     class with methods for evaluating gradients and hessians of the strain energy

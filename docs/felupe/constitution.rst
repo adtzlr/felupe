@@ -61,6 +61,7 @@ There are many different pre-defined constitutive material formulations availabl
 .. autosummary::
 
    ConstitutiveMaterial
+   constitutive_material
    ViewMaterial
    ViewMaterialIncompressible
 
@@ -160,6 +161,8 @@ There are many different pre-defined constitutive material formulations availabl
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autofunction:: felupe.constitutive_material
 
 .. autoclass:: felupe.ViewMaterial
    :members:

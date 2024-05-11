@@ -24,7 +24,80 @@ from ._view import ViewMaterial, ViewMaterialIncompressible
 
 
 class ConstitutiveMaterial:
-    "Base class for constitutive materials."
+    """Base class for constitutive materials.
+
+    A constitutive material definition, or so-called ``umat`` (user material), is a
+    class with methods for evaluating gradients and hessians of the strain energy
+    density function with respect to the defined fields in the field container, where
+    the gradient of the first (displacement) field is passed as the deformation
+    gradient. For all following fields, the field values (no gradients) are provided. An
+    attribute ``x=[np.zeros(statevars_shape)]`` has to be added to the class to define
+    the shape of optional state variables. For reasons of performance, FElupe passes the
+    field gradients and values *all at once*, e.g. the deformation gradient is of shape
+    ``(3, 3, q, c)``, where ``q`` refers to the number of quadrature points per cell and
+    ``c`` to the number of cells. These last two axes are the so-called *trailing axes*.
+    Math-functions from :ref:`felupe.math <felupe-api-math>` all support the operation
+    on trailing axes. The constitutive material definition class should be inherited
+    from :class:`~felupe.ConstitutiveMaterial` in order to provide force-stretch curves
+    for elementary deformations.
+
+    Examples
+    --------
+    Take this code-block as a template for a two-field :math:`(\boldsymbol{u}, p)`
+    formulation with the old displacement gradient as a state variable:
+
+    ..  pyvista-plot::
+        :context:
+
+        import numpy as np
+        import felupe as fem
+
+        # math-functions which support trailing axes
+        from felupe.math import det, dya, identity, transpose, inv
+
+        class MyMaterialFormulation(fem.ConstitutiveMaterial):
+
+            def __init__(self):
+                # provide the shape of state variables without trailing axes
+                # values are ignored - state variables are always initiated with zeros
+                self.x = [np.zeros((3, 3))]
+
+            def gradient(self, x):
+                "Gradients of the strain energy density function."
+
+                # extract variables
+                F, p, statevars = x[0], x[1], x[-1]
+
+                # user code
+                dWdF = None  # first Piola-Kirchhoff stress tensor
+                dWdp = None
+
+                # update state variables
+                # example: the displacement gradient
+                statevars_new = F - identity(F)
+
+                return [dWdF, dWdp, statevars_new]
+
+            def hessian(self, x, **kwargs):
+                "Hessians of the strain energy density function."
+
+                # extract variables
+                F, p, statevars = x[0], x[1], x[-1]
+
+                # user code
+                d2WdFdF = None  # fourth-order elasticity tensor
+                d2WdFdp = None
+                d2Wdpdp = None
+
+                # upper-triangle items of the hessian
+                return [d2WdFdF, d2WdFdp, d2Wdpdp]
+
+        umat = MyMaterialFormulation()
+
+    See Also
+    --------
+    felupe.constitutive_material : A decorator for a constitutive material definition.
+    """
 
     def view(self, incompressible=False, **kwargs):
         """Create views on normal force per undeformed area vs. stretch curves for the

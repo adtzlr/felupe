@@ -4,7 +4,8 @@ from ._material import Material
 from ._material_ad import MaterialAD
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
-from .hyperelasticity import Hyperelastic, NeoHooke, NeoHookeCompressible, Volumetric
+from .hyperelasticity import Hyperelastic
+from .hyperelasticity.core import NeoHooke, NeoHookeCompressible, Volumetric
 from .hyperelasticity.models import (
     alexander,
     arruda_boyce,

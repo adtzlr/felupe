@@ -3,58 +3,11 @@
 Constitution
 ~~~~~~~~~~~~
 
-This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>` formulations. In FElupe, a constitutive material definition, or so-called ``umat`` (user material), is a class with methods for evaluating gradients and hessians of the strain energy density function with respect to the defined fields in the field container, where the gradient of the first (displacement) field is passed as the deformation gradient. For all following fields, the field values (no gradients) are provided. An attribute ``x=[np.zeros(statevars_shape)]`` has to be added to the class to define the shape of optional state variables. For reasons of performance, FElupe passes the field gradients and values *all at once*, e.g. the deformation gradient is of shape ``(3, 3, q, c)``, where ``q`` refers to the number of quadrature points per cell and ``c`` to the number of cells. These last two axes are the so-called *trailing axes*. Math-functions from :ref:`felupe.math <felupe-api-math>` all support the operation on trailing axes. The constitutive material definition class should be inherited from :class:`~felupe.ConstitutiveMaterial` in order to provide force-stretch curves for elementary deformations. Take this code-block as a template for a two-field :math:`(\boldsymbol{u}, p)` formulation with the old displacement gradient as a state variable:
-
-..  code-block:: python
-
-    import numpy as np
-    import felupe as fem
-
-    # math-functions which support trailing axes
-    from felupe.math import det, dya, identity, transpose, inv
-
-    class MyMaterialFormulation(fem.ConstitutiveMaterial):
-
-        def __init__(self):
-            # provide the shape of state variables without trailing axes
-            # values are ignored - state variables are always initiated with zeros
-            self.x = [np.zeros((3, 3))]
-
-        def gradient(self, x):
-            "Gradients of the strain energy density function."
-
-            # extract variables
-            F, p, statevars = x[0], x[1], x[-1]
-
-            # user code
-            dWdF = None  # first Piola-Kirchhoff stress tensor
-            dWdp = None
-
-            # update state variables
-            # example: the displacement gradient
-            statevars_new = F - identity(F)
-
-            return [dWdF, dWdp, statevars_new]
-
-        def hessian(self, x, **kwargs):
-            "Hessians of the strain energy density function."
-
-            # extract variables
-            F, p, statevars = x[0], x[1], x[-1]
-
-            # user code
-            d2WdFdF = None  # fourth-order elasticity tensor
-            d2WdFdp = None
-            d2Wdpdp = None
-
-            # upper-triangle items of the hessian
-            return [d2WdFdF, d2WdFdp, d2Wdpdp]
-
-    umat = MyMaterialFormulation()
+This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>` formulations.
 
 There are many different pre-defined constitutive material formulations available, including definitions for linear-elasticity, small-strain plasticity, hyperelasticity or pseudo-elasticity. The generation of user materials may be simplified when using frameworks for user-defined functions, like hyperelasticity (with automatic differentiation) or a small-strain based framework with state variables. The most general case is given by a framework with functions for the evaluation of stress and elasticity tensors in terms of the deformation gradient.
 
-**View Force-Stretch Curves on Elementary Deformations**
+**Base class (decorator) for constitutive material formulations**
 
 .. currentmodule:: felupe
 
@@ -62,6 +15,11 @@ There are many different pre-defined constitutive material formulations availabl
 
    ConstitutiveMaterial
    constitutive_material
+
+**View Force-Stretch Curves on Elementary Deformations**
+
+.. autosummary::
+
    ViewMaterial
    ViewMaterialIncompressible
 

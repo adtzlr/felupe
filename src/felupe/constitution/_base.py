@@ -356,6 +356,63 @@ class ConstitutiveMaterial:
         return CompositeMaterial(self, other_material)
 
 
+def constitutive_material(Material, name=None):
+    """A class-decorator for a constitutive material definition.
+
+    Parameters
+    ----------
+    Material : object
+        A class with methods for the gradient and the hessian of the strain energy
+        density function per unit undeformed volume w.r.t. the deformation gradient
+        tensor.
+    name : str or None, optional
+        The name of the derived class object. If None, the name is taken from
+        ``Material`` (default is None).
+
+    Returns
+    -------
+    object
+        A derived class with multiple inheritance of
+        :class:`~felupe.ConstitutiveMaterial` and ``Material``.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+        :context:
+
+        >>> import felupe as fem
+        >>> import matadi as mat
+        >>>
+        >>> MaterialHyperelastic = fem.constitutive_material(mat.MaterialHyperelastic)
+        >>> umat = MaterialHyperelastic(mat.models.neo_hooke, C10=0.5)
+        >>> ax = umat.plot(incompressible=True)
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
+
+    See Also
+    --------
+    felupe.ConstitutiveMaterial : Base class for constitutive material formulations.
+    """
+    if name is None:
+        name = Material.__name__
+
+    class ConstitutiveMaterialDerived(ConstitutiveMaterial, Material):
+        pass
+
+    ConstitutiveMaterialDerived.__name__ = name
+
+    return ConstitutiveMaterialDerived
+
+
 class CompositeMaterial(ConstitutiveMaterial):
     """A composite material with two constitutive materials merged. State variables are
     only considered for the first material.

@@ -154,7 +154,9 @@ def test_linear_planestress():
     r, F = pre(sym=False, add_identity=True)
     F = [F[0][:2][:, :2]]
 
-    le = fem.constitution.LinearElasticPlaneStress(E=1.0, nu=0.3)
+    le = fem.constitutive_material(fem.constitution.LinearElasticPlaneStress)(
+        E=1.0, nu=0.3
+    )
 
     stress = le.gradient(F)[:-1]
     dsde = le.hessian(F)

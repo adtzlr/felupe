@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add the isotropic-hyperelastic Micro-Sphere `miehe_goektepe_lulei(mu, N, U, p, q)` material model formulation to be used in `Hyperelastic()`.
 - Add the pseudo-elastic `ogden_roxburgh(r, m, beta, material, **kwargs)` material model formulation to be used in `Hyperelastic()`.
 - Add an optional relative-residuals argument to `ConstitutiveMaterial.optimize(relative=False)`.
+- Add a class-decorator `constitutive_material(Msterial, name=None)`.
 
 ### Changed
 - Recfactor the `constitution` module.

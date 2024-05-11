@@ -45,12 +45,13 @@ There are many different pre-defined constitutive material formulations availabl
 
    LinearElasticPlasticIsotropicHardening
 
-**Hyperelasticity**
+**Core Hyperelasticity (without Automatic Differentation)**
 
 .. autosummary::
 
    NeoHooke
    NeoHookeCompressible
+   OgdenRoxburgh
    Volumetric
 
 **Hyperelastic Three-Field-Formulations** :math:`(\boldsymbol{u}, p, \bar{J})`
@@ -60,20 +61,14 @@ There are many different pre-defined constitutive material formulations availabl
    ThreeFieldVariation
    NearlyIncompressible
 
-**Pseudo-Elasticity (Isotropic Damage)**
-
-.. autosummary::
-
-   OgdenRoxburgh
-
-**Hyperelastic User-Materials with Automatic Differentation**
+**Hyperelasticity with Automatic Differentation**
 
 .. autosummary::
    
    Hyperelastic
    MaterialAD
 
-**Material Model Formulations (Strain Energy Functions) for** :class:`~felupe.Hyperelastic`
+**Material Models (Strain Energy Functions) for** :class:`~felupe.Hyperelastic`
 
 .. autosummary::
 
@@ -91,7 +86,7 @@ There are many different pre-defined constitutive material formulations availabl
    van_der_waals
    yeoh
 
-**(Small) Strain-based User Materials**
+**Small Strain-based User Materials**
 
 .. autosummary::
 
@@ -99,7 +94,7 @@ There are many different pre-defined constitutive material formulations availabl
    linear_elastic
    linear_elastic_plastic_isotropic_hardening
 
-**Deformation-Gradient-based User Materials**
+**Deformation Gradient-based User Materials**
 
 .. autosummary::
 
@@ -147,12 +142,12 @@ There are many different pre-defined constitutive material formulations availabl
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.Volumetric
+.. autoclass:: felupe.OgdenRoxburgh
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.OgdenRoxburgh
+.. autoclass:: felupe.Volumetric
    :members:
    :undoc-members:
    :inherited-members:

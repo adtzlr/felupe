@@ -1,6 +1,6 @@
 """
-Models
-======
+Strain-energy density functions for hyperlastic model formulations.
+
 This module contains strain energy density functions for material model formulations to
 be used as the ``fun``-argument in :func:`~felupe.Hyperelastic`. A strain energy density
 function must be formulated in terms of the right Cauchy-Green deformation tensor. The

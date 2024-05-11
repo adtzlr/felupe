@@ -450,6 +450,17 @@ def constitutive_material(Material, name=None):
 
     Examples
     --------
+    This example shows how to create a derived user material class to enable the
+    methods from :class:`~felupe.ConstitutiveMaterial` on an externally defined user
+    material.
+
+    .. admonition:: This example requires external packages.
+       :class: hint
+
+       .. code-block::
+
+          pip install matadi
+
     ..  pyvista-plot::
         :context:
 

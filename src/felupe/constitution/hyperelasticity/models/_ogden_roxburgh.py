@@ -64,7 +64,9 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
             \frac{\psi_\text{max} - \psi}{m + \beta~\psi_\text{max}}
         \right)
 
-        \delta \phi &= -\delta \eta \hat{\psi}
+        \delta \phi &= -\delta \eta \ \hat{\psi}
+
+        \delta \psi &= \eta \ \delta \hat{\psi}
 
     Examples
     --------

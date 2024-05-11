@@ -5,7 +5,12 @@ from ._material_ad import MaterialAD
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
 from .hyperelasticity import Hyperelastic
-from .hyperelasticity.core import NeoHooke, NeoHookeCompressible, Volumetric
+from .hyperelasticity.core import (
+    NeoHooke,
+    NeoHookeCompressible,
+    OgdenRoxburgh,
+    Volumetric,
+)
 from .hyperelasticity.models import (
     alexander,
     arruda_boyce,
@@ -30,7 +35,6 @@ from .linear_elasticity import (
     LinearElasticTensorNotation,
     lame_converter,
 )
-from .pseudo_elasticity import OgdenRoxburgh
 from .small_strain import MaterialStrain
 from .small_strain.models import (
     LinearElasticPlasticIsotropicHardening,

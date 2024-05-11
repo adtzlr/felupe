@@ -18,8 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import dya
-from .._base import ConstitutiveMaterial
+from ....math import dya
+from ..._base import ConstitutiveMaterial
 
 
 class OgdenRoxburgh(ConstitutiveMaterial):

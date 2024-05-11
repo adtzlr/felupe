@@ -9,10 +9,12 @@ energy density functions. For more sophisticated material model formulations see
 
 from ._neo_hooke_compressible import NeoHookeCompressible
 from ._neo_hooke_nearly_incompressible import NeoHooke
+from ._ogden_roxburgh import OgdenRoxburgh
 from ._volumetric import Volumetric
 
 __all__ = [
     "NeoHooke",
     "NeoHookeCompressible",
+    "OgdenRoxburgh",
     "Volumetric",
 ]

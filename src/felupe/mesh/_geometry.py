@@ -295,6 +295,15 @@ class Grid(Mesh):
 class RectangleArbitraryOrderQuad(Rectangle):
     """A rectangular 2d-mesh with an arbitrarr-order Lagrange quad between ``a`` and
     ``b``.
+    
+    Examples
+    --------
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.mesh.RectangleArbitraryOrderQuad(order=5).add_runouts()
+        >>> mesh.plot(nonlinear_subdivision=4).show()
     """
 
     def __init__(self, a=(0.0, 0.0), b=(1.0, 1.0), order=2):
@@ -308,6 +317,15 @@ class RectangleArbitraryOrderQuad(Rectangle):
 class CubeArbitraryOrderHexahedron(Cube):
     """A rectangular 2d-mesh with an arbitrarr-order Lagrange hexahedron between ``a``
     and ``b``.
+    
+    Examples
+    --------
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=5).add_runouts()
+        >>> mesh.plot(nonlinear_subdivision=4).show()
     """
 
     def __init__(self, a=(0.0, 0.0, 0.0), b=(1.0, 1.0, 1.0), order=2):

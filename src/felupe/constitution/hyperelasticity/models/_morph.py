@@ -25,7 +25,7 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_,
     implemented by the concept of
     `representative directions <https://nbn-resolving.org/urn:nbn:de:bsz:ch1-qucosa-114428>`_
-    [2]_.
+    [2]_, [3]_.
 
     Parameters
     ----------
@@ -48,6 +48,7 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
         >>> umat = fem.Hyperelastic(
         ...     fem.morph_representative_directions,
         ...     p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
+        ...     nstatevars=84,
         ... )
         >>> ax = umat.plot(
         ...    incompressible=True,
@@ -80,6 +81,12 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
     .. [2] M. Freund, "Verallgemeinerung eindimensionaler Materialmodelle für die
        Finite-Elemente-Methode", Dissertation, Technische Universität Chemnitz,
        Chemnitz, 2013.
+
+    .. [3] C. Miehe, S. Göktepe and F. Lulei, "A micro-macro approach to rubber-like
+       materials - Part I: the non-affine micro-sphere model of rubber elasticity",
+       Journal of the Mechanics and Physics of Solids, vol. 52, no. 11. Elsevier BV, pp.
+       2617–2660, Nov. 2004. doi:
+       `10.1016/j.jmps.2004.03.011 <https://doi.org/10.1016/j.jmps.2004.03.011>`_.
     """
 
     def morph_uniaxial(λ, statevars, p, ε=1e-8):

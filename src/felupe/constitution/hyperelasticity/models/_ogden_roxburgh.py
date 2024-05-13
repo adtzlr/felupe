@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from tensortrax import Tensor, Δ, Δδ, f, δ
-from tensortrax.math import array, maximum, tanh
+from tensortrax.math import array, maximum, real_to_dual, tanh
 
 
 def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
@@ -106,19 +106,11 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     W = material(C, **kwargs)
     Wmax = maximum(W, array(Wmax_n, like=W))
 
-    def pseudo_elastic_strain_energy(W, Wmax):
-        "Strain energy density function with custom variations."
+    # evolution equation
+    η = lambda W: 1 - 1 / r * tanh((Wmax - W) / (m + beta * Wmax))
 
-        # evolution equation
-        η = 1 - 1 / r * tanh((Wmax - W) / (m + beta * Wmax))
+    # custom first- and second-partial derivatives
+    # set the variation to δη * W (and the linearization to Δη * δW + η * ΔδW)
+    dWdF = real_to_dual(η(W), W)
 
-        # custom first- and second-partial derivatives
-        return Tensor(
-            x=f(η) * f(W),
-            δx=f(η) * δ(W),
-            Δx=f(η) * Δ(W),
-            Δδx=δ(η) * Δ(W) + f(η) * Δδ(W),
-            ntrax=W.ntrax,
-        )
-
-    return pseudo_elastic_strain_energy(W, Wmax), Wmax
+    return dWdF, Wmax

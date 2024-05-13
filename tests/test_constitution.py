@@ -299,27 +299,31 @@ def test_umat():
     dsde = linear_elastic.hessian([F, None])
 
 
-def test_umat_ogden_roxburgh():
+def test_umat_hyperelastic_statevars():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
-
-    import matplotlib.pyplot as plt
-    import tensortrax.math as tm
 
     for model, kwargs, incompressible in [
         (
             fem.constitution.ogden_roxburgh,
             dict(r=3, m=1, beta=0, material=fem.neo_hooke, mu=1, nstatevars=1),
             True,
-        )
+        ),
+        (
+            fem.constitution.morph_representative_directions,
+            dict(
+                p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117], nstatevars=84
+            ),
+            True,
+        ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 
-        statevars = np.zeros((8, 1))
+        statevars = np.zeros((kwargs["nstatevars"], 8, 1))
         s, statevars_new = umat.gradient([F, statevars])
         dsde = umat.hessian([F, statevars])
 
-        ux = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=[10, 10, 20, 20, 30, 30])
+        ux = fem.math.linsteps([1, 2, 1], num=10)
         ax = umat.plot(ux=ux, bx=None, ps=None, incompressible=True)
 
 
@@ -327,7 +331,6 @@ def test_umat_hyperelastic():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
-    import matplotlib.pyplot as plt
     import tensortrax.math as tm
 
     def neo_hooke(C, mu=1):
@@ -609,7 +612,7 @@ if __name__ == "__main__":
     test_umat()
     test_umat_hyperelastic()
     test_umat_hyperelastic2()
-    test_umat_ogden_roxburgh()
+    test_umat_hyperelastic_statevars()
     test_umat_viscoelastic()
     test_umat_viscoelastic2()
     test_umat_strain()

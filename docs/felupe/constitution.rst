@@ -229,7 +229,7 @@ There are many different pre-defined constitutive material formulations availabl
 
 .. autofunction:: felupe.mooney_rivlin
 
-.. autofunction:: morph_representative_directions
+.. autofunction:: felupe.morph_representative_directions
 
 .. autofunction:: felupe.neo_hooke
 

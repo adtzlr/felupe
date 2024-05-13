@@ -16,7 +16,15 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .microsphere import affine_stretch_statevars
-from tensortrax.math import array, abs as tensor_abs, maximum, sqrt, exp, if_else, real_to_dual
+from tensortrax.math import (
+    array,
+    abs as tensor_abs,
+    maximum,
+    sqrt,
+    exp,
+    if_else,
+    real_to_dual,
+)
 from tensortrax.math.special import try_stack, from_triu_1d, triu_1d, sym, dev
 from tensortrax.math.linalg import det, inv, eigvalsh, expm
 
@@ -116,7 +124,7 @@ def morph(C, statevars, p):
     SA = (SAn + β * LTG * SL) / (1 + β * LTG)
 
     # second Piola-Kirchhoff stress tensor
-    dψdC = (2 * α * dev(CG) @ invC + dev(SA @ C) @ invC) / 2
+    dψdC = α * dev(CG) @ invC + dev(SA @ C) @ invC / 2
     statevars_new = try_stack([[CTS], triu_1d(C), triu_1d(SA)], fallback=statevars)
 
     return real_to_dual(dψdC, C), statevars_new

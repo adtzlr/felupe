@@ -25,7 +25,7 @@ from tensortrax.math import (
     if_else,
     real_to_dual,
 )
-from tensortrax.math.special import try_stack, from_triu_1d, triu_1d, sym, dev
+from tensortrax.math.special import try_stack, from_triu_1d, triu_1d, sym, dev, ddot
 from tensortrax.math.linalg import det, inv, eigvalsh, expm
 
 
@@ -127,7 +127,7 @@ def morph(C, statevars, p):
     dψdC = α * dev(CG) @ invC + dev(SA @ C) @ invC / 2
     statevars_new = try_stack([[CTS], triu_1d(C), triu_1d(SA)], fallback=statevars)
 
-    return real_to_dual(dψdC, C), statevars_new
+    return real_to_dual(dψdC, C, mul=ddot), statevars_new
 
 
 def morph_representative_directions(C, statevars, p, ε=1e-8):

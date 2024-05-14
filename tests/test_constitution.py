@@ -610,6 +610,25 @@ def test_optimize():
         ax.plot(stretches, stresses, "C0x")
 
 
+def test_total_lagrange():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    import tensortrax.math as tm
+    
+    @fem.total_lagrange
+    def neo_hooke_total_lagrange(C, mu=1):
+        S = mu * tm.special.dev(tm.linalg.det(C)**(-1/3) * C) @ tm.linalg.inv(C)
+        return S
+    
+    umat = fem.Hyperelastic(neo_hooke_total_lagrange, mu=1)
+    nh = fem.NeoHooke(mu=1)
+    
+    P = umat.gradient([F])
+    A4 = umat.hessian([F])
+    assert np.allclose(P[0], nh.gradient([F])[0])
+    assert np.allclose(A4[0], nh.hessian([F])[0])
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -627,3 +646,4 @@ if __name__ == "__main__":
     test_elpliso()
     test_composite()
     test_optimize()
+    test_total_lagrange()

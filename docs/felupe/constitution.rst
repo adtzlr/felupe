@@ -78,6 +78,7 @@ There are many different pre-defined constitutive material formulations availabl
    finite_strain_viscoelastic
    miehe_goektepe_lulei
    mooney_rivlin
+   morph
    morph_representative_directions
    neo_hooke
    ogden
@@ -228,6 +229,8 @@ There are many different pre-defined constitutive material formulations availabl
 .. autofunction:: felupe.miehe_goektepe_lulei
 
 .. autofunction:: felupe.mooney_rivlin
+
+.. autofunction:: felupe.morph
 
 .. autofunction:: felupe.morph_representative_directions
 

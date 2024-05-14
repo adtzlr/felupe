@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add an optional relative-residuals argument to `ConstitutiveMaterial.optimize(relative=False)`.
 - Add a class-decorator `constitutive_material(Msterial, name=None)`.
 - Add the MORPH material formulation implemented by the concept of representative directions `morph_representative_directions(p)` to be used in `Hyperelastic()`.
+- Add the MORPH material formulation `morph(p)` to be used in `Hyperelastic()`.
 
 ### Changed
 - Recfactor the `constitution` module.

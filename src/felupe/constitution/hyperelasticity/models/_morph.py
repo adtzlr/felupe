@@ -16,8 +16,118 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .microsphere import affine_stretch_statevars
-from tensortrax.math import array, abs as tensor_abs, maximum, sqrt, exp
-from tensortrax.math.special import try_stack
+from tensortrax.math import (
+    array,
+    abs as tensor_abs,
+    maximum,
+    sqrt,
+    exp,
+    if_else,
+    real_to_dual,
+)
+from tensortrax.math.special import try_stack, from_triu_1d, triu_1d, sym, dev, ddot
+from tensortrax.math.linalg import det, inv, eigvalsh, expm
+
+
+def morph(C, statevars, p):
+    """Strain energy function of the
+    `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_.
+
+    Parameters
+    ----------
+    C : tensortrax.Tensor
+        Right Cauchy-Green deformation tensor.
+    statevars : array
+        Vector of stacked state variables (CTS, C, SA).
+    p : list of float
+        A list which contains the 8 material parameters.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+        :context:
+
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.Hyperelastic(
+        ...     fem.morph,
+        ...     p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
+        ...     nstatevars=13,
+        ... )
+        >>> ax = umat.plot(
+        ...    incompressible=True,
+        ...    ux=fem.math.linsteps(
+        ...        [1, 2, 1, 2.75, 1, 3.5, 1, 4.2, 1, 4.8, 1, 4.8, 1],
+        ...        num=50,
+        ...    ),
+        ...    ps=None,
+        ...    bx=None,
+        ... )
+
+    ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
+
+    References
+    ----------
+    .. [1] D. Besdo and J. Ihlemann, "A phenomenological constitutive model for
+       rubberlike materials and its numerical applications", International Journal
+       of Plasticity, vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
+       `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
+    """
+
+    # extract old state variables
+    CTSn = array(statevars[0], like=C[0, 0])
+    Cn = from_triu_1d(statevars[1:7], like=C)
+    SAn = from_triu_1d(statevars[7:], like=C)
+
+    # distortional part of right Cauchy-Green deformation tensor
+    I3 = det(C)
+    CG = C * I3 ** (-1 / 3)
+
+    # inverse of and incremental right Cauchy-Green deformation tensor
+    invC = inv(C)
+    dC = C - Cn
+
+    # eigenvalues of right Cauchy-Green deformation tensor (sorted in ascending order)
+    λCG = eigvalsh(CG)
+
+    # Tresca invariant of distortional part of right Cauchy-Green deformation tensor
+    CTG = λCG[-1] - λCG[0]
+
+    # maximum Tresca invariant in load history
+    CTS = maximum(CTG, CTSn)
+
+    def sigmoid(x):
+        "Algebraic sigmoid function."
+        return 1 / sqrt(1 + x**2)
+
+    # material parameters
+    α = p[0] + p[1] * sigmoid(p[2] * CTS)
+    β = p[3] * sigmoid(p[2] * CTS)
+    γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
+
+    LG = sym(dev(invC @ dC)) @ CG
+    λLG = eigvalsh(LG)
+    LTG = λLG[-1] - λLG[0]
+    LG_LTG = if_else(LTG > 0, LG / LTG, LG)
+
+    # limiting stresses "L" and additional stresses "A"
+    SL = (γ * expm(p[6] * LG_LTG * CTG / CTS) + p[7] * LG_LTG) @ invC
+    SA = (SAn + β * LTG * SL) / (1 + β * LTG)
+
+    # second Piola-Kirchhoff stress tensor
+    dψdC = α * dev(CG) @ invC + dev(SA @ C) @ invC / 2
+    statevars_new = try_stack([[CTS], triu_1d(C), triu_1d(SA)], fallback=statevars)
+
+    return real_to_dual(dψdC, C, mul=ddot), statevars_new
 
 
 def morph_representative_directions(C, statevars, p, ε=1e-8):

@@ -316,6 +316,13 @@ def test_umat_hyperelastic_statevars():
             ),
             True,
         ),
+        (
+            fem.constitution.morph,
+            dict(
+                p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244], nstatevars=13
+            ),
+            True,
+        ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 

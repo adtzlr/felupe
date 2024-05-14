@@ -15,20 +15,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+from tensortrax.math import abs as tensor_abs
+from tensortrax.math import array, exp, maximum, sqrt
+from tensortrax.math.linalg import det, eigvalsh, expm, inv
+from tensortrax.math.special import dev, from_triu_1d, sym, triu_1d, try_stack
+
+from .._total_lagrange import total_lagrange
 from .microsphere import affine_stretch_statevars
-from tensortrax.math import (
-    array,
-    abs as tensor_abs,
-    maximum,
-    sqrt,
-    exp,
-    if_else,
-    real_to_dual,
-)
-from tensortrax.math.special import try_stack, from_triu_1d, triu_1d, sym, dev, ddot
-from tensortrax.math.linalg import det, inv, eigvalsh, expm
 
 
+@total_lagrange
 def morph(C, statevars, p):
     r"""Strain energy function of the
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_.
@@ -221,10 +217,10 @@ def morph(C, statevars, p):
     SA = (SAn + β * LTG * SL) / (1 + β * LTG)
 
     # second Piola-Kirchhoff stress tensor
-    dψdC = α * dev(CG) @ invC + dev(SA @ C) @ invC / 2
+    S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
     statevars_new = try_stack([[CTS], triu_1d(C), triu_1d(SA)], fallback=statevars)
 
-    return real_to_dual(dψdC, C, mul=ddot), statevars_new
+    return S, statevars_new
 
 
 def morph_representative_directions(C, statevars, p, ε=1e-8):

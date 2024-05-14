@@ -4,7 +4,7 @@ from ._material import Material
 from ._material_ad import MaterialAD
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
-from .hyperelasticity import Hyperelastic
+from .hyperelasticity import Hyperelastic, total_lagrange
 from .hyperelasticity.core import (
     NeoHooke,
     NeoHookeCompressible,
@@ -45,7 +45,6 @@ from .small_strain.models import (
 )
 
 __all__ = [
-    "hyperelastic",
     "alexander",
     "arruda_boyce",
     "extended_tube",
@@ -76,6 +75,7 @@ __all__ = [
     "MaterialStrain",
     "MaterialAD",
     "Hyperelastic",
+    "total_lagrange",
     "AreaChange",
     "LineChange",
     "VolumeChange",

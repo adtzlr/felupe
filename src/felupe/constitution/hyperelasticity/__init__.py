@@ -13,7 +13,9 @@ b) manually-defined hyperelastic material model formulations (no automatic
    differentation) :mod:`constitution.hyperelasticity.core`.
 """
 from ._hyperelastic import Hyperelastic
+from ._total_lagrange import total_lagrange
 
 __all__ = [
     "Hyperelastic",
+    "total_lagrange",
 ]

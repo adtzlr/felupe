@@ -67,6 +67,8 @@ There are many different pre-defined constitutive material formulations availabl
    
    Hyperelastic
    MaterialAD
+   total_lagrange
+   updated_lagrange
 
 **Material Models (Strain Energy Functions) for** :class:`~felupe.Hyperelastic`
 
@@ -78,7 +80,6 @@ There are many different pre-defined constitutive material formulations availabl
    finite_strain_viscoelastic
    miehe_goektepe_lulei
    mooney_rivlin
-   morph
    morph_representative_directions
    neo_hooke
    ogden
@@ -87,6 +88,12 @@ There are many different pre-defined constitutive material formulations availabl
    third_order_deformation
    van_der_waals
    yeoh
+
+**Material Models (Strain Energy Functions) for** :class:`~felupe.MaterialAD`
+
+.. autosummary::
+
+   morph
 
 **Small Strain-based User Materials**
 
@@ -243,6 +250,10 @@ There are many different pre-defined constitutive material formulations availabl
 .. autofunction:: felupe.saint_venant_kirchhoff
 
 .. autofunction:: felupe.third_order_deformation
+
+.. autofunction:: felupe.total_lagrange
+
+.. autofunction:: felupe.updated_lagrange
 
 .. autofunction:: felupe.van_der_waals
 

@@ -6,7 +6,7 @@ This example contains a simulation of a rotating rubber wheel in plane strain wi
 [1]_. While the rotation is increased, a constant vertical compression is applied to the
 rubber wheel by a frictionless contact on the bottom. The vertical reaction force is
 then carried out for the rotation angles. The MORPH material model is implemented as a
-first Piola-Kirchhoff stress-based formulation with automatic differentiation. The
+second Piola-Kirchhoff stress-based formulation with automatic differentiation. The
 Tresca invariant of the distortional part of the right Cauchy-Green deformation tensor
 is used as internal state variable, see Eq. :eq:`morph-state`.
 
@@ -102,6 +102,7 @@ import tensortrax.math as tm
 import felupe as fem
 
 
+@fem.total_lagrange
 def morph(F, statevars_old, p):
     "MORPH material model formulation."
 
@@ -111,7 +112,7 @@ def morph(F, statevars_old, p):
     # extract old state variables
     CTSn = tm.array(statevars_old[0], like=C[0, 0])
     Cn = tm.special.from_triu_1d(statevars_old[1:7], like=C)
-    SAn = tm.special.from_triu_1d(statevars_old[7:], like=C)
+    SAn = tm.special.from_triu_1d(statevars_old[7:13], like=C)
 
     # distortional part of right Cauchy-Green deformation tensor
     I3 = tm.linalg.det(C)
@@ -152,12 +153,14 @@ def morph(F, statevars_old, p):
     S = 2 * α * tm.special.dev(CG) @ invC + tm.special.dev(SA @ C) @ invC
 
     try:  # update state variables
-        statevars_new = tm.stack([CTS, *tm.special.triu_1d(C), *tm.special.triu_1d(SA)])
+        statevars_new = np.stack(
+            [CTS.x, *tm.special.triu_1d(C).x, *tm.special.triu_1d(SA).x]
+        )
     except:
         # not possible (and not necessary) during AD-based hessian evaluation
         statevars_new = statevars_old
 
-    return F @ S, statevars_new
+    return S, statevars_new
 
 
 umat = fem.MaterialAD(

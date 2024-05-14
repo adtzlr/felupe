@@ -215,10 +215,9 @@ def morph(C, statevars, p):
     LG = sym(dev(invC @ dC)) @ CG
     λLG = eigvalsh(LG)
     LTG = λLG[-1] - λLG[0]
-    LG_LTG = if_else(LTG > 0, LG / LTG, LG)
 
     # limiting stresses "L" and additional stresses "A"
-    SL = (γ * expm(p[6] * LG_LTG * CTG / CTS) + p[7] * LG_LTG) @ invC
+    SL = (γ * expm(p[6] * LG / LTG * CTG / CTS) + p[7] * LG / LTG) @ invC
     SA = (SAn + β * LTG * SL) / (1 + β * LTG)
 
     # second Piola-Kirchhoff stress tensor

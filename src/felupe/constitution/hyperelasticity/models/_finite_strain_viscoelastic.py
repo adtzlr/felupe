@@ -84,7 +84,7 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
         ... )
         >>> ax = umat.plot(
         ...    incompressible=True,
-        ...    ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ...    ux=fem.math.linsteps([1, 1.5, 1, 2, 1], num=[5, 5, 10, 10]),
         ...    ps=None,
         ...    bx=None,
         ... )

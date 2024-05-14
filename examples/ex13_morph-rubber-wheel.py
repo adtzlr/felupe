@@ -152,7 +152,9 @@ def morph(F, statevars_old, p):
     S = 2 * α * tm.special.dev(CG) @ invC + tm.special.dev(SA @ C) @ invC
 
     try:  # update state variables
-        statevars_new = tm.stack([CTS, *tm.special.triu_1d(C), *tm.special.triu_1d(SA)])
+        statevars_new = np.stack(
+            [CTS.x, *tm.special.triu_1d(C).x, *tm.special.triu_1d(SA).x]
+        )
     except:
         # not possible (and not necessary) during AD-based hessian evaluation
         statevars_new = statevars_old

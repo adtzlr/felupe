@@ -221,49 +221,55 @@ class Material(ConstitutiveMaterial):
            + \left(\mu - \lambda \ln(J) \right)
                \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
            + \lambda \boldsymbol{F}^{-T} {\otimes} \boldsymbol{F}^{-T}
+
+    ..  pyvista-plot::
+        :context:
     
-    >>> import numpy as np
-    >>> import felupe as fem
-    >>> from felupe.math import (
-    ...     cdya_ik,
-    ...     cdya_il,
-    ...     det,
-    ...     dya,
-    ...     identity,
-    ...     inv,
-    ...     transpose
-    ... )
-    
-    >>> def stress(x, mu, lmbda):
-    ...     F, statevars = x[0], x[-1]
-    ...     J = det(F)
-    ...     lnJ = np.log(J)
-    ...     iFT = transpose(inv(F, J))
-    ...     dWdF = mu * (F - iFT) + lmbda * lnJ * iFT
-    ...     return [dWdF, statevars]
-    
-    >>> def elasticity(x, mu, lmbda):
-    ...     F = x[0]
-    ...     J = det(F)
-    ...     iFT = transpose(inv(F, J))
-    ...     eye = identity(F)
-    ...     return [
-    ...         mu * cdya_ik(eye, eye) + lmbda * dya(iFT, iFT) +
-    ...         (mu - lmbda * np.log(J)) * cdya_il(iFT, iFT)
-    ...     ]
-    
-    >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>> from felupe.math import (
+        ...     cdya_ik,
+        ...     cdya_il,
+        ...     det,
+        ...     dya,
+        ...     identity,
+        ...     inv,
+        ...     transpose
+        ... )
+        >>>
+        >>> def stress(x, mu, lmbda):
+        ...     F, statevars = x[0], x[-1]
+        ...     J = det(F)
+        ...     lnJ = np.log(J)
+        ...     iFT = transpose(inv(F, J))
+        ...     dWdF = mu * (F - iFT) + lmbda * lnJ * iFT
+        ...     return [dWdF, statevars]
+        >>>
+        >>> def elasticity(x, mu, lmbda):
+        ...     F = x[0]
+        ...     J = det(F)
+        ...     iFT = transpose(inv(F, J))
+        ...     eye = identity(F)
+        ...     return [
+        ...         mu * cdya_ik(eye, eye) + lmbda * dya(iFT, iFT) +
+        ...         (mu - lmbda * np.log(J)) * cdya_il(iFT, iFT)
+        ...     ]
+        >>>
+        >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)
     
     The material formulation is tested in a minimal example of non-homogeneous uniaxial
     tension.
+    
+    ..  pyvista-plot::
+        :context:
 
-    >>> mesh = fem.Cube(n=6)
-    >>> region = fem.RegionHexahedron(mesh)
-    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.5)
-    >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
-    >>> step = fem.Step(items=[solid], boundaries=boundaries)
-    >>> job = fem.Job(steps=[step]).evaluate()
+        >>> mesh = fem.Cube(n=6)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+        >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.5)
+        >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+        >>> step = fem.Step(items=[solid], boundaries=boundaries)
+        >>> job = fem.Job(steps=[step]).evaluate()
     
     See Also
     --------

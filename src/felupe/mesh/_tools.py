@@ -408,8 +408,9 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
     --------
     Two quad meshes to be merged overlap some points. Merge these duplicated
     points and update the cells.
+
     .. pyvista-plot::
-       :include-source: True
+       :context:
 
        >>> import felupe as fem
        >>>
@@ -424,44 +425,56 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 
     Each mesh contains 121 points and 100 cells.
 
-    >>> rect1
-    <felupe Mesh object>
-      Number of points: 121
-      Number of cells:
-        quad: 100
+    ..  pyvista-plot::
+        :context:
 
-    >>> rect2
-    <felupe Mesh object>
-      Number of points: 121
-      Number of cells:
-        quad: 100
+        >>> rect1
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 100
+
+        >>> rect2
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 100
 
     These two meshes are now stored in a
     :class:`~felupe.MeshContainer`.
 
-    >>> container
-    <felupe mesh container object>
-      Number of points: 242
-      Number of cells:
-        quad: 100
-        quad: 100
+    ..  pyvista-plot::
+        :context:
+
+        >>> container
+        <felupe mesh container object>
+          Number of points: 242
+          Number of cells:
+            quad: 100
+            quad: 100
 
     The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
 
-    >>> stack
-    <felupe Mesh object>
-      Number of points: 242
-      Number of cells:
-        quad: 200
+    ..  pyvista-plot::
+        :context:
+
+        >>> stack
+        <felupe Mesh object>
+          Number of points: 242
+          Number of cells:
+            quad: 200
 
     After merging the duplicated points and cells, the number of points is reduced but
     the number of cells is unchanged.
 
-    >>> mesh
-    <felupe Mesh object>
-      Number of points: 220
-      Number of cells:
-        quad: 200
+    ..  pyvista-plot::
+        :context:
+
+        >>> mesh
+        <felupe Mesh object>
+          Number of points: 220
+          Number of cells:
+            quad: 200
 
     ..  note::
         The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
@@ -534,59 +547,71 @@ def merge_duplicate_cells(points, cells, cell_type):
     Two quad meshes to be merged overlap some cells. Merge these duplicated
     points and update the cells.
 
-    .. pyvista-plot::
-       :include-source: True
+    ..  pyvista-plot::
+        :context:
 
-       >>> import felupe as fem
-       >>>
-       >>> rect1 = fem.Rectangle(n=11)
-       >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
-       >>>
-       >>> container = fem.MeshContainer([rect1, rect2])
-       >>> stack = fem.mesh.stack(container.meshes)
-       >>> mesh = fem.mesh.merge_duplicate_points(stack)
-       >>>
-       >>> mesh.plot(opacity=0.6).show()
+        >>> import felupe as fem
+        >>>
+        >>> rect1 = fem.Rectangle(n=11)
+        >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
+        >>>
+        >>> container = fem.MeshContainer([rect1, rect2])
+        >>> stack = fem.mesh.stack(container.meshes)
+        >>> mesh = fem.mesh.merge_duplicate_points(stack)
+        >>>
+        >>> mesh.plot(opacity=0.6).show()
 
     Each mesh contains 121 points and 100 cells.
 
-    >>> rect1
-    <felupe Mesh object>
-      Number of points: 121
-      Number of cells:
-        quad: 100
+    ..  pyvista-plot::
+        :context:
 
-    >>> rect2
-    <felupe Mesh object>
-      Number of points: 121
-      Number of cells:
-        quad: 100
+        >>> rect1
+        <felupe Mesh object>
+          Number of points: 121
+          Number of cells:
+            quad: 100
+
+        >>> rect2
+        <felupe Mesh object>
+            Number of points: 121
+            Number of cells:
+            quad: 100
 
     These two meshes are now stored in a :class:`~felupe.MeshContainer`.
 
-    >>> container
-    <felupe mesh container object>
-      Number of points: 242
-      Number of cells:
-        quad: 100
-        quad: 100
+    ..  pyvista-plot::
+        :context:
+
+        >>> container
+        <felupe mesh container object>
+        Number of points: 242
+        Number of cells:
+            quad: 100
+            quad: 100
 
     The meshes of the mesh container are :func:`stacked <felupe.mesh.stack>`.
 
-    >>> stack
-    <felupe Mesh object>
-      Number of points: 242
-      Number of cells:
-        quad: 200
+    ..  pyvista-plot::
+        :context:
+
+        >>> stack
+        <felupe Mesh object>
+        Number of points: 242
+        Number of cells:
+            quad: 200
 
     After merging the duplicated points and cells, the number of points is reduced but
     the number of cells is unchanged.
 
-    >>> mesh
-    <felupe Mesh object>
-      Number of points: 220
-      Number of cells:
-        quad: 200
+    ..  pyvista-plot::
+        :context:
+
+        >>> mesh
+        <felupe Mesh object>
+        Number of points: 220
+        Number of cells:
+            quad: 200
 
     ..  note::
         The :class:`~felupe.MeshContainer` may be directly created with ``merge=True``.
@@ -595,15 +620,15 @@ def merge_duplicate_cells(points, cells, cell_type):
 
     The duplicate cells are merged in a second step.
 
-    >>> merged = fem.mesh.merge_duplicate_cells(mesh)
-    >>> merged
-    <felupe Mesh object>
-      Number of points: 220
-      Number of cells:
-        quad: 190
+    ..  pyvista-plot::
+        :context:
 
-    ..  image:: images/mesh_merged.png
-        :width: 400px
+        >>> merged = fem.mesh.merge_duplicate_cells(mesh)
+        >>> merged
+        <felupe Mesh object>
+        Number of points: 220
+        Number of cells:
+            quad: 190
 
     See Also
     --------

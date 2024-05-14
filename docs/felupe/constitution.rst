@@ -66,7 +66,7 @@ There are many different pre-defined constitutive material formulations availabl
 .. autosummary::
    
    Hyperelastic
-   MaterialAD
+   total_lagrange
 
 **Material Models (Strain Energy Functions) for** :class:`~felupe.Hyperelastic`
 
@@ -247,6 +247,8 @@ There are many different pre-defined constitutive material formulations availabl
 .. autofunction:: felupe.van_der_waals
 
 .. autofunction:: felupe.yeoh
+
+.. autofunction:: felupe.total_lagrange
 
 .. autoclass:: felupe.LineChange
    :members:

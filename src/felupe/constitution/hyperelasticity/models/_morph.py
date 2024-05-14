@@ -26,7 +26,7 @@ from .microsphere import affine_stretch_statevars
 
 @total_lagrange
 def morph(C, statevars, p):
-    r"""Strain energy function of the
+    r"""Second Piola-Kirchhoff stress tensor of the
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_.
 
     Parameters

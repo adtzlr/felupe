@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 
-from ._material import Material
+from .._material import Material
 
 
 class MaterialAD(Material):

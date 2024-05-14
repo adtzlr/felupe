@@ -54,6 +54,7 @@ from .constitution import (
     saint_venant_kirchhoff,
     third_order_deformation,
     total_lagrange,
+    updated_lagrange,
     van_der_waals,
     yeoh,
 )
@@ -176,6 +177,7 @@ __all__ = [
     "MaterialStrain",
     "Hyperelastic",
     "total_lagrange",
+    "updated_lagrange",
     "MaterialAD",
     "ViewMaterial",
     "ViewMaterialIncompressible",

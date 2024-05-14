@@ -1,10 +1,9 @@
 from ._base import CompositeMaterial, ConstitutiveMaterial, constitutive_material
 from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
-from ._material_ad import MaterialAD
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
-from .hyperelasticity import Hyperelastic, total_lagrange
+from .hyperelasticity import Hyperelastic
 from .hyperelasticity.core import (
     NeoHooke,
     NeoHookeCompressible,
@@ -19,7 +18,6 @@ from .hyperelasticity.models import (
     isochoric_volumetric_split,
     miehe_goektepe_lulei,
     mooney_rivlin,
-    morph,
     morph_representative_directions,
     neo_hooke,
     ogden,
@@ -29,6 +27,8 @@ from .hyperelasticity.models import (
     van_der_waals,
     yeoh,
 )
+from .lagrange import MaterialAD, total_lagrange, updated_lagrange
+from .lagrange.models import morph
 from .linear_elasticity import (
     LinearElastic,
     LinearElasticLargeStrain,
@@ -76,6 +76,7 @@ __all__ = [
     "MaterialAD",
     "Hyperelastic",
     "total_lagrange",
+    "updated_lagrange",
     "AreaChange",
     "LineChange",
     "VolumeChange",

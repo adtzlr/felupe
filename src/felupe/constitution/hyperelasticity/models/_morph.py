@@ -149,8 +149,9 @@ def morph(C, statevars, p):
         >>> ax = umat.plot(
         ...    incompressible=True,
         ...    ux=fem.math.linsteps(
-        ...        [1, 2, 1, 2.75, 1, 3.5, 1, 4.2, 1, 4.8, 1, 4.8, 1],
-        ...        num=50,
+        ...        # [1, 2, 1, 2.75, 1, 3.5, 1, 4.2, 1, 4.8, 1, 4.8, 1],
+        ...        [1, 2.75, 1, 2.75],
+        ...        num=20,
         ...    ),
         ...    ps=None,
         ...    bx=None,
@@ -260,8 +261,9 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
         >>> ax = umat.plot(
         ...    incompressible=True,
         ...    ux=fem.math.linsteps(
-        ...        [1, 2, 1, 2.75, 1, 3.5, 1, 4.2, 1, 4.8, 1, 4.8, 1],
-        ...        num=50,
+        ...        # [1, 2, 1, 2.75, 1, 3.5, 1, 4.2, 1, 4.8, 1, 4.8, 1],
+        ...        [1, 2.75, 1, 2.75],
+        ...        num=20,
         ...    ),
         ...    ps=None,
         ...    bx=None,

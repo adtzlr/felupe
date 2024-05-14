@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a class-decorator `constitutive_material(Msterial, name=None)`.
 - Add the MORPH material formulation implemented by the concept of representative directions `morph_representative_directions(p)` to be used in `Hyperelastic()`.
 - Add the MORPH material formulation `morph(p)` to be used in `Hyperelastic()`.
-- Add a decorator `@total_lagrange` for Total Lagrange material formulations to be used in `Hyperelastic`.
+- Add decorators `@total_lagrange` and `@updated_lagrange` for Total / Updated Lagrange material formulations to be used in `MaterialAD`.
 
 ### Changed
 - Recfactor the `constitution` module.

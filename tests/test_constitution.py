@@ -655,7 +655,7 @@ def test_lagrange_statevars():
         umat = fem.MaterialAD(fun, mu=1, nstatevars=1)
         nh = fem.NeoHooke(mu=1)
 
-        statevars = np.ones_like(F)[0, :1]
+        statevars = np.zeros((1, 8, 1))
         P = umat.gradient([F, statevars])
         A4 = umat.hessian([F, statevars])
         assert np.allclose(P[0], nh.gradient([F])[0])

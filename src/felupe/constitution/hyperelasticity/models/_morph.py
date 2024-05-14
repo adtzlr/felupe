@@ -184,7 +184,7 @@ def morph(C, statevars, p):
     # extract old state variables
     CTSn = array(statevars[0], like=C[0, 0])
     Cn = from_triu_1d(statevars[1:7], like=C)
-    SAn = from_triu_1d(statevars[7:], like=C)
+    SAn = from_triu_1d(statevars[7:13], like=C)
 
     # distortional part of right Cauchy-Green deformation tensor
     I3 = det(C)
@@ -332,7 +332,7 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
         CTSn = array(statevars[:21], like=C, shape=(21,))
         λn = array(statevars[21:42], like=C, shape=(21,)) + 1
         SA1n = array(statevars[42:63], like=C, shape=(21,))
-        SA2n = array(statevars[63:], like=C, shape=(21,))
+        SA2n = array(statevars[63:84], like=C, shape=(21,))
 
         CT = tensor_abs(λ**2 - 1 / λ)
         CTS = maximum(CT, CTSn)

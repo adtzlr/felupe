@@ -112,7 +112,7 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     J3 = det(C) ** (-1 / 3)
 
     # update of state variables by evolution equation
-    Ci = from_triu_1d(Cin, like=C) + (mu / eta * dtime) * (J3 * C)
+    Ci = from_triu_1d(Cin[:6], like=C) + (mu / eta * dtime) * (J3 * C)
     Ci = det(Ci) ** (-1 / 3) * Ci
 
     # first invariant of elastic part of right Cauchy-Green deformation tensor

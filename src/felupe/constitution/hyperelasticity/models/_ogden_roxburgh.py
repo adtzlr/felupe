@@ -104,7 +104,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     """
 
     W = material(C, **kwargs)
-    Wmax = maximum(W, array(Wmax_n, like=W))
+    Wmax = maximum(W, array(Wmax_n[:1], like=W))
 
     # evolution equation
     η = lambda W: 1 - 1 / r * tanh((Wmax - W) / (m + beta * Wmax))

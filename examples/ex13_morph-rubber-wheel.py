@@ -111,7 +111,7 @@ def morph(F, statevars_old, p):
     # extract old state variables
     CTSn = tm.array(statevars_old[0], like=C[0, 0])
     Cn = tm.special.from_triu_1d(statevars_old[1:7], like=C)
-    SAn = tm.special.from_triu_1d(statevars_old[7:], like=C)
+    SAn = tm.special.from_triu_1d(statevars_old[7:13], like=C)
 
     # distortional part of right Cauchy-Green deformation tensor
     I3 = tm.linalg.det(C)

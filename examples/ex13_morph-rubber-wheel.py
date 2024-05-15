@@ -14,7 +14,9 @@ is used as internal state variable, see Eq. :eq:`morph-state`.
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
     formulation captures the Mullins effect and quasi-static hysteresis effects of
     rubber mixtures very nicely, it has been observed to be unstable for medium- to
-    highly-distorted states of deformation.
+    highly-distorted states of deformation. An alternative implementation by the method
+    of `representative directions <https://nbn-resolving.org/urn:nbn:de:bsz:ch1-qucosa-114428>`_
+    provides better stability but is computationally more costly [2]_, [3]_.
 
 ..  math::
     :label: morph-state
@@ -171,6 +173,10 @@ umat = fem.MaterialAD(
 )
 
 # %%
+# .. note::
+#    The MORPH material model formulation is also available in FElupe, see
+#    :class:`~felupe.morph`.
+#
 # The force-stress curves are shown for uniaxial incompressible tension cycles.
 ux = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1, 2.5], num=(10, 10, 20, 20, 30, 30, 30))
 ax = umat.plot(
@@ -266,3 +272,13 @@ solid.plot(
 #    materials and its numerical applications", International Journal of Plasticity,
 #    vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
 #    `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
+#
+# .. [2] M. Freund, "Verallgemeinerung eindimensionaler Materialmodelle für die
+#    Finite-Elemente-Methode", Dissertation, Technische Universität Chemnitz,
+#    Chemnitz, 2013.
+#
+# .. [3] C. Miehe, S. Göktepe and F. Lulei, "A micro-macro approach to rubber-like
+#    materials - Part I: the non-affine micro-sphere model of rubber elasticity",
+#    Journal of the Mechanics and Physics of Solids, vol. 52, no. 11. Elsevier BV, pp.
+#    2617–2660, Nov. 2004. doi:
+#    `10.1016/j.jmps.2004.03.011 <https://doi.org/10.1016/j.jmps.2004.03.011>`_.

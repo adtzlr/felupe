@@ -23,7 +23,7 @@ This page contains hyperelastic material model formulations with automatic diffe
    finite_strain_viscoelastic
    miehe_goektepe_lulei
    mooney_rivlin
-   morph_representative_directions
+   constitution.hyperelasticity.models.morph_representative_directions
    neo_hooke
    ogden
    ogden_roxburgh

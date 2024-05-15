@@ -28,7 +28,7 @@ from .hyperelasticity.models import (
     yeoh,
 )
 from .lagrange import MaterialAD, total_lagrange, updated_lagrange
-from .lagrange.models import morph
+from .lagrange.models import morph, morph_representative_directions
 from .linear_elasticity import (
     LinearElastic,
     LinearElasticLargeStrain,

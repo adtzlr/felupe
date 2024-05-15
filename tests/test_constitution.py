@@ -310,7 +310,7 @@ def test_umat_hyperelastic_statevars():
             True,
         ),
         (
-            fem.constitution.morph_representative_directions,
+            fem.constitution.hyperelasticity.models.morph_representative_directions,
             dict(
                 p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117], nstatevars=84
             ),
@@ -665,6 +665,16 @@ def test_lagrange_statevars():
     umat = fem.MaterialAD(fem.morph, p=p, nstatevars=13)
 
     statevars = np.zeros((13, 8, 1))
+    P = umat.gradient([F, statevars])
+    A4 = umat.hessian([F, statevars])
+
+    assert not np.isnan(P[0]).any()
+    assert not np.isnan(A4[0]).any()
+
+    p = [0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117]
+    umat = fem.MaterialAD(fem.morph_representative_directions, p=p, nstatevars=84)
+
+    statevars = np.zeros((84, 8, 1))
     P = umat.gradient([F, statevars])
     A4 = umat.hessian([F, statevars])
 

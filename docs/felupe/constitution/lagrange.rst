@@ -20,6 +20,7 @@ This page contains Total- and Updated-Lagrange material formulations with automa
 .. autosummary::
 
    morph
+   morph_representative_directions
 
 **Detailed API Reference**
 
@@ -29,6 +30,8 @@ This page contains Total- and Updated-Lagrange material formulations with automa
    :inherited-members:
 
 .. autofunction:: felupe.morph
+
+.. autofunction:: felupe.morph_representative_directions
 
 .. autofunction:: felupe.total_lagrange
 

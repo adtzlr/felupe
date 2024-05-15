@@ -16,7 +16,7 @@ from ._finite_strain_viscoelastic import finite_strain_viscoelastic
 from ._helpers import isochoric_volumetric_split
 from ._miehe_goektepe_lulei import miehe_goektepe_lulei
 from ._mooney_rivlin import mooney_rivlin
-from ._morph import morph_representative_directions
+from ._morph_representative_directions import morph_representative_directions
 from ._neo_hooke import neo_hooke
 from ._ogden import ogden
 from ._ogden_roxburgh import ogden_roxburgh

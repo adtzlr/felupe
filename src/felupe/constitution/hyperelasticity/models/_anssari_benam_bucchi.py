@@ -54,7 +54,7 @@ def anssari_benam_bucchi(C, mu, N):
     The initial shear modulus :math:`\mu_0` is given in Eq. :eq:`shear-modulus-abb`.
 
     ..  math::
-        label: shear-modulus-abb
+        :label: shear-modulus-abb
 
         \mu_0 = \mu \frac{1 - 3N}{3 - 3N}
 

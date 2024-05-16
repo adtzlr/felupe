@@ -296,8 +296,8 @@ class ConstitutiveMaterial:
 
         Examples
         --------
-        The :func:`Ogden <felupe.ogden>` material model formulation is fitted on
-        Treloar's uniaxial tension data [1]_.
+        The :func:`Extended Tube <felupe.extended_tube>` material model formulation is
+        best-fitted on Treloar's uniaxial and biaxial tension data [1]_.
 
         ..  pyvista-plot::
             :context:
@@ -305,7 +305,7 @@ class ConstitutiveMaterial:
             >>> import numpy as np
             >>> import felupe as fem
             >>>
-            >>> stretches, stresses = np.array(
+            >>> λ_ux, P_ux = np.array(
             ...     [
             ...         [1.000, 0.00],
             ...         [1.020, 0.26],
@@ -335,12 +335,38 @@ class ConstitutiveMaterial:
             ...     ]
             ... ).T * np.array([[1.0], [0.0980665]])
             >>>
-            >>> umat = fem.Hyperelastic(fem.ogden)
-            >>> umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
+            >>> λ_bx, P_bx = np.array(
+            >>>     [
+            ...         [1.00, 0.00],
+            ...         [1.03, 0.95],
+            ...         [1.07, 1.60],
+            ...         [1.12, 2.42],
+            ...         [1.14, 2.62],
+            ...         [1.20, 3.32],
+            ...         [1.31, 4.43],
+            ...         [1.42, 5.18],
+            ...         [1.68, 6.60],
+            ...         [1.94, 7.78],
+            ...         [2.49, 9.79],
+            ...         [3.03, 12.6],
+            ...         [3.43, 14.7],
+            ...         [3.75, 17.4],
+            ...         [4.07, 20.1],
+            ...         [4.26, 22.5],
+            ...         [4.45, 24.7],
+            ...     ]
+            ... ).T * np.array([[1.0], [0.0980665]])
             >>>
-            >>> ux = np.linspace(stretches.min(), stretches.max(), num=200)
-            >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
-            >>> ax.plot(stretches, stresses, "C0x")
+            >>> umat = fem.Hyperelastic(fem.extended_tube)
+            >>> umat_new, res = umat.optimize(
+            ...     ux=[λ_ux, P_ux], bx=[λ_bx, P_bx], incompressible=True
+            ... )
+            >>>
+            >>> ux = np.linspace(λ_ux.min(), λ_ux.max(), num=50)
+            >>> bx = np.linspace(λ_bx.min(), λ_bx.max(), num=50)
+            >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=bx, ps=None)
+            >>> ax.plot(λ_ux, P_ux, "C0x")
+            >>> ax.plot(λ_bx, P_bx, "C1x")
 
         ..  pyvista-plot::
             :include-source: False

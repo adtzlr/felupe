@@ -54,7 +54,7 @@ This page contains hyperelastic material model formulations with automatic diffe
 
 .. autofunction:: felupe.mooney_rivlin
 
-.. autofunction:: felupe.morph_representative_directions
+.. autofunction:: constitution.hyperelasticity.models.morph_representative_directions
 
 .. autofunction:: felupe.neo_hooke
 

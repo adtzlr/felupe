@@ -18,6 +18,7 @@ This page contains hyperelastic material model formulations with automatic diffe
 .. autosummary::
 
    alexander
+   anssari_benam_bucchi
    arruda_boyce
    extended_tube
    finite_strain_viscoelastic
@@ -40,6 +41,8 @@ This page contains hyperelastic material model formulations with automatic diffe
    :inherited-members:
 
 .. autofunction:: felupe.alexander
+
+.. autofunction:: felupe.anssari_benam_bucchi
 
 .. autofunction:: felupe.arruda_boyce
 

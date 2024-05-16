@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add the Total-Lagrange MORPH material formulation implemented by the concept of representative directions `morph_representative_directions(p)` to be used in `MaterialAD()`.
 - Add the Total-Lagrange (original) MORPH material formulation `morph(p)` to be used in `Hyperelastic()`.
 - Add decorators `@total_lagrange` and `@updated_lagrange` for Total / Updated Lagrange material formulations to be used in `MaterialAD`.
+- Add the isotropic-hyperelastic `anssari_benam_bucchi(mu, N)` material model formulation to be used in `Hyperelastic()`.
 
 ### Changed
 - Recfactor the `constitution` module.

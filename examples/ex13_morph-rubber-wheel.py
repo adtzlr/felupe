@@ -166,12 +166,10 @@ def morph(F, statevars_old, p):
 
 
 umat = fem.MaterialAD(
-    # morph,
-    fem.morph_representative_directions,
-    p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
-    # p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
-    nstatevars=84,
-    parallel=False,
+    morph,
+    p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
+    nstatevars=13,
+    # parallel=True,
 )
 
 # %%
@@ -193,7 +191,7 @@ ax = umat.plot(
 mesh = fem.mesh.Line(a=0.4, n=6).revolve(37, phi=360)
 mesh.update(points=np.vstack([mesh.points, [0, -1.1]]))
 x, y = mesh.points.T
-# mesh.plot().show()
+mesh.plot().show()
 
 # %%
 # A quad-region and a plane-strain displacement field are created. Mesh-points at
@@ -216,7 +214,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 360 * 3], num=36 * 3)
+angles_deg = fem.math.linsteps([0, 120], num=6)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]
@@ -261,11 +259,11 @@ ax.set_xticks(angles_deg[::6])
 # %%
 # The resulting max. principal values of the Cauchy stresses are shown for the final
 # rotation angle.
-# solid.plot(
-#     "Principal Values of Cauchy Stress",
-#     plotter=bottom.plot(color="black", line_width=5, opacity=1.0),
-#     project=fem.topoints,
-# ).show()
+solid.plot(
+    "Principal Values of Cauchy Stress",
+    plotter=bottom.plot(color="black", line_width=5, opacity=1.0),
+    project=fem.topoints,
+).show()
 
 # %%
 # References

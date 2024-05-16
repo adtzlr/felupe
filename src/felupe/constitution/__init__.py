@@ -12,6 +12,7 @@ from .hyperelasticity.core import (
 )
 from .hyperelasticity.models import (
     alexander,
+    anssari_benam_bucchi,
     arruda_boyce,
     extended_tube,
     finite_strain_viscoelastic,
@@ -46,6 +47,7 @@ from .small_strain.models import (
 
 __all__ = [
     "alexander",
+    "anssari_benam_bucchi",
     "arruda_boyce",
     "extended_tube",
     "finite_strain_viscoelastic",

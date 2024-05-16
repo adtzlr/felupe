@@ -364,6 +364,11 @@ def test_umat_hyperelastic():
             dict(C1=0.117, C2=0.137, C3=0.00690, gamma=0.735, k=0.00015),
             True,
         ),
+        (
+            fem.constitution.anssari_benam_bucchi,
+            dict(mu=0.29, N=26.8),
+            True,
+        ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 

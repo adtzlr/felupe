@@ -20,7 +20,7 @@ from tensortrax.math.linalg import det
 
 
 def anssari_benam_bucchi(C, mu, N):
-    r"""Strain energy function of the isotropic hyperelastic
+    r"""Strain energy function of the isotropic hyperelastic generalized Neo-Hookean
     `Anssari-Benam Bucchi <https://doi.org/10.1016/j.ijnonlinmec.2020.103626>`_ material
     formulation [1]_.
 
@@ -67,7 +67,12 @@ def anssari_benam_bucchi(C, mu, N):
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.anssari_benam_bucchi, mu=0.29, N=26.8)
-        >>> ax = umat.plot(incompressible=True)
+        >>>
+        >>> ux = fem.math.linsteps([0.6, 5], num=50)
+        >>> ps = fem.math.linsteps([1, 5], num=50)
+        >>> bx = fem.math.linsteps([1, 3], num=50)
+        >>>
+        >>> ax = umat.plot(ux=ux, ps=ps, bx=bx, incompressible=True)
 
     ..  pyvista-plot::
         :include-source: False

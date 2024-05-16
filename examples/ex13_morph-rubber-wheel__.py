@@ -6,17 +6,15 @@ This example contains a simulation of a rotating rubber wheel in plane strain wi
 [1]_. While the rotation is increased, a constant vertical compression is applied to the
 rubber wheel by a frictionless contact on the bottom. The vertical reaction force is
 then carried out for the rotation angles. The MORPH material model is implemented as a
-second Piola-Kirchhoff stress-based formulation with automatic differentiation. The
-Tresca invariant of the distortional part of the right Cauchy-Green deformation tensor
-is used as internal state variable, see Eq. :eq:`morph-state`.
+Total-Lagrange second Piola-Kirchhoff stress-based formulation with automatic
+differentiation. The Tresca invariant of the distortional part of the right Cauchy-Green
+deformation tensor is used as internal state variable, see Eq. :eq:`morph-state`.
 
 ..  warning::
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
     formulation captures the Mullins effect and quasi-static hysteresis effects of
     rubber mixtures very nicely, it has been observed to be unstable for medium- to
-    highly-distorted states of deformation. An alternative implementation by the method
-    of `representative directions <https://nbn-resolving.org/urn:nbn:de:bsz:ch1-qucosa-114428>`_
-    provides better stability but is computationally more costly [2]_, [3]_.
+    highly-distorted states of deformation.
 
 ..  math::
     :label: morph-state
@@ -105,11 +103,8 @@ import felupe as fem
 
 
 @fem.total_lagrange
-def morph(F, statevars_old, p):
+def morph(C, statevars_old, p):
     "MORPH material model formulation."
-
-    # right Cauchy-Green deformation tensor
-    C = F.T @ F
 
     # extract old state variables
     CTSn = tm.array(statevars_old[0], like=C[0, 0])
@@ -154,31 +149,21 @@ def morph(F, statevars_old, p):
     # second Piola-Kirchhoff stress tensor
     S = 2 * α * tm.special.dev(CG) @ invC + tm.special.dev(SA @ C) @ invC
 
-    try:  # update state variables
-        statevars_new = np.stack(
-            [CTS.x, *tm.special.triu_1d(C).x, *tm.special.triu_1d(SA).x]
-        )
-    except:
-        # not possible (and not necessary) during AD-based hessian evaluation
-        statevars_new = statevars_old
-
+    # update state variables
+    statevars_new = tm.special.try_stack(
+        [[CTS], tm.special.triu_1d(C), tm.special.triu_1d(SA)], fallback=statevars_old
+    )
     return S, statevars_new
 
 
-umat = fem.MaterialAD(
-    # morph,
-    fem.morph_representative_directions,
-    p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
-    # p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
-    nstatevars=84,
-    parallel=False,
+umat = fem.Hyperelastic(
+    morph,
+    p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
+    nstatevars=13,
+    # parallel=True,
 )
 
 # %%
-# .. note::
-#    The MORPH material model formulation is also available in FElupe, see
-#    :class:`~felupe.morph`.
-#
 # The force-stress curves are shown for uniaxial incompressible tension cycles.
 ux = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1, 2.5], num=(10, 10, 20, 20, 30, 30, 30))
 ax = umat.plot(
@@ -193,7 +178,7 @@ ax = umat.plot(
 mesh = fem.mesh.Line(a=0.4, n=6).revolve(37, phi=360)
 mesh.update(points=np.vstack([mesh.points, [0, -1.1]]))
 x, y = mesh.points.T
-# mesh.plot().show()
+mesh.plot().show()
 
 # %%
 # A quad-region and a plane-strain displacement field are created. Mesh-points at
@@ -216,7 +201,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 360 * 3], num=36 * 3)
+angles_deg = fem.math.linsteps([0, 120], num=6)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]
@@ -261,11 +246,11 @@ ax.set_xticks(angles_deg[::6])
 # %%
 # The resulting max. principal values of the Cauchy stresses are shown for the final
 # rotation angle.
-# solid.plot(
-#     "Principal Values of Cauchy Stress",
-#     plotter=bottom.plot(color="black", line_width=5, opacity=1.0),
-#     project=fem.topoints,
-# ).show()
+solid.plot(
+    "Principal Values of Cauchy Stress",
+    plotter=bottom.plot(color="black", line_width=5, opacity=1.0),
+    project=fem.topoints,
+).show()
 
 # %%
 # References
@@ -274,13 +259,3 @@ ax.set_xticks(angles_deg[::6])
 #    materials and its numerical applications", International Journal of Plasticity,
 #    vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
 #    `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
-#
-# .. [2] M. Freund, "Verallgemeinerung eindimensionaler Materialmodelle für die
-#    Finite-Elemente-Methode", Dissertation, Technische Universität Chemnitz,
-#    Chemnitz, 2013.
-#
-# .. [3] C. Miehe, S. Göktepe and F. Lulei, "A micro-macro approach to rubber-like
-#    materials - Part I: the non-affine micro-sphere model of rubber elasticity",
-#    Journal of the Mechanics and Physics of Solids, vol. 52, no. 11. Elsevier BV, pp.
-#    2617–2660, Nov. 2004. doi:
-#    `10.1016/j.jmps.2004.03.011 <https://doi.org/10.1016/j.jmps.2004.03.011>`_.

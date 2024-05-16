@@ -81,12 +81,12 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         ...     material=fem.neo_hooke,
         ...     r=3,
         ...     m=1,
-        ...     beta=0,
+        ...     beta=0.1,
         ...     mu=1,
         ...     nstatevars=1
         ... )
         >>> ux = fem.math.linsteps(
-        ...     [1, 1.5, 1, 2, 1, 2.5, 1], num=[10, 10, 20, 20, 30, 30]
+        ...     [1, 2.5, 1, 3.5, 1], num=[15, 15, 25, 25]
         ... )
         >>> ax = umat.plot(ux=ux, bx=None, ps=None, incompressible=True)
 

@@ -28,7 +28,8 @@ and the pressure - displacement curve is plotted.
    :width: 400px
 
 First, setup a problem in FElupe as usual (mesh, region, field, boundaries, umat, solid
-and a pressure boundary). For the material definition we use the **Neo-Hooke** built-in
+and a pressure boundary). For the material definition we use the
+:class:`Neo-Hooke <felupe.NeoHookeCompressible>` built-in
 hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
 
 .. math::

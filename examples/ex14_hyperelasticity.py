@@ -1,6 +1,6 @@
 r"""
-Hyperelastic Material Formulations
-----------------------------------
+Best-fit Hyperelastic Material Parameters
+-----------------------------------------
 
 .. topic:: Best-fit of hyperelastic material parameters to given experimental data.
 

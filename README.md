@@ -20,7 +20,8 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
   href="https://felupe.readthedocs.io/en/latest/examples/ex11_notch-stress.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex11_notch-stress_thumb.png" height="120px"/></a> <a 
   href="https://felupe.readthedocs.io/en/latest/examples/ex12_foot-bone.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex12_foot-bone_thumb.png" height="120px"/></a> <a 
   href="https://felupe.readthedocs.io/en/latest/examples/ex13_morph-rubber-wheel.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex13_morph-rubber-wheel_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex14_hyperelasticity.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex14_hyperelasticity_thumb.png" height="120px"/></a>
+  href="https://felupe.readthedocs.io/en/latest/examples/ex14_hyperelasticity.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex14_hyperelasticity_thumb.png" height="120px"/></a> <a 
+  href="https://felupe.readthedocs.io/en/latest/examples/ex15_hexmesh-metacone.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex15_hexmesh-metacone_thumb.png" height="120px"/></a>
 </p>
 
 # Installation

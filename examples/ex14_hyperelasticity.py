@@ -14,6 +14,7 @@ The :func:`Extended Tube <felupe.extended_tube>` material model formulation [1]_
 best-fitted on Treloar's uniaxial and biaxial tension data [2]_.
 """
 import numpy as np
+import tensortrax.math as tm
 
 import felupe as fem
 
@@ -69,6 +70,7 @@ import felupe as fem
     ]
 ).T * np.array([[1.0], [0.0980665]])
 
+
 # %%
 # An isotropic-hyperelastic material formulation is defined by a strain energy density
 # function. All math-operations must support automatic differentiation and hence, they
@@ -104,9 +106,6 @@ import felupe as fem
 #
 # ..  note::
 #     This material formulation is available in FElupe as :func:`~felupe.extended_tube`.
-import tensortrax.math as tm
-
-
 def extended_tube(C, Gc, δ, Ge, β):
     "Strain energy density function of the Extended Tube material formulation."
 

@@ -105,7 +105,8 @@ import felupe as fem
 #     \hat{\lambda}_\alpha &= J^{-1/3} \lambda_\alpha
 #
 # ..  note::
-#     This material formulation is available in FElupe as :func:`~felupe.extended_tube`.
+#     This material formulation is also available in FElupe as
+#     :func:`~felupe.extended_tube`.
 def extended_tube(C, Gc, δ, Ge, β):
     "Strain energy density function of the Extended Tube material formulation."
 

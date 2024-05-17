@@ -369,6 +369,11 @@ def test_umat_hyperelastic():
             dict(mu=0.29, N=26.8),
             True,
         ),
+        (
+            fem.constitution.lopez_pamies,
+            dict(mu=[0.2699, 0.00001771], alpha=[1.08, 4.40]),
+            True,
+        ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 

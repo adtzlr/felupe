@@ -15,6 +15,7 @@ from ._arruda_boyce import arruda_boyce
 from ._extended_tube import extended_tube
 from ._finite_strain_viscoelastic import finite_strain_viscoelastic
 from ._helpers import isochoric_volumetric_split
+from ._lopez_pamies import lopez_pamies
 from ._miehe_goektepe_lulei import miehe_goektepe_lulei
 from ._mooney_rivlin import mooney_rivlin
 from ._morph_representative_directions import morph_representative_directions
@@ -33,6 +34,7 @@ __all__ = [
     "extended_tube",
     "finite_strain_viscoelastic",
     "isochoric_volumetric_split",
+    "lopez_pamies",
     "miehe_goektepe_lulei",
     "mooney_rivlin",
     "morph_representative_directions",
@@ -50,6 +52,7 @@ alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100, k=0)
 anssari_benam_bucchi.kwargs = dict(mu=0, N=100)
 arruda_boyce.kwargs = dict(C1=0, limit=100)
 extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
+lopez_pamies.kwargs = dict(mu=[0, 0], alpha=[1, 4])
 miehe_goektepe_lulei.kwargs = dict(mu=0, N=100, U=0, p=2, q=2)
 mooney_rivlin.kwargs = dict(C10=0, C01=0)
 morph_representative_directions.kwargs = dict(p=[0, 0, 0, 0, 0, 1, 0, 0])

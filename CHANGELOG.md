@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix plotting the keyword-arguments of a constitutive material `ConstitutiveMaterial.plot(show_kwargs=True)`. For list-based material parameters of length 1, the brackets aren't shown now. E.g., this affects optimized material parameters.
+- Don't update the material parameters in-place in `ConstitutiveMaterial.optimize()`.
+- Don't convert material parameter scalars to arrays in `ConstitutiveMaterial.optimize()`.
 
 ## [8.5.1] - 2024-05-08
 

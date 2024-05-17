@@ -129,7 +129,9 @@ principal_stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=
 #    It is important to only use automatic-differentiable math-functions from the
 #    NumPy-like modules `tensortrax.math <https://github.com/adtzlr/tensortrax>`_,
 #    `tensortrax.math.linalg <https://github.com/adtzlr/tensortrax>`_ or
-#    `tensortrax.math.special <https://github.com/adtzlr/tensortrax>`_.
+#    `tensortrax.math.special <https://github.com/adtzlr/tensortrax>`_. TensorTRAX is a
+#    dependency of FElupe and hence, is installed along with
+#    `FElupe <https://pypi.org/project/felupe/>`_.
 #
 # .. math::
 #

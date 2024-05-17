@@ -42,7 +42,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focussing on t
    
    + hyperelastic :class:`integral (weak) forms <felupe.IntegralForm>`
    
-   + easy-to-use :ref:`hyperelastic material models <felupe-api-constitution-hyperelasticity>` using `automatic-differentation <https://github.com/adtzlr/tensortrax>`_
+   + easy-to-use :ref:`hyperelastic material models <felupe-api-constitution-hyperelasticity>` with `automatic-differentiation <https://github.com/adtzlr/tensortrax>`_
    
    + straight-forward definition of :class:`mixed-fields <felupe.FieldsMixed>`
    

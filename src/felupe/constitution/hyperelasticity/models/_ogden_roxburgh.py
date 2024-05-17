@@ -52,21 +52,26 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         This implementation uses the hyperbolic tangent instead of the Gauss error
         function.
 
-    The strain energy density function and the Mullins-effect related evolution are
-    given in Eq. :eq:`psi-ogden-roxburgh`.
+    The pseudo-elastic strain energy density function :math:`\widetilde{\psi}` and the
+    Mullins-effect related evolution equation are given in Eq. :eq:`psi-ogden-roxburgh`.
+    The variation of the functional :math:`\phi` is defined in such a way that the term
+    :math:`\delta \eta \ \hat{\psi}` is canceled in the variation of the strain energy
+    function:math:`\delta \psi`. The evolution equation`:math:`\eta` acts as a
+    deformation and deformation-history dependent scaling factor on the variation of the
+    distortional part of the strain energy density function.
 
     ..  math::
         :label: psi-ogden-roxburgh
 
-        \psi &= \eta \hat{\psi} + \phi
+        \widetilde{\psi} &= \eta \hat{\psi} + \phi
 
-        \eta(\psi, \psi_\text{max}) &= 1 - \frac{1}{r} \tanh \left(
-            \frac{\psi_\text{max} - \psi}{m + \beta~\psi_\text{max}}
+        \eta(\hat{\psi}, \hat{\psi}_\text{max}) &= 1 - \frac{1}{r} \tanh \left(
+            \frac{\hat{\psi}_\text{max} - \psi}{m + \beta~\hat{\psi}_\text{max}}
         \right)
 
-        \delta \phi &= -\delta \eta \ \hat{\psi}
+        \delta \widetilde{\psi} &= -\delta \eta \ \hat{\psi}
 
-        \delta \psi &= \eta \ \delta \hat{\psi}
+        \delta \widetilde{\psi} &= \eta \ \delta \hat{\psi}
 
     Examples
     --------

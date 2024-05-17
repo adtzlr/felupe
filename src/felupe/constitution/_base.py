@@ -300,8 +300,8 @@ class ConstitutiveMaterial:
 
         Examples
         --------
-        The :func:`Extended Tube <felupe.extended_tube>` material model formulation is
-        best-fitted on Treloar's uniaxial and biaxial tension data [1]_.
+        The :func:`Anssari-Benam Bucchi <felupe.anssari_benam_bucchi>` material model
+        formulation is best-fitted on Treloar's uniaxial and biaxial tension data [1]_.
 
         ..  pyvista-plot::
             :context:
@@ -309,68 +309,30 @@ class ConstitutiveMaterial:
             >>> import numpy as np
             >>> import felupe as fem
             >>>
-            >>> λ_ux, P_ux = np.array(
+            >>> λ, P = np.array(
             ...     [
             ...         [1.000, 0.00],
-            ...         [1.020, 0.26],
-            ...         [1.125, 1.37],
             ...         [1.240, 2.30],
-            ...         [1.390, 3.23],
             ...         [1.585, 4.16],
-            ...         [1.900, 5.10],
             ...         [2.180, 6.00],
-            ...         [2.420, 6.90],
             ...         [3.020, 8.80],
-            ...         [3.570, 10.7],
             ...         [4.030, 12.5],
             ...         [4.760, 16.2],
-            ...         [5.360, 19.9],
             ...         [5.750, 23.6],
-            ...         [6.150, 27.4],
-            ...         [6.400, 31.0],
-            ...         [6.600, 34.8],
             ...         [6.850, 38.5],
-            ...         [7.050, 42.1],
-            ...         [7.150, 45.8],
             ...         [7.250, 49.6],
-            ...         [7.400, 53.3],
-            ...         [7.500, 57.0],
             ...         [7.600, 64.4],
             ...     ]
             ... ).T * np.array([[1.0], [0.0980665]])
             >>>
-            >>> λ_bx, P_bx = np.array(
-            >>>     [
-            ...         [1.00, 0.00],
-            ...         [1.03, 0.95],
-            ...         [1.07, 1.60],
-            ...         [1.12, 2.42],
-            ...         [1.14, 2.62],
-            ...         [1.20, 3.32],
-            ...         [1.31, 4.43],
-            ...         [1.42, 5.18],
-            ...         [1.68, 6.60],
-            ...         [1.94, 7.78],
-            ...         [2.49, 9.79],
-            ...         [3.03, 12.6],
-            ...         [3.43, 14.7],
-            ...         [3.75, 17.4],
-            ...         [4.07, 20.1],
-            ...         [4.26, 22.5],
-            ...         [4.45, 24.7],
-            ...     ]
-            ... ).T * np.array([[1.0], [0.0980665]])
-            >>>
-            >>> umat = fem.Hyperelastic(fem.extended_tube)
+            >>> umat = fem.Hyperelastic(fem.anssari_benam_bucchi)
             >>> umat_new, res = umat.optimize(
-            ...     ux=[λ_ux, P_ux], bx=[λ_bx, P_bx], incompressible=True
+            ...     ux=[λ, P], incompressible=True, relative=True
             ... )
             >>>
-            >>> ux = np.linspace(λ_ux.min(), λ_ux.max(), num=50)
-            >>> bx = np.linspace(λ_bx.min(), λ_bx.max(), num=50)
-            >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=bx, ps=None)
-            >>> ax.plot(λ_ux, P_ux, "C0x")
-            >>> ax.plot(λ_bx, P_bx, "C1x")
+            >>> ux = np.linspace(λ.min(), λ.max(), num=50)
+            >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
+            >>> ax.plot(λ, P, "C0x")
 
         ..  pyvista-plot::
             :include-source: False

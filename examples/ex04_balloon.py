@@ -34,7 +34,9 @@ hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
 .. math::
    :label: neo-hookean-strain-energy
 
-   \psi = \frac{\mu}{2} \left( J^{-2/3}\ \text{tr}(\boldsymbol{C}) - 3 \right)
+   \psi = \frac{\mu}{2} \left( 
+       \text{tr}(\boldsymbol{C}) - \ln(\det(\boldsymbol{C})) 
+   \right)
 """
 # sphinx_gallery_thumbnail_number = -1
 import contique
@@ -42,18 +44,19 @@ import numpy as np
 
 import felupe as fem
 
-mesh = fem.Cube(b=(25, 25, 1), n=(4, 4, 2))
-region = fem.RegionHexahedron(mesh)
-field = fem.FieldContainer([fem.Field(region, dim=3)])
-bounds = fem.dof.symmetry(field[0], axes=(True, True, False))
-bounds["fix-z"] = fem.Boundary(field[0], fx=25, fy=25, mode="or", skip=(1, 1, 0))
+mesh = fem.Rectangle(b=(1, 25), n=(2, 6))
+region = fem.RegionQuad(mesh)
+field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
+bounds = {"fix-y": fem.Boundary(field[0], fy=mesh.y.max(), mode="or", skip=(0, 1))}
 dof0, dof1 = fem.dof.partition(field, bounds)
 
-umat = fem.Hyperelastic(fem.neo_hooke, mu=1)
+umat = fem.NeoHookeCompressible(mu=1)
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
-region_for_pressure = fem.RegionHexahedronBoundary(mesh, mask=(mesh.points[:, 2] == 0))
-field_for_pressure = fem.FieldContainer([fem.Field(region_for_pressure, dim=3)])
+region_for_pressure = fem.RegionQuadBoundary(mesh, mask=(mesh.x == 0), ensure_3d=True)
+field_for_pressure = fem.FieldContainer(
+    [fem.FieldAxisymmetric(region_for_pressure, dim=2)]
+)
 
 pressure = fem.SolidBodyPressure(field_for_pressure)
 
@@ -97,10 +100,10 @@ Res = contique.solve(
     jac=[dfundx, dfundl],
     x0=field[0][dof1],
     lpf0=0,
-    dxmax=1,
-    dlpfmax=1e-3,
+    control0=(0, 1),
     maxsteps=150,
     rebalance=True,
+    tol=1e-2,
 )
 X = np.array([res.x for res in Res])
 
@@ -109,10 +112,16 @@ X = np.array([res.x for res in Res])
 # curve.
 import matplotlib.pyplot as plt
 
-plt.plot(X[:, 2], X[:, -1], lw=3)
-plt.xlabel(r"Max. Displacement $u_3(X_1=X_2=X_3=0)$ $\longrightarrow$")
+plt.plot(X[:, 0], X[:, -1], "x-", lw=3)
+plt.xlabel(r"Max. Displacement $u_1(X_1=X_2=0)$ $\longrightarrow$")
 plt.ylabel(r"Load-Proportionality-Factor $\lambda$ $\longrightarrow$")
 
 # %%
-# The deformed configuration of the solid body is plotted.
-solid.plot("Principal Values of Cauchy Stress").show()
+# The 3d-deformed configuration of the solid body is plotted.
+mesh_3d = mesh.revolve(phi=90, n=6)
+region_3d = fem.RegionHexahedron(mesh_3d)
+values = mesh.copy(points=field[0].values).revolve(phi=90, n=6).points
+u_3d = fem.Field(region_3d, values=values, dim=3)
+field_3d = fem.FieldContainer([u_3d])
+solid_3d = fem.SolidBodyNearlyIncompressible(umat, field_3d, bulk=5000)
+solid_3d.plot("Principal Values of Cauchy Stress", project=fem.topoints).show()

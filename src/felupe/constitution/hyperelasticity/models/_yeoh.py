@@ -58,7 +58,7 @@ def yeoh(C, C10, C20, C30):
     :math:`\mu` as denoted in Eq. :eq:`shear-modulus-yeoh`.
 
     ..  math::
-        label: shear-modulus-yeoh
+        :label: shear-modulus-yeoh
 
         \mu = 2 C_{10}
 

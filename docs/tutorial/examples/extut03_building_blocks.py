@@ -126,8 +126,10 @@ principal_stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=
 # incompressible version of the Neo-Hookean material model formulation.
 #
 # .. note::
-#    It is important to use only differentiable math-functions from
-#    `tensortrax.math <https://github.com/adtzlr/tensortrax>`_.
+#    It is important to only use automatic-differentiable math-functions from the
+#    NumPy-like modules `tensortrax.math <https://github.com/adtzlr/tensortrax>`_,
+#    `tensortrax.math.linalg <https://github.com/adtzlr/tensortrax>`_ or
+#    `tensortrax.math.special <https://github.com/adtzlr/tensortrax>`_.
 #
 # .. math::
 #

@@ -22,6 +22,7 @@ This page contains hyperelastic material model formulations with automatic diffe
    arruda_boyce
    extended_tube
    finite_strain_viscoelastic
+   lopez_pamies
    miehe_goektepe_lulei
    mooney_rivlin
    neo_hooke
@@ -48,6 +49,8 @@ This page contains hyperelastic material model formulations with automatic diffe
 .. autofunction:: felupe.extended_tube
 
 .. autofunction:: felupe.finite_strain_viscoelastic
+
+.. autofunction:: felupe.lopez_pamies
 
 .. autofunction:: felupe.miehe_goektepe_lulei
 

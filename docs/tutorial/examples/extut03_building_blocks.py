@@ -107,6 +107,8 @@ F = field.extract(grad=True, sym=False, add_identity=True)
 # %%
 # Methods to evaluate the deformation gradient as well as strain measures are
 # provided in :class:`FieldContainer.evaluate <felupe.field.EvaluateFieldContainer>`.
+import numpy as np
+
 log_strain = field.evaluate.strain(fun=lambda stretch: np.log(stretch), tensor=True)
 principal_stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=False)
 
@@ -160,8 +162,6 @@ A = umat.hessian
 # y and z whereas displacements in direction x are prescribed with a user-defined
 # ``value=0.5``. A :class:`~felupe.Boundary` holds useful attributes like
 # :attr:`~felupe.Boundary.points` or :attr:`~felupe.Boundary.dof`.
-import numpy as np
-
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 

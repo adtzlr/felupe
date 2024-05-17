@@ -74,11 +74,11 @@ import felupe as fem
 # %%
 # An isotropic-hyperelastic material formulation is defined by a strain energy density
 # function. All math-operations must support automatic differentiation and hence, they
-# must taken from :mod:`tensortrax.math`. The strain energy function of the Extended
-# Tube model is given in Eq. :eq:`psi-et`
+# must taken from :mod:`tensortrax.math <https://github.com/adtzlr/tensortrax>`. The
+# strain energy function of the Extended Tube model is given in Eq. :eq:`ex-psi-et`
 #
 # ..  math::
-#     :label: psi-et
+#     :label: ex-psi-et
 #
 #     \psi = \frac{G_c}{2} \left[ \frac{\left( 1 - \delta^2 \right)
 #         \left( \hat{I}_1 - 3 \right)}{1 - \delta^2 \left( \hat{I}_1 - 3 \right)} +
@@ -87,18 +87,18 @@ import felupe as fem
 #         \hat{\lambda}_2^{-\beta} + \hat{\lambda}_3^{-\beta} - 3 \right)
 #
 # with the first main invariant of the distortional part of the right
-# Cauchy-Green deformation tensor as given in Eq. :eq:`invariants-et`
+# Cauchy-Green deformation tensor as given in Eq. :eq:`ex-invariants-et`
 #
 # ..  math::
-#     :label: invariants-et
+#     :label: ex-invariants-et
 #
 #     \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 #
 # and the principal stretches, obtained from the distortional part of the right
-# Cauchy-Green deformation tensor, see Eq. :eq:`stretches-et`.
+# Cauchy-Green deformation tensor, see Eq. :eq:`ex-stretches-et`.
 #
 # ..  math::
-#     :label: stretches-et
+#     :label: ex-stretches-et
 #
 #     \lambda^2_\alpha &= \text{eigvals}\left( \boldsymbol{C} \right)
 #

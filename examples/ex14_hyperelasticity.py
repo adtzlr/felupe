@@ -2,7 +2,7 @@ r"""
 Best-fit Hyperelastic Material Parameters
 -----------------------------------------
 
-.. topic:: Best-fit of hyperelastic material parameters to given experimental data.
+.. topic:: Best-fit of hyperelastic material parameters on given experimental data.
 
    * define a strain-energy function for a hyperelastic material formulation
    

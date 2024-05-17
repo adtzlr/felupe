@@ -24,7 +24,6 @@ This page contains hyperelastic material model formulations with automatic diffe
    finite_strain_viscoelastic
    miehe_goektepe_lulei
    mooney_rivlin
-   constitution.hyperelasticity.models.morph_representative_directions
    neo_hooke
    ogden
    ogden_roxburgh
@@ -53,8 +52,6 @@ This page contains hyperelastic material model formulations with automatic diffe
 .. autofunction:: felupe.miehe_goektepe_lulei
 
 .. autofunction:: felupe.mooney_rivlin
-
-.. autofunction:: constitution.hyperelasticity.models.morph_representative_directions
 
 .. autofunction:: felupe.neo_hooke
 

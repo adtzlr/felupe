@@ -404,15 +404,18 @@ class ConstitutiveMaterial:
         # get sizes of material parameters and offsets as cumulative sum
         offsets = np.cumsum([np.asarray(y).size for y in self.kwargs.values()])[:-1]
 
+        # copy the material model formulation
+        umat = copy(self)
+
         def fun(x):
             "Return the vector of residuals for given material parameters x."
 
             # update the material parameters
-            for key, value in zip(self.kwargs.keys(), np.split(x, offsets)):
-                self.kwargs[key] = value
+            for key, value in zip(umat.kwargs.keys(), np.split(x, offsets)):
+                umat.kwargs[key] = value[0] if value.size == 1 else value
 
             # evaluate the load cases by the material model formulation
-            model = self.view(
+            model = umat.view(
                 incompressible=incompressible,
                 ux=experiments[0][0],
                 bx=experiments[1][0],
@@ -433,7 +436,7 @@ class ConstitutiveMaterial:
             return np.concatenate(residuals)
 
         # optimize the initial material parameters
-        x0 = [np.asarray(value).ravel() for value in self.kwargs.values()]
+        x0 = [np.asarray(value).ravel() for value in umat.kwargs.values()]
         res = least_squares(fun=fun, x0=np.concatenate(x0), **kwargs)
 
         def std(hessian, residuals_variance):
@@ -444,10 +447,9 @@ class ConstitutiveMaterial:
         hess = res.jac.T @ res.jac
         res.dx = std(hess, 2 * res.cost / (len(res.fun) - len(res.x)))
 
-        # copy and update the material parameters of the material model formulation
-        umat = copy(self)
-        for key, value in zip(self.kwargs.keys(), np.split(res.x, offsets)):
-            umat.kwargs[key] = value
+        # save the final the material parameters
+        for key, value in zip(umat.kwargs.keys(), np.split(res.x, offsets)):
+            umat.kwargs[key] = value[0] if value.size == 1 else value
 
         return umat, res
 

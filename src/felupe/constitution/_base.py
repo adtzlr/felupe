@@ -99,6 +99,10 @@ class ConstitutiveMaterial:
     felupe.constitutive_material : A decorator for a constitutive material definition.
     """
 
+    def copy(self):
+        "Return a deep-copy of the constitutive material."
+        return copy(self)
+
     def view(self, incompressible=False, **kwargs):
         """Create views on normal force per undeformed area vs. stretch curves for the
         elementary homogeneous deformations uniaxial tension/compression, planar shear
@@ -405,7 +409,7 @@ class ConstitutiveMaterial:
         offsets = np.cumsum([np.asarray(y).size for y in self.kwargs.values()])[:-1]
 
         # copy the material model formulation
-        umat = copy(self)
+        umat = self.copy()
 
         def fun(x):
             "Return the vector of residuals for given material parameters x."

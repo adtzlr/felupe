@@ -92,7 +92,7 @@ import felupe as fem
 # ..  math::
 #     :label: ex-invariants-et
 #
-#     \hat{I}_1 = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
+#     D = J^{-2/3} \text{tr}\left( \boldsymbol{C} \right)
 #
 # and the principal stretches, obtained from the distortional part of the right
 # Cauchy-Green deformation tensor, see Eq. :eq:`ex-stretches-et`.
@@ -110,13 +110,13 @@ import felupe as fem
 def extended_tube(C, Gc, δ, Ge, β):
     "Strain energy density function of the Extended Tube material formulation."
 
-    J3 = tm.linalg.det(C) ** (-1 / 3)
-    D = J3 * tm.trace(C)
-    wC = J3 * tm.linalg.eigvalsh(C)
+    I3 = tm.linalg.det(C)
+    D = I3 ** (-1 / 3) * tm.trace(C)
+    λ = tm.sqrt(I3 ** (-1 / 3) * tm.linalg.eigvalsh(C))
     γ = (1 - δ**2) * (D - 3) / (1 - δ**2 * (D - 3))
 
     Wc = Gc / 2 * (γ + tm.log(1 - δ**2 * (D - 3)))
-    We = 2 * Ge / β**2 * tm.sum(wC ** (-β / 2) - 1)
+    We = 2 * Ge / β**2 * tm.sum(λ**-β - 1)
 
     return Wc + We
 

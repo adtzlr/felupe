@@ -23,8 +23,6 @@ Start setting up a problem in FElupe by the creation of a numeric :class:`~felup
 .. image:: examples/extut03_building_blocks_sketch.svg
    :width: 600px
 """
-import numpy as np
-
 # sphinx_gallery_thumbnail_number = -1
 import felupe as fem
 

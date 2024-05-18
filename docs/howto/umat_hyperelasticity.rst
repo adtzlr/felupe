@@ -26,18 +26,11 @@ This function is further added as the ``fun`` argument of :class:`~felupe.Hypere
     
     umat = fem.Hyperelastic(fun=strain_energy_function, **kwargs)
 
-FElupe contains several reference implementations of hyperelastic user material formulations
+FElupe contains several reference implementations of hyperelastic user material formulations, like
 
-* :func:`~felupe.saint_venant_kirchhoff`
-* :func:`~felupe.neo_hooke`
-* :func:`~felupe.mooney_rivlin`
-* :func:`~felupe.yeoh`
-* :func:`~felupe.third_order_deformation`
-* :func:`~felupe.ogden`
-* :func:`~felupe.arruda_boyce`
-* :func:`~felupe.extended_tube`
-* :func:`~felupe.van_der_waals`
+* :func:`~felupe.neo_hooke`,
+* :func:`~felupe.mooney_rivlin`,
+* :func:`~felupe.yeoh` or
+* :func:`~felupe.ogden`.
 
-as well as a function decorator for the multiplicative isochoric-volumetric split of the Deformation Gradient.
-
-* :func:`~felupe.isochoric_volumetric_split`
+A complete list of all available model formulations is available in the :ref:`hyperelasticity <felupe-api-constitution-hyperelasticity>` section of the API reference.

@@ -98,7 +98,9 @@ def partition(field, bounds):
     ..  pyvista-plot::
         :context:
 
-        >>> plotter = mesh.plot()
+        >>> import pyvista as pv
+        >>>
+        >>> plotter = pv.Plotter()
         >>> actor = plotter.add_point_labels(
         ...     points=np.pad(mesh.points, ((0, 0), (0, 1))),
         ...     labels=[
@@ -106,7 +108,7 @@ def partition(field, bounds):
         ...         for i, (a, b) in enumerate(displacement.indices.dof)
         ...     ],
         ... )
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     >>> boundaries = dict(
     ...     left=fem.Boundary(displacement, fx=0, value=0.2),

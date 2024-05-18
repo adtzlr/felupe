@@ -49,12 +49,12 @@ class BazantOh(Scheme):
        >>> import felupe as fem
        >>> import pyvista as pv
        >>>
-       >>> quadrature = fem.BazantOh(n=21)
-       >>>
-       >>> plotter = quadrature.plot(weighted=True)
+       >>> plotter = pv.Plotter()
        >>> sphere = pv.Sphere(radius=1).clip(normal="z", invert=False)
        >>> actor = plotter.add_mesh(sphere, opacity=0.3, color="white")
-       >>> plotter.show()
+       >>>
+       >>> quadrature = fem.BazantOh(n=21)
+       >>> quadrature.plot(plotter=plotter, weighted=True).show()
 
     References
     ----------

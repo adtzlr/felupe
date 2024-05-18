@@ -1372,8 +1372,7 @@ class Mesh(DiscreteGeometry):
            >>> mesh = fem.Rectangle(n=6)
            >>> mesh2 = mesh.convert(order=2)
            >>>
-           >>> plotter = mesh2.plot(plotter=mesh.plot(), style="points", color="black")
-           >>> plotter.show()
+           >>> mesh2.plot(plotter=mesh.plot(), style="points", color="black").show()
 
         >>> mesh2
         <felupe Mesh object>

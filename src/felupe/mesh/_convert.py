@@ -82,8 +82,7 @@ def convert(
        >>> mesh = fem.Rectangle(n=6)
        >>> mesh2 = fem.mesh.convert(mesh, order=2)
        >>>
-       >>> plotter = mesh2.plot(plotter=mesh.plot(), style="points", color="black")
-       >>> plotter.show()
+       >>> mesh2.plot(plotter=mesh.plot(), style="points", color="black").show()
 
     >>> mesh2
     <felupe Mesh object>
@@ -346,10 +345,9 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
        >>> mesh = fem.Rectangle(n=6)
        >>> mesh_with_midpoints_edges = fem.mesh.add_midpoints_edges(mesh)
        >>>
-       >>> plotter = mesh_with_midpoints_edges.plot(
+       >>> mesh_with_midpoints_edges.plot(
        ...     plotter=mesh.plot(), style="points", color="black"
-       ... )
-       >>> plotter.show()
+       ... ).show()
 
     >>> mesh_with_midpoints_edges
     <felupe Mesh object>
@@ -430,8 +428,7 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
        >>>
        >>> plotter = mesh_with_midpoints_faces.plot(
        ...     plotter=mesh.plot(), style="points", color="black"
-       ... )
-       >>> plotter.show()
+       ... ).show()
 
     >>> mesh_with_midpoints_faces
     <felupe Mesh object>

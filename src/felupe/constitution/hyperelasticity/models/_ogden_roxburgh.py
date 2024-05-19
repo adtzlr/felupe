@@ -15,8 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-from tensortrax import Tensor, Δ, Δδ, f, δ
-from tensortrax.math import array, maximum, real_to_dual, tanh
+from tensortrax.math import array, maximum, real_to_dual, tanh, stack
 
 
 def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
@@ -109,7 +108,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     """
 
     W = material(C, **kwargs)
-    Wmax = maximum(W, array(Wmax_n, like=W))
+    Wmax = maximum(W, array(Wmax_n[:1], like=W))
 
     # evolution equation
     η = lambda W: 1 - 1 / r * tanh((Wmax - W) / (m + beta * Wmax))
@@ -118,4 +117,4 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     # set the variation to δη * W (and the linearization to Δη * δW + η * ΔδW)
     dWdF = real_to_dual(η(W), W)
 
-    return dWdF, Wmax
+    return dWdF, Wmax.x[None, ...]

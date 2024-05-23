@@ -66,9 +66,10 @@ docs = [
     "pypandoc",
 ]
 examples = [
-    "matadi",
     "contique",
+    "matadi",
     "pypardiso",
+    "torch",
 ]
 io = [
     "h5py",

@@ -1,6 +1,6 @@
 r"""
-Deep neural network
--------------------
+Train a deep neural network
+---------------------------
 
 .. topic:: Train a PyTorch model by simulation results.
 

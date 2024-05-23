@@ -1,6 +1,6 @@
 r"""
-A deep neural network with simulated displacements
---------------------------------------------------
+Deep neural network (PyTorch)
+-----------------------------
 
 .. topic:: Train a PyTorch model by simulation results.
 

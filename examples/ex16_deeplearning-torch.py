@@ -100,7 +100,7 @@ def run_epochs(n=100):
 # %%
 # Max. principal values of the logarithmic strain tensors are evaluated and plotted
 # based on the PyTorch model displacement results. After 50 epoch runs, the result is
-# quite bad.
+# quite bad with a lot of unwanted artefacts (noise).
 run_epochs(n=50)
 field_2 = field.copy()
 field_2[0].values[:] = model(torch.Tensor([[-0.17]])).detach().numpy()[0]

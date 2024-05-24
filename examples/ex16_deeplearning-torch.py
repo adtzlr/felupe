@@ -23,9 +23,9 @@ completed substep. Only very few substeps are used to run the simulation.
       pip install torch
 """
 # sphinx_gallery_thumbnail_number = -1
-import felupe as fem
 import numpy as np
 
+import felupe as fem
 
 mesh = fem.Rectangle(a=(0, 1), b=(1, 3), n=(11, 31))
 region = fem.RegionQuad(mesh)

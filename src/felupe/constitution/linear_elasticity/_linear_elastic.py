@@ -111,7 +111,7 @@ class LinearElastic(ConstitutiveMaterial):
         Parameters
         ----------
         x : list of ndarray
-            List with Deformation gradient :math:`boldsymbol{F}` (3x3) as first item.
+            List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -156,7 +156,7 @@ class LinearElastic(ConstitutiveMaterial):
         Parameters
         ----------
         x : list of ndarray, optional
-            List with Deformation gradient :math:`boldsymbol{F}` (3x3) as first item
+            List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item
             (default is None).
         E : float, optional
             Young's modulus (default is None).
@@ -275,7 +275,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         Parameters
         ----------
         x : list of ndarray
-            List with Deformation gradient :math:`boldsymbol{F}` (3x3) as first item.
+            List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -312,7 +312,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         Parameters
         ----------
         x : list of ndarray
-            List with Deformation gradient  :math:`boldsymbol{F}` (3x3) as first item.
+            List with Deformation gradient  :math:`\boldsymbol{F}` (3x3) as first item.
             (default is None)
         E : float, optional
             Young's modulus (default is None).
@@ -410,7 +410,7 @@ class LinearElasticPlaneStrain:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -437,7 +437,7 @@ class LinearElasticPlaneStrain:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -465,7 +465,7 @@ class LinearElasticPlaneStrain:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -495,7 +495,7 @@ class LinearElasticPlaneStrain:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -553,7 +553,7 @@ class LinearElasticPlaneStress:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -590,7 +590,7 @@ class LinearElasticPlaneStress:
         ----------
         x : list of ndarray, optional
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item (default is None)-
+            :math:`\boldsymbol{F}` as first item (default is None)-
         E : float, optional
             Young's  modulus (default is None).
         nu : float, optional
@@ -632,7 +632,7 @@ class LinearElasticPlaneStress:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional
@@ -669,7 +669,7 @@ class LinearElasticPlaneStress:
         ----------
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
-            :math:`boldsymbol{F}` as first item.
+            :math:`\boldsymbol{F}` as first item.
         E : float, optional
             Young's modulus (default is None).
         nu : float, optional

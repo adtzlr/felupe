@@ -55,23 +55,20 @@ for phi in angles_deg:
 # frames are recorded, it is important to ``close()`` the plotter.
 moment = []
 
-plotter = solid.plot(
-    "Principal Values of Cauchy Stress", clim=[0, 0.7], off_screen=True
+plotter = field.plot(
+    "Principal Values of Logarithmic Strain", clim=[0, 0.2], off_screen=True
 )
 plotter.open_gif("result.gif", fps=10)
 
 
-def record(stepnumber, substepnumber, substep, plotter, source):
-    # plot the updated scene off-screen and take the active scalars ("{name}-0")
-    name = plotter.mesh.active_scalars_info.name[:-2]
-    frame = source.plot(name, off_screen=True)
-    data = frame.mesh[f"{name}-0"]
-    frame.close()
-
+def record(stepnumber, substepnumber, substep, plotter):
     # update the mesh-points and the scalars of the plotter
+    name = plotter.mesh.active_scalars_info.name
+    data = field.evaluate.log_strain(tensor=False).mean(-2)[-1]
+
     plotter.mesh.points[:] = mesh.points + field[0].values
-    plotter.mesh[f"{name}-0"] = data
-    plotter.render()
+    plotter.mesh[name] = data
+    # plotter.update_scalar_bar_range(clim=[min(data), max(data)])
     plotter.write_frame()
 
     # evaluate the reaction moment at the centerpoint of the right end face
@@ -81,7 +78,8 @@ def record(stepnumber, substepnumber, substep, plotter, source):
 
 
 step = fem.Step(items=[solid], ramp={boundaries["top"]: move}, boundaries=boundaries)
-job = fem.Job(steps=[step], callback=record, plotter=plotter, source=solid).evaluate()
+job = fem.Job(steps=[step], callback=record, plotter=plotter).evaluate()
+
 plotter.close()
 
 # %%

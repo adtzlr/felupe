@@ -22,8 +22,8 @@ from tensortrax.math.linalg import det, inv
 
 
 def updated_lagrange(material):
-    r"""Decorate an Updated-Lagrange material formulation as a first Piola-Kirchoff
-    stress function.
+    r"""Decorate a Cauchy-stress Updated-Lagrange material formulation as a first Piola-
+    Kirchoff stress function.
 
     Notes
     -----

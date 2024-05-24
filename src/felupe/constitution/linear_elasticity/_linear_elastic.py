@@ -106,7 +106,7 @@ class LinearElastic(ConstitutiveMaterial):
         self.x = [np.eye(3), np.zeros(0)]
 
     def gradient(self, x, E=None, nu=None):
-        """Evaluate the stress tensor (as a function of the deformation gradient).
+        r"""Evaluate the stress tensor (as a function of the deformation gradient).
 
         Parameters
         ----------
@@ -150,7 +150,7 @@ class LinearElastic(ConstitutiveMaterial):
         return [E / (1 + nu) / (1 - 2 * nu) * stress, statevars]
 
     def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
-        """Evaluate the elasticity tensor. The Deformation gradient is only
+        r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
         Parameters
@@ -269,7 +269,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         self.x = [np.eye(3), np.zeros(0)]
 
     def gradient(self, x, E=None, nu=None):
-        """Evaluate the stress tensor (as a function of the deformation
+        r"""Evaluate the stress tensor (as a function of the deformation
         gradient).
 
         Parameters
@@ -306,7 +306,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         return [2 * mu * strain + gamma * trace(strain) * identity(strain), statevars]
 
     def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
-        """Evaluate the elasticity tensor. The Deformation gradient is only
+        r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
         Parameters
@@ -404,7 +404,7 @@ class LinearElasticPlaneStrain:
         return E_eff, nu_eff
 
     def gradient(self, x, E=None, nu=None):
-        """Evaluate the 2d-stress tensor from the deformation gradient.
+        r"""Evaluate the 2d-stress tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -431,7 +431,7 @@ class LinearElasticPlaneStrain:
         return self._umat.gradient(x, *self._convert(E, nu))
 
     def hessian(self, x, E=None, nu=None):
-        """Evaluate the 2d-elasticity tensor from the deformation gradient.
+        r"""Evaluate the 2d-elasticity tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -459,7 +459,7 @@ class LinearElasticPlaneStrain:
         return self._umat.hessian(x, *self._convert(E, nu))
 
     def strain(self, x, E=None, nu=None):
-        """Evaluate the strain tensor from the deformation gradient.
+        r"""Evaluate the strain tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -489,7 +489,7 @@ class LinearElasticPlaneStrain:
         return [e]
 
     def stress(self, x, E=None, nu=None):
-        """ "Evaluate the 3d-stress tensor from the deformation gradient.
+        r""" "Evaluate the 3d-stress tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -547,7 +547,7 @@ class LinearElasticPlaneStress:
         self.elasticity = self.hessian
 
     def gradient(self, x, E=None, nu=None):
-        """Evaluate the 2d-stress tensor from the deformation gradient.
+        r"""Evaluate the 2d-stress tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -584,7 +584,7 @@ class LinearElasticPlaneStress:
         return [stress, statevars]
 
     def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
-        """Evaluate the elasticity tensor from the deformation gradient.
+        r"""Evaluate the elasticity tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -626,7 +626,7 @@ class LinearElasticPlaneStress:
         return [elast]
 
     def strain(self, x, E=None, nu=None):
-        """Evaluate the strain tensor from the deformation gradient.
+        r"""Evaluate the strain tensor from the deformation gradient.
 
         Parameters
         ----------
@@ -663,7 +663,7 @@ class LinearElasticPlaneStress:
         return [e]
 
     def stress(self, x, E=None, nu=None):
-        """ "Evaluate the 3d-stress tensor from the deformation gradient.
+        r""" "Evaluate the 3d-stress tensor from the deformation gradient.
 
         Parameters
         ----------

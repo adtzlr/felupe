@@ -21,8 +21,8 @@ from tensortrax import Tensor
 
 
 def total_lagrange(material):
-    r"""Decorate a Total-Lagrange material formulation as a first Piola-Kirchoff stress
-    function.
+    r"""Decorate a second Piola-Kirchhoff stress Total-Lagrange material formulation as
+    a first Piola-Kirchoff stress function.
 
     Notes
     -----

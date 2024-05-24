@@ -5,6 +5,7 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
 
 ..  pyvista-plot::
     :context:
+    :force_static:
 
     import numpy as np
     import felupe as fem

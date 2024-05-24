@@ -67,6 +67,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     x-axis.
 
     ..  pyvista-plot::
+        :force_static:
 
         >>> import numpy as np
         >>> import felupe as fem
@@ -180,6 +181,7 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -319,6 +321,7 @@ def biaxial(
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -336,6 +339,7 @@ def biaxial(
     results in a different deformation at the end faces.
 
     ..  pyvista-plot::
+        :force_static:
 
         >>> import numpy as np
         >>> import felupe as fem
@@ -367,6 +371,7 @@ def biaxial(
     must at least be deactivated on the fixed longitudinal axis.
 
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>
@@ -520,6 +525,7 @@ def shear(
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(

@@ -97,6 +97,7 @@ def partition(field, bounds):
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> import pyvista as pv
         >>>

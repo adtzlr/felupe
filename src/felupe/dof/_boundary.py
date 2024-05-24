@@ -90,6 +90,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> import pyvista as pv
         >>>
@@ -108,6 +109,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
         >>>
@@ -123,6 +125,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
         >>>
@@ -141,6 +144,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x >= 0)
         >>> surface = fem.Boundary(displacement, mask=mask)
@@ -158,6 +162,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> new_mask = np.logical_and(mask, y <= 0)
         >>> surface.apply_mask(new_mask)
@@ -176,6 +181,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
         >>>
@@ -192,6 +198,7 @@ class Boundary:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> left = fem.Boundary(displacement, fx=x.min(), value=-0.2)
         >>> left.update(-0.3)

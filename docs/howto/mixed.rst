@@ -49,6 +49,7 @@ The Step and Job definitions are identical to ones used with single field formul
 
 ..  pyvista-plot::
     :context:
+    :force_static:
 
     step = fem.Step(
         items=[solid], 

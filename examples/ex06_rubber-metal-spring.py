@@ -129,8 +129,8 @@ plotter.show()
 # the characteristic-curve job. The force is multiplied by two due to the fact that only
 # one half of the geometry is simulated.
 fig, ax = job.plot(
-    xlabel="Displacement $d_Z$ in mm $\longrightarrow$",
-    ylabel="Normal Force $F_Z$ in kN $\longrightarrow$",
+    xlabel=r"Displacement $d_Z$ in mm $\longrightarrow$",
+    ylabel=r"Normal Force $F_Z$ in kN $\longrightarrow$",
     xaxis=2,
     yaxis=2,
     yscale=2 / 1000,
@@ -140,8 +140,8 @@ fig, ax = job.plot(
 # The shear lateral force-displacement curve is again obtained from the characteristic-
 # curve job.
 fig, ax = job.plot(
-    xlabel="Displacement $d_X$ in mm $\longrightarrow$",
-    ylabel="Normal Force $F_X$ in kN $\longrightarrow$",
+    xlabel=r"Displacement $d_X$ in mm $\longrightarrow$",
+    ylabel=r"Normal Force $F_X$ in kN $\longrightarrow$",
     xaxis=0,
     yaxis=0,
     yscale=2 / 1000,

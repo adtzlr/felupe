@@ -62,7 +62,7 @@ class RegionQuad(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -94,7 +94,7 @@ class RegionQuadraticQuad(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -126,7 +126,7 @@ class RegionBiQuadraticQuad(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -156,7 +156,7 @@ class RegionQuadBoundary(RegionBoundary):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -201,7 +201,7 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -246,7 +246,7 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -304,7 +304,7 @@ class RegionHexahedron(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -336,7 +336,7 @@ class RegionHexahedronBoundary(RegionBoundary):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -373,7 +373,7 @@ class RegionQuadraticHexahedron(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -405,7 +405,7 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -442,7 +442,7 @@ class RegionTriQuadraticHexahedron(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -471,7 +471,7 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -509,7 +509,7 @@ class RegionLagrange(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -542,7 +542,7 @@ class RegionTriangle(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -576,7 +576,7 @@ class RegionTetra(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -610,7 +610,7 @@ class RegionTriangleMINI(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -644,7 +644,7 @@ class RegionTetraMINI(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -678,7 +678,7 @@ class RegionQuadraticTriangle(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -706,7 +706,7 @@ class RegionQuadraticTetra(Region):
     Plot the element with its point-ids and the applied quadrature rule.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

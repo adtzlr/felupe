@@ -183,7 +183,7 @@ class GaussLegendreBoundary(GaussLegendre):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -195,7 +195,7 @@ class GaussLegendreBoundary(GaussLegendre):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -207,7 +207,7 @@ class GaussLegendreBoundary(GaussLegendre):
        ... ).show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

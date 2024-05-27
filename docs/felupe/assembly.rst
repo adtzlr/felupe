@@ -5,7 +5,7 @@ Assembly
 
 This module contains classes for the integration and assembly of (weak) integral forms
 into dense or sparse vectors and matrices. The integration algorithm switches 
-automatically between general cartesion, plane strain or axisymmetric routines, 
+automatically between general cartesian, plane strain or axisymmetric routines, 
 dependent on the given fields.
 
 ..  hint::

@@ -1,10 +1,11 @@
 r"""
 Uniaxial loading/unloading of a viscoelastic material (VHB 4910)
 ----------------------------------------------------------------
-This examples shows how to implement a constitutive material model formulation for
-rubber viscoelastic materials by a strain energy density function. Local Newton-
-iterations are used for the solution of the nonlinear viscoelastic evolution equation
-[1]_.
+This example shows how to implement a constitutive material model for
+rubber viscoelastic materials using a strain energy density function coupled 
+with an ODE for an internal (state) variable [1]_. The ODE is discretized using a
+backward-Euler scheme and the resulting nonlinear algebraic equations for the 
+internal variable are solved using Newton's method [2]_.
 """
 
 import tensortrax as tr
@@ -112,3 +113,7 @@ solid.plot("Principal Values of Cauchy Stress").show()
 #    rubber viscoelastic materials", Comptes Rendus. Mécanique, vol. 344, no. 2. Cellule
 #    MathDoc/Centre Mersenne, pp. 102–112, Jan. 26, 2016. doi:
 #    `10.1016/j.crme.2015.11.004 <http://dx.doi.org/10.1016/j.crme.2015.11.004>`_.
+# .. [2] B. Shrimali, K. Ghosh and O. Lopez-Pamies "The Nonlinear Viscoelastic Response of
+#    Suspensions of Vacuous Bubbles in Rubber: I — Gaussian Rubber with Constant Viscosity", 
+#    Journal of Elasticity, vol. 153, pp. 479-508 (2023), Nov. 30, 2021. doi:
+#    `10.1007/s10659-021-09868-y <https://doi.org/10.1007/s10659-021-09868-y>`_.

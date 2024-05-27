@@ -1,30 +1,33 @@
-from tensortrax import function, jacobian
-from tensortrax.math import trace
-from tensortrax.math.linalg import inv
-from tensortrax.math.special import dev, from_triu_1d, triu_1d
-from matplotlib import pyplot as plt
+r"""
+Uniaxial loading/unloading of a viscoelastic material (VHB 4910)
+----------------------------------------------------------------
+This examples shows how to implement a constitutive material model formulation for
+rubber viscoelastic materials by a strain energy density function. Local Newton-
+iterations are used for the solution of the nonlinear viscoelastic evolution equation
+[1]_.
+"""
+
+import tensortrax as tr
+import tensortrax.math as tm
 import felupe as fem
 
 
-@fem.constitution.isochoric_volumetric_split
+@fem.isochoric_volumetric_split
 def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
     # extract old state variables
-    Cvn = from_triu_1d(ζn, like=C)
-
-    # first invariant of the right Cauchy-Green deformation tensor
-    I1 = trace(C)
+    Cvn = tm.special.from_triu_1d(ζn, like=C)
 
     def invariants(Cv, C):
         "Invariants of the elastic and viscous parts of the deformation."
-        Ce = C @ inv(Cv)
+        Ce = C @ tm.linalg.inv(Cv)
 
-        I1e = trace(Ce)
-        I1v = trace(Cv)
-        I2e = (I1e**2 - trace(Ce @ Ce)) / 2
+        I1e = tm.trace(Ce)
+        I1v = tm.trace(Cv)
+        I2e = (I1e**2 - tm.trace(Ce @ Ce)) / 2
 
         return I1e, I1v, I2e
 
-    def evolution(Cv, Cvn, C):
+    def evolution(Cv, Cvn, C, ξ=1e-10):
         "Evolution equation for the internal (state) variable Cv."
         I1e, I1v, I2e = invariants(Cv, C)
         J2Neq = (I1e**2 / 3 - I2e) * sum(
@@ -32,22 +35,23 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
         ) ** 2
         u = [3 ** (1 - a[r]) * m[r] * I1e ** (a[r] - 1) for r in [0, 1]]
         ηK = ηinf + (η0 - ηinf + K[0] * (I1v ** β[0] - 3 ** β[0])) / (
-            1 + (K[1] * J2Neq + 1e-10) ** β[1]
+            1 + (K[1] * J2Neq + ξ) ** β[1]
         )
-        G = sum(u) / ηK * dev(C @ inv(Cv)) @ Cv
+        G = sum(u) / ηK * tm.special.dev(C @ tm.linalg.inv(Cv)) @ Cv
         return G - (Cv - Cvn) / dt
 
     # update the state variables
     Cv = fem.newtonrhapson(
         x0=Cvn,
-        fun=function(evolution, ntrax=C.ntrax),
-        jac=jacobian(evolution, ntrax=C.ntrax),
+        fun=tr.function(evolution, ntrax=C.ntrax),
+        jac=tr.jacobian(evolution, ntrax=C.ntrax),
         solve=fem.math.solve_2d,
         args=(Cvn, C.x),
         verbose=0,
-        tol=1e-1,
     ).x
 
+    # invariants of the (elastic and viscous) right Cauchy-Green deformation tensor
+    I1 = tm.trace(C)
     I1e, I1v, I2e = invariants(Cv, C)
 
     # strain energy functions of the equilibrium and non-equilibrium parts
@@ -55,7 +59,7 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
     ψEq = [3 ** (1 - α[r]) / (2 * α[r]) * μ[r] * (I1 ** α[r] - 3 ** α[r]) for r in p]
     ψNEq = [3 ** (1 - a[r]) / (2 * a[r]) * m[r] * (I1e ** a[r] - 3 ** a[r]) for r in p]
 
-    return sum(ψEq) + sum(ψNEq), triu_1d(Cv)
+    return sum(ψEq) + sum(ψNEq), tm.special.triu_1d(Cv)
 
 
 dt_vals = 4.0
@@ -91,13 +95,20 @@ move = fem.math.linsteps([0.0, lfinal - 1.00, 0.358], num=int(num_steps) + 1)
 
 step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-job.evaluate()
+job.evaluate(tol=1e-2)
+
 fig, ax = job.plot(
     xlabel=r"Displacement $u$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F$ in N $\longrightarrow$",
     marker="x",
 )
-ax.set_title("Uniaxial loading/unloading of a viscoelastic material (VHB 4910)")
-img = solid.imshow("Principal Values of Cauchy Stress")
-fig.tight_layout()
-plt.show()
+ax.set_title("Uniaxial loading/unloading\n of a viscoelastic material (VHB 4910)")
+solid.plot("Principal Values of Cauchy Stress").show()
+
+# %%
+# References
+# ----------
+# .. [1] A. Kumar and O. Lopez-Pamies, "On the two-potential constitutive modeling of
+#    rubber viscoelastic materials", Comptes Rendus. Mécanique, vol. 344, no. 2. Cellule
+#    MathDoc/Centre Mersenne, pp. 102–112, Jan. 26, 2016. doi:
+#    `10.1016/j.crme.2015.11.004 <http://dx.doi.org/10.1016/j.crme.2015.11.004>`_.

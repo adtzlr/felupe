@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.6.0] - 2024-05-29
+
 ### Added
 - Add the isotropic-hyperelastic `alexander(C1, C2, C2, gamma, k)` material model formulation to be used in `Hyperelastic()`.
 - Add the isotropic-hyperelastic Micro-Sphere `miehe_goektepe_lulei(mu, N, U, p, q)` material model formulation to be used in `Hyperelastic()`.

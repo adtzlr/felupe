@@ -74,7 +74,7 @@ import felupe as fem
 # %%
 # An isotropic-hyperelastic material formulation is defined by a strain energy density
 # function. All math-operations must support automatic differentiation and hence, they
-# must taken from :mod:`tensortrax.math <https://github.com/adtzlr/tensortrax>`. The
+# must be taken from :mod:`tensortrax.math <https://github.com/adtzlr/tensortrax>`. The
 # strain energy function of the Extended Tube model is given in Eq. :eq:`ex-psi-et`
 #
 # ..  math::

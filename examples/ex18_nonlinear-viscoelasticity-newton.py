@@ -16,7 +16,8 @@ import felupe as fem
 @fem.isochoric_volumetric_split
 def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
     # extract old state variables
-    Cvn = tm.special.from_triu_1d(ζn, like=C)
+    I = tm.base.eye(C)
+    Cvn = tm.special.from_triu_1d(ζn, like=C) + I
 
     def invariants(Cv, C):
         "Invariants of the elastic and viscous parts of the deformation."
@@ -60,7 +61,7 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
     ψEq = [3 ** (1 - α[r]) / (2 * α[r]) * μ[r] * (I1 ** α[r] - 3 ** α[r]) for r in p]
     ψNEq = [3 ** (1 - a[r]) / (2 * a[r]) * m[r] * (I1e ** a[r] - 3 ** a[r]) for r in p]
 
-    return sum(ψEq) + sum(ψNEq), tm.special.triu_1d(Cv)
+    return sum(ψEq) + sum(ψNEq), tm.special.triu_1d(Cv - I)
 
 
 dt_vals = 4.0
@@ -86,7 +87,6 @@ field = fem.FieldContainer([fem.Field(region, dim=3)])
 boundaries, loadcase = fem.dof.uniaxial(field, clamped=False)
 
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
-solid.results.statevars[[0, 3, 5]] += 1.0
 
 ldot = 0.05
 lfinal = 3.0
@@ -114,6 +114,6 @@ solid.plot("Principal Values of Cauchy Stress").show()
 #    MathDoc/Centre Mersenne, pp. 102–112, Jan. 26, 2016. doi:
 #    `10.1016/j.crme.2015.11.004 <http://dx.doi.org/10.1016/j.crme.2015.11.004>`_.
 # .. [2] B. Shrimali, K. Ghosh and O. Lopez-Pamies "The Nonlinear Viscoelastic Response of
-#    Suspensions of Vacuous Bubbles in Rubber: I — Gaussian Rubber with Constant Viscosity", 
+#    Suspensions of Vacuous Bubbles in Rubber: I — Gaussian Rubber with Constant Viscosity",
 #    Journal of Elasticity, vol. 153, pp. 479-508 (2023), Nov. 30, 2021. doi:
 #    `10.1007/s10659-021-09868-y <https://doi.org/10.1007/s10659-021-09868-y>`_.

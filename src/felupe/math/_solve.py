@@ -19,8 +19,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
-    r"""Solve a linear equation system for two-dimensional unknowns with optional
+def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
+    r"""Solve a linear equation system for n-dimensional unknowns with optional
     elementwise-operating trailing axes.
 
     Parameters
@@ -29,6 +29,8 @@ def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
         The left-hand side array of the equation system.
     b : ndarray of shape (M, N, ...)
         The right-hand side array of the equation system.
+    n : int, optional
+        The dimension of the unknowns, must be greater or equal zero (default is 1).
     solve : callable, optional
         A function with a compatible signature to :func:`numpy.linalg.solve`
         (default is :func:`numpy.linalg.solve`).
@@ -44,10 +46,87 @@ def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
     -----
     The first two axes of the rhs ``b`` and the first four axes of the lhs ``A`` are the
     tensor dimensions and all remaining trailing axes are treated as batch dimensions.
-    This function finds :math:`x_{kl}` for Eq. :eq:`solve-system`.
+    This function finds :math:`x_{kl}` for Eq. :eq:`solve-system-nd`.
 
     ..  math::
-        :label: solve-system
+        :label: solve-system-nd
+
+        A_{i...j...} : x_{j...} = b_{i...}
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> np.random.seed(855436)
+    >>>
+    >>> A = np.random.rand(3, 3, 3, 3, 3, 3, 2, 4)
+    >>> b = np.ones((3, 3, 3, 2, 4))
+    >>>
+    >>> x = fem.math.solve_nd(A, b, n=3)
+
+    >>> x[..., 0, 0]
+    array([[[ 0.63499407, -1.32830401, -1.14593   ],
+            [ 1.38045295, -1.03504171,  0.02272754],
+            [-0.40106257,  1.6447736 ,  1.87685462]],
+
+           [[ 0.22602567,  0.53675077,  0.37876301],
+            [-0.5807506 ,  1.20191896,  0.46334835],
+            [-0.90352229,  0.45065787, -0.53026653]],
+
+           [[ 0.3551602 , -1.06411506,  0.01788346],
+            [-1.33151311,  1.76817965,  0.00544784],
+            [ 0.67065754,  0.43405431, -1.67714269]]])
+
+    >>> x.shape
+    (3, 3, 3, 2, 4)
+
+    """
+
+    shape = b.shape[:n]
+    size = np.prod(shape, dtype=int)
+    trax = b.shape[n:]
+
+    # flatten and reshape A to a 2d-matrix of shape (..., M * N, M * N) and
+    # b to a 1d-vector of shape (..., M * N)
+    b_1d = np.einsum("i...->...i", b.reshape(size, np.prod(trax)))
+    A_1d = np.einsum("ij...->...ij", A.reshape(size, size, np.prod(trax)))
+
+    # move the batch-dimensions to the back and reshape x
+    return np.einsum("i...->...i", solve(A_1d, b_1d, **kwargs)).reshape(*shape, *trax)
+
+
+def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
+    r"""Solve a linear equation system for two-dimensional unknowns with optional
+    elementwise-operating trailing axes.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, N, M, N, ...)
+        The left-hand side array of the equation system.
+    b : ndarray of shape (M, N, ...)
+        The right-hand side array of the equation system.
+    n : int, optional
+        The dimension of the unknowns (default is 1).
+    solve : callable, optional
+        A function with a compatible signature to :func:`numpy.linalg.solve`
+        (default is :func:`numpy.linalg.solve`).
+    **kwargs : dict, optional
+        Optional keyword arguments are passed to the callable ``solve(A, b, **kwargs)``.
+
+    Returns
+    -------
+    x : ndarray of shape (M, N, ...)
+        The solved array of unknowns.
+
+    Notes
+    -----
+    The first two axes of the rhs ``b`` and the first four axes of the lhs ``A`` are the
+    tensor dimensions and all remaining trailing axes are treated as batch dimensions.
+    This function finds :math:`x_{kl}` for Eq. :eq:`solve-system-2d`.
+
+    ..  math::
+        :label: solve-system-2d
 
         A_{ijkl} : x_{kl} = b_{ij}
 
@@ -72,15 +151,4 @@ def solve_2d(A, b, solve=np.linalg.solve, **kwargs):
     (3, 3, 2, 4)
 
     """
-
-    shape = b.shape[:2]
-    size = np.prod(shape)
-    trax = b.shape[2:]
-
-    # flatten and reshape A to a 2d-matrix of shape (..., M * N, M * N) and
-    # b to a 1d-vector of shape (..., M * N)
-    b_1d = np.einsum("i...->...i", b.reshape(size, np.prod(trax)))
-    A_1d = np.einsum("ij...->...ij", A.reshape(size, size, np.prod(trax)))
-
-    # move the batch-dimensions to the back and reshape x
-    return np.einsum("i...->...i", solve(A_1d, b_1d, **kwargs)).reshape(*shape, *trax)
+    return solve_nd(A=A, b=b, solve=solve, n=2, **kwargs)

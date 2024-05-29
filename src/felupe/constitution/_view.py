@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import warnings
+from copy import deepcopy
 
 import numpy as np
 
@@ -42,14 +43,18 @@ class PlotMaterial:
 
         data = []
 
+        initial_statevars = deepcopy(self.statevars)
         if self.ux is not None:
             data.append(self.uniaxial())
+            self.statevars = initial_statevars
 
         if self.ps is not None:
             data.append(self.planar())
+            self.statevars = initial_statevars
 
         if self.bx is not None:
             data.append(self.biaxial())
+            self.statevars = initial_statevars
 
         return data
 

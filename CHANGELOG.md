@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## Fixes
+- Reset state variables in `PlotMaterial.evaluate()` after each completed load case.
+
 ## [8.6.0] - 2024-05-29
 
 ### Added

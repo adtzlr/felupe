@@ -10,6 +10,7 @@ internal variable are solved using Newton's method [2]_.
 
 import tensortrax as tr
 import tensortrax.math as tm
+
 import felupe as fem
 
 

@@ -29,35 +29,37 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
     Notes
     -----
     The material formulation is built upon the multiplicative decomposition of the
-    deformation gradient tensor into an elastic and an inelastic part, see Eq.
-    :eq:`multiplicative-split`.
+    distortional part of the deformation gradient tensor into an elastic and an
+    inelastic part, see Eq. :eq:`multiplicative-split`.
 
     ..  math::
         :label: multiplicative-split
 
-        \boldsymbol{F} &= \boldsymbol{F}_e \boldsymbol{F}_i
+        \hat{\boldsymbol{F}} &= \boldsymbol{F}_e \boldsymbol{F}_i
+            \ (= \hat{\boldsymbol{F}_e} \boldsymbol{F}_i)
 
         \boldsymbol{C}_e &= \boldsymbol{F}_e^T \boldsymbol{F}_e
 
         \boldsymbol{C}_i &= \boldsymbol{F}_i^T \boldsymbol{F}_i
 
         \text{tr}\left( \boldsymbol{C}_e \right) &= \text{tr}\left(
-            \boldsymbol{C} \boldsymbol{C}_i^{-1}
+            \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1}
         \right)
 
     The components of the inelastic right Cauchy-Green deformation tensor are used as
     state variables with the evolution equation and its explicit update formula as given
-    in Eq. :eq:`evolution` [1]_. Here, the inelastic right Cauchy-Green deformation
-    tensor is enforced to be an unimodular tensor.
+    in Eq. :eq:`evolution` [1]_. The elastic part of the multiplicative decomposition of
+    the deformation gradient tensor is also enforced to be an unimodular tensor which
+    leads to the constraint :math:`\det(\boldsymbol{F_i})=1`. Hence, the inelastic right
+    Cauchy-Green deformation tensor must be an unimodular tensor
+    :math:`\det(\boldsymbol{C_i})=1`.
 
     ..  math::
         :label: evolution
 
-        \dot{\boldsymbol{C}}_i &= \frac{\mu}{\eta} \text{dev}\left(
-            \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1}
-        \right) \boldsymbol{C}_i
+        \dot{\boldsymbol{C}}_i &= \frac{\mu}{\eta}\ \hat{\boldsymbol{C}}
 
-        \boldsymbol{C}_i &= \hat{\bar{\boldsymbol{C}_{i,n}
+        \boldsymbol{C}_i &= \hat{\overline{\boldsymbol{C}_{i,n}
             + \frac{\Delta t \mu}{\eta} \hat{\boldsymbol{C}}}}
 
     The distortional part of the strain energy density per unit undeformed volume is

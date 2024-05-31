@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ## Added
-- Add `math.solve_nd(A, b, n=1)` as a generalized function of `math.solve_2d(A, b)`.
+- Add `math.solve_nd(A, b, n=1)` as a generalized function of `math.solve_2d(A, b)` with supported broadcasting on the elementwise-operating trailing axes.
 
 ## Changed
 - Rebase `math.solve_2d(A, b)` on `math.solve_nd(A, b, n=2)`.

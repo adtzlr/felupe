@@ -39,3 +39,16 @@ def affine_tube(C, f, kwargs, quadrature=BazantOh(n=21)):
     λa = det(C) ** (1 / 6) * sqrt(einsum("ai,ij...,aj->a...", r, inv(C), r))
 
     return einsum("a...,a->...", f(λa, **kwargs), w)
+
+
+def affine_tube_statevars(C, statevars, f, kwargs, quadrature=BazantOh(n=21)):
+    "Micro-sphere model: Affine area-stretch part."
+
+    r = quadrature.points
+    w = quadrature.weights
+
+    # affine area-stretches (distortional part)
+    λa = det(C) ** (1 / 6) * sqrt(einsum("ai,ij...,aj->a...", r, inv(C), r))
+    ψa, statevars_new = f(λa, statevars, **kwargs)
+
+    return einsum("a...,a->...", ψa, w), statevars_new

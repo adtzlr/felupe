@@ -12,7 +12,7 @@ from ._field import (
     values,
 )
 from ._math import linsteps
-from ._solve import solve_2d
+from ._solve import solve_2d, solve_nd
 from ._spatial import rotation_matrix
 from ._tensor import (
     cdya,
@@ -79,4 +79,5 @@ __all__ = [
     "trace",
     "transpose",
     "solve_2d",
+    "solve_nd",
 ]

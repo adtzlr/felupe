@@ -52,7 +52,7 @@ dynamic = ["version"]
 dependencies = [
   "numpy",
   "scipy",
-  "tensortrax>=0.21.3",
+  "tensortrax>=0.24.0",
 ]
 
 [project.optional-dependencies]

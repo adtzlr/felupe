@@ -61,7 +61,7 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
     >>> np.random.seed(855436)
     >>>
     >>> A = np.random.rand(3, 3, 3, 3, 3, 3, 2, 4)
-    >>> b = np.ones((3, 3, 3, 2, 1))
+    >>> b = np.ones((3, 3, 3, 1, 1))
     >>>
     >>> x = fem.math.solve_nd(A, b, n=3)
 

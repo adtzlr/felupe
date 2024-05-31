@@ -61,7 +61,7 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
     >>> np.random.seed(855436)
     >>>
     >>> A = np.random.rand(3, 3, 3, 3, 3, 3, 2, 4)
-    >>> b = np.ones((3, 3, 3, 2, 4))
+    >>> b = np.ones((3, 3, 3, 2, 1))
     >>>
     >>> x = fem.math.solve_nd(A, b, n=3)
 
@@ -85,12 +85,12 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
 
     shape = b.shape[:n]
     size = np.prod(shape, dtype=int)
-    trax = b.shape[n:]
+    trax = np.broadcast_shapes(b.shape[n:], A.shape[2 * n :])
 
     # flatten and reshape A to a 2d-matrix of shape (..., M * N, M * N) and
     # b to a 1d-vector of shape (..., M * N)
-    b_1d = np.einsum("i...->...i", b.reshape(size, np.prod(trax)))
-    A_1d = np.einsum("ij...->...ij", A.reshape(size, size, np.prod(trax)))
+    b_1d = np.einsum("i...->...i", b.reshape(size, -1))
+    A_1d = np.einsum("ij...->...ij", A.reshape(size, size, -1))
 
     # move the batch-dimensions to the back and reshape x
     return np.einsum("i...->...i", solve(A_1d, b_1d, **kwargs)).reshape(*shape, *trax)

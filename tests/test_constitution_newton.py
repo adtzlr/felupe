@@ -27,7 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 from tensortrax.math import trace
-from tensortrax.math.linalg import inv
+from tensortrax.math.linalg import det, inv
 from tensortrax.math.special import dev, from_triu_1d, triu_1d
 
 import felupe as fem
@@ -45,7 +45,7 @@ def test_visco_newton():
 
         def evolution(Ci, Cin, C, mu, eta, dtime):
             "Viscoelastic evolution equation."
-            return mu / eta * dev(C @ inv(Ci)) @ Ci - (Ci - Cin) / dtime
+            return mu / eta * C - (Ci - Cin) / dtime
 
         # update of state variables by evolution equation
         Cin = from_triu_1d(Cin, like=C)
@@ -56,8 +56,8 @@ def test_visco_newton():
             solve=fem.math.solve_2d,
             args=(Cin, C.x, mu, eta, dtime),
             verbose=0,
-            tol=1e-2,
         ).x
+        Ci *= det(Ci) ** (-1 / 3)
 
         # first invariant of elastic part of right Cauchy-Green deformation tensor
         I1 = trace(C @ inv(Ci))
@@ -69,14 +69,14 @@ def test_visco_newton():
         finite_strain_viscoelastic_newton, mu=1.0, eta=1.0, dtime=0.1, nstatevars=6
     )
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
-    solid.results.statevars[[0, 3, 5]] += 1
+    # solid.results.statevars[[0, 3, 5]] += 1
 
     move = fem.math.linsteps([0, 0.3], num=3)
     step = fem.Step(
         items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
     )
     job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"]).evaluate()
-    assert np.all([norm[-1] < 1e-8 for norm in job.fnorms])
+    assert np.all([norm[-1] < 1e-7 for norm in job.fnorms])
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ## Changed
 - Rebase `math.solve_2d(A, b)` on `math.solve_nd(A, b, n=2)`.
+- Change `ogden_roxburgh()` and `OgdenRoxburgh` to use the Gauss error function `erf` instead of `tanh` as internal sigmoid function.
 
 ## Fixes
 - Reset state variables in `PlotMaterial.evaluate()` after each completed load case.

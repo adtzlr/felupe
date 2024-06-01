@@ -15,7 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-from tensortrax.math import array, maximum, real_to_dual, stack, tanh
+from tensortrax.math import array, maximum, real_to_dual
+from tensortrax.math.special import erf
 
 
 def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
@@ -45,12 +46,6 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         Optional keyword arguments are passed to the isotropic strain energy density
         function :func:`material <material(C, **kwargs)>`.
 
-    Notes
-    -----
-    ..  note::
-        This implementation uses the hyperbolic tangent instead of the Gauss error
-        function.
-
     The pseudo-elastic strain energy density function :math:`\widetilde{\psi}` and the
     Mullins-effect related evolution equation are given in Eq. :eq:`psi-ogden-roxburgh`.
     The variation of the functional :math:`\phi` is defined in such a way that the term
@@ -64,7 +59,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
 
         \widetilde{\psi} &= \eta \hat{\psi} + \phi
 
-        \eta(\hat{\psi}, \hat{\psi}_\text{max}) &= 1 - \frac{1}{r} \tanh \left(
+        \eta(\hat{\psi}, \hat{\psi}_\text{max}) &= 1 - \frac{1}{r} \text{erf} \left(
             \frac{\hat{\psi}_\text{max} - \psi}{m + \beta~\hat{\psi}_\text{max}}
         \right)
 
@@ -111,7 +106,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     Wmax = maximum(W, array(Wmax_n[:1], like=W))
 
     # evolution equation
-    η = lambda W: 1 - 1 / r * tanh((Wmax - W) / (m + beta * Wmax))
+    η = lambda W: 1 - 1 / r * erf((Wmax - W) / (m + beta * Wmax))
 
     # custom first- and second-partial derivatives
     # set the variation to δη * W (and the linearization to Δη * δW + η * ΔδW)

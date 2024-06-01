@@ -83,12 +83,25 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
 
     """
 
+    # broadcast matrix-axes of lhs
+    Ashape_new = list(A.shape)
+    Ashape_new[:n] = Ashape_new[n : 2 * n] = np.broadcast_shapes(
+        A.shape[:n], A.shape[n : 2 * n]
+    )
+    A = np.broadcast_to(A, Ashape_new)
+
+    # broadcast matrix-axes of rhs
+    bshape_new = list(b.shape)
+    bshape_new[:n] = np.broadcast_shapes(A.shape[:n], b.shape[:n])
+    b = np.broadcast_to(b, bshape_new)
+
+    # trailing (batch) axes of broadcasted output
     shape = b.shape[:n]
     size = np.prod(shape, dtype=int)
     trax = np.broadcast_shapes(b.shape[n:], A.shape[2 * n :])
 
-    # flatten and reshape A to a 2d-matrix of shape (..., M * N, M * N) and
-    # b to a 1d-vector of shape (..., M * N)
+    # flatten and reshape A to a 2d-matrix of shape (..., M * N * ..., M * N * ...) and
+    # b to a 1d-vector of shape (..., M * N * ...) with batches at leading axis
     b_1d = np.einsum("i...->...i", b.reshape(size, -1))
     A_1d = np.einsum("ij...->...ij", A.reshape(size, size, -1))
 

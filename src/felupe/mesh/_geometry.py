@@ -293,7 +293,7 @@ class Grid(Mesh):
 
 
 class RectangleArbitraryOrderQuad(Rectangle):
-    """A rectangular 2d-mesh with an arbitrarr-order Lagrange quad between ``a`` and
+    """A rectangular 2d-mesh with an arbitrary-order Lagrange quad between ``a`` and
     ``b``.
 
     Examples
@@ -315,7 +315,7 @@ class RectangleArbitraryOrderQuad(Rectangle):
 
 
 class CubeArbitraryOrderHexahedron(Cube):
-    """A rectangular 2d-mesh with an arbitrarr-order Lagrange hexahedron between ``a``
+    """A rectangular 2d-mesh with an arbitrary-order Lagrange hexahedron between ``a``
     and ``b``.
 
     Examples

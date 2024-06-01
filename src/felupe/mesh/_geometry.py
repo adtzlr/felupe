@@ -303,7 +303,10 @@ class RectangleArbitraryOrderQuad(Rectangle):
         >>> import felupe as fem
         >>>
         >>> mesh = fem.mesh.RectangleArbitraryOrderQuad(order=5).add_runouts()
-        >>> mesh.plot(nonlinear_subdivision=4).show()
+        >>> mesh.plot(
+        >>>     nonlinear_subdivision=4,
+        >>>     plotter=mesh.plot(style="points", color="black"),
+        >>> ).show()
     """
 
     def __init__(self, a=(0.0, 0.0), b=(1.0, 1.0), order=2):
@@ -325,7 +328,10 @@ class CubeArbitraryOrderHexahedron(Cube):
         >>> import felupe as fem
         >>>
         >>> mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=5).add_runouts()
-        >>> mesh.plot(nonlinear_subdivision=4).show()
+        >>> mesh.plot(
+        >>>     nonlinear_subdivision=4,
+        >>>     plotter=mesh.plot(style="points", color="black"),
+        >>> ).show()
     """
 
     def __init__(self, a=(0.0, 0.0, 0.0), b=(1.0, 1.0, 1.0), order=2):

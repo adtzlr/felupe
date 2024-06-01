@@ -164,4 +164,4 @@ Slightly modified code-blocks are provided for different kind of analyses and el
 Tutorials
 ---------
 
-This section is all about learning. Each tutorial focusses on some lessons to learn.
+This section is all about learning. Each tutorial focuses on some lessons to learn.

@@ -43,13 +43,9 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     Notes
     -----
-    ..  note::
-        This implementation uses the hyperbolic tangent instead of the Gauss error
-        function.
-
     ..  math::
 
-        \eta(\psi, \psi_\text{max}) &= 1 - \frac{1}{r} \tanh \left(
+        \eta(\psi, \psi_\text{max}) &= 1 - \frac{1}{r} \text{erf} \left(
             \frac{\psi_\text{max} - \psi}{m + \beta~\psi_\text{max}}
         \right)
 

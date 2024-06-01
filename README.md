@@ -85,8 +85,10 @@ fig, ax = job.plot(
 solid.plot("Principal Values of Cauchy Stress").show()
 ```
 
-<img src="https://github.com/adtzlr/felupe/assets/5793153/911ce6b0-530b-4578-af92-1098389b961a" alt="Curve" height="200px">
-<img src="https://github.com/adtzlr/felupe/assets/5793153/29d72f83-dbce-403f-8d7b-76d9a8b2b24d" alt="Solid Body" height="200px">
+<p align="center">
+  <img src="https://github.com/adtzlr/felupe/assets/5793153/911ce6b0-530b-4578-af92-1098389b961a" alt="Curve" height="200px">
+  <img src="https://github.com/adtzlr/felupe/assets/5793153/29d72f83-dbce-403f-8d7b-76d9a8b2b24d" alt="Solid Body" height="200px">
+</p>
 
 # Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/latest/?badge=latest).

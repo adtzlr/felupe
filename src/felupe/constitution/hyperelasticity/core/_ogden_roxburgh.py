@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
+from scipy.special import erf
 
 from ....math import dya
 from ..._base import ConstitutiveMaterial
@@ -126,7 +127,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         z = (Wmax - W) / (m + beta * Wmax)
 
         # softening function
-        eta = 1 - np.tanh(z) / r
+        eta = 1 - erf(z) / r
 
         # update the state variables
         statevars_new = statevars.copy()
@@ -154,10 +155,10 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         z = (Wmax - W) / (m + beta * Wmax)
 
         # softening function
-        eta = 1 - np.tanh(z) / r
+        eta = 1 - erf(z) / r
 
         # derivative of softening function
-        detadz = (-1 / r) * 1 / np.cosh(z) ** 2
+        detadz = -2 / (np.sqrt(np.pi) * r) * np.exp(-(z**2))
         dzdW = -1 / (m + beta * Wmax)
         detadW = detadz * dzdW
 

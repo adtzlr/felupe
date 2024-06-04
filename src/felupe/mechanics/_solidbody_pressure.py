@@ -34,6 +34,10 @@ class SolidBodyPressure:
 
     Notes
     -----
+    ..  hint::
+        The pressure is always given as normal force per deformed **area**. This is
+        important for axisymmetric problems.
+
     ..  math::
 
         \delta W_{ext} = \int_{\partial V}

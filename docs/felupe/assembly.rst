@@ -17,7 +17,7 @@ dependent on the given fields.
 
 **Core**
 
-Take arrays for some pre-defined weak-forms and integrate them into dense or assembly
+Take arrays for some pre-defined weak-forms and integrate them into dense or assemble
 them into sparse vectors or matrices.
 
 .. currentmodule:: felupe

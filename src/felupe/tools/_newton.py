@@ -333,7 +333,7 @@ def newtonrhapson(
     Examples
     --------
     >>> import felupe as fem
-
+    >>>
     >>> region = fem.RegionHexahedron(fem.Cube(n=6))
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
     >>> boundaries, loadcase = fem.dof.uniaxial(field, move=0.2, clamped=True)

@@ -52,7 +52,7 @@ class Boundary:
         ``fy`` and ``fz`` are ignored. However, ``skip`` is still applied on the mask.
     mode : string, optional
         A string which defines the logical operation for the selected points per
-        axis (default is `or`).
+        axis (default is ``"or"``).
 
     Attributes
     ----------

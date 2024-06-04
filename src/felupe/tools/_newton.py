@@ -274,46 +274,56 @@ def newtonrhapson(
     -----
     Nonlinear equilibrium equations :math:`f(x)` as a function of the unknowns :math:`x`
     are solved by linearization of :math:`f` at a valid starting point of given unknowns
-    :math:`x_0`.
+    :math:`x_0`, see Eq. :eq:`newton-x0`.
 
     ..  math::
+        :label: newton-x0
 
         f(x_0) = 0
 
-    The linearization is given by
+    The linearization is given in Eq. :eq:`newton-lin`
 
     ..  math::
+        :label:  newton-lin
 
         f(x_0 + dx) \approx f(x_0) + K(x_0) \ dx \ (= 0)
 
-    with the Jacobian, evaluated at given unknowns :math:`x_0`,
+    with the Jacobian as in Eq. :eq:`newton-jac`, evaluated at given unknowns
+    :math:`x_0`,
 
     ..  math::
+        :label: newton-jac
 
         K(x_0) = \frac{\partial f}{\partial x}(x_0)
 
-    and is rearranged to an equation system with left- and right-hand sides.
+    and is rearranged to an equation system with left- and right-hand sides, see Eq.
+    :eq:`newton-lhs-rhs`.
 
     ..  math::
+        :label: newton-lhs-rhs
 
         K(x_0) \ dx = -f(x_0)
 
-    After a solution is found, the unknowns are updated.
+    After a solution is found, the unknowns are updated, see Eq. :eq:`newton-update-0`.
 
     ..  math::
+        :label: newton-update-0
 
-        dx &= \text{solve} \left( K(x_0), -f(x_0) \right)
+        dx &= \text{solve} \left( K(x_0), -f(x_0) \right) \nonumber
 
         x &= x_0 + dx
 
-    Repeated evaluations lead to an incrementally updated solution of :math:`x`. Herein
-    :math:`x_n` refer to the inital unknowns whereas :math:`x` are the updated unknowns
-    (the subscript :math:`(\bullet)_{n+1}` is dropped for readability).
+    Repeated evaluations lead to an incrementally updated solution of :math:`x`. Herein,
+    :math:`x_n` refer to the inital unknowns whereas :math:`x` are the updated unknowns,
+    see Eq. :eq:`newton-update`.
+
+    ..  note::
+        The subscript :math:`(\bullet)_{n+1}` is dropped for easier readability.
 
     ..  math::
-        :name: eq:newton-solve
+        :label: newton-update
 
-        dx &= \text{solve} \left( K(x_n), -f(x_n) \right)
+        dx &= \text{solve} \left( K(x_n), -f(x_n) \right) \nonumber
 
          x &= x_n + dx
 

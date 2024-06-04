@@ -144,4 +144,12 @@ html_theme_options = {
         "image_light": "logo_light.svg",
         "image_dark": "logo_dark.svg",
     },
+    "use_edit_page_button": True,
+}
+
+html_context = {
+    "github_user": "adtzlr",
+    "github_repo": "felupe",
+    "github_version": "main",
+    "doc_path": "docs/",
 }

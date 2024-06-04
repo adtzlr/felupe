@@ -46,6 +46,8 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         Optional keyword arguments are passed to the isotropic strain energy density
         function :func:`material <material(C, **kwargs)>`.
 
+    Notes
+    -----
     The pseudo-elastic strain energy density function :math:`\widetilde{\psi}` and the
     Mullins-effect related evolution equation are given in Eq. :eq:`psi-ogden-roxburgh`.
     The variation of the functional :math:`\phi` is defined in such a way that the term

@@ -60,14 +60,14 @@ The displacement boundaries are created on the total field.
     )
 
 
-The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. For each material a solid body is created.
+The rubber is associated to a Neo-Hookean material formulation whereas the steel is modeled by a linear elastic material formulation. Due to the large rotation, its large-strain formulation is required. For each material a solid body is created.
 
 ..  pyvista-plot::
     :context:
 
     # two material model formulations
     neo_hooke = fem.NeoHooke(mu=1, bulk=1)
-    linear_elastic = fem.LinearElastic(E=100, nu=0.3)
+    linear_elastic = fem.LinearElasticLargeStrain(E=100, nu=0.3)
     
     # the solid bodies
     fiber = fem.SolidBody(umat=linear_elastic, field=fields[0])
@@ -90,6 +90,6 @@ A step is created and further added to a job. The global field must be passed to
     
     # take care of the x0-argument
     job = fem.Job(steps=[step])
-    job.evaluate(x0=field, filename="result.xdmf")
+    job.evaluate(x0=field)
 
     field.plot("Principal Values of Logarithmic Strain").show()

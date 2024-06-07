@@ -500,7 +500,7 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 
     original = np.arange(len(points))
 
-    mask = inverse != original
+    mask = inverse.ravel() != original
     find = original[mask]
     replace = inverse[mask]
 

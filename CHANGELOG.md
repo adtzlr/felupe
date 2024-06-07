@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [8.7.0] - 2024-06-07
+
 ## Added
 - Add `math.solve_nd(A, b, n=1)` as a generalized function of `math.solve_2d(A, b)` with supported broadcasting on the elementwise-operating trailing axes.
 

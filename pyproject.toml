@@ -50,7 +50,7 @@ classifiers = [
 dynamic = ["version"]
 
 dependencies = [
-  "numpy",
+  "numpy==2.0.0rc2",
   "scipy",
   "tensortrax>=0.25.0",
 ]

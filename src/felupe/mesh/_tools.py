@@ -494,13 +494,17 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
     else:
         points_rounded = np.round(points, decimals)
 
-    points_new, index, inverse, counts = np.unique(
-        points_rounded, True, True, True, axis=0
+    points_new, inverse = np.unique(
+        points_rounded,
+        return_index=False,
+        return_inverse=True,
+        return_counts=False,
+        axis=0,
     )
 
     original = np.arange(len(points))
 
-    mask = inverse != original
+    mask = inverse.ravel() != original
     find = original[mask]
     replace = inverse[mask]
 

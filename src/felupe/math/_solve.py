@@ -101,12 +101,12 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
     trax = np.broadcast_shapes(b.shape[n:], A.shape[2 * n :])
 
     # flatten and reshape A to a 2d-matrix of shape (..., M * N * ..., M * N * ...) and
-    # b to a 1d-vector of shape (..., M * N * ...) with batches at leading axis
-    b_1d = np.einsum("i...->...i", b.reshape(size, -1))
+    # b to a 1d-vector of shape (..., M * N * ..., 1) with batches at leading axis
+    b_1d = np.einsum("ik...->...ik", b.reshape(size, 1, -1))
     A_1d = np.einsum("ij...->...ij", A.reshape(size, size, -1))
 
     # move the batch-dimensions to the back and reshape x
-    return np.einsum("i...->...i", solve(A_1d, b_1d, **kwargs)).reshape(*shape, *trax)
+    return np.einsum("...ik->ik...", solve(A_1d, b_1d, **kwargs)).reshape(*shape, *trax)
 
 
 def solve_2d(A, b, solve=np.linalg.solve, **kwargs):

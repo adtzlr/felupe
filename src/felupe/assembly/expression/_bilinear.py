@@ -77,7 +77,8 @@ class BilinearForm:
                 self.v.basis.shape[-4],
                 len(self.u.basis),
                 self.u.basis.shape[-4],
-                *self.u.basis.shape[-2:],
+                self.u.basis.shape[-2],
+                self.u.field.region.mesh.ncells,
             )
         )
 

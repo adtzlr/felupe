@@ -139,6 +139,11 @@ class IntegralFormCartesian:
             int
         )
 
+        # broadcast values of a uniform grid mesh
+        if values.size < self.indices[0].size:
+            new_shape = (*values.shape[:-1], self.v.region.mesh.ncells)
+            values = np.broadcast_to(values, new_shape)
+
         res = sparsematrix(
             (values.transpose(permute).ravel(), self.indices), shape=self.shape
         )

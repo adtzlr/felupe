@@ -33,7 +33,7 @@ import felupe as fem
 
 def pre():
     m = fem.Cube(n=3)
-    r = fem.RegionHexahedron(m)
+    r = fem.RegionHexahedron(m, uniform=True)
 
     u = fem.Field(r, dim=3)
     p = fem.Field(r)

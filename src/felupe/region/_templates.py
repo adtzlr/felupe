@@ -49,9 +49,10 @@ class RegionConstantQuad(Region):
         mesh,
         quadrature=GaussLegendre(order=1, dim=2),
         grad=False,
+        **kwargs,
     ):
         element = ConstantQuad()
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionQuad(Region):
@@ -77,13 +78,15 @@ class RegionQuad(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True):
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True, **kwargs
+    ):
         element = Quad()
 
         if len(mesh.cells.T) > 4:
             mesh = Mesh(mesh.points, mesh.cells[:, :4], "quad")
 
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionQuadraticQuad(Region):
@@ -109,13 +112,15 @@ class RegionQuadraticQuad(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True, **kwargs
+    ):
         element = QuadraticQuad()
 
         if len(mesh.cells.T) > 8:
             mesh = Mesh(mesh.points, mesh.cells[:, :8], "quad8")
 
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionBiQuadraticQuad(Region):
@@ -142,10 +147,12 @@ class RegionBiQuadraticQuad(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True):
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True, **kwargs
+    ):
         element = BiQuadraticQuad()
 
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionQuadBoundary(RegionBoundary):
@@ -179,6 +186,7 @@ class RegionQuadBoundary(RegionBoundary):
         only_surface=True,
         mask=None,
         ensure_3d=False,
+        **kwargs,
     ):
         element = Quad()
 
@@ -190,6 +198,7 @@ class RegionQuadBoundary(RegionBoundary):
             only_surface=only_surface,
             mask=mask,
             ensure_3d=ensure_3d,
+            **kwargs,
         )
 
 
@@ -224,6 +233,7 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
         only_surface=True,
         mask=None,
         ensure_3d=False,
+        **kwargs,
     ):
         element = QuadraticQuad()
 
@@ -235,6 +245,7 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
             only_surface=only_surface,
             mask=mask,
             ensure_3d=ensure_3d,
+            **kwargs,
         )
 
 
@@ -269,6 +280,7 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
         only_surface=True,
         mask=None,
         ensure_3d=False,
+        **kwargs,
     ):
         element = BiQuadraticQuad()
 
@@ -280,6 +292,7 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
             only_surface=only_surface,
             mask=mask,
             ensure_3d=ensure_3d,
+            **kwargs,
         )
 
 
@@ -291,9 +304,10 @@ class RegionConstantHexahedron(Region):
         mesh,
         quadrature=GaussLegendre(order=1, dim=3),
         grad=False,
+        **kwargs,
     ):
         element = ConstantHexahedron()
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionHexahedron(Region):
@@ -319,13 +333,15 @@ class RegionHexahedron(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=GaussLegendre(order=1, dim=3), grad=True):
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=1, dim=3), grad=True, **kwargs
+    ):
         element = Hexahedron()
 
         if len(mesh.cells.T) > 8:
             mesh = Mesh(mesh.points, mesh.cells[:, :8], "hexahedron")
 
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionHexahedronBoundary(RegionBoundary):
@@ -358,10 +374,17 @@ class RegionHexahedronBoundary(RegionBoundary):
         grad=True,
         only_surface=True,
         mask=None,
+        **kwargs,
     ):
         element = Hexahedron()
         super().__init__(
-            mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
+            mesh,
+            element,
+            quadrature,
+            grad=grad,
+            only_surface=only_surface,
+            mask=mask,
+            **kwargs,
         )
 
 
@@ -388,13 +411,15 @@ class RegionQuadraticHexahedron(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True, **kwargs
+    ):
         element = QuadraticHexahedron()
 
         if len(mesh.cells.T) > 20:
             mesh = Mesh(mesh.points, mesh.cells[:, :20], "hexahedron20")
 
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionQuadraticHexahedronBoundary(RegionBoundary):
@@ -427,10 +452,17 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
         grad=True,
         only_surface=True,
         mask=None,
+        **kwargs,
     ):
         element = QuadraticHexahedron()
         super().__init__(
-            mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
+            mesh,
+            element,
+            quadrature,
+            grad=grad,
+            only_surface=only_surface,
+            mask=mask,
+            **kwargs,
         )
 
 
@@ -458,9 +490,11 @@ class RegionTriQuadraticHexahedron(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True):
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True, **kwargs
+    ):
         element = TriQuadraticHexahedron()
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
@@ -494,10 +528,17 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
         grad=True,
         only_surface=True,
         mask=None,
+        **kwargs,
     ):
         element = TriQuadraticHexahedron()
         super().__init__(
-            mesh, element, quadrature, grad=grad, only_surface=only_surface, mask=mask
+            mesh,
+            element,
+            quadrature,
+            grad=grad,
+            only_surface=only_surface,
+            mask=mask,
+            **kwargs,
         )
 
 
@@ -524,14 +565,16 @@ class RegionLagrange(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, order, dim, quadrature=None, grad=True, permute=True):
+    def __init__(
+        self, mesh, order, dim, quadrature=None, grad=True, permute=True, **kwargs
+    ):
         if quadrature is None:
             quadrature = GaussLegendre(order=order, dim=dim, permute=permute)
 
         element = ArbitraryOrderLagrange(order, dim, permute=permute)
         self.order = order
 
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionTriangle(Region):
@@ -557,7 +600,9 @@ class RegionTriangle(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=TriangleQuadrature(order=1), grad=True):
+    def __init__(
+        self, mesh, quadrature=TriangleQuadrature(order=1), grad=True, **kwargs
+    ):
         element = Triangle()
 
         if len(mesh.cells.T) > 3:
@@ -565,7 +610,7 @@ class RegionTriangle(Region):
         else:
             m = mesh
 
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(m, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionTetra(Region):
@@ -591,7 +636,7 @@ class RegionTetra(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True):
+    def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True, **kwargs):
         element = Tetra()
 
         if len(mesh.cells.T) > 4:
@@ -599,7 +644,7 @@ class RegionTetra(Region):
         else:
             m = mesh
 
-        super().__init__(m, element, quadrature, grad=grad)
+        super().__init__(m, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionTriangleMINI(Region):
@@ -631,9 +676,10 @@ class RegionTriangleMINI(Region):
         quadrature=TriangleQuadrature(order=2),
         grad=True,
         bubble_multiplier=0.1,
+        **kwargs,
     ):
         element = TriangleMINI(bubble_multiplier=bubble_multiplier)
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionTetraMINI(Region):
@@ -665,9 +711,10 @@ class RegionTetraMINI(Region):
         quadrature=TetraQuadrature(order=2),
         grad=True,
         bubble_multiplier=0.1,
+        **kwargs,
     ):
         element = TetraMINI(bubble_multiplier=bubble_multiplier)
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionQuadraticTriangle(Region):
@@ -693,9 +740,11 @@ class RegionQuadraticTriangle(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=TriangleQuadrature(order=2), grad=True):
+    def __init__(
+        self, mesh, quadrature=TriangleQuadrature(order=2), grad=True, **kwargs
+    ):
         element = QuadraticTriangle()
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
 
 
 class RegionQuadraticTetra(Region):
@@ -721,6 +770,6 @@ class RegionQuadraticTetra(Region):
        >>> region.plot().show()
     """
 
-    def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True):
+    def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True, **kwargs):
         element = QuadraticTetra()
-        super().__init__(mesh, element, quadrature, grad=grad)
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)

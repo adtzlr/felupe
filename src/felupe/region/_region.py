@@ -42,6 +42,10 @@ class Region:
         derivatives of the element shape functions w.r.t. undeformed coordinates
         :math:`\frac{\partial \boldsymbol{h}(\boldsymbol{r})}{\partial \boldsymbol{X}}`
         and the differential volumes :math:`dV` are evaluated.
+    uniform : bool, optional
+        A flag to activate a compressed storage of the element shape functions and their
+        gradients for a uniform grid mesh. This is a performance feature. Default is
+        False.
 
     Attributes
     ----------
@@ -133,11 +137,11 @@ class Region:
 
     """
 
-    def __init__(self, mesh, element, quadrature, grad=True):
+    def __init__(self, mesh, element, quadrature, grad=True, uniform=False):
         self.evaluate_gradient = grad
-        self.reload(mesh=mesh, element=element, quadrature=quadrature)
+        self.reload(mesh=mesh, element=element, quadrature=quadrature, uniform=uniform)
 
-    def copy(self, mesh=None, element=None, quadrature=None):
+    def copy(self, mesh=None, element=None, quadrature=None, uniform=None):
         """Return a copy of the region and reload it if necessary.
 
         Parameters
@@ -149,6 +153,10 @@ class Region:
         quadrature: Quadrature or None, optional
             An element-compatible numeric integration scheme with points and weights
             (default is None).
+        uniform : bool or None, optional
+            A flag to activate a compressed storage of the element shape functions and
+            their gradients for a uniform grid mesh. This is a performance feature.
+            Default is None.
 
         Returns
         -------
@@ -161,11 +169,13 @@ class Region:
         """
 
         region = deepcopy(self)
-        region.reload(mesh=mesh, element=element, quadrature=quadrature)
+        region.reload(
+            mesh=mesh, element=element, quadrature=quadrature, uniform=uniform
+        )
 
         return region
 
-    def reload(self, mesh=None, element=None, quadrature=None):
+    def reload(self, mesh=None, element=None, quadrature=None, uniform=None):
         """Reload the numeric region inplace.
 
         Parameters
@@ -177,6 +187,10 @@ class Region:
         quadrature: Quadrature or None, optional
             An element-compatible numeric integration scheme with points and weights
             (default is None).
+        uniform : bool or None, optional
+            A flag to activate a compressed storage of the element shape functions and
+            their gradients for a uniform grid mesh. This is a performance feature.
+            Default is None.
 
         Examples
         --------
@@ -211,25 +225,36 @@ class Region:
         if quadrature is not None:
             region.quadrature = quadrature
 
-        if mesh is not None or element is not None or quadrature is not None:
+        if uniform is None:
+            uniform = False
+
+        if (
+            mesh is not None
+            or element is not None
+            or quadrature is not None
+            or uniform is not None
+        ):
             # element shape function
             region.element.h = np.array(
                 [region.element.function(q) for q in region.quadrature.points]
             ).T
-            region.h = np.tile(np.expand_dims(region.element.h, -1), region.mesh.ncells)
+            region.h = np.expand_dims(region.element.h, -1)
 
             # partial derivative of element shape function
             region.element.dhdr = np.array(
                 [region.element.gradient(q) for q in region.quadrature.points]
             ).transpose(1, 2, 0)
-            region.dhdr = np.tile(
-                np.expand_dims(region.element.dhdr, -1), region.mesh.ncells
-            )
+            region.dhdr = np.expand_dims(region.element.dhdr, -1)
 
             if region.evaluate_gradient:
                 # geometric gradient
+
+                cells = region.mesh.cells
+                if uniform:
+                    cells = cells[:1]
+
                 region.dXdr = np.einsum(
-                    "caI,aJqc->IJqc", region.mesh.points[region.mesh.cells], region.dhdr
+                    "caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr
                 )
 
                 # determinant and inverse of dXdr

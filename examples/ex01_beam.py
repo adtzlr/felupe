@@ -19,10 +19,11 @@ First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)``
 per axis. A numeric region created on the mesh represents the cantilever beam. A three-
 dimensional vector-valued displacement field is initiated on the region.
 """
+
 import felupe as fem
 
 cube = fem.Cube(a=(0, 0, 0), b=(2000, 100, 100), n=(101, 6, 6))
-region = fem.RegionHexahedron(cube)
+region = fem.RegionHexahedron(cube, uniform=True)
 displacement = fem.Field(region, dim=3)
 field = fem.FieldContainer([displacement])
 

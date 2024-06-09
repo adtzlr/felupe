@@ -3,17 +3,20 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `Region(uniform=False)`, a flag to invoke a reduced evaluation of the element shape functions and their gradients. If True, only the first cell is evaluated. This drastically speeds up linear-elasticity on uniform grid meshes (e.g. voxel-like quads and hexahedrons).
+
 ## [8.7.0] - 2024-06-07
 
-## Added
+### Added
 - Add `math.solve_nd(A, b, n=1)` as a generalized function of `math.solve_2d(A, b)` with supported broadcasting on the elementwise-operating trailing axes.
 
-## Changed
+### Changed
 - Rebase `math.solve_2d(A, b)` on `math.solve_nd(A, b, n=2)` with a batched-rhs supported in NumPy 2.0.
 - Change `ogden_roxburgh()` and `OgdenRoxburgh` to use the Gauss error function `erf` instead of `tanh` as internal sigmoid function.
 - Flatten the returned `inverse` indices-array of `np.unique(..., return_inverse=True)` in `mesh.merge_duplicate_points()` to ensure compatibility with NumPy 2.0.
 
-## Fixes
+### Fixes
 - Reset state variables in `PlotMaterial.evaluate()` after each completed load case.
 
 ## [8.6.0] - 2024-05-29

@@ -100,7 +100,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 |:-------------------------------------------------------:|:-------------------------------------------------------:|
 |  [hyperelastic](https://github.com/adtzlr/hyperelastic) |     Constitutive hyperelastic material formulations     |
 |    [matadi](https://github.com/adtzlr/matadi)           | Material Definition with Automatic Differentiation (AD) |
-|  [tensortrax](https://github.com/adtzlr/tensortrax)     |     Math on (Hyper-Dual) Tensors with Trailing Axes     |
+|  [tensortrax](https://github.com/adtzlr/tensortrax)     |      Differentiable Tensors based on NumPy Arrays       |
 |    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
 # Testing

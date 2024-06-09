@@ -33,7 +33,7 @@ import felupe as fem
 
 def test_region():
     mesh = fem.Rectangle()
-    r = fem.RegionQuad(mesh)
+    r = fem.RegionQuad(mesh, uniform=True)
 
     r.plot(off_screen=True)
 

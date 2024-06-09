@@ -86,7 +86,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 +-----------------------------------------------------------+---------------------------------------------------------+
 | `matadi <https://github.com/adtzlr/matadi>`_              | Material Definition with Automatic Differentiation (AD) |
 +-----------------------------------------------------------+---------------------------------------------------------+
-| `tensortrax <https://github.com/adtzlr/tensortrax>`_      | Math on Hyper-Dual Tensors with Trailing Axes           |
+| `tensortrax <https://github.com/adtzlr/tensortrax>`_      | Differentiable Tensors based on NumPy Arrays            |
 |                                                           | (bundled with FElupe)                                   |
 +-----------------------------------------------------------+---------------------------------------------------------+
 | `feplot <https://github.com/ZAARAOUI999/feplot>`_         | A visualization tool for FElupe                         |

@@ -35,7 +35,7 @@ def test_simple():
     umat = fem.LinearElastic(E=1, nu=0.3)
 
     m = fem.Cube(n=3)
-    r = fem.RegionHexahedron(m)
+    r = fem.RegionHexahedron(m, uniform=True)
     u = fem.FieldContainer([fem.Field(r, dim=3)])
 
     b = fem.SolidBody(umat, u)

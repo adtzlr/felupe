@@ -33,7 +33,7 @@ import felupe as fem
 
 def pre():
     m = fem.Cube(n=3)
-    r = fem.RegionHexahedron(m, uniform=True)
+    r = fem.RegionHexahedron(m)
 
     u = fem.Field(r, dim=3)
     p = fem.Field(r)
@@ -54,7 +54,7 @@ def pre_broadcast():
     m = fem.Cube(n=3)
     e = fem.Hexahedron()
     q = fem.GaussLegendre(1, 3)
-    r = fem.Region(m, e, q, uniform=True)
+    r = fem.Region(m, e, q)
 
     u = fem.Field(r, dim=3)
     p = fem.Field(r)
@@ -111,7 +111,7 @@ def pre_axi_mixed():
     m = fem.mesh.Rectangle(n=3)
     e = fem.element.Quad()
     q = fem.quadrature.GaussLegendre(1, 2)
-    r = fem.Region(m, e, q, uniform=True)
+    r = fem.Region(m, e, q)
 
     u = fem.FieldAxisymmetric(r, dim=2)
     p = fem.Field(r)

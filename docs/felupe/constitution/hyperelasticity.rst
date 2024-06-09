@@ -3,7 +3,12 @@
 Hyperelasticity
 ~~~~~~~~~~~~~~~
 
-This page contains hyperelastic material model formulations with automatic differentiation using `tensortrax <https://github.com/adtzlr/tensortrax>`_. These material model formulations are defined by a strain energy density function.
+This page contains hyperelastic material model formulations with automatic differentiation using :mod:`tensortrax`. These material model formulations are defined by a strain energy density function.
+
+.. figure:: _static/logo_tensortrax.png
+   :align: center
+
+   Differentiable Tensors based on NumPy Arrays.
 
 **Frameworks**
 

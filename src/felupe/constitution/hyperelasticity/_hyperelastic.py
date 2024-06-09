@@ -37,7 +37,7 @@ class Hyperelastic(Material):
         ``fun = lambda C, statevars, **kwargs: [psi, statevars_new]`` for functions
         with state variables. The right Cauchy-Green deformation tensor will be a
         :class:`tensortrax.Tensor` when the function is evaluated. It is important to
-        only use differentiable math-functions from ``tensortrax.math``!
+        only use differentiable math-functions from :mod:`tensortrax.math`.
     nstatevars : int, optional
         Number of state variables (default is 0).
     parallel : bool, optional
@@ -54,7 +54,7 @@ class Hyperelastic(Material):
 
     ..  warning::
         It is important to only use differentiable math-functions from
-        ``tensortrax.math``!
+        :mod:`tensortrax.math`!
 
     Take this minimal code-block as template
 
@@ -103,7 +103,7 @@ class Hyperelastic(Material):
         )
 
     ..  note::
-        See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
+        See the `documentation of tensortrax <https://tensortrax.readthedocs.io>`_
         for further details.
 
     Examples

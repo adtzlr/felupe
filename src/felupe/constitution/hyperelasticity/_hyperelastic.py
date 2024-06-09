@@ -26,7 +26,7 @@ from .._material import Material
 class Hyperelastic(Material):
     r"""A hyperelastic material definition with a given function for the strain energy
     density function per unit undeformed volume with Automatic Differentiation provided
-    by ``tensortrax``.
+    by :mod:`tensortrax`.
 
     Parameters
     ----------

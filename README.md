@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://felupe.readthedocs.io/en/latest/?badge=latest"><img src="https://user-images.githubusercontent.com/5793153/235789118-eb03eb25-2556-401d-8a0f-580f37e72f8d.png" height="80px"/></a>
+  <a href="https://felupe.readthedocs.io/en/latest/?badge=latest"><img src="https://github.com/adtzlr/felupe/assets/5793153/e91a37d3-b751-4cc9-b2ba-e3e6cb324ff4"/></a>
   <p align="center"><i>Finite element analysis for continuum mechanics of solid bodies.</i></p>
 </p>
 

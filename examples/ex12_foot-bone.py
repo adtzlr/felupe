@@ -1,6 +1,8 @@
 r"""
 Voxelized Foot Bone
 -------------------
+A :class:`~felupe.Region` on a voxel-based mesh with uniform hexahedrons should be
+created with ``uniform=True`` to enhance performance.
 
 .. admonition:: This example requires external packages.
    :class: hint
@@ -34,12 +36,12 @@ boundaries = {"fixed": fem.Boundary(field[0], fx=lambda x: x <= -110)}
 
 umat = fem.LinearElastic(E=1000, nu=0.3)
 solid = fem.SolidBody(umat, field)
-# gravity = fem.SolidBodyGravity(field, gravity=[0, 0, -7e-2])
-# bottom = fem.MultiPointContact(
-#     field, points=np.arange(mesh.npoints), centerpoint=-1, skip=(1, 1, 0)
-# )
+gravity = fem.SolidBodyGravity(field, gravity=[0, 0, -7e-2])
+bottom = fem.MultiPointContact(
+    field, points=np.arange(mesh.npoints), centerpoint=-1, skip=(1, 1, 0)
+)
 
-step = fem.Step(items=[solid], boundaries=boundaries)
+step = fem.Step(items=[solid, gravity, bottom], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve, parallel=True)
 plotter = solid.plot(
     "Principal Values of Cauchy Stress",
@@ -47,4 +49,4 @@ plotter = solid.plot(
     show_undeformed=False,
     clim=[0, 10],
 )
-# bottom.plot(plotter=plotter, color="white", opacity=1).show()
+bottom.plot(plotter=plotter, color="white", opacity=1).show()

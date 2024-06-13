@@ -3,7 +3,12 @@
 Total- & Updated-Lagrange
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-This page contains Total- and Updated-Lagrange material formulations with automatic differentiation using `tensortrax <https://github.com/adtzlr/tensortrax>`_. The material model formulations are defined by the first Piola-Kirchhoff stress tensor. Function-decorators are available to use Total-Lagrange and Updated-Lagrange material formulations in :class:`~felupe.MaterialAD`.
+This page contains Total- and Updated-Lagrange material formulations with automatic differentiation using :mod:`tensortrax.math`. The material model formulations are defined by the first Piola-Kirchhoff stress tensor. Function-decorators are available to use Total-Lagrange and Updated-Lagrange material formulations in :class:`~felupe.MaterialAD`.
+
+.. figure:: /_static/logo_tensortrax.png
+   :align: center
+
+   Differentiable Tensors based on NumPy Arrays.
 
 **Frameworks**
 

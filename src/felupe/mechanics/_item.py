@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from copy import deepcopy
 from ._helpers import Assemble, Results
 
 
@@ -35,13 +36,18 @@ class FormItem:
     sym : bool, optional
         Flag to active symmetric integration/assembly for bilinear forms (default is
         False).
-    args : tuple or None, optional
-        Tuple with initial optional weakform-arguments (default is None).
     kwargs : dict or None, optional
         Dictionary with initial optional weakform-keyword-arguments (default is None).
+    ramp_item : str or int, optional
+        The item of the dict of keyword arguments which will be updated in a
+        :class:`~felupe.Step` (default is 0). By default, the first item of the dict
+        is selected. Optionally, also the key of the item to be updated may be
+        given.
 
     Examples
     --------
+    A :class:`~felupe.FormItem` is used to create a linear-elastic solid body.
+
     >>> import felupe as fem
     >>> from felupe.math import ddot, sym, trace, grad
     >>>
@@ -61,6 +67,43 @@ class FormItem:
     >>> step = fem.Step(items=[item], boundaries=boundaries)
     >>> job = fem.Job(steps=[step]).evaluate()
 
+    A :class:`~felupe.FormItem` is used to create a boundary condition with externally
+    applied displacements which is used as a ramped-boundary in a :class:`Step`.
+
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>> from felupe.math import ddot
+    >>>
+    >>> mesh = fem.Cube(n=4)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+    >>> boundaries = fem.dof.symmetry(field[0])
+    >>> solid = fem.SolidBody(umat=fem.NeoHookeCompressible(mu=1, lmbda=2), field=field)
+    >>>
+    >>> face = fem.Field(fem.RegionHexahedronBoundary(mesh, mask=mesh.x == 1), dim=3)
+    >>> right = fem.FieldContainer([face])
+    >>>
+    >>>
+    >>> @fem.Form(v=right)
+    >>> def linearform():
+    >>>     def L(v, value, multiplier=100):
+    >>>         u = right.extract(grad=False)[0]
+    >>>         uext = value * np.array([1, 0, 0]).reshape(3, 1, 1)
+    >>>         return multiplier * ddot(v, u - uext)
+    >>>
+    >>>     return [L]
+    >>>
+    >>>
+    >>> @fem.Form(v=right, u=right)
+    >>> def bilinearform():
+    >>>     return [lambda v, u, value, multiplier=100: multiplier * ddot(v, u)]
+    >>>
+    >>>
+    >>> move = fem.FormItem(bilinearform, linearform, kwargs={"value": 0}, ramp_item=0)
+    >>> values = fem.math.linsteps([0, 1], num=5)
+    >>> step = fem.Step(items=[solid, move], boundaries=boundaries, ramp={move: values})
+    >>> job = fem.Job(steps=[step]).evaluate()
+
     See Also
     --------
     felupe.Form : A function decorator for a linear- or bilinear-form object.
@@ -68,12 +111,15 @@ class FormItem:
 
     """
 
-    def __init__(self, bilinearform=None, linearform=None, sym=False, kwargs=None):
+    def __init__(
+        self, bilinearform=None, linearform=None, sym=False, kwargs=None, ramp_item=0
+    ):
         self.bilinearform = bilinearform
         self.linearform = linearform
 
         self.sym = sym
         self.kwargs = kwargs
+        self.ramp_item = ramp_item
 
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
@@ -83,6 +129,13 @@ class FormItem:
         else:
             if self.linearform is not None:
                 self.field = self.linearform.form.v.field
+
+    def update(self, value):
+        key = self.ramp_item
+        if isinstance(key, int):
+            key = list(self.kwargs.keys())[key]
+
+        self.kwargs[key] = value
 
     def _vector(self, field=None, parallel=False):
         if field is not None:

@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add `Region(uniform=False)`, a flag to invoke a reduced evaluation of the element shape functions and their gradients. If True, only the first cell is evaluated. This drastically speeds up linear-elasticity on uniform grid meshes (e.g. voxel-like quads and hexahedrons).
+- Add an update-method in `FormItem(..., ramp_item=0).update(value)`. This enables a `FormItem` to be used as a ramped-item in a `Step`.
 
 ## [8.7.0] - 2024-06-07
 

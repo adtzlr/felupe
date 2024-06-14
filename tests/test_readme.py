@@ -147,7 +147,8 @@ def test_readme_form():
 
     field[0].fill(0)
 
-    item = fem.FormItem(bilinearform, linearform)
+    item = fem.FormItem(bilinearform, linearform, kwargs=dict(μ=1.0, λ=2.0))
+    item.update(1.0)
     step = fem.Step(items=[item], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 

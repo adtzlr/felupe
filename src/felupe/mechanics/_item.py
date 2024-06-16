@@ -83,21 +83,19 @@ class FormItem:
     >>> face = fem.Field(fem.RegionHexahedronBoundary(mesh, mask=mesh.x == 1), dim=3)
     >>> right = fem.FieldContainer([face])
     >>>
-    >>>
     >>> @fem.Form(v=right)
-    >>> def linearform():
-    >>>     def L(v, value, multiplier=100):
-    >>>         u = right.extract(grad=False)[0]
-    >>>         uext = value * np.array([1, 0, 0]).reshape(3, 1, 1)
-    >>>         return multiplier * ddot(v, u - uext)
-    >>>
-    >>>     return [L]
+    ... def linearform():
+    ...     def L(v, value, multiplier=100):
+    ...         u = right.extract(grad=False)[0]
+    ...         uext = value * np.array([1, 0, 0]).reshape(3, 1, 1)
+    ...         return multiplier * ddot(v, u - uext)
+    ...
+    ...     return [L]
     >>>
     >>>
     >>> @fem.Form(v=right, u=right)
-    >>> def bilinearform():
-    >>>     return [lambda v, u, value, multiplier=100: multiplier * ddot(v, u)]
-    >>>
+    ... def bilinearform():
+    ...     return [lambda v, u, value, multiplier=100: multiplier * ddot(v, u)]
     >>>
     >>> move = fem.FormItem(bilinearform, linearform, kwargs={"value": 0}, ramp_item=0)
     >>> values = fem.math.linsteps([0, 1], num=5)

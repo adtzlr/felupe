@@ -141,6 +141,37 @@ class Region:
         self.evaluate_gradient = grad
         self.reload(mesh=mesh, element=element, quadrature=quadrature, uniform=uniform)
 
+    def astype(self, dtype=None):
+        """Copy the region and cast the arrays to a specified type.
+
+        Parameters
+        ----------
+        dtype : data-type or None, optional
+            The data-type of the arrays of the Region. If None, a copy of the Region is
+            returned.
+
+        Returns
+        -------
+        Region
+            A copy of the region with arrays casted to a specified type.
+
+        See Also
+        --------
+        felupe.region.copy : Return a copy of the region and reload it if necessary.
+        """
+
+        region = self.copy()
+        region.h = region.h.astype(dtype)
+        region.dhdr = region.dhdr.astype(dtype)
+
+        if region.evaluate_gradient:
+            region.drdX = region.drdX.astype(dtype)
+            region.dXdr = region.dXdr.astype(dtype)
+            region.dhdX = region.dhdX.astype(dtype)
+            region.dV = region.dV.astype(dtype)
+
+        return region
+
     def copy(self, mesh=None, element=None, quadrature=None, uniform=None):
         """Return a copy of the region and reload it if necessary.
 

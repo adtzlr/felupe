@@ -68,12 +68,10 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
     >>> import felupe as fem
     >>>
     >>> R = fem.math.rotation_matrix(alpha_deg=45, dim=2)
-    >>> x = np.tile(np.array([[1., 0.]]), (3, 1))
-    >>> y = np.einsum("ij,...j->...i", R, x)
+    >>> x = np.array([1., 0.])
+    >>> y = np.einsum("ij,j->i", R, x)
     >>> y
-    array([[0.70710678, 0.70710678],
-           [0.70710678, 0.70710678],
-           [0.70710678, 0.70710678]])
+    array([0.70710678, 0.70710678])
     """
 
     a = np.deg2rad(alpha_deg)

@@ -174,7 +174,7 @@ class Field:
         )
 
         if sym:
-            return symmetric(g)
+            return symmetric(g, out=g)
         else:
             return g
 

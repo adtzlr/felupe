@@ -149,7 +149,7 @@ class LinearElastic(ConstitutiveMaterial):
 
         return [E / (1 + nu) / (1 - 2 * nu) * stress, statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), dtype=None):
         r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -178,7 +178,10 @@ class LinearElastic(ConstitutiveMaterial):
         if nu is None:
             nu = self.nu
 
-        elast = np.zeros((3, 3, 3, 3, *shape))
+        if x is not None:
+            dtype = x[0].dtype
+
+        elast = np.zeros((3, 3, 3, 3, *shape), dtype=dtype)
 
         # diagonal normal components
         for i in range(3):
@@ -334,7 +337,10 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         if nu is None:
             nu = self.nu
 
-        eye = identity(dim=3, shape=shape)
+        if x is not None:
+            dtype = x[0].dtype
+
+        eye = identity(dim=3, shape=shape, dtype=dtype)
 
         # convert to lame constants
         gamma, mu = lame_converter(E, nu)

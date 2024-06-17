@@ -41,7 +41,7 @@ def test_dtype(dtype=np.float32, tol=1e-3):
 
     boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    umat = fem.LinearElastic(E=1, nu=0.3)
     solid = fem.SolidBody(umat, field)
     step = fem.Step([solid], boundaries=boundaries)
     job = fem.Job([step]).evaluate(tol=tol)

@@ -165,7 +165,7 @@ def sym(A, out=None):
 
     """
     out = np.add(A, transpose(A), out=out)
-    return np.multiply(out, 0.5, out=out, dtype=out.dtype)
+    return np.multiply(out, 0.5, out=out)
 
 
 def dya(A, B, mode=2, parallel=False, **kwargs):

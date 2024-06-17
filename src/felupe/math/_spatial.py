@@ -20,7 +20,7 @@ import numpy as np
 
 
 def rotation_matrix(alpha_deg, dim=3, axis=0):
-    """Rotation matrix with given rotation axis and dimension (2d or 3d).
+    r"""Rotation matrix with given rotation axis and dimension (2d or 3d).
 
     Parameters
     ----------
@@ -35,6 +35,45 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
     -------
     rotation_matrix : ndarray
         Rotation matrix of dim 2 or 3 with given rotation axis.
+
+    Notes
+    -----
+    The two-dimensional rotation axis is denoted in Eq. :eq:`rotation-matrix-2d`.
+
+    ..  math::
+        :label: rotation-matrix-2d
+
+        \boldsymbol{R}(\alpha) = \begin{bmatrix}
+            \cos(\alpha) & -\sin(\alpha) \\
+            \sin(\alpha) &  \cos(\alpha)
+        \end{bmatrix}
+
+    A three-dimensional rotation matrix is created by inserting zeros in the row and
+    column at the given axis of rotation and one at the intersection, see
+    Eq. :eq:`rotation-matrix-3d`. If the axis of rotation is the second axis, the two-
+    dimensinal rotation matrix is transposed.
+
+    ..  math::
+        :label: rotation-matrix-3d
+
+        \boldsymbol{R}(\alpha) = \begin{bmatrix}
+            \cos(\alpha) & -\sin(\alpha) & 0 \\
+            \sin(\alpha) &  \cos(\alpha) & 0 \\
+                  0      &        0      & 1
+        \end{bmatrix}
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> R = fem.math.rotation_matrix(alpha_deg=45, dim=2)
+    >>> x = np.tile(np.array([[1., 0.]]), (3, 1))
+    >>> y = np.einsum("ij,...j->...i", R, x)
+    >>> y
+    array([[0.70710678, 0.70710678],
+           [0.70710678, 0.70710678],
+           [0.70710678, 0.70710678]])
     """
 
     a = np.deg2rad(alpha_deg)

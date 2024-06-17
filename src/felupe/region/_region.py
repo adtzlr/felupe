@@ -160,7 +160,7 @@ class Region:
         felupe.region.copy : Return a copy of the region and reload it if necessary.
         """
 
-        region = self.copy()
+        region = self.copy(uniform=self.uniform)
         region.h = region.h.astype(dtype)
         region.dhdr = region.dhdr.astype(dtype)
 
@@ -258,6 +258,8 @@ class Region:
 
         if uniform is None:
             uniform = False
+
+        region.uniform = uniform
 
         if (
             mesh is not None

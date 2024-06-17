@@ -36,7 +36,9 @@ class FieldPlaneStrain(Field):
     values : float or array
         A single value for all components of the field or an array of
         shape (region.mesh.npoints, dim)`. Default is 0.0.
-    
+    dtype : data-type or None, optional
+        Data-type of the array containing the field values.
+
     Notes
     -----
     This is a modified :class:`~felupe.Field` for plane strain. The :meth:`grad`-method
@@ -61,9 +63,9 @@ class FieldPlaneStrain(Field):
 
     """
 
-    def __init__(self, region, dim=2, values=0.0):
+    def __init__(self, region, dim=2, values=0.0, dtype=None):
         # init base Field
-        super().__init__(region, dim=dim, values=values)
+        super().__init__(region, dim=dim, values=values, dtype=dtype)
 
     def _interpolate_2d(self, dtype=None, out=None):
         """Interpolate 2D field values at points and evaluate them at the

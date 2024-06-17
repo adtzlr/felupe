@@ -36,7 +36,9 @@ class FieldAxisymmetric(Field):
     values : float or array, optional
         A single value for all components of the field or an array of
         shape (region.mesh.npoints, dim)`. Default is 0.0.
-    
+    dtype : data-type or None, optional
+        Data-type of the array containing the field values.
+
     Notes
     -----
     * component 1 =  axial component
@@ -75,12 +77,12 @@ class FieldAxisymmetric(Field):
 
     """
 
-    def __init__(self, region, dim=2, values=0.0):
+    def __init__(self, region, dim=2, values=0.0, dtype=None):
         # init base Field
-        super().__init__(region, dim=dim, values=values)
+        super().__init__(region, dim=dim, values=values, dtype=dtype)
 
         # create scalar-valued field of radial point values
-        self.scalar = Field(region, dim=1, values=region.mesh.points[:, 1])
+        self.scalar = Field(region, dim=1, values=region.mesh.points[:, 1], dtype=dtype)
 
         # interpolate radial point values to integration points of each cell
         # in the region

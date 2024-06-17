@@ -308,7 +308,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
         return [2 * mu * strain + gamma * trace(strain) * identity(strain), statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
+    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), dtype=None):
         r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -323,6 +323,8 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
             Poisson ratio (default is None).
         shape : (int, ...), optional
             Tuple with shape of the trailing axes (default is (1, 1))
+        dtype : data-type or None, optional
+            Data-type of the returned array (default is None).
 
         Returns
         -------

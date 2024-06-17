@@ -97,7 +97,7 @@ def pre_mixed():
 
     u = fem.Field(r, dim=3)
     p = fem.Field(r)
-    J = fem.Field(r, values=1)
+    J = fem.Field(r, values=1.0)
 
     f = fem.FieldContainer((u, p, J))
 
@@ -115,7 +115,7 @@ def pre_axi_mixed():
 
     u = fem.FieldAxisymmetric(r, dim=2)
     p = fem.Field(r)
-    J = fem.Field(r, values=1)
+    J = fem.Field(r, values=1.0)
 
     f = fem.FieldContainer((u, p, J))
 

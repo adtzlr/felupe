@@ -62,7 +62,12 @@ class LinearForm:
         """
 
         values = np.zeros(
-            (len(self.v.basis), self.v.basis.shape[-4], self.v.basis.shape[-2], self.v.field.region.mesh.ncells)
+            (
+                len(self.v.basis),
+                self.v.basis.shape[-4],
+                self.v.basis.shape[-2],
+                self.v.field.region.mesh.ncells,
+            )
         )
 
         if not parallel:

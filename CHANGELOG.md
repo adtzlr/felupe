@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `Region.astype(dtype=None)` to copy and cast the region arrays to a specified type.
+- Add `Field.extract(dtype=None)` to cast the extracted field gradient/interpolated values to a specified type.
+
 ## [8.8.0] - 2024-06-16
 
 ### Added

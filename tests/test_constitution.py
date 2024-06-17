@@ -53,7 +53,7 @@ def pre_mixed(sym, add_identity):
     r = fem.Region(m, e, q)
     u = fem.Field(r, dim=3)
     v = fem.Field(r, dim=1)
-    z = fem.Field(r, dim=1, values=1)
+    z = fem.Field(r, dim=1, values=1.0)
     w = fem.FieldContainer([u, v, z])
     return r, w.extract(grad=True, sym=sym, add_identity=add_identity), m
 

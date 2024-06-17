@@ -37,7 +37,7 @@ def pre():
 
     u = fem.Field(r, dim=3)
     p = fem.Field(r)
-    J = fem.Field(r, values=1)
+    J = fem.Field(r, values=1.0)
 
     f = fem.FieldContainer((u, p, J))
 
@@ -261,7 +261,7 @@ def test_newton_mixed():
     # add a displacement field and apply a uniaxial elongation on the cube
     u = fem.Field(region, dim=3)
     p = fem.Field(region0)
-    J = fem.Field(region0, values=1)
+    J = fem.Field(region0, values=1.0)
     field = fem.FieldContainer((u, p, J))
 
     assert len(field) == 3
@@ -288,7 +288,7 @@ def test_newton_body():
     # add a displacement field and apply a uniaxial elongation on the cube
     u = fem.Field(region, dim=3)
     p = fem.Field(region0)
-    J = fem.Field(region0, values=1)
+    J = fem.Field(region0, values=1.0)
     field = fem.FieldContainer((u, p, J))
 
     boundaries, loadcase = fem.dof.uniaxial(field, move=0.2, clamped=True)

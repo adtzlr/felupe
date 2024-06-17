@@ -33,7 +33,7 @@ Next, let's create a meshed cube for a Hood-Taylor element formulation. The fami
 
     displacement = fem.Field(region_q2,  dim=3)
     pressure     = fem.Field(region_p1, dim=1)
-    volumeratio  = fem.Field(region_p1, dim=1, values=1)
+    volumeratio  = fem.Field(region_p1, dim=1, values=1.0)
 
     field = fem.FieldContainer(fields=[displacement, pressure, volumeratio])
     solid = fem.SolidBody(umat=umat, field=field)

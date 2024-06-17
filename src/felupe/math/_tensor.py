@@ -26,7 +26,7 @@ except ModuleNotFoundError:
     from numpy import einsum as einsumt
 
 
-def identity(A=None, dim=None, shape=None):
+def identity(A=None, dim=None, shape=None, dtype=None):
     r"""Return identity matrices with ones on the diagonal of the first two axes and
     zeros elsewhere. 
     
@@ -42,7 +42,11 @@ def identity(A=None, dim=None, shape=None):
     shape : tuple of int or None, optional
         A tuple containing the shape of the trailing axes (batch dimensions). Default is
         None.
-    
+    dtype : data-type or None, optional
+        Data-type of the returned array. If None and ``A`` is not None, the data-type of
+        ``A`` is used. If None and ``A`` is None, the data-type of the returned array is
+        ``float``.
+
     Returns
     -------
     ndarray of shape (N, M, *np.ones_like(...)) or (dim, dim, *np.ones_like(...))
@@ -106,9 +110,11 @@ def identity(A=None, dim=None, shape=None):
             dim = N
         if shape is None:
             shape = shapeA
+        if dtype is None:
+            dtype = A.dtype
 
     ones = (1,) * len(shape)
-    eye = np.eye(N=dim, M=M)
+    eye = np.eye(N=dim, M=M, dtype=dtype)
     return eye.reshape(*eye.shape, *ones)
 
 

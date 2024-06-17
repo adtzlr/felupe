@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from copy import deepcopy
+
 from ._helpers import Assemble, Results
 
 

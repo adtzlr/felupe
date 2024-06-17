@@ -36,7 +36,9 @@ class FieldAxisymmetric(Field):
     values : float or array, optional
         A single value for all components of the field or an array of
         shape (region.mesh.npoints, dim)`. Default is 0.0.
-    
+    dtype : data-type or None, optional
+        Data-type of the array containing the field values.
+
     Notes
     -----
     * component 1 =  axial component
@@ -75,18 +77,18 @@ class FieldAxisymmetric(Field):
 
     """
 
-    def __init__(self, region, dim=2, values=0.0):
+    def __init__(self, region, dim=2, values=0.0, dtype=None):
         # init base Field
-        super().__init__(region, dim=dim, values=values)
+        super().__init__(region, dim=dim, values=values, dtype=dtype)
 
         # create scalar-valued field of radial point values
-        self.scalar = Field(region, dim=1, values=region.mesh.points[:, 1])
+        self.scalar = Field(region, dim=1, values=region.mesh.points[:, 1], dtype=dtype)
 
         # interpolate radial point values to integration points of each cell
         # in the region
         self.radius = self.scalar.interpolate()
 
-    def _interpolate_2d(self, out=None):
+    def _interpolate_2d(self, dtype=None, out=None):
         """Interpolate 2D field values at points and evaluate them at the
         integration points of all cells in the region."""
 
@@ -97,18 +99,21 @@ class FieldAxisymmetric(Field):
             "ca...,aqc->...qc",
             self.values[self.region.mesh.cells],
             self.region.h,
+            dtype=dtype,
             out=out,
         )
 
-    def interpolate(self, out=None):
+    def interpolate(self, dtype=None, out=None):
         # out-argument is not supported
         # if out is not None:
         #     out = out[:2]
 
         # extend dimension of in-plane 2d-gradient
-        return np.pad(self._interpolate_2d(out=None), ((0, 1), (0, 0), (0, 0)))
+        return np.pad(
+            self._interpolate_2d(dtype=dtype, out=None), ((0, 1), (0, 0), (0, 0))
+        )
 
-    def _grad_2d(self, sym=False, out=None):
+    def _grad_2d(self, sym=False, dtype=None, out=None):
         """In-plane 2D gradient as partial derivative of field values at points
         w.r.t. the undeformed coordinates, evaluated at the integration points
         of all cells in the region. Optionally, the symmetric part of the
@@ -118,6 +123,9 @@ class FieldAxisymmetric(Field):
         ---------
         sym : bool, optional (default is False)
             Calculate the symmetric part of the gradient.
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
         out : None or ndarray, optional
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
@@ -138,6 +146,7 @@ class FieldAxisymmetric(Field):
             "ca...,aJqc->...Jqc",
             self.values[self.region.mesh.cells],
             self.region.dhdX,
+            dtype=dtype,
             out=out,
         )
 
@@ -146,7 +155,7 @@ class FieldAxisymmetric(Field):
         else:
             return g
 
-    def grad(self, sym=False, out=None):
+    def grad(self, sym=False, dtype=None, out=None):
         """3D-gradient as partial derivative of field values at points w.r.t.
         the undeformed coordinates, evaluated at the integration points of all
         cells in the region. Optionally, the symmetric part of the gradient is
@@ -162,6 +171,9 @@ class FieldAxisymmetric(Field):
         ---------
         sym : bool, optional
             Calculate the symmetric part of the gradient (default is False).
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
         out : None or ndarray, optional
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
@@ -180,9 +192,12 @@ class FieldAxisymmetric(Field):
         #     out = out[:2, :2]
 
         # extend dimension of in-plane 2d-gradient
-        g = np.pad(self._grad_2d(sym=sym, out=None), ((0, 1), (0, 1), (0, 0), (0, 0)))
+        g = np.pad(
+            self._grad_2d(sym=sym, dtype=dtype, out=None),
+            ((0, 1), (0, 1), (0, 0), (0, 0)),
+        )
 
         # set dudX_33 = u_r / R
-        g[-1, -1] = self.interpolate()[1] / self.radius
+        g[-1, -1] = self.interpolate(dtype=dtype)[1] / self.radius
 
         return g

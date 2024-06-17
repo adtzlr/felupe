@@ -130,7 +130,7 @@ class FieldPlaneStrain(Field):
         )
 
         if sym:
-            return symmetric(g, dtype=dtype, out=g)
+            return symmetric(g, out=g)
         else:
             return g
 

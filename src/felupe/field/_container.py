@@ -111,7 +111,7 @@ class FieldContainer:
 
         return "\n".join([header, size, fields_header, *fields])
 
-    def extract(self, grad=True, sym=False, add_identity=True, out=None):
+    def extract(self, grad=True, sym=False, add_identity=True, dtype=None, out=None):
         """Generalized extraction method which evaluates either the gradient or the
         field values at the integration points of all cells in the region. Optionally,
         the symmetric part of the gradient is evaluated and/or the identity matrix is
@@ -129,6 +129,9 @@ class FieldContainer:
         add_identity : bool, optional
             Flag for the addition of the identity matrix if the gradient is evaluated
             (default is True).
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
         out : None or ndarray, optional
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
@@ -149,7 +152,7 @@ class FieldContainer:
 
         grads = np.pad(grad, (0, len(self.fields) - 1))
         return tuple(
-            f.extract(g, sym, add_identity=add_identity, out=res)
+            f.extract(g, sym, add_identity=add_identity, dtype=dtype, out=res)
             for g, f, res in zip(grads, self.fields, out)
         )
 

@@ -39,6 +39,8 @@ class Field:
     values : float or array
         A single value for all components of the field or an array of shape
         `(region.mesh.npoints, dim)`. Default is 0.0.
+    dtype : data-type or None, optional
+        Data-type of the array containing the field values.
     **kwargs : dict, optional
         Extra class attributes for the field.
 
@@ -88,7 +90,7 @@ class Field:
 
     """
 
-    def __init__(self, region, dim=1, values=0.0, **kwargs):
+    def __init__(self, region, dim=1, values=0.0, dtype=None, **kwargs):
         self.region = region
         self.dim = dim
         self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
@@ -107,8 +109,13 @@ class Field:
             else:
                 raise ValueError("Wrong shape of values.")
 
+            if dtype is not None:
+                self.values = self.values.astype(dtype)
+
         else:  # scalar value
-            self.values = np.ones((region.mesh.npoints, dim)) * values
+            self.values = np.full(
+                shape=(region.mesh.npoints, dim), fill_value=values, dtype=dtype
+            )
 
         eai, ai = self._indices_per_cell(self.region.mesh.cells, dim)
         self.indices = Indices(eai, ai, region, dim)
@@ -125,7 +132,7 @@ class Field:
 
         return cai, ai
 
-    def grad(self, sym=False, out=None):
+    def grad(self, sym=False, dtype=None, out=None):
         r"""Gradient as partial derivative of field values w.r.t. undeformed
         coordinates, evaluated at the integration points of all cells in the region.
         Optionally, the symmetric part the gradient is evaluated.
@@ -139,6 +146,9 @@ class Field:
         ---------
         sym : bool, optional
             Calculate the symmetric part of the gradient (default is False).
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
         out : None or ndarray, optional
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
@@ -159,6 +169,7 @@ class Field:
             "ca...,aJqc->...Jqc",
             self.values[self.region.mesh.cells],
             self.region.dhdX,
+            dtype=dtype,
             out=out,
         )
 
@@ -167,7 +178,7 @@ class Field:
         else:
             return g
 
-    def interpolate(self, out=None):
+    def interpolate(self, dtype=None, out=None):
         """Interpolate field values located at mesh-points to the quadrature points
         ``q`` of cells ``c`` in the region.
 
@@ -177,6 +188,9 @@ class Field:
 
         Arguments
         ---------
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
         out : None or ndarray, optional
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
@@ -196,10 +210,11 @@ class Field:
             "ca...,aqc->...qc",
             self.values[self.region.mesh.cells],
             self.region.h,
+            dtype=dtype,
             out=None,
         )
 
-    def extract(self, grad=True, sym=False, add_identity=True, out=None):
+    def extract(self, grad=True, sym=False, add_identity=True, dtype=None, out=None):
         """Generalized extraction method which evaluates either the gradient or the
         field values at the integration points of all cells in the region. Optionally,
         the symmetric part of the gradient is evaluated and/or the identity matrix is
@@ -214,6 +229,9 @@ class Field:
         add_identity : bool, optional
             Flag for the addition of the identity matrix
             if the gradient is evaluated (default is True).
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
         out : None or ndarray, optional
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
@@ -232,17 +250,17 @@ class Field:
         """
 
         if grad:
-            gr = self.grad(out=out)
+            gr = self.grad(out=out, dtype=dtype)
 
             if sym:
                 gr = symmetric(gr, out=gr)
 
             if add_identity:
-                gr = np.add(gr, identity(gr), out=gr)
+                gr = np.add(gr, identity(gr, dtype=dtype), out=gr)
 
             return gr
         else:
-            return self.interpolate(out=out)
+            return self.interpolate(out=out, dtype=dtype)
 
     def copy(self):
         "Return a copy of the field."

@@ -30,14 +30,24 @@ import numpy as np
 import felupe as fem
 
 
-def test_dtype():
+def test_dtype(dtype=np.float32, tol=1e-3):
     mesh = fem.Cube(n=3)
-    region = fem.RegionHexahedron(mesh).astype(np.float32)
-    displacement = fem.Field(region, dtype=np.float32)
+    region = fem.RegionHexahedron(mesh).astype(dtype)
+    displacement = fem.Field(region, dim=3, dtype=dtype)
     field = fem.FieldContainer([displacement])
 
-    assert field.extract()[0].dtype == np.float32
-    assert field.extract(grad=False)[0].dtype == np.float32
+    assert field.extract()[0].dtype == dtype
+    assert field.extract(grad=False)[0].dtype == dtype
+
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    solid = fem.SolidBody(umat, field)
+    step = fem.Step([solid], boundaries=boundaries)
+    job = fem.Job([step]).evaluate(tol=tol)
+
+    assert np.allclose([norm[-1] for norm in job.fnorms], 0, atol=tol)
+    assert displacement.values.dtype == dtype
 
 
 def test_dtype_axi():

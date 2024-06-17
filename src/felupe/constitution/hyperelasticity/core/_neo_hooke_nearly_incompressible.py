@@ -323,7 +323,7 @@ class NeoHooke(ConstitutiveMaterial):
 
         A4 = out
         if A4 is None:
-            A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]))
+            A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]), dtype=F.dtype)
         else:
             np.multiply(A4, 0, out=A4)
 

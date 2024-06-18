@@ -53,6 +53,13 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     ..  math::
 
         a(v, u) = \int_\Omega v \cdot f \cdot u \ dx
+    
+    Notes
+    -----
+    ..  warning::
+        The computational cost of weak-forms defined by :func:`~felupe.Form` is much
+        higher compared to :class:`~felupe.IntegralForm`. Try to re-formulate the weak
+        form and use :class:`~felupe.IntegralForm`instead if performance is relevant.
 
     Examples
     --------

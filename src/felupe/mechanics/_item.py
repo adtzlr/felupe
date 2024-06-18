@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from copy import deepcopy
-
 from ._helpers import Assemble, Results
 
 
@@ -44,6 +42,13 @@ class FormItem:
         :class:`~felupe.Step` (default is 0). By default, the first item of the dict
         is selected. Optionally, also the key of the item to be updated may be
         given.
+
+    Notes
+    -----
+    ..  warning::
+        The computational cost of weak-forms defined by :func:`~felupe.Form` is much
+        higher compared to :class:`~felupe.IntegralForm`. Try to re-formulate the weak
+        form and use :class:`~felupe.IntegralForm`instead if performance is relevant.
 
     Examples
     --------

@@ -113,6 +113,7 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> from felupe.math import ddot, trace, sym, grad
         >>> 

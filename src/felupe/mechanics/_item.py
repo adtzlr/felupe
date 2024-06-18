@@ -51,8 +51,9 @@ class FormItem:
     elastic solid bodies, boundary conditions or hyperelastic mixed-field solid bodies
     by their weak forms.
 
-    Linear-Elasticity
-    ^^^^^^^^^^^^^^^^^
+
+    **Linear-Elasticity**
+
     A :class:`~felupe.FormItem` is used to create a linear-elastic solid body.
 
     >>> import felupe as fem
@@ -74,8 +75,9 @@ class FormItem:
     >>> step = fem.Step(items=[item], boundaries=boundaries)
     >>> job = fem.Job(steps=[step]).evaluate()
 
-    Boundary Condition
-    ^^^^^^^^^^^^^^^^^^
+
+    **Boundary Condition**
+
     A :class:`~felupe.FormItem` is used to create a boundary condition with externally
     applied displacements which is used as a ramped-boundary in a :class:`Step`.
 
@@ -111,8 +113,9 @@ class FormItem:
     >>> step = fem.Step(items=[solid, move], boundaries=boundaries, ramp={move: values})
     >>> job = fem.Job(steps=[step]).evaluate()
 
-    Hu-Washizu (Mixed) Three-Field Formulation
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    **Hu-Washizu (Mixed) Three-Field Formulation**
+
     A :class:`~felupe.FormItem` is used to create a mixed three-field variation suitable
     for nearly-incompressible hyperelastic solid bodies.
 

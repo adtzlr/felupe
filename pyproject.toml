@@ -68,7 +68,7 @@ docs = [
 examples = [
     "contique",
     "imageio",
-    "matadi",
+    "matadi>=0.2.2",
     "pypardiso",
     "torch",
 ]

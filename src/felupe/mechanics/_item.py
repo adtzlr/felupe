@@ -48,7 +48,7 @@ class FormItem:
     ..  warning::
         The computational cost of weak-forms defined by :func:`~felupe.Form` is much
         higher compared to :class:`~felupe.IntegralForm`. Try to re-formulate the weak
-        form and use :class:`~felupe.IntegralForm`instead if performance is relevant.
+        form and use :class:`~felupe.IntegralForm` instead if performance is relevant.
 
     Examples
     --------

@@ -126,7 +126,7 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
         ...         δε, ε = sym(grad(v)), sym(grad(u))
         ...         return 2 * μ * ddot(δε, ε) + λ * trace(δε) * trace(ε)
         ...
-        ...     return [linear_elasticity,]
+        ...     return [linear_elasticity]
         >>> 
         >>> stiffness_matrix = bilinearform.assemble(v=field, u=field, parallel=False)
         >>> 

@@ -110,10 +110,10 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
     to ``v`` and ``u`` along with the gradient flags for both fields. Arguments as well
     as keyword arguments of the weak-form may be defined inside the decorator or as part
     of the assembly arguments.
-    
+
     ..  pyvista-plot::
         :context:
-            
+
         >>> from felupe.math import ddot, trace, sym, grad
         >>> 
         >>> @fem.Form(v=field, u=field, kwargs={"μ": 1.0, "λ": 2.0})
@@ -136,6 +136,9 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
         >>> field += fem.solve.solve(*system, ext0=loadcase["ext0"])
         >>> field.plot("Principal Values of Logarithmic Strain").show()
 
+    See Also
+    --------
+    felupe.FormItem: Bilinear and optional linear form objects based on weak-forms.
     """
 
     def form(weakform):

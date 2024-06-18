@@ -47,6 +47,12 @@ class FormItem:
 
     Examples
     --------
+    A :class:`~felupe.FormItem` is very flexible, e.g. it is possible to define linear-
+    elastic solid bodies, boundary conditions or hyperelastic mixed-field solid bodies
+    by their weak forms.
+
+    Linear-Elasticity
+    ^^^^^^^^^^^^^^^^^
     A :class:`~felupe.FormItem` is used to create a linear-elastic solid body.
 
     >>> import felupe as fem
@@ -68,6 +74,8 @@ class FormItem:
     >>> step = fem.Step(items=[item], boundaries=boundaries)
     >>> job = fem.Job(steps=[step]).evaluate()
 
+    Boundary Condition
+    ^^^^^^^^^^^^^^^^^^
     A :class:`~felupe.FormItem` is used to create a boundary condition with externally
     applied displacements which is used as a ramped-boundary in a :class:`Step`.
 
@@ -103,11 +111,65 @@ class FormItem:
     >>> step = fem.Step(items=[solid, move], boundaries=boundaries, ramp={move: values})
     >>> job = fem.Job(steps=[step]).evaluate()
 
+    Hu-Washizu (Mixed) Three-Field Formulation
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    A :class:`~felupe.FormItem` is used to create a mixed three-field variation suitable
+    for nearly-incompressible hyperelastic solid bodies.
+
+    >>> import felupe as fem
+    >>> from felupe.math import ddot, grad
+    >>>
+    >>> mesh = fem.Cube(n=3)
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> field = fem.FieldsMixed(region, n=3)
+    >>>
+    >>> @fem.Form(v=field)
+    ... def linearform():
+    ...     def L1(du, **kwargs):
+    ...         dW = linearform.dW = kwargs["umat"].gradient(kwargs["field"].extract())
+    ...         return fem.math.ddot(fem.math.grad(du), dW[0])
+    ...
+    ...     def L2(dp, **kwargs):
+    ...         return dp[0] * linearform.dW[1]
+    ...
+    ...     def L3(dJ, **kwargs):
+    ...         return dJ[0] * linearform.dW[2]
+    ...
+    ...     return [L1, L2, L3]
+    >>>
+    >>> @fem.Form(v=field, u=field)
+    ... def bilinearform():
+    ...     def a11(du, Du, **kwargs):
+    ...         d2W = bilinearform.d2W = kwargs["umat"].hessian(kwargs["field"].extract())
+    ...         return ddot(ddot(grad(du), d2W[0], mode=(2, 4)), grad(Du))
+    ...
+    ...     def a12(du, Dp, **kwargs):
+    ...         return ddot(grad(du), bilinearform.d2W[1]) * Dp[0]
+    ...
+    ...     def a13(du, DJ, **kwargs):
+    ...         return ddot(grad(du), bilinearform.d2W[2]) * DJ[0]
+    ...
+    ...     def a22(dp, Dp, **kwargs):
+    ...         return dp[0] * bilinearform.d2W[3] * Dp[0]
+    ...
+    ...     def a23(dp, DJ, **kwargs):
+    ...         return dp[0] * bilinearform.d2W[4] * DJ[0]
+    ...
+    ...     def a33(dJ, DJ, **kwargs):
+    ...         return dJ[0] * bilinearform.d2W[5] * DJ[0]
+    ...
+    ...     return [a11, a12, a13, a22, a23, a33]
+    >>>
+    >>> umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
+    >>> item = fem.FormItem(bilinearform, linearform, kwargs={"umat": umat, "field": field})
+    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=-0.3)
+    >>> step = fem.Step(items=[item], boundaries=boundaries)
+    >>> job = fem.Job(steps=[step], boundary=boundaries["move"]).evaluate()
+
     See Also
     --------
     felupe.Form : A function decorator for a linear- or bilinear-form object.
     felupe.Step : A Step with multiple substeps.
-
     """
 
     def __init__(

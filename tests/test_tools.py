@@ -103,6 +103,11 @@ def test_solve():
     assert cauchy.shape == (r.mesh.npoints,)
 
 
+def test_hello_world():
+    fem.hello_world()
+    fem.hello_world(pypardiso=True, parallel=True)
+
+
 def test_solve_mixed():
     r, f, fields = pre()
     u = fields[0]
@@ -491,6 +496,7 @@ def test_extrapolate():
 
 
 if __name__ == "__main__":
+    test_hello_world()
     test_solve()
     test_solve_mixed()
     test_newton_simple()

@@ -133,7 +133,15 @@ from .region import (
 from .tools import ViewField, ViewMesh
 from .tools import ViewSolid
 from .tools import ViewSolid as View
-from .tools import ViewXdmf, newtonrhapson, project, runs_on, save, topoints
+from .tools import (
+    ViewXdmf,
+    hello_world,
+    newtonrhapson,
+    project,
+    runs_on,
+    save,
+    topoints,
+)
 
 UserMaterial = Material  # alias to be removed in v8.0.0
 UserMaterialStrain = MaterialStrain  # alias to be removed in v8.0.0
@@ -144,6 +152,7 @@ __all__ = [
     "constitution",
     "dof",
     "element",
+    "hello_world",
     "math",
     "mechanics",
     "mesh",

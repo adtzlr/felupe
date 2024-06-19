@@ -1,3 +1,4 @@
+from ._hello_world import hello_world
 from ._misc import logo, runs_on
 from ._newton import NewtonResult
 from ._newton import fun_items as fun
@@ -15,6 +16,7 @@ __all__ = [
     "newtonrhapson",
     "curve",
     "force",
+    "hello_world",
     "moment",
     "extrapolate",
     "project",

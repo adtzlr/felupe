@@ -19,6 +19,7 @@ However, this is not a problem. FElupe supports arrays to be passed as the ``val
 argument of a :class:`~felupe.Boundary`. This is even possible in a
 :class:`~felupe.Step` with the ``ramp``-argument.
 """
+
 # sphinx_gallery_thumbnail_number = -2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -64,7 +65,7 @@ plotter.open_gif("result.gif", fps=10)
 def record(stepnumber, substepnumber, substep, plotter):
     # update the mesh-points and the scalars of the plotter
     name = plotter.mesh.active_scalars_info.name
-    data = field.evaluate.log_strain(tensor=False).mean(-2)[-1]
+    data = substep.x.evaluate.log_strain(tensor=False).mean(-2)[-1]
 
     plotter.mesh.points[:] = mesh.points + field[0].values
     plotter.mesh[name] = data

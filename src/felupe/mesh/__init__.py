@@ -20,6 +20,7 @@ from ._geometry import (
     RectangleArbitraryOrderQuad,
     Triangle,
 )
+from ._interpolate import interpolate_line
 from ._line_rectangle_cube import cube_hexa as _cube_hexa
 from ._line_rectangle_cube import line_line as _line_line
 from ._line_rectangle_cube import rectangle_quad as _rectangle_quad
@@ -58,6 +59,7 @@ __all__ = [
     "expand",
     "flip",
     "fill_between",
+    "interpolate_line",
     "mirror",
     "merge_duplicate_points",
     "merge_duplicate_cells",

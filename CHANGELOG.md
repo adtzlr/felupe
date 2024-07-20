@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Field(..., dtype=None)` to cast the array with field values to a specified type.
 - Add `Field.extract(dtype=None)` to cast the extracted field gradient/interpolated values to a specified type.
 - Add `hello_world()` to print the lines of a minimal-working-example to the console.
+- Add `mesh.interpolate_line(mesh, xi, axis)` to interpolate a line mesh.
 
 ### Changed
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.

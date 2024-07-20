@@ -95,4 +95,7 @@ def interpolate_line(mesh, xi, axis, Interpolator=None, **kwargs):
 
     cells_new = np.repeat(np.arange(len(xi)), 2)[1:-1].reshape(-1, 2)
 
-    return type(mesh)(points_new, cells_new, cell_type="line")
+    mesh_new = type(mesh)(points_new, cells_new, cell_type="line")
+    mesh_new.points_derivative = spline.derivative()
+
+    return mesh_new

@@ -553,6 +553,20 @@ def test_expand():
     assert np.allclose(cube.points.max(axis=0), [1, 2, 3])
 
 
+def test_interpolate_line():
+    import felupe as fem
+
+    mesh = fem.mesh.Line(n=5).expand(n=1).expand(n=1)
+    t = mesh.x.copy()
+    mesh.points[:, 0] = np.sin(np.pi / 2 * t)
+    mesh.points[:, 1] = np.cos(np.pi / 2 * t)
+
+    xi = np.linspace(0, 1, 101)
+    mesh_new = fem.mesh.interpolate_line(mesh, xi=xi, axis=1)
+
+    assert mesh_new.npoints == len(xi)
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -572,3 +586,4 @@ if __name__ == "__main__":
     test_mesh_update()
     test_modify_corners()
     test_expand()
+    test_interpolate_line()

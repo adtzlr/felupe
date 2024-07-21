@@ -39,7 +39,9 @@ def interpolate_line(mesh, xi, axis, Interpolator=None, **kwargs):
     Returns
     -------
     Mesh
-        A new line mesh with interpolated points.
+        A new line mesh with interpolated points. The attribute ``points_derivative``
+        holds the derivatives of the independent variable w.r.t. the dependent
+        variable(s).
 
     Examples
     --------
@@ -96,6 +98,7 @@ def interpolate_line(mesh, xi, axis, Interpolator=None, **kwargs):
     cells_new = np.repeat(np.arange(len(xi)), 2)[1:-1].reshape(-1, 2)
 
     mesh_new = type(mesh)(points_new, cells_new, cell_type="line")
-    mesh_new.points_derivative = spline.derivative()
+    mesh_new.points_derivative = np.zeros_like(mesh_new.points)
+    mesh_new.points_derivative[:, axes[mask]] = spline.derivative()(xi)
 
     return mesh_new

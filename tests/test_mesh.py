@@ -563,10 +563,10 @@ def test_interpolate_line():
 
     xi = np.linspace(0, 1, 101)
     mesh_new = fem.mesh.interpolate_line(mesh, xi=xi, axis=1)
-    derivative = mesh_new.points_derivative(xi)
 
     assert mesh_new.npoints == len(xi)
-    assert len(derivative) == len(xi)
+    assert len(mesh_new.points_derivative) == len(xi)
+    assert np.allclose(mesh_new.points_derivative[:, 1], 0)
 
 
 if __name__ == "__main__":

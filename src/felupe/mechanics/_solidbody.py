@@ -243,7 +243,9 @@ class SolidBody(Solid):
 
         self._form = IntegralForm
 
-    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+    def _vector(
+        self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
+    ):
         if kwargs is None:
             kwargs = {}
 
@@ -255,11 +257,13 @@ class SolidBody(Solid):
             fun=self.results.stress[slice(items)],
             v=self.field,
             dV=self.field.region.dV,
-        ).assemble(parallel=parallel)
+        ).assemble(parallel=parallel, block=block)
 
         return self.results.force
 
-    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+    def _matrix(
+        self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
+    ):
         if kwargs is None:
             kwargs = {}
 
@@ -279,7 +283,9 @@ class SolidBody(Solid):
             parallel=parallel, out=self.results.stiffness_values
         )
 
-        self.results.stiffness = form.assemble(values=self.results.stiffness_values)
+        self.results.stiffness = form.assemble(
+            values=self.results.stiffness_values, block=block
+        )
 
         return self.results.stiffness
 

@@ -364,7 +364,9 @@ class SolidBodyNearlyIncompressible(Solid):
             kirchhoff_stress=self._kirchhoff_stress,
         )
 
-    def _vector(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+    def _vector(
+        self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
+    ):
         if kwargs is None:
             kwargs = {}
 
@@ -393,11 +395,15 @@ class SolidBodyNearlyIncompressible(Solid):
             self.results.force_values[0], constraint, out=self.results.force_values[0]
         )
 
-        self.results.force = form.assemble(values=self.results.force_values)
+        self.results.force = form.assemble(
+            values=self.results.force_values, block=block
+        )
 
         return self.results.force
 
-    def _matrix(self, field=None, parallel=False, items=None, args=(), kwargs=None):
+    def _matrix(
+        self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
+    ):
         if kwargs is None:
             kwargs = {}
 
@@ -428,7 +434,9 @@ class SolidBodyNearlyIncompressible(Solid):
             out=self.results.stiffness_values[0],
         )
 
-        self.results.stiffness = form.assemble(values=self.results.stiffness_values)
+        self.results.stiffness = form.assemble(
+            values=self.results.stiffness_values, block=block
+        )
 
         return self.results.stiffness
 

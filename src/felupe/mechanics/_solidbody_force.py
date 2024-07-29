@@ -16,8 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from warnings import warn
-
 import numpy as np
 from scipy.sparse import csr_matrix
 
@@ -25,19 +23,20 @@ from ..assembly import IntegralForm
 from ._helpers import Assemble, Results
 
 
-class SolidBodyGravity:
-    r"""A gravity (body) force on a solid body.
+class SolidBodyForce:
+    r"""A body force on a solid body.
 
     Parameters
     ----------
     field : FieldContainer
         A field container with fields created on a boundary region.
-    gravity : ndarray or None, optional
-        The prescribed values of gravity :math:`\boldsymbol{g}` (default is None). If
-        None, the gravity vector is set to zero (the dimension of the gravity vector is
-        derived from the first field of the field container).
-    density : float, optional
-        The density :math:`\rho` of the solid body (default is 1.0).
+    values : ndarray or None, optional
+        The prescribed values (e.g. gravity :math:`\boldsymbol{g}`). Default is None. If
+        None, the values are set to zero (the dimension is derived from the first field
+        of the field container).
+    scale : float, optional
+        An optional scale factor for the values, e.g. density :math:`\rho` of the solid
+        body. Default is 1.0.
 
     Notes
     -----
@@ -59,12 +58,13 @@ class SolidBodyGravity:
         >>>
         >>> umat = fem.NeoHooke(mu=1, bulk=2)
         >>> solid = fem.SolidBody(umat, field)
-        >>> gravity = fem.SolidBodyGravity(field, density=1.0)
+        >>> density = 1.0
+        >>> force = fem.SolidBodyForce(field, scale=density)
         >>>
-        >>> table = fem.math.linsteps([0, 1], num=5, axis=0, axes=3)
+        >>> gravity = fem.math.linsteps([0, 2], num=5, axis=0, axes=3)
         >>> step = fem.Step(
-        ...     items=[solid, gravity],
-        ...     ramp={gravity: 2 * table},
+        ...     items=[solid, force],
+        ...     ramp={force: gravity},
         ...     boundaries=boundaries,
         ... )
         >>>
@@ -73,26 +73,20 @@ class SolidBodyGravity:
 
     """
 
-    def __init__(self, field, gravity=None, density=1.0):
-        warn(
-            "felupe.SolidBodyGravity is deprecated, use felupe.SolidBodyForce instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
+    def __init__(self, field, values=None, scale=1.0):
         self.field = field
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self._form = IntegralForm
 
-        self.results.gravity = np.zeros(self.field[0].dim)
-        if gravity is not None:
-            self.results.gravity = np.array(gravity)
+        self.results.values = np.zeros(self.field[0].dim)
+        if values is not None:
+            self.results.values = np.array(values)
 
-        self.results.density = density
+        self.results.scale = scale
 
-    def update(self, gravity):
-        self.__init__(self.field, gravity, self.results.density)
+    def update(self, values):
+        self.__init__(self.field, values, self.results.scale)
 
     def _vector(self, field=None, parallel=False):
         if field is not None:
@@ -103,7 +97,7 @@ class SolidBodyGravity:
         f.fields = f.fields[0:1]
 
         self.results.force = self._form(
-            fun=[self.results.density * self.results.gravity.reshape(-1, 1, 1)],
+            fun=[self.results.scale * self.results.values.reshape(-1, 1, 1)],
             v=f,
             dV=self.field.region.dV,
             grad_v=[False],

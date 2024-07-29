@@ -414,7 +414,7 @@ def test_solidbody_planestrain():
 def test_solidbody_mixed():
     umat, u = pre_mixed(dim=3)
     b = fem.SolidBody(umat=umat, field=u)
-    g = fem.SolidBodyGravity(field=u, gravity=[9810, 0, 0], density=7.85e-9)
+    g = fem.SolidBodyForce(field=u, values=[9810, 0, 0], scale=7.85e-9)
 
     g.assemble.vector()
 

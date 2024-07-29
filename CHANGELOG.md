@@ -10,9 +10,14 @@ All notable changes to this project will be documented in this file. The format 
 - Add `hello_world()` to print the lines of a minimal-working-example to the console.
 - Add `mesh.interpolate_line(mesh, xi, axis)` to interpolate a line mesh. The attribute `points_derivative` holds the derivatives of the independent variable w.r.t. the dependent variable(s). The column of the independent variable is filled with zeros.
 - Add optional keyword-argument `SolidBody.assemble.matrix(block=True)`, also for `SolidBody.assemble.vector(block=True)` and the assemble-methods of `SolidBodyNearlyIncompressible`. If `block=False`, these methods will assemble a list of the upper-triangle sub block-vectors/-matrices instead of the combined block-vector/-matrix.
+- Add `SolidBodyForce` as a replacement for `SolidBodyGravity` with more general keyword arguments (`"values"` instead of `"gravity"`, `"scale"` instead of `"density"`).
+- Add `Laplace` to be used as user-material in a solid body. Works with scalar- and vector-valued fields.
 
 ### Changed
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.
+
+### Deprecated
+- Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.
 
 ## [8.8.0] - 2024-06-16
 

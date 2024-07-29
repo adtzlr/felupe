@@ -12,7 +12,7 @@ Mechanics
    SolidBody
    SolidBodyNearlyIncompressible
    SolidBodyPressure
-   SolidBodyGravity
+   SolidBodyForce
 
 **State Variables**
 
@@ -53,7 +53,7 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.SolidBodyGravity
+.. autoclass:: felupe.SolidBodyForce
    :members:
    :undoc-members:
    :show-inheritance:

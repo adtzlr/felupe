@@ -12,7 +12,7 @@ import pytest
 import felupe as fem
 
 
-def pre():
+def pre(SolidBodyForce=fem.SolidBodyForce):
     mesh = fem.Rectangle(n=2)
     region = fem.RegionQuad(mesh)
     field = fem.FieldsMixed(region, n=3, axisymmetric=True)
@@ -23,7 +23,7 @@ def pre():
 
     points = mesh.points[:, 0] == 1
     load = fem.PointLoad(field, points)
-    gravity = fem.SolidBodyGravity(field, [0, 0, 0], 0)
+    gravity = SolidBodyForce(field, [0, 0, 0], 0)
 
     region2 = fem.RegionQuadBoundary(mesh, mask=points, ensure_3d=True)
     field2 = fem.FieldContainer([fem.FieldAxisymmetric(region2, dim=2)])
@@ -48,7 +48,7 @@ def weather(i, j, res, outside):
 
 
 def test_job():
-    field, step = pre()
+    field, step = pre(SolidBodyForce=fem.SolidBodyForce)
     job = fem.Job(steps=[step])
     job.evaluate()
     field, step = pre()
@@ -61,7 +61,7 @@ def test_job():
 
 
 def test_job_xdmf():
-    field, step = pre()
+    field, step = pre(SolidBodyForce=fem.SolidBodyGravity)
     job = fem.Job(steps=[step])
     job.evaluate()
 

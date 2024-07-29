@@ -5,13 +5,13 @@ The `Poisson equation <https://en.wikipedia.org/wiki/Poisson%27s_equation>`_
 
 .. math::
     
-   \text{div}(\boldsymbol{\nabla} v) + f = 0 \quad \text{in} \quad \Omega
+   \text{div}(\boldsymbol{\nabla} u) + f = 0 \quad \text{in} \quad \Omega
 
 with fixed boundaries on the bottom, top, left and right end-edges
 
 .. math::
    
-   v = 0 \quad \text{on} \quad \Gamma_v
+   u = 0 \quad \text{on} \quad \Gamma_u
 
 and a unit load
 
@@ -28,8 +28,8 @@ is solved on a unit rectangle with triangles.
 #
 # .. math::
 #
-#    \int_\Omega \boldsymbol{\nabla} v \cdot \boldsymbol{\nabla} u \ d\Omega
-#        = \int_\Omega  f \cdot v \ d\Omega
+#    \int_\Omega \boldsymbol{\nabla} (\delta u) \cdot \boldsymbol{\nabla} (\Delta u)
+#        \ d\Omega = \int_\Omega  \delta u \cdot f \ d\Omega
 #
 
 import felupe as fem

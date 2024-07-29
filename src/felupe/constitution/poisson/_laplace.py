@@ -76,7 +76,7 @@ class Laplace(ConstitutiveMaterial):
         self.x = [np.eye(3), np.zeros(0)]
 
     def function(self, x):
-        r"""Evaluate the strain energy density function per unit undeformed volume.
+        r"""Evaluate the potential per unit undeformed volume.
 
         Parameters
         ----------
@@ -85,17 +85,15 @@ class Laplace(ConstitutiveMaterial):
 
         Returns
         -------
-        ndarray of shape (n, m, ...)
-            Strain energy density function
+        ndarray of shape (...)
+            potential
 
         """
 
         F = x[0]
         H = F - identity(F)
 
-        I2 = ddot(H, H)
-
-        return [I2 / 2]
+        return [ddot(H, H) / 2]
 
     def gradient(self, x):
         r"""Evaluate the stress tensor.
@@ -108,7 +106,7 @@ class Laplace(ConstitutiveMaterial):
         Returns
         -------
         ndarray of shape (n, m, ...)
-            Stress tensor
+            gradient of the potential w.r.t. the undeformed coordinates
 
         """
 
@@ -130,7 +128,7 @@ class Laplace(ConstitutiveMaterial):
         Returns
         -------
         ndarray of shape (n, m, n, m, ...)
-            elasticity tensor
+            hessian of the potential w.r.t. the undeformed coordinates
 
         """
 

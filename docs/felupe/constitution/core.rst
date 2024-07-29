@@ -7,6 +7,12 @@ This page contains the core (hard-coded) constitutive material model formulation
 
 .. currentmodule:: felupe
 
+**Poisson Equation**
+
+.. autosummary::
+
+   Laplace
+
 **Linear-Elasticity**
 
 .. autosummary::
@@ -47,6 +53,11 @@ This page contains the core (hard-coded) constitutive material model formulation
    linear_elastic_plastic_isotropic_hardening
 
 **Detailed API Reference**
+
+.. autoclass:: felupe.Laplace
+   :members:
+   :undoc-members:
+   :inherited-members:
 
 .. autoclass:: felupe.LinearElastic
    :members:

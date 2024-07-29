@@ -22,7 +22,6 @@ and a unit load
 is solved on a unit rectangle with triangles.
 """
 
-
 # %%
 # The Poisson equation is transformed into integral form representation by the
 # `divergence (Gauss's) theorem <https://en.wikipedia.org/wiki/Divergence_theorem>`_.
@@ -32,39 +31,26 @@ is solved on a unit rectangle with triangles.
 #    \int_\Omega \boldsymbol{\nabla} v \cdot \boldsymbol{\nabla} u \ d\Omega
 #        = \int_\Omega  f \cdot v \ d\Omega
 #
-# For the :func:`~felupe.newtonrhapson` to converge, the *linear form* of the Poisson
-# equation is also required.
 
 import felupe as fem
-from felupe.math import ddot, grad
 
 mesh = fem.Rectangle(n=2**5).triangulate()
 region = fem.RegionTriangle(mesh)
-scalar = fem.Field(region)
-field = fem.FieldContainer([scalar])
+u = fem.Field(region, dim=1)
+field = fem.FieldContainer([u])
 
+boundaries = dict(
+    bottom=fem.Boundary(u, fy=0),
+    top=fem.Boundary(u, fy=1),
+    left=fem.Boundary(u, fx=0),
+    right=fem.Boundary(u, fx=1),
+)
 
-@fem.Form(v=field, u=field)
-def a():
-    "Container for a bilinear form."
-    return [lambda v, u, **kwargs: ddot(grad(v), grad(u))]
+solid = fem.SolidBody(umat=fem.Laplace(), field=field)
+unit_load = fem.SolidBodyForce(field=field, values=1.0)
 
-
-@fem.Form(v=field)
-def L():
-    "Container for a linear form."
-    return [lambda v, **kwargs: ddot(grad(v), grad(scalar)) - kwargs["scale"] * v]
-
-
-poisson = fem.FormItem(bilinearform=a, linearform=L, kwargs={"scale": 1.0})
-
-boundaries = {
-    "bottom-or-left": fem.Boundary(field[0], fx=0, fy=0, mode="or"),
-    "top-or-right": fem.Boundary(field[0], fx=1, fy=1, mode="or"),
-}
-
-step = fem.Step([poisson], boundaries=boundaries)
+step = fem.Step([solid, unit_load], boundaries=boundaries)
 job = fem.Job([step]).evaluate()
 
-view = mesh.view(point_data={"Field": scalar.values})
-view.plot("Field", show_undeformed=False).show()
+view = mesh.view(point_data={"Field": u.values})
+view.plot("Field").show()

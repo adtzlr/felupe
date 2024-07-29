@@ -5,6 +5,7 @@ from ._job import Job
 from ._multipoint import MultiPointConstraint, MultiPointContact
 from ._pointload import PointLoad
 from ._solidbody import SolidBody
+from ._solidbody_force import SolidBodyForce
 from ._solidbody_gravity import SolidBodyGravity
 from ._solidbody_incompressible import SolidBodyNearlyIncompressible
 from ._solidbody_pressure import SolidBodyPressure
@@ -18,6 +19,7 @@ __all__ = [
     "PointLoad",
     "SolidBody",
     "SolidBodyGravity",
+    "SolidBodyForce",
     "SolidBodyNearlyIncompressible",
     "SolidBodyPressure",
     "Step",

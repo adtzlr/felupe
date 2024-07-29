@@ -20,7 +20,6 @@ from .hyperelasticity.models import (
     lopez_pamies,
     miehe_goektepe_lulei,
     mooney_rivlin,
-    morph_representative_directions,
     neo_hooke,
     ogden,
     ogden_roxburgh,
@@ -39,6 +38,7 @@ from .linear_elasticity import (
     LinearElasticTensorNotation,
     lame_converter,
 )
+from .poisson import Laplace
 from .small_strain import MaterialStrain
 from .small_strain.models import (
     LinearElasticPlasticIsotropicHardening,
@@ -67,6 +67,7 @@ __all__ = [
     "yeoh",
     "NeoHooke",
     "NeoHookeCompressible",
+    "Laplace",
     "LinearElastic",
     "LinearElasticLargeStrain",
     "LinearElasticPlaneStrain",

@@ -692,6 +692,19 @@ def test_lagrange_statevars():
     assert not np.isnan(A4[0]).any()
 
 
+def test_laplace():
+    r, F = pre(sym=False, add_identity=True)
+
+    umat = fem.Laplace()
+    W = umat.function(F)
+    P = umat.gradient(F)[:-1]
+    A = umat.hessian(F)
+
+    assert W[0].shape == F[0].shape[-2:]
+    assert P[0].shape == (3, 3, *F[0].shape[-2:])
+    assert A[0].shape == (3, 3, 3, 3, 1, 1)
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -711,3 +724,4 @@ if __name__ == "__main__":
     test_optimize()
     test_lagrange()
     test_lagrange_statevars()
+    test_laplace()

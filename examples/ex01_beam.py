@@ -42,13 +42,15 @@ solid = fem.SolidBody(umat=umat, field=field)
 #
 # .. math::
 #    \delta W_{ext} = \int_v \delta \boldsymbol{u} \cdot \rho \boldsymbol{g} ~ dv
-gravity = fem.SolidBodyGravity(field, gravity=[0, 0, 9810], density=7850 * 1e-12)
+density = 7850 * 1e-12
+gravity = [0, 0, 9810]
+force = fem.SolidBodyForce(field, values=gravity, scale=density)
 
 # %%
 # Inside a Newton-Rhapson procedure, the weak form of linear elasticity is assembled
 # into the stiffness matrix and the applied gravity field is assembled into the body
 # force vector.
-step = fem.Step(items=[solid, gravity], boundaries=boundaries)
+step = fem.Step(items=[solid, force], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate()
 
 # %%

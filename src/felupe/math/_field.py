@@ -31,7 +31,7 @@ def displacement(field, dim=3, n=0):
 
 
 def deformation_gradient(field, n=0):
-    "Return the deformation gradient of the n-th field."
+    "Return the deformation gradient tensors of the n-th field."
     return field[n].extract(grad=True, sym=False, add_identity=True)
 
 

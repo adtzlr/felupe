@@ -90,7 +90,7 @@ The generation of force vectors or stiffness matrices of pressure boundaries on 
 
 ..  math::
 
-    \delta W_{ext} = \int_{\partial V} \delta \boldsymbol{u} \cdot p \ J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
+    \delta W_{ext} = \int_{\partial V} \delta \boldsymbol{u} \cdot (-p) \ J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
 
 
 ..  pyvista-plot::

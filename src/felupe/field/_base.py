@@ -179,7 +179,7 @@ class Field:
             return g
 
     def interpolate(self, dtype=None, out=None):
-        """Interpolate field values located at mesh-points to the quadrature points
+        r"""Interpolate field values located at mesh-points to the quadrature points
         ``q`` of cells ``c`` in the region.
 
         ..  math::

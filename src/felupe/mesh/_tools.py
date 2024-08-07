@@ -696,7 +696,7 @@ def translate(points, cells, cell_type, move, axis):
 
 @mesh_or_data
 def flip(points, cells, cell_type, mask=None):
-    """Ensure positive cell volumes for `tria`, `tetra`, `quad` and `hexahedron` cell
+    r"""Ensure positive cell volumes for `tria`, `tetra`, `quad` and `hexahedron` cell
     types.
 
     Parameters

@@ -83,7 +83,9 @@ class PointLoad:
         self.axisymmetric = axisymmetric
 
         self.results = Results()
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.assemble = Assemble(
+            vector=self._vector, matrix=self._matrix, multiplier=-1.0
+        )
 
     def update(self, values):
         self.__init__(self.field, self.points, values, self.apply_on, self.axisymmetric)
@@ -104,7 +106,7 @@ class PointLoad:
             np.concatenate([f.ravel() for f in force]).reshape(-1, 1)
         )
 
-        return -self.results.force
+        return self.results.force
 
     def _matrix(self, field=None, parallel=False):
         if field is not None:

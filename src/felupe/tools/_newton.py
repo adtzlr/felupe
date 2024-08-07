@@ -98,6 +98,9 @@ def fun_items(items, x, parallel=False):
         # assemble vector
         r = body.assemble.vector(field=body.field, **kwargs)
 
+        if body.assemble.multiplier is not None:
+            r *= body.assemble.multiplier
+
         # check and reshape vector
         if r.shape != shape:
             r.resize(*shape)
@@ -121,6 +124,9 @@ def jac_items(items, x, parallel=False):
     for body in items:
         # assemble matrix
         K = body.assemble.matrix(**kwargs)
+
+        if body.assemble.multiplier is not None:
+            K *= body.assemble.multiplier
 
         # check and reshape matrix
         if K.shape != matrix.shape:

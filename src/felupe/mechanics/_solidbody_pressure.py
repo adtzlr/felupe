@@ -41,7 +41,7 @@ class SolidBodyPressure:
     ..  math::
 
         \delta W_{ext} = \int_{\partial V}
-            \delta \boldsymbol{u} \cdot p J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
+            \delta \boldsymbol{u} \cdot (-p) J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
 
     Examples
     --------
@@ -87,7 +87,9 @@ class SolidBodyPressure:
         if pressure is not None:
             self.results.pressure = pressure
 
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.assemble = Assemble(
+            vector=self._vector, matrix=self._matrix, multiplier=-1
+        )
         self._area_change = AreaChange()
 
     def update(self, pressure):
@@ -113,7 +115,7 @@ class SolidBodyPressure:
         if pressure is not None:
             self.results.pressure = pressure
 
-        fun[0] *= self.results.pressure
+        fun[0] *= -self.results.pressure
 
         self.results.force = IntegralForm(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
@@ -138,7 +140,7 @@ class SolidBodyPressure:
         if pressure is not None:
             self.results.pressure = pressure
 
-        fun[0] *= self.results.pressure
+        fun[0] *= -self.results.pressure
 
         self.results.stiffness = IntegralForm(
             fun=fun,

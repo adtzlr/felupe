@@ -64,7 +64,7 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
 Body Force (Gravity) on a Solid Body
 ------------------------------------
 
-The generation of external force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyGravity`.
+The generation of external force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyForce`.
 
 
 ..  math::
@@ -74,7 +74,7 @@ The generation of external force vectors or stiffness matrices of body forces ac
 
 ..  code-block:: python
     
-    body = fem.SolidBodyGravity(field=field, gravity=[9810, 0, 0], density=7.85e-9)
+    body = fem.SolidBodyForce(field=field, values=[9810, 0, 0], scale=7.85e-9)
     
     force_gravity = body.assemble.vector(field, parallel=False, jit=False)
 

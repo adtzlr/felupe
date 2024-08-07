@@ -88,7 +88,7 @@ class SolidBodyPressure:
             self.results.pressure = pressure
 
         self.assemble = Assemble(
-            vector=self._vector, matrix=self._matrix, multiplier=-1
+            vector=self._vector, matrix=self._matrix, multiplier=-1.0
         )
         self._area_change = AreaChange()
 

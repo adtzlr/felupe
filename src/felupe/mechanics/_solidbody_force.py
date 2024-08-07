@@ -77,7 +77,7 @@ class SolidBodyForce:
         self.field = field
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(
-            vector=self._vector, matrix=self._matrix, multiplier=-1
+            vector=self._vector, matrix=self._matrix, multiplier=-1.0
         )
         self._form = IntegralForm
 
@@ -115,6 +115,6 @@ class SolidBodyForce:
             self.field = field
 
         n = np.sum(self.field.fieldsizes)
-        self.results.stiffness = csr_matrix(([0], ([0], [0])), shape=(n, n))
+        self.results.stiffness = csr_matrix(([0.0], ([0], [0])), shape=(n, n))
 
         return self.results.stiffness

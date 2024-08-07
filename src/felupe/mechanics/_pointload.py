@@ -106,6 +106,6 @@ class PointLoad:
             self.field = field
 
         n = np.sum(self.field.fieldsizes)
-        self.results.stiffness = csr_matrix(([0], ([0], [0])), shape=(n, n))
+        self.results.stiffness = csr_matrix(([0.0], ([0], [0])), shape=(n, n))
 
         return self.results.stiffness

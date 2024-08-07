@@ -21,7 +21,9 @@ Solvers from SciPy Sparse:
 
 .. tab:: SciPy Sparse (iterative)
 
-   **Note**: ``minres`` may be replaced by another iterative method.
+   ..  note::
+
+       ``minres`` may be replaced by another iterative method.
 
    ..  code-block:: python
         
@@ -45,10 +47,6 @@ Solvers from external packages:
    ..  code-block:: python
       
        from pypardiso import spsolve as solver
-       
-       # undocumented, untested workaround if multiple blas libaries are installed
-       # import os
-       # os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 .. tab:: PyPardiso (direct, symmetric)
 

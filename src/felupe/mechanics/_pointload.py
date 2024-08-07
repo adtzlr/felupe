@@ -23,7 +23,52 @@ from ._helpers import Assemble, Results
 
 
 class PointLoad:
-    "A point load with methods for the assembly of sparse vectors/matrices."
+    r"""A point load with methods for the assembly of sparse vectors/matrices, applied
+    on the n-th field.
+
+    Parameters
+    ----------
+    field : FieldContainer
+        A field container with fields created on a region.
+    points : list of int
+        A list with point ids where the values are applied.
+    values : float or array_like or None, optional
+        Values at points (default is None). If None, the values are set to zero.
+    apply_on : int, optional
+        The n-th field on which the point load is applied (default is 0).
+    axisymmetric : bool, optional
+        A flag to multiply the assembled vector and matrix by a scaling factor of
+        :math:`2 \pi` (default is False).
+
+    Notes
+    -----
+    .. warning::
+
+       The assembled vector is returned with a negative sign because this is considered
+       as an external quantity.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.mesh.Line(n=3)
+        >>> element = fem.element.Line()
+        >>> quadrature = fem.GaussLegendre(order=1, dim=1)
+        >>>
+        >>> region = fem.Region(mesh, element, quadrature)
+        >>> field = fem.FieldContainer([fem.Field(region, dim=1)])
+        >>>
+        >>> load = fem.PointLoad(field, [1, 2], values=[[3], [5]])
+        >>>
+        >>> vector = load.assemble.vector()
+        >>> vector.toarray()
+        array([[ 0.],
+               [-3.],
+               [-5.]])
+    """
 
     def __init__(self, field, points, values=None, apply_on=0, axisymmetric=False):
         self.field = field

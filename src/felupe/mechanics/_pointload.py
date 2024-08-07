@@ -40,13 +40,6 @@ class PointLoad:
         A flag to multiply the assembled vector and matrix by a scaling factor of
         :math:`2 \pi` (default is False).
 
-    Notes
-    -----
-    .. warning::
-
-       The assembled vector is returned with a negative sign because this is considered
-       as an external quantity.
-
     Examples
     --------
     ..  pyvista-plot::
@@ -65,9 +58,9 @@ class PointLoad:
         >>>
         >>> vector = load.assemble.vector()
         >>> vector.toarray()
-        array([[ 0.],
-               [-3.],
-               [-5.]])
+        array([[0.],
+               [3.],
+               [5.]])
     """
 
     def __init__(self, field, points, values=None, apply_on=0, axisymmetric=False):

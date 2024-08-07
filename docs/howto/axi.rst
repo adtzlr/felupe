@@ -35,4 +35,4 @@ For simplicity, let's use the isotropic hyperelastic :class:`~felupe.NeoHooke` m
     r = fem.IntegralForm(umat.gradient(F), field, dA).assemble()
     K = fem.IntegralForm(umat.hessian(F), field, dA, field).assemble()
 
-To sum up, for axisymmetric problems use :class:`~felupe.FieldAxisymmetric`. Of course, Mixed-field formulations may be applied on axisymmetric scenarios too.
+To sum up, for axisymmetric problems use :class:`~felupe.FieldAxisymmetric`. Of course, mixed-field formulations may also be used with axisymmetric (displacement) fields.

@@ -47,7 +47,7 @@ solid = fem.SolidBody(umat, field)
 # .. math::
 #
 #    \delta W_{ext} = \int_v \delta \boldsymbol{u} \cdot \boldsymbol{b} ~ dv
-bodyforce = fem.SolidBodyGravity(field)
+bodyforce = fem.SolidBodyForce(field)
 b = fem.math.linsteps([0, 200], num=10, axis=0, axes=3)
 
 # %%

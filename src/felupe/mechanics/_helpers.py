@@ -24,11 +24,12 @@ from ..math import det
 
 
 class Assemble:
-    "A class with assembly methods of a SolidBody."
+    "A class with methods for assembling vectors and matrices of a SolidBody."
 
-    def __init__(self, vector, matrix):
+    def __init__(self, vector, matrix, multiplier=None):
         self.vector = vector
         self.matrix = matrix
+        self.multiplier = multiplier
 
 
 class Evaluate:

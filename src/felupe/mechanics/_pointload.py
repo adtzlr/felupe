@@ -40,13 +40,6 @@ class PointLoad:
         A flag to multiply the assembled vector and matrix by a scaling factor of
         :math:`2 \pi` (default is False).
 
-    Notes
-    -----
-    .. warning::
-
-       The assembled vector is returned with a negative sign because this is considered
-       as an external quantity.
-
     Examples
     --------
     ..  pyvista-plot::
@@ -65,9 +58,9 @@ class PointLoad:
         >>>
         >>> vector = load.assemble.vector()
         >>> vector.toarray()
-        array([[ 0.],
-               [-3.],
-               [-5.]])
+        array([[0.],
+               [3.],
+               [5.]])
     """
 
     def __init__(self, field, points, values=None, apply_on=0, axisymmetric=False):
@@ -83,7 +76,9 @@ class PointLoad:
         self.axisymmetric = axisymmetric
 
         self.results = Results()
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.assemble = Assemble(
+            vector=self._vector, matrix=self._matrix, multiplier=-1.0
+        )
 
     def update(self, values):
         self.__init__(self.field, self.points, values, self.apply_on, self.axisymmetric)
@@ -104,13 +99,13 @@ class PointLoad:
             np.concatenate([f.ravel() for f in force]).reshape(-1, 1)
         )
 
-        return -self.results.force
+        return self.results.force
 
     def _matrix(self, field=None, parallel=False):
         if field is not None:
             self.field = field
 
         n = np.sum(self.field.fieldsizes)
-        self.results.stiffness = csr_matrix(([0], ([0], [0])), shape=(n, n))
+        self.results.stiffness = csr_matrix(([0.0], ([0], [0])), shape=(n, n))
 
         return self.results.stiffness

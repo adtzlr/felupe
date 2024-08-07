@@ -1064,7 +1064,7 @@ class Mesh(DiscreteGeometry):
         return as_mesh(fill_between(self, other_mesh=other_mesh, n=n))
 
     def flip(self, mask=None):
-        """Ensure positive cell volumes for `tria`, `tetra`, `quad` and `hexahedron`
+        r"""Ensure positive cell volumes for `tria`, `tetra`, `quad` and `hexahedron`
         cell types.
 
         Parameters
@@ -1080,8 +1080,8 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
-        A quad mesh with negative cell volumes occurs if one coordinate axis is multiplied
-        by -1. The error pops up if a region is created with this mesh.
+        A quad mesh with negative cell volumes occurs if one coordinate axis is
+        multiplied by -1. The error pops up if a region is created with this mesh.
 
         >>> import numpy as np
         >>> import felupe as fem
@@ -1090,8 +1090,8 @@ class Mesh(DiscreteGeometry):
         >>> mesh.update(points=mesh.points * np.array([[-1, 1]]))
         >>> region = fem.RegionQuad(mesh)
 
-        The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is evaluated
-        to -1.0.
+        The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is
+        evaluated to -1.0.
 
         >>> region.dV.sum()
         -1.0

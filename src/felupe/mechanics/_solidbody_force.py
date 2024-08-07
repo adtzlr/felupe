@@ -76,7 +76,9 @@ class SolidBodyForce:
     def __init__(self, field, values=None, scale=1.0):
         self.field = field
         self.results = Results(stress=False, elasticity=False)
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.assemble = Assemble(
+            vector=self._vector, matrix=self._matrix, multiplier=-1.0
+        )
         self._form = IntegralForm
 
         self.results.values = np.zeros(self.field[0].dim)
@@ -106,13 +108,13 @@ class SolidBodyForce:
         if len(self.field) > 1:
             self.results.force.resize(np.sum(self.field.fieldsizes), 1)
 
-        return -self.results.force
+        return self.results.force
 
     def _matrix(self, field=None, parallel=False):
         if field is not None:
             self.field = field
 
         n = np.sum(self.field.fieldsizes)
-        self.results.stiffness = csr_matrix(([0], ([0], [0])), shape=(n, n))
+        self.results.stiffness = csr_matrix(([0.0], ([0], [0])), shape=(n, n))
 
         return self.results.stiffness

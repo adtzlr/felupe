@@ -12,9 +12,12 @@ All notable changes to this project will be documented in this file. The format 
 - Add optional keyword-argument `SolidBody.assemble.matrix(block=True)`, also for `SolidBody.assemble.vector(block=True)` and the assemble-methods of `SolidBodyNearlyIncompressible`. If `block=False`, these methods will assemble a list of the upper-triangle sub block-vectors/-matrices instead of the combined block-vector/-matrix.
 - Add `SolidBodyForce` as a replacement for `SolidBodyGravity` with more general keyword arguments (`"values"` instead of `"gravity"`, `"scale"` instead of `"density"`).
 - Add `Laplace` to be used as user-material in a solid body. Works with scalar- and vector-valued fields.
+- Add an optional `Assemble(..., multiplier=None)` argument which is used in external items like  `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` and is applied in `newtonrhapson(items, ...)`.
 
 ### Changed
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.
+- Initialize empty matrices of `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` with `dtype=float`.
+- Don't multiply the assembled vectors of `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` by `-1.0`.
 
 ### Deprecated
 - Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.

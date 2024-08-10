@@ -24,7 +24,7 @@ from ..math import det
 
 
 class Assemble:
-    "A class with methods for assembling vectors and matrices of a SolidBody."
+    "A class with methods for assembling vectors and matrices of an Item."
 
     def __init__(self, vector, matrix, multiplier=None):
         self.vector = vector
@@ -33,7 +33,7 @@ class Assemble:
 
 
 class Evaluate:
-    "A class with evaluate methods of a SolidBody."
+    "A class with evaluate methods of an Item."
 
     def __init__(self, gradient, hessian, cauchy_stress=None, kirchhoff_stress=None):
         self.gradient = gradient
@@ -45,7 +45,7 @@ class Evaluate:
 
 
 class Results:
-    "A class with intermediate results of a SolidBody."
+    "A class with intermediate results of an Item."
 
     def __init__(self, stress=False, elasticity=False):
         self.force = None

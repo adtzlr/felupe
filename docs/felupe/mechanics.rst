@@ -14,12 +14,6 @@ Mechanics
    SolidBodyPressure
    SolidBodyForce
 
-**State Variables**
-
-.. autosummary::
-
-   StateNearlyIncompressible
-
 **Steps and Jobs**
 
 .. autosummary::
@@ -35,6 +29,15 @@ Mechanics
    PointLoad
    MultiPointConstraint
    MultiPointContact
+   
+**Helpers for Custom Items and State Variables**
+
+.. autosummary::
+
+   StateNearlyIncompressible
+   mechanics.Assemble
+   mechanics.Evaluate
+   mechanics.Results
 
 **Detailed API Reference**
    
@@ -44,11 +47,6 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.SolidBodyNearlyIncompressible
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: felupe.StateNearlyIncompressible
    :members:
    :undoc-members:
    :show-inheritance:
@@ -89,6 +87,26 @@ Mechanics
    :inherited-members:
 
 .. autoclass:: felupe.MultiPointContact
+   :members:
+   :undoc-members:
+   :inherited-members:
+   
+.. autoclass:: felupe.StateNearlyIncompressible
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.mechanics.Assemble
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.mechanics.Evaluate
+   :members:
+   :undoc-members:
+   :inherited-members:
+   
+.. autoclass:: felupe.mechanics.Results
    :members:
    :undoc-members:
    :inherited-members:

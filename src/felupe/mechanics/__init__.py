@@ -1,5 +1,5 @@
 from ._curve import CharacteristicCurve
-from ._helpers import StateNearlyIncompressible
+from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._item import FormItem
 from ._job import Job
 from ._multipoint import MultiPointConstraint, MultiPointContact
@@ -12,11 +12,14 @@ from ._solidbody_pressure import SolidBodyPressure
 from ._step import Step
 
 __all__ = [
+    "Assemble",
     "CharacteristicCurve",
+    "Evaluate",
     "FormItem",
     "StateNearlyIncompressible",
     "Job",
     "PointLoad",
+    "Results",
     "SolidBody",
     "SolidBodyGravity",
     "SolidBodyForce",

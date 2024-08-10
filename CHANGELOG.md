@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.
 - Initialize empty matrices of `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` with `dtype=float`.
 - Don't multiply the assembled vectors of `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` by `-1.0`.
+- Change the visibility of the internal helpers `Assemble`, `Evaluate` and `Results` of the mechanics-module `felupe.mechanics` from private to public.
 
 ### Deprecated
 - Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.

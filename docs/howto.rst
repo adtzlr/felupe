@@ -16,3 +16,4 @@ How-To Guides
    howto/solid
    howto/umat
    howto/umat_hyperelasticity
+   howto/items

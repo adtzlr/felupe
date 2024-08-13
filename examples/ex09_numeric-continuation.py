@@ -87,7 +87,7 @@ def fun(x, lpf, *args):
     body.field[0].values.ravel()[dof1] += x
     load.update(values_load * lpf)
 
-    return fem.tools.fun([body, load], body.field)[dof1]
+    return fem.tools.fun(items=[body, load], x=body.field)[dof1]
 
 
 def dfundx(x, lpf, *args):
@@ -98,8 +98,8 @@ def dfundx(x, lpf, *args):
     body.field[0].values.ravel()[dof1] += x
     load.update(values_load * lpf)
 
-    r = fem.tools.fun([body, load], body.field, True)
-    K = fem.tools.jac([body, load], body.field, True)
+    r = fem.tools.fun(items=[body, load], x=body.field)
+    K = fem.tools.jac(items=[body, load], x=body.field)
 
     return fem.solve.partition(body.field, K, dof1, dof0, -r)[2]
 
@@ -112,7 +112,7 @@ def dfundl(x, lpf, *args):
     body.field[0].values.ravel()[dof1] += x
     load.update(values_load)
 
-    return -load.assemble.vector()[dof1]
+    return fem.tools.fun(items=[load], x=body.field)[dof1]
 
 
 # %%

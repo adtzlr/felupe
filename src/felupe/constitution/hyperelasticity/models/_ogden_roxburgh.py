@@ -46,6 +46,11 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         Optional keyword arguments are passed to the isotropic strain energy density
         function :func:`material <material(C, **kwargs)>`.
 
+    ..  warning::
+
+        The keyword arguments of :func:`material <material(C, **kwargs)>` must not
+        include the names ``r``, ``m`` and ``beta``.
+
     Notes
     -----
     The pseudo-elastic strain energy density function :math:`\widetilde{\psi}` and the

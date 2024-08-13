@@ -101,15 +101,13 @@ def dfundx(x, lpf, *args):
     r = fem.tools.fun(items=[body, load], x=body.field)
     K = fem.tools.jac(items=[body, load], x=body.field)
 
-    return fem.solve.partition(body.field, K, dof1, dof0, -r)[2]
+    return fem.solve.partition(body.field, K, dof1, dof0, r)[2]
 
 
 def dfundl(x, lpf, *args):
     """The jacobian of the system vector of equilibrium equations w.r.t. the
     load proportionality factor."""
 
-    body.field[0].values.fill(0)
-    body.field[0].values.ravel()[dof1] += x
     load.update(values_load)
 
     return fem.tools.fun(items=[load], x=body.field)[dof1]

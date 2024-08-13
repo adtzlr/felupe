@@ -103,8 +103,8 @@ job = fem.CharacteristicCurve(steps=[vertical], boundary=boundaries["u_y"]).eval
     x0=field, tol=1e-1
 )
 figv, axv = job.plot(
-    xlabel="Displacement $u_y$ in mm $\longrightarrow$",
-    ylabel="Normal Force $F_y$ in kN $\longrightarrow$",
+    xlabel=r"Displacement $u_y$ in mm $\longrightarrow$",
+    ylabel=r"Normal Force $F_y$ in kN $\longrightarrow$",
     xaxis=1,
     yaxis=1,
     yscale=1 / 1000 * thickness,
@@ -121,8 +121,8 @@ job = fem.CharacteristicCurve(steps=[horizontal], boundary=boundaries["u_y"]).ev
     x0=field, tol=1e-1
 )
 figh, axh = job.plot(
-    xlabel="Displacement $u_x$ in mm $\longrightarrow$",
-    ylabel="Normal Force $F_x$ in kN $\longrightarrow$",
+    xlabel=r"Displacement $u_x$ in mm $\longrightarrow$",
+    ylabel=r"Normal Force $F_x$ in kN $\longrightarrow$",
     yscale=1 / 1000 * thickness,
     lw=3,
     color="C0",

@@ -187,9 +187,9 @@ class IntegralForm:
 
     See Also
     --------
-    felupe.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
-    felupe.IntegralFormCartesian : Single-field integral form.
     felupe.Form : A weak-form expression decorator.
+    felupe.assembly.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
+    felupe.assembly.IntegralFormCartesian : Single-field integral form.
 
     """
 

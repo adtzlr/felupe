@@ -19,6 +19,7 @@ With the help of `contique <https://github.com/adtzlr/contique>`_ (install with 
       
       pip install contique matadi
 """
+
 # sphinx_gallery_thumbnail_number = -1
 import contique
 import matadi as mat
@@ -111,7 +112,7 @@ def dfundl(x, lpf, *args):
     body.field[0].values.ravel()[dof1] += x
     load.update(values_load)
 
-    return load.assemble.vector()[dof1]
+    return -load.assemble.vector()[dof1]
 
 
 # %%
@@ -141,6 +142,9 @@ with meshio.xdmf.TimeSeriesWriter("result.xdmf") as writer:
     )
 
     X = np.array([res.x for res in Res])
+
+# check the final lpf value
+assert np.isclose(X[-1, -1], 11.759)
 
 # %%
 # Finally, the force-displacement curve is plotted. It can be seen that the resulting

@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from scipy.sparse import bmat, vstack
 
-from ..field import Field, FieldDual, FieldAxisymmetric, FieldPlaneStrain
+from ..field import Field, FieldAxisymmetric, FieldDual, FieldPlaneStrain
 from ._axi import IntegralFormAxisymmetric
 from ._cartesian import IntegralFormCartesian
 
@@ -184,8 +184,8 @@ class IntegralForm:
 
     See Also
     --------
-    felupe.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
-    felupe.IntegralFormCartesian : Single-field integral form.
+    felupe.assembly.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
+    felupe.assembly.IntegralFormCartesian : Single-field integral form.
     felupe.Form : A weak-form expression decorator.
 
     """

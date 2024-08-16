@@ -97,7 +97,7 @@ class IntegralFormCartesian:
     See Also
     --------
     felupe.IntegralForm : Mixed-field integral form container with methods for integration and assembly.
-    felupe.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
+    felupe.assembly.IntegralFormAxisymmetric : An Integral Form for axisymmetric fields.
 
     """
 

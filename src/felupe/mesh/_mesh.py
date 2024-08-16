@@ -20,7 +20,7 @@ from functools import wraps
 
 import numpy as np
 
-from ..tools._plot import ViewMesh
+from ..view import ViewMesh
 from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,

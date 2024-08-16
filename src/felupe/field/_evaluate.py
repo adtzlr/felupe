@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..math._field import strain, strain_stretch_1d
+from ..math import strain, strain_stretch_1d
 
 
 class EvaluateFieldContainer:

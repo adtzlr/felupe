@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..region._templates import (
+from ..region import (
     RegionBiQuadraticQuad,
     RegionConstantHexahedron,
     RegionConstantQuad,

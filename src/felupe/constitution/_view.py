@@ -21,8 +21,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from ..math._math import linsteps
-from ..math._tensor import det
+from ..math import det, linsteps
 
 
 class PlotMaterial:

@@ -18,8 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..field._axi import FieldAxisymmetric
-from ..field._base import Field
+from ..field import Field, FieldAxisymmetric
 from ._cartesian import IntegralFormCartesian
 
 
@@ -115,7 +114,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
     See Also
     --------
     felupe.IntegralForm : Mixed-field integral form container with methods for integration and assembly.
-    felupe.IntegralFormCartesian : Single-field integral form.
+    felupe.assembly.IntegralFormCartesian : Single-field integral form.
 
     """
 

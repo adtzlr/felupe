@@ -1,4 +1,5 @@
 from . import (
+    assembly,
     constitution,
     dof,
     element,

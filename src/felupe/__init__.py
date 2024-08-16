@@ -9,6 +9,7 @@ from . import (
     region,
     solve,
     tools,
+    view,
 )
 from .__about__ import __version__
 from .assembly import IntegralForm
@@ -132,18 +133,11 @@ from .region import (
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
 )
-from .tools import ViewField, ViewMesh
-from .tools import ViewSolid
-from .tools import ViewSolid as View
-from .tools import (
-    ViewXdmf,
-    hello_world,
-    newtonrhapson,
-    project,
-    runs_on,
-    save,
-    topoints,
-)
+from .tools import hello_world, newtonrhapson, project, runs_on, save, topoints
+from .view import ViewField, ViewMesh
+from .view import ViewSolid
+from .view import ViewSolid as View
+from .view import ViewXdmf
 
 UserMaterial = Material  # alias to be removed in v8.0.0
 UserMaterialStrain = MaterialStrain  # alias to be removed in v8.0.0

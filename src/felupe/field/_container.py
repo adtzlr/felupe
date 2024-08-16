@@ -20,7 +20,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from ..tools._plot import ViewField
+from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
 
 

@@ -24,7 +24,7 @@ import numpy as np
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..math import det, dot, transpose
-from ..tools._plot import ViewSolid
+from ..view import ViewSolid
 from ._helpers import Assemble, Evaluate, Results
 
 

@@ -23,3 +23,4 @@ FElupe consists of several (sub-) modules. Relevant functions and classes are av
    felupe/tools
    felupe/mechanics
    felupe/math
+   felupe/view

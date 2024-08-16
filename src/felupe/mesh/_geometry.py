@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..element._lagrange import lagrange_hexahedron, lagrange_quad
+from ..element import lagrange_hexahedron, lagrange_quad
 from ._line_rectangle_cube import cube_hexa, line_line, rectangle_quad
 from ._mesh import Mesh
 from ._tools import concatenate

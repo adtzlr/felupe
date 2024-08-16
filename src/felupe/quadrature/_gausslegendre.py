@@ -20,7 +20,7 @@ from string import ascii_lowercase
 
 import numpy as np
 
-from ..element._lagrange import lagrange_hexahedron, lagrange_quad
+from ..element import lagrange_hexahedron, lagrange_quad
 from ._scheme import Scheme
 
 

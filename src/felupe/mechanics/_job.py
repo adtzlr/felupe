@@ -19,7 +19,7 @@ import os
 
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
-from ..tools._misc import logo, runs_on
+from ..tools import logo, runs_on
 
 
 def displacement(field, substep=None):

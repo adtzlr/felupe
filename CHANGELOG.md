@@ -20,7 +20,8 @@ All notable changes to this project will be documented in this file. The format 
 - Initialize empty matrices of `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` with `dtype=float`.
 - Don't multiply the assembled vectors of `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` by `-1.0`.
 - Change the visibility of the internal helpers `Assemble`, `Evaluate` and `Results` of the mechanics-module `felupe.mechanics` from private to public.
-- Import the `assembly` module.
+- Import the `assembly` module to the global namespace.
+- Isolate the submodules, i.e. a submodule only uses the public API of another submodule. If necessary, this will help to change one or more modules to a future extension package.
 
 ### Deprecated
 - Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.

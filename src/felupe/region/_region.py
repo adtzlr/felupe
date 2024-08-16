@@ -271,13 +271,14 @@ class Region:
             region.element.h = np.array(
                 [region.element.function(q) for q in region.quadrature.points]
             ).T
-            region.h = np.expand_dims(region.element.h, -1)
+            region.h = np.ascontiguousarray(np.expand_dims(region.element.h, -1))
 
             # partial derivative of element shape function
             region.element.dhdr = np.array(
                 [region.element.gradient(q) for q in region.quadrature.points]
             ).transpose(1, 2, 0)
-            region.dhdr = np.expand_dims(region.element.dhdr, -1)
+
+            region.dhdr = np.ascontiguousarray(np.expand_dims(region.element.dhdr, -1))
 
             if region.evaluate_gradient:
                 # geometric gradient
@@ -286,8 +287,8 @@ class Region:
                 if uniform:
                     cells = cells[:1]
 
-                region.dXdr = np.einsum(
-                    "caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr
+                region.dXdr = np.ascontiguousarray(
+                    np.einsum("caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr)
                 )
 
                 # determinant and inverse of dXdr

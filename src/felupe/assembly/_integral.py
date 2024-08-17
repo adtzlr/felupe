@@ -31,8 +31,8 @@ class IntegralForm:
     fields ``[u, ...]``. For the lists of fields, gradients may be passed by setting the
     respective list items in ``grad_v`` and ``grad_u`` to True.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     fun : list of array
         The list of pre-evaluated function arrays.
     v : FieldContainer

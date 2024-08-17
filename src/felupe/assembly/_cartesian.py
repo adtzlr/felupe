@@ -32,10 +32,11 @@ class IntegralFormCartesian:
     both fields ``v`` and ``u`` gradients may be passed by setting ``grad_v`` and
     ``grad_u`` to True (default is False for both fields).
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     fun : array
-        The pre-evaluated function array.
+        The pre-evaluated function array. If the array is not contiguous, a C-contiguous
+        copy is made.
     v : Field
         The test field.
     dV : array
@@ -60,7 +61,7 @@ class IntegralFormCartesian:
         L(\boldsymbol{v}) = \int_\Omega \boldsymbol{f} \cdot \boldsymbol{v} ~ dV
 
 
-    or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{F}`
+    or by the double-dot product of a (matrix-valued) function :math:`\boldsymbol{f}`
     and the gradient of the field values :math:`\boldsymbol{\nabla v}`.
 
     ..  math::

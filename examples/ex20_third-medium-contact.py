@@ -8,8 +8,6 @@ Third Medium Contact
    
    * define multiple solid bodies and create a top-level field
    
-   * setup a simplified frictionless elastic-to-rigid contact interaction
-   
    * plot the Cauchy stress component :math:`\sigma_{22}`
 
 This contact method uses a third medium for two solid contact bodies [1]_, [2]_.
@@ -17,9 +15,11 @@ First, let's create a rectangular mesh with quad cells for the upper solid body.
 :meth:`~felupe.Mesh.add_runouts`-method is used to modify the geometry according to
 [1]_. Another rectangle is used for the elastic foundation. As both solid bodies will
 use the same material model formulation and properties, both meshes are merged by
-stacking the mesh container.
+stacking the meshes of the :class:`mesh container <felupe.MeshContainer>` into a
+:class:`mesh <felupe.Mesh>`.
 """
 
+# sphinx_gallery_thumbnail_number = -1
 import numpy as np
 import tensortrax.math as tm
 

@@ -11,6 +11,15 @@ Third Medium Contact
    * plot the Cauchy stress component :math:`\sigma_{22}`
 
 This contact method uses a third medium for two solid contact bodies [1]_, [2]_.
+
+..  note::
+    
+    This example is based on a transversal isotropic hyperelastic strain energy function
+    for the third medium [1]_. Instead of a transversal isotropic hyperelastic strain
+    energy function a regularization is also possible [2]_. However, this kind of
+    regularization requires the Hessian of the displacement field inside a weak form
+    expression - which is unfortunately not possibe in FElupe.
+
 First, let's create a rectangular mesh with quad cells for the upper solid body. The
 :meth:`~felupe.Mesh.add_runouts`-method is used to modify the geometry according to
 [1]_. Another rectangle is used for the elastic foundation. As both solid bodies will

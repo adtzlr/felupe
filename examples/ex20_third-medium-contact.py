@@ -129,9 +129,9 @@ job = fem.Job([step]).evaluate(x0=field)
 #
 #    The stress results are higher than the ones shown in [1]_, this could have multiple
 #    reasons. First, we plot a component of the Cauchy stress tensor. Second, we project
-#    the stresses by shifting the stress results, located at the quadrature points, to
-#    the mesh points. Furthermore, these point-based stress values are averaged
-#    **inside** the solid body.
+#    the stresses by :func:`shifting <felupe.topoints>` the stress results, located at 
+#    the quadrature points, to the mesh points. Furthermore, these point-based stress
+#    values are averaged **inside** the solid body.
 #
 plotter = solids[0].plot("Cauchy Stress", component=1, project=fem.topoints)
 plotter.show_bounds(ytitle="")

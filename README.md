@@ -8,24 +8,25 @@
 FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics 🔧 of solid bodies 🚂. Its name is a combination of FE (finite element) and the german word *Lupe* 🔍 (magnifying glass) as a synonym for getting an insight 📖 how a finite element analysis code 🧮 looks like under the hood 🕳️.
 
 <p align="center">
-  <a href="https://felupe.readthedocs.io/en/latest/examples/ex01_beam.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex01_beam_thumb.png" height="120px"/></a> <a href="https://felupe.readthedocs.io/en/latest/examples/ex02_plate-with-hole.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex02_plate-with-hole_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex03_plasticity.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex03_plasticity_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex04_balloon.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex04_balloon_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex05_rubber-metal-bushing.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex05_rubber-metal-bushing_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex06_rubber-metal-spring.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex06_rubber-metal-spring_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex07_engine-mount.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex07_engine-mount_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex08_shear.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex08_shear_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex09_numeric-continuation.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex09_numeric-continuation_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex10_poisson-equation.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex10_poisson-equation_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex11_notch-stress.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex11_notch-stress_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex12_foot-bone.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex12_foot-bone_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex13_morph-rubber-wheel.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex13_morph-rubber-wheel_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex14_hyperelasticity.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex14_hyperelasticity_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex15_hexmesh-metacone.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex15_hexmesh-metacone_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex16_deeplearning-torch.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex16_deeplearning-torch_thumb.png" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex17_torsion-gif.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex17_torsion-gif_thumb.gif" height="120px"/></a> <a 
-  href="https://felupe.readthedocs.io/en/latest/examples/ex18_nonlinear-viscoelasticity-newton.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex18_nonlinear-viscoelasticity-newton_thumb.png" height="120px"/></a> <a
-  href="https://felupe.readthedocs.io/en/latest/examples/ex19_taylor-hood.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex19_taylor-hood_thumb.png" height="120px"/></a>
+  <a href="https://felupe.readthedocs.io/en/latest/examples/ex01_beam.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex01_beam_thumb.png" height="100px"/></a> <a href="https://felupe.readthedocs.io/en/latest/examples/ex02_plate-with-hole.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex02_plate-with-hole_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex03_plasticity.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex03_plasticity_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex04_balloon.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex04_balloon_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex05_rubber-metal-bushing.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex05_rubber-metal-bushing_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex06_rubber-metal-spring.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex06_rubber-metal-spring_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex07_engine-mount.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex07_engine-mount_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex08_shear.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex08_shear_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex09_numeric-continuation.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex09_numeric-continuation_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex10_poisson-equation.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex10_poisson-equation_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex11_notch-stress.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex11_notch-stress_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex12_foot-bone.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex12_foot-bone_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex13_morph-rubber-wheel.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex13_morph-rubber-wheel_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex14_hyperelasticity.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex14_hyperelasticity_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex15_hexmesh-metacone.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex15_hexmesh-metacone_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex16_deeplearning-torch.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex16_deeplearning-torch_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex17_torsion-gif.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex17_torsion-gif_thumb.gif" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex18_nonlinear-viscoelasticity-newton.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex18_nonlinear-viscoelasticity-newton_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex19_taylor-hood.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex19_taylor-hood_thumb.png" height="100px"/></a> <a
+  href="https://felupe.readthedocs.io/en/latest/examples/ex20_third-medium-contact.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex20_third-medium-contact_thumb.png" height="100px"/></a>
 </p>
 
 # Installation

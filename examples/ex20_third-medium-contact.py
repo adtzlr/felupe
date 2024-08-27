@@ -10,15 +10,13 @@ Third Medium Contact
    
    * plot the Cauchy stress component :math:`\sigma_{22}`
 
-This contact method uses a third medium for two solid contact bodies [1]_, [2]_.
+This contact method uses a third medium for two solid contact bodies.
 
 ..  note::
     
-    This example is based on a transversal isotropic hyperelastic strain energy function
+    This example starts with a transversal isotropic hyperelastic strain energy function
     for the third medium [1]_. Instead of a transversal isotropic hyperelastic strain
-    energy function a regularization is also possible [2]_. However, this kind of
-    regularization requires the Hessian of the displacement field inside a weak form
-    expression - which is unfortunately not possibe in FElupe.
+    energy function, a Hessian-based regularization is also possible ([2]_, [3]_).
 
 First, let's create a rectangular mesh with quad cells for the upper solid body. The
 :meth:`~felupe.Mesh.add_runouts`-method is used to modify the geometry according to
@@ -33,6 +31,7 @@ import numpy as np
 import tensortrax.math as tm
 
 import felupe as fem
+from felupe.math import dddot, hess
 
 top = fem.Rectangle(a=(-1, 1.1), b=(1, 2), n=(11, 4))
 block = top.add_runouts([-1 / 3], normalize=True, centerpoint=[0, 2], exponent=2)
@@ -53,12 +52,29 @@ lower = line.copy(
 )
 upper = line.copy(points=block.points[top.y == top.y.min()])
 medium = lower.fill_between(upper, n=3)
-medium.points[12:21, 0] += 0.04
+
+# %%
+# The left- and right-rectangles are also added to the third medium to visualize the
+# deformation of the background mesh in a region where no contact occurs.
+air = [
+    fem.Rectangle(
+        a=(-2, block.y[block.x == -1].min()), b=(-1, 2), n=(6, 4)
+    ),  # top-left
+    fem.Rectangle(
+        a=(-2, 1), b=(-1, block.y[block.x == 1].min()), n=(6, 3)
+    ),  # bottom-l.
+    fem.Rectangle(a=(1, block.y[block.x == 1].min()), b=(2, 2), n=(6, 4)),  # top-right
+    fem.Rectangle(a=(1, 1), b=(2, block.y[block.x == 1].min()), n=(6, 3)),  # bottom-r.
+]
+medium = fem.MeshContainer([medium, *air], merge=True).stack()
+medium.points[
+    np.logical_and(medium.y == 2, np.logical_or(medium.x < -1, medium.x > 1)), 1
+] -= 0.02
 
 # %%
 # Both meshes are added to a mesh container. For each mesh of the container, quad
 # regions and plane-strain vector-fields for the displacements are created.
-container = fem.MeshContainer([structure, medium], merge=True)
+container = fem.MeshContainer([structure, medium], merge=True, decimals=6)
 
 plotter = container.plot(colors=["darkgrey", "lightgrey"])
 plotter.show_bounds(xtitle="", ytitle="")
@@ -133,27 +149,93 @@ job = fem.Job([step]).evaluate(x0=field)
 # %%
 # The vertical component of the Cauchy stress :math:`\sigma_{22}` is shifted to and
 # averaged inside the solid body at the mesh points.
-#
-# .. note::
-#
-#    The stress results are higher than the ones shown in [1]_, this could have multiple
-#    reasons. First, we plot a component of the Cauchy stress tensor. Second, we project
-#    the stresses by :func:`shifting <felupe.topoints>` the stress results, located at
-#    the quadrature points, to the mesh points. Furthermore, these point-based stress
-#    values are averaged **inside** the solid body.
-#
 plotter = solids[0].plot("Cauchy Stress", component=1, project=fem.topoints)
 plotter.show_bounds(xtitle="", ytitle="")
 plotter.show()
+
+# %%
+# The deformed wireframe mesh shows the deformation of the background material.
+field.plot(style="wireframe", nonlinear_subdivision=2, line_width=2).show()
+
+# %%
+# Instead of using a transversly anisotropic material formulation for the third medium
+# contact method, a hessian-regularization may be used. Therefore, we must reload the
+# region of the background material and enable the flag to evaluate the Hessian.
+regions[1].reload(hess=True)
+
+
+# %%
+# The so-called HuHu-regularization is created by two weak-:func:`form <felupe.Form>`
+# expressions. This time, the Neo-Hookean isotropic hyperelastic material formulation
+# from the solid bodies is also used for the isotropic part of the background material
+# but with scaled down material parameters.
+@fem.Form(v=fields[1], u=fields[1])
+def bilinearform():
+    return [lambda v, u: dddot(hess(v), hess(u))]
+
+
+@fem.Form(v=fields[1])
+def linearform():
+    u = fields[1][0]
+    return [lambda v: dddot(hess(v), hess(u)[:2, :2, :2])]
+
+
+solids = [
+    fem.SolidBody(fem.NeoHooke(mu=2692.3, bulk=5833.3), fields[0]),
+    fem.SolidBody(fem.NeoHooke(mu=2692.3 * 1e-3, bulk=5833.3 * 1e-3), fields[1]),
+    fem.FormItem(bilinearform, linearform),
+]
+
+# %%
+# The fields are resetted in order to restart the simulation with the Hessian-based
+# regularization. This time, the enforced vertical displacement on the top edge of the
+# upper body is doubled.
+field[0].fill(0.0)
+[f[0].fill(0.0) for f in fields]
+
+move = fem.math.linsteps([0, -0.2], num=15)
+step = fem.Step(solids, boundaries=boundaries, ramp={boundaries["move"]: move})
+job = fem.Job([step]).evaluate(x0=field)
+
+# %%
+# The vertical component of the Cauchy stress :math:`\sigma_{22}` is plotted for the
+# maximum applied vertical displacement.
+plotter = solids[0].plot("Cauchy Stress", component=1, project=fem.topoints)
+plotter.show_bounds(xtitle="", ytitle="")
+plotter.show()
+
+# %%
+# Now, the upper solid body is moved along the horizontal direction and the vertical
+# Cauchy stress component is plotted again.
+boundaries, loadcase = fem.dof.shear(field, axes=(0, 1), sym=False, moves=(0, 0, -0.2))
+move = fem.math.linsteps([0, 0.5], num=10)
+
+step = fem.Step(solids, boundaries=boundaries, ramp={boundaries["move"]: move})
+job = fem.Job([step]).evaluate(x0=field)
+
+plotter = solids[0].plot("Cauchy Stress", component=1, project=fem.topoints)
+plotter.show_bounds(xtitle="", ytitle="")
+plotter.show()
+
+# %%
+# The deformed wireframe mesh shows again the deformation of the background material.
+field.plot(style="wireframe", nonlinear_subdivision=2, line_width=2).show()
 
 # %%
 # References
 # ~~~~~~~~~~
 # .. [1] P. Wriggers, J. Schröder, and A. Schwarz, "A finite element method for contact
 #        using a third medium", Computational Mechanics, vol. 52, no. 4. Springer
-#        Science and Business Media LLC, pp. 837–847, Mar. 30, 2013. |DOI|.
+#        Science and Business Media LLC, pp. 837–847, Mar. 30, 2013. |DOI-1|.
 #
 # .. [2] https://en.wikipedia.org/wiki/Third_medium_contact_method
 #
-# .. |DOI| image:: https://zenodo.org/badge/DOI/10.1007/s00466-013-0848-5.svg
+# .. [3] G. L. Bluhm, O. Sigmund, and K. Poulios, "Internal contact modeling for finite
+#        strain topology optimization", Computational Mechanics, vol. 67, no. 4.
+#        Springer Science and Business Media LLC, pp. 1099–1114, Mar. 04, 2021. |DOI-3|.
+#
+# .. |DOI-1| image:: https://zenodo.org/badge/DOI/10.1007/s00466-013-0848-5.svg
+#    :target: https://www.doi.org/10.1007/s00466-013-0848-5
+#
+# .. |DOI-3| image:: https://zenodo.org/badge/DOI/10.1007/s00466-013-0848-5.svg
 #    :target: https://www.doi.org/10.1007/s00466-013-0848-5

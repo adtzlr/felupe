@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file. The format 
 - Import the `assembly` module to the global namespace.
 - Isolate the submodules, i.e. a submodule only uses the public API of another submodule. If necessary, this will help to change one or more modules to a future extension package.
 - Enforce contiguous arrays for the region shape-function and -gradient arrays `h` and `dhdX`. This recovers the integral-form assembly performance from v8.6.0.
+- Make the private basis classes public (`assembly.expression.Basis`, `assembly.expression.BasisField` and `assembly.expression.BasisArray`) as especially their docstrings are useful to understand how a *Basis* is created on a field.
 
 ### Deprecated
 - Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.

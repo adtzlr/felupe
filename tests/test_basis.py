@@ -33,9 +33,9 @@ import felupe as fem
 
 def pre(dim):
     m = fem.Cube(n=3)
-    r = fem.RegionHexahedron(m, hess=True)
+    r = fem.RegionHexahedron(m)
     u = fem.FieldContainer([fem.Field(r, dim=dim)])
-    return r, u
+    return r.reload(hess=True), u
 
 
 def pre_constant(dim):

@@ -25,8 +25,10 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 import felupe as fem
-from felupe.math import ddot, dot, dya, grad
+from felupe.math import dddot, ddot, dot, dya, grad, hess, sym, trace
 
 
 def lform(v, w):
@@ -108,8 +110,6 @@ def test_linear_elastic():
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
 
-    from felupe.math import ddot, grad, sym, trace
-
     @fem.Form(v=field, u=field, kwargs={"mu": 1.0, "lmbda": 2.0})
     def bilinearform():
         "A container for a bilinear form."
@@ -131,6 +131,54 @@ def test_linear_elastic():
     bilinearform.assemble(v=field, u=field, parallel=True, sym=True)
 
 
+def test_huhu_regularization():
+    mesh = fem.Cube()
+    region = fem.RegionHexahedron(mesh, hess=True)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
+
+    @fem.Form(v=field, u=field)
+    def bilinearform():
+        return [lambda v, u: dddot(hess(v), hess(u))]
+
+    @fem.Form(v=field)
+    def linearform():
+        u = field[0]
+        return [lambda v: dddot(hess(v), hess(u))]
+
+    matrix = bilinearform.assemble(v=field, u=field)
+    vector = linearform.assemble(v=field)
+
+    assert matrix.shape == (24, 24)
+    assert vector.shape == (24, 1)
+    assert np.allclose(vector.toarray(), 0.0)
+
+
+def test_huhu_regularization_planestrain():
+    mesh = fem.Rectangle()
+    region = fem.RegionQuad(mesh, hess=True)
+    displacement = fem.FieldPlaneStrain(region, dim=2)
+    field = fem.FieldContainer([displacement])
+
+    @fem.Form(v=field, u=field)
+    def bilinearform():
+        return [lambda v, u: dddot(hess(v), hess(u))]
+
+    @fem.Form(v=field)
+    def linearform():
+        u = field[0]
+        return [lambda v: dddot(hess(v), hess(u)[:2, :2, :2])]
+
+    matrix = bilinearform.assemble(v=field, u=field)
+    vector = linearform.assemble(v=field)
+
+    assert matrix.shape == (8, 8)
+    assert vector.shape == (8, 1)
+    assert np.allclose(vector.toarray(), 0.0)
+
+
 if __name__ == "__main__":
     test_form_decorator()
     test_linear_elastic()
+    test_huhu_regularization()
+    test_huhu_regularization_planestrain()

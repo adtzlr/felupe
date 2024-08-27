@@ -1301,6 +1301,55 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
         raise TypeError("Unknown shape of A and B.")
 
 
+def dddot(A, B, mode=(3, 3), parallel=False, **kwargs):
+    r"""Return the triple-dot products of third-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, M, M, ...)
+        Array with third-order tensors.
+    B : ndarray of shape (M, M, M, ...)
+        Array with fthird-order tensors.
+    mode : tuple of int, optional
+        Mode of operation. Return the triple-dot products of two third-order tensors
+        with (3, 3). Default is (3, 3).
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray of shape (...)
+        Array with the triple-dot products.
+
+    Notes
+    -----
+    The first three axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The triple-dot product is obtained by Eq. :eq:`math-dddot33` for two third-order
+    tensors.
+
+    ..  math::
+        :label: math-dddot33
+
+        c &= \boldsymbol{A} : \boldsymbol{B}
+
+        c &= A_{ijk} : B_{ijk}
+    """
+
+    if parallel:
+        einsum = einsumt
+    else:
+        einsum = np.einsum
+
+    if mode == (3, 3):
+        return einsum("ijk...,ijk...->...", A, B, **kwargs)
+    else:
+        raise TypeError("Unknown shape of A and B.")
+
+
 def tovoigt(A, strain=False):
     r"""Return a three-dimensional second-order tensor in reduced symmetric (Voigt-
     notation) vector/matrix storage.

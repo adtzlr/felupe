@@ -40,8 +40,14 @@ class Region:
     grad : bool, optional
         A flag to invoke gradient evaluation (default is True). If True, the partial
         derivatives of the element shape functions w.r.t. undeformed coordinates
-        :math:`\frac{\partial \boldsymbol{h}(\boldsymbol{r})}{\partial \boldsymbol{X}}`
+        :math:`\frac{\partial \boldsymbol{h}}{\partial \boldsymbol{X}}`
         and the differential volumes :math:`dV` are evaluated.
+    hess : bool, optional
+        A flag to invoke hessian evaluation in addition to the gradient (default is
+        False). If True, the second partial derivatives of the element shape functions
+        w.r.t. undeformed coordinates
+        :math:`\frac{\partial^2 \boldsymbol{h}}{\partial \boldsymbol{X}\ \partial \boldsymbol{X}}`
+        are evaluated.
     uniform : bool, optional
         A flag to activate a compressed storage of the element shape functions and their
         gradients for a uniform grid mesh. This is a performance feature. Default is
@@ -110,6 +116,7 @@ class Region:
       Element formulation: Quad
       Quadrature rule: GaussLegendre
       Gradient evaluated: True
+      Hessian evaluated: False
 
     The numeric differential volumes are the products of the determinant of the
     geometric gradient :math:`\frac{\partial X_I}{\partial r_J}` and the weights `w` of
@@ -137,8 +144,9 @@ class Region:
 
     """
 
-    def __init__(self, mesh, element, quadrature, grad=True, uniform=False):
+    def __init__(self, mesh, element, quadrature, grad=True, hess=False, uniform=False):
         self.evaluate_gradient = grad
+        self.evaluate_hessian = hess
         self.reload(mesh=mesh, element=element, quadrature=quadrature, uniform=uniform)
 
     def astype(self, dtype=None):
@@ -172,7 +180,15 @@ class Region:
 
         return region
 
-    def copy(self, mesh=None, element=None, quadrature=None, uniform=None):
+    def copy(
+        self,
+        mesh=None,
+        element=None,
+        quadrature=None,
+        grad=None,
+        hess=None,
+        uniform=None,
+    ):
         """Return a copy of the region and reload it if necessary.
 
         Parameters
@@ -184,6 +200,17 @@ class Region:
         quadrature: Quadrature or None, optional
             An element-compatible numeric integration scheme with points and weights
             (default is None).
+        grad : bool, optional
+            A flag to invoke gradient evaluation (default is True). If True, the partial
+            derivatives of the element shape functions w.r.t. undeformed coordinates
+            :math:`\frac{\partial \boldsymbol{h}}{\partial \boldsymbol{X}}`
+            and the differential volumes :math:`dV` are evaluated.
+        hess : bool, optional
+            A flag to invoke hessian evaluation in addition to the gradient (default is
+            False). If True, the second partial derivatives of the element shape functions
+            w.r.t. undeformed coordinates
+            :math:`\frac{\partial^2 \boldsymbol{h}}{\partial \boldsymbol{X}\ \partial \boldsymbol{X}}`
+            are evaluated.
         uniform : bool or None, optional
             A flag to activate a compressed storage of the element shape functions and
             their gradients for a uniform grid mesh. This is a performance feature.
@@ -201,12 +228,25 @@ class Region:
 
         region = deepcopy(self)
         region.reload(
-            mesh=mesh, element=element, quadrature=quadrature, uniform=uniform
+            mesh=mesh,
+            element=element,
+            quadrature=quadrature,
+            grad=grad,
+            hess=hess,
+            uniform=uniform,
         )
 
         return region
 
-    def reload(self, mesh=None, element=None, quadrature=None, uniform=None):
+    def reload(
+        self,
+        mesh=None,
+        element=None,
+        quadrature=None,
+        grad=None,
+        hess=None,
+        uniform=None,
+    ):
         """Reload the numeric region inplace.
 
         Parameters
@@ -218,6 +258,17 @@ class Region:
         quadrature: Quadrature or None, optional
             An element-compatible numeric integration scheme with points and weights
             (default is None).
+        grad : bool, optional
+            A flag to invoke gradient evaluation (default is True). If True, the partial
+            derivatives of the element shape functions w.r.t. undeformed coordinates
+            :math:`\frac{\partial \boldsymbol{h}}{\partial \boldsymbol{X}}`
+            and the differential volumes :math:`dV` are evaluated.
+        hess : bool, optional
+            A flag to invoke hessian evaluation in addition to the gradient (default is
+            False). If True, the second partial derivatives of the element shape functions
+            w.r.t. undeformed coordinates
+            :math:`\frac{\partial^2 \boldsymbol{h}}{\partial \boldsymbol{X}\ \partial \boldsymbol{X}}`
+            are evaluated.
         uniform : bool or None, optional
             A flag to activate a compressed storage of the element shape functions and
             their gradients for a uniform grid mesh. This is a performance feature.
@@ -255,6 +306,12 @@ class Region:
 
         if quadrature is not None:
             region.quadrature = quadrature
+
+        if grad is not None:
+            region.evaluate_gradient = grad
+
+        if hess is not None:
+            region.evaluate_hessian = hess
 
         if uniform is None:
             uniform = False
@@ -312,17 +369,36 @@ class Region:
                     )
                     warnings.warn(message_negative_volumes)
 
-                # Partial derivative of element shape function
-                # w.r.t. undeformed coordinates
+                # Partial derivative of element shape function w.r.t. undeformed
+                # coordinates
                 region.dhdX = np.einsum("aIqc,IJqc->aJqc", region.dhdr, region.drdX)
+
+                # Second partial derivative of element shape function w.r.t. undeformed
+                # coordinates
+                if region.evaluate_hessian:
+                    region.element.d2hdrdr = np.array(
+                        [region.element.hessian(q) for q in region.quadrature.points]
+                    ).transpose(1, 2, 3, 0)
+
+                    region.d2hdrdr = np.ascontiguousarray(
+                        np.expand_dims(region.element.d2hdrdr, -1)
+                    )
+
+                    region.d2hdXdX = np.einsum(
+                        "aIJqc,IKqc,JLqc->aKLqc",
+                        region.d2hdrdr,
+                        region.drdX,
+                        region.drdX,
+                    )
 
     def __repr__(self):
         header = "<felupe Region object>"
         element = f"  Element formulation: {type(self.element).__name__}"
         quadrature = f"  Quadrature rule: {type(self.quadrature).__name__}"
-        grad = f"  Gradient evaluated: {hasattr(self, 'dV')}"
+        grad = f"  Gradient evaluated: {self.evaluate_gradient}"
+        hess = f"  Hessian evaluated: {self.evaluate_hessian}"
 
-        return "\n".join([header, element, quadrature, grad])
+        return "\n".join([header, element, quadrature, grad, hess])
 
     def plot(self, **kwargs):
         """Plot the element with point-ids and the quadrature points,

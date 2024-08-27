@@ -329,6 +329,7 @@ class RegionBoundary(Region):
       Element formulation: Quad
       Quadrature rule: GaussLegendreBoundary
       Gradient evaluated: True
+      Hessian evaluated: False
 
     The numeric differential area vectors are the products of the cofactors of the
     geometric gradient :math:`\partial X_I / \partial r_J` and the weights `w` of the

@@ -107,6 +107,9 @@ def test_math():
     assert fem.math.ddot(C, A, mode=(2, 4)).shape == (3, 3, 5, 7)
     assert fem.math.ddot(A, C, mode=(4, 2)).shape == (3, 3, 5, 7)
 
+    assert fem.math.dddot(B, B, mode=(3, 3)).shape == (5, 7)
+    assert fem.math.dddot(B, B, mode=(3, 3), parallel=True).shape == (5, 7)
+
     assert fem.math.ddot(A, A, mode=(4, 4)).shape == (3, 3, 3, 3, 5, 7)
     assert fem.math.equivalent_von_mises(C).shape == (5, 7)
     assert fem.math.equivalent_von_mises(C[:2, :2, ...]).shape == (5, 7)
@@ -116,6 +119,9 @@ def test_math():
 
     with pytest.raises(TypeError):
         fem.math.ddot(B, B, mode=(3, 3))
+
+    with pytest.raises(TypeError):
+        fem.math.dddot(B, C, mode=(3, 2))
 
     fem.math.ddot(C, B, mode=(2, 3))
     fem.math.ddot(B, C, mode=(3, 2))

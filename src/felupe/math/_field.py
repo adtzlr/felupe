@@ -178,3 +178,11 @@ def grad(x, **kwargs):
         return x.grad(**kwargs)
     else:
         return x.grad
+
+
+def hess(x, **kwargs):
+    "Return the hessian of a field or the hessian of a basis-array."
+    if callable(x.hess):
+        return x.hess(**kwargs)
+    else:
+        return x.hess

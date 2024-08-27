@@ -73,7 +73,9 @@ class LinearForm:
         if not parallel:
             for a, vbasis in enumerate(self.v.basis):
                 for i, vb in enumerate(vbasis):
-                    v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
+                    v = type(self.v.basis)(
+                        vb, self.v.basis.grad[a, i], self.v.basis.hess[a, i]
+                    )
                     values[a, i] = weakform(v, **kwargs) * self.dx
 
         else:
@@ -81,7 +83,9 @@ class LinearForm:
             ai = zip(idx_a.ravel(), idx_i.ravel())
 
             def contribution(values, a, i, kwargs):
-                v = type(self.v.basis)(self.v.basis[a, i], self.v.basis.grad[a, i])
+                v = type(self.v.basis)(
+                    self.v.basis[a, i], self.v.basis.grad[a, i], self.v.basis.hess[a, i]
+                )
                 values[a, i] = weakform(v, **kwargs) * self.dx
 
             threads = [

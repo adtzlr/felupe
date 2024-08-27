@@ -88,16 +88,24 @@ class BilinearForm:
                     for b, ubasis in enumerate(self.u.basis):
                         for j, ub in enumerate(ubasis):
                             if sym:
-                                v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
-                                u = type(self.u.basis)(ub, self.u.basis.grad[b, j])
+                                v = type(self.v.basis)(
+                                    vb, self.v.basis.grad[a, i], self.v.basis.hess[a, i]
+                                )
+                                u = type(self.u.basis)(
+                                    ub, self.u.basis.grad[b, j], self.u.basis.hess[b, j]
+                                )
                                 if len(vbasis) * a + i <= len(ubasis) * b + j:
                                     values[a, i, b, j] = values[b, j, a, i] = (
                                         weakform(v, u, **kwargs) * self.dx
                                     )
 
                             else:
-                                v = type(self.v.basis)(vb, self.v.basis.grad[a, i])
-                                u = type(self.u.basis)(ub, self.u.basis.grad[b, j])
+                                v = type(self.v.basis)(
+                                    vb, self.v.basis.grad[a, i], self.v.basis.hess[a, i]
+                                )
+                                u = type(self.u.basis)(
+                                    ub, self.u.basis.grad[b, j], self.u.basis.hess[b, j]
+                                )
                                 values[a, i, b, j] = weakform(v, u, **kwargs) * self.dx
 
         else:
@@ -117,8 +125,12 @@ class BilinearForm:
                 )
 
             def contribution(values, a, i, b, j, sym, kwargs):
-                v = type(self.v.basis)(self.v.basis[a, i], self.v.basis.grad[a, i])
-                u = type(self.u.basis)(self.u.basis[b, j], self.u.basis.grad[b, j])
+                v = type(self.v.basis)(
+                    self.v.basis[a, i], self.v.basis.grad[a, i], self.v.basis.hess[a, i]
+                )
+                u = type(self.u.basis)(
+                    self.u.basis[b, j], self.u.basis.grad[b, j], self.u.basis.hess[b, j]
+                )
                 if sym:
                     values[a, i, b, j] = values[b, j, a, i] = (
                         weakform(v, u, **kwargs) * self.dx

@@ -59,11 +59,15 @@ class ConstantQuad(Element):
 
     def function(self, rs):
         "Return the shape functions at given coordinates (r, s)."
-        return np.array([1])
+        return np.ones(1)
 
     def gradient(self, rs):
         "Return the gradient of shape functions at given coordinates (r, s)."
-        return np.array([[0, 0]])
+        return np.zeros((1, 2))
+
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+        return np.zeros((1, 2, 2))
 
 
 class Quad(Element):
@@ -133,6 +137,22 @@ class Quad(Element):
                     [(1 - s), -(1 + r)],
                     [(1 + s), (1 + r)],
                     [-(1 + s), (1 - r)],
+                ]
+            )
+            * 0.25
+        )
+
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+
+        r, s = rs
+        return (
+            np.array(
+                [
+                    [[0, 1], [1, 0]],
+                    [[0, -1], [-1, 0]],
+                    [[0, 1], [1, 0]],
+                    [[0, -1], [-1, 0]],
                 ]
             )
             * 0.25

@@ -74,6 +74,10 @@ class Tetra(Element):
         r, s, t = rst
         return np.array([[-1, -1, -1], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float)
 
+    def hessian(self, rst):
+        "Return the hessian of shape functions at given coordinates (r, s, t)."
+        return np.zeros((4, 3, 3))
+
 
 class TetraMINI(Element):
     r"""A 3D tetrahedron element formulation with bubble-enriched linear shape
@@ -146,6 +150,33 @@ class TetraMINI(Element):
             ],
             dtype=float,
         )
+
+    def hessian(self, rst):
+        "Return the hessian of shape functions at given coordinates (r, s, t)."
+        r, s, t = rst
+        hess = np.zeros((5, 3, 3))
+        hess[4, 0] = self.bubble_multiplier * np.array(
+            [
+                -2 * s * t,
+                t * (1 - r - s - t) - t * (r + s),
+                s * (1 - r - s - t) - s * (r + t),
+            ]
+        )
+        hess[4, 1] = self.bubble_multiplier * np.array(
+            [
+                t * (1 - r - s - t) - t * (r + s),
+                -2 * r * t,
+                r * (1 - r - s - t) - r * (t + s),
+            ]
+        )
+        hess[4, 2] = self.bubble_multiplier * np.array(
+            [
+                s * (1 - r - s - t) - s * (r + t),
+                r * (1 - r - s - t) - r * (s + t),
+                -2 * r * s,
+            ]
+        )
+        return hess
 
 
 class QuadraticTetra(Element):

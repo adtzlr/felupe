@@ -25,7 +25,7 @@ except ModuleNotFoundError:
 
 
 class BasisArray(np.ndarray):
-    """Add the grad-attribute to an existing array [1]_, [2]_.
+    """Add the grad- and hess-attributes to an existing array [1]_, [2]_.
 
     Parameters
     ----------
@@ -33,6 +33,8 @@ class BasisArray(np.ndarray):
         The input array.
     grad : array_like or None, optional
         The array for the grad-attribute (default is None).
+    hess : array_like or None, optional
+        The array for the hess-attribute (default is None).
 
     Examples
     --------
@@ -41,7 +43,9 @@ class BasisArray(np.ndarray):
         >>> import numpy as np
         >>> import felupe as fem
         >>>
-        >>> x = fem.assembly.expression.BasisArray(np.ones(3), grad=np.zeros((3, 3)))
+        >>> x = fem.assembly.expression.BasisArray(
+        >>>     np.ones(3), grad=np.zeros((3, 3)), hess=np.zeros((3, 3, 3))
+        >>> )
         >>> x
         BasisArray([1., 1., 1.])
 
@@ -50,6 +54,19 @@ class BasisArray(np.ndarray):
                [0., 0., 0.],
                [0., 0., 0.]])
 
+        >>> x.hess
+        array([[[0., 0., 0.],
+                [0., 0., 0.],
+                [0., 0., 0.]],
+
+               [[0., 0., 0.],
+                [0., 0., 0.],
+                [0., 0., 0.]],
+
+               [[0., 0., 0.],
+                [0., 0., 0.],
+                [0., 0., 0.]]])
+
     References
     ----------
     ..  [1] https://numpy.org/doc/stable/user/basics.subclassing.html
@@ -57,15 +74,17 @@ class BasisArray(np.ndarray):
     ..  [2] https://numpy.org/doc/stable/user/basics.subclassing.html#slightly-more-realistic-example-attribute-added-to-existing-array
     """
 
-    def __new__(cls, input_array, grad=None):
+    def __new__(cls, input_array, grad=None, hess=None):
         obj = np.asarray(input_array).view(cls)
         obj.grad = grad
+        obj.hess = hess
         return obj
 
     def __array_finalize__(self, obj):
         if obj is None:
             return
         self.grad = getattr(obj, "grad", None)
+        self.hess = getattr(obj, "hess", None)
 
 
 class BasisField:
@@ -84,6 +103,8 @@ class BasisField:
         The evaluated basis functions at quadrature points.
     grad : ndarray
         The evaluated gradient of the basis (if provided by the region).
+    hess : ndarray
+        The evaluated hessian of the basis (if provided by the region).
 
     Notes
     -----
@@ -120,8 +141,11 @@ class BasisField:
         >>> bf.basis.shape
         (4, 2, 2, 4, 1)
 
-        >>> bf.basis.shape
+        >>> bf.basis.grad.shape
         (4, 2, 2, 2, 4, 1)
+
+        >>> bf.basis.hess.shape
+        (4, 2, 2, 2, 2, 4, 1)
 
     See Also
     --------
@@ -149,7 +173,15 @@ class BasisField:
         else:
             grad = np.full(basis.shape[:2], None)
 
-        self.basis = BasisArray(basis, grad=grad)
+        if self.field.region.evaluate_hessian:
+            hess = einsum(
+                "ij,aklqc->aijklqc", np.eye(self.field.dim), self.field.region.d2hdXdX
+            )
+
+        else:
+            hess = np.full(basis.shape[:2], None)
+
+        self.basis = BasisArray(basis, grad=grad, hess=hess)
 
 
 class Basis:
@@ -186,6 +218,9 @@ class Basis:
 
         >>> bases[0].basis.grad.shape
         (4, 2, 2, 2, 4, 1)
+
+        >>> bases[0].basis.hess.shape
+        (4, 2, 2, 2, 2, 4, 1)
 
     See Also
     --------

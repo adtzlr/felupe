@@ -74,6 +74,7 @@ class RegionQuad(Region):
          Element formulation: Quad
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -108,6 +109,7 @@ class RegionQuadraticQuad(Region):
          Element formulation: QuadraticQuad
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -143,6 +145,7 @@ class RegionBiQuadraticQuad(Region):
          Element formulation: BiQuadraticQuad
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -174,6 +177,7 @@ class RegionQuadBoundary(RegionBoundary):
          Element formulation: Quad
          Quadrature rule: GaussLegendreBoundary
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -221,6 +225,7 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
          Element formulation: QuadraticQuad
          Quadrature rule: GaussLegendreBoundary
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -268,6 +273,7 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
          Element formulation: BiQuadraticQuad
          Quadrature rule: GaussLegendreBoundary
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -329,6 +335,7 @@ class RegionHexahedron(Region):
          Element formulation: Hexahedron
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -363,6 +370,7 @@ class RegionHexahedronBoundary(RegionBoundary):
          Element formulation: Hexahedron
          Quadrature rule: GaussLegendreBoundary
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -407,6 +415,7 @@ class RegionQuadraticHexahedron(Region):
          Element formulation: QuadraticHexahedron
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -441,6 +450,7 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
          Element formulation: QuadraticHexahedron
          Quadrature rule: GaussLegendreBoundary
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -486,6 +496,7 @@ class RegionTriQuadraticHexahedron(Region):
          Element formulation: TriQuadraticHexahedron
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -517,6 +528,7 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
          Element formulation: TriQuadraticHexahedron
          Quadrature rule: GaussLegendreBoundary
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -561,6 +573,7 @@ class RegionLagrange(Region):
          Element formulation: ArbitraryOrderLagrange
          Quadrature rule: GaussLegendre
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -596,6 +609,7 @@ class RegionTriangle(Region):
          Element formulation: Triangle
          Quadrature rule: Triangle
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -632,6 +646,7 @@ class RegionTetra(Region):
          Element formulation: Tetra
          Quadrature rule: Tetrahedron
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -666,6 +681,7 @@ class RegionTriangleMINI(Region):
          Element formulation: TriangleMINI
          Quadrature rule: Triangle
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -701,6 +717,7 @@ class RegionTetraMINI(Region):
          Element formulation: TetraMINI
          Quadrature rule: Tetrahedron
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -736,6 +753,7 @@ class RegionQuadraticTriangle(Region):
          Element formulation: QuadraticTriangle
          Quadrature rule: Triangle
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """
@@ -766,6 +784,7 @@ class RegionQuadraticTetra(Region):
          Element formulation: QuadraticTetra
          Quadrature rule: Tetrahedron
          Gradient evaluated: True
+         Hessian evaluated: False
 
        >>> region.plot().show()
     """

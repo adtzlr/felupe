@@ -59,3 +59,7 @@ class Line(Element):
         "Return the gradient of shape functions at given coordinates (r,)."
         (r,) = rv
         return np.array([[-1], [1]]) * 0.5
+
+    def hessian(self, rv):
+        "Return the hessian of shape functions at given coordinates (r,)."
+        return np.zeros((2, 1, 1))

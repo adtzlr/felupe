@@ -73,6 +73,11 @@ class Triangle(Element):
         r, s = rs
         return np.array([[-1, -1], [1, 0], [0, 1]], dtype=float)
 
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+        r, s = rs
+        return np.zeros((3, 2, 2))
+
 
 class TriangleMINI(Element):
     r"""A 2D triangle element formulation with bubble-enriched linear shape functions.
@@ -135,6 +140,18 @@ class TriangleMINI(Element):
             ],
             dtype=float,
         )
+
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+        r, s = rs
+        hess = np.zeros((4, 2, 2))
+        hess[3] = self.bubble_multiplier * np.array(
+            [
+                [-2 * s, (1 - r - s) - (s + r)],
+                [(1 - r - s) - (r + s), -2 * r],
+            ]
+        )
+        return hess
 
 
 class QuadraticTriangle(Element):

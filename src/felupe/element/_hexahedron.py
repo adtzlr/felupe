@@ -73,11 +73,15 @@ class ConstantHexahedron(Element):
 
     def function(self, rst):
         "Return the shape functions at given coordinates (r, s, t)."
-        return np.array([1])
+        return np.ones(1)
 
     def gradient(self, rst):
         "Return the gradient of shape functions at given coordinates (r, s, t)."
-        return np.array([[0, 0, 0]])
+        return np.zeros((1, 3))
+
+    def hessian(self, rst):
+        "Return the hessian of shape functions at given coordinates (r, s, t)."
+        return np.zeros((1, 3, 3))
 
 
 class Hexahedron(Element):
@@ -171,6 +175,25 @@ class Hexahedron(Element):
                     [(1 - s) * (1 + t), -(1 + r) * (1 + t), (1 + r) * (1 - s)],
                     [(1 + s) * (1 + t), (1 + r) * (1 + t), (1 + r) * (1 + s)],
                     [-(1 + s) * (1 + t), (1 - r) * (1 + t), (1 - r) * (1 + s)],
+                ]
+            )
+            * 0.125
+        )
+
+    def hessian(self, rst):
+        "Return the hessian of shape functions at given coordinates (r, s, t)."
+        r, s, t = rst
+        return (
+            np.array(
+                [
+                    [[0, 1 - t, 1 - s], [1 - t, 0, 1 - r], [1 - s, 1 - r, 0]],
+                    [[0, t - 1, s - 1], [t - 1, 0, 1 + r], [s - 1, 1 + r, 0]],
+                    [[0, 1 - t, -1 - s], [1 - t, 0, -1 - r], [-1 - s, -1 - r, 0]],
+                    [[0, t - 1, 1 + s], [t - 1, 0, r - 1], [1 + s, -1 - r, 0]],
+                    [[0, 1 + t, s - 1], [1 + t, 0, r - 1], [s - 1, r - 1, 0]],
+                    [[0, -1 - t, 0], [-1 - t, 0, -1 - r], [1 - s, -1 - r, 0]],
+                    [[0, 1 + t, 1 + s], [1 + t, 0, 1 + r], [1 + s, 1 + r, 0]],
+                    [[0, -1 - t, -1 - s], [-1 - t, 0, 1 - r], [-1 - s, 1 - r, 0]],
                 ]
             )
             * 0.125

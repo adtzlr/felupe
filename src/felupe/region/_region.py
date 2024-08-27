@@ -137,8 +137,9 @@ class Region:
 
     """
 
-    def __init__(self, mesh, element, quadrature, grad=True, uniform=False):
+    def __init__(self, mesh, element, quadrature, grad=True, hess=False, uniform=False):
         self.evaluate_gradient = grad
+        self.evaluate_hessian = hess
         self.reload(mesh=mesh, element=element, quadrature=quadrature, uniform=uniform)
 
     def astype(self, dtype=None):
@@ -280,6 +281,15 @@ class Region:
 
             region.dhdr = np.ascontiguousarray(np.expand_dims(region.element.dhdr, -1))
 
+            if hasattr(region.element, "hessian"):
+                region.element.d2hdrdr = np.array(
+                    [region.element.hessian(q) for q in region.quadrature.points]
+                ).transpose(1, 2, 3, 0)
+
+                region.d2hdrdr = np.ascontiguousarray(
+                    np.expand_dims(region.element.d2hdrdr, -1)
+                )
+
             if region.evaluate_gradient:
                 # geometric gradient
 
@@ -312,9 +322,19 @@ class Region:
                     )
                     warnings.warn(message_negative_volumes)
 
-                # Partial derivative of element shape function
-                # w.r.t. undeformed coordinates
+                # Partial derivative of element shape function w.r.t. undeformed
+                # coordinates
                 region.dhdX = np.einsum("aIqc,IJqc->aJqc", region.dhdr, region.drdX)
+
+                # Second partial derivative of element shape function w.r.t. undeformed
+                # coordinates
+                if region.evaluate_hessian:
+                    region.d2hdXdX = np.einsum(
+                        "aIJqc,IKqc,JLqc->aKLqc",
+                        region.d2hdrdr,
+                        region.drdX,
+                        region.drdX,
+                    )
 
     def __repr__(self):
         header = "<felupe Region object>"

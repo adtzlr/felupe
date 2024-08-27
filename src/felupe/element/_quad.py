@@ -138,6 +138,22 @@ class Quad(Element):
             * 0.25
         )
 
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+
+        r, s = rs
+        return (
+            np.array(
+                [
+                    [[0, 1], [1, 0]],
+                    [[0, -1], [-1, 0]],
+                    [[0, 1], [1, 0]],
+                    [[0, -1], [-1, 0]],
+                ]
+            )
+            * 0.25
+        )
+
 
 class QuadraticQuad(Element):
     r"""A 2D quadrilateral element formulation with quadratic (serendipity) shape

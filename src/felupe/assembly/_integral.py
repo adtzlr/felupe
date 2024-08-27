@@ -69,7 +69,8 @@ class IntegralForm:
 
     ..  math::
 
-        L(\boldsymbol{v}) = \int_\Omega \boldsymbol{f} : \boldsymbol{\nabla v} ~ dV
+        L(\boldsymbol{\nabla v}) =
+            \int_\Omega \boldsymbol{f} : \boldsymbol{\nabla v} ~ dV
 
     Bilinearform
     ~~~~~~~~~~~~
@@ -90,13 +91,13 @@ class IntegralForm:
 
     ..  math::
 
-        a(\boldsymbol{v}, \boldsymbol{u}) &=
+        a(\boldsymbol{\nabla v}, \boldsymbol{u}) &=
             \int_\Omega \boldsymbol{\nabla v} : \boldsymbol{f} \cdot \boldsymbol{u} ~ dV
 
-        a(\boldsymbol{v}, \boldsymbol{u}) &=
+        a(\boldsymbol{v}, \boldsymbol{\nabla u}) &=
             \int_\Omega \boldsymbol{v} \cdot \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
-        a(\boldsymbol{v}, \boldsymbol{u}) &= \int_\Omega
+        a(\boldsymbol{\nabla v}, \boldsymbol{\nabla u}) &= \int_\Omega
             \boldsymbol{\nabla v} : \boldsymbol{f} : \boldsymbol{\nabla u} ~ dV
 
     Examples

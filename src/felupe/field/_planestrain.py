@@ -134,6 +134,42 @@ class FieldPlaneStrain(Field):
         else:
             return g
 
+    def _hess_2d(self, dtype=None, out=None):
+        r"""In-plane 2D Hessian as second partial derivative of field values w.r.t.
+        undeformed coordinates, evaluated at the integration points of all cells in the
+        region.
+
+        Parameters
+        ----------
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
+
+        Returns
+        -------
+        ndarray of shape (i, j, k, q, c)
+            Hessian as partial derivative of field value components ``i`` at points
+            w.r.t. the undeformed coordinates ``j`` and ``k``, evaluated at the
+            quadrature points ``q`` of cells ``c`` in the region.
+        """
+
+        # hessian d2udXdX_IJKqc as second partial derivative of field values at points
+        # "aI" w.r.t. undeformed coordinates "J" and "K" evaluated at quadrature point
+        # "q" for each cell "c"
+        h = np.einsum(
+            "ca...,aJKqc->...JKqc",
+            self.values[self.region.mesh.cells],
+            self.region.d2hdXdX,
+            dtype=dtype,
+            out=out,
+        )
+
+        return h
+
     def grad(self, sym=False, dtype=None, out=None):
         """3D-gradient as partial derivative of field values at points w.r.t.
         the undeformed coordinates, evaluated at the integration points of all
@@ -146,8 +182,8 @@ class FieldPlaneStrain(Field):
             dudX(planestrain) = | ..................|
                                 |     0     :   0   |
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         sym : bool, optional
             Calculate the symmetric part of the gradient (default is False).
         dtype : data-type or None, optional
@@ -177,3 +213,37 @@ class FieldPlaneStrain(Field):
         )
 
         return g
+
+    def hess(self, dtype=None, out=None):
+        """3D-Hessian as second partial derivative of field values at points w.r.t.
+        the undeformed coordinates, evaluated at the integration points of all
+        cells in the region. Optionally, the symmetric part of the gradient is
+        returned.
+
+        Parameters
+        ----------
+        sym : bool, optional
+            Calculate the symmetric part of the gradient (default is False).
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
+
+        Returns
+        -------
+        ndarray
+            Full 3D-hessian as second partial derivative of field values at points
+            w.r.t. undeformed coordinates, evaluated at the integration points
+            of all cells in the region.
+        """
+
+        # extend dimension of in-plane 2d-hessian
+        h = np.pad(
+            self._hess_2d(dtype=dtype, out=None),
+            ((0, 1), (0, 1), (0, 1), (0, 0), (0, 0)),
+        )
+
+        return h

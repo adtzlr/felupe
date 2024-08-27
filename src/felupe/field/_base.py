@@ -142,8 +142,8 @@ class Field:
             \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
                 \hat{u}_{ai} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         sym : bool, optional
             Calculate the symmetric part of the gradient (default is False).
         dtype : data-type or None, optional
@@ -177,6 +177,46 @@ class Field:
             return symmetric(g, out=g)
         else:
             return g
+
+    def hess(self, dtype=None, out=None):
+        r"""Hessian as second partial derivative of field values w.r.t. undeformed
+        coordinates, evaluated at the integration points of all cells in the region.
+
+        ..  math::
+
+            \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
+                \hat{u}_{ai} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
+
+        Parameters
+        ----------
+        dtype : data-type or None, optional
+            If provided, forces the calculation to use the data type specified. Default
+            is None.
+        out : None or ndarray, optional
+            A location into which the result is stored. If provided, it must have a
+            shape that the inputs broadcast to. If not provided or None, a freshly-
+            allocated array is returned (default is None).
+
+        Returns
+        -------
+        ndarray of shape (i, j, k, q, c)
+            Hessian as partial derivative of field value components ``i`` at points
+            w.r.t. the undeformed coordinates ``j`` and ``k``, evaluated at the
+            quadrature points ``q`` of cells ``c`` in the region.
+        """
+
+        # hessian d2udXdX_IJKqc as second partial derivative of field values at points
+        # "aI" w.r.t. undeformed coordinates "J" and "K" evaluated at quadrature point
+        # "q" for each cell "c"
+        h = np.einsum(
+            "ca...,aJKqc->...JKqc",
+            self.values[self.region.mesh.cells],
+            self.region.d2hdXdX,
+            dtype=dtype,
+            out=out,
+        )
+
+        return h
 
     def interpolate(self, dtype=None, out=None):
         r"""Interpolate field values located at mesh-points to the quadrature points

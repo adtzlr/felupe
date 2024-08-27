@@ -154,7 +154,31 @@ def test_huhu_regularization():
     assert np.allclose(vector.toarray(), 0.0)
 
 
+def test_huhu_regularization_planestrain():
+    mesh = fem.Rectangle()
+    region = fem.RegionQuad(mesh, hess=True)
+    displacement = fem.FieldPlaneStrain(region, dim=2)
+    field = fem.FieldContainer([displacement])
+
+    @fem.Form(v=field, u=field)
+    def bilinearform():
+        return [lambda v, u: dddot(hess(v), hess(u))]
+
+    @fem.Form(v=field)
+    def linearform():
+        u = field[0]
+        return [lambda v: dddot(hess(v), hess(u)[:2, :2, :2])]
+
+    matrix = bilinearform.assemble(v=field, u=field)
+    vector = linearform.assemble(v=field)
+
+    assert matrix.shape == (8, 8)
+    assert vector.shape == (8, 1)
+    assert np.allclose(vector.toarray(), 0.0)
+
+
 if __name__ == "__main__":
     test_form_decorator()
     test_linear_elastic()
     test_huhu_regularization()
+    test_huhu_regularization_planestrain()

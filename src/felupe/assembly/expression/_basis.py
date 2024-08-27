@@ -25,11 +25,36 @@ except ModuleNotFoundError:
 
 
 class BasisArray(np.ndarray):
-    """Add the grad-attribute to an existing array [1]_.
+    """Add the grad-attribute to an existing array [1]_, [2]_.
+
+    Parameters
+    ----------
+    input_array : array_like
+        The input array.
+    grad : array_like or None, optional
+        The array for the grad-attribute (default is None).
+
+    Examples
+    --------
+    ..  pyvista-plot::
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> x = fem.assembly.expression.BasisArray(np.ones(3), grad=np.zeros((3, 3)))
+        >>> x
+        BasisArray([1., 1., 1.])
+
+        >>> x.grad
+        array([[0., 0., 0.],
+               [0., 0., 0.],
+               [0., 0., 0.]])
 
     References
     ----------
     ..  [1] https://numpy.org/doc/stable/user/basics.subclassing.html
+
+    ..  [2] https://numpy.org/doc/stable/user/basics.subclassing.html#slightly-more-realistic-example-attribute-added-to-existing-array
     """
 
     def __new__(cls, input_array, grad=None):
@@ -44,31 +69,12 @@ class BasisArray(np.ndarray):
 
 
 class BasisField:
-    r"""A basis and its gradient built on top of a scalar- or vector-valued
-    field. *Basis* refers to the trial and test field, either values or
-    gradients evaluated at quadrature points. The first two indices of a basis
-    are used for looping over the element shape functions ``a`` and its
-    components ``i``. The third index represents the vector component ``j`` of
-    the field. The two trailing axes ``(q, c)`` contain the evaluated element
-    shape functions at quadrature points ``q`` per cell ``c``.
-
-    ..  math::
-
-        \varphi_{aijpc} = \delta_{ij} \left( h_a \right)_{pc}
-
-
-    For gradients, the fourth index is used for the vector component of the
-    partial derivative ``k``.
-
-    ..  math::
-
-        \text{grad}(\varphi)_{aijkpc} = \delta_{ij}
-            \left( \frac{\partial h_a}{\partial X_K} \right)_{pc}
+    r"""Basis and its gradient for a field.
 
     Parameters
     ----------
     field : Field
-        A field on which the basis should be created.
+        A field on which the basis is created.
     parallel : bool, optional (default is False)
         Flag to activate parallel (threaded) basis evaluation.
 
@@ -78,6 +84,49 @@ class BasisField:
         The evaluated basis functions at quadrature points.
     grad : ndarray
         The evaluated gradient of the basis (if provided by the region).
+
+    Notes
+    -----
+    *Basis* refers to the trial and test field, either values or gradients evaluated at
+    quadrature points. The first two indices of a basis are used for looping over the
+    element shape functions ``a`` and its components ``i``. The third index represents
+    the vector component ``j`` of the field. The two trailing axes ``(q, c)`` contain
+    the evaluated element shape functions at quadrature points ``q`` per cell ``c``.
+
+    ..  math::
+
+        \varphi_{ai~j~qc} = \delta_{ij} \left( h_a \right)_{qc}
+
+    For gradients, the fourth index is used for the vector component of the
+    partial derivative ``k``.
+
+    ..  math::
+
+        \text{grad}(\varphi)_{ai~jk~qc} = \delta_{ij}
+            \left( \frac{\partial h_a}{\partial X_K} \right)_{qc}
+
+    Examples
+    --------
+    ..  pyvista-plot::
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle()
+        >>> region = fem.RegionQuad(mesh)
+        >>> displacement = fem.Field(region, dim=2)
+        >>>
+        >>> bf = fem.assembly.expression.BasisField(displacement)
+        >>> bf.basis.shape
+        (4, 2, 2, 4, 1)
+
+        >>> bf.basis.shape
+        (4, 2, 2, 2, 4, 1)
+
+    See Also
+    --------
+    felupe.assembly.expression.Basis : Bases and their gradients for the fields of a
+        field container.
 
     """
 
@@ -104,26 +153,7 @@ class BasisField:
 
 
 class Basis:
-    r"""A basis and its gradient built on top of a scalar- or vector-valued
-    field container. *Basis* refers to the trial and test field, either values or
-    gradients evaluated at quadrature points. The first two indices of a basis
-    are used for looping over the element shape functions ``a`` and its
-    components ``i``. The third index represents the vector component ``j`` of
-    the field. The two trailing axes ``(q, c)`` contain the evaluated element
-    shape functions at quadrature points ``q`` per cell ``c``.
-
-    ..  math::
-
-        \varphi_{aijpc} = \delta_{ij} \left( h_a \right)_{pc}
-
-
-    For gradients, the fourth index is used for the vector component of the
-    partial derivative ``k``.
-
-    ..  math::
-
-        \text{grad}(\varphi)_{aijkpc} = \delta_{ij}
-            \left( \frac{\partial h_a}{\partial X_K} \right)_{pc}
+    r"""Bases and their gradients for the fields of a field container.
 
     Parameters
     ----------
@@ -133,9 +163,33 @@ class Basis:
     Attributes
     ----------
     basis : ndarray
-        The evaluated basis functions at quadrature points.
-    grad : ndarray
-        The evaluated gradient of the basis (if provided by the region).
+        The list of bases.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle()
+        >>> region = fem.RegionQuad(mesh)
+        >>> displacement = fem.Field(region, dim=2)
+        >>> field = fem.FieldContainer([displacement])
+        >>>
+        >>> bases = fem.assembly.expression.Basis(field)
+        >>> len(bases[:])
+        >>> 1
+
+        >>> bases[0].basis.shape
+        (4, 2, 2, 4, 1)
+
+        >>> bases[0].basis.grad.shape
+        (4, 2, 2, 2, 4, 1)
+
+    See Also
+    --------
+    felupe.assembly.expression.BasisField : Basis and its gradient for a field.
 
     """
 

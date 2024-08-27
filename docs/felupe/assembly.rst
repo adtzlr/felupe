@@ -36,6 +36,9 @@ Define weak-form expressions on-the-fly for flexible and general form expression
 .. autosummary::
 
    Form
+   assembly.expression.Basis
+   assembly.expression.BasisField
+   assembly.expression.BasisArray
 
 Create an item out of bilinear and linear weak-form expressions for a Step.
 
@@ -61,6 +64,21 @@ Create an item out of bilinear and linear weak-form expressions for a Step.
    :inherited-members:
 
 .. autofunction:: felupe.Form
+
+.. autoclass:: felupe.assembly.expression.Basis
+   :members:
+   :undoc-members:
+   :inherited-members:
+   
+.. autoclass:: felupe.assembly.expression.BasisField
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.assembly.expression.BasisArray
+   :members:
+   :undoc-members:
+   :inherited-members:
 
 .. autoclass:: felupe.FormItem
    :members:

@@ -110,6 +110,7 @@ class Region:
       Element formulation: Quad
       Quadrature rule: GaussLegendre
       Gradient evaluated: True
+      Hessian evaluated: False
 
     The numeric differential volumes are the products of the determinant of the
     geometric gradient :math:`\frac{\partial X_I}{\partial r_J}` and the weights `w` of
@@ -340,9 +341,10 @@ class Region:
         header = "<felupe Region object>"
         element = f"  Element formulation: {type(self.element).__name__}"
         quadrature = f"  Quadrature rule: {type(self.quadrature).__name__}"
-        grad = f"  Gradient evaluated: {hasattr(self, 'dV')}"
+        grad = f"  Gradient evaluated: {self.evaluate_gradient}"
+        hess = f"  Hessian evaluated: {self.evaluate_hessian}"
 
-        return "\n".join([header, element, quadrature, grad])
+        return "\n".join([header, element, quadrature, grad, hess])
 
     def plot(self, **kwargs):
         """Plot the element with point-ids and the quadrature points,

@@ -37,9 +37,11 @@ def test_line2():
 
     h = line2.function(r)
     dhdr = line2.gradient(r)
+    d2hdrdr = line2.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
+    assert np.all(d2hdrdr == 0.0)
 
     assert line2.shape == dhdr.shape
 
@@ -69,9 +71,11 @@ def test_quad0():
 
     h = quad0.function(r)
     dhdr = quad0.gradient(r)
+    d2hdrdr = quad0.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == 0)
+    assert np.all(d2hdrdr == 0.0)
 
     assert quad0.shape == dhdr.shape
 
@@ -83,9 +87,11 @@ def test_quad4():
 
     h = quad4.function(r)
     dhdr = quad4.gradient(r)
+    d2hdrdr = quad4.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
+    assert d2hdrdr.shape == (4, 2, 2)
 
     assert quad4.shape == dhdr.shape
 
@@ -127,9 +133,11 @@ def test_hex0():
 
     h = hex0.function(r)
     dhdr = hex0.gradient(r)
+    d2hdrdr = hex0.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == 0)
+    assert np.all(d2hdrdr == 0)
 
     assert hex0.shape == dhdr.shape
 
@@ -141,9 +149,11 @@ def test_hex8():
 
     h = hex8.function(r)
     dhdr = hex8.gradient(r)
+    d2hdrdr = hex8.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
+    assert d2hdrdr.shape == (8, 3, 3)
 
     assert hex8.shape == dhdr.shape
 
@@ -187,9 +197,11 @@ def test_tri3():
 
     h = tri3.function(r)
     dhdr = tri3.gradient(r)
+    d2hdrdr = tri3.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1)
+    assert np.all(d2hdrdr == 0)
 
     assert tri3.shape == dhdr.shape
 
@@ -215,10 +227,12 @@ def test_tri_mini():
 
     h = trim.function(r)
     dhdr = trim.gradient(r)
+    d2hdrdr = trim.hessian(r)
 
     assert h[0] == 1
     assert h[-1] == 0  # check bubble
     assert np.all(dhdr[0] == -1)
+    assert d2hdrdr.shape == (4, 2, 2)
 
     assert trim.shape == dhdr.shape
 
@@ -230,9 +244,11 @@ def test_tet4():
 
     h = tet4.function(r)
     dhdr = tet4.gradient(r)
+    d2hdrdr = tet4.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1)
+    assert np.all(d2hdrdr == 0)
 
     assert tet4.shape == dhdr.shape
 
@@ -258,10 +274,12 @@ def test_tet_mini():
 
     h = tetm.function(r)
     dhdr = tetm.gradient(r)
+    d2hdrdr = tetm.hessian(r)
 
     assert h[0] == 1
     assert h[-1] == 0  # check bubble
     assert np.all(dhdr[0] == -1)
+    assert d2hdrdr.shape == (5, 3, 3)
 
     assert tetm.shape == dhdr.shape
 

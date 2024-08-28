@@ -61,7 +61,7 @@ job = fem.Job(steps=[step]).evaluate()
 # %%
 # A view on the field-container shows the deformed mesh and the normal plastic strain in
 # direction :math:`x` due to the applied body force. The vector of all state variables,
-# stored as a result in the solid body object, are splitted into separate variables. The
+# stored as a result in the solid body object, is splitted into separate variables. The
 # plastic strain is stored as the second state variable. The mean-per-cell value of the
 # plastic strain in direction :math:`x` is exported to the view.
 def plot(solid, field):

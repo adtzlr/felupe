@@ -237,5 +237,5 @@ field.plot(style="wireframe", nonlinear_subdivision=2, line_width=2).show()
 # .. |DOI-1| image:: https://zenodo.org/badge/DOI/10.1007/s00466-013-0848-5.svg
 #    :target: https://www.doi.org/10.1007/s00466-013-0848-5
 #
-# .. |DOI-3| image:: https://zenodo.org/badge/DOI/10.1007/s00466-013-0848-5.svg
-#    :target: https://www.doi.org/10.1007/s00466-013-0848-5
+# .. |DOI-3| image:: https://zenodo.org/badge/DOI/10.1007/s00466-021-01974-x.svg
+#    :target: https://www.doi.org/10.1007/s00466-021-01974-x

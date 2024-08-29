@@ -108,15 +108,15 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
     def __init__(
         self,
-        E1=None,
-        E2=None,
-        E3=None,
-        nu12=None,
-        nu23=None,
-        nu13=None,
-        G12=None,
-        G23=None,
-        G13=None,
+        E1,
+        E2,
+        E3,
+        nu12,
+        nu23,
+        nu13,
+        G12,
+        G23,
+        G13,
     ):
         self.E1 = E1
         self.E2 = E1
@@ -153,15 +153,6 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
     def gradient(
         self,
         x,
-        E1=None,
-        E2=None,
-        E3=None,
-        nu12=None,
-        nu23=None,
-        nu13=None,
-        G12=None,
-        G23=None,
-        G13=None,
     ):
         r"""Evaluate the stress tensor (as a function of the deformation gradient).
 
@@ -169,24 +160,6 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         ----------
         x : list of ndarray
             List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item.
-        E1 : float
-            Young's modulus.
-        E2 : float
-            Young's modulus.
-        E3 : float
-            Young's modulus.
-        nu12 : float
-            Poisson ratio.
-        nu23 : float
-            Poisson ratio.
-        nu13 : float
-            Poisson ratio.
-        G12 : float
-            Shear modulus.
-        G23 : float
-            Shear modulus.
-        G13 : float
-            Shear modulus.
 
         Returns
         -------
@@ -197,33 +170,6 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
         F, statevars = x[0], x[-1]
 
-        if E1 is None:
-            E1 = self.E1
-
-        if E2 is None:
-            E2 = self.E2
-
-        if E3 is None:
-            E3 = self.E3
-
-        if nu12 is None:
-            nu12 = self.nu12
-
-        if nu23 is None:
-            nu23 = self.nu23
-
-        if nu13 is None:
-            nu13 = self.nu13
-
-        if G12 is None:
-            G12 = self.G12
-
-        if G23 is None:
-            G23 = self.G23
-
-        if G13 is None:
-            G13 = self.G13
-
         # convert the deformation gradient to strain
         H = F - identity(F)
         strain = (H + transpose(H)) / 2
@@ -231,15 +177,6 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         # init stress
         elast = self.hessian(
             x=x,
-            E1=E1,
-            E2=E2,
-            E3=E3,
-            nu12=nu12,
-            nu23=nu23,
-            n13=nu13,
-            G12=G12,
-            G23=G23,
-            G13=G13,
         )[0]
 
         return [ddot(elast, strain, mode=(4, 2)), statevars]
@@ -247,15 +184,6 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
     def hessian(
         self,
         x=None,
-        E1=None,
-        E2=None,
-        E3=None,
-        nu12=None,
-        nu23=None,
-        nu13=None,
-        G12=None,
-        G23=None,
-        G13=None,
         shape=(1, 1),
         dtype=None,
     ):
@@ -267,24 +195,6 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         x : list of ndarray, optional
             List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item
             (default is None).
-        E1 : float
-            Young's modulus.
-        E2 : float
-            Young's modulus.
-        E3 : float
-            Young's modulus.
-        nu12 : float
-            Poisson ratio.
-        nu23 : float
-            Poisson ratio.
-        nu13 : float
-            Poisson ratio.
-        G12 : float
-            Shear modulus.
-        G23 : float
-            Shear modulus.
-        G13 : float
-            Shear modulus.
         shape : tuple of int, optional
             Tuple with shape of the trailing axes (default is (1, 1)).
 
@@ -295,32 +205,17 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
         """
 
-        if E1 is None:
-            E1 = self.E1
+        E1 = self.E1
+        E2 = self.E2
+        E3 = self.E3
 
-        if E2 is None:
-            E2 = self.E2
+        nu12 = self.nu12
+        nu23 = self.nu23
+        nu13 = self.nu13
 
-        if E3 is None:
-            E3 = self.E3
-
-        if nu12 is None:
-            nu12 = self.nu12
-
-        if nu23 is None:
-            nu23 = self.nu23
-
-        if nu13 is None:
-            nu13 = self.nu13
-
-        if G12 is None:
-            G12 = self.G12
-
-        if G23 is None:
-            G23 = self.G23
-
-        if G13 is None:
-            G13 = self.G13
+        G12 = self.G12
+        G23 = self.G23
+        G13 = self.G13
 
         if x is not None:
             dtype = x[0].dtype

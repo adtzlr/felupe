@@ -46,50 +46,15 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
     G13 : float
         Shear modulus.
     
-    Notes
-    -----
-    ..  math::
-
-        \begin{bmatrix}
-            \sigma_{11} \\
-            \sigma_{22} \\
-            \sigma_{33} \\
-            \sigma_{12} \\
-            \sigma_{23} \\
-            \sigma_{31}
-        \end{bmatrix} = \frac{E}{(1+\nu)(1-2\nu)}\begin{bmatrix}
-            1-\nu & \nu & \nu & 0 & 0 & 0\\
-            \nu & 1-\nu & \nu & 0 & 0 & 0\\
-            \nu & \nu & 1-\nu & 0 & 0 & 0\\
-            0 & 0 & 0 & \frac{1-2\nu}{2} & 0 & 0 \\
-            0 & 0 & 0 & 0 & \frac{1-2\nu}{2} & 0 \\
-            0 & 0 & 0 & 0 & 0 & \frac{1-2\nu}{2}
-        \end{bmatrix} \cdot \begin{bmatrix}
-            \varepsilon_{11} \\
-            \varepsilon_{22} \\
-            \varepsilon_{33} \\
-            2 \varepsilon_{12} \\
-            2 \varepsilon_{23} \\
-            2 \varepsilon_{31}
-        \end{bmatrix}
-
-    with the strain tensor
-
-    ..  math::
-
-        \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}
-        {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
-        {\partial \boldsymbol{X}} \right)^T \right)
-    
     Examples
     --------
     ..  pyvista-plot::
         :context:
         
         >>> import felupe as fem
-        >>> 
+        >>>
         >>> umat = fem.LinearElasticOrthotropic(
-        >>>     E1=1, E2=1, E3=1, nu12=0.3, n23=0.3, nu13=0.3, G12=0.4, G23=0.4, G13=0.4
+        >>>     E1=1, E2=1, E3=1, nu12=0.3, nu23=0.3, nu13=0.3, G12=0.4, G23=0.4, G13=0.4
         >>> )
         >>> ax = umat.plot()
     
@@ -106,18 +71,7 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
     """
 
-    def __init__(
-        self,
-        E1,
-        E2,
-        E3,
-        nu12,
-        nu23,
-        nu13,
-        G12,
-        G23,
-        G13,
-    ):
+    def __init__(self, E1, E2, E3, nu12, nu23, nu13, G12, G23, G13):
         self.E1 = E1
         self.E2 = E1
         self.E3 = E3
@@ -150,10 +104,7 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(
-        self,
-        x,
-    ):
+    def gradient(self, x):
         r"""Evaluate the stress tensor (as a function of the deformation gradient).
 
         Parameters
@@ -175,18 +126,11 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         strain = (H + transpose(H)) / 2
 
         # init stress
-        elast = self.hessian(
-            x=x,
-        )[0]
+        elast = self.hessian(x=x)[0]
 
         return [ddot(elast, strain, mode=(4, 2)), statevars]
 
-    def hessian(
-        self,
-        x=None,
-        shape=(1, 1),
-        dtype=None,
-    ):
+    def hessian(self, x=None, shape=(1, 1), dtype=None):
         r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 

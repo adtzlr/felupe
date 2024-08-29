@@ -158,6 +158,7 @@ def test_linear_orthotropic():
     ]:
         LinearElastic, kwargs = Material
 
+        # doi.org/10.2478/ace-2018-0027 (pine wood)
         le = LinearElastic(
             E1=6919,
             E2=271,

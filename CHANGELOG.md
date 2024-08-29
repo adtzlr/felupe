@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add an optional `mechanics.Assemble(..., multiplier=None)` argument which is used in external items like  `SolidBodyForce`, `SolidBodyGravity` and `PointLoad` and is applied in `newtonrhapson(items, ...)`.
 - Add a new submodule `view` which contains the `View...` classes like `ViewSolid` or `ViewField`, previously located at `tools._plot`.
 - Add the `grad`- and `hess`-arguments to the `reload()`- and `copy()`-methods of a `Region`, i.e. `Region.reload(grad=None, hess=None)`.
+- Add `LinearElasticOrthotropic`.
 
 ### Changed
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.

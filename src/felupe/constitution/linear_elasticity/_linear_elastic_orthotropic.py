@@ -45,19 +45,19 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         Shear modulus.
     G13 : float
         Shear modulus.
-    
+
     Examples
     --------
     ..  pyvista-plot::
         :context:
-        
+
         >>> import felupe as fem
         >>>
         >>> umat = fem.LinearElasticOrthotropic(
         >>>     E1=1, E2=1, E3=1, nu12=0.3, nu23=0.3, nu13=0.3, G12=0.4, G23=0.4, G13=0.4
         >>> )
         >>> ax = umat.plot()
-    
+
     ..  pyvista-plot::
         :include-source: False
         :context:
@@ -114,8 +114,8 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
         Returns
         -------
-        ndarray
-            Stress tensor (3x3)
+        ndarray of shape (3, 3, ...)
+            Stress tensor
 
         """
 
@@ -144,8 +144,8 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
         Returns
         -------
-        ndarray
-            elasticity tensor (3x3x3x3)
+        ndarray of shape (3, 3, 3, 3, ...)
+            elasticity tensor
 
         """
 

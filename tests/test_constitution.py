@@ -169,7 +169,7 @@ def test_linear_orthotropic():
             G12=262,
             G23=34,
             G13=354,
-            **kwargs
+            **kwargs,
         )
 
         stress = le.gradient(F)[:-1]

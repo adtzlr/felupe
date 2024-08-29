@@ -33,6 +33,7 @@ from .lagrange.models import morph, morph_representative_directions
 from .linear_elasticity import (
     LinearElastic,
     LinearElasticLargeStrain,
+    LinearElasticOrthotropic,
     LinearElasticPlaneStrain,
     LinearElasticPlaneStress,
     LinearElasticTensorNotation,
@@ -70,6 +71,7 @@ __all__ = [
     "Laplace",
     "LinearElastic",
     "LinearElasticLargeStrain",
+    "LinearElasticOrthotropic",
     "LinearElasticPlaneStrain",
     "LinearElasticPlaneStress",
     "LinearElasticTensorNotation",

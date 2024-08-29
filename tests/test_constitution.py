@@ -150,6 +150,39 @@ def test_linear():
     assert np.allclose(*check_dsde)
 
 
+def test_linear_orthotropic():
+    r, F = pre(sym=False, add_identity=True)
+
+    for Material in [
+        (fem.constitution.LinearElasticOrthotropic, {}),
+    ]:
+        LinearElastic, kwargs = Material
+
+        # doi.org/10.2478/ace-2018-0027 (pine wood)
+        le = LinearElastic(
+            E1=6919,
+            E2=271,
+            E3=450,
+            nu12=0.388,
+            nu23=0.278,
+            nu13=0.375,
+            G12=262,
+            G23=34,
+            G13=354,
+            **kwargs,
+        )
+
+        stress = le.gradient(F)[:-1]
+        dsde = le.hessian(F)
+
+        assert le.elasticity()[0].shape[-2:] == (1, 1)
+
+        assert stress[0].shape == (3, 3, *F[0].shape[-2:])
+        assert dsde[0].shape == (3, 3, 3, 3, 1, 1)
+
+        assert np.allclose(stress, 0)
+
+
 def test_linear_planestress():
     r, F = pre(sym=False, add_identity=True)
     F = [F[0][:2][:, :2]]
@@ -708,6 +741,7 @@ def test_laplace():
 if __name__ == "__main__":
     test_nh()
     test_linear()
+    test_linear_orthotropic()
     test_linear_planestress()
     test_linear_planestrain()
     test_kinematics()

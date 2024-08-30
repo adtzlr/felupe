@@ -21,9 +21,9 @@ from ._field import ViewField
 
 
 class ViewSolid(ViewField):
-    """Provide Visualization methods for :class:`felupe.Field` and `felupe.SolidBody`.
-    The warped (deformed) mesh is created from the values of the first field
-    (displacements). By default, the "Deformation Gradient" tensor, the
+    """Provide Visualization methods for :class:`felupe.FieldContainer` and
+    `felupe.SolidBody`. The warped (deformed) mesh is created from the values of the
+    first field (displacements). By default, the "Deformation Gradient" tensor, the
     "Logarithmic Strain" tensor and the "Principal Values of Logarithmic Strain" are
     evaluated as field-related items of the cell-data dict. Optional items of given
     point- and cell-data overwrite these default field-related cell-data items.

@@ -24,7 +24,7 @@ from .._cartesian import IntegralFormCartesian
 
 
 class LinearForm:
-    r"""A linear form object with methods for integration and assembly of vectors.
+    r"""A linear form with methods for integration and assembly of vectors.
 
     ..  math::
 

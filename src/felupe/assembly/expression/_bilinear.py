@@ -24,8 +24,7 @@ from .._cartesian import IntegralFormCartesian
 
 
 class BilinearForm:
-    r"""A bilinear form object with methods for integration and assembly of
-    matrices.
+    r"""A bilinear form with methods for integration and assembly of matrices.
 
     ..  math::
 

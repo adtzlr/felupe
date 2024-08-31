@@ -11,8 +11,9 @@ Mechanics
 
    SolidBody
    SolidBodyNearlyIncompressible
-   SolidBodyPressure
    SolidBodyForce
+   SolidBodyPressure
+   SolidBodyCauchyStress
 
 **Steps and Jobs**
 
@@ -57,6 +58,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.SolidBodyPressure
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.SolidBodyCauchyStress
    :members:
    :undoc-members:
    :show-inheritance:

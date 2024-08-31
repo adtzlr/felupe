@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import pytest
+from scipy.sparse import csr_matrix
 
 import felupe as fem
 
@@ -540,9 +541,48 @@ def test_threefield():
     assert np.isclose(job.fnorms[0][-1], 0)
 
 
+def test_solidbody_cauchy_stress():
+    field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
+    region_stress = fem.RegionHexahedronBoundary(
+        mesh=field.region.mesh,
+        only_surface=True,
+        mask=field.region.mesh.x == 1,
+    )
+    field_boundary = fem.FieldContainer([fem.Field(region_stress, dim=3)])
+    boundaries = dict(left=fem.Boundary(field[0], fx=0))
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
+    solid = fem.SolidBody(umat, field)
+
+    resize_matrix = csr_matrix(([0.0], ([0], [0])), shape=(100, 100))
+    resize_vector = csr_matrix(([0.0], ([0], [0])), shape=(100, 1))
+
+    for cauchy_stress in [None, np.zeros((3, 3))]:
+        stress = fem.SolidBodyCauchyStress(
+            field=field_boundary, cauchy_stress=cauchy_stress
+        )
+        matrix = stress.assemble.matrix(field, resize=resize_matrix)
+        vector = stress.assemble.vector(field, resize=resize_vector)
+        stress._update(other_field=field, field=field_boundary)
+
+        assert matrix.shape == (100, 100)
+        assert vector.shape == (100, 1)
+
+    table = (
+        fem.math.linsteps([1], num=0, axis=2, axes=9)
+        + fem.math.linsteps([1], num=0, axis=6, axes=9)
+    ).reshape(-1, 3, 3)
+    step = fem.Step(
+        items=[solid, stress], ramp={stress: 1 * table}, boundaries=boundaries
+    )
+    fem.Job(steps=[step]).evaluate()
+
+    assert np.isclose(field[0].values.max(), 0.971866)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
+    test_solidbody_cauchy_stress()
     test_solidbody_incompressible()
     test_solidbody_axi()
     test_solidbody_axi_incompressible()

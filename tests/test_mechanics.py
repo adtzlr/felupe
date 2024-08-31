@@ -562,13 +562,14 @@ def test_solidbody_cauchy_stress():
         )
         matrix = stress.assemble.matrix(field, resize=resize_matrix)
         vector = stress.assemble.vector(field, resize=resize_vector)
+        stress._update(other_field=field, field=field_boundary)
 
         assert matrix.shape == (100, 100)
         assert vector.shape == (100, 1)
 
     table = (
-        fem.math.linsteps([0, 1], num=5, axis=2, axes=9)
-        + fem.math.linsteps([0, 1], num=5, axis=6, axes=9)
+        fem.math.linsteps([1], num=0, axis=2, axes=9)
+        + fem.math.linsteps([1], num=0, axis=6, axes=9)
     ).reshape(-1, 3, 3)
     step = fem.Step(
         items=[solid, stress], ramp={stress: 1 * table}, boundaries=boundaries

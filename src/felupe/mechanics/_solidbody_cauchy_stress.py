@@ -48,7 +48,9 @@ class SolidBodyCauchyStress:
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
+        >>> import numpy as np
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Rectangle(n=6)

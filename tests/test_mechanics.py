@@ -27,6 +27,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 import pytest
+from scipy.sparse import csr_matrix
 
 import felupe as fem
 
@@ -552,15 +553,18 @@ def test_solidbody_cauchy_stress():
     umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
     solid = fem.SolidBody(umat, field)
 
+    resize_matrix = csr_matrix(([0.0], ([0], [0])), shape=(100, 100))
+    resize_vector = csr_matrix(([0.0], ([0], [0])), shape=(100, 1))
+
     for cauchy_stress in [None, np.zeros((3, 3))]:
         stress = fem.SolidBodyCauchyStress(
             field=field_boundary, cauchy_stress=cauchy_stress
         )
-        matrix = stress.assemble.matrix(field)
-        vector = stress.assemble.vector(field)
+        matrix = stress.assemble.matrix(field, resize=resize_matrix)
+        vector = stress.assemble.vector(field, resize=resize_vector)
 
-        assert matrix.shape == (81, 81)
-        assert vector.shape == (81, 1)
+        assert matrix.shape == (100, 100)
+        assert vector.shape == (100, 1)
 
     table = (
         fem.math.linsteps([0, 1], num=5, axis=2, axes=9)

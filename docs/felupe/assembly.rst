@@ -76,9 +76,6 @@ Create an item out of bilinear and linear weak-form expressions for a Step.
    :inherited-members:
 
 .. autoclass:: felupe.assembly.expression.BasisArray
-   :members:
-   :undoc-members:
-   :inherited-members:
 
 .. autoclass:: felupe.FormItem
    :members:

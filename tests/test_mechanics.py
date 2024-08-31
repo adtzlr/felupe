@@ -551,7 +551,17 @@ def test_solidbody_cauchy_stress():
     boundaries = dict(left=fem.Boundary(field[0], fx=0))
     umat = fem.NeoHooke(mu=1, bulk=2)
     solid = fem.SolidBody(umat, field)
-    stress = fem.SolidBodyCauchyStress(field=field_boundary)
+
+    for cauchy_stress in [None, np.zeros((3, 3))]:
+        stress = fem.SolidBodyCauchyStress(
+            field=field_boundary, cauchy_stress=cauchy_stress
+        )
+        matrix = stress.assemble.matrix(field)
+        vector = stress.assemble.vector(field)
+
+        assert matrix.shape == (375, 375)
+        assert vector.shape == (375, 1)
+
     table = (
         fem.math.linsteps([0, 1], num=5, axis=2, axes=9)
         + fem.math.linsteps([0, 1], num=5, axis=6, axes=9)

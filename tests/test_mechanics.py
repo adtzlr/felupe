@@ -541,7 +541,7 @@ def test_threefield():
 
 
 def test_solidbody_cauchy_stress():
-    field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=5)), n=1)
+    field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
     region_stress = fem.RegionHexahedronBoundary(
         mesh=field.region.mesh,
         only_surface=True,
@@ -549,7 +549,7 @@ def test_solidbody_cauchy_stress():
     )
     field_boundary = fem.FieldContainer([fem.Field(region_stress, dim=3)])
     boundaries = dict(left=fem.Boundary(field[0], fx=0))
-    umat = fem.NeoHooke(mu=1, bulk=2)
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
     solid = fem.SolidBody(umat, field)
 
     for cauchy_stress in [None, np.zeros((3, 3))]:
@@ -559,8 +559,8 @@ def test_solidbody_cauchy_stress():
         matrix = stress.assemble.matrix(field)
         vector = stress.assemble.vector(field)
 
-        assert matrix.shape == (375, 375)
-        assert vector.shape == (375, 1)
+        assert matrix.shape == (81, 81)
+        assert vector.shape == (81, 1)
 
     table = (
         fem.math.linsteps([0, 1], num=5, axis=2, axes=9)
@@ -570,7 +570,8 @@ def test_solidbody_cauchy_stress():
         items=[solid, stress], ramp={stress: 1 * table}, boundaries=boundaries
     )
     fem.Job(steps=[step]).evaluate()
-    assert np.isclose(field[0].values.max(), 1.11455)
+
+    assert np.isclose(field[0].values.max(), 0.971866)
 
 
 if __name__ == "__main__":

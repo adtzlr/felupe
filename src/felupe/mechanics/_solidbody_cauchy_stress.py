@@ -103,7 +103,7 @@ class SolidBodyCauchyStress:
 
         return self.results.kinematics
 
-    def _vector(self, field=None, cauchy_stress=None, parallel=False, resize=None):
+    def _vector(self, field=None, parallel=False, resize=None):
         if field is not None:
             self._update(field)
             self.results.kinematics = self._extract(self.field)
@@ -113,9 +113,6 @@ class SolidBodyCauchyStress:
             self._normals,
             parallel=parallel,
         )
-
-        if cauchy_stress is not None:
-            self.results.cauchy_stress = cauchy_stress
 
         fun[0] = dot(self.results.cauchy_stress, fun[0], mode=(2, 2), out=fun[0])
 
@@ -128,7 +125,7 @@ class SolidBodyCauchyStress:
 
         return self.results.force
 
-    def _matrix(self, field=None, cauchy_stress=None, parallel=False, resize=None):
+    def _matrix(self, field=None, parallel=False, resize=None):
         if field is not None:
             self._update(field)
             self.results.kinematics = self._extract(self.field)
@@ -138,9 +135,6 @@ class SolidBodyCauchyStress:
             self._normals,
             parallel=parallel,
         )
-
-        if cauchy_stress is not None:
-            self.results.cauchy_stress = cauchy_stress
 
         fun[0] = dot(self.results.cauchy_stress, fun[0], mode=(2, 4), out=fun[0])
 

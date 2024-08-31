@@ -123,7 +123,7 @@ class BasisField:
 
     ..  math::
 
-        \text{grad}(\varphi)_{ai~jk~qc} = \delta_{ij}
+        \text{grad}(\varphi)_{ai~jK~qc} = \delta_{ij}
             \left( \frac{\partial h_a}{\partial X_K} \right)_{qc}
 
     Examples

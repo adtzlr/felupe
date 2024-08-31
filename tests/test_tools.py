@@ -225,7 +225,7 @@ def test_newton_plane():
     )
 
     # define the constitutive material behavior
-    umat = fem.LinearElasticPlaneStrain(E=1.0, nu=0.3)
+    umat = fem.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
     # newton-rhapson procedure
     res = fem.newtonrhapson(

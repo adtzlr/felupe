@@ -336,6 +336,13 @@ class LinearElasticPlaneStrain:
     nu : float
         Poisson ratio.
 
+    Notes
+    -----
+    .. warning::
+
+       This class must not be used with :class:`~felupe.FieldPlaneStrain` but with
+       :class:`~felupe.Field` instead!
+
     """
 
     def __init__(self, E, nu):

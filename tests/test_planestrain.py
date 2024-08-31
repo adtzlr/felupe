@@ -75,7 +75,7 @@ def test_planestrain():
     g = fem.FieldsMixed(r, n=1, planestrain=False)
 
     u = fem.LinearElastic(E=1, nu=0.3)
-    v = fem.LinearElasticPlaneStrain(E=1, nu=0.3)
+    v = fem.constitution.LinearElasticPlaneStrain(E=1, nu=0.3)
 
     b = fem.SolidBody(u, f)
     c = fem.SolidBody(v, g)

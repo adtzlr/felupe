@@ -23,17 +23,17 @@ from ..._base import ConstitutiveMaterial
 
 
 class NeoHooke(ConstitutiveMaterial):
-    r"""Nearly-incompressible isotropic hyperelastic Neo-Hookean material
-    formulation. The strain energy density function of the Neo-Hookean
-    material formulation is a linear function of the trace of the
-    isochoric part of the right Cauchy-Green deformation tensor.
+    r"""Nearly-incompressible isotropic hyperelastic Neo-Hookean material formulation.
+    The strain energy density function of the Neo-Hookean material formulation is a
+    linear function of the trace of the isochoric part of the right Cauchy-Green
+    deformation tensor.
 
     Parameters
     ----------
     mu : float or None, optional
-        Shear modulus
+        Shear modulus (default is None)
     bulk : float or None, optional
-        Bulk modulus
+        Bulk modulus (default is None)
 
     Notes
     -----
@@ -208,27 +208,20 @@ class NeoHooke(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def function(self, x, mu=None, bulk=None):
-        """Strain energy density function per unit undeformed volume of the
-        Neo-Hookean material formulation.
+    def function(self, x):
+        """Strain energy density function per unit undeformed volume of the Neo-Hookean
+        material formulation.
 
         Parameters
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
         """
 
         F = x[0]
 
-        if mu is None:
-            mu = self.mu
-
-        if bulk is None:
-            bulk = self.bulk
+        mu = self.mu
+        bulk = self.bulk
 
         J = det(F)
         C = dot(transpose(F), F, parallel=self.parallel)
@@ -242,29 +235,22 @@ class NeoHooke(ConstitutiveMaterial):
 
         return [W]
 
-    def gradient(self, x, mu=None, bulk=None, out=None):
-        """Gradient of the strain energy density function per unit
-        undeformed volume of the Neo-Hookean material formulation.
+    def gradient(self, x, out=None):
+        """Gradient of the strain energy density function per unit undeformed volume of
+        the Neo-Hookean material formulation.
 
         Parameters
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
         out : ndarray or None, optional
             A location into which the result is stored (default is None).
         """
 
         F, statevars = x[0], x[-1]
 
-        if mu is None:
-            mu = self.mu
-
-        if bulk is None:
-            bulk = self.bulk
+        mu = self.mu
+        bulk = self.bulk
 
         J = det(F)
         iFT = transpose(inv(F, J))
@@ -294,29 +280,22 @@ class NeoHooke(ConstitutiveMaterial):
 
         return [P, statevars]
 
-    def hessian(self, x, mu=None, bulk=None, out=None):
-        """Hessian of the strain energy density function per unit
-        undeformed volume of the Neo-Hookean material formulation.
+    def hessian(self, x, out=None):
+        """Hessian of the strain energy density function per unit undeformed volume of
+        the Neo-Hookean material formulation.
 
         Parameters
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        bulk : float, optional
-            Bulk modulus (default is None)
         out : ndarray or None, optional
             A location into which the result is stored (default is None).
         """
 
         F = x[0]
 
-        if mu is None:
-            mu = self.mu
-
-        if bulk is None:
-            bulk = self.bulk
+        mu = self.mu
+        bulk = self.bulk
 
         J = det(F)
         iFT = transpose(inv(F, J))

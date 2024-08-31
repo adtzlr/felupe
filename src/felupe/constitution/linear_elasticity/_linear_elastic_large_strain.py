@@ -36,7 +36,7 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
 
     See Also
     --------
-    NeoHookeCompressible: Compressible isotropic hyperelastic Neo-Hooke material
+    felupe.NeoHookeCompressible: Compressible isotropic hyperelastic Neo-Hooke material
         formulation.
 
     Examples
@@ -62,10 +62,9 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
 
     """
 
-    def __init__(self, E=None, nu=None, parallel=False):
+    def __init__(self, E, nu, parallel=False):
         self.E = E
         self.nu = nu
-
         self.kwargs = {"E": self.E, "nu": self.nu}
 
         # aliases for gradient and hessian
@@ -77,25 +76,16 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-        mu = None
-        lmbda = None
-
-        if self.E is not None and self.nu is not None:
-            lmbda, mu = lame_converter(E, nu)
-
+        lmbda, mu = lame_converter(E, nu)
         self.material = NeoHookeCompressible(mu=mu, lmbda=lmbda, parallel=parallel)
 
-    def function(self, x, E=None, nu=None):
+    def function(self, x):
         """Evaluate the strain energy (as a function of the deformation gradient).
 
         Arguments
         ---------
         x : list of ndarray
             List with Deformation gradient ``F`` (3x3) as first item
-        E : float, optional
-            Young's modulus (default is None)
-        nu : float, optional
-            Poisson ratio (default is None)
 
         Returns
         -------
@@ -103,28 +93,15 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
             Stress tensor (3x3)
 
         """
+        return self.material.function(x)
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
-
-        lmbda, mu = lame_converter(E, nu)
-
-        return self.material.function(x, mu=mu, lmbda=lmbda)
-
-    def gradient(self, x, E=None, nu=None):
+    def gradient(self, x):
         """Evaluate the stress tensor (as a function of the deformation gradient).
 
         Arguments
         ---------
         x : list of ndarray
             List with Deformation gradient ``F`` (3x3) as first item
-        E : float, optional
-            Young's modulus (default is None)
-        nu : float, optional
-            Poisson ratio (default is None)
 
         Returns
         -------
@@ -132,28 +109,15 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
             Stress tensor (3x3)
 
         """
+        return self.material.gradient(x)
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
-
-        lmbda, mu = lame_converter(E, nu)
-
-        return self.material.gradient(x, mu=mu, lmbda=lmbda)
-
-    def hessian(self, x, E=None, nu=None):
+    def hessian(self, x):
         """Evaluate the elasticity tensor (as a function of the deformation gradient).
 
         Arguments
         ---------
         x : list of ndarray
             List with Deformation gradient ``F`` (3x3) as first item.
-        E : float, optional
-            Young's modulus (default is None)
-        nu : float, optional
-            Poisson ratio (default is None)
 
         Returns
         -------
@@ -161,13 +125,4 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
             elasticity tensor (3x3x3x3)
 
         """
-
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
-
-        lmbda, mu = lame_converter(E, nu)
-
-        return self.material.hessian(x, mu=mu, lmbda=lmbda)
+        return self.material.hessian(x)

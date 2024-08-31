@@ -22,15 +22,6 @@ def lame_converter(E, nu):
     Poisson ratio :math:`\nu` to first and second Lamé - constants :math:`\lambda` and
     :math:`\mu`.
 
-    Notes
-    -----
-
-    ..  math::
-
-        \lambda &= \frac{E \nu}{(1 + \nu) (1 - 2 \nu)}
-
-        \mu &= \frac{E}{2 (1 + \nu)}
-
     Parameters
     ----------
     E : float
@@ -44,6 +35,15 @@ def lame_converter(E, nu):
         First Lamé - constant.
     mu : float
         Second Lamé - constant (shear modulus).
+
+    Notes
+    -----
+
+    ..  math::
+
+        \lambda &= \frac{E \nu}{(1 + \nu) (1 - 2 \nu)}
+
+        \mu &= \frac{E}{2 (1 + \nu)}
     """
 
     lmbda = E * nu / ((1 + nu) * (1 - 2 * nu))

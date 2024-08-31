@@ -88,14 +88,6 @@ def test_nh():
 
             nh = fem.constitution.NeoHooke(mu=None, bulk=2.0, parallel=parallel)
 
-            W = nh.function(F, mu=2.0)
-            P = nh.gradient(F, mu=2.0)[:-1]
-            A = nh.hessian(F, mu=2.0)
-
-            assert W[0].shape == F[0].shape[-2:]
-            assert P[0].shape == (3, 3, *F[0].shape[-2:])
-            assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
-
             assert np.allclose(P, 0)
 
             nh = fem.constitution.NeoHooke(mu=1.0, parallel=parallel)
@@ -134,16 +126,6 @@ def test_linear():
         check_dsde.append([dsde[0][..., 0, 0], dsde2[0][..., 0, 0]])
 
         assert dsde[0].shape[:-2] == dsde2[0].shape[:-2]
-
-        le = LinearElastic(E=None, nu=0.3, **kwargs)
-        stress = le.gradient(F, E=2.0)[:-1]
-        stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
-        dsde = le.hessian(F, E=2.0)
-        dsde = le.hessian(F, E=3.0)
-
-        assert stress[0].shape == (3, 3, *F[0].shape[-2:])
-        assert dsde[0].shape == (3, 3, 3, 3, 1, 1)
-
         assert np.allclose(stress, 0)
 
     assert np.allclose(*check_stress)
@@ -208,12 +190,6 @@ def test_linear_planestress():
     assert stress_full[0].shape == (3, 3, *F[0].shape[-2:])
     assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
 
-    le = fem.constitution.LinearElasticPlaneStress(E=None, nu=0.3)
-    stress = le.gradient(F, E=2.0)[:-1]
-    stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
-    dsde = le.hessian(F, E=2.0)
-    dsde = le.hessian(F, E=3.0)
-
     assert stress[0].shape == (2, 2, *F[0].shape[-2:])
     assert dsde[0].shape == (2, 2, 2, 2, 1, 1)
 
@@ -235,13 +211,6 @@ def test_linear_planestrain():
 
     assert stress_full[0].shape == (3, 3, *F[0].shape[-2:])
     assert strain_full[0].shape == (3, 3, *F[0].shape[-2:])
-
-    le = fem.constitution.LinearElasticPlaneStrain(E=None, nu=None)
-    le = fem.constitution.LinearElasticPlaneStrain(E=None, nu=0.3)
-    stress = le.gradient(F, E=2.0)[:-1]
-    stress = le.gradient(F, E=0.5, nu=0.2)[:-1]
-    dsde = le.hessian(F, E=2.0)
-    dsde = le.hessian(F, E=3.0)
 
     assert stress[0].shape == (2, 2, *F[0].shape[-2:])
     assert dsde[0].shape == (2, 2, 2, 2, 1, 1)

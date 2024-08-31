@@ -91,7 +91,7 @@ class LinearElastic(ConstitutiveMaterial):
 
     """
 
-    def __init__(self, E=None, nu=None):
+    def __init__(self, E, nu):
         self.E = E
         self.nu = nu
 
@@ -105,17 +105,13 @@ class LinearElastic(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(self, x, E=None, nu=None):
+    def gradient(self, x):
         r"""Evaluate the stress tensor (as a function of the deformation gradient).
 
         Parameters
         ----------
         x : list of ndarray
             List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -124,13 +120,10 @@ class LinearElastic(ConstitutiveMaterial):
 
         """
 
+        E = self.E
+        nu = self.nu
+
         F, statevars = x[0], x[-1]
-
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
 
         # convert the deformation gradient to strain
         H = F - identity(F)
@@ -149,7 +142,7 @@ class LinearElastic(ConstitutiveMaterial):
 
         return [E / (1 + nu) / (1 - 2 * nu) * stress, statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), dtype=None):
+    def hessian(self, x=None, shape=(1, 1), dtype=None):
         r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -158,10 +151,6 @@ class LinearElastic(ConstitutiveMaterial):
         x : list of ndarray, optional
             List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item
             (default is None).
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
         shape : tuple of int, optional
             Tuple with shape of the trailing axes (default is (1, 1)).
 
@@ -172,11 +161,8 @@ class LinearElastic(ConstitutiveMaterial):
 
         """
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
+        E = self.E
+        nu = self.nu
 
         if x is not None:
             dtype = x[0].dtype
@@ -255,7 +241,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
     """
 
-    def __init__(self, E=None, nu=None, parallel=False):
+    def __init__(self, E, nu, parallel=False):
         self.parallel = parallel
 
         self.E = E
@@ -271,7 +257,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(self, x, E=None, nu=None):
+    def gradient(self, x):
         r"""Evaluate the stress tensor (as a function of the deformation
         gradient).
 
@@ -279,10 +265,6 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         ----------
         x : list of ndarray
             List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -291,13 +273,10 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
         """
 
+        E = self.E
+        nu = self.nu
+
         F, statevars = x[0], x[-1]
-
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
 
         # convert to lame constants
         gamma, mu = lame_converter(E, nu)
@@ -308,7 +287,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
         return [2 * mu * strain + gamma * trace(strain) * identity(strain), statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1), dtype=None):
+    def hessian(self, x=None, shape=(1, 1), dtype=None):
         r"""Evaluate the elasticity tensor. The Deformation gradient is only
         used for the shape of the trailing axes.
 
@@ -317,10 +296,6 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         x : list of ndarray
             List with Deformation gradient  :math:`\boldsymbol{F}` (3x3) as first item.
             (default is None)
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
         shape : (int, ...), optional
             Tuple with shape of the trailing axes (default is (1, 1))
         dtype : data-type or None, optional
@@ -333,11 +308,8 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
         """
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
+        E = self.E
+        nu = self.nu
 
         if x is not None:
             dtype = x[0].dtype
@@ -371,7 +343,6 @@ class LinearElasticPlaneStrain:
         self.nu = nu
 
         self.kwargs = {"E": self.E, "nu": self.nu}
-
         self._umat = LinearElasticPlaneStress(*self._convert(self.E, self.nu))
 
         # initial variables for calling
@@ -399,19 +370,12 @@ class LinearElasticPlaneStrain:
 
         """
 
-        if E is None or nu is None:
-            E_eff = None
-        else:
-            E_eff = E / (1 - nu**2)
-
-        if nu is None:
-            nu_eff = None
-        else:
-            nu_eff = nu / (1 - nu)
+        E_eff = E / (1 - nu**2)
+        nu_eff = nu / (1 - nu)
 
         return E_eff, nu_eff
 
-    def gradient(self, x, E=None, nu=None):
+    def gradient(self, x):
         r"""Evaluate the 2d-stress tensor from the deformation gradient.
 
         Parameters
@@ -419,10 +383,6 @@ class LinearElasticPlaneStrain:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -430,15 +390,9 @@ class LinearElasticPlaneStrain:
             In-plane components of stress tensor (2x2)
 
         """
-        if E is None:
-            E = self.E
+        return self._umat.gradient(x)
 
-        if nu is None:
-            nu = self.nu
-
-        return self._umat.gradient(x, *self._convert(E, nu))
-
-    def hessian(self, x, E=None, nu=None):
+    def hessian(self, x):
         r"""Evaluate the 2d-elasticity tensor from the deformation gradient.
 
         Parameters
@@ -446,10 +400,6 @@ class LinearElasticPlaneStrain:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -457,16 +407,9 @@ class LinearElasticPlaneStrain:
             In-plane components of elasticity tensor (2x2x2x2)
 
         """
+        return self._umat.hessian(x)
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
-
-        return self._umat.hessian(x, *self._convert(E, nu))
-
-    def strain(self, x, E=None, nu=None):
+    def strain(self, x):
         r"""Evaluate the strain tensor from the deformation gradient.
 
         Parameters
@@ -474,10 +417,6 @@ class LinearElasticPlaneStrain:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -496,7 +435,7 @@ class LinearElasticPlaneStrain:
 
         return [e]
 
-    def stress(self, x, E=None, nu=None):
+    def stress(self, x):
         r""" "Evaluate the 3d-stress tensor from the deformation gradient.
 
         Parameters
@@ -504,10 +443,6 @@ class LinearElasticPlaneStrain:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -518,14 +453,8 @@ class LinearElasticPlaneStrain:
 
         F = x[0]
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
-
-        s = np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))
-        s[2, 2] = nu * (s[0, 0] + s[1, 1])
+        s = np.pad(self.gradient(F)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))
+        s[2, 2] = self.nu * (s[0, 0] + s[1, 1])
 
         return [s]
 
@@ -554,7 +483,7 @@ class LinearElasticPlaneStress:
 
         self.elasticity = self.hessian
 
-    def gradient(self, x, E=None, nu=None):
+    def gradient(self, x):
         r"""Evaluate the 2d-stress tensor from the deformation gradient.
 
         Parameters
@@ -562,10 +491,6 @@ class LinearElasticPlaneStress:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -576,11 +501,8 @@ class LinearElasticPlaneStress:
 
         F, statevars = x[0], x[-1]
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
+        E = self.E
+        nu = self.nu
 
         stress = np.zeros((2, 2, *F.shape[-2:]))
 
@@ -591,7 +513,7 @@ class LinearElasticPlaneStress:
 
         return [stress, statevars]
 
-    def hessian(self, x=None, E=None, nu=None, shape=(1, 1)):
+    def hessian(self, x=None, shape=(1, 1)):
         r"""Evaluate the elasticity tensor from the deformation gradient.
 
         Parameters
@@ -599,10 +521,6 @@ class LinearElasticPlaneStress:
         x : list of ndarray, optional
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item (default is None)-
-        E : float, optional
-            Young's  modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
         shape : tuple of int, optional
             Tuple with shape of the trailing axes (default is (1, 1)).
 
@@ -613,11 +531,8 @@ class LinearElasticPlaneStress:
 
         """
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
+        E = self.E
+        nu = self.nu
 
         elast = np.zeros((2, 2, 2, 2, *shape))
 
@@ -633,7 +548,7 @@ class LinearElasticPlaneStress:
 
         return [elast]
 
-    def strain(self, x, E=None, nu=None):
+    def strain(self, x):
         r"""Evaluate the strain tensor from the deformation gradient.
 
         Parameters
@@ -641,10 +556,6 @@ class LinearElasticPlaneStress:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -654,11 +565,7 @@ class LinearElasticPlaneStress:
 
         F = x[0]
 
-        if E is None:
-            E = self.E
-
-        if nu is None:
-            nu = self.nu
+        nu = self.nu
 
         e = np.zeros((3, 3, *F.shape[-2:]))
 
@@ -670,7 +577,7 @@ class LinearElasticPlaneStress:
 
         return [e]
 
-    def stress(self, x, E=None, nu=None):
+    def stress(self, x):
         r""" "Evaluate the 3d-stress tensor from the deformation gradient.
 
         Parameters
@@ -678,10 +585,6 @@ class LinearElasticPlaneStress:
         x : list of ndarray
             List with In-plane components (2x2) of the Deformation gradient
             :math:`\boldsymbol{F}` as first item.
-        E : float, optional
-            Young's modulus (default is None).
-        nu : float, optional
-            Poisson ratio (default is None).
 
         Returns
         -------
@@ -692,6 +595,4 @@ class LinearElasticPlaneStress:
 
         F = x[0]
 
-        return [
-            np.pad(self.gradient(F, E=E, nu=nu)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))
-        ]
+        return [np.pad(self.gradient(F)[0], ((0, 1), (0, 1), (0, 0), (0, 0)))]

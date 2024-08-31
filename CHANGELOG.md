@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file. The format 
 - Isolate the submodules, i.e. a submodule only uses the public API of another submodule. If necessary, this will help to change one or more modules to a future extension package.
 - Enforce contiguous arrays for the region shape-function and -gradient arrays `h` and `dhdX`. This recovers the integral-form assembly performance from v8.6.0.
 - Make the private basis classes public (`assembly.expression.Basis`, `assembly.expression.BasisField` and `assembly.expression.BasisArray`) as especially their docstrings are useful to understand how a *Basis* is created on a field.
+- Remove material parameter keyword-arguments in the `function()`-, `gradient()`- and `hessian()`-methods of the core constitutive material formulations. This removes the ability for temporary material parameters in `LinearElastic(E=None, nu=0.3).gradient(x, E=1.0)`, use `LinearElastic(E=1.0, nu=0.3).gradient(x)` instead. This affects the material formulations `LinearElastic`, `LinearElasticPlaneStrain`, `LinearElasticPlaneStress`, `LinearElasticLargeStrain`, `NeoHooke` and `NeoHookeCompressible`. `None` is still supported for the material parameters of `NeoHooke` and `NeoHookeCompressible`.
 
 ### Deprecated
 - Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.

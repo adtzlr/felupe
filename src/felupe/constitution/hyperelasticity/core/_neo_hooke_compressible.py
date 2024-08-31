@@ -29,10 +29,10 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
     Parameters
     ----------
-    mu : float
-        Shear modulus (second Lamé constant)
-    lmbda : float
-        First Lamé constant
+    mu : float or None, optional
+        Shear modulus (second Lamé constant). Default is None.
+    lmbda : float or None, optional
+        First Lamé constant (default is None)
 
     Notes
     -----
@@ -115,7 +115,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def function(self, x, mu=None, lmbda=None):
+    def function(self, x):
         """Strain energy density function per unit undeformed volume of the Neo-Hookean
         material formulation.
 
@@ -123,19 +123,12 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        lmbda : float, optional
-            First Lamé constant (default is None)
         """
 
         F = x[0]
 
-        if mu is None:
-            mu = self.mu
-
-        if lmbda is None:
-            lmbda = self.lmbda
+        mu = self.mu
+        lmbda = self.lmbda
 
         lnJ = np.log(det(F))
         C = dot(transpose(F), F, parallel=self.parallel)
@@ -147,7 +140,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
         return [W]
 
-    def gradient(self, x, mu=None, lmbda=None, out=None):
+    def gradient(self, x, out=None):
         """Gradient of the strain energy density function per unit undeformed volume of
         the Neo-Hookean material formulation.
 
@@ -155,21 +148,14 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        lmbda : float, optional
-            First Lamé constant (default is None)
         out : ndarray or None, optional
             A location into which the result is stored (default is None).
         """
 
         F, statevars = x[0], x[-1]
 
-        if mu is None:
-            mu = self.mu
-
-        if lmbda is None:
-            lmbda = self.lmbda
+        mu = self.mu
+        lmbda = self.lmbda
 
         J = det(F)
         iFT = transpose(inv(F, J))
@@ -187,7 +173,7 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
         return [P, statevars]
 
-    def hessian(self, x, mu=None, lmbda=None, out=None):
+    def hessian(self, x, out=None):
         """Hessian of the strain energy density function per unit undeformed volume of
         the Neo-Hookean material formulation.
 
@@ -195,21 +181,14 @@ class NeoHookeCompressible(ConstitutiveMaterial):
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        mu : float, optional
-            Shear modulus (default is None)
-        lmbda : float, optional
-            First Lamé constant (default is None)
         out : ndarray or None, optional
             A location into which the result is stored (default is None).
         """
 
         F = x[0]
 
-        if mu is None:
-            mu = self.mu
-
-        if lmbda is None:
-            lmbda = self.lmbda
+        mu = self.mu
+        lmbda = self.lmbda
 
         J = det(F)
         iFT = transpose(inv(F, J))

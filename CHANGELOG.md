@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `LinearElasticOrthotropic`.
 - Add `SolidBodyCauchyStress` in addition to `SolidBodyPressure`.
 - Add `mesh.cell_types()` which returns an object-array with cell-type mappings for FElupe and PyVista.
+- Add `MeshContainer.from_unstructured_grid(grid, dim=None, **kwargs)` to create a mesh-container from an unstructured grid (PyVista).
 
 ### Changed
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.

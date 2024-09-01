@@ -56,6 +56,7 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
    mesh.stack
    mesh.read
    mesh.interpolate_line
+   mesh.cell_types
 
 **Detailed API Reference**
 
@@ -115,4 +116,4 @@ This module contains meshing-related classes and functions. Standalone mesh-tool
    :show-inheritance:
 
 .. automodule:: felupe.mesh
-   :members: expand, translate, rotate, revolve, sweep, mirror, concatenate, runouts, triangulate, convert, collect_edges, collect_faces, collect_volumes, add_midpoints_edges, add_midpoints_faces, add_midpoints_volumes, flip, fill_between, dual, stack, merge_duplicate_points, merge_duplicate_cells, read, interpolate_line
+   :members: expand, translate, rotate, revolve, sweep, mirror, concatenate, runouts, triangulate, convert, collect_edges, collect_faces, collect_volumes, add_midpoints_edges, add_midpoints_faces, add_midpoints_volumes, flip, fill_between, dual, stack, merge_duplicate_points, merge_duplicate_cells, read, interpolate_line, cell_types

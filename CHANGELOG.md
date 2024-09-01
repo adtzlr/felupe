@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add the `grad`- and `hess`-arguments to the `reload()`- and `copy()`-methods of a `Region`, i.e. `Region.reload(grad=None, hess=None)`.
 - Add `LinearElasticOrthotropic`.
 - Add `SolidBodyCauchyStress` in addition to `SolidBodyPressure`.
+- Add `mesh.cell_types()` which returns an object-array with cell-type mappings for FElupe and PyVista.
 
 ### Changed
 - Change the internal initialization of `field = Field(region, values=1, dtype=None)` values from `field.values = np.ones(shape) * values` to `field = np.full(shape, fill_value=values, dtype=dtype)`. This enforces `field = Field(region, values=1)` to return the gradient array with data-type `int` which was of type `float` before.
@@ -29,6 +30,7 @@ All notable changes to this project will be documented in this file. The format 
 - Make the private basis classes public (`assembly.expression.Basis`, `assembly.expression.BasisField` and `assembly.expression.BasisArray`) as especially their docstrings are useful to understand how a *Basis* is created on a field.
 - Remove material parameter keyword-arguments in the `function()`-, `gradient()`- and `hessian()`-methods of the core constitutive material formulations. This removes the ability for temporary material parameters in `LinearElastic(E=None, nu=0.3).gradient(x, E=1.0)`, use `LinearElastic(E=1.0, nu=0.3).gradient(x)` instead. This affects the material formulations `LinearElastic`, `LinearElasticPlaneStrain`, `LinearElasticPlaneStress`, `LinearElasticLargeStrain`, `NeoHooke` and `NeoHookeCompressible`. `None` is still supported for the material parameters of `NeoHooke` and `NeoHookeCompressible`.
 - Remove `LinearElasticPlaneStrain` from the top-level package namespace because this should only be used with `Field(region, dim=2)`. The preferred method is to use `FieldPlaneStrain(region, dim=2)` and the default `LinearElastic`. `LinearElasticPlaneStrain` remains available in `constitution.LinearElasticPlaneStrain`.
+- Rename `Mesh.as_pyvista()` to `Mesh.as_unstructured_grid()` and add `Mesh.as_pyvista()` as alias.
 
 ### Deprecated
 - Deprecate `SolidBodyGravity`, `SolidBodyForce` should be used instead.

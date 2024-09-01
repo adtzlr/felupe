@@ -21,6 +21,63 @@ import numpy as np
 from ._helpers import mesh_or_data
 
 
+def cell_types():
+    r"""Return a list with tuples of identical cell types for different packages.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+        :context:
+
+        >>> import felupe as fem
+        >>>
+        >>> cell_types_array = fem.mesh.cell_types()
+
+    Create a dict which takes a FElupe cell-type string and returns the PyVista cell-
+    type.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> cell_types_felupe_to_pyvista = dict(cell_types_array)
+        >>> cell_types_felupe_to_pyvista["line"]
+        <CellType.LINE: 3>
+
+    Create a dict which takes a PyVista cell-type string and returns the FElupe cell-
+    type.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> import pyvista as pv
+        >>>
+        >>> cell_types_pyvista_to_felupe = dict(cell_types_array[:, [1, 0]])
+        >>> cell_types_pyvista_to_felupe[pv.CellType.LINE]
+        "line"
+    """
+
+    import pyvista as pv
+
+    cell_types = [
+        ("line", pv.CellType.LINE),
+        ("triangle", pv.CellType.TRIANGLE),
+        ("triangle6", pv.CellType.QUADRATIC_TRIANGLE),
+        ("tetra", pv.CellType.TETRA),
+        ("tetra10", pv.CellType.QUADRATIC_TETRA),
+        ("quad", pv.CellType.QUAD),
+        ("quad8", pv.CellType.QUADRATIC_QUAD),
+        ("quad9", pv.CellType.BIQUADRATIC_QUAD),
+        ("hexahedron", pv.CellType.HEXAHEDRON),
+        ("hexahedron20", pv.CellType.QUADRATIC_HEXAHEDRON),
+        ("hexahedron27", pv.CellType.TRIQUADRATIC_HEXAHEDRON),
+        ("VTK_LAGRANGE_HEXAHEDRON", pv.CellType.LAGRANGE_HEXAHEDRON),
+        ("VTK_LAGRANGE_QUADRILATERAL", pv.CellType.LAGRANGE_QUADRILATERAL),
+        ("VTK_LAGRANGE_LINE", pv.CellType.LAGRANGE_CURVE),
+    ]
+
+    return np.array(cell_types, dtype=object)
+
+
 @mesh_or_data
 def convert(
     points,
@@ -75,7 +132,7 @@ def convert(
     the cell edges.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -84,11 +141,11 @@ def convert(
        >>>
        >>> mesh2.plot(plotter=mesh.plot(), style="points", color="black").show()
 
-    >>> mesh2
-    <felupe Mesh object>
-      Number of points: 96
-      Number of cells:
-        quad8: 25
+       >>> mesh2
+       <felupe Mesh object>
+         Number of points: 96
+         Number of cells:
+           quad8: 25
 
     See Also
     --------

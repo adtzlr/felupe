@@ -365,6 +365,13 @@ def test_container():
     for combined in [False, True]:
         print(container.as_meshio(combined=combined))
 
+    container_2 = fem.MeshContainer.from_unstructured_grid(
+        mesh_1.as_unstructured_grid(), dim=2
+    )
+
+    assert np.allclose(container_2[0].points, mesh_1.points)
+    assert np.allclose(container_2[0].cells, mesh_1.cells)
+
 
 def test_read(filename="tests/mesh.bdf"):
     mesh = fem.mesh.read(filename=filename, dim=2)[0]

@@ -250,7 +250,7 @@ class MeshContainer:
         cell_types_felupe = dict(cell_types()[:, [1, 0]])
 
         for cell_type, cells in grid.cells_dict.items():
-            meshes.append(Mesh(points[:, :None], cells, cell_types_felupe[cell_type]))
+            meshes.append(Mesh(points[:, :dim], cells, cell_types_felupe[cell_type]))
 
         return cls(meshes, **kwargs)
 

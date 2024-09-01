@@ -20,6 +20,7 @@ from copy import deepcopy
 
 import numpy as np
 
+from ._convert import cell_types
 from ._mesh import Mesh
 from ._tools import merge_duplicate_points as sweep
 from ._tools import stack
@@ -201,6 +202,57 @@ class MeshContainer:
                 "List of meshes must have same cell-types.",
             ]
             raise TypeError(" ".join(message))
+
+    @classmethod
+    def from_unstructured_grid(cls, grid, dim=None, **kwargs):
+        r"""Create a mesh container from an unstructured grid (PyVista).
+
+        Parameters
+        ----------
+        grid : pyvista.UnstructuredGrid
+            PyVista dataset used for arbitrary combinations of all possible cell types.
+        dim : int or None, optional
+            Trim the dimension of the ``points``-array (default is None).
+        **kwargs : dict, optional
+            Additional keyword-arguments are passed to the mesh container.
+
+        Returns
+        -------
+        MeshContainer
+            A container which operates on a list of meshes with identical dimensions.
+
+        Examples
+        --------
+
+        ..  pyvista-plot::
+
+            >>> import felupe as fem
+            >>> import pyvista as pv
+            >>>
+            >>> grid = pv.UnstructuredGrid(pv.examples.hexbeamfile)
+            >>> container = fem.MechContainer.from_unstructured_grid(grid)
+            >>>
+            >>> container
+            <felupe mesh container object>
+              Number of points: 99
+              Number of cells:
+                hexahedron: 40
+
+        See Also
+        --------
+        felupe.mesh.cell_types : Return a list with tuples of cell type mappings.
+        felupe.Mesh.as_unstructured_grid : Export the mesh as unstructured grid.
+        """
+
+        points = grid.points
+        meshes = []
+
+        cell_types_felupe = dict(cell_types()[:, [1, 0]])
+
+        for cell_type, cells in grid.cells_dict.items():
+            meshes.append(Mesh(points[:, :None], cells, cell_types_felupe[cell_type]))
+
+        return cls(meshes, **kwargs)
 
     def as_meshio(self, combined=True, **kwargs):
         "Export a (combined) mesh object as :class:`meshio.Mesh`."

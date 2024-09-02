@@ -33,7 +33,7 @@ def cell_types():
         >>>
         >>> cell_types_array = fem.mesh.cell_types()
 
-    Create a dict which takes a FElupe cell-type string and returns the PyVista cell-
+    Create a dict which takes a FElupe cell type string and returns the PyVista cell
     type.
 
     ..  pyvista-plot::
@@ -43,7 +43,7 @@ def cell_types():
         >>> cell_types_felupe_to_pyvista["line"]
         <CellType.LINE: 3>
 
-    Create a dict which takes a PyVista cell-type string and returns the FElupe cell-
+    Create a dict which takes a PyVista cell type string and returns the FElupe cell
     type.
 
     ..  pyvista-plot::

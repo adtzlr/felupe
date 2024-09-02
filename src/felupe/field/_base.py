@@ -184,8 +184,10 @@ class Field:
 
         ..  math::
 
-            \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
-                \hat{u}_{ai} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
+            \left( \frac{\partial^2 u_i}{\partial X_J~\partial X_K} \right)_{(qc)} =
+                \hat{u}_{ai} \left(
+                    \frac{\partial^2 h_a}{\partial X_J~\partial X_K}
+                \right)_{(qc)}
 
         Parameters
         ----------

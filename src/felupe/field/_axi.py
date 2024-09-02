@@ -156,16 +156,20 @@ class FieldAxisymmetric(Field):
             return g
 
     def grad(self, sym=False, dtype=None, out=None):
-        """3D-gradient as partial derivative of field values at points w.r.t.
+        r"""3D-gradient as partial derivative of field values at points w.r.t.
         the undeformed coordinates, evaluated at the integration points of all
         cells in the region. Optionally, the symmetric part of the gradient is
         returned.
 
-        ..  code-block::
-
-                        |  dudX(2d) :   0   |
-            dudX(axi) = | ..................|
-                        |     0     : u_r/R |
+        ..  math::
+            
+            \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} = 
+                \begin{bmatrix}
+                    \left( 
+                        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} 
+                    \right)_{2d} & \boldsymbol{0} \\
+                    \boldsymbol{0}^T & \frac{u_r}{R}
+                \end{bmatrix}
 
         Arguments
         ---------

@@ -36,7 +36,7 @@ boundaries = {"fixed": fem.Boundary(field[0], fx=lambda x: x <= -110)}
 
 umat = fem.LinearElastic(E=1000, nu=0.3)
 solid = fem.SolidBody(umat, field)
-gravity = fem.SolidBodyGravity(field, gravity=[0, 0, -7e-2])
+gravity = fem.SolidBodyForce(field, values=[0, 0, -7e-2])
 bottom = fem.MultiPointContact(
     field, points=np.arange(mesh.npoints), centerpoint=-1, skip=(1, 1, 0)
 )

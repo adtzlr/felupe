@@ -149,7 +149,7 @@ All notable changes to this project will be documented in [this file](CHANGELOG.
 
 [[3]]() K. J. Bathe, "*Finite Element Procedures*". 2006, isbn: 978-0-9790049-0-2.
 
-[[4]](https://doi.org/10.1016/c2009-0-24909-9) O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, "The Finite Element Method: its Basis and Fundamentals". Elsevier, 2013. [![DOI:10.1016/c2009-0-24909-9](https://zenodo.org/badge/DOI/10.1016/c2009-0-24909-9.svg)](https://doi.org/10.1016/c2009-0-24909-9).
+[[4]](https://doi.org/10.1016/c2009-0-24909-9) O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, "*The Finite Element Method: its Basis and Fundamentals*". Elsevier, 2013. [![DOI:10.1016/c2009-0-24909-9](https://zenodo.org/badge/DOI/10.1016/c2009-0-24909-9.svg)](https://doi.org/10.1016/c2009-0-24909-9).
 
 # License
 FElupe - finite element analysis (C) 2021-2024 Andreas Dutzler, Graz (Austria).

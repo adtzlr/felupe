@@ -144,8 +144,11 @@ All notable changes to this project will be documented in [this file](CHANGELOG.
 
 # References
 [[1]](https://doi.org/10.21105/joss.02369) T. Gustafsson and G. McBain, "*[scikit-fem](https://github.com/kinnala/scikit-fem): A Python package for finite element assembly*", Journal of Open Source Software, vol. 5, no. 52. The Open Journal, p. 2369, Aug. 21, 2020. [![DOI:10.21105/joss.02369](https://zenodo.org/badge/DOI/10.21105/joss.02369.svg)](https://doi.org/10.21105/joss.02369).
+
 [[2]](https://doi.org/10.1017/cbo9780511755446) J. Bonet and R. D. Wood, "*Nonlinear Continuum Mechanics for Finite Element Analysis*". Cambridge University Press, Mar. 13, 2008. [![DOI:10.1017/cbo9780511755446](https://zenodo.org/badge/DOI/10.1017/cbo9780511755446.svg)](https://doi.org/10.1017/cbo9780511755446).
+
 [[3]]() K. J. Bathe, "*Finite Element Procedures*". 2006, isbn: 978-0-9790049-0-2.
+
 [[4]](https://doi.org/10.1016/c2009-0-24909-9) O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, "The Finite Element Method: its Basis and Fundamentals". Elsevier, 2013. [![DOI:10.1016/c2009-0-24909-9](https://zenodo.org/badge/DOI/10.1016/c2009-0-24909-9.svg)](https://doi.org/10.1016/c2009-0-24909-9).
 
 # License

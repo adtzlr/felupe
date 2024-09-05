@@ -1,7 +1,7 @@
 FElupe documentation
 ====================
 
-FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics 🔧 of solid bodies 🚂. Its name is a combination of FE (finite element) and the german word *Lupe* 🔍 (magnifying glass) as a synonym for getting an insight 📖 how a finite element analysis code 🧮 looks like under the hood 🕳️.
+FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics 🔧 of solid bodies 🪨. This package is intended for scientific research 💻, but is also suitable for running nonlinear simulations 🚂 in general 🏎️. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
 
 .. grid::
 
@@ -32,21 +32,25 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on th
       A gallery of examples.
 
 
-
 .. admonition:: Highlights
    :class: admonition
-   
-   + high-level :ref:`finite-element-analysis API <felupe-api>`
 
-   + flexible building blocks for :ref:`finite element assembly <felupe-api-assembly>`
-   
-   + hyperelastic :class:`integral (weak) forms <felupe.IntegralForm>`
-   
-   + easy-to-use :ref:`hyperelastic material models <felupe-api-constitution-hyperelasticity>` with `automatic-differentiation <https://github.com/adtzlr/tensortrax>`_
-   
-   + straight-forward definition of :class:`mixed-fields <felupe.FieldsMixed>`
-   
-   + :class:`nearly-incompressible hyperelastic solid bodies <felupe.SolidBodyNearlyIncompressible>`
+   + 100% Python package built with `NumPy <https://numpy.org/>`_ and `SciPy <https://scipy.org/>`_
+
+   + easy to learn and productive high-level :ref:`API <felupe-api>`
+
+   + nonlinear deformation of :class:`solid bodies <felupe.SolidBody>`
+
+   + interactive views on meshes, fields and solid bodies (using `PyVista <https://pyvista.org/>`_)
+
+   + typical :ref:`finite elements <felupe-api-element>`
+
+   + axisymmetric, plane strain and mixed fields
+
+   + :ref:`hyperelastic material models <felupe-api-constitution-hyperelasticity>`
+
+   + strain energy density functions with :class:`automatic differentiation <felupe.Hyperelastic>`
+
 
 Installation
 ------------

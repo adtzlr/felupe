@@ -39,7 +39,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on th
 - [x] [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution/hyperelasticity.html)
 - [x] strain energy density functions with [automatic differentiation](https://felupe.readthedocs.io/en/latest/felupe/constitution/hyperelasticity.html#felupe.Hyperelastic)
 
-The concept of efficient math-operations in [NumPy](https://numpy.org/) with elementwise operating *trailing axes* is inspired by [[1]](https://doi.org/10.21105/joss.02369). The finite element method, as used in FElupe, is based on [[2]](https://doi.org/10.1017/cbo9780511755446), [[3]]() and [[4]](https://doi.org/10.1016/c2009-0-24909-9). Related scientific articles are listed in the sections of the [API reference](https://felupe.readthedocs.io/en/latest/felupe.html).
+Efficient [NumPy](https://numpy.org/)-based math is realized by element-wise operating *trailing axes* [[1]](https://doi.org/10.21105/joss.02369). The finite element method, as used in FElupe, is based on [[2]](https://doi.org/10.1017/cbo9780511755446), [[3]]() and [[4]](https://doi.org/10.1016/c2009-0-24909-9). Related scientific articles are listed in the sections of the [API reference](https://felupe.readthedocs.io/en/latest/felupe.html).
 
 > [!NOTE]
 > *FElupe* is a combination of FE (finite element) and the german word *Lupe* 🔍 (magnifying glass) as a synonym for getting an insight 📖 how a finite element analysis code 🧮 looks like under the hood 🕳️.

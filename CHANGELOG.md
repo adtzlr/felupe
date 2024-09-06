@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [9.0.0] - 2024-09-06
+
 ### Added
 - Add `Region.astype(dtype=None)` to copy and cast the region arrays to a specified type.
 - Add `Field(..., dtype=None)` to cast the array with field values to a specified type.

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add the hessian of the element shape functions for a quadratic quad element `QuadraticQuad.hessian()`.
+
 ## [9.0.0] - 2024-09-06
 
 ### Added

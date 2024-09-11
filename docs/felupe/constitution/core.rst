@@ -18,8 +18,8 @@ This page contains the core (hard-coded) constitutive material model formulation
 .. autosummary::
 
    LinearElastic
-   LinearElasticPlaneStrain
    LinearElasticPlaneStress
+   constitution.LinearElasticPlaneStrain
    constitution.LinearElasticTensorNotation
    LinearElasticLargeStrain
    LinearElasticOrthotropic

@@ -68,7 +68,7 @@ bounds = dict(
 
 # %%
 # The so-called HuHu-regularization is created by two weak-:func:`form <felupe.Form>`
-# expressions, see Eq. :eq:`huhu-regularization`.
+# expressions, see Eq. :eq:`huhu-regularization` [3_].
 #
 # .. math::
 #    :label: huhu-regularization
@@ -137,7 +137,15 @@ plotter.close()
 #
 # .. [2] G. L. Bluhm, O. Sigmund, and K. Poulios, "Internal contact modeling for finite
 #        strain topology optimization", Computational Mechanics, vol. 67, no. 4.
-#        Springer Science and Business Media LLC, pp. 1099–1114, Mar. 04, 2021. |DOI|.
+#        Springer Science and Business Media LLC, pp. 1099–1114, Mar. 04, 2021. |DOI-2|.
 #
-# .. |DOI| image:: https://zenodo.org/badge/DOI/10.1007/s00466-021-01974-x.svg
+# .. [3] A. H. Frederiksen, O. Sigmund, and K. Poulios, "Topology optimization of self-
+#        contacting structures", Computational Mechanics, vol. 73, no. 4. Springer
+#        Science and Business Media LLC, pp. 967–981, Oct. 07, 2023. doi: |DOI-3|.
+#
+# .. |DOI-2| image:: https://zenodo.org/badge/DOI/10.1007/s00466-021-01974-x.svg
 #    :target: https://www.doi.org/10.1007/s00466-021-01974-x
+#
+# .. |DOI-3| image:: https://zenodo.org/badge/DOI/10.1007/s00466-023-02396-7.svg
+#    :target: https://www.doi.org/10.1007/s00466-023-02396-7
+#

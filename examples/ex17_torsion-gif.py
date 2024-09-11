@@ -52,7 +52,7 @@ for phi in angles_deg:
 # %%
 # The reaction moment on the centerpoint of the right end face is tracked by a
 # ``callback()`` function when we :meth:`~felupe.Job.evaluate` the :class:`~felupe.Job`.
-# During the callback, the animated deformed body is recored in a GIF-file. After all
+# During the callback, the animated deformed body is recorded in a GIF-file. After all
 # frames are recorded, it is important to ``close()`` the plotter.
 moment = []
 

@@ -68,7 +68,7 @@ bounds = dict(
 
 # %%
 # The so-called HuHu-regularization is created by two weak-:func:`form <felupe.Form>`
-# expressions, see Eq. :eq:`huhu-regularization` [3_].
+# expressions, see Eq. :eq:`huhu-regularization` [3]_.
 #
 # .. math::
 #    :label: huhu-regularization

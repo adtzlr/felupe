@@ -139,7 +139,7 @@ plotter.close()
 #
 # .. [3] A. H. Frederiksen, O. Sigmund, and K. Poulios, "Topology optimization of self-
 #        contacting structures", Computational Mechanics, vol. 73, no. 4. Springer
-#        Science and Business Media LLC, pp. 967–981, Oct. 07, 2023. doi: |DOI-3|.
+#        Science and Business Media LLC, pp. 967–981, Oct. 07, 2023. |DOI-3|.
 #
 # .. |DOI-2| image:: https://zenodo.org/badge/DOI/10.1007/s00466-021-01974-x.svg
 #    :target: https://www.doi.org/10.1007/s00466-021-01974-x

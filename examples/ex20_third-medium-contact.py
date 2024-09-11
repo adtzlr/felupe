@@ -108,7 +108,9 @@ step = fem.Step(
 )
 
 # %%
-# The deformation is captured in a GIF-file.
+# The deformation is captured in a GIF-file. The top-level field has to be passed as the
+# ``x0``-argument for :func:`Newton's method <felupe.newtonrhapson>`, which is called on
+# evaluation. After all frames are recorded, it is important to ``close()`` the plotter.
 plotter = container.plot(colors=["grey", "white"], line_width=3, off_screen=True)
 plotter.open_gif("third-medium-contact.gif", fps=30)
 
@@ -120,9 +122,6 @@ def record(stepnumber, substepnumber, substep, plotter):
     plotter.write_frame()
 
 
-# %%
-# The top-level field has to be passed as the ``x0``-argument for
-# :func:`Newton's method <felupe.newtonrhapson>`, which is called on evaluation.
 job = fem.Job([step], callback=record, plotter=plotter)
 job.evaluate(x0=field)
 

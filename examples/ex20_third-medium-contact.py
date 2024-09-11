@@ -74,13 +74,13 @@ bounds = dict(
 #    :label: huhu-regularization
 #
 #    \Pi &= \frac{1}{2} \int_V
-#        \mathbb{H} \boldsymbol{u} \vdots \mathbb{H} \boldsymbol{u} \ dV
+#        \mathbb{H}(\boldsymbol{u})~\vdots~\mathbb{H}(\boldsymbol{u})~dV
 #
 #    \delta \Pi &= \int_V
-#        \mathbb{H} \delta \boldsymbol{u} \vdots \mathbb{H} \boldsymbol{u} \ dV
+#        \mathbb{H}(\delta \boldsymbol{u})~\vdots~\mathbb{H}(\boldsymbol{u})~dV
 #
 #    \Delta \delta \Pi &= \int_V
-#        \mathbb{H} \delta \boldsymbol{u} \vdots \mathbb{H} \Delta \boldsymbol{u} \ dV
+#        \mathbb{H}(\delta \boldsymbol{u})~\vdots~\mathbb{H}(\Delta \boldsymbol{u})~dV
 #
 from felupe.math import dddot, hess
 

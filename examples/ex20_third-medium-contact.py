@@ -109,8 +109,7 @@ step = fem.Step(
 
 # %%
 # The deformation is captured in a GIF-file.
-plotter = regions[0].mesh.plot(line_width=3, off_screen=True)
-plotter = regions[1].mesh.plot(style="wireframe", plotter=plotter)
+plotter = container.plot(colors=["grey", "white"], line_width=3, off_screen=True)
 plotter.open_gif("third-medium-contact.gif", fps=30)
 
 

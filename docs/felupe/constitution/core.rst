@@ -77,7 +77,7 @@ This page contains the core (hard-coded) constitutive material model formulation
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.LinearElasticPlaneStrain
+.. autoclass:: felupe.constitution.LinearElasticPlaneStrain
    :members:
    :undoc-members:
    :inherited-members:

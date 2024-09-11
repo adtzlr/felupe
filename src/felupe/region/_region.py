@@ -189,7 +189,7 @@ class Region:
         hess=None,
         uniform=None,
     ):
-        """Return a copy of the region and reload it if necessary.
+        r"""Return a copy of the region and reload it if necessary.
 
         Parameters
         ----------
@@ -247,7 +247,7 @@ class Region:
         hess=None,
         uniform=None,
     ):
-        """Reload the numeric region inplace.
+        r"""Reload the numeric region inplace.
 
         Parameters
         ----------

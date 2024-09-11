@@ -26,7 +26,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on th
   href="https://felupe.readthedocs.io/en/latest/examples/ex17_torsion-gif.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex17_torsion-gif_thumb.gif" height="100px"/></a> <a
   href="https://felupe.readthedocs.io/en/latest/examples/ex18_nonlinear-viscoelasticity-newton.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex18_nonlinear-viscoelasticity-newton_thumb.png" height="100px"/></a> <a
   href="https://felupe.readthedocs.io/en/latest/examples/ex19_taylor-hood.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex19_taylor-hood_thumb.png" height="100px"/></a> <a
-  href="https://felupe.readthedocs.io/en/latest/examples/ex20_third-medium-contact.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex20_third-medium-contact_thumb.png" height="100px"/></a>
+  href="https://felupe.readthedocs.io/en/latest/examples/ex20_third-medium-contact.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex20_third-medium-contact_thumb.gif" height="100px"/></a>
 </p>
 
 # Highlights

@@ -226,18 +226,40 @@ class QuadraticQuad(Element):
             ra * (1 + sa * s) * (ra * r + sa * s - 1) / 4
             + (1 + ra * r) * (1 + sa * s) * ra / 4
         )
+        dhds = (
+            sa * (1 + ra * r) * (ra * r + sa * s - 1) / 4
+            + (1 + ra * r) * (1 + sa * s) * sa / 4
+        )
 
-        dhdr[ra == 0] = -2 * r * (1 + sa[ra == 0] * s) / 2
-        dhdr[sa == 0] = ra[sa == 0] * (1 - s**2) / 2
-
-        dhds = (1 + ra * r) * sa * (ra * r + sa * s - 1) / 4 + (1 + ra * r) * (
-            1 + sa * s
-        ) * sa / 4
-
+        dhdr[ra == 0] = -r * (1 + sa[ra == 0] * s)
         dhds[ra == 0] = (1 - r**2) * sa[ra == 0] / 2
-        dhds[sa == 0] = (1 + ra[sa == 0] * r) * -2 * s / 2
+
+        dhdr[sa == 0] = ra[sa == 0] * (1 - s**2) / 2
+        dhds[sa == 0] = (1 + ra[sa == 0] * r) * -s
 
         return np.vstack([dhdr, dhds]).T
+
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+
+        r, s = rs
+        ra, sa = self.points.T
+
+        d2hdrdr = ra**2 * (1 + sa * s) / 2
+        d2hdsds = sa**2 * (1 + ra * r) / 2
+
+        d2hdrds = ra * sa * (1 + 2 * ra * r + 2 * sa * s) / 4
+
+        d2hdrdr[ra == 0] = -(1 + sa[ra == 0] * s)
+        d2hdsds[sa == 0] = -(1 + ra[sa == 0] * r)
+
+        d2hdrdr[sa == 0] = 0
+        d2hdsds[ra == 0] = 0
+
+        d2hdrds[ra == 0] = sa[ra == 0] * -r
+        d2hdrds[sa == 0] = ra[sa == 0] * -s
+
+        return np.array([[d2hdrdr, d2hdrds], [d2hdrds, d2hdsds]]).T
 
 
 class BiQuadraticQuad(Element):

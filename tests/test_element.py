@@ -105,9 +105,11 @@ def test_quad8():
 
     h = quad8.function(r)
     dhdr = quad8.gradient(r)
+    d2hdrdr = quad8.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
+    assert d2hdrdr.shape == (8, 2, 2)
 
     assert quad8.shape == dhdr.shape
 

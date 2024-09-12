@@ -59,18 +59,19 @@ moment = []
 plotter = field.plot(
     "Principal Values of Logarithmic Strain", clim=[0, 0.2], off_screen=True
 )
-plotter.open_gif("result.gif", fps=10)
+plotter.open_gif("result.gif", fps=5)
 
 
 def record(stepnumber, substepnumber, substep, plotter):
-    # update the mesh-points and the scalars of the plotter
-    name = plotter.mesh.active_scalars_info.name
-    data = substep.x.evaluate.log_strain(tensor=False).mean(-2)[-1]
+    "Update the mesh-points and the scalars of the plotter."
+    if substepnumber in np.arange(len(move), step=2):
+        name = plotter.mesh.active_scalars_info.name
+        data = substep.x.evaluate.log_strain(tensor=False).mean(-2)[-1]
 
-    plotter.mesh.points[:] = mesh.points + field[0].values
-    plotter.mesh[name] = data
-    # plotter.update_scalar_bar_range(clim=[min(data), max(data)])
-    plotter.write_frame()
+        plotter.mesh.points[:] = mesh.points + field[0].values
+        plotter.mesh[name] = data
+
+        plotter.write_frame()
 
     # evaluate the reaction moment at the centerpoint of the right end face
     forces = substep.fun

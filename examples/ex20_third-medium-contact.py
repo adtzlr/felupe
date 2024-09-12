@@ -15,6 +15,8 @@ based regularization [2]_. First, let's create sub meshes with quad cells for th
 body. All sub meshes are merged by stacking the meshes of the
 :class:`mesh container <felupe.MeshContainer>` into a :class:`mesh <felupe.Mesh>`.
 """
+import numpy as np
+
 import felupe as fem
 
 t = 0.1
@@ -86,17 +88,21 @@ from felupe.math import dddot, hess
 
 
 @fem.Form(v=fields[1], u=fields[1], kwargs={"kr": None})
-def Δδ_ψ():
+def bilinearform():
     return [lambda v, u, kr: kr * dddot(hess(u), hess(v))]
 
 
 @fem.Form(v=fields[1], kwargs={"kr": 1.0})
-def δ_ψ():
+def linearform():
     u = fields[1][0]
     return [lambda v, kr: kr * dddot(hess(v), hess(u)[:2, :2, :2])]
 
 
-regularization = fem.FormItem(Δδ_ψ, δ_ψ, kwargs=dict(kr=K * L**2 * gamma))
+regularization = fem.FormItem(
+    bilinearform=bilinearform,
+    linearform=linearform,
+    kwargs={"kr": K * L**2 * gamma},
+)
 
 # %%
 # The prescribed displacement is ramped up to the maximum value and released until zero.
@@ -112,14 +118,15 @@ step = fem.Step(
 # ``x0``-argument for :func:`Newton's method <felupe.newtonrhapson>`, which is called on
 # evaluation. After all frames are recorded, it is important to ``close()`` the plotter.
 plotter = container.plot(colors=["grey", "white"], line_width=3, off_screen=True)
-plotter.open_gif("third-medium-contact.gif", fps=30)
+plotter.open_gif("third-medium-contact.gif", fps=5)
 
 
 def record(stepnumber, substepnumber, substep, plotter):
     "Update the mesh of the plotter and write a frame."
-    for m in plotter.meshes:
-        m.points[:, :2] = region.mesh.points + field[0].values
-    plotter.write_frame()
+    if substepnumber in np.arange(len(move), step=5):
+        for m in plotter.meshes:
+            m.points[:, :2] = region.mesh.points + field[0].values
+        plotter.write_frame()
 
 
 job = fem.Job([step], callback=record, plotter=plotter)

@@ -69,20 +69,15 @@ bounds = dict(
 )
 
 # %%
-# The so-called HuHu-regularization is created by two weak-:func:`form <felupe.Form>`
-# expressions, see Eq. :eq:`huhu-regularization` [3]_.
+# The so-called HuHu-regularization is created by two weak-:func:`forms <felupe.Form>`,
+# which are derived from the regularization potential, see Eq.
+# :eq:`huhu-regularization` [3]_.
 #
 # .. math::
 #    :label: huhu-regularization
 #
-#    \Pi &= \frac{1}{2} \int_V
+#    \Pi = \frac{1}{2} \int_V
 #        \mathbb{H}(\boldsymbol{u})~\vdots~\mathbb{H}(\boldsymbol{u})~dV
-#
-#    \delta \Pi &= \int_V
-#        \mathbb{H}(\delta \boldsymbol{u})~\vdots~\mathbb{H}(\boldsymbol{u})~dV
-#
-#    \Delta \delta \Pi &= \int_V
-#        \mathbb{H}(\delta \boldsymbol{u})~\vdots~\mathbb{H}(\Delta \boldsymbol{u})~dV
 #
 from felupe.math import dddot, hess
 

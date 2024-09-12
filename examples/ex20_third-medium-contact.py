@@ -82,7 +82,7 @@ bounds = dict(
 from felupe.math import dddot, hess
 
 
-@fem.Form(v=fields[1], u=fields[1], kwargs={"kr": None})
+@fem.Form(v=fields[1], u=fields[1], kwargs={"kr": 1.0})
 def bilinearform():
     return [lambda v, u, kr: kr * dddot(hess(u), hess(v))]
 

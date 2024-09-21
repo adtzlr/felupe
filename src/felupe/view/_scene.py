@@ -45,10 +45,10 @@ class Scene:
 
     See Also
     --------
-    felupe.view.ViewMesh : Provide Visualization methods for a mesh with optional given
+    felupe.ViewMesh : Provide Visualization methods for a mesh with optional given
         dicts of point- and cell-data items.
-    felupe.view.ViewField : Provide Visualization methods for a field container.
-    felupe.view.ViewSolid : Provide Visualization methods for a field container or a
+    felupe.ViewField : Provide Visualization methods for a field container.
+    felupe.ViewSolid : Provide Visualization methods for a field container or a
         solid body.
     """
 

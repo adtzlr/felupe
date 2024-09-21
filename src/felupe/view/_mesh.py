@@ -50,15 +50,15 @@ class ViewMesh(Scene):
         >>>
         >>> mesh = fem.Cube(n=3)
         >>> displacement = np.arange(81).reshape(27, 3) / 300
-        >>> view = fem.view.ViewMesh(mesh, point_data={"Displacement": displacement})
+        >>> view = fem.ViewMesh(mesh, point_data={"Displacement": displacement})
         >>>
         >>> view.plot("Displacement", component=None).show()
 
     See Also
     --------
     felupe.view.Scene : Base class for plotting a static scene.
-    felupe.view.ViewField : Provide Visualization methods for a field container.
-    felupe.view.ViewSolid : Provide Visualization methods for a field container or a
+    felupe.ViewField : Provide Visualization methods for a field container.
+    felupe.ViewSolid : Provide Visualization methods for a field container or a
         solid body.
 
     """

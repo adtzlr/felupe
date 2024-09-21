@@ -35,7 +35,7 @@ class ViewSolid(ViewField):
     solid : felupe.SolidBody or felupe.SolidBodyIncompressible or None, optional
         A solid body to evaluate the (Cauchy) stress (default is None).
     stress_type : str, optional
-        The type of stress, either "Cauchy" or "Kirchhoff, which is exported (default is
+        The type of stress which is exported, either "Cauchy" or "Kirchhoff" (default is
         "Cauchy").
     point_data : dict or None, optional
         Additional point-data dict (default is None).
@@ -54,8 +54,29 @@ class ViewSolid(ViewField):
         A generalized Dataset with the mesh as well as point- and cell-data. This is
         not an instance of :class:`felupe.Mesh`.
 
+    Examples
+    --------
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=3)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> u = np.sqrt(1 + np.arange(81)).reshape(27, 3) / 100
+        >>> field = fem.FieldContainer([fem.Field(region, values=u)])
+        >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=2), field=field)
+        >>>
+        >>> view = fem.ViewSolid(field, solid, project=fem.project)
+        >>> view.plot("Principal Values of Cauchy Stress").show()
+
     See Also
     --------
+    felupe.view.Scene : Base class for plotting a static scene.
+    felupe.ViewMesh : Provide Visualization methods for a mesh with optional given
+        dicts of point- and cell-data items.
+    felupe.ViewField : Provide Visualization methods for a field container.
     felupe.project: Project given values at quadrature-points to mesh-points.
     """
 

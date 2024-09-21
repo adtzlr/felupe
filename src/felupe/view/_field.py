@@ -62,15 +62,15 @@ class ViewField(ViewMesh):
         >>> u = np.sqrt(1 + np.arange(81)).reshape(27, 3) / 100
         >>> field = fem.FieldContainer([fem.Field(region, values=u)])
         >>>
-        >>> view = fem.view.ViewField(field, project=fem.project)
+        >>> view = fem.ViewField(field, project=fem.project)
         >>> view.plot("Principal Values of Logarithmic Strain").show()
 
     See Also
     --------
     felupe.view.Scene : Base class for plotting a static scene.
-    felupe.view.ViewMesh : Provide Visualization methods for a mesh with optional given
+    felupe.ViewMesh : Provide Visualization methods for a mesh with optional given
         dicts of point- and cell-data items.
-    felupe.view.ViewSolid : Provide Visualization methods for a field container or a
+    felupe.ViewSolid : Provide Visualization methods for a field container or a
         solid body.
     felupe.project: Project given values at quadrature-points to mesh-points.
     """

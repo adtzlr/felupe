@@ -30,7 +30,7 @@ class FieldContainer:
 
     Parameters
     ----------
-    fields : list or tuple of Field, FieldAxisymmetric or FieldPlaneStrain
+    fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric` or :class:``~felupe.FieldPlaneStrain`
         List with fields. The region is linked to the first field.
 
     Attributes
@@ -42,40 +42,46 @@ class FieldContainer:
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> mesh = fem.Cube(n=3)
-    >>> region = fem.RegionHexahedron(mesh)
-    >>> region_dual = fem.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
-    >>> displacement = fem.Field(region, dim=3)
-    >>> pressure = fem.Field(region_dual)
-    >>> field = fem.FieldContainer([displacement, pressure])
-    >>> field
-    <felupe FieldContainer object>
-      Number of fields: 2
-      Dimension of fields:
-        Field: 3
-        Field: 1
+    ..  pyvista-plot::
+        :context:
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=3)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> region_dual = fem.RegionConstantHexahedron(mesh.dual(points_per_cell=1))
+        >>> displacement = fem.Field(region, dim=3)
+        >>> pressure = fem.Field(region_dual)
+        >>> field = fem.FieldContainer([displacement, pressure])
+        >>> field
+        <felupe FieldContainer object>
+          Number of fields: 2
+          Dimension of fields:
+            Field: 3
+            Field: 1
 
     A new :class:`~felupe.FieldContainer` is also created by one of the logical-and
     combinations of a :class:`~felupe.Field`, :class:`~felupe.FieldAxisymmetric`,
     :class:`~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`.
 
-    >>> displacement & pressure
-    <felupe FieldContainer object>
-      Number of fields: 2
-      Dimension of fields:
-        Field: 3
-        Field: 1
+    ..  pyvista-plot::
+        :context:
 
-    >>> volume_ratio = fem.Field(region_dual)
-    >>> field & volume_ratio  # displacement & pressure & volume_ratio
-    <felupe FieldContainer object>
-      Number of fields: 3
-      Dimension of fields:
-        Field: 3
-        Field: 1
-        Field: 1
+        >>> displacement & pressure
+        <felupe FieldContainer object>
+          Number of fields: 2
+          Dimension of fields:
+            Field: 3
+            Field: 1
+
+        >>> volume_ratio = fem.Field(region_dual)
+        >>> field & volume_ratio  # displacement & pressure & volume_ratio
+        <felupe FieldContainer object>
+          Number of fields: 3
+          Dimension of fields:
+            Field: 3
+            Field: 1
+            Field: 1
 
     See Also
     --------

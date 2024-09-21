@@ -65,14 +65,17 @@ class Field:
 
     Examples
     --------
-    >>> import felupe as fem
+    ..  pyvista-plot::
+        :context:
 
-    >>> mesh = fem.Cube(n=6)
-    >>> region = fem.RegionHexahedron(mesh)
-    >>> displacement = fem.Field(region, dim=3)
-
-    >>> u = displacement.interpolate()
-    >>> dudX = displacement.grad()
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=6)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> displacement = fem.Field(region, dim=3)
+        >>>
+        >>> u = displacement.interpolate()
+        >>> dudX = displacement.grad()
 
     To obtain deformation-related quantities like the right Cauchy-Green deformation
     tensor or the principal stretches, use the math-helpers from FElupe. These
@@ -82,11 +85,14 @@ class Field:
 
         \boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}
 
-    >>> from felupe.math import dot, transpose, eigvalsh, sqrt
+    ..  pyvista-plot::
+        :context:
 
-    >>> F = displacement.extract(grad=True, add_identity=True)
-    >>> C = dot(transpose(F), F)
-    >>> λ = sqrt(eigvalsh(C))
+        >>> from felupe.math import dot, transpose, eigvalsh, sqrt
+        >>>
+        >>> F = displacement.extract(grad=True, add_identity=True)
+        >>> C = dot(transpose(F), F)
+        >>> λ = sqrt(eigvalsh(C))
 
     """
 

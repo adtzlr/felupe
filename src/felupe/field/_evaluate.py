@@ -27,6 +27,27 @@ class EvaluateFieldContainer:
     ----------
     field : FieldContainer
         A container for fields.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=4)
+        >>> region = fem.RegionQuad(mesh)
+        >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+        >>>
+        >>> evaluate = fem.field.EvaluateFieldContainer(field)
+        >>> F = evaluate.deformation_gradient()
+        >>>
+        >>> F.shape  # (3, 3, nquadraturepoints, ncells)
+        (3, 3, 4, 9)
+
+        >>> F[..., 0, 0]  # deformation gradient of first cell, first quadrature point
+        array([[1., 0., 0.],
+               [0., 1., 0.],
+               [0., 0., 1.]])
     """
 
     def __init__(self, field):

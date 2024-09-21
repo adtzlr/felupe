@@ -20,7 +20,7 @@ from ..math import strain, strain_stretch_1d
 
 
 class EvaluateFieldContainer:
-    """Methods to evaluate the deformation gradient and strain measures of a field
+    r"""Methods to evaluate the deformation gradient and strain measures of a field
     container.
 
     Parameters
@@ -48,6 +48,10 @@ class EvaluateFieldContainer:
         array([[1., 0., 0.],
                [0., 1., 0.],
                [0., 0., 1.]])
+
+    See Also
+    --------
+    felupe.FieldContainer : A container which holds one or multiple (mixed) fields.
     """
 
     def __init__(self, field):

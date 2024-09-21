@@ -51,7 +51,7 @@ Install Python, fire up 🔥 a terminal and run 🏃
 pip install felupe[all]
 ```
 
-The [documentation](https://felupe.readthedocs.io/) covers more details (required and optional dependencies and how to install the latest development version).
+The [documentation](https://felupe.readthedocs.io/) covers more details, like required and optional dependencies and how to install the latest development version.
 
 # Getting Started
 This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. 

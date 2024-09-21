@@ -20,7 +20,7 @@ import numpy as np
 
 
 class Scene:
-    """Base class for plotting a static scene.
+    r"""Base class for plotting a static scene.
 
     Attributes
     ----------
@@ -28,6 +28,28 @@ class Scene:
         A generalized Dataset with the mesh as well as point- and cell-data. This is
         not an instance of :class:`felupe.Mesh`.
 
+    Examples
+    --------
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> scene = fem.view.Scene()
+        >>> scene.mesh = fem.Cube(n=3).as_unstructured_grid()
+        >>> scene.mesh.point_data["Displacement"] = np.arange(81).reshape(27, 3) / 300
+        >>> scene.mesh.set_active_scalars(None)
+        >>>
+        >>> scene.plot("Displacement", component=None).show()
+
+    See Also
+    --------
+    felupe.view.ViewMesh : Provide Visualization methods for a mesh with optional given
+        dicts of point- and cell-data items.
+    felupe.view.ViewField : Provide Visualization methods for a field container.
+    felupe.view.ViewSolid : Provide Visualization methods for a field container or a
+        solid body.
     """
 
     def plot(

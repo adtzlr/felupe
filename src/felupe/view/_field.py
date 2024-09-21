@@ -21,7 +21,7 @@ from ._mesh import ViewMesh
 
 
 class ViewField(ViewMesh):
-    """Provide Visualization methods for :class:`felupe.FieldContainer`. The warped
+    r"""Provide Visualization methods for :class:`felupe.FieldContainer`. The warped
     (deformed) mesh is created from the values of the first field (displacements). By
     default, the "Deformation Gradient" tensor, the "Logarithmic Strain" tensor and the
     "Principal Values of Logarithmic Strain" are evaluated as field-related items of the
@@ -49,10 +49,30 @@ class ViewField(ViewMesh):
         A generalized Dataset with the mesh as well as point- and cell-data. This is
         not an instance of :class:`felupe.Mesh`.
 
+    Examples
+    --------
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=3)
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> u = np.sqrt(1 + np.arange(81)).reshape(27, 3) / 100
+        >>> field = fem.FieldContainer([fem.Field(region, values=u)])
+        >>>
+        >>> view = fem.view.ViewField(field, project=fem.project)
+        >>> view.plot("Principal Values of Logarithmic Strain").show()
+
     See Also
     --------
+    felupe.view.Scene : Base class for plotting a static scene.
+    felupe.view.ViewMesh : Provide Visualization methods for a mesh with optional given
+        dicts of point- and cell-data items.
+    felupe.view.ViewSolid : Provide Visualization methods for a field container or a
+        solid body.
     felupe.project: Project given values at quadrature-points to mesh-points.
-
     """
 
     def __init__(

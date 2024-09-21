@@ -78,6 +78,20 @@ In order to make use of all features of FElupe 💎💰💍👑💎, it is sugge
 * `pyvista <https://github.com/pyvista/pyvista>`_ for interactive visualizations
 * `tqdm <https://github.com/tqdm/tqdm>`_ for showing progress bars during job evaluations
 
+The development version may contain not yet released bug fixes and features. Consider using the ``--user`` option to install the package into your home directory (see `pip documentation <https://pip.pypa.io/en/stable/user_guide/#user-installs>`_ for more details). To install FElupe from the latest development branch, use
+
+.. code-block:: shell
+
+   pip install git+https://github.com/adtzlr/felupe.git@main
+
+or clone the repository and install the package in editable mode.
+
+.. code-block:: shell
+
+   git clone https://github.com/adtzlr/felupe.git
+   cd felupe
+   pip install --editable .
+
 Extension Packages
 ------------------
 

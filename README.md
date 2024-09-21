@@ -51,18 +51,7 @@ Install Python, fire up 🔥 a terminal and run 🏃
 pip install felupe[all]
 ```
 
-where `[all]` is a combination of `[io,parallel,plot,progress,view]` and installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
-* [`numpy`](https://github.com/numpy/numpy) for array operations
-* [`scipy`](https://github.com/scipy/scipy) for sparse matrices
-* [`tensortrax`](https://github.com/adtzlr/tensortrax) for automatic differentiation
-
-In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
-* [`einsumt`](https://github.com/mrkwjc/einsumt) for parallel (threaded) assembly
-* [`h5py`](https://github.com/h5py/h5py) for writing XDMF result files
-* [`matplotlib`](https://github.com/matplotlib/matplotlib) for plotting graphs
-* [`meshio`](https://github.com/nschloe/meshio) for mesh-related I/O
-* [`pyvista`](https://github.com/pyvista/pyvista) for interactive visualizations
-* [`tqdm`](https://github.com/tqdm/tqdm) for showing progress bars during job evaluations
+The [documentation](https://felupe.readthedocs.io/) covers more details, like required and optional dependencies and how to install the latest development version.
 
 # Getting Started
 This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. 

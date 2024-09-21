@@ -20,7 +20,7 @@ from ._scene import Scene
 
 
 class ViewMesh(Scene):
-    """Provide Visualization methods for :class:`felupe.Mesh` with optional given
+    r"""Provide Visualization methods for :class:`felupe.Mesh` with optional given
     dicts of point- and cell-data items.
 
     Parameters
@@ -39,6 +39,27 @@ class ViewMesh(Scene):
     mesh : pyvista.UnstructuredGrid
         A generalized Dataset with the mesh as well as point- and cell-data. This is
         not an instance of :class:`felupe.Mesh`.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=3)
+        >>> displacement = np.arange(81).reshape(27, 3) / 300
+        >>> view = fem.view.ViewMesh(mesh, point_data={"Displacement": displacement})
+        >>>
+        >>> view.plot("Displacement", component=None).show()
+
+    See Also
+    --------
+    felupe.view.Scene : Base class for plotting a static scene.
+    felupe.view.ViewField : Provide Visualization methods for a field container.
+    felupe.view.ViewSolid : Provide Visualization methods for a field container or a
+        solid body.
 
     """
 

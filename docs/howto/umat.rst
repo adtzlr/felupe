@@ -14,7 +14,9 @@ A user material (``umat``) based on the incremental small-strain tensor, e.g. su
 +----------+---------------+---------------------------------------+
 | Argument |      ζn       | list of old state variables           |
 +----------+---------------+---------------------------------------+
-| Return   |      σ        | tangent modulus                       |
+| Return   |     dσdε      | tangent modulus                       |
++----------+---------------+---------------------------------------+
+| Return   |      σ        | new stress tensor                     |
 +----------+---------------+---------------------------------------+
 | Return   |      ζ        | list of new state variables           |
 +----------+---------------+---------------------------------------+

@@ -45,7 +45,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on th
 
    + typical :ref:`finite elements <felupe-api-element>`
 
-   + axisymmetric, plane strain and mixed fields
+   + cartesian, axisymmetric, plane strain and mixed fields
 
    + :ref:`hyperelastic material models <felupe-api-constitution-hyperelasticity>`
 

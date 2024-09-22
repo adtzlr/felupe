@@ -35,7 +35,7 @@ FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on th
 - [x] nonlinear deformation of [solid bodies](https://felupe.readthedocs.io/en/latest/felupe/mechanics.html#felupe.SolidBody)
 - [x] interactive views on meshes, fields and solid bodies (using [PyVista](https://pyvista.org/))
 - [x] typical [finite elements](https://felupe.readthedocs.io/en/latest/felupe/element.html)
-- [x] axisymmetric, plane strain and mixed fields
+- [x] cartesian, axisymmetric, plane strain and mixed fields
 - [x] [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution/hyperelasticity.html)
 - [x] strain energy density functions with [automatic differentiation](https://felupe.readthedocs.io/en/latest/felupe/constitution/hyperelasticity.html#felupe.Hyperelastic)
 

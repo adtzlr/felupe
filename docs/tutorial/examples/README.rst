@@ -48,8 +48,8 @@ The :class:`step <felupe.Step>` is further added to a list of steps of a :class:
    job.evaluate(filename="result.xdmf")
 
    fig, ax = job.plot(
-       xlabel="Displacement $d_1$ in mm $\longrightarrow$",
-       ylabel="Normal Force $F_1$ in N $\longrightarrow$",
+       xlabel=r"Displacement $d_1$ in mm $\longrightarrow$",
+       ylabel=r"Normal Force $F_1$ in N $\longrightarrow$",
    )
 
 .. pyvista-plot::

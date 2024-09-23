@@ -184,20 +184,21 @@ class Material(ConstitutiveMaterial):
     Examples
     --------
     The compressible isotropic hyperelastic Neo-Hookean material formulation is given
-    by the strain energy density function.
+    by the strain energy density function
     
     .. math::
 
-        \psi &= \psi(\boldsymbol{C})
-
-        \psi(\boldsymbol{C}) &= \frac{\mu}{2} \text{tr}(\boldsymbol{C})
+        \psi(\boldsymbol{C}) = \frac{\mu}{2} \text{tr}(\boldsymbol{C})
             - \mu \ln(J) + \frac{\lambda}{2} \ln(J)^2
 
-    with
+    with the determinant of the deformation gradient and the right Cauchy Green
+    deformation tensor.
 
     .. math::
 
-       J = \text{det}(\boldsymbol{F})
+       J &= \text{det}(\boldsymbol{F})
+       
+       C &= \boldsymbol{F}^T\ \boldsymbol{F}
       
     The first Piola-Kirchhoff stress tensor is evaluated as the gradient
     of the strain energy density function.
@@ -227,6 +228,7 @@ class Material(ConstitutiveMaterial):
     
         >>> import numpy as np
         >>> import felupe as fem
+        >>>
         >>> from felupe.math import (
         ...     cdya_ik,
         ...     cdya_il,
@@ -255,7 +257,6 @@ class Material(ConstitutiveMaterial):
         ...         (mu - lmbda * np.log(J)) * cdya_il(iFT, iFT)
         ...     ]
         >>>
-        >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)
     
     The material formulation is tested in a minimal example of non-homogeneous uniaxial
     tension.
@@ -263,11 +264,15 @@ class Material(ConstitutiveMaterial):
     ..  pyvista-plot::
         :context:
 
-        >>> mesh = fem.Cube(n=6)
+        >>> mesh = fem.Cube(n=3)
         >>> region = fem.RegionHexahedron(mesh)
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-        >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.5)
+        >>>
+        >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)
         >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+        >>>
+        >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.5)
+        >>>
         >>> step = fem.Step(items=[solid], boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()
     

@@ -88,7 +88,7 @@ class FieldAxisymmetric(Field):
         # in the region
         self.radius = self.scalar.interpolate()
 
-    def _interpolate_2d(self, dtype=None, out=None):
+    def _interpolate_2d(self, dtype=None, out=None, order="C"):
         """Interpolate 2D field values at points and evaluate them at the
         integration points of all cells in the region."""
 
@@ -101,20 +101,22 @@ class FieldAxisymmetric(Field):
             self.region.h,
             dtype=dtype,
             out=out,
+            order=order,
         )
 
-    def interpolate(self, dtype=None, out=None):
+    def interpolate(self, dtype=None, out=None, order="C"):
         # out-argument is not supported
         # if out is not None:
         #     out = out[:2]
 
-        # extend dimension of in-plane 2d-gradient
+        # extend dimension of in-plane 2d-gradient (out-keyword can't be used here)
         return np.pad(
-            self._interpolate_2d(dtype=dtype, out=None), ((0, 1), (0, 0), (0, 0))
+            self._interpolate_2d(dtype=dtype, out=None, order=order),
+            ((0, 1), (0, 0), (0, 0)),
         )
 
-    def _grad_2d(self, sym=False, dtype=None, out=None):
-        """In-plane 2D gradient as partial derivative of field values at points
+    def _grad_2d(self, sym=False, dtype=None, out=None, order="C"):
+        r"""In-plane 2D gradient as partial derivative of field values at points
         w.r.t. the undeformed coordinates, evaluated at the integration points
         of all cells in the region. Optionally, the symmetric part of the
         gradient is returned.
@@ -130,6 +132,12 @@ class FieldAxisymmetric(Field):
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        order : {'C', 'F', 'A', 'K'}, optional
+            Controls the memory layout of the output. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -148,6 +156,7 @@ class FieldAxisymmetric(Field):
             self.region.dhdX,
             dtype=dtype,
             out=out,
+            order=order,
         )
 
         if sym:
@@ -155,7 +164,7 @@ class FieldAxisymmetric(Field):
         else:
             return g
 
-    def grad(self, sym=False, dtype=None, out=None):
+    def grad(self, sym=False, dtype=None, out=None, order="C"):
         r"""3D-gradient as partial derivative of field values at points w.r.t.
         the undeformed coordinates, evaluated at the integration points of all
         cells in the region. Optionally, the symmetric part of the gradient is
@@ -182,6 +191,12 @@ class FieldAxisymmetric(Field):
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        order : {'C', 'F', 'A', 'K'}, optional
+            Controls the memory layout of the output. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -197,11 +212,11 @@ class FieldAxisymmetric(Field):
 
         # extend dimension of in-plane 2d-gradient
         g = np.pad(
-            self._grad_2d(sym=sym, dtype=dtype, out=None),
+            self._grad_2d(sym=sym, dtype=dtype, out=None, order=order),
             ((0, 1), (0, 1), (0, 0), (0, 0)),
         )
 
         # set dudX_33 = u_r / R
-        g[-1, -1] = self.interpolate(dtype=dtype)[1] / self.radius
+        g[-1, -1] = self.interpolate(dtype=dtype, order=order)[1] / self.radius
 
         return g

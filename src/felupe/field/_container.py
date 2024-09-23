@@ -117,7 +117,9 @@ class FieldContainer:
 
         return "\n".join([header, size, fields_header, *fields])
 
-    def extract(self, grad=True, sym=False, add_identity=True, dtype=None, out=None):
+    def extract(
+        self, grad=True, sym=False, add_identity=True, dtype=None, out=None, order="C"
+    ):
         """Generalized extraction method which evaluates either the gradient or the
         field values at the integration points of all cells in the region. Optionally,
         the symmetric part of the gradient is evaluated and/or the identity matrix is
@@ -142,6 +144,12 @@ class FieldContainer:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        orders : str or list of str, optional
+            Controls the memory layout of the outputs. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -153,13 +161,18 @@ class FieldContainer:
         if isinstance(grad, bool):
             grad = (grad,)
 
+        if isinstance(order, str):
+            order = (order,)
+
         if out is None:
             out = [None] * len(self.fields)
 
         grads = np.pad(grad, (0, len(self.fields) - 1))
+        orders = np.pad(order, (0, len(self.fields) - 1))
+
         return tuple(
-            f.extract(g, sym, add_identity=add_identity, dtype=dtype, out=res)
-            for g, f, res in zip(grads, self.fields, out)
+            f.extract(g, sym, add_identity=add_identity, dtype=dtype, out=res, order=od)
+            for g, f, res, od in zip(grads, self.fields, out, orders)
         )
 
     def values(self):

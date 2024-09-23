@@ -138,7 +138,7 @@ class Field:
 
         return cai, ai
 
-    def grad(self, sym=False, dtype=None, out=None):
+    def grad(self, sym=False, dtype=None, out=None, order="C"):
         r"""Gradient as partial derivative of field values w.r.t. undeformed
         coordinates, evaluated at the integration points of all cells in the region.
         Optionally, the symmetric part the gradient is evaluated.
@@ -159,6 +159,12 @@ class Field:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        order : {'C', 'F', 'A', 'K'}, optional
+            Controls the memory layout of the output. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -177,6 +183,7 @@ class Field:
             self.region.dhdX,
             dtype=dtype,
             out=out,
+            order=order,
         )
 
         if sym:
@@ -184,7 +191,7 @@ class Field:
         else:
             return g
 
-    def hess(self, dtype=None, out=None):
+    def hess(self, dtype=None, out=None, order="C"):
         r"""Hessian as second partial derivative of field values w.r.t. undeformed
         coordinates, evaluated at the integration points of all cells in the region.
 
@@ -204,6 +211,12 @@ class Field:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        order : {'C', 'F', 'A', 'K'}, optional
+            Controls the memory layout of the output. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -222,11 +235,12 @@ class Field:
             self.region.d2hdXdX,
             dtype=dtype,
             out=out,
+            order=order,
         )
 
         return h
 
-    def interpolate(self, dtype=None, out=None):
+    def interpolate(self, dtype=None, out=None, order="C"):
         r"""Interpolate field values located at mesh-points to the quadrature points
         ``q`` of cells ``c`` in the region.
 
@@ -243,6 +257,12 @@ class Field:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        order : {'C', 'F', 'A', 'K'}, optional
+            Controls the memory layout of the output. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -259,10 +279,13 @@ class Field:
             self.values[self.region.mesh.cells],
             self.region.h,
             dtype=dtype,
-            out=None,
+            out=out,
+            order=order,
         )
 
-    def extract(self, grad=True, sym=False, add_identity=True, dtype=None, out=None):
+    def extract(
+        self, grad=True, sym=False, add_identity=True, dtype=None, out=None, order="C"
+    ):
         """Generalized extraction method which evaluates either the gradient or the
         field values at the integration points of all cells in the region. Optionally,
         the symmetric part of the gradient is evaluated and/or the identity matrix is
@@ -284,6 +307,12 @@ class Field:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
+        order : {'C', 'F', 'A', 'K'}, optional
+            Controls the memory layout of the outputs. 'C' means it should be C
+            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
+            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
+            close to the layout as the inputs as is possible, including arbitrarily
+            permuted axes. Default is 'C'.
 
         Returns
         -------
@@ -298,7 +327,7 @@ class Field:
         """
 
         if grad:
-            gr = self.grad(out=out, dtype=dtype)
+            gr = self.grad(out=out, dtype=dtype, order=order)
 
             if sym:
                 gr = symmetric(gr, out=gr)
@@ -308,7 +337,7 @@ class Field:
 
             return gr
         else:
-            return self.interpolate(out=out, dtype=dtype)
+            return self.interpolate(out=out, dtype=dtype, order=order)
 
     def copy(self):
         "Return a copy of the field."

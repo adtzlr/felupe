@@ -344,8 +344,8 @@ class Region:
                 if uniform:
                     cells = cells[:1]
 
-                region.dXdr = np.ascontiguousarray(
-                    np.einsum("caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr)
+                region.dXdr = np.einsum(
+                    "caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr, order="C"
                 )
 
                 # determinant and inverse of dXdr

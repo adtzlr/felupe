@@ -34,20 +34,22 @@ class Point(Mesh):
 
     Examples
     --------
-    >>> import felupe as fem
-
-    >>> mesh = fem.Point(a=-2.1)
-    >>> mesh
-    <felupe Mesh object>
-      Number of points: 1
-      Number of cells:
-        vertex: 1
-
-    >>> mesh.points
-    array([[-2.1]])
-
-    >>> mesh.cells
-    array([[0]])
+    ..  pyvista-plot::
+        
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Point(a=-2.1)
+        >>> mesh
+        <felupe Mesh object>
+          Number of points: 1
+          Number of cells:
+            vertex: 1
+    
+        >>> mesh.points
+        array([[-2.1]])
+    
+        >>> mesh.cells
+        array([[0]])
     """
 
     def __init__(self, a=0.0):
@@ -184,6 +186,7 @@ class Cube(Mesh):
     --------
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -328,6 +331,7 @@ class CubeArbitraryOrderHexahedron(Cube):
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>

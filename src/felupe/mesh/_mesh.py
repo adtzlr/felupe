@@ -92,7 +92,7 @@ class Mesh(DiscreteGeometry):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import numpy as np
        >>> import felupe as fem
@@ -532,6 +532,7 @@ class Mesh(DiscreteGeometry):
         --------
         ..  pyvista-plot::
             :context:
+            :force_static:
 
             >>> import numpy as np
             >>> import felupe as fem
@@ -541,6 +542,7 @@ class Mesh(DiscreteGeometry):
 
         ..  pyvista-plot::
             :context:
+            :force_static:
 
             >>> mesh = mesh.modify_corners()  # inplace
             >>> mesh.plot().show()
@@ -697,7 +699,7 @@ class Mesh(DiscreteGeometry):
         Expand a rectangle to a cube.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -743,7 +745,7 @@ class Mesh(DiscreteGeometry):
         Rotate a rectangle in the xy-plane by 35 degree.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -790,7 +792,7 @@ class Mesh(DiscreteGeometry):
         Revolve a cylinder from a rectangle.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -840,7 +842,7 @@ class Mesh(DiscreteGeometry):
             :context:
 
             >>> import felupe as fem
-
+            >>>
             >>> rect1 = fem.Rectangle(n=11)
             >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
             >>> rect2
@@ -875,11 +877,12 @@ class Mesh(DiscreteGeometry):
               Number of cells:
                 quad: 200
 
-        After merging the duplicated points and cells, the number of points is reduced but
-        the number of cells is unchanged.
+        After merging the duplicated points and cells, the number of points is reduced
+        but the number of cells is unchanged.
 
         ..  pyvista-plot::
             :context:
+            :force_static:
 
             >>> mesh = stack.merge_duplicate_points()
             >>> mesh
@@ -888,7 +891,7 @@ class Mesh(DiscreteGeometry):
               Number of cells:
                 quad: 200
 
-            >>> ax = mesh.imshow(opacity=0.6)
+            >>> mesh.plot(opacity=0.6).show()
 
         ..  note::
             The :class:`~felupe.MeshContainer` may be directly created with
@@ -930,7 +933,7 @@ class Mesh(DiscreteGeometry):
             :context:
 
             >>> import felupe as fem
-
+            >>>
             >>> rect1 = fem.Rectangle(n=11)
             >>> rect2 = fem.Rectangle(a=(0.9, 0), b=(1.9, 1), n=11)
             >>> rect2
@@ -970,6 +973,7 @@ class Mesh(DiscreteGeometry):
 
         ..  pyvista-plot::
             :context:
+            :force_static:
 
             >>> mesh = stack.merge_duplicate_points()
             >>> mesh
@@ -978,7 +982,7 @@ class Mesh(DiscreteGeometry):
               Number of cells:
                 quad: 200
 
-            >>> ax = mesh.imshow(opacity=0.6)
+            mesh.plot(opacity=0.6).show()
 
         ..  note::
             The :class:`~felupe.MeshContainer` may be directly created with
@@ -1029,7 +1033,7 @@ class Mesh(DiscreteGeometry):
         Examples
         --------
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1135,7 +1139,7 @@ class Mesh(DiscreteGeometry):
         Examples
         --------
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1143,7 +1147,7 @@ class Mesh(DiscreteGeometry):
            >>> mesh.plot().show()
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1209,7 +1213,7 @@ class Mesh(DiscreteGeometry):
         Use ``mode=0`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1219,7 +1223,7 @@ class Mesh(DiscreteGeometry):
         Use ``mode=3`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1275,7 +1279,7 @@ class Mesh(DiscreteGeometry):
         Examples
         --------
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1285,7 +1289,7 @@ class Mesh(DiscreteGeometry):
            >>> mesh.plot().show()
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1352,7 +1356,7 @@ class Mesh(DiscreteGeometry):
         the cell edges.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1426,7 +1430,7 @@ class Mesh(DiscreteGeometry):
         the cell edges.
 
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1469,7 +1473,7 @@ class Mesh(DiscreteGeometry):
         Examples
         --------
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>
@@ -1511,7 +1515,7 @@ class Mesh(DiscreteGeometry):
         Examples
         --------
         .. pyvista-plot::
-           :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>> import pyvista as pv

@@ -168,7 +168,7 @@ class FieldContainer:
             out = [None] * len(self.fields)
 
         grads = np.pad(grad, (0, len(self.fields) - 1))
-        orders = np.pad(order, (0, len(self.fields) - 1))
+        orders = order * len(self.fields)
 
         return tuple(
             f.extract(g, sym, add_identity=add_identity, dtype=dtype, out=res, order=od)

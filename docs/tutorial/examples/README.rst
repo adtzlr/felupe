@@ -7,7 +7,8 @@ This minimal code-block covers the essential high-level parts of creating and so
 
 First, let’s import FElupe and create a meshed :class:`cube <felupe.Cube>` out of :class:`hexahedron <felupe.Hexahedron>` cells with a given number of points per axis. A numeric :class:`region <felupe.RegionHexahedron>`, pre-defined for hexahedrons, is created on the mesh. A vector-valued displacement :class:`field <felupe.Field>` is initiated on the region. Next, a :class:`field container <felupe.FieldContainer>` is created on top of this field.
 
-.. code-block:: python
+.. pyvista-plot::
+   :context:
 
    import felupe as fem
 
@@ -17,27 +18,31 @@ First, let’s import FElupe and create a meshed :class:`cube <felupe.Cube>` out
 
 A :func:`~felupe.dof.uniaxial` load case is applied on the displacement :class:`field <felupe.Field>` stored inside the :class:`field container <felupe.FieldContainer>`. This involves setting up :func:`~felupe.dof.symmetry` planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is *clamped* 🛠️: only displacements in direction *x* are allowed. The dict of :class:`boundary <felupe.Boundary>` conditions for this pre-defined load case are returned as ``boundaries`` and the partitioned degrees of freedom as well as the external displacements are stored within the returned dict ``loadcase``.
 
-.. code-block:: python
+.. pyvista-plot::
+   :context:
 
    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
 An isotropic pseudo-elastic :class:`Ogden-Roxburgh <felupe.OgdenRoxburgh>` Mullins-softening model formulation in combination with an isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:`nearly-incompressible solid body <felupe.SolidBodyNearlyIncompressible>`.
 
-.. code-block:: python
+.. pyvista-plot::
+   :context:
 
    umat = fem.NeoHooke(mu=1)
    solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
 A :class:`step <felupe.Step>` generates the consecutive substep-movements of a given :class:`boundary <felupe.Boundary>` condition.
 
-.. code-block:: python
+.. pyvista-plot::
+   :context:
 
    move = fem.math.linsteps([0, 1], num=5)
    step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
 The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>` 👩‍💻 (here, a :class:`characteristic curve <felupe.CharacteristicCurve>` 📈 job is used). During :meth:`evaluation <felupe.Job.evaluate>` ⏳, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Rhapson <felupe.newtonrhapson>` procedure ⚖️. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series ⌚ XDMF file.
 
-.. code-block:: python
+.. pyvista-plot::
+   :context:
 
    job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
    job.evaluate(filename="result.xdmf")
@@ -47,9 +52,22 @@ The :class:`step <felupe.Step>` is further added to a list of steps of a :class:
        ylabel="Normal Force $F_1$ in N $\longrightarrow$",
    )
 
+.. pyvista-plot::
+   :include-source: False
+   :context:
+   :force_static:
+
+   import pyvista as pv
+
+   fig = ax.get_figure()
+   chart = pv.ChartMPL(fig)
+   chart.show()
+
 Finally, the result of the last completed substep is plotted.
 
-.. code-block:: python
+.. pyvista-plot::
+   :context:
+   :force_static:
 
    solid.plot("Principal Values of Cauchy Stress").show()
 

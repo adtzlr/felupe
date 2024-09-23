@@ -76,11 +76,12 @@ class Line(Mesh):
     --------
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
        >>> mesh = fem.mesh.Line(a=-2.1, b=3.5, n=3)
-       >>> mesh.plot().show()
+       >>> mesh.plot(line_width=8).show()
 
     >>> mesh
     <felupe Mesh object>
@@ -125,6 +126,7 @@ class Rectangle(Mesh):
     --------
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -236,6 +238,7 @@ class Grid(Mesh):
     --------
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import numpy as np
        >>> import felupe as fem
@@ -299,6 +302,7 @@ class RectangleArbitraryOrderQuad(Rectangle):
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>
@@ -370,7 +374,7 @@ class Circle(Mesh):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -475,6 +479,7 @@ class Triangle(Mesh):
     --------
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

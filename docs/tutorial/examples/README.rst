@@ -67,7 +67,6 @@ Finally, the result of the last completed substep is plotted.
 
 .. pyvista-plot::
    :context:
-   :force_static:
 
    solid.plot("Principal Values of Cauchy Stress").show()
 

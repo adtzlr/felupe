@@ -82,6 +82,7 @@ class MeshContainer:
 
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -171,6 +172,7 @@ class MeshContainer:
 
         .. pyvista-plot::
            :include-source: True
+           :force_static:
 
            >>> import felupe as fem
            >>>

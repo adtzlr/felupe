@@ -24,14 +24,36 @@ from ._cartesian import IntegralFormCartesian
 
 class IntegralFormAxisymmetric(IntegralFormCartesian):
     r"""An Integral Form for axisymmetric fields.
+    
+    Parameters
+    ----------
+    fun : array
+        The pre-evaluated function array. If the array is not contiguous, a C-contiguous
+        copy is made.
+    v : FieldAxisymmetric
+        The axisymmetric test field.
+    dV : array
+        The differential volumes.
+    u : FieldAxisymmetric, optional
+        If a field is passed, a bilinear form is created (default is None).
+    grad_v : bool, optional
+        Flag to activate the gradient on the test field ``v`` (default is False).
+    grad_u : bool, optional
+        Flag to activate the gradient on the trial field ``u`` (default is False).
 
     Notes
     -----
-    Axisymmetric scenarios are modeled with a 2D-mesh and consequently, a 2D element
-    formulation. The rotation axis is chosen along the global X-axis
-    :math:`(X,Y,Z) \widehat{=} (Z,R,\varphi)`. The 3x3 deformation gradient consists of
-    an in-plane 2x2 sub-matrix and one additional entry for the out-of-plane stretch
-    which is equal to the ratio of deformed and undeformed radius.
+    Axisymmetric integral forms are created with a two-dimensional mesh, a two-
+    dimensional element formulation and an axisymmetric field.
+
+    ..  note::
+
+        The rotation axis is chosen along the global X-axis
+        :math:`(X,Y,Z) \widehat{=} (Z,R,\varphi)`.
+
+    The three-dimensional deformation gradient consists of four in-plane components and
+    one additional non-zero entry for the out-of-plane stretch, which is equal to the
+    ratio of the deformed and the undeformed radius.
 
     ..  math::
 
@@ -45,9 +67,9 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
 
     ..  math::
 
-        \delta \boldsymbol{F}_{(2D)} = \delta \frac{
+        \delta \boldsymbol{F}_{(2D)} = \delta \left( \frac{
                 \partial \boldsymbol{u}}{\partial \boldsymbol{X}
-            } \qquad \text{and} \qquad \delta \left(\frac{r}{R}\right)
+            } \right) \qquad \text{and} \qquad \delta \left(\frac{r}{R}\right)
             = \frac{\delta u_r}{R}
 
     Again, the internal virtual work leads to two seperate terms.
@@ -100,20 +122,20 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
 
     ..  math::
 
-        \mathbb{A}_{(2D),(2D)} &= \frac{
-            \partial \psi}{\partial \boldsymbol{F}_{(2D)} \partial \boldsymbol{F}_{(2D)}
+        \mathbb{A}_{(2D)~(2D)} &= \frac{
+            \partial \psi}{\partial \boldsymbol{F}_{(2D)}~\partial \boldsymbol{F}_{(2D)}
         }
 
-        \mathbb{A}_{(2D),33} &= \frac{
-            \partial \psi}{\partial \boldsymbol{F}_{(2D)} \partial F^3_{\hphantom{3}3}}
-            \left ( = \mathbb{A}_{33,(2D)} \right )
+        \mathbb{A}_{(2D)~33} &= \frac{
+            \partial \psi}{\partial \boldsymbol{F}_{(2D)}\ \partial F_{33}}
+            \left ( = \mathbb{A}_{33~(2D)} \right )
 
-        \mathbb{A}_{33,33} &= \frac{\partial \psi}{F^3_{\hphantom{3}3}
-            \partial F^3_{\hphantom{3}3}}
+        \mathbb{A}_{33~33} &= \frac{\partial \psi}{\partial F_{33}~\partial F_{33}}
 
     See Also
     --------
-    felupe.IntegralForm : Mixed-field integral form container with methods for integration and assembly.
+    felupe.IntegralForm : Mixed-field integral form container with methods for
+        integration and assembly.
     felupe.assembly.IntegralFormCartesian : Single-field integral form.
 
     """

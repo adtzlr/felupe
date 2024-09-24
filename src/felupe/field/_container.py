@@ -120,13 +120,13 @@ class FieldContainer:
     def extract(
         self, grad=True, sym=False, add_identity=True, dtype=None, out=None, order="C"
     ):
-        """Generalized extraction method which evaluates either the gradient or the
+        r"""Generalized extraction method which evaluates either the gradient or the
         field values at the integration points of all cells in the region. Optionally,
         the symmetric part of the gradient is evaluated and/or the identity matrix is
         added to the gradient.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         grad : bool or list of bool, optional
             Flag(s) for gradient evaluation(s). A boolean value is appplied on the first
             field only and all other fields are extracted with ``grad=False``. To
@@ -156,6 +156,33 @@ class FieldContainer:
         tuple of ndarray
             (Symmetric) gradient or interpolated field values evaluated at
             the integration points of each cell in the region.
+
+        Notes
+        -----
+        If the gradient is not requested, the interpolation method returns the field
+        values evaluated at the numeric integration  points ``q`` for each cell ``c`` in
+        the region (so-called *trailing axes*).
+
+        ..  math::
+
+            u_{i(qc)} = \hat{u}_{ai}\ h_{a(qc)}
+
+        On the other hand, the gradient method returns the gradient of the field values
+        w.r.t. the undeformed mesh point coordinates, evaluated at the integration
+        points of all cells in the region.
+
+        ..  math::
+
+            \left( \frac{\partial u_i}{\partial X_J} \right)_{(qc)} =
+                \hat{u}_{ai} \left( \frac{\partial h_a}{\partial X_J} \right)_{(qc)}
+
+        See Also
+        --------
+        felupe.Field.interpolate : Interpolate field values located at mesh-points to
+            the quadrature points in the region.
+        felupe.Field.grad : Gradient as partial derivative of field values w.r.t.
+            undeformed coordinates.
+
         """
 
         if isinstance(grad, bool):

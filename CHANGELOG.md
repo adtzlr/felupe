@@ -5,10 +5,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add the hessian of the element shape functions for a quadratic quad element `QuadraticQuad.hessian()`.
-- Add the `order`-argument to `FieldContainer.extract(order="C")` to return C-contiguous arrays by default.
+- Add the `order`-argument to `FieldContainer.extract(order="C")` as well as for `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` to return C-contiguous arrays by default.
 
 ### Changed
-- Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric` and `FieldPlaneStrain`.
+- Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.
 
 ## [9.0.0] - 2024-09-06
 

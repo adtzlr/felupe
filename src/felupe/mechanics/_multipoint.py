@@ -23,10 +23,134 @@ from ._helpers import Assemble, Results
 
 
 class MultiPointConstraint:
+    """A Multi-point-constraint which connects a center-point to a list of points.
+
+    Parameters
+    ----------
+    field : FieldContainer
+        A field container with the displacement field as first field.
+    points : (n,) ndarray
+        An array with indices of points to be connected to the center-point.
+    centerpoint : int
+        The index of the centerpoint.
+    skip : 3-tuple of bool, optional
+        A tuple with boolean values for each axis to skip. If True, the respective axis
+        is not connected. Default is (False, False, False).
+    multiplier : float, optional
+        A multiplier to penalize the relative displacements between the center-point and
+        the points. Default is 1e-3.
+
+    Notes
+    -----
+    A :class:`~felupe.MultiPointConstraint` is supported as an item in a
+    :class:`~felupe.Step`. Rotational degrees-of-freedom of the center-point are
+    not connected to the points.
+
+    Examples
+    --------
+    This example shows how to use a :class:`~felupe.MultiPointConstraint`.
+
+    An additional center-point is added to a mesh. By default, all *hanging* points are
+    collected in the mesh-attribute :attr:`~felupe.Mesh.points_without_cells`. The
+    degrees of freedom of these points are considered as fixed, i.e. they are ignored.
+    The center-point is not connected to any cell and is added to the points-without-
+    cells list. Hence, we have to remove the center-point.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(n=3)
+        >>> mesh.update(points=np.vstack([mesh.points, [2.0, 0.5, 0.5]]))
+        >>>
+        >>> # prevent the field-values at the center-point to be treated as dof0
+        >>> mesh.points_without_cells = mesh.points_without_cells[:-1]
+        >>>
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> displacement = fem.Field(region, dim=3)
+        >>> field = fem.FieldContainer([displacement])
+        >>>
+        >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+        >>> solid = fem.SolidBody(umat=umat, field=field)
+
+    A :class:`~felupe.MultiPointConstraint` defines the multi-point constraint which
+    connects the displacement degrees of freedom of the center-point with the dofs of
+    points located at :math:`x=1`.
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> mpc = fem.MultiPointConstraint(
+        ...     field=field,
+        ...     points=np.arange(mesh.npoints)[mesh.x == 1],
+        ...     centerpoint=-1,
+        ... )
+        >>>
+        >>> plotter = pv.Plotter()
+        >>> actor_1 = plotter.add_points(
+        ...     mesh.points[mpc.points],
+        ...     point_size=16,
+        ...     color="red",
+        ... )
+        >>> actor_2 = plotter.add_points(
+        ...     mesh.points[[mpc.centerpoint]],
+        ...     point_size=16,
+        ...     color="green",
+        ... )
+        >>> mesh.plot(plotter=mpc.plot(plotter=plotter)).show()
+
+    The mesh is fixed on the left end face and a ramped :class:`~felupe.PointLoad` is
+    applied on the center-point of the :class:`~felupe.MultiPointConstraint`. All items
+    are added to a step and a job is evaluated.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> boundaries = {"fixed": fem.Boundary(displacement, fx=0)}
+        >>> load = fem.PointLoad(field, points=[-1])
+        >>> table = fem.math.linsteps([0, 1], num=5, axis=0, axes=3)
+        >>>
+        >>> step = fem.Step(
+        ...     [solid, mpc, load], boundaries=boundaries, ramp={load: table}
+        ... )
+        >>> job = fem.Job([step]).evaluate()
+
+    A view on the deformed mesh including the :class:`~felupe.MultiPointConstraint` is
+    plotted.
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
+        >>> plotter = pv.Plotter()
+        >>> actor_1 = plotter.add_points(
+        ...     mesh.points[mpc.points] + displacement.values[mpc.points],
+        ...     point_size=16,
+        ...     color="red",
+        ... )
+        >>> actor_2 = plotter.add_points(
+        ...     mesh.points[[mpc.centerpoint]] + displacement.values[[mpc.centerpoint]],
+        ...     point_size=16,
+        ...     color="green",
+        ... )
+        >>> field.plot(
+        ...     "Displacement", component=None, plotter=mpc.plot(plotter=plotter)
+        ... ).show()
+
+    See Also
+    --------
+    felupe.MultiPointContact : A frictionless point-to-rigid (wall) contact.
+
+    """
+
     def __init__(
         self, field, points, centerpoint, skip=(False, False, False), multiplier=1e3
     ):
-        "RBE2 Multi-point-constraint."
         self.field = field
         self.mesh = field.region.mesh
         self.points = np.asarray(points)
@@ -97,7 +221,8 @@ class MultiPointContact:
     def __init__(
         self, field, points, centerpoint, skip=(False, False, False), multiplier=1e6
     ):
-        "RBE2 Multi-point-bolt-constraint."
+        "A frictionless point-to-rigid (wall) contact."
+
         self.field = field
         self.mesh = field.region.mesh
         self.points = np.asarray(points)

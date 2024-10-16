@@ -43,18 +43,26 @@ class MultiPointConstraint:
     Notes
     -----
     A :class:`~felupe.MultiPointConstraint` is supported as an item in a
-    :class:`~felupe.Step`. Rotational degrees-of-freedom of the center-point are
-    not connected to the points.
+    :class:`~felupe.Step`. It provides the assemble-methods
+    :meth:`MultiPointConstraint.assemble.vector() <felupe.MultiPointConstraint.assemble.vector>`
+    and :meth:`MultiPointConstraint.assemble.matrix() <felupe.MultiPointConstraint.assemble.matrix>`.
+
+    ..  note::
+
+        Rotational degrees-of-freedom of the center-point are not connected to the
+        points.
 
     Examples
     --------
     This example shows how to use a :class:`~felupe.MultiPointConstraint`.
 
     An additional center-point is added to a mesh. By default, all *hanging* points are
-    collected in the mesh-attribute :attr:`~felupe.Mesh.points_without_cells`. The
-    degrees of freedom of these points are considered as fixed, i.e. they are ignored.
-    The center-point is not connected to any cell and is added to the points-without-
-    cells list. Hence, we have to remove the center-point.
+    collected in the mesh-attribute
+    :attr:`Mesh.points_without_cells <felupe.Mesh.points_without_cells>`. The degrees of
+    freedom of these points are considered as fixed, i.e. they are ignored. The center-
+    point is not connected to any cell and is added to the points-without-cells array
+    on :meth:`Mesh.update <felupe.Mesh.update>`. Hence, center-point has to be removed
+    manually.
 
     ..  pyvista-plot::
         :context:
@@ -106,7 +114,7 @@ class MultiPointConstraint:
 
     The mesh is fixed on the left end face and a ramped :class:`~felupe.PointLoad` is
     applied on the center-point of the :class:`~felupe.MultiPointConstraint`. All items
-    are added to a step and a job is evaluated.
+    are added to a :class:`~felupe.Step` and a :class:`~felupe.Job` is evaluated.
 
     ..  pyvista-plot::
         :context:

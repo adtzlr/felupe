@@ -83,15 +83,13 @@ class MultiPointConstraint:
         :context:
         :force_static:
 
-        >>> import pyvista as pv
-        >>>
         >>> mpc = fem.MultiPointConstraint(
         ...     field=field,
         ...     points=np.arange(mesh.npoints)[mesh.x == 1],
         ...     centerpoint=-1,
         ... )
         >>>
-        >>> plotter = pv.Plotter()
+        >>> plotter = mpc.plot()
         >>> actor_1 = plotter.add_points(
         ...     mesh.points[mpc.points],
         ...     point_size=16,
@@ -102,7 +100,7 @@ class MultiPointConstraint:
         ...     point_size=16,
         ...     color="green",
         ... )
-        >>> mesh.plot(plotter=mpc.plot(plotter=plotter)).show()
+        >>> mesh.plot(plotter=plotter).show()
 
     The mesh is fixed on the left end face and a ramped :class:`~felupe.PointLoad` is
     applied on the center-point of the :class:`~felupe.MultiPointConstraint`. All items
@@ -127,7 +125,7 @@ class MultiPointConstraint:
         :context:
         :force_static:
 
-        >>> plotter = pv.Plotter()
+        >>> plotter = mpc.plot()
         >>> actor_1 = plotter.add_points(
         ...     mesh.points[mpc.points] + displacement.values[mpc.points],
         ...     point_size=16,
@@ -138,9 +136,7 @@ class MultiPointConstraint:
         ...     point_size=16,
         ...     color="green",
         ... )
-        >>> field.plot(
-        ...     "Displacement", component=None, plotter=mpc.plot(plotter=plotter)
-        ... ).show()
+        >>> field.plot("Displacement", component=None, plotter=plotter).show()
 
     See Also
     --------

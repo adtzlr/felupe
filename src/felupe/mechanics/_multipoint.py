@@ -314,7 +314,7 @@ class MultiPointContact:
         ... )
         >>> mesh.plot(plotter=contact.plot(plotter=plotter)).show()
 
-    The mesh is fixed on the left end face and a ramped :class:`~felupe.PointLoad` is
+    The mesh is fixed on the left end face and a ramped :class:`~felupe.Boundary` is
     applied on the center-point of the :class:`~felupe.MultiPointContact`. All items
     are added to a :class:`~felupe.Step` and a :class:`~felupe.Job` is evaluated.
 
@@ -326,11 +326,11 @@ class MultiPointContact:
         ...     "control": fem.Boundary(displacement, fx=2, skip=(1, 0, 0)),
         ...     "move": fem.Boundary(displacement, fx=2, skip=(0, 1, 1)),
         ... }
-        >>> load = fem.PointLoad(field, points=[-1])
         >>> table = fem.math.linsteps([0, -1, -1.5], num=5)
-        >>>
         >>> step = fem.Step(
-        ...     [solid, contact], boundaries=boundaries, ramp={boundaries["move"]: table}
+        ...     [solid, contact],
+        ...     boundaries=boundaries,
+        ...     ramp={boundaries["move"]: table},
         ... )
         >>> job = fem.Job([step]).evaluate()
 

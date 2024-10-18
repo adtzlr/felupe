@@ -26,6 +26,11 @@ class Laplace(ConstitutiveMaterial):
     r"""Laplace equation as hessian of one half of the second main invariant of the
     field gradient.
 
+    Parameters
+    ----------
+    multiplier : float, optional
+        A multiplier which scales the potential (default is 1.0).
+
     Notes
     -----
     The potential is given by the second main invariant of the field gradient w.r.t.
@@ -64,8 +69,9 @@ class Laplace(ConstitutiveMaterial):
 
     """
 
-    def __init__(self):
-        self.kwargs = {}
+    def __init__(self, multiplier=1.0):
+        self.multiplier = multiplier
+        self.kwargs = {"multiplier": self.multiplier}
 
         # aliases for gradient and hessian
         self.stress = self.gradient
@@ -93,7 +99,7 @@ class Laplace(ConstitutiveMaterial):
         F = x[0]
         H = F - identity(F)
 
-        return [ddot(H, H) / 2]
+        return [self.multiplier * ddot(H, H) / 2]
 
     def gradient(self, x):
         r"""Evaluate the stress tensor.
@@ -113,7 +119,7 @@ class Laplace(ConstitutiveMaterial):
         F, statevars = x[0], x[-1]
         H = F - identity(F)
 
-        return [H, statevars]
+        return [self.multiplier * H, statevars]
 
     def hessian(self, x):
         r"""Evaluate the elasticity tensor.
@@ -122,8 +128,6 @@ class Laplace(ConstitutiveMaterial):
         ----------
         x : list of ndarray
             List with Deformation gradient :math:`\boldsymbol{F}` as first item.
-        shape : tuple of int, optional
-            Tuple with shape of the trailing axes (default is (1, 1)).
 
         Returns
         -------
@@ -136,4 +140,6 @@ class Laplace(ConstitutiveMaterial):
         ntrax = len(x[0].shape) - 2
         ones = np.ones(ntrax, dtype=int)
 
-        return [cdya_ik(np.eye(n), np.eye(m)).reshape(n, m, n, m, *ones)]
+        return [
+            self.multiplier * cdya_ik(np.eye(n), np.eye(m)).reshape(n, m, n, m, *ones)
+        ]

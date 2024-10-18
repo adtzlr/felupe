@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.
+- Change supported Python versions to 3.9 - 3.13.
 
 ## [9.0.0] - 2024-09-06
 

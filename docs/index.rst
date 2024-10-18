@@ -1,7 +1,7 @@
 FElupe documentation
 ====================
 
-FElupe is a Python 3.8+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies 🔧. This package is intended for scientific research 💻, but is also suitable for running nonlinear simulations 🚂 in general 🏎️. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
+FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies 🔧. This package is intended for scientific research 💻, but is also suitable for running nonlinear simulations 🚂 in general 🏎️. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
 
 .. grid::
 

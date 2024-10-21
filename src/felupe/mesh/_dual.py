@@ -75,7 +75,7 @@ def dual(
     Examples
     --------
     ..  pyvista-plot::
-        
+
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Rectangle(n=5).add_midpoints_edges()

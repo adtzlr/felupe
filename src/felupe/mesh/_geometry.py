@@ -35,7 +35,7 @@ class Point(Mesh):
     Examples
     --------
     ..  pyvista-plot::
-        
+
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Point(a=-2.1)
@@ -44,10 +44,10 @@ class Point(Mesh):
           Number of points: 1
           Number of cells:
             vertex: 1
-    
+
         >>> mesh.points
         array([[-2.1]])
-    
+
         >>> mesh.cells
         array([[0]])
     """

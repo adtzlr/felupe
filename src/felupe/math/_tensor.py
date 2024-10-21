@@ -819,12 +819,12 @@ def eigvalsh(A, shear=False):
     return eigvals(A, shear=shear, eigvals=np.linalg.eigvalsh)
 
 
-def transpose(A, mode=1):
+def transpose(A, mode=1, **kwargs):
     "Transpose (mode=1) or major-transpose (mode=2) of matrix A."
     if mode == 1:
-        return np.einsum("ij...->ji...", A)
+        return np.einsum("ij...->ji...", A, **kwargs)
     elif mode == 2:
-        return np.einsum("ijkl...->klij...", A)
+        return np.einsum("ijkl...->klij...", A, **kwargs)
     else:
         raise ValueError("Unknown value of mode.")
 

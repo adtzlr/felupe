@@ -106,15 +106,23 @@ def dual(
 
     if disconnect:
         cells_new = np.arange(ncells * points_per_cell).reshape(ncells, points_per_cell)
+
+        if calc_points:
+            points_new = points[cells[:, :points_per_cell]].reshape(-1, dim)
+        else:
+            points_new = np.broadcast_to(
+                np.zeros((1, dim), dtype=int), (ncells * points_per_cell, dim)
+            )
+
     else:
         cells_new = cells[:, :points_per_cell]
 
-    if calc_points:
-        points_new = points[cells[:, :points_per_cell]].reshape(-1, dim)
-    else:
-        points_new = np.broadcast_to(
-            np.zeros((1, dim), dtype=int), (ncells * points_per_cell, dim)
-        )
+        if calc_points:
+            points_new = points[: 1 + cells_new.max()]
+        else:
+            points_new = np.broadcast_to(
+                np.zeros((1, dim), dtype=int), (1 + cells_new.max(), dim)
+            )
 
     if offset > 0:
         cells_new += offset

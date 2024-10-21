@@ -61,8 +61,10 @@ def test_meshes():
     )
 
     m.dual()
-    fem.mesh.dual(m, disconnect=False)
-    fem.mesh.dual(m, calc_points=True)
+    fem.mesh.dual(m, disconnect=False, calc_points=False)
+    fem.mesh.dual(m, disconnect=False, calc_points=True)
+    fem.mesh.dual(m, disconnect=True, calc_points=False)
+    fem.mesh.dual(m, disconnect=True, calc_points=True)
 
     rect = fem.Rectangle(n=5).add_midpoints_edges()
     rect_dual = rect.dual(points_per_cell=1, disconnect=False)

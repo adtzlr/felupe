@@ -35,7 +35,11 @@ class LinearElastic(ConstitutiveMaterial):
     
     Notes
     -----
+    The stress-strain relation of the linear-elastic material formulation is given in
+    Eq. :eq:`linear-elastic`
+    
     ..  math::
+        :label: linear-elastic
 
         \begin{bmatrix}
             \sigma_{11} \\
@@ -60,13 +64,23 @@ class LinearElastic(ConstitutiveMaterial):
             2 \varepsilon_{31}
         \end{bmatrix}
 
-    with the strain tensor
+    with the small-strain tensor from Eq. :eq:`linear-elastic-strain`.
 
     ..  math::
+        :label: linear-elastic-strain
 
         \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} \right)^T \right)
+    
+    ..  warning::
+        
+        This material formulation must not be used in analyses where large rotations,
+        large displacements or large strains occur. In this case, consider using a
+        :class:`~felupe.Hyperelastic` material formulation instead.
+        :class:`~felupe.LinearElasticLargeStrain` is based on a compressible version
+        of the Neo-Hookean material formulation and is safe to use for large rotations,
+        large displacements and large strains.
     
     Examples
     --------
@@ -88,7 +102,15 @@ class LinearElastic(ConstitutiveMaterial):
         >>> fig = ax.get_figure()
         >>> chart = pv.ChartMPL(fig)
         >>> chart.show()
-
+    
+    See Also
+    --------
+    felupe.LinearElasticLargeStrain : Linear-elastic material formulation suitable for
+        large-strain analyses based on the compressible Neo-Hookean material
+        formulation.
+    felupe.Hyperelastic : A hyperelastic material definition with a given function for
+        the strain energy density function per unit undeformed volume with automatic
+        differentiation.
     """
 
     def __init__(self, E, nu):

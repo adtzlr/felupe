@@ -24,7 +24,7 @@ from ._lame_converter import lame_converter
 
 
 class LinearElasticLargeStrain(ConstitutiveMaterial):
-    r"""Linear-elastic material formulation suitable for large-rotation analyses based
+    r"""Linear-elastic material formulation suitable for large-strain analyses based
     on the compressible Neo-Hookean material formulation.
 
     Parameters

@@ -24,6 +24,15 @@ import numpy as np
 from ..math import det, linsteps
 
 
+def check_stretches(stretches):
+    "Check if any stretch is lower or equal zero."
+
+    if np.any(stretches <= 0.0):
+        raise ValueError("All stretches must greater than 0.")
+
+    return
+
+
 class PlotMaterial:
     "Plot force-stretch curves of constitutive material formulations."
 
@@ -203,7 +212,10 @@ class ViewMaterial(PlotMaterial):
         if stretches is None:
             stretches = self.ux
 
+        check_stretches(stretches)
+
         λ1 = stretches
+
         λ2 = λ3 = 1 / np.sqrt(λ1)
         eye = np.eye(3).reshape(3, 3, 1, 1)
 
@@ -264,6 +276,8 @@ class ViewMaterial(PlotMaterial):
 
         if stretches is None:
             stretches = self.ps
+
+        check_stretches(stretches)
 
         λ1 = stretches
         λ2 = np.ones_like(λ1)
@@ -326,6 +340,8 @@ class ViewMaterial(PlotMaterial):
 
         if stretches is None:
             stretches = self.bx
+
+        check_stretches(stretches)
 
         λ1 = λ2 = stretches
         λ3 = 1 / λ1**2
@@ -475,6 +491,8 @@ class ViewMaterialIncompressible(PlotMaterial):
         if stretches is None:
             stretches = self.ux
 
+        check_stretches(stretches)
+
         λ1 = stretches
         λ2 = λ3 = 1 / np.sqrt(λ1)
         eye = np.eye(3).reshape(3, 3, 1, 1)
@@ -511,6 +529,8 @@ class ViewMaterialIncompressible(PlotMaterial):
 
         if stretches is None:
             stretches = self.ps
+
+        check_stretches(stretches)
 
         λ1 = stretches
         λ2 = np.ones_like(λ1)
@@ -553,6 +573,8 @@ class ViewMaterialIncompressible(PlotMaterial):
 
         if stretches is None:
             stretches = self.bx
+
+        check_stretches(stretches)
 
         λ1 = λ2 = stretches
         λ3 = 1 / λ1**2

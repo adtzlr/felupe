@@ -707,6 +707,21 @@ def test_laplace():
     assert A[0].shape == (3, 3, 3, 3, 1, 1)
 
 
+def test_plot_negative_stretches():
+    stretches = np.linspace(-0.5, 1, 16)
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+
+    for incompressible in [False, True]:
+        with pytest.raises(ValueError):
+            umat.plot(ux=stretches, incompressible=incompressible)
+
+        with pytest.raises(ValueError):
+            umat.plot(bx=stretches, incompressible=incompressible)
+
+        with pytest.raises(ValueError):
+            umat.plot(ps=stretches, incompressible=incompressible)
+
+
 if __name__ == "__main__":
     test_nh()
     test_linear()
@@ -728,3 +743,4 @@ if __name__ == "__main__":
     test_lagrange()
     test_lagrange_statevars()
     test_laplace()
+    test_plot_negative_stretches()

@@ -449,8 +449,11 @@ class RegionBoundary(Region):
         ):
             dA_1 = self.dXdr[:, 0][::-1]
             dA_1[0] = -dA_1[0]
+            
+            dX_1 = -self.dXdr[:, 0]
+            dX_1[0] = -dX_1[0]
 
-            tangents.append(self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0))
+            tangents.append(dX_1 / np.linalg.norm(dX_1, axis=0))
 
         elif (
             self.mesh.cell_type == "hexahedron"

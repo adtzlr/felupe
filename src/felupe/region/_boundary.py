@@ -462,7 +462,7 @@ class RegionBoundary(Region):
         ):
             dA_1 = cross(self.dXdr[:, 0], self.dXdr[:, 1])
 
-            tangents.append(self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0))
+            tangents.append(-self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0))
             tangents.append(self.dXdr[:, 1] / np.linalg.norm(self.dXdr[:, 1], axis=0))
 
         dA = -dA_1 * self.quadrature.weights.reshape(-1, 1)

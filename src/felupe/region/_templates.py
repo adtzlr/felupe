@@ -180,6 +180,11 @@ class RegionQuadBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
+    
+    See Also
+    --------
+    felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
+        element and a numeric integration scheme (quadrature rule).
     """
 
     def __init__(
@@ -228,6 +233,11 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
+    
+    See Also
+    --------
+    felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
+        element and a numeric integration scheme (quadrature rule).
     """
 
     def __init__(
@@ -276,6 +286,11 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
+    
+    See Also
+    --------
+    felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
+        element and a numeric integration scheme (quadrature rule).
     """
 
     def __init__(
@@ -373,6 +388,11 @@ class RegionHexahedronBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
+    
+    See Also
+    --------
+    felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
+        element and a numeric integration scheme (quadrature rule).
     """
 
     def __init__(
@@ -453,6 +473,11 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
+    
+    See Also
+    --------
+    felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
+        element and a numeric integration scheme (quadrature rule).
     """
 
     def __init__(
@@ -531,6 +556,11 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
+    
+    See Also
+    --------
+    felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
+        element and a numeric integration scheme (quadrature rule).
     """
 
     def __init__(

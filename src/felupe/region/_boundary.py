@@ -435,10 +435,12 @@ class RegionBoundary(Region):
         super().__init__(mesh_boundary_cells, element, quadrature, grad=grad)
 
         if grad:
-            self.dA, self.dV, self.normals = self._init_faces()
+            self.dA, self.dV, self.normals, self.tangents = self._init_faces()
 
     def _init_faces(self):
         "Initialize (norm of) face normals of cells."
+
+        tangents = []
 
         if (
             self.mesh.cell_type == "quad"
@@ -448,12 +450,17 @@ class RegionBoundary(Region):
             dA_1 = self.dXdr[:, 0][::-1]
             dA_1[0] = -dA_1[0]
 
+            tangents.append(self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0))
+
         elif (
             self.mesh.cell_type == "hexahedron"
             or self.mesh.cell_type == "hexahedron20"
             or self.mesh.cell_type == "hexahedron27"
         ):
             dA_1 = cross(self.dXdr[:, 0], self.dXdr[:, 1])
+
+            tangents.append(self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0))
+            tangents.append(self.dXdr[:, 1] / np.linalg.norm(self.dXdr[:, 1], axis=0))
 
         dA = -dA_1 * self.quadrature.weights.reshape(-1, 1)
 
@@ -466,7 +473,7 @@ class RegionBoundary(Region):
                 dA = np.pad(dA, ((0, 1), (0, 0), (0, 0)))
                 normals = np.pad(normals, ((0, 1), (0, 0), (0, 0)))
 
-        return dA, dV, normals
+        return dA, dV, normals, tangents
 
     def mesh_faces(self):
         "Return a Mesh with face-cells on the selected boundary."

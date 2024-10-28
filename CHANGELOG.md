@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add the `order`-argument to `FieldContainer.extract(order="C")` as well as for `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` to return C-contiguous arrays by default.
 - Add an optional multiplier to `Laplace(multiplier=1.0)`.
 - Add optional keyword-arguments to `math.transpose(**kwargs)` to support optional `out` and `order`-keywords.
+- Add the attribute `RegionBoundary.tangents`, which contains a list of tangent unit vectors. For `quad` cell-types the length of this list is one and for `hexahedron` cell-types it is of length two.
+- Add `math.inplane(A, vectors)` to return the in-plane components of a symmetric tensor `A`, where the plane is defined by its standard unit vectors.
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.

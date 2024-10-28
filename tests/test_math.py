@@ -185,7 +185,18 @@ def test_math_linsteps():
     assert np.allclose(steps[-1], (0, 5))
 
 
+def test_inplane():
+    import felupe as fem
+
+    A = np.array([[0, 3, 5], [3, 1, 4], [5, 4, 2]], dtype=float)
+    vectors = [[1, 0, 0], [0, 1, 0]]
+
+    A_inplane = fem.math.inplane(A, vectors)
+    assert np.allclose(A_inplane.ravel(), [0, 3, 3, 1])
+
+
 if __name__ == "__main__":
     test_math()
     test_math_field()
     test_math_linsteps()
+    test_inplane()

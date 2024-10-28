@@ -180,7 +180,7 @@ class RegionQuadBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
-    
+
     See Also
     --------
     felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
@@ -233,7 +233,7 @@ class RegionQuadraticQuadBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
-    
+
     See Also
     --------
     felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
@@ -286,7 +286,7 @@ class RegionBiQuadraticQuadBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
-    
+
     See Also
     --------
     felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
@@ -388,7 +388,7 @@ class RegionHexahedronBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
-    
+
     See Also
     --------
     felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
@@ -473,7 +473,7 @@ class RegionQuadraticHexahedronBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
-    
+
     See Also
     --------
     felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an
@@ -556,7 +556,7 @@ class RegionTriQuadraticHexahedronBoundary(RegionBoundary):
          Hessian evaluated: False
 
        >>> region.plot().show()
-    
+
     See Also
     --------
     felupe.RegionBoundary : A numeric boundary-region as a combination of a mesh, an

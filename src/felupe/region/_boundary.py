@@ -243,9 +243,8 @@ def boundary_cells_hexahedron27(mesh):
 
 
 class RegionBoundary(Region):
-    r"""
-    A numeric boundary-region as a combination of a mesh, an element and a
-    numeric integration scheme (quadrature rule).
+    r"""A numeric boundary-region as a combination of a mesh, an element and a numeric
+    integration scheme (quadrature rule).
 
     Parameters
     ----------
@@ -291,6 +290,8 @@ class RegionBoundary(Region):
         Numeric *Differential area vectors*.
     normals : ndarray
         Area unit normal vectors.
+    tangents : list of ndarray
+        List of standard unit vectors.
     dV : ndarray
         Numeric *Differential volume element* as norm of *Differential area vectors*.
     dhdX : ndarray
@@ -318,11 +319,11 @@ class RegionBoundary(Region):
     Examples
     --------
     >>> import felupe as fem
-
+    >>>
     >>> mesh = fem.Rectangle(n=(3, 2))
     >>> element = fem.Quad()
     >>> quadrature = fem.GaussLegendreBoundary(order=1, dim=2)
-
+    >>>
     >>> region = fem.RegionBoundary(mesh, element, quadrature)
     >>> region
     <felupe Region object>
@@ -361,11 +362,109 @@ class RegionBoundary(Region):
             [-1., -0., -1., -0.,  1.,  1.]]])
 
     The partial derivative of the first element shape function w.r.t. the undeformed
-    coordinates evaluated at the second integration point of the last element of the
-    region:
+    coordinates, evaluated at the second integration point of the last element of the
+    region, is obtained by:
 
     >>> region.dhdX[0, :, 1, -1]
     array([2.        , 0.21132487])
+
+    The faces-cells may be used to create a mesh on the boundary.
+
+    >>> fem.Mesh(points=mesh.points, cells=region.mesh.cells_faces, cell_type="line")
+    <felupe Mesh object>
+      Number of points: 6
+      Number of cells:
+        line: 6
+
+    A second example shows the standard unit vectors and the area normals, located at
+    the quadrature points for all edges of a quadrilateral.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>> import numpy as np
+        >>> import pyvista as pv
+        >>>
+        >>> m = fem.Rectangle(n=2)
+        >>> mesh = m.copy()
+        >>> mesh.points[-1, 0] += 0.5
+        >>> edges = fem.RegionQuadBoundary(mesh)
+        >>>
+        >>> start = fem.Field(edges, values=mesh.points).interpolate()
+        >>> (direction,) = edges.tangents
+        >>>
+        >>> # 3d-data required for plotting
+        >>> start = np.insert(start, len(start), 0, axis=0)
+        >>> direction = np.insert(direction, len(direction), 0, axis=0)
+        >>> normal = np.insert(edges.normals, len(edges.normals), 0, axis=0)
+        >>>
+        >>> plotter = pv.Plotter()
+        ... actor = plotter.add_arrows(
+        ...     start.reshape(3, -1).T,
+        ...     direction.reshape(3, -1).T,
+        ...     show_scalar_bar=False,
+        ...     mag=1 / 7,
+        ...     color="red",
+        ...     label="tangents",
+        ... )
+        >>> actor = plotter.add_arrows(
+        ...     start.reshape(3, -1).T,
+        ...     normal.reshape(3, -1).T,
+        ...     show_scalar_bar=False,
+        ...     mag=1 / 7,
+        ...     color="green",
+        ...     label="normals",
+        ... )
+        >>> actor = plotter.add_legend()
+        >>> mesh.plot(plotter=plotter, style="wireframe").show()
+
+    A third example shows the standard unit vectors and the area normals, located at the
+    quadrature points for one face of a hexahedron.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>> import numpy as np
+        >>> import pyvista as pv
+        >>>
+        >>> m = fem.Cube(n=2)
+        >>> mesh = m.copy()
+        >>> mesh.points[-1, 0] += 0.5
+        >>> faces = fem.RegionHexahedronBoundary(mesh, mask=m.x == m.x.max())
+        >>>
+        >>> start = fem.Field(faces, values=mesh.points).interpolate()
+        >>> direction, direction_2 = faces.tangents
+        >>>
+        >>> plotter = pv.Plotter()
+        >>> actor = plotter.add_arrows(
+        ...     start.reshape(3, -1).T,
+        ...     direction.reshape(3, -1).T,
+        ...     show_scalar_bar=False,
+        ...     mag=1 / 7,
+        ...     color="red",
+        ...     label="tangents (1)",
+        ... )
+        >>> actor = plotter.add_arrows(
+        ...     start.reshape(3, -1).T,
+        ...     direction_2.reshape(3, -1).T,
+        ...     show_scalar_bar=False,
+        ...     mag=1 / 7,
+        ...     color="green",
+        ...     label="tangents (2)",
+        ... )
+        >>> actor = plotter.add_arrows(
+        ...     start.reshape(3, -1).T,
+        ...     faces.normals.reshape(3, -1).T,
+        ...     show_scalar_bar=False,
+        ...     mag=1 / 7,
+        ...     color="blue",
+        ...     label="normals",
+        ... )
+        >>> plotter.add_legend()
+        >>> mesh.plot(plotter=plotter, style="wireframe").show()
+
     """
 
     def __init__(
@@ -449,7 +548,7 @@ class RegionBoundary(Region):
         ):
             dA_1 = self.dXdr[:, 0][::-1]
             dA_1[0] = -dA_1[0]
-            
+
             dX_1 = -self.dXdr[:, 0]
             dX_1[0] = -dX_1[0]
 

@@ -1484,13 +1484,13 @@ def equivalent_von_mises(A):
 
 
 def inplane(A, vectors, **kwargs):
-    r"""Return the in-plane components of symmetric 2x2 or 3x3 tensors, where the planes
-    are defined by their standard unit vectors.
+    r"""Return the in-plane components of 2d or 3d second order tensors, where the
+    planes are defined by their standard unit vectors.
 
     Parameters
     ----------
     A : ndarray of shape (N, N, ...)
-        Symmetric second-order tensors.
+        Second-order tensors.
     vectors : list of ndarray of shape (N, ...)
         List of standard unit vectors of the planes.
     **kwargs : dict, optional
@@ -1498,6 +1498,10 @@ def inplane(A, vectors, **kwargs):
 
     Notes
     -----
+    ..  note::
+
+        Out-of-plane tensor components are ignored.
+
     The first two axes of the tensor and the first axis of each vector are the
     tensor/vector dimensions and all remaining trailing axes are treated as batch
     dimensions.
@@ -1511,7 +1515,7 @@ def inplane(A, vectors, **kwargs):
     Returns
     -------
     ndarray of shape (N - 1, N - 1, ...)
-        The in-plane components of symmetric (N, N) tensors.
+        In-plane components.
 
     Examples
     --------
@@ -1528,8 +1532,4 @@ def inplane(A, vectors, **kwargs):
 
     vectors = np.array(vectors)
 
-    i, j = np.triu_indices(len(vectors))
-    ij = np.zeros((len(vectors), len(vectors)), dtype=int)
-    ij[i, j] = ij[j, i] = np.arange(len(i), dtype=int)
-
-    return np.einsum("ij...,ai...,aj...->a...", A, vectors[i], vectors[j], **kwargs)[ij]
+    return np.einsum("ij...,ai...,bj...->ab...", A, vectors, vectors, **kwargs)

@@ -1,3 +1,4 @@
+from . import jax
 from ._base import CompositeMaterial, ConstitutiveMaterial, constitutive_material
 from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
@@ -97,4 +98,5 @@ __all__ = [
     "constitutive_material",
     "CompositeMaterial",
     "Volumetric",
+    "jax",
 ]

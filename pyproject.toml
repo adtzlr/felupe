@@ -65,6 +65,7 @@ docs = [
     "sphinx-gallery",
     "pypandoc",
 ]
+constitution = ["jax"]
 examples = [
     "contique",
     "imageio",
@@ -81,8 +82,8 @@ progress = ["tqdm"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
 
-test = ["felupe[io,plot]"]
-all = ["felupe[io,parallel,plot,progress,view]"]
+test = ["felupe[io,constitution,plot]"]
+all = ["felupe[io,constitution,parallel,plot,progress,view]"]
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

@@ -55,52 +55,62 @@ def test_vmap():
 
 
 def test_hyperelastic_jax():
-    import jax.numpy as jnp
+    try:
+        import jax.numpy as jnp
 
-    def W(C, C10, K):
-        I3 = jnp.linalg.det(C)
-        J = jnp.sqrt(I3)
-        I1 = I3 ** (-1 / 3) * jnp.trace(C)
-        return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2
+        def W(C, C10, K):
+            I3 = jnp.linalg.det(C)
+            J = jnp.sqrt(I3)
+            I1 = I3 ** (-1 / 3) * jnp.trace(C)
+            return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2
 
-    umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
-    mesh = fem.Cube(n=2)
-    region = fem.RegionHexahedron(mesh)
-    field = fem.FieldContainer([fem.Field(region, dim=3)])
+        umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-    solid = fem.SolidBody(umat=umat, field=field)
+        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        solid = fem.SolidBody(umat=umat, field=field)
 
-    move = fem.math.linsteps([0, 1], num=3)
-    ramp = {boundaries["move"]: move}
-    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-    job = fem.Job(steps=[step])
-    job.evaluate(tol=1e-4)
+        move = fem.math.linsteps([0, 1], num=3)
+        ramp = {boundaries["move"]: move}
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        job = fem.Job(steps=[step])
+        job.evaluate(tol=1e-4)
+
+    except ModuleNotFoundError:
+        pass
 
 
 def test_hyperelastic_jax_statevars():
-    import jax.numpy as jnp
+    try:
+        import jax.numpy as jnp
 
-    def W(C, statevars, C10, K):
-        I3 = jnp.linalg.det(C)
-        J = jnp.sqrt(I3)
-        I1 = I3 ** (-1 / 3) * jnp.trace(C)
-        statevars_new = I1
-        return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2, statevars_new
+        def W(C, statevars, C10, K):
+            I3 = jnp.linalg.det(C)
+            J = jnp.sqrt(I3)
+            I1 = I3 ** (-1 / 3) * jnp.trace(C)
+            statevars_new = I1
+            return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2, statevars_new
 
-    umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, nstatevars=1, jit=True)
-    mesh = fem.Cube(n=2)
-    region = fem.RegionHexahedron(mesh)
-    field = fem.FieldContainer([fem.Field(region, dim=3)])
+        umat = fem.constitution.jax.Hyperelastic(
+            W, C10=0.5, K=2.0, nstatevars=1, jit=True
+        )
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-    solid = fem.SolidBody(umat=umat, field=field)
+        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        solid = fem.SolidBody(umat=umat, field=field)
 
-    move = fem.math.linsteps([0, 1], num=3)
-    ramp = {boundaries["move"]: move}
-    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-    job = fem.Job(steps=[step])
-    job.evaluate(tol=1e-4)
+        move = fem.math.linsteps([0, 1], num=3)
+        ramp = {boundaries["move"]: move}
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        job = fem.Job(steps=[step])
+        job.evaluate(tol=1e-4)
+
+    except ModuleNotFoundError:
+        pass
 
 
 if __name__ == "__main__":

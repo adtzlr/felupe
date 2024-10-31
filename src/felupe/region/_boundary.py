@@ -553,7 +553,7 @@ class RegionBoundary(Region):
             dX_1[0] = -dX_1[0]
 
             tangents.append(dX_1 / np.linalg.norm(dX_1, axis=0))
-            
+
             if self.ensure_3d:
                 tangents[0] = np.insert(tangents[0], len(tangents[0]), 0, axis=0)
                 other_tangent = np.zeros_like(tangents[0])

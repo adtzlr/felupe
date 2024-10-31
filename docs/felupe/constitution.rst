@@ -13,6 +13,7 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
    constitution/hyperelasticity
    constitution/lagrange
    constitution/tools
+   constitution/jax
 
 There are many different pre-defined constitutive material formulations available, including definitions for linear-elasticity, small-strain plasticity, hyperelasticity or pseudo-elasticity. The generation of user materials may be simplified when using frameworks for user-defined functions, like hyperelasticity (with automatic differentiation) or a small-strain based framework with state variables. However, the most general case is given by a framework with functions for the evaluation of stress and elasticity tensors in terms of the deformation gradient.
 

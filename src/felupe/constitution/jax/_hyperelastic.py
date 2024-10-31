@@ -145,6 +145,7 @@ class Hyperelastic(Material):
 
     ..  code-block::
 
+        import felupe as fem
         import jax.numpy as jnp
 
         def neo_hooke(C, mu):
@@ -161,6 +162,7 @@ class Hyperelastic(Material):
 
     ..  code-block::
 
+        import felupe as fem
         import jax.numpy as np
 
         def viscoelastic(C, Cin, mu, eta, dtime):
@@ -170,14 +172,14 @@ class Hyperelastic(Material):
             Cu = jnp.linalg.det(C) ** (-1 / 3) * C
 
             # update of state variables by evolution equation
-            Ci = Cin + mu / eta * dtime * Cu
+            Ci = Cin.reshape(3, 3) + mu / eta * dtime * Cu
             Ci = jnp.linalg.det(Ci) ** (-1 / 3) * Ci
 
             # first invariant of elastic part of right Cauchy-Green deformation tensor
             I1 = jnp.trace(Cu @ jnp.linalg.inv(Ci))
 
             # strain energy function and state variable
-            return mu / 2 * (I1 - 3), Ci
+            return mu / 2 * (I1 - 3), Ci.ravel()
 
         umat = fem.constitution.jax.Hyperelastic(
             viscoelastic, mu=1, eta=1, dtime=1, nstatevars=9
@@ -242,7 +244,7 @@ class Hyperelastic(Material):
 
         kwargs_jax = dict(in_axes=-1, out_axes=-1)
         if nstatevars > 0:
-            kwargs_jax["in_axes"] = (-1, *([-1] * nstatevars))
+            kwargs_jax["in_axes"] = (-1, -1)
 
         self._grad = vmap2(jax.grad(self.fun, has_aux=has_aux), **kwargs_jax)
         self._hess = vmap2(

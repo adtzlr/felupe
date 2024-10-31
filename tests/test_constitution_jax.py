@@ -31,27 +31,32 @@ import felupe as fem
 
 
 def test_vmap():
-    def f(x, a=1.0):
-        return x
+    try:
 
-    def g(x, y, a=1.0, **kwargs):
-        return x
+        def f(x, a=1.0):
+            return x
 
-    vf = fem.constitution.jax.vmap(f)
-    vg = fem.constitution.jax.vmap(g)
+        def g(x, y, a=1.0, **kwargs):
+            return x
 
-    x = np.eye(3).reshape(1, 3, 3) * np.ones((10, 1, 1))
+        vf = fem.constitution.jax.vmap(f)
+        vg = fem.constitution.jax.vmap(g)
 
-    z = vf(x, a=1.0)
+        x = np.eye(3).reshape(1, 3, 3) * np.ones((10, 1, 1))
 
-    assert np.allclose(z, vf(x, 1.0))
-    assert np.allclose(z, vf(a=1.0, x=x))
+        z = vf(x, a=1.0)
 
-    with pytest.raises(TypeError):
-        vf(x, a=1.0, b=2.0)
+        assert np.allclose(z, vf(x, 1.0))
+        assert np.allclose(z, vf(a=1.0, x=x))
 
-    # does not raise an error because of `g(..., **kwargs)`
-    assert np.allclose(z, vg(x, a=1.0, b=2.0))
+        with pytest.raises(TypeError):
+            vf(x, a=1.0, b=2.0)
+
+        # does not raise an error because of `g(..., **kwargs)`
+        assert np.allclose(z, vg(x, a=1.0, b=2.0))
+
+    except ModuleNotFoundError:
+        pass
 
 
 def test_hyperelastic_jax():

@@ -34,6 +34,11 @@ This page contains Total- and Updated-Lagrange material formulations with automa
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: felupe.constitution.autodiff.tensortrax.Material
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autofunction:: felupe.morph
 
 .. autofunction:: felupe.morph_representative_directions

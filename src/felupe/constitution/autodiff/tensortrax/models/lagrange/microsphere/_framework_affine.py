@@ -1,8 +1,8 @@
 from tensortrax.math import einsum, sqrt, trace
 from tensortrax.math.linalg import det, inv
 
-from .....quadrature import BazantOh
-from ..._total_lagrange import total_lagrange
+from .......quadrature import BazantOh
+from ...._total_lagrange import total_lagrange
 
 
 @total_lagrange

@@ -15,7 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-from ...lagrange.models import morph_uniaxial
+from ..lagrange import morph_uniaxial
 from .microsphere import affine_stretch_statevars
 
 
@@ -43,9 +43,10 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
         :context:
 
         >>> import felupe as fem
+        >>> import felupe.constitution.autodiff.tensortrax.models as models
         >>>
         >>> umat = fem.Hyperelastic(
-        ...     fem.constitution.hyperelasticity.models.morph_representative_directions,
+        ...     models.hyperelastic.morph_representative_directions,
         ...     p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
         ...     nstatevars=84,
         ... )

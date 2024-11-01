@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from .._base import ConstitutiveMaterial
-from ..hyperelasticity.core import NeoHookeCompressible
+from ..hyperelasticity import NeoHookeCompressible
 from ._lame_converter import lame_converter
 
 

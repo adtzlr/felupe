@@ -39,8 +39,8 @@ def test_vmap():
         def g(x, y, a=1.0, **kwargs):
             return x
 
-        vf = fem.constitution.jax.vmap(f)
-        vg = fem.constitution.jax.vmap(g)
+        vf = fem.constitution.autodiff.jax.vmap(f)
+        vg = fem.constitution.autodiff.jax.vmap(g)
 
         x = np.eye(3).reshape(1, 3, 3) * np.ones((10, 1, 1))
 
@@ -69,8 +69,10 @@ def test_hyperelastic_jax():
             I1 = I3 ** (-1 / 3) * jnp.trace(C)
             return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2
 
-        umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, parallel=True)
-        umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
+        umat = fem.constitution.autodiff.jax.Hyperelastic(
+            W, C10=0.5, K=2.0, parallel=True
+        )
+        umat = fem.constitution.autodiff.jax.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
@@ -101,7 +103,7 @@ def test_hyperelastic_jax_statevars():
 
         W.kwargs = {"C10": 0.5}
 
-        umat = fem.constitution.jax.Hyperelastic(
+        umat = fem.constitution.autodiff.jax.Hyperelastic(
             W, C10=0.5, K=2.0, nstatevars=1, jit=True
         )
         mesh = fem.Cube(n=2)

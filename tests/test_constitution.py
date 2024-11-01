@@ -29,6 +29,7 @@ import numpy as np
 import pytest
 
 import felupe as fem
+import felupe.constitution.autodiff.tensortrax.models as models
 
 
 def pre(sym, add_identity, add_random=False):
@@ -312,7 +313,7 @@ def test_umat_hyperelastic_statevars():
             True,
         ),
         (
-            fem.constitution.hyperelasticity.models.morph_representative_directions,
+            models.hyperelastic.morph_representative_directions,
             dict(
                 p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117], nstatevars=84
             ),

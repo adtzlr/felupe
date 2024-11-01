@@ -19,10 +19,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 
-from .._material import Material
+from ..._material import Material as MaterialDefault
 
 
-class MaterialAD(Material):
+class Material(MaterialDefault):
     r"""A material definition with a given function for the partial derivative of the
     strain energy function w.r.t. the deformation gradient tensor with Automatic
     Differentiation provided by `tensortrax <https://github.com/adtzlr/tensortrax>`_.

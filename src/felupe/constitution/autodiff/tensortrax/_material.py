@@ -36,7 +36,7 @@ class Material(MaterialDefault):
         ``fun = lambda F, statevars, **kwargs: [P, statevars_new]`` for functions
         with state variables. The deformation gradient tensor will be a
         :class:`tensortrax.Tensor` when the function is evaluated. It is important to
-        only use differentiable math-functions from ``tensortrax.math``!
+        use only differentiable math-functions from ``tensortrax.math``!
     nstatevars : int, optional
         Number of state variables (default is 0).
     parallel : bool, optional
@@ -53,7 +53,7 @@ class Material(MaterialDefault):
     deformation gradient tensor :math:`\boldsymbol{F}`.
 
     ..  warning::
-        It is important to only use differentiable math-functions from
+        It is important to use only differentiable math-functions from
         ``tensortrax.math``!
 
     ..  math::
@@ -65,6 +65,7 @@ class Material(MaterialDefault):
 
     ..  code-block::
 
+        import felupe as fem
         import tensortrax.math as tm
 
         def neo_hooke(F, mu):
@@ -81,6 +82,7 @@ class Material(MaterialDefault):
 
     ..  code-block::
 
+        import felupe as fem
         import tensortrax.math as tm
 
         def viscoelastic(F, Cin, mu, eta, dtime):

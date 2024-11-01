@@ -18,8 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ....math import cdya_ik, cdya_il, det, dot, dya, identity, inv, trace, transpose
-from ..._base import ConstitutiveMaterial
+from ...math import cdya_ik, cdya_il, det, dot, dya, identity, inv, trace, transpose
+from .._base import ConstitutiveMaterial
 
 
 class NeoHookeCompressible(ConstitutiveMaterial):

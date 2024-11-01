@@ -1,17 +1,12 @@
-from . import jax
 from ._base import CompositeMaterial, ConstitutiveMaterial, constitutive_material
 from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
-from .hyperelasticity import Hyperelastic
-from .hyperelasticity.core import (
-    NeoHooke,
-    NeoHookeCompressible,
-    OgdenRoxburgh,
-    Volumetric,
-)
-from .hyperelasticity.models import (
+from .autodiff.tensortrax import Hyperelastic
+from .autodiff.tensortrax import Material as MaterialAD
+from .autodiff.tensortrax import total_lagrange, updated_lagrange
+from .autodiff.tensortrax.models.hyperelastic import (
     alexander,
     anssari_benam_bucchi,
     arruda_boyce,
@@ -29,8 +24,8 @@ from .hyperelasticity.models import (
     van_der_waals,
     yeoh,
 )
-from .lagrange import MaterialAD, total_lagrange, updated_lagrange
-from .lagrange.models import morph, morph_representative_directions
+from .autodiff.tensortrax.models.lagrange import morph, morph_representative_directions
+from .hyperelasticity import NeoHooke, NeoHookeCompressible, OgdenRoxburgh, Volumetric
 from .linear_elasticity import (
     LinearElastic,
     LinearElasticLargeStrain,
@@ -98,5 +93,4 @@ __all__ = [
     "constitutive_material",
     "CompositeMaterial",
     "Volumetric",
-    "jax",
 ]

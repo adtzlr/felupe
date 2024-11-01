@@ -1,19 +1,20 @@
 """
-Hyperelastic material model formulations.
-
-This module contains automatic-differentiation (ad) and non-ad based hyperelastic
-material model formulations:
-
-a) :class:`~felupe.Hyperelastic` to be used with strain energy density functions for
-   material model formulations from :mod:`constitution.hyperelasticity.models` which are
-   implemented with automatic differentiation using
-   `tensortrax <https://github.com/adtzlr/tensortrax>`_ and
-
-b) manually-defined hyperelastic material model formulations (no automatic
-   differentation) :mod:`constitution.hyperelasticity.core`.
+constitution.hyperelasticity
+============================
+This module contains manually (no automatic differentiation) defined isotropic
+hyperelastic constitutive material formulations with gradients and hessians of strain
+energy density functions. For more sophisticated material model formulations see
+:class:`~felupe.Hyperelastic`.
 """
-from ._hyperelastic import Hyperelastic
+
+from ._neo_hooke_compressible import NeoHookeCompressible
+from ._neo_hooke_nearly_incompressible import NeoHooke
+from ._ogden_roxburgh import OgdenRoxburgh
+from ._volumetric import Volumetric
 
 __all__ = [
-    "Hyperelastic",
+    "NeoHooke",
+    "NeoHookeCompressible",
+    "OgdenRoxburgh",
+    "Volumetric",
 ]

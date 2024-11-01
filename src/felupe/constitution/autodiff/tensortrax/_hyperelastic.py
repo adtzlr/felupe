@@ -19,8 +19,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 
-from ...math import cdya_ik, dot, transpose
-from .._material import Material
+from ....math import cdya_ik, dot, transpose
+from ..._material import Material
 
 
 class Hyperelastic(Material):

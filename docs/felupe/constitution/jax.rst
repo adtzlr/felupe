@@ -11,11 +11,11 @@ This page contains hyperelastic material model formulations with automatic diffe
 
 .. autosummary::
    
-   constitution.jax.Hyperelastic
+   constitution.autodiff.jax.Hyperelastic
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.constitution.jax.Hyperelastic
+.. autoclass:: felupe.constitution.autodiff.jax.Hyperelastic
    :members:
    :undoc-members:
    :inherited-members:

@@ -19,7 +19,7 @@ from tensortrax.math import array, maximum, sqrt
 from tensortrax.math.linalg import det, eigvalsh, expm, inv
 from tensortrax.math.special import dev, from_triu_1d, sym, triu_1d, try_stack
 
-from .._total_lagrange import total_lagrange
+from ..._total_lagrange import total_lagrange
 
 
 @total_lagrange

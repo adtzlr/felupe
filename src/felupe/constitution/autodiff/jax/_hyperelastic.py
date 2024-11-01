@@ -22,7 +22,7 @@ from functools import wraps
 
 import numpy as np
 
-from .._material import Material
+from ..._material import Material
 
 
 def vmap(fun, in_axes=0, out_axes=0, **kwargs):
@@ -96,9 +96,13 @@ def vmap2(fun, in_axes=0, out_axes=0, **kwargs):
 
 
 def total_lagrange(fun):
+    import jax.numpy as jnp
+
     @wraps(fun)
     def evaluate(F, *args, **kwargs):
-        C = F.T @ F
+        i, j = jnp.triu_indices(3)
+        C_triu = jnp.einsum("ia,ia->a", F[:, i], F[:, j])
+        C = C_triu[jnp.array([[0, 1, 2], [1, 3, 4], [2, 4, 5]])]
         return fun(C, *args, **kwargs)
 
     return evaluate

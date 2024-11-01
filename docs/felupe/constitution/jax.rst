@@ -3,7 +3,7 @@
 JAX-based Materials
 ~~~~~~~~~~~~~~~~~~~
 
-This page contains hyperelastic material model formulations with automatic differentiation using :mod:`jax`. These material model formulations are defined by a strain energy density function.
+This page contains material model formulations with automatic differentiation using :mod:`jax`.
 
 **Frameworks**
 
@@ -12,6 +12,13 @@ This page contains hyperelastic material model formulations with automatic diffe
 .. autosummary::
    
    constitution.autodiff.jax.Hyperelastic
+   constitution.autodiff.jax.Material
+
+**Tools**
+
+.. autosummary::
+   
+   constitution.autodiff.jax.vmap
 
 **Detailed API Reference**
 
@@ -19,3 +26,10 @@ This page contains hyperelastic material model formulations with automatic diffe
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autoclass:: felupe.constitution.autodiff.jax.Material
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autofunction:: felupe.constitution.autodiff.jax.vmap

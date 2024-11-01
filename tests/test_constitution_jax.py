@@ -123,7 +123,79 @@ def test_hyperelastic_jax_statevars():
         pass
 
 
+def test_material_jax():
+    try:
+        import jax.numpy as jnp
+
+        def dWdF(F, C10, K):
+            J = jnp.linalg.det(F)
+            C = F.T @ F
+            Cu = J ** (-2 / 3) * C
+            dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+
+            P = 2 * C10 * F @ dev(Cu) @ jnp.linalg.inv(C)
+            return P + K * (J - 1) * J * jnp.linalg.inv(C)
+
+        umat = fem.constitution.autodiff.jax.Material(
+            dWdF, C10=0.5, K=2.0, parallel=True
+        )
+        umat = fem.constitution.autodiff.jax.Material(dWdF, C10=0.5, K=2.0, jit=True)
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        solid = fem.SolidBody(umat=umat, field=field)
+
+        move = fem.math.linsteps([0, 1], num=3)
+        ramp = {boundaries["move"]: move}
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        job = fem.Job(steps=[step])
+        job.evaluate(tol=1e-4)
+
+    except ModuleNotFoundError:
+        pass
+
+
+def test_material_jax_statevars():
+    try:
+        import jax.numpy as jnp
+
+        def dWdF(F, statevars, C10, K):
+            J = jnp.linalg.det(F)
+            C = F.T @ F
+            Cu = J ** (-2 / 3) * C
+            dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+
+            P = 2 * C10 * F @ dev(Cu) @ jnp.linalg.inv(C)
+            statevars_new = J
+            return P + K * (J - 1) * J * jnp.linalg.inv(C), statevars_new
+
+        dWdF.kwargs = {"C10": 0.5}
+
+        umat = fem.constitution.autodiff.jax.Material(
+            dWdF, C10=0.5, K=2.0, nstatevars=1, jit=True
+        )
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        solid = fem.SolidBody(umat=umat, field=field)
+
+        move = fem.math.linsteps([0, 1], num=3)
+        ramp = {boundaries["move"]: move}
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        job = fem.Job(steps=[step])
+        job.evaluate(tol=1e-4)
+
+    except ModuleNotFoundError:
+        pass
+
+
 if __name__ == "__main__":
     test_vmap()
     test_hyperelastic_jax()
     test_hyperelastic_jax_statevars()
+    test_material_jax()
+    test_material_jax_statevars()

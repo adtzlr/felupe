@@ -79,11 +79,12 @@ sphinx_gallery_conf = {
     "within_subsection_order": FileNameSortKey,
 }
 intersphinx_mapping = {
+    "jax": ("https://jax.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/version/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "tensortrax": ("https://tensortrax.readthedocs.io/en/latest/", None),
 }
 

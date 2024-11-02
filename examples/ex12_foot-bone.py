@@ -3,24 +3,16 @@ Voxelized Foot Bone
 -------------------
 A :class:`~felupe.Region` on a voxel-based mesh with uniform hexahedrons should be
 created with ``uniform=True`` to enhance performance.
-
-.. admonition:: This example requires external packages.
-   :class: hint
-   
-   .. code-block::
-      
-      pip install pypardiso
 """
 
 import numpy as np
-import pypardiso
 import pyvista as pv
 from pyvista import examples
 
 import felupe as fem
 
 surface = examples.download_foot_bones()
-voxels = pv.voxelize(surface, density=surface.length / 50)
+voxels = pv.voxelize(surface, density=0.6)
 
 mesh = fem.Mesh(
     points=voxels.points,
@@ -42,7 +34,7 @@ bottom = fem.MultiPointContact(
 )
 
 step = fem.Step(items=[solid, gravity, bottom], boundaries=boundaries)
-job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve, parallel=True)
+job = fem.Job(steps=[step]).evaluate()
 plotter = solid.plot(
     "Principal Values of Cauchy Stress",
     show_edges=False,

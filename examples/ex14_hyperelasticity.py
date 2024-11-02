@@ -107,7 +107,7 @@ import felupe as fem
 # ..  note::
 #     This material formulation is also available in FElupe as
 #     :func:`~felupe.extended_tube` among other
-#     :ref:`hyperelastic material models <felupe-api-constitution-hyperelasticity>`.
+#     :ref:`hyperelastic material models <felupe-api-constitution-autodiff>`.
 def extended_tube(C, Gc, δ, Ge, β):
     "Strain energy density function of the Extended Tube material formulation."
 

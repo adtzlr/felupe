@@ -8,7 +8,7 @@ rubber wheel by a frictionless contact on the bottom. The vertical reaction forc
 then carried out for the rotation angles. The MORPH material model is implemented as a
 second Piola-Kirchhoff stress-based formulation with automatic differentiation (JAX).
 The Tresca invariant of the distortional part of the right Cauchy-Green deformation
-tensor is used as internal state variable, see Eq. :eq:`morph-state`.
+tensor is used as internal state variable, see Eq. :eq:`morph-state-ex`.
 
 ..  warning::
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
@@ -19,7 +19,7 @@ tensor is used as internal state variable, see Eq. :eq:`morph-state`.
     provides better stability but is computationally more costly [2]_, [3]_.
 
 ..  math::
-    :label: morph-state
+    :label: morph-state-ex
     
     \boldsymbol{C} &= \boldsymbol{F}^T \boldsymbol{F}
     
@@ -34,10 +34,10 @@ tensor is used as internal state variable, see Eq. :eq:`morph-state`.
     \hat{C}_T^S &= \max \left( \hat{C}_T, \hat{C}_{T,n}^S \right)
 
 A sigmoid-function is used inside the deformation-dependent variables :math:`\alpha`,
-:math:`\beta` and :math:`\gamma`, see Eq. :eq:`morph-sigmoid`.
+:math:`\beta` and :math:`\gamma`, see Eq. :eq:`morph-sigmoid-ex`.
 
 ..  math::
-    :label: morph-sigmoid
+    :label: morph-sigmoid-ex
     
     f(x) &= \frac{1}{\sqrt{1 + x^2}}
     
@@ -48,7 +48,7 @@ A sigmoid-function is used inside the deformation-dependent variables :math:`\al
     \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
 
 The rate of deformation is described by the Lagrangian tensor and its Tresca-invariant,
-see Eq. :eq:`morph-rate-of-deformation`.
+see Eq. :eq:`morph-rate-of-deformation-ex`.
 
 ..  note::
     It is important to evaluate the incremental right Cauchy-Green tensor by the
@@ -56,7 +56,7 @@ see Eq. :eq:`morph-rate-of-deformation`.
     with respect to the deformation gradient tensor.
 
 ..  math::
-    :label: morph-rate-of-deformation
+    :label: morph-rate-of-deformation-ex
     
     \hat{\boldsymbol{L}} &= \text{sym}\left( 
             \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C}) 
@@ -71,11 +71,11 @@ see Eq. :eq:`morph-rate-of-deformation`.
     \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
 
 The additional stresses evolve between the limiting stresses, see Eq.
-:eq:`morph-stresses`. The additional deviatoric-enforcement terms [1]_ are neglected in
+:eq:`morph-stresses-ex`. The additional deviatoric-enforcement terms [1]_ are neglected in
 this example.
 
 ..  math::
-    :label: morph-stresses
+    :label: morph-stresses-ex
     
     \boldsymbol{S}_L &= \left(
         \gamma \exp \left(p_7 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
@@ -93,16 +93,20 @@ this example.
 
 ..  note::
     Only the upper-triangle entries of the symmetric stress-tensor state
-    variables are stored in the solid body. Hence, it is necessary to extract such
-    variables with :func:`tm.special.from_triu_1d` and export them as
-    :func:`tm.special.triu_1d`.
+    variables are stored in the solid body.
+
 """
 # sphinx_gallery_thumbnail_number = -1
+# sphinx_gallery_start_ignore
+PYVISTA_GALLERY_FORCE_STATIC_IN_DOCUMENT = True
+# sphinx_gallery_end_ignore
+
+import jax.numpy as jnp
 import numpy as np
+from jax.scipy.linalg import expm
+
 import felupe as fem
 import felupe.constitution.jax as mat
-from jax.scipy.linalg import expm
-import jax.numpy as jnp
 
 
 def morph(F, statevars, p):
@@ -176,7 +180,8 @@ umat = mat.Material(
 # %%
 # .. note::
 #    The MORPH material model formulation is also available in FElupe, see
-#    :class:`~felupe.constitution.jax.models.lagrange.morph`.
+#    :class:`~felupe.morph` (tensortrax) and
+#    :class:`~felupe.constitution.jax.models.lagrange.morph` (JAX).
 #
 # The force-stress curves are shown for uniaxial incompressible tension cycles.
 ux = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1, 2.5], num=(5, 5, 10, 10, 15, 15, 15))
@@ -215,7 +220,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 180], num=9)
+angles_deg = fem.math.linsteps([0, 120], num=6)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]

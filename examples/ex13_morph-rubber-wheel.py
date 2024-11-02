@@ -6,9 +6,9 @@ This example contains a simulation of a rotating rubber wheel in plane strain wi
 [1]_. While the rotation is increased, a constant vertical compression is applied to the
 rubber wheel by a frictionless contact on the bottom. The vertical reaction force is
 then carried out for the rotation angles. The MORPH material model is implemented as a
-second Piola-Kirchhoff stress-based formulation with automatic differentiation. The
-Tresca invariant of the distortional part of the right Cauchy-Green deformation tensor
-is used as internal state variable, see Eq. :eq:`morph-state`.
+second Piola-Kirchhoff stress-based formulation with automatic differentiation (JAX).
+The Tresca invariant of the distortional part of the right Cauchy-Green deformation
+tensor is used as internal state variable, see Eq. :eq:`morph-state`.
 
 ..  warning::
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
@@ -99,86 +99,87 @@ this example.
 """
 # sphinx_gallery_thumbnail_number = -1
 import numpy as np
-import tensortrax.math as tm
-
 import felupe as fem
+import felupe.constitution.jax as mat
+from jax.scipy.linalg import expm
+import jax.numpy as jnp
 
 
-@fem.total_lagrange
-def morph(F, statevars_old, p):
+def morph(F, statevars, p):
     "MORPH material model formulation."
 
     # right Cauchy-Green deformation tensor
     C = F.T @ F
 
     # extract old state variables
-    CTSn = tm.array(statevars_old[0], like=C[0, 0])
-    Cn = tm.special.from_triu_1d(statevars_old[1:7], like=C)
-    SAn = tm.special.from_triu_1d(statevars_old[7:13], like=C)
+    CTSn = statevars[0]
+    from_triu = lambda C: C[jnp.array([[0, 1, 2], [1, 3, 4], [2, 4, 5]])]
+    Cn = from_triu(statevars[1:7])
+    SAn = from_triu(statevars[7:13])
 
     # distortional part of right Cauchy-Green deformation tensor
-    I3 = tm.linalg.det(C)
+    I3 = jnp.linalg.det(C)
     CG = C * I3 ** (-1 / 3)
 
     # inverse of and incremental right Cauchy-Green deformation tensor
-    invC = tm.linalg.inv(C)
+    invC = jnp.linalg.inv(C)
     dC = C - Cn
 
     # eigenvalues of right Cauchy-Green deformation tensor (sorted in ascending order)
-    λCG = tm.linalg.eigvalsh(CG)
+    ε = jnp.diag(jnp.array([1e-4, -1e-4, 0]))
+    eigvalsh_ε = lambda C: jnp.linalg.eigvalsh(C + ε)
+    λCG = eigvalsh_ε(CG)
 
     # Tresca invariant of distortional part of right Cauchy-Green deformation tensor
     CTG = λCG[-1] - λCG[0]
 
     # maximum Tresca invariant in load history
-    CTS = tm.maximum(CTG, CTSn)
+    CTS = jnp.maximum(CTG, CTSn)
 
-    def f(x):
+    def sigmoid(x):
         "Algebraic sigmoid function."
-        return 1 / tm.sqrt(1 + x**2)
+        return 1 / jnp.sqrt(1 + x**2)
 
     # material parameters
-    α = p[0] + p[1] * f(p[2] * CTS)
-    β = p[3] * f(p[2] * CTS)
-    γ = p[4] * CTS * (1 - f(CTS / p[5]))
+    α = p[0] + p[1] * sigmoid(p[2] * CTS)
+    β = p[3] * sigmoid(p[2] * CTS)
+    γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
 
-    LG = tm.special.sym(tm.special.dev(invC @ dC)) @ CG
-    λLG = tm.linalg.eigvalsh(LG)
+    dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+    sym = lambda C: (C + C.T) / 2
+
+    LG = sym(dev(invC @ dC)) @ CG
+    λLG = eigvalsh_ε(LG)
     LTG = λLG[-1] - λLG[0]
-    LG_LTG = tm.if_else(LTG > 0, LG / LTG, LG)
 
     # limiting stresses "L" and additional stresses "A"
-    SL = (γ * tm.linalg.expm(p[6] * LG_LTG * CTG / CTS) + p[7] * LG_LTG) @ invC
+    SL = (γ * expm(p[6] * LG / LTG * CTG / CTS) + p[7] * LG / LTG) @ invC
     SA = (SAn + β * LTG * SL) / (1 + β * LTG)
 
     # second Piola-Kirchhoff stress tensor
-    S = 2 * α * tm.special.dev(CG) @ invC + tm.special.dev(SA @ C) @ invC
+    S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
 
-    try:  # update state variables
-        statevars_new = np.stack(
-            [CTS.x, *tm.special.triu_1d(C).x, *tm.special.triu_1d(SA).x]
-        )
-    except:
-        # not possible (and not necessary) during AD-based hessian evaluation
-        statevars_new = statevars_old
+    # update the state variables
+    i, j = jnp.triu_indices(3)
+    to_triu = lambda C: C[i, j]
+    statevars_new = jnp.concatenate([jnp.array([CTS]), to_triu(C), to_triu(SA)])
 
-    return S, statevars_new
+    return F @ S, statevars_new
 
 
-umat = fem.MaterialAD(
+umat = mat.Material(
     morph,
     p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
     nstatevars=13,
-    # parallel=True,
 )
 
 # %%
 # .. note::
 #    The MORPH material model formulation is also available in FElupe, see
-#    :class:`~felupe.morph`.
+#    :class:`~felupe.constitution.jax.models.lagrange.morph`.
 #
 # The force-stress curves are shown for uniaxial incompressible tension cycles.
-ux = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1, 2.5], num=(10, 10, 20, 20, 30, 30, 30))
+ux = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1, 2.5], num=(5, 5, 10, 10, 15, 15, 15))
 ax = umat.plot(
     ux=ux,
     bx=None,
@@ -214,7 +215,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 120], num=6)
+angles_deg = fem.math.linsteps([0, 180], num=9)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]

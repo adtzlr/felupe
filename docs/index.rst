@@ -72,6 +72,7 @@ where ``[all]`` is a combination of ``[io,parallel,plot,progress,view]`` and ins
 In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
 
 * `einsumt <https://github.com/mrkwjc/einsumt>`_ for parallel (threaded) assembly
+* `jax <https://github.com/jax-ml/jax>`_ for JAX-based material formulations
 * `h5py <https://github.com/h5py/h5py>`_ for writing XDMF result files
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs
 * `meshio <https://github.com/nschloe/meshio>`_ for mesh-related I/O

@@ -22,6 +22,9 @@ All notable changes to this project will be documented in this file. The format 
 - Fix the number of points for non-disconnected dual meshes. This reduces the assembled (sparse) vector- and matrix-shapes, which are defined on mixed-fields.
 - Fix wrong results of `ConstitutiveMaterial.plot()` if any stretch is non-physical, i.e. lower or equal zero. This raises an error now.
 
+# Removed
+- Remove the unused, deprecated aliases `UserMaterial`, `UserMaterialStrain` and `UserMaterialHyperelastic`.
+
 ## [9.0.0] - 2024-09-06
 
 ### Added

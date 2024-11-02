@@ -17,7 +17,7 @@ be the preferred option.
 
 It is straightforward to switch between these backends.
 
-..  tab:: tensortrax
+..  tab:: tensortrax (default)
 
     ..  code-block::
         

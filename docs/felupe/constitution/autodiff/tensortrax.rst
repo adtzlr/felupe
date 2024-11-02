@@ -43,7 +43,7 @@ These material model formulations are defined by a strain energy density functio
    van_der_waals
    yeoh
 
-**Material Models for** :class:`~felupe.constitution.tensortrax.Material`
+**Material Models for** :class:`felupe.constitution.tensortrax.Material`
 
 The material model formulations are defined by the first Piola-Kirchhoff stress tensor.
 Function-decorators are available to use Total-Lagrange and Updated-Lagrange material

@@ -56,12 +56,22 @@ formulations in :class:`~felupe.constitution.tensortrax.Material`.
 
 **Detailed API Reference**
 
-.. autoclass:: constitution.tensortrax.Hyperelastic
+.. autoclass:: felupe.constitution.tensortrax.Hyperelastic
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: constitution.tensortrax.Material
+.. autoclass:: felupe.constitution.tensortrax.Material
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.Hyperelastic
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.MaterialAD
    :members:
    :undoc-members:
    :inherited-members:

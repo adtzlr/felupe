@@ -77,7 +77,6 @@ class Line(Mesh):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
        :force_static:
 
        >>> import felupe as fem
@@ -127,7 +126,6 @@ class Rectangle(Mesh):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
        :force_static:
 
        >>> import felupe as fem
@@ -185,7 +183,6 @@ class Cube(Mesh):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
        :force_static:
 
        >>> import felupe as fem
@@ -240,7 +237,6 @@ class Grid(Mesh):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
        :force_static:
 
        >>> import numpy as np
@@ -482,7 +478,6 @@ class Triangle(Mesh):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
        :force_static:
 
        >>> import felupe as fem

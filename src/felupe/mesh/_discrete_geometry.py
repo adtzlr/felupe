@@ -102,15 +102,17 @@ class DiscreteGeometry:
             If the points of a mesh are modified and a region was already created with
             the mesh, it is important to re-evaluate (reload) the
             :class:`~felupe.Region`.
+        
+        ..  pyvista-plot::
 
-        >>> import felupe as fem
-        >>>
-        >>> mesh = fem.Cube(n=6)
-        >>> region = fem.RegionHexahedron(mesh)
-        >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-        >>>
-        >>> new_points = mesh.rotate(angle_deg=-90, axis=2).points
-        >>> mesh.update(points=new_points, callback=region.reload)
+            >>> import felupe as fem
+            >>>
+            >>> mesh = fem.Cube(n=6)
+            >>> region = fem.RegionHexahedron(mesh)
+            >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
+            >>>
+            >>> new_points = mesh.rotate(angle_deg=-90, axis=2).points
+            >>> mesh.update(points=new_points, callback=region.reload)
 
         See Also
         --------

@@ -116,7 +116,7 @@ class Hyperelastic(Material):
         :context:
 
         >>> import felupe as fem
-        >>> import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
         >>> import tensortrax.math as tm
         >>>
         >>> def neo_hooke(C, mu):

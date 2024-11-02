@@ -411,6 +411,7 @@ def merge_duplicate_points(points, cells, cell_type, decimals=None):
 
     .. pyvista-plot::
        :context:
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -553,6 +554,7 @@ def merge_duplicate_cells(points, cells, cell_type):
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> import felupe as fem
         >>>
@@ -823,7 +825,7 @@ def mirror(
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -831,7 +833,7 @@ def mirror(
        >>> mesh.plot().show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -960,7 +962,7 @@ def stack(meshes):
     Two quad meshes with identical point arrays should be stacked into a single mesh.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -1022,7 +1024,7 @@ def triangulate(points, cells, cell_type, mode=3):
     Use ``mode=0`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -1033,7 +1035,7 @@ def triangulate(points, cells, cell_type, mode=3):
     Use ``mode=3`` to convert a mesh of hexahedrons into tetrahedrons [1]_.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -1152,7 +1154,7 @@ def runouts(
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -1162,7 +1164,7 @@ def runouts(
        >>> mesh.plot().show()
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

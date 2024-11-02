@@ -396,6 +396,7 @@ def add_midpoints_edges(points, cells, cell_type, cell_type_new=None):
 
     .. pyvista-plot::
        :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -474,7 +475,7 @@ def add_midpoints_faces(points, cells, cell_type, cell_type_new=None):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -558,7 +559,7 @@ def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>> import pyvista as pv

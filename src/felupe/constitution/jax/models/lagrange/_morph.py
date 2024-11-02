@@ -18,12 +18,12 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 
 def morph(F, statevars, p):
-    r"""Second Piola-Kirchhoff stress tensor of the
+    r"""First Piola-Kirchhoff stress tensor of the
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_.
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    F : jax.array
         Right Cauchy-Green deformation tensor.
     statevars : array
         Vector of stacked state variables (CTS, C, SA).
@@ -32,7 +32,7 @@ def morph(F, statevars, p):
 
     Notes
     -----
-    The MORPH material model is implemented as a second Piola-Kirchhoff stress-based
+    The MORPH material model is implemented as a first Piola-Kirchhoff stress-based
     formulation with automatic differentiation. The Tresca invariant of the distortional
     part of the right Cauchy-Green deformation tensor is used as internal state
     variable, see Eq. :eq:`morph-state`.
@@ -157,6 +157,10 @@ def morph(F, statevars, p):
        rubberlike materials and its numerical applications", International Journal
        of Plasticity, vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
        `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
+
+    See Also
+    --------
+    felupe.constitution.tensortrax.models.lagrange.morph : MORPH model (tensortrax)
     """
 
     from jax.numpy import (

@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.
+- Change supported Python versions to 3.9 - 3.12.
 
 ### Fixed
 - Fix the number of points for non-disconnected dual meshes. This reduces the assembled (sparse) vector- and matrix-shapes, which are defined on mixed-fields.

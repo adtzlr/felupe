@@ -36,8 +36,7 @@ FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on th
 - [x] interactive views on meshes, fields and solid bodies (using [PyVista](https://pyvista.org/))
 - [x] typical [finite elements](https://felupe.readthedocs.io/en/latest/felupe/element.html)
 - [x] cartesian, axisymmetric, plane strain and mixed fields
-- [x] [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution.html)
-- [x] strain energy density functions with automatic differentiation
+- [x] [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution.html) with automatic differentiation
 
 Efficient [NumPy](https://numpy.org/)-based math is realized by element-wise operating *trailing axes* [[1]](https://doi.org/10.21105/joss.02369). The finite element method, as used in FElupe, is based on [[2]](https://doi.org/10.1017/cbo9780511755446), [[3]]() and [[4]](https://doi.org/10.1016/c2009-0-24909-9). Related scientific articles are listed in the sections of the [API reference](https://felupe.readthedocs.io/en/latest/felupe.html).
 

@@ -141,10 +141,6 @@ from .view import ViewSolid
 from .view import ViewSolid as View
 from .view import ViewXdmf
 
-UserMaterial = Material  # alias to be removed in v8.0.0
-UserMaterialStrain = MaterialStrain  # alias to be removed in v8.0.0
-UserMaterialHyperelastic = Hyperelastic  # alias to be removed in v8.0.0
-
 __all__ = [
     "__version__",
     "constitution",
@@ -289,7 +285,4 @@ __all__ = [
     "ViewXdmf",
     "ViewSolid",
     "runs_on",
-    "UserMaterial",  # to be removed in v8.0.0
-    "UserMaterialStrain",  # to be removed in v8.0.0
-    "UserMaterialHyperelastic",  # to be removed in v8.0.0
 ]

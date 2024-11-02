@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `math.inplane(A, vectors)` to return the in-plane components of a symmetric tensor `A`, where the plane is defined by its standard unit vectors.
 - Add `constitution.autodiff.jax.Hyperelastic` as a feature-equivalent alternative to `Hyperelastic` with `jax` as backend.
 - Add `constitution.autodiff.jax.Material` as a feature-equivalent alternative to `MaterialAD` with `jax` as backend.
+- Add the MORPH-material formulation for a JAX-based material `felupe.constitution.autodiff.jax.models.lagrange.morph()`.
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.

@@ -193,9 +193,34 @@ def test_material_jax_statevars():
         pass
 
 
+def test_material_included_jax_statevars():
+    try:
+        umat = fem.constitution.autodiff.jax.Material(
+            fem.constitution.autodiff.jax.models.lagrange.morph,
+            p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
+            nstatevars=13,
+        )
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        solid = fem.SolidBody(umat=umat, field=field)
+
+        move = fem.math.linsteps([0, 1], num=3)
+        ramp = {boundaries["move"]: move}
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        job = fem.Job(steps=[step])
+        job.evaluate(tol=1e-4)
+
+    except ModuleNotFoundError:
+        pass
+
+
 if __name__ == "__main__":
     test_vmap()
     test_hyperelastic_jax()
     test_hyperelastic_jax_statevars()
     test_material_jax()
     test_material_jax_statevars()
+    test_material_included_jax_statevars()

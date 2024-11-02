@@ -14,6 +14,12 @@ This page contains material model formulations with automatic differentiation us
    constitution.autodiff.jax.Hyperelastic
    constitution.autodiff.jax.Material
 
+**Material Models for** :class:`felupe.constitution.autodiff.jax.Material`
+
+.. autosummary::
+
+   felupe.constitution.autodiff.jax.models.lagrange.morph
+
 **Tools**
 
 .. autosummary::
@@ -31,5 +37,7 @@ This page contains material model formulations with automatic differentiation us
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autofunction:: felupe.constitution.autodiff.jax.models.lagrange.morph
 
 .. autofunction:: felupe.constitution.autodiff.jax.vmap

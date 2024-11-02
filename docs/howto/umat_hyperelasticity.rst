@@ -33,4 +33,4 @@ FElupe contains several reference implementations of hyperelastic user material 
 * :func:`~felupe.yeoh` or
 * :func:`~felupe.ogden`.
 
-A complete list of all available model formulations is available in the :ref:`hyperelasticity <felupe-api-constitution-hyperelasticity>` section of the API reference.
+A complete list of all available model formulations is available in the :ref:`hyperelasticity <felupe-api-constitution-autodiff>` section of the API reference.

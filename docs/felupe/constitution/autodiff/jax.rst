@@ -1,7 +1,7 @@
-.. _felupe-api-constitution-jax:
+.. _felupe-api-constitution-autodiff-jax:
 
-JAX-based Materials
-~~~~~~~~~~~~~~~~~~~
+Materials with Automatic Differentiation (JAX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This page contains material model formulations with automatic differentiation using :mod:`jax`.
 

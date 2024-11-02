@@ -120,18 +120,21 @@ principal_stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=
 # library (see :ref:`felupe-api-constitution`) including :class:`~felupe.NeoHooke`,
 # :class:`~felupe.LinearElastic` and a generalized Hu-Washizu (u,p,J)
 # :class:`~felupe.ThreeFieldVariation`. By alternative, an isotropic material
-# formulation :class:`~felupe.Hyperelastic` is defined by a strain energy density
-# function where both variation (stress) and linearization (elasticity) are carried out
-# by automatic differentiation. The latter one is demonstrated here with a nearly-
-# incompressible version of the Neo-Hookean material model formulation.
+# formulation :class:`~felupe.constitution.tensortrax.Hyperelastic` is defined by a
+# strain energy density function where both variation (stress) and linearization
+# (elasticity) are carried out by automatic differentiation. The latter one is
+# demonstrated here with a nearly-incompressible version of the Neo-Hookean material
+# model formulation.
 #
 # .. note::
-#    It is important to use only automatic-differentiable math-functions from the
+#    FElupe supports different backends for automatic differentiation and uses
+#    `tensortrax <https://github.com/adtzlr/tensortrax>`_ by default. It is important to
+#    use only differentiable math-functions from the backend, e.g.
 #    NumPy-like modules `tensortrax.math <https://github.com/adtzlr/tensortrax>`_,
 #    `tensortrax.math.linalg <https://github.com/adtzlr/tensortrax>`_ or
-#    `tensortrax.math.special <https://github.com/adtzlr/tensortrax>`_. TensorTRAX is a
-#    dependency of FElupe and hence, is installed along with
-#    `FElupe <https://pypi.org/project/felupe/>`_.
+#    `tensortrax.math.special <https://github.com/adtzlr/tensortrax>`_.
+#    `tensortrax <https://github.com/adtzlr/tensortrax>`_ is a dependency of FElupe and
+#    hence, is installed along with `FElupe <https://pypi.org/project/felupe/>`_.
 #
 # .. math::
 #
@@ -139,16 +142,18 @@ principal_stretches = field.evaluate.strain(fun=lambda stretch: stretch, tensor=
 #         + \frac{K}{2} \left( J - 1 \right)^2
 import tensortrax.math as tm
 
+import felupe.constitution.tensortrax as mat
+
 
 def W(C, mu, bulk):
-    "Neo-Hooke"
+    "Isotropic hyperelastic Neo-Hookean material formulation."
 
     J = tm.sqrt(tm.linalg.det(C))
 
     return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + bulk * (J - 1) ** 2 / 2
 
 
-umat = fem.Hyperelastic(W, mu=1.0, bulk=2.0)
+umat = mat.Hyperelastic(W, mu=1.0, bulk=2.0)
 
 P = umat.gradient
 A = umat.hessian

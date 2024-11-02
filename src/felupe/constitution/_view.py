@@ -37,7 +37,7 @@ class PlotMaterial:
     "Plot force-stretch curves of constitutive material formulations."
 
     def evaluate(self):
-        """Evaluate normal force per undeformed area vs. stretch curves for the
+        """Evaluate normal force per undeformed area vs stretch curves for the
         elementary homogeneous incompressible deformations uniaxial tension/compression,
         planar shear and biaxial tension. A load case is not included if its array of
         stretches  (attribute ``ux``, ``ps`` or ``bx``) is None.
@@ -67,7 +67,7 @@ class PlotMaterial:
         return data
 
     def plot(self, ax=None, show_title=True, show_kwargs=True, **kwargs):
-        """Plot normal force per undeformed area vs. stretch curves for the elementary
+        """Plot normal force per undeformed area vs stretch curves for the elementary
         homogeneous incompressible deformations uniaxial tension/compression, planar
         shear and biaxial tension."""
 
@@ -126,7 +126,7 @@ class PlotMaterial:
 
 
 class ViewMaterial(PlotMaterial):
-    """Create views on normal force per undeformed area vs. stretch curves for the
+    """Create views on normal force per undeformed area vs stretch curves for the
     elementary homogeneous deformations uniaxial tension/compression, planar shear and
     biaxial tension of a given isotropic material formulation.
 
@@ -259,7 +259,7 @@ class ViewMaterial(PlotMaterial):
         return λ1, P[0, 0].ravel(), "Uniaxial"
 
     def planar(self, stretches=None):
-        """Normal force per undeformed area vs. stretch curve for a planar shear
+        """Normal force per undeformed area vs stretch curve for a planar shear
         incompressible deformation.
 
         Parameters
@@ -323,7 +323,7 @@ class ViewMaterial(PlotMaterial):
         return λ1, P[0, 0].ravel(), "Planar Shear"
 
     def biaxial(self, stretches=None):
-        """Normal force per undeformed area vs. stretch curve for a equi-biaxial
+        """Normal force per undeformed area vs stretch curve for a equi-biaxial
         incompressible deformation.
 
         Parameters
@@ -387,7 +387,7 @@ class ViewMaterial(PlotMaterial):
 
 
 class ViewMaterialIncompressible(PlotMaterial):
-    """Create views on normal force per undeformed area vs. stretch curves for the
+    """Create views on normal force per undeformed area vs stretch curves for the
     elementary homogeneous incompressible deformations uniaxial tension/compression,
     planar shear and biaxial tension of a given isotropic material formulation.
 
@@ -473,7 +473,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         self.statevars = statevars
 
     def uniaxial(self, stretches=None):
-        """Normal force per undeformed area vs. stretch curve for a uniaxial
+        """Normal force per undeformed area vs stretch curve for a uniaxial
         incompressible deformation.
 
         Parameters
@@ -512,7 +512,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Uniaxial (Incompressible)"
 
     def planar(self, stretches=None):
-        """Normal force per undeformed area vs. stretch curve for a planar shear
+        """Normal force per undeformed area vs stretch curve for a planar shear
         incompressible deformation.
 
         Parameters
@@ -556,7 +556,7 @@ class ViewMaterialIncompressible(PlotMaterial):
         )
 
     def biaxial(self, stretches=None):
-        """Normal force per undeformed area vs. stretch curve for a equi-biaxial
+        """Normal force per undeformed area vs stretch curve for a equi-biaxial
         incompressible deformation.
 
         Parameters

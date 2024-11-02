@@ -33,6 +33,7 @@ def total_lagrange(material):
     Examples
     --------
     >>> import felupe as fem
+    >>> import felupe.constitution.tensortrax as mat
     >>> import tensortrax.math as tm
     >>>
     >>> @fem.total_lagrange
@@ -41,7 +42,7 @@ def total_lagrange(material):
     >>>     S = mu * tm.special.dev(tm.linalg.det(C)**(-1/3) * C) @ tm.linalg.inv(C)
     >>>     return S
     >>>
-    >>> umat = fem.MaterialAD(neo_hooke_total_lagrange, mu=1)
+    >>> umat = mat.Material(neo_hooke_total_lagrange, mu=1)
 
     See Also
     --------

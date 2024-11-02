@@ -34,6 +34,7 @@ def updated_lagrange(material):
     Examples
     --------
     >>> import felupe as fem
+    >>> import felupe.constitution.tensortrax as mat
     >>> import tensortrax.math as tm
     >>>
     >>> @fem.updated_lagrange
@@ -43,7 +44,7 @@ def updated_lagrange(material):
     >>>     σ = mu * tm.special.dev(J**(-2/3) * b) / J
     >>>     return σ
     >>>
-    >>> umat = fem.MaterialAD(neo_hooke_updated_lagrange, mu=1)
+    >>> umat = mat.Material(neo_hooke_updated_lagrange, mu=1)
 
     See Also
     --------

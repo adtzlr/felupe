@@ -45,7 +45,7 @@ This page contains the core (hard-coded) constitutive material model formulation
    ThreeFieldVariation
    NearlyIncompressible
 
-**Small Strain-based User Materials**
+**Small Strain-based Materials**
 
 .. autosummary::
 

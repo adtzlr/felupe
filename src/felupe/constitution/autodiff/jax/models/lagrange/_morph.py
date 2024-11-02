@@ -221,7 +221,8 @@ def morph(F, statevars, p):
     # second Piola-Kirchhoff stress tensor
     S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
 
-    to_triu = lambda C: C[*triu_indices(3)]
+    i, j = triu_indices(3)
+    to_triu = lambda C: C[i, j]
     statevars_new = concatenate([array([CTS]), to_triu(C), to_triu(SA)])
 
     return F @ S, statevars_new

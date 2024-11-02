@@ -100,7 +100,8 @@ class Material(MaterialDefault):
             S = mu * dev(Cu @ jnp.linalg.inv(Ci)) @ jnp.linalg.inv(C)
 
             # first Piola-Kirchhoff stress tensor and state variable
-            to_triu = lambda C: C[*jnp.triu_indices(3)]
+            i, j = triu_indices(3)
+            to_triu = lambda C: C[i, j]
             return F @ S, to_triu(Ci)
 
         umat = fem.constitution.autodiff.jax.Material(

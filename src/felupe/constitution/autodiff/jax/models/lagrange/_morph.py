@@ -15,9 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-from jax.numpy import array, concatenate, diag, eye, maximum, sqrt, trace, triu_indices
-from jax.numpy.linalg import det, eigvalsh, inv
-from jax.scipy.linalg import expm
 
 
 def morph(F, statevars, p):
@@ -160,6 +157,19 @@ def morph(F, statevars, p):
        of Plasticity, vol. 19, no. 7. Elsevier BV, pp. 1019–1036, Jul. 2003. doi:
        `10.1016/s0749-6419(02)00091-8 <https://doi.org/10.1016/s0749-6419(02)00091-8>`_.
     """
+
+    from jax.numpy import (
+        array,
+        concatenate,
+        diag,
+        eye,
+        maximum,
+        sqrt,
+        trace,
+        triu_indices,
+    )
+    from jax.numpy.linalg import det, eigvalsh, inv
+    from jax.scipy.linalg import expm
 
     # right Cauchy-Green deformation tensor
     C = F.T @ F

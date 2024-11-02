@@ -47,9 +47,7 @@ FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on th
 
    + cartesian, axisymmetric, plane strain and mixed fields
 
-   + :ref:`hyperelastic material models <felupe-api-constitution-autodiff>`
-
-   + strain energy density functions with :class:`automatic differentiation <felupe.Hyperelastic>`
+   + :ref:`hyperelastic material models <felupe-api-constitution-autodiff>` with :class:`automatic differentiation <felupe.Hyperelastic>`
 
 
 Installation

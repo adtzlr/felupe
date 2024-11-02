@@ -29,7 +29,7 @@ import numpy as np
 import pytest
 
 import felupe as fem
-import felupe.constitution.autodiff.tensortrax.models as models
+import felupe.constitution.tensortrax.models as models
 
 
 def pre(sym, add_identity, add_random=False):

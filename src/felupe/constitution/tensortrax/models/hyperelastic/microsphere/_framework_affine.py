@@ -1,7 +1,7 @@
 from tensortrax.math import einsum, sqrt
 from tensortrax.math.linalg import det, inv
 
-from .......quadrature import BazantOh
+from ......quadrature import BazantOh
 
 
 def affine_stretch(C, f, kwargs, quadrature=BazantOh(n=21)):

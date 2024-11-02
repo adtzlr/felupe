@@ -28,6 +28,7 @@ import numpy as np
 import pytest
 
 import felupe as fem
+import felupe.constitution.jax as mat
 
 
 def test_vmap():
@@ -39,8 +40,8 @@ def test_vmap():
         def g(x, y, a=1.0, **kwargs):
             return x
 
-        vf = fem.constitution.autodiff.jax.vmap(f)
-        vg = fem.constitution.autodiff.jax.vmap(g)
+        vf = fem.constitution.jax.vmap(f)
+        vg = fem.constitution.jax.vmap(g)
 
         x = np.eye(3).reshape(1, 3, 3) * np.ones((10, 1, 1))
 
@@ -69,10 +70,8 @@ def test_hyperelastic_jax():
             I1 = I3 ** (-1 / 3) * jnp.trace(C)
             return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2
 
-        umat = fem.constitution.autodiff.jax.Hyperelastic(
-            W, C10=0.5, K=2.0, parallel=True
-        )
-        umat = fem.constitution.autodiff.jax.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
+        umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, parallel=True)
+        umat = mat.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
@@ -103,9 +102,7 @@ def test_hyperelastic_jax_statevars():
 
         W.kwargs = {"C10": 0.5}
 
-        umat = fem.constitution.autodiff.jax.Hyperelastic(
-            W, C10=0.5, K=2.0, nstatevars=1, jit=True
-        )
+        umat = mat.Hyperelastic(W, C10=0.5, K=2.0, nstatevars=1, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
@@ -136,10 +133,8 @@ def test_material_jax():
             P = 2 * C10 * F @ dev(Cu) @ jnp.linalg.inv(C)
             return P + K * (J - 1) * J * jnp.linalg.inv(C)
 
-        umat = fem.constitution.autodiff.jax.Material(
-            dWdF, C10=0.5, K=2.0, parallel=True
-        )
-        umat = fem.constitution.autodiff.jax.Material(dWdF, C10=0.5, K=2.0, jit=True)
+        umat = mat.Material(dWdF, C10=0.5, K=2.0, parallel=True)
+        umat = fem.constitution.jax.Material(dWdF, C10=0.5, K=2.0, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
@@ -173,9 +168,7 @@ def test_material_jax_statevars():
 
         dWdF.kwargs = {"C10": 0.5}
 
-        umat = fem.constitution.autodiff.jax.Material(
-            dWdF, C10=0.5, K=2.0, nstatevars=1, jit=True
-        )
+        umat = mat.Material(dWdF, C10=0.5, K=2.0, nstatevars=1, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
@@ -195,8 +188,8 @@ def test_material_jax_statevars():
 
 def test_material_included_jax_statevars():
     try:
-        umat = fem.constitution.autodiff.jax.Material(
-            fem.constitution.autodiff.jax.models.lagrange.morph,
+        umat = mat.Material(
+            fem.constitution.jax.models.lagrange.morph,
             p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
             nstatevars=13,
         )

@@ -76,6 +76,10 @@ formulations in :class:`~felupe.constitution.tensortrax.Material`.
    :undoc-members:
    :inherited-members:
 
+.. autofunction:: felupe.constitution.tensortrax.total_lagrange
+
+.. autofunction:: felupe.constitution.tensortrax.updated_lagrange
+
 .. autofunction:: felupe.total_lagrange
 
 .. autofunction:: felupe.updated_lagrange

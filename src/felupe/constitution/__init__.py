@@ -3,28 +3,6 @@ from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
 from ._mixed import NearlyIncompressible, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
-from .autodiff.tensortrax import Hyperelastic
-from .autodiff.tensortrax import Material as MaterialAD
-from .autodiff.tensortrax import total_lagrange, updated_lagrange
-from .autodiff.tensortrax.models.hyperelastic import (
-    alexander,
-    anssari_benam_bucchi,
-    arruda_boyce,
-    extended_tube,
-    finite_strain_viscoelastic,
-    isochoric_volumetric_split,
-    lopez_pamies,
-    miehe_goektepe_lulei,
-    mooney_rivlin,
-    neo_hooke,
-    ogden,
-    ogden_roxburgh,
-    saint_venant_kirchhoff,
-    third_order_deformation,
-    van_der_waals,
-    yeoh,
-)
-from .autodiff.tensortrax.models.lagrange import morph, morph_representative_directions
 from .hyperelasticity import NeoHooke, NeoHookeCompressible, OgdenRoxburgh, Volumetric
 from .linear_elasticity import (
     LinearElastic,
@@ -42,6 +20,28 @@ from .small_strain.models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
 )
+from .tensortrax import Hyperelastic
+from .tensortrax import Material as MaterialAD
+from .tensortrax import total_lagrange, updated_lagrange
+from .tensortrax.models.hyperelastic import (
+    alexander,
+    anssari_benam_bucchi,
+    arruda_boyce,
+    extended_tube,
+    finite_strain_viscoelastic,
+    isochoric_volumetric_split,
+    lopez_pamies,
+    miehe_goektepe_lulei,
+    mooney_rivlin,
+    neo_hooke,
+    ogden,
+    ogden_roxburgh,
+    saint_venant_kirchhoff,
+    third_order_deformation,
+    van_der_waals,
+    yeoh,
+)
+from .tensortrax.models.lagrange import morph, morph_representative_directions
 
 __all__ = [
     "alexander",

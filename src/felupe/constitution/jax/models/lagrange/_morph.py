@@ -122,9 +122,10 @@ def morph(F, statevars, p):
         :context:
 
         >>> import felupe as fem
+        >>> import felupe.constitution.jax as mat
         >>>
-        >>> umat = fem.constitution.autodiff.jax.Material(
-        ...     fem.constitution.autodiff.jax.models.lagrange.morph,
+        >>> umat = mat.Material(
+        ...     mat.models.lagrange.morph,
         ...     p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
         ...     nstatevars=13,
         ... )

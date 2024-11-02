@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 
-from ..._material import Material as MaterialDefault
+from .._material import Material as MaterialDefault
 
 
 class Material(MaterialDefault):
@@ -66,6 +66,7 @@ class Material(MaterialDefault):
     ..  code-block::
 
         import felupe as fem
+        import felupe.constitution.tensortrax as mat
         import tensortrax.math as tm
 
         def neo_hooke(F, mu):
@@ -76,13 +77,14 @@ class Material(MaterialDefault):
 
             return mu * F @ tm.special.dev(Cu) @ tm.linalg.inv(C)
 
-        umat = fem.MaterialAD(neo_hooke, mu=1)
+        umat = mat.Material(neo_hooke, mu=1)
 
     and this code-block for material formulations with state variables:
 
     ..  code-block::
 
         import felupe as fem
+        import felupe.constitution.tensortrax as mat
         import tensortrax.math as tm
 
         def viscoelastic(F, Cin, mu, eta, dtime):
@@ -102,9 +104,7 @@ class Material(MaterialDefault):
             # first Piola-Kirchhoff stress tensor and state variable
             return F @ S, tm.special.triu_1d(Ci)
 
-        umat = fem.MaterialAD(
-            viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6
-        )
+        umat = mat.Material(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
 
     ..  note::
         See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_
@@ -116,6 +116,7 @@ class Material(MaterialDefault):
         :context:
 
         >>> import felupe as fem
+        >>> import felupe.constitution.tensortrax as mat
         >>> import tensortrax.math as tm
         >>>
         >>> def neo_hooke(F, mu):
@@ -123,7 +124,7 @@ class Material(MaterialDefault):
         ...     S = mu * tm.special.dev(tm.linalg.det(C)**(-1/3) * C) @ tm.linalg.inv(C)
         ...     return F @ S
         >>>
-        >>> umat = fem.MaterialAD(neo_hooke, mu=1)
+        >>> umat = mat.Material(neo_hooke, mu=1)
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

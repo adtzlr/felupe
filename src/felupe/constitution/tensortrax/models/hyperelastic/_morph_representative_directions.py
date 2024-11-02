@@ -43,7 +43,7 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
         :context:
 
         >>> import felupe as fem
-        >>> import felupe.constitution.autodiff.tensortrax.models as models
+        >>> import felupe.constitution.tensortrax.models as models
         >>>
         >>> umat = fem.Hyperelastic(
         ...     models.hyperelastic.morph_representative_directions,

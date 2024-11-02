@@ -20,22 +20,22 @@ import warnings
 
 import numpy as np
 
-from ..._material import Material
-from ._tools import total_lagrange, vmap2
+from .._material import Material as MaterialDefault
+from ._tools import vmap2
 
 
-class Hyperelastic(Material):
-    r"""A hyperelastic material definition with a given function for the strain energy
-    density function per unit undeformed volume with Automatic Differentiation provided
-    by :mod:`jax`.
+class Material(MaterialDefault):
+    r"""A material definition with a given function for the partial derivative of the
+    strain energy function w.r.t. the deformation gradient tensor with Automatic
+    Differentiation provided by :mod:`jax`.
 
     Parameters
     ----------
     fun : callable
-        A strain energy density function in terms of the right Cauchy-Green deformation
-        tensor :math:`\boldsymbol{C}`. Function signature must be
-        ``fun = lambda C, **kwargs: psi`` for functions without state variables and
-        ``fun = lambda C, statevars, **kwargs: [psi, statevars_new]`` for functions
+        A gradient of the strain energy density function w.r.t. the deformation gradient
+        tensor :math:`\boldsymbol{F}`. Function signature must be
+        ``fun = lambda F, **kwargs: P`` for functions without state variables and
+        ``fun = lambda F, statevars, **kwargs: [P, statevars_new]`` for functions
         with state variables. It is important to use only differentiable math-functions
         from :mod:`jax`.
     nstatevars : int, optional
@@ -43,67 +43,70 @@ class Hyperelastic(Material):
     jit : bool, optional
         A flag to invoke just-in-time compilation (default is True).
     parallel : bool, optional
-        A flag to invoke threaded strain energy density function evaluations (default
-        is False). Not implemented.
+        A flag to invoke threaded function evaluations (defaultnis False). Not
+        implemented.
     **kwargs : dict, optional
-        Optional keyword-arguments for the strain energy density function.
+        Optional keyword-arguments for the gradient of the strain energy density
+        function.
 
     Notes
     -----
-    The strain energy density function :math:`\psi` must be given in terms of the right
-    Cauchy-Green deformation tensor
-    :math:`\boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}`.
+    The gradient of the strain energy density function
+    :math:`\frac{\partial \psi}{\partial \boldsymbol{F}}` must be given in terms of the
+    deformation gradient tensor :math:`\boldsymbol{F}`.
 
     ..  warning::
         It is important to use only differentiable math-functions from :mod:`jax`!
 
-    Take this minimal code-block as template
-
-    ..  math::
-
-        \psi = \psi(\boldsymbol{C})
+    Take this code-block as template
 
     ..  code-block::
 
         import felupe as fem
+        import felupe.constitution.jax as mat
         import jax.numpy as jnp
 
-        def neo_hooke(C, mu):
-            "Strain energy function of the Neo-Hookean material formulation."
-            return mu / 2 * (jnp.linalg.det(C) ** (-1/3) * jnp.trace(C) - 3)
+        def neo_hooke(F, mu):
+            "First Piola-Kirchhoff stress of the Neo-Hookean material formulation."
 
-        umat = fem.constitution.autodiff.jax.Hyperelastic(neo_hooke, mu=1)
+            C = F.T @ F
+            Cu = jnp.linalg.det(C) ** (-1/3) * C
+            dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
 
-    and this code-block for material formulations with state variables.
+            return mu * F @ dev(Cu) @ jnp.linalg.inv(C)
 
-    ..  math::
+        umat = mat.Material(neo_hooke, mu=1)
 
-        \psi = \psi(\boldsymbol{C}, \boldsymbol{\zeta})
+    and this code-block for material formulations with state variables:
 
     ..  code-block::
 
         import felupe as fem
-        import jax.numpy as np
+        import felupe.constitution.jax as mat
+        import jax.numpy as jnp
 
-        def viscoelastic(C, Cin, mu, eta, dtime):
+        def viscoelastic(F, Cin, mu, eta, dtime):
             "Finite strain viscoelastic material formulation."
 
             # unimodular part of the right Cauchy-Green deformation tensor
+            C = F.T @ F
             Cu = jnp.linalg.det(C) ** (-1 / 3) * C
 
             # update of state variables by evolution equation
-            Ci = Cin.reshape(3, 3) + mu / eta * dtime * Cu
+            from_triu = lambda C: C[jnp.array([[0, 1, 2], [1, 3, 4], [2, 4, 5]])]
+            Ci = from_triu(Cin) + mu / eta * dtime * Cu
             Ci = jnp.linalg.det(Ci) ** (-1 / 3) * Ci
 
-            # first invariant of elastic part of right Cauchy-Green deformation tensor
-            I1 = jnp.trace(Cu @ jnp.linalg.inv(Ci))
+            # second Piola-Kirchhoff stress tensor
+            dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+            S = mu * dev(Cu @ jnp.linalg.inv(Ci)) @ jnp.linalg.inv(C)
 
-            # strain energy function and state variable
-            return mu / 2 * (I1 - 3), Ci.ravel()
+            # first Piola-Kirchhoff stress tensor and state variable
+            i, j = triu_indices(3)
+            to_triu = lambda C: C[i, j]
+            return F @ S, to_triu(Ci)
 
-        umat = fem.constitution.autodiff.jax.Hyperelastic(
-            viscoelastic, mu=1, eta=1, dtime=1, nstatevars=9
-        )
+        umat = mat.Material(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
 
     ..  note::
         See the `documentation of JAX <https://jax.readthedocs.io>`_ for further
@@ -120,13 +123,19 @@ class Hyperelastic(Material):
         :context:
 
         >>> import felupe as fem
+        >>> import felupe.constitution.jax as mat
         >>> import jax.numpy as jnp
         >>>
-        >>> def neo_hooke(C, mu):
-        ...     "Strain energy function of the Neo-Hookean material formulation."
-        ...     return mu / 2 * (jnp.linalg.det(C) ** (-1/3) * jnp.trace(C) - 3)
+        >>> def neo_hooke(F, mu):
+        ...     "First Piola-Kirchhoff stress of the Neo-Hookean material formulation."
+        ...
+        ...     C = F.T @ F
+        ...     Cu = jnp.linalg.det(C) ** (-1/3) * C
+        ...     dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+        ...
+        ...     return mu * F @ dev(Cu) @ jnp.linalg.inv(C)
         >>>
-        >>> umat = fem.constitution.autodiff.jax.Hyperelastic(neo_hooke, mu=1)
+        >>> umat = mat.Material(neo_hooke, mu=1)
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::
@@ -146,7 +155,7 @@ class Hyperelastic(Material):
         import jax
 
         has_aux = nstatevars > 0
-        self.fun = total_lagrange(fun)
+        self.fun = fun
 
         if parallel:
             warnings.warn("Parallel execution is not implemented.")
@@ -166,11 +175,8 @@ class Hyperelastic(Material):
         if nstatevars > 0:
             kwargs_jax["in_axes"] = (-1, -1)
 
-        self._grad = vmap2(jax.grad(self.fun, has_aux=has_aux), **kwargs_jax)
-        self._hess = vmap2(
-            jax.jacfwd(jax.grad(self.fun, has_aux=has_aux), has_aux=has_aux),
-            **kwargs_jax,
-        )
+        self._grad = vmap2(self.fun, **kwargs_jax)
+        self._hess = vmap2(jax.jacfwd(self.fun, has_aux=has_aux), **kwargs_jax)
 
         if jit:
             self._grad = jax.jit(self._grad)

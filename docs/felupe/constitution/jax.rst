@@ -11,33 +11,33 @@ This page contains material model formulations with automatic differentiation us
 
 .. autosummary::
    
-   constitution.autodiff.jax.Hyperelastic
-   constitution.autodiff.jax.Material
+   constitution.jax.Hyperelastic
+   constitution.jax.Material
 
-**Material Models for** :class:`felupe.constitution.autodiff.jax.Material`
+**Material Models for** :class:`felupe.constitution.jax.Material`
 
 .. autosummary::
 
-   felupe.constitution.autodiff.jax.models.lagrange.morph
+   felupe.constitution.jax.models.lagrange.morph
 
 **Tools**
 
 .. autosummary::
    
-   constitution.autodiff.jax.vmap
+   constitution.jax.vmap
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.constitution.autodiff.jax.Hyperelastic
+.. autoclass:: felupe.constitution.jax.Hyperelastic
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.constitution.autodiff.jax.Material
+.. autoclass:: felupe.constitution.jax.Material
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autofunction:: felupe.constitution.autodiff.jax.models.lagrange.morph
+.. autofunction:: felupe.constitution.jax.models.lagrange.morph
 
-.. autofunction:: felupe.constitution.autodiff.jax.vmap
+.. autofunction:: felupe.constitution.jax.vmap

@@ -5,10 +5,10 @@ Automatic Differentiation
 
 .. toctree::
    :maxdepth: 1
-   :caption: Constitution:
+   :caption: Automatic Differentiation:
 
-   constitution/autodiff/tensortrax
-   constitution/autodiff/jax
+   autodiff/tensortrax
+   autodiff/jax
 
 FElupe supports multiple backends for constitutive material formulations with
 automatic differentiation. The default backend is based on :mod:`tensortrax` which ships

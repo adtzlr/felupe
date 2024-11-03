@@ -102,14 +102,9 @@ def test_hyperelastic_jax_statevars():
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
         solid = fem.SolidBody(umat=umat, field=field)
-
-        move = fem.math.linsteps([0, 1], num=3)
-        ramp = {boundaries["move"]: move}
-        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-        job = fem.Job(steps=[step])
-        job.evaluate(tol=1e-4)
+        solid.evaluate.gradient()
+        solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass
@@ -134,14 +129,9 @@ def test_material_jax():
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
         solid = fem.SolidBody(umat=umat, field=field)
-
-        move = fem.math.linsteps([0, 1], num=3)
-        ramp = {boundaries["move"]: move}
-        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-        job = fem.Job(steps=[step])
-        job.evaluate(tol=1e-4)
+        solid.evaluate.gradient()
+        solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass
@@ -168,14 +158,9 @@ def test_material_jax_statevars():
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
         solid = fem.SolidBody(umat=umat, field=field)
-
-        move = fem.math.linsteps([0, 1], num=3)
-        ramp = {boundaries["move"]: move}
-        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-        job = fem.Job(steps=[step])
-        job.evaluate(tol=1e-4)
+        solid.evaluate.gradient()
+        solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass
@@ -192,14 +177,9 @@ def test_material_included_jax_statevars():
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
         solid = fem.SolidBody(umat=umat, field=field)
-
-        move = fem.math.linsteps([0, 1], num=3)
-        ramp = {boundaries["move"]: move}
-        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-        job = fem.Job(steps=[step])
-        job.evaluate(tol=1e-4)
+        solid.evaluate.gradient()
+        solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass

@@ -22,6 +22,7 @@ First, let's create a meshed cube out of hexahedron cells with ``n=(16, 6, 6)`` 
 per axis. A three-dimensional vector-valued displacement field is initiated on the
 numeric region.
 """
+
 import numpy as np
 
 import felupe as fem

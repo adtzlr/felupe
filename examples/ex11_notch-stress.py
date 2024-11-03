@@ -26,6 +26,7 @@ the stress tensor is projected to the mesh-points and its maximum principal valu
 implemented and hence, the quadratic wedges in the mesh are converted to quadratic
 hexahedrons.
 """
+
 # sphinx_gallery_thumbnail_number = -1
 import numpy as np
 import pypardiso

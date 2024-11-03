@@ -29,6 +29,7 @@ example:
 * a `mesh for the air <../_static/ex07_engine-mount_mesh-air.vtk>`_ inside the
   engine mount.
 """
+
 # sphinx_gallery_thumbnail_number = -1
 import numpy as np
 

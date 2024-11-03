@@ -22,6 +22,7 @@ realistic analysis of rubber-like materials. Note that the bulk modulus is now a
 argument of the (nearly) incompressible solid body instead of the constitutive
 Neo-Hookean material definition.
 """
+
 import felupe as fem
 
 mesh = fem.Cube(n=6)

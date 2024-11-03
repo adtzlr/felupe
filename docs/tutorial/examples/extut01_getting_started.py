@@ -24,6 +24,7 @@ cells with ``n`` points per axis. A numeric region, pre-defined for hexahedrons,
 created on the mesh. A vector-valued displacement field is initiated on the region.
 Next, a field container is created on top of the displacement field.
 """
+
 import felupe as fem
 
 mesh = fem.Cube(n=6)

@@ -39,6 +39,7 @@ hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
        \text{tr}(\boldsymbol{C}) - \ln(\det(\boldsymbol{C})) 
    \right)
 """
+
 # sphinx_gallery_thumbnail_number = -1
 import contique
 import numpy as np

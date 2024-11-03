@@ -102,7 +102,7 @@ class DiscreteGeometry:
             If the points of a mesh are modified and a region was already created with
             the mesh, it is important to re-evaluate (reload) the
             :class:`~felupe.Region`.
-        
+
         ..  pyvista-plot::
 
             >>> import felupe as fem

@@ -8,6 +8,7 @@ Script-based Hex-meshing
    
    * create a :class:`~felupe.MeshContainer` for meshes associated to two materials
 """
+
 import numpy as np
 
 import felupe as fem

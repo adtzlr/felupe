@@ -37,6 +37,7 @@ constraint (MPC). By default, FElupe stores points not connected to any cells in
 :attr:`Mesh.points_without_cells` and adds them to the list of inactive
 degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
 """
+
 # sphinx_gallery_thumbnail_number = -2
 import numpy as np
 

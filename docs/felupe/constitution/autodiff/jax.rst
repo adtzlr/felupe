@@ -13,6 +13,16 @@ This page contains material model formulations with automatic differentiation us
    
    constitution.jax.Hyperelastic
    constitution.jax.Material
+   constitution.jax.total_lagrange
+   constitution.jax.updated_lagrange
+
+**Material Models for** :class:`felupe.constitution.jax.Hyperelastic`
+
+These material model formulations are defined by a strain energy density function.
+
+.. autosummary::
+
+   felupe.constitution.jax.models.hyperelastic.mooney_rivlin
 
 **Material Models for** :class:`felupe.constitution.jax.Material`
 
@@ -37,6 +47,12 @@ This page contains material model formulations with automatic differentiation us
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autofunction:: felupe.constitution.jax.total_lagrange
+
+.. autofunction:: felupe.constitution.jax.updated_lagrange
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.mooney_rivlin
 
 .. autofunction:: felupe.constitution.jax.models.lagrange.morph
 

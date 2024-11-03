@@ -125,13 +125,16 @@ def test_material_jax():
 
         umat = mat.Material(dWdF, C10=0.5, K=2.0, parallel=True)
         umat = mat.Material(dWdF, C10=0.5, K=2.0, jit=True)
-        mesh = fem.Cube(n=2)
-        region = fem.RegionHexahedron(mesh)
-        field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        solid = fem.SolidBody(umat=umat, field=field)
-        solid.evaluate.gradient()
-        solid.evaluate.hessian()
+        for fun in [dWdF, mat.updated_lagrange(dWdF), mat.total_lagrange(dWdF)]:
+            umat = mat.Material(dWdF, C10=0.5, K=2.0)
+            mesh = fem.Cube(n=2)
+            region = fem.RegionHexahedron(mesh)
+            field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+            solid = fem.SolidBody(umat=umat, field=field)
+            solid.evaluate.gradient()
+            solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass
@@ -153,14 +156,15 @@ def test_material_jax_statevars():
 
         dWdF.kwargs = {"C10": 0.5}
 
-        umat = mat.Material(dWdF, C10=0.5, K=2.0, nstatevars=1, jit=True)
-        mesh = fem.Cube(n=2)
-        region = fem.RegionHexahedron(mesh)
-        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        for fun in [dWdF, mat.updated_lagrange(dWdF), mat.total_lagrange(dWdF)]:
+            umat = mat.Material(fun, C10=0.5, K=2.0, nstatevars=1, jit=True)
+            mesh = fem.Cube(n=2)
+            region = fem.RegionHexahedron(mesh)
+            field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        solid = fem.SolidBody(umat=umat, field=field)
-        solid.evaluate.gradient()
-        solid.evaluate.hessian()
+            solid = fem.SolidBody(umat=umat, field=field)
+            solid.evaluate.gradient()
+            solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass

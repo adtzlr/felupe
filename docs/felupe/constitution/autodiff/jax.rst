@@ -23,6 +23,8 @@ These material model formulations are defined by a strain energy density functio
 .. autosummary::
 
    felupe.constitution.jax.models.hyperelastic.mooney_rivlin
+   felupe.constitution.jax.models.hyperelastic.third_order_deformation
+   felupe.constitution.jax.models.hyperelastic.yeoh
 
 **Material Models for** :class:`felupe.constitution.jax.Material`
 
@@ -53,6 +55,10 @@ These material model formulations are defined by a strain energy density functio
 .. autofunction:: felupe.constitution.jax.updated_lagrange
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.mooney_rivlin
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.third_order_deformation
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.yeoh
 
 .. autofunction:: felupe.constitution.jax.models.lagrange.morph
 

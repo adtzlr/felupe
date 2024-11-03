@@ -15,24 +15,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+from ..._total_lagrange import total_lagrange
 
 
+@total_lagrange
 def morph(F, statevars, p):
     r"""First Piola-Kirchhoff stress tensor of the
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_.
 
     Parameters
     ----------
-    F : jax.array
-        Right Cauchy-Green deformation tensor.
-    statevars : array
+    F : jax.Array
+        Deformation gradient tensor.
+    statevars : jax.Array
         Vector of stacked state variables (CTS, C, SA).
     p : list of float
         A list which contains the 8 material parameters.
 
     Notes
     -----
-    The MORPH material model is implemented as a first Piola-Kirchhoff stress-based
+    The MORPH material model is implemented as a second Piola-Kirchhoff stress-based
     formulation with automatic differentiation. The Tresca invariant of the distortional
     part of the right Cauchy-Green deformation tensor is used as internal state
     variable, see Eq. :eq:`morph-state`.
@@ -230,4 +232,4 @@ def morph(F, statevars, p):
     to_triu = lambda C: C[i, j]
     statevars_new = concatenate([array([CTS]), to_triu(C), to_triu(SA)])
 
-    return F @ S, statevars_new
+    return S, statevars_new

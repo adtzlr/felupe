@@ -27,7 +27,7 @@ def mooney_rivlin(C, C10, C01):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     C10 : float
         First material parameter associated to the first invariant.
@@ -66,13 +66,22 @@ def mooney_rivlin(C, C10, C01):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
 
     ..  pyvista-plot::
         :context:
 
-        >>> import felupe as fem
-        >>>
-        >>> umat = fem.Hyperelastic(fem.mooney_rivlin, C10=0.3, C01=0.8)
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the hyperelastic material.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> umat = mat.Hyperelastic(
+        ...     mat.models.hyperelastic.mooney_rivlin, C10=0.3, C01=0.8
+        ... )
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

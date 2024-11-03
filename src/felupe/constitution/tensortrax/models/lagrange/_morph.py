@@ -29,8 +29,8 @@ def morph(F, statevars, p):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
-        Right Cauchy-Green deformation tensor.
+    F : tensortrax.Tensor
+        Deformation gradient tensor.
     statevars : array
         Vector of stacked state variables (CTS, C, SA).
     p : list of float

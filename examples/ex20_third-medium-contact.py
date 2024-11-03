@@ -15,6 +15,7 @@ based regularization [2]_. First, let's create sub meshes with quad cells for th
 body. All sub meshes are merged by stacking the meshes of the
 :class:`mesh container <felupe.MeshContainer>` into a :class:`mesh <felupe.Mesh>`.
 """
+
 import numpy as np
 
 import felupe as fem

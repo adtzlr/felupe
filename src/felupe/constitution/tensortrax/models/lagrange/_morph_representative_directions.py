@@ -28,8 +28,8 @@ def morph_representative_directions(F, statevars, p, ε=1e-8):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
-        Right Cauchy-Green deformation tensor.
+    F : tensortrax.Tensor
+        Deformation gradient tensor.
     statevars : array
         Vector of stacked state variables (CTS, λ - 1, SA1, SA2).
     p : list of float
@@ -43,8 +43,9 @@ def morph_representative_directions(F, statevars, p, ε=1e-8):
         :context:
 
         >>> import felupe as fem
+        >>> import felupe.constitution.tensortrax as mat
         >>>
-        >>> umat = fem.MaterialAD(
+        >>> umat = mat.Material(
         ...     fem.morph_representative_directions,
         ...     p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
         ...     nstatevars=84,

@@ -13,6 +13,7 @@ Best-fit Hyperelastic Material Parameters
 The :func:`Extended Tube <felupe.extended_tube>` material model formulation [1]_ is
 best-fitted on Treloar's uniaxial and biaxial tension data [2]_.
 """
+
 import numpy as np
 import tensortrax.math as tm
 

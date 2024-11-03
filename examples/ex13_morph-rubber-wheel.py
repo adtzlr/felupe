@@ -96,6 +96,7 @@ this example.
     variables are stored in the solid body.
 
 """
+
 # sphinx_gallery_thumbnail_number = -1
 # sphinx_gallery_start_ignore
 PYVISTA_GALLERY_FORCE_STATIC_IN_DOCUMENT = True

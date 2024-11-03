@@ -27,7 +27,7 @@ def yeoh(C, C10, C20, C30):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     C10 : float
         Material parameter associated to the linear term of the first invariant.
@@ -64,13 +64,22 @@ def yeoh(C, C10, C20, C30):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
 
     ..  pyvista-plot::
         :context:
 
-        >>> import felupe as fem
-        >>>
-        >>> umat = fem.Hyperelastic(fem.yeoh, C10=0.5, C20=-0.1, C30=0.02)
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the hyperelastic material.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> umat = mat.Hyperelastic(
+        ...     mat.models.hyperelastic.yeoh, C10=0.5, C20=-0.1, C30=0.02
+        ... )
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

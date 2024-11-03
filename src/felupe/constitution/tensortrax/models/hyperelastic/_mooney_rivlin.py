@@ -80,8 +80,8 @@ def mooney_rivlin(C, C10, C01):
         :context:
 
         >>> umat = mat.Hyperelastic(
-        >>>     mat.models.hyperelastic.mooney_rivlin, C10=0.3, C01=0.8
-        >>> )
+        ...     mat.models.hyperelastic.mooney_rivlin, C10=0.3, C01=0.8
+        ... )
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

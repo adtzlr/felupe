@@ -62,22 +62,23 @@ def test_vmap():
 
 def test_hyperelastic_jax():
     try:
-
-        W = mat.models.hyperelastic.mooney_rivlin
-        umat = mat.Hyperelastic(W, C10=0.4, C01=0.1, K=2.0, parallel=True)
-        umat = mat.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-        boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-        solid = fem.SolidBody(umat=umat, field=field)
+        md = mat.models.hyperelastic
+        for W in [
+            md.mooney_rivlin,
+            md.yeoh,
+            md.third_order_deformation,
+        ]:
+            umat = mat.Hyperelastic(W, **W.kwargs)
+            solid = fem.SolidBody(umat=umat, field=field)
+            solid.evaluate.gradient()
+            solid.evaluate.hessian()
 
-        move = fem.math.linsteps([0, 1], num=3)
-        ramp = {boundaries["move"]: move}
-        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
-        job = fem.Job(steps=[step])
-        job.evaluate(tol=1e-4)
+        umat = mat.Hyperelastic(W, **W.kwargs, parallel=True)
+        umat = mat.Hyperelastic(W, **W.kwargs, jit=True)
 
     except ModuleNotFoundError:
         pass
@@ -128,7 +129,7 @@ def test_material_jax():
             return P + K * (J - 1) * J * jnp.linalg.inv(C)
 
         umat = mat.Material(dWdF, C10=0.5, K=2.0, parallel=True)
-        umat = fem.constitution.jax.Material(dWdF, C10=0.5, K=2.0, jit=True)
+        umat = mat.Material(dWdF, C10=0.5, K=2.0, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])

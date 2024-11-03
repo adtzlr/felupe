@@ -62,15 +62,9 @@ def test_vmap():
 
 def test_hyperelastic_jax():
     try:
-        import jax.numpy as jnp
 
-        def W(C, C10, K):
-            I3 = jnp.linalg.det(C)
-            J = jnp.sqrt(I3)
-            I1 = I3 ** (-1 / 3) * jnp.trace(C)
-            return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2
-
-        umat = fem.constitution.jax.Hyperelastic(W, C10=0.5, K=2.0, parallel=True)
+        W = mat.models.hyperelastic.mooney_rivlin
+        umat = mat.Hyperelastic(W, C10=0.4, C01=0.1, K=2.0, parallel=True)
         umat = mat.Hyperelastic(W, C10=0.5, K=2.0, jit=True)
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)

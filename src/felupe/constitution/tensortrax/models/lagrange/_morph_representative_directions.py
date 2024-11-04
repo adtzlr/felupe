@@ -28,7 +28,7 @@ def morph_representative_directions(F, statevars, p, ε=1e-8):
 
     Parameters
     ----------
-    F : tensortrax.Tensor
+    F : tensortrax.Tensor or jax.Array
         Deformation gradient tensor.
     statevars : array
         Vector of stacked state variables (CTS, λ - 1, SA1, SA2).
@@ -39,14 +39,23 @@ def morph_representative_directions(F, statevars, p, ε=1e-8):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
-        >>> import felupe.constitution.tensortrax as mat
         >>>
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the material.
+
+    ..  pyvista-plot::
+        :context:
+
         >>> umat = mat.Material(
-        ...     fem.morph_representative_directions,
+        ...     mat.models.lagrange.morph_representative_directions,
         ...     p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
         ...     nstatevars=84,
         ... )

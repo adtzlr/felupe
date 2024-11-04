@@ -1,9 +1,10 @@
 """
-Strain-energy density functions for hyperlastic model formulations.
+Strain-energy density functions for strain energy-gradient (stress) model formulations.
 
-This module contains material model formulations to be used as the ``fun``-argument in :func:`~felupe.MaterialAD`. The gradient as well as the hessian of the strain energy
-density function is carried out by automatic differentiation using :mod:`tensortrax`.
-Hence, all math-functions must be taken from :mod:`tensortrax.math`.
+This module contains material model formulations to be used as the ``fun``-argument in
+:func:`~felupe.constitution.tensortrax.Material`. The gradient as well as the hessian of
+the strain energy density function is carried out by automatic differentiation using
+:mod:`tensortrax`. Hence, all math-functions must be taken from :mod:`tensortrax.math`.
 """
 
 from ._morph import morph

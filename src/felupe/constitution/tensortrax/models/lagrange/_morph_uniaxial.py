@@ -27,7 +27,7 @@ def morph_uniaxial(λ, statevars, p, ε=1e-8):
 
     Parameters
     ----------
-    λ : tensortrax.Tensor
+    λ : tensortrax.Tensor or jax.Array
         Longitudinal stretch of uniaxial incompressible deformation.
     statevars : array
         Vector of stacked state variables (CTS, λ - 1, SA1, SA2).
@@ -54,20 +54,20 @@ def morph_uniaxial(λ, statevars, p, ε=1e-8):
     SA2n = array(statevars[63:84], like=λ, shape=(21,))
 
     CT = tensor_abs(λ**2 - 1 / λ)
-    CTS = maximum(CT, CTSn)
+    CTS = maximum(CT, maximum(CTSn, ε * λ / λ))
 
     L1 = 2 * (λ**3 / λn - λn**2) / 3
     L2 = (λn**2 / λ**3 - 1 / λn) / 3
-    LT = tensor_abs(L1 - L2)
+    LT = ε + tensor_abs(L1 - L2)
 
     sigmoid = lambda x: 1 / sqrt(1 + x**2)
     α = p[0] + p[1] * sigmoid(p[2] * CTS)
     β = p[3] * sigmoid(p[2] * CTS)
     γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
 
-    L1_LT = L1 / (ε + LT)
-    L2_LT = L2 / (ε + LT)
-    CT_CTS = CT / (ε + CTS)
+    L1_LT = L1 / LT
+    L2_LT = L2 / LT
+    CT_CTS = CT / CTS
 
     SL1 = (γ * exp(p[6] * L1_LT * CT_CTS) + p[7] * L1_LT) / λ**2
     SL2 = (γ * exp(p[6] * L2_LT * CT_CTS) + p[7] * L2_LT) * λ

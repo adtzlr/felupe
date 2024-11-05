@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `constitution.jax.Hyperelastic` as a feature-equivalent alternative to `Hyperelastic` with `jax` as backend.
 - Add `constitution.jax.Material(..., jacobian=None)` with JAX as backend. A custom jacobian-callable may be passed to switch between forward- and backward-mode automatic differentiation.
 - Add material models for JAX-based materials: `felupe.constitution.jax.models.hyperelastic.mooney_rivlin()`, `felupe.constitution.jax.models.hyperelastic.yeoh()`, `felupe.constitution.jax.models.hyperelastic.third_order_deformation()`, `felupe.constitution.jax.models.lagrange.morph()`, `felupe.constitution.jax.models.lagrange.morph_representative_directions()`.
-- Add `felupe.constitution.jax.total_lagrange()`, `felupe.constitution.jax.updated_lagrange()` and `felupe.constitution.jax.models.hyperelastic.isochoric_volumetric_split()` function decorators for the JAX hyperelastic material class.
+- Add `felupe.constitution.jax.total_lagrange()`, `felupe.constitution.jax.updated_lagrange()` and `felupe.constitution.jax.isochoric_volumetric_split()` function decorators for the JAX hyperelastic material class.
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.

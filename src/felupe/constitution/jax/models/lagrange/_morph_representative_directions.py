@@ -23,7 +23,7 @@ from .microsphere import affine_force_statevars
 
 
 @wraps(morph_repr)
-def morph_representative_directions(F, statevars, p, ε=1e-4):
+def morph_representative_directions(F, statevars, p, ε=1e-6):
     def f(λ, statevars, **kwargs):
         dψdλ, statevars_new = morph_uniaxial(λ, statevars, **kwargs)
         return 5 * dψdλ, statevars_new

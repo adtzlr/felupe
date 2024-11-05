@@ -172,18 +172,27 @@ def test_material_jax_statevars():
 
 def test_material_included_jax_statevars():
     try:
-        umat = mat.Material(
-            fem.constitution.jax.models.lagrange.morph,
-            p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
-            nstatevars=13,
-        )
-        mesh = fem.Cube(n=2)
-        region = fem.RegionHexahedron(mesh)
-        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        import felupe.constitution.jax as mat
 
-        solid = fem.SolidBody(umat=umat, field=field)
-        solid.evaluate.gradient()
-        solid.evaluate.hessian()
+        for fun, nstatevars in zip(
+            [
+                mat.models.lagrange.morph,
+                mat.models.lagrange.morph_representative_directions,
+            ],
+            [13, 84],
+        ):
+            umat = mat.Material(
+                fun,
+                **fun.kwargs,
+                nstatevars=nstatevars,
+            )
+            mesh = fem.Cube(n=2)
+            region = fem.RegionHexahedron(mesh)
+            field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+            solid = fem.SolidBody(umat=umat, field=field)
+            solid.evaluate.gradient()
+            solid.evaluate.hessian()
 
     except ModuleNotFoundError:
         pass

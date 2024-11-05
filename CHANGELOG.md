@@ -11,8 +11,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add the attribute `RegionBoundary.tangents`, which contains a list of tangent unit vectors. For `quad` cell-types the length of this list is one and for `hexahedron` cell-types it is of length two.
 - Add `math.inplane(A, vectors)` to return the in-plane components of a symmetric tensor `A`, where the plane is defined by its standard unit vectors.
 - Add `constitution.jax.Hyperelastic` as a feature-equivalent alternative to `Hyperelastic` with `jax` as backend.
-- Add `constitution.jax.Material` as a feature-equivalent alternative to `MaterialAD` with `jax` as backend.
-- Add the material models for JAX-based materials `felupe.constitution.jax.models.hyperelastic.mooney_rivlin()`, `felupe.constitution.jax.models.hyperelastic.yeoh()`, `felupe.constitution.jax.models.hyperelastic.third_order_deformation()` and `felupe.constitution.jax.models.lagrange.morph()`.
+- Add `constitution.jax.Material(..., jacobian=None)` with JAX as backend. A custom jacobian-callable may be passed to switch between forward- and backward-mode automatic differentiation.
+- Add material models for JAX-based materials: `felupe.constitution.jax.models.hyperelastic.mooney_rivlin()`, `felupe.constitution.jax.models.hyperelastic.yeoh()`, `felupe.constitution.jax.models.hyperelastic.third_order_deformation()`, `felupe.constitution.jax.models.lagrange.morph()`, `felupe.constitution.jax.models.lagrange.morph_representative_directions()`.
 - Add `felupe.constitution.jax.total_lagrange()` and `felupe.constitution.jax.updated_lagrange()` function decorators for JAX materials.
 
 ### Changed

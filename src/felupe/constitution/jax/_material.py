@@ -45,6 +45,10 @@ class Material(MaterialDefault):
     parallel : bool, optional
         A flag to invoke threaded function evaluations (defaultnis False). Not
         implemented.
+    jacobian : callable or None, optional
+        A callable for the Jacobian. Default is None, where :func:`jax.jacobian` is
+        used. This may be used to switch to forward-mode differentian
+        :func:`jax.jacfwd`.
     **kwargs : dict, optional
         Optional keyword-arguments for the gradient of the strain energy density
         function.
@@ -151,11 +155,16 @@ class Material(MaterialDefault):
 
     """
 
-    def __init__(self, fun, nstatevars=0, jit=True, parallel=False, **kwargs):
+    def __init__(
+        self, fun, nstatevars=0, jit=True, parallel=False, jacobian=None, **kwargs
+    ):
         import jax
 
         has_aux = nstatevars > 0
         self.fun = fun
+
+        if jacobian is None:
+            jacobian = jax.jacobian
 
         if parallel:
             warnings.warn("Parallel execution is not implemented.")
@@ -176,7 +185,7 @@ class Material(MaterialDefault):
             kwargs_jax["in_axes"] = (-1, -1)
 
         self._grad = vmap2(self.fun, **kwargs_jax)
-        self._hess = vmap2(jax.jacfwd(self.fun, has_aux=has_aux), **kwargs_jax)
+        self._hess = vmap2(jacobian(self.fun, has_aux=has_aux), **kwargs_jax)
 
         if jit:
             self._grad = jax.jit(self._grad)

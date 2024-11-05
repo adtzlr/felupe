@@ -19,7 +19,7 @@ from ._morph_uniaxial import morph_uniaxial
 from .microsphere import affine_force_statevars
 
 
-def morph_representative_directions(F, statevars, p, ε=1e-8):
+def morph_representative_directions(F, statevars, p, ε=1e-6):
     """First Piola-Kirchhoff stress tensor of the
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_,
     implemented by the concept of
@@ -35,7 +35,7 @@ def morph_representative_directions(F, statevars, p, ε=1e-8):
     p : list of float
         A list which contains the 8 material parameters.
     ε : float, optional
-        A small stabilization parameter (default is 1e-8).
+        A small stabilization parameter (default is 1e-6).
 
     Examples
     --------

@@ -20,7 +20,7 @@ from tensortrax.math import array, exp, maximum, sqrt
 from tensortrax.math.special import try_stack
 
 
-def morph_uniaxial(λ, statevars, p, ε=1e-8):
+def morph_uniaxial(λ, statevars, p, ε=1e-6):
     """Return the force (per undeformed area) for a given longitudinal stretch in
     uniaxial incompressible tension or compression for the MORPH material
     formulation [1]_, [2]_.
@@ -54,20 +54,20 @@ def morph_uniaxial(λ, statevars, p, ε=1e-8):
     SA2n = array(statevars[63:84], like=λ, shape=(21,))
 
     CT = tensor_abs(λ**2 - 1 / λ)
-    CTS = maximum(CT, maximum(CTSn, ε * λ / λ))
+    CTS = maximum(CT, CTSn)
 
     L1 = 2 * (λ**3 / λn - λn**2) / 3
     L2 = (λn**2 / λ**3 - 1 / λn) / 3
-    LT = ε + tensor_abs(L1 - L2)
+    LT = tensor_abs(L1 - L2)
 
     sigmoid = lambda x: 1 / sqrt(1 + x**2)
     α = p[0] + p[1] * sigmoid(p[2] * CTS)
     β = p[3] * sigmoid(p[2] * CTS)
     γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
 
-    L1_LT = L1 / LT
-    L2_LT = L2 / LT
-    CT_CTS = CT / CTS
+    L1_LT = L1 / (ε + LT)
+    L2_LT = L2 / (ε + LT)
+    CT_CTS = CT / (ε + CTS)
 
     SL1 = (γ * exp(p[6] * L1_LT * CT_CTS) + p[7] * L1_LT) / λ**2
     SL2 = (γ * exp(p[6] * L2_LT * CT_CTS) + p[7] * L2_LT) * λ

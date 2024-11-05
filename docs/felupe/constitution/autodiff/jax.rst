@@ -28,9 +28,14 @@ These material model formulations are defined by a strain energy density functio
 
 **Material Models for** :class:`felupe.constitution.jax.Material`
 
+The material model formulations are defined by the first Piola-Kirchhoff stress tensor.
+Function-decorators are available to use Total-Lagrange and Updated-Lagrange material
+formulations in :class:`~felupe.constitution.jax.Material`.
+
 .. autosummary::
 
    felupe.constitution.jax.models.lagrange.morph
+   felupe.constitution.jax.models.lagrange.morph_representative_directions
 
 **Tools**
 
@@ -61,5 +66,7 @@ These material model formulations are defined by a strain energy density functio
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.yeoh
 
 .. autofunction:: felupe.constitution.jax.models.lagrange.morph
+
+.. autofunction:: felupe.constitution.jax.models.lagrange.morph_representative_directions
 
 .. autofunction:: felupe.constitution.jax.vmap

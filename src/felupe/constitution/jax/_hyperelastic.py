@@ -21,7 +21,7 @@ import warnings
 import numpy as np
 
 from .._material import Material
-from ._tools import total_lagrange, vmap2
+from ._helpers import as_total_lagrange, vmap2
 
 
 class Hyperelastic(Material):
@@ -147,7 +147,7 @@ class Hyperelastic(Material):
         import jax
 
         has_aux = nstatevars > 0
-        self.fun = total_lagrange(fun)
+        self.fun = as_total_lagrange(fun)
 
         if parallel:
             warnings.warn("Parallel execution is not implemented.")

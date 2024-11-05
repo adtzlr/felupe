@@ -21,7 +21,7 @@ import warnings
 import numpy as np
 
 from .._material import Material as MaterialDefault
-from ._tools import vmap2
+from ._helpers import vmap2
 
 
 class Material(MaterialDefault):

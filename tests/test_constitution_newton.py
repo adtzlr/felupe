@@ -42,7 +42,7 @@ def test_visco_newton():
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-    @mat.models.hyperelastic.isochoric_volumetric_split
+    @mat.isochoric_volumetric_split
     def finite_strain_viscoelastic_newton(C, Cin, mu, eta, dtime):
         "Finite Strain Viscoelastic material formulation."
 
@@ -94,7 +94,7 @@ def test_visco_newton_jax():
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-    @mat.models.hyperelastic.isochoric_volumetric_split
+    @mat.isochoric_volumetric_split
     def finite_strain_viscoelastic_newton(C, statevars, mu, eta, dtime):
         "Finite Strain Viscoelastic material formulation."
 

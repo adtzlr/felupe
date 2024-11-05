@@ -34,7 +34,7 @@ def morph_uniaxial(λ, statevars, p, ε=1e-6):
     p : list of float
         A list which contains the 8 material parameters.
     ε : float, optional
-        A small stabilization parameter (default is 1e-8).
+        A small stabilization parameter (default is 1e-6).
 
     References
     ----------

@@ -19,7 +19,7 @@ from ._morph_uniaxial import morph_uniaxial
 from .microsphere import affine_force_statevars
 
 
-def morph_representative_directions(F, statevars, p, ε=1e-8):
+def morph_representative_directions(F, statevars, p, ε=1e-6):
     """First Piola-Kirchhoff stress tensor of the
     `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ model formulation [1]_,
     implemented by the concept of
@@ -28,25 +28,34 @@ def morph_representative_directions(F, statevars, p, ε=1e-8):
 
     Parameters
     ----------
-    F : tensortrax.Tensor
+    F : tensortrax.Tensor or jax.Array
         Deformation gradient tensor.
     statevars : array
         Vector of stacked state variables (CTS, λ - 1, SA1, SA2).
     p : list of float
         A list which contains the 8 material parameters.
     ε : float, optional
-        A small stabilization parameter (default is 1e-8).
+        A small stabilization parameter (default is 1e-6).
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
-        >>> import felupe.constitution.tensortrax as mat
         >>>
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the material.
+
+    ..  pyvista-plot::
+        :context:
+
         >>> umat = mat.Material(
-        ...     fem.morph_representative_directions,
+        ...     mat.models.lagrange.morph_representative_directions,
         ...     p=[0.011, 0.408, 0.421, 6.85, 0.0056, 5.54, 5.84, 0.117],
         ...     nstatevars=84,
         ... )

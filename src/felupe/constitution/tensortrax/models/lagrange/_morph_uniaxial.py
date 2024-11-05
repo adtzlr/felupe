@@ -20,21 +20,21 @@ from tensortrax.math import array, exp, maximum, sqrt
 from tensortrax.math.special import try_stack
 
 
-def morph_uniaxial(λ, statevars, p, ε=1e-8):
+def morph_uniaxial(λ, statevars, p, ε=1e-6):
     """Return the force (per undeformed area) for a given longitudinal stretch in
     uniaxial incompressible tension or compression for the MORPH material
     formulation [1]_, [2]_.
 
     Parameters
     ----------
-    λ : tensortrax.Tensor
+    λ : tensortrax.Tensor or jax.Array
         Longitudinal stretch of uniaxial incompressible deformation.
     statevars : array
         Vector of stacked state variables (CTS, λ - 1, SA1, SA2).
     p : list of float
         A list which contains the 8 material parameters.
     ε : float, optional
-        A small stabilization parameter (default is 1e-8).
+        A small stabilization parameter (default is 1e-6).
 
     References
     ----------

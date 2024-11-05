@@ -29,7 +29,7 @@ def morph(F, statevars, p):
 
     Parameters
     ----------
-    F : tensortrax.Tensor
+    F : tensortrax.Tensor or jax.Array
         Deformation gradient tensor.
     statevars : array
         Vector of stacked state variables (CTS, C, SA).
@@ -130,13 +130,23 @@ def morph(F, statevars, p):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
         >>>
-        >>> umat = fem.MaterialAD(
-        ...     fem.morph,
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the material.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> umat = mat.Material(
+        ...     mat.models.lagrange.morph,
         ...     p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
         ...     nstatevars=13,
         ... )

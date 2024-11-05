@@ -22,14 +22,13 @@ from .small_strain.models import (
 )
 from .tensortrax import Hyperelastic
 from .tensortrax import Material as MaterialAD
-from .tensortrax import total_lagrange, updated_lagrange
+from .tensortrax import isochoric_volumetric_split, total_lagrange, updated_lagrange
 from .tensortrax.models.hyperelastic import (
     alexander,
     anssari_benam_bucchi,
     arruda_boyce,
     extended_tube,
     finite_strain_viscoelastic,
-    isochoric_volumetric_split,
     lopez_pamies,
     miehe_goektepe_lulei,
     mooney_rivlin,

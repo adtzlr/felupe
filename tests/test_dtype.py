@@ -62,7 +62,7 @@ def test_dtype_axi():
 
 def test_dtype_planestrain():
     mesh = fem.Rectangle(n=3)
-    region = fem.RegionQuad(mesh).astype(np.float32)
+    region = fem.RegionQuad(mesh, hess=True).astype(np.float32)
     displacement = fem.FieldPlaneStrain(region, dtype=np.float32)
     field = fem.FieldContainer([displacement])
 

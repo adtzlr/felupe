@@ -14,7 +14,6 @@ from ._anssari_benam_bucchi import anssari_benam_bucchi
 from ._arruda_boyce import arruda_boyce
 from ._extended_tube import extended_tube
 from ._finite_strain_viscoelastic import finite_strain_viscoelastic
-from ._helpers import isochoric_volumetric_split
 from ._lopez_pamies import lopez_pamies
 from ._miehe_goektepe_lulei import miehe_goektepe_lulei
 from ._mooney_rivlin import mooney_rivlin
@@ -33,7 +32,6 @@ __all__ = [
     "arruda_boyce",
     "extended_tube",
     "finite_strain_viscoelastic",
-    "isochoric_volumetric_split",
     "lopez_pamies",
     "miehe_goektepe_lulei",
     "mooney_rivlin",

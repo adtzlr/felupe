@@ -90,7 +90,7 @@ def vmap2(fun, in_axes=0, out_axes=0, **kwargs):
     )
 
 
-def total_lagrange(fun):
+def as_total_lagrange(fun):
     import jax.numpy as jnp
 
     @wraps(fun)
@@ -101,3 +101,15 @@ def total_lagrange(fun):
         return fun(C, *args, **kwargs)
 
     return evaluate
+
+
+def isochoric_volumetric_split(fun):
+    """Apply the material formulation only on the isochoric part of the
+    multiplicative split of the deformation gradient."""
+    from jax.numpy.linalg import det
+
+    @wraps(fun)
+    def apply_iso(C, *args, **kwargs):
+        return fun(det(C) ** (-1 / 3) * C, *args, **kwargs)
+
+    return apply_iso

@@ -32,7 +32,7 @@ import felupe as fem
 
 def test_dtype(dtype=np.float32, tol=1e-3):
     mesh = fem.Cube(n=3)
-    region = fem.RegionHexahedron(mesh).astype(dtype)
+    region = fem.RegionHexahedron(mesh).astype(dtype, copy=False)
     displacement = fem.Field(region, dim=3, dtype=dtype)
     field = fem.FieldContainer([displacement])
 
@@ -62,7 +62,7 @@ def test_dtype_axi():
 
 def test_dtype_planestrain():
     mesh = fem.Rectangle(n=3)
-    region = fem.RegionQuad(mesh).astype(np.float32)
+    region = fem.RegionQuad(mesh, hess=True).astype(np.float32)
     displacement = fem.FieldPlaneStrain(region, dtype=np.float32)
     field = fem.FieldContainer([displacement])
 

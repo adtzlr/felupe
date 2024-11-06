@@ -149,14 +149,17 @@ class Region:
         self.evaluate_hessian = hess
         self.reload(mesh=mesh, element=element, quadrature=quadrature, uniform=uniform)
 
-    def astype(self, dtype=None):
+    def astype(self, dtype, copy=True):
         """Copy the region and cast the arrays to a specified type.
 
         Parameters
         ----------
-        dtype : data-type or None, optional
-            The data-type of the arrays of the Region. If None, a copy of the Region is
-            returned.
+        dtype : str or dtype
+            Typecode or data-type to which the arrays of the region are cast.
+        copy : bool, optional
+            By default, astype always returns a copy of the region with newly allocated
+            arrays. If False, the arrays of the input region are modified and the input
+            region is returned. Default is True.
 
         Returns
         -------
@@ -168,7 +171,11 @@ class Region:
         felupe.region.copy : Return a copy of the region and reload it if necessary.
         """
 
-        region = self.copy(uniform=self.uniform)
+        region = self
+
+        if copy:
+            region = region.copy(uniform=self.uniform)
+
         region.h = region.h.astype(dtype)
         region.dhdr = region.dhdr.astype(dtype)
 
@@ -177,6 +184,10 @@ class Region:
             region.dXdr = region.dXdr.astype(dtype)
             region.dhdX = region.dhdX.astype(dtype)
             region.dV = region.dV.astype(dtype)
+
+        if region.evaluate_hessian:
+            region.d2hdrdr = region.d2hdrdr.astype(dtype)
+            region.d2hdXdX = region.d2hdXdX.astype(dtype)
 
         return region
 

@@ -14,10 +14,12 @@ All notable changes to this project will be documented in this file. The format 
 - Add `constitution.jax.Material(..., jacobian=None)` with JAX as backend. A custom jacobian-callable may be passed to switch between forward- and backward-mode automatic differentiation.
 - Add material models for JAX-based materials: `felupe.constitution.jax.models.hyperelastic.mooney_rivlin()`, `felupe.constitution.jax.models.hyperelastic.yeoh()`, `felupe.constitution.jax.models.hyperelastic.third_order_deformation()`, `felupe.constitution.jax.models.lagrange.morph()`, `felupe.constitution.jax.models.lagrange.morph_representative_directions()`.
 - Add `felupe.constitution.jax.total_lagrange()`, `felupe.constitution.jax.updated_lagrange()` and `felupe.constitution.jax.models.hyperelastic.isochoric_volumetric_split()` function decorators for the JAX hyperelastic material class.
+- Add an optional keyword-argument `Region.astype(copy=True)` to modify the data types of the arrays of the region in-place if `copy=False`.
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.
 - Change supported Python versions to 3.9 - 3.12.
+- Change the `dtype`-argument in `Region.astype(dtype)` from an optional to a required argument.
 
 ### Fixed
 - Fix the number of points for non-disconnected dual meshes. This reduces the assembled (sparse) vector- and matrix-shapes, which are defined on mixed-fields.

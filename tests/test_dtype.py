@@ -32,7 +32,7 @@ import felupe as fem
 
 def test_dtype(dtype=np.float32, tol=1e-3):
     mesh = fem.Cube(n=3)
-    region = fem.RegionHexahedron(mesh).astype(dtype)
+    region = fem.RegionHexahedron(mesh).astype(dtype, copy=False)
     displacement = fem.Field(region, dim=3, dtype=dtype)
     field = fem.FieldContainer([displacement])
 

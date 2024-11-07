@@ -139,18 +139,26 @@ class Hyperelastic(Material):
 
     See Also
     --------
-    saint_venant_kirchhoff : Strain energy function of the Saint
-        Venant-Kirchhoff material formulation.
-    neo_hooke : Strain energy function of the Neo-Hookean material formulation.
-    mooney_rivlin : Strain energy function of the Mooney-Rivlin material formulation.
-    yeoh : "Strain energy function of the Yeoh material formulation.
-    third_order_deformation : Strain energy function of the
-        Third-Order-Deformation material formulation.
-    ogden : Strain energy function of the Ogden material formulation.
-    arruda_boyce : Strain energy function of the Arruda-Boyce material formulation.
-    extended_tube : Strain energy function of the Extended-Tube material formulation.
-    van_der_waals : Strain energy function of the Van der Waals material formulation.
-    finite_strain_viscoelastic : Finite strain viscoelastic material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.saint_venant_kirchhoff : Strain
+        energy function of the Saint Venant-Kirchhoff material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.neo_hooke : Strain energy
+        function of the Neo-Hookean material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.mooney_rivlin : Strain energy
+        function of the Mooney-Rivlin material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.yeoh : "Strain energy function of
+        the Yeoh material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.third_order_deformation : Strain
+        energy function of the Third-Order-Deformation material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.ogden : Strain energy function of
+        the Ogden material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.arruda_boyce : Strain energy
+        function of the Arruda-Boyce material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.extended_tube : Strain energy
+        function of the Extended-Tube material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.van_der_waals : Strain energy
+        function of the Van der Waals material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.finite_strain_viscoelastic :
+        Finite strain viscoelastic material formulation.
 
     """
 

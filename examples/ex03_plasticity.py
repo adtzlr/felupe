@@ -27,7 +27,7 @@ import numpy as np
 
 import felupe as fem
 
-mesh = fem.Cube(b=(3, 1, 1), n=(16, 6, 6))
+mesh = fem.Cube(b=(3, 1, 1), n=(10, 4, 4))
 region = fem.RegionHexahedron(mesh)
 displacement = fem.Field(region, dim=3)
 field = fem.FieldContainer([displacement])

@@ -7,24 +7,26 @@ This page contains material model formulations with automatic differentiation us
 
 **Frameworks**
 
-.. currentmodule:: felupe
+.. currentmodule:: felupe.constitution.jax
 
 .. autosummary::
    
-   constitution.jax.Hyperelastic
-   constitution.jax.Material
-   constitution.jax.total_lagrange
-   constitution.jax.updated_lagrange
+   Hyperelastic
+   Material
+   total_lagrange
+   updated_lagrange
 
 **Material Models for** :class:`felupe.constitution.jax.Hyperelastic`
 
 These material model formulations are defined by a strain energy density function.
 
+.. currentmodule:: felupe.constitution.jax.models.hyperelastic
+
 .. autosummary::
 
-   felupe.constitution.jax.models.hyperelastic.mooney_rivlin
-   felupe.constitution.jax.models.hyperelastic.third_order_deformation
-   felupe.constitution.jax.models.hyperelastic.yeoh
+   mooney_rivlin
+   third_order_deformation
+   yeoh
 
 **Material Models for** :class:`felupe.constitution.jax.Material`
 
@@ -32,16 +34,20 @@ The material model formulations are defined by the first Piola-Kirchhoff stress 
 Function-decorators are available to use Total-Lagrange and Updated-Lagrange material
 formulations in :class:`~felupe.constitution.jax.Material`.
 
+.. currentmodule:: felupe.constitution.jax.models.lagrange
+
 .. autosummary::
 
-   felupe.constitution.jax.models.lagrange.morph
-   felupe.constitution.jax.models.lagrange.morph_representative_directions
+   morph
+   morph_representative_directions
 
 **Tools**
 
+.. currentmodule:: felupe.constitution.jax
+
 .. autosummary::
    
-   constitution.jax.vmap
+   vmap
 
 **Detailed API Reference**
 

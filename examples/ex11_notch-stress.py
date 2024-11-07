@@ -22,9 +22,9 @@ Notch Stress
       pip install pypardiso
 
 A linear-elastic notched plate is subjected to uniaxial tension. The cell-based mean of
-the stress tensor is projected to the mesh-points and its maximum principal value is plotted. FElupe has no quadratic wedge element formulation
-implemented and hence, the quadratic wedges in the mesh are converted to quadratic
-hexahedrons.
+the stress tensor is projected to the mesh-points and its maximum principal value is
+plotted. FElupe has no wedge element formulation implemented and hence, the wedges in
+the mesh are converted to hexahedrons.
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -36,13 +36,13 @@ import felupe as fem
 
 m = pv.examples.download_notch_displacement()
 
-hex20 = [0, 2, 1, 1, 3, 5, 4, 4, 8, 7, 1, 6, 11, 10, 4, 9, 12, 14, 13, 13]
+hex8 = [0, 2, 1, 1, 3, 5, 4, 4]
 mesh = fem.Mesh(
     m.points * 250,
-    np.vstack([m.cells_dict[25], m.cells_dict[26][:, hex20]]),
-    "hexahedron20",
+    np.vstack([m.cells_dict[25][:, :8], m.cells_dict[26][:, hex8]]),
+    "hexahedron",
 )
-region = fem.RegionQuadraticHexahedron(mesh)
+region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, move=0.02)
@@ -64,7 +64,7 @@ solid.plot(
 # principal value of the Cauchy stress tensor is used to evaluate the fatigue life.
 # For simplicity, the stress is evaluated for the total solid body. To consider only
 # stresses on points which lie on the surface of the solid body, the cells on faces
-# :meth:`~felupe.RegionQuadraticHexahedronBoundary.mesh.cells_faces` must be determined
+# :meth:`~felupe.RegionHexahedronBoundary.mesh.cells_faces` must be determined
 # first.
 #
 # .. math::

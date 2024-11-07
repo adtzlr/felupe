@@ -12,18 +12,20 @@ This page contains hyperelastic material model formulations with automatic diffe
 
 **Frameworks**
 
-.. currentmodule:: felupe
+.. currentmodule:: felupe.constitution.tensortrax
 
 .. autosummary::
    
-   constitution.tensortrax.Hyperelastic
-   constitution.tensortrax.Material
-   constitution.tensortrax.total_lagrange
-   constitution.tensortrax.updated_lagrange
+   Hyperelastic
+   Material
+   total_lagrange
+   updated_lagrange
 
 **Material Models for** :class:`felupe.constitution.tensortrax.Hyperelastic`
 
 These material model formulations are defined by a strain energy density function.
+
+.. currentmodule:: felupe.constitution.tensortrax.models.hyperelastic
 
 .. autosummary::
 
@@ -46,8 +48,11 @@ These material model formulations are defined by a strain energy density functio
 **Material Models for** :class:`felupe.constitution.tensortrax.Material`
 
 The material model formulations are defined by the first Piola-Kirchhoff stress tensor.
-Function-decorators are available to use Total-Lagrange and Updated-Lagrange material
-formulations in :class:`~felupe.constitution.tensortrax.Material`.
+Function-decorators are available to use :func:`~felupe.constitution.tensortrax.total_lagrange`
+and :func:`~felupe.constitution.tensortrax.updated_lagrange` material formulations in
+:class:`~felupe.constitution.tensortrax.Material`.
+
+.. currentmodule:: felupe.constitution.tensortrax.models.lagrange
 
 .. autosummary::
 
@@ -84,36 +89,36 @@ formulations in :class:`~felupe.constitution.tensortrax.Material`.
 
 .. autofunction:: felupe.updated_lagrange
 
-.. autofunction:: felupe.alexander
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.alexander
 
-.. autofunction:: felupe.anssari_benam_bucchi
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.anssari_benam_bucchi
 
-.. autofunction:: felupe.arruda_boyce
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.arruda_boyce
 
-.. autofunction:: felupe.extended_tube
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.extended_tube
 
-.. autofunction:: felupe.finite_strain_viscoelastic
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.finite_strain_viscoelastic
 
-.. autofunction:: felupe.lopez_pamies
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.lopez_pamies
 
-.. autofunction:: felupe.miehe_goektepe_lulei
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.miehe_goektepe_lulei
 
-.. autofunction:: felupe.mooney_rivlin
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.mooney_rivlin
 
-.. autofunction:: felupe.neo_hooke
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.neo_hooke
 
-.. autofunction:: felupe.ogden
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.ogden
 
-.. autofunction:: felupe.ogden_roxburgh
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.ogden_roxburgh
 
-.. autofunction:: felupe.saint_venant_kirchhoff
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.saint_venant_kirchhoff
 
-.. autofunction:: felupe.third_order_deformation
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.third_order_deformation
 
-.. autofunction:: felupe.van_der_waals
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.van_der_waals
 
-.. autofunction:: felupe.yeoh
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.yeoh
 
-.. autofunction:: felupe.morph
+.. autofunction:: felupe.constitution.tensortrax.models.lagrange.morph
 
-.. autofunction:: felupe.morph_representative_directions
+.. autofunction:: felupe.constitution.tensortrax.models.lagrange.morph_representative_directions

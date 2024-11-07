@@ -45,3 +45,12 @@ It is straightforward to switch between these backends.
             return mu / 2 * (jnp.linalg.det(C) ** (-1/3) * jnp.trace(C) - 3)
 
         umat = mat.Hyperelastic(neo_hooke, mu=1.0)
+
+
+..  note::
+
+    The default backend is available in the top-level package namespace, this includes
+    all models from :mod:`felupe.constitution.tensortrax.models.hyperelastic` and
+    :mod:`felupe.constitution.tensortrax.models.lagrange` as well as the material
+    classes :class:`felupe.constitution.tensortrax.Material` and
+    :class:`felupe.constitution.tensortrax.Hyperelastic`.

@@ -42,6 +42,10 @@ mesh = fem.Mesh(
     np.vstack([m.cells_dict[25][:, :8], m.cells_dict[26][:, hex8]]),
     "hexahedron",
 )
+point_ids = np.zeros(mesh.npoints, dtype=int)
+point_ids[mesh.points_with_cells] = np.arange(len(mesh.points_with_cells))
+mesh.update(points=mesh.points[mesh.points_with_cells], cells=point_ids[mesh.cells])
+
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 

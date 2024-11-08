@@ -28,9 +28,8 @@ import felupe as fem
 import felupe.constitution.tensortrax as mat
 
 # %%
-# First, setup a problem as usual (mesh, region, field, boundaries and umat). For the
-# material definition we use matADi (``pip install madati``). We utilize matADi's lab-
-# capability to visualize the unstable material behavior in uniaxial tension.
+# First, setup a problem as usual (mesh, region, field, boundaries and umat). The
+# unstable material behavior is plotted for uniaxial incompressible tension.
 
 # setup a numeric region on a cube
 mesh = fem.Cube(n=2)
@@ -56,7 +55,7 @@ body = fem.SolidBodyNearlyIncompressible(yeoh, field, bulk=5000)
 
 # external force vector at x=1
 right = region.mesh.points[:, 0] == 1
-v = 0.01 * region.mesh.cells_per_point[right]
+v = region.mesh.cells_per_point[right]
 values_load = np.vstack([v, np.zeros_like(v), np.zeros_like(v)]).T
 
 load = fem.PointLoad(field, right, values_load)
@@ -119,7 +118,7 @@ with meshio.xdmf.TimeSeriesWriter("result.xdmf") as writer:
         x0=field[0][dof1],
         lpf0=0,
         dxmax=0.06,
-        dlpfmax=2,
+        dlpfmax=0.02,
         maxsteps=35,
         rebalance=True,
         overshoot=1.05,

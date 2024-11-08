@@ -46,11 +46,12 @@ import numpy as np
 
 import felupe as fem
 
-mesh = fem.Rectangle(b=(1, 25), n=(2, 6))
+mesh = fem.Rectangle(b=(1, 25), n=(2, 4))
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
-bounds = {"fix-y": fem.Boundary(field[0], fy=mesh.y.max(), mode="or", skip=(0, 1))}
-dof0, dof1 = fem.dof.partition(field, bounds)
+boundaries = fem.dof.symmetry(field[0], axes=(0, 1))
+boundaries["fix-y"] = fem.Boundary(field[0], fy=mesh.y.max(), mode="or", skip=(0, 1))
+dof0, dof1 = fem.dof.partition(field, boundaries)
 
 umat = fem.NeoHookeCompressible(mu=1)
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
@@ -103,9 +104,13 @@ Res = contique.solve(
     x0=field[0][dof1],
     lpf0=0,
     control0=(0, 1),
-    maxsteps=150,
+    dxmax=1.0,
+    dlpfmax=0.0075,
+    maxsteps=65,
     rebalance=True,
-    tol=1e-2,
+    tol=1e-3,
+    decrease=1.2,
+    increase=0.4,
 )
 X = np.array([res.x for res in Res])
 

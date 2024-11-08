@@ -2,7 +2,12 @@ r"""
 Numeric Continuation
 --------------------
 
-With the help of `contique <https://github.com/adtzlr/contique>`_ (install with ``pip install contique``) it is possible to apply a numerical parameter continuation algorithm on any system of equilibrium equations. This example demonstrates the usage of FElupe in conjunction with contique. An unstable isotropic hyperelastic material formulation is applied on a single hexahedron. The model will be visualized by the XDMF-output (of meshio) and the resulting force - displacement curve will be plotted.
+With the help of `contique <https://github.com/adtzlr/contique>`_ (install with
+``pip install contique``) it is possible to apply a numerical parameter continuation
+algorithm on any system of equilibrium equations. This example demonstrates the usage of
+FElupe in conjunction with contique. An unstable isotropic hyperelastic material
+formulation is applied on a single hexahedron. The model will be visualized and the
+resulting force - displacement curve will be plotted.
 
 .. topic:: Numeric continuation of a hyperelastic cube.
 
@@ -10,24 +15,17 @@ With the help of `contique <https://github.com/adtzlr/contique>`_ (install with 
    
    * on-the-fly XDMF-file export
    
-   * plot force-displacement curve
-
-.. admonition:: This example requires external packages.
-   :class: hint
-   
-   .. code-block::
-      
-      pip install contique matadi
+   * plot a force-displacement curve
 """
 
 # sphinx_gallery_thumbnail_number = -1
 import contique
-import matadi as mat
 import matplotlib.pyplot as plt
 import meshio
 import numpy as np
 
 import felupe as fem
+import felupe.constitution.tensortrax as mat
 
 # %%
 # First, setup a problem as usual (mesh, region, field, boundaries and umat). For the
@@ -46,20 +44,9 @@ bounds = fem.dof.symmetry(field[0], axes=(True, True, True))
 dof0, dof1 = fem.dof.partition(field, bounds)
 
 # constitutive isotropic hyperelastic material formulation
-yeoh = mat.MaterialHyperelastic(mat.models.yeoh, C10=0.5, C20=-0.25, C30=0.025, bulk=5)
-
-lab = mat.Lab(yeoh)
-data = lab.run(
-    ux=True,
-    bx=False,
-    ps=False,
-    shear=False,
-    stretch_min=1,
-    stretch_max=2.75,
-    num=100,
-)
-lab.plot(data)
-body = fem.SolidBody(yeoh, field)
+yeoh = mat.Hyperelastic(mat.models.hyperelastic.yeoh, C10=0.5, C20=-0.25, C30=0.025)
+ax = yeoh.plot(incompressible=True, ux=np.linspace(1, 2.76), bx=None, ps=None)
+body = fem.SolidBodyNearlyIncompressible(yeoh, field, bulk=5000)
 
 # %%
 # An external normal force is applied at :math:`x=1` on a quarter model of a cube with
@@ -131,23 +118,24 @@ with meshio.xdmf.TimeSeriesWriter("result.xdmf") as writer:
         jac=[dfundx, dfundl],
         x0=field[0][dof1],
         lpf0=0,
-        dxmax=0.05,
-        dlpfmax=0.5,
-        maxsteps=80,
+        dxmax=0.06,
+        dlpfmax=2,
+        maxsteps=35,
         rebalance=True,
         overshoot=1.05,
         callback=step_to_xdmf,
+        tol=1e-2,
     )
 
     X = np.array([res.x for res in Res])
 
 # check the final lpf value
-assert np.isclose(X[-1, -1], 11.759)
+assert np.isclose(X[-1, 1], -0.3982995)
 
 # %%
 # Finally, the force-displacement curve is plotted. It can be seen that the resulting
 # (unstable) force-controlled equilibrium path is equal to the displacement-controlled
-# load case of matADi's lab.
+# load case.
 
 plt.figure()
 plt.plot(X[:, 0], X[:, -1], "x-")

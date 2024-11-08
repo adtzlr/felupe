@@ -24,7 +24,7 @@ def miehe_goektepe_lulei(C, mu, N, U, p, q):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     mu : float
         Shear modulus (ground state stifness).
@@ -39,14 +39,23 @@ def miehe_goektepe_lulei(C, mu, N, U, p, q):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the hyperelastic material.
 
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
         >>>
-        >>> umat = fem.Hyperelastic(
-        ...     fem.miehe_goektepe_lulei,
+        >>> umat = mat.Hyperelastic(
+        ...     mat.models.hyperelastic.miehe_goektepe_lulei,
         ...     mu=0.1475,
         ...     N=3.273,
         ...     p=9.31,

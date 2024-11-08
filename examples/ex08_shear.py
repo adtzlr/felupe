@@ -16,13 +16,6 @@ Non-homogeneous shear
    
    * plot force - displacement curves
 
-.. admonition:: This example requires external packages.
-   :class: hint
-   
-   .. code-block::
-      
-      pip install matadi
-
 Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
 rigid plate on their top and bottom faces, are subjected to a displacement 
 controlled non-homogeneous shear deformation by :math:`u_{ext}` in combination 
@@ -74,23 +67,22 @@ dof0, dof1 = fem.dof.partition(field, boundaries)
 
 # %%
 # The micro-sphere material formulation is used for the rubber. It is defined
-# as a hyperelastic material in `matADi <https://github.com/adtzlr/matadi>`_. The
-# material formulation is finally applied on the plane-strain field, resulting in a
-# hyperelastic solid body.
+# as a :class:`~felupe.constitution.jax.Hyperelastic` JAX-based material. The material
+# formulation is finally applied on the plane-strain field, resulting in a hyperelastic
+# solid body.
 
-import matadi as mat
+import felupe.constitution.jax as mat
 
-umat = mat.MaterialHyperelastic(
-    mat.models.miehe_goektepe_lulei,
+umat = mat.Hyperelastic(
+    mat.models.hyperelastic.miehe_goektepe_lulei,
     mu=0.1475,
     N=3.273,
     p=9.31,
     U=9.94,
     q=0.567,
-    bulk=5000.0,
 )
 
-rubber = fem.SolidBody(umat=mat.ThreeFieldVariation(umat), field=field)
+rubber = fem.SolidBody(umat=fem.NearlyIncompressible(umat, bulk=5000), field=field)
 
 # %%
 # At the centerpoint of a multi-point constraint (MPC) the external shear
@@ -133,7 +125,7 @@ step = fem.Step(
     items=[rubber, mpc], ramp={boundaries["control"]: UX}, boundaries=boundaries
 )
 job = fem.Job(steps=[step], callback=callback)
-res = job.evaluate()
+res = job.evaluate(tol=1e-4)
 
 # %%
 # The principal stretches are evaluated for the maximum deformed configuration. This may

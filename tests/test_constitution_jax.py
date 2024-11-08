@@ -71,6 +71,7 @@ def test_hyperelastic_jax():
             md.mooney_rivlin,
             md.yeoh,
             md.third_order_deformation,
+            md.miehe_goektepe_lulei,
         ]:
             umat = mat.Hyperelastic(W, **W.kwargs)
             solid = fem.SolidBody(umat=umat, field=field)

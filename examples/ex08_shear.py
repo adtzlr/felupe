@@ -67,11 +67,12 @@ dof0, dof1 = fem.dof.partition(field, boundaries)
 
 # %%
 # The micro-sphere material formulation is used for the rubber. It is defined
-# as a :class:`~felupe.constitution.jax.Hyperelastic` JAX-based material. The material
+# as a :class:`~felupe.Hyperelastic` material. The material
 # formulation is finally applied on the plane-strain field, resulting in a hyperelastic
 # solid body.
 
-import felupe.constitution.jax as mat
+import felupe.constitution.tensortrax as mat
+# import felupe.constitution.jax as mat
 
 umat = mat.Hyperelastic(
     mat.models.hyperelastic.miehe_goektepe_lulei,
@@ -125,7 +126,7 @@ step = fem.Step(
     items=[rubber, mpc], ramp={boundaries["control"]: UX}, boundaries=boundaries
 )
 job = fem.Job(steps=[step], callback=callback)
-res = job.evaluate(tol=1e-2)
+res = job.evaluate()
 
 # %%
 # The principal stretches are evaluated for the maximum deformed configuration. This may

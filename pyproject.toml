@@ -67,7 +67,6 @@ autodiff = ["tensortrax", "jax"]
 examples = [
     "contique",
     "imageio",
-    "matadi",
     "pypardiso",
     "torch",
 ]

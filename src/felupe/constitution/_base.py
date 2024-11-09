@@ -445,24 +445,31 @@ def constitutive_material(Material, name=None):
     Examples
     --------
     This example shows how to create a derived user material class to enable the
-    methods from :class:`~felupe.ConstitutiveMaterial` on an externally defined user
-    material.
-
-    .. admonition:: This example requires external packages.
-       :class: hint
-
-       .. code-block::
-
-          pip install matadi
+    methods from :class:`~felupe.ConstitutiveMaterial` on any (external) material.
 
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
-        >>> import matadi as mat
+        >>> import numpy as np
         >>>
-        >>> MaterialHyperelastic = fem.constitutive_material(mat.MaterialHyperelastic)
-        >>> umat = MaterialHyperelastic(mat.models.neo_hooke, C10=0.5)
+        >>> class MyMaterialFormulation:
+        ...     def __init__(self, a=5):
+        ...         self.x = [np.zeros((3, 3))]
+        ...         self.kwargs = {"a": a}
+        ...
+        ...     def gradient(self, x):
+        ...         F, statevars = x[0], x[-1]
+        ...         dWdF = self.kwargs["a"] * fem.math.identity(F)
+        ...         return [dWdF, statevars]
+        ...
+        ...     def hessian(self, x, **kwargs):
+        ...         F, statevars = x[0], x[-1]
+        ...         d2WdFdF = self.kwargs["a"] * np.zeros((3, 3, 3, 3, *F.shape[2:]))
+        ...         return [d2WdFdF]
+        >>>
+        >>> MyMaterial = fem.constitutive_material(MyMaterialFormulation)
+        >>> umat = MyMaterial(a=0.5)
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

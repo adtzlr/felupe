@@ -1,10 +1,11 @@
+from jax.numpy import einsum, sqrt
+from jax.numpy.linalg import det, inv
+
 from ......quadrature import BazantOh
 
 
 def affine_stretch(C, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Affine stretch part."
-    from jax.numpy import einsum, sqrt
-    from jax.numpy.linalg import det
 
     r = quadrature.points
     w = quadrature.weights
@@ -17,8 +18,6 @@ def affine_stretch(C, f, kwargs, quadrature=BazantOh(n=21)):
 
 def affine_stretch_statevars(C, statevars, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Affine stretch part."
-    from jax.numpy import einsum, sqrt
-    from jax.numpy.linalg import det
 
     r = quadrature.points
     w = quadrature.weights
@@ -32,8 +31,6 @@ def affine_stretch_statevars(C, statevars, f, kwargs, quadrature=BazantOh(n=21))
 
 def affine_tube(C, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Affine area-stretch part."
-    from jax.numpy import einsum, sqrt
-    from jax.numpy.linalg import det, inv
 
     r = quadrature.points
     w = quadrature.weights
@@ -46,8 +43,6 @@ def affine_tube(C, f, kwargs, quadrature=BazantOh(n=21)):
 
 def affine_tube_statevars(C, statevars, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Affine area-stretch part."
-    from jax.numpy import einsum, sqrt
-    from jax.numpy.linalg import det, inv
 
     r = quadrature.points
     w = quadrature.weights

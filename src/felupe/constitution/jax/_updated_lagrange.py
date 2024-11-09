@@ -17,6 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
+import jax
+import jax.numpy as jnp
+
 
 def updated_lagrange(material):
     r"""Decorate a Cauchy-stress Updated-Lagrange material formulation as a first Piola-
@@ -53,8 +56,6 @@ def updated_lagrange(material):
         the partial derivative of the strain energy function w.r.t. the deformation
         gradient tensor with Automatic Differentiation provided by jax.
     """
-    import jax.numpy as jnp
-    from jax import Array
 
     @wraps(material)
     def first_piola_kirchhoff_stress(F, *args, **kwargs):
@@ -63,7 +64,7 @@ def updated_lagrange(material):
 
         # check if the material formulation returns state variables and extract
         # the Cauchy stress tensor
-        if isinstance(res, Array):
+        if isinstance(res, jax.Array):
             σ = res
             statevars_new = None
         else:

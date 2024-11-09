@@ -17,6 +17,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
+from jax.numpy import array, concatenate, diag, eye, maximum, sqrt, trace, triu_indices
+from jax.numpy.linalg import det, eigvalsh, inv
+from jax.scipy.linalg import expm
+
 from ....tensortrax.models.lagrange import morph as morph_docstring
 from ..._total_lagrange import total_lagrange
 
@@ -24,18 +28,6 @@ from ..._total_lagrange import total_lagrange
 @wraps(morph_docstring)
 @total_lagrange
 def morph(F, statevars, p):
-    from jax.numpy import (
-        array,
-        concatenate,
-        diag,
-        eye,
-        maximum,
-        sqrt,
-        trace,
-        triu_indices,
-    )
-    from jax.numpy.linalg import det, eigvalsh, inv
-    from jax.scipy.linalg import expm
 
     # right Cauchy-Green deformation tensor
     C = F.T @ F

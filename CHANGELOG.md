@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file. The format 
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.
 - Change supported Python versions to 3.9 - 3.12.
 - Change the `dtype`-argument in `Region.astype(dtype)` from an optional to a required argument.
+- Make `tensortrax` an optional dependency (again). Now FElupe does only depend on NumPy and SciPy, all other extras are optional.
 
 ### Fixed
 - Fix the number of points for non-disconnected dual meshes. This reduces the assembled (sparse) vector- and matrix-shapes, which are defined on mixed-fields.

@@ -65,16 +65,16 @@ where ``[all]`` is a combination of ``[io,parallel,plot,progress,view]`` and ins
 
 * `numpy <https://github.com/numpy/numpy>`_ for array operations
 * `scipy <https://github.com/scipy/scipy>`_ for sparse matrices
-* `tensortrax <https://github.com/adtzlr/tensortrax>`_ for automatic differentiation
 
 In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
 
 * `einsumt <https://github.com/mrkwjc/einsumt>`_ for parallel (threaded) assembly
-* `jax <https://github.com/jax-ml/jax>`_ for JAX-based material formulations
+* `jax <https://github.com/jax-ml/jax>`_ for automatic differentiation in material formulations (JAX-based)
 * `h5py <https://github.com/h5py/h5py>`_ for writing XDMF result files
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs
 * `meshio <https://github.com/nschloe/meshio>`_ for mesh-related I/O
 * `pyvista <https://github.com/pyvista/pyvista>`_ for interactive visualizations
+* `tensortrax <https://github.com/adtzlr/tensortrax>`_ for automatic differentiation in material formulations (NumPy-based)
 * `tqdm <https://github.com/tqdm/tqdm>`_ for showing progress bars during job evaluations
 
 The development version may contain not yet released bug fixes and features. Consider using the ``--user`` option to install the package into your home directory (see `pip documentation <https://pip.pypa.io/en/stable/user_guide/#user-installs>`_ for more details). To install FElupe from the latest development branch, use

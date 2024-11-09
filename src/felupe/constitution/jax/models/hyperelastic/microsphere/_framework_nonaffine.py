@@ -1,10 +1,11 @@
+from jax.numpy import einsum, sqrt
+from jax.numpy.linalg import det, inv
+
 from ......quadrature import BazantOh
 
 
 def nonaffine_stretch(C, p, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Non-affine stretch part."
-    from jax.numpy import einsum, sqrt
-    from jax.numpy.linalg import det
 
     r = quadrature.points
     w = quadrature.weights
@@ -20,8 +21,6 @@ def nonaffine_stretch(C, p, f, kwargs, quadrature=BazantOh(n=21)):
 
 def nonaffine_tube(C, q, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Non-affine tube part."
-    from jax.numpy import einsum, sqrt
-    from jax.numpy.linalg import det, inv
 
     r = quadrature.points
     w = quadrature.weights

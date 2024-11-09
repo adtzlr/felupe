@@ -51,7 +51,6 @@ dynamic = ["version"]
 dependencies = [
   "numpy",
   "scipy",
-  "tensortrax>=0.25.2",
 ]
 
 [project.optional-dependencies]
@@ -64,11 +63,11 @@ docs = [
     "sphinx-gallery",
     "pypandoc",
 ]
-constitution = ["jax"]
+autodiff = ["tensortrax", "jax"]
 examples = [
     "contique",
     "imageio",
-    "matadi>=0.2.2",
+    "matadi",
     "pypardiso",
     "torch",
 ]
@@ -81,8 +80,8 @@ progress = ["tqdm"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
 
-test = ["felupe[io,constitution,plot]"]
-all = ["felupe[io,constitution,parallel,plot,progress,view]"]
+test = ["felupe[io,autodiff,plot]"]
+all = ["felupe[io,autodiff,parallel,plot,progress,view]"]
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

@@ -15,9 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import inspect
 from functools import wraps
+
+import jax
+import jax.numpy as jnp
+from jax.numpy.linalg import det
 
 
 def vmap(fun, in_axes=0, out_axes=0, **kwargs):
@@ -29,8 +32,6 @@ def vmap(fun, in_axes=0, out_axes=0, **kwargs):
     jax.vmap : Vectorizing map. Creates a function which maps ``fun`` over argument
         axes.
     """
-
-    import jax
 
     @wraps(fun)
     def vmap_with_static_kwargs(*args, **keywordargs):
@@ -91,7 +92,6 @@ def vmap2(fun, in_axes=0, out_axes=0, **kwargs):
 
 
 def as_total_lagrange(fun):
-    import jax.numpy as jnp
 
     @wraps(fun)
     def evaluate(F, *args, **kwargs):
@@ -106,7 +106,6 @@ def as_total_lagrange(fun):
 def isochoric_volumetric_split(fun):
     """Apply the material formulation only on the isochoric part of the
     multiplicative split of the deformation gradient."""
-    from jax.numpy.linalg import det
 
     @wraps(fun)
     def apply_iso(C, *args, **kwargs):

@@ -17,13 +17,14 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
+from jax.numpy import trace
+from jax.numpy.linalg import det
+
 from ....tensortrax.models.hyperelastic import third_order_deformation as tod_docstring
 
 
 @wraps(tod_docstring)
 def third_order_deformation(C, C10, C01, C11, C20, C30):
-    from jax.numpy import trace
-    from jax.numpy.linalg import det
 
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)

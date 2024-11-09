@@ -17,6 +17,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
+import jax
+
 
 def total_lagrange(material):
     r"""Decorate a second Piola-Kirchhoff stress Total-Lagrange material formulation as
@@ -52,7 +54,6 @@ def total_lagrange(material):
         the partial derivative of the strain energy function w.r.t. the deformation
         gradient tensor with Automatic Differentiation provided by jax.
     """
-    from jax import Array
 
     @wraps(material)
     def first_piola_kirchhoff_stress(F, *args, **kwargs):
@@ -61,7 +62,7 @@ def total_lagrange(material):
 
         # check if the material formulation returns state variables and extract
         # the second Piola-Kirchhoff stress tensor
-        if isinstance(res, Array):
+        if isinstance(res, jax.Array):
             S = res
             statevars_new = None
         else:

@@ -80,7 +80,7 @@ progress = ["tqdm"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
 
-test = ["felupe[io,autodiff,plot]"]
+test = ["felupe[io,plot]"]
 all = ["felupe[io,autodiff,parallel,plot,progress,view]"]
 
 [tool.setuptools.dynamic]

@@ -17,13 +17,14 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
+from jax.numpy import abs as jabs
+from jax.numpy import concatenate, exp, maximum, sqrt
+
 from ....tensortrax.models.lagrange import morph_uniaxial as morph_ux
 
 
 @wraps(morph_ux)
 def morph_uniaxial(λ, statevars, p, ε=1e-6):
-    from jax.numpy import abs as jabs
-    from jax.numpy import concatenate, exp, maximum, sqrt
 
     CTSn = statevars[:21]
     λn = 1 + statevars[21:42]

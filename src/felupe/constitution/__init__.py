@@ -20,47 +20,8 @@ from .small_strain.models import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
 )
-from .tensortrax import Hyperelastic
-from .tensortrax import Material as MaterialAD
-from .tensortrax import isochoric_volumetric_split, total_lagrange, updated_lagrange
-from .tensortrax.models.hyperelastic import (
-    alexander,
-    anssari_benam_bucchi,
-    arruda_boyce,
-    extended_tube,
-    finite_strain_viscoelastic,
-    lopez_pamies,
-    miehe_goektepe_lulei,
-    mooney_rivlin,
-    neo_hooke,
-    ogden,
-    ogden_roxburgh,
-    saint_venant_kirchhoff,
-    third_order_deformation,
-    van_der_waals,
-    yeoh,
-)
-from .tensortrax.models.lagrange import morph, morph_representative_directions
 
 __all__ = [
-    "alexander",
-    "anssari_benam_bucchi",
-    "arruda_boyce",
-    "extended_tube",
-    "finite_strain_viscoelastic",
-    "isochoric_volumetric_split",
-    "lopez_pamies",
-    "miehe_goektepe_lulei",
-    "mooney_rivlin",
-    "morph",
-    "morph_representative_directions",
-    "neo_hooke",
-    "ogden",
-    "ogden_roxburgh",
-    "saint_venant_kirchhoff",
-    "third_order_deformation",
-    "van_der_waals",
-    "yeoh",
     "NeoHooke",
     "NeoHookeCompressible",
     "Laplace",
@@ -75,10 +36,6 @@ __all__ = [
     "LinearElasticPlasticIsotropicHardening",
     "Material",
     "MaterialStrain",
-    "MaterialAD",
-    "Hyperelastic",
-    "total_lagrange",
-    "updated_lagrange",
     "AreaChange",
     "LineChange",
     "VolumeChange",
@@ -93,3 +50,54 @@ __all__ = [
     "CompositeMaterial",
     "Volumetric",
 ]
+try:
+    from .tensortrax import Hyperelastic
+    from .tensortrax import Material as MaterialAD
+    from .tensortrax import isochoric_volumetric_split, total_lagrange, updated_lagrange
+    from .tensortrax.models.hyperelastic import (
+        alexander,
+        anssari_benam_bucchi,
+        arruda_boyce,
+        extended_tube,
+        finite_strain_viscoelastic,
+        lopez_pamies,
+        miehe_goektepe_lulei,
+        mooney_rivlin,
+        neo_hooke,
+        ogden,
+        ogden_roxburgh,
+        saint_venant_kirchhoff,
+        third_order_deformation,
+        van_der_waals,
+        yeoh,
+    )
+    from .tensortrax.models.lagrange import morph, morph_representative_directions
+
+    __all_tensortrax = [
+        "alexander",
+        "anssari_benam_bucchi",
+        "arruda_boyce",
+        "extended_tube",
+        "finite_strain_viscoelastic",
+        "isochoric_volumetric_split",
+        "lopez_pamies",
+        "miehe_goektepe_lulei",
+        "mooney_rivlin",
+        "morph",
+        "morph_representative_directions",
+        "neo_hooke",
+        "ogden",
+        "ogden_roxburgh",
+        "saint_venant_kirchhoff",
+        "third_order_deformation",
+        "van_der_waals",
+        "yeoh",
+        "MaterialAD",
+        "Hyperelastic",
+        "total_lagrange",
+        "updated_lagrange",
+    ]
+    __all__.extend(__all_tensortrax)
+
+except ImportError:
+    pass

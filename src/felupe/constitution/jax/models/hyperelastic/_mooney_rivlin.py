@@ -17,13 +17,14 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
+from jax.numpy import trace
+from jax.numpy.linalg import det
+
 from ....tensortrax.models.hyperelastic import mooney_rivlin as mooney_rivlin_docstring
 
 
 @wraps(mooney_rivlin_docstring)
 def mooney_rivlin(C, C10, C01):
-    from jax.numpy import trace
-    from jax.numpy.linalg import det
 
     J3 = det(C) ** (-1 / 3)
     I1 = J3 * trace(C)

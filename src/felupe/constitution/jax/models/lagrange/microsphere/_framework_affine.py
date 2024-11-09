@@ -15,6 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+from jax.numpy import einsum, sqrt, trace
+from jax.numpy.linalg import det, inv
+
 from ......quadrature import BazantOh
 from ...._total_lagrange import total_lagrange
 
@@ -22,9 +25,6 @@ from ...._total_lagrange import total_lagrange
 @total_lagrange
 def affine_force_statevars(F, statevars, f, kwargs, quadrature=BazantOh(n=21)):
     "Micro-sphere model: Affine force (stretch) part."
-
-    from jax.numpy import einsum, sqrt, trace
-    from jax.numpy.linalg import det, inv
 
     r = quadrature.points
     M = einsum("ai,aj->aij", r, r)

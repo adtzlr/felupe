@@ -18,6 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
 
+import jax
 import numpy as np
 
 from .._material import Material as MaterialDefault
@@ -158,7 +159,6 @@ class Material(MaterialDefault):
     def __init__(
         self, fun, nstatevars=0, jit=True, parallel=False, jacobian=None, **kwargs
     ):
-        import jax
 
         has_aux = nstatevars > 0
         self.fun = fun

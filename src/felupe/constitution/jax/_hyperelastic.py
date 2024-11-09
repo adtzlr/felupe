@@ -18,6 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
 
+import jax
 import numpy as np
 
 from .._material import Material
@@ -144,7 +145,6 @@ class Hyperelastic(Material):
     """
 
     def __init__(self, fun, nstatevars=0, jit=True, parallel=False, **kwargs):
-        import jax
 
         has_aux = nstatevars > 0
         self.fun = as_total_lagrange(fun)

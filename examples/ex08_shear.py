@@ -125,7 +125,7 @@ step = fem.Step(
     items=[rubber, mpc], ramp={boundaries["control"]: UX}, boundaries=boundaries
 )
 job = fem.Job(steps=[step], callback=callback)
-res = job.evaluate(tol=1e-4)
+res = job.evaluate(tol=1e-2)
 
 # %%
 # The principal stretches are evaluated for the maximum deformed configuration. This may

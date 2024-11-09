@@ -61,7 +61,7 @@ Install Python, fire up 🔥 a terminal and run 🏃
 
    pip install felupe[all]
 
-where ``[all]`` is a combination of ``[io,parallel,plot,progress,view]`` and installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
+where ``[all]`` is a combination of ``[autodiff,io,parallel,plot,progress,view]`` and installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
 
 * `numpy <https://github.com/numpy/numpy>`_ for array operations
 * `scipy <https://github.com/scipy/scipy>`_ for sparse matrices

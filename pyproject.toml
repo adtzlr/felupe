@@ -79,7 +79,7 @@ parallel = ["einsumt"]
 progress = ["tqdm"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
-all = ["felupe[io,autodiff,parallel,plot,progress,view]"]
+all = ["felupe[autodiff,io,parallel,plot,progress,view]"]
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

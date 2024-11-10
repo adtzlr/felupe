@@ -166,9 +166,6 @@ class Material(MaterialDefault):
         if jacobian is None:
             jacobian = jax.jacobian
 
-        if parallel:
-            warnings.warn("Parallel execution is not implemented.")
-
         keyword_args = kwargs
         if hasattr(fun, "kwargs"):
             keyword_args = {**fun.kwargs, **keyword_args}
@@ -180,12 +177,27 @@ class Material(MaterialDefault):
             **keyword_args,
         )
 
-        kwargs_jax = dict(in_axes=-1, out_axes=-1)
+        in_axes = out_axes_grad = [2, 3]
         if nstatevars > 0:
-            kwargs_jax["in_axes"] = (-1, -1)
+            in_axes = out_axes_grad = [(2, 1), (3, 2)]
 
-        self._grad = vmap2(self.fun, **kwargs_jax)
-        self._hess = vmap2(jacobian(self.fun, has_aux=has_aux), **kwargs_jax)
+        out_axes_hess = [4, 5]
+        if nstatevars > 0:
+            out_axes_hess = [(4, 1), (5, 2)]
+
+        methods = [jax.vmap, jax.vmap]
+        if parallel:
+            methods[0] = jax.pmap
+
+        self._grad = vmap2(
+            self.fun, in_axes=in_axes, out_axes=out_axes_grad, methods=methods
+        )
+        self._hess = vmap2(
+            jacobian(self.fun, has_aux=has_aux),
+            in_axes=in_axes,
+            out_axes=out_axes_hess,
+            methods=methods,
+        )
 
         if jit:
             self._grad = jax.jit(self._grad)

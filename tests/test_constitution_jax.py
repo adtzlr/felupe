@@ -42,7 +42,7 @@ def test_vmap():
     vf = fem.constitution.jax.vmap(f)
     vg = fem.constitution.jax.vmap(g)
 
-    x = np.eye(3).reshape(1, 3, 3) * np.ones((10, 1, 1))
+    x = (np.eye(3).reshape(1, 1, 3, 3) * np.ones((10, 2, 1, 1))).T
 
     z = vf(x, a=1.0)
 
@@ -83,7 +83,9 @@ def test_hyperelastic_jax_statevars():
         I3 = jnp.linalg.det(C)
         J = jnp.sqrt(I3)
         I1 = I3 ** (-1 / 3) * jnp.trace(C)
-        statevars_new = I1
+        statevars_new = I1.reshape(
+            1,
+        )
         return C10 * (I1 - 3) + K * (J - 1) ** 2 / 2, statevars_new
 
     W.kwargs = {"C10": 0.5}
@@ -132,7 +134,9 @@ def test_material_jax_statevars():
         dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
 
         P = 2 * C10 * F @ dev(Cu) @ jnp.linalg.inv(C)
-        statevars_new = J
+        statevars_new = J.reshape(
+            1,
+        )
         return P + K * (J - 1) * J * jnp.linalg.inv(C), statevars_new
 
     dWdF.kwargs = {"C10": 0.5}

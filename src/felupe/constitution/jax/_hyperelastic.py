@@ -86,7 +86,7 @@ class Hyperelastic(Material):
 
         import felupe as fem
         import felupe.constitution.jax as mat
-        import jax.numpy as np
+        import jax.numpy as jnp
 
         def viscoelastic(C, Cin, mu, eta, dtime):
             "Finite strain viscoelastic material formulation."
@@ -149,9 +149,6 @@ class Hyperelastic(Material):
         has_aux = nstatevars > 0
         self.fun = as_total_lagrange(fun)
 
-        if parallel:
-            warnings.warn("Parallel execution is not implemented.")
-
         keyword_args = kwargs
         if hasattr(fun, "kwargs"):
             keyword_args = {**fun.kwargs, **keyword_args}
@@ -163,14 +160,29 @@ class Hyperelastic(Material):
             **keyword_args,
         )
 
-        kwargs_jax = dict(in_axes=-1, out_axes=-1)
+        in_axes = out_axes_grad = [2, 3]
         if nstatevars > 0:
-            kwargs_jax["in_axes"] = (-1, -1)
+            in_axes = out_axes_grad = [(2, 1), (3, 2)]
 
-        self._grad = vmap2(jax.grad(self.fun, has_aux=has_aux), **kwargs_jax)
+        out_axes_hess = [4, 5]
+        if nstatevars > 0:
+            out_axes_hess = [(4, 1), (5, 2)]
+
+        methods = [jax.vmap, jax.vmap]
+        if parallel:
+            methods[0] = jax.pmap
+
+        self._grad = vmap2(
+            jax.grad(self.fun, has_aux=has_aux),
+            in_axes=in_axes,
+            out_axes=out_axes_grad,
+            methods=methods,
+        )
         self._hess = vmap2(
             jax.jacfwd(jax.grad(self.fun, has_aux=has_aux), has_aux=has_aux),
-            **kwargs_jax,
+            in_axes=in_axes,
+            out_axes=out_axes_hess,
+            methods=methods,
         )
 
         if jit:

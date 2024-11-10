@@ -44,8 +44,9 @@ class Hyperelastic(Material):
     jit : bool, optional
         A flag to invoke just-in-time compilation (default is True).
     parallel : bool, optional
-        A flag to invoke threaded strain energy density function evaluations (default
-        is False). Not implemented.
+        A flag to invoke parallel strain energy density function evaluations (default
+        is False). If True, the quadrature points are executed in parallel. The number
+        of devices must be greater or equal the number of quadrature points per cell.
     **kwargs : dict, optional
         Optional keyword-arguments for the strain energy density function.
 
@@ -170,7 +171,8 @@ class Hyperelastic(Material):
 
         methods = [jax.vmap, jax.vmap]
         if parallel:
-            methods[0] = jax.pmap
+            methods[0] = jax.pmap  # apply on quadrature-points
+            jit = False  # pmap uses jit
 
         self._grad = vmap2(
             jax.grad(self.fun, has_aux=has_aux),

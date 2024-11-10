@@ -44,8 +44,9 @@ class Material(MaterialDefault):
     jit : bool, optional
         A flag to invoke just-in-time compilation (default is True).
     parallel : bool, optional
-        A flag to invoke threaded function evaluations (defaultnis False). Not
-        implemented.
+        A flag to invoke parallel function evaluations (default is False). If True, the
+        quadrature points are executed in parallel. The number of devices must be
+        greater or equal the number of quadrature points per cell.
     jacobian : callable or None, optional
         A callable for the Jacobian. Default is None, where :func:`jax.jacobian` is
         used. This may be used to switch to forward-mode differentian
@@ -107,7 +108,7 @@ class Material(MaterialDefault):
             S = mu * dev(Cu @ jnp.linalg.inv(Ci)) @ jnp.linalg.inv(C)
 
             # first Piola-Kirchhoff stress tensor and state variable
-            i, j = triu_indices(3)
+            i, j = jnp.triu_indices(3)
             to_triu = lambda C: C[i, j]
             return F @ S, to_triu(Ci)
 
@@ -187,7 +188,8 @@ class Material(MaterialDefault):
 
         methods = [jax.vmap, jax.vmap]
         if parallel:
-            methods[0] = jax.pmap
+            methods[0] = jax.pmap  # apply on quadrature-points
+            jit = False  # pmap uses jit
 
         self._grad = vmap2(
             self.fun, in_axes=in_axes, out_axes=out_axes_grad, methods=methods

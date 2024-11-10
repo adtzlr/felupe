@@ -3,7 +3,30 @@
 Materials with Automatic Differentiation (JAX)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This page contains material model formulations with automatic differentiation using :mod:`jax`.
+This page contains material model formulations with automatic differentiation using
+:mod:`jax`.
+
+..  note::
+
+    JAX uses single-precision (32bit) data types by default. This requires to relax the
+    tolerance of :func:`~felupe.newtonrhapson` to ``tol=1e-4``. If required, JAX may be
+    enforced to use double-precision at startup with
+    ``jax.config.update("jax_enable_x64", True)``.
+
+..  note::
+
+    The number of local XLA devices available must be greater or equal the number of the
+    parallel-mapped axis, i.e. the number of quadrature points per cell when used in
+    :class:`~felupe.constitution.jax.Material` and
+    :class:`~felupe.constitution.jax.Hyperelastic` along with ``parallel=True``. To use
+    the multiple cores of a CPU device as multiple local XLA devices, the XLA device
+    count must be defined at startup.
+    
+    ..  code-block:: python
+        
+        import os
+
+        os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=4"
 
 **Frameworks**
 

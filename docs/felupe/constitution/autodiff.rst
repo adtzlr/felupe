@@ -15,12 +15,6 @@ automatic differentiation. The default backend is based on :mod:`tensortrax` whi
 with FElupe. For more computationally expensive material formulations, :mod:`jax` may
 be the preferred option.
 
-..  note::
-    JAX uses single-precision (32bit) data types by default. This requires to relax the
-    tolerance of :func:`~felupe.newtonrhapson` to ``tol=1e-4``. If required, JAX may be
-    enforced to use double-precision at startup with
-    ``jax.config.update("jax_enable_x64", True)``.
-
 It is straightforward to switch between these backends.
 
 ..  tab:: tensortrax (default)

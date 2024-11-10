@@ -44,8 +44,9 @@ class Material(MaterialDefault):
     jit : bool, optional
         A flag to invoke just-in-time compilation (default is True).
     parallel : bool, optional
-        A flag to invoke threaded function evaluations (defaultnis False). Not
-        implemented.
+        A flag to invoke parallel function evaluations (default is False). If True, the
+        quadrature points are executed in parallel. The number of devices must be
+        greater or equal the number of quadrature points per cell.
     jacobian : callable or None, optional
         A callable for the Jacobian. Default is None, where :func:`jax.jacobian` is
         used. This may be used to switch to forward-mode differentian
@@ -107,7 +108,7 @@ class Material(MaterialDefault):
             S = mu * dev(Cu @ jnp.linalg.inv(Ci)) @ jnp.linalg.inv(C)
 
             # first Piola-Kirchhoff stress tensor and state variable
-            i, j = triu_indices(3)
+            i, j = jnp.triu_indices(3)
             to_triu = lambda C: C[i, j]
             return F @ S, to_triu(Ci)
 
@@ -166,9 +167,6 @@ class Material(MaterialDefault):
         if jacobian is None:
             jacobian = jax.jacobian
 
-        if parallel:
-            warnings.warn("Parallel execution is not implemented.")
-
         keyword_args = kwargs
         if hasattr(fun, "kwargs"):
             keyword_args = {**fun.kwargs, **keyword_args}
@@ -180,12 +178,28 @@ class Material(MaterialDefault):
             **keyword_args,
         )
 
-        kwargs_jax = dict(in_axes=-1, out_axes=-1)
+        in_axes = out_axes_grad = [2, 3]
         if nstatevars > 0:
-            kwargs_jax["in_axes"] = (-1, -1)
+            in_axes = out_axes_grad = [(2, 1), (3, 2)]
 
-        self._grad = vmap2(self.fun, **kwargs_jax)
-        self._hess = vmap2(jacobian(self.fun, has_aux=has_aux), **kwargs_jax)
+        out_axes_hess = [4, 5]
+        if nstatevars > 0:
+            out_axes_hess = [(4, 1), (5, 2)]
+
+        methods = [jax.vmap, jax.vmap]
+        if parallel:
+            methods[0] = jax.pmap  # apply on quadrature-points
+            jit = False  # pmap uses jit
+
+        self._grad = vmap2(
+            self.fun, in_axes=in_axes, out_axes=out_axes_grad, methods=methods
+        )
+        self._hess = vmap2(
+            jacobian(self.fun, has_aux=has_aux),
+            in_axes=in_axes,
+            out_axes=out_axes_hess,
+            methods=methods,
+        )
 
         if jit:
             self._grad = jax.jit(self._grad)

@@ -23,7 +23,7 @@ import jax.numpy as jnp
 from jax.numpy.linalg import det
 
 
-def vmap(fun, in_axes=0, out_axes=0, **kwargs):
+def vmap(fun, in_axes=0, out_axes=0, method=jax.vmap, **kwargs):
     """Vectorizing map. Creates a function which maps ``fun`` over argument axes. This
     decorator treats all non-specified arguments and keyword-arguments as static.
 
@@ -74,19 +74,22 @@ def vmap(fun, in_axes=0, out_axes=0, **kwargs):
         static_argnums = len(args) + len(keyword_args) - len(in_axes_tuple)
         in_axes_new = (*in_axes_tuple, *([None] * static_argnums))
 
-        vfun = jax.vmap(fun, in_axes=in_axes_new, out_axes=out_axes, **kwargs)
+        vfun = method(fun, in_axes=in_axes_new, out_axes=out_axes, **kwargs)
 
         return vfun(*args, *keyword_args)
 
     return vmap_with_static_kwargs
 
 
-def vmap2(fun, in_axes=0, out_axes=0, **kwargs):
+def vmap2(fun, in_axes=[0, 0], out_axes=[0, 0], methods=[jax.vmap, jax.vmap], **kwargs):
     "Nested vectorizing map."
     return vmap(
-        vmap(fun, in_axes=in_axes, out_axes=out_axes, **kwargs),
-        in_axes=in_axes,
-        out_axes=out_axes,
+        vmap(
+            fun, in_axes=in_axes[0], out_axes=out_axes[0], method=methods[0], **kwargs
+        ),
+        in_axes=in_axes[1],
+        out_axes=out_axes[1],
+        method=methods[1],
         **kwargs,
     )
 

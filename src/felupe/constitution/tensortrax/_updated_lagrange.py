@@ -48,12 +48,12 @@ def updated_lagrange(material):
 
     See Also
     --------
-    felupe.Hyperelastic : A hyperelastic material definition with a given function for
-        the strain energy density function per unit undeformed volume with Automatic
-        Differentiation.
-    felupe.MaterialAD : A material definition with a given function for the partial
-        derivative of the strain energy function w.r.t. the deformation gradient tensor
-        with Automatic Differentiation.
+    felupe.constitution.tensortrax.Hyperelastic : A hyperelastic material definition
+        with a given function for the strain energy density function per unit undeformed
+        volume with Automatic Differentiation.
+    felupe.constitution.tensortrax.Material : A material definition with a given
+        function for the partial derivative of the strain energy function w.r.t. the
+        deformation gradient tensor with Automatic Differentiation.
     """
 
     @wraps(material)

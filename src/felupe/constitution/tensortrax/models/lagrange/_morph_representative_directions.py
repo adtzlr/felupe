@@ -100,7 +100,10 @@ def morph_representative_directions(F, statevars, p, ε=1e-6):
 
     See Also
     --------
-    felupe.morph : Strain energy function of the MORPH model formulation.
+    felupe.constitution.tensortrax.models.lagrange.morph : Strain energy function of the
+        MORPH model formulation.
+    felupe.constitution.jax.models.lagrange.morph : Strain energy function of the MORPH
+        model formulation.
     """
 
     def f(λ, statevars, **kwargs):

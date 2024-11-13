@@ -181,7 +181,7 @@ umat = mat.Material(
 # %%
 # .. note::
 #    The MORPH material model formulation is also available in FElupe, see
-#    :class:`~felupe.morph` (tensortrax) and
+#    :class:`~felupe.constitution.tensortrax.models.lagrange.morph` (tensortrax) and
 #    :class:`~felupe.constitution.jax.models.lagrange.morph` (JAX).
 #
 # The force-stress curves are shown for uniaxial incompressible tension cycles.

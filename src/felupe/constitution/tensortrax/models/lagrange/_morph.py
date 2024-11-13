@@ -181,8 +181,12 @@ def morph(F, statevars, p):
 
     See Also
     --------
-    felupe.morph_representative_directions : Strain energy function of the MORPH model
-        formulation, implemented by the concept of representative directions.
+    felupe.constitution.tensortrax.models.lagrange.morph_representative_directions :
+        Strain energy function of the MORPH model formulation, implemented by the
+        concept of representative directions.
+    felupe.constitution.jax.models.lagrange.morph_representative_directions : Strain
+        energy function of the MORPH model formulation, implemented by the concept of
+        representative directions.
     """
 
     # right Cauchy-Green deformation tensor

@@ -3,9 +3,17 @@ Voxelized Foot Bones
 --------------------
 A :class:`~felupe.Region` on a voxel-based mesh with uniform hexahedrons should be
 created with ``uniform=True`` to enhance performance.
+
+.. admonition:: This example requires external packages.
+   :class: hint
+   
+   .. code-block::
+      
+      pip install pypardiso
 """
 
 import numpy as np
+import pypardiso
 
 import felupe as fem
 
@@ -23,7 +31,7 @@ bottom = fem.MultiPointContact(
 )
 
 step = fem.Step(items=[solid, gravity, bottom], boundaries=boundaries)
-job = fem.Job(steps=[step]).evaluate()
+job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve, parallel=True)
 plotter = solid.plot(
     "Principal Values of Cauchy Stress",
     show_edges=False,

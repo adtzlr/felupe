@@ -95,7 +95,6 @@ def vmap2(fun, in_axes=[0, 0], out_axes=[0, 0], methods=[jax.vmap, jax.vmap], **
 
 
 def as_total_lagrange(fun):
-
     @wraps(fun)
     def evaluate(F, *args, **kwargs):
         i, j = jnp.triu_indices(3)

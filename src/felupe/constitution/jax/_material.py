@@ -160,7 +160,6 @@ class Material(MaterialDefault):
     def __init__(
         self, fun, nstatevars=0, jit=True, parallel=False, jacobian=None, **kwargs
     ):
-
         has_aux = nstatevars > 0
         self.fun = fun
 

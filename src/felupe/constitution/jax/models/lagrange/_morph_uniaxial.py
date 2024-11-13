@@ -25,7 +25,6 @@ from ....tensortrax.models.lagrange import morph_uniaxial as morph_ux
 
 @wraps(morph_ux)
 def morph_uniaxial(λ, statevars, p, ε=1e-6):
-
     CTSn = statevars[:21]
     λn = 1 + statevars[21:42]
     SA1n = statevars[42:63]

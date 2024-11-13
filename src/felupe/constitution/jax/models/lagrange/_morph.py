@@ -28,7 +28,6 @@ from ..._total_lagrange import total_lagrange
 @wraps(morph_docstring)
 @total_lagrange
 def morph(F, statevars, p):
-
     # right Cauchy-Green deformation tensor
     C = F.T @ F
 

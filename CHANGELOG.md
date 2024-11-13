@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add material models for JAX-based materials: `felupe.constitution.jax.models.hyperelastic.miehe_goektepe_lulei()`, `felupe.constitution.jax.models.hyperelastic.mooney_rivlin()`, `felupe.constitution.jax.models.hyperelastic.yeoh()`, `felupe.constitution.jax.models.hyperelastic.third_order_deformation()`, `felupe.constitution.jax.models.lagrange.morph()`, `felupe.constitution.jax.models.lagrange.morph_representative_directions()`.
 - Add `felupe.constitution.jax.total_lagrange()`, `felupe.constitution.jax.updated_lagrange()` and `felupe.constitution.jax.isochoric_volumetric_split()` function decorators for the JAX hyperelastic material class.
 - Add an optional keyword-argument `Region.astype(copy=True)` to modify the data types of the arrays of the region in-place if `copy=False`.
+- Add `field.evaluate.right_cauchy_green_deformation()` and `math.right_cauchy_green_deformation(field)` to evaluate the right Cauchy-Green deformation tensor.
+- Add `math.strain(field, C=None, ..., **kwargs)` to use a given right Cauchy-Green deformation tensor for the evaluation of the strain tensor.
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.

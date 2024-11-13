@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from ..math import right_cauchy_green_deformation as right_cauchy_green
 from ..math import strain, strain_stretch_1d
 
 
@@ -70,6 +71,22 @@ class EvaluateFieldContainer:
 
         """
         return self.field[0].extract()
+
+    def right_cauchy_green_deformation(self):
+        r"""Return the right Cauchy-Green deformation tensor.
+
+        .. math::
+           :label:right-cauchy-green-deformation-tensor
+
+           \boldsymbol{F} &= \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+
+           \boldsymbol{C} &= \boldsymbol{F}^T \boldsymbol{F}
+
+           \boldsymbol{C} &= \sum_\alpha \lambda^2_\alpha
+               \ \boldsymbol{N}_\alpha \otimes \boldsymbol{N}_\alpha
+
+        """
+        return right_cauchy_green(self.field)
 
     def strain(self, fun=strain_stretch_1d, tensor=True, asvoigt=False, n=0, **kwargs):
         r"""Return the Lagrangian strain tensor or its principal values.

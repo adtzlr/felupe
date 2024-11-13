@@ -35,6 +35,12 @@ def deformation_gradient(field, n=0):
     return field[n].extract(grad=True, sym=False, add_identity=True)
 
 
+def right_cauchy_green_deformation(field, n=0):
+    "Return the right Cauchy-Green deformation tensor of the n-th field."
+    F = deformation_gradient(field, n=n)
+    return dot(transpose(F), F)
+
+
 def strain_stretch_1d(stretch, k=0):
     r"""Compute the Seth-Hill strains.
 
@@ -66,13 +72,20 @@ def strain_stretch_1d(stretch, k=0):
     return strain
 
 
-def strain(field, fun=strain_stretch_1d, tensor=True, asvoigt=False, n=0, **kwargs):
+def strain(
+    field, C=None, fun=strain_stretch_1d, tensor=True, asvoigt=False, n=0, **kwargs
+):
     r"""Return Lagrangian strain tensor or its principal values of the n-th field.
 
     Parameters
     ----------
-    field : FieldContainer
-        A field container with a displacement field.
+    field : FieldContainer or None
+        A field container with a displacement field from which the deformation gradient
+        tensor is extracted if ``def_grad`` is None.
+    C : ndarray of shape (N, N, ...) or None, optional
+        Optional array of right Cauchy-Green deformation tensors. If None, the
+        right Cauchy-Green deformation tensor is obtained from the field. Default is
+        None.
     fun : callable, optional
         A callable for the one-dimensional strain-stretch relation. Function signature
         must be ``lambda stretch, **kwargs: strain`` (default is the log. strain,
@@ -132,8 +145,9 @@ def strain(field, fun=strain_stretch_1d, tensor=True, asvoigt=False, n=0, **kwar
     math.strain_stretch_1d : Compute the Seth-Hill strains.
     """
 
-    F = deformation_gradient(field)
-    C = dot(transpose(F), F)
+    if C is None:
+        F = deformation_gradient(field)
+        C = dot(transpose(F), F)
 
     if tensor:
         w, N = eigh(C)

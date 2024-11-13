@@ -146,7 +146,6 @@ class Hyperelastic(Material):
     """
 
     def __init__(self, fun, nstatevars=0, jit=True, parallel=False, **kwargs):
-
         has_aux = nstatevars > 0
         self.fun = as_total_lagrange(fun)
 

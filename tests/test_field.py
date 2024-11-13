@@ -163,6 +163,7 @@ def test_3d_mixed():
     f.evaluate.strain()
     f.evaluate.log_strain()
     f.evaluate.green_lagrange_strain()
+    f.evaluate.right_cauchy_green_deformation()
 
     f.extract()
     f.extract(grad=False)

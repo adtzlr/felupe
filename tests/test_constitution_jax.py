@@ -78,7 +78,6 @@ def test_hyperelastic_jax():
 
 
 def test_hyperelastic_jax_statevars():
-
     def W(C, statevars, C10, K):
         I3 = jnp.linalg.det(C)
         J = jnp.sqrt(I3)
@@ -99,7 +98,6 @@ def test_hyperelastic_jax_statevars():
 
 
 def test_material_jax():
-
     def dWdF(F, C10, K):
         J = jnp.linalg.det(F)
         C = F.T @ F
@@ -124,7 +122,6 @@ def test_material_jax():
 
 
 def test_material_jax_statevars():
-
     def dWdF(F, statevars, C10, K):
         J = jnp.linalg.det(F)
         C = F.T @ F
@@ -149,7 +146,6 @@ def test_material_jax_statevars():
 
 
 def test_material_included_jax_statevars():
-
     for fun, nstatevars in zip(
         [
             mat.models.lagrange.morph,

@@ -1,26 +1,15 @@
 r"""
-Voxelized Foot Bone
--------------------
+Voxelized Foot Bones
+--------------------
 A :class:`~felupe.Region` on a voxel-based mesh with uniform hexahedrons should be
 created with ``uniform=True`` to enhance performance.
 """
 
 import numpy as np
-import pyvista as pv
-from pyvista import examples
 
 import felupe as fem
 
-surface = examples.download_foot_bones()
-voxels = pv.voxelize(surface, density=0.6)
-
-mesh = fem.Mesh(
-    points=voxels.points,
-    cells=voxels.cell_connectivity.reshape(-1, 8),
-    cell_type="hexahedron",
-).rotate(90, axis=0)
-mesh.points *= 25
-mesh.update(points=np.vstack([mesh.points, [0, 0, mesh.z.min() - 2]]))
+mesh = fem.mesh.read("ex12_foot-bones_mesh-voxels.vtu")[0]
 
 region = fem.RegionHexahedron(mesh, uniform=True)
 field = fem.FieldContainer([fem.Field(region, dim=3)])

@@ -4,7 +4,7 @@ Notch Stress
 
 .. topic:: Three-dimensional linear-elastic analysis.
 
-   * read a mesh file
+   * create a hexahedron mesh
    
    * define a linear-elastic solid body
    
@@ -23,28 +23,35 @@ Notch Stress
 
 A linear-elastic notched plate is subjected to uniaxial tension. The cell-based mean of
 the stress tensor is projected to the mesh-points and its maximum principal value is
-plotted. FElupe has no wedge element formulation implemented and hence, the wedges in
-the mesh are converted to hexahedrons.
+plotted.
 """
 
 # sphinx_gallery_thumbnail_number = -1
-import numpy as np
 import pypardiso
-import pyvista as pv
 
 import felupe as fem
 
-m = pv.examples.download_notch_displacement()
+meshes = []
 
-hex8 = [0, 2, 1, 1, 3, 5, 4, 4]
-mesh = fem.Mesh(
-    m.points * 250,
-    np.vstack([m.cells_dict[25][:, :8], m.cells_dict[26][:, hex8]]),
-    "hexahedron",
+radius = fem.mesh.Point(a=-2.5).revolve(n=9, phi=90).translate(5, axis=1)
+radius = fem.mesh.flip(radius)
+middle = fem.mesh.Line(a=-7.5, b=0, n=9).expand(n=0)
+meshes.append(middle.fill_between(radius, n=6))
+
+left = fem.mesh.Line(-7.5, 5, n=11).expand(n=0).rotate(90, axis=2, center=[-7.5, 0])
+right = (
+    fem.mesh.Line(a=-2.5, b=5, n=11)
+    .expand(n=0)
+    .rotate(90, axis=2, center=[-2.5, 0])
+    .translate(5, axis=1)
 )
-point_ids = np.zeros(mesh.npoints, dtype=int)
-point_ids[mesh.points_with_cells] = np.arange(len(mesh.points_with_cells))
-mesh.update(points=mesh.points[mesh.points_with_cells], cells=point_ids[mesh.cells])
+meshes.append(right.fill_between(left, n=6))
+meshes.append(fem.Rectangle(a=(-50, 0), b=(-7.5, 12.5), n=(36, 11)))
+
+mesh = fem.MeshContainer(meshes, merge=True).stack()
+mesh = fem.MeshContainer([mesh, mesh.mirror(axis=0)], merge=True, decimals=6).stack()
+mesh = fem.MeshContainer([mesh, mesh.mirror(axis=1)], merge=True, decimals=6).stack()
+mesh = mesh.expand(n=3, z=2.5)
 
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])

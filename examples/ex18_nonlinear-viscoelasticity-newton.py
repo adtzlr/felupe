@@ -8,6 +8,7 @@ backward-Euler scheme and the resulting nonlinear algebraic equations for the
 internal variable are solved using Newton's method [2]_.
 """
 
+# sphinx_gallery_thumbnail_number = -1
 import tensortrax as tr
 import tensortrax.math as tm
 

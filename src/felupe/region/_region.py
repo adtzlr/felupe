@@ -168,7 +168,7 @@ class Region:
 
         See Also
         --------
-        felupe.region.copy : Return a copy of the region and reload it if necessary.
+        felupe.Region.copy : Return a copy of the region and reload it if necessary.
         """
 
         region = self

@@ -14,6 +14,7 @@ from ._anssari_benam_bucchi import anssari_benam_bucchi
 from ._arruda_boyce import arruda_boyce
 from ._extended_tube import extended_tube
 from ._finite_strain_viscoelastic import finite_strain_viscoelastic
+from ._foam import foam
 from ._lopez_pamies import lopez_pamies
 from ._miehe_goektepe_lulei import miehe_goektepe_lulei
 from ._mooney_rivlin import mooney_rivlin
@@ -32,6 +33,7 @@ __all__ = [
     "arruda_boyce",
     "extended_tube",
     "finite_strain_viscoelastic",
+    "foam",
     "lopez_pamies",
     "miehe_goektepe_lulei",
     "mooney_rivlin",
@@ -50,6 +52,7 @@ alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100, k=0)
 anssari_benam_bucchi.kwargs = dict(mu=0, N=100)
 arruda_boyce.kwargs = dict(C1=0, limit=100)
 extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
+foam.kwargs = dict(mu=[0, 0], alpha=[2, -2], beta=[1, 1])
 lopez_pamies.kwargs = dict(mu=[0, 0], alpha=[1, 4])
 miehe_goektepe_lulei.kwargs = dict(mu=0, N=100, U=0, p=2, q=2)
 mooney_rivlin.kwargs = dict(C10=0, C01=0)

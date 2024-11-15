@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from tensortrax.math import sum as tsum, sqrt
+from tensortrax.math import sum as tsum
 from tensortrax.math.linalg import det, eigvalsh
 
 
@@ -73,7 +73,7 @@ def foam(C, mu, alpha, beta):
 
         >>> import felupe.constitution.tensortrax as mat
 
-    and create the hyperelastic material.
+    and create the hyperelastic material [2]_.
 
     ..  pyvista-plot::
         :context:
@@ -82,14 +82,14 @@ def foam(C, mu, alpha, beta):
         >>>
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.foam,
-        ...     mu=[4.5 * (1.85 / 2), -4.5 * (-9.2 / 2)],
-        ...     alpha=[1.85, -9.2],
-        ...     beta=0.92,
+        ...     mu=[58.2225e-3, 20.9835e-3],
+        ...     alpha=[4.26621, 0.153096],
+        ...     beta=[50.8857, 0.041169],
         ... )
         >>> ax = umat.plot(
-        ...     ux=fem.math.linsteps([1, 2], 20),
-        ...     ps=fem.math.linsteps([1, 2], 20),
-        ...     bx=fem.math.linsteps([1, 1.5], 10),
+        ...     ux=fem.math.linsteps([1, 0.25], 15),
+        ...     ps=fem.math.linsteps([1, 0.25], 15),
+        ...     bx=fem.math.linsteps([1, 0.55], 9),
         ... )
 
     ..  pyvista-plot::
@@ -109,15 +109,17 @@ def foam(C, mu, alpha, beta):
        finite compressible elasticity", Journal of the Mechanics and Physics of Solids,
        vol. 34, no. 2. Elsevier BV, pp. 125–145, Jan. 1986. doi:
        10.1016/0022-5096(86)90033-5.
+
+    .. [2] A. Kossa and S. Berezvai, "Novel strategy for the hyperelastic parameter
+       fitting procedure of polymer foam materials", Polymer Testing, vol. 53. Elsevier
+       BV, pp. 149–155, Aug. 2016. doi: 10.1016/j.polymertesting.2016.05.014.
     """
 
-    I3 = det(C)
-    λ2 = I3 ** (-1 / 3) * eigvalsh(C)
-
-    β = beta
+    λ2 = eigvalsh(C)
+    
     return tsum(
         [
-            2 * μ / α**2 * ((tsum(λ2 ** (α / 2)) - 3) + (I3 ** (-α * β / 2) - 1) / β)
-            for μ, α in zip(mu, alpha)
+            2 * μ / α**2 * (tsum(λ2 ** (α / 2)) - 3 + (det(C) ** (-α * β / 2) - 1) / β)
+            for μ, α, β in zip(mu, alpha, beta)
         ]
     )

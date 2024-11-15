@@ -20,8 +20,8 @@ from tensortrax.math import sum as tsum
 from tensortrax.math.linalg import det, eigvalsh
 
 
-def foam(C, mu, alpha, beta):
-    r"""Strain energy function of the isotropic hyperelastic
+def storakers(C, mu, alpha, beta):
+    r"""Strain energy function of Storåkers' isotropic hyperelastic
     `Foam <https://doi.org/10.1016/0022-5096(86)90033-5>`_ material formulation [1]_.
 
     Parameters
@@ -50,14 +50,14 @@ def foam(C, mu, alpha, beta):
         \right]
 
     The sum of the moduli :math:`\mu_i` is equal to the initial shear modulus
-    :math:`\mu`, see Eq. :eq:`shear-modulus-foam`.
+    :math:`\mu`, see Eq. :eq:`shear-modulus-foam`,
 
     ..  math::
         :label: shear-modulus-ogden
 
         \mu = \sum_i \mu_i
 
-    The initial bulk modulus is given in Eq. :eq:`bulk-modulus-foam`.
+    and the initial bulk modulus is given in Eq. :eq:`bulk-modulus-foam`.
 
     ..  math::
         :label: bulk-modulus-ogden
@@ -81,10 +81,10 @@ def foam(C, mu, alpha, beta):
         >>> import felupe as fem
         >>>
         >>> umat = mat.Hyperelastic(
-        ...     mat.models.hyperelastic.foam,
-        ...     mu=[58.2225e-3, 20.9835e-3],
-        ...     alpha=[4.26621, 0.153096],
-        ...     beta=[50.8857, 0.041169],
+        ...     mat.models.hyperelastic.storakers,
+        ...     mu=[104.869e-3],
+        ...     alpha=[7.10874],
+        ...     beta=[0.106469],
         ... )
         >>> ax = umat.plot(
         ...     ux=fem.math.linsteps([1, 0.25], 15),

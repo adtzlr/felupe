@@ -28,7 +28,7 @@ def check_stretches(stretches):
     "Check if any stretch is lower or equal zero."
 
     if np.any(stretches <= 0.0):
-        raise ValueError("All stretches must greater than 0.")
+        raise ValueError("All stretches must be greater than 0.")
 
     return
 
@@ -193,7 +193,7 @@ class ViewMaterial(PlotMaterial):
         self.statevars_included = np.prod(self.umat.x[-1].shape) > 0
         self.statevars = statevars
 
-    def uniaxial(self, stretches=None):
+    def uniaxial(self, stretches=None, **kwargs):
         """Normal force per undeformed area vs. stretch curve for a uniaxial
         deformation.
 
@@ -237,7 +237,16 @@ class ViewMaterial(PlotMaterial):
 
         from scipy.optimize import root
 
-        λ2 = λ3 = root(fun, λ3).x
+        res = root(fun, λ3, **kwargs)
+
+        if not res.success:
+            λ2 = λ3 = np.ones_like(λ1)
+            res = root(fun, λ3, **kwargs)
+
+            if not res.success:
+                raise ValueError("Uniaxial deformation failed.")
+
+        λ2 = λ3 = res.x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
@@ -258,9 +267,9 @@ class ViewMaterial(PlotMaterial):
 
         return λ1, P[0, 0].ravel(), "Uniaxial"
 
-    def planar(self, stretches=None):
+    def planar(self, stretches=None, **kwargs):
         """Normal force per undeformed area vs stretch curve for a planar shear
-        incompressible deformation.
+        deformation.
 
         Parameters
         ----------
@@ -301,7 +310,16 @@ class ViewMaterial(PlotMaterial):
 
         from scipy.optimize import root
 
-        λ3 = root(fun, λ3).x
+        res = root(fun, λ3, **kwargs)
+
+        if not res.success:
+            λ3 = np.ones_like(λ1)
+            res = root(fun, λ3, **kwargs)
+
+            if not res.success:
+                raise ValueError("Planar deformation failed.")
+
+        λ3 = res.x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:
@@ -322,9 +340,9 @@ class ViewMaterial(PlotMaterial):
 
         return λ1, P[0, 0].ravel(), "Planar Shear"
 
-    def biaxial(self, stretches=None):
+    def biaxial(self, stretches=None, **kwargs):
         """Normal force per undeformed area vs stretch curve for a equi-biaxial
-        incompressible deformation.
+        deformation.
 
         Parameters
         ----------
@@ -364,7 +382,16 @@ class ViewMaterial(PlotMaterial):
 
         from scipy.optimize import root
 
-        λ3 = root(fun, λ3).x
+        res = root(fun, λ3, **kwargs)
+
+        if not res.success:
+            λ3 = np.ones_like(λ1)
+            res = root(fun, λ3, **kwargs)
+
+            if not res.success:
+                raise ValueError("Biaxial deformation failed.")
+
+        λ3 = res.x
         F = eye * np.array([λ1, λ2, λ3]).reshape(1, 3, 1, -1)
 
         if self.statevars_included:

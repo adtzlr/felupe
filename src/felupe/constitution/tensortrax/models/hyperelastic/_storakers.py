@@ -116,7 +116,7 @@ def storakers(C, mu, alpha, beta):
     """
 
     λ2 = eigvalsh(C)
-    
+
     return tsum(
         [
             2 * μ / α**2 * (tsum(λ2 ** (α / 2)) - 3 + (det(C) ** (-α * β / 2) - 1) / β)

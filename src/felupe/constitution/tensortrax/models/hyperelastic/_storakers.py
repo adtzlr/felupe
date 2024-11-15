@@ -82,14 +82,14 @@ def storakers(C, mu, alpha, beta):
         >>>
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.storakers,
-        ...     mu=[104.869e-3],
-        ...     alpha=[7.10874],
-        ...     beta=[0.106469],
+        ...     mu=[4.5 * (1.85 / 2), -4.5 * (-9.2 / 2)],
+        ...     alpha=[1.85, -9.2],
+        ...     beta=[0.92, 0.92],
         ... )
         >>> ax = umat.plot(
-        ...     ux=fem.math.linsteps([1, 0.25], 15),
-        ...     ps=fem.math.linsteps([1, 0.25], 15),
-        ...     bx=fem.math.linsteps([1, 0.55], 9),
+        ...     ux=fem.math.linsteps([1, 2], 15),
+        ...     ps=fem.math.linsteps([1, 1], 15),
+        ...     bx=fem.math.linsteps([1, 1], 9),
         ... )
 
     ..  pyvista-plot::

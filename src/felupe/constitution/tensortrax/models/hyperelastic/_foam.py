@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from tensortrax.math import sum as tsum
+from tensortrax.math import sum as tsum, sqrt
 from tensortrax.math.linalg import det, eigvalsh
 
 
@@ -84,7 +84,7 @@ def foam(C, mu, alpha, beta):
         ...     mat.models.hyperelastic.foam,
         ...     mu=[4.5 * (1.85 / 2), -4.5 * (-9.2 / 2)],
         ...     alpha=[1.85, -9.2],
-        ...     beta=[0.92, 0.92],
+        ...     beta=0.92,
         ... )
         >>> ax = umat.plot(
         ...     ux=fem.math.linsteps([1, 2], 20),
@@ -114,9 +114,10 @@ def foam(C, mu, alpha, beta):
     I3 = det(C)
     λ2 = I3 ** (-1 / 3) * eigvalsh(C)
 
+    β = beta
     return tsum(
         [
             2 * μ / α**2 * ((tsum(λ2 ** (α / 2)) - 3) + (I3 ** (-α * β / 2) - 1) / β)
-            for μ, α, β in zip(mu, alpha, beta)
+            for μ, α in zip(mu, alpha)
         ]
     )

@@ -397,6 +397,17 @@ def test_umat_hyperelastic():
         ax = umat.plot(incompressible=incompressible)
         ax = umat.screenshot(incompressible=incompressible)
 
+    umat = fem.Hyperelastic(fem.neo_hooke, mu=np.nan)
+
+    with pytest.raises(ValueError):
+        umat.plot(bx=None, ps=None)
+    
+    with pytest.raises(ValueError):
+        umat.plot(ux=None, bx=None)
+    
+    with pytest.raises(ValueError):
+        umat.plot(ux=None, ps=None)
+
 
 def test_umat_hyperelastic2():
     r, x = pre(sym=False, add_identity=True, add_random=True)

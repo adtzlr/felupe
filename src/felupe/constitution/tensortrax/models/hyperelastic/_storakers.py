@@ -74,7 +74,7 @@ def storakers(C, mu, alpha, beta):
         >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
-    and create the hyperelastic material [2]_.
+    and create the hyperelastic material.
 
     ..  pyvista-plot::
         :context:
@@ -110,10 +110,6 @@ def storakers(C, mu, alpha, beta):
        finite compressible elasticity", Journal of the Mechanics and Physics of Solids,
        vol. 34, no. 2. Elsevier BV, pp. 125–145, Jan. 1986. doi:
        10.1016/0022-5096(86)90033-5.
-
-    .. [2] A. Kossa and S. Berezvai, "Novel strategy for the hyperelastic parameter
-       fitting procedure of polymer foam materials", Polymer Testing, vol. 53. Elsevier
-       BV, pp. 149–155, Aug. 2016. doi: 10.1016/j.polymertesting.2016.05.014.
     """
 
     λ2 = eigvalsh(C)

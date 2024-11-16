@@ -380,9 +380,9 @@ def test_umat_hyperelastic():
         (
             fem.storakers,
             dict(
-                mu=[4.5 * (1.85 / 2), -4.5 * (-9.2 / 2)],
-                alpha=[1.85, -9.2],
-                beta=[0.92, 0.92],
+                mu=[104.869e-3],
+                alpha=[7.10874],
+                beta=[0.106469],
             ),
             False,
         ),

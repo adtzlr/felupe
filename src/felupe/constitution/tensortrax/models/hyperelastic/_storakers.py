@@ -21,12 +21,12 @@ from tensortrax.math.linalg import det, eigvalsh
 
 
 def storakers(C, mu, alpha, beta):
-    r"""Strain energy function of Storåkers' isotropic hyperelastic
-    `Foam <https://doi.org/10.1016/0022-5096(86)90033-5>`_ material formulation [1]_.
+    r"""Strain energy function of the Storåkers isotropic hyperelastic
+    `foam <https://doi.org/10.1016/0022-5096(86)90033-5>`_ material formulation [1]_.
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     mu : list of float
         List of moduli.
@@ -66,11 +66,12 @@ def storakers(C, mu, alpha, beta):
 
     Examples
     --------
-    First, import the automatic differentiation backend
+    First, choose the desired automatic differentiation backend
 
     ..  pyvista-plot::
         :context:
 
+        >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
     and create the hyperelastic material [2]_.

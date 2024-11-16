@@ -341,41 +341,50 @@ def test_umat_hyperelastic():
 
     for model, kwargs, incompressible in [
         (neo_hooke, {"mu": 1}, True),
-        (fem.constitution.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}, False),
-        (fem.constitution.neo_hooke, {"mu": 1}, True),
-        (fem.constitution.mooney_rivlin, {"C10": 0.3, "C01": 0.8}, True),
-        (fem.constitution.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}, True),
+        (fem.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}, False),
+        (fem.neo_hooke, {"mu": 1}, True),
+        (fem.mooney_rivlin, {"C10": 0.3, "C01": 0.8}, True),
+        (fem.yeoh, {"C10": 0.5, "C20": -0.1, "C30": 0.02}, True),
         (
-            fem.constitution.third_order_deformation,
+            fem.third_order_deformation,
             {"C10": 0.5, "C01": 0.1, "C11": 0.01, "C20": -0.1, "C30": 0.02},
             True,
         ),
-        (fem.constitution.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}, True),
-        (fem.constitution.arruda_boyce, {"C1": 1.0, "limit": 3.2}, True),
+        (fem.ogden, {"mu": [1, 0.2], "alpha": [1.7, -1.5]}, True),
+        (fem.arruda_boyce, {"C1": 1.0, "limit": 3.2}, True),
         (
-            fem.constitution.extended_tube,
+            fem.extended_tube,
             {"Gc": 0.1867, "Ge": 0.2169, "beta": 0.2, "delta": 0.09693},
             True,
         ),
         (
-            fem.constitution.van_der_waals,
+            fem.van_der_waals,
             {"mu": 1.0, "beta": 0.1, "a": 0.5, "limit": 5.0},
             True,
         ),
         (
-            fem.constitution.alexander,
+            fem.alexander,
             dict(C1=0.117, C2=0.137, C3=0.00690, gamma=0.735, k=0.00015),
             True,
         ),
         (
-            fem.constitution.anssari_benam_bucchi,
+            fem.anssari_benam_bucchi,
             dict(mu=0.29, N=26.8),
             True,
         ),
         (
-            fem.constitution.lopez_pamies,
+            fem.lopez_pamies,
             dict(mu=[0.2699, 0.00001771], alpha=[1.08, 4.40]),
             True,
+        ),
+        (
+            fem.storakers,
+            dict(
+                mu=[104.869e-3],
+                alpha=[7.10874],
+                beta=[0.106469],
+            ),
+            False,
         ),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
@@ -387,6 +396,17 @@ def test_umat_hyperelastic():
     for incompressible in [False, True]:
         ax = umat.plot(incompressible=incompressible)
         ax = umat.screenshot(incompressible=incompressible)
+
+    umat = fem.Hyperelastic(fem.neo_hooke, mu=np.nan)
+
+    with pytest.raises(ValueError):
+        umat.plot(bx=None, ps=None)
+
+    with pytest.raises(ValueError):
+        umat.plot(ux=None, bx=None)
+
+    with pytest.raises(ValueError):
+        umat.plot(ux=None, ps=None)
 
 
 def test_umat_hyperelastic2():

@@ -41,6 +41,7 @@ These material model formulations are defined by a strain energy density functio
    ogden
    ogden_roxburgh
    saint_venant_kirchhoff
+   storakers
    third_order_deformation
    van_der_waals
    yeoh
@@ -112,6 +113,8 @@ and :func:`~felupe.constitution.tensortrax.updated_lagrange` material formulatio
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.ogden_roxburgh
 
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.saint_venant_kirchhoff
+
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.storakers
 
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.third_order_deformation
 

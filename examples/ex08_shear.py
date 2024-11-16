@@ -72,6 +72,7 @@ dof0, dof1 = fem.dof.partition(field, boundaries)
 # solid body.
 
 import felupe.constitution.tensortrax as mat
+
 # import felupe.constitution.jax as mat
 
 umat = mat.Hyperelastic(

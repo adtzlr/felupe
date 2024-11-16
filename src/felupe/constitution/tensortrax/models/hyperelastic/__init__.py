@@ -22,6 +22,7 @@ from ._neo_hooke import neo_hooke
 from ._ogden import ogden
 from ._ogden_roxburgh import ogden_roxburgh
 from ._saint_venant_kirchhoff import saint_venant_kirchhoff
+from ._storakers import storakers
 from ._third_order_deformation import third_order_deformation
 from ._van_der_waals import van_der_waals
 from ._yeoh import yeoh
@@ -40,6 +41,7 @@ __all__ = [
     "ogden",
     "ogden_roxburgh",
     "saint_venant_kirchhoff",
+    "storakers",
     "third_order_deformation",
     "van_der_waals",
     "yeoh",
@@ -58,6 +60,7 @@ neo_hooke.kwargs = dict(mu=0)
 ogden.kwargs = dict(mu=[0, 0], alpha=[2, -2])
 ogden_roxburgh.kwargs = dict(r=100, m=1, beta=0, material=neo_hooke, mu=0)
 saint_venant_kirchhoff.kwargs = dict(mu=0.0, lmbda=0.0)
+storakers.kwargs = dict(mu=[0], alpha=[2], beta=[1])
 third_order_deformation.kwargs = dict(C10=0, C01=0, C11=0, C20=0, C30=0)
 van_der_waals.kwargs = dict(mu=0, beta=0, a=0, limit=100)
 yeoh.kwargs = dict(C10=0, C20=0, C30=0)

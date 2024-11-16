@@ -49,6 +49,7 @@ These material model formulations are defined by a strain energy density functio
 
    miehe_goektepe_lulei
    mooney_rivlin
+   storakers
    third_order_deformation
    yeoh
 
@@ -92,6 +93,8 @@ formulations in :class:`~felupe.constitution.jax.Material`.
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.miehe_goektepe_lulei
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.mooney_rivlin
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.storakers
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.third_order_deformation
 

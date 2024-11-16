@@ -401,10 +401,10 @@ def test_umat_hyperelastic():
 
     with pytest.raises(ValueError):
         umat.plot(bx=None, ps=None)
-    
+
     with pytest.raises(ValueError):
         umat.plot(ux=None, bx=None)
-    
+
     with pytest.raises(ValueError):
         umat.plot(ux=None, ps=None)
 

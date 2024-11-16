@@ -40,27 +40,27 @@ def storakers(C, mu, alpha, beta):
     The strain energy function is given in Eq. :eq:`psi-foam`
 
     ..  math::
-        :label: psi-ogden
+        :label: psi-foam
 
         \psi = \sum_i \frac{2 \mu_i}{\alpha^2_i} \left[
-            \hat{\lambda}_1^{\alpha_i} +
-            \hat{\lambda}_2^{\alpha_i} +
-            \hat{\lambda}_3^{\alpha_i} - 3
-            + \frac{1}{\beta_i} \left( J^{-\alpha \beta} - 1 \right)
+            \lambda_1^{\alpha_i} +
+            \lambda_2^{\alpha_i} +
+            \lambda_3^{\alpha_i} - 3
+            + \frac{1}{\beta_i} \left( J^{-\alpha_i \beta_i} - 1 \right)
         \right]
 
     The sum of the moduli :math:`\mu_i` is equal to the initial shear modulus
     :math:`\mu`, see Eq. :eq:`shear-modulus-foam`,
 
     ..  math::
-        :label: shear-modulus-ogden
+        :label: shear-modulus-foam
 
         \mu = \sum_i \mu_i
 
     and the initial bulk modulus is given in Eq. :eq:`bulk-modulus-foam`.
 
     ..  math::
-        :label: bulk-modulus-ogden
+        :label: bulk-modulus-foam
 
         K = \sum_i 2 \mu_i \left( \frac{1}{3} + \beta_i \right)
 

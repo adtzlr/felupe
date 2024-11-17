@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add an optional keyword-argument `Region.astype(copy=True)` to modify the data types of the arrays of the region in-place if `copy=False`.
 - Add `FieldContainer.evaluate.right_cauchy_green_deformation()` and `math.right_cauchy_green_deformation(field)` to evaluate the right Cauchy-Green deformation tensor.
 - Add `math.strain(field, C=None, ..., **kwargs)` to use a given right Cauchy-Green deformation tensor for the evaluation of the strain tensor.
+- Add the hyperelastic foam models `storakers()` and `blatz_ko()` for both AD-backends.
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.

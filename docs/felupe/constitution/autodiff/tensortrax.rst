@@ -32,6 +32,7 @@ These material model formulations are defined by a strain energy density functio
    alexander
    anssari_benam_bucchi
    arruda_boyce
+   blatz_ko
    extended_tube
    finite_strain_viscoelastic
    lopez_pamies
@@ -95,6 +96,8 @@ and :func:`~felupe.constitution.tensortrax.updated_lagrange` material formulatio
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.anssari_benam_bucchi
 
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.arruda_boyce
+
+.. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.blatz_ko
 
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.extended_tube
 

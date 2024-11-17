@@ -47,6 +47,7 @@ These material model formulations are defined by a strain energy density functio
 
 .. autosummary::
 
+   blatz_ko
    miehe_goektepe_lulei
    mooney_rivlin
    storakers
@@ -89,6 +90,8 @@ formulations in :class:`~felupe.constitution.jax.Material`.
 .. autofunction:: felupe.constitution.jax.total_lagrange
 
 .. autofunction:: felupe.constitution.jax.updated_lagrange
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.blatz_ko
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.miehe_goektepe_lulei
 

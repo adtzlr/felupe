@@ -24,11 +24,11 @@ from tensortrax.math.linalg import det
 def van_der_waals(C, mu, limit, a, beta):
     r"""Strain energy function of the
     `Van der Waals <https://doi.org/10.1016/0032-3861(81)90200-7>`_ [1]_ material
-    formulation.,
+    formulation.
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     mu : float
         Initial shear modulus.
@@ -42,12 +42,22 @@ def van_der_waals(C, mu, limit, a, beta):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the hyperelastic material.
+
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
         >>>
-        >>> umat = fem.Hyperelastic(fem.van_der_waals, mu=1.0, beta=0.1, a=0.5, limit=5.0)
+        >>> umat = mat.Hyperelastic(fem.van_der_waals, mu=1.0, beta=0.1, a=0.5, limit=5.0)
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

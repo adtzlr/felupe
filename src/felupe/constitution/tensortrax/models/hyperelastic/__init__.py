@@ -12,6 +12,7 @@ taken from :mod:`tensortrax.math`.
 from ._alexander import alexander
 from ._anssari_benam_bucchi import anssari_benam_bucchi
 from ._arruda_boyce import arruda_boyce
+from ._blatz_ko import blatz_ko
 from ._extended_tube import extended_tube
 from ._finite_strain_viscoelastic import finite_strain_viscoelastic
 from ._lopez_pamies import lopez_pamies
@@ -31,6 +32,7 @@ __all__ = [
     "alexander",
     "anssari_benam_bucchi",
     "arruda_boyce",
+    "blatz_ko",
     "extended_tube",
     "finite_strain_viscoelastic",
     "lopez_pamies",
@@ -51,6 +53,7 @@ __all__ = [
 alexander.kwargs = dict(C1=0, C2=0, C3=0, gamma=100, k=0)
 anssari_benam_bucchi.kwargs = dict(mu=0, N=100)
 arruda_boyce.kwargs = dict(C1=0, limit=100)
+blatz_ko.kwargs = dict(mu=0)
 extended_tube.kwargs = dict(Gc=0, Ge=0, beta=1, delta=0)
 lopez_pamies.kwargs = dict(mu=[0, 0], alpha=[1, 4])
 miehe_goektepe_lulei.kwargs = dict(mu=0, N=100, U=0, p=2, q=2)

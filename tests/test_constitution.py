@@ -386,6 +386,7 @@ def test_umat_hyperelastic():
             ),
             False,
         ),
+        (fem.blatz_ko, dict(mu=1.0), False),
     ]:
         umat = fem.Hyperelastic(model, **kwargs)
 

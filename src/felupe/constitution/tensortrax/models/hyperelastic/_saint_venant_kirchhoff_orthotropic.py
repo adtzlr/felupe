@@ -32,7 +32,7 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
     mu : list of float
         List of the three shear moduli.
     lmbda : list of float
-        The six orthotropic moduli.
+        The six (upper triangle) orthotropic moduli.
     r1 : list of float
         First normal vector of planes of symmetry.
     r2 : list of float
@@ -47,11 +47,11 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
     ..  math::
         :label: psi-svk-ortho
 
-        \psi = \sum_{i=1}^3
-            \mu\_i \boldsymbol{E} : \boldsymbol{r}_i \otimes \boldsymbol{r}_i +
-            \sum_{i=1)^3 \sum_{j=1)^3 \frac{\lambda_{ij}}{2}
-                \left(\boldsymbol{E} : \boldsymbol{r}_i \otimes \boldsymbol{r}_i \right)
-                \left(\boldsymbol{E} : \boldsymbol{r}_j \otimes \boldsymbol{r}_j \right)
+        \psi = \sum_{a=1}^3
+            \mu_a \boldsymbol{E} : \boldsymbol{r}_a \otimes \boldsymbol{r}_a +
+            \sum_{a=1}^3 \sum_{b=1}^3 \frac{\lambda_{ab}}{2}
+                \left(\boldsymbol{E} : \boldsymbol{r}_a \otimes \boldsymbol{r}_a \right)
+                \left(\boldsymbol{E} : \boldsymbol{r}_b \otimes \boldsymbol{r}_b \right)
 
     Examples
     --------

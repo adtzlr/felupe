@@ -28,7 +28,7 @@ def extended_tube(C, Gc, delta, Ge, beta):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     Gc : float
         Cross-link contribution to the initial shear modulus.
@@ -82,14 +82,27 @@ def extended_tube(C, Gc, delta, Ge, beta):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the hyperelastic material.
 
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
         >>>
-        >>> umat = fem.Hyperelastic(
-        ...     fem.extended_tube, Gc=0.1867, Ge=0.2169, beta=0.2, delta=0.09693
+        >>> umat = mat.Hyperelastic(
+        ...     mat.models.hyperelastic.extended_tube,
+        ...     Gc=0.1867,
+        ...     Ge=0.2169,
+        ...     beta=0.2,
+        ...     delta=0.09693,
         ... )
         >>> ax = umat.plot(incompressible=True)
 

@@ -26,7 +26,7 @@ def neo_hooke(C, mu):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     mu : float
         Shear modulus.
@@ -42,13 +42,22 @@ def neo_hooke(C, mu):
 
     Examples
     --------
+    First, choose the desired automatic differentiation backend
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    and create the hyperelastic material.
 
     ..  pyvista-plot::
         :context:
 
         >>> import felupe as fem
         >>>
-        >>> umat = fem.Hyperelastic(fem.neo_hooke, mu=1.0)
+        >>> umat = mat.Hyperelastic(mat.models.hyperelastic.neo_hooke, mu=1.0)
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::

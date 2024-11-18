@@ -69,6 +69,7 @@ def test_hyperelastic_jax():
         md.miehe_goektepe_lulei,
         md.storakers,
         md.van_der_waals,
+        md.extended_tube,
         md.blatz_ko,
     ]:
         umat = mat.Hyperelastic(W, **W.kwargs)

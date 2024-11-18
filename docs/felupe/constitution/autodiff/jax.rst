@@ -48,8 +48,10 @@ These material model formulations are defined by a strain energy density functio
 .. autosummary::
 
    blatz_ko
+   extended_tube
    miehe_goektepe_lulei
    mooney_rivlin
+   neo_hooke
    storakers
    third_order_deformation
    van_der_waals
@@ -94,9 +96,13 @@ formulations in :class:`~felupe.constitution.jax.Material`.
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.blatz_ko
 
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.extended_tube
+
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.miehe_goektepe_lulei
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.mooney_rivlin
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.neo_hooke
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.storakers
 

@@ -12,12 +12,13 @@ All notable changes to this project will be documented in this file. The format 
 - Add `math.inplane(A, vectors)` to return the in-plane components of a symmetric tensor `A`, where the plane is defined by its standard unit vectors.
 - Add `constitution.jax.Hyperelastic` as a feature-equivalent alternative to `Hyperelastic` with `jax` as backend.
 - Add `constitution.jax.Material(..., jacobian=None)` with JAX as backend. A custom jacobian-callable may be passed to switch between forward- and backward-mode automatic differentiation.
-- Add material models for JAX-based materials. Hyperelastic models available at `constitution.jax.models.hyperelastic`: `miehe_goektepe_lulei()`, `mooney_rivlin()`, `yeoh()`, `third_order_deformation()`, `van_der_waals()`. Lagrange (stress-based) models available at `constitution.jax.models.lagrange`: `morph()`, `morph_representative_directions()`.
+- Add material models for JAX-based materials. Hyperelastic models available at `constitution.jax.models.hyperelastic`: `extended_tube()`, `miehe_goektepe_lulei()`, `mooney_rivlin()`, `neo_hooke()`, `yeoh()`, `third_order_deformation()`, `van_der_waals()`. Lagrange (stress-based) models available at `constitution.jax.models.lagrange`: `morph()`, `morph_representative_directions()`.
 - Add `constitution.jax.total_lagrange()`, `constitution.jax.updated_lagrange()` and `constitution.jax.isochoric_volumetric_split()` function decorators for the JAX hyperelastic material class.
 - Add an optional keyword-argument `Region.astype(copy=True)` to modify the data types of the arrays of the region in-place if `copy=False`.
 - Add `FieldContainer.evaluate.right_cauchy_green_deformation()` and `math.right_cauchy_green_deformation(field)` to evaluate the right Cauchy-Green deformation tensor.
 - Add `math.strain(field, C=None, ..., **kwargs)` to use a given right Cauchy-Green deformation tensor for the evaluation of the strain tensor.
 - Add the hyperelastic foam models `storakers()` and `blatz_ko()` for both AD-backends.
+- Add the `saint_venant_kirchhoff_orthotropic()` hyperelastic model (tensortrax).
 
 ### Changed
 - Change default `np.einsum(..., order="K")` to `np.einsum(..., order="C")` in the methods of `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` and `FieldContainer`.

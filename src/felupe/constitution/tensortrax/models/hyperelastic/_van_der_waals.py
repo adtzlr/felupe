@@ -57,7 +57,13 @@ def van_der_waals(C, mu, limit, a, beta):
 
         >>> import felupe as fem
         >>>
-        >>> umat = mat.Hyperelastic(fem.van_der_waals, mu=1.0, beta=0.1, a=0.5, limit=5.0)
+        >>> umat = mat.Hyperelastic(
+        ...     mat.models.hyperelastic.van_der_waals,
+        ...     mu=1.0,
+        ...     beta=0.1,
+        ...     a=0.5,
+        ...     limit=5.0
+        ... )
         >>> ax = umat.plot(incompressible=True)
 
     ..  pyvista-plot::
@@ -82,7 +88,7 @@ def van_der_waals(C, mu, limit, a, beta):
     I1 = J3 * trace(C)
     I2 = (trace(C) ** 2 - J3**2 * trace(C @ C)) / 2
     Im = (1 - beta) * I1 + beta * I2
-    Im.x[np.isclose(Im.x, 3)] += 1e-8
+    Im += 1e-4
     eta = sqrt((Im - 3) / (limit**2 - 3))
     return mu * (
         -(limit**2 - 3) * (log(1 - eta) + eta) - 2 / 3 * a * ((Im - 3) / 2) ** (3 / 2)

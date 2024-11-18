@@ -17,22 +17,12 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
-from jax.numpy import array, diag, sqrt
-from jax.numpy import sum as asum
-from jax.numpy.linalg import eigvalsh
+from jax.numpy import trace
+from jax.numpy.linalg import det
 
-from ....tensortrax.models.hyperelastic import storakers as storakers_docstring
+from ....tensortrax.models.hyperelastic import neo_hooke as neo_hooke_docstring
 
 
-@wraps(storakers_docstring)
-def storakers(C, mu, alpha, beta):
-    λ1, λ2, λ3 = sqrt(eigvalsh(C + diag(array([0, -1e-4, 1e-4]))))
-    J = λ1 * λ2 * λ3
-
-    μ = array(mu)
-    α = array(alpha)
-    β = array(beta)
-
-    return asum(
-        2 * μ / α**2 * (λ1**α + λ2**α + λ3**α - 3 + (J ** (-α * β) - 1) / β)
-    )
+@wraps(neo_hooke_docstring)
+def neo_hooke(C, mu):
+    return mu / 2 * (det(C) ** (-1 / 3) * trace(C) - 3)

@@ -95,15 +95,16 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
 
 
     """
-    r = array([r1, r2, r3])
-
-    E = (C - base.eye(C)) / 2
-    Err = einsum("ai...,ij...,aj...->a...", r, E, r)
-
-    I1 = einsum("a...,b...->ab...", Err, Err)
-    I2 = einsum("ai...,ij...,aj...->a...", r, E @ E, r)
-
+    eye = base.eye
     μ = array(mu)
     λ = from_triu_1d(array(lmbda))
 
-    return einsum("a,a...->...", μ, I2) + einsum("ab,ab...->...", λ, I1**2 / 2)
+    r = array([r1, r2, r3])
+
+    E = (C - eye(C)) / 2
+    Err = einsum("ai...,ij...,aj...->a...", r, E, r)
+
+    λI1 = einsum("ab,a...,b...->...", λ / 2, Err, Err)
+    μI2 = einsum("a,ai...,ij...,aj...->...", μ, r, E @ E, r)
+
+    return μI2 + λI1

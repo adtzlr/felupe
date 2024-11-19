@@ -136,22 +136,22 @@ def test_linear():
 def test_linear_orthotropic():
     r, F = pre(sym=False, add_identity=True)
 
+    lmbda, mu = fem.constitution.lame_converter_orthotropic(
+        E=[6919, 271, 450],
+        nu=[0.388, 0.278, 0.375],
+        G=[262, 34, 354],
+    )
+
     for Material in [
         (fem.constitution.LinearElasticOrthotropic, {}),
     ]:
-        LinearElastic, kwargs = Material
+        LinearElasticOrtho, kwargs = Material
 
         # doi.org/10.2478/ace-2018-0027 (pine wood)
-        le = LinearElastic(
-            E1=6919,
-            E2=271,
-            E3=450,
-            nu12=0.388,
-            nu23=0.278,
-            nu13=0.375,
-            G12=262,
-            G23=34,
-            G13=354,
+        le = LinearElasticOrtho(
+            E=[6919, 271, 450],
+            nu=[0.388, 0.278, 0.375],
+            G=[262, 34, 354],
             **kwargs,
         )
 

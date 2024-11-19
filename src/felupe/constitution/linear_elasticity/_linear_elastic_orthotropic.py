@@ -27,24 +27,12 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
     Parameters
     ----------
-    E1 : float
-        Young's modulus.
-    E2 : float
-        Young's modulus.
-    E3 : float
-        Young's modulus.
-    nu12 : float
-        Poisson ratio.
-    nu23 : float
-        Poisson ratio.
-    nu13 : float
-        Poisson ratio.
-    G12 : float
-        Shear modulus.
-    G23 : float
-        Shear modulus.
-    G13 : float
-        Shear modulus.
+    E : float
+        Young's modulus (E1, E2, E3).
+    nu : float
+        Poisson ratio (nu12, nu23, n31).
+    G : float
+        Shear modulus (G12, G23, G31).
 
     Examples
     --------
@@ -54,8 +42,8 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
         >>> import felupe as fem
         >>>
         >>> umat = fem.LinearElasticOrthotropic(
-        >>>     E1=1, E2=1, E3=1, nu12=0.3, nu23=0.3, nu13=0.3, G12=0.4, G23=0.4, G13=0.4
-        >>> )
+        ...     E=[1, 1, 1], nu=[0.3, 0.3, 0.3], G=[0.4, 0.4, 0.4]
+        ... )
         >>> ax = umat.plot()
 
     ..  pyvista-plot::
@@ -71,30 +59,12 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
     """
 
-    def __init__(self, E1, E2, E3, nu12, nu23, nu13, G12, G23, G13):
-        self.E1 = E1
-        self.E2 = E1
-        self.E3 = E3
+    def __init__(self, E, nu, G):
+        self.E = E
+        self.nu = nu
+        self.G = G
 
-        self.nu12 = nu12
-        self.nu23 = nu23
-        self.nu13 = nu13
-
-        self.G12 = G12
-        self.G23 = G23
-        self.G13 = G13
-
-        self.kwargs = {
-            "E1": self.E1,
-            "E2": self.E2,
-            "E3": self.E3,
-            "nu12": self.nu12,
-            "nu23": self.nu23,
-            "nu13": self.nu13,
-            "G12": self.G12,
-            "G23": self.G23,
-            "G13": self.G13,
-        }
+        self.kwargs = {"E": self.E, "nu": self.nu, "G": self.G}
 
         # aliases for gradient and hessian
         self.stress = self.gradient
@@ -149,17 +119,9 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
         """
 
-        E1 = self.E1
-        E2 = self.E2
-        E3 = self.E3
-
-        nu12 = self.nu12
-        nu23 = self.nu23
-        nu13 = self.nu13
-
-        G12 = self.G12
-        G23 = self.G23
-        G13 = self.G13
+        E1, E2, E3 = self.E
+        nu12, nu23, nu31 = self.nu
+        G12, G23, G31 = self.G
 
         if x is not None:
             dtype = x[0].dtype
@@ -168,7 +130,7 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
 
         nu21 = nu12 * E2 / E1
         nu32 = nu23 * E3 / E2
-        nu31 = nu13 * E3 / E1
+        nu13 = nu31 * E1 / E3
 
         J = 1 / (1 - nu12 * nu21 - nu23 * nu32 - nu31 * nu13 - 2 * nu21 * nu32 * nu13)
 
@@ -192,7 +154,7 @@ class LinearElasticOrthotropic(ConstitutiveMaterial):
             [2, 0, 2, 0],
             [0, 0, 2, 2],
             [2, 2, 0, 0],
-        ] = G13
+        ] = G31
 
         elast[
             [1, 2, 1, 2],

@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+from numpy.linalg import inv
 
 
 def lame_converter(E, nu):
@@ -48,5 +49,75 @@ def lame_converter(E, nu):
 
     lmbda = E * nu / ((1 + nu) * (1 - 2 * nu))
     mu = E / (2 * (1 + nu))
+
+    return lmbda, mu
+
+
+def lame_converter_orthotropic(E, nu, G):
+    r"""Convert elastic orthotropic material parameters to Lamé parameter.
+
+    Parameters
+    ----------
+    E : list of float
+        List of the three elastic moduli :math:`E_1, E_2, E_3`.
+    nu : list of float
+        List of three poisson ratios :math:`\nu_{12}, \nu_{23}, \nu_{31}`.
+    G : list of float
+        List of three shear moduli :math:`G_{12}, G_{23}, G_{31}`.
+
+    Returns
+    -------
+    lmbda : list of float
+        List of six (upper triangle) first Lamé parameters
+        :math:`\lambda_11, \lambda_12, \lambda_13, \lambda_22, \lambda_23, \lambda_33`.
+    mu : list of float
+        List of the three second Lamé parameters :math:`\mu_1,\mu_2, \mu3`.
+
+    """
+
+    # unpack orthotropic elastic material parameters
+    E1, E2, E3 = E
+    ν12, ν23, ν31 = nu
+    G12, G23, G31 = G
+
+    # orthotropic symmetry
+    ν21 = ν12 * E2 / E1
+    ν32 = ν23 * E3 / E2
+    ν13 = ν31 * E1 / E3
+
+    C = inv(
+        [
+            [1 / E1, -ν21 / E2, -ν31 / E3, 0, 0, 0],
+            [-ν12 / E1, 1 / E2, -ν32 / E3, 0, 0, 0],
+            [-ν13 / E1, -ν23 / E2, 1 / E3, 0, 0, 0],
+            [0, 0, 0, 1 / G12, 0, 0],
+            [0, 0, 0, 0, 1 / G23, 0],
+            [0, 0, 0, 0, 0, 1 / G31],
+        ]
+    )
+
+    # take the components from this matrix
+    #
+    # [λ11 + 2 * μ1, λ12, λ13, 0, 0, 0]
+    # [λ12, λ22 + 2 * μ2, λ23, 0, 0, 0]
+    # [λ13, λ23, λ33 + 2 * μ3, 0, 0, 0]
+    # [0, 0, 0, (μ1 + μ2) / 2, 0, 0]
+    # [0, 0, 0, 0, (μ2 + μ3) / 2, 0]
+    # [0, 0, 0, 0, 0, (μ1 + μ3) / 2]
+
+    λ12 = C[0, 1]
+    λ23 = C[1, 2]
+    λ13 = C[0, 2]
+
+    μ1 = C[3, 3] - C[4, 4] + C[5, 5]
+    μ2 = C[3, 3] + C[4, 4] - C[5, 5]
+    μ3 = -C[3, 3] + C[4, 4] + C[5, 5]
+
+    λ11 = C[0, 0] - 2 * μ1
+    λ22 = C[1, 1] - 2 * μ2
+    λ33 = C[2, 2] - 2 * μ3
+
+    lmbda = [λ11, λ12, λ13, λ22, λ23, λ33]
+    mu = [μ1, μ2, μ3]
 
     return lmbda, mu

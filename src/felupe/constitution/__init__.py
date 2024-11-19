@@ -12,6 +12,7 @@ from .linear_elasticity import (
     LinearElasticPlaneStress,
     LinearElasticTensorNotation,
     lame_converter,
+    lame_converter_orthotropic,
 )
 from .poisson import Laplace
 from .small_strain import MaterialStrain
@@ -32,6 +33,7 @@ __all__ = [
     "LinearElasticPlaneStress",
     "LinearElasticTensorNotation",
     "lame_converter",
+    "lame_converter_orthotropic",
     "OgdenRoxburgh",
     "LinearElasticPlasticIsotropicHardening",
     "Material",

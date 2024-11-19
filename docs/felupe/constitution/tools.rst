@@ -29,6 +29,7 @@ This page contains tools and helpers for constitutive material formulations.
 .. autosummary::
 
    constitution.lame_converter
+   constitution.lame_converter_orthotropic
 
 **Detailed API Reference**
 
@@ -68,3 +69,5 @@ This page contains tools and helpers for constitutive material formulations.
    :inherited-members:
 
 .. autofunction:: felupe.constitution.lame_converter
+
+.. autofunction:: felupe.constitution.lame_converter_orthotropic

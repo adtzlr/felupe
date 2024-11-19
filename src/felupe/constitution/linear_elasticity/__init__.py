@@ -1,4 +1,4 @@
-from ._lame_converter import lame_converter
+from ._lame_converter import lame_converter, lame_converter_orthotropic
 from ._linear_elastic import (
     LinearElastic,
     LinearElasticPlaneStrain,
@@ -10,6 +10,7 @@ from ._linear_elastic_orthotropic import LinearElasticOrthotropic
 
 __all__ = [
     "lame_converter",
+    "lame_converter_orthotropic",
     "LinearElastic",
     "LinearElasticLargeStrain",
     "LinearElasticOrthotropic",

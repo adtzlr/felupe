@@ -30,9 +30,10 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
     C : tensortrax.Tensor
         Right Cauchy-Green deformation tensor.
     mu : list of float
-        List of the three shear moduli.
+        List of the three second Lamé parameters :math:`\mu_1,\mu_2, \mu3`.
     lmbda : list of float
-        The six (upper triangle) orthotropic moduli.
+        List of six (upper triangle) first Lamé parameters
+        :math:`\lambda_11, \lambda_12, \lambda_13, \lambda_22, \lambda_23, \lambda_33`.
     r1 : list of float
         First normal vector of planes of symmetry.
     r2 : list of float
@@ -65,16 +66,21 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
         >>> import felupe.constitution.tensortrax as mat
         >>> import felupe as fem
         >>>
-        >>> r = fem.math.rotation_matrix(30, axis=2)
+        >>> r = fem.math.rotation_matrix(0, axis=2)
+        >>> lmbda, mu = fem.constitution.lame_converter_orthotropic(
+        ...     E=[10, 10, 10],
+        ...     nu=[0.3, 0.3, 0.3],
+        ...     G=[1, 1, 1],
+        ... )
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.saint_venant_kirchhoff_orthotropic,
-        ...     mu=[1, 1, 1],
-        ...     lmbda=[20, 20, 20, 20, 20, 20],
+        ...     mu=mu,
+        ...     lmbda=lmbda,
         ...     r1=r[:, 0],
         ...     r2=r[:, 1],
         ...     r3=r[:, 2],
         ... )
-        >>> ax = umat.plot(incompressible=False)
+        >>> ax = umat.plot(ux=fem.math.linsteps([1, 1.1], num=10), ps=None, bx=None)
 
     ..  pyvista-plot::
         :include-source: False

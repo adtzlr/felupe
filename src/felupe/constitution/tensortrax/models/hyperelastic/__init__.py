@@ -64,7 +64,7 @@ morph_representative_directions.kwargs = dict(p=[0, 0, 0, 0, 0, 1, 0, 0])
 neo_hooke.kwargs = dict(mu=0)
 ogden.kwargs = dict(mu=[0, 0], alpha=[2, -2])
 ogden_roxburgh.kwargs = dict(r=100, m=1, beta=0, material=neo_hooke, mu=0)
-saint_venant_kirchhoff.kwargs = dict(mu=0.0, lmbda=0.0)
+saint_venant_kirchhoff.kwargs = dict(mu=0.0, lmbda=0.0, k=2)
 saint_venant_kirchhoff_orthotropic.kwargs = dict(
     mu=[0.0, 0.0, 0.0],
     lmbda=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],

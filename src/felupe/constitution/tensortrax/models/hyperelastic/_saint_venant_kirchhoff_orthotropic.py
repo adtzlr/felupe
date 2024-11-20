@@ -16,11 +16,13 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from numpy import array
-from tensortrax.math import base, einsum
+from tensortrax.math import base, einsum, log
+from tensortrax.math import sum as tsum
+from tensortrax.math.linalg import eigh
 from tensortrax.math.special import from_triu_1d
 
 
-def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
+def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3, k=2):
     r"""Strain energy function of the orthotropic hyperelastic
     `Saint-Venant Kirchhoff <https://en.wikipedia.org/wiki/Hyperelastic_material#Saint_Venant-Kirchhoff_model>`_
     material formulation.
@@ -40,6 +42,9 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
         Second normal vector of planes of symmetry.
     r3 : list of float
         Third normal vector of planes of symmetry.
+    k : float, optional
+        Strain exponent (default is 2). If 2, the Green-Lagrange strain measure is used.
+        For any other value, the family of Seth-Hill strains is used.
 
     Notes
     -----
@@ -96,12 +101,21 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3):
 
     """
     eye = base.eye
+
+    if k == 2:
+        E = (C - eye(C)) / 2
+
+    else:
+        λ2, M = eigh(C)
+        if k == 0:
+            E = tsum(log(λ2) / 2 * M, axis=0)
+        else:
+            E = tsum((λ2 ** (k / 2) - 1) / k * M, axis=0)
+
     μ = array(mu)
     λ = from_triu_1d(array(lmbda))
 
     r = array([r1, r2, r3])
-
-    E = (C - eye(C)) / 2
     Err = einsum("ai...,ij...,aj...->a...", r, E, r)
 
     λI1 = einsum("ab,a...,b...->...", λ / 2, Err, Err)

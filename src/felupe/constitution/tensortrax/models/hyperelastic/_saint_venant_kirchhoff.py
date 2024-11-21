@@ -16,10 +16,13 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from tensortrax.math import base, log
+from tensortrax.math import sum as tsum
 from tensortrax.math import trace
+from tensortrax.math.linalg import eigvalsh
 
 
-def saint_venant_kirchhoff(C, mu, lmbda):
+def saint_venant_kirchhoff(C, mu, lmbda, k=2):
     r"""Strain energy function of the isotropic hyperelastic
     `Saint-Venant Kirchhoff <https://en.wikipedia.org/wiki/Hyperelastic_material#Saint_Venant-Kirchhoff_model>`_
     material formulation.
@@ -32,6 +35,9 @@ def saint_venant_kirchhoff(C, mu, lmbda):
         Second Lamé constant (shear modulus).
     lmbda : float
         First Lamé constant (shear modulus).
+    k : float, optional
+        Strain exponent (default is 2). If 2, the Green-Lagrange strain measure is used.
+        For any other value, the family of Seth-Hill strains is used.
 
     Notes
     -----
@@ -79,6 +85,22 @@ def saint_venant_kirchhoff(C, mu, lmbda):
 
 
     """
-    I1 = trace(C) / 2 - 3 / 2
-    I2 = trace(C @ C) / 4 - trace(C) / 2 + 3 / 4
+    eye = base.eye
+
+    if k == 2:
+        E = (C - eye(C)) / 2
+
+        I1 = trace(E)
+        I2 = trace(E @ E)
+
+    else:
+        λ2 = eigvalsh(C)
+        if k == 0:
+            Ek = log(λ2) / 2
+        else:
+            Ek = (λ2 ** (k / 2) - 1) / k
+
+        I1 = tsum(Ek)
+        I2 = tsum(Ek**2)
+
     return mu * I2 + lmbda * I1**2 / 2

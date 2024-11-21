@@ -342,6 +342,8 @@ def test_umat_hyperelastic():
     for model, kwargs, incompressible in [
         (neo_hooke, {"mu": 1}, True),
         (fem.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0}, False),
+        (fem.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0, "k": 0}, False),
+        (fem.saint_venant_kirchhoff, {"mu": 1, "lmbda": 20.0, "k": 1}, False),
         (
             fem.saint_venant_kirchhoff_orthotropic,
             {
@@ -350,6 +352,30 @@ def test_umat_hyperelastic():
                 "r1": np.eye(3)[:, 0],
                 "r2": np.eye(3)[:, 1],
                 "r3": np.eye(3)[:, 2],
+            },
+            False,
+        ),
+        (
+            fem.saint_venant_kirchhoff_orthotropic,
+            {
+                "mu": [1, 1, 1],
+                "lmbda": [20, 20, 20, 20, 20, 20],
+                "r1": np.eye(3)[:, 0],
+                "r2": np.eye(3)[:, 1],
+                "r3": None,
+                "k": 0,
+            },
+            False,
+        ),
+        (
+            fem.saint_venant_kirchhoff_orthotropic,
+            {
+                "mu": [1, 1, 1],
+                "lmbda": [20, 20, 20, 20, 20, 20],
+                "r1": np.eye(3)[:, 0],
+                "r2": np.eye(3)[:, 1],
+                "r3": np.eye(3)[:, 2],
+                "k": 1,
             },
             False,
         ),

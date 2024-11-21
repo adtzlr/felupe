@@ -362,7 +362,7 @@ def test_umat_hyperelastic():
                 "lmbda": [20, 20, 20, 20, 20, 20],
                 "r1": np.eye(3)[:, 0],
                 "r2": np.eye(3)[:, 1],
-                "r3": np.eye(3)[:, 2],
+                "r3": None,
                 "k": 0,
             },
             False,

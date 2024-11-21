@@ -21,8 +21,10 @@ from tensortrax.math import sum as tsum
 from tensortrax.math.linalg import eigh
 from tensortrax.math.special import from_triu_1d
 
+from .....math import cross
 
-def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3, k=2):
+
+def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3=None, k=2):
     r"""Strain energy function of the orthotropic hyperelastic
     `Saint-Venant Kirchhoff <https://en.wikipedia.org/wiki/Hyperelastic_material#Saint_Venant-Kirchhoff_model>`_
     material formulation.
@@ -32,16 +34,17 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3, k=2):
     C : tensortrax.Tensor
         Right Cauchy-Green deformation tensor.
     mu : list of float
-        List of the three second Lamé parameters :math:`\mu_1,\mu_2, \mu3`.
+        List of the three second Lamé parameters :math:`\mu_1,\mu_2, \mu_3`.
     lmbda : list of float
-        List of six (upper triangle) first Lamé parameters
-        :math:`\lambda_11, \lambda_12, \lambda_13, \lambda_22, \lambda_23, \lambda_33`.
+        List of six (upper triangle) first Lamé parameters :math:`\lambda_{11},
+        \lambda_{12}, \lambda_{13}, \lambda_{22}, \lambda_{23}, \lambda_{33}`.
     r1 : list of float
         First normal vector of planes of symmetry.
     r2 : list of float
         Second normal vector of planes of symmetry.
-    r3 : list of float
-        Third normal vector of planes of symmetry.
+    r3 : list of float or None, optional
+        Third normal vector of planes of symmetry. If None, the third normal vector
+        is evaluated as :math:`r_1 \times r_2`. Default is None.
     k : float, optional
         Strain exponent (default is 2). If 2, the Green-Lagrange strain measure is used.
         For any other value, the family of Seth-Hill strains is used.
@@ -114,6 +117,9 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3, k=2):
 
     μ = array(mu)
     λ = from_triu_1d(array(lmbda))
+
+    if r3 is None:
+        r3 = cross(r1, r2)
 
     r = array([r1, r2, r3])
     Err = einsum("ai...,ij...,aj...->a...", r, E, r)

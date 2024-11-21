@@ -54,7 +54,7 @@ def lame_converter(E, nu):
 
 
 def lame_converter_orthotropic(E, nu, G):
-    r"""Convert elastic orthotropic material parameters to Lamé parameter.
+    r"""Convert elastic orthotropic material parameters to Lamé constants.
 
     Parameters
     ----------
@@ -68,11 +68,60 @@ def lame_converter_orthotropic(E, nu, G):
     Returns
     -------
     lmbda : list of float
-        List of six (upper triangle) first Lamé parameters
-        :math:`\lambda_11, \lambda_12, \lambda_13, \lambda_22, \lambda_23, \lambda_33`.
+        List of six (upper triangle) first Lamé parameters :math:`\lambda_{11},
+        \lambda_{12}, \lambda_{13}, \lambda_{22}, \lambda_{23}, \lambda_{33}`.
     mu : list of float
-        List of the three second Lamé parameters :math:`\mu_1,\mu_2, \mu3`.
+        List of the three second Lamé parameters :math:`\mu_1,\mu_2, \mu_3`.
 
+    Notes
+    -----
+    The orthotropic material parameters are converted to orthotropic Lamé
+    constants.
+
+    The compliance matrix as the inverse of the stiffness matrix with the
+    parameters :math:`E_i`, :math:`\nu_{ij}` and :math:`G_{ij}` is given in
+    Eq. :eq:`ortho-matrix-inv`.
+
+    ..  math::
+        :label: ortho-matrix-inv
+
+        \boldsymbol{C}^{-1} = \begin{bmatrix}
+            \frac{1}{E_1} & -\frac{\nu_{21}}{E_2} & -\frac{\nu_{31}}{E_3}
+                & 0 & 0 & 0 \\
+            -\frac{\nu_{12}}{E_1} & \frac{1}{E_2} & -\frac{\nu_{32}}{E_3}
+                & 0 & 0 & 0 \\
+            -\frac{\nu_{13}}{E_1} & -\frac{\nu_{23}}{E_2} & \frac{1}{E_3}
+                & 0 & 0 & 0 \\
+            0 & 0 & 0 & \frac{1}{G_{12}} & 0 & 0 \\
+            0 & 0 & 0 & 0 & \frac{1}{G_{23}} & 0 \\  
+            0 & 0 & 0 & 0 & 0 & \frac{1}{G_{31}}
+        \end{bmatrix}
+
+    The stiffness matrix with the Lamé constants is denoted in
+    Eq. :eq:`ortho-matrix`.
+
+    ..  math::
+        :label: ortho-matrix-inv
+
+        \boldsymbol{C} = \begin{bmatrix}
+            \lambda_{11} + 2 \mu_1 & \lambda_{12} & \lambda_{13} & 0 & 0 & 0 \\
+            \lambda_{11} & \lambda_{12} + 2 \mu_2 & \lambda_{13} & 0 & 0 & 0 \\
+            \lambda_{11} & \lambda_{12} & \lambda_{13} + 2 \mu_3 & 0 & 0 & 0 \\
+            0 & 0 & 0 & \frac{\mu_1 + \mu_2}{2} & 0 & 0 \\
+            0 & 0 & 0 & 0 & \frac{\mu_2 + \mu_3}{2} & 0 \\  
+            0 & 0 & 0 & 0 & 0 & \frac{\mu_3 + \mu_1}{2}
+        \end{bmatrix}
+
+    Eq. :eq:`ortho-matrix-inv` is evaluated and inverted numerically to extract
+    the Lamé constants.
+
+    See Also
+    --------
+    felupe.LinearElasticOrthotropic : Orthotropic linear-elastic
+        material formulation.
+    felupe.constitution.tensortrax.models.hyperelastic.saint_venant_kirchhoff_orthotropic :
+        Strain energy function of the orthotropic hyperelastic Saint-Venant
+        Kirchhoff material formulation.
     """
 
     # unpack orthotropic elastic material parameters

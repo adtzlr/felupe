@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [9.1.0] - 2024-11-23
+
 ### Added
 - Add the hessian of the element shape functions for a quadratic quad element `QuadraticQuad.hessian()`.
 - Add the `order`-argument to `FieldContainer.extract(order="C")` as well as for `Field`, `FieldAxisymmetric`, `FieldPlaneStrain` to return C-contiguous arrays by default.

@@ -355,7 +355,9 @@ class SolidBodyNearlyIncompressible(Solid):
             self.results.state = state
 
         self.results.kinematics = self._extract(self.field)
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.assemble = Assemble(
+            vector=self._vector, matrix=self._matrix, mass=self._mass
+        )
 
         self.evaluate = Evaluate(
             gradient=self._gradient,
@@ -537,3 +539,16 @@ class SolidBodyNearlyIncompressible(Solid):
             J = det(F)
 
         return dot(P, transpose(F)) / J
+
+    def _mass(self, density=1.0):
+        field = self.field[0].as_container()
+        dim = field[0].dim
+        form = self._form(
+            fun=[density * np.eye(dim).reshape(dim, dim, 1, 1)],
+            v=field,
+            u=field,
+            dV=field.region.dV,
+            grad_v=[False],
+            grad_u=[False],
+        )
+        return form.assemble()

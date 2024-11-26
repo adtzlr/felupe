@@ -26,9 +26,10 @@ from ..math import det
 class Assemble:
     "A class with methods for assembling vectors and matrices of an Item."
 
-    def __init__(self, vector, matrix, multiplier=None):
+    def __init__(self, vector, matrix, mass=None, multiplier=None):
         self.vector = vector
         self.matrix = matrix
+        self.mass = mass
         self.multiplier = multiplier
 
 

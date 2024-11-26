@@ -43,6 +43,7 @@ def test_simple():
     r = b.assemble.vector()
 
     K = b.assemble.matrix()
+    M = b.assemble.mass()
     r = b.assemble.vector(u)
     F = b.results.kinematics
     P = b.results.stress
@@ -51,6 +52,7 @@ def test_simple():
     C = b.results.elasticity
 
     assert K.shape == (81, 81)
+    assert M.shape == (81, 81)
     assert r.shape == (81, 1)
     assert F[0].shape == (3, 3, 8, 8)
     assert P[0].shape == (3, 3, 8, 8)
@@ -235,6 +237,9 @@ def test_solidbody_incompressible():
     b = fem.SolidBodyNearlyIncompressible(
         umat=umat, field=u, bulk=5000, state=fem.StateNearlyIncompressible(u)
     )
+
+    M = b.assemble.mass()
+    assert M.shape == (81, 81)
 
     for parallel in [False, True]:
         kwargs = {"parallel": parallel}

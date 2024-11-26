@@ -33,6 +33,4 @@ def storakers(C, mu, alpha, beta):
     α = array(alpha)
     β = array(beta)
 
-    return asum(
-        2 * μ / α**2 * (λ1**α + λ2**α + λ3**α - 3 + (J ** (-α * β) - 1) / β)
-    )
+    return asum(2 * μ / α**2 * (λ1**α + λ2**α + λ3**α - 3 + (J ** (-α * β) - 1) / β))

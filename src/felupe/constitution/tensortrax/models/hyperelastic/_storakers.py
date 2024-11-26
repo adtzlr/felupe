@@ -116,10 +116,7 @@ def storakers(C, mu, alpha, beta):
 
     return tsum(
         [
-            2
-            * μ
-            / α**2
-            * (tsum(λ2 ** (α / 2)) - 3 + (det(C) ** (-α * β / 2) - 1) / β)
+            2 * μ / α**2 * (tsum(λ2 ** (α / 2)) - 3 + (det(C) ** (-α * β / 2) - 1) / β)
             for μ, α, β in zip(mu, alpha, beta)
         ]
     )

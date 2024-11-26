@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `SolidBody.assemble.mass(density=1.0)` and `SolidBodyNearlyIncompressible.assemble.mass(density=1.0)` to assemble the mass matrix.
+
 ## [9.1.0] - 2024-11-23
 
 ### Added

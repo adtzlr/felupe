@@ -95,8 +95,8 @@ class Solid:
             name = kwargs.pop("name", args[0])
             stress_type = (
                 name.lower()
-                .split("principal values of ")[0]
-                .split("equivalent of ")[0]
+                .split("principal values of ")[-1]
+                .split("equivalent of ")[-1]
                 .split("stress")[0]
                 .rstrip()
             )

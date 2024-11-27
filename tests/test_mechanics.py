@@ -516,7 +516,7 @@ def test_view():
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     umat = fem.NeoHooke(mu=1, bulk=2)
     solid = fem.SolidBody(umat, field)
-    plotter = solid.plot(off_screen=True)
+    plotter = solid.plot("Principal Values of Cauchy Stress", off_screen=True)
     # img = solid.screenshot(transparent_background=True)
     # ax = solid.imshow()
 
@@ -524,10 +524,10 @@ def test_view():
     umat = fem.LinearElasticPlaneStress(E=1, nu=0.3)
 
     solid = fem.SolidBody(umat, field)
-    plotter = solid.plot(off_screen=True)
+    plotter = solid.plot("Equivalent of Stress", off_screen=True)
 
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=0)
-    plotter = solid.plot(off_screen=True)
+    plotter = solid.plot("Kirchhoff Stress", off_screen=True)
 
 
 def test_threefield():

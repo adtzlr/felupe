@@ -132,6 +132,8 @@ class SolidBody(Solid):
         A field container with one or more fields.
     statevars : ndarray or None, optional
         Array of initial internal state variables (default is None).
+    density : float or None, optional
+        The density of the solid body.
 
     Notes
     -----
@@ -209,9 +211,10 @@ class SolidBody(Solid):
         methods for the assembly of sparse vectors/matrices.
     """
 
-    def __init__(self, umat, field, statevars=None):
+    def __init__(self, umat, field, statevars=None, density=None):
         self.umat = umat
         self.field = field
+        self.density = density
 
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
@@ -364,9 +367,14 @@ class SolidBody(Solid):
 
         return dot(P, transpose(F)) / J
 
-    def _mass(self, density=1.0):
+    def _mass(self, density=None):
+        
+        if density is None:
+            density = self.density
+        
         field = self.field[0].as_container()
         dim = field[0].dim
+        
         form = self._form(
             fun=[density * np.eye(dim).reshape(dim, dim, 1, 1)],
             v=field,
@@ -375,4 +383,5 @@ class SolidBody(Solid):
             grad_v=[False],
             grad_u=[False],
         )
+        
         return form.assemble()

@@ -89,17 +89,19 @@ class Solid:
         felupe.topoints: Shift given values at quadrature-points to mesh-points.
         """
 
-        stress_type = ""
+        stress_type = "Cauchy"
 
         if len(args) > 0:
             name = kwargs.pop("name", args[0])
-            stress_type = (
-                name.lower()
-                .split("principal values of ")[-1]
-                .split("equivalent of ")[-1]
-                .split("stress")[0]
-                .rstrip()
-            )
+
+            if "Stress" in name:
+                stress_type = (
+                    name.lower()
+                    .split("principal values of ")[-1]
+                    .split("equivalent of ")[-1]
+                    .split("stress")[0]
+                    .rstrip()
+                )
 
         if len(stress_type) == 0:
             stress_type = None

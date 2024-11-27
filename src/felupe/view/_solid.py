@@ -34,9 +34,10 @@ class ViewSolid(ViewField):
         The field-container.
     solid : felupe.SolidBody or felupe.SolidBodyIncompressible or None, optional
         A solid body to evaluate the (Cauchy) stress (default is None).
-    stress_type : str, optional
-        The type of stress which is exported, either "Cauchy" or "Kirchhoff" (default is
-        "Cauchy").
+    stress_type : str or None, optional
+        The type of stress which is exported, either "Cauchy", "Kirchhoff" or None. If
+        None, the first Piola-Kirchhoff stress (engineering stress in linear elasticity)
+        is used. Default is "Cauchy".
     point_data : dict or None, optional
         Additional point-data dict (default is None).
     cell_data : dict or None, optional
@@ -101,12 +102,15 @@ class ViewSolid(ViewField):
         cell_data_from_solid = {}
 
         if solid is not None:
+            if stress_type is None:
+                stress_type = ""
             stress_from_field = {
+                "": solid.evaluate.stress,
                 "cauchy": solid.evaluate.cauchy_stress,
                 "kirchhoff": solid.evaluate.kirchhoff_stress,
             }
             stress = stress_from_field[stress_type.lower()](field)
-            stress_label = f"{stress_type.title()} Stress"
+            stress_label = f"{stress_type.title()} Stress".lstrip()
 
             if project is None:
                 cell_data_from_solid[stress_label] = tovoigt(stress.mean(-2)).T

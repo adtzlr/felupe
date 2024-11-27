@@ -31,7 +31,14 @@ from ._helpers import Assemble, Evaluate, Results
 class Solid:
     "Base class for solid bodies which provides methods for visualisations."
 
-    def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
+    def view(
+        self,
+        point_data=None,
+        cell_data=None,
+        cell_type=None,
+        project=None,
+        stress_type="Cauchy",
+    ):
         """View the solid with optional given dicts of point- and cell-data items.
 
         Parameters
@@ -44,6 +51,10 @@ class Solid:
             Cell-type of PyVista (default is None).
         project : callable or None, optional
             Project stress at quadrature-points to mesh-points (default is None).
+        stress_type : str or None, optional
+            The type of stress which is exported, either "Cauchy", "Kirchhoff" or None.
+            If None, the first Piola-Kirchhoff stress (engineering stress in linear
+            elasticity) is used. Default is "Cauchy".
 
         Returns
         -------
@@ -65,6 +76,7 @@ class Solid:
             cell_data=cell_data,
             cell_type=cell_type,
             project=project,
+            stress_type=stress_type,
         )
 
     def plot(self, *args, project=None, **kwargs):
@@ -76,7 +88,23 @@ class Solid:
         felupe.project: Project given values at quadrature-points to mesh-points.
         felupe.topoints: Shift given values at quadrature-points to mesh-points.
         """
-        return self.view(project=project).plot(*args, **kwargs)
+
+        stress_type = ""
+
+        if len(args) > 0:
+            name = kwargs.pop("name", args[0])
+            stress_type = (
+                name.lower()
+                .split("principal values of ")[0]
+                .split("equivalent of ")[0]
+                .split("stress")[0]
+                .rstrip()
+            )
+
+        if len(stress_type) == 0:
+            stress_type = None
+
+        return self.view(project=project, stress_type=stress_type).plot(*args, **kwargs)
 
     def screenshot(
         self,

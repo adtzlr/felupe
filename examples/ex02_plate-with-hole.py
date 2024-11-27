@@ -76,7 +76,7 @@ field_boundary = fem.FieldContainer([fem.Field(region_boundary, dim=2)])
 load = fem.SolidBodyPressure(field_boundary, pressure=-100)
 
 # %%
-# The simulation model is now ready to be solved. The equivalent von Mises Cauchy stress
+# The simulation model is now ready to be solved. The equivalent von Mises stress
 # will be plotted. For the two-dimensional case it is calculated by Eq. :eq:`svM`.
 # Stresses, located at quadrature-points of cells, are shifted to and averaged at mesh-
 # points.
@@ -89,7 +89,7 @@ load = fem.SolidBodyPressure(field_boundary, pressure=-100)
 step = fem.Step(items=[solid, load], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate()
 
-solid.plot("Equivalent of Cauchy Stress", show_edges=False, project=fem.topoints).show()
+solid.plot("Equivalent of Stress", show_edges=False, project=fem.topoints).show()
 
 # %%
 # The normal stress distribution :math:`\sigma_{11}` over the hole at :math:`x=0` is
@@ -97,7 +97,7 @@ solid.plot("Equivalent of Cauchy Stress", show_edges=False, project=fem.topoints
 import matplotlib.pyplot as plt
 
 plt.plot(
-    fem.tools.project(solid.evaluate.cauchy_stress(), region)[:, 0, 0][mesh.x == 0],
+    fem.tools.project(solid.evaluate.stress(), region)[:, 0, 0][mesh.x == 0],
     mesh.points[:, 1][mesh.x == 0] / h,
     "o-",
 )

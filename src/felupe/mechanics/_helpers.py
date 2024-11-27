@@ -36,13 +36,20 @@ class Assemble:
 class Evaluate:
     "A class with evaluate methods of an Item."
 
-    def __init__(self, gradient, hessian, cauchy_stress=None, kirchhoff_stress=None):
+    def __init__(
+        self, gradient, hessian, stress=None, cauchy_stress=None, kirchhoff_stress=None
+    ):
         self.gradient = gradient
         self.hessian = hessian
 
         if cauchy_stress is not None:
             self.cauchy_stress = cauchy_stress
             self.kirchhoff_stress = kirchhoff_stress
+
+        if stress is None:
+            stress = lambda field=None, **kwargs: gradient(field, **kwargs)[0]
+
+        self.stress = stress
 
 
 class Results:

@@ -62,7 +62,7 @@ step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(parallel=True, solver=pypardiso.spsolve)
 
 solid.plot(
-    "Principal Values of Cauchy Stress",
+    "Principal Values of Stress",
     show_edges=False,
     view="xy",
     project=fem.topoints,
@@ -72,7 +72,7 @@ solid.plot(
 # %%
 # The number of maximum endurable cycles between zero and the applied displacement is
 # evaluated with a SN-curve as denoted in Eq. :eq:`sn-curve`. The range of the maximum
-# principal value of the Cauchy stress tensor is used to evaluate the fatigue life.
+# principal value of the stress tensor is used to evaluate the fatigue life.
 # For simplicity, the stress is evaluated for the total solid body. To consider only
 # stresses on points which lie on the surface of the solid body, the cells on faces
 # :meth:`~felupe.RegionHexahedronBoundary.mesh.cells_faces` must be determined
@@ -87,7 +87,7 @@ S_D = 100  # MPa
 N_D = 2e6  # cycles
 k = 5  # slope
 
-S = fem.topoints(fem.math.eigvalsh(solid.evaluate.cauchy_stress())[-1], region)
+S = fem.topoints(fem.math.eigvalsh(solid.evaluate.stress())[-1], region)
 N = N_D * (abs(S) / S_D) ** -k
 
 view = solid.view(point_data={"Endurable Cycles": N})

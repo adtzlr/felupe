@@ -276,6 +276,10 @@ def test_solidbody_incompressible():
         F2 = b._extract(u)
         assert np.allclose(F1, F2)
 
+        p1 = b.evaluate.stress()
+        p2 = b.evaluate.stress(u)
+        assert np.allclose(p1, p2)
+
         s1 = b.evaluate.cauchy_stress()
         s2 = b.evaluate.cauchy_stress(u)
         assert np.allclose(s1, s2)
@@ -512,7 +516,7 @@ def test_view():
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
     umat = fem.NeoHooke(mu=1, bulk=2)
     solid = fem.SolidBody(umat, field)
-    plotter = solid.plot(off_screen=True)
+    plotter = solid.plot("Principal Values of Cauchy Stress", off_screen=True)
     # img = solid.screenshot(transparent_background=True)
     # ax = solid.imshow()
 
@@ -520,12 +524,10 @@ def test_view():
     umat = fem.LinearElasticPlaneStress(E=1, nu=0.3)
 
     solid = fem.SolidBody(umat, field)
-    with pytest.warns():
-        plotter = solid.plot(off_screen=True)
+    plotter = solid.plot("Equivalent of Stress", off_screen=True)
 
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=0)
-    with pytest.warns():
-        plotter = solid.plot(off_screen=True)
+    plotter = solid.plot("Kirchhoff Stress", off_screen=True)
 
 
 def test_threefield():

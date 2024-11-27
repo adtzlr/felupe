@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 27 15:33:53 2021
-
-@author: adutz
-"""
-
 import numpy as np
 
 import felupe as fem

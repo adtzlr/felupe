@@ -61,7 +61,7 @@ class FreeVibration:
         self.eigenvalues = None
         self.eigenvectors = None
 
-    def evaluate(self, x0=None, k=6, solver=eigsh, tol=0, **kwargs):
+    def evaluate(self, x0=None, solver=eigsh, parallel=False, **kwargs):
         if x0 is not None:
             x = x0
         else:
@@ -77,7 +77,7 @@ class FreeVibration:
 
         # assemble matrices
         for item in self.items:
-            K = item.assemble.matrix(**kwargs)
+            K = item.assemble.matrix(parallel=parallel)
             M = item.assemble.mass()
 
             if item.assemble.multiplier is not None:
@@ -99,20 +99,26 @@ class FreeVibration:
         K = stiffness[self.dof1][:, self.dof1]
         M = mass[self.dof1][:, self.dof1]
 
-        self.eigenvalues, self.eigenvectors = solver(A=K, k=k, M=M, sigma=0, tol=tol)
+        sigma = kwargs.get("sigma", 0)
+        self.eigenvalues, self.eigenvectors = solver(A=K, M=M, sigma=sigma, **kwargs)
 
         return self
 
     def extract(self, n=0, x0=None, inplace=True):
         if x0 is not None:
-            x = x0
+            field = x0
         else:
-            x = self.items[0].field
+            field = self.items[0].field
 
         if not inplace:
-            x = x.copy()
+            field = field.copy()
+
+        values = np.zeros(sum(field.fieldsizes))
+        values[self.dof1] = self.eigenvectors[:, n]
 
         frequency = np.sqrt(self.eigenvalues[n]) / (2 * np.pi)
-        x[0].values.ravel()[self.dof1] = self.eigenvectors[:, n]
 
-        return x, frequency
+        [f.fill(0) for f in field]
+        field += values
+
+        return field, frequency

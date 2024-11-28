@@ -22,6 +22,7 @@ Mechanics
    Step
    Job
    CharacteristicCurve
+   FreeVibration
 
 **Point Load and Multi-Point Constraints**
 
@@ -83,6 +84,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.CharacteristicCurve
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.FreeVibration
    :members:
    :undoc-members:
    :show-inheritance:

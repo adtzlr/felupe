@@ -39,7 +39,7 @@ def test_simple():
     r = fem.RegionHexahedron(m, uniform=True)
     u = fem.FieldContainer([fem.Field(r, dim=3)])
 
-    b = fem.SolidBody(umat, u)
+    b = fem.SolidBody(umat, u, density=1.0)
     r = b.assemble.vector()
 
     K = b.assemble.matrix()
@@ -235,7 +235,11 @@ def test_solidbody_incompressible():
 
     umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
     b = fem.SolidBodyNearlyIncompressible(
-        umat=umat, field=u, bulk=5000, state=fem.StateNearlyIncompressible(u)
+        umat=umat,
+        field=u,
+        bulk=5000,
+        state=fem.StateNearlyIncompressible(u),
+        density=1.0,
     )
 
     M = b.assemble.mass()

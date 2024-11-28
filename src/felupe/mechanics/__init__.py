@@ -1,4 +1,5 @@
 from ._curve import CharacteristicCurve
+from ._free_vibration import FreeVibration
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._item import FormItem
 from ._job import Job
@@ -16,6 +17,7 @@ __all__ = [
     "Assemble",
     "CharacteristicCurve",
     "Evaluate",
+    "FreeVibration",
     "FormItem",
     "StateNearlyIncompressible",
     "Job",

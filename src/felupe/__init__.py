@@ -70,6 +70,7 @@ from .field import (
 from .mechanics import (
     CharacteristicCurve,
     FormItem,
+    FreeVibration,
     Job,
     MultiPointConstraint,
     MultiPointContact,
@@ -133,6 +134,7 @@ __all__ = [
     "tools",
     "Form",
     "FormItem",
+    "FreeVibration",
     "IntegralForm",
     "Basis",
     "Field",

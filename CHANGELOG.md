@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `SolidBody.assemble.mass(density=1.0)` and `SolidBodyNearlyIncompressible.assemble.mass(density=1.0)` to assemble the mass matrix.
 - Add `SolidBody.evaluate.stress(field)` to evaluate the (first Piola-Kirchhoff) stress tensor (engineering stress in linear elasticity).
+- Add a free-vibration modal analysis Step/Job `FreeVibration(items, boundaries)` with methods to evaluate `FreeVibration.evaluate()` and to extract `field, frequency = FreeVibration.extract(n)` its n-th result.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.
 - Autodetect the stress-type in `SolidBody.plot(name)` from `name`.
+- Enhance the `hello_world(axisymmetric=False, planestrain=False, curve=False, xdmf=False, container=False)` function with new arguments to customize the generated template script.
 
 ## [9.1.0] - 2024-11-23
 

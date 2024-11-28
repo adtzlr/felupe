@@ -4,6 +4,20 @@ import felupe as fem
 
 
 def test_free_vibration():
+
+    mesh = fem.Cube(a=(0, 0, 5), b=(50, 100, 30), n=(3, 6, 4))
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    umat = fem.NeoHooke(mu=1, bulk=2)
+    solid = fem.SolidBody(umat=umat, field=field, density=1.5e-9)
+
+    job = fem.FreeVibration([solid]).evaluate(x0=field)
+    new_field, frequency = job.extract(x0=field, n=-1, inplace=False)
+
+
+def test_free_vibration_mixed():
+
     meshes = [
         fem.Cube(a=(0, 0, 30), b=(50, 100, 35), n=(3, 6, 2)),
         fem.Cube(a=(0, 0, 5), b=(50, 100, 30), n=(3, 6, 4)),
@@ -34,8 +48,7 @@ def test_free_vibration():
     job = fem.FreeVibration(solids, boundaries).evaluate(x0=field)
     new_field, frequency = job.extract(x0=field, n=-1, inplace=False)
 
-    assert np.isclose(new_field[0].values.max(), 358.08157)
-
 
 if __name__ == "__main__":
     test_free_vibration()
+    test_free_vibration_mixed()

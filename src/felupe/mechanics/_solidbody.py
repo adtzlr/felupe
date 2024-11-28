@@ -398,13 +398,13 @@ class SolidBody(Solid):
         return dot(P, transpose(F)) / J
 
     def _mass(self, density=None):
-        
+
         if density is None:
             density = self.density
-        
+
         field = self.field[0].as_container()
         dim = field[0].dim
-        
+
         form = self._form(
             fun=[density * np.eye(dim).reshape(dim, dim, 1, 1)],
             v=field,
@@ -413,5 +413,5 @@ class SolidBody(Solid):
             grad_v=[False],
             grad_u=[False],
         )
-        
+
         return form.assemble()

@@ -39,8 +39,8 @@ def test_free_vibration():
     umat = fem.NeoHooke(mu=1, bulk=2)
     solid = fem.SolidBody(umat=umat, field=field, density=1.5e-9)
 
-    job = fem.FreeVibration([solid]).evaluate(x0=field)
-    new_field, frequency = job.extract(x0=field, n=-1, inplace=False)
+    job = fem.FreeVibration([solid]).evaluate()
+    new_field, frequency = job.extract(n=-1, inplace=False)
 
 
 def test_free_vibration_mixed():

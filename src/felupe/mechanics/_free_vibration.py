@@ -24,7 +24,7 @@ from ..dof import partition
 
 
 class FreeVibration:
-    """A Free-Vibration Step.
+    """A Free-Vibration Step/Job.
 
     Parameters
     ----------
@@ -33,6 +33,12 @@ class FreeVibration:
         matrices.
     boundaries : dict of Boundary, optional
         A dict with :class:`~felupe.Boundary` conditions (default is None).
+    
+    Notes
+    -----
+    ..  note::
+        
+        Boundary conditions with non-zero values are not supported.
 
     Examples
     --------
@@ -40,16 +46,17 @@ class FreeVibration:
 
         >>> import felupe as fem
         >>> import numpy as np
-        >>> from scipy.sparse.linalg import eigsh
         >>>
         >>> mesh = fem.Rectangle(b=(5, 1), n=(50, 10))
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
         >>> boundaries = dict(left=fem.Boundary(field[0], fx=0))
-        >>> dof0, dof1 = fem.dof.partition(field, boundaries)
-        >>>
-        >>> solid = fem.SolidBody(umat=fem.LinearElastic(E=2.5, nu=0.25), field=field)
+        >>> solid = fem.SolidBody(fem.LinearElastic(E=2.5, nu=0.25), field, density=1.0)
+        >>> modal = fem.FreeVibration(items=[solid], boundaries=boundaries).evaluate()
+        >>> 
+        >>> eigenvector, frequency = modal.extract(n=4, inplace=True)
+        >>> solid.plot("Stress", component=0).show()
     """
 
     def __init__(self, items, boundaries=None):

@@ -105,7 +105,9 @@ def test_solve():
 
 def test_hello_world():
     fem.hello_world()
-    fem.hello_world(pypardiso=True, parallel=True)
+    fem.hello_world(pypardiso=True, parallel=True, xdmf=True)
+    fem.hello_world(curve=True, axisymmetric=True)
+    fem.hello_world(container=True, planestrain=True)
 
 
 def test_solve_mixed():

@@ -39,7 +39,7 @@ def test_simple():
     r = fem.RegionHexahedron(m, uniform=True)
     u = fem.FieldContainer([fem.Field(r, dim=3)])
 
-    b = fem.SolidBody(umat, u)
+    b = fem.SolidBody(umat, u, density=1.0)
     r = b.assemble.vector()
 
     K = b.assemble.matrix()

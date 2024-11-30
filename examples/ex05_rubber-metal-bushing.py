@@ -106,7 +106,7 @@ for progress in table:
         center=[0, 0, 0],
     )[0]
     inner_radial = 8 * np.array([0, 0, 1]) * progress
-    move.append((inner_radial + inner_rotated - inner).ravel())
+    move.append(inner_radial + inner_rotated - inner)
 
 # %%
 # After defining the load step, the simulation model is ready to be solved.

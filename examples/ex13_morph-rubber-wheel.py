@@ -233,7 +233,7 @@ for phi in angles_deg:
         axis=0,
         center=[0, 0],
     )[0]
-    move.append((center_rotated - center).ravel())
+    move.append(center_rotated - center)
 
 # %%
 # A nearly-incompressible solid body is created for the rubber. At the bottom, a

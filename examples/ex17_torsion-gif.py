@@ -47,7 +47,7 @@ for phi in angles_deg:
         axis=2,
         center=[0, 0, 1],
     )[0]
-    move.append((top_rotated - top).ravel())
+    move.append(top_rotated - top)
 
 # %%
 # The reaction moment on the centerpoint of the right end face is tracked by a

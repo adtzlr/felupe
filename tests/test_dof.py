@@ -145,6 +145,24 @@ def test_loadcase():
         assert "top" in sh[0]
 
 
+def test_boundary_multiaxial():
+    mesh = fem.Rectangle(n=3)
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    for value in [1.0, np.arange(1, 3), np.arange(1, 3).reshape(1, 2)]:
+        boundaries = dict(
+            left=fem.Boundary(field[0], fx=0),
+            right=fem.Boundary(field[0], fx=1, value=value),
+        )
+
+        dof0, dof1 = fem.dof.partition(field, boundaries)
+        ext0 = fem.dof.apply(field, boundaries, dof0)
+
+        assert ext0.shape == dof0.shape
+
+
 if __name__ == "__main__":
     test_boundary()
+    test_boundary_multiaxial()
     test_loadcase()

@@ -33,11 +33,11 @@ class FreeVibration:
         matrices.
     boundaries : dict of Boundary, optional
         A dict with :class:`~felupe.Boundary` conditions (default is None).
-    
+
     Notes
     -----
     ..  note::
-        
+
         Boundary conditions with non-zero values are not supported.
 
     Examples
@@ -54,7 +54,7 @@ class FreeVibration:
         >>> boundaries = dict(left=fem.Boundary(field[0], fx=0))
         >>> solid = fem.SolidBody(fem.LinearElastic(E=2.5, nu=0.25), field, density=1.0)
         >>> modal = fem.FreeVibration(items=[solid], boundaries=boundaries).evaluate()
-        >>> 
+        >>>
         >>> eigenvector, frequency = modal.extract(n=4, inplace=True)
         >>> solid.plot("Stress", component=0).show()
     """

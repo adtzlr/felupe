@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.
 - Autodetect the stress-type in `SolidBody.plot(name)` from `name`.
 - Enhance the `hello_world(axisymmetric=False, planestrain=False, curve=False, xdmf=False, container=False)` function with new arguments to customize the generated template script.
+- Enhance `Boundary` with added support for multiaxial prescribed values.
 
 ## [9.1.0] - 2024-11-23
 

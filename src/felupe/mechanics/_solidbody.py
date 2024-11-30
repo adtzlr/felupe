@@ -398,7 +398,6 @@ class SolidBody(Solid):
         return dot(P, transpose(F)) / J
 
     def _mass(self, density=None):
-
         if density is None:
             density = self.density
 

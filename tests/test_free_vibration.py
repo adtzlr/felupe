@@ -31,7 +31,6 @@ import felupe as fem
 
 
 def test_free_vibration():
-
     mesh = fem.Cube(a=(0, 0, 5), b=(50, 100, 30), n=(3, 6, 4))
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
@@ -44,7 +43,6 @@ def test_free_vibration():
 
 
 def test_free_vibration_mixed():
-
     meshes = [
         fem.Cube(a=(0, 0, 30), b=(50, 100, 35), n=(3, 6, 2)),
         fem.Cube(a=(0, 0, 5), b=(50, 100, 30), n=(3, 6, 4)),

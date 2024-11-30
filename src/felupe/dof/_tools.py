@@ -235,8 +235,21 @@ def apply(field, bounds, dof0=None):
         # get offset for field-dof of current boundary
         offset = offsets[[b.field == f for f in field.fields]]
 
+        if isinstance(b.value, np.ndarray):
+            # get size and broadcast the values if necessary
+            value = b.value
+            if b.dof.size != value.size:
+                if len(value.shape) == 1:
+                    value = value.reshape(1, -1)
+
+                value = np.broadcast_to(value, (b.points.size, b.value.shape[-1]))
+
+            value = value.ravel()
+        else:
+            value = b.value
+
         # set prescribed values
-        u.ravel()[b.dof + offset] = b.value
+        u.ravel()[b.dof + offset] = value
 
     if dof0 is None:
         return u

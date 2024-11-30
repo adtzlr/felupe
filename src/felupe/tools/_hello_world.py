@@ -101,7 +101,6 @@ def hello_world(
     plot = "\n".join(plot)
 
     if not container:
-
         kwargs = ", ".join(kwargs)
 
         # fmt: off
@@ -126,7 +125,6 @@ def hello_world(
         # fmt: on
 
     else:
-
         kwargs.insert(0, "x0=field")
         kwargs = ", ".join(kwargs)
 

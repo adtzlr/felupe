@@ -92,18 +92,10 @@ class Boundary:
         :context:
         :force_static:
 
-        >>> import pyvista as pv
-        >>>
         >>> right = fem.Boundary(displacement, fx=x.max())
         >>> right = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.max()))
         >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[right.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> right.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 
@@ -112,14 +104,7 @@ class Boundary:
         :force_static:
 
         >>> axes = fem.Boundary(displacement, fx=0, fy=0, mode="or")
-        >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[axes.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> axes.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     This may be changed to *logical-and* if desired.
 
@@ -128,14 +113,7 @@ class Boundary:
         :force_static:
 
         >>> center = fem.Boundary(displacement, fx=0, fy=0, mode="and")
-        >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[center.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> center.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     For the most-general case, a user-defined boolean mask for the selection of the
     mesh-points is provided. While the two upper methods are useful to select
@@ -149,13 +127,7 @@ class Boundary:
         >>> mask = np.logical_and(np.isclose(x**2 + y**2, 1), x >= 0)
         >>> surface = fem.Boundary(displacement, mask=mask)
         >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[surface.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> surface.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     The application of a new mask allows to change the selected points of an existing
     boundary condition.
@@ -167,13 +139,7 @@ class Boundary:
         >>> new_mask = np.logical_and(mask, y <= 0)
         >>> surface.apply_mask(new_mask)
         >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[surface.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> surface.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
@@ -184,14 +150,7 @@ class Boundary:
         :force_static:
 
         >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
-        >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[axes_x.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> axes_x.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     Values for the prescribed degress of freedom are either applied during creation
     or by the update-method.
@@ -203,13 +162,7 @@ class Boundary:
         >>> left = fem.Boundary(displacement, fx=x.min(), value=-0.2)
         >>> left.update(-0.3)
         >>>
-        >>> plotter = pv.Plotter()
-        >>> actor = plotter.add_points(
-        ...     mesh.points[left.points],
-        ...     point_size=20,
-        ...     color="red",
-        ... )
-        >>> mesh.plot(plotter=plotter, opacity=0.7).show()
+        >>> left.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
     Sometimes it is useful to create a boundary with all axes skipped. This
     boundary has no prescribed degrees of freedom and hence, is without effect.
@@ -265,7 +218,7 @@ class Boundary:
 
             # select the logical combination function "or" or "and"
             combine = {"or": np.logical_or, "and": np.logical_and}[self.mode]
-            mask = combine.reduce(masks)
+            mask = combine.reduce(np.array(masks)[[f != np.isnan for f in self.fun]])
 
         self.apply_mask(mask)
 
@@ -307,4 +260,47 @@ class Boundary:
     def update(self, value):
         "Update the value of the boundary in-place."
 
-        self.value = value
+        self.value = value  #
+
+    def plot(
+        self, plotter=None, color="black", scale=0.125, point_size=10, width=3, **kwargs
+    ):
+        "Plot the points and their prescribed directions of a boundary condition."
+
+        mesh = self.field.region.mesh
+
+        if plotter is None:
+            plotter = mesh.plot()
+
+        if self.dim > 1 and self.dim != mesh.dim:
+            raise ValueError(
+                " ".join(
+                    [
+                        "Plotting is not supported.",
+                        "Field and Mesh must have equal dimensions.",
+                    ]
+                )
+            )
+
+        if len(self.points) > 0:
+            magnitude = min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+
+            _ = plotter.add_points(
+                mesh.points[self.points],
+                color=color,
+                point_size=point_size,
+                label=self.name,
+            )
+
+            for skip, direction in zip(self.skip, np.eye(mesh.dim)):
+                if not skip:
+                    end = mesh.points[self.points] + direction * magnitude
+                    _ = plotter.add_lines(
+                        np.hstack([mesh.points[self.points], end]).reshape(
+                            -1, mesh.dim
+                        ),
+                        color=color,
+                        width=width,
+                    )
+
+        return plotter

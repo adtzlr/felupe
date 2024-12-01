@@ -162,7 +162,26 @@ def test_boundary_multiaxial():
         assert ext0.shape == dof0.shape
 
 
+def test_boundary_plot():
+    region = fem.RegionHexahedron(fem.Cube(b=(3, 1, 1), n=2))
+    field = fem.Field(region, dim=3).as_container()
+    boundaries = dict(
+        left=fem.Boundary(field[0], fx=0, skip=(0, 1, 0)),
+        right=fem.Boundary(field[0], fx=1, skip=(0, 0, 0)),
+    )
+    _ = boundaries["left"].plot(plotter=boundaries["right"].plot())
+
+    field = fem.Field(region, dim=2).as_container()
+    boundaries = dict(
+        left=fem.Boundary(field[0], fx=0, skip=(0, 1, 0)),
+    )
+
+    with pytest.raises(ValueError):
+        _ = boundaries["left"].plot()
+
+
 if __name__ == "__main__":
     test_boundary()
     test_boundary_multiaxial()
+    test_boundary_plot()
     test_loadcase()

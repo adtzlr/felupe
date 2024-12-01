@@ -263,7 +263,14 @@ class Boundary:
         self.value = value  #
 
     def plot(
-        self, plotter=None, color="black", scale=0.125, point_size=10, width=3, **kwargs
+        self,
+        plotter=None,
+        color="black",
+        scale=0.125,
+        point_size=10,
+        width=3,
+        label=None,
+        **kwargs,
     ):
         "Plot the points and their prescribed directions of a boundary condition."
 
@@ -283,13 +290,16 @@ class Boundary:
             )
 
         if len(self.points) > 0:
+            if label is None:
+                label = self.name
+
             magnitude = min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
 
             _ = plotter.add_points(
                 mesh.points[self.points],
                 color=color,
                 point_size=point_size,
-                label=self.name,
+                label=label,
             )
 
             for skip, direction in zip(self.skip, np.eye(mesh.dim)):

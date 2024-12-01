@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `SolidBody.evaluate.stress(field)` to evaluate the (first Piola-Kirchhoff) stress tensor (engineering stress in linear elasticity).
 - Add a free-vibration modal analysis Step/Job `FreeVibration(items, boundaries)` with methods to evaluate `FreeVibration.evaluate()` and to extract `field, frequency = FreeVibration.extract(n)` its n-th result.
 - Add `Boundary.plot()` to plot the points and prescribed directions of a boundary.
+- Add `BoundaryDict` as a subclassed dict with methods to `plot()`, `screenshot()` and `imshow()`.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.

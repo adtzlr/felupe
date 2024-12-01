@@ -180,8 +180,22 @@ def test_boundary_plot():
         _ = boundaries["left"].plot()
 
 
+def test_boundary_dict():
+    field = fem.Field(
+        fem.RegionHexahedron(fem.Cube(b=(3, 1, 1), n=5)), dim=1
+    ).as_container()
+    boundaries = fem.BoundaryDict(
+        left=fem.Boundary(field[0], fx=0, skip=(0, 0, 1)),
+        right=fem.Boundary(field[0], name="my_label", fx=3, skip=(0, 1, 0)),
+    )
+    plotter = boundaries.plot()
+    img = boundaries.screenshot()
+    ax = boundaries.imshow()
+
+
 if __name__ == "__main__":
     test_boundary()
+    test_boundary_dict()
     test_boundary_multiaxial()
     test_boundary_plot()
     test_loadcase()

@@ -10,6 +10,7 @@ This module contains the definition of a boundary condition, tools related to th
 .. autosummary::
 
    Boundary
+   BoundaryDict
 
 
 **Tools**
@@ -33,6 +34,11 @@ This module contains the definition of a boundary condition, tools related to th
 **Detailed API Reference**
 
 .. autoclass:: felupe.Boundary
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.BoundaryDict
    :members:
    :undoc-members:
    :inherited-members:

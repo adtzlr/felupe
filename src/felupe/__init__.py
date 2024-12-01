@@ -40,7 +40,7 @@ from .constitution import (
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
 )
-from .dof import Boundary
+from .dof import Boundary, BoundaryDict
 from .element import ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement
 from .element import (
     BiQuadraticQuad,
@@ -168,6 +168,7 @@ __all__ = [
     "linear_elastic",
     "linear_elastic_plastic_isotropic_hardening",
     "Boundary",
+    "BoundaryDict",
     "ArbitraryOrderLagrangeElement",
     "BiQuadraticQuad",
     "ConstantHexahedron",

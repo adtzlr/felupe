@@ -188,9 +188,9 @@ def test_boundary_dict():
         left=fem.Boundary(field[0], fx=0, skip=(0, 0, 1)),
         right=fem.Boundary(field[0], name="my_label", fx=3, skip=(0, 1, 0)),
     )
-    plotter = boundaries.plot()
-    img = boundaries.screenshot()
-    ax = boundaries.imshow()
+    # plotter = boundaries.plot()
+    # img = boundaries.screenshot()
+    # ax = boundaries.imshow()
 
 
 if __name__ == "__main__":

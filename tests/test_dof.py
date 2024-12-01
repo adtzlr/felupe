@@ -181,12 +181,12 @@ def test_boundary_plot():
 
 
 def test_boundary_dict():
-    field = fem.Field(
-        fem.RegionHexahedron(fem.Cube(b=(3, 1, 1), n=5)), dim=3
+    field = fem.FieldPlaneStrain(
+        fem.RegionQuad(fem.Rectangle(b=(3, 1), n=5)), dim=2
     ).as_container()
     boundaries = fem.BoundaryDict(
-        left=fem.Boundary(field[0], fx=0, skip=(0, 0, 1)),
-        right=fem.Boundary(field[0], name="my_label", fx=3, skip=(0, 1, 0)),
+        left=fem.Boundary(field[0], fx=0, skip=(0, 0)),
+        right=fem.Boundary(field[0], name="my_label", fx=3, skip=(0, 1)),
     )
     plotter = boundaries.plot()
     # img = boundaries.screenshot()

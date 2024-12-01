@@ -15,6 +15,9 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance the `hello_world(axisymmetric=False, planestrain=False, curve=False, xdmf=False, container=False)` function with new arguments to customize the generated template script.
 - Enhance `Boundary` with added support for multiaxial prescribed values.
 
+### Fixed
+- Fix `Boundary(..., mode="and")` by ignoring any undefined axis.
+
 ## [9.1.0] - 2024-11-23
 
 ### Added

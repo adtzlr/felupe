@@ -263,7 +263,16 @@ class Boundary:
         self.value = value  #
 
     def plot(
-        self, plotter=None, color="black", scale=0.125, point_size=10, width=3, **kwargs
+        self,
+        plotter=None,
+        color="black",
+        scale=0.125,
+        point_size=10,
+        width=3,
+        label=None,
+        show_points=True,
+        show_lines=True,
+        **kwargs,
     ):
         "Plot the points and their prescribed directions of a boundary condition."
 
@@ -283,24 +292,32 @@ class Boundary:
             )
 
         if len(self.points) > 0:
-            magnitude = min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+            if label is None:
+                label = self.name
 
-            _ = plotter.add_points(
-                mesh.points[self.points],
-                color=color,
-                point_size=point_size,
-                label=self.name,
-            )
+            if show_points or show_lines:
+                points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
-            for skip, direction in zip(self.skip, np.eye(mesh.dim)):
-                if not skip:
-                    end = mesh.points[self.points] + direction * magnitude
-                    _ = plotter.add_lines(
-                        np.hstack([mesh.points[self.points], end]).reshape(
-                            -1, mesh.dim
-                        ),
-                        color=color,
-                        width=width,
-                    )
+            if show_points:
+                _ = plotter.add_points(
+                    points[self.points],
+                    color=color,
+                    point_size=point_size,
+                    label=label,
+                )
+
+            if show_lines:
+                magnitude = (
+                    min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+                )
+
+                for skip, direction in zip(self.skip, np.eye(3)):
+                    if not skip:
+                        end = points[self.points] + direction * magnitude
+                        _ = plotter.add_lines(
+                            np.hstack([points[self.points], end]).reshape(-1, 3),
+                            color=color,
+                            width=width,
+                        )
 
         return plotter

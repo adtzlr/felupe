@@ -171,14 +171,13 @@ A = umat.hessian
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 
-boundaries = {}
+boundaries = fem.BoundaryDict()
+
 boundaries["left"] = fem.Boundary(displacement, fx=f0)
 boundaries["right"] = fem.Boundary(displacement, fx=f1, skip=(1, 0, 0))
 boundaries["move"] = fem.Boundary(displacement, fx=f1, skip=(0, 1, 1), value=0.5)
 
-plotter = boundaries["left"].plot(color="green")
-plotter = boundaries["right"].plot(plotter=plotter, color="red")
-boundaries["move"].plot(plotter=plotter, color="blue", point_size=5).show()
+boundaries.plot().show()
 
 # %%
 # Partition of deegrees of freedom

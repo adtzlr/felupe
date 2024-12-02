@@ -19,6 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._boundary import Boundary
+from ._dict import BoundaryDict
 from ._tools import apply, partition
 
 
@@ -108,7 +109,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     ]
 
     if bounds is None:
-        bounds = {}
+        bounds = BoundaryDict()
     labels = ["symx", "symy", "symz"]
 
     # loop over symmetry conditions and add them to a new dict
@@ -559,7 +560,7 @@ def shear(
 
         bounds = symmetry(f, axes=sym)
     else:
-        bounds = {}
+        bounds = BoundaryDict()
 
     fy = ["fx", "fy", "fz"][axes[1]]
 

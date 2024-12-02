@@ -1,7 +1,15 @@
 class BoundaryDict(dict):
     "A dict of boundary conditions."
 
-    def plot(self, plotter=None, colors=None, **kwargs):
+    def plot(
+        self,
+        plotter=None,
+        colors=None,
+        size=(0.1, 0.1),
+        show_points=True,
+        show_lines=True,
+        **kwargs,
+    ):
         "Plot the boundary conditions."
 
         if colors is None:
@@ -18,9 +26,16 @@ class BoundaryDict(dict):
             if boundary.name != "default":
                 label = boundary.name
 
-            plotter = boundary.plot(label=label, color=color, plotter=plotter, **kwargs)
+            plotter = boundary.plot(
+                label=label,
+                color=color,
+                plotter=plotter,
+                show_points=show_points,
+                show_lines=show_lines,
+                **kwargs,
+            )
 
-        plotter.add_legend(size=(0.1, 0.1), bcolor="white", face="rectangle")
+        plotter.add_legend(size=size, bcolor="white")
 
         return plotter
 

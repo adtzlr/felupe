@@ -270,6 +270,8 @@ class Boundary:
         point_size=10,
         width=3,
         label=None,
+        show_points=True,
+        show_lines=True,
         **kwargs,
     ):
         "Plot the points and their prescribed directions of a boundary condition."
@@ -293,25 +295,29 @@ class Boundary:
             if label is None:
                 label = self.name
 
-            points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
-            magnitude = min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+            if show_points or show_lines:
+                points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
-            _ = plotter.add_points(
-                points[self.points],
-                color=color,
-                point_size=point_size,
-                label=label,
-            )
+            if show_points:
+                _ = plotter.add_points(
+                    points[self.points],
+                    color=color,
+                    point_size=point_size,
+                    label=label,
+                )
 
-            for skip, direction in zip(self.skip, np.eye(3)):
-                if not skip:
-                    end = points[self.points] + direction * magnitude
-                    _ = plotter.add_lines(
-                        np.hstack([points[self.points], end]).reshape(
-                            -1, 3
-                        ),
-                        color=color,
-                        width=width,
-                    )
+            if show_lines:
+                magnitude = (
+                    min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+                )
+
+                for skip, direction in zip(self.skip, np.eye(3)):
+                    if not skip:
+                        end = points[self.points] + direction * magnitude
+                        _ = plotter.add_lines(
+                            np.hstack([points[self.points], end]).reshape(-1, 3),
+                            color=color,
+                            width=width,
+                        )
 
         return plotter

@@ -28,7 +28,7 @@ Eq. :eq:`poisson-integral-form`.
        \ d\Omega = \int_\Omega  \delta u \cdot f \ d\Omega
 
 """
-
+# sphinx_gallery_thumbnail_number = -1
 import felupe as fem
 
 mesh = fem.Rectangle(n=2**5).triangulate()
@@ -36,12 +36,13 @@ region = fem.RegionTriangle(mesh)
 u = fem.Field(region, dim=1)
 field = fem.FieldContainer([u])
 
-boundaries = dict(
+boundaries = fem.BoundaryDict(
     bottom=fem.Boundary(u, fy=0),
     top=fem.Boundary(u, fy=1),
     left=fem.Boundary(u, fx=0),
     right=fem.Boundary(u, fx=1),
 )
+boundaries.plot(show_lines=False).show()
 
 solid = fem.SolidBody(umat=fem.Laplace(), field=field)
 load = fem.SolidBodyForce(field=field, values=1.0)

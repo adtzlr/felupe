@@ -503,15 +503,19 @@ def test_load():
             values *= 0.025
 
         body = fem.SolidBody(umat, field)
-        load = fem.PointLoad(field, mask, values=values, axisymmetric=axi)
-        plotter = load.plot(plotter=field.region.mesh.plot(off_screen=True))
 
+        load = fem.PointLoad(field, mask, values=values, axisymmetric=axi)
         bounds = {"fix": fem.Boundary(field[0], fx=lambda x: x == 0)}
         dof0, dof1 = fem.dof.partition(field, bounds)
 
         res = fem.newtonrhapson(items=[body, load], dof0=dof0, dof1=dof1)
 
         assert res.success
+
+    plotter = load.plot(plotter=field.region.mesh.plot(off_screen=True))
+
+    load.update([0, 0.1])
+    plotter = load.plot(plotter=field.region.mesh.plot(off_screen=True))
 
 
 def test_view():

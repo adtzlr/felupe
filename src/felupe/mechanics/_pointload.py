@@ -109,3 +109,42 @@ class PointLoad:
         self.results.stiffness = csr_matrix(([0.0], ([0], [0])), shape=(n, n))
 
         return self.results.stiffness
+
+    def plot(
+        self,
+        plotter=None,
+        color="red",
+        scale=0.125,
+        **kwargs,
+    ):
+        "Plot the point load."
+
+        mesh = self.field.region.mesh
+
+        if plotter is None:
+            plotter = mesh.plot()
+
+        if len(self.points) > 0:
+            points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
+            magnitude = min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+
+            values = np.atleast_2d(self.values)
+
+            skip = np.zeros(3, dtype=bool)
+            skip[values.shape[1] :] = True
+
+            if values.shape[1] > 1:
+                skip[:values.shape[1]][np.isclose(values, 0).all(axis=0)] = True
+
+            for a, (skip_axis, direction) in enumerate(zip(skip, np.eye(3))):
+                d = np.broadcast_to(direction.reshape(1, 3), points[self.points].shape)
+                if not skip_axis:
+                    _ = plotter.add_arrows(
+                        points[self.points],
+                        direction=d * np.sign(values[0, a]),
+                        mag=magnitude,
+                        color=color,
+                        **kwargs,
+                    )
+
+        return plotter

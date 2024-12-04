@@ -133,8 +133,8 @@ class PointLoad:
             skip = np.zeros(3, dtype=bool)
             skip[values.shape[1] :] = True
 
-            if values.shape[-1] > 1:
-                skip[np.isclose(values, 0).all(axis=0)] = True
+            if values.shape[1] > 1:
+                skip[:values.shape[1]][np.isclose(values, 0).all(axis=0)] = True
 
             for a, (skip_axis, direction) in enumerate(zip(skip, np.eye(3))):
                 d = np.broadcast_to(direction.reshape(1, 3), points[self.points].shape)

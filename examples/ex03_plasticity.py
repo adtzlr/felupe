@@ -23,6 +23,7 @@ per axis. A three-dimensional vector-valued displacement field is initiated on t
 numeric region.
 """
 
+# sphinx_gallery_thumbnail_number = -1
 import numpy as np
 
 import felupe as fem
@@ -34,7 +35,8 @@ field = fem.FieldContainer([displacement])
 
 # %%
 # A fixed boundary condition is applied at :math:`x=0`.
-boundaries = {"fixed": fem.dof.Boundary(displacement, fx=0)}
+boundaries = fem.BoundaryDict(fixed=fem.dof.Boundary(displacement, fx=0))
+boundaries.plot().show()
 
 # %%
 # The material behaviour is defined through a built-in isotropic linear-elastic plastic

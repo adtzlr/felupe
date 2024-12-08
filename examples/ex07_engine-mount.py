@@ -42,7 +42,6 @@ air = fem.mesh.read("ex07_engine-mount_mesh-air.vtk", dim=2)[0]
 # sub-meshes with shared points-array and a global mesh
 meshes = fem.MeshContainer([metal, rubber, air], merge=True)
 mesh = fem.mesh.concatenate(meshes).sweep()
-meshes.plot(colors=["grey", "black", "white"]).show()
 
 # %%
 # A global region as well as sub-regions for all materials are generated. The same
@@ -65,11 +64,13 @@ only_cells_metal = np.isin(np.arange(mesh.npoints), np.unique(meshes[0].cells))
 inner = np.logical_and(only_cells_metal, radius <= 45)
 outer = np.logical_and(only_cells_metal, radius > 45)
 
-boundaries = dict(
+boundaries = fem.BoundaryDict(
     fixed=fem.Boundary(field[0], mask=outer),
     u_x=fem.Boundary(field[0], mask=inner, skip=(0, 1)),
     u_y=fem.Boundary(field[0], mask=inner, skip=(1, 0)),
 )
+plotter = meshes.plot(colors=["grey", "black", "white"])
+boundaries.plot(plotter=plotter, scale=0.02).show()
 
 # %%
 # The material behaviour of the rubberlike solid is defined through a built-in hyperelastic

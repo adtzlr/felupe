@@ -47,8 +47,6 @@ rect = fem.mesh.Rectangle(a=(h, 0), b=(L, h), n=21)
 mesh = fem.mesh.concatenate([face, face.mirror(normal=[-1, 1, 0]), rect])
 mesh = mesh.sweep(decimals=5)
 
-mesh.plot().show()
-
 # %%
 # A numeric quad-region created on the mesh in combination with a vector-valued
 # displacement field represents the plate. The Boundary conditions for the symmetry
@@ -58,6 +56,7 @@ displacement = fem.Field(region, dim=2)
 field = fem.FieldContainer([displacement])
 
 boundaries = fem.dof.symmetry(displacement)
+boundaries.plot().show()
 
 # %%
 # The material behaviour is defined through a built-in isotropic linear-elastic material

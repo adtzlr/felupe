@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
-def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
+def linsteps(points, num=10, endpoint=True, axis=None, axes=None, values=0.0):
     """Return a sequence from batches of evenly spaced samples between pairs of
     milestone points.
 
@@ -40,6 +40,9 @@ def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
     axes : int or None, optional
         Number of output columns if ``axis`` is not None. Requires ``axes > axis`` and
         will be set to ``axes = axis + 1`` by default (None).
+    values : array_like, optional
+        Default values if ``axis`` is not None (not used for column ``axis``). Default
+        is 0.0.
 
     Returns
     -------
@@ -49,7 +52,7 @@ def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
     Examples
     --------
     >>> import felupe as fem
-
+    >>>
     >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2)
     array([0.  , 0.25, 0.5 , 1.  , 1.5 , 2.5 , 3.5 ])
 
@@ -58,14 +61,14 @@ def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
     >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2, endpoint=False)
     array([0.  , 0.25, 0.5 , 1.  , 1.5 , 2.5 ])
 
-    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2, axis=1)
-    array([[0.  , 0.  ],
-           [0.  , 0.25],
-           [0.  , 0.5 ],
-           [0.  , 1.  ],
-           [0.  , 1.5 ],
-           [0.  , 2.5 ],
-           [0.  , 3.5 ]])
+    >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=2, axis=1, values=[-1, 0])
+    array([[-1.  ,  0.  ],
+           [-1.  ,  0.25],
+           [-1.  ,  0.5 ],
+           [-1.  ,  1.  ],
+           [-1.  ,  1.5 ],
+           [-1.  ,  2.5 ],
+           [-1.  ,  3.5 ]])
 
     Output with four columns:
 
@@ -120,7 +123,7 @@ def linsteps(points, num=10, endpoint=True, axis=None, axes=None):
             axes = axis + 1
 
         steps_1d = steps
-        steps = np.zeros((len(steps_1d), axes))
+        steps = np.ones((len(steps_1d), axes)) * np.atleast_2d(values)
         steps[:, axis] = steps_1d
 
     return steps

@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file. The format 
 - Autodetect the stress-type in `SolidBody.plot(name)` from `name`.
 - Enhance the `hello_world(axisymmetric=False, planestrain=False, curve=False, xdmf=False, container=False)` function with new arguments to customize the generated template script.
 - Enhance `Boundary` with added support for multiaxial prescribed values.
+- Enhance `math.linsteps(..., values=0)` with default values except for the column `axis` if `axis` is not None.
 
 ### Fixed
 - Fix `Boundary(..., mode="and")` by ignoring any undefined axis.

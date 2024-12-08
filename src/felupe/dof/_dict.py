@@ -30,6 +30,7 @@ class BoundaryDict(dict):
                 label=label,
                 color=color,
                 plotter=plotter,
+                size=size,
                 show_points=show_points,
                 show_lines=show_lines,
                 **kwargs,

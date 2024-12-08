@@ -20,6 +20,7 @@ per axis. A numeric region created on the mesh represents the cantilever beam. A
 dimensional vector-valued displacement field is initiated on the region.
 """
 
+# sphinx_gallery_thumbnail_number = -1
 import felupe as fem
 
 cube = fem.Cube(a=(0, 0, 0), b=(2000, 100, 100), n=(101, 6, 6))
@@ -29,7 +30,8 @@ field = fem.FieldContainer([displacement])
 
 # %%
 # A fixed boundary condition is applied on the left end of the beam.
-boundaries = {"fixed": fem.dof.Boundary(displacement, fx=0)}
+boundaries = fem.BoundaryDict(fixed=fem.dof.Boundary(displacement, fx=0))
+boundaries.plot().show()
 
 # %%
 # The material behaviour is defined through a built-in isotropic linear-elastic material

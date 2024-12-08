@@ -57,8 +57,6 @@ meshes = fem.MeshContainer([rubber, *metals], merge=True)
 mesh = fem.mesh.stack(meshes.meshes)
 x, y, z = mesh.points.T
 
-mesh.plot().show()
-
 # %%
 # A global region as well as sub-regions for all materials are generated. The same
 # applies to the fields, the material formulations as well as the solid bodies.
@@ -78,10 +76,11 @@ solids = [
 # %%
 # The boundary conditions are created on the global displacement field. Masks are
 # created for both the innermost and the outermost metal sheet faces.
-boundaries = {
-    "inner": fem.dof.Boundary(field[0], mask=np.isclose(np.sqrt(y**2 + z**2), 25)),
-    "outer": fem.dof.Boundary(field[0], mask=np.isclose(np.sqrt(y**2 + z**2), 65)),
-}
+boundaries = fem.BoundaryDict(
+    inner=fem.dof.Boundary(field[0], mask=np.isclose(np.sqrt(y**2 + z**2), 25)),
+    outer=fem.dof.Boundary(field[0], mask=np.isclose(np.sqrt(y**2 + z**2), 65)),
+)
+boundaries.plot(show_lines=False).show()
 
 # prescribed values for the innermost radial mesh points
 table = fem.math.linsteps([0, 1], num=3)

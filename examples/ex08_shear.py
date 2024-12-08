@@ -58,10 +58,10 @@ mesh.points_without_cells = np.array([], dtype=bool)
 region = fem.RegionQuad(mesh)
 field = fem.FieldsMixed(region, n=3, planestrain=True)
 
-boundaries = {
-    "fixed": fem.Boundary(field[0], fy=mesh.y.min()),
-    "control": fem.Boundary(field[0], fy=mesh.y.max(), skip=(0, 1)),
-}
+boundaries = fem.BoundaryDict(
+    fixed=fem.Boundary(field[0], fy=mesh.y.min()),
+    control=fem.Boundary(field[0], fy=mesh.y.max(), skip=(0, 1)),
+)
 
 dof0, dof1 = fem.dof.partition(field, boundaries)
 
@@ -97,7 +97,7 @@ mpc = fem.MultiPointConstraint(
     centerpoint=mesh.npoints - 1,
 )
 
-plotter = mesh.plot()
+plotter = boundaries.plot()
 plotter = mpc.plot(plotter=plotter)
 plotter.show()
 

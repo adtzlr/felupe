@@ -247,9 +247,26 @@ def test_view():
     # ax = mesh.imshow()
 
 
+def test_link():
+    mesh = fem.Cube(n=2)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.Field(region, dim=3) & fem.Field(region, dim=1)
+    field.link()
+
+    assert field[0].values is field[1].values
+
+    field1 = fem.Field(region, dim=3) & fem.Field(region, dim=1)
+    field2 = fem.Field(region, dim=3) & fem.Field(region, dim=1)
+    field1.link(field2)
+
+    assert field1[0].values is field2[0].values
+    assert field1[1].values is field2[1].values
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
     test_3d_mixed()
     test_mixed_lagrange()
     test_view()
+    test_link()

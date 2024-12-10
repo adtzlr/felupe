@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance the `hello_world(axisymmetric=False, planestrain=False, curve=False, xdmf=False, container=False)` function with new arguments to customize the generated template script.
 - Enhance `Boundary` with added support for multiaxial prescribed values.
 - Enhance `math.linsteps(..., values=0)` with default values except for the column `axis` if `axis` is not None.
+- Link all field-values to the values of the first field if no other field is given in `FieldContainer.link()`.
 
 ### Fixed
 - Fix `Boundary(..., mode="and")` by ignoring any undefined axis.

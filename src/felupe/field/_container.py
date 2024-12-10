@@ -210,10 +210,14 @@ class FieldContainer:
         "Return a copy of the field."
         return deepcopy(self)
 
-    def link(self, other_field):
+    def link(self, other_field=None):
         "Link value array of other field."
-        for field, newfield in zip(self.fields, other_field.fields):
-            field.values = newfield.values
+        if other_field is None:
+            for u in self.fields[1:]:  # link n-to-1 (all-to-first)
+                u.values = self.fields[0].values
+        else:
+            for field, newfield in zip(self.fields, other_field.fields):  # link 1-to-1
+                field.values = newfield.values
 
     def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.

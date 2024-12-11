@@ -401,7 +401,7 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
             " ".join(
                 [
                     "Wrong shape of first two axes.",
-                    "Must be (1, 1), (2, 2) or (3, 3) but {A.shape[:2]} is given.",
+                    f"Must be (1, 1), (2, 2) or (3, 3) but {A.shape[:2]} is given.",
                 ]
             )
         )

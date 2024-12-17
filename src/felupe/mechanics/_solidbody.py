@@ -164,6 +164,11 @@ class SolidBody(Solid):
         Array of initial internal state variables (default is None).
     density : float or None, optional
         The density of the solid body.
+    block : bool, optional
+        Assemble a sparse matrix from sparse sub-blocks or assemble a sparse vector by
+        stacking sparse matrices vertically (row wise). Default is True.
+    apply : callable or None, optional
+        Apply a callable on the assembled vectors and sparse matrices. Default is None.
 
     Notes
     -----
@@ -241,10 +246,14 @@ class SolidBody(Solid):
         methods for the assembly of sparse vectors/matrices.
     """
 
-    def __init__(self, umat, field, statevars=None, density=None):
+    def __init__(
+        self, umat, field, statevars=None, density=None, block=True, apply=None
+    ):
         self.umat = umat
         self.field = field
         self.density = density
+        self.block = block
+        self.apply = apply
 
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
@@ -279,13 +288,26 @@ class SolidBody(Solid):
         self._form = IntegralForm
 
     def _vector(
-        self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
+        self,
+        field=None,
+        parallel=False,
+        items=None,
+        args=(),
+        kwargs=None,
+        block=None,
+        apply=None,
     ):
         if kwargs is None:
             kwargs = {}
 
         if field is not None:
             self.field = field
+
+        if block is None:
+            block = self.block
+
+        if apply is None:
+            apply = self.apply
 
         self.results.stress = self._gradient(field, args=args, kwargs=kwargs)
         self.results.force = self._form(
@@ -294,16 +316,32 @@ class SolidBody(Solid):
             dV=self.field.region.dV,
         ).assemble(parallel=parallel, block=block)
 
+        if apply is not None:
+            self.results.force = apply(self.results.force)
+
         return self.results.force
 
     def _matrix(
-        self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
+        self,
+        field=None,
+        parallel=False,
+        items=None,
+        args=(),
+        kwargs=None,
+        block=None,
+        apply=None,
     ):
         if kwargs is None:
             kwargs = {}
 
         if field is not None:
             self.field = field
+
+        if block is None:
+            block = self.block
+
+        if apply is None:
+            apply = self.apply
 
         self.results.elasticity = self._hessian(field, args=args, kwargs=kwargs)
 
@@ -321,6 +359,9 @@ class SolidBody(Solid):
         self.results.stiffness = form.assemble(
             values=self.results.stiffness_values, block=block
         )
+
+        if apply is not None:
+            self.results.stiffness = apply(self.results.stiffness)
 
         return self.results.stiffness
 

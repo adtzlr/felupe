@@ -357,6 +357,9 @@ def test_solidbody_axi_incompressible():
         K2 = b.assemble.matrix(**kwargs)
         assert np.allclose(K1.toarray(), K2.toarray())
 
+        K3 = b.assemble.matrix(**kwargs, block=False, apply=sum)
+        assert np.allclose(K1.toarray(), K3.toarray())
+
         P1 = b.results.stress
         P2 = b.evaluate.gradient()
         P2 = b.evaluate.gradient(u)

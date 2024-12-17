@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a free-vibration modal analysis Step/Job `FreeVibration(items, boundaries)` with methods to evaluate `FreeVibration.evaluate()` and to extract `field, frequency = FreeVibration.extract(n)` its n-th result.
 - Add `Boundary.plot()` to plot the points and prescribed directions of a boundary.
 - Add `BoundaryDict` as a subclassed dict with methods to `plot()`, `screenshot()` and `imshow()`.
+- Add a new argument to apply a callable on the assembled vector/matrix of a solid body, `SolidBody(..., apply=None)`. This may be used to sum the list of sub-blocks instead of stacking them together, `SolidBody(..., block=False, apply=None)`. This is useful for mixed formulations where both the deformation gradient and the displacement values are required.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 - Enhance `Boundary` with added support for multiaxial prescribed values.
 - Enhance `math.linsteps(..., values=0)` with default values except for the column `axis` if `axis` is not None.
 - Link all field-values to the values of the first field if no other field is given in `FieldContainer.link()`.
+- Change the default arguments from `block=True` to `block=None` in `SolidBody.assemble.vector(block=None)` and `SolidBody.assemble.matrix(block=None)` and define `block` on creation, `SolidBody(..., block=True)` instead.
 
 ### Fixed
 - Fix `Boundary(..., mode="and")` by ignoring any undefined axis.

@@ -273,13 +273,12 @@ class IntegralForm:
                 if i != j:
                     K[j, i] = res[a].T
 
-            return bmat(K).tocsr()
+            res = bmat(K).tocsr()
 
         if block and self.mode == 1:
-            return vstack(res).tocsr()
+            res = vstack(res).tocsr()
 
-        else:
-            return res
+        return res
 
     def integrate(self, parallel=False, out=None):
         if out is None:

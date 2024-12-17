@@ -169,6 +169,8 @@ class SolidBody(Solid):
         stacking sparse matrices vertically (row wise). Default is True.
     apply : callable or None, optional
         Apply a callable on the assembled vectors and sparse matrices. Default is None.
+    multiplier : float or None, optional
+        A scale factor for the assembled vector and matrix. Default is None.
 
     Notes
     -----
@@ -247,7 +249,14 @@ class SolidBody(Solid):
     """
 
     def __init__(
-        self, umat, field, statevars=None, density=None, block=True, apply=None
+        self,
+        umat,
+        field,
+        statevars=None,
+        density=None,
+        block=True,
+        apply=None,
+        multiplier=None,
     ):
         self.umat = umat
         self.field = field
@@ -273,7 +282,10 @@ class SolidBody(Solid):
             )
 
         self.assemble = Assemble(
-            vector=self._vector, matrix=self._matrix, mass=self._mass
+            vector=self._vector,
+            matrix=self._matrix,
+            mass=self._mass,
+            multiplier=multiplier,
         )
 
         self.evaluate = Evaluate(

@@ -293,7 +293,7 @@ def test_solidbody_incompressible():
         assert np.allclose(t1, t2)
 
 
-def test_solidbody_axi():
+def test_solidbody_axi_incompressible():
     umat, u = pre_axi(bulk=None)
     b = fem.SolidBodyNearlyIncompressible(umat=umat, field=u, bulk=5000)
     b = fem.SolidBodyNearlyIncompressible(
@@ -338,7 +338,7 @@ def test_solidbody_axi():
         assert np.allclose(t1, t2)
 
 
-def test_solidbody_axi_incompressible():
+def test_solidbody_axi():
     umat, u = pre_axi()
     b = fem.SolidBody(umat=umat, field=u)
 
@@ -350,6 +350,9 @@ def test_solidbody_axi_incompressible():
 
         r2 = b.assemble.vector(**kwargs)
         assert np.allclose(r1.toarray(), r2.toarray())
+
+        r3 = b.assemble.vector(**kwargs, block=False, apply=sum)
+        assert np.allclose(r1.toarray(), r3.toarray())
 
         K1 = b.assemble.matrix(u, **kwargs)
         assert K1.shape == (18, 18)

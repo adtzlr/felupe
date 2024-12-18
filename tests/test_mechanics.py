@@ -465,7 +465,10 @@ def test_solidbody_mixed():
         A2 = b.evaluate.hessian()
         A2 = b.evaluate.hessian(u)
         for a1, a2 in zip(A1, A2):
-            assert np.allclose(a1, a2)
+            if a1 is None:
+                assert a2 is None
+            else:
+                assert np.allclose(a1, a2)
 
         F1 = b.results.kinematics
         F2 = b._extract(u)

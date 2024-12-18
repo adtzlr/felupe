@@ -104,7 +104,10 @@ class IntegralFormCartesian:
     """
 
     def __init__(self, fun, v, dV, u=None, grad_v=False, grad_u=False):
-        self.fun = np.ascontiguousarray(fun)
+        self.fun = fun
+        if self.fun is not None:
+            self.fun = np.ascontiguousarray(self.fun)
+
         self.dV = dV
 
         self.v = v
@@ -137,20 +140,22 @@ class IntegralFormCartesian:
         if values is None:
             values = self.integrate(parallel=parallel, out=out)
 
-        permute = np.append(len(values.shape) - 1, range(len(values.shape) - 1)).astype(
-            int
-        )
+        if values is not None:
+            permute = np.append(
+                len(values.shape) - 1, range(len(values.shape) - 1)
+            ).astype(int)
 
-        # broadcast values of a uniform grid mesh
-        if values.size < self.indices[0].size:
-            new_shape = (*values.shape[:-1], self.v.region.mesh.ncells)
-            values = np.broadcast_to(values, new_shape)
+            # broadcast values of a uniform grid mesh
+            if values.size < self.indices[0].size:
+                new_shape = (*values.shape[:-1], self.v.region.mesh.ncells)
+                values = np.broadcast_to(values, new_shape)
 
-        res = sparsematrix(
-            (values.transpose(permute).ravel(), self.indices), shape=self.shape
-        )
+            return sparsematrix(
+                (values.transpose(permute).ravel(), self.indices), shape=self.shape
+            )
 
-        return res
+        else:
+            return sparsematrix(self.shape)
 
     def integrate(self, parallel=False, out=None):
         "Return evaluated (but not assembled) integrals."
@@ -159,6 +164,9 @@ class IntegralFormCartesian:
         v, u = self.v, self.u
         dV = self.dV
         fun = self.fun
+
+        if fun is None:
+            return None
 
         # plane strain
         # trim 3d vector-valued functions to the dimension of the field

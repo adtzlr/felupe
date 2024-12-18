@@ -214,8 +214,8 @@ class NearlyIncompressible(ConstitutiveMaterial):
         d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
         d2WdFdF += p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
         d2WdFdp = detF * iFT
-        d2WdFdJ = np.zeros_like(F)
-        d2Wdpdp = np.zeros_like(p)
+        d2WdFdJ = None  # np.zeros_like(F)
+        d2Wdpdp = None  # np.zeros_like(p)
         d2WdpdJ = -np.ones_like(J)
         d2WdJdJ = self.d2UdJdJ(J, self.bulk) * np.ones_like(J)
         return [d2WdFdF, d2WdFdp, d2WdFdJ, d2Wdpdp, d2WdpdJ, d2WdJdJ]
@@ -623,7 +623,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
         ndarray
             p,p - part of hessian
         """
-        return np.zeros_like(p)
+        return None  # np.zeros_like(p)
 
     def _hessian_JJ(self, F, p, J):
         """Linearization w.r.t. volume ratio of variation of

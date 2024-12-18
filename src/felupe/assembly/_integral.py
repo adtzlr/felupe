@@ -239,8 +239,8 @@ class IntegralForm:
                 f = IntForm(fun=fun, v=v, dV=self.dV, grad_v=grad_v)
                 self.forms.append(f)
 
-        elif len(fun) == np.sum(1 + np.arange(self.nv)) and u is not None:
-            # BilinearForm
+        elif u is not None and len(fun) == np.sum(1 + np.arange(self.nv)):
+            # BilinearForm (symmetric, upper-triangle entries)
             self.mode = 2
             self.i, self.j = np.triu_indices(self.nv)
 
@@ -254,6 +254,23 @@ class IntegralForm:
                     grad_u=self.grad_u[j],
                 )
                 self.forms.append(f)
+
+        elif u is not None and len(fun) == self.nv * self.nu:
+            # BilinearForm (non-symmetric)
+            self.mode = 3
+            self.i, self.j = [i.ravel() for i in np.indices((self.nv, self.nu))]
+
+            for a, (i, j) in enumerate(zip(self.i, self.j)):
+                f = IntForm(
+                    self.fun[a],
+                    v=self.v[i],
+                    dV=self.dV,
+                    u=self.u[j],
+                    grad_v=self.grad_v[i],
+                    grad_u=self.grad_u[j],
+                )
+                self.forms.append(f)
+
         else:
             raise ValueError("Unknown input format.")
 
@@ -267,11 +284,18 @@ class IntegralForm:
             res.append(form.assemble(val, parallel=parallel, out=out))
 
         if block and self.mode == 2:
-            K = np.zeros((self.nv, self.nv), dtype=object)
+            K = np.zeros((self.nv, self.nu), dtype=object)
             for a, (i, j) in enumerate(zip(self.i, self.j)):
                 K[i, j] = res[a]
                 if i != j:
                     K[j, i] = res[a].T
+
+            res = bmat(K).tocsr()
+
+        if block and self.mode == 3:
+            K = np.zeros((self.nv, self.nu), dtype=object)
+            for a, (i, j) in enumerate(zip(self.i, self.j)):
+                K[i, j] = res[a]
 
             res = bmat(K).tocsr()
 

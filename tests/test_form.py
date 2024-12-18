@@ -252,6 +252,20 @@ def test_mixed():
 
         assert b.shape == (z, 1)
 
+    L = fem.IntegralForm([f[0], None, f[2]], v, r.dV)
+    x = L.integrate()
+    b = L.assemble(x)
+
+    assert b.shape == (z, 1)
+
+    a = fem.IntegralForm(
+        [A[0], A[1], A[2], A[1], A[3], A[4], A[2], A[4], A[5]], v, r.dV, v
+    )
+    y = a.integrate()
+    K = a.assemble(y)
+
+    assert K.shape == (z, z)
+
     r, v, f, A = pre_axi_mixed()
 
     for parallel in [False, True]:

@@ -283,19 +283,12 @@ class IntegralForm:
         for val, form in zip(values, self.forms):
             res.append(form.assemble(val, parallel=parallel, out=out))
 
-        if block and self.mode == 2:
+        if block and (self.mode == 2 or self.mode == 3):
             K = np.zeros((self.nv, self.nu), dtype=object)
             for a, (i, j) in enumerate(zip(self.i, self.j)):
                 K[i, j] = res[a]
-                if i != j:
+                if self.mode == 2 and i != j:
                     K[j, i] = res[a].T
-
-            res = bmat(K).tocsr()
-
-        if block and self.mode == 3:
-            K = np.zeros((self.nv, self.nu), dtype=object)
-            for a, (i, j) in enumerate(zip(self.i, self.j)):
-                K[i, j] = res[a]
 
             res = bmat(K).tocsr()
 

@@ -48,12 +48,13 @@ medium = fem.MeshContainer([f, g], merge=True).stack()
 # down material parameters.
 G = 5 / 14
 K = 5 / 3
-gamma = 2e-6
+kr = 1e-6
+gamma0 = 1e-6
 
-container = fem.MeshContainer([body, medium], merge=True)
+container = fem.MeshContainer([body, medium], merge=True, decimals=6)
 regions = [fem.RegionQuad(m, hess=True) for m in container.meshes]
 fields = [fem.FieldPlaneStrain(r, dim=2).as_container() for r in regions]
-umats = [fem.NeoHooke(mu=G, bulk=K), fem.NeoHooke(mu=G * gamma, bulk=K * gamma)]
+umats = [fem.NeoHooke(mu=G, bulk=K), fem.NeoHooke(mu=G * gamma0, bulk=K * gamma0)]
 solids = [fem.SolidBody(umat, f) for umat, f in zip(umats, fields)]
 
 # %%
@@ -97,15 +98,15 @@ def linearform():
 regularization = fem.FormItem(
     bilinearform=bilinearform,
     linearform=linearform,
-    kwargs={"kr": K * L**2 * gamma},
+    kwargs={"kr": kr * K * L**2},
 )
 
 # %%
 # The prescribed displacement is ramped up to the maximum value and released until zero.
-move = fem.math.linsteps([0, 0.6, 1, 0.6, 0], num=15)
+move = fem.math.linsteps([0, 1, 0], num=30)
 step = fem.Step(
     items=[*solids, regularization],
-    ramp={bounds["move"]: move * -0.5 * L},
+    ramp={bounds["move"]: -0.4 * move * L},
     boundaries=bounds,
 )
 

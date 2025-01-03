@@ -260,7 +260,8 @@ class ArbitraryOrderLagrange(Element):
         self._npoints = self._nshape**dim
         self._nbasis = self._npoints
         self._interval = interval
-        self._dim = dim
+
+        self.dim = dim
 
         self.permute = None
         if permute:
@@ -321,10 +322,10 @@ class ArbitraryOrderLagrange(Element):
         k = [self._AT @ np.append(0, self._polynomial(ra, n)[:-1]) for ra in r]
 
         # init output
-        dhdr = np.zeros((n**self._dim, self._dim))
+        dhdr = np.zeros((n**self.dim, self.dim))
 
         # loop over columns
-        for i in range(self._dim):
+        for i in range(self.dim):
             g = copy(h)
             g[i] = k[i]
             dhdr[:, i] = np.einsum(self._subscripts, *g).ravel("F")

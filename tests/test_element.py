@@ -43,8 +43,6 @@ def test_line2():
     assert np.all(dhdr[0] == -0.5)
     assert np.all(d2hdrdr == 0.0)
 
-    assert line2.shape == dhdr.shape
-
     line2.plot(off_screen=True)
 
 
@@ -58,8 +56,6 @@ def test_line_lagrange():
 
     assert np.isclose(h[0], 1)
     assert np.isclose(dhdr[0, 0], -5.70833333)
-
-    assert line6.shape == dhdr.shape
 
     line6.plot(off_screen=True)
 
@@ -77,8 +73,6 @@ def test_quad0():
     assert np.all(dhdr[0] == 0)
     assert np.all(d2hdrdr == 0.0)
 
-    assert quad0.shape == dhdr.shape
-
 
 def test_quad4():
     quad4 = fem.element.Quad()
@@ -92,8 +86,6 @@ def test_quad4():
     assert h[0] == 1
     assert np.all(dhdr[0] == -0.5)
     assert d2hdrdr.shape == (4, 2, 2)
-
-    assert quad4.shape == dhdr.shape
 
     quad4.plot(off_screen=True)
 
@@ -111,8 +103,6 @@ def test_quad8():
     assert np.all(dhdr[0] == -1.5)
     assert d2hdrdr.shape == (8, 2, 2)
 
-    assert quad8.shape == dhdr.shape
-
 
 def test_quad9():
     quad9 = fem.element.BiQuadraticQuad()
@@ -124,8 +114,6 @@ def test_quad9():
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
-
-    assert quad9.shape == dhdr.shape
 
 
 def test_hex0():
@@ -141,8 +129,6 @@ def test_hex0():
     assert np.all(dhdr[0] == 0)
     assert np.all(d2hdrdr == 0)
 
-    assert hex0.shape == dhdr.shape
-
 
 def test_hex8():
     hex8 = fem.element.Hexahedron()
@@ -157,8 +143,6 @@ def test_hex8():
     assert np.all(dhdr[0] == -0.5)
     assert d2hdrdr.shape == (8, 3, 3)
 
-    assert hex8.shape == dhdr.shape
-
 
 def test_hex20():
     hex20 = fem.element.QuadraticHexahedron()
@@ -170,8 +154,6 @@ def test_hex20():
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
-
-    assert hex20.shape == dhdr.shape
 
     hex20.plot(off_screen=True)
 
@@ -186,8 +168,6 @@ def test_hex27():
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
-
-    assert hex27.shape == dhdr.shape
 
     hex27.plot(off_screen=True)
 
@@ -205,9 +185,6 @@ def test_tri3():
     assert np.all(dhdr[0] == -1)
     assert np.all(d2hdrdr == 0)
 
-    assert tri3.shape == dhdr.shape
-
-
 def test_tri6():
     tri6 = fem.element.QuadraticTriangle()
 
@@ -218,8 +195,6 @@ def test_tri6():
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -3)
-
-    assert tri6.shape == dhdr.shape
 
 
 def test_tri_mini():
@@ -236,8 +211,6 @@ def test_tri_mini():
     assert np.all(dhdr[0] == -1)
     assert d2hdrdr.shape == (4, 2, 2)
 
-    assert trim.shape == dhdr.shape
-
 
 def test_tet4():
     tet4 = fem.element.Tetra()
@@ -252,8 +225,6 @@ def test_tet4():
     assert np.all(dhdr[0] == -1)
     assert np.all(d2hdrdr == 0)
 
-    assert tet4.shape == dhdr.shape
-
 
 def test_tet10():
     tet10 = fem.element.QuadraticTetra()
@@ -265,8 +236,6 @@ def test_tet10():
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -3)
-
-    assert tet10.shape == dhdr.shape
 
 
 def test_tet_mini():
@@ -283,8 +252,6 @@ def test_tet_mini():
     assert np.all(dhdr[0] == -1)
     assert d2hdrdr.shape == (5, 3, 3)
 
-    assert tetm.shape == dhdr.shape
-
 
 def test_aol():
     aol32 = fem.element.ArbitraryOrderLagrange(order=3, dim=2)
@@ -296,7 +263,6 @@ def test_aol():
     dhdr = aol32.gradient(r)
 
     assert h[0] == 1
-    assert aol32.shape == dhdr.shape
 
     r = [-1, -1, -1]
 
@@ -304,7 +270,6 @@ def test_aol():
     dhdr = aol23.gradient(r)
 
     assert h[0] == 1
-    assert aol23.shape == dhdr.shape
 
 
 if __name__ == "__main__":

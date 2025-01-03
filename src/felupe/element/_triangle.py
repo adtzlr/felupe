@@ -196,7 +196,7 @@ class QuadraticTriangle(Element):
     """
 
     def __init__(self):
-        self.points = np.zeros(self.shape)
+        self.points = np.zeros((6, 2))
         self.points[:3] = np.array([[0, 0], [1, 0], [0, 1]], dtype=float)
         self.points[3] = np.mean(self.points[[0, 1]], axis=0)
         self.points[4] = np.mean(self.points[[1, 2]], axis=0)

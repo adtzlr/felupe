@@ -235,7 +235,7 @@ class QuadraticTetra(Element):
     """
 
     def __init__(self):
-        self.points = np.zeros(self.shape)
+        self.points = np.zeros((10, 3))
         self.points[:4] = np.array(
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
         )

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `BoundaryDict` as a subclassed dict with methods to `plot()`, `screenshot()` and `imshow()`.
 - Add a new argument to apply a callable on the assembled vector/matrix of a solid body, `SolidBody(..., apply=None)`. This may be used to sum the list of sub-blocks instead of stacking them together, `SolidBody(..., block=False, apply=None)`. This is useful for mixed formulations where both the deformation gradient and the displacement values are required.
 - Add support for non-symmetric bilinear mixed forms in `IntegralForm`.
+- Add `element.Element` to the top-level package namespace.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.
@@ -24,6 +25,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix `Boundary(..., mode="and")` by ignoring any undefined axis.
+
+### Removed
+- Remove the unused `shape`-argument in `element.Element(shape)`. Adopt the arbitrary-lagrange element to use its own `dim`-argument. This simplifies the creation of custom finite element formulations.
 
 ## [9.1.0] - 2024-11-23
 

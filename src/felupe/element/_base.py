@@ -20,9 +20,6 @@ import numpy as np
 
 
 class Element:
-    def __init__(self, shape):
-        self.shape = shape
-        self.dim = self.shape[1]
 
     def view(self, point_data=None, cell_data=None, cell_type=None):
         """View the element with optional given dicts of point- and cell-data items.
@@ -91,7 +88,7 @@ class Element:
         )
         if add_point_labels:
             plotter.add_point_labels(
-                points=np.pad(self.points, ((0, 0), (0, 3 - self.shape[1]))),
+                points=np.pad(self.points, ((0, 0), (0, 3 - self.points.shape[1]))),
                 labels=[f"{a}" for a in np.arange(len(self.points))],
                 font_size=font_size,
                 show_points=show_points,
@@ -108,19 +105,19 @@ class Element:
             actor.SetNormalizedShaftLength((0.9, 0.9, 0.9))
             actor.SetNormalizedTipLength((0.1, 0.1, 0.1))
 
-            if self.shape[1] == 3:
+            if self.points.shape[1] == 3:
                 actor.SetTotalLength([1.3, 1.3, 1.3])
-            elif self.shape[1] == 2:
+            elif self.points.shape[1] == 2:
                 actor.SetZAxisLabelText("")
                 actor.SetTotalLength([1.3, 1.3, 0])
-            elif self.shape[1] == 1:
+            elif self.points.shape[1] == 1:
                 actor.SetYAxisLabelText("")
                 actor.SetZAxisLabelText("")
                 actor.SetTotalLength([1.3, 0, 0])
 
             plotter.camera.zoom(0.7)
 
-        if self.shape[1] == 3:
+        if self.points.shape[1] == 3:
             plotter.camera.azimuth = -17
 
         return plotter

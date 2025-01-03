@@ -69,7 +69,6 @@ class ConstantHexahedron(Element):
         )
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "hexahedron"
-        super().__init__(shape=(1, 3))
 
     def function(self, rst):
         "Return the shape functions at given coordinates (r, s, t)."
@@ -140,7 +139,6 @@ class Hexahedron(Element):
         )
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "hexahedron"
-        super().__init__(shape=(8, 3))
 
     def function(self, rst):
         "Return the shape functions at given coordinates (r, s, t)."
@@ -263,7 +261,6 @@ class QuadraticHexahedron(Element):
         )
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "hexahedron20"
-        super().__init__(shape=(20, 3))
 
     def function(self, rst):
         "Return the shape functions at given coordinates (r, s, t)."
@@ -471,8 +468,6 @@ class TriQuadraticHexahedron(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(27, 3))
-
         self.points = np.array(
             [
                 [-1, -1, -1],

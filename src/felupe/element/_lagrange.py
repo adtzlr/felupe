@@ -261,13 +261,13 @@ class ArbitraryOrderLagrange(Element):
         self._nbasis = self._npoints
         self._interval = interval
 
+        self.dim = dim
+
         self.permute = None
         if permute:
             self.permute = [None, lagrange_line, lagrange_quad, lagrange_hexahedron][
                 dim
             ](order)
-
-        super().__init__(shape=(self._npoints, dim))
 
         # init curve-parameter matrix
         n = self._nshape
@@ -278,7 +278,7 @@ class ArbitraryOrderLagrange(Element):
         # indices for outer product in einstein notation
         # idx = ["a", "b", "c", ...][:dim]
         # subscripts = "a,b,c -> abc"
-        self._idx = [letter for letter in alphabet][: self.dim]
+        self._idx = [letter for letter in alphabet][:dim]
         self._subscripts = ",".join(self._idx) + "->" + "".join(self._idx)
 
         # init points

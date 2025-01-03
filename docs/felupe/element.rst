@@ -5,9 +5,13 @@ Element
 
 This module provides classes for the finite element formulations.
 
-**Linear Elements**
-
 .. currentmodule:: felupe
+
+.. autosummary::
+
+   Element
+
+**Linear Elements**
 
 .. autosummary::
 
@@ -49,6 +53,11 @@ This module provides classes for the finite element formulations.
    element.ArbitraryOrderLagrange
 
 **Detailed API Reference**
+
+.. autoclass:: felupe.Element
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. autoclass:: felupe.Line
    :members:

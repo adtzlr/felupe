@@ -57,7 +57,6 @@ class Tetra(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(4, 3))
         self.points = np.array(
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float
         )
@@ -117,7 +116,6 @@ class TetraMINI(Element):
     """
 
     def __init__(self, bubble_multiplier=1.0):
-        super().__init__(shape=(5, 3))
         self.points = np.array(
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [1 / 3, 1 / 3, 1 / 3]],
             dtype=float,
@@ -237,7 +235,6 @@ class QuadraticTetra(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(10, 3))
         self.points = np.zeros(self.shape)
         self.points[:4] = np.array(
             [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=float

@@ -52,7 +52,6 @@ class ConstantQuad(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(1, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "quad"
@@ -106,7 +105,6 @@ class Quad(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(4, 2))
         self.points = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
         self.cells = np.arange(len(self.points)).reshape(1, -1)
         self.cell_type = "quad"
@@ -188,7 +186,6 @@ class QuadraticQuad(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(8, 2))
         self.points = np.array(
             [
                 [-1, -1],
@@ -289,8 +286,6 @@ class BiQuadraticQuad(Element):
     """
 
     def __init__(self):
-        super().__init__(shape=(9, 2))
-
         self._lagrange = ArbitraryOrderLagrange(order=2, dim=2, permute=False)
 
         self._vertices = np.array([0, 2, 8, 6])

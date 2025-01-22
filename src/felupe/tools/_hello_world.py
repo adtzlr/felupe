@@ -74,6 +74,7 @@ def hello_world(
 
     elif planestrain:
         mesh = "Rectangle"
+        region += "Quad"
         field += "PlaneStrain"
         dim = 2
 

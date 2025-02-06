@@ -54,6 +54,9 @@ pip install felupe[all]
 The [documentation](https://felupe.readthedocs.io/en/stable/) covers more details, like required and optional dependencies and how to install the latest development version.
 
 # Getting Started
+
+<details><summary>Expand the description...</summary>
+
 This tutorial covers the essential high-level parts of creating and solving problems with FElupe. As an introductory example 👨‍🏫, a quarter model of a solid cube with hyperelastic material behaviour is subjected to a uniaxial elongation applied at a clamped end-face. 
 
 First, let’s import FElupe and create a meshed cube out of hexahedron cells with a given number of points per axis. A numeric region, pre-defined for hexahedrons, is created on the mesh. A vector-valued displacement field is initiated on the region. Next, a field container is created on top of this field. 
@@ -65,6 +68,8 @@ An isotropic pseudo-elastic Ogden-Roxburgh Mullins-softening model formulation i
 A step generates the consecutive substep-movements of a given boundary condition. The step is further added to a list of steps of a job 👩‍💻 (here, a characteristic-curve 📈 job is used). During evaluation ⏳, each substep of each step is solved by an iterative Newton-Rhapson procedure ⚖️. The solution is exported after each completed substep as a time-series ⌚ XDMF file. Finally, the result of the last completed substep is plotted.
 
 For more details beside this high-level code snippet, please have a look at the 📝 [documentation](https://felupe.readthedocs.io/en/stable/).
+
+</details>
 
 ```python
 import felupe as fem
@@ -118,7 +123,7 @@ tox
 ```
 
 # Scientific Publications
-A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
+A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io/stable) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
 
 <details><summary>Expand the list...</summary>
 

@@ -71,9 +71,9 @@ def boundary_cells_quad8(mesh):
 
     # complementary midpoints of edges for the creation of "boundary" quadratic quads
     # (rotated quads with 1st edge as n-th edge of one original quad)
-    n = [5, 6, 7, 4]
-    p = [4, 5, 6, 7]
-    q = [6, 7, 4, 5]
+    n = [4, 6, 5, 7]
+    p = [5, 7, 6, 4]
+    q = [6, 4, 7, 5]
 
     cells = np.dstack(
         (

@@ -302,7 +302,7 @@ def test_umat():
     dsde = linear_elastic.hessian([F, None])
 
 
-def test_umat_hyperelastic_statevars():
+def test_umat_hyperelastic_statevars(close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
@@ -329,8 +329,11 @@ def test_umat_hyperelastic_statevars():
         ux = fem.math.linsteps([1, 2, 1], num=10)
         ax = umat.plot(ux=ux, bx=None, ps=None, incompressible=True)
 
+        if close_figs:
+            plt.close(ax.get_figure())
 
-def test_umat_hyperelastic():
+
+def test_umat_hyperelastic(close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
@@ -433,18 +436,34 @@ def test_umat_hyperelastic():
 
     for incompressible in [False, True]:
         ax = umat.plot(incompressible=incompressible)
+
+        if close_figs:
+            plt.close(ax.get_figure())
+
         ax = umat.screenshot(incompressible=incompressible)
+
+        if close_figs:
+            plt.close(ax.get_figure())
 
     umat = fem.Hyperelastic(fem.neo_hooke, mu=np.nan)
 
     with pytest.raises(ValueError):
-        umat.plot(bx=None, ps=None)
+        ax = umat.plot(bx=None, ps=None)
+
+        if close_figs:
+            plt.close(ax.get_figure())
 
     with pytest.raises(ValueError):
-        umat.plot(ux=None, bx=None)
+        ax = umat.plot(ux=None, bx=None)
+
+        if close_figs:
+            plt.close(ax.get_figure())
 
     with pytest.raises(ValueError):
-        umat.plot(ux=None, ps=None)
+        ax = umat.plot(ux=None, ps=None)
+
+        if close_figs:
+            plt.close(ax.get_figure())
 
 
 def test_umat_hyperelastic2():
@@ -476,7 +495,7 @@ def test_umat_hyperelastic2():
     assert np.allclose(dsde, dsde2)
 
 
-def test_umat_viscoelastic():
+def test_umat_viscoelastic(close_figs=True):
     r, x = pre(sym=False, add_identity=True, add_random=True)
     F = x[0]
 
@@ -503,12 +522,15 @@ def test_umat_viscoelastic():
     umat = fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
-    umat.plot(
+    ax = umat.plot(
         ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
         ps=None,
         bx=None,
         incompressible=True,
     )
+
+    if close_figs:
+        plt.close(ax.get_figure())
 
     s2, statevars_new = umat.gradient([F, statevars])
     dsde2 = umat.hessian([F, statevars])
@@ -598,7 +620,7 @@ def test_elpliso():
     dsde = umat.hessian([F, statevars])
 
 
-def test_composite():
+def test_composite(close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
@@ -608,11 +630,14 @@ def test_composite():
 
     ax = umat.plot()
 
+    if close_figs:
+        plt.close(ax.get_figure())
+
     dWdF, statevars_new = umat.gradient([F, None])
     (d2WdFdF,) = umat.hessian([F, None])
 
 
-def test_optimize():
+def test_optimize(close_figs=True):
     stretches, stresses = (
         np.array(
             [
@@ -647,10 +672,23 @@ def test_optimize():
     ).T
 
     for model in [
+        fem.extended_tube,
+    ]:
+        umat = fem.Hyperelastic(model)
+        with pytest.warns():
+            umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
+
+        ux = np.linspace(stretches.min(), stretches.max(), num=200)
+        ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
+        ax.plot(stretches, stresses, "C0x")
+
+        if close_figs:
+            plt.close(ax.get_figure())
+
+    for model in [
         fem.neo_hooke,
         fem.ogden,
         fem.third_order_deformation,
-        fem.extended_tube,
         fem.alexander,
     ]:
         umat = fem.Hyperelastic(model)
@@ -659,6 +697,9 @@ def test_optimize():
         ux = np.linspace(stretches.min(), stretches.max(), num=200)
         ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
         ax.plot(stretches, stresses, "C0x")
+
+        if close_figs:
+            plt.close(ax.get_figure())
 
     for model in [
         fem.neo_hooke,
@@ -672,6 +713,9 @@ def test_optimize():
         ux = np.linspace(stretches.min(), stretches.max(), num=200)
         ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
         ax.plot(stretches, stresses, "C0x")
+
+        if close_figs:
+            plt.close(ax.get_figure())
 
 
 def test_lagrange():
@@ -766,22 +810,34 @@ def test_laplace():
     assert A[0].shape == (3, 3, 3, 3, 1, 1)
 
 
-def test_plot_negative_stretches():
+def test_plot_negative_stretches(close_figs=True):
     stretches = np.linspace(-0.5, 1, 16)
     umat = fem.NeoHooke(mu=1.0, bulk=2.0)
 
     for incompressible in [False, True]:
         with pytest.raises(ValueError):
-            umat.plot(ux=stretches, incompressible=incompressible)
+            ax = umat.plot(ux=stretches, incompressible=incompressible)
+
+            if close_figs:
+                plt.close(ax.get_figure())
 
         with pytest.raises(ValueError):
-            umat.plot(bx=stretches, incompressible=incompressible)
+            ax = umat.plot(bx=stretches, incompressible=incompressible)
+
+            if close_figs:
+                plt.close(ax.get_figure())
 
         with pytest.raises(ValueError):
-            umat.plot(ps=stretches, incompressible=incompressible)
+            ax = umat.plot(ps=stretches, incompressible=incompressible)
+
+            if close_figs:
+                plt.close(ax.get_figure())
 
 
 if __name__ == "__main__":
+
+    close_figs = True
+
     test_nh()
     test_linear()
     test_linear_orthotropic()
@@ -789,17 +845,17 @@ if __name__ == "__main__":
     test_linear_planestrain()
     test_kinematics()
     test_umat()
-    test_umat_hyperelastic()
+    test_umat_hyperelastic(close_figs=close_figs)
     test_umat_hyperelastic2()
-    test_umat_hyperelastic_statevars()
-    test_umat_viscoelastic()
+    test_umat_hyperelastic_statevars(close_figs=close_figs)
+    test_umat_viscoelastic(close_figs=close_figs)
     test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_plasticity()
     test_elpliso()
-    test_composite()
-    test_optimize()
+    test_composite(close_figs=close_figs)
+    test_optimize(close_figs=close_figs)
     test_lagrange()
     test_lagrange_statevars()
     test_laplace()
-    test_plot_negative_stretches()
+    test_plot_negative_stretches(close_figs=True)

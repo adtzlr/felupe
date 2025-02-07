@@ -166,5 +166,15 @@ def test_region():
     assert not np.any(r.dV <= 0)
 
 
+def test_region_negative_volumes_cells():
+
+    mesh = fem.Rectangle()
+    mesh.cells = mesh.cells[:, ::-1]
+
+    with pytest.warns():  # negative volumes of cells
+        region = fem.RegionQuad(mesh)
+
+
 if __name__ == "__main__":
     test_region()
+    test_region_negative_volumes_cells()

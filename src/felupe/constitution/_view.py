@@ -72,11 +72,12 @@ class PlotMaterial:
         shear and biaxial tension."""
 
         import matplotlib.pyplot as plt
+        
+        data = self.evaluate()
 
         if ax is None:
             fig, ax = plt.subplots()
 
-        data = self.evaluate()
         for stretch, force, label in data:
             ax.plot(stretch, force, label=label, **kwargs)
 

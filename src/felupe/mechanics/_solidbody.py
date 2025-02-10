@@ -221,6 +221,7 @@ class SolidBody(Solid):
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>

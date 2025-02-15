@@ -175,6 +175,40 @@ def test_region_negative_volumes_cells():
         region = fem.RegionQuad(mesh)
 
 
+def test_container_warning():
+
+    mesh = fem.MeshContainer([fem.Rectangle()])
+    element = fem.Quad()
+    quadrature = fem.GaussLegendre(order=1, dim=2)
+    with pytest.raises(TypeError):
+        region = fem.Region(mesh, element, quadrature)
+
+    mesh = fem.MeshContainer([fem.Rectangle()])
+    with pytest.raises(TypeError):
+        region = fem.RegionQuad(mesh)
+
+    mesh = fem.MeshContainer([fem.Rectangle().add_midpoints_edges()])
+    with pytest.raises(TypeError):
+        region = fem.RegionQuadraticQuad(mesh)
+
+    mesh = fem.MeshContainer([fem.Rectangle().triangulate()])
+    with pytest.raises(TypeError):
+        region = fem.RegionTriangle(mesh)
+
+    mesh = fem.MeshContainer([fem.Cube()])
+    with pytest.raises(TypeError):
+        region = fem.RegionHexahedron(mesh)
+
+    mesh = fem.MeshContainer([fem.Cube().add_midpoints_edges()])
+    with pytest.raises(TypeError):
+        region = fem.RegionQuadraticHexahedron(mesh)
+
+    mesh = fem.MeshContainer([fem.Cube().triangulate()])
+    with pytest.raises(TypeError):
+        region = fem.RegionTetra(mesh)
+
+
 if __name__ == "__main__":
     test_region()
     test_region_negative_volumes_cells()
+    test_container_warning()

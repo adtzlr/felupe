@@ -58,7 +58,7 @@ from .element import (
     TetraMINI,
     Triangle,
     TriangleMINI,
-    TriQuadraticHexahedron,
+    Vertex,
 )
 from .field import (
     Field,
@@ -188,6 +188,7 @@ __all__ = [
     "Triangle",
     "TriangleMINI",
     "TriQuadraticHexahedron",
+    "Vertex",
     "Circle",
     "Cube",
     "Grid",

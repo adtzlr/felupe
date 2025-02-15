@@ -279,6 +279,11 @@ class MeshContainer:
 
         return meshio.Mesh(self.points, cells, **kwargs)
 
+    def as_vertex_mesh(self):
+        "Return a merged vertex-mesh."
+        cells = np.unique([mesh.cells.ravel() for mesh in self.meshes]).reshape(-1, 1)
+        return Mesh(self.points, cells, cell_type=None)
+
     def copy(self):
         "Return a deepcopy of the mesh container."
         return deepcopy(self)

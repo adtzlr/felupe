@@ -32,6 +32,12 @@ import felupe as fem
 
 
 def test_region():
+
+    mesh = fem.Point()
+    r = fem.RegionVertex(mesh)
+
+    assert r.h.flags["C_CONTIGUOUS"]
+
     mesh = fem.Rectangle()
     r = fem.RegionQuad(mesh, uniform=True)
 

@@ -82,6 +82,11 @@ class RegionQuad(Region):
     def __init__(
         self, mesh, quadrature=GaussLegendre(order=1, dim=2), grad=True, **kwargs
     ):
+        if "container" in type(mesh).__name__.lower():
+            raise TypeError(
+                "A mesh container is not supported by a region, use a mesh instead."
+            )
+
         element = Quad()
 
         if len(mesh.cells.T) > 4:
@@ -117,6 +122,11 @@ class RegionQuadraticQuad(Region):
     def __init__(
         self, mesh, quadrature=GaussLegendre(order=2, dim=2), grad=True, **kwargs
     ):
+        if "container" in type(mesh).__name__.lower():
+            raise TypeError(
+                "A mesh container is not supported by a region, use a mesh instead."
+            )
+
         element = QuadraticQuad()
 
         if len(mesh.cells.T) > 8:
@@ -358,6 +368,11 @@ class RegionHexahedron(Region):
     def __init__(
         self, mesh, quadrature=GaussLegendre(order=1, dim=3), grad=True, **kwargs
     ):
+        if "container" in type(mesh).__name__.lower():
+            raise TypeError(
+                "A mesh container is not supported by a region, use a mesh instead."
+            )
+
         element = Hexahedron()
 
         if len(mesh.cells.T) > 8:
@@ -443,6 +458,11 @@ class RegionQuadraticHexahedron(Region):
     def __init__(
         self, mesh, quadrature=GaussLegendre(order=2, dim=3), grad=True, **kwargs
     ):
+        if "container" in type(mesh).__name__.lower():
+            raise TypeError(
+                "A mesh container is not supported by a region, use a mesh instead."
+            )
+
         element = QuadraticHexahedron()
 
         if len(mesh.cells.T) > 20:
@@ -647,6 +667,11 @@ class RegionTriangle(Region):
     def __init__(
         self, mesh, quadrature=TriangleQuadrature(order=1), grad=True, **kwargs
     ):
+        if "container" in type(mesh).__name__.lower():
+            raise TypeError(
+                "A mesh container is not supported by a region, use a mesh instead."
+            )
+
         element = Triangle()
 
         if len(mesh.cells.T) > 3:
@@ -682,6 +707,11 @@ class RegionTetra(Region):
     """
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=1), grad=True, **kwargs):
+        if "container" in type(mesh).__name__.lower():
+            raise TypeError(
+                "A mesh container is not supported by a region, use a mesh instead."
+            )
+
         element = Tetra()
 
         if len(mesh.cells.T) > 4:

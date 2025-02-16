@@ -266,13 +266,13 @@ def test_link():
 def test_toplevel():
     meshes = [
         fem.Rectangle(n=3),
-        fem.Rectangle(n=3).translate(1, axis=0),
+        fem.Rectangle(n=3).translate(1, axis=0).triangulate(),
     ]
     container = fem.MeshContainer(meshes, merge=True)
     field = fem.Field.from_mesh_container(container).as_container()
     regions = [
         fem.RegionQuad(container.meshes[0]),
-        fem.RegionQuad(container.meshes[1]),
+        fem.RegionTriangle(container.meshes[1]),
     ]
     fields = [
         fem.FieldContainer([fem.FieldPlaneStrain(regions[0], dim=2)]),
@@ -289,6 +289,8 @@ def test_toplevel():
     ]
     step = fem.Step(items=solids, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(x0=field)
+    
+    field.region.mesh.plot().show()
 
 
 if __name__ == "__main__":

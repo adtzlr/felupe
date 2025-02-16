@@ -263,6 +263,34 @@ def test_link():
     assert field1[1].values is field2[1].values
 
 
+def test_toplevel():
+    meshes = [
+        fem.Rectangle(n=3),
+        fem.Rectangle(n=3).translate(1, axis=0),
+    ]
+    container = fem.MeshContainer(meshes, merge=True)
+    field = fem.Field.from_mesh_container(container).as_container()
+    regions = [
+        fem.RegionQuad(container.meshes[0]),
+        fem.RegionQuad(container.meshes[1]),
+    ]
+    fields = [
+        fem.FieldContainer([fem.FieldPlaneStrain(regions[0], dim=2)]),
+        fem.FieldContainer([fem.FieldPlaneStrain(regions[1], dim=2)]),
+    ]
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    umats = [
+        fem.LinearElastic(E=2.1e5, nu=0.3),
+        fem.LinearElastic(E=1.0, nu=0.3),
+    ]
+    solids = [
+        fem.SolidBody(umat=umats[0], field=fields[0]),
+        fem.SolidBody(umat=umats[1], field=fields[1]),
+    ]
+    step = fem.Step(items=solids, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate(x0=field)
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -270,3 +298,4 @@ if __name__ == "__main__":
     test_mixed_lagrange()
     test_view()
     test_link()
+    test_toplevel()

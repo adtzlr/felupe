@@ -289,8 +289,6 @@ def test_toplevel():
     ]
     step = fem.Step(items=solids, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(x0=field)
-    
-    field.region.mesh.plot().show()
 
 
 if __name__ == "__main__":

@@ -282,7 +282,7 @@ class MeshContainer:
     def as_vertex_mesh(self):
         "Return a merged vertex-mesh."
         cells = np.unique(np.concatenate([mesh.cells.ravel() for mesh in self.meshes]))
-        return Mesh(self.points, cells.reshape(-1, 1), cell_type=None)
+        return Mesh(self.points, cells.reshape(-1, 1), cell_type="vertex")
 
     def copy(self):
         "Return a deepcopy of the mesh container."

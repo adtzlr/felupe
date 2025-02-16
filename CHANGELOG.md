@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add the `Vertex` element formulation.
 - Add a vertex-region `RegionVertex`.
 - Add `MeshContainer.as_vertex_mesh()` to create a merged vertex mesh from the meshes of the mesh container.
+- Add `Field.from_mesh_container(container)` to create a top-level field on a vertex mesh.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.

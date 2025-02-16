@@ -58,7 +58,7 @@ from .element import (
     TetraMINI,
     Triangle,
     TriangleMINI,
-    TriQuadraticHexahedron,
+    Vertex,
 )
 from .field import (
     Field,
@@ -113,6 +113,7 @@ from .region import (
     RegionTriangleMINI,
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
+    RegionVertex,
 )
 from .tools import hello_world, newtonrhapson, project, runs_on, save, topoints
 from .view import ViewField, ViewMesh
@@ -187,6 +188,7 @@ __all__ = [
     "Triangle",
     "TriangleMINI",
     "TriQuadraticHexahedron",
+    "Vertex",
     "Circle",
     "Cube",
     "Grid",
@@ -235,6 +237,7 @@ __all__ = [
     "RegionTriangleMINI",
     "RegionTriQuadraticHexahedron",
     "RegionTriQuadraticHexahedronBoundary",
+    "RegionVertex",
     "newtonrhapson",
     "project",
     "save",

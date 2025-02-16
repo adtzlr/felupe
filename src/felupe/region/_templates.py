@@ -32,6 +32,7 @@ from ..element import (
     Triangle,
     TriangleMINI,
     TriQuadraticHexahedron,
+    Vertex,
 )
 from ..mesh import Mesh
 from ..quadrature import GaussLegendre, GaussLegendreBoundary
@@ -851,4 +852,14 @@ class RegionQuadraticTetra(Region):
 
     def __init__(self, mesh, quadrature=TetraQuadrature(order=2), grad=True, **kwargs):
         element = QuadraticTetra()
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
+
+
+class RegionVertex(Region):
+    "A region with a vertex element."
+
+    def __init__(
+        self, mesh, quadrature=GaussLegendre(order=0, dim=1), grad=False, **kwargs
+    ):
+        element = Vertex()
         super().__init__(mesh, element, quadrature, grad=grad, **kwargs)

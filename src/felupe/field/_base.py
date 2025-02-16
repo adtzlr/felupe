@@ -22,6 +22,7 @@ import numpy as np
 
 from ..math import identity
 from ..math import sym as symmetric
+from ..region import RegionVertex
 from ._container import FieldContainer
 from ._indices import Indices
 
@@ -137,6 +138,18 @@ class Field:
         ai = (cai.ravel(), np.zeros_like(cai.ravel()))
 
         return cai, ai
+
+    @classmethod
+    def from_mesh_container(cls, mesh_container, dim=None, values=0.0):
+        "Create a Field on a vertex mesh from a mesh container."
+
+        mesh = mesh_container.as_vertex_mesh()
+        region = RegionVertex(mesh)
+
+        if dim is None:
+            dim = mesh.dim
+
+        return cls(region, dim=dim, values=values)
 
     def grad(self, sym=False, dtype=None, out=None, order="C"):
         r"""Gradient as partial derivative of field values w.r.t. undeformed

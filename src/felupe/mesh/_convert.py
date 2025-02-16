@@ -59,6 +59,7 @@ def cell_types():
     import pyvista as pv
 
     cell_types = [
+        ("vertex", pv.CellType.VERTEX),
         ("line", pv.CellType.LINE),
         ("triangle", pv.CellType.TRIANGLE),
         ("triangle6", pv.CellType.QUADRATIC_TRIANGLE),

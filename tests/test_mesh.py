@@ -374,6 +374,10 @@ def test_container():
     assert np.allclose(container_2[0].points, mesh_1.points)
     assert np.allclose(container_2[0].cells, mesh_1.cells)
 
+    mesh = container.as_vertex_mesh()
+
+    assert mesh.cells.shape[1] == 1
+
 
 def test_read(filename="tests/mesh.bdf"):
     mesh = fem.mesh.read(filename=filename, dim=2)[0]

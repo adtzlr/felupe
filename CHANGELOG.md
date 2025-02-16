@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file. The format 
 - Add support for non-symmetric bilinear mixed forms in `IntegralForm`.
 - Add `element.Element` to the top-level package namespace.
 - Raise a TypeError if a mesh container is used as the `mesh`-argument in a region. The error message explains that the container is not supported. A mesh must be used instead.
+- Add the `Vertex` element formulation.
+- Add a vertex-region `RegionVertex`.
+- Add `MeshContainer.as_vertex_mesh()` to create a merged vertex mesh from the meshes of the mesh container.
+- Add `Field.from_mesh_container(container)` to create a top-level field on a vertex mesh.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.

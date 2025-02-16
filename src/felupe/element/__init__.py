@@ -15,6 +15,7 @@ from ._line import Line
 from ._quad import BiQuadraticQuad, ConstantQuad, Quad, QuadraticQuad
 from ._tetra import QuadraticTetra, Tetra, TetraMINI
 from ._triangle import QuadraticTriangle, Triangle, TriangleMINI
+from ._vertex import Vertex
 
 __all__ = [
     "Element",
@@ -37,4 +38,5 @@ __all__ = [
     "lagrange_line",
     "lagrange_quad",
     "lagrange_hexahedron",
+    "Vertex",
 ]

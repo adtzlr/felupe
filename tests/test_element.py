@@ -30,6 +30,20 @@ import pytest
 import felupe as fem
 
 
+def test_vertex1():
+    vertex1 = fem.element.Vertex()
+
+    r = [0]
+
+    h = vertex1.function(r)
+    dhdr = vertex1.gradient(r)
+    d2hdrdr = vertex1.hessian(r)
+
+    assert h[0] == 1.0
+    assert np.all(dhdr[0] == 0.0)
+    assert np.all(d2hdrdr == 0.0)
+
+
 def test_line2():
     line2 = fem.element.Line()
 
@@ -185,6 +199,7 @@ def test_tri3():
     assert np.all(dhdr[0] == -1)
     assert np.all(d2hdrdr == 0)
 
+
 def test_tri6():
     tri6 = fem.element.QuadraticTriangle()
 
@@ -273,6 +288,8 @@ def test_aol():
 
 
 if __name__ == "__main__":
+    test_vertex1()
+
     test_line2()
     test_line_lagrange()
 

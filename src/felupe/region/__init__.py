@@ -22,6 +22,7 @@ from ._templates import (
     RegionTriangleMINI,
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
+    RegionVertex,
 )
 
 __all__ = [
@@ -48,4 +49,5 @@ __all__ = [
     "RegionTriangleMINI",
     "RegionTriQuadraticHexahedron",
     "RegionTriQuadraticHexahedronBoundary",
+    "RegionVertex",
 ]

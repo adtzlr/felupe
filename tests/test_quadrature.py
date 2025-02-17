@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
+ _______  _______  ___      __   __  _______  _______
 |       ||       ||   |    |  | |  ||       ||       |
 |    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
 |    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
+|   |    |   |___ |       ||       ||   |    |   |___
 |___|    |_______||_______||_______||___|    |_______|
 
 This file is part of felupe.
@@ -86,6 +86,30 @@ def test_gausslegendre_boundary():
         fem.GaussLegendreBoundary(order=1, dim=4)
 
 
+def test_gausslobatto():
+    for order in [1, 2, 3, 4, 5]:
+        for dim in [1, 2, 3]:
+            fem.GaussLobatto(order=order, dim=dim)
+
+    with pytest.raises(ValueError):
+        fem.GaussLobatto(order=1, dim=4)
+
+    with pytest.raises(ValueError):
+        fem.GaussLobatto(order=9, dim=4)
+
+
+def test_gausslobatto_boundary():
+    for order in [1, 2, 3, 4, 5]:
+        for dim in [2, 3]:
+            fem.GaussLobattoBoundary(order=order, dim=dim)
+
+    with pytest.raises(ValueError):
+        fem.GaussLobattoBoundary(order=1, dim=4)
+
+    with pytest.raises(ValueError):
+        fem.GaussLobattoBoundary(order=9, dim=4)
+
+
 def test_triangle():
     q = fem.TriangleQuadrature(order=1)
     assert q.points.shape == (1, 2)
@@ -129,6 +153,8 @@ def test_sphere():
 if __name__ == "__main__":
     test_gausslegendre()
     test_gausslegendre_boundary()
+    test_gausslobatto_boundary()
+    test_gausslobatto()
     test_triangle()
     test_tetra()
     test_sphere()

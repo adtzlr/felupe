@@ -15,6 +15,7 @@ This module provides classes for the finite element formulations.
 
 .. autosummary::
 
+   Vertex
    Line
    Quad
    Hexahedron
@@ -55,6 +56,11 @@ This module provides classes for the finite element formulations.
 **Detailed API Reference**
 
 .. autoclass:: felupe.Element
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.Vertex
    :members:
    :undoc-members:
    :show-inheritance:

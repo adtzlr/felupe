@@ -33,6 +33,7 @@ This module contains the definition of a region as well as a boundary region alo
    RegionLagrange
    RegionQuadBoundary
    RegionHexahedronBoundary
+   RegionVertex
 
 **Detailed API Reference**
 
@@ -127,6 +128,11 @@ This module contains the definition of a region as well as a boundary region alo
    :show-inheritance:
 
 .. autoclass:: felupe.RegionLagrange
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.RegionVertex
    :members:
    :undoc-members:
    :show-inheritance:

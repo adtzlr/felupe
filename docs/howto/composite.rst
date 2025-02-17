@@ -30,9 +30,12 @@ definition of the boundary conditions as well as for the evaluation of the job.
     
 ..  pyvista-plot::
     :context:
+    :force_static:
 
     container = fem.MeshContainer([inner, outer], merge=True)
     field = fem.Field.from_mesh_container(container).as_container()
+    
+    field.plot(plotter=container.plot(), point_size=15, color="red").show()
 
 The sub-meshes are available in the global mesh container, on which the sub-fields are
 created.

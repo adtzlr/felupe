@@ -154,20 +154,6 @@ class GaussLobattoBoundary(GaussLobatto):
 
     with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
 
-    Examples
-    --------
-    .. pyvista-plot::
-       :force_static:
-
-       >>> import felupe as fem
-       >>>
-       >>> element = fem.QuadraticQuad()
-       >>> quadrature = fem.GaussLobattoBoundary(order=2, dim=2)
-       >>> quadrature.plot(
-       ...     plotter=element.plot(add_point_labels=False, show_points=False),
-       ...     weighted=True,
-       ... ).show()
-
     """
 
     def __init__(self, order: int, dim: int):

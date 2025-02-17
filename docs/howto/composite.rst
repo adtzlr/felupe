@@ -99,9 +99,10 @@ linked automatically, i.e. they share their ``values`` array.
     job = fem.Job(steps=[step])
     job.evaluate(x0=field)
 
-    plotter = fields[0].plot(
-        "Principal Values of Logarithmic Strain", show_undeformed=False
-    )
     fields[1].plot(
-        "Principal Values of Logarithmic Strain", show_undeformed=False, plotter=plotter
+        "Principal Values of Logarithmic Strain", 
+        show_undeformed=False, 
+        plotter=fields[0].plot(
+            "Principal Values of Logarithmic Strain", show_undeformed=False
+        ),
     ).show()

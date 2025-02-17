@@ -11,6 +11,8 @@ This module contains quadrature (numeric integration) schemes for different fini
 
    GaussLegendre
    GaussLegendreBoundary
+   GaussLobatto
+   GaussLobattoBoundary
 
 **Triangles and Tetrahedrons**
 
@@ -40,6 +42,16 @@ This module contains quadrature (numeric integration) schemes for different fini
    :show-inheritance:
 
 .. autoclass:: felupe.GaussLegendreBoundary
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.GaussLobatto
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.GaussLobattoBoundary
    :members:
    :undoc-members:
    :show-inheritance:

@@ -112,7 +112,7 @@ class GaussLobatto(Scheme):
 
     """
 
-    def __init__(self, order: int, dim: int, permute: bool = True):
+    def __init__(self, order: int, dim: int):
         if dim not in [1, 2, 3]:
             raise ValueError("Wrong dimension.")
 
@@ -124,11 +124,6 @@ class GaussLobatto(Scheme):
 
         idx = list(ascii_lowercase)[:dim]
         weights = np.einsum(", ".join(idx), *([w] * dim)).ravel()
-        sort = None
-
-        if sort is not None:
-            points = points[sort]
-            weights = weights[sort]
 
         super().__init__(points, weights)
 
@@ -175,8 +170,8 @@ class GaussLobattoBoundary(GaussLobatto):
 
     """
 
-    def __init__(self, order: int, dim: int, permute: bool = True):
-        super().__init__(order=order, dim=dim - 1, permute=permute)
+    def __init__(self, order: int, dim: int):
+        super().__init__(order=order, dim=dim - 1)
 
         # reset dimension
         self.dim = dim

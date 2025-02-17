@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix `Boundary(..., mode="and")` by ignoring any undefined axis.
 - Fix `tools.hello_world(planestrain=True)` with the correct region `RegionQuad` for the plane-strain template.
 - Fix the cells-array in `RegionQuadraticQuadBoundary` for midpoints of edges.
+- Fix `FieldContainer.plot()` for regions without the shape-function gradients available.
 
 ### Removed
 - Remove the unused `shape`-argument in `element.Element(shape)`. Adopt the arbitrary-lagrange element to use its own `dim`-argument. This simplifies the creation of custom finite element formulations.

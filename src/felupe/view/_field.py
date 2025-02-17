@@ -81,34 +81,38 @@ class ViewField(ViewMesh):
         point_data_from_field = {}
         cell_data_from_field = {}
 
-        if project is None:
-            cell_data_from_field = {
-                "Deformation Gradient": field.evaluate.deformation_gradient()
-                .mean(-2)
-                .T,
-                "Logarithmic Strain": field.evaluate.strain(tensor=True, asvoigt=True)
-                .mean(-2)
-                .T,
-                "Principal Values of Logarithmic Strain": field.evaluate.strain(
-                    tensor=False
-                )
-                .mean(-2)
-                .T,
-            }
-        elif callable(project):
-            point_data_from_field = {
-                "Deformation Gradient": project(
-                    field.evaluate.deformation_gradient(), field.region
-                ),
-                "Logarithmic Strain": project(
-                    field.evaluate.strain(tensor=True, asvoigt=True), field.region
-                ),
-                "Principal Values of Logarithmic Strain": project(
-                    field.evaluate.strain(tensor=False), field.region
-                ),
-            }
-        else:
-            raise TypeError("The project-argument must be callable or None.")
+        if hasattr(field.region, "dhdX"):
+
+            if project is None:
+                cell_data_from_field = {
+                    "Deformation Gradient": field.evaluate.deformation_gradient()
+                    .mean(-2)
+                    .T,
+                    "Logarithmic Strain": field.evaluate.strain(
+                        tensor=True, asvoigt=True
+                    )
+                    .mean(-2)
+                    .T,
+                    "Principal Values of Logarithmic Strain": field.evaluate.strain(
+                        tensor=False
+                    )
+                    .mean(-2)
+                    .T,
+                }
+            elif callable(project):
+                point_data_from_field = {
+                    "Deformation Gradient": project(
+                        field.evaluate.deformation_gradient(), field.region
+                    ),
+                    "Logarithmic Strain": project(
+                        field.evaluate.strain(tensor=True, asvoigt=True), field.region
+                    ),
+                    "Principal Values of Logarithmic Strain": project(
+                        field.evaluate.strain(tensor=False), field.region
+                    ),
+                }
+            else:
+                raise TypeError("The project-argument must be callable or None.")
 
         point_data_from_field["Displacement"] = displacement(field)
 

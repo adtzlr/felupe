@@ -87,7 +87,7 @@ def test_gausslegendre_boundary():
 
 
 def test_gausslobatto():
-    for order in [1, 2, 3, 4, 5]:
+    for order in [0, 1, 2, 3, 4, 5]:
         for dim in [1, 2, 3]:
             fem.GaussLobatto(order=order, dim=dim)
 
@@ -99,7 +99,7 @@ def test_gausslobatto():
 
 
 def test_gausslobatto_boundary():
-    for order in [1, 2, 3, 4, 5]:
+    for order in [0, 1, 2, 3, 4, 5]:
         for dim in [2, 3]:
             fem.GaussLobattoBoundary(order=order, dim=dim)
 

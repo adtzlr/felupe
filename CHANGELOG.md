@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a vertex-region `RegionVertex`.
 - Add `MeshContainer.as_vertex_mesh()` to create a merged vertex mesh from the meshes of the mesh container.
 - Add `Field.from_mesh_container(container)` to create a top-level field on a vertex mesh.
+- Add `GaussLobatto` quadrature. The order-argument is equal to the 1d-sample points minus two. This ensures identical minimum order-arguments for Gauss-Legendre and Gauss-Lobatto schemes.
 
 ### Changed
 - The first Piola-Kirchhoff stress tensor is evaluated if `ViewSolid(stress_type=None)`.

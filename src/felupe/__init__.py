@@ -86,7 +86,13 @@ from .mechanics import (
     Step,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
-from .quadrature import BazantOh, GaussLegendre, GaussLegendreBoundary
+from .quadrature import (
+    BazantOh,
+    GaussLegendre,
+    GaussLegendreBoundary,
+    GaussLobatto,
+    GaussLobattoBoundary,
+)
 from .quadrature import Tetrahedron as TetrahedronQuadrature
 from .quadrature import Triangle as TriangleQuadrature
 from .region import (
@@ -211,6 +217,8 @@ __all__ = [
     "MultiPointContact",
     "GaussLegendre",
     "GaussLegendreBoundary",
+    "GaussLobatto",
+    "GaussLobattoBoundary",
     "TetrahedronQuadrature",
     "TriangleQuadrature",
     "BazantOh",

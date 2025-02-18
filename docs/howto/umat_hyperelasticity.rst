@@ -26,11 +26,13 @@ This function is further added as the ``fun`` argument of :class:`~felupe.Hypere
     
     umat = fem.Hyperelastic(fun=strain_energy_function, **kwargs)
 
-FElupe contains several reference implementations of hyperelastic user material formulations, like
+FElupe contains several reference implementations of hyperelastic user material
+formulations, like
 
-* :func:`~felupe.neo_hooke`,
-* :func:`~felupe.mooney_rivlin`,
-* :func:`~felupe.yeoh` or
-* :func:`~felupe.ogden`.
+* :func:`~felupe.constitution.tensortrax.models.hyperelastic.neo_hooke`,
+* :func:`~felupe.constitution.tensortrax.models.hyperelastic.mooney_rivlin`,
+* :func:`~felupe.constitution.tensortrax.models.hyperelastic.yeoh` or
+* :func:`~felupe.constitution.tensortrax.models.hyperelastic.ogden`.
 
-A complete list of all available model formulations is available in the :ref:`hyperelasticity <felupe-api-constitution-autodiff>` section of the API reference.
+A complete list of all available model formulations is available in the
+:ref:`hyperelasticity <felupe-api-constitution-autodiff>` section of the API reference.

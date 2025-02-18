@@ -29,12 +29,6 @@ FElupe provides a simple mesh generation module :ref:`mesh <felupe-api-mesh>`. A
     # view the mesh in an interactive window
     mesh.plot().show()
 
-    # take a screenshot of an off-screen view
-    img = mesh.screenshot(
-        filename="mesh.png", 
-        transparent_background=True,
-    )
-
 ..  pyvista-plot::
     :context:
     :nofigs:

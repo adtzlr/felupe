@@ -1,12 +1,16 @@
 Solid Bodies as Items for Assembly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The mechanics submodule contains classes for the generation of solid bodies. Solid body objects are supported as items of a :class:`~felupe.Step` and the :func:`~felupe.newtonrhapson` procedure.
+The mechanics submodule contains classes for the generation of solid bodies. Solid body
+objects are supported as items of a :class:`~felupe.Step` and the
+:func:`~felupe.newtonrhapson` function.
 
 Solid Body
 ----------
 
-The generation of internal force vectors and stiffness matrices of solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBody` or a :class:`~felupe.SolidBodyNearlyIncompressible`.
+The generation of internal force vectors and stiffness matrices of solid bodies are
+provided as assembly-methods of a :class:`~felupe.SolidBody` or a
+:class:`~felupe.SolidBodyNearlyIncompressible`.
 
 ..  pyvista-plot::
     :context:
@@ -27,15 +31,24 @@ The generation of internal force vectors and stiffness matrices of solid bodies 
     stiffness_matrix = body.assemble.matrix(field, parallel=False)
 
 
-During assembly, several results are stored, e.g. the gradient of the strain energy density function per unit undeformed volume w.r.t. the deformation gradient (first Piola-Kirchhoff stress tensor). Other results are the deformation gradient or the fourth-order elasticity tensor associated to the first Piola-Kirchhoff stress tensor.
+During assembly, several results are stored, e.g. the gradient of the strain energy
+density function per unit undeformed volume w.r.t. the deformation gradient (first
+Piola-Kirchhoff stress tensor). Other results are the deformation gradient or the
+fourth-order elasticity tensor associated to the first Piola-Kirchhoff stress tensor.
 
 ..  math::
 
-    \boldsymbol{F} &= \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+    \boldsymbol{F} &= \frac{
+        \partial \boldsymbol{x}}{\partial \boldsymbol{X}
+    }
 
-    \boldsymbol{P} &= \frac{\partial \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}}
+    \boldsymbol{P} &= \frac{
+        \partial \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}
+    }
 
-    \mathbb{A} &= \frac{\partial^2 \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+    \mathbb{A} &= \frac{
+        \partial^2 \psi(\boldsymbol{C}(\boldsymbol{F}))
+    }{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
 
 ..  pyvista-plot::
     :context:
@@ -45,13 +58,19 @@ During assembly, several results are stored, e.g. the gradient of the strain ene
     A = body.results.elasticity
 
 
-The Cauchy stress tensor, as well as the gradient and the hessian of the strain energy density function per unit undeformed volume are obtained by evaluate-methods of the solid body.
+The Cauchy stress tensor, as well as the gradient and the hessian of the strain energy
+density function per unit undeformed volume are obtained by evaluate-methods of the
+solid body.
 
 ..  math::
 
-    \boldsymbol{P} &= \frac{\partial \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}}
+    \boldsymbol{P} &= \frac{
+        \partial \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}
+    }
 
-    \mathbb{A} &= \frac{\partial^2 \psi(\boldsymbol{C}(\boldsymbol{F}))}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
+    \mathbb{A} &= \frac{
+        \partial^2 \psi(\boldsymbol{C}(\boldsymbol{F}))
+    }{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
 
     \boldsymbol{\sigma} &= \frac{1}{J} \boldsymbol{P} \boldsymbol{F}^T
 
@@ -67,7 +86,8 @@ The Cauchy stress tensor, as well as the gradient and the hessian of the strain 
 Body Force (Gravity) on a Solid Body
 ------------------------------------
 
-The generation of external force vectors or stiffness matrices of body forces acting on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyForce`.
+The generation of external force vectors or stiffness matrices of body forces acting on
+solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyForce`.
 
 
 ..  math::
@@ -86,11 +106,13 @@ The generation of external force vectors or stiffness matrices of body forces ac
 Pressure Boundary on a Solid Body
 ---------------------------------
 
-The generation of force vectors or stiffness matrices of pressure boundaries on solid bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyPressure`.
+The generation of force vectors or stiffness matrices of pressure boundaries on solid
+bodies are provided as assembly-methods of a :class:`~felupe.SolidBodyPressure`.
 
 ..  math::
 
-    \delta W_{ext} = \int_{\partial V} \delta \boldsymbol{u} \cdot (-p) \ J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
+    \delta W_{ext} = \int_{\partial V}
+        \delta \boldsymbol{u} \cdot (-p) \ J \boldsymbol{F}^{-T} \ d\boldsymbol{A}
 
 
 ..  pyvista-plot::
@@ -113,7 +135,8 @@ The generation of force vectors or stiffness matrices of pressure boundaries on 
     )
 
 
-For axisymmetric problems the boundary region has to be created with the attribute ``ensure_3d=True``.
+For axisymmetric problems the boundary region has to be created with the attribute
+``ensure_3d=True``.
 
 ..  pyvista-plot::
     :context:

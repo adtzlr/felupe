@@ -235,7 +235,7 @@ def rotate(points, cells, cell_type, angle_deg, axis, center=None, mask=None):
     Rotate a rectangle in the xy-plane by 35 degree.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -313,7 +313,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
     Revolve a cylinder from a rectangle.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

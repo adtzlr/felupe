@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
+ _______  _______  ___      __   __  _______  _______
 |       ||       ||   |    |  | |  ||       ||       |
 |    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
 |    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
+|   |    |   |___ |       ||       ||   |    |   |___
 |___|    |_______||_______||_______||___|    |_______|
 
 This file is part of felupe.
@@ -568,6 +568,7 @@ def test_expand():
 
 def test_interpolate_line():
     import felupe as fem
+    from scipy.interpolate import CubicSpline
 
     mesh = fem.mesh.Line(n=5).expand(n=1).expand(n=1)
     t = mesh.x.copy()
@@ -580,6 +581,19 @@ def test_interpolate_line():
     assert mesh_new.npoints == len(xi)
     assert len(mesh_new.points_derivative) == len(xi)
     assert np.allclose(mesh_new.points_derivative[:, 1], 0)
+
+    mesh = fem.mesh.Line(n=5).expand(n=1).expand(n=1)
+    t = mesh.x.copy()
+    mesh.points[:, 0] = np.sin(2 * np.pi * t)
+    mesh.points[:, 1] = np.cos(2 * np.pi * t)
+
+    xi = np.linspace(0, 1, 101)
+    mesh_new = fem.mesh.interpolate_line(
+        mesh, xi=xi, Interpolator=CubicSpline, bc_type="periodic"
+    )
+
+    assert mesh_new.npoints == len(xi)
+    assert len(mesh_new.points_derivative) == len(xi)
 
 
 if __name__ == "__main__":

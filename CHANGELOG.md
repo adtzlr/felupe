@@ -62,6 +62,7 @@ All notable changes to this project will be documented in this file. The format 
 - Change supported Python versions to 3.9 - 3.12.
 - Change the `dtype`-argument in `Region.astype(dtype)` from an optional to a required argument.
 - Make `tensortrax` an optional dependency (again). Now FElupe does only depend on NumPy and SciPy, all other extras are optional.
+- Enhance `mesh.interpolate_line(mesh, xi, axis=None, ...)` which by default uses a curve-progress variable when `axis=None`. The curve progress evaluation points `xi` must be within `0 <= xi <= 1`.
 
 ### Fixed
 - Fix the number of points for non-disconnected dual meshes. This reduces the assembled (sparse) vector- and matrix-shapes, which are defined on mixed-fields.

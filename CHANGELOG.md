@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file. The format 
 - Link all field-values to the values of the first field if no other field is given in `FieldContainer.link()`.
 - Change the default arguments from `block=True` to `block=None` in `SolidBody.assemble.vector(block=None)` and `SolidBody.assemble.matrix(block=None)` and define `block` on creation, `SolidBody(..., block=True)` instead.
 - Integrate and assemble `None`-items in the `fun`-argument of `IntegralForm`. On integration, `None` is returned. `None` will be assembled to an emtpy sparse matrix.
+- Enhance `mesh.interpolate_line(mesh, xi, axis=None, ...)` which by default uses a curve-progress variable when `axis=None`. The curve progress evaluation points `xi` must be within `0 <= xi <= 1`.
 
 ### Fixed
 - Fix `Boundary(..., mode="and")` by ignoring any undefined axis.
@@ -62,7 +63,6 @@ All notable changes to this project will be documented in this file. The format 
 - Change supported Python versions to 3.9 - 3.12.
 - Change the `dtype`-argument in `Region.astype(dtype)` from an optional to a required argument.
 - Make `tensortrax` an optional dependency (again). Now FElupe does only depend on NumPy and SciPy, all other extras are optional.
-- Enhance `mesh.interpolate_line(mesh, xi, axis=None, ...)` which by default uses a curve-progress variable when `axis=None`. The curve progress evaluation points `xi` must be within `0 <= xi <= 1`.
 
 ### Fixed
 - Fix the number of points for non-disconnected dual meshes. This reduces the assembled (sparse) vector- and matrix-shapes, which are defined on mixed-fields.

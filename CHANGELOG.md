@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [9.2.0] - 2025-03-04
+
 ### Added
 - Add `SolidBody.assemble.mass(density=1.0)` and `SolidBodyNearlyIncompressible.assemble.mass(density=1.0)` to assemble the mass matrix.
 - Add `SolidBody.evaluate.stress(field)` to evaluate the (first Piola-Kirchhoff) stress tensor (engineering stress in linear elasticity).

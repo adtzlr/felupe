@@ -4,7 +4,7 @@ tags:
   - python
   - finite-elements
   - hyperelasticity
-  - computations-mechanics
+  - computational-mechanics
   - scientific-computing
 authors:
   - name: Andreas Dutzler

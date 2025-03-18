@@ -323,6 +323,14 @@ class Mesh(DiscreteGeometry):
 
         return ax
 
+    def add_points(self, points):
+        "Add additional points to the mesh."
+        self.update(points=np.vstack([self.points, points]))
+
+    def clear_points_without_cells(self):
+        "Clear the list of points without cells."
+        self.points_without_cells = self.points_without_cells[:0]
+
     def get_point_ids(self, value, fun=np.isclose, mode=np.all, **kwargs):
         """Return point ids for points which are close to a given value.
 

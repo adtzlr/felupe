@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `Mesh.add_points(points)` to update the mesh with additional points.
+- Add `Mesh.clear_points_without_cells()` to clear the list of points without cells (useful for center-points of multi-point constraints).
+
 ## [9.2.0] - 2025-03-04
 
 ### Added

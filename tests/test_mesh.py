@@ -545,6 +545,10 @@ def test_mesh_update():
     mesh.update(points=new_points)
     region.reload(mesh)
 
+    # add additional point and clear points without cells
+    mesh.add_points([2, 0, 0])
+    mesh.clear_points_without_cells()
+
 
 def test_modify_corners():
     fem.Rectangle(n=6).modify_corners()

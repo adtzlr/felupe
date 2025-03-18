@@ -20,7 +20,8 @@ import felupe as fem
 mesh = fem.Circle(n=6, sections=[0]).triangulate().add_midpoints_edges()
 mask = np.isclose(mesh.x**2 + mesh.y**2, 1, atol=0.05)
 mesh.points[mask] /= np.linalg.norm(mesh.points[mask], axis=1).reshape(-1, 1)
-mesh.update(points=np.vstack([mesh.points, [0, 1.1]]))
+mesh.add_points([0, 1.1])
+mesh.clear_points_without_cells()
 
 # %%
 # Let's create a region for quadratic triangles and a mixed-field container with two

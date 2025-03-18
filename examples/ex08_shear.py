@@ -44,8 +44,8 @@ n = 8
 a = min(L / n, H / n)
 
 mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
-mesh.update(points=np.vstack((mesh.points, [L / 2, 1.3 * H])))
-mesh.points_without_cells = np.array([], dtype=bool)
+mesh.add_points([L / 2, 1.3 * H])
+mesh.clear_points_without_cells()
 
 # %%
 # A numeric quad-region created on the mesh in combination with a vector-valued

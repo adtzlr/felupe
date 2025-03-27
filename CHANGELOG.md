@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `Mesh.add_points(points)` to update the mesh with additional points.
 - Add `Mesh.clear_points_without_cells()` to clear the list of points without cells (useful for center-points of multi-point constraints).
+- Release FElupe on conda-forge, starting with v9.2.0.
 
 ## [9.2.0] - 2025-03-04
 

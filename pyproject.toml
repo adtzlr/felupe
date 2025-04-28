@@ -15,7 +15,8 @@ authors = [
   
 ]
 requires-python = ">=3.9"
-license = {file = "LICENSE"}
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E.*"]
 keywords = [
   "computational-mechanics",
   "fea",
@@ -34,7 +35,6 @@ classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",

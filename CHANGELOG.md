@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Mesh.clear_points_without_cells()` to clear the list of points without cells (useful for center-points of multi-point constraints).
 - Release FElupe on conda-forge, starting with v9.2.0.
 
+### Fixed
+- Fix the declaration of the (spdx identifier) license and license-file in `pyproject.toml`.
+
 ## [9.2.0] - 2025-03-04
 
 ### Added

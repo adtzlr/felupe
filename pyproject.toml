@@ -16,7 +16,7 @@ authors = [
 ]
 requires-python = ">=3.9"
 license = "GPL-3.0-or-later"
-license-files = ["LICEN[CS]E.*"]
+license-files = ["LICENSE"]
 keywords = [
   "computational-mechanics",
   "fea",

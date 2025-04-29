@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [tool.isort]
@@ -10,9 +10,7 @@ name = "felupe"
 description = "Finite Element Analysis"
 readme = "README.md"
 authors = [
-  {name = "Andreas Dutzler"},
-  {email = "a.dutzler@gmail.com"},
-  
+  {name = "Andreas Dutzler", email = "a.dutzler@gmail.com"},
 ]
 requires-python = ">=3.9"
 license = "GPL-3.0-or-later"
@@ -86,5 +84,7 @@ version = {attr = "felupe.__about__.__version__"}
 
 [project.urls]
 Homepage = "https://felupe.readthedocs.io/en/latest"
-Code = "https://github.com/adtzlr/felupe"
+Documentation = "https://felupe.readthedocs.io/en/latest"
+Repository = "https://github.com/adtzlr/felupe"
 Issues = "https://github.com/adtzlr/felupe/issues"
+Changelog = "https://github.com/adtzlr/felupe/blob/main/CHANGELOG.md"

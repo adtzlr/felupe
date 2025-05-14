@@ -571,8 +571,9 @@ def test_expand():
 
 
 def test_interpolate_line():
-    import felupe as fem
     from scipy.interpolate import CubicSpline
+
+    import felupe as fem
 
     mesh = fem.mesh.Line(n=5).expand(n=1).expand(n=1)
     t = mesh.x.copy()

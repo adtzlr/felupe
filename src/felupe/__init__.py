@@ -58,6 +58,7 @@ from .element import (
     TetraMINI,
     Triangle,
     TriangleMINI,
+    TriQuadraticHexahedron,
     Vertex,
 )
 from .field import (

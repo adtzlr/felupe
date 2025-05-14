@@ -321,7 +321,7 @@ class RectangleArbitraryOrderQuad(Rectangle):
 
 
 class CubeArbitraryOrderHexahedron(Cube):
-    """A rectangular 2d-mesh with an arbitrary-order Lagrange hexahedron between ``a``
+    """A rectangular 3d-mesh with an arbitrary-order Lagrange hexahedron between ``a``
     and ``b``.
 
     Examples

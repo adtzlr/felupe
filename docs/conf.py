@@ -143,8 +143,8 @@ html_theme_options = {
     ],
     "logo": {
         "text": "FElupe",
-        "image_light": "logo_without_text.svg",
-        "image_dark": "logo_without_text.svg",
+        "image_light": "_static/logo_without_text.svg",
+        "image_dark": "_static/logo_without_text.svg",
     },
     "use_edit_page_button": True,
 }

@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix the declaration of the (spdx identifier) license and license-file in `pyproject.toml`.
+- Fix missing import of `TriQuadraticHexahedron` in the top-level namespace.
+- Fix the path to `docs/_static/logo_without_text.svg` in `docs/conf.py`.
 
 ## [9.2.0] - 2025-03-04
 

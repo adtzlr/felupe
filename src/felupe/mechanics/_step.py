@@ -39,6 +39,7 @@ class Step:
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>
@@ -58,6 +59,13 @@ class Step:
         >>>
         >>> job = fem.Job(steps=[step]).evaluate()
         >>> ax = solid.plot("Principal Values of Cauchy Stress").show()
+
+    See Also
+    --------
+    Job : A job with a list of steps and a method to evaluate them.
+    CharacteristicCurve : A job with a list of steps and a method to evaluate them.
+        Force-displacement curve data is tracked during evaluation for a given
+        :class:`~felupe.Boundary`.
     """
 
     def __init__(self, items, ramp=None, boundaries=None):

@@ -43,6 +43,7 @@ class FreeVibration:
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>> import numpy as np

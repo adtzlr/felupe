@@ -48,6 +48,8 @@ class CharacteristicCurve(Job):
     Examples
     --------
     ..  pyvista-plot::
+        :context:
+        :force_static:
 
         >>> import felupe as fem
         >>>
@@ -72,6 +74,11 @@ class CharacteristicCurve(Job):
         ...    ylabel=r"Normal Force in $F_1$ in N $\rightarrow$",
         ...    marker="o",
         ... )
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
         >>> solid.plot("Principal Values of Cauchy Stress").show()
 
     See Also

@@ -86,6 +86,7 @@ class Job:
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>

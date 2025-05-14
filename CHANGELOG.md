@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix the declaration of the (spdx identifier) license and license-file in `pyproject.toml`.
 - Fix missing import of `TriQuadraticHexahedron` in the top-level namespace.
 - Fix the path to `docs/_static/logo_without_text.svg` in `docs/conf.py`.
+- Fix a typo in the docstring of `MeshContainer.from_unstructured_grid()`.
 
 ## [9.2.0] - 2025-03-04
 

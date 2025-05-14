@@ -233,7 +233,7 @@ class MeshContainer:
             >>> import pyvista as pv
             >>>
             >>> grid = pv.UnstructuredGrid(pv.examples.hexbeamfile)
-            >>> container = fem.MechContainer.from_unstructured_grid(grid)
+            >>> container = fem.MeshContainer.from_unstructured_grid(grid)
             >>>
             >>> container
             <felupe mesh container object>

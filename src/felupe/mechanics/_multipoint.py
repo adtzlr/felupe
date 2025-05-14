@@ -147,9 +147,7 @@ class MultiPointConstraint:
         ...     point_size=16,
         ...     color="green",
         ... )
-        >>> # field.plot(
-        ... #     "Displacement", component=None, plotter=mpc.plot(plotter=plotter)
-        ... # ).show()
+        >>> field.plot("Displacement", component=None, plotter=mpc.plot(plotter=plotter)).show()
 
     See Also
     --------
@@ -353,9 +351,7 @@ class MultiPointContact:
         ...     point_size=16,
         ...     color="green",
         ... )
-        >>> # field.plot(
-        ... #     "Displacement", component=None, plotter=contact.plot(plotter=plotter)
-        ... # ).show()
+        >>> field.plot("Displacement", component=None, plotter=contact.plot(plotter=plotter)).show()
 
     See Also
     --------

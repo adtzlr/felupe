@@ -76,6 +76,17 @@ class CharacteristicCurve(Job):
         ... )
 
     ..  pyvista-plot::
+        :include-source: False
+        :context:
+        :force_static:
+
+        >>> import pyvista as pv
+        >>>
+        >>> fig = ax.get_figure()
+        >>> chart = pv.ChartMPL(fig)
+        >>> chart.show()
+
+    ..  pyvista-plot::
         :context:
         :force_static:
 

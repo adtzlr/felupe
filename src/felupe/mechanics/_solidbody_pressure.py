@@ -46,6 +46,7 @@ class SolidBodyPressure:
     Examples
     --------
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>

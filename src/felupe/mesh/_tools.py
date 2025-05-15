@@ -62,7 +62,7 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
     Expand a rectangle to a cube.
 
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>
@@ -164,7 +164,7 @@ def fill_between(mesh, other_mesh, n=11):
     Examples
     --------
     .. pyvista-plot::
-       :include-source: True
+       :force_static:
 
        >>> import felupe as fem
        >>>

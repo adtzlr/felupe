@@ -273,7 +273,8 @@ class SolidBodyNearlyIncompressible(Solid):
     Examples
     --------
     ..  pyvista-plot::
-        
+        :force_static:
+
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Cube(n=6)

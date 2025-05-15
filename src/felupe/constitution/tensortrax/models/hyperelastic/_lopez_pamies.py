@@ -64,8 +64,7 @@ def lopez_pamies(C, mu, alpha):
     Examples
     --------
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -78,17 +77,6 @@ def lopez_pamies(C, mu, alpha):
         >>> bx = fem.math.linsteps([1, 5], num=50)
         >>>
         >>> ax = umat.plot(ux=ux, ps=ps, bx=bx, incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

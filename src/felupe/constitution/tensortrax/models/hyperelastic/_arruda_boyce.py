@@ -82,24 +82,12 @@ def arruda_boyce(C, C1, limit):
     Examples
     --------
     
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.arruda_boyce, C1=1.0, limit=3.2)
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
     I1 = det(C) ** (-1 / 3) * trace(C)

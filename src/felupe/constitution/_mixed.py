@@ -79,13 +79,15 @@ class NearlyIncompressible(ConstitutiveMaterial):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>>
-    >>> field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=6)), n=3)
-    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
-    >>> umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
-    >>> solid = fem.SolidBody(umat, field)
-    >>> job = fem.Job(steps=[fem.Step(items=[solid], boundaries=boundaries)]).evaluate()
+
+    ..  plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=6)), n=3)
+        >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        >>> umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
+        >>> solid = fem.SolidBody(umat, field)
 
     See Also
     --------

@@ -39,8 +39,7 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>> import felupe.constitution.tensortrax.models as models
@@ -60,17 +59,6 @@ def morph_representative_directions(C, statevars, p, ε=1e-8):
         ...    ps=None,
         ...    bx=None,
         ... )
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

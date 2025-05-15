@@ -68,8 +68,7 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3=None, k=2):
         The orthotropic Saint-Venant Kirchhoff material formulation is unstable for
         large strains.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe.constitution.tensortrax as mat
         >>> import felupe as fem
@@ -89,18 +88,6 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3=None, k=2):
         ...     r3=r[:, 2],
         ... )
         >>> ax = umat.plot(ux=fem.math.linsteps([1, 1.1], num=10), ps=None, bx=None)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
-
 
     """
     eye = base.eye

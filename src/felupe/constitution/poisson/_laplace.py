@@ -49,23 +49,11 @@ class Laplace(ConstitutiveMaterial):
     Examples
     --------
     ..  pyvista-plot::
-        :context:
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Laplace()
         >>> ax = umat.plot()
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
 

@@ -84,16 +84,16 @@ def extended_tube(C, Gc, delta, Ge, beta):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
     and create the hyperelastic material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> import felupe as fem
         >>>
@@ -105,17 +105,6 @@ def extended_tube(C, Gc, delta, Ge, beta):
         ...     delta=0.09693,
         ... )
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

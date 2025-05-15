@@ -75,24 +75,12 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
         >>> ax = umat.plot()
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
 

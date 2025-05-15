@@ -77,8 +77,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     Examples
     --------
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -95,17 +94,6 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
         ...     [1, 2.5, 1, 3.5, 1], num=[15, 15, 25, 25]
         ... )
         >>> ax = umat.plot(ux=ux, bx=None, ps=None, incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
 

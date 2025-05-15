@@ -64,25 +64,12 @@ def saint_venant_kirchhoff(C, mu, lmbda, k=2):
     ..  warning::
         The Saint-Venant Kirchhoff material formulation is unstable for large strains.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.Hyperelastic(fem.saint_venant_kirchhoff, mu=1.0, lmbda=20.0)
         >>> ax = umat.plot(incompressible=False)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
-
 
     """
     eye = base.eye

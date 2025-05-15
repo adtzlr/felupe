@@ -68,32 +68,21 @@ def mooney_rivlin(C, C10, C01):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
     and create the hyperelastic material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.mooney_rivlin, C10=0.3, C01=0.8
         ... )
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
     J3 = det(C) ** (-1 / 3)

@@ -119,8 +119,7 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -135,17 +134,6 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
         ... )
         >>> ux = fem.math.linsteps([1, 1.05, 0.95, 1.05], num=[10, 20, 20])
         >>> ax = umat.plot(ux=ux, bx=None, ps=None)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     See Also
     --------

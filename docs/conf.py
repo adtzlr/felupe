@@ -29,9 +29,9 @@ pyvista.set_plot_theme("document")
 pyvista.BUILDING_GALLERY = True
 os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
-# start a virtual framebuffer
-if os.environ.get("READTHEDOCS") or os.environ.get("CI"):
-    pyvista.start_xvfb()
+# start a virtual framebuffer (deprecated since pyvista 0.45.0)
+# if os.environ.get("READTHEDOCS") or os.environ.get("CI"):
+#     pyvista.start_xvfb()
 
 # FElupe: turn off logging
 os.environ["FELUPE_VERBOSE"] = "false"

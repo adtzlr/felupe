@@ -68,7 +68,7 @@ class CharacteristicCurve(Job):
         >>> move = fem.math.linsteps([0, 1], num=5)
         >>> step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
         >>>
-        >>> job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"]).evaluate()+
+        >>> job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"]).evaluate()
         >>> solid.plot("Principal Values of Cauchy Stress").show()
         >>> fig, ax = job.plot(
         ...    xlabel=r"Displacement $u_1$ in mm $\rightarrow$",

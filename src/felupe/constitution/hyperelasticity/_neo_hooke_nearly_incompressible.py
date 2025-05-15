@@ -164,24 +164,12 @@ class NeoHooke(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
         >>> ax = umat.plot()
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
 

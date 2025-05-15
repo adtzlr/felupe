@@ -84,24 +84,12 @@ class LinearElastic(ConstitutiveMaterial):
     
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
-        
+    ..  plot::
+
         >>> import felupe as fem
         >>> 
         >>> umat = fem.LinearElastic(E=1, nu=0.3)
         >>> ax = umat.plot()
-    
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
     
     See Also
     --------
@@ -242,24 +230,12 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
-        
+    ..  plot::
+
         >>> import felupe as fem
         >>> 
         >>> umat = fem.constitution.LinearElasticTensorNotation(E=1, nu=0.3)
         >>> ax = umat.plot()
-    
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
 

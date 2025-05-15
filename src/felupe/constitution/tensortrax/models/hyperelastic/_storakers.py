@@ -68,16 +68,16 @@ def storakers(C, mu, alpha, beta):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
     and create the hyperelastic material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> import felupe as fem
         >>>
@@ -92,17 +92,6 @@ def storakers(C, mu, alpha, beta):
         ...     ps=fem.math.linsteps([1, 1], 15),
         ...     bx=fem.math.linsteps([1, 1], 9),
         ... )
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

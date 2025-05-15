@@ -74,8 +74,7 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -88,17 +87,6 @@ def finite_strain_viscoelastic(C, Cin, mu, eta, dtime):
         ...    ps=None,
         ...    bx=None,
         ... )
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

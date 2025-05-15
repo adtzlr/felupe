@@ -44,32 +44,21 @@ def neo_hooke(C, mu):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
     and create the hyperelastic material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> import felupe as fem
         >>>
         >>> umat = mat.Hyperelastic(mat.models.hyperelastic.neo_hooke, mu=1.0)
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
     return mu / 2 * (det(C) ** (-1 / 3) * trace(C) - 3)

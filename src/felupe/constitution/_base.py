@@ -303,8 +303,7 @@ class ConstitutiveMaterial:
         The :func:`Anssari-Benam Bucchi <felupe.anssari_benam_bucchi>` material model
         formulation is best-fitted on Treloar's uniaxial and biaxial tension data [1]_.
 
-        ..  pyvista-plot::
-            :context:
+        ..  plot::
 
             >>> import numpy as np
             >>> import felupe as fem
@@ -333,17 +332,6 @@ class ConstitutiveMaterial:
             >>> ux = np.linspace(λ.min(), λ.max(), num=50)
             >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
             >>> ax.plot(λ, P, "C0x")
-
-        ..  pyvista-plot::
-            :include-source: False
-            :context:
-            :force_static:
-
-            >>> import pyvista as pv
-            >>>
-            >>> fig = ax.get_figure()
-            >>> chart = pv.ChartMPL(fig)
-            >>> chart.show()
 
         See Also
         --------
@@ -447,8 +435,7 @@ def constitutive_material(Material, name=None):
     This example shows how to create a derived user material class to enable the
     methods from :class:`~felupe.ConstitutiveMaterial` on any (external) material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>> import numpy as np
@@ -471,17 +458,6 @@ def constitutive_material(Material, name=None):
         >>> MyMaterial = fem.constitutive_material(MyMaterialFormulation)
         >>> umat = MyMaterial(a=0.5)
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     See Also
     --------
@@ -518,7 +494,7 @@ class CompositeMaterial(ConstitutiveMaterial):
 
     Examples
     --------
-    ..  pyvista-plot::
+    ..  plot::
 
         >>> import felupe as fem
         >>>

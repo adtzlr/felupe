@@ -80,16 +80,16 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> # import felupe.constitution.jax as mat
         >>> import felupe.constitution.tensortrax as mat
 
     and create the hyperelastic material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.third_order_deformation,
@@ -100,17 +100,6 @@ def third_order_deformation(C, C10, C01, C11, C20, C30):
         ...     C30=0.02,
         ... )
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
     J3 = det(C) ** (-1 / 3)

@@ -223,8 +223,8 @@ class Material(ConstitutiveMaterial):
                \boldsymbol{F}^{-T} \overset{il}{\otimes} \boldsymbol{F}^{-T}
            + \lambda \boldsymbol{F}^{-T} {\otimes} \boldsymbol{F}^{-T}
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
     
         >>> import numpy as np
         >>> import felupe as fem
@@ -261,8 +261,8 @@ class Material(ConstitutiveMaterial):
     The material formulation is tested in a minimal example of non-homogeneous uniaxial
     tension.
     
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> mesh = fem.Cube(n=3)
         >>> region = fem.RegionHexahedron(mesh)

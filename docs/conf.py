@@ -59,6 +59,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
+    "matplotlib.sphinxext.plot_directive",
     "pyvista.ext.plot_directive",
     "pyvista.ext.viewer_directive",
 ]
@@ -99,10 +100,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # Execution mode for notebooks
 # nb_execution_mode = "force"
 
-# plot directives
+# matplotlib plot directive
 plot_include_source = True
 plot_html_show_source_link = False
+plot_html_show_formats = False
 plot_formats = ["png"]
+
+# pyvista plot directive
+pyvista_plot_include_source = True
 
 # -- Options for HTML output -------------------------------------------------
 

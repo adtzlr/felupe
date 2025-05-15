@@ -112,8 +112,7 @@ class Material(MaterialDefault):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>> import felupe.constitution.tensortrax as mat
@@ -126,17 +125,6 @@ class Material(MaterialDefault):
         >>>
         >>> umat = mat.Material(neo_hooke, mu=1)
         >>> ax = umat.plot(incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     """
 

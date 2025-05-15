@@ -85,8 +85,7 @@ def alexander(C, C1, C2, C3, gamma, k):
     Examples
     --------
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
@@ -98,17 +97,6 @@ def alexander(C, C1, C2, C3, gamma, k):
         >>> bx = fem.math.linsteps([1, 3], num=50)
         >>>
         >>> ax = umat.plot(ux=ux, ps=ps, bx=bx, incompressible=True)
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

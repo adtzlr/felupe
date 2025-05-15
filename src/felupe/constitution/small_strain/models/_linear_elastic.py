@@ -68,24 +68,12 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 
     Examples
     --------
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
 
         >>> import felupe as fem
         >>>
         >>> umat = fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0)
         >>> ax = umat.plot()
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     See Also
     --------

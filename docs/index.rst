@@ -142,21 +142,21 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
 
 
       def pre_linear_elastic(n, **kwargs):
-         mesh = fem.Cube(n=n).triangulate()
-         region = fem.RegionTetra(mesh)
-         field = fem.FieldContainer([fem.Field(region, dim=3)])
-         umat = fem.LinearElastic(E=1, nu=0.3)
-         solid = fem.SolidBody(umat, field)
-         return mesh, solid
+          mesh = fem.Cube(n=n).triangulate()
+          region = fem.RegionTetra(mesh)
+          field = fem.FieldContainer([fem.Field(region, dim=3)])
+          umat = fem.LinearElastic(E=1, nu=0.3)
+          solid = fem.SolidBody(umat, field)
+          return mesh, solid
 
 
       def pre_hyperelastic(n, **kwargs):
-         mesh = fem.Cube(n=n).triangulate()
-         region = fem.RegionTetra(mesh)
-         field = fem.FieldContainer([fem.Field(region, dim=3)])
-         umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
-         solid = fem.SolidBody(umat, field)
-         return mesh, solid
+          mesh = fem.Cube(n=n).triangulate()
+          region = fem.RegionTetra(mesh)
+          field = fem.FieldContainer([fem.Field(region, dim=3)])
+          umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
+          solid = fem.SolidBody(umat, field)
+          return mesh, solid
 
 
       print("# Assembly Runtimes")
@@ -172,23 +172,23 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
       runtimes = np.zeros((len(points_per_axis), 2))
 
       for i, n in enumerate(points_per_axis):
-         mesh, solid = pre_linear_elastic(n)
-         matrix = solid.assemble.matrix(parallel=parallel)
-         time_linear_elastic = (
-            timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
-         )
+          mesh, solid = pre_linear_elastic(n)
+          matrix = solid.assemble.matrix(parallel=parallel)
+          time_linear_elastic = (
+              timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
+          )
 
-         mesh, solid = pre_hyperelastic(n)
-         matrix = solid.assemble.matrix(parallel=parallel)
-         time_hyperelastic = (
-            timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
-         )
+          mesh, solid = pre_hyperelastic(n)
+          matrix = solid.assemble.matrix(parallel=parallel)
+          time_hyperelastic = (
+              timeit(lambda: solid.assemble.matrix(parallel=parallel), number=number) / number
+          )
 
-         runtimes[i] = time_linear_elastic, time_hyperelastic
+          runtimes[i] = time_linear_elastic, time_hyperelastic
 
-         print(
-            f"| {mesh.points.size:7d} | {runtimes[i][0]:19.2f} | {runtimes[i][1]:17.2f} |"
-         )
+          print(
+              f"| {mesh.points.size:7d} | {runtimes[i][0]:19.2f} | {runtimes[i][1]:17.2f} |"
+          )
 
       dofs_le = points_per_axis ** 3 * 3 / runtimes[:, 0]
       dofs_he = points_per_axis ** 3 * 3 / runtimes[:, 1]
@@ -197,29 +197,28 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
       print("| Analysis       |        DOF/s      |")
       print("| -------------- | ----------------- |")
       print(
-         f"| Linear-Elastic |   {np.mean(dofs_le):5.0f} +/-{np.std(dofs_le):5.0f}  |"
+          f"| Linear-Elastic |   {np.mean(dofs_le):5.0f} +/-{np.std(dofs_le):5.0f}  |"
       )
       print(f"| Hyperelastic   |   {np.mean(dofs_he):5.0f} +/-{np.std(dofs_he):5.0f}  |")
 
       plt.figure()
       plt.loglog(
-         points_per_axis ** 3 * 3,
-         runtimes[:, 1],
-         "C0",
-         label=r"Stiffness Matrix (Hyperelastic)",
+          points_per_axis ** 3 * 3,
+          runtimes[:, 1],
+          "C0",
+          label=r"Stiffness Matrix (Hyperelastic)",
       )
       plt.loglog(
-         points_per_axis ** 3 * 3,
-         runtimes[:, 0],
-         "C1--",
-         label=r"Stiffness Matrix (Linear-Elastic)",
+          points_per_axis ** 3 * 3,
+          runtimes[:, 0],
+          "C1--",
+          label=r"Stiffness Matrix (Linear-Elastic)",
       )
       plt.xlabel(r"Number of degrees of freedom $\longrightarrow$")
       plt.ylabel(r"Runtime in s $\longrightarrow$")
       plt.legend()
       plt.tight_layout()
       plt.savefig("benchmark.png")
-
 
 
 .. toctree::

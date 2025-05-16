@@ -15,8 +15,7 @@ a linear-elastic analysis [1]_.
 
 .. image:: ../../examples/ex01_beam_sketch.png
 
-First, let's create a meshed cube out of hexahedron cells with ``n=(181, 9, 9)`` points
-per axis. A numeric region created on the mesh represents the cantilever beam. A three-
+First, let's create a meshed cube out of hexahedron cells. A numeric region created on the mesh represents the cantilever beam. A three-
 dimensional vector-valued displacement field is initiated on the region.
 """
 

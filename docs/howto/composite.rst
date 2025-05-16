@@ -2,7 +2,7 @@ Multiple Solid Bodies
 ---------------------
 
 This section demonstrates how to set up a problem with two regions, each associated to a
-seperated solid body. Different element formulations are used for the solid bodies.
+separated solid body. Different element formulations are used for the solid bodies.
 
 ..  pyvista-plot::
     :context:

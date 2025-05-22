@@ -7,16 +7,19 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Mesh.add_points(points)` to update the mesh with additional points.
 - Add `Mesh.clear_points_without_cells()` to clear the list of points without cells (useful for center-points of multi-point constraints).
 - Release FElupe on conda-forge, starting with v9.2.0.
+- Add `ConstitutiveMaterial.is_stable()` which returns a boolean mask of stability for isotropic material model formulations. Note that this will require an additional volumetric part of the strain energy density function for hyperelastic material model formulations without a volumetric part.
 
 ### Changed
 - Change the required setuptools-version in the build-system table of `pyproject.toml` to match PEP639 (setuptools>=77.0.3).
 - Change the labels to well-known labels for the URLs in `pyproject.toml`.
+- Change the first return value of `ViewMaterial.uniaxial()`, `ViewMaterial.planar()`, `ViewMaterial.biaxial()`, `ViewMaterialIncompressible.uniaxial()`, `ViewMaterialIncompressible.planar()`, `ViewMaterialIncompressible.biaxial()` from the stretch to a list of all three principal stretches.
 
 ### Fixed
 - Fix the declaration of the (spdx identifier) license and license-file in `pyproject.toml`.
 - Fix missing import of `TriQuadraticHexahedron` in the top-level namespace.
 - Fix the path to `docs/_static/logo_without_text.svg` in `docs/conf.py`.
 - Fix a typo in the docstring of `MeshContainer.from_unstructured_grid()`.
+- Fix `CompositeMaterial` for input lists of length 1.
 
 ## [9.2.0] - 2025-03-04
 

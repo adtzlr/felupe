@@ -20,6 +20,7 @@ from copy import deepcopy as copy
 
 import numpy as np
 
+from ..math import dot, eigh, transpose
 from ._view import ViewMaterial, ViewMaterialIncompressible
 
 
@@ -407,6 +408,107 @@ class ConstitutiveMaterial:
 
         return umat, res
 
+    def is_stable(self, x, hessian=None):
+        """Return a boolean mask for stability of isotropic material model formulations.
+
+        At a given deformation gradient, a normal force is applied on each principal
+        stretch direction. If the resulting incremental stretches are positive, the
+        material model formulation is considered to be stable at the given deformation
+        gradient.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            The list with input arguments. These contain the extracted fields of a
+            :class:`~felupe.FieldContainer`.
+        hessian : ndarray or None, optional
+            Second partial derivative of the strain energy density function w.r.t. the
+            deformation gradient. Default is None.
+
+        Returns
+        -------
+        ndarray
+            Boolean mask of stability.
+
+        Notes
+        -----
+
+        ..  warning::
+
+            This stability check will lead to a singular matrix for isotropic
+            (hyperelastic) material model formulations without a volumetric part.
+
+        Examples
+        --------
+        First, let's check the stability of the Neo-Hookean material model formulation.
+        The stability is evaluated on (valid) principal stretches of a biaxial
+        deformation. All deformations are stable.
+
+        ..  plot::
+
+            >>> import numpy as np
+            >>> import felupe as fem
+            >>>
+            >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+            >>> view = umat.view()
+            >>> λ = view.biaxial()[0]
+            >>>
+            >>> F = np.zeros((3, 3, 1, λ[0].size))
+            >>> for a in range(3):
+            ...     F[a, a] = λ[a]
+            >>>
+            >>> umat.is_stable([F])
+            array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+                     True,  True,  True,  True,  True,  True,  True]])
+
+        Now, let's check the stability of the Mooney-Rivlin material model formulation.
+        The stability is evaluated on (valid) principal stretches of a biaxial
+        deformation. Biaxial deformations are only stable up to a longitudinal stretch
+        of 1.35.
+
+        ..  plot::
+
+            >>> import numpy as np
+            >>> import felupe as fem
+            >>> import felupe.constitution.tensortrax as mat
+            >>>
+            >>> umat = fem.Hyperelastic(
+            ...     mat.models.hyperelastic.mooney_rivlin,
+            ...     C10=0.25,
+            ...     C01=0.25,
+            ... ) & fem.Volumetric(bulk=5000)
+            >>> view = umat.view()
+            >>> λ = view.biaxial()[0]
+            >>>
+            >>> F = np.zeros((3, 3, 1, λ[0].size))
+            >>> for a in range(3):
+            ...     F[a, a] = λ[a]
+            >>>
+            >>> umat.is_stable([F])
+            array([[ True,  True,  True,  True,  True,  True,  True,  True, False,
+                    False, False, False, False, False, False, False]])
+
+        """
+        N = eigh(dot(transpose(x[0]), x[0]))[1]
+        n = eigh(dot(x[0], transpose(x[0])))[1]
+
+        if hessian is None:
+            hessian = self.hessian(x)[0]
+
+        A = np.einsum(
+            "iJkL...,ia...,Ja...,kb...,Lb...->ab...",
+            hessian,
+            n,
+            N,
+            n,
+            N,
+            optimize=True,
+        )
+
+        stretch_change = np.diagonal(np.linalg.inv(A.T).T, axis1=0, axis2=1)
+
+        return np.all(stretch_change > 0, axis=-1)
+
     def __and__(self, other_material):
         return CompositeMaterial(self, other_material)
 
@@ -512,12 +614,12 @@ class CompositeMaterial(ConstitutiveMaterial):
 
     def gradient(self, x, **kwargs):
         gradients = [material.gradient(x, **kwargs) for material in self.materials]
-        nfields = len(x) - 1
+        nfields = max(1, len(x) - 1)
         P = [np.sum([grad[i] for grad in gradients], axis=0) for i in range(nfields)]
         statevars_new = gradients[0][-1]
         return [*P, statevars_new]
 
     def hessian(self, x, **kwargs):
         hessians = [material.hessian(x, **kwargs) for material in self.materials]
-        nfields = len(x) - 1
+        nfields = max(1, len(x) - 1)
         return [np.sum([hess[i] for hess in hessians], axis=0) for i in range(nfields)]

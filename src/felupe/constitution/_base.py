@@ -440,6 +440,9 @@ class ConstitutiveMaterial:
 
         Examples
         --------
+        First, let's check the stability of the Neo-Hookean material model formulation.
+        The stability is evaluated on (valid) principal stretches of a biaxial
+        deformation. All deformations are stable.
 
         ..  plot::
 
@@ -458,6 +461,10 @@ class ConstitutiveMaterial:
             array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
                      True,  True,  True,  True,  True,  True,  True]])
 
+        Now, let's check the stability of the Mooney-Rivlin material model formulation.
+        The stability is evaluated on (valid) principal stretches of a biaxial
+        deformation. Biaxial deformations are only stable up to a longitudinal stretch
+        of 1.35.
 
         ..  plot::
 

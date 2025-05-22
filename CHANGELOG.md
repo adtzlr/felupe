@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix missing import of `TriQuadraticHexahedron` in the top-level namespace.
 - Fix the path to `docs/_static/logo_without_text.svg` in `docs/conf.py`.
 - Fix a typo in the docstring of `MeshContainer.from_unstructured_grid()`.
+- Fix `CompositeMaterial` for input lists of length 1.
 
 ## [9.2.0] - 2025-03-04
 

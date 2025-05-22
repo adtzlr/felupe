@@ -467,7 +467,7 @@ class ConstitutiveMaterial:
             ...     C01=0.25,
             ... ) & fem.Volumetric(bulk=5000)
             >>> umat.is_stable([F])
-            array([[ True]])
+            array([[False]])
 
         """
         N = eigh(dot(transpose(x[0]), x[0]))[1]

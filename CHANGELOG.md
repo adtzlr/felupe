@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Change the required setuptools-version in the build-system table of `pyproject.toml` to match PEP639 (setuptools>=77.0.3).
 - Change the labels to well-known labels for the URLs in `pyproject.toml`.
+- Change the first return value of `ViewMaterial.uniaxial()`, `ViewMaterial.planar()`, `ViewMaterial.biaxial()`, `ViewMaterialIncompressible.uniaxial()`, `ViewMaterialIncompressible.planar()`, `ViewMaterialIncompressible.biaxial()` from the stretch to a list of all three principal stretches.
 
 ### Fixed
 - Fix the declaration of the (spdx identifier) license and license-file in `pyproject.toml`.

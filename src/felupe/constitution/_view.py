@@ -72,14 +72,14 @@ class PlotMaterial:
         shear and biaxial tension."""
 
         import matplotlib.pyplot as plt
-        
+
         data = self.evaluate()
 
         if ax is None:
             fig, ax = plt.subplots()
 
-        for stretch, force, label in data:
-            ax.plot(stretch, force, label=label, **kwargs)
+        for stretches, force, label in data:
+            ax.plot(stretches[0], force, label=label, **kwargs)
 
         ax.set_xlabel(r"Stretch $l/L$ $\rightarrow$")
         ax.set_ylabel("Normal force per undeformed area" + r" $N/A$ $\rightarrow$")
@@ -254,7 +254,7 @@ class ViewMaterial(PlotMaterial):
             warnings.warn("Uniaxial data with volume ratio det(F) <= 0 included.")
             P[0, 0][~valid] = np.nan
 
-        return λ1, P[0, 0].ravel(), "Uniaxial"
+        return (λ1, λ2, λ3), P[0, 0].ravel(), "Uniaxial"
 
     def planar(self, stretches=None, **kwargs):
         """Normal force per undeformed area vs stretch curve for a planar shear
@@ -327,7 +327,7 @@ class ViewMaterial(PlotMaterial):
             warnings.warn("Planar Shear data with volume ratio det(F) <= 0 included.")
             P[0, 0][~valid] = np.nan
 
-        return λ1, P[0, 0].ravel(), "Planar Shear"
+        return (λ1, λ2, λ3), P[0, 0].ravel(), "Planar Shear"
 
     def biaxial(self, stretches=None, **kwargs):
         """Normal force per undeformed area vs stretch curve for a equi-biaxial
@@ -399,7 +399,7 @@ class ViewMaterial(PlotMaterial):
             warnings.warn("Biaxial data with volume ratio det(F) <= 0 included.")
             P[0, 0][~valid] = np.nan
 
-        return λ1, P[0, 0].ravel(), "Biaxial"
+        return (λ1, λ2, λ3), P[0, 0].ravel(), "Biaxial"
 
 
 class ViewMaterialIncompressible(PlotMaterial):
@@ -503,7 +503,11 @@ class ViewMaterialIncompressible(PlotMaterial):
         else:
             P, self.statevars = self.umat.gradient([F, None])
 
-        return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Uniaxial (Incompressible)"
+        return (
+            (λ1, λ2, λ3),
+            (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(),
+            "Uniaxial (Incompressible)",
+        )
 
     def planar(self, stretches=None):
         """Normal force per undeformed area vs stretch curve for a planar shear
@@ -544,7 +548,7 @@ class ViewMaterialIncompressible(PlotMaterial):
             P, self.statevars = self.umat.gradient([F, None])
 
         return (
-            λ1,
+            (λ1, λ2, λ3),
             (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(),
             "Planar Shear (Incompressible)",
         )
@@ -586,4 +590,8 @@ class ViewMaterialIncompressible(PlotMaterial):
         else:
             P, self.statevars = self.umat.gradient([F, None])
 
-        return λ1, (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(), "Biaxial (Incompressible)"
+        return (
+            (λ1, λ2, λ3),
+            (P[0, 0] - λ3 / λ1 * P[2, 2]).ravel(),
+            "Biaxial (Incompressible)",
+        )

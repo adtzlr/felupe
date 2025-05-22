@@ -101,6 +101,8 @@ def test_nh():
             assert P[0].shape == (3, 3, *F[0].shape[-2:])
             assert A[0].shape == (3, 3, 3, 3, *F[0].shape[-2:])
 
+    assert np.all(nh.is_stable(F))
+
 
 def test_linear():
     r, F = pre(sym=False, add_identity=True)

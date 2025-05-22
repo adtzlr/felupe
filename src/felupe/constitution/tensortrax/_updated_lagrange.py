@@ -33,18 +33,20 @@ def updated_lagrange(material):
 
     Examples
     --------
-    >>> import felupe as fem
-    >>> import felupe.constitution.tensortrax as mat
-    >>> import tensortrax.math as tm
-    >>>
-    >>> @fem.updated_lagrange
-    >>> def neo_hooke_updated_lagrange(F, mu=1):
-    >>>     J = tm.linalg.det(F)
-    >>>     b = F @ F.T
-    >>>     σ = mu * tm.special.dev(J**(-2/3) * b) / J
-    >>>     return σ
-    >>>
-    >>> umat = mat.Material(neo_hooke_updated_lagrange, mu=1)
+    ..  plot::
+    
+        >>> import felupe as fem
+        >>> import felupe.constitution.tensortrax as mat
+        >>> import tensortrax.math as tm
+        >>>
+        >>> @fem.updated_lagrange
+        ... def neo_hooke_updated_lagrange(F, mu=1):
+        ...     J = tm.linalg.det(F)
+        ...     b = F @ F.T
+        ...     σ = mu * tm.special.dev(J**(-2/3) * b) / J
+        ...     return σ
+        >>>
+        >>> umat = mat.Material(neo_hooke_updated_lagrange, mu=1)
 
     See Also
     --------

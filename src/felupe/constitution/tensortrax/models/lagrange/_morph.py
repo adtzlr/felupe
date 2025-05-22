@@ -132,8 +132,8 @@ def morph(F, statevars, p):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> import felupe as fem
         >>>
@@ -142,8 +142,8 @@ def morph(F, statevars, p):
 
     and create the material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> umat = mat.Material(
         ...     mat.models.lagrange.morph,
@@ -160,17 +160,6 @@ def morph(F, statevars, p):
         ...    ps=None,
         ...    bx=None,
         ... )
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

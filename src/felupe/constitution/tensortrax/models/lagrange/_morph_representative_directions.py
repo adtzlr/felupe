@@ -41,8 +41,8 @@ def morph_representative_directions(F, statevars, p, ε=1e-6):
     --------
     First, choose the desired automatic differentiation backend
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> import felupe as fem
         >>>
@@ -51,8 +51,8 @@ def morph_representative_directions(F, statevars, p, ε=1e-6):
 
     and create the material.
 
-    ..  pyvista-plot::
-        :context:
+    ..  plot::
+        :context: close-figs
 
         >>> umat = mat.Material(
         ...     mat.models.lagrange.morph_representative_directions,
@@ -69,17 +69,6 @@ def morph_representative_directions(F, statevars, p, ε=1e-6):
         ...    ps=None,
         ...    bx=None,
         ... )
-
-    ..  pyvista-plot::
-        :include-source: False
-        :context:
-        :force_static:
-
-        >>> import pyvista as pv
-        >>>
-        >>> fig = ax.get_figure()
-        >>> chart = pv.ChartMPL(fig)
-        >>> chart.show()
 
     References
     ----------

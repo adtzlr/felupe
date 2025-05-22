@@ -446,11 +446,17 @@ class ConstitutiveMaterial:
             >>> import numpy as np
             >>> import felupe as fem
             >>>
-            >>> F = np.diag([2.0, 2.0, 0.25]).reshape(3, 3, 1, 1)
-            >>>
             >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+            >>> view = umat.view()
+            >>> λ = view.biaxial()[0]
+            >>>
+            >>> F = np.zeros((3, 3, 1, λ[0].size))
+            >>> for a in range(3):
+            ...     F[a, a] = λ[a]
+            >>>
             >>> umat.is_stable([F])
-            array([[ True]])
+            array([[ True,  True,  True,  True,  True,  True,  True,  True,  True,
+                     True,  True,  True,  True,  True,  True,  True]])
 
 
         ..  plot::
@@ -459,15 +465,21 @@ class ConstitutiveMaterial:
             >>> import felupe as fem
             >>> import felupe.constitution.tensortrax as mat
             >>>
-            >>> F = np.diag([2.0, 2.0, 0.25]).reshape(3, 3, 1, 1)
-            >>>
             >>> umat = fem.Hyperelastic(
             ...     mat.models.hyperelastic.mooney_rivlin,
             ...     C10=0.25,
             ...     C01=0.25,
             ... ) & fem.Volumetric(bulk=5000)
+            >>> view = umat.view()
+            >>> λ = view.biaxial()[0]
+            >>>
+            >>> F = np.zeros((3, 3, 1, λ[0].size))
+            >>> for a in range(3):
+            ...     F[a, a] = λ[a]
+            >>>
             >>> umat.is_stable([F])
-            array([[False]])
+            array([[ True,  True,  True,  True,  True,  True,  True,  True, False,
+                    False, False, False, False, False, False, False]])
 
         """
         N = eigh(dot(transpose(x[0]), x[0]))[1]

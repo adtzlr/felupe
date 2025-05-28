@@ -86,7 +86,7 @@ from .mechanics import (
     SolidBodyPressure,
     StateNearlyIncompressible,
     Step,
-    Truss,
+    TrussBody,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .quadrature import (
@@ -217,7 +217,7 @@ __all__ = [
     "SolidBodyPressure",
     "StateNearlyIncompressible",
     "Step",
-    "Truss",
+    "TrussBody",
     "MultiPointConstraint",
     "MultiPointContact",
     "GaussLegendre",

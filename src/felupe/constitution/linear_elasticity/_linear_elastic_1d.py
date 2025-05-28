@@ -71,13 +71,16 @@ class LinearElastic1D(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.ones(1), np.zeros(0)]
 
-    def gradient(self, x):
+    def gradient(self, x, out=None):
         r"""Evaluate the stress (as a function of the stretch).
 
         Parameters
         ----------
         x : list of ndarray
             List with the stretch :math:`\lambda` as first item.
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
+            Not implemented.
 
         Returns
         -------
@@ -90,7 +93,7 @@ class LinearElastic1D(ConstitutiveMaterial):
 
         return [self.E * (λ - 1), statevars]
 
-    def hessian(self, x=None, shape=(1,), dtype=None):
+    def hessian(self, x=None, shape=(1,), dtype=None, out=None):
         r"""Evaluate the elasticity. The stretch is only used for the shape of the
         trailing axes.
 
@@ -100,6 +103,9 @@ class LinearElastic1D(ConstitutiveMaterial):
             List with stretch :math:`\lambda` as first item (default is None).
         shape : tuple of int, optional
             Tuple with shape of the trailing axes (default is (1,)).
+        out : ndarray or None, optional
+            A location into which the result is stored (default is None).
+            Not implemented.
 
         Returns
         -------

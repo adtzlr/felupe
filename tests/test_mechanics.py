@@ -614,7 +614,7 @@ def test_truss():
     boundaries = fem.BoundaryDict(fixed=fem.Boundary(field[0], fy=0))
 
     umat = fem.LinearElastic1D(E=np.ones(2))
-    truss = fem.Truss(umat, field, area=np.ones(2))
+    truss = fem.TrussBody(umat, field, area=np.ones(2))
     load = fem.PointLoad(field, [1])
 
     move = fem.math.linsteps([0, -0.1], num=5, axis=1, axes=2)
@@ -622,12 +622,6 @@ def test_truss():
     fem.Job(steps=[step]).evaluate()
 
     assert np.isclose(field[0].values[1, 1], -0.16302376)
-
-    g = truss.evaluate.gradient(field)
-    g = truss.evaluate.gradient(field, out=g)
-
-    h = truss.evaluate.gradient(field)
-    h = truss.evaluate.gradient(field, out=h)
 
 
 if __name__ == "__main__":

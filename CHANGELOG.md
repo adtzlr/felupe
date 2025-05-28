@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Mesh.clear_points_without_cells()` to clear the list of points without cells (useful for center-points of multi-point constraints).
 - Release FElupe on conda-forge, starting with v9.2.0.
 - Add `ConstitutiveMaterial.is_stable()` which returns a boolean mask of stability for isotropic material model formulations. Note that this will require an additional volumetric part of the strain energy density function for hyperelastic material model formulations without a volumetric part.
-- Add the linear-elastic material formulation `constitution.LinearElastic1D()` and a solid-body-like truss `mechanics.Truss()`.
+- Add the linear-elastic material formulation `constitution.LinearElastic1D()` and a truss-body `mechanics.TrussBody()`.
 
 ### Changed
 - Change the required setuptools-version in the build-system table of `pyproject.toml` to match PEP639 (setuptools>=77.0.3).

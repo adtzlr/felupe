@@ -14,7 +14,7 @@ Mechanics
    SolidBodyForce
    SolidBodyPressure
    SolidBodyCauchyStress
-   Truss
+   TrussBody
 
 **Steps and Jobs**
 
@@ -74,7 +74,7 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.Truss
+.. autoclass:: felupe.TrussBody
    :members:
    :undoc-members:
    :show-inheritance:

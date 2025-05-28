@@ -27,8 +27,57 @@ from ._helpers import Assemble, Evaluate, Results
 from ._solidbody import Solid
 
 
-class Truss(Solid):
-    def __init__(self, umat, field, area):
+class TrussBody(Solid):
+    r"""A Truss body with methods for the assembly of sparse vectors/matrices.
+
+    Parameters
+    ----------
+    umat : class
+        A class which provides methods for evaluating the gradient and the hessian of
+        the strain energy density function per unit undeformed volume. The function
+        signatures must be ``dψdλ, ζ_new = umat.gradient([λ, ζ])`` for
+        the gradient and ``d2ψdλdλ = umat.hessian([λ, ζ])`` for the hessian of
+        the strain energy density function :math:`\psi(\lambda)`, where
+        :math:`\lambda` is the stretch and :math:`\zeta`
+        holds the array of internal state variables.
+    field : FieldContainer
+        A field container with one or more fields.
+    area : float or ndarray
+        The cross-sectional areas of the trusses.
+    statevars : ndarray or None, optional
+        Array of initial internal state variables (default is None).
+
+    Examples
+    --------
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Mesh(
+        ...     points=[[0, 0], [1, 1], [2.0, 0]], cells=[[0, 1], [1, 2]], cell_type="line"
+        ... )
+        >>> region = fem.Region(mesh, fem.Line(), fem.GaussLobatto(order=0, dim=1), grad=False)
+        >>> field = fem.Field(region, dim=2).as_container()
+        >>> boundaries = fem.BoundaryDict(fixed=fem.Boundary(field[0], fy=0))
+        >>>
+        >>> umat = fem.LinearElastic1D(E=[1, 1])
+        >>> truss = fem.TrussBody(umat, field, area=[1, 1])
+        >>> load = fem.PointLoad(field, [1])
+        >>>
+        >>> mesh.plot(plotter=load.plot(plotter=boundaries.plot()), line_width=5).show()
+        >>>
+        >>> move = fem.math.linsteps([0, -0.1], num=5, axis=1, axes=2)
+        >>> step = fem.Step(items=[truss, load], ramp={load: move}, boundaries=boundaries)
+        >>> job = fem.Job(steps=[step]).evaluate()
+
+    See Also
+    --------
+    felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
+        methods for the assembly of sparse vectors/matrices.
+    """
+
+    def __init__(self, umat, field, area, statevars=None):
         self.field = field
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self.evaluate = Evaluate(gradient=self._gradient, hessian=self._hessian)
@@ -51,6 +100,19 @@ class Truss(Solid):
             grad_v=[False],
             grad_u=[False],
         )
+
+        if statevars is not None:
+            self.results.statevars = statevars
+        else:
+            statevars_shape = (0,)
+            if hasattr(umat, "x"):
+                statevars_shape = umat.x[-1].shape
+            self.results.statevars = np.zeros(
+                (
+                    *statevars_shape,
+                    field.region.mesh.ncells,
+                )
+            )
 
         cells = self.field.region.mesh.cells
         self.X = self.field.region.mesh.points[cells].T

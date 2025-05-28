@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 - Release FElupe on conda-forge, starting with v9.2.0.
 - Add `ConstitutiveMaterial.is_stable()` which returns a boolean mask of stability for isotropic material model formulations. Note that this will require an additional volumetric part of the strain energy density function for hyperelastic material model formulations without a volumetric part.
 - Add the linear-elastic material formulation `constitution.LinearElastic1D()` and a truss-body `mechanics.TrussBody()`.
+- Add `RegionTruss` with a truss element. This is a line element with a `GaussLobatto(order=0)` quadrature, i.e. with two quadrature points located at the boundaries.
 
 ### Changed
 - Change the required setuptools-version in the build-system table of `pyproject.toml` to match PEP639 (setuptools>=77.0.3).

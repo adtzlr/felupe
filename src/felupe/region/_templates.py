@@ -22,6 +22,7 @@ from ..element import (
     ConstantHexahedron,
     ConstantQuad,
     Hexahedron,
+    Line,
     Quad,
     QuadraticHexahedron,
     QuadraticQuad,
@@ -35,7 +36,7 @@ from ..element import (
     Vertex,
 )
 from ..mesh import Mesh
-from ..quadrature import GaussLegendre, GaussLegendreBoundary
+from ..quadrature import GaussLegendre, GaussLegendreBoundary, GaussLobatto
 from ..quadrature import Tetrahedron as TetraQuadrature
 from ..quadrature import Triangle as TriangleQuadrature
 from ._boundary import RegionBoundary
@@ -862,4 +863,14 @@ class RegionVertex(Region):
         self, mesh, quadrature=GaussLegendre(order=0, dim=1), grad=False, **kwargs
     ):
         element = Vertex()
+        super().__init__(mesh, element, quadrature, grad=grad, **kwargs)
+
+
+class RegionTruss(Region):
+    "A region with a truss element."
+
+    def __init__(
+        self, mesh, quadrature=GaussLobatto(order=0, dim=1), grad=False, **kwargs
+    ):
+        element = Line()
         super().__init__(mesh, element, quadrature, grad=grad, **kwargs)

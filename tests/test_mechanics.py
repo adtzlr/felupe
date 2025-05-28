@@ -609,7 +609,7 @@ def test_truss():
     mesh = fem.Mesh(
         points=[[0, 0], [1, 1], [2.0, 0]], cells=[[0, 1], [1, 2]], cell_type="line"
     )
-    region = fem.Region(mesh, fem.Line(), fem.GaussLobatto(order=0, dim=1), grad=False)
+    region = fem.RegionTruss(mesh)
     field = fem.Field(region, dim=2).as_container()
     boundaries = fem.BoundaryDict(fixed=fem.Boundary(field[0], fy=0))
 

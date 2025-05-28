@@ -2,7 +2,7 @@ r"""
 Mixed-field hyperelasticity with quadratic triangles
 ----------------------------------------------------
 A 90° section of a plane-strain circle is subjected to frictionless uniaxial compression
-by a vertically moved rigid top plate. A mixed-field formulation is used with quadratic 
+by a vertically moved rigid top plate. A mixed-field formulation is used with quadratic
 triangles.
 """
 

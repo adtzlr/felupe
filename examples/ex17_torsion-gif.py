@@ -7,9 +7,9 @@ Animated torsional-shear loading
    * assign non-homogeneous displacements to a boundary condition
 
    * create an animation
-   
+
    * export a GIF-movie
-   
+
    * evaluate the reaction moment on a boundary condition
 
 This example demonstrates how to create a :class:`~felupe.Boundary` for torsional

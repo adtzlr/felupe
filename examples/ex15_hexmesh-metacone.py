@@ -5,7 +5,7 @@ Script-based Hex-meshing
 .. topic:: Create a 3d dynamic mesh for a metacone component out of hexahedrons.
 
    * apply :ref:`mesh-tools <felupe-api-mesh>`
-   
+
    * create a :class:`~felupe.MeshContainer` for meshes associated to two materials
 """
 

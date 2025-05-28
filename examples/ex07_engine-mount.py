@@ -5,11 +5,11 @@ Engine Mount
 .. topic:: A rubberlike-metal component used as an engine-mount.
 
    * read and combine mesh files
-   
+
    * define an isotropic hyperelastic solid body
-   
+
    * create consecutive steps and add them to a job
-   
+
    * export and plot characteristic curves
 
 
@@ -19,9 +19,9 @@ horizontal directions as well as the logarithmic strain distribution inside the 
 The air inside the structure is meshed as a hyperelastic solid with no volumetric part
 of the strain energy function for a simplified treatment of the rubber contact. The
 metal parts are simplified as rigid bodies. Three mesh files are provided for this
-example: 
+example:
 
-* a `mesh for the metal parts <../_static/ex07_engine-mount_mesh-metal.vtk>`_, 
+* a `mesh for the metal parts <../_static/ex07_engine-mount_mesh-metal.vtk>`_,
 
 * a `mesh for the rubber blocks <../_static/ex07_engine-mount_mesh-rubber.vtk>`_
   as well as

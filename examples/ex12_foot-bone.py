@@ -6,9 +6,9 @@ created with ``uniform=True`` to enhance performance.
 
 .. admonition:: This example requires external packages.
    :class: hint
-   
+
    .. code-block::
-      
+
       pip install pypardiso
 """
 

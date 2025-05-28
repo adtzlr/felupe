@@ -5,7 +5,7 @@ Cantilever beam under gravity
 .. topic:: Apply a gravity load on a solid body.
 
    * create a solid body and apply the gravity load
-   
+
    * linear-elastic analysis
 
 The displacement due to gravity of a cantilever beam with young's modulus

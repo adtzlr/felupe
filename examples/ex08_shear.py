@@ -5,20 +5,20 @@ Non-homogeneous shear
 .. topic:: Plane strain hyperelastic non-homogeneous shear loadcase
 
    * define a non-homogeneous shear loadcase
-   
+
    * use a mixed hyperelastic formulation in plane strain
-   
+
    * assign a micro-sphere material formulation
 
    * define a step and a job along with a callback-function
-   
+
    * export and visualize principal stretches
-   
+
    * plot force - displacement curves
 
-Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a 
-rigid plate on their top and bottom faces, are subjected to a displacement 
-controlled non-homogeneous shear deformation by :math:`u_{ext}` in combination 
+Two rubber blocks of height :math:`H` and length :math:`L`, both glued to a
+rigid plate on their top and bottom faces, are subjected to a displacement
+controlled non-homogeneous shear deformation by :math:`u_{ext}` in combination
 with a compressive normal force :math:`F`.
 
 .. image:: ../../examples/ex08_shear_sketch.svg

@@ -5,11 +5,11 @@ Plate with a Hole
 .. topic:: Plane stress linear analysis.
 
    * create and mesh a plate with a hole
-   
+
    * define a solid body with a linear-elastic plane stress material
-   
+
    * create an external pressure load
-   
+
    * export and plot stress results
 
 

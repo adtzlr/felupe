@@ -2,9 +2,9 @@ r"""
 Uniaxial loading/unloading of a viscoelastic material (VHB 4910)
 ----------------------------------------------------------------
 This example shows how to implement a constitutive material model for
-rubber viscoelastic materials using a strain energy density function coupled 
+rubber viscoelastic materials using a strain energy density function coupled
 with an ODE for an internal (state) variable [1]_. The ODE is discretized using a
-backward-Euler scheme and the resulting nonlinear algebraic equations for the 
+backward-Euler scheme and the resulting nonlinear algebraic equations for the
 internal variable are solved using Newton's method [2]_.
 """
 

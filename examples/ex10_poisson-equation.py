@@ -7,12 +7,12 @@ in Eq. :eq:`poisson` and Eq. :eq:`poisson-boundaries`, is solved on a rectangle.
 
 .. math::
    :label: poisson
-    
+
    \text{div}(\boldsymbol{\nabla} u) + f = 0 \quad \text{in} \quad \Omega
 
 .. math::
    :label: poisson-boundaries
-   
+
    u &= 0 \quad \text{on} \quad \Gamma_u
 
    f &= 1 \quad \text{in} \quad \Omega
@@ -28,6 +28,7 @@ Eq. :eq:`poisson-integral-form`.
        \ d\Omega = \int_\Omega  \delta u \cdot f \ d\Omega
 
 """
+
 # sphinx_gallery_thumbnail_number = -1
 import felupe as fem
 

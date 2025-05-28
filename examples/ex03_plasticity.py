@@ -12,7 +12,7 @@ Plasticity with Isotropic Hardening
 
 The normal plastic strain due to a body force applied on a solid with a linear-elastic
 plastic material formulation with isotropic hardening with young's modulus
-:math:`E=210000`, poisson ratio :math:`\nu=0.3`, isotropic hardening modulus 
+:math:`E=210000`, poisson ratio :math:`\nu=0.3`, isotropic hardening modulus
 :math:`K=1000`, yield stress :math:`\sigma_y=355`, length :math:`L=3` and cross section
 area :math:`A=1` is to be evaluated.
 

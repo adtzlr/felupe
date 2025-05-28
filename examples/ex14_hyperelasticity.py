@@ -5,9 +5,9 @@ Best-fit Hyperelastic Material Parameters
 .. topic:: Best-fit of hyperelastic material parameters on given experimental data.
 
    * define a strain-energy function for a hyperelastic material formulation
-   
+
    * best-fit the parameters to uniaxial and biaxial tension experiments
-   
+
    * plot the standard deviations of the material parameters
 
 The :func:`Extended Tube <felupe.extended_tube>` material model formulation [1]_ is

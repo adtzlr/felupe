@@ -5,9 +5,9 @@ Third Medium Contact
 .. topic:: Frictionless contact method simulated by a third medium [1]_.
 
    * create a mesh container with multiple meshes
-   
+
    * define multiple solid bodies and create a top-level field
-   
+
    * create an animation of the deformed solid
 
 This contact method uses a third medium for two solid contact bodies with a a Hessian-

@@ -203,9 +203,7 @@ def boundary_cells_hexahedron20(mesh):
 def boundary_cells_hexahedron27(mesh):
     "Convert the cells array of a bi-quadratic hex mesh into a boundary cells array."
 
-    cells_hexahedron20, cells_faces_hexahedron20 = boundary_cells_hexahedron20(
-        mesh
-    )
+    cells_hexahedron20, cells_faces_hexahedron20 = boundary_cells_hexahedron20(mesh)
 
     # midpoints of faces (boundary) of a hexahedron
     i = [20, 21, 22, 23, 24, 25]
@@ -593,9 +591,7 @@ class RegionBoundary(Region):
             tangents.append(dX_1 / np.linalg.norm(dX_1, axis=0))
 
             if self.ensure_3d:
-                tangents[0] = np.insert(
-                    tangents[0], len(tangents[0]), 0, axis=0
-                )
+                tangents[0] = np.insert(tangents[0], len(tangents[0]), 0, axis=0)
                 other_tangent = np.zeros_like(tangents[0])
                 other_tangent[2] = 1.0
                 tangents.append(other_tangent)
@@ -607,12 +603,8 @@ class RegionBoundary(Region):
         ):
             dA_1 = cross(self.dXdr[:, 0], self.dXdr[:, 1])
 
-            tangents.append(
-                -self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0)
-            )
-            tangents.append(
-                self.dXdr[:, 1] / np.linalg.norm(self.dXdr[:, 1], axis=0)
-            )
+            tangents.append(-self.dXdr[:, 0] / np.linalg.norm(self.dXdr[:, 0], axis=0))
+            tangents.append(self.dXdr[:, 1] / np.linalg.norm(self.dXdr[:, 1], axis=0))
 
         dA = -dA_1 * self.quadrature.weights.reshape(-1, 1)
 

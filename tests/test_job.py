@@ -57,7 +57,7 @@ def test_job():
 def test_job_xdmf():
     with pytest.warns():  # solidbodygravity is deprecated
         field, step = pre(SolidBodyForce=fem.SolidBodyGravity)
-        
+
     job = fem.Job(steps=[step])
     job.evaluate()
 

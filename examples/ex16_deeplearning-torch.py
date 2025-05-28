@@ -7,9 +7,9 @@ Train a deep neural network
    * compression of a hyperelastic axisymmetric cylinder
 
    * evaluate displacements located at mesh-points
-   
+
    * train a neural network on the displacement data
-   
+
    * obtain displacements from the PyTorch model and plot the log. strains
 
 First, an axisymmetric model is created. The displacements are saved after each
@@ -17,9 +17,9 @@ completed substep. Only very few substeps are used to run the simulation.
 
 .. admonition:: This example requires external packages.
    :class: hint
-   
+
    .. code-block::
-      
+
       pip install torch
 """
 

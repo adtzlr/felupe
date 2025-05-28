@@ -34,7 +34,7 @@ def updated_lagrange(material):
     Examples
     --------
     ..  plot::
-    
+
         >>> import felupe as fem
         >>> import felupe.constitution.tensortrax as mat
         >>> import tensortrax.math as tm

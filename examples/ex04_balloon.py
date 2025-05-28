@@ -7,14 +7,14 @@ Inflation of a hyperelastic balloon
    * use FElupe with contique
 
    * plot pressure-displacement curve
-    
+
    * view the deformed balloon
 
 .. admonition:: This example requires external packages.
    :class: hint
-   
+
    .. code-block::
-      
+
       pip install contique
 
 With the help of `contique <https://github.com/adtzlr/contique>`_ it is possible to
@@ -35,8 +35,8 @@ hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
 .. math::
    :label: neo-hookean-strain-energy
 
-   \psi = \frac{\mu}{2} \left( 
-       \text{tr}(\boldsymbol{C}) - \ln(\det(\boldsymbol{C})) 
+   \psi = \frac{\mu}{2} \left(
+       \text{tr}(\boldsymbol{C}) - \ln(\det(\boldsymbol{C}))
    \right)
 """
 

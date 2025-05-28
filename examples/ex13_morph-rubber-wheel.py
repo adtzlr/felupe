@@ -20,17 +20,17 @@ tensor is used as internal state variable, see Eq. :eq:`morph-state-ex`.
 
 ..  math::
     :label: morph-state-ex
-    
+
     \boldsymbol{C} &= \boldsymbol{F}^T \boldsymbol{F}
-    
+
     I_3 &= \det (\boldsymbol{C})
-    
+
     \hat{\boldsymbol{C}} &= I_3^{-1/3} \boldsymbol{C}
-    
+
     \hat{\lambda}^2_\alpha &= \text{eigvals}(\hat{\boldsymbol{C}})
-    
+
     \hat{C}_T &= \max \left( \hat{\lambda}^2_\alpha - \hat{\lambda}^2_\beta \right)
-    
+
     \hat{C}_T^S &= \max \left( \hat{C}_T, \hat{C}_{T,n}^S \right)
 
 A sigmoid-function is used inside the deformation-dependent variables :math:`\alpha`,
@@ -38,13 +38,13 @@ A sigmoid-function is used inside the deformation-dependent variables :math:`\al
 
 ..  math::
     :label: morph-sigmoid-ex
-    
+
     f(x) &= \frac{1}{\sqrt{1 + x^2}}
-    
+
     \alpha &= p_1 + p_2 \ f(p_3\ C_T^S)
-    
+
     \beta &= p_4\ f(p_3\ C_T^S)
-    
+
     \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
 
 The rate of deformation is described by the Lagrangian tensor and its Tresca-invariant,
@@ -57,17 +57,17 @@ see Eq. :eq:`morph-rate-of-deformation-ex`.
 
 ..  math::
     :label: morph-rate-of-deformation-ex
-    
-    \hat{\boldsymbol{L}} &= \text{sym}\left( 
-            \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C}) 
+
+    \hat{\boldsymbol{L}} &= \text{sym}\left(
+            \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
         \right) \hat{\boldsymbol{C}}
-    
+
     \lambda_{\hat{\boldsymbol{L}}, \alpha} &= \text{eigvals}(\hat{\boldsymbol{L}})
-    
+
     \hat{L}_T &= \max \left(
         \lambda_{\hat{\boldsymbol{L}}, \alpha} - \lambda_{\hat{\boldsymbol{L}}, \beta}
     \right)
-    
+
     \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
 
 The additional stresses evolve between the limiting stresses, see Eq.
@@ -76,17 +76,17 @@ this example.
 
 ..  math::
     :label: morph-stresses-ex
-    
+
     \boldsymbol{S}_L &= \left(
         \gamma \exp \left(p_7 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
             \frac{\hat{C}_T}{\hat{C}_T^S} \right) +
             p8 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
     \right) \boldsymbol{C}^{-1}
-    
+
     \boldsymbol{S}_A &= \frac{
         \boldsymbol{S}_{A,n} + \beta\ \hat{L}_T\ \boldsymbol{S}_L
     }{1 + \beta\ \hat{L}_T}
-    
+
     \boldsymbol{S} &= 2 \alpha\ \text{dev}( \hat{\boldsymbol{C}} )
         \boldsymbol{C}^{-1} + \text{dev}\left( \boldsymbol{S}_A\ \boldsymbol{C} \right)
         \boldsymbol{C}^{-1}

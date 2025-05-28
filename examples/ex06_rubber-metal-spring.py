@@ -5,18 +5,18 @@ Hyperelastic Spring
 .. topic:: A hyperelastic spring with a simplified frictionless contact.
 
    * read a mesh file
-   
+
    * define an isotropic hyperelastic solid body
-   
+
    * setup a simplified frictionless elastic-to-rigid contact interaction
-   
+
    * export and plot the log. strain
 
 .. admonition:: This example requires external packages.
    :class: hint
-   
+
    .. code-block::
-      
+
       pip install pypardiso
 
 A `meshed three-dimensional geometry <../_static/ex06_rubber-metal-spring_mesh.vtk>`_ of

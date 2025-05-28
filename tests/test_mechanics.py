@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
- _______  _______  ___      __   __  _______  _______ 
+ _______  _______  ___      __   __  _______  _______
 |       ||       ||   |    |  | |  ||       ||       |
 |    ___||    ___||   |    |  | |  ||    _  ||    ___|
-|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___ 
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
 |    ___||    ___||   |___ |       ||    ___||    ___|
-|   |    |   |___ |       ||       ||   |    |   |___ 
+|   |    |   |___ |       ||       ||   |    |   |___
 |___|    |_______||_______||_______||___|    |_______|
 
 This file is part of felupe.
@@ -604,6 +604,26 @@ def test_solidbody_cauchy_stress():
     assert np.isclose(field[0].values.max(), 0.971866)
 
 
+def test_truss():
+
+    mesh = fem.Mesh(
+        points=[[0, 0], [1, 1], [2.0, 0]], cells=[[0, 1], [1, 2]], cell_type="line"
+    )
+    region = fem.Region(mesh, fem.Line(), fem.GaussLobatto(order=0, dim=1), grad=False)
+    field = fem.Field(region, dim=2).as_container()
+    boundaries = fem.BoundaryDict(fixed=fem.Boundary(field[0], fy=0))
+
+    umat = fem.LinearElastic1D(E=np.ones(2))
+    truss = fem.TrussBody(umat, field, area=np.ones(2))
+    load = fem.PointLoad(field, [1])
+
+    move = fem.math.linsteps([0, -0.1], num=5, axis=1, axes=2)
+    step = fem.Step(items=[truss, load], ramp={load: move}, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    assert np.isclose(field[0].values[1, 1], -0.16302376)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -617,3 +637,4 @@ if __name__ == "__main__":
     test_load()
     test_view()
     test_threefield()
+    test_truss

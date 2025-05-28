@@ -6,6 +6,7 @@ from ._view import ViewMaterial, ViewMaterialIncompressible
 from .hyperelasticity import NeoHooke, NeoHookeCompressible, OgdenRoxburgh, Volumetric
 from .linear_elasticity import (
     LinearElastic,
+    LinearElastic1D,
     LinearElasticLargeStrain,
     LinearElasticOrthotropic,
     LinearElasticPlaneStrain,
@@ -27,6 +28,7 @@ __all__ = [
     "NeoHookeCompressible",
     "Laplace",
     "LinearElastic",
+    "LinearElastic1D",
     "LinearElasticLargeStrain",
     "LinearElasticOrthotropic",
     "LinearElasticPlaneStrain",

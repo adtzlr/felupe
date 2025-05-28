@@ -5,17 +5,17 @@ Building Blocks
 .. topic:: Learn the building blocks of FElupe.
 
    * create a meshed cube with hexahedron elements
-   
+
    * setup your own numeric region with a mesh, an element and a quadrature
-   
+
    * add a displacement field to a field container
-   
+
    * define your own Neo-Hookean material formulation
-   
+
    * apply your own boundary conditions
-   
+
    * solve the problem (create your own Newton-Rhapson iteration loop)
-   
+
    * export the displaced mesh along with cauchy stress projected to mesh-points
 
 Start setting up a problem in FElupe by the creation of a numeric :class:`~felupe.Region` with a geometry :class:`~felupe.Mesh`, a finite **Element** formulation :class:`~felupe.Hexahedron` and a **Quadrature** rule :class:`~felupe.GaussLegendre`.

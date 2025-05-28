@@ -7,18 +7,18 @@ Elastic bearing with torsional loading
    * create and stack meshes
 
    * define a boundary condition with torsional loading
-   
+
    * work with multiple solid bodies
-   
+
    * create a step and add it to a job
-   
+
    * plot strains and stresses
 
 .. admonition:: This example requires external packages.
    :class: hint
-   
+
    .. code-block::
-      
+
       pip install pypardiso
 
 An elastic bearing is subjected to combined multiaxial radial-torsional-cardanic

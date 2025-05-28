@@ -5,20 +5,20 @@ Notch Stress
 .. topic:: Three-dimensional linear-elastic analysis.
 
    * create a hexahedron mesh
-   
+
    * define a linear-elastic solid body
-   
+
    * project the linear-elastic stress tensor to the mesh-points
-   
+
    * plot the max. principal stress component
 
    * evaluate the fatigue life
 
 .. admonition:: This example requires external packages.
    :class: hint
-   
+
    .. code-block::
-      
+
       pip install pypardiso
 
 A linear-elastic notched plate is subjected to uniaxial tension. The cell-based mean of

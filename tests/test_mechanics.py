@@ -623,6 +623,9 @@ def test_truss():
 
     assert np.isclose(field[0].values[1, 1], -0.16302376)
 
+    hess = truss.evaluate.hessian(field)
+    fem.TrussBody(umat, field, area=[1, 1], statevars=[0, 0])
+
 
 if __name__ == "__main__":
     test_simple()

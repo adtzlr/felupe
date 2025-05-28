@@ -59,7 +59,7 @@ class LinearElastic1D(ConstitutiveMaterial):
     """
 
     def __init__(self, E):
-        self.E = E
+        self.E = np.array(E)
 
         self.kwargs = {"E": self.E}
 

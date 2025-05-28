@@ -35,7 +35,7 @@ class Truss(Solid):
         self.results = Results(stress=True, elasticity=True)
 
         self.umat = umat
-        self.area = area
+        self.area = np.array(area)
 
         self.form_vector = IntegralForm(
             [None],

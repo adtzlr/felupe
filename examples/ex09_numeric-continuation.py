@@ -25,6 +25,7 @@ import meshio
 import numpy as np
 
 import felupe as fem
+import felupe.constitution.tensortrax as mat
 
 # %%
 # First, setup a problem as usual (mesh, region, field, boundaries and umat). The
@@ -41,24 +42,10 @@ bounds = fem.dof.symmetry(field[0], axes=(True, True, True))
 # partition degrees of freedom
 dof0, dof1 = fem.dof.partition(field, bounds)
 
-import tensortrax.math as tm
-
 # constitutive isotropic hyperelastic material formulation
-import felupe.constitution.tensortrax as mat
-
-
-def fun(C):
-    I3 = tm.linalg.det(C)
-
-    return 0.5 * (I3 ** (-1 / 3) * tm.trace(C) - 3) + 10 * (tm.sqrt(I3) - 1) ** 2 / 2
-    return 0.5 * (I3 ** (-1 / 3) * tm.trace(C) - 3) + 10 * (tm.sqrt(I3) - 1) ** 2 / 2
-    # return 0.5 * (I3**(-1/3) * tm.trace(C) - 3) + 10 * tm.log(tm.sqrt(I3))**2 / 2
-
-
-yeoh = umat = fem.Hyperelastic(fun)
-
+yeoh = mat.Hyperelastic(mat.models.hyperelastic.yeoh, C10=0.5, C20=-0.25, C30=0.025)
 ax = yeoh.plot(incompressible=True, ux=np.linspace(1, 2.76), bx=None, ps=None)
-body = fem.SolidBody(yeoh, field)
+body = fem.SolidBodyNearlyIncompressible(yeoh, field, bulk=5000)
 
 # %%
 # An external normal force is applied at :math:`x=1` on a quarter model of a cube with
@@ -69,7 +56,7 @@ body = fem.SolidBody(yeoh, field)
 # external force vector at x=1
 right = region.mesh.points[:, 0] == 1
 v = region.mesh.cells_per_point[right]
-values_load = -np.vstack([v, np.ones_like(v) * 0, np.ones_like(v) * 0]).T
+values_load = np.vstack([v, np.zeros_like(v), np.zeros_like(v)]).T
 
 load = fem.PointLoad(field, right, values_load)
 
@@ -129,21 +116,20 @@ with meshio.xdmf.TimeSeriesWriter("result.xdmf") as writer:
         fun=fun,
         jac=[dfundx, dfundl],
         x0=field[0][dof1],
-        control0=(-1, 1),
         lpf0=0,
-        dxmax=0.1,
-        dlpfmax=0.1,
-        maxsteps=100,
+        dxmax=0.06,
+        dlpfmax=0.02,
+        maxsteps=35,
         rebalance=True,
         overshoot=1.05,
         callback=step_to_xdmf,
-        tol=1e-8,
+        tol=1e-2,
     )
 
     X = np.array([res.x for res in Res])
 
 # check the final lpf value
-# assert np.isclose(X[-1, 1], -0.3982995)
+assert np.isclose(X[-1, 1], -0.3982995)
 
 # %%
 # Finally, the force-displacement curve is plotted. It can be seen that the resulting
@@ -156,17 +142,3 @@ plt.xlabel(r"displacement $u(x=1)/L$ $\longrightarrow$")
 plt.ylabel(r"load-proportionality-factor $\lambda$ $\longrightarrow$")
 
 field.plot("Displacement", component=0).show()
-
-umat = yeoh
-stability = umat.is_stable(field.extract())
-# stability = umat.is_stable(field.extract(), hessian=solid.evaluate.hessian(field)[0])
-field.view(cell_data={"Stability": stability.sum(axis=0) / 8}).plot(
-    "Stability", cmap=plt.get_cmap("coolwarm_r", 8), clim=[0, 1]
-).show()
-
-import numpy as np
-
-stretches = fem.math.eigvalsh(field.extract()[0])[:, 1, 0]
-
-F = np.diag(stretches)
-s = umat.is_stable([F.reshape(3, 3, 1, 1)])

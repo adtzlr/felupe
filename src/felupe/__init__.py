@@ -21,6 +21,7 @@ from .constitution import (
     ConstitutiveMaterial,
     Laplace,
     LinearElastic,
+    LinearElastic1D,
     LinearElasticLargeStrain,
     LinearElasticOrthotropic,
     LinearElasticPlaneStress,
@@ -85,6 +86,7 @@ from .mechanics import (
     SolidBodyPressure,
     StateNearlyIncompressible,
     Step,
+    Truss,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .quadrature import (
@@ -155,6 +157,7 @@ __all__ = [
     "AreaChange",
     "Laplace",
     "LinearElastic",
+    "LinearElastic1D",
     "LinearElasticLargeStrain",
     "LinearElasticOrthotropic",
     "LinearElasticPlaneStress",
@@ -214,6 +217,7 @@ __all__ = [
     "SolidBodyPressure",
     "StateNearlyIncompressible",
     "Step",
+    "Truss",
     "MultiPointConstraint",
     "MultiPointContact",
     "GaussLegendre",

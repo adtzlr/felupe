@@ -623,6 +623,12 @@ def test_truss():
 
     assert np.isclose(field[0].values[1, 1], -0.16302376)
 
+    g = truss.evaluate.gradient(field)
+    g = truss.evaluate.gradient(field, out=g)
+
+    h = truss.evaluate.gradient(field)
+    h = truss.evaluate.gradient(field, out=h)
+
 
 if __name__ == "__main__":
     test_simple()

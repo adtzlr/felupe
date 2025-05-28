@@ -50,31 +50,34 @@ class TrussBody(Solid):
     Examples
     --------
     ..  pyvista-plot::
+        :context:
         :force_static:
 
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Mesh(
-        ...     points=[[0, 0], [1, 1], [2.0, 0]], cells=[[0, 1], [1, 2]], cell_type="line"
+        ...     points=[[0, 0], [1, 1], [2.0, 0]],
+        ...     cells=[[0, 1], [1, 2]],
+        ...     cell_type="line",
         ... )
-        >>> region = fem.Region(mesh, fem.Line(), fem.GaussLobatto(order=0, dim=1), grad=False)
+        >>> region = fem.RegionTruss(mesh)
         >>> field = fem.Field(region, dim=2).as_container()
         >>> boundaries = fem.BoundaryDict(fixed=fem.Boundary(field[0], fy=0))
         >>>
         >>> umat = fem.LinearElastic1D(E=[1, 1])
         >>> truss = fem.TrussBody(umat, field, area=[1, 1])
-        >>> load = fem.PointLoad(field, [1])
+        >>> load = fem.PointLoad(field, points=[1])
         >>>
-        >>> mesh.plot(plotter=load.plot(plotter=boundaries.plot()), line_width=5).show()
-        >>>
-        >>> move = fem.math.linsteps([0, -0.1], num=5, axis=1, axes=2)
-        >>> step = fem.Step(items=[truss, load], ramp={load: move}, boundaries=boundaries)
+        >>> table = fem.math.linsteps([0, 1], num=5, axis=1, axes=2)
+        >>> ramp = {load: table * -0.1}
+        >>> step = fem.Step(items=[truss, load], ramp=ramp, boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()
+        >>>
+        >>> mesh.plot(
+        ...     plotter=load.plot(plotter=boundaries.plot(), scale=0.5),
+        ...     line_width=5
+        ... ).show()
 
-    See Also
-    --------
-    felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
-        methods for the assembly of sparse vectors/matrices.
     """
 
     def __init__(self, umat, field, area, statevars=None):

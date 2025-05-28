@@ -122,6 +122,7 @@ from .region import (
     RegionTriangleMINI,
     RegionTriQuadraticHexahedron,
     RegionTriQuadraticHexahedronBoundary,
+    RegionTruss,
     RegionVertex,
 )
 from .tools import hello_world, newtonrhapson, project, runs_on, save, topoints
@@ -250,6 +251,7 @@ __all__ = [
     "RegionTriangleMINI",
     "RegionTriQuadraticHexahedron",
     "RegionTriQuadraticHexahedronBoundary",
+    "RegionTruss",
     "RegionVertex",
     "newtonrhapson",
     "project",

@@ -18,6 +18,7 @@ This page contains the core (hard-coded) constitutive material model formulation
 .. autosummary::
 
    LinearElastic
+   LinearElastic1D
    LinearElasticPlaneStress
    constitution.LinearElasticPlaneStrain
    constitution.LinearElasticTensorNotation
@@ -61,6 +62,11 @@ This page contains the core (hard-coded) constitutive material model formulation
    :inherited-members:
 
 .. autoclass:: felupe.LinearElastic
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.LinearElastic1D
    :members:
    :undoc-members:
    :inherited-members:

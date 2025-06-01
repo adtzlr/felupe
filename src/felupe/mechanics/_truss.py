@@ -47,6 +47,108 @@ class TrussBody(Solid):
     statevars : ndarray or None, optional
         Array of initial internal state variables (default is None).
 
+    Notes
+    -----
+    For a truss element the stretch may be calculated as given in Eq.
+    :eq:`truss-stretch`.
+
+    .. math::
+       :label: truss-stretch
+
+       \Lambda = \frac{l}{L} = \sqrt{1 + 2 \left(
+               \frac{\boldsymbol{\Delta X}}{L}
+           \right)^T \left(\frac{\boldsymbol{\Delta u}}{L}\right) + \left(
+               \frac{\boldsymbol{\Delta u}}{L}
+           \right)^T \left(\frac{\boldsymbol{\Delta u}}{L}\right)}
+
+    This follows from Eqs. :eq:`truss-lengths`
+
+    .. math::
+       :label: truss-lengths
+
+       l^2 &= \boldsymbol{\Delta x}^T \boldsymbol{\Delta x} \\
+       L^2 &= \boldsymbol{\Delta X}^T \boldsymbol{\Delta X}
+
+    and enables the Biot strain measure, see Eq. :eq:`truss-strain`.
+
+    .. math::
+       :label: truss-strain
+
+       E_{11} = \Lambda - 1
+
+    The normal force of a truss depends directly on the geometric exactly defined
+    strain measure :math:`E_{11}`. For the general case of a nonlinear material
+    behaviour the normal force is defined as given in Eq. :eq:`truss-force`
+
+    .. math::
+       :label: truss-force
+
+       N = S_{11}(E_{11})~A
+
+    and the derivative according to Eq. :eq:`truss-force-derivative`.
+
+    .. math::
+       :label: truss-force-derivative
+
+       \frac{\partial N}{\partial E_{11}} = \frac{
+               \partial S_{11}(E_{11})
+           }{\partial E_{11}}~A
+
+    For the case of a linear elastic material this reduces to
+    Eqs. :eq:`truss-force-linear`.
+
+    .. math::
+       :label: truss-force-linear
+
+       S_{11}(E_{11}) &= E~E_{11} \\
+       N              &= EA~E_{11} \\
+       \frac{\partial N}{\partial E_{11}} &= EA
+
+    The (nonlinear) fixing force column vector may be expressed as a function of the
+    elemental force :math:`N_k` and the deformed unit vector :math:`\boldsymbol{n}_k`,
+    see Eq. :eq:`truss-fixing-force`.
+
+    .. math::
+       :label: truss-fixing-force
+
+       \boldsymbol{r}_k = \begin{bmatrix}
+               \boldsymbol{r}_A \\
+               \boldsymbol{r}_E
+           \end{bmatrix} = N_k \begin{pmatrix}
+               -\boldsymbol{n}_k \\
+               \phantom{-}\boldsymbol{n}_k
+           \end{pmatrix}
+
+    For a truss the stiffness matrix is divided into four block matrices of the
+    same components but with different signs, see Eq. :eq:`truss-stiffness-matrix`.
+
+    .. math::
+       :label: truss-stiffness-matrix
+
+       \boldsymbol{K}_{k~(6,6)} = \begin{bmatrix}
+               \boldsymbol{K}_{AA} & \boldsymbol{K}_{AE}\\
+               \boldsymbol{K}_{EA} & \boldsymbol{K}_{EE}
+           \end{bmatrix} = \begin{pmatrix}
+               \phantom{-}\boldsymbol{K}_{EE} & -\boldsymbol{K}_{EE}\\
+               -\boldsymbol{K}_{EE} &  \phantom{-}\boldsymbol{K}_{EE}
+           \end{pmatrix}
+
+    A change in the fixing force vector at the end node `E` w.r.t. a small change of
+    the displacements at node `E` is defined as the tangent stiffnes `EE`, see
+    Eq. :eq:`truss-stiffness-block`.
+
+    .. math::
+       :label: truss-stiffness-block
+
+       \boldsymbol{K}_{EE} &= \frac{
+           \partial \boldsymbol{r}_E}{\partial \boldsymbol{U}_E
+       } \\
+       \boldsymbol{K}_{EE} &= \frac{A}{L} ~ \frac{
+           \partial S_{11}(E_{11})
+       }{\partial E_{11}} \boldsymbol{n} \otimes \boldsymbol{n} + \frac{N}{l} \left(
+           \boldsymbol{1} - \boldsymbol{n} \otimes \boldsymbol{n}
+       \right)
+
     Examples
     --------
     ..  pyvista-plot::

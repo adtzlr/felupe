@@ -41,7 +41,7 @@ The code for the variation of the total-potential energy, as given in Eq.
     )
     vector = δΠ.assemble()
 
-For the linearization, see Eq. eq:`total-potential-energy-linearization`.
+For the linearization, see Eq. :eq:`total-potential-energy-linearization`.
 
 ..  math::
     :label: total-potential-energy-linearization

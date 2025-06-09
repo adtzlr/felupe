@@ -17,3 +17,4 @@ How-To Guides
    howto/umat_hyperelasticity
    howto/items
    howto/project
+   howto/assemble

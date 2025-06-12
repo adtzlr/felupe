@@ -49,19 +49,15 @@ class TrussBody(Solid):
 
     Notes
     -----
-    For a truss element the stretch may be calculated as given in Eq.
-    :eq:`truss-stretch`.
+    For a truss element the stretch is evaluated as given in Eq. :eq:`truss-stretch`
 
     .. math::
        :label: truss-stretch
 
-       \Lambda = \frac{l}{L} = \sqrt{1 + 2 \left(
-               \frac{\boldsymbol{\Delta X}}{L}
-           \right)^T \left(\frac{\boldsymbol{\Delta u}}{L}\right) + \left(
-               \frac{\boldsymbol{\Delta u}}{L}
-           \right)^T \left(\frac{\boldsymbol{\Delta u}}{L}\right)}
+       \Lambda = \sqrt{\frac{l^2}{L^2}}
 
-    This follows from Eqs. :eq:`truss-lengths`
+   with the squared undeformed and deformed lengths, denoted in
+   Eqs. :eq:`truss-lengths`.
 
     .. math::
        :label: truss-lengths
@@ -69,7 +65,7 @@ class TrussBody(Solid):
        l^2 &= \boldsymbol{\Delta x}^T \boldsymbol{\Delta x} \\
        L^2 &= \boldsymbol{\Delta X}^T \boldsymbol{\Delta X}
 
-    and enables the Biot strain measure, see Eq. :eq:`truss-strain`.
+    This enables the Biot strain measure, see Eq. :eq:`truss-strain`.
 
     .. math::
        :label: truss-strain

@@ -324,7 +324,7 @@ class Mesh(DiscreteGeometry):
         return ax
 
     def add_points(self, points):
-        "Add additional points to the mesh."
+        "Add additional points to the mesh in-place."
         self.update(points=np.vstack([self.points, points]))
 
     def clear_points_without_cells(self):

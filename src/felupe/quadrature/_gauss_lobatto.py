@@ -101,7 +101,6 @@ class GaussLobatto(Scheme):
 
     Notes
     -----
-
     The approximation is given by
 
     ..  math::
@@ -109,6 +108,61 @@ class GaussLobatto(Scheme):
         \int_{-1}^1 f(x) dx \approx \sum f(x_q) w_q
 
     with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+
+    Examples
+    --------
+    ..  note::
+
+        The quadrature points are not weighted in the plots because the end-points would
+        be almost invisible for the Gauss-Lobatto quadrature rule.
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.Line()
+       >>> quadrature = fem.GaussLobatto(order=2, dim=1)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticQuad()
+       >>> quadrature = fem.GaussLobatto(order=2, dim=2)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticHexahedron()
+       >>> quadrature = fem.GaussLobatto(order=2, dim=3)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ArbitraryOrderLagrangeElement(order=5, dim=2)
+       >>> quadrature = fem.GaussLobatto(order=5, dim=2)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
 
     """
 
@@ -153,6 +207,49 @@ class GaussLobattoBoundary(GaussLobatto):
         \int_{-1}^1 f(x) dx \approx \sum f(x_q) w_q
 
     with quadrature points :math:`x_q` and corresponding weights :math:`w_q`.
+
+    Examples
+    --------
+    ..  note::
+
+        The quadrature points are not weighted in the plots because the end-points would
+        be almost invisible for the Gauss-Lobatto quadrature rule.
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticQuad()
+       >>> quadrature = fem.GaussLobattoBoundary(order=2, dim=2)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.QuadraticHexahedron()
+       >>> quadrature = fem.GaussLobattoBoundary(order=2, dim=3)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> element = fem.ArbitraryOrderLagrangeElement(order=5, dim=3)
+       >>> quadrature = fem.GaussLobattoBoundary(order=5, dim=3)
+       >>> quadrature.plot(
+       ...     plotter=element.plot(add_point_labels=False, show_points=False),
+       ...     weighted=False,
+       ... ).show()
 
     """
 

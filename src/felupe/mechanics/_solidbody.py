@@ -22,7 +22,6 @@ import warnings
 import numpy as np
 
 from ..assembly import IntegralForm
-from ..constitution import AreaChange
 from ..math import det, dot, transpose
 from ..view import ViewSolid
 from ._helpers import Assemble, Evaluate, Results
@@ -174,8 +173,7 @@ class SolidBody(Solid):
 
     Notes
     -----
-    The total potential energy of internal forces is given in Eq.
-    :eq:`solidbody`
+    The total potential energy of internal forces is given in Eq. :eq:`solidbody`
 
     ..  math::
         :label: solidbody
@@ -269,11 +267,20 @@ class SolidBody(Solid):
         self.results.kinematics = self._extract(self.field)
 
         if statevars is not None:
+            # state variables are located in the results
             self.results.statevars = statevars
+
         else:
+            # init the shape of the state variables
             statevars_shape = (0,)
+
+            # take the shape of the last item of the list if the provided umat has an
+            # x-attribute
             if hasattr(umat, "x"):
                 statevars_shape = umat.x[-1].shape
+
+            # create and fill the array of state variables with zeros
+            # state variables are located in the results
             self.results.statevars = np.zeros(
                 (
                     *statevars_shape,
@@ -295,10 +302,6 @@ class SolidBody(Solid):
             cauchy_stress=self._cauchy_stress,
             kirchhoff_stress=self._kirchhoff_stress,
         )
-
-        self._area_change = AreaChange()
-
-        self._form = IntegralForm
 
     def _vector(
         self,
@@ -322,13 +325,18 @@ class SolidBody(Solid):
         if apply is None:
             apply = self.apply
 
+        # evaluate the (first Piola-Kirchhoff) stress tensor and store it in the results
         self.results.stress = self._gradient(field, args=args, kwargs=kwargs)
-        self.results.force = self._form(
+
+        # assemble the internal force vector
+        # optionally, use only the first n items for mixed-field formulations
+        self.results.force = IntegralForm(
             fun=self.results.stress[slice(items)],
             v=self.field,
             dV=self.field.region.dV,
         ).assemble(parallel=parallel, block=block)
 
+        # apply a callback on the assembled internal force vector
         if apply is not None:
             self.results.force = apply(self.results.force)
 
@@ -356,29 +364,43 @@ class SolidBody(Solid):
         if apply is None:
             apply = self.apply
 
+        # evaluate the fourth-order elasticity tensor and store it in the results
+        # (associated to the first Piola-Kirchhoff stress tensor, i.e. the partial
+        # derivative of the first Piola-Kirchhoff stress tensor w.r.t. the deformation
+        # gradient tensor)
         self.results.elasticity = self._hessian(field, args=args, kwargs=kwargs)
 
-        form = self._form(
+        # assemble the (sparse) tangent stiffness matrix
+        # optionally, use only the first n items for mixed-field formulations
+        form = IntegralForm(
             fun=self.results.elasticity[slice(items)],
             v=self.field,
             u=self.field,
             dV=self.field.region.dV,
         )
 
+        # in a first step, integrate the weak-form and store the stiffness values
+        # (this dense array is only allocated once and will be re-used in all following
+        # evaluations)
         self.results.stiffness_values = form.integrate(
             parallel=parallel, out=self.results.stiffness_values
         )
 
+        # finally, the dense array of stiffness-values is assembled into the sparse
+        # matrix
         self.results.stiffness = form.assemble(
             values=self.results.stiffness_values, block=block
         )
 
+        # apply a callback on the assembled tangent stiffness matrix
         if apply is not None:
             self.results.stiffness = apply(self.results.stiffness)
 
         return self.results.stiffness
 
     def _extract(self, field):
+        "Evaluate and return the kinematics (the deformation gradient tensor)."
+
         self.field = field
         self.results.kinematics = self.field.extract(out=self.results.kinematics)
 
@@ -388,6 +410,7 @@ class SolidBody(Solid):
         if kwargs is None:
             kwargs = {}
 
+        # update the deformation gradient
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
@@ -395,11 +418,17 @@ class SolidBody(Solid):
         if "out" in inspect.signature(self.umat.gradient).parameters:
             kwargs["out"] = self.results.gradient
 
+        # evaluate the partial derivative of the strain energy density w.r.t. the
+        # deformation gradient
         gradient = self.umat.gradient(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+        # store the first Piola-Kirchhoff stress tensor in the results
         self.results.gradient = gradient[0]
 
+        # store all gradients and the temporary state variables in the results
+        # the state variables are only updated to the public results-attribute if the
+        # solution is valid
         self.results.stress, self.results._statevars = gradient[:-1], gradient[-1]
 
         return self.results.stress
@@ -415,9 +444,14 @@ class SolidBody(Solid):
         if "out" in inspect.signature(self.umat.hessian).parameters:
             kwargs["out"] = self.results.hessian
 
+        # evaluate the second partial derivative of the strain energy density w.r.t. the
+        # deformation gradient
         self.results.elasticity = self.umat.hessian(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
+
+        # store the partial derivative of the first Piola-Kirchhoff stress tensor w.r.t.
+        # the deformation gradient in the results
         self.results.hessian = self.results.elasticity[0]
 
         return self.results.elasticity
@@ -458,7 +492,7 @@ class SolidBody(Solid):
         field = self.field[0].as_container()
         dim = field[0].dim
 
-        form = self._form(
+        form = IntegralForm(
             fun=[density * np.eye(dim).reshape(dim, dim, 1, 1)],
             v=field,
             u=field,

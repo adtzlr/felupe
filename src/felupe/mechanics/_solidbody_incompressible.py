@@ -370,6 +370,90 @@ class SolidBodyNearlyIncompressible(Solid):
             kirchhoff_stress=self._kirchhoff_stress,
         )
 
+    def checkpoint(self):
+        """Return a checkpoint of the nearly-incompressible solid body.
+
+        Returns
+        -------
+        dict
+            A dict with checkpoint arrays / objects.
+
+        Examples
+        --------
+        ..  pyvista-plot::
+            :force_static:
+
+            import felupe as fem
+
+            mesh = fem.Rectangle(b=(3, 1), n=(7, 3))
+            region = fem.RegionQuad(mesh)
+            field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+            umat = fem.NeoHooke(mu=1)
+            solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
+
+            # 1. vertical compression
+            boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+            ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
+            step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+            job = fem.Job(steps=[step]).evaluate()
+
+            # checkpoint the current state of deformation
+            checkpoint = solid.checkpoint()
+
+            # 2a. horizontal shear (right)
+            boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+            ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
+            step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+            job = fem.Job(steps=[step]).evaluate()
+
+            # (1.) restore compression without shear
+            solid.restore(checkpoint)
+
+            # 2b. horizontal shear (left)
+            boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+            ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
+            step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+            job = fem.Job(steps=[step]).evaluate()
+
+        See Also
+        --------
+        felupe.SolidBody.restore : Restore a checkpoint of a nearly-incompressible solid
+            body inplace.
+        """
+
+        return {
+            **self.field.checkpoint(),
+            "results.state.u": self.results.state.u.copy(),
+            "results.state.p": self.results.state.p.copy(),
+            "results.state.J": self.results.state.J.copy(),
+            "results.statevars": self.results.statevars.copy(),
+        }
+
+    def restore(self, checkpoint):
+        """Restore a checkpoint inplace.
+
+        Parameters
+        ----------
+        checkpoint : dict
+            A dict with checkpoint arrays / objects.
+
+        See Also
+        --------
+        felupe.SolidBodyNearlyIncompressible.checkpoint : Return a checkpoint of the
+            nearly-incompressible solid body.
+        """
+
+        self.field.restore(checkpoint)
+        self.results.state.u[:] = checkpoint["results.state.u"]
+        self.results.state.p[:] = checkpoint["results.state.p"]
+        self.results.state.J[:] = checkpoint["results.state.J"]
+        self.results.statevars[:] = checkpoint["results.statevars"]
+
+        # results must be re-evaluated
+        self.evaluate.gradient(self.field)
+        self.evaluate.hessian(self.field)
+
     def _vector(
         self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True
     ):

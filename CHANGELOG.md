@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add a method to checkpoint a current state of deformation, `state = SolidBody.checkpoint()` and a method to restore checkpoints, `SolidBody.restore(state)`. This is implemented for `SolidBody`, `SolidBodyNearlyIncompressible` and `FieldContainer`.
+
 ## [9.3.0] - 2025-06-29
 
 ### Added

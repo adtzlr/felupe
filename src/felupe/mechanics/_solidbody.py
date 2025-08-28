@@ -355,7 +355,7 @@ class SolidBody(Solid):
         """
 
         return {
-            "field": self.field.copy(),
+            **self.field.checkpoint(),
             "results.statevars": self.results.statevars.copy(),
         }
 

@@ -423,7 +423,7 @@ class SolidBodyNearlyIncompressible(Solid):
         """
 
         return {
-            "field": self.field.copy(),
+            **self.field.checkpoint(),
             "results.state.u": self.results.state.u.copy(),
             "results.state.p": self.results.state.p.copy(),
             "results.state.J": self.results.state.J.copy(),

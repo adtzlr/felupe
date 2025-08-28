@@ -219,6 +219,37 @@ class FieldContainer:
             for field, newfield in zip(self.fields, other_field.fields):  # link 1-to-1
                 field.values = newfield.values
 
+    def checkpoint(self):
+        """Return a checkpoint of the field container.
+
+        Returns
+        -------
+        dict
+            A dict with the checkpoint array.
+
+        See Also
+        --------
+        felupe.FieldContainer.restore : Restore a checkpoint of a field container
+            inplace.
+        """
+        return {"field": self.copy()}
+
+    def restore(self, checkpoint):
+        """Restore a checkpoint inplace.
+
+        Parameters
+        ----------
+        checkpoint : dict
+            A dict with checkpoint arrays / objects.
+
+        See Also
+        --------
+        felupe.FieldContainer.checkpoint : Return a checkpoint of the field container.
+        """
+
+        for field, newfield in zip(self.fields, checkpoint["field"].fields):
+            field.values[:] = newfield.values
+
     def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.
 

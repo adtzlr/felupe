@@ -7,7 +7,6 @@ from ._multipoint import MultiPointConstraint, MultiPointContact
 from ._pointload import PointLoad
 from ._solidbody import SolidBody
 from ._solidbody_cauchy_stress import SolidBodyCauchyStress
-from ._solidbody_contact import SolidBodyContact
 from ._solidbody_force import SolidBodyForce
 from ._solidbody_gravity import SolidBodyGravity
 from ._solidbody_incompressible import SolidBodyNearlyIncompressible
@@ -27,7 +26,6 @@ __all__ = [
     "Results",
     "SolidBody",
     "SolidBodyCauchyStress",
-    "SolidBodyContact",
     "SolidBodyGravity",
     "SolidBodyForce",
     "SolidBodyNearlyIncompressible",

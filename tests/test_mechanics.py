@@ -627,6 +627,78 @@ def test_truss():
     fem.TrussBody(umat, field, area=[1, 1], statevars=[0, 0])
 
 
+def test_checkpoint():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(b=(3, 1), n=(7, 3))
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    umat = fem.NeoHooke(mu=1, bulk=2)
+    solid = fem.SolidBody(umat=umat, field=field)
+
+    # 1. vertical compression
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+    ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    # checkpoint the current state of deformation
+    checkpoint = solid.checkpoint()
+
+    # 2a. horizontal shear (right)
+    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    # (1.) restore compression without shear
+    solid.restore(checkpoint)
+
+    # 2b. horizontal shear (left)
+    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
+def test_checkpoint_incompressible():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(b=(3, 1), n=(7, 3))
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    umat = fem.NeoHooke(mu=1)
+    solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
+
+    # 1. vertical compression
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+    ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    # checkpoint the current state of deformation
+    checkpoint = solid.checkpoint()
+
+    # 2a. horizontal shear (right)
+    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    # (1.) restore compression without shear
+    solid.restore(checkpoint)
+
+    # 2b. horizontal shear (left)
+    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -641,3 +713,5 @@ if __name__ == "__main__":
     test_view()
     test_threefield()
     test_truss
+    test_checkpoint()
+    test_checkpoint_incompressible()

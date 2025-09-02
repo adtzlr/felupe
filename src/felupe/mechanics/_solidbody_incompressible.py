@@ -453,7 +453,7 @@ class SolidBodyNearlyIncompressible(Solid):
         # results must be re-evaluated
         self.evaluate.gradient(self.field)
         self.evaluate.hessian(self.field)
-        
+
         # reset force and stiffness
         self.results.force = None
         self.results.stiffness = None

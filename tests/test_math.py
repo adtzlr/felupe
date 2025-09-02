@@ -169,6 +169,9 @@ def test_math():
             points_new = fem.math.revolve_points(np.eye(dim), n=11, phi=phi, axis=0)
             assert points_new.shape[1] == dim + 1
 
+    fem.math.rotate_points(np.eye(2), angle_deg=45, axis=0)
+    fem.math.rotate_points(np.eye(2), angle_deg=45, axis=1, center=[0.5, 0.5])
+
 
 def test_math_linsteps():
     steps = fem.math.linsteps([0, 1], num=10)

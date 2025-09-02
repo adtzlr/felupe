@@ -453,6 +453,10 @@ class SolidBodyNearlyIncompressible(Solid):
         # results must be re-evaluated
         self.evaluate.gradient(self.field)
         self.evaluate.hessian(self.field)
+        
+        # reset force and stiffness
+        self.results.force = None
+        self.results.stiffness = None
 
     def _vector(
         self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True

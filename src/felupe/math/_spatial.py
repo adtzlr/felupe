@@ -87,6 +87,69 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
     return rotation_matrix
 
 
+def rotate_points(points, angle_deg, axis, center=None, mask=None):
+    """Rotate points along a given axis.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    angle_deg : int
+        Rotation angle in degree.
+    axis : int
+        Rotation axis.
+    center : list or ndarray or None, optional
+        Center point coordinates (default is None).
+    mask : ndarray or None, optional
+        A boolean mask to select points which are rotated (default is None).
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+
+    Examples
+    --------
+    Rotate the points of a rectangle in the xy-plane by 35 degree.
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> points = fem.Rectangle(b=(3, 1), n=(10, 4)).points
+       >>> points_new = fem.math.rotate_points(
+       ...     points, angle_deg=35, axis=2, center=[1.5, 0.5]
+       ... )
+
+    See Also
+    --------
+    felupe.mesh.rotate : Rotate a Mesh.
+    felupe.Mesh.rotate : Rotate a Mesh.
+    """
+
+    points = np.array(points)
+    dim = points.shape[1]
+
+    if center is None:
+        center = np.zeros(dim)
+    else:
+        center = np.array(center)
+    center = center.reshape(1, -1)
+
+    if mask is None:
+        mask = slice(None)
+
+    points_rotated = (
+        rotation_matrix(angle_deg, dim, axis) @ (points - center).T
+    ).T + center
+
+    points_new = points.copy()
+    points_new[mask] = points_rotated[mask]
+
+    return points_new
+
+
 def revolve_points(points, n=11, phi=180, axis=0, expand_dim=True):
     """Revolve points along a given axis.
 

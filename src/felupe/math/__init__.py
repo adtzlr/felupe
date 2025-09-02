@@ -15,7 +15,7 @@ from ._field import (
 )
 from ._math import linsteps
 from ._solve import solve_2d, solve_nd
-from ._spatial import revolve_points, rotation_matrix
+from ._spatial import revolve_points, rotate_points, rotation_matrix
 from ._tensor import (
     cdya,
     cdya_ik,
@@ -88,4 +88,6 @@ __all__ = [
     "transpose",
     "solve_2d",
     "solve_nd",
+    "revolve_points",
+    "rotate_points",
 ]

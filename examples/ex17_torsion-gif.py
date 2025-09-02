@@ -39,14 +39,12 @@ angles_deg = fem.math.linsteps([0, -30, 0], num=10)
 move = []
 for phi in angles_deg:
     top = mesh.points[boundaries["top"].points]
-    top_rotated = fem.mesh.rotate(
+    top_rotated = fem.math.rotate_points(
         points=top,
-        cells=None,
-        cell_type=None,
         angle_deg=phi,
         axis=2,
         center=[0, 0, 1],
-    )[0]
+    )
     move.append(top_rotated - top)
 
 # %%

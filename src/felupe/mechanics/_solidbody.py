@@ -359,13 +359,16 @@ class SolidBody(Solid):
             "results.statevars": self.results.statevars.copy(),
         }
 
-    def restore(self, checkpoint):
+    def restore(self, checkpoint, restore_statevars=True):
         """Restore a checkpoint inplace.
 
         Parameters
         ----------
         checkpoint : dict
             A dict with checkpoint arrays / objects.
+        restore_statevars : bool, optional
+            Flag to restore state variables. This is a power feature and must be used
+            with caution! Default is True.
 
         See Also
         --------
@@ -373,7 +376,8 @@ class SolidBody(Solid):
         """
 
         self.field.restore(checkpoint)
-        self.results.statevars[:] = checkpoint["results.statevars"]
+        if restore_statevars:
+            self.results.statevars[:] = checkpoint["results.statevars"]
 
         # results must be re-evaluated
         self.evaluate.gradient(self.field)

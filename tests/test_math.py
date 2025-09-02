@@ -165,7 +165,7 @@ def test_math():
     fem.math.trace(C)
 
     for dim in [1, 2]:
-        for phi in [180, 360]:
+        for phi in [180, [0, 180, 360]]:
             points_new = fem.math.revolve_points(np.eye(dim), n=11, phi=phi, axis=0)
             assert points_new.shape[1] == dim + 1
 

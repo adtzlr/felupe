@@ -118,9 +118,7 @@ def revolve_points(points, n=11, phi=180, axis=0, expand_dim=True):
 
        >>> import felupe as fem
        >>>
-       >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
-       >>> mesh = fem.mesh.revolve(rect, n=11, phi=180, axis=0)
-       >>>
+       >>> points = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4)).points
        >>> points_new = fem.math.revolve_points(mesh.points, n=11, phi=180, axis=0)
 
     See Also

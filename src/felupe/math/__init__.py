@@ -15,7 +15,7 @@ from ._field import (
 )
 from ._math import linsteps
 from ._solve import solve_2d, solve_nd
-from ._spatial import rotation_matrix
+from ._spatial import rotation_matrix, revolve_points
 from ._tensor import (
     cdya,
     cdya_ik,

@@ -85,3 +85,71 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
         rotation_matrix[axis, axis] = 1
 
     return rotation_matrix
+
+
+def revolve_points(points, n=11, phi=180, axis=0, expand_dim=True):
+    """Revolve points along a given axis.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    n : int, optional
+        Number of n-point revolutions (or (n-1) cell revolutions),
+        default is 11.
+    phi : float or ndarray, optional
+        Revolution angle in degree (default is 180).
+    axis : int, optional
+        Revolution axis (default is 0).
+    expand_dim : bool, optional
+        Expand the dimension of the point coordinates (default is True).
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+
+    Examples
+    --------
+    Revolve the points of a cylinder from a rectangle.
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> rect = fem.Rectangle(a=(0, 4), b=(3, 5), n=(10, 4))
+       >>> mesh = fem.mesh.revolve(rect, n=11, phi=180, axis=0)
+       >>>
+       >>> points_new = fem.math.revolve_points(mesh.points, n=11, phi=180, axis=0)
+
+    See Also
+    --------
+    felupe.mesh.revolve : Revolve a 0d-Point to a 1d-Line, a 1d-Line to 2d-Quad or a
+        2d-Quad to a 3d-Hexahedron Mesh.
+    felupe.Mesh.revolve : Revolve a 2d-Quad to a 3d-Hexahedron Mesh.
+    """
+
+    points = np.array(points)
+    dim = points.shape[1]
+
+    if np.isscalar(phi):
+        points_phi = np.linspace(0, phi, n)
+    else:
+        points_phi = phi
+        n = len(points_phi)
+
+    dim_new = dim
+    if expand_dim:
+        dim_new = dim + 1
+
+    p = np.pad(points, ((0, 0), (0, dim_new - dim)))
+
+    points_new = np.vstack(
+        [(rotation_matrix(angle, dim_new, axis=axis) @ p.T).T for angle in points_phi]
+    )
+
+    if points_phi[-1] == 360:
+        points_new = points_new[: len(points_new) - len(points)]
+
+    return points_new

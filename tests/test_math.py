@@ -164,6 +164,11 @@ def test_math():
     fem.math.majortranspose(A)
     fem.math.trace(C)
 
+    for dim in [1, 2]:
+        for phi in [180, 360]:
+            points_new = fem.math.revolve_points(np.eye(dim), n=11, phi=phi, axis=0)
+            assert points_new.shape[1] == dim + 1
+
 
 def test_math_linsteps():
     steps = fem.math.linsteps([0, 1], num=10)

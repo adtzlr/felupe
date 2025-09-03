@@ -714,6 +714,33 @@ def test_axi_to_3d():
     fem.Job(steps=[step]).evaluate()
 
     new_solid = solid.revolve(n=11, phi=180)
+    new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
+
+    boundaries, loadcase = fem.dof.uniaxial(
+        new_solid.field, clamped=True, sym=(0, 0, 1)
+    )
+
+    step = fem.Step(items=[new_solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
+def test_axi_to_3d_incompressible():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(n=6)
+    field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
+
+    umat = fem.NeoHooke(mu=1)
+    solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
+
+    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    new_solid = solid.revolve(n=11, phi=180)
+    new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
+
     boundaries, loadcase = fem.dof.uniaxial(
         new_solid.field, clamped=True, sym=(0, 0, 1)
     )
@@ -739,3 +766,4 @@ if __name__ == "__main__":
     test_checkpoint()
     test_checkpoint_incompressible()
     test_axi_to_3d()
+    test_axi_to_3d_incompressible()

@@ -291,6 +291,26 @@ def test_toplevel():
     fem.Job(steps=[step]).evaluate(x0=field)
 
 
+def test_toplevel_merge():
+
+    mesh1 = fem.Rectangle(n=3)
+    field1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+
+    mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
+    field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+
+    fields, x0 = (field1 & field2).merge()
+
+    umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
+    solid1 = fem.SolidBody(umat, fields[0])
+    solid2 = fem.SolidBody(umat, fields[1])
+
+    boundaries, loadcase = fem.dof.uniaxial(x0, clamped=True)
+
+    step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate(x0=x0)
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -299,3 +319,4 @@ if __name__ == "__main__":
     test_view()
     test_link()
     test_toplevel()
+    test_toplevel_merge()

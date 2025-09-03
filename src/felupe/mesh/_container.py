@@ -36,7 +36,7 @@ class MeshContainer:
     merge : bool, optional
         Flag to merge duplicate mesh points. This changes the cells arrays of the
         meshes. Default is False.
-    decimals : float or None, optional
+    decimals : int or None, optional
         Precision decimals for merging duplicated mesh points. Only relevant if
         merge=True. Default is None.
 

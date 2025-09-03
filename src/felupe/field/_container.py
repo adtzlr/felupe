@@ -20,6 +20,7 @@ from copy import deepcopy
 
 import numpy as np
 
+from ..mesh import MeshContainer
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
 
@@ -419,3 +420,64 @@ class FieldContainer:
             fields = []
 
         return FieldContainer([*self.fields, *fields])
+
+    def merge(self, decimals=None):
+        """Merge all fields and return a list of field containers as well as the
+        top-level field container.
+
+        Parameters
+        ----------
+        decimals : int or None, optional
+            Precision decimals for merging duplicated mesh points. Default is None.
+
+        Returns
+        -------
+        list of FieldContainer
+            A list with field containers to be used in different items (solid bodies).
+        FieldContainer
+            The top-level field container, to be used as the ``x0``-argument in
+            `meth:`~felupe.Job.evaluate and for the creation of boundary conditions.
+
+        Examples
+        --------
+        ..  pyvista-plot::
+
+            >>> import felupe as fem
+            >>>
+            >>> mesh1 = fem.Rectangle(n=3)
+            >>> field1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+            >>>
+            >>> mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
+            >>> field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+            >>>
+            >>> fields, x0 = (field1 & field2).merge()
+            >>>
+            >>> umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
+            >>> solid1 = fem.SolidBody(umat, fields[0])
+            >>> solid2 = fem.SolidBody(umat, fields[1])
+            >>>
+            >>> boundaries, loadcase = fem.dof.uniaxial(x0, clamped=True)
+            >>>
+            >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
+            >>> job = fem.Job(steps=[step]).evaluate(x0=x0)
+
+        """
+
+        regions = [field.region for field in self.fields]
+        meshes = [region.mesh for region in regions]
+
+        container = MeshContainer(meshes, merge=True, decimals=decimals)
+
+        new_regions = [
+            type(region)(mesh) for region, mesh in zip(regions, container.meshes)
+        ]
+        fields = [
+            type(field)(region, dim=field.dim)
+            for field, region in zip(self.fields, new_regions)
+        ]
+
+        vertex_field = (
+            type(self.fields[0]).from_mesh_container(container).as_container()
+        )
+
+        return [f.as_container() for f in fields], vertex_field

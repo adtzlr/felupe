@@ -24,7 +24,7 @@ import numpy as np
 from ..assembly import IntegralForm
 from ..field import Field, FieldContainer
 from ..math import det, dot, rotate_points, transpose
-from ..region import RegionHexahedron, RegionQuad, RegionTetra, RegionTriangle
+from ..region import RegionHexahedron, RegionQuad
 from ..view import ViewSolid
 from ._helpers import Assemble, Evaluate, Results
 
@@ -458,7 +458,6 @@ class SolidBody(Solid):
         new_mesh = self.field.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
         new_region = {
             RegionQuad: RegionHexahedron,
-            RegionTriangle: RegionTetra,
         }[
             type(self.field.region)
         ](new_mesh)

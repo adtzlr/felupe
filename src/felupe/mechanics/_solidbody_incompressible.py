@@ -25,7 +25,7 @@ from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..field import Field, FieldAxisymmetric, FieldContainer
 from ..math import ddot, det, dot, dya, rotate_points, transpose
-from ..region import RegionHexahedron, RegionQuad, RegionTetra, RegionTriangle
+from ..region import RegionHexahedron, RegionQuad
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._solidbody import Solid
 
@@ -489,7 +489,6 @@ class SolidBodyNearlyIncompressible(Solid):
         new_mesh = self.field.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
         new_region = {
             RegionQuad: RegionHexahedron,
-            RegionTriangle: RegionTetra,
         }[
             type(self.field.region)
         ](new_mesh)

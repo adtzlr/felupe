@@ -6,7 +6,7 @@ Multiple solid bodies
 
    * merge a **FieldContainer** and generate a top-level field container
 
-   * evaluate a **Job** with a top-level fielk
+   * evaluate a **Job** with a top-level field
 
 This tutorial demonstrates the handling of multiple solid bodies. Different approaches
 are possible, but this technique is by far the most straight forward one. Let's start

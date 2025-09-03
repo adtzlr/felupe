@@ -411,6 +411,7 @@ class SolidBody(Solid):
 
         ..  pyvista-plot::
             :context:
+            :force_static:
 
             >>> import felupe as fem
             >>>
@@ -434,6 +435,7 @@ class SolidBody(Solid):
 
         ..  pyvista-plot::
             :context:
+            :force_static:
 
             >>> new_solid = solid.revolve(n=11, phi=180)
             >>> boundaries, loadcase = fem.dof.uniaxial(

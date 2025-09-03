@@ -699,6 +699,74 @@ def test_checkpoint_incompressible():
     fem.Job(steps=[step]).evaluate()
 
 
+def test_axi_to_3d():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(n=6)
+    field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
+
+    umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
+    solid = fem.SolidBody(umat=umat, field=field)
+
+    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    new_solid = solid.revolve(n=11, phi=180)
+    new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
+
+    boundaries, loadcase = fem.dof.uniaxial(
+        new_solid.field, clamped=True, sym=(0, 0, 1)
+    )
+
+    step = fem.Step(items=[new_solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
+def test_axi_to_3d_mixed():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(n=6)
+    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3)
+
+    umat = fem.NeoHooke(mu=1, bulk=20)
+    solid = fem.SolidBody(umat=fem.ThreeFieldVariation(umat), field=field)
+
+    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    with pytest.raises(ValueError):
+        solid.revolve(n=11, phi=180)
+
+
+def test_axi_to_3d_incompressible():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(n=6)
+    field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
+
+    umat = fem.NeoHooke(mu=1)
+    solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
+
+    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    new_solid = solid.revolve(n=11, phi=180)
+    new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
+
+    boundaries, loadcase = fem.dof.uniaxial(
+        new_solid.field, clamped=True, sym=(0, 0, 1)
+    )
+
+    step = fem.Step(items=[new_solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -715,3 +783,6 @@ if __name__ == "__main__":
     test_truss
     test_checkpoint()
     test_checkpoint_incompressible()
+    test_axi_to_3d()
+    test_axi_to_3d_incompressible()
+    test_axi_to_3d_mixed()

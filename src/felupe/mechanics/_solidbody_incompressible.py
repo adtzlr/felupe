@@ -23,8 +23,9 @@ import numpy as np
 
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
-from ..field import FieldAxisymmetric
-from ..math import ddot, det, dot, dya, transpose
+from ..field import Field, FieldAxisymmetric, FieldContainer
+from ..math import ddot, det, dot, dya, rotate_points, transpose
+from ..region import RegionHexahedron, RegionQuad
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._solidbody import Solid
 
@@ -462,6 +463,88 @@ class SolidBodyNearlyIncompressible(Solid):
         # reset force and stiffness
         self.results.force = None
         self.results.stiffness = None
+
+    def revolve(self, n=11, phi=180):
+        """Return a revolved solid body.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of n-point revolutions (or (n-1) cell revolutions), default is 11.
+        phi : float or ndarray, optional
+            Revolution angle in degree (default is 180).
+
+        Returns
+        -------
+        SolidBody
+            The revolved solid body.
+
+        See Also
+        --------
+        SolidBody.revolve : Return a revolved solid body
+
+        """
+
+        # revolve the mesh around the x-axis and create new region and new field
+        new_mesh = self.field.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
+        new_region = {
+            RegionQuad: RegionHexahedron,
+        }[
+            type(self.field.region)
+        ](new_mesh)
+
+        if np.isscalar(phi):
+            rotation_angles = np.linspace(0, phi, n)
+        else:
+            rotation_angles = phi
+            n = len(rotation_angles)
+
+        new_values = []
+        for angle_deg in rotation_angles:
+            new_values.append(
+                rotate_points(
+                    points=np.pad(self.field[0].values, ((0, 0), (0, 1))),
+                    angle_deg=angle_deg,
+                    axis=0,
+                )
+            )
+
+        dim = new_values[-1].shape[1]
+        new_field = FieldContainer(
+            [Field(new_region, dim=3, values=np.array(new_values).reshape(-1, dim))]
+        )
+
+        # create a new solid body
+        new_solid = SolidBodyNearlyIncompressible(
+            umat=self.umat,
+            field=new_field,
+            density=self.density,
+            bulk=self.bulk,
+        )
+
+        # expand state variables (no rotation is applied here)
+        new_shape = np.array(new_solid.results.statevars.shape)
+        old_shape = np.array(self.results.statevars.shape)
+
+        # ratio of shape of new vs. old state variables
+        reps = np.zeros(len(new_shape), dtype=int)
+        reps[0] = new_shape[0]
+        reps[1:] = new_shape[1:] // old_shape[1:]
+
+        new_solid.results.statevars[:] = np.tile(self.results.statevars, reps)
+
+        # expand internal field variables (displacement)
+        new_shape_internal = np.array(new_solid.results.state.p.shape)
+        old_shape_internal = np.array(self.results.state.p.shape)
+
+        # ratio of shape of new vs. old internal field variables
+        reps_internal = new_shape_internal // old_shape_internal
+
+        new_solid.results.state.u[:] = new_field[0].values
+        new_solid.results.state.p[:] = np.tile(self.results.state.p, reps_internal)
+        new_solid.results.state.J[:] = np.tile(self.results.state.J, reps_internal)
+
+        return new_solid
 
     def _vector(
         self, field=None, parallel=False, items=None, args=(), kwargs=None, block=True

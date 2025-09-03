@@ -22,7 +22,9 @@ import warnings
 import numpy as np
 
 from ..assembly import IntegralForm
-from ..math import det, dot, transpose
+from ..field import Field, FieldContainer
+from ..math import det, dot, rotate_points, transpose
+from ..region import RegionHexahedron, RegionQuad, RegionTetra, RegionTriangle
 from ..view import ViewSolid
 from ._helpers import Assemble, Evaluate, Results
 
@@ -386,6 +388,123 @@ class SolidBody(Solid):
         # reset force and stiffness
         self.results.force = None
         self.results.stiffness = None
+
+    def revolve(self, n=11, phi=180):
+        """Return a revolved solid body.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of n-point revolutions (or (n-1) cell revolutions), default is 11.
+        phi : float or ndarray, optional
+            Revolution angle in degree (default is 180).
+
+        Returns
+        -------
+        SolidBody
+            The revolved solid body.
+
+        Examples
+        --------
+        First, create an axisymmetric model. A non-homogeneuous uniaxial tension load
+        case is applied on the solid body.
+
+        ..  pyvista-plot::
+            :context:
+
+            >>> import felupe as fem
+            >>>
+            >>> region = fem.RegionQuad(mesh=fem.Rectangle(n=6))
+            >>> field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
+            >>>
+            >>> umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
+            >>> solid = fem.SolidBody(umat=umat, field=field)
+            >>>
+            >>> boundaries, loadcase = fem.dof.uniaxial(
+            ...     solid.field, clamped=True, sym=False
+            ... )
+            >>> step = fem.Step(items=[solid], boundaries=boundaries)
+            >>> job = fem.Job(steps=[step]).evaluate()
+            >>>
+            >>> solid.plot("Principal Values of Cauchy Stress").show()
+
+        The solid body is now revolved around the x-axis. This model may now be used to
+        apply non-axisymmetric loads. Here, the same load case is also applied on the
+        3d-model.
+
+        ..  pyvista-plot::
+            :context:
+
+            >>> new_solid = solid.revolve(n=11, phi=180)
+            >>> boundaries, loadcase = fem.dof.uniaxial(
+            ...     new_solid.field, clamped=True, sym=(0, 0, 1)
+            ... )
+            >>>
+            >>> step = fem.Step(items=[new_solid], boundaries=boundaries)
+            >>> job = fem.Job(steps=[step]).evaluate()
+            >>>
+            >>> new_solid.plot("Principal Values of Cauchy Stress").show()
+
+        See Also
+        --------
+        SolidBodyNearlyIncompressible.revolve : Return a revolved solid body
+
+        """
+
+        if len(self.field) > 1:
+            raise ValueError("Revolve is not supported for more than one field.")
+
+        # revolve the mesh around the x-axis and create new region and new field
+        new_mesh = self.field.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
+        new_region = {
+            RegionQuad: RegionHexahedron,
+            RegionTriangle: RegionTetra,
+        }[
+            type(self.field.region)
+        ](new_mesh)
+
+        if np.isscalar(phi):
+            rotation_angles = np.linspace(0, phi, n)
+        else:
+            rotation_angles = phi
+            n = len(rotation_angles)
+
+        new_values = []
+        for angle_deg in rotation_angles:
+            new_values.append(
+                rotate_points(
+                    points=np.pad(self.field[0].values, ((0, 0), (0, 1))),
+                    angle_deg=angle_deg,
+                    axis=0,
+                )
+            )
+
+        dim = new_values[-1].shape[1]
+        new_field = FieldContainer(
+            [Field(new_region, dim=3, values=np.array(new_values).reshape(-1, dim))]
+        )
+
+        # create a new solid body
+        new_solid = SolidBody(
+            umat=self.umat,
+            field=new_field,
+            density=self.density,
+            block=self.block,
+            apply=self.apply,
+            multiplier=self.assemble.multiplier,
+        )
+
+        # expand state variables (no rotation is applied here)
+        new_shape = np.array(new_solid.results.statevars.shape)
+        old_shape = np.array(self.results.statevars.shape)
+
+        reps = np.zeros(len(new_shape), dtype=int)
+        reps[0] = new_shape[0]
+        reps[1:] = new_shape[1:] // old_shape[1:]
+
+        new_solid.results.statevars[:] = np.tile(self.results.statevars, reps)
+
+        return new_solid
 
     def _vector(
         self,

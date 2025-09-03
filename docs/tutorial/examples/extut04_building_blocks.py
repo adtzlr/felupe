@@ -69,7 +69,7 @@ V = dV.sum()
 # Field
 # ~~~~~
 # In a next step, a displacement :class:`~felupe.Field` is added to the
-# :class:`~felupe.Region`. This may be either a scalar- or a vector-valed field. The
+# :class:`~felupe.Region`. This may be either a scalar- or a vector-valued field. The
 # values at mesh-points are obtained with the attribute :attr:`~felupe.Field.values`.
 # Interpolated field values at quadrature points are calculated with the
 # :meth:`~felupe.Field.interpolate` method. Additionally, the displacement gradient

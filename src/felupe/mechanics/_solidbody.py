@@ -406,7 +406,7 @@ class SolidBody(Solid):
 
         Examples
         --------
-        First, create an axisymmetric model. A non-homogeneuous uniaxial tension load
+        First, create an axisymmetric model. A non-homogeneous uniaxial tension load
         case is applied on the solid body.
 
         ..  pyvista-plot::

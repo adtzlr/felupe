@@ -82,7 +82,7 @@ boundaries = fem.BoundaryDict(
 )
 
 boundaries.plot(
-    plotter=field.mesh_container.plot(colors=["black", "grey"], opacity=1.0)
+    plotter=field.mesh_container.plot(colors=[[0.3, 0.3, 0.3], "white"], opacity=1.0)
 ).show()
 
 # prescribed values for the innermost radial mesh points

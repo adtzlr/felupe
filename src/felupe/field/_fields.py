@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import warnings
+
 from ._axi import FieldAxisymmetric
 from ._base import Field
 from ._container import FieldContainer
@@ -94,6 +96,18 @@ class FieldsMixed(FieldContainer):
         else:
             raise ValueError(
                 "Choose between ``axisymmetric=True`` or ``planestrain=True``."
+            )
+
+        if (axisymmetric or planestrain) and "dim" in kwargs.keys() and n > 1:
+            warnings.warn(
+                " ".join(
+                    [
+                        f'"dim={kwargs["dim"]}" will be used for the dual fields only.',
+                        'For NearlyIncompressible and "ThreeFieldVariation"',
+                        '"dim" must not be passed (dual fields have to be scalars).',
+                    ]
+                ),
+                stacklevel=2,
             )
 
         fields = [F(region, dim=region.mesh.dim, values=values[0])]

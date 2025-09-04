@@ -31,8 +31,10 @@ class FieldContainer:
 
     Parameters
     ----------
-    fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric` or :class:``~felupe.FieldPlaneStrain`
+    fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric`, :class:``~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`
         List with fields. The region is linked to the first field.
+    **kwargs : dict, optional
+        Extra class attributes for the field container.
 
     Attributes
     ----------
@@ -97,9 +99,22 @@ class FieldContainer:
 
     """
 
-    def __init__(self, fields):
-        self.fields = fields
-        self.region = fields[0].region
+    def __init__(self, fields, **kwargs):
+
+        # flatten the given list of fields (unpack field containers)
+        self.fields = []
+
+        for field in fields:
+            if isinstance(field, FieldContainer):
+                self.fields.extend(field.fields)
+            else:
+                self.fields.append(field)
+
+        # set optional user-defined attributes
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        self.region = self.fields[0].region
 
         # get sizes of fields and calculate offsets
         self.fieldsizes = [f.indices.dof.size for f in self.fields]
@@ -362,7 +377,9 @@ class FieldContainer:
         new_fields_grouped = group_dual_fields(new_fields)
         Field = self.fields[0].__field__
 
-        vertex_field = Field.from_mesh_container(container).as_container()
+        vertex_field = Field.from_mesh_container(container).as_container(
+            mesh_container=container
+        )
 
         return [FieldContainer(f) for f in new_fields_grouped], vertex_field
 
@@ -528,10 +545,9 @@ class FieldContainer:
         return len(self.fields)
 
     def __and__(self, field):
-        fields = [field]
-        if isinstance(field, FieldContainer):
-            fields = field.fields
-        elif field is None:
-            fields = []
+        fields = [self]
 
-        return FieldContainer([*self.fields, *fields])
+        if field is not None:
+            fields.append(field)
+
+        return FieldContainer(fields)

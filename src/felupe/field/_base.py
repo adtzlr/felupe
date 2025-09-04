@@ -126,7 +126,7 @@ class Field:
 
         eai, ai = self._indices_per_cell(self.region.mesh.cells, dim)
         self.indices = Indices(eai, ai, region, dim)
-        
+
         self.__field__ = Field
 
     def _indices_per_cell(self, cells, dim):
@@ -151,7 +151,7 @@ class Field:
         if dim is None:
             dim = mesh.dim
 
-        return cls(region, dim=dim, values=values)
+        return cls(region, dim=dim, values=values, mesh_container=mesh_container)
 
     def grad(self, sym=False, dtype=None, out=None, order="C"):
         r"""Gradient as partial derivative of field values w.r.t. undeformed
@@ -362,10 +362,10 @@ class Field:
         "Fill all field values with a scalar value."
         self.values.fill(a)
 
-    def as_container(self):
+    def as_container(self, **kwargs):
         "Create a :class:`~felupe.FieldContainer` with the field."
 
-        return FieldContainer([self])
+        return FieldContainer([self], **kwargs)
 
     def __add__(self, newvalues):
         if isinstance(newvalues, np.ndarray):
@@ -478,10 +478,9 @@ class Field:
         return self.values.ravel()[dof]
 
     def __and__(self, field):
-        fields = [field]
-        if isinstance(field, FieldContainer):
-            fields = field.fields
-        elif field is None:
-            fields = []
+        fields = [self]
 
-        return FieldContainer([self, *fields])
+        if field is not None:
+            fields.append(field)
+
+        return FieldContainer(fields)

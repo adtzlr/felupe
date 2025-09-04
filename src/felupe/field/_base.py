@@ -126,6 +126,8 @@ class Field:
 
         eai, ai = self._indices_per_cell(self.region.mesh.cells, dim)
         self.indices = Indices(eai, ai, region, dim)
+        
+        self.__field__ = Field
 
     def _indices_per_cell(self, cells, dim):
         "Calculate pre-defined indices for sparse matrices."

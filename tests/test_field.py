@@ -108,6 +108,9 @@ def pre_axi_mixed():
     with pytest.raises(ValueError):
         fem.FieldsMixed(region, axisymmetric=True, planestrain=True)
 
+    with pytest.warns(UserWarning):
+        fem.FieldsMixed(region, axisymmetric=True, n=3, dim=2)
+
     u.values[0] = np.ones(2)
     assert np.all(f.values()[0][0] == 1)
 
@@ -294,7 +297,7 @@ def test_toplevel():
 def test_toplevel_merge():
 
     mesh1 = fem.Rectangle(n=3)
-    field1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+    field1 = fem.FieldsMixed(fem.RegionQuad(mesh1), n=3, axisymmetric=True)
 
     mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
     field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
@@ -302,7 +305,7 @@ def test_toplevel_merge():
     fields, x0 = (field1 & field2).merge()
 
     umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-    solid1 = fem.SolidBody(umat, fields[0])
+    solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), fields[0])
     solid2 = fem.SolidBody(umat, fields[1])
 
     boundaries, loadcase = fem.dof.uniaxial(x0, clamped=True)

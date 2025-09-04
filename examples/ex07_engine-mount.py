@@ -39,28 +39,28 @@ metal = fem.mesh.read("ex07_engine-mount_mesh-metal.vtk", dim=2)[0]
 rubber = fem.mesh.read("ex07_engine-mount_mesh-rubber.vtk", dim=2)[0]
 air = fem.mesh.read("ex07_engine-mount_mesh-air.vtk", dim=2)[0]
 
-# sub-meshes with shared points-array and a global mesh
-meshes = fem.MeshContainer([metal, rubber, air], merge=True)
-mesh = fem.mesh.concatenate(meshes).sweep()
 
 # %%
-# A global region as well as sub-regions for all materials are generated. The same
-# applies to the fields.
-region = fem.RegionQuad(mesh)
-regions = [fem.RegionQuad(m) for m in meshes]
+# Sub-regions and fields for all materials are generated. The sub-fields must be merged
+# to generate the fields for meta / rubber / air and a top-level field.
+regions = [fem.RegionQuad(m) for m in [metal, rubber, air]]
+fields, field = fem.FieldContainer(
+    [fem.FieldsMixed(r, n=1, planestrain=True) for r in regions]
+).merge()
 
-field = fem.FieldsMixed(region, n=1, planestrain=True)
-fields = [fem.FieldsMixed(r, n=1, planestrain=True) for r in regions]
-[f.link(field) for f in fields]
 
 # %%
 # The boundary conditions are created on the global displacement field. First, a mask
 # for all points related to the metal parts is created. Then, this mask is splitted into
-# the inner and the outer metal part.
+# the inner and the outer metal part. The global field holds a mesh-container attribute
+# which may be used for plotting.
+mesh = field.region.mesh
 x, y = mesh.points.T
 radius = np.sqrt(x**2 + y**2)
 
-only_cells_metal = np.isin(np.arange(mesh.npoints), np.unique(meshes[0].cells))
+only_cells_metal = np.isin(
+    np.arange(mesh.npoints), np.unique(fields[0].region.mesh.cells)
+)
 inner = np.logical_and(only_cells_metal, radius <= 45)
 outer = np.logical_and(only_cells_metal, radius > 45)
 
@@ -69,7 +69,7 @@ boundaries = fem.BoundaryDict(
     u_x=fem.Boundary(field[0], mask=inner, skip=(0, 1)),
     u_y=fem.Boundary(field[0], mask=inner, skip=(1, 0)),
 )
-plotter = meshes.plot(colors=["grey", "black", "white"])
+plotter = field.mesh_container.plot(colors=["grey", "black", "white"])
 boundaries.plot(plotter=plotter, scale=0.02).show()
 
 # %%

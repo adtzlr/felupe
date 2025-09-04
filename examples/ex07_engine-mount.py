@@ -42,7 +42,8 @@ air = fem.mesh.read("ex07_engine-mount_mesh-air.vtk", dim=2)[0]
 
 # %%
 # Sub-regions and fields for all materials are generated. The sub-fields must be merged
-# to generate the fields for meta / rubber / air and a top-level field.
+# to generate both the displacement fields for metal / rubber / air and a top-level
+# displacement field.
 regions = [fem.RegionQuad(m) for m in [metal, rubber, air]]
 fields, field = fem.FieldContainer(
     [fem.FieldsMixed(r, n=1, planestrain=True) for r in regions]

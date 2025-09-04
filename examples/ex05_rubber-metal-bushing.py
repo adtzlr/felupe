@@ -56,8 +56,10 @@ metal = fem.MeshContainer(
 ).stack()
 
 # %%
-# A global region as well as sub-regions for all materials are generated. The same
-# applies to the fields, the material formulations as well as the solid bodies.
+# Sub-regions are generated for all materials. The same applies to the material
+# formulations as well as the solid bodies. The sub-fields are also created as vector-
+# valued displacement fields. However, the fields must be merged in a top-level field-
+# container. This modifies the sub-fields to be used in the solid bodies.
 regions = [fem.RegionHexahedron(m) for m in [rubber, metal]]
 fields, field = fem.FieldContainer([fem.Field(r, dim=3) for r in regions]).merge()
 
@@ -69,7 +71,7 @@ solids = [
 ]
 
 # %%
-# The boundary conditions are created on the global displacement field. Masks are
+# The boundary conditions are created on the top-level displacement field. Masks are
 # created for both the innermost and the outermost metal sheet faces. The global field
 # holds a mesh-container attribute which may be used for plotting.
 x, y, z = field.region.mesh.points.T

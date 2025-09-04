@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Allow field containers to be included in the list of `fields` in `FieldContainer(fields)`. If a field container is included, its sub-fields are unpacked.
+- Set custom attributes by keyword-arguments in `FieldContainer(fields, **kwargs)`.
 
 ## [9.3.0] - 2025-06-29
 

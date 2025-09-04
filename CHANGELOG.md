@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a method to checkpoint a current state of deformation, `state = SolidBody.checkpoint()` and a method to restore checkpoints, `SolidBody.restore(state)`. This is implemented for `SolidBody`, `SolidBodyNearlyIncompressible` and `FieldContainer`.
 - Add `math.revolve_points()`, to revolve only points instead of a Mesh. Previously, `mesh.revolve(points, cells=None, cell_type=None, **kwargs)[0]` had to be used.
 - Add `math.rotate_points()`, to rotate only points instead of a Mesh. Previously, `mesh.rotate(points, cells=None, cell_type=None, **kwargs)[0]` had to be used.
-- Add `SolidBody.revolve()` and `SolidBodyNearlyIncompressible.revolve()` to convert a axisymmetric solid body to a 3d solid body. Only implemented for the conversion of axisymmetric quads to hexahedrons.
+- Add `FieldContainer.revolve()`, `SolidBody.revolve()` and `SolidBodyNearlyIncompressible.revolve()` to convert a axisymmetric field / solid body to a 3d field / solid body. Only implemented for the conversion of axisymmetric quads to hexahedrons. For top-level fields, a vertex-mesh is also supported.
 - Add `fields, x0 = FieldContainer.merge()` to simplify the handling of multiple items (solid bodies). The top-level field container `x0` must be used for boundary conditions and in `Job.evaluate(x0=x0)`.
 - Add a warning if `FieldMixed()` is called with `axisymmetric=True` or `planestrain=True`, more than one field `n>1` and a given `dim`. This dimension is passed to the dual fields only.
 

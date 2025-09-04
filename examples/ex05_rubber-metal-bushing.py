@@ -47,63 +47,60 @@ section = section.add_runouts(axis=1, centerpoint=[0, 45], values=[0.2], normali
 rubber = section.revolve(n=19, phi=360)
 
 # create meshes for the metal sheet rings
-metals = [
-    fem.Rectangle(a=(-50, 25), b=(50, 30), n=(21, 3)).revolve(n=19, phi=360),
-    fem.Rectangle(a=(-30, 60), b=(30, 65), n=(21, 3)).revolve(n=19, phi=360),
-]
-
-# stack the meshes
-meshes = fem.MeshContainer([rubber, *metals], merge=True)
-mesh = fem.mesh.stack(meshes.meshes)
-x, y, z = mesh.points.T
+metal = fem.MeshContainer(
+    [
+        fem.Rectangle(a=(-50, 25), b=(50, 30), n=(21, 3)).revolve(n=19, phi=360),
+        fem.Rectangle(a=(-30, 60), b=(30, 65), n=(21, 3)).revolve(n=19, phi=360),
+    ],
+    merge=True,
+).stack()
 
 # %%
 # A global region as well as sub-regions for all materials are generated. The same
 # applies to the fields, the material formulations as well as the solid bodies.
-region = fem.RegionHexahedron(mesh)
-regions = [fem.RegionHexahedron(m) for m in meshes]
-field = fem.FieldContainer([fem.Field(region, dim=3)])
-fields = [fem.FieldContainer([fem.Field(r, dim=3)]) for r in regions]
+regions = [fem.RegionHexahedron(m) for m in [rubber, metal]]
+fields, field = fem.FieldContainer([fem.Field(r, dim=3) for r in regions]).merge()
 
 # material formulations and solid bodies for the rubber and the metal sheets
 umats = [fem.NeoHooke(mu=1), fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)]
 solids = [
     fem.SolidBodyNearlyIncompressible(umats[0], fields[0], bulk=5000),
     fem.SolidBody(umats[1], fields[1]),
-    fem.SolidBody(umats[1], fields[2]),
 ]
 
 # %%
 # The boundary conditions are created on the global displacement field. Masks are
-# created for both the innermost and the outermost metal sheet faces.
+# created for both the innermost and the outermost metal sheet faces. The global field
+# holds a mesh-container attribute which may be used for plotting.
+x, y, z = field.region.mesh.points.T
+
 boundaries = fem.BoundaryDict(
     inner=fem.dof.Boundary(field[0], mask=np.isclose(np.sqrt(y**2 + z**2), 25)),
     outer=fem.dof.Boundary(field[0], mask=np.isclose(np.sqrt(y**2 + z**2), 65)),
 )
-boundaries.plot(show_lines=False).show()
+
+boundaries.plot(
+    plotter=field.mesh_container.plot(colors=["black", "grey"], opacity=1.0)
+).show()
 
 # prescribed values for the innermost radial mesh points
 table = fem.math.linsteps([0, 1], num=3)
 move = []
 
 for progress in table:
-    inner = mesh.points[boundaries["inner"].points]
-    inner_rotated = fem.mesh.rotate(
+    inner = field.region.mesh.points[boundaries["inner"].points]
+    inner_rotated = fem.math.rotate_points(
         points=inner,
-        cells=None,
-        cell_type=None,
         angle_deg=30 * progress,
         axis=0,
         center=[0, 0, 0],
-    )[0]
-    inner_rotated = fem.mesh.rotate(
+    )
+    inner_rotated = fem.math.rotate_points(
         points=inner_rotated,
-        cells=None,
-        cell_type=None,
         angle_deg=-5 * progress,
         axis=1,
         center=[0, 0, 0],
-    )[0]
+    )
     inner_radial = 8 * np.array([0, 0, 1]) * progress
     move.append(inner_radial + inner_rotated - inner)
 
@@ -116,12 +113,19 @@ job.evaluate(x0=field, parallel=True, solver=pypardiso.spsolve)
 # %%
 # The maximum principal values of the logarithmic strain are plotted on the total
 # simulation model as well as on a clipped view.
-field.plot("Principal Values of Logarithmic Strain", show_undeformed=False).show()
+plotter = fields[1].plot(color="white", show_undeformed=False)
+fields[0].plot(
+    "Principal Values of Logarithmic Strain", show_undeformed=False, plotter=plotter
+).show()
 
-plotter = field.plot(
+plotter = fields[1].plot(color="white", show_undeformed=False, show_edges=False)
+plotter.mesh.clip("y", invert=False, value=0.0, inplace=True)
+
+plotter = fields[0].plot(
     "Principal Values of Logarithmic Strain",
     show_undeformed=False,
     show_edges=False,
+    plotter=plotter,
 )
 plotter.mesh.clip("y", invert=False, value=0.0, inplace=True)
 plotter.show()

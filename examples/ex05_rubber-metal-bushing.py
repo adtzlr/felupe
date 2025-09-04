@@ -49,8 +49,8 @@ rubber = section.revolve(n=19, phi=360)
 # create meshes for the metal sheet rings
 metal = fem.MeshContainer(
     [
-        fem.Rectangle(a=(-50, 25), b=(50, 30), n=(21, 3)).revolve(n=19, phi=360),
-        fem.Rectangle(a=(-30, 60), b=(30, 65), n=(21, 3)).revolve(n=19, phi=360),
+        fem.Rectangle(a=(-50, 25), b=(50, 30), n=(6, 3)).revolve(n=19, phi=360),
+        fem.Rectangle(a=(-30, 60), b=(30, 65), n=(6, 3)).revolve(n=19, phi=360),
     ],
     merge=True,
 ).stack()

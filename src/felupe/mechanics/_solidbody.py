@@ -22,9 +22,7 @@ import warnings
 import numpy as np
 
 from ..assembly import IntegralForm
-from ..field import Field, FieldContainer
-from ..math import det, dot, rotate_points, transpose
-from ..region import RegionHexahedron, RegionQuad
+from ..math import det, dot, transpose
 from ..view import ViewSolid
 from ._helpers import Assemble, Evaluate, Results
 
@@ -453,37 +451,7 @@ class SolidBody(Solid):
 
         """
 
-        if len(self.field) > 1:
-            raise ValueError("Revolve is not supported for more than one field.")
-
-        # revolve the mesh around the x-axis and create new region and new field
-        new_mesh = self.field.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
-        new_region = {
-            RegionQuad: RegionHexahedron,
-        }[
-            type(self.field.region)
-        ](new_mesh)
-
-        if np.isscalar(phi):
-            rotation_angles = np.linspace(0, phi, n)
-        else:
-            rotation_angles = phi
-            n = len(rotation_angles)
-
-        new_values = []
-        for angle_deg in rotation_angles:
-            new_values.append(
-                rotate_points(
-                    points=np.pad(self.field[0].values, ((0, 0), (0, 1))),
-                    angle_deg=angle_deg,
-                    axis=0,
-                )
-            )
-
-        dim = new_values[-1].shape[1]
-        new_field = FieldContainer(
-            [Field(new_region, dim=3, values=np.array(new_values).reshape(-1, dim))]
-        )
+        new_field = self.field.revolve(n=n, phi=phi)
 
         # create a new solid body
         new_solid = SolidBody(

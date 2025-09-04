@@ -20,7 +20,9 @@ from copy import deepcopy
 
 import numpy as np
 
+from ..math import rotate_points
 from ..mesh import MeshContainer
+from ..region import RegionHexahedron, RegionQuad, RegionVertex
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
 
@@ -265,6 +267,87 @@ class FieldContainer:
 
         for field, newfield in zip(self.fields, checkpoint["field"].fields):
             field.values[:] = newfield.values
+
+    def revolve(self, n=11, phi=180):
+        """Return a revolved field container.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of n-point revolutions (or (n-1) cell revolutions), default is 11.
+        phi : float or ndarray, optional
+            Revolution angle in degree (default is 180).
+
+        Returns
+        -------
+        FieldContainer
+            The revolved field container.
+
+        Examples
+        --------
+        First, create an axisymmetric field.
+
+        ..  pyvista-plot::
+            :context:
+            :force_static:
+
+            >>> import felupe as fem
+            >>>
+            >>> region = fem.RegionQuad(mesh=fem.Rectangle(n=6))
+            >>> field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
+            >>> field.plot().show()
+
+        The first field of the field container is now revolved around the x-axis.
+
+        ..  pyvista-plot::
+            :context:
+            :force_static:
+
+            >>> new_field = field.revolve(n=11, phi=180)
+            >>> new_field.plot().show()
+
+        See Also
+        --------
+        SolidBody.revolve : Return a revolved solid body
+        SolidBodyNearlyIncompressible.revolve : Return a revolved solid body
+
+        """
+
+        if len(self.fields) > 1:
+            raise ValueError("Revolve is not supported for more than one field.")
+
+        # revolve the mesh around the x-axis and create new region and new field
+        new_mesh = self.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
+
+        new_region = {
+            RegionQuad: RegionHexahedron,
+            RegionVertex: RegionVertex,
+        }[
+            type(self.region)
+        ](new_mesh)
+
+        if np.isscalar(phi):
+            rotation_angles = np.linspace(0, phi, n)
+        else:
+            rotation_angles = phi
+            n = len(rotation_angles)
+
+        new_values = []
+        for angle_deg in rotation_angles:
+            new_values.append(
+                rotate_points(
+                    points=np.pad(self.fields[0].values, ((0, 0), (0, 1))),
+                    angle_deg=angle_deg,
+                    axis=0,
+                )
+            )
+
+        dim = new_values[-1].shape[1]
+        Field = self.fields[0].__field__
+
+        return FieldContainer(
+            [Field(new_region, dim=dim, values=np.array(new_values).reshape(-1, dim))]
+        )
 
     def merge(self, decimals=None):
         """Merge all fields and return a list of field containers as well as the

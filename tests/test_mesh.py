@@ -610,6 +610,9 @@ def test_expand_revolve_quadratic():
     new_mesh = mesh.revolve(n=3, phi=45)
     assert len(new_mesh.cells) == 8
     
+    new_mesh = mesh.revolve(n=11, phi=360)
+    assert len(new_mesh.cells) == 4 * 10
+    
     new_mesh = mesh.revolve(phi=[0, 20, 40])
     assert len(new_mesh.cells) == 8
     

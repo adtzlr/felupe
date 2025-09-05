@@ -168,7 +168,10 @@ axh.legend()
 
 # %%
 # The maximum principal values of the logarithmic strain tensors are plotted on the
-# deformed configuration.
-plotter = fields[0].plot(color="grey", show_edges=False)
+# deformed configuration. The displacement field of the metal parts was not used and
+# must be linked manually to the top-level field.
+fields[0].link(field)
+
+plotter = fields[0].plot(color="grey", show_edges=True, show_undeformed=False)
 plotter = fields[1].plot("Principal Values of Logarithmic Strain", plotter=plotter)
 plotter.show()

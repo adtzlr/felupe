@@ -2,12 +2,12 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="96mm"
+   width="102mm"
    height="34mm"
-   viewBox="0 0 96 34"
+   viewBox="0 0 102 34"
    version="1.1"
    id="svg5"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
    sodipodi:docname="logo_inkscape.svg"
    inkscape:export-filename="C:\UserData\z0039mte\Documents\GitHub\felupe\docs\_static\logo.png"
    inkscape:export-xdpi="94.852844"
@@ -27,12 +27,12 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.72626621"
-     inkscape:cx="187.25916"
-     inkscape:cy="165.22867"
-     inkscape:window-width="1368"
-     inkscape:window-height="840"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:cx="178.99773"
+     inkscape:cy="164.54022"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
@@ -76,25 +76,36 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:22.5778px;line-height:1.25;font-family:sans-serif;letter-spacing:-0.79375px;fill:#666666;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="30.149769"
+       x="54.491459"
        y="19.078936"
        id="text10118"><tspan
          sodipodi:role="line"
          id="tspan10116"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans';fill:#666666;fill-opacity:1;stroke-width:0.264583"
-         x="30.149769"
-         y="19.078936">felupe</tspan></text>
+         x="54.491459"
+         y="19.078936">lupe</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:22.5778px;line-height:1.25;font-family:sans-serif;letter-spacing:-0.79375px;fill:#666666;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="0.20539626"
+       y="18.891768"
+       id="text10118-9"><tspan
+         sodipodi:role="line"
+         id="tspan10116-7"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:22.5778px;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans';fill:#666666;fill-opacity:1;stroke-width:0.264583"
+         x="0.20539626"
+         y="18.891768">FE</tspan></text>
     <rect
        style="fill:none;stroke:#666666;stroke-width:1.30692;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3137"
        width="25.345255"
        height="25.345255"
-       x="1.3460729"
+       x="28.333578"
        y="1.9087489"
        ry="2.2799897" />
     <g
        id="g2894"
-       transform="matrix(1.2356824,0,0,1.2356824,-14.501073,40.25412)">
+       transform="matrix(1.2356824,0,0,1.2356824,12.486432,40.25412)">
       <rect
          style="fill:#ff7f2a;stroke:none;stroke-width:0.989499;stroke-linecap:round;stroke-linejoin:bevel"
          id="rect846"
@@ -161,18 +172,18 @@
     </g>
     <path
        style="fill:none;stroke:#666666;stroke-width:1.30692;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 26.813882,22.967391 c 2.481677,0.627469 4.963029,1.254856 7.444052,1.88216"
+       d="m 53.801399,22.967391 c 2.481677,0.627469 4.963029,1.254856 7.444052,1.88216"
        id="path5447"
        inkscape:path-effect="#path-effect5449"
-       inkscape:original-d="m 26.813882,22.967391 c 2.48163,0.627655 4.962982,1.255042 7.444052,1.88216"
+       inkscape:original-d="m 53.801399,22.967391 c 2.48163,0.627655 4.962982,1.255042 7.444052,1.88216"
        sodipodi:nodetypes="cc" />
     <rect
        style="fill:none;stroke:#666666;stroke-width:1.30692;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect3137-3"
        width="19.903408"
        height="5.7757387"
-       x="39.5989"
-       y="12.593107"
+       x="65.666801"
+       y="5.6082335"
        ry="1.8109155"
        rx="0"
        transform="rotate(15)" />

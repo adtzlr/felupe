@@ -107,13 +107,27 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
             "vertex": ("line", slice(None, None, None)),
             "line": ("quad", slice(None, None, -1)),
             "quad": ("hexahedron", slice(None, None, None)),
+            "quad9": ("hexahedron27", slice(None, None, None)),
         }[cell_type]
+
+        if cell_type_new == "hexahedron27":
+            n = n + (n - 1)
 
         if np.isscalar(thickness):
             points_thickness = np.linspace(0, thickness, n)
         else:
+
+            if cell_type_new == "hexahedron27":
+                points_thickness = np.vstack(
+                    [
+                        points_thickness,
+                        points_thickness + np.diff(points_thickness, append=np.nan) / 2,
+                    ]
+                ).T.ravel()[:-1]
+
             points_thickness = thickness
-            n = len(thickness)
+
+        n = len(points_thickness)
 
         # init zero vector of input dimension
         layers = np.zeros((n, dim_new))
@@ -126,7 +140,26 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
             cells[np.newaxis, ...]
             + len(points) * np.arange(n)[..., np.newaxis, np.newaxis]
         )
-        cells_new = np.concatenate([cells_new[:-1], cells_new[1:, ..., sl]], axis=-1)
+
+        if cell_type_new == "hexahedron27":
+            verts = [0, 1, 2, 3, 18, 19, 20, 21]
+            edges = [4, 5, 6, 7, 22, 23, 24, 25, 9, 10, 11, 12]
+            faces = [16, 14, 13, 15, 8, 26]
+            volume = [17]
+
+            start = cells_new[:-2]
+            middle = cells_new[1:-1]
+            end = cells_new[2:]
+
+            cells_new = np.concatenate([start, middle, end], axis=-1)[
+                ..., [*verts, *edges, *faces, *volume]
+            ]
+
+        else:
+            start = cells_new[:-1]
+            end = cells_new[1:, ..., sl]
+
+            cells_new = np.concatenate([start, end], axis=-1)
 
         # expand vertex point to line in first direction
         if cell_type_new == "line":
@@ -342,15 +375,25 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
         "vertex": ("line", slice(None, None, None)),
         "line": ("quad", slice(None, None, -1)),
         "quad": ("hexahedron", slice(None, None, None)),
+        "quad9": ("hexahedron27", slice(None, None, None)),
     }[cell_type]
+
+    if cell_type_new == "hexahedron27":
+        n = n + (n - 1)
 
     if np.isscalar(phi):
         points_phi = np.linspace(0, phi, n)
     else:
-        points_phi = phi
-        n = len(points_phi)
+        points_phi = np.array(phi)
 
+        if cell_type_new == "hexahedron27":
+            points_phi = np.vstack(
+                [points_phi, points_phi + np.diff(points_phi, append=np.nan) / 2]
+            ).T.ravel()[:-1]
+
+    n = len(points_phi)
     dim_new = dim
+
     if expand_dim:
         dim_new = dim + 1
 
@@ -367,7 +410,17 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
         c[-1] = c[0]
         points_new = points_new[: len(points_new) - len(points)]
 
-    cells_new = np.vstack([np.hstack((a, b[:, sl])) for a, b in zip(c[:-1], c[1:])])
+    if cell_type_new == "hexahedron27":
+        one = [0, 1, 2, 3, 18, 19, 20, 21]
+        two = [4, 5, 6, 7, 22, 23, 24, 25]
+        three = [9, 10, 11, 12, 16, 14, 13, 15, 8, 26, 17]
+
+        cells_new = np.vstack(
+            [np.hstack((r, s, t)) for r, s, t in zip(c[:-2], c[1:-1], c[2:])]
+        )[:, [*one, *two, *three]]
+
+    else:
+        cells_new = np.vstack([np.hstack((r, s[:, sl])) for r, s in zip(c[:-1], c[1:])])
 
     return points_new, cells_new, cell_type_new
 

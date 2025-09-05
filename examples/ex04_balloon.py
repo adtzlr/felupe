@@ -21,7 +21,7 @@ With the help of `contique <https://github.com/adtzlr/contique>`_ it is possible
 apply a numerical parameter continuation algorithm on any system of equilibrium
 equations. This advanced tutorial demonstrates the usage of FElupe in conjunction with
 `contique <https://github.com/adtzlr/contique>`_. The unstable inflation of a
-rectangular hyperelastic balloon demonstrates this powerful approach. The deformed model
+circular hyperelastic balloon demonstrates this powerful approach. The deformed model
 and the pressure - displacement curve is plotted.
 
 .. image:: ../../examples/ex04_balloon_sketch.png
@@ -35,9 +35,9 @@ hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
 .. math::
    :label: neo-hookean-strain-energy
 
-   \psi = \frac{\mu}{2} \left(
-       \text{tr}(\boldsymbol{C}) - \ln(\det(\boldsymbol{C}))
-   \right)
+   \psi(\boldsymbol{C}) &= \frac{\mu}{2} \text{tr}(\boldsymbol{C})
+       - \mu \ln(J) + \frac{\lambda}{2} \ln(J)^2
+
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -46,17 +46,19 @@ import numpy as np
 
 import felupe as fem
 
-mesh = fem.Rectangle(b=(1, 25), n=(2, 4))
-region = fem.RegionQuad(mesh)
-field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
+mesh = fem.Rectangle(b=(1, 25), n=(2, 4)).add_midpoints_edges().add_midpoints_faces()
+region = fem.RegionBiQuadraticQuad(mesh)
+field = fem.FieldsMixed(region, n=1, axisymmetric=True)
 boundaries = fem.dof.symmetry(field[0], axes=(0, 1))
 boundaries["fix-y"] = fem.Boundary(field[0], fy=mesh.y.max(), mode="or", skip=(0, 1))
 dof0, dof1 = fem.dof.partition(field, boundaries)
 
-umat = fem.NeoHookeCompressible(mu=1)
-solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+umat = fem.NeoHookeCompressible(mu=1, lmbda=50)
+solid = fem.SolidBody(umat, field)
 
-region_for_pressure = fem.RegionQuadBoundary(mesh, mask=(mesh.x == 0), ensure_3d=True)
+region_for_pressure = fem.RegionBiQuadraticQuadBoundary(
+    mesh, mask=(mesh.x == 0), ensure_3d=True
+)
 field_for_pressure = fem.FieldContainer(
     [fem.FieldAxisymmetric(region_for_pressure, dim=2)]
 )
@@ -106,7 +108,7 @@ Res = contique.solve(
     control0=(0, 1),
     dxmax=1.0,
     dlpfmax=0.0075,
-    maxsteps=65,
+    maxsteps=17,
     rebalance=True,
     tol=1e-3,
     decrease=1.2,
@@ -124,11 +126,7 @@ plt.xlabel(r"Max. Displacement $u_1(X_1=X_2=0)$ $\longrightarrow$")
 plt.ylabel(r"Load-Proportionality-Factor $\lambda$ $\longrightarrow$")
 
 # %%
-# The 3d-deformed configuration of the solid body is plotted.
-mesh_3d = mesh.revolve(phi=90, n=6)
-region_3d = fem.RegionHexahedron(mesh_3d)
-values = mesh.copy(points=field[0].values).revolve(phi=90, n=6).points
-u_3d = fem.Field(region_3d, values=values, dim=3)
-field_3d = fem.FieldContainer([u_3d])
-solid_3d = fem.SolidBodyNearlyIncompressible(umat, field_3d, bulk=5000)
-solid_3d.plot("Principal Values of Cauchy Stress", project=fem.topoints).show()
+# The deformed configuration of the solid body is plotted.
+solid.plot(
+    "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=2
+).show()

@@ -35,7 +35,7 @@ hyperelastic material formulation, see Eq. :eq:`neo-hookean-strain-energy`.
 .. math::
    :label: neo-hookean-strain-energy
 
-   \psi(\boldsymbol{C}) &= \frac{\mu}{2} \text{tr}(\boldsymbol{C})
+   \psi(\boldsymbol{C}) = \frac{\mu}{2} \text{tr}(\boldsymbol{C})
        - \mu \ln(J) + \frac{\lambda}{2} \ln(J)^2
 
 """

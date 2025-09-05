@@ -573,8 +573,6 @@ def test_expand():
 def test_interpolate_line():
     from scipy.interpolate import CubicSpline
 
-    import felupe as fem
-
     mesh = fem.mesh.Line(n=5).expand(n=1).expand(n=1)
     t = mesh.x.copy()
     mesh.points[:, 0] = np.sin(np.pi / 2 * t)
@@ -601,6 +599,27 @@ def test_interpolate_line():
     assert len(mesh_new.points_derivative) == len(xi)
 
 
+def test_expand_revolve_quadratic():
+
+    mesh = (
+        fem.Rectangle(a=(0, 1), b=(1, 2), n=3)
+        .add_midpoints_edges()
+        .add_midpoints_faces()
+    )
+    
+    new_mesh = mesh.revolve(n=3, phi=45)
+    assert len(new_mesh.cells) == 8
+    
+    new_mesh = mesh.revolve(n=11, phi=360)
+    assert len(new_mesh.cells) == 4 * 10
+    
+    new_mesh = mesh.revolve(phi=[0, 20, 40])
+    assert len(new_mesh.cells) == 8
+    
+    new_mesh = mesh.expand(z=[0, 1, 2])
+    assert len(new_mesh.cells) == 8
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -621,3 +640,4 @@ if __name__ == "__main__":
     test_modify_corners()
     test_expand()
     test_interpolate_line()
+    test_expand_revolve_quadratic()

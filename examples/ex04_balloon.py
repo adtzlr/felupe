@@ -126,7 +126,7 @@ plt.xlabel(r"Max. Displacement $u_1(X_1=X_2=0)$ $\longrightarrow$")
 plt.ylabel(r"Load-Proportionality-Factor $\lambda$ $\longrightarrow$")
 
 # %%
-# The deformed configuration of the solid body is plotted.
-solid.plot(
-    "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=2
+# The deformed configuration of the revolved solid body is plotted.
+solid.revolve(n=10, phi=90).plot(
+    "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=3
 ).show()

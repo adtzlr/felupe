@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `FieldContainer.revolve()`, `SolidBody.revolve()` and `SolidBodyNearlyIncompressible.revolve()` to convert a axisymmetric field / solid body to a 3d field / solid body. Only implemented for the conversion of axisymmetric quads to hexahedrons. For top-level fields, a vertex-mesh is also supported.
 - Add `fields, x0 = FieldContainer.merge()` to simplify the handling of multiple items (solid bodies). The top-level field container `x0` must be used for boundary conditions and in `Job.evaluate(x0=x0)`.
 - Add a warning if `FieldMixed()` is called with `axisymmetric=True` or `planestrain=True`, more than one field `n>1` and a given `dim`. This dimension is passed to the dual fields only.
+- Add support for the conversion of `quad9` to `hexahedron27` element types in `mesh.revolve()` and `mesh.expand()`.
 
 ### Changed
 - Allow field containers to be included in the list of `fields` in `FieldContainer(fields)`. If a field container is included, its sub-fields are unpacked.

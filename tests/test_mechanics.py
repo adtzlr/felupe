@@ -726,10 +726,8 @@ def test_axi_to_3d():
 
 def test_axi_to_3d_mixed():
 
-    import felupe as fem
-
     mesh = fem.Rectangle(n=6)
-    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3)
+    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3, axisymmetric=True)
 
     umat = fem.NeoHooke(mu=1, bulk=20)
     solid = fem.SolidBody(umat=fem.ThreeFieldVariation(umat), field=field)
@@ -744,8 +742,6 @@ def test_axi_to_3d_mixed():
 
 def test_axi_to_3d_incompressible():
 
-    import felupe as fem
-
     mesh = fem.Rectangle(n=6)
     field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
 
@@ -756,6 +752,7 @@ def test_axi_to_3d_incompressible():
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
+    new_solid = solid.revolve(n=11, phi=360)
     new_solid = solid.revolve(n=11, phi=180)
     new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
 
@@ -765,6 +762,22 @@ def test_axi_to_3d_incompressible():
 
     step = fem.Step(items=[new_solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
+
+
+def test_axi_to_3d_quadratic():
+
+    mesh = fem.Rectangle(n=6).add_midpoints_edges().add_midpoints_faces()
+    field = fem.FieldsMixed(fem.RegionBiQuadraticQuad(mesh), n=1, axisymmetric=True)
+
+    umat = fem.NeoHooke(mu=1, bulk=20)
+    solid = fem.SolidBody(umat, field=field)
+
+    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    solid.revolve(phi=180)
+    solid.revolve(phi=360)
 
 
 if __name__ == "__main__":
@@ -786,3 +799,4 @@ if __name__ == "__main__":
     test_axi_to_3d()
     test_axi_to_3d_incompressible()
     test_axi_to_3d_mixed()
+    test_axi_to_3d_quadratic()

@@ -111,7 +111,7 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
         }[cell_type]
 
         if cell_type_new == "hexahedron27":
-            n = 2 * n
+            n = 2 * n - 1
 
         if np.isscalar(thickness):
             points_thickness = np.linspace(0, thickness, n)
@@ -379,7 +379,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
     }[cell_type]
 
     if cell_type_new == "hexahedron27":
-        n = 2 * n
+        n = 2 * n - 1
 
     if np.isscalar(phi):
         points_phi = np.linspace(0, phi, n)

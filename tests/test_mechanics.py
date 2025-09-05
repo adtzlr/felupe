@@ -751,7 +751,8 @@ def test_axi_to_3d_incompressible():
     boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
-
+    
+    new_solid = solid.revolve(n=11, phi=360)
     new_solid = solid.revolve(n=11, phi=180)
     new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
 

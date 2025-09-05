@@ -12,6 +12,7 @@ Script-based Hex-meshing with revolve
    * run an axisymmetric simulation and revolve the results to a 3d simulation
 """
 
+# sphinx_gallery_thumbnail_number = -1
 import numpy as np
 import pypardiso
 

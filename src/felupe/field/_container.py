@@ -22,7 +22,13 @@ import numpy as np
 
 from ..math import rotate_points
 from ..mesh import MeshContainer
-from ..region import RegionHexahedron, RegionQuad, RegionVertex
+from ..region import (
+    RegionHexahedron,
+    RegionQuad,
+    RegionVertex,
+    RegionTriQuadraticHexahedron,
+    RegionBiQuadraticQuad,
+)
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
 
@@ -320,17 +326,22 @@ class FieldContainer:
         new_mesh = self.region.mesh.revolve(n=n, phi=phi, axis=0, expand_dim=True)
 
         new_region = {
+            RegionBiQuadraticQuad: RegionTriQuadraticHexahedron,
             RegionQuad: RegionHexahedron,
             RegionVertex: RegionVertex,
-        }[
-            type(self.region)
-        ](new_mesh)
+        }[type(self.region)](new_mesh)
+
+        if type(new_region) is RegionTriQuadraticHexahedron:
+            n = 2 * n - 1
 
         if np.isscalar(phi):
             rotation_angles = np.linspace(0, phi, n)
         else:
             rotation_angles = phi
             n = len(rotation_angles)
+
+        if rotation_angles[-1] == 360:
+            rotation_angles = rotation_angles[:-1]
 
         new_values = []
         for angle_deg in rotation_angles:

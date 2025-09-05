@@ -8,11 +8,11 @@ Multiple solid bodies
 
    * evaluate a **Job** with a top-level field
 
-This tutorial demonstrates the handling of multiple solid bodies. Different approaches
-are possible, but this technique is by far the most straight forward one. Let's start
-with the meshes, regions and fields. A top-level field container is further used for the
-boundary conditions. It is important to use the fields of the merged field container for
-the creation of the solid bodies.
+This tutorial shows how to handle multiple solid bodies. There are different ways to
+approach this, but the method presented here is by far the most straightforward. We'll
+start with the meshes, regions, and fields. After that, a top-level field container will
+be introduced for the boundary conditions. When creating the solid bodies, make sure to
+use the fields from this merged container.
 """
 
 import felupe as fem

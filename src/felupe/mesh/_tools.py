@@ -111,21 +111,21 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
         }[cell_type]
 
         if cell_type_new == "hexahedron27":
-            n = n + (n - 1)
+            n = 2 * n
 
         if np.isscalar(thickness):
             points_thickness = np.linspace(0, thickness, n)
         else:
 
+            points_thickness = np.array(thickness)
             if cell_type_new == "hexahedron27":
+
                 points_thickness = np.vstack(
                     [
                         points_thickness,
                         points_thickness + np.diff(points_thickness, append=np.nan) / 2,
                     ]
                 ).T.ravel()[:-1]
-
-            points_thickness = thickness
 
         n = len(points_thickness)
 
@@ -147,9 +147,9 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
             faces = [16, 14, 13, 15, 8, 26]
             volume = [17]
 
-            start = cells_new[:-2]
-            middle = cells_new[1:-1]
-            end = cells_new[2:]
+            start = cells_new[:-2:2]
+            middle = cells_new[1:-1:2]
+            end = cells_new[2::2]
 
             cells_new = np.concatenate([start, middle, end], axis=-1)[
                 ..., [*verts, *edges, *faces, *volume]
@@ -379,7 +379,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
     }[cell_type]
 
     if cell_type_new == "hexahedron27":
-        n = n + (n - 1)
+        n = 2 * n
 
     if np.isscalar(phi):
         points_phi = np.linspace(0, phi, n)
@@ -416,7 +416,7 @@ def revolve(points, cells, cell_type, n=11, phi=180, axis=0, expand_dim=True):
         three = [9, 10, 11, 12, 16, 14, 13, 15, 8, 26, 17]
 
         cells_new = np.vstack(
-            [np.hstack((r, s, t)) for r, s, t in zip(c[:-2], c[1:-1], c[2:])]
+            [np.hstack((r, s, t)) for r, s, t in zip(c[:-2:2], c[1:-1:2], c[2::2])]
         )[:, [*one, *two, *three]]
 
     else:

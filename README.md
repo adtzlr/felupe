@@ -63,11 +63,10 @@ mesh = fem.Cube(n=8)
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer(fields=[fem.Field(region, dim=3)])
 
-boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=-0.3)
 solid = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=5), field=field)
 
-move = fem.math.linsteps([0, -0.3], num=3)
-step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate()
 
 solid.plot("Principal Values of Cauchy Stress").show()

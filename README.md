@@ -124,7 +124,7 @@ All notable changes to this project will be documented in [this file](CHANGELOG.
 
 [[4]](https://doi.org/10.1016/c2009-0-24909-9) O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, "*The Finite Element Method: its Basis and Fundamentals*". Elsevier, 2013. [![DOI:10.1016/c2009-0-24909-9](https://zenodo.org/badge/DOI/10.1016/c2009-0-24909-9.svg)](https://doi.org/10.1016/c2009-0-24909-9).
 
-## License
+## 🔓 License
 FElupe - finite element analysis (C) 2021-2025 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

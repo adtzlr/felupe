@@ -44,7 +44,7 @@ Efficient [NumPy](https://numpy.org/)-based math is realized by element-wise ope
 > [!NOTE]
 > The name *FElupe* is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like *under the hood*.
 
-# 📦 Installation
+## 📦 Installation
 Install Python, open a terminal and run
 
 ```shell
@@ -53,7 +53,7 @@ pip install felupe[all]
 
 The [documentation](https://felupe.readthedocs.io/en/stable/) covers more details, like required and optional dependencies and how to install the latest development version.
 
-# 🚀 Getting Started
+## 🚀 Getting Started
 
 <details><summary>Expand the description...</summary>
 
@@ -101,10 +101,10 @@ solid.plot("Principal Values of Cauchy Stress").show()
   <img src="https://github.com/adtzlr/felupe/assets/5793153/29d72f83-dbce-403f-8d7b-76d9a8b2b24d" alt="Solid Body" height="200px">
 </p>
 
-# 📖 Documentation
+## 📖 Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/stable/).
 
-# 🧩 Extension Packages
+## 🧩 Extension Packages
 The capabilities of FElupe may be enhanced with extension packages created by the community.
 
 |                    **Package**                          |                     **Description**                     |
@@ -114,7 +114,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 |  [tensortrax](https://github.com/adtzlr/tensortrax)     |      Differentiable Tensors based on NumPy Arrays       |
 |    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
-# 🛠️ Testing
+## 🛠️ Testing
 
 To run the FElupe unit tests, check out this repository and type
 
@@ -122,7 +122,7 @@ To run the FElupe unit tests, check out this repository and type
 tox
 ```
 
-# 📝 Scientific Publications
+## 📝 Scientific Publications
 A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io/en/stable) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
 
 <details><summary>Expand the list...</summary>
@@ -137,10 +137,10 @@ Bogies and Running Gears](https://transportation.bme.hu/2022/11/30/bogie22/), 20
 
 </details>
 
-# 📄 Changelog
+## 📄 Changelog
 All notable changes to this project will be documented in [this file](CHANGELOG.md). The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# 📚 References
+## 📚 References
 [[1]](https://doi.org/10.21105/joss.02369) T. Gustafsson and G. McBain, "*[scikit-fem](https://github.com/kinnala/scikit-fem): A Python package for finite element assembly*", Journal of Open Source Software, vol. 5, no. 52. The Open Journal, p. 2369, Aug. 21, 2020. [![DOI:10.21105/joss.02369](https://zenodo.org/badge/DOI/10.21105/joss.02369.svg)](https://doi.org/10.21105/joss.02369).
 
 [[2]](https://doi.org/10.1017/cbo9780511755446) J. Bonet and R. D. Wood, "*Nonlinear Continuum Mechanics for Finite Element Analysis*". Cambridge University Press, Mar. 13, 2008. [![DOI:10.1017/cbo9780511755446](https://zenodo.org/badge/DOI/10.1017/cbo9780511755446.svg)](https://doi.org/10.1017/cbo9780511755446).
@@ -149,7 +149,7 @@ All notable changes to this project will be documented in [this file](CHANGELOG.
 
 [[4]](https://doi.org/10.1016/c2009-0-24909-9) O. C. Zienkiewicz, R. L. Taylor and J. Z. Zhu, "*The Finite Element Method: its Basis and Fundamentals*". Elsevier, 2013. [![DOI:10.1016/c2009-0-24909-9](https://zenodo.org/badge/DOI/10.1016/c2009-0-24909-9.svg)](https://doi.org/10.1016/c2009-0-24909-9).
 
-# License
+## License
 FElupe - finite element analysis (C) 2021-2025 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

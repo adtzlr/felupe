@@ -30,7 +30,7 @@ FElupe is a Python 3.9+ finite element analysis package focusing on the formulat
   href="https://felupe.readthedocs.io/en/latest/examples/ex20_third-medium-contact.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex20_third-medium-contact_thumb.gif" height="100px"/></a>
 </p>
 
-# ✨ Highlights
+## ✨ Highlights
 - ✅ 100% Python package built with [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/)
 - ✅ easy to learn and productive high-level [API](https://felupe.readthedocs.io/en/latest/felupe.html)
 - ✅ nonlinear deformation of [solid bodies](https://felupe.readthedocs.io/en/latest/felupe/mechanics.html#felupe.SolidBody)

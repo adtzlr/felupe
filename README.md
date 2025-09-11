@@ -6,7 +6,7 @@
 [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io/en/stable/) [![PyPI version shields.io](https://img.shields.io/pypi/v/felupe.svg)](https://pypi.python.org/pypi/felupe/) [![Conda Version](https://img.shields.io/conda/vn/conda-forge/felupe.svg)](https://anaconda.org/conda-forge/felupe) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/felupe)
  [![Documentation Status](https://readthedocs.org/projects/felupe/badge/?version=stable)](https://felupe.readthedocs.io/en/stable/?badge=stable) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active) [![codecov](https://codecov.io/gh/adtzlr/felupe/branch/main/graph/badge.svg?token=J2QP6Y6LVH)](https://codecov.io/gh/adtzlr/felupe) [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) ![Codestyle black](https://img.shields.io/badge/code%20style-black-black) ![PyPI - Downloads](https://img.shields.io/pypi/dm/felupe) [![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://adtzlr.github.io/felupe-web/lab?path=01_Getting-Started.ipynb) <a target="_blank" href="https://colab.research.google.com/github/adtzlr/felupe-web/blob/main/notebooks/colab/01_Getting-Started.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 
-FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies 🔧. This package is intended for scientific research 💻, but is also suitable for running nonlinear simulations 🚂 in general 🏎️. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
+FElupe is a Python 3.9+ finite element analysis package focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. This package is intended for scientific research, but is also suitable for running nonlinear simulations in general. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
 
 <p align="center">
   <a href="https://felupe.readthedocs.io/en/latest/examples/ex01_beam.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex01_beam_thumb.png" height="100px"/></a> <a href="https://felupe.readthedocs.io/en/latest/examples/ex02_plate-with-hole.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex02_plate-with-hole_thumb.png" height="100px"/></a> <a
@@ -30,22 +30,22 @@ FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on th
   href="https://felupe.readthedocs.io/en/latest/examples/ex20_third-medium-contact.html"><img src="https://felupe.readthedocs.io/en/latest/_images/sphx_glr_ex20_third-medium-contact_thumb.gif" height="100px"/></a>
 </p>
 
-# Highlights
-- [x] 100% Python package built with [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/)
-- [x] easy to learn and productive high-level [API](https://felupe.readthedocs.io/en/latest/felupe.html)
-- [x] nonlinear deformation of [solid bodies](https://felupe.readthedocs.io/en/latest/felupe/mechanics.html#felupe.SolidBody)
-- [x] interactive views on meshes, fields and solid bodies (using [PyVista](https://pyvista.org/))
-- [x] typical [finite elements](https://felupe.readthedocs.io/en/latest/felupe/element.html)
-- [x] cartesian, axisymmetric, plane strain and mixed fields
-- [x] [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution.html) with automatic differentiation
+# ✨ Highlights
+- ✅ 100% Python package built with [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/)
+- ✅ easy to learn and productive high-level [API](https://felupe.readthedocs.io/en/latest/felupe.html)
+- ✅ nonlinear deformation of [solid bodies](https://felupe.readthedocs.io/en/latest/felupe/mechanics.html#felupe.SolidBody)
+- ✅ interactive views on meshes, fields and solid bodies (using [PyVista](https://pyvista.org/))
+- ✅ typical [finite elements](https://felupe.readthedocs.io/en/latest/felupe/element.html)
+- ✅ cartesian, axisymmetric, plane strain and mixed fields
+- ✅ [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution.html) with automatic differentiation
 
 Efficient [NumPy](https://numpy.org/)-based math is realized by element-wise operating *trailing axes* [[1]](https://doi.org/10.21105/joss.02369). The finite element method, as used in FElupe, is based on [[2]](https://doi.org/10.1017/cbo9780511755446), [[3]]() and [[4]](https://doi.org/10.1016/c2009-0-24909-9). Related scientific articles are listed in the sections of the [API reference](https://felupe.readthedocs.io/en/latest/felupe.html).
 
 > [!NOTE]
-> *FElupe* is a combination of FE (finite element) and the german word *Lupe* 🔍 (magnifying glass) as a synonym for getting an insight 📖 how a finite element analysis code 🧮 looks like under the hood 🕳️.
+> The name *FElupe* is a combination of FE (finite element) and the german word *Lupe* (magnifying glass) as a synonym for getting an insight how a finite element analysis code looks like *under the hood*.
 
-# Installation
-Install Python, fire up 🔥 a terminal and run 🏃
+# 📦 Installation
+Install Python, open a terminal and run
 
 ```shell
 pip install felupe[all]
@@ -101,10 +101,10 @@ solid.plot("Principal Values of Cauchy Stress").show()
   <img src="https://github.com/adtzlr/felupe/assets/5793153/29d72f83-dbce-403f-8d7b-76d9a8b2b24d" alt="Solid Body" height="200px">
 </p>
 
-# Documentation
+# 📖 Documentation
 The documentation is located [here](https://felupe.readthedocs.io/en/stable/).
 
-# Extension Packages
+# 🧩 Extension Packages
 The capabilities of FElupe may be enhanced with extension packages created by the community.
 
 |                    **Package**                          |                     **Description**                     |
@@ -114,7 +114,7 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 |  [tensortrax](https://github.com/adtzlr/tensortrax)     |      Differentiable Tensors based on NumPy Arrays       |
 |    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
 
-# Testing
+# 🛠️ Testing
 
 To run the FElupe unit tests, check out this repository and type
 
@@ -122,7 +122,7 @@ To run the FElupe unit tests, check out this repository and type
 tox
 ```
 
-# Scientific Publications
+# 📝 Scientific Publications
 A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io/en/stable) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![DOI](https://zenodo.org/badge/360657894.svg)](https://zenodo.org/badge/latestdoi/360657894) and add your publication to this list.
 
 <details><summary>Expand the list...</summary>
@@ -137,10 +137,10 @@ Bogies and Running Gears](https://transportation.bme.hu/2022/11/30/bogie22/), 20
 
 </details>
 
-# Changelog
+# 📄 Changelog
 All notable changes to this project will be documented in [this file](CHANGELOG.md). The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# References
+# 📚 References
 [[1]](https://doi.org/10.21105/joss.02369) T. Gustafsson and G. McBain, "*[scikit-fem](https://github.com/kinnala/scikit-fem): A Python package for finite element assembly*", Journal of Open Source Software, vol. 5, no. 52. The Open Journal, p. 2369, Aug. 21, 2020. [![DOI:10.21105/joss.02369](https://zenodo.org/badge/DOI/10.21105/joss.02369.svg)](https://doi.org/10.21105/joss.02369).
 
 [[2]](https://doi.org/10.1017/cbo9780511755446) J. Bonet and R. D. Wood, "*Nonlinear Continuum Mechanics for Finite Element Analysis*". Cambridge University Press, Mar. 13, 2008. [![DOI:10.1017/cbo9780511755446](https://zenodo.org/badge/DOI/10.1017/cbo9780511755446.svg)](https://doi.org/10.1017/cbo9780511755446).

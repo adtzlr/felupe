@@ -1,7 +1,7 @@
 FElupe documentation
 ====================
 
-FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies 🔧. This package is intended for scientific research 💻, but is also suitable for running nonlinear simulations 🚂 in general 🏎️. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
+FElupe is a Python 3.9+ finite element analysis package focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. This package is intended for scientific research, but is also suitable for running nonlinear simulations in general. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
 
 .. grid::
 
@@ -52,7 +52,7 @@ FElupe is a Python 3.9+ 🐍 finite element analysis package 📦 focusing on th
 
 Installation
 ------------
-Install Python, fire up 🔥 a terminal and run 🏃
+Install Python, open a terminal and run
 
 .. image:: https://img.shields.io/pypi/v/felupe.svg
    :target: https://pypi.python.org/pypi/felupe/
@@ -66,7 +66,7 @@ where ``[all]`` is a combination of ``[autodiff,io,parallel,plot,progress,view]`
 * `numpy <https://github.com/numpy/numpy>`_ for array operations
 * `scipy <https://github.com/scipy/scipy>`_ for sparse matrices
 
-In order to make use of all features of FElupe 💎💰💍👑💎, it is suggested to install all optional dependencies.
+In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
 
 * `einsumt <https://github.com/mrkwjc/einsumt>`_ for parallel (threaded) assembly
 * `jax <https://github.com/jax-ml/jax>`_ for automatic differentiation in material formulations (JAX-based)

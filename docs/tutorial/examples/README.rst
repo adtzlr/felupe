@@ -76,9 +76,9 @@ Slightly modified code-blocks are provided for different kind of analyses
 
 .. tab:: 3D
 
+   and element formulations.
+
    .. tab:: Hexahedron
-      
-      and element formulations.
 
       .. code-block:: python
 
@@ -109,8 +109,6 @@ Slightly modified code-blocks are provided for different kind of analyses
          ).show()
    
    .. tab:: Quadratic Hexahedron
-         
-      and element formulations.
 
       .. code-block:: python
 
@@ -126,7 +124,9 @@ Slightly modified code-blocks are provided for different kind of analyses
          solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
-         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         step = fem.Step(
+             items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+         )
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
          job.evaluate()
@@ -135,12 +135,10 @@ Slightly modified code-blocks are provided for different kind of analyses
              ylabel=r"Normal Force $F$ in N $\longrightarrow$",
          )
          solid.plot(
-             "Principal Values of Cauchy Stress", project=fem.topoints, nonlinear_subdivision=4
+             "Principal Values of Cauchy Stress", nonlinear_subdivision=4
          ).show()
 
    .. tab:: Lagrange Hexahedron
-         
-      and element formulations.
 
       .. code-block:: python
 
@@ -156,7 +154,9 @@ Slightly modified code-blocks are provided for different kind of analyses
          solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
-         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         step = fem.Step(
+             items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+         )
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
          job.evaluate()
@@ -170,9 +170,9 @@ Slightly modified code-blocks are provided for different kind of analyses
 
 .. tab:: Plane Strain
 
+   and element formulations.
+
    .. tab:: Quad
-         
-      and element formulations.
 
       .. code-block:: python
 
@@ -188,7 +188,9 @@ Slightly modified code-blocks are provided for different kind of analyses
          solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
-         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         step = fem.Step(
+             items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+         )
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
          job.evaluate(filename="result.xdmf")
@@ -202,9 +204,9 @@ Slightly modified code-blocks are provided for different kind of analyses
 
 .. tab:: Axisymmetric
 
+   and element formulations.
+
    .. tab:: Quad
-         
-      and element formulations.
 
       .. code-block:: python
 
@@ -220,7 +222,9 @@ Slightly modified code-blocks are provided for different kind of analyses
          solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
-         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         step = fem.Step(
+             items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+         )
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
          job.evaluate(filename="result.xdmf")

@@ -23,13 +23,13 @@ A :func:`~felupe.dof.uniaxial` load case is applied on the displacement :class:`
 
    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:`nearly-incompressible solid body <felupe.SolidBodyNearlyIncompressible>`.
+An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:solid body <felupe.SolidBody>`.
 
 .. pyvista-plot::
    :context:
 
-   umat = fem.NeoHooke(mu=1)
-   solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+   umat = fem.NeoHooke(mu=1, bulk=50)
+   solid = fem.SolidBody(umat, field)
 
 A :class:`step <felupe.Step>` generates the consecutive substep-movements of a given :class:`boundary <felupe.Boundary>` condition.
 
@@ -37,7 +37,9 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
    :context:
 
    move = fem.math.linsteps([0, 1], num=5)
-   step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+   step = fem.Step(
+       items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+   )
 
 The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>` (here, a :class:`characteristic curve <felupe.CharacteristicCurve>` job is used). During :meth:`evaluation <felupe.Job.evaluate>`, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Rhapson <felupe.newtonrhapson>` procedure. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series XDMF file.
 
@@ -88,16 +90,18 @@ Slightly modified code-blocks are provided for different kind of analyses
 
          boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-         umat = fem.NeoHooke(mu=1)
-         solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+         umat = fem.NeoHooke(mu=1, bulk=50)
+         solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
-         step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+         step = fem.Step(
+             items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+         )
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
          job.evaluate(filename="result.xdmf")
          fig, ax = job.plot(
-             xlabel=rDisplacement $d_1$ in mm $\longrightarrow$",
+             xlabel=r"Displacement $d_1$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F_1$ in N $\longrightarrow$",
          )
          solid.plot(
@@ -125,7 +129,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-         job.evaluate(parallel=True)
+         job.evaluate()
          fig, ax = job.plot(
              xlabel=r"Displacement $u$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F$ in N $\longrightarrow$",
@@ -142,8 +146,8 @@ Slightly modified code-blocks are provided for different kind of analyses
 
          import felupe as fem
 
-         mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=6)
-         region = fem.RegionLagrange(mesh, order=6, dim=3)
+         mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=3)
+         region = fem.RegionLagrange(mesh, order=3, dim=3)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
          boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
@@ -155,7 +159,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
 
          job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-         job.evaluate(parallel=True)
+         job.evaluate()
          fig, ax = job.plot(
              xlabel=r"Displacement $u$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F$ in N $\longrightarrow$",
@@ -180,8 +184,8 @@ Slightly modified code-blocks are provided for different kind of analyses
 
          boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-         umat = fem.NeoHooke(mu=1)
-         solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+         umat = fem.NeoHooke(mu=1, bulk=50)
+         solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
          step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
@@ -212,8 +216,8 @@ Slightly modified code-blocks are provided for different kind of analyses
 
          boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
 
-         umat = fem.NeoHooke(mu=1)
-         solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+         umat = fem.NeoHooke(mu=1, bulk=50)
+         solid = fem.SolidBody(umat, field)
 
          move = fem.math.linsteps([0, 1], num=5)
          step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)

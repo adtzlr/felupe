@@ -70,11 +70,13 @@ Finally, the result of the last completed substep is plotted.
 
    solid.plot("Principal Values of Cauchy Stress").show()
 
-Slightly modified code-blocks are provided for different kind of analyses and element formulations.
+Slightly modified code-blocks are provided for different kind of analyses
 
 .. tab:: 3D
 
    .. tab:: Hexahedron
+      
+      and element formulations.
 
       .. code-block:: python
 
@@ -103,6 +105,8 @@ Slightly modified code-blocks are provided for different kind of analyses and el
          ).show()
    
    .. tab:: Quadratic Hexahedron
+         
+      and element formulations.
 
       .. code-block:: python
 
@@ -131,6 +135,8 @@ Slightly modified code-blocks are provided for different kind of analyses and el
          ).show()
 
    .. tab:: Lagrange Hexahedron
+         
+      and element formulations.
 
       .. code-block:: python
 
@@ -161,6 +167,8 @@ Slightly modified code-blocks are provided for different kind of analyses and el
 .. tab:: Plane Strain
 
    .. tab:: Quad
+         
+      and element formulations.
 
       .. code-block:: python
 
@@ -191,6 +199,8 @@ Slightly modified code-blocks are provided for different kind of analyses and el
 .. tab:: Axisymmetric
 
    .. tab:: Quad
+         
+      and element formulations.
 
       .. code-block:: python
 

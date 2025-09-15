@@ -221,6 +221,8 @@ def newtonrhapson(
     ext0=None,
     solver=spsolve,
     verbose=None,
+    callback=None,
+    callback_kwargs=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -247,7 +249,8 @@ def newtonrhapson(
         Callable to update the unknowns. Function signature must be
         ``update = lambda x0, dx: x``.
     check : callable, optional
-        Callable to the check the result.
+        Callable to check the result with signature
+        ``check = lambda xnorm, fnorm, success: dx, x, **kwargs``.
     tol : float, optional
         Tolerance value to check if the function has converged (default is 1.490e-8).
     items : list or None, optional
@@ -270,6 +273,10 @@ def newtonrhapson(
         Default is None. If None, verbosity is set to True. If None and the
         environmental variable FELUPE_VERBOSE is set and its value is not ``true``,
         then logging is turned off.
+    callback : callable or None, optional
+        An optional callback function with function signature
+        ``callback = lambda dx, x, iteration, xnorm, fnorm, success: None``, which is
+        called after each completed iteration. Default is None.
 
     Returns
     -------
@@ -447,6 +454,12 @@ def newtonrhapson(
         )
         xnorms.append(xnorm)
         fnorms.append(fnorm)
+
+        if callback is not None:
+            if callback_kwargs is None:
+                callback_kwargs = {}
+
+            callback(dx, x, iteration, xnorm, fnorm, success)
 
         if verbose:
             print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))

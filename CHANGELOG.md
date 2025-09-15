@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `fields, x0 = FieldContainer.merge()` to simplify the handling of multiple items (solid bodies). The top-level field container `x0` must be used for boundary conditions and in `Job.evaluate(x0=x0)`.
 - Add a warning if `FieldMixed()` is called with `axisymmetric=True` or `planestrain=True`, more than one field `n>1` and a given `dim`. This dimension is passed to the dual fields only.
 - Add support for the conversion of `quad9` to `hexahedron27` element types in `mesh.revolve()` and `mesh.expand()`.
+- Add `newtonrhapson.callback(dx, x, iteration, xnorm, fnorm, success)` to provide a callback after each completed Newton iteration. This is available as `Job.evaluate(callback=newton_callback)`, whereas a callback after each completed substep has to be provided in `Job(callback=substep_callback)`.
 
 ### Changed
 - Allow field containers to be included in the list of `fields` in `FieldContainer(fields)`. If a field container is included, its sub-fields are unpacked.

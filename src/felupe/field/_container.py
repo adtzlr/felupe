@@ -23,11 +23,11 @@ import numpy as np
 from ..math import rotate_points
 from ..mesh import MeshContainer
 from ..region import (
+    RegionBiQuadraticQuad,
     RegionHexahedron,
     RegionQuad,
-    RegionVertex,
     RegionTriQuadraticHexahedron,
-    RegionBiQuadraticQuad,
+    RegionVertex,
 )
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer

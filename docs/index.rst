@@ -91,6 +91,12 @@ or clone the repository and install the package in editable mode.
    cd felupe
    pip install --editable .
 
+Optional dependencies may also be installed by replacing the last line.
+
+.. code-block:: shell
+
+   pip install --editable ".[all]"
+
 Extension Packages
 ------------------
 

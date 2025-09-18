@@ -169,14 +169,18 @@ class MultiPointConstraint:
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
-    def plot(self, plotter=None, color="black", **kwargs):
+    def plot(self, plotter=None, color="black", deformed=True, **kwargs):
         import pyvista as pv
 
         if plotter is None:
             plotter = pv.Plotter()
 
-        # get deformed points
-        x = self.mesh.points + self.field[0].values
+        # get undeformed points
+        x = self.mesh.points
+        
+        if deformed:  # get deformed points
+            x += self.field[0].values
+            
         x = np.pad(x, ((0, 0), (0, 3 - x.shape[1])))
         pointa = x[self.centerpoint]
 

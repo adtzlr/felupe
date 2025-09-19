@@ -115,6 +115,7 @@ class PointLoad:
         plotter=None,
         color="red",
         scale=0.125,
+        deformed=True,
         **kwargs,
     ):
         "Plot the point load."
@@ -125,8 +126,14 @@ class PointLoad:
             plotter = mesh.plot()
 
         if len(self.points) > 0:
-            points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
-            magnitude = min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
+
+            x = mesh.points
+
+            if deformed:
+                x = x + self.field[0].values
+
+            points = np.pad(x, ((0, 0), (0, 3 - mesh.dim)))
+            magnitude = min(points.max(axis=0) - points.min(axis=0)) * scale
 
             values = np.atleast_2d(self.values)
 

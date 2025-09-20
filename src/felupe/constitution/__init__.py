@@ -7,6 +7,7 @@ from .hyperelasticity import NeoHooke, NeoHookeCompressible, OgdenRoxburgh, Volu
 from .linear_elasticity import (
     LinearElastic,
     LinearElastic1D,
+    LinearElasticLargeRotation,
     LinearElasticLargeStrain,
     LinearElasticOrthotropic,
     LinearElasticPlaneStrain,
@@ -30,6 +31,7 @@ __all__ = [
     "LinearElastic",
     "LinearElastic1D",
     "LinearElasticLargeStrain",
+    "LinearElasticLargeRotation",
     "LinearElasticOrthotropic",
     "LinearElasticPlaneStrain",
     "LinearElasticPlaneStress",

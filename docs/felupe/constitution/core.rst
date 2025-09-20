@@ -23,6 +23,7 @@ This page contains the core (hard-coded) constitutive material model formulation
    constitution.LinearElasticPlaneStrain
    constitution.LinearElasticTensorNotation
    LinearElasticLargeStrain
+   LinearElasticLargeRotation
    LinearElasticOrthotropic
 
 **Plasticity**
@@ -74,6 +75,11 @@ This page contains the core (hard-coded) constitutive material model formulation
 .. autofunction:: felupe.linear_elastic
 
 .. autoclass:: felupe.LinearElasticLargeStrain
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.LinearElasticLargeRotation
    :members:
    :undoc-members:
    :inherited-members:

@@ -6,6 +6,7 @@ from ._linear_elastic import (
     LinearElasticTensorNotation,
 )
 from ._linear_elastic_1d import LinearElastic1D
+from ._linear_elastic_large_rotation import LinearElasticLargeRotation
 from ._linear_elastic_large_strain import LinearElasticLargeStrain
 from ._linear_elastic_orthotropic import LinearElasticOrthotropic
 
@@ -15,6 +16,7 @@ __all__ = [
     "LinearElastic",
     "LinearElastic1D",
     "LinearElasticLargeStrain",
+    "LinearElasticLargeRotation",
     "LinearElasticOrthotropic",
     "LinearElasticPlaneStrain",
     "LinearElasticPlaneStress",

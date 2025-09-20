@@ -152,8 +152,11 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
             stress[a, b] = stress[b, a] = (1 - 2 * nu) / 2 * 2 * strain[a, b]
 
         stress *= E / (1 + nu) / (1 - 2 * nu)
+        stress = np.einsum(
+            "iI...,jJ...,IJ...->ij...", R, R, stress, optimize=True, out=stress
+        )
 
-        return [dot(dot(R, stress), transpose(R)), statevars]
+        return [stress, statevars]
 
     def hessian(self, x):
         r"""Evaluate the elasticity tensor.
@@ -201,6 +204,6 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
         ] = (1 - 2 * nu) / 2
 
         elast *= E / (1 + nu) / (1 - 2 * nu)
-        elast = np.einsum("mi...,nk...,ijkl...->mjnl...", R, R, elast, optimize=True)
+        elast = np.einsum("iI...,kK...,IJKL...->iJkL...", R, R, elast, optimize=True)
 
         return [elast]

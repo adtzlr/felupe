@@ -75,10 +75,9 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
     
     ..  warning::
         
-        This material formulation must not be used in analyses where large rotations,
-        large displacements or large strains occur. In this case, consider using a
-        :class:`~felupe.Hyperelastic` material formulation instead.
-        :class:`~felupe.LinearElasticLargeStrain` is based on a compressible version
+        This material formulation must not be used in analyses where large strains occur.
+        In this case, consider using a :class:`~felupe.Hyperelastic` material formulation
+        instead. :class:`~felupe.LinearElasticLargeStrain` is based on a compressible version
         of the Neo-Hookean material formulation and is safe to use for large rotations,
         large displacements and large strains.
     
@@ -88,11 +87,12 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
 
         >>> import felupe as fem
         >>> 
-        >>> umat = fem.LinearElastic(E=1, nu=0.3)
+        >>> umat = fem.LinearElasticLargeRotation(E=1, nu=0.3)
         >>> ax = umat.plot()
     
     See Also
     --------
+    felupe.LinearElastic : Linear-elastic material formulation.
     felupe.LinearElasticLargeStrain : Linear-elastic material formulation suitable for
         large-strain analyses based on the compressible Neo-Hookean material
         formulation.

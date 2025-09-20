@@ -153,7 +153,7 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
 
         stress *= E / (1 + nu) / (1 - 2 * nu)
         stress = np.einsum(
-            "iI...,jJ...,IJ...->ij...", R, R, stress, optimize=True, out=stress
+            "iI...,IJ...->iJ...", R, stress, optimize=True, out=stress
         )
 
         return [stress, statevars]

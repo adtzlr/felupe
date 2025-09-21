@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import cdya, dot, dya, identity, trace, transpose
+from ...math import cdya, dot, dya, identity, svd, trace, transpose
 from .._base import ConstitutiveMaterial
 from ._lame_converter import lame_converter
 
@@ -135,8 +135,8 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
 
         # convert the deformation gradient to strain
         F, statevars = x[0], x[-1]
-        W, Sigma, Vt = np.linalg.svd(F.T, full_matrices=False, hermitian=True)
-        R = transpose(dot(Vt.T, W.T))
+        W, Sigma, Vt = svd(F, full_matrices=False, hermitian=True)
+        R = dot(W, Vt)
         RtHR = dot(dot(transpose(R), F - identity(F)), R)
         strain = (RtHR + transpose(RtHR)) / 2
 
@@ -152,9 +152,7 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
             stress[a, b] = stress[b, a] = (1 - 2 * nu) / 2 * 2 * strain[a, b]
 
         stress *= E / (1 + nu) / (1 - 2 * nu)
-        stress = np.einsum(
-            "iI...,IJ...->iJ...", R, stress, optimize=True, out=stress
-        )
+        stress = np.einsum("iI...,IJ...->iJ...", R, stress, optimize=True, out=stress)
 
         return [stress, statevars]
 
@@ -181,8 +179,8 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
 
         # convert the deformation gradient to strain
         F = x[0]
-        W, Sigma, Vt = np.linalg.svd(F.T, full_matrices=False, hermitian=True)
-        R = transpose(dot(Vt.T, W.T))
+        W, Sigma, Vt = svd(F, full_matrices=False, hermitian=True)
+        R = dot(W, Vt)
 
         elast = np.zeros((3, 3, *F.shape), dtype=F.dtype)
 

@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import cdya, dya, identity, trace, transpose
+from ...math import cdya, cdya_ik, det, dot, dya, identity, inv, trace, transpose
 from .._base import ConstitutiveMaterial
 from ._lame_converter import lame_converter
 
@@ -101,9 +101,12 @@ class LinearElastic(ConstitutiveMaterial):
         differentiation.
     """
 
-    def __init__(self, E, nu):
+    def __init__(self, E, nu, nonlinear_geometry=False, formulation="updated"):
         self.E = E
         self.nu = nu
+
+        self.nonlinear_geometry = nonlinear_geometry
+        self.formulation = formulation
 
         self.kwargs = {"E": self.E, "nu": self.nu}
 
@@ -115,7 +118,7 @@ class LinearElastic(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(self, x):
+    def gradient(self, x, finalize=True):
         r"""Evaluate the stress tensor (as a function of the deformation gradient).
 
         Parameters
@@ -136,8 +139,22 @@ class LinearElastic(ConstitutiveMaterial):
         F, statevars = x[0], x[-1]
 
         # convert the deformation gradient to strain
-        H = F - identity(F)
-        strain = (H + transpose(H)) / 2
+        if self.nonlinear_geometry is False:
+            H = F - identity(F)
+            strain = (H + transpose(H)) / 2
+        else:
+            if self.formulation == "total":
+                C = dot(transpose(F), F)
+                strain = (C - identity(C)) / 2
+            elif self.formulation == "updated":
+                J = det(F)
+                invF = inv(F, determinant=J)
+                invb = dot(transpose(invF), invF)
+                strain = (identity(invb) - invb) / 2
+            else:
+                raise ValueError(
+                    f'Unknown formulation {self.formulation}. Must be "total" or "updated".'
+                )
 
         # init stress
         stress = np.zeros_like(strain)
@@ -150,7 +167,18 @@ class LinearElastic(ConstitutiveMaterial):
         for a, b in zip([0, 0, 1], [1, 2, 2]):
             stress[a, b] = stress[b, a] = (1 - 2 * nu) / 2 * 2 * strain[a, b]
 
-        return [E / (1 + nu) / (1 - 2 * nu) * stress, statevars]
+        stress *= E / (1 + nu) / (1 - 2 * nu)
+        P = stress
+
+        if self.nonlinear_geometry and finalize:
+            if self.formulation == "total":
+                S = stress
+                P = dot(F, S)
+            elif self.formulation == "updated":
+                σ = stress
+                P = J * σ * transpose(invF)
+
+        return [P, statevars]
 
     def hessian(self, x=None, shape=(1, 1), dtype=None):
         r"""Evaluate the elasticity tensor. The Deformation gradient is only
@@ -160,7 +188,7 @@ class LinearElastic(ConstitutiveMaterial):
         ----------
         x : list of ndarray, optional
             List with Deformation gradient :math:`\boldsymbol{F}` (3x3) as first item
-            (default is None).
+            (default is None). Must not be None if nonlinear_geometry is True.
         shape : tuple of int, optional
             Tuple with shape of the trailing axes (default is (1, 1)).
 
@@ -175,7 +203,11 @@ class LinearElastic(ConstitutiveMaterial):
         nu = self.nu
 
         if x is not None:
+            F = x[0]
             dtype = x[0].dtype
+        
+        if self.nonlinear_geometry:
+            shape = F.shape[-2:]
 
         elast = np.zeros((3, 3, 3, 3, *shape), dtype=dtype)
 
@@ -196,7 +228,32 @@ class LinearElastic(ConstitutiveMaterial):
             [1, 1, 0, 0, 2, 2, 0, 0, 2, 2, 1, 1],
         ] = (1 - 2 * nu) / 2
 
-        return [E / (1 + nu) / (1 - 2 * nu) * elast]
+        elast *= E / (1 + nu) / (1 - 2 * nu)
+        A = elast
+
+        if self.nonlinear_geometry:
+            if self.formulation == "total":
+                S = self.gradient(x, finalize=False)[0]
+                C = elast
+                A = np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C, out=C)
+                B = cdya_ik(np.eye(3), S)
+                A = np.sum(np.broadcast_arrays(A, B), axis=0, out=A)
+
+            elif self.formulation == "updated":
+                J = det(F)
+                invF = inv(F, determinant=J)
+                σ = self.gradient(x, finalize=False)[0]
+                c = elast
+                c = np.sum(np.broadcast_arrays(c, cdya_ik(np.eye(3), σ)), axis=0, out=c)
+                A = np.einsum("Jj...,Ll...,ijkl...->iJkL...", invF, invF, c, out=c)
+                A = np.divide(A, J, out=A)
+
+            else:
+                raise ValueError(
+                    f'Unknown formulation {self.formulation}. Must be "total" or "updated".'
+                )
+
+        return [A]
 
 
 class LinearElasticTensorNotation(ConstitutiveMaterial):

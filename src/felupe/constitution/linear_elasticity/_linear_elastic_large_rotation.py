@@ -136,8 +136,8 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
         F, statevars = x[0], x[-1]
         W, Sigma, Vt = svd(F, full_matrices=False, hermitian=True)
         R = dot(W, Vt)
-        RtHR = dot(dot(transpose(R), F - identity(F)), R)
-        strain = (RtHR + transpose(RtHR)) / 2
+        RtH = dot(transpose(R), F - identity(F))
+        strain = (RtH + transpose(RtH)) / 2
 
         # init stress
         stress = np.zeros_like(strain)

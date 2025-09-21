@@ -18,9 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import cdya, dot, dya, identity, svd, trace, transpose
+from ...math import dot, identity, svd, transpose
 from .._base import ConstitutiveMaterial
-from ._lame_converter import lame_converter
 
 
 class LinearElasticLargeRotation(ConstitutiveMaterial):

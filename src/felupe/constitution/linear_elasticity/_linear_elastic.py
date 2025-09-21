@@ -205,7 +205,7 @@ class LinearElastic(ConstitutiveMaterial):
         if x is not None:
             F = x[0]
             dtype = x[0].dtype
-        
+
         if self.nonlinear_geometry:
             shape = F.shape[-2:]
 
@@ -236,8 +236,7 @@ class LinearElastic(ConstitutiveMaterial):
                 S = self.gradient(x, finalize=False)[0]
                 C = elast
                 A = np.einsum("iI...,kK...,IJKL...->iJkL...", F, F, C, out=C)
-                B = cdya_ik(np.eye(3), S)
-                A = np.sum(np.broadcast_arrays(A, B), axis=0, out=A)
+                A = np.sum(np.broadcast_arrays(A, cdya_ik(np.eye(3), S)), axis=0, out=A)
 
             elif self.formulation == "updated":
                 J = det(F)
@@ -245,8 +244,8 @@ class LinearElastic(ConstitutiveMaterial):
                 σ = self.gradient(x, finalize=False)[0]
                 c = elast
                 c = np.sum(np.broadcast_arrays(c, cdya_ik(np.eye(3), σ)), axis=0, out=c)
-                A = np.einsum("Jj...,Ll...,ijkl...->iJkL...", invF, invF, c, out=c)
-                A = np.divide(A, J, out=A)
+                JA = np.einsum("Jj...,Ll...,ijkl...->iJkL...", invF, invF, c, out=c)
+                A = np.divide(JA, J, out=JA)
 
             else:
                 raise ValueError(

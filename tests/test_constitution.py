@@ -138,23 +138,6 @@ def test_linear():
     assert np.allclose(*check_stress)
     assert np.allclose(*check_dsde)
 
-    for Material in [
-        (fem.constitution.LinearElasticLargeRotation, {}),
-    ]:
-        LinearElastic, kwargs = Material
-
-        le = LinearElastic(E=1.0, nu=0.3, **kwargs)
-
-        stress = le.gradient(F)[:-1]
-        dsde = le.hessian(F)
-
-        assert le.elasticity(F)[0].shape[-2:] == F[0].shape[-2:]
-
-        check_stress.append(stress)
-        check_dsde.append([dsde[0][..., 0, 0], dsde2[0][..., 0, 0]])
-
-        assert np.allclose(stress, 0)
-
 
 def test_linear_orthotropic():
     r, F = pre(sym=False, add_identity=True)

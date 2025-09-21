@@ -13,7 +13,6 @@ All notable changes to this project will be documented in this file. The format 
 - Add support for the conversion of `quad9` to `hexahedron27` element types in `mesh.revolve()` and `mesh.expand()`.
 - Add `newtonrhapson.callback(dx, x, iteration, xnorm, fnorm, success)` to provide a callback after each completed Newton iteration. This is available as `Job.evaluate(callback=newton_callback)`, whereas a callback after each completed substep has to be provided in `Job(callback=substep_callback)`.
 - Add a flag to plot MPC and point load either on the deformed (default) or undeformed mesh-points, `MultiPointConstraint.plot(..., deformed=True)`, `MultiPointContact.plot(..., deformed=True)`, `PointLoad.plot(..., deformed=True)`.
-- Add `LinearElasticLargeRotation` suitable for large rotations and small strains.
 - Add `math.svd()` for the singular value decomposition of arrays with trailing axes.
 
 ### Changed

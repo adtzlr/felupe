@@ -16,7 +16,6 @@ __all__ = [
     "LinearElastic",
     "LinearElastic1D",
     "LinearElasticLargeStrain",
-    "LinearElasticLargeRotation",
     "LinearElasticOrthotropic",
     "LinearElasticPlaneStrain",
     "LinearElasticPlaneStress",

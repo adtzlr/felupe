@@ -819,6 +819,78 @@ def eigvalsh(A, shear=False):
     return eigvals(A, shear=shear, eigvals=np.linalg.eigvalsh)
 
 
+def svd(a, full_matrices=True, compute_uv=True, hermitian=False):
+    """Singular Value Decomposition.
+
+    When `a` is a 2D array, and ``full_matrices=False``, then it is
+    factorized as ``u @ np.diag(s) @ vh = (u * s) @ vh``, where
+    `u` and the Hermitian transpose of `vh` are 2D arrays with
+    orthonormal columns and `s` is a 1D array of `a`'s singular
+    values. When `a` is higher-dimensional, SVD is applied in
+    stacked mode as explained below.
+
+    Parameters
+    ----------
+    a : (..., M, N) array_like
+        A real or complex array with ``a.ndim >= 2``.
+    full_matrices : bool, optional
+        If True (default), `u` and `vh` have the shapes ``(..., M, M)`` and
+        ``(..., N, N)``, respectively.  Otherwise, the shapes are
+        ``(..., M, K)`` and ``(..., K, N)``, respectively, where
+        ``K = min(M, N)``.
+    compute_uv : bool, optional
+        Whether or not to compute `u` and `vh` in addition to `s`.  True
+        by default.
+    hermitian : bool, optional
+        If True, `a` is assumed to be Hermitian (symmetric if real-valued),
+        enabling a more efficient method for finding singular values.
+        Defaults to False.
+
+    Returns
+    -------
+    When `compute_uv` is True, the result is a namedtuple with the following
+    attribute names:
+
+    U : { (..., M, M), (..., M, K) } array
+        Unitary array(s). The first ``a.ndim - 2`` dimensions have the same
+        size as those of the input `a`. The size of the last two dimensions
+        depends on the value of `full_matrices`. Only returned when
+        `compute_uv` is True.
+    S : (..., K) array
+        Vector(s) with the singular values, within each vector sorted in
+        descending order. The first ``a.ndim - 2`` dimensions have the same
+        size as those of the input `a`.
+    Vh : { (..., N, N), (..., K, N) } array
+        Unitary array(s). The first ``a.ndim - 2`` dimensions have the same
+        size as those of the input `a`. The size of the last two dimensions
+        depends on the value of `full_matrices`. Only returned when
+        `compute_uv` is True.
+
+    Raises
+    ------
+    LinAlgError
+        If SVD computation does not converge.
+
+    See Also
+    --------
+    numpy.linalg.svd : Singular Value Decomposition.
+    """
+
+    SVDResult = namedtuple("SVDResult", ["U", "S", "Vh"])
+    U, S, Vh = np.linalg.svd(
+        np.einsum("ij...->...ij", a),
+        full_matrices=full_matrices,
+        compute_uv=compute_uv,
+        hermitian=hermitian,
+    )
+
+    return SVDResult(
+        U=np.einsum("...ij->ij...", U),
+        S=np.einsum("...a->a...", S),
+        Vh=np.einsum("...ij->ij...", Vh),
+    )
+
+
 def transpose(A, mode=1, **kwargs):
     "Transpose (mode=1) or major-transpose (mode=2) of matrix A."
     if mode == 1:

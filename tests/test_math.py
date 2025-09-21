@@ -160,6 +160,7 @@ def test_math():
     fem.math.eigvalsh(C)
     fem.math.eigh(C)
     fem.math.eig(C)
+    fem.math.svd(C)
 
     fem.math.majortranspose(A)
     fem.math.trace(C)

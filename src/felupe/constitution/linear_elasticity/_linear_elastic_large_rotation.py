@@ -177,7 +177,7 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
         E = self.E
         nu = self.nu
 
-        # convert the deformation gradient to strain
+        # obtain R from the deformation gradient
         F = x[0]
         W, Sigma, Vt = svd(F, full_matrices=False, hermitian=True)
         R = dot(W, Vt)
@@ -201,24 +201,7 @@ class LinearElasticLargeRotation(ConstitutiveMaterial):
             [1, 1, 0, 0, 2, 2, 0, 0, 2, 2, 1, 1],
         ] = (1 - 2 * nu) / 2
 
-        # HR = dot(F - identity(F), R)
-        # strain = (HR + transpose(HR)) / 2
-
-        # # init stress
-        # stress = np.zeros_like(strain)
-
-        # # normal stress components
-        # for a, b, c in zip([0, 1, 2], [1, 2, 0], [2, 0, 1]):
-        #     stress[a, a] = (1 - nu) * strain[a, a] + nu * (strain[b, b] + strain[c, c])
-
-        # # shear stress components
-        # for a, b in zip([0, 0, 1], [1, 2, 2]):
-        #     stress[a, b] = stress[b, a] = (1 - 2 * nu) / 2 * 2 * strain[a, b]
-
-        # stress *= E / (1 + nu) / (1 - 2 * nu)
-
         elast *= E / (1 + nu) / (1 - 2 * nu)
-        # elast += np.einsum("ik...,jl...->ijkl...", np.eye(3), stress, optimize=True)
 
         elast = np.einsum("iI...,kK...,IJKL...->iJkL...", R, R, elast, optimize=True)
 

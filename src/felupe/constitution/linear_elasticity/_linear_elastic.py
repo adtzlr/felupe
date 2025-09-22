@@ -176,7 +176,7 @@ class LinearElastic(ConstitutiveMaterial):
                 P = dot(F, S)
             elif self.formulation == "updated":
                 σ = stress
-                P = J * σ * transpose(invF)
+                P = J * dot(σ, transpose(invF))
 
         return [P, statevars]
 

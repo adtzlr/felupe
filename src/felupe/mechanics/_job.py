@@ -279,15 +279,13 @@ class Job:
 
             if verbose == 1:
                 total = sum([step.nsubsteps for step in self.steps])
-                progress_bar = tqdm(total=total, unit="substep")
+                progress_bar = tqdm(total=total, desc="Step  ", unit="substep")
 
             for j, step in enumerate(self.steps):
-                newton_verbose = False
                 if verbose == 2:
                     print(f"Begin Evaluation of Step {j + 1}.")
-                    newton_verbose = True
 
-                substeps = step.generate(verbose=newton_verbose, **kwargs)
+                substeps = step.generate(verbose=verbose, **kwargs)
                 for i, substep in enumerate(substeps):
                     self.fnorms.append(substep.fnorms)
                     if verbose == 2:

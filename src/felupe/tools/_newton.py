@@ -396,8 +396,8 @@ def newtonrhapson(
 
             decades = None
 
-        except ModuleNotFoundError:
-            verbose = 2
+        except ModuleNotFoundError:  # pragma: no cover
+            verbose = 2  # pragma: no cover
 
     if verbose == 1:
         progress_bar = tqdm(total=100, desc="Solver", leave=False, unit="%")

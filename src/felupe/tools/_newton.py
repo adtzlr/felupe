@@ -391,6 +391,20 @@ def newtonrhapson(
             verbose = FELUPE_VERBOSE == "true"
 
     if verbose:
+        try:
+            from tqdm import tqdm
+
+            decades = None
+
+        except ModuleNotFoundError:  # pragma: no cover
+            verbose = 2  # pragma: no cover
+
+    if verbose == 1:
+        progress_bar = tqdm(total=100, desc="Solver", leave=False, unit="%")
+        progress0 = 0
+        progress = 0
+
+    if verbose == 2:
         runtimes = [perf_counter()]
         soltimes = []
 
@@ -408,7 +422,7 @@ def newtonrhapson(
     else:
         f = fun(x, *args, **kwargs)
 
-    if verbose:
+    if verbose == 2:
         print()
         print("Newton-Rhapson solver")
         print("=====================")
@@ -433,12 +447,12 @@ def newtonrhapson(
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
-        if verbose:
+        if verbose == 2:
             soltime_start = perf_counter()
 
         dx = solve(K, -f, **kwargs_solve)
 
-        if verbose:
+        if verbose == 2:
             soltime_end = perf_counter()
             soltimes.append([soltime_start, soltime_end])
 
@@ -461,7 +475,23 @@ def newtonrhapson(
 
             callback(dx, x, iteration, xnorm, fnorm, success)
 
-        if verbose:
+        # update progress bar if norm of residuals is available
+        if verbose == 1 and fnorm > 0.0:
+
+            # initial log. ratio of first residual norm vs. tolerance norm
+            if decades is None:
+                decades = max(1.0, np.log10(fnorm) - np.log10(tol))
+
+            # current log. ratio of first residual norm vs. tolerance norm
+            dfnorm = np.log10(fnorm) - np.log10(tol)
+            completion = 1 - dfnorm / decades
+
+            # progress in percent, ensure lower equal 100%
+            progress = np.clip(100 * completion, 0, 100).astype(int)
+            progress_bar.update(progress - progress0)
+            progress0 = progress
+
+        if verbose == 2:
             print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))
 
         if success:
@@ -482,7 +512,10 @@ def newtonrhapson(
         fnorms=fnorms,
     )
 
-    if verbose:
+    if verbose == 1:
+        progress_bar.close()
+
+    if verbose == 2:
         runtimes.append(perf_counter())
         runtime = np.diff(runtimes)[0]
         soltime = np.diff(soltimes).sum()

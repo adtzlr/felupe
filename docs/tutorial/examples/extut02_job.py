@@ -50,7 +50,7 @@ uniaxial = fem.Step(
 # :class:`~felupe.CharacteristicCurve`-job logs the displacement and sum of reaction
 # forces on a given boundary condition.
 job = fem.CharacteristicCurve(steps=[uniaxial], boundary=boundaries["move"])
-job.evaluate(filename="result.xdmf", verbose=True)
+job.evaluate(filename="result.xdmf")
 
 field.plot("Principal Values of Logarithmic Strain").show()
 

@@ -223,6 +223,7 @@ def newtonrhapson(
     verbose=None,
     callback=None,
     callback_kwargs=None,
+    progress_bar=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -277,6 +278,9 @@ def newtonrhapson(
         An optional callback function with function signature
         ``callback = lambda dx, x, iteration, xnorm, fnorm, success: None``, which is
         called after each completed iteration. Default is None.
+    progress_bar : str or None, optional
+        A progress bar if verbose is True. If None and verbose is True, a new bar is
+        created.
 
     Returns
     -------
@@ -400,7 +404,13 @@ def newtonrhapson(
             verbose = 2  # pragma: no cover
 
     if verbose == 1:
-        progress_bar = tqdm(total=100, desc="Solver", leave=False, unit="%")
+        if progress_bar is None:
+            progress_bar = tqdm(total=100, colour="yellow", unit="%")
+            close_bar = True
+        else:
+            progress_bar.reset()
+            close_bar = False
+
         progress0 = 0
         progress = 0
 
@@ -513,7 +523,9 @@ def newtonrhapson(
     )
 
     if verbose == 1:
-        progress_bar.close()
+        progress_bar.update(100 - progress)
+        if close_bar:
+            progress_bar.close()
 
     if verbose == 2:
         runtimes.append(perf_counter())

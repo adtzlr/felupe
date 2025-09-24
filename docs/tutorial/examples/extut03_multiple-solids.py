@@ -52,7 +52,7 @@ uniaxial = fem.Step(
 # This step is now added to a :class:`~felupe.Job`. The top-level field ``x0`` is passed
 # to :meth:`~felupe.Job.evaluate`.
 job = fem.Job(steps=[uniaxial])
-job.evaluate(x0=x0, verbose=True)
+job.evaluate(x0=x0)
 
 plotter = solid_1.plot(style="wireframe")
 plotter = solid_3.plot(style="wireframe", plotter=plotter)

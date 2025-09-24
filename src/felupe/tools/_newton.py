@@ -486,15 +486,17 @@ def newtonrhapson(
             callback(dx, x, iteration, xnorm, fnorm, success)
 
         # update progress bar if norm of residuals is available
-        if verbose == 1 and fnorm > 0.0:
+        if verbose == 1:
+            completion = 0.1
 
-            # initial log. ratio of first residual norm vs. tolerance norm
-            if decades is None:
-                decades = max(1.0, np.log10(fnorm) - np.log10(tol))
+            if fnorm > 0.0:
+                # initial log. ratio of first residual norm vs. tolerance norm
+                if decades is None:
+                    decades = max(1.0, np.log10(fnorm) - np.log10(tol))
 
-            # current log. ratio of first residual norm vs. tolerance norm
-            dfnorm = np.log10(fnorm) - np.log10(tol)
-            completion = 1 - dfnorm / decades
+                # current log. ratio of first residual norm vs. tolerance norm
+                dfnorm = np.log10(fnorm) - np.log10(tol)
+                completion += 0.9 * (1 - dfnorm / decades)
 
             # progress in percent, ensure lower equal 100%
             progress = np.clip(100 * completion, 0, 100).astype(int)

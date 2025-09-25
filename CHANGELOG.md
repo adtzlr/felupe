@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [9.4.0] - 2025-09-25
+
 ### Added
 - Add a method to checkpoint a current state of deformation, `state = SolidBody.checkpoint()` and a method to restore checkpoints, `SolidBody.restore(state)`. This is implemented for `SolidBody`, `SolidBodyNearlyIncompressible` and `FieldContainer`.
 - Add `math.revolve_points()`, to revolve only points instead of a Mesh. Previously, `mesh.revolve(points, cells=None, cell_type=None, **kwargs)[0]` had to be used.

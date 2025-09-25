@@ -223,7 +223,7 @@ class Job:
 
         if verbose:
             try:
-                from tqdm import tqdm
+                from tqdm.auto import tqdm
             except ModuleNotFoundError:  # pragma: no cover
                 verbose = 2  # pragma: no cover
 

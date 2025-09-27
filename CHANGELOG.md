@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [9.4.1] - 2025-09-27
+
+### Added
+-Add the pyOpenSci peer reviewed badge.
+
 ## [9.4.0] - 2025-09-25
 
 ### Added

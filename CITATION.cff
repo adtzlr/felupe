@@ -1,11 +1,34 @@
+cff-version: "1.2.0"
 authors:
-- family-names: "Dutzler"
-  given-names: "Andreas"
+- family-names: Dutzler
+  given-names: Andreas
   orcid: "https://orcid.org/0000-0002-9383-9686"
-cff-version: 1.2.0
-message: "If you use this software, please cite it using these metadata."
-title: "FElupe: Finite Element Analysis"
-type: software
-doi: 10.5281/zenodo.4817406
-url: https://github.com/adtzlr/felupe
-license: GPL-3.0
+- family-names: Leitner
+  given-names: Martin
+  orcid: "https://orcid.org/0000-0002-3530-1183"
+doi: 10.5281/zenodo.17202699
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Dutzler
+    given-names: Andreas
+    orcid: "https://orcid.org/0000-0002-9383-9686"
+  - family-names: Leitner
+    given-names: Martin
+    orcid: "https://orcid.org/0000-0002-3530-1183"
+  date-published: 2025-10-07
+  doi: 10.21105/joss.09160
+  issn: 2475-9066
+  issue: 114
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 9160
+  title: "FElupe: Finite element analysis for continuum mechanics of
+    solid bodies"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.09160"
+  volume: 10
+title: "FElupe: Finite element analysis for continuum mechanics of solid
+  bodies"

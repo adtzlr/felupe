@@ -9,7 +9,7 @@ tags:
 authors:
   - name: Andreas Dutzler
     orcid: 0000-0002-9383-9686
-    affiliation: [ 1, 2 ]
+    affiliation: "1, 2"
   - name: Martin Leitner
     orcid: 0000-0002-3530-1183
     affiliation: 1

@@ -224,6 +224,7 @@ def newtonrhapson(
     callback=None,
     callback_kwargs=None,
     progress_bar=None,
+    tqdm="auto",
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -278,9 +279,13 @@ def newtonrhapson(
         An optional callback function with function signature
         ``callback = lambda dx, x, iteration, xnorm, fnorm, success: None``, which is
         called after each completed iteration. Default is None.
-    progress_bar : str or None, optional
-        A progress bar if verbose is True. If None and verbose is True, a new bar is
-        created.
+    progress_bar : tqdm or None, optional
+        Use an existing instance of a progress bar if verbose is True. If None and
+        verbose is True, a new bar is created. Default is None.
+    tqdm : str or None, optional
+        If verbose is True, choose a backend for ``tqdm`` (None, ``"auto"`` or
+        ``"notebook"``. Default is ``"auto"``. Note that ``tqdm.auto`` does not
+        update the progress bar in a Jupyter console, which is used in Spyder IDE.
 
     Returns
     -------
@@ -396,7 +401,16 @@ def newtonrhapson(
 
     if verbose:
         try:
-            from tqdm import tqdm
+            backend = str(tqdm).lower()
+
+            if backend == "none":
+                from tqdm import tqdm
+            elif backend == "auto":
+                from tqdm.auto import tqdm
+            elif backend == "notebook":
+                from tqdm.notebook import tqdm
+            else:
+                raise ValueError('tqdm must be None, "auto" or "notebook".')
 
             decades = None
 

@@ -1,3 +1,29 @@
+# -*- coding: utf-8 -*-
+"""
+ _______  _______  ___      __   __  _______  _______
+|       ||       ||   |    |  | |  ||       ||       |
+|    ___||    ___||   |    |  | |  ||    _  ||    ___|
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
+|    ___||    ___||   |___ |       ||    ___||    ___|
+|   |    |   |___ |       ||       ||   |    |   |___
+|___|    |_______||_______||_______||___|    |_______|
+
+This file is part of felupe.
+
+Felupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Felupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
 import os
 
 import numpy as np
@@ -73,7 +99,7 @@ def test_job_xdmf_global_field():
 
     field, step = pre()
     job = fem.Job(steps=[step])
-    job.evaluate(filename="result.xdmf", x0=field)
+    job.evaluate(filename="result.xdmf", x0=field, tqdm=None)
 
 
 def test_curve():
@@ -147,7 +173,11 @@ def test_empty():
 
     step = fem.Step(items=[solid], ramp=None, boundaries=None)
     job = fem.Job(steps=[step])
-    job.evaluate()
+
+    with pytest.raises(ValueError):
+        job.evaluate(tqdm="my_fancy_backend")
+
+    job.evaluate(tqdm="notebook")
 
 
 def test_noramp():

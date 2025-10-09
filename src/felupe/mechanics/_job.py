@@ -151,6 +151,7 @@ class Job:
         cell_data_default=True,
         verbose=None,
         parallel=False,
+        tqdm="auto",
         **kwargs,
     ):
         """Evaluate the steps.
@@ -188,6 +189,10 @@ class Job:
             Flag to use a threaded version of :func:`numpy.einsum` during assembly.
             Requires ``einsumt``. This may add additional overhead to small-sized
             problems. Default is False.
+        tqdm : str or None, optional
+            If verbose is True, choose a backend for ``tqdm`` (None, ``"auto"`` or
+            ``"notebook"``. Default is ``"auto"``. Note that ``tqdm.auto`` does not
+            update the progress bar in a Jupyter console, which is used in Spyder IDE.
         **kwargs : dict
             Optional keyword arguments for :meth:`~felupe.Step.generate`. If
             ``parallel=True``, it is added as ``kwargs["parallel"] = True`` to the dict
@@ -223,7 +228,17 @@ class Job:
 
         if verbose:
             try:
-                from tqdm.auto import tqdm
+                backend = str(tqdm).lower()
+
+                if backend == "none":
+                    from tqdm import tqdm
+                elif backend == "auto":
+                    from tqdm.auto import tqdm
+                elif backend == "notebook":
+                    from tqdm.notebook import tqdm
+                else:
+                    raise ValueError('tqdm must be None, "auto" or "notebook".')
+
             except ModuleNotFoundError:  # pragma: no cover
                 verbose = 2  # pragma: no cover
 

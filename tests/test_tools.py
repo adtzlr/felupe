@@ -223,17 +223,28 @@ def test_newton_plane():
         field,
         verbose=True,
         kwargs=dict(umat=umat),
+        tqdm=None,
         **loadcase,
     )
 
     # define the constitutive material behavior
     umat = fem.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
+    with pytest.raises(ValueError):
+        res = fem.newtonrhapson(
+            field,
+            verbose=True,
+            kwargs=dict(umat=umat),
+            tqdm="my_fancy_backend",
+            **loadcase,
+        )
+
     # newton-rhapson procedure
     res = fem.newtonrhapson(
         field,
         verbose=True,
         kwargs=dict(umat=umat),
+        tqdm="notebook",
         **loadcase,
     )
 

@@ -102,6 +102,43 @@ def test_job_xdmf_global_field():
     job.evaluate(filename="result.xdmf", x0=field, tqdm=None)
 
 
+def test_job_xdmf_vertex():
+
+    import felupe as fem
+
+    meshes = [
+        fem.Cube(n=3),
+        fem.Cube(n=3).translate(1, axis=0),
+    ]
+    container = fem.MeshContainer(meshes, merge=True)
+    field = fem.Field.from_mesh_container(container).as_container()
+
+    regions = [
+        fem.RegionHexahedron(container.meshes[0]),
+        fem.RegionHexahedron(container.meshes[1]),
+    ]
+    fields = [
+        fem.FieldContainer([fem.Field(regions[0], dim=3)]),
+        fem.FieldContainer([fem.Field(regions[1], dim=3)]),
+    ]
+
+    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    umat = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
+    solids = [
+        fem.SolidBody(umat=umat, field=fields[0]),
+        fem.SolidBody(umat=umat, field=fields[1]),
+    ]
+
+    move = fem.math.linsteps([0, 1], num=5)
+    ramp = {boundaries["move"]: move}
+    step = fem.Step(items=solids, ramp=ramp, boundaries=boundaries)
+
+    job = fem.Job(steps=[step])
+
+    with pytest.warns(UserWarning):
+        job.evaluate(x0=field, filename="result.xdmf")
+
+
 def test_curve():
     field, step = pre()
 
@@ -198,6 +235,7 @@ if __name__ == "__main__":
     test_job()
     test_job_xdmf()
     test_job_xdmf_global_field()
+    test_job_xdmf_vertex()
     test_curve()
     test_curve2()
     test_curve_custom_items()

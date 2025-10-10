@@ -278,22 +278,21 @@ class Job:
                     "Logarithmic Strain": log_strain,
                     "Deformation Gradient": deformation_gradient,
                 }
-                print(type(kwargs["x0"].region))
-                if "x0" in kwargs.keys() and isinstance(
-                    kwargs["x0"].region, RegionVertex
-                ):
-                    # strains and deformation gradient can't be evaluated due to missing
-                    # shape function gradient w.r.t. the undeformed coordinates in
-                    # RegionVertex
-                    cdata = {}
-                    warnings.warn(
-                        " ".join(
-                            [
-                                "RegionVertex detected as region of global field,",
-                                "export only points and default point data.",
-                            ]
+                if "x0" in kwargs.keys():
+                    if isinstance(kwargs["x0"].region, RegionVertex):
+                        # strains and deformation gradient can't be evaluated due to
+                        # missing shape function gradient w.r.t. the undeformed
+                        # coordinates in RegionVertex
+                        cdata = {}
+                        warnings.warn(
+                            " ".join(
+                                [
+                                    "RegionVertex detected as region of the global",
+                                    "field, result-file will only contain points and",
+                                    "default point-data.",
+                                ]
+                            )
                         )
-                    )
 
             if point_data is None:
                 point_data = {}

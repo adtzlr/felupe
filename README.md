@@ -80,7 +80,7 @@ tox
 ```
 
 ## 📝 Scientific Publications
-A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io/en/stable) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![status](https://joss.theoj.org/papers/631ced28a5ede102f536d66cb25183f9/status.svg)](https://joss.theoj.org/papers/631ced28a5ede102f536d66cb25183f9) and add your publication to this list.
+A list of articles in which [![FElupe](https://img.shields.io/badge/%F0%9F%94%8D-FElupe-white)](https://felupe.readthedocs.io/en/stable) is involved. If you use FElupe in your scientific work, please star this repository, cite it [![status](https://joss.theoj.org/papers/631ced28a5ede102f536d66cb25183f9/status.svg)](https://joss.theoj.org/papers/631ced28a5ede102f536d66cb25183f9) and optionally add your publication to this list.
 
 <details><summary>Expand the list...</summary>
 

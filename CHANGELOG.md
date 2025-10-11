@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add JOSS badge to README.md and change CITATION.cff to JOSS.
 - Add the keyword `Job.evaluate(tqdm="auto")` and `newtonrhapson(tqdm="auto")` with additional options `None` and `"notebook"`. In a Jupyter console, a progress bar from `tqdm.auto` does not update. The `tqdm`-keyword allows to switch the tqdm-backend manually.
 
+### Fixed
+- Fix the XDMF output error if a global `field` in `Job.evaluate(x0=field)` is based on `RegionVertex`. Fall-back to a basic output with only points and default point-data.
+
 ## [9.4.1] - 2025-09-27
 
 ### Added

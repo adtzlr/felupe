@@ -16,9 +16,11 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import warnings
 
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
+from ..region import RegionVertex
 from ..tools import logo, runs_on
 
 
@@ -276,6 +278,21 @@ class Job:
                     "Logarithmic Strain": log_strain,
                     "Deformation Gradient": deformation_gradient,
                 }
+                if "x0" in kwargs.keys():
+                    if isinstance(kwargs["x0"].region, RegionVertex):
+                        # strains and deformation gradient can't be evaluated due to
+                        # missing shape function gradient w.r.t. the undeformed
+                        # coordinates in RegionVertex
+                        cdata = {}
+                        warnings.warn(
+                            " ".join(
+                                [
+                                    "RegionVertex detected as region of the global",
+                                    "field, result-file will only contain points and",
+                                    "default point-data.",
+                                ]
+                            )
+                        )
 
             if point_data is None:
                 point_data = {}

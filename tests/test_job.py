@@ -99,7 +99,7 @@ def test_job_xdmf_global_field():
 
     field, step = pre()
     job = fem.Job(steps=[step])
-    job.evaluate(filename="result.xdmf", x0=field, tqdm=None)
+    job.evaluate(filename="result.xdmf", x0=field, tqdm="auto")
 
 
 def test_job_xdmf_vertex():

@@ -223,7 +223,7 @@ def test_newton_plane():
         field,
         verbose=True,
         kwargs=dict(umat=umat),
-        tqdm=None,
+        tqdm="auto",
         **loadcase,
     )
 

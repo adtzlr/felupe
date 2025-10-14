@@ -4,8 +4,8 @@ All notable changes to this project will be documented in this file. The format 
 ## [Unreleased]
 
 ### Added
-- Add JOSS badge to README.md and change CITATION.cff to JOSS.
-- Add the keyword `Job.evaluate(tqdm="auto")` and `newtonrhapson(tqdm="auto")` with additional options `None` and `"notebook"`. In a Jupyter console, a progress bar from `tqdm.auto` does not update. The `tqdm`-keyword allows to switch the tqdm-backend manually.
+- Add a JOSS badge to README.md and change CITATION.cff to JOSS.
+- Add the keyword `Job.evaluate(tqdm="tqdm")` and `newtonrhapson(tqdm="tqdm")` with additional options `"auto"` and `"notebook"`. The `tqdm`-keyword allows to switch the tqdm-backend manually. Note that in a Jupyter console, a progress bar from `tqdm.auto` does not update. 
 
 ### Changed
 - Change the recommended citation from Zenodo to JOSS in README.md.

@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix the XDMF output error if a global `field` in `Job.evaluate(x0=field)` is based on `RegionVertex`. Fall-back to a basic output with only points and default point-data.
+- Fix the magnitude in `PointLoad.plot()` for 2d-models in 3d-space, e.g. for truss bodies. Use the max. distance per axis instead of the min. distance per axis for the base magnitude of the force arrow(s).
 
 ## [9.4.1] - 2025-09-27
 

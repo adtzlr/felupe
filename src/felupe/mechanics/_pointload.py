@@ -133,7 +133,7 @@ class PointLoad:
                 x = x + self.field[0].values
 
             points = np.pad(x, ((0, 0), (0, 3 - mesh.dim)))
-            magnitude = min(points.max(axis=0) - points.min(axis=0)) * scale
+            magnitude = max(points.max(axis=0) - points.min(axis=0)) * scale
 
             values = np.atleast_2d(self.values)
 

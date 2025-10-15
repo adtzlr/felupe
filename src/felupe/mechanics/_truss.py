@@ -56,8 +56,8 @@ class TrussBody(Solid):
 
        \Lambda = \sqrt{\frac{l^2}{L^2}}
 
-   with the squared undeformed and deformed lengths, denoted in
-   Eqs. :eq:`truss-lengths`.
+    with the squared undeformed and deformed lengths, denoted in
+    Eqs. :eq:`truss-lengths`.
 
     .. math::
        :label: truss-lengths

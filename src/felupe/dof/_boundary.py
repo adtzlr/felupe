@@ -47,9 +47,10 @@ class Boundary:
         A tuple to define which axes of the selected points should be skipped, i.e.
         not prescribed (default is ``None`` and will be set to ``(False, False, False)``
         if ``mask=None``).
-    mask : ndarray
+    mask : array_like or None, optional
         Boolean mask for the prescribed degrees of freedom. If a mask is passed, ``fx``,
         ``fy`` and ``fz`` are ignored. However, ``skip`` is still applied on the mask.
+        Default is None.
     mode : string, optional
         A string which defines the logical operation for the selected points per
         axis (default is ``"or"``).
@@ -227,7 +228,7 @@ class Boundary:
 
         # reshape the mask
         npoints = self.field.region.mesh.npoints
-        self.mask = mask.reshape(npoints, -1)
+        self.mask = np.array(mask).astype(bool).reshape(npoints, -1)
 
         # expand point-based to dof-based mask
         if self.mask.shape[1] == 1:

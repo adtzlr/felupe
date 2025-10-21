@@ -1,6 +1,23 @@
 r"""
 Nonlinear Truss Analysis
 ------------------------
+
+.. topic:: Numeric continuation of a 3d truss system.
+
+   * use FElupe with contique
+
+   * view the normal forces of the deformed truss system
+
+   * plot load-proportionality-factor (LPF) - displacement curves
+
+   
+.. admonition:: This example requires external packages.
+   :class: hint
+
+   .. code-block::
+
+      pip install contique
+
 This example describes a three-dimensional system of trusses with 5 points and 6 cells
 (in total 5 active degrees of freedom). Given to its geometry, strong geometric
 nonlinearities are to be expected when the given reference load is applied. First,  we

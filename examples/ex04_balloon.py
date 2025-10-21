@@ -82,7 +82,10 @@ def dfundx(x, lpf, *args):
     """The jacobian of the system vector of equilibrium equations w.r.t. the
     primary unknowns."""
 
-    K = fem.tools.jac([solid, pressure], field)
+    field[0].values.ravel()[dof1] = x
+    pressure.update(lpf)
+
+    K = fem.tools.jac(items=[solid, pressure], x=field)
 
     return fem.solve.partition(field, K, dof1, dof0)[2]
 
@@ -113,6 +116,7 @@ Res = contique.solve(
     tol=1e-3,
     decrease=1.2,
     increase=0.4,
+    high=2,
 )
 X = np.array([res.x for res in Res])
 

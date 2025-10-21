@@ -2,7 +2,7 @@ r"""
 Nonlinear Truss Analysis
 ------------------------
 This example describes a three-dimensional system of trusses with 5 points and 6 cells
-(in total 5 active deegrees of freedom). Given to its geometry, strong geometric
+(in total 5 active degrees of freedom). Given to its geometry, strong geometric
 nonlinearities are to be expected when the given reference load is applied. First,  we
 create a mesh, where points are defined by their coordinates and cells by pairs of point
 connectivities.
@@ -74,7 +74,7 @@ plotter.show()
 # %%
 # For the numeric continuation, the equilibrium function ``fun`` and its derivatives
 # w.r.t. the displacement field ``dfun_du`` and the load-proportionality-factor
-# ``dfun_dlpf`` have to be defined. We're only interested in the active degrees of
+# ``dfun_dlpf`` have to be defined. Here, we're only interested in the active degrees of
 # freedom.
 def fun(x, lpf, *args):
     field[0].values.ravel()[dof1] = x
@@ -96,7 +96,7 @@ def dfun_dlpf(x, lpf, *args):
 
 
 # %%
-# Now that the model is finished some additional settings have to be chosen. Initial
+# Now that the model is finished, some additional settings have to be chosen. Initial
 # allowed incremental system vector components for both the displacement vector and the
 # load-proportionality-factor (LPF) have to be specified. We use ``dlpf = 0.005`` and
 # ``du = 0.05`` (figured out after some trial and error). Both parameters can't be
@@ -133,6 +133,7 @@ plotter = field.view(cell_data={"Force": force}).plot(
     cmap="coolwarm",
     clim=[-abs(force).max(), abs(force).max()],
     render_lines_as_tubes=True,
+    show_edges=False,
 )
 plotter.add_points(
     mesh.points + field[0].values,

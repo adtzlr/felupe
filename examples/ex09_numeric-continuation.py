@@ -37,15 +37,15 @@ region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 # introduce symmetry planes at x=y=z=0
-bounds = fem.dof.symmetry(field[0], axes=(True, True, True))
+boundaries = fem.dof.symmetry(field[0], axes=(True, True, True))
 
 # partition degrees of freedom
-dof0, dof1 = fem.dof.partition(field, bounds)
+dof0, dof1 = fem.dof.partition(field, boundaries)
 
 # constitutive isotropic hyperelastic material formulation
 yeoh = mat.Hyperelastic(mat.models.hyperelastic.yeoh, C10=0.5, C20=-0.25, C30=0.025)
 ax = yeoh.plot(incompressible=True, ux=np.linspace(1, 2.76), bx=None, ps=None)
-body = fem.SolidBodyNearlyIncompressible(yeoh, field, bulk=5000)
+solid = fem.SolidBodyNearlyIncompressible(yeoh, field, bulk=5000)
 
 # %%
 # An external normal force is applied at :math:`x=1` on a quarter model of a cube with
@@ -56,8 +56,8 @@ body = fem.SolidBodyNearlyIncompressible(yeoh, field, bulk=5000)
 # external force vector at x=1
 right = region.mesh.points[:, 0] == 1
 v = region.mesh.cells_per_point[right]
-values_load = np.vstack([v, np.zeros_like(v), np.zeros_like(v)]).T
 
+values_load = np.vstack([v, np.zeros_like(v), np.zeros_like(v)]).T
 load = fem.PointLoad(field, right, values_load)
 
 # %%
@@ -69,25 +69,23 @@ def fun(x, lpf, *args):
     "The system vector of equilibrium equations."
 
     # re-create field-values from active degrees of freedom
-    body.field[0].values.fill(0)
-    body.field[0].values.ravel()[dof1] += x
+    field[0].values.ravel()[dof1] = x
     load.update(values_load * lpf)
 
-    return fem.tools.fun(items=[body, load], x=body.field)[dof1]
+    return fem.tools.fun(items=[solid, load], x=field)[dof1]
 
 
 def dfundx(x, lpf, *args):
     """The jacobian of the system vector of equilibrium equations w.r.t. the
     primary unknowns."""
 
-    body.field[0].values.fill(0)
-    body.field[0].values.ravel()[dof1] += x
+    field[0].values.ravel()[dof1] = x
     load.update(values_load * lpf)
 
-    r = fem.tools.fun(items=[body, load], x=body.field)
-    K = fem.tools.jac(items=[body, load], x=body.field)
+    r = fem.tools.fun(items=[solid, load], x=field)
+    K = fem.tools.jac(items=[solid, load], x=field)
 
-    return fem.solve.partition(body.field, K, dof1, dof0, r)[2]
+    return fem.solve.partition(field, K, dof1, dof0, r)[2]
 
 
 def dfundl(x, lpf, *args):
@@ -96,7 +94,7 @@ def dfundl(x, lpf, *args):
 
     load.update(values_load)
 
-    return fem.tools.fun(items=[load], x=body.field)[dof1]
+    return fem.tools.fun(items=[load], x=field)[dof1]
 
 
 # %%

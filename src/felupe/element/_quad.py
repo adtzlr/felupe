@@ -310,3 +310,8 @@ class BiQuadraticQuad(Element):
         "Return the gradient of shape functions at given coordinates (r, s)."
 
         return self._lagrange.gradient(rs)[self._permute, :]
+
+    def hessian(self, rs):
+        "Return the hessian of shape functions at given coordinates (r, s)."
+
+        return self._lagrange.hessian(rs)[self._permute, :]

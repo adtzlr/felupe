@@ -335,6 +335,36 @@ class ArbitraryOrderLagrange(Element):
 
         return dhdr
 
+    def hessian(self, r):
+        "Return the hessian of shape functions at given coordinate vector r."
+        n = self._nshape
+
+        # 1d - basis function vectors per axis
+        h = [self._AT @ self._polynomial(ra, n) for ra in r]
+
+        # shifted 1d - basis function vectors per axis
+        h1 = [self._AT @ np.append(0, self._polynomial(ra, n)[:-1]) for ra in r]
+        h2 = [self._AT @ np.append([0, 0], self._polynomial(ra, n)[:-2]) for ra in r]
+
+        # init output
+        d2hdrdr = np.zeros((n**self.dim, self.dim, self.dim))
+
+        # loop over columns
+        for i in range(self.dim):
+            for j in range(self.dim):
+                g = copy(h)
+                if i == j:
+                    g[i] = h2[i]
+                else:
+                    g[i] = h1[i]
+                    g[j] = h1[j]
+                d2hdrdr[:, i, j] = np.einsum(self._subscripts, *g).ravel("F")
+
+        if self.permute is not None:
+            d2hdrdr = d2hdrdr[self.permute]
+
+        return d2hdrdr
+
     def _points(self, n):
         "Equidistant n-points in interval [-1, 1]."
         return np.linspace(*self._interval, n)

@@ -620,6 +620,19 @@ def test_expand_revolve_quadratic():
     assert len(new_mesh.cells) == 8
 
 
+def test_subdivide():
+
+    mesh = fem.Rectangle(n=3)
+    mesh.subdivide()
+    mesh.triangulate().subdivide()
+
+    fem.mesh.subdivide(fem.Cube(n=3))
+    fem.Cube(n=3).triangulate().subdivide()
+
+    with pytest.raises(NotImplementedError):
+        fem.mesh.subdivide(fem.mesh.Line(n=3))
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -641,3 +654,4 @@ if __name__ == "__main__":
     test_expand()
     test_interpolate_line()
     test_expand_revolve_quadratic()
+    test_subdivide()

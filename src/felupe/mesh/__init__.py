@@ -8,6 +8,7 @@ from ._convert import (
     collect_faces,
     collect_volumes,
     convert,
+    subdivide,
 )
 from ._dual import dual
 from ._geometry import (
@@ -69,6 +70,7 @@ __all__ = [
     "rotate",
     "runouts",
     "stack",
+    "subdivide",
     "sweep",
     "translate",
     "triangulate",

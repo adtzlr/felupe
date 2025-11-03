@@ -626,9 +626,6 @@ def subdivide(points, cells, cell_type):
         Original point-connectivity of cells.
     cell_type : str
         A string in VTK-convention that specifies the cell type.
-    cell_type_new: str or None, optional
-        A string in VTK-convention that specifies the new cell type (default is None).
-        If None, the cell type is chosen automatically.
 
     Returns
     -------

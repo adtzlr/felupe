@@ -529,7 +529,7 @@ class TriQuadraticHexahedron(Element):
         "Return the gradient of shape functions at given coordinates (r, s, t)."
 
         return self._lagrange.gradient(rst)[self._permute, :]
-    
+
     def hessian(self, rst):
         "Return the hessian of shape functions at given coordinates (r, s, t)."
 

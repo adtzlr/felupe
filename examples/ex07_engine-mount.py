@@ -74,17 +74,17 @@ plotter = field.mesh_container.plot(colors=["grey", "black", "white"])
 boundaries.plot(plotter=plotter, scale=0.02).show()
 
 # %%
-# The material behaviour of the rubberlike solid is defined through a built-in hyperelastic
-# isotropic compressible Neo-Hookean material formulation. A solid body applies the material formulation on the
-# displacement field. The air is also simulated by a Neo-Hookean material formulation
-# but with no volumetric contribution and hence, no special mixed-field treatment is
-# necessary here. A crucial parameter is the shear modulus which is used for the
-# simulation of the air. The air is meshed and simulated to capture the contacts of the
-# rubber blocks inside the engine mount during the deformation. Hence, its overall
-# stiffness contribution must be as low as possible. Here, ``1 / 25`` of the shear
-# modulus of the rubber is used. The bulk modulus of the rubber is lowered to provide a
-# more realistic deformation for the three-dimensional component simulated by a plane-
-# strain analysis.
+# The material behaviour of the rubberlike solid is defined through a built-in
+# hyperelastic isotropic compressible Neo-Hookean material formulation. A solid body
+# applies the material formulation on the displacement field. The air is also simulated
+# by a Neo-Hookean material formulation but with no volumetric contribution and hence,
+# no special mixed-field treatment is necessary here. A crucial parameter is the shear
+# modulus which is used for the simulation of the air. The air is meshed and simulated
+# to capture the contacts of the rubber blocks inside the engine mount during the
+# deformation. Hence, its overall stiffness contribution must be as low as possible.
+# Here, ``1 / 25`` of the shear modulus of the rubber is used. The bulk modulus of the
+# rubber is lowered to provide a more realistic deformation for the three-dimensional
+# component simulated by a plane- strain analysis.
 shear_modulus = 1
 rubber = fem.SolidBodyNearlyIncompressible(
     umat=fem.NeoHooke(mu=shear_modulus), field=fields[1], bulk=100

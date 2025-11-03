@@ -10,7 +10,7 @@ Nonlinear Truss Analysis
 
    * plot load-proportionality-factor (LPF) - displacement curves
 
-   
+
 .. admonition:: This example requires external packages.
    :class: hint
 

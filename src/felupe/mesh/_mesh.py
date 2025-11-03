@@ -30,6 +30,7 @@ from ._convert import (
     collect_faces,
     collect_volumes,
     convert,
+    subdivide,
 )
 from ._discrete_geometry import DiscreteGeometry
 from ._dual import dual
@@ -1548,3 +1549,31 @@ class Mesh(DiscreteGeometry):
             and cells and update cell_type accordingly.
         """
         return add_midpoints_volumes(self, cell_type_new=cell_type)
+
+    def subdivide(self):
+        """Subdivide cells by adding midpoints on edges, faces and volumes.
+
+        Returns
+        -------
+        Mesh
+            A new subdivided mesh.
+
+        Examples
+        --------
+
+        .. pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>>
+        >>> rect = fem.Rectangle(n=3)
+        >>> mesh = rect.subdivide()
+        >>>
+        >>> mesh.plot().show()
+
+        See Also
+        --------
+        felupe.Mesh.subdivide : Subdivide cells by adding midpoints on edges, faces and
+            volumes.
+        """
+        return subdivide(self)

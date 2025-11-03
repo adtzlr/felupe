@@ -88,7 +88,7 @@ bounds = fem.BoundaryDict(
 #        - \frac{1}{\text{tr}(\boldsymbol{1})}
 #          \mathbb{L}(\boldsymbol{u}) \cdot \mathbb{L}(\boldsymbol{u})
 #
-from felupe.math import dot, dddot, hess
+from felupe.math import dddot, dot, hess
 
 laplacian = lambda x: np.einsum("ijj...->i...", x)
 

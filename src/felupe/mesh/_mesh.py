@@ -1562,7 +1562,7 @@ class Mesh(DiscreteGeometry):
         --------
 
         .. pyvista-plot::
-        :force_static:
+           :force_static:
 
         >>> import felupe as fem
         >>>

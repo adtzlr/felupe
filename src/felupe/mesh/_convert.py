@@ -612,3 +612,103 @@ def add_midpoints_volumes(points, cells, cell_type, cell_type_new=None):
         }[cell_type]
 
     return points_new, cells_new, cell_type_new
+
+
+@mesh_or_data
+def subdivide(points, cells, cell_type):
+    """Subdivide cells by adding midpoints on edges, faces and volumes.
+
+    Parameters
+    ----------
+    points : list or ndarray
+        Original point coordinates.
+    cells : list or ndarray
+        Original point-connectivity of cells.
+    cell_type : str
+        A string in VTK-convention that specifies the cell type.
+
+    Returns
+    -------
+    points : ndarray
+        Modified point coordinates.
+    cells : ndarray
+        Modified point-connectivity of cells.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type.
+
+    Examples
+    --------
+    Take a rectangle mesh and subdivide it two times.
+
+    .. pyvista-plot::
+       :context:
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> rect = fem.Rectangle(n=4).modify_corners()
+       >>> rect.plot().show()
+
+    .. pyvista-plot::
+       :context:
+       :force_static:
+
+       >>> mesh = fem.mesh.subdivide(fem.mesh.subdivide(rect))
+       >>> mesh.plot().show()
+
+    See Also
+    --------
+    felupe.Mesh.subdivide : Subdivide cells by adding midpoints on edges, faces and
+        volumes.
+    """
+
+    if cell_type == "triangle":
+        points, cells, cell_type_new = add_midpoints_edges(points, cells, cell_type)
+
+        idx = [[0, 3, 5], [3, 1, 4], [5, 4, 2], [3, 4, 5]]
+
+    elif cell_type == "tetra":
+        points, cells, cell_type_new = add_midpoints_edges(points, cells, cell_type)
+        points, cells, cell_type_new = add_midpoints_faces(points, cells, cell_type_new)
+
+        idx = [
+            [0, 4, 6, 7],
+            [4, 1, 5, 8],
+            [6, 5, 2, 9],
+            [7, 8, 9, 3],
+            [8, 4, 5, 9],
+            [4, 5, 6, 9],
+            [8, 4, 7, 9],
+            [7, 6, 9, 4],
+        ]
+
+    elif cell_type == "quad":
+        points, cells, cell_type_new = add_midpoints_edges(points, cells, cell_type)
+        points, cells, cell_type_new = add_midpoints_faces(points, cells, cell_type_new)
+
+        idx = [[0, 4, 8, 7], [4, 1, 5, 8], [7, 8, 6, 3], [8, 5, 2, 6]]
+
+    elif cell_type == "hexahedron":
+        points, cells, cell_type_new = add_midpoints_edges(points, cells, cell_type)
+        points, cells, cell_type_new = add_midpoints_faces(points, cells, cell_type_new)
+        points, cells, cell_type_new = add_midpoints_volumes(
+            points, cells, cell_type_new
+        )
+
+        idx = [
+            [0, 8, 24, 11, 16, 22, 26, 20],
+            [8, 1, 9, 24, 22, 17, 21, 26],
+            [11, 24, 10, 3, 20, 26, 23, 19],
+            [24, 9, 2, 10, 26, 21, 18, 23],
+            [16, 22, 26, 20, 4, 12, 25, 15],
+            [22, 17, 21, 26, 12, 5, 13, 25],
+            [20, 26, 23, 19, 15, 25, 14, 7],
+            [26, 21, 18, 23, 25, 13, 6, 14],
+        ]
+
+    else:
+        raise NotImplementedError("Cell type not supported for subdivision.")
+
+    cells = np.vstack([cells[:, i] for i in idx])
+
+    return points, cells, cell_type

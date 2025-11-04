@@ -64,12 +64,13 @@ The documentation is located [here](https://felupe.readthedocs.io/en/stable/).
 ## 🧩 Extension Packages
 The capabilities of FElupe may be enhanced with extension packages created by the community.
 
-|                    **Package**                          |                     **Description**                     |
-|:-------------------------------------------------------:|:-------------------------------------------------------:|
-|  [hyperelastic](https://github.com/adtzlr/hyperelastic) |     Constitutive hyperelastic material formulations     |
-|    [matadi](https://github.com/adtzlr/matadi)           | Material Definition with Automatic Differentiation (AD) |
-|  [tensortrax](https://github.com/adtzlr/tensortrax)     |      Differentiable Tensors based on NumPy Arrays       |
-|    [feplot](https://github.com/ZAARAOUI999/feplot)      |             A visualization tool for FElupe             |
+|                    **Package**                          |                     **Description**                        |
+|:-------------------------------------------------------:|:----------------------------------------------------------:|
+|      [contique](https://github.com/adtzlr/contique)     | Numerical continuation of nonlinear equilibrium equations. |
+|  [hyperelastic](https://github.com/adtzlr/hyperelastic) |      Constitutive hyperelastic material formulations       |
+|    [matadi](https://github.com/adtzlr/matadi)           |  Material Definition with Automatic Differentiation (AD)   |
+|  [tensortrax](https://github.com/adtzlr/tensortrax)     |       Differentiable Tensors based on NumPy Arrays         |
+|    [feplot](https://github.com/ZAARAOUI999/feplot)      |              A visualization tool for FElupe               |
 
 ## 🛠️ Testing
 

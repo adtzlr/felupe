@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add a JOSS badge to README.md and change CITATION.cff to JOSS.
-- Add the keyword `Job.evaluate(tqdm="tqdm")` and `newtonrhapson(tqdm="tqdm")` with additional options `"auto"` and `"notebook"`. The `tqdm`-keyword allows to switch the tqdm-backend manually. Note that in a Jupyter console, a progress bar from `tqdm.auto` does not update. 
+- Add the keyword `Job.evaluate(tqdm="tqdm")` and `newtonrhapson(tqdm="tqdm")` with additional options `"auto"` and `"notebook"`. The `tqdm`-keyword allows to switch the tqdm-backend manually. Note that in a Jupyter console, a progress bar from `tqdm.auto` does not update.
+- Add the `hessian()` method to the `ArbitraryOrderLagrange` element and also for `BiQuadraticQuad` and `TriQuadraticHexahedron`.
+- Add `mesh.subdivide()` and `Mesh.subdivide()` to refine a mesh with quad, hexahedron, triangle or tetra cells.
 
 ### Changed
 - Change the recommended citation from Zenodo to JOSS in README.md.
@@ -13,6 +15,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 - Fix the XDMF output error if a global `field` in `Job.evaluate(x0=field)` is based on `RegionVertex`. Fall-back to a basic output with only points and default point-data.
 - Fix the magnitude in `PointLoad.plot()` for 2d-models in 3d-space, e.g. for truss bodies. Use the max. distance per axis instead of the min. distance per axis for the base magnitude of the force arrow(s).
+- Change the mask-argument of a `Boundary` from a boolean array to an array-like argument, which is converted to a boolean array internally. This will handle integer mask-arrays correctly.
 
 ## [9.4.1] - 2025-09-27
 

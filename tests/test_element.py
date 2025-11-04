@@ -67,9 +67,11 @@ def test_line_lagrange():
 
     h = line6.function(r)
     dhdr = line6.gradient(r)
+    d2hdrdr = line6.hessian(r)
 
     assert np.isclose(h[0], 1)
     assert np.isclose(dhdr[0, 0], -5.70833333)
+    assert np.isclose(d2hdrdr[0, 0, 0], 23.4375)
 
     line6.plot(off_screen=True)
 
@@ -125,9 +127,11 @@ def test_quad9():
 
     h = quad9.function(r)
     dhdr = quad9.gradient(r)
+    d2hdrdr = quad9.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
+    assert d2hdrdr.shape == (9, 2, 2)
 
 
 def test_hex0():
@@ -179,9 +183,11 @@ def test_hex27():
 
     h = hex27.function(r)
     dhdr = hex27.gradient(r)
+    d2hdrdr = hex27.hessian(r)
 
     assert h[0] == 1
     assert np.all(dhdr[0] == -1.5)
+    assert d2hdrdr.shape == (27, 3, 3)
 
     hex27.plot(off_screen=True)
 

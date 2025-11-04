@@ -1560,15 +1560,22 @@ class Mesh(DiscreteGeometry):
 
         Examples
         --------
+        Take a rectangle mesh and subdivide it two times.
 
         .. pyvista-plot::
+           :context:
            :force_static:
 
         >>> import felupe as fem
         >>>
-        >>> rect = fem.Rectangle(n=3)
-        >>> mesh = rect.subdivide()
-        >>>
+        >>> rect = fem.Rectangle(n=4).modify_corners()
+        >>> rect.plot().show()
+
+        .. pyvista-plot::
+           :context:
+           :force_static:
+
+        >>> mesh = rect.subdivide().subdivide()
         >>> mesh.plot().show()
 
         See Also

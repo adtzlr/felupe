@@ -638,15 +638,22 @@ def subdivide(points, cells, cell_type):
 
     Examples
     --------
+    Take a rectangle mesh and subdivide it two times.
 
     .. pyvista-plot::
+       :context:
        :force_static:
 
        >>> import felupe as fem
        >>>
-       >>> rect = fem.Rectangle(n=3)
-       >>> mesh = fem.mesh.subdivide(rect)
-       >>>
+       >>> rect = fem.Rectangle(n=4).modify_corners()
+       >>> rect.plot().show()
+
+    .. pyvista-plot::
+       :context:
+       :force_static:
+
+       >>> mesh = fem.mesh.subdivide(fem.mesh.subdivide(rect))
        >>> mesh.plot().show()
 
     See Also

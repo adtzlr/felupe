@@ -470,10 +470,14 @@ class Triangle(Mesh):
     c : 2-tuple of float, optional
         Third end point of the mesh (default is (0.0, 1.0)).
     n : int, optional
-        Number of points per axis (default is 2).
+        Number of points per axis is 2n - 1 if n >= 2 (default is 2).
     decimals : int
         Decimals used for rounding point coordinates to avoid non-connected sections
         (default is 10).
+
+    Notes
+    -----
+    If ``n < 2``, a triangle mesh with a single triangle cell is created.
 
     Examples
     --------
@@ -482,7 +486,15 @@ class Triangle(Mesh):
 
        >>> import felupe as fem
        >>>
-       >>> mesh = fem.mesh.Triangle(a=(0.3, 0.2), b=(1.2, 0.1), c=(0.1, 0.9), n=3)
+       >>> mesh = fem.mesh.Triangle(a=(-0.1, 0.2), b=(1.2, 0.1), c=(0.1, 0.9), n=1)
+       >>> mesh.plot().show()
+
+    .. pyvista-plot::
+       :force_static:
+
+       >>> import felupe as fem
+       >>>
+       >>> mesh = fem.mesh.Triangle(a=(-0.1, 0.2), b=(1.2, 0.1), c=(0.1, 0.9), n=2)
        >>> mesh.plot().show()
 
     >>> mesh
@@ -535,54 +547,62 @@ class Triangle(Mesh):
         n=2,
         decimals=10,
     ):
-        a = np.asarray(a)
-        b = np.asarray(b)
-        c = np.asarray(c)
+        if n < 2:  # triangle mesh
+            points = np.vstack([a, b, c])
+            cells = np.arange(3).reshape(1, 3)
+            cell_type = "triangle"
 
-        sections = []
+        else:  # quad mesh
+            a = np.asarray(a)
+            b = np.asarray(b)
+            c = np.asarray(c)
 
-        centerpoint = (a + b + c) / 3
-        centerpoints = {"ab": (a + b) / 2, "bc": (b + c) / 2, "ac": (a + c) / 2}
+            sections = []
 
-        line = Line(n=n)
+            centerpoint = (a + b + c) / 3
+            centerpoints = {"ab": (a + b) / 2, "bc": (b + c) / 2, "ac": (a + c) / 2}
 
-        # section (connected to point) a
-        x1 = np.linspace(a[0], centerpoints["ac"][0], n)
-        y1 = np.linspace(a[1], centerpoints["ac"][1], n)
+            line = Line(n=n)
 
-        left = line.copy(points=np.vstack([x1, y1]).T)
+            # section (connected to point) a
+            x1 = np.linspace(a[0], centerpoints["ac"][0], n)
+            y1 = np.linspace(a[1], centerpoints["ac"][1], n)
 
-        x2 = np.linspace(centerpoints["ab"][0], centerpoint[0], n)
-        y2 = np.linspace(centerpoints["ab"][1], centerpoint[1], n)
+            left = line.copy(points=np.vstack([x1, y1]).T)
 
-        middle = line.copy(points=np.vstack([x2, y2]).T)
+            x2 = np.linspace(centerpoints["ab"][0], centerpoint[0], n)
+            y2 = np.linspace(centerpoints["ab"][1], centerpoint[1], n)
 
-        sections.append(middle.fill_between(left, n=n))
+            middle = line.copy(points=np.vstack([x2, y2]).T)
 
-        # section (connected to point) b
-        x3 = np.linspace(b[0], centerpoints["bc"][0], n)
-        y3 = np.linspace(b[1], centerpoints["bc"][1], n)
+            sections.append(middle.fill_between(left, n=n))
 
-        right = line.copy(points=np.vstack([x3, y3]).T)
+            # section (connected to point) b
+            x3 = np.linspace(b[0], centerpoints["bc"][0], n)
+            y3 = np.linspace(b[1], centerpoints["bc"][1], n)
 
-        sections.append(right.fill_between(middle, n=n))
+            right = line.copy(points=np.vstack([x3, y3]).T)
 
-        # section (connected to point) c
-        x4 = np.linspace(centerpoints["ac"][0], c[0], n)
-        y4 = np.linspace(centerpoints["ac"][1], c[1], n)
+            sections.append(right.fill_between(middle, n=n))
 
-        top = line.copy(points=np.vstack([x4, y4]).T)
+            # section (connected to point) c
+            x4 = np.linspace(centerpoints["ac"][0], c[0], n)
+            y4 = np.linspace(centerpoints["ac"][1], c[1], n)
 
-        x5 = np.linspace(centerpoint[0], centerpoints["bc"][0], n)
-        y5 = np.linspace(centerpoint[1], centerpoints["bc"][1], n)
+            top = line.copy(points=np.vstack([x4, y4]).T)
 
-        bottom = line.copy(points=np.vstack([x5, y5]).T)
+            x5 = np.linspace(centerpoint[0], centerpoints["bc"][0], n)
+            y5 = np.linspace(centerpoint[1], centerpoints["bc"][1], n)
 
-        sections.append(bottom.fill_between(top, n=n))
+            bottom = line.copy(points=np.vstack([x5, y5]).T)
 
-        # combine sections
-        triangle = concatenate(sections).sweep(decimals=decimals)
+            sections.append(bottom.fill_between(top, n=n))
 
-        super().__init__(
-            points=triangle.points, cells=triangle.cells, cell_type=triangle.cell_type
-        )
+            # combine sections
+            triangle = concatenate(sections).sweep(decimals=decimals)
+
+            points = triangle.points
+            cells = triangle.cells
+            cell_type = triangle.cell_type
+
+        super().__init__(points=points, cells=cells, cell_type=cell_type)

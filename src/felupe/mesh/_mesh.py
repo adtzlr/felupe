@@ -1566,17 +1566,17 @@ class Mesh(DiscreteGeometry):
            :context:
            :force_static:
 
-        >>> import felupe as fem
-        >>>
-        >>> rect = fem.Rectangle(n=4).modify_corners()
-        >>> rect.plot().show()
+           >>> import felupe as fem
+           >>>
+           >>> rect = fem.Rectangle(n=4).modify_corners()
+           >>> rect.plot().show()
 
         .. pyvista-plot::
            :context:
            :force_static:
 
-        >>> mesh = rect.subdivide().subdivide()
-        >>> mesh.plot().show()
+           >>> mesh = rect.subdivide().subdivide()
+           >>> mesh.plot().show()
 
         See Also
         --------

@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import identity, ravel, reshape, sym
+from ...math import identity, ravel, reshape, sym, dot, transpose, cdya_ik
 from .._base import ConstitutiveMaterial
 
 
@@ -107,9 +107,9 @@ class MaterialStrain(ConstitutiveMaterial):
         dim = self.dim
         dxdX, statevars = x
 
-        # small-strain tensor as strain = sym(dx/dX - 1)
-        dudx = dxdX - identity(dxdX)
-        strain = sym(dudx)
+        # large-strain tensor as E = (C - I) / 2
+        strain = sym(dxdX - identity(dxdX))
+        strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
 
         # separate strain and stress from state variables
         statevars_all = np.split(
@@ -136,6 +136,8 @@ class MaterialStrain(ConstitutiveMaterial):
         strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = False
 
+        dxdX, statevars = x
+
         dsde, stress_new, statevars_new_list = self.material(
             dstrain, strain_old, stress_old, statevars_old, **self.kwargs
         )
@@ -148,15 +150,17 @@ class MaterialStrain(ConstitutiveMaterial):
             axis=0,
         )
 
-        return [stress_new, statevars_new]
+        return [dot(dxdX, stress_new), statevars_new]
 
     def hessian(self, x):
         strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = True
 
-        dsde = self.material(
+        dxdX, statevars = x
+
+        dsde, stress_new, statevars_new_list = self.material(
             dstrain, strain_old, stress_old, statevars_old, **self.kwargs
-        )[0]
+        )
 
         # ensure minor-symmetric elasticity tensor due to symmetry of strain
         dsde = (
@@ -164,6 +168,10 @@ class MaterialStrain(ConstitutiveMaterial):
             + np.einsum("ijkl...->jikl...", dsde)
             + np.einsum("ijkl...->ijlk...", dsde)
             + np.einsum("ijkl...->jilk...", dsde)
-        ) / 4
+        ) / 4 
+
+        dsde = np.einsum(
+            "iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde
+        ) + cdya_ik(np.eye(3), stress_new)
 
         return [dsde]

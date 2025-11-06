@@ -85,12 +85,13 @@ class MaterialStrain(ConstitutiveMaterial):
 
     """
 
-    def __init__(self, material, dim=3, statevars=(0,), **kwargs):
+    def __init__(self, material, dim=3, statevars=(0,), large_strain=False, **kwargs):
         self.material = material
         self.statevars_shape = statevars
         self.statevars_size = [np.prod(shape) for shape in statevars]
         self.statevars_offsets = np.cumsum(self.statevars_size)
         self.nstatevars = sum(self.statevars_size)
+        self.large_strain = large_strain
 
         self.kwargs = {**kwargs, "tangent": None}
 
@@ -107,9 +108,10 @@ class MaterialStrain(ConstitutiveMaterial):
         dim = self.dim
         dxdX, statevars = x
 
-        # large-strain tensor as E = (C - I) / 2
-        strain = sym(dxdX - identity(dxdX))
-        strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
+        if self.large_strain:
+            strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
+        else:
+            strain = sym(dxdX - identity(dxdX))
 
         # separate strain and stress from state variables
         statevars_all = np.split(
@@ -136,6 +138,8 @@ class MaterialStrain(ConstitutiveMaterial):
         strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = False
 
+        # unpack deformation gradient F = dx/dX
+        dim = self.dim
         dxdX, statevars = x
 
         dsde, stress_new, statevars_new_list = self.material(
@@ -150,12 +154,17 @@ class MaterialStrain(ConstitutiveMaterial):
             axis=0,
         )
 
-        return [dot(dxdX, stress_new), statevars_new]
+        if self.large_strain:
+            stress_new = dot(dxdX, stress_new)
+
+        return [stress_new, statevars_new]
 
     def hessian(self, x):
         strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = True
 
+        # unpack deformation gradient F = dx/dX
+        dim = self.dim
         dxdX, statevars = x
 
         dsde, stress_new, statevars_new_list = self.material(
@@ -168,10 +177,11 @@ class MaterialStrain(ConstitutiveMaterial):
             + np.einsum("ijkl...->jikl...", dsde)
             + np.einsum("ijkl...->ijlk...", dsde)
             + np.einsum("ijkl...->jilk...", dsde)
-        ) / 4 
+        ) / 4
 
-        dsde = np.einsum(
-            "iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde
-        ) + cdya_ik(np.eye(3), stress_new)
+        if self.large_strain:
+            dsde = np.einsum(
+                "iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde
+            ) + cdya_ik(np.eye(3), stress_new)
 
         return [dsde]

@@ -34,27 +34,25 @@ from .._base import ConstitutiveMaterial
 
 
 class MaterialStrain(ConstitutiveMaterial):
-    """A strain-based user-defined material definition with a given function
-    for the stress tensor and the (fourth-order) elasticity tensor.
+    """A strain-based user-defined material definition with a given function for the
+    stress tensor and the (fourth-order) elasticity tensor.
 
     Parameters
     ----------
     material : callable
         The material model formulation. Function signature must be
-        ``lambda dε, εn, σn, ζn, **kwargs: dσdε, σ, ζ``. Input arguments are
-        the strain increment, old strain, old stress, the list of old state
-        variables and optional keyword arguments. The function must return the
-        algorithmic consistent elasticity tensor, new stress and the list of
-        new state variables. The provided strain and required stress quantities
-        are selected by the framework argument.
+        ``lambda dε, εn, σn, ζn, **kwargs: dσdε, σ, ζ``. Input arguments are the strain
+        increment, old strain, old stress, the list of old state variables and optional
+        keyword arguments. The function must return the algorithmic consistent
+        elasticity tensor, new stress and the list of new state variables. The provided
+        strain and required stress quantities are selected by the framework argument.
     dim : int, optional
         The dimension of the material formulation. Default is 3.
     statevars : tuple of int, optional
         A tuple containing the shape of each state variable. Default is (0, ).
     framework : str, optional
-        The framework to be used for the stress and strain formulations.
-        "small-strain", "total-lagrange" and "co-rotational" are supported.
-        Default is "small-strain".
+        The framework to be used for the stress and strain formulations. "small-strain"
+        and "total-lagrange" are supported. Default is "small-strain".
 
 
     Examples
@@ -117,8 +115,8 @@ class MaterialStrain(ConstitutiveMaterial):
     linear_elastic : 3D linear-elastic material formulation
     linear_elastic_plastic_isotropic_hardening : Linear-elastic-plastic material
         formulation with linear isotropic hardening (return mapping algorithm).
-    LinearElasticPlasticIsotropicHardening : Linear-elastic-plastic material
-        formulation with linear isotropic hardening (return mapping algorithm).
+    LinearElasticPlasticIsotropicHardening : Linear-elastic-plastic material formulation
+        with linear isotropic hardening (return mapping algorithm).
 
     """
 
@@ -151,7 +149,6 @@ class MaterialStrain(ConstitutiveMaterial):
         # unpack deformation gradient F = dx/dX
         dim = self.dim
         dxdX, statevars = x
-        rotation = None
 
         if self.framework == "small-strain":
             strain = sym(dxdX - identity(dxdX))
@@ -159,19 +156,8 @@ class MaterialStrain(ConstitutiveMaterial):
         elif self.framework == "total-lagrange":
             strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
 
-        elif self.framework == "updated-lagrange":
-            left_cauchy_green_deformation = dot(dxdX, transpose(dxdX))
-            strain = (identity(dxdX) - inv(left_cauchy_green_deformation)) / 2
-
-        elif self.framework == "co-rotational":
-            svd_res = svd(dxdX)
-            rotation = dot(svd_res.U, svd_res.Vh)
-            strain = sym(dot(transpose(rotation), dxdX) - identity(dxdX))
-
         else:
-            raise NotImplementedError(
-                f'Framework "{self.framework}" not implemented.'
-            )
+            raise NotImplementedError(f'Framework "{self.framework}" not implemented.')
 
         # separate strain and stress from state variables
         statevars_all = np.split(
@@ -182,8 +168,7 @@ class MaterialStrain(ConstitutiveMaterial):
         # list of state variables with original shapes
         shapes = self.statevars_shape
         statevars_old = [
-            reshape(sv, shape).copy()
-            for sv, shape in zip(statevars_all[:-2], shapes)
+            reshape(sv, shape).copy() for sv, shape in zip(statevars_all[:-2], shapes)
         ]
 
         # reshape strain and stress from (dim**2,) to (dim, dim)
@@ -193,12 +178,10 @@ class MaterialStrain(ConstitutiveMaterial):
         # change of strain
         dstrain = strain - strain_old
 
-        return strain_old, dstrain, stress_old, statevars_old, rotation
+        return strain_old, dstrain, stress_old, statevars_old
 
     def gradient(self, x):
-        strain_old, dstrain, stress_old, statevars_old, rotation = (
-            self.extract(x)
-        )
+        strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = False
 
         # unpack deformation gradient F = dx/dX
@@ -208,9 +191,7 @@ class MaterialStrain(ConstitutiveMaterial):
             dstrain, strain_old, stress_old, statevars_old, **self.kwargs
         )
 
-        strain_new_1d = (strain_old + dstrain).reshape(
-            -1, *strain_old.shape[2:]
-        )
+        strain_new_1d = (strain_old + dstrain).reshape(-1, *strain_old.shape[2:])
         stress_new_1d = stress_new.reshape(-1, *strain_old.shape[2:])
 
         statevars_new = np.concatenate(
@@ -223,20 +204,14 @@ class MaterialStrain(ConstitutiveMaterial):
         )
 
         if self.framework == "total-lagrange":
+
+            # convert second to first Piola-Kirchhoff stress
             stress_new = dot(dxdX, stress_new)
-
-        elif self.framework == "co-rotational":
-            stress_new = dot(rotation, stress_new)
-
-        elif self.framework == "updated-lagrange":
-            stress_new = dot(stress_new, cof(dxdX))
 
         return [stress_new, statevars_new]
 
     def hessian(self, x):
-        strain_old, dstrain, stress_old, statevars_old, rotation = (
-            self.extract(x)
-        )
+        strain_old, dstrain, stress_old, statevars_old = self.extract(x)
         self.kwargs["tangent"] = True
 
         # unpack deformation gradient F = dx/dX
@@ -245,29 +220,14 @@ class MaterialStrain(ConstitutiveMaterial):
         dsde, stress_new, statevars_new_list = self.material(
             dstrain, strain_old, stress_old, statevars_old, **self.kwargs
         )
-
-        # ensure minor-symmetric elasticity tensor due to symmetry of strain
-        dsde = (
-            dsde
-            + np.einsum("ijkl...->jikl...", dsde)
-            + np.einsum("ijkl...->ijlk...", dsde)
-            + np.einsum("ijkl...->jilk...", dsde)
-        ) / 4
+        dsde = np.ascontiguousarray(dsde)
 
         if self.framework == "total-lagrange":
-            dsde = np.einsum(
-                "iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde
-            ) + cdya_ik(np.eye(3), stress_new)
 
-        if self.framework == "co-rotational":
-            dsde = np.einsum(
-                "iI...,kK...,IJKL...->iJkL...", rotation, rotation, dsde
-            ) + cdya_ik(np.eye(3), stress_new)
+            # convert elasticity tensor and add geometric part
+            dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde)
+            geometric = cdya_ik(np.eye(3), stress_new)
 
-        if self.framework == "updated-lagrange":
-            inv_dxdX = inv(dxdX)
-            dsde = np.einsum(
-                "Jj...,Ll...,ijkl...->iJkL...", inv_dxdX, inv_dxdX, dsde
-            ) + cdya_ik(np.eye(3), stress_new)
+            dsde = np.sum(np.broadcast_arrays(dsde, geometric), axis=0)
 
         return [dsde]

@@ -585,7 +585,7 @@ def test_umat_strain():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
     statevars = np.zeros((18, *F.shape[-2:]))
-    
+
     for framework in ["small-strain", "total-lagrange"]:
 
         umat = fem.MaterialStrain(
@@ -594,7 +594,19 @@ def test_umat_strain():
             μ=1,
             framework=framework,
         )
-    
+
+        s, statevars_new = umat.gradient([F, statevars])
+        dsde = umat.hessian([F, statevars])
+
+    with pytest.raises(NotImplementedError):
+
+        umat = fem.MaterialStrain(
+            material=fem.constitution.linear_elastic,
+            λ=1,
+            μ=1,
+            framework="my-fance-framework",
+        )
+
         s, statevars_new = umat.gradient([F, statevars])
         dsde = umat.hessian([F, statevars])
 

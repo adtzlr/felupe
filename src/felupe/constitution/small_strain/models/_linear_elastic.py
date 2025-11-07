@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ....math import cdya_ik, dya, identity, trace
+from ....math import cdya, dya, identity, trace
 
 
 def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
@@ -91,7 +91,7 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
 
     # evaluate elasticity tensor
     if kwargs["tangent"]:
-        dσdε = 2 * μ * cdya_ik(eye, eye) + λ * dya(eye, eye)
+        dσdε = 2 * μ * cdya(eye, eye) + λ * dya(eye, eye)
     else:
         dσdε = None
 

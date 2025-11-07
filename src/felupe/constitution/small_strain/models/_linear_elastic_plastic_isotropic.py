@@ -23,9 +23,7 @@ from ...linear_elasticity import lame_converter
 from .._material_strain import MaterialStrain
 
 
-def linear_elastic_plastic_isotropic_hardening(
-    dε, εn, σn, ζn, λ, μ, σy, K, **kwargs
-):
+def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, K, **kwargs):
     r"""Linear-elastic-plastic material formulation with linear isotropic
     hardening (return mapping algorithm) to be used in :class:`~felupe.MaterialStrain`.
 
@@ -189,10 +187,7 @@ def linear_elastic_plastic_isotropic_hardening(
                 * μ
                 * dγ
                 / norm_s
-                * (
-                    2 * μ * (cdya(eye, eye) - 1 / 3 * dya(eye, eye))
-                    - 2 * μ * dya(n, n)
-                )
+                * (2 * μ * (cdya(eye, eye) - 1 / 3 * dya(eye, eye)) - 2 * μ * dya(n, n))
             )[..., mask]
 
         # update list of state variables

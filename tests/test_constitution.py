@@ -586,14 +586,29 @@ def test_umat_strain():
     F = x[0]
     statevars = np.zeros((18, *F.shape[-2:]))
 
-    umat = fem.MaterialStrain(
-        material=fem.constitution.linear_elastic,
-        λ=1,
-        μ=1,
-    )
+    for framework in ["small-strain", "total-lagrange"]:
 
-    s, statevars_new = umat.gradient([F, statevars])
-    dsde = umat.hessian([F, statevars])
+        umat = fem.MaterialStrain(
+            material=fem.constitution.linear_elastic,
+            λ=1,
+            μ=1,
+            framework=framework,
+        )
+
+        s, statevars_new = umat.gradient([F, statevars])
+        dsde = umat.hessian([F, statevars])
+
+    with pytest.raises(NotImplementedError):
+
+        umat = fem.MaterialStrain(
+            material=fem.constitution.linear_elastic,
+            λ=1,
+            μ=1,
+            framework="my-fance-framework",
+        )
+
+        s, statevars_new = umat.gradient([F, statevars])
+        dsde = umat.hessian([F, statevars])
 
 
 def test_umat_strain_plasticity():

@@ -16,8 +16,8 @@ from .linear_elasticity import (
     lame_converter_orthotropic,
 )
 from .poisson import Laplace
-from .small_strain import MaterialStrain
-from .small_strain.models import (
+from .strain import MaterialStrain
+from .strain.models import (
     LinearElasticPlasticIsotropicHardening,
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,

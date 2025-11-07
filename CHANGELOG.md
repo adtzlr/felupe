@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `MaterialStrain(..., framework="small-strain")` to select a framework. Default is `"small-strain"` (unchanged) but now `"total-lagrange"` is also supported. `framework="total-lagrange"` will change the linear-elastic material model formulation to the Saint-Venant Kirchhoff material model formulation.
+
 ## [9.5.0] - 2025-11-05
 
 ### Added

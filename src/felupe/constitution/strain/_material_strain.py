@@ -60,7 +60,7 @@ class MaterialStrain(ConstitutiveMaterial):
     Take this code-block for a linear-elastic material formulation
 
     ..  plot::
-        :context:
+        :context: close-figs
 
         import felupe as fem
         from felupe.math import identity, cdya, dya, trace
@@ -103,12 +103,27 @@ class MaterialStrain(ConstitutiveMaterial):
     or this minimal header as template.
 
     ..  plot::
-        :context:
+        :context: close-figs
 
         def fun(dε, εn, σn, ζn, **kwargs):
             return dσdε, σ, ζ
 
         umat = fem.MaterialStrain(material=fun, **kwargs)
+
+    The Total-Lagrange framework changes the linear-elastic material formulation to the
+    Saint-Venant Kirchhoff material model formulation.
+
+    ..  plot::
+        :context: close-figs
+
+        umat = fem.MaterialStrain(
+            material=fem.linear_elastic, μ=1, λ=2, framework="total-lagrange"
+        )
+        ax = umat.plot(
+            ux=fem.math.linsteps([1, 1.5], num=20),
+            ps=fem.math.linsteps([1, 1.5], num=20),
+            bx=fem.math.linsteps([1, 1.25], num=10),
+        )
 
     See Also
     --------

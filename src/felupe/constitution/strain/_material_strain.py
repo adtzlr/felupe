@@ -23,7 +23,7 @@ from .._base import ConstitutiveMaterial
 
 
 class MaterialStrain(ConstitutiveMaterial):
-    """A strain-based user-defined material definition with a given function for the
+    r"""A strain-based user-defined material definition with a given function for the
     stress tensor and the (fourth-order) elasticity tensor.
 
     Parameters

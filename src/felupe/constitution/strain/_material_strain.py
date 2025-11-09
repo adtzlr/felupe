@@ -18,15 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import (
-    cdya_ik,
-    dot,
-    identity,
-    ravel,
-    reshape,
-    sym,
-    transpose,
-)
+from ...math import cdya_ik, dot, identity, ravel, reshape, sym, transpose
 from .._base import ConstitutiveMaterial
 
 
@@ -50,9 +42,10 @@ class MaterialStrain(ConstitutiveMaterial):
     framework : str, optional
         The framework to be used for the stress and strain formulations. "small-strain"
         and "total-lagrange" are supported. Default is "small-strain".
-    enforce_symmetry : bool, optional
-        Enforce symmetry on the returned stress and minor symmetries on the algorithmic
-        consistent elasticity tensor. Default is True.
+    symmetry : bool, optional
+        Take the symmetric part of the returned stress and the minor symmetric-parts of
+        the algorithmic consistent elasticity tensor. Default is True. May enhance
+        performance if the material returns symmetric tensors.
 
     Examples
     --------
@@ -62,7 +55,7 @@ class MaterialStrain(ConstitutiveMaterial):
         :context: close-figs
 
         import felupe as fem
-        from felupe.math import identity, cdya, dya, trace
+        from felupe.math import identity, cdya_ik, dya, trace
 
         def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
             '''3D linear-elastic material formulation.
@@ -89,7 +82,7 @@ class MaterialStrain(ConstitutiveMaterial):
 
             # update stress and evaluate elasticity tensor
             σ = σn + dσ
-            dσdε = 2 * μ * cdya(I, I) + λ * dya(I, I)
+            dσdε = 2 * μ * cdya_ik(I, I) + λ * dya(I, I)
 
             # update state variables (not used here)
             ζ = ζn
@@ -140,7 +133,7 @@ class MaterialStrain(ConstitutiveMaterial):
         dim=3,
         statevars=(0,),
         framework="small-strain",
-        enforce_symmetry=True,
+        symmetry=True,
         **kwargs,
     ):
         self.material = material
@@ -150,7 +143,7 @@ class MaterialStrain(ConstitutiveMaterial):
         self.nstatevars = sum(self.statevars_size)
 
         self.framework = framework
-        self.enforce_symmetry = True
+        self.symmetry = symmetry
 
         self.kwargs = {**kwargs, "tangent": None}
 
@@ -220,7 +213,7 @@ class MaterialStrain(ConstitutiveMaterial):
             axis=0,
         )
 
-        if self.enforce_symmetry:
+        if self.symmetry:
             stress_new = sym(stress_new)
 
         if self.framework == "total-lagrange":
@@ -241,7 +234,8 @@ class MaterialStrain(ConstitutiveMaterial):
         )
         dsde = np.ascontiguousarray(dsde)
 
-        if self.enforce_symmetry:
+        if self.symmetry:
+
             # enforce minor symmetries on the algorithmic consistent elasticity tensor
             dsde = np.add(dsde, np.einsum("ijlk...->ijkl...", dsde), out=dsde)
             dsde = np.add(dsde, np.einsum("jikl...->ijkl...", dsde), out=dsde)
@@ -250,6 +244,10 @@ class MaterialStrain(ConstitutiveMaterial):
         if self.framework == "total-lagrange":
             # convert elasticity tensor and add geometric part
             dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde)
+
+            if self.symmetry:
+                stress_new = sym(stress_new)
+
             geometric = cdya_ik(np.eye(3), stress_new)
 
             dsde = np.sum(np.broadcast_arrays(dsde, geometric), axis=0)

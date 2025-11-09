@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add `MaterialStrain(..., framework="small-strain")` to select a framework. Default is `"small-strain"` (unchanged) but now `"total-lagrange"` is also supported. Note that `framework="total-lagrange"` will change the linear-elastic material model formulation to the Saint-Venant Kirchhoff material model formulation.
-- Add `MaterialStrain(..., enforce_symmetry=True)` to enforce the returned stress and elasticity tensors to be (minor) symmetric. Default is True. `enforce_symmetry=False` will improve performance if the `material` already returns symmetric tensors.
+- Add `MaterialStrain(..., symmetry=True)` to enforce the returned stress and elasticity tensors to be (minor) symmetric. Default is True. `symmetry=False` will improve performance if the provided `material` returns symmetric tensors.
 
 ### Changed
 - Don't enforce the returned elasticity tensor in `MaterialStrain` to be major-symmetric.

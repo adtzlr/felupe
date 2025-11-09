@@ -245,7 +245,7 @@ class MaterialStrain(ConstitutiveMaterial):
             # enforce minor symmetries on the algorithmic consistent elasticity tensor
             dsde = np.add(dsde, np.einsum("ijlk...->ijkl...", dsde), out=dsde)
             dsde = np.add(dsde, np.einsum("jikl...->ijkl...", dsde), out=dsde)
-            dsde = np.multiply(dsde, 1 / 3, out=dsde)
+            dsde = np.multiply(dsde, 0.25, out=dsde)
 
         if self.framework == "total-lagrange":
             # convert elasticity tensor and add geometric part

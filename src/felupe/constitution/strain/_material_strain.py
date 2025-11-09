@@ -20,13 +20,10 @@ import numpy as np
 
 from ...math import (
     cdya_ik,
-    cof,
     dot,
     identity,
-    inv,
     ravel,
     reshape,
-    svd,
     sym,
     transpose,
 )
@@ -53,7 +50,9 @@ class MaterialStrain(ConstitutiveMaterial):
     framework : str, optional
         The framework to be used for the stress and strain formulations. "small-strain"
         and "total-lagrange" are supported. Default is "small-strain".
-
+    enforce_symmetry : bool, optional
+        Enforce symmetry on the returned stress and minor symmetries on the algorithmic
+        consistent elasticity tensor. Default is True.
 
     Examples
     --------
@@ -141,6 +140,7 @@ class MaterialStrain(ConstitutiveMaterial):
         dim=3,
         statevars=(0,),
         framework="small-strain",
+        enforce_symmetry=True,
         **kwargs,
     ):
         self.material = material
@@ -148,7 +148,9 @@ class MaterialStrain(ConstitutiveMaterial):
         self.statevars_size = [np.prod(shape) for shape in statevars]
         self.statevars_offsets = np.cumsum(self.statevars_size)
         self.nstatevars = sum(self.statevars_size)
+
         self.framework = framework
+        self.enforce_symmetry = True
 
         self.kwargs = {**kwargs, "tangent": None}
 
@@ -218,8 +220,10 @@ class MaterialStrain(ConstitutiveMaterial):
             axis=0,
         )
 
-        if self.framework == "total-lagrange":
+        if self.enforce_symmetry:
+            stress_new = sym(stress_new)
 
+        if self.framework == "total-lagrange":
             # convert second to first Piola-Kirchhoff stress
             stress_new = dot(dxdX, stress_new)
 
@@ -237,8 +241,13 @@ class MaterialStrain(ConstitutiveMaterial):
         )
         dsde = np.ascontiguousarray(dsde)
 
-        if self.framework == "total-lagrange":
+        if self.enforce_symmetry:
+            # enforce minor symmetries on the algorithmic consistent elasticity tensor
+            dsde = np.add(dsde, np.einsum("ijlk...->ijkl...", dsde), out=dsde)
+            dsde = np.add(dsde, np.einsum("jikl...->ijkl...", dsde), out=dsde)
+            dsde = np.multiply(dsde, 1 / 3, out=dsde)
 
+        if self.framework == "total-lagrange":
             # convert elasticity tensor and add geometric part
             dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde)
             geometric = cdya_ik(np.eye(3), stress_new)

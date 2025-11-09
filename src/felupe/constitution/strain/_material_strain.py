@@ -46,49 +46,49 @@ class MaterialStrain(ConstitutiveMaterial):
         Take the symmetric part of the returned stress and the minor symmetric-parts of
         the algorithmic consistent elasticity tensor. Default is True. May enhance
         performance if the material returns symmetric tensors.
-    
+
     Notes
     -----
     The (default) small-strain framework evaluates the strain tensor as the symmetric
     part of the displacement gradient, see Eq. :eq:`small-strain`.
-    
+
     ..  math::
         :label: small-strain
-        
-        \boldsymbol{\varepsilon} = \operatorname{sym} \left(
+
+        \boldsymbol{\varepsilon} = \text{sym} \left(
             \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{x}} \right)
-    
+
     The Total-Lagrange framework uses the Green-Lagrange strain, see Eq.
     :eq:`gl-strain`,
-    
+
     ..  math::
         :label: gl-strain
-        
+
         \boldsymbol{E} = \frac{1}{2} \left( \boldsymbol{C} - \boldsymbol{1} \right)
-    
+
     with the right Cauchy-Green deformation tensor, as denoted in Eq.
     :eq:`right-cauchy-green-deformation`.
-    
+
     ..  math::
         :label: right-cauchy-green-deformation
-        
+
         \boldsymbol{C} = \boldsymbol{F}^T\ \boldsymbol{F}
-    
+
     The second Piola-Kirchhoff stress tensor :math:`boldsymbol{S}`, as a function of the
     Green-Lagrange strain tensor :math:`boldsymbol{E}`, is converted to the first Piola
     -Kirchhoff stress tensor \boldsymbol{P}, see Eq. :eq:`pk1-stress`.
-    
+
     ..  math::
         :label: pk1-stress
-        
+
         \boldsymbol{P} = \boldsymbol{F}\ \boldsymbol{S}
-    
+
     Furthermore, the fourth-order material elasticity tensor is also converted for 
     algorithmic consistency, see Eq. :eq:`pk1-elasticity`.
-    
+
     ..  math::
         :label: pk1-elasticity
-        
+
         \mathbb{A}_{iJkL} = F_{iI}\ F_{kK}\ \mathbb{C}_{IJKL}
             + \delta_{ik} S_{JL}
 

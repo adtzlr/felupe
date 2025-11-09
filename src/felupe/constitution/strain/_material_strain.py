@@ -74,17 +74,19 @@ class MaterialStrain(ConstitutiveMaterial):
 
         \boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}
 
-    The second Piola-Kirchhoff stress tensor :math:`\boldsymbol{S}`, as a function of
-    the Green-Lagrange strain tensor :math:`\boldsymbol{E}`, is converted to the first
-    Piola-Kirchhoff stress tensor :math:`\boldsymbol{P}`, see Eq. :eq:`pk1-stress`.
+    Within the Total-Lagrange framework, the second Piola-Kirchhoff stress tensor
+    :math:`\boldsymbol{S}`, as a function of the Green-Lagrange strain tensor
+    :math:`\boldsymbol{E}`, is converted to the first Piola-Kirchhoff stress tensor
+    :math:`\boldsymbol{P}`, see Eq. :eq:`pk1-stress`.
 
     ..  math::
         :label: pk1-stress
 
         \boldsymbol{P} = \boldsymbol{F}\ \boldsymbol{S}
 
-    Furthermore, the fourth-order material elasticity tensor is also converted for 
-    algorithmic consistency, see Eq. :eq:`pk1-elasticity`.
+    Furthermore, the fourth-order material elasticity tensor in the Total-Lagrange
+    framework is also converted for algorithmic consistency, see Eq.
+    :eq:`pk1-elasticity`.
 
     ..  math::
         :label: pk1-elasticity

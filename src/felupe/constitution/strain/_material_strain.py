@@ -55,7 +55,7 @@ class MaterialStrain(ConstitutiveMaterial):
     ..  math::
         :label: small-strain
 
-        \boldsymbol{\varepsilon} = \text{sym} \left(
+        \boldsymbol{\varepsilon} = \operatorname{sym} \left(
             \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{x}} \right)
 
     The Total-Lagrange framework uses the Green-Lagrange strain, see Eq.

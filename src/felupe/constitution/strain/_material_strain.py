@@ -90,7 +90,7 @@ class MaterialStrain(ConstitutiveMaterial):
         :label: pk1-elasticity
 
         \mathbb{A}_{iJkL} = F_{iI}\ F_{kK}\ \mathbb{C}_{IJKL}
-            + \delta_{ik} S_{JL}
+            + \delta_{ik}\ S_{JL}
 
     Examples
     --------

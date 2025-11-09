@@ -72,11 +72,11 @@ class MaterialStrain(ConstitutiveMaterial):
     ..  math::
         :label: right-cauchy-green-deformation
 
-        \boldsymbol{C} = \boldsymbol{F}^T\ \boldsymbol{F}
+        \boldsymbol{C} = \boldsymbol{F}^T \boldsymbol{F}
 
-    The second Piola-Kirchhoff stress tensor :math:`boldsymbol{S}`, as a function of the
-    Green-Lagrange strain tensor :math:`boldsymbol{E}`, is converted to the first Piola
-    -Kirchhoff stress tensor \boldsymbol{P}, see Eq. :eq:`pk1-stress`.
+    The second Piola-Kirchhoff stress tensor :math:`\boldsymbol{S}`, as a function of
+    the Green-Lagrange strain tensor :math:`\boldsymbol{E}`, is converted to the first
+    Piola-Kirchhoff stress tensor :math:`\boldsymbol{P}`, see Eq. :eq:`pk1-stress`.
 
     ..  math::
         :label: pk1-stress

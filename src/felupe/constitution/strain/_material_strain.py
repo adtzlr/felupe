@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ...math import cdya_ik, dot, identity, ravel, reshape, sym, transpose
+from ...math import cdya_ik, dot, identity, ravel, reshape, svd, sym, transpose
 from .._base import ConstitutiveMaterial
 
 
@@ -207,11 +207,19 @@ class MaterialStrain(ConstitutiveMaterial):
         dim = self.dim
         dxdX, statevars = x
 
+        rotation = None
+
         if self.framework == "small-strain":
             strain = sym(dxdX - identity(dxdX))
 
         elif self.framework == "total-lagrange":
             strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
+
+        elif self.framework == "co-rotational":
+            svd_res = svd(dxdX)
+            rotation = dot(svd_res.U, svd_res.Vh)
+            stretch = dot(transpose(rotation), dxdX)
+            strain = stretch - identity(dxdX)
 
         else:
             raise NotImplementedError(f'Framework "{self.framework}" not implemented.')
@@ -235,10 +243,10 @@ class MaterialStrain(ConstitutiveMaterial):
         # change of strain
         dstrain = strain - strain_old
 
-        return strain_old, dstrain, stress_old, statevars_old
+        return strain_old, dstrain, stress_old, statevars_old, rotation
 
     def gradient(self, x):
-        strain_old, dstrain, stress_old, statevars_old = self.extract(x)
+        strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
         self.kwargs["tangent"] = False
 
         # unpack deformation gradient F = dx/dX
@@ -267,10 +275,13 @@ class MaterialStrain(ConstitutiveMaterial):
             # convert second to first Piola-Kirchhoff stress
             stress_new = dot(dxdX, stress_new)
 
+        if self.framework == "co-rotational":
+            stress_new = dot(rotation, stress_new)
+
         return [stress_new, statevars_new]
 
     def hessian(self, x):
-        strain_old, dstrain, stress_old, statevars_old = self.extract(x)
+        strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
         self.kwargs["tangent"] = True
 
         # unpack deformation gradient F = dx/dX
@@ -288,15 +299,20 @@ class MaterialStrain(ConstitutiveMaterial):
             dsde = np.add(dsde, np.einsum("jikl...->ijkl...", dsde), out=dsde)
             dsde = np.multiply(dsde, 0.25, out=dsde)
 
-        if self.framework == "total-lagrange":
-            # convert elasticity tensor and add geometric part
-            dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde)
+        if self.framework in ["total-lagrange", "co-rotational"]:
+
+            phi = {
+                "total-lagrange": dxdX,
+                "co-rotational": rotation,
+            }[self.framework]
+
+            # convert elasticity tensor
+            dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", phi, phi, dsde)
 
             if self.symmetry:
                 stress_new = sym(stress_new)
 
             geometric = cdya_ik(np.eye(3), stress_new)
-
             dsde = np.sum(np.broadcast_arrays(dsde, geometric), axis=0)
 
         return [dsde]

@@ -586,12 +586,12 @@ def test_umat_strain():
     F = x[0]
     statevars = np.zeros((18, *F.shape[-2:]))
 
-    for framework in ["small-strain", "total-lagrange"]:
+    for framework in ["small-strain", "total-lagrange", "co-rotational"]:
 
         umat = fem.MaterialStrain(
             material=fem.constitution.linear_elastic,
             λ=1,
-            μ=1,
+            μ=2,
             framework=framework,
         )
 

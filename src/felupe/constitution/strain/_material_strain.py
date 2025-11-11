@@ -40,8 +40,8 @@ class MaterialStrain(ConstitutiveMaterial):
     statevars : tuple of int, optional
         A tuple containing the shape of each state variable. Default is (0, ).
     framework : str, optional
-        The framework to be used for the stress and strain formulations. "small-strain"
-        and "total-lagrange" are supported. Default is "small-strain".
+        The framework to be used for the stress and strain formulations. "small-strain",
+        "total-lagrange" and "co-rotational" are supported. Default is "small-strain".
     symmetry : bool, optional
         Take the symmetric part of the returned stress and the minor symmetric-parts of
         the algorithmic consistent elasticity tensor. Default is True. May enhance
@@ -93,6 +93,12 @@ class MaterialStrain(ConstitutiveMaterial):
 
         \mathbb{A}_{iJkL} = F_{iI}\ F_{kK}\ \mathbb{C}_{IJKL}
             + \delta_{ik}\ S_{JL}
+
+    ..  warning::
+
+        The implementation of the co-rotational framework is experimental. The fourth-
+        order elasticity tensor is an approximation and hence, Newton's method does not
+        converge quadratically.
 
     Examples
     --------

@@ -78,7 +78,7 @@ bounds = fem.BoundaryDict(
 # %%
 # The so-called HuHu-LuLu-regularization is created by two weak-
 # :func:`forms <felupe.Form>`, which are derived from the regularization
-# potential, see Eq. :eq:`huhu-regularization` [3]_.
+# potential, see Eq. :eq:`huhu-lulu-regularization` [3]_.
 #
 # .. math::
 #    :label: huhu-lulu-regularization

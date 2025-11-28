@@ -211,7 +211,7 @@ class QuadraticHexahedron(Element):
     (1,5), (2,6), (3,7). [1]
 
     The shape functions :math:`\boldsymbol{h}` are given in terms of the coordinates
-    :math:`(r,s,t)`..
+    :math:`(r,s,t)`.
 
     Examples
     --------

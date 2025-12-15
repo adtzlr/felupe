@@ -105,7 +105,7 @@ class Mesh(DiscreteGeometry):
         \end{bmatrix}
 
     Exemplaric point coordinates of a single point at the origin in :math:`\mathbb{R}^3`
-    are shown in Eq.:eq:`point`.
+    are shown in Eq. :eq:`point`.
 
     ..  math::
         :label: point
@@ -125,8 +125,8 @@ class Mesh(DiscreteGeometry):
             \boldsymbol{t}_n^T \\
         \end{bmatrix}
 
-    with an exemplaric cell-connectivity of a :class:`~felupe.Quad`, as shown in
-    Eq. :eq:`cell`.
+    with an exemplaric topologic cell-connectivity of a :class:`~felupe.Quad`, as shown
+    in Eq. :eq:`cell`.
 
     ..  math::
         :label: cell

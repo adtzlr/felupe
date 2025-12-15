@@ -55,14 +55,14 @@ def as_mesh(obj):
 
 
 class Mesh(DiscreteGeometry):
-    """A mesh with points, cells and optional a specified cell type.
+    r"""A mesh with points, cells and optional a specified cell type.
 
     Parameters
     ----------
     points : ndarray
-        Point coordinates.
+        Array with point coordinates of shape ``(npoints, dim)``.
     cells : ndarray
-        Point-connectivity of cells.
+        Array with cell connectivities of shape ``(ncells, points_per_cell)``.
     cell_type : str or None, optional
         An optional string in VTK-convention that specifies the cell type (default is
         None). Necessary when a mesh is saved to a file.
@@ -70,17 +70,17 @@ class Mesh(DiscreteGeometry):
     Attributes
     ----------
     points : ndarray
-        Point coordinates.
+        Array with point coordinates of shape ``(npoints, dim)``.
     cells : ndarray
-        Point-connectivity of cells.
+        Array with cell connectivities of shape ``(ncells, points_per_cell)``.
     cell_type : str or None
         A string in VTK-convention that specifies the cell type.
     npoints : int
-        Amount of points.
+        Number of points.
     dim : int
         Dimension of mesh point coordinates.
     ndof : int
-        Amount of degrees of freedom.
+        Number of degrees of freedom as product of number of points and dim.
     ncells : int
         Amount of cells.
     points_with_cells : ndarray
@@ -89,6 +89,49 @@ class Mesh(DiscreteGeometry):
         Array with points not connected to cells.
     cells_per_point : ndarray
         Array which counts connected cells per point. Used for averaging results.
+
+    Notes
+    -----
+    The ``points``-array is of shape ``(npoints, dim)``, as denoted in Eq. :eq:`points`.
+
+    ..  math::
+        :label: points
+
+        \hat{\boldsymbol{X}} = \begin{bmatrix}
+            \hat{\boldsymbol{X}_1}^T \\
+            \hat{\boldsymbol{X}_2}^T \\
+            \dots \\
+            \hat{\boldsymbol{X}_n}^T \\
+        \end{bmatrix}
+
+    Exemplaric point coordinates of a single point at the origin in :math:`\mathbb{R}^3`
+    are shown in Eq.:eq:`point`.
+
+    ..  math::
+        :label: point
+
+        \hat{\boldsymbol{X}_1}^T = \begin{bmatrix} 0.0 & 0.0 & 0.0 \end{bmatrix}
+
+    Topologic cell connectivies are stored inside the ``cells``-array, see Eq.
+    :eq:`cells`,
+
+    ..  math::
+        :label: cells
+
+        \boldsymbol{t} = \begin{bmatrix}
+            \boldsymbol{t}_1^T \\
+            \boldsymbol{t}_2^T \\
+            \dots \\
+            \boldsymbol{t}_n^T \\
+        \end{bmatrix}
+
+    with an exemplaric cell-connectivity of a :class:`~felupe.Quad`, as shown in
+    Eq. :eq:`cell`.
+
+    ..  math::
+        :label: cell
+
+        \boldsymbol{t}_1^T = \begin{bmatrix} 0 & 1 & 2 & 3 \end{bmatrix}
 
     Examples
     --------

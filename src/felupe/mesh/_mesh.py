@@ -121,7 +121,7 @@ class Mesh(DiscreteGeometry):
         \boldsymbol{t} = \begin{bmatrix}
             \boldsymbol{t}_1^T \\
             \boldsymbol{t}_2^T \\
-            \dots \\
+            \vdots \\
             \boldsymbol{t}_n^T \\
         \end{bmatrix}
 

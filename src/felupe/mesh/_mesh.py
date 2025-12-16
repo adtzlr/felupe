@@ -67,29 +67,6 @@ class Mesh(DiscreteGeometry):
         An optional string in VTK-convention that specifies the cell type (default is
         None). Necessary when a mesh is saved to a file.
 
-    Attributes
-    ----------
-    points : ndarray
-        Array with point coordinates of shape ``(npoints, dim)``.
-    cells : ndarray
-        Array with cell connectivities of shape ``(ncells, points_per_cell)``.
-    cell_type : str or None
-        A string in VTK-convention that specifies the cell type.
-    npoints : int
-        Number of points.
-    dim : int
-        Dimension of mesh point coordinates.
-    ndof : int
-        Number of degrees of freedom as product of number of points and dim.
-    ncells : int
-        Amount of cells.
-    points_with_cells : ndarray
-        Array with points connected to cells.
-    points_without_cells : ndarray
-        Array with points not connected to cells.
-    cells_per_point : ndarray
-        Array which counts connected cells per point. Used for averaging results.
-
     Notes
     -----
     The ``points``-array is of shape ``(npoints, dim)``, as denoted in Eq. :eq:`points`.
@@ -136,6 +113,7 @@ class Mesh(DiscreteGeometry):
     Examples
     --------
     .. pyvista-plot::
+       :context:
        :force_static:
 
        >>> import numpy as np
@@ -146,9 +124,30 @@ class Mesh(DiscreteGeometry):
        ... )
        >>> cells = np.array([[0, 1, 4, 3], [1, 2, 5, 4]])
        >>> mesh = fem.Mesh(points, cells, cell_type="quad")
-       >>>
        >>> mesh.plot().show()
 
+       A mesh provides several useful attributes, like the dimension, the number of
+       points, number of cells, number of deegrees of freedom, points connected to cells
+       and points not connected to cells.
+
+    .. pyvista-plot::
+       :context:
+       :force_static:
+
+       >>> mesh.dim
+       2
+
+       >>> mesh.npoints
+       6
+
+       >>> mesh.ncells
+       2
+
+       >>> mesh.ndof
+       12
+
+       >>> mesh.points_with_cells
+       array([0, 1, 2, 3, 4, 5])
 
     See Also
     --------

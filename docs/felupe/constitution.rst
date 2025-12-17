@@ -9,19 +9,19 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
 
    .. grid-item-card:: 🏠 Models
       :link: felupe-api-constitution-core
-      :link-type: ref
+      :link-type: doc
 
       Core frameworks and library with basic material models.
 
    .. grid-item-card:: 🧮 Automatic Differentiation
       :link: felupe-api-constitution-autodiff
-      :link-type: ref
+      :link-type: doc
 
       Advanced frameworks and material models with support for automatic differentiation.
 
    .. grid-item-card:: 🔧 Tools & Helpers
       :link: felupe-api-constitution-tools
-      :link-type: ref
+      :link-type: doc
 
       Utilities to speed up repetitive & complicated tasks.
 

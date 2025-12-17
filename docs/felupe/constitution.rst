@@ -8,19 +8,19 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
 .. grid::
 
    .. grid-item-card:: 🏠 Models
-      :link: constitution/core
+      :link: felupe-api-constitution-core
       :link-type: ref
 
       Core frameworks and library with basic material models.
 
    .. grid-item-card:: 🧮 Automatic Differentiation
-      :link: constitution/autodiff
+      :link: felupe-api-constitution-autodiff
       :link-type: ref
 
       Advanced frameworks and material models with support for automatic differentiation.
 
    .. grid-item-card:: 🔧 Tools & Helpers
-      :link: constitution/tools
+      :link: felupe-api-constitution-tools
       :link-type: ref
 
       Utilities to speed up repetitive & complicated tasks.
@@ -56,3 +56,8 @@ There are many different pre-defined constitutive material formulations availabl
    :members:
    :undoc-members:
    :inherited-members:
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Constitution:

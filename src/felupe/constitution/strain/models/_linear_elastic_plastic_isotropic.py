@@ -45,6 +45,11 @@ def linear_elastic_plastic_isotropic_hardening(dε, εn, σn, ζn, λ, μ, σy, 
         Initial yield stress.
     K : float
         Isotropic hardening modulus.
+    **kwargs
+        Additional keyword arguments.
+
+        tangent : bool
+            A flag to evaluate the elasticity tensor.
 
     Returns
     -------

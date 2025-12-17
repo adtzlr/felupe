@@ -37,6 +37,11 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
         First Lamé-constant.
     μ : float
         Second Lamé-constant (shear modulus).
+    **kwargs
+        Additional keyword arguments.
+
+        tangent : bool
+            A flag to evaluate the elasticity tensor.
 
     Returns
     -------

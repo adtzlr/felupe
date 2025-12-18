@@ -9,6 +9,10 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
    :maxdepth: 1
    :caption: Constitution:
 
+   constitution/core
+   constitution/autodiff
+   constitution/tools
+
 .. grid::
 
    .. grid-item-card:: 🏠 Models

@@ -5,6 +5,10 @@ Constitution
 
 This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>` formulations.
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Constitution:
+
 .. grid::
 
    .. grid-item-card:: 🏠 Models
@@ -56,8 +60,3 @@ There are many different pre-defined constitutive material formulations availabl
    :members:
    :undoc-members:
    :inherited-members:
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Constitution:

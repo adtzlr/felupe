@@ -283,8 +283,8 @@ def newtonrhapson(
         Use an existing instance of a progress bar if verbose is True. If None and
         verbose is True, a new bar is created. Default is None.
     tqdm : str, optional
-        If verbose is True, choose a backend for ``tqdm`` ("tqdm", ``"auto"`` or
-        ``"notebook"``. Default is ``"tqdm"``.
+        If verbose is True, choose a backend for ``tqdm`` (``"tqdm"``, ``"auto"`` or
+        ``"notebook"``). Default is ``"tqdm"``.
 
     Returns
     -------

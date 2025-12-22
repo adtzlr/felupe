@@ -7,6 +7,7 @@ This module provides :class:`constitutive material <felupe.ConstitutiveMaterial>
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
    :caption: Constitution:
 
    constitution/core

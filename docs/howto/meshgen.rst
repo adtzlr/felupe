@@ -310,6 +310,7 @@ If a mesh with midpoints is required by a region, functions for edge, face and v
 
 ..  pyvista-plot::
     :context:
+    :force_static:
     
     rectangle_quad4 = fem.Rectangle(n=6)
     rectangle_quad8 = rectangle_quad4.convert(order=2)
@@ -319,8 +320,11 @@ The same also applies on meshes with triangles.
 
 ..  pyvista-plot::
     :context:
+    :force_static:
 
     rectangle_triangle3 = fem.Rectangle(n=6).triangulate()
     rectangle_triangle6 = rectangle_triangle3.add_midpoints_edges()
 
-While views on higher-order meshes are possible, it is suggested to use ParaView for the visualization of meshes with midpoints due to the improved representation of the cells.
+    rectangle_triangle6.plot(nonlinear_subdivision=2).show()
+
+For views on higher-order meshes use ``nonlinear_subdivision``.

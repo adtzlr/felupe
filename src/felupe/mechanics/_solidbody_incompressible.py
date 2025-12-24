@@ -280,7 +280,7 @@ class SolidBodyNearlyIncompressible(Solid):
         >>> mesh = fem.Cube(n=6)
         >>> region = fem.RegionHexahedron(mesh)
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-        >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>>
         >>> umat = fem.NeoHooke(mu=1)
         >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
@@ -393,7 +393,7 @@ class SolidBodyNearlyIncompressible(Solid):
             solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
 
             # 1. vertical compression
-            boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+            boundaries = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
             ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
             step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
             job = fem.Job(steps=[step]).evaluate()
@@ -402,7 +402,7 @@ class SolidBodyNearlyIncompressible(Solid):
             checkpoint = solid.checkpoint()
 
             # 2a. horizontal shear (right)
-            boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+            boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
             ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
             step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
             job = fem.Job(steps=[step]).evaluate()
@@ -411,7 +411,7 @@ class SolidBodyNearlyIncompressible(Solid):
             solid.restore(checkpoint)
 
             # 2b. horizontal shear (left)
-            boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+            boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
             ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
             step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
             job = fem.Job(steps=[step]).evaluate()

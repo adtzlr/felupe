@@ -21,7 +21,7 @@ A :func:`~felupe.dof.uniaxial` load case is applied on the displacement :class:`
 .. pyvista-plot::
    :context:
 
-   boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+   boundaries = fem.dof.uniaxial(field, clamped=True)
 
 An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:solid body <felupe.SolidBody>`.
 
@@ -88,7 +88,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionHexahedron(mesh)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -118,7 +118,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionQuadraticHexahedron(mesh)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -148,7 +148,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionLagrange(mesh, order=3, dim=3)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -182,7 +182,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionQuad(mesh)
          field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
-         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -216,7 +216,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionQuad(mesh)
          field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
 
-         boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)

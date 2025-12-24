@@ -122,7 +122,7 @@ def test_job_xdmf_vertex():
         fem.FieldContainer([fem.Field(regions[1], dim=3)]),
     ]
 
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     umat = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
     solids = [
         fem.SolidBody(umat=umat, field=fields[0]),

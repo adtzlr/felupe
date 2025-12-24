@@ -48,7 +48,7 @@ def test_composite():
         region, n=3, npoints=mesh_rubber.ncells + mesh_reinforced.ncells
     )
 
-    boundaries, loadcase = fem.dof.uniaxial(field, move=-0.1)
+    boundaries = fem.dof.uniaxial(field, move=-0.1)
 
     nh1 = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     nh2 = fem.ThreeFieldVariation(fem.NeoHooke(mu=5000, bulk=5000))
@@ -111,7 +111,7 @@ def test_composite_planestrain():
         npoints=mesh_rubber.ncells + mesh_reinforced.ncells,
     )
 
-    boundaries, loadcase = fem.dof.uniaxial(field, move=-0.1)
+    boundaries = fem.dof.uniaxial(field, move=-0.1)
 
     nh1 = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     nh2 = fem.ThreeFieldVariation(fem.NeoHooke(mu=5000, bulk=5000))

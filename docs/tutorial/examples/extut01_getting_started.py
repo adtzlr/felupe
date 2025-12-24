@@ -37,10 +37,8 @@ field = fem.FieldContainer(fields=[displacement])
 # container. This involves setting up symmetry planes as well as the absolute value of
 # the prescribed displacement at the mesh-points on the right-end face of the cube. The
 # right-end face is *clamped*: only displacements in direction x are allowed. The dict
-# of boundary conditions for this pre-defined load case are returned as ``boundaries``
-# and the partitioned degrees of freedom as well as the external displacements are
-# stored within the returned dict ``loadcase``.
-boundaries, loadcase = fem.dof.uniaxial(field, move=0.2, right=1, clamped=True)
+# of boundary conditions for this pre-defined load case are returned as ``boundaries``.
+boundaries = fem.dof.uniaxial(field, move=0.2, right=1, clamped=True)
 
 # %%
 # The material behaviour is defined through a built-in Neo-Hookean material formulation.

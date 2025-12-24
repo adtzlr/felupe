@@ -39,7 +39,7 @@ def pre():
 
     umat = fem.ThreeFieldVariation(fem.NeoHooke(1, 5000))
     body = fem.SolidBody(umat, field)
-    bounds, loadcase = fem.dof.uniaxial(field)
+    boundaries = fem.dof.uniaxial(field)
 
     points = mesh.points[:, 0] == 1
     load = fem.PointLoad(field, points)
@@ -52,12 +52,12 @@ def pre():
     step = fem.Step(
         items=[body, load, gravity, pressure],
         ramp={
-            bounds["move"]: fem.math.linsteps([0, 1], num=10),
+            boundaries["move"]: fem.math.linsteps([0, 1], num=10),
             load: np.zeros((11, 2)),
             pressure: np.zeros(11),
             gravity: np.zeros((11, 3)),
         },
-        boundaries=bounds,
+        boundaries=boundaries,
     )
 
     return field, step

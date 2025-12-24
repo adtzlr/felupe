@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Don't enforce the returned elasticity tensor in `MaterialStrain` to be major-symmetric.
+- Change the default output of the loadcases to only return the dict of boundary conditions ``boundaries = fem.dof.uniaxial(field)`` (was ``boundaries, loadcase = fem.dof.uniaxial(field)`` before). The additional ``loadcase`` dict is now optional, ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)``. Note that this is a non backward compatible change.
 
 ## [9.5.0] - 2025-11-05
 

@@ -253,6 +253,16 @@ def test_symmetry():
         fem.dof.symmetry(field[0], bounds=boundaries)
 
 
+def test_boundarydict_iter():
+    field = fem.FieldPlaneStrain(
+        fem.RegionQuad(fem.Rectangle(n=3)), dim=2
+    ).as_container()
+    with pytest.raises(TypeError):
+        boundaries, loadcase = fem.dof.uniaxial(field)
+
+    items = fem.dof.uniaxial(field).items()
+
+
 if __name__ == "__main__":
     test_boundary()
     test_boundary_dict()

@@ -89,7 +89,9 @@ def FormExpressionDecorator(v, u=None, dx=None, kwargs=None, parallel=False):
         >>> displacement = fem.Field(region, dim=3)
         >>> field = fem.FieldContainer([displacement])
         >>> 
-        >>> boundaries = fem.dof.uniaxial(field, move=0.5, clamped=True)
+        >>> boundaries, loadcase = fem.dof.uniaxial(
+        ...     field, move=0.5, clamped=True, return_loadcase=True
+        ... )
 
     The bilinear form of linear elasticity is defined as
 

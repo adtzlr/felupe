@@ -56,7 +56,7 @@ mesh = mesh.expand(n=3, z=2.5)
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, move=0.02)
+boundaries = fem.dof.uniaxial(field, clamped=True, sym=False, move=0.02)
 solid = fem.SolidBody(umat=fem.LinearElastic(E=2.1e5, nu=0.30), field=field)
 step = fem.Step(items=[solid], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(parallel=True, solver=pypardiso.spsolve)

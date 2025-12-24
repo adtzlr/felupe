@@ -86,7 +86,7 @@ umat = fem.Hyperelastic(
 mesh = fem.Cube(n=2)
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
-boundaries, loadcase = fem.dof.uniaxial(field, clamped=False)
+boundaries = fem.dof.uniaxial(field, clamped=False)
 
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 

@@ -80,8 +80,9 @@ def test_planestrain():
     b = fem.SolidBody(u, f)
     c = fem.SolidBody(v, g)
 
-    r = fem.newtonrhapson(items=[b], **fem.dof.uniaxial(f, clamped=True)[-1])
-    s = fem.newtonrhapson(items=[c], **fem.dof.uniaxial(f, clamped=True)[-1])
+    kwargs = dict(clamped=True, return_loadcase=True)
+    r = fem.newtonrhapson(items=[b], **fem.dof.uniaxial(f, **kwargs)[-1])
+    s = fem.newtonrhapson(items=[c], **fem.dof.uniaxial(f, **kwargs)[-1])
 
     assert np.allclose(r.x.values(), s.x.values())
     assert np.allclose(r.fun, s.fun)

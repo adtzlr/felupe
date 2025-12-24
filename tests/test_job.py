@@ -223,7 +223,7 @@ def test_noramp():
 
     umat = fem.LinearElastic(E=1, nu=0.3)
     solid = fem.SolidBody(umat, field)
-    bounds = fem.dof.uniaxial(field)[0]
+    bounds = fem.dof.uniaxial(field)
 
     step = fem.Step(items=[solid], ramp=None, boundaries=bounds)
     job = fem.Job(steps=[step])

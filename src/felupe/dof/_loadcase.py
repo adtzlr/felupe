@@ -116,6 +116,9 @@ def symmetry(
         )
 
         boundaries = bounds
+    
+    if not hasattr(field, "dim"):
+        raise TypeError("Given field has no `dim`. Did you use a field container?")
 
     # convert axes to array and slice by mesh dimension
     enforce = np.array(axes).astype(bool)[: field.dim]

@@ -237,9 +237,26 @@ def test_boundary_dict():
     # ax = boundaries.imshow()
 
 
+def test_symmetry():
+    field = fem.FieldPlaneStrain(
+        fem.RegionQuad(fem.Rectangle(n=3)), dim=2
+    ).as_container()
+    boundaries = fem.BoundaryDict()
+
+    with pytest.raises(TypeError):
+        fem.dof.symmetry(field)
+
+    with pytest.raises(ValueError):
+        fem.dof.symmetry(field[0], bounds=boundaries, boundaries=boundaries)
+
+    with pytest.warns(DeprecationWarning):
+        fem.dof.symmetry(field[0], bounds=boundaries)
+
+
 if __name__ == "__main__":
     test_boundary()
     test_boundary_dict()
     test_boundary_multiaxial()
     test_boundary_plot()
     test_loadcase()
+    test_symmetry()

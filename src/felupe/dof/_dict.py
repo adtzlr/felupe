@@ -1,5 +1,13 @@
+import warnings
+
+
 class BoundaryDict(dict):
     "A dict of boundary conditions."
+
+    def __iter__(self):
+        raise TypeError(
+            "Iteration over BoundaryDict is not allowed, use `.items()` instead."
+        )
 
     def plot(
         self,

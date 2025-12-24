@@ -18,6 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import NamedTuple
 from warnings import warn
+
 import numpy as np
 
 from ._boundary import Boundary

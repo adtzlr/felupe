@@ -191,7 +191,9 @@ def test_newton():
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
-    boundaries = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.2, clamped=True, return_loadcase=True
+    )
 
     # define the constitutive material behavior
     umat = fem.NeoHooke(mu=1.0, bulk=2.0)
@@ -213,7 +215,9 @@ def test_newton_plane():
     # add a displacement field and apply a uniaxial elongation on the rectangle
     displacement = fem.Field(region, dim=2)
     field = fem.FieldContainer([displacement])
-    boundaries = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.2, clamped=True, return_loadcase=True
+    )
 
     # define the constitutive material behavior
     umat = fem.LinearElasticPlaneStress(E=1.0, nu=0.3)
@@ -256,7 +260,9 @@ def test_newton_linearelastic():
     # add a displacement field and apply a uniaxial elongation on the cube
     displacement = fem.Field(region, dim=3)
     field = fem.FieldContainer([displacement])
-    boundaries = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.2, clamped=True, return_loadcase=True
+    )
 
     # define the constitutive material behavior
     umat = fem.LinearElastic(E=1.0, nu=0.3)
@@ -284,7 +290,9 @@ def test_newton_mixed():
 
     assert len(field) == 3
 
-    boundaries = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.2, clamped=True, return_loadcase=True
+    )
 
     # deformation gradient
     F = field.extract(grad=True, sym=False, add_identity=True)
@@ -309,7 +317,9 @@ def test_newton_body():
     J = fem.Field(region0, values=1.0)
     field = fem.FieldContainer((u, p, J))
 
-    boundaries = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.2, clamped=True, return_loadcase=True
+    )
 
     # define the constitutive material behavior
     nh = fem.NeoHooke(mu=1.0, bulk=2.0)

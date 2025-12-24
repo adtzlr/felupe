@@ -109,7 +109,7 @@ def symmetry(
             raise ValueError("Provide either `bounds` or `boundaries`, but not both.")
 
         warn(
-            "`bounds` is deprecated since v10.0.0 and will be removed in a future release."
+            "`bounds` is deprecated since v10.0.0 and will be removed in a future release. "
             "Use `boundaries` in new code.",
             DeprecationWarning,
             stacklevel=2,

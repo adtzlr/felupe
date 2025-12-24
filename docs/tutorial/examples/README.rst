@@ -25,7 +25,7 @@ A :func:`~felupe.dof.uniaxial` load case is applied on the displacement :class:`
        field, clamped=True, return_loadcase=True
    )
 
-An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:solid body <felupe.SolidBody>`.
+An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:`solid body <felupe.SolidBody>`.
 
 .. pyvista-plot::
    :context:

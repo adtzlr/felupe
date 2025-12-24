@@ -17,7 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from typing import NamedTuple
-
+from warnings import warn
 import numpy as np
 
 from ._boundary import Boundary
@@ -26,11 +26,13 @@ from ._tools import apply, partition
 
 
 class LoadcaseResult(NamedTuple):
-    bounds: BoundaryDict
+    boundaries: BoundaryDict
     loadcase: dict
 
 
-def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
+def symmetry(
+    field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None, boundaries=None
+):
     """Return a dict of boundaries for the symmetry axes on the x-, y- and
     z-coordinates.
 
@@ -46,7 +48,7 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
         Center of the y-symmetry (default is 0.0).
     z : float, optional
         Center of the z-symmetry (default is 0.0).
-    bounds : dict of felupe.Boundary, optional
+    boundaries : dict or felupe.BoundaryDict, optional
         Extend a given dict of boundaries by the symmetry boundaries (default is None).
 
     Returns
@@ -101,6 +103,19 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     felupe.Boundary : A collection of prescribed degrees of freedom.
     """
 
+    if bounds is not None:
+        if boundaries is not None:
+            raise ValueError("Provide either `bounds` or `boundaries`, but not both.")
+
+        warn(
+            "`bounds` is deprecated since v10.0.0 and will be removed in a future release."
+            "Use `boundaries` in new code.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        boundaries = bounds
+
     # convert axes to array and slice by mesh dimension
     enforce = np.array(axes).astype(bool)[: field.dim]
 
@@ -115,16 +130,16 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
         {"fz": z, "skip": skipax[2][: field.dim]},
     ]
 
-    if bounds is None:
-        bounds = BoundaryDict()
+    if boundaries is None:
+        boundaries = BoundaryDict()
     labels = ["symx", "symy", "symz"]
 
     # loop over symmetry conditions and add them to a new dict
     for a, (symaxis, kwargs) in enumerate(zip(enforce, kwarglist[: field.dim])):
         if symaxis:
-            bounds[labels[a]] = Boundary(field, **kwargs)
+            boundaries[labels[a]] = Boundary(field, **kwargs)
 
-    return bounds
+    return boundaries
 
 
 def uniaxial(

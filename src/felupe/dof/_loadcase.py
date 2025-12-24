@@ -16,6 +16,9 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from typing import NamedTuple
+from warnings import warn
+
 import numpy as np
 
 from ._boundary import Boundary
@@ -23,7 +26,14 @@ from ._dict import BoundaryDict
 from ._tools import apply, partition
 
 
-def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
+class LoadcaseResult(NamedTuple):
+    boundaries: BoundaryDict
+    loadcase: dict
+
+
+def symmetry(
+    field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None, boundaries=None
+):
     """Return a dict of boundaries for the symmetry axes on the x-, y- and
     z-coordinates.
 
@@ -39,12 +49,12 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
         Center of the y-symmetry (default is 0.0).
     z : float, optional
         Center of the z-symmetry (default is 0.0).
-    bounds : dict of felupe.Boundary, optional
+    boundaries : dict or felupe.BoundaryDict, optional
         Extend a given dict of boundaries by the symmetry boundaries (default is None).
 
     Returns
     -------
-    dict of felupe.Boundary
+    felupe.BoundaryDict
         New or extended dict of boundaries including symmetry boundaries.
 
     Notes
@@ -94,6 +104,22 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
     felupe.Boundary : A collection of prescribed degrees of freedom.
     """
 
+    if bounds is not None:
+        if boundaries is not None:
+            raise ValueError("Provide either `bounds` or `boundaries`, but not both.")
+
+        warn(
+            "`bounds` is deprecated since v10.0.0 and will be removed in a future release."
+            "Use `boundaries` in new code.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        boundaries = bounds
+    
+    if not hasattr(field, "dim"):
+        raise TypeError("Given field has no `dim`. Did you use a field container?")
+
     # convert axes to array and slice by mesh dimension
     enforce = np.array(axes).astype(bool)[: field.dim]
 
@@ -108,19 +134,28 @@ def symmetry(field, axes=(True, True, True), x=0.0, y=0.0, z=0.0, bounds=None):
         {"fz": z, "skip": skipax[2][: field.dim]},
     ]
 
-    if bounds is None:
-        bounds = BoundaryDict()
+    if boundaries is None:
+        boundaries = BoundaryDict()
     labels = ["symx", "symy", "symz"]
 
     # loop over symmetry conditions and add them to a new dict
     for a, (symaxis, kwargs) in enumerate(zip(enforce, kwarglist[: field.dim])):
         if symaxis:
-            bounds[labels[a]] = Boundary(field, **kwargs)
+            boundaries[labels[a]] = Boundary(field, **kwargs)
 
-    return bounds
+    return boundaries
 
 
-def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=True):
+def uniaxial(
+    field,
+    left=None,
+    right=None,
+    move=0.2,
+    axis=0,
+    clamped=False,
+    sym=True,
+    return_loadcase=False,
+):
     """Return a dict of boundaries for uniaxial loading between a left (fixed or
     symmetry face) and a right (applied) end face along a given axis with optional
     selective symmetries at the origin. Optionally, the right end face is assumed to be
@@ -153,15 +188,23 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the direction of the longitudinal axis as well as in the
         directions of the transversal axes.
+    return_loadcase : bool, optional
+        A flag to return a dict with loadcase-related data. Default is False.
 
     Returns
     -------
-    dict of felupe.Boundary
-        Dict of boundaries for a uniaxial loadcase.
-    dict of ndarray
-        Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
-        freedom as well as the external displacement values ``ext0`` for the prescribed
-        degrees of freedom.
+    felupe.BoundaryDict
+        Dict of boundaries for this loadcase.
+
+    LoadcaseResult
+        Returned only if ``return_loadcase=True``.
+
+        bounds: felupe.BoundaryDict
+            Dict of boundaries for this loadcase.
+        loadcase : dict
+            Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
+            freedom as well as the external displacement values ``ext0`` for the prescribed
+            degrees of freedom.
 
     Examples
     --------
@@ -176,7 +219,7 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
         >>> region = fem.RegionHexahedron(fem.Cube(a=(0, 0, 0), b=(2, 3, 1), n=(6, 11, 5)))
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
         >>>
-        >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)[0]
+        >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)
 
     The longitudinal displacement is applied incrementally.
 
@@ -234,10 +277,15 @@ def uniaxial(field, left=None, right=None, move=0.2, axis=0, clamped=False, sym=
 
     bounds["move"] = Boundary(f, skip=active, value=move, **{fx: right})
 
-    dof0, dof1 = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0)
+    if return_loadcase:
+        dof0, dof1 = partition(field, bounds)
+        ext0 = apply(field, bounds, dof0)
 
-    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
+        return LoadcaseResult(
+            boundaries=bounds, loadcase=dict(dof0=dof0, dof1=dof1, ext0=ext0)
+        )
+
+    return bounds
 
 
 def biaxial(
@@ -248,6 +296,7 @@ def biaxial(
     axes=(0, 1),
     clampes=(False, False),
     sym=True,
+    return_loadcase=False,
 ):
     """Return a dict of boundaries for biaxial loading between a left (applied or
     symmetry face) and a right (applied) end face along a given pair of axes with
@@ -282,15 +331,23 @@ def biaxial(
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the directions of the longitudinal axes as well as in the
         direction of the transversal axis.
+    return_loadcase : bool, optional
+        A flag to return a dict with loadcase-related data. Default is False.
 
     Returns
     -------
-    dict of felupe.Boundary
-        Dict of boundaries for a biaxial loadcase.
-    dict of ndarray
-        Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
-        freedom as well as the external displacement values ``ext0`` for the prescribed
-        degrees of freedom.
+    felupe.BoundaryDict
+        Dict of boundaries for this loadcase.
+
+    LoadcaseResult
+        Returned only if ``return_loadcase=True``.
+
+        bounds: felupe.BoundaryDict
+            Dict of boundaries for this loadcase.
+        loadcase : dict
+            Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
+            freedom as well as the external displacement values ``ext0`` for the prescribed
+            degrees of freedom.
 
     Notes
     -----
@@ -316,7 +373,7 @@ def biaxial(
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
-        >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))[0]
+        >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))
 
     The longitudinal displacements are applied incrementally.
 
@@ -353,7 +410,7 @@ def biaxial(
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
-        >>> boundaries = fem.dof.biaxial(field, clampes=(False, False))[0]
+        >>> boundaries = fem.dof.biaxial(field, clampes=(False, False))
         >>>
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -381,7 +438,7 @@ def biaxial(
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
         >>> boundaries = fem.dof.biaxial(
         ...     field, clampes=(True, False), moves=(0, 0), sym=False, axes=(0, 1)
-        ... )[0]
+        ... )
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
         ...     items=[solid],
@@ -447,10 +504,15 @@ def biaxial(
             f, skip=active, value=move, **{fx: right}
         )
 
-    dof0, dof1 = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0)
+    if return_loadcase:
+        dof0, dof1 = partition(field, bounds)
+        ext0 = apply(field, bounds, dof0)
 
-    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
+        return LoadcaseResult(
+            boundaries=bounds, loadcase=dict(dof0=dof0, dof1=dof1, ext0=ext0)
+        )
+
+    return bounds
 
 
 def shear(
@@ -460,6 +522,7 @@ def shear(
     moves=(0.2, 0.0, 0.0),
     axes=(0, 1),
     sym=True,
+    return_loadcase=False,
 ):
     """Return a dict of boundaries for shear loading with optional combined compression
     between a rigid bottom and a rigid top end face along a given pair of axes. The
@@ -491,15 +554,24 @@ def shear(
         axis of compression (default is (0, 1)).
     sym : bool, optional
         A flag to invoke a symmetry boundary in the direction of the thickness axis.
+    return_loadcase : bool, optional
+        A flag to return a dict with loadcase-related data. Default is False.
 
     Returns
     -------
-    dict of felupe.Boundary
-        Dict of boundaries for a biaxial loadcase.
-    dict of ndarray
-        Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
-        freedom as well as the external displacement values ``ext0`` for the prescribed
-        degrees of freedom.
+    felupe.BoundaryDict
+        Dict of boundaries for this loadcase.
+
+    LoadcaseResult
+        Returned only if ``return_loadcase=True``.
+
+        bounds: felupe.BoundaryDict
+            Dict of boundaries for this loadcase.
+        loadcase : dict
+            Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
+            freedom as well as the external displacement values ``ext0`` for the prescribed
+            degrees of freedom.
+
 
     Examples
     --------
@@ -520,7 +592,7 @@ def shear(
     ..  pyvista-plot::
         :context:
 
-        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))[0]
+        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))
 
     The shear displacement is applied incrementally.
 
@@ -587,7 +659,12 @@ def shear(
     )
     bounds["move"] = Boundary(f, **{fy: top}, skip=not_skip_shear, value=moves[0])
 
-    dof0, dof1 = partition(field, bounds)
-    ext0 = apply(field, bounds, dof0)
+    if return_loadcase:
+        dof0, dof1 = partition(field, bounds)
+        ext0 = apply(field, bounds, dof0)
 
-    return bounds, dict(dof0=dof0, dof1=dof1, ext0=ext0)
+        return LoadcaseResult(
+            boundaries=bounds, loadcase=dict(dof0=dof0, dof1=dof1, ext0=ext0)
+        )
+
+    return bounds

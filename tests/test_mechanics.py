@@ -553,7 +553,7 @@ def test_view():
 
 def test_threefield():
     field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
     solid = fem.SolidBody(umat, field)
     step = fem.Step(items=[solid], boundaries=boundaries)
@@ -561,7 +561,7 @@ def test_threefield():
     assert np.isclose(job.fnorms[0][-1], 0)
 
     field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     solid = fem.SolidBody(umat, field)
     step = fem.Step(items=[solid], boundaries=boundaries)
@@ -642,7 +642,7 @@ def test_checkpoint():
     solid = fem.SolidBody(umat=umat, field=field)
 
     # 1. vertical compression
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+    boundaries = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
     ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
     step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -651,7 +651,7 @@ def test_checkpoint():
     checkpoint = solid.checkpoint()
 
     # 2a. horizontal shear (right)
-    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
     ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
     step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -660,7 +660,7 @@ def test_checkpoint():
     solid.restore(checkpoint)
 
     # 2b. horizontal shear (left)
-    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
     ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
     step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -678,7 +678,7 @@ def test_checkpoint_incompressible():
     solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
 
     # 1. vertical compression
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+    boundaries = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
     ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
     step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -687,7 +687,7 @@ def test_checkpoint_incompressible():
     checkpoint = solid.checkpoint()
 
     # 2a. horizontal shear (right)
-    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
     ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
     step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -696,7 +696,7 @@ def test_checkpoint_incompressible():
     solid.restore(checkpoint)
 
     # 2b. horizontal shear (left)
-    boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+    boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
     ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
     step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -712,16 +712,14 @@ def test_axi_to_3d():
     umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
     solid = fem.SolidBody(umat=umat, field=field)
 
-    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    boundaries = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
     new_solid = solid.revolve(n=11, phi=180)
     new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
 
-    boundaries, loadcase = fem.dof.uniaxial(
-        new_solid.field, clamped=True, sym=(0, 0, 1)
-    )
+    boundaries = fem.dof.uniaxial(new_solid.field, clamped=True, sym=(0, 0, 1))
 
     step = fem.Step(items=[new_solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -735,7 +733,7 @@ def test_axi_to_3d_mixed():
     umat = fem.NeoHooke(mu=1, bulk=20)
     solid = fem.SolidBody(umat=fem.ThreeFieldVariation(umat), field=field)
 
-    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    boundaries = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
@@ -751,7 +749,7 @@ def test_axi_to_3d_incompressible():
     umat = fem.NeoHooke(mu=1)
     solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
 
-    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    boundaries = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
@@ -759,9 +757,7 @@ def test_axi_to_3d_incompressible():
     new_solid = solid.revolve(n=11, phi=180)
     new_solid = solid.revolve(n=11, phi=fem.math.linsteps([0, 180], num=10))
 
-    boundaries, loadcase = fem.dof.uniaxial(
-        new_solid.field, clamped=True, sym=(0, 0, 1)
-    )
+    boundaries = fem.dof.uniaxial(new_solid.field, clamped=True, sym=(0, 0, 1))
 
     step = fem.Step(items=[new_solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
@@ -775,7 +771,7 @@ def test_axi_to_3d_quadratic():
     umat = fem.NeoHooke(mu=1, bulk=20)
     solid = fem.SolidBody(umat, field=field)
 
-    boundaries, loadcase = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
+    boundaries = fem.dof.uniaxial(solid.field, clamped=True, sym=False)
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 

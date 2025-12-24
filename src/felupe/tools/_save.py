@@ -59,7 +59,7 @@ def save(
     >>> region = fem.RegionHexahedron(mesh)
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
     >>>
-    >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, move=0.3)
+    >>> boundaries = fem.dof.uniaxial(field, clamped=True, move=0.3)
     >>>
     >>> umat = fem.NeoHooke(mu=1)
     >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)

@@ -32,18 +32,18 @@ import pytest
 import felupe as fem
 
 
-def pre(SolidBodyForce=fem.SolidBodyForce):
+def pre():
     mesh = fem.Rectangle(n=2)
     region = fem.RegionQuad(mesh)
     field = fem.FieldsMixed(region, n=3, axisymmetric=True)
 
     umat = fem.ThreeFieldVariation(fem.NeoHooke(1, 5000))
     body = fem.SolidBody(umat, field)
-    bounds, loadcase = fem.dof.uniaxial(field)
+    boundaries = fem.dof.uniaxial(field)
 
     points = mesh.points[:, 0] == 1
     load = fem.PointLoad(field, points)
-    gravity = SolidBodyForce(field, [0, 0, 0], 0)
+    gravity = fem.SolidBodyForce(field, [0, 0, 0], 0)
 
     region2 = fem.RegionQuadBoundary(mesh, mask=points, ensure_3d=True)
     field2 = fem.FieldContainer([fem.FieldAxisymmetric(region2, dim=2)])
@@ -52,12 +52,12 @@ def pre(SolidBodyForce=fem.SolidBodyForce):
     step = fem.Step(
         items=[body, load, gravity, pressure],
         ramp={
-            bounds["move"]: fem.math.linsteps([0, 1], num=10),
+            boundaries["move"]: fem.math.linsteps([0, 1], num=10),
             load: np.zeros((11, 2)),
             pressure: np.zeros(11),
             gravity: np.zeros((11, 3)),
         },
-        boundaries=bounds,
+        boundaries=boundaries,
     )
 
     return field, step
@@ -68,7 +68,7 @@ def weather(i, j, res, outside):
 
 
 def test_job():
-    field, step = pre(SolidBodyForce=fem.SolidBodyForce)
+    field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
     field, step = pre()
@@ -81,8 +81,7 @@ def test_job():
 
 
 def test_job_xdmf():
-    with pytest.warns():  # solidbodygravity is deprecated
-        field, step = pre(SolidBodyForce=fem.SolidBodyGravity)
+    field, step = pre()
 
     job = fem.Job(steps=[step])
     job.evaluate()
@@ -122,7 +121,7 @@ def test_job_xdmf_vertex():
         fem.FieldContainer([fem.Field(regions[1], dim=3)]),
     ]
 
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     umat = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
     solids = [
         fem.SolidBody(umat=umat, field=fields[0]),
@@ -224,7 +223,7 @@ def test_noramp():
 
     umat = fem.LinearElastic(E=1, nu=0.3)
     solid = fem.SolidBody(umat, field)
-    bounds = fem.dof.uniaxial(field)[0]
+    bounds = fem.dof.uniaxial(field)
 
     step = fem.Step(items=[solid], ramp=None, boundaries=bounds)
     job = fem.Job(steps=[step])

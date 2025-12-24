@@ -8,7 +8,6 @@ from ._pointload import PointLoad
 from ._solidbody import SolidBody
 from ._solidbody_cauchy_stress import SolidBodyCauchyStress
 from ._solidbody_force import SolidBodyForce
-from ._solidbody_gravity import SolidBodyGravity
 from ._solidbody_incompressible import SolidBodyNearlyIncompressible
 from ._solidbody_pressure import SolidBodyPressure
 from ._step import Step
@@ -26,7 +25,6 @@ __all__ = [
     "Results",
     "SolidBody",
     "SolidBodyCauchyStress",
-    "SolidBodyGravity",
     "SolidBodyForce",
     "SolidBodyNearlyIncompressible",
     "SolidBodyPressure",

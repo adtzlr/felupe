@@ -226,7 +226,7 @@ class SolidBody(Solid):
         >>> mesh = fem.Cube(n=6)
         >>> region = fem.RegionHexahedron(mesh)
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-        >>> boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>>
         >>> umat = fem.NeoHooke(mu=1, bulk=2)
         >>> solid = fem.SolidBody(umat, field)
@@ -326,7 +326,7 @@ class SolidBody(Solid):
             solid = fem.SolidBody(umat=umat, field=field)
 
             # 1. vertical compression
-            boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
+            boundaries = fem.dof.uniaxial(field, clamped=True, sym=False, axis=1)
             ramp = {boundaries["move"]: fem.math.linsteps([0, -0.2], num=2)}
             step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
             job = fem.Job(steps=[step]).evaluate()
@@ -335,7 +335,7 @@ class SolidBody(Solid):
             checkpoint = solid.checkpoint()
 
             # 2a. horizontal shear (right)
-            boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+            boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
             ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=2)}
             step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
             job = fem.Job(steps=[step]).evaluate()
@@ -344,7 +344,7 @@ class SolidBody(Solid):
             solid.restore(checkpoint)
 
             # 2b. horizontal shear (left)
-            boundaries, loadcase = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
+            boundaries = fem.dof.shear(field, sym=False, moves=(0, 0, -0.2))
             ramp = {boundaries["move"]: fem.math.linsteps([0, -1], num=2)}
             step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
             job = fem.Job(steps=[step]).evaluate()
@@ -419,7 +419,7 @@ class SolidBody(Solid):
             >>> umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
             >>> solid = fem.SolidBody(umat=umat, field=field)
             >>>
-            >>> boundaries, loadcase = fem.dof.uniaxial(
+            >>> boundaries = fem.dof.uniaxial(
             ...     solid.field, clamped=True, sym=False
             ... )
             >>> step = fem.Step(items=[solid], boundaries=boundaries)
@@ -436,7 +436,7 @@ class SolidBody(Solid):
             :force_static:
 
             >>> new_solid = solid.revolve(n=11, phi=180)
-            >>> boundaries, loadcase = fem.dof.uniaxial(
+            >>> boundaries = fem.dof.uniaxial(
             ...     new_solid.field, clamped=True, sym=(0, 0, 1)
             ... )
             >>>

@@ -37,7 +37,7 @@ def test_axi():
     f = fem.FieldsMixed(r, n=1, axisymmetric=True)
     u = fem.NeoHooke(mu=1, bulk=1)
     b = fem.SolidBody(u, f)
-    loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
+    loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
     res = fem.newtonrhapson(items=[b], **loadcase)
 
     u = f[0].interpolate()
@@ -55,7 +55,7 @@ def test_axi_mixed():
     f = fem.FieldsMixed(r, n=3, axisymmetric=True)
     u = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     b = fem.SolidBody(u, f)
-    loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
+    loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
     res = fem.newtonrhapson(items=[b], **loadcase)
 
     u = f[0].interpolate()
@@ -80,8 +80,9 @@ def test_planestrain():
     b = fem.SolidBody(u, f)
     c = fem.SolidBody(v, g)
 
-    r = fem.newtonrhapson(items=[b], **fem.dof.uniaxial(f, clamped=True)[-1])
-    s = fem.newtonrhapson(items=[c], **fem.dof.uniaxial(f, clamped=True)[-1])
+    kwargs = dict(clamped=True, return_loadcase=True)
+    r = fem.newtonrhapson(items=[b], **fem.dof.uniaxial(f, **kwargs)[-1])
+    s = fem.newtonrhapson(items=[c], **fem.dof.uniaxial(f, **kwargs)[-1])
 
     assert np.allclose(r.x.values(), s.x.values())
     assert np.allclose(r.fun, s.fun)
@@ -93,7 +94,7 @@ def test_planestrain_nh():
     f = fem.FieldsMixed(r, n=1, planestrain=True)
     u = fem.NeoHooke(mu=1, bulk=2)
     b = fem.SolidBody(u, f)
-    loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
+    loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
     res = fem.newtonrhapson(items=[b], **loadcase)
 
     u = f[0].interpolate()
@@ -111,7 +112,7 @@ def test_planestrain_nh_mixed():
     f = fem.FieldsMixed(r, n=3, planestrain=True)
     u = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     b = fem.SolidBody(u, f)
-    loadcase = fem.dof.uniaxial(f, clamped=True)[-1]
+    loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
     res = fem.newtonrhapson(items=[b], **loadcase)
 
     u = f[0].interpolate()

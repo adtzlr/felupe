@@ -40,7 +40,13 @@ field = fem.FieldContainer(fields=[displacement])
 # of boundary conditions for this pre-defined load case are returned as ``boundaries``
 # and the partitioned degrees of freedom as well as the external displacements are
 # stored within the returned dict ``loadcase``.
-boundaries, loadcase = fem.dof.uniaxial(field, move=0.2, right=1, clamped=True)
+boundaries, loadcase = fem.dof.uniaxial(
+    field,
+    move=0.2,
+    right=1,
+    clamped=True,
+    return_loadcase=True,
+)
 
 # %%
 # The material behaviour is defined through a built-in Neo-Hookean material formulation.

@@ -91,56 +91,100 @@ def test_loadcase():
         v = fem.FieldContainer([u[0], deepcopy(u[0])])
 
         ux = fem.dof.uniaxial(u, right=1.0, move=0.2, clamped=False, sym=True)
+        ux = fem.dof.uniaxial(
+            u, right=1.0, move=0.2, clamped=False, sym=True, return_loadcase=True
+        )
         assert len(ux) == 2
-
-        ux = fem.dof.uniaxial(u, right=1.0, move=0.2, clamped=True, sym=False)
-        assert len(ux) == 2
-        assert "right" in ux[0]
 
         ux = fem.dof.uniaxial(
-            u, right=1.0, move=0.2, clamped=True, axis=1, sym=(False, True, False)
+            u, right=1.0, move=0.2, clamped=True, sym=False, return_loadcase=True
         )
         assert len(ux) == 2
         assert "right" in ux[0]
 
         ux = fem.dof.uniaxial(
-            u, right=1.0, move=0.2, clamped=True, axis=1, sym=(True, False, True)
+            u,
+            right=1.0,
+            move=0.2,
+            clamped=True,
+            axis=1,
+            sym=(False, True, False),
+            return_loadcase=True,
         )
         assert len(ux) == 2
         assert "right" in ux[0]
 
-        ux = fem.dof.uniaxial(u, right=None, move=0.2, clamped=True)
+        ux = fem.dof.uniaxial(
+            u,
+            right=1.0,
+            move=0.2,
+            clamped=True,
+            axis=1,
+            sym=(True, False, True),
+            return_loadcase=True,
+        )
+        assert len(ux) == 2
+        assert "right" in ux[0]
+
+        ux = fem.dof.uniaxial(
+            u, right=None, move=0.2, clamped=True, return_loadcase=True
+        )
         assert len(ux) == 2
         assert "right" in ux[0]
 
         bx = fem.dof.biaxial(
             u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(False, False)
         )
+        bx = fem.dof.biaxial(
+            u,
+            rights=(1.0, 1.0),
+            moves=(0.2, 0.2),
+            clampes=(False, False),
+            return_loadcase=True,
+        )
         assert len(bx) == 2
 
         bx = fem.dof.biaxial(
-            u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(True, True), sym=False
+            u,
+            rights=(1.0, 1.0),
+            moves=(0.2, 0.2),
+            clampes=(True, True),
+            sym=False,
+            return_loadcase=True,
         )
         assert len(bx) == 2
         assert "left-0" in bx[0]
 
         bx = fem.dof.biaxial(
-            u, rights=(None, None), moves=(0.2, 0.2), clampes=(True, True)
+            u,
+            rights=(None, None),
+            moves=(0.2, 0.2),
+            clampes=(True, True),
+            return_loadcase=True,
         )
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
         bx = fem.dof.biaxial(
-            v, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(True, True)
+            v,
+            rights=(1.0, 1.0),
+            moves=(0.2, 0.2),
+            clampes=(True, True),
+            return_loadcase=True,
         )
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
         sh = fem.dof.shear(u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True)
+        sh = fem.dof.shear(
+            u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True, return_loadcase=True
+        )
         assert len(sh) == 2
         assert "top" in sh[0]
 
-        sh = fem.dof.shear(v, bottom=None, top=None, moves=(0.2, 0, 0), sym=False)
+        sh = fem.dof.shear(
+            v, bottom=None, top=None, moves=(0.2, 0, 0), sym=False, return_loadcase=True
+        )
         assert len(sh) == 2
         assert "top" in sh[0]
 
@@ -193,9 +237,26 @@ def test_boundary_dict():
     # ax = boundaries.imshow()
 
 
+def test_symmetry():
+    field = fem.FieldPlaneStrain(
+        fem.RegionQuad(fem.Rectangle(n=3)), dim=2
+    ).as_container()
+    boundaries = fem.BoundaryDict()
+
+    with pytest.raises(TypeError):
+        fem.dof.symmetry(field)
+
+    with pytest.raises(ValueError):
+        fem.dof.symmetry(field[0], bounds=boundaries, boundaries=boundaries)
+
+    with pytest.warns(DeprecationWarning):
+        fem.dof.symmetry(field[0], bounds=boundaries)
+
+
 if __name__ == "__main__":
     test_boundary()
     test_boundary_dict()
     test_boundary_multiaxial()
     test_boundary_plot()
     test_loadcase()
+    test_symmetry()

@@ -113,7 +113,7 @@ def test_readme_form():
     mesh = fem.Cube(n=3)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
 
     from felupe.math import ddot, grad, sym, trace
 

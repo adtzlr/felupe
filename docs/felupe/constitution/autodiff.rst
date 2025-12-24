@@ -5,17 +5,30 @@ Automatic Differentiation
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
    :caption: Automatic Differentiation:
 
    autodiff/tensortrax
    autodiff/jax
 
-FElupe supports multiple backends for constitutive material formulations with
-automatic differentiation. The default backend is based on :mod:`tensortrax` which ships
-with FElupe. For more computationally expensive material formulations, :mod:`jax` may
-be the preferred option.
+.. grid::
 
-It is straightforward to switch between these backends.
+   .. grid-item-card:: NumPy
+      :link: autodiff/tensortrax
+      :link-type: doc
+
+      Default NumPy-based backend ``tensortrax`` for automatic differentiation
+      (bundled with FElupe).
+
+   .. grid-item-card:: JAX
+      :link: autodiff/jax
+      :link-type: doc
+
+      Use JAX as backend for automatic differentiation. Preferred option for
+      computationally expensive material formulations.
+
+FElupe supports multiple backends for constitutive material formulations with
+automatic differentiation. It is straightforward to switch between these backends.
 
 ..  tab:: tensortrax (default)
 

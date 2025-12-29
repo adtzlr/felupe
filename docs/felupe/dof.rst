@@ -41,7 +41,6 @@ This module contains the definition of a boundary condition, tools related to th
 .. autoclass:: felupe.BoundaryDict
    :members:
    :undoc-members:
-   :inherited-members:
 
 .. autofunction:: felupe.dof.partition
 

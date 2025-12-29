@@ -16,14 +16,16 @@ First, let’s import FElupe and create a meshed :class:`cube <felupe.Cube>` out
    region = fem.RegionHexahedron(mesh)
    field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-A :func:`~felupe.dof.uniaxial` load case is applied on the displacement :class:`field <felupe.Field>` stored inside the :class:`field container <felupe.FieldContainer>`. This involves setting up :func:`~felupe.dof.symmetry` planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is *clamped*: only displacements in direction *x* are allowed. The dict of :class:`boundary <felupe.Boundary>` conditions for this pre-defined load case are returned as ``boundaries`` and the partitioned degrees of freedom as well as the external displacements are stored within the returned dict ``loadcase``.
+A :func:`~felupe.dof.uniaxial` load case is applied on the displacement :class:`field <felupe.Field>` stored inside the :class:`field container <felupe.FieldContainer>`. This involves setting up :func:`~felupe.dof.symmetry` planes as well as the absolute value of the prescribed displacement at the mesh-points on the right-end face of the cube. The right-end face is *clamped*: only displacements in direction *x* are allowed. The dict of :class:`boundary <felupe.Boundary>` conditions for this pre-defined load case are returned as ``boundaries``. Optionally, the partitioned degrees of freedom as well as the external displacements are stored within the returned dict ``loadcase``.
 
 .. pyvista-plot::
    :context:
 
-   boundaries = fem.dof.uniaxial(field, clamped=True)
+   boundaries, loadcase = fem.dof.uniaxial(
+       field, clamped=True, return_loadcase=True
+   )
 
-An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:solid body <felupe.SolidBody>`.
+An isotropic hyperelastic :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is applied on the displacement :class:`field <felupe.Field>` of a :class:`solid body <felupe.SolidBody>`.
 
 .. pyvista-plot::
    :context:

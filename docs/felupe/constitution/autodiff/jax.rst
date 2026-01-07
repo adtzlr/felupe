@@ -21,7 +21,7 @@ This page contains material model formulations with automatic differentiation us
 
         os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=4"
 
-..  note::
+..  warning::
 
     JAX uses single-precision (32bit) data types by default. This requires to relax the
     tolerance of :func:`~felupe.newtonrhapson` to ``tol=1e-4``. If required, JAX may be

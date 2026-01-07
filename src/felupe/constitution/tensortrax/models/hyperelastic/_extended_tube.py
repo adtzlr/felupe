@@ -95,8 +95,6 @@ def extended_tube(C, Gc, delta, Ge, beta):
     ..  plot::
         :context: close-figs
 
-        >>> import felupe as fem
-        >>>
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.extended_tube,
         ...     Gc=0.1867,

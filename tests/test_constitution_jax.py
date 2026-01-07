@@ -67,6 +67,7 @@ def test_hyperelastic_jax():
         md.yeoh,
         md.third_order_deformation,
         md.miehe_goektepe_lulei,
+        md.ogden,
         md.storakers,
         md.van_der_waals,
         md.extended_tube,

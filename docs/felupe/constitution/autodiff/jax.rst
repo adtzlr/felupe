@@ -52,6 +52,7 @@ These material model formulations are defined by a strain energy density functio
    miehe_goektepe_lulei
    mooney_rivlin
    neo_hooke
+   ogden
    storakers
    third_order_deformation
    van_der_waals

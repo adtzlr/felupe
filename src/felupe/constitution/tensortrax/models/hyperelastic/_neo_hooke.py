@@ -55,8 +55,6 @@ def neo_hooke(C, mu):
     ..  plot::
         :context: close-figs
 
-        >>> import felupe as fem
-        >>>
         >>> umat = mat.Hyperelastic(mat.models.hyperelastic.neo_hooke, mu=1.0)
         >>> ax = umat.plot(incompressible=True)
 

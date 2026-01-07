@@ -116,7 +116,7 @@ def symmetry(
         )
 
         boundaries = bounds
-    
+
     if not hasattr(field, "dim"):
         raise TypeError("Given field has no `dim`. Did you use a field container?")
 

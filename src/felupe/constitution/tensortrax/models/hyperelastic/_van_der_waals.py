@@ -55,8 +55,6 @@ def van_der_waals(C, mu, limit, a, beta):
     ..  plot::
         :context: close-figs
 
-        >>> import felupe as fem
-        >>>
         >>> umat = mat.Hyperelastic(
         ...     mat.models.hyperelastic.van_der_waals,
         ...     mu=1.0,

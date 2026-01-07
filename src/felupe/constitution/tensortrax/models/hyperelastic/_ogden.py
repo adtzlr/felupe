@@ -27,7 +27,7 @@ def ogden(C, mu, alpha):
 
     Parameters
     ----------
-    C : tensortrax.Tensor
+    C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     mu : list of float
         List of moduli.
@@ -57,10 +57,16 @@ def ogden(C, mu, alpha):
     --------
 
     ..  plot::
+        :context: close-figs
 
-        >>> import felupe as fem
-        >>>
-        >>> umat = fem.Hyperelastic(fem.ogden, mu=[1, 0.2], alpha=[1.7, -1.5])
+        >>> # import felupe.constitution.jax as mat
+        >>> import felupe.constitution.tensortrax as mat
+
+    ..  plot::
+
+        >>> umat = mat.Hyperelastic(
+        ...     mat.models.hyperelastic.ogden, mu=[1, 0.2], alpha=[1.7, -1.5]
+        ... )
         >>> ax = umat.plot(incompressible=True)
 
     """

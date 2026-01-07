@@ -8,13 +8,6 @@ This page contains material model formulations with automatic differentiation us
 
 ..  note::
 
-    JAX uses single-precision (32bit) data types by default. This requires to relax the
-    tolerance of :func:`~felupe.newtonrhapson` to ``tol=1e-4``. If required, JAX may be
-    enforced to use double-precision at startup with
-    ``jax.config.update("jax_enable_x64", True)``.
-
-..  note::
-
     The number of local XLA devices available must be greater or equal the number of the
     parallel-mapped axis, i.e. the number of quadrature points per cell when used in
     :class:`~felupe.constitution.jax.Material` and
@@ -27,6 +20,18 @@ This page contains material model formulations with automatic differentiation us
         import os
 
         os.environ["XLA_FLAGS"] = "--xla_force_host_platform_device_count=4"
+
+..  note::
+
+    JAX uses single-precision (32bit) data types by default. This requires to relax the
+    tolerance of :func:`~felupe.newtonrhapson` to ``tol=1e-4``. If required, JAX may be
+    enforced to use double-precision at startup,
+
+    ..  code-block:: python
+        
+        import jax
+
+        jax.config.update("jax_enable_x64", True)
 
 **Frameworks**
 
@@ -104,6 +109,8 @@ formulations in :class:`~felupe.constitution.jax.Material`.
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.mooney_rivlin
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.neo_hooke
+
+.. autofunction:: felupe.constitution.jax.models.hyperelastic.ogden
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.storakers
 

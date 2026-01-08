@@ -1,7 +1,7 @@
 FElupe documentation
 ====================
 
-FElupe is a Python 3.9+ finite element analysis package focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. This package is intended for scientific research, but is also suitable for running nonlinear simulations in general. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
+FElupe is a Python 3.10+ finite element analysis package focusing on the formulation and numerical solution of nonlinear problems in continuum mechanics of solid bodies. This package is intended for scientific research, but is also suitable for running nonlinear simulations in general. In addition to the transformation of general weak forms into sparse vectors and matrices, FElupe provides an efficient high-level abstraction layer for the simulation of the deformation of solid bodies.
 
 .. grid::
 
@@ -241,7 +241,7 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
 License
 -------
 
-FElupe - Finite Element Analysis (C) 2021-2025 Andreas Dutzler, Graz (Austria).
+FElupe - Finite Element Analysis (C) 2021-2026 Andreas Dutzler, Graz (Austria).
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

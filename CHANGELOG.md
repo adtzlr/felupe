@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file. The format 
 - Change the default output of the loadcases `dof.uniaxial()`, `dof.shear()` and `dof.biaxial()` to only return the dict of boundary conditions ``boundaries = fem.dof.uniaxial(field)`` (was ``boundaries, loadcase = fem.dof.uniaxial(field)`` before). The additional ``loadcase`` dict is now optional, ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)``. Note that this is a non backward compatible change.
 - Don't support iteration over a `BoundaryDict`. Use `BoundaryDict.items()` or `BoundaryDict.values()` instead.
 
+### Removed
+- Remove support for Python 3.9.
+
 ### Deprecated
 - Deprecate `bounds` in `dof.symmetry(field, bounds=None)`. Use new equivalent `boundaries` argument, `dof.symmetry(field, boundaries=None)`.
 

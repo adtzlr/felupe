@@ -584,7 +584,7 @@ def test_umat_viscoelastic2():
 def test_umat_strain():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
-    statevars = np.zeros((18, *F.shape[-2:]))
+    statevars = np.zeros((18 + 0, *F.shape[-2:]))
 
     for framework in ["small-strain", "total-lagrange", "co-rotational"]:
 
@@ -615,7 +615,7 @@ def test_umat_strain_plasticity():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
-    statevars = np.ones((28, *F.shape[-2:]))
+    statevars = np.ones((18 + 10, *F.shape[-2:]))
 
     umat = fem.MaterialStrain(
         material=fem.constitution.linear_elastic_plastic_isotropic_hardening,
@@ -624,6 +624,26 @@ def test_umat_strain_plasticity():
         σy=0,
         K=0.1,
         statevars=(1, (3, 3)),
+    )
+
+    s, statevars_new = umat.gradient([F, statevars])
+    dsde = umat.hessian([F, statevars])
+
+
+def test_umat_strain_viscoelasticity():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    statevars = np.ones((18 + 18, *F.shape[-2:]))
+
+    umat = fem.MaterialStrain(
+        material=fem.constitution.linear_elastic_viscoelastic,
+        λ=2.0,
+        μ=1.0,
+        G=[3.0, 15.0],
+        τ=[10.0, 100.0],
+        Δt=5.0,
+        statevars=((2, 3, 3),),
     )
 
     s, statevars_new = umat.gradient([F, statevars])

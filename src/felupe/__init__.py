@@ -40,6 +40,7 @@ from .constitution import (
     Volumetric,
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
+    linear_elastic_viscoelastic,
 )
 from .dof import Boundary, BoundaryDict
 from .element import ArbitraryOrderLagrange as ArbitraryOrderLagrangeElement
@@ -178,6 +179,7 @@ __all__ = [
     "constitutive_material",
     "VolumeChange",
     "linear_elastic",
+    "linear_elastic_viscoelastic",
     "linear_elastic_plastic_isotropic_hardening",
     "Boundary",
     "BoundaryDict",

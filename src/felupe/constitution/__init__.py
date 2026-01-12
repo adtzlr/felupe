@@ -21,6 +21,7 @@ from .strain.models import (
     LinearElasticPlasticIsotropicHardening,
     linear_elastic,
     linear_elastic_plastic_isotropic_hardening,
+    linear_elastic_viscoelastic,
 )
 
 __all__ = [
@@ -46,6 +47,7 @@ __all__ = [
     "ThreeFieldVariation",
     "NearlyIncompressible",
     "linear_elastic",
+    "linear_elastic_viscoelastic",
     "linear_elastic_plastic_isotropic_hardening",
     "ViewMaterial",
     "ViewMaterialIncompressible",

@@ -52,6 +52,7 @@ This page contains the core (hard-coded) constitutive material model formulation
 
    MaterialStrain
    linear_elastic
+   linear_elastic_viscoelastic
    linear_elastic_plastic_isotropic_hardening
 
 **Detailed API Reference**

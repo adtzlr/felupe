@@ -74,6 +74,10 @@ This page contains the core (hard-coded) constitutive material model formulation
 
 .. autofunction:: felupe.linear_elastic
 
+.. autofunction:: felupe.linear_elastic_viscoelastic
+
+.. autofunction:: felupe.linear_elastic_plastic_isotropic_hardening
+
 .. autoclass:: felupe.LinearElasticLargeStrain
    :members:
    :undoc-members:
@@ -98,8 +102,6 @@ This page contains the core (hard-coded) constitutive material model formulation
    :members:
    :undoc-members:
    :inherited-members:
-
-.. autofunction:: felupe.linear_elastic_plastic_isotropic_hardening
 
 .. autoclass:: felupe.LinearElasticOrthotropic
    :members:

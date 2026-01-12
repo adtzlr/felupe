@@ -40,9 +40,9 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     μ : float
         Second Lamé-constant (shear modulus).
     G : list of float
-        List of Viscoelastic (deviatoric) moduli.
+        List of deviatoric viscoelastic shear moduli.
     τ : list of float
-        List of time constants for viscoelastic (deviatoric) moduli.
+        List of time constants for deviatoric viscoelastic shear moduli.
     Δt : float
         Time increment.
     **kwargs

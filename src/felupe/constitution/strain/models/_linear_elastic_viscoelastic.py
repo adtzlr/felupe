@@ -83,6 +83,10 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     ..  math::
         :label: visco-stress
 
+        \dot{\boldsymbol{\sigma}}_{v,i} 
+            + \frac{1}{\tau_i} \boldsymbol{\sigma}_{v,i} &= 
+            2 G_i \operatorname{dev}\left( \dot{\boldsymbol{\varepsilon}} \right)
+
         \boldsymbol{\sigma}_{v,i} = a_i\ \boldsymbol{\sigma}_{v,i}^n + b_i
             \operatorname{dev} \left(
                 \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_n
@@ -103,7 +107,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
         :label: fourth-order-visco
 
         \mathbb{C} = 2 \bar{\mu} \ \boldsymbol{1} \odot \boldsymbol{1} +
-                \bar{\lambda} \boldsymbol{1} \otimes \boldsymbol{1}
+                \bar{\lambda}\ \boldsymbol{1} \otimes \boldsymbol{1}
 
     The effective coefficients are summarized in Eq. :eq:`visco-coeff-tangent`.
 

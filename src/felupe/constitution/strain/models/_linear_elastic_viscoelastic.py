@@ -119,7 +119,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
         ...     material=fem.linear_elastic_viscoelastic,
         ...     λ=2.0,
         ...     μ=1.0,
-        ...     G=[3.0, 15.0],
+        ...     G=[3.0, 2.0],
         ...     τ=[10.0, 100.0],
         ...     Δt=5.0,
         ...     statevars=((2, 3, 3),),

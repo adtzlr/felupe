@@ -83,8 +83,8 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     ..  math::
         :label: visco-stress
 
-        \dot{\boldsymbol{\sigma}}_{v,i} 
-            + \frac{1}{\tau_i} \boldsymbol{\sigma}_{v,i} &= 
+        \dot{\boldsymbol{\sigma}}_{v,i}
+            + \frac{1}{\tau_i} \boldsymbol{\sigma}_{v,i} &=
             2 G_i \operatorname{dev}\left( \dot{\boldsymbol{\varepsilon}} \right)
 
         \boldsymbol{\sigma}_{v,i} = a_i\ \boldsymbol{\sigma}_{v,i}^n + b_i
@@ -155,6 +155,10 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
     a = [np.exp(-Δt / τi) for τi in τ]
     b = [2 * Gi * (1 - ai) * τi / Δt for Gi, ai, τi in zip(G, a, τ)]
+
+    # Alternative method: backward-Euler
+    # a = [1 / (1 + Δt / τi) for τi in τ]
+    # b = [2 * Gi * ai for Gi, ai in zip(G, a)]
 
     # update of new deviatoric viscoelastic stress
     σvn = ζn[0]

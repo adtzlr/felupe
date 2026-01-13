@@ -97,7 +97,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
         b_i &= 2 G_i (1 - a_i)
 
-        G_{eff} &= \mu + \sum_i G_i \frac{1-a_i}{\Delta t}
+        G_{eff} &= \mu + \sum_{i=1}^N G_i \frac{1-a_i}{\Delta t}
 
         K &= \lambda + \frac{2}{3} \mu
 

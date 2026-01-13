@@ -99,7 +99,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
         G_{eff} &= \mu + \sum_i G_i \frac{1-a_i}{\Delta t}
 
-        K = \lambda + \frac{2}{3} \mu
+        K &= \lambda + \frac{2}{3} \mu
 
     The total fourth-order elasticity tensor is given in Eq. :eq:`fourth-order-visco`.
 

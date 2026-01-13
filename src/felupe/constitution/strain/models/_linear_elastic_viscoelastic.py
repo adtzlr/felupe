@@ -88,7 +88,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
                 \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_n
             \right)
 
-    along with the coefficients as denoted in Eq. :eq:`visco-coeff`.
+    with the coefficients as denoted in Eq. :eq:`visco-coeff`.
 
     ..  math::
         :label: visco-coeff
@@ -97,10 +97,6 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
         b_i &= \frac{2 G_i\ \tau_i (1 - a_i)}{\Delta t}
 
-        \bar{\mu} &= \mu + \sum_{i=1}^N \frac{b_i}{2}
-
-        \bar{\lambda} &= \lambda - \frac{2}{3} \left( \bar{\mu} - \mu \right)
-
     The total fourth-order elasticity tensor is given in Eq. :eq:`fourth-order-visco`.
 
     ..  math::
@@ -108,6 +104,15 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
         \mathbb{C} = 2 \bar{\mu} \ \boldsymbol{1} \odot \boldsymbol{1} +
                 \bar{\lambda} \boldsymbol{1} \otimes \boldsymbol{1}
+
+    The effective coefficients are summarized in Eq. :eq:`visco-coeff-tangent`.
+
+    ..  math::
+        :label: visco-coeff-tangent
+
+        \bar{\mu} &= \mu + \sum_{i=1}^N \frac{b_i}{2}
+
+        \bar{\lambda} &= \lambda - \frac{2}{3} \left( \bar{\mu} - \mu \right)
 
     Examples
     --------

@@ -60,6 +60,56 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     ζ : list
         List of new state variables.
 
+    Notes
+    -----
+    The stress consists of a long-term elastic and a deviatoric viscoelastic stress
+    part, see Eq. \eq{total-stress}.
+
+    ..  math::
+        label: total-stress
+
+        \boldsymbol{\sigma} = \boldsymbol{\sigma}_e + \boldsymbol{\sigma}_v
+
+    The long-term elastic part is given in Eq. \eq{elastic-stress}.
+
+    ..  math::
+        :label: elastic-stress
+
+        \boldsymbol{\sigma}_e = 2 \mu\ \boldsymbol{\varepsilon}
+            + \lambda \operatorname{tr}(\boldsymbol{\varepsilon}) \boldsymbol{1}
+
+    The i-th viscous part is given in Eq. \eq{visco-stress},
+
+    ..  math::
+        :label: visco-stress
+
+        \boldsymbol{\sigma}_{v,i} = a_i \boldsymbol{\sigma}_n + b_i
+            \left( \operatorname{dev} (
+                \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_n
+            ) \right)
+
+    along with the coefficients as denoted in Eq. \eq{visco-coeff}.
+
+    ..  math::
+        :label: visco-coeff
+
+        a_i &= \exp{-\Delta t / \tau_i}
+
+        b_i &= 2 G_i (1 - a_i)
+
+        G_{eff} &= \mu + \sum_i G_i \frac{1-a_i}{\Delta t}
+
+        K = \lambda + \frac{2}{3} \mu
+
+    The total fourth-order elasticity tensor is given in Eq. \eq{fourth-order-visco}.
+
+    ..  math::
+        :label: fourth-order-visco
+
+        \mathbb{C} &= 2 G_{eff} \ \left( \boldsymbol{1} \odot \boldsymbol{1} -
+                \frac{1}{3} \ \boldsymbol{1} \otimes \boldsymbol{1} \right) +
+                K \ \frac{1}{3} \boldsymbol{1} \otimes \boldsymbol{1}
+
     Examples
     --------
     ..  plot::

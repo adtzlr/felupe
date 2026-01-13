@@ -84,9 +84,9 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
         :label: visco-stress
 
         \boldsymbol{\sigma}_{v,i} = a_i\ \boldsymbol{\sigma}_n + b_i
-            \left( \operatorname{dev} (
+            \operatorname{dev} \left(
                 \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_n
-            ) \right)
+            \right)
 
     along with the coefficients as denoted in Eq. :eq:`visco-coeff`.
 

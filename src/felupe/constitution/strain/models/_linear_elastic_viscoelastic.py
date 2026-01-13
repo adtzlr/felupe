@@ -106,9 +106,9 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     ..  math::
         :label: fourth-order-visco
 
-        \mathbb{C} = 2 G_{eff} \ \left( \boldsymbol{1} \odot \boldsymbol{1} -
-                \frac{1}{3} \ \boldsymbol{1} \otimes \boldsymbol{1} \right) +
-                K \ \frac{1}{3} \boldsymbol{1} \otimes \boldsymbol{1}
+        \mathbb{C} = 2 G_{eff} \ \boldsymbol{1} \odot \boldsymbol{1} +
+                \left( K - \frac{2}{3} G_{eff} \right)
+                \boldsymbol{1} \otimes \boldsymbol{1}
 
     Examples
     --------
@@ -158,8 +158,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     if kwargs["tangent"]:
         K = λ + 2 / 3 * μ
         μ_eff = μ + np.sum([Gi * (1 - ai) / Δt for Gi, ai in zip(G, a)], axis=0)
-        eye_eye = dya(eye, eye)
-        dσdε = 2 * μ_eff * (cdya_ik(eye, eye) - eye_eye / 3) + K * eye_eye
+        dσdε = 2 * μ_eff * cdya_ik(eye, eye) + (K - 2 / 3 * μ_eff) * dya(eye, eye)
     else:
         dσdε = None
 

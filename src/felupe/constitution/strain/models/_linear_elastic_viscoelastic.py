@@ -83,7 +83,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     ..  math::
         :label: visco-stress
 
-        \boldsymbol{\sigma}_{v,i} = a_i\ \boldsymbol{\sigma}_n + b_i
+        \boldsymbol{\sigma}_{v,i} = a_i\ \boldsymbol{\sigma}_{v,i}^n + b_i
             \operatorname{dev} \left(
                 \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}_n
             \right)
@@ -95,20 +95,19 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
         a_i &= \exp \left( -\Delta t / \tau_i \right)
 
-        b_i &= 2 G_i (1 - a_i)
+        b_i &= \frac{2 G_i\ \tau_i (1 - a_i)}{\Delta t}
 
-        G_{eff} &= \mu + \sum_{i=1}^N G_i \frac{1-a_i}{\Delta t}
+        \bar{\mu} &= \mu + \sum_{i=1}^N \frac{b_i}{2}
 
-        K &= \lambda + \frac{2}{3} \mu
+        \bar{\lambda} &= \lambda - \frac{2}{3} \left( \bar{\mu} - \mu \right)
 
     The total fourth-order elasticity tensor is given in Eq. :eq:`fourth-order-visco`.
 
     ..  math::
         :label: fourth-order-visco
 
-        \mathbb{C} = 2 G_{eff} \ \boldsymbol{1} \odot \boldsymbol{1} +
-                \left( K - \frac{2}{3} G_{eff} \right)
-                \boldsymbol{1} \otimes \boldsymbol{1}
+        \mathbb{C} = 2 \bar{\mu} \ \boldsymbol{1} \odot \boldsymbol{1} +
+                \bar{\lambda} \boldsymbol{1} \otimes \boldsymbol{1}
 
     Examples
     --------
@@ -146,27 +145,26 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     dev_dε = dev(dε)
 
     a = [np.exp(-Δt / τi) for τi in τ]
-    b = [2 * Gi * (1 - ai) for Gi, ai in zip(G, a)]
+    b = [2 * Gi * (1 - ai) * τi / Δt for Gi, ai, τi in zip(G, a, τ)]
 
-    # caution: inplace update of new deviatoric viscoelastic stress
+    # update of new deviatoric viscoelastic stress
     σvn = ζn[0]
-    σv = σvn
-    for i, (Gi, τi) in enumerate(zip(G, τ)):
-        σv[i] = a[i] * σvn[i] + b[i] * dev_dε
+    σv = σvn.copy()
+    for i, σvni in enumerate(ζn[0]):
+        σv[i] = a[i] * σvni + b[i] * dev_dε
 
     # evaluate elasticity tensor
     if kwargs["tangent"]:
-        K = λ + 2 / 3 * μ
-        μ_eff = μ + np.sum([Gi * (1 - ai) / Δt for Gi, ai in zip(G, a)], axis=0)
-        dσdε = 2 * μ_eff * cdya_ik(eye, eye) + (K - 2 / 3 * μ_eff) * dya(eye, eye)
+        μ_eff = μ + np.sum(b, axis=0) / 2
+        λ_eff = λ - 2 / 3 * (μ_eff - μ)
+        dσdε = 2 * μ_eff * cdya_ik(eye, eye) + λ_eff * dya(eye, eye)
     else:
         dσdε = None
 
     # new total stress
     σ += np.sum(σv, axis=0)
 
-    # new state variables (update inplace)
-    ζ = ζn
-    ζ[0] = σv
+    # new state variables
+    ζ = [σv]
 
     return dσdε, σ, ζ

@@ -1,7 +1,7 @@
-Small-Strain based Materials
-----------------------------
+Strain based Materials
+----------------------
 
-A user material (``umat``) based on the incremental small-strain tensor, e.g. suitable
+A user material (``umat``), based on the incremental strain tensor, e.g. suitable
 for linear elastic-plastic material formulations, is provided by
 :class:`~felupe.MaterialStrain`. A user-defined function must be created with the
 arguments and must return:
@@ -31,16 +31,25 @@ arguments and must return:
 
 This function is further added as the ``material`` argument of
 :class:`~felupe.MaterialStrain`. If the material makes use of state variables, the
-shapes of these internal state variables must be provided.
+shapes of these internal state variables must be provided. By default, the small-strain
+framework is used. Optionally, this may be changed to a Total-Lagrange or a
+co-rotational strain framework.
 
 ..  code-block:: python
-    
-    import felupe as fem
-    
-    umat = fem.MaterialStrain(material=material, statevars=(0,), **kwargs)
 
-FElupe contains two reference small-strain user materials, one for linear elastic
-materials and another one for linear elastic-plastic materials with isotropic hardening:
+    import felupe as fem
+
+    umat = fem.MaterialStrain(
+        material=material, 
+        statevars=(0,), 
+        framework="small-strain",  # also "total-lagrange" or "co-rotational"
+        **kwargs,
+    )
+
+FElupe contains three reference small-strain user materials, one for linear elastic
+materials, one for linear elastic-plastic materials with isotropic hardening and one for
+linear viscoelastic materials:
 
 * :func:`~felupe.linear_elastic`
 * :func:`~felupe.linear_elastic_plastic_isotropic_hardening`
+* :func:`~felupe.linear_elastic_viscoelastic`

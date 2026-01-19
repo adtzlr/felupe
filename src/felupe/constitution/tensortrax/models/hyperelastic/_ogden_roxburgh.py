@@ -57,7 +57,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     Mullins-effect related evolution equation are given in Eq. :eq:`psi-ogden-roxburgh`.
     The variation of the functional :math:`\phi` is defined in such a way that the term
     :math:`\delta \eta \ \hat{\psi}` is canceled in the variation of the strain energy
-    function:math:`\delta \psi`. The evolution equation`:math:`\eta` acts as a
+    function :math:`\delta \psi`. The evolution equation :math:`\eta` acts as a
     deformation and deformation-history dependent scaling factor on the variation of the
     distortional part of the strain energy density function.
 
@@ -70,7 +70,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
             \frac{\hat{\psi}_\text{max} - \psi}{m + \beta~\hat{\psi}_\text{max}}
         \right)
 
-        \delta \widetilde{\psi} &= -\delta \eta \ \hat{\psi}
+        \delta \phi &= -\delta \eta \ \hat{\psi}
 
         \delta \widetilde{\psi} &= \eta \ \delta \hat{\psi}
 

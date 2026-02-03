@@ -111,6 +111,8 @@ The capabilities of FElupe may be enhanced with extension packages created by th
 +-----------------------------------------------------------+------------------------------------------------------------+
 | `matadi <https://github.com/adtzlr/matadi>`_              | Material Definition with Automatic Differentiation (AD)    |
 +-----------------------------------------------------------+------------------------------------------------------------+
+| `statescale <https://github.com/adtzlr/statescale>`_      | Snapshot-Driven State Upscaling                            |
++-----------------------------------------------------------+------------------------------------------------------------+
 | `tensortrax <https://github.com/adtzlr/tensortrax>`_      | Differentiable Tensors based on NumPy Arrays               |
 |                                                           | (bundled with FElupe)                                      |
 +-----------------------------------------------------------+------------------------------------------------------------+

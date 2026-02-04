@@ -230,7 +230,7 @@ def test_boundary_dict():
     ).as_container()
     boundaries = fem.BoundaryDict(
         left=fem.Boundary(field[0], fx=0, skip=(0, 0)),
-        right=fem.Boundary(field[0], name="my_label", fx=3, skip=(0, 1)),
+        right=fem.Boundary(field[0], fx=3, skip=(0, 1)),
     )
     plotter = boundaries.plot()
     # img = boundaries.screenshot()

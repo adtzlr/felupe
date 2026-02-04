@@ -33,10 +33,7 @@ class BoundaryDict(dict):
         while len(colors_list) < len(self.keys()):
             colors_list = [*colors_list, *colors]
 
-        for (key, boundary), color in zip(self.items(), colors_list):
-            label = key
-            if boundary.name != "default":
-                label = boundary.name
+        for (label, boundary), color in zip(self.items(), colors_list):
 
             plotter = boundary.plot(
                 label=label,

@@ -27,8 +27,6 @@ class Boundary:
     ----------
     field : felupe.Field
         Field on wich the boundary is created.
-    name : str, optional (default is "default")
-        Name of the boundary.
     fx : float or callable, optional
         Mask-function for x-component of mesh-points which returns `True` at points
         on which the boundary will be applied (default is ``np.isnan``). If a float is
@@ -182,7 +180,6 @@ class Boundary:
     def __init__(
         self,
         field,
-        name="default",
         fx=np.isnan,
         fy=np.isnan,
         fz=np.isnan,
@@ -195,7 +192,6 @@ class Boundary:
 
         self.field = field
         self.dim = field.dim
-        self.name = name
         self.value = value
         self.skip = skip
         self.mode = mode
@@ -270,7 +266,7 @@ class Boundary:
         scale=0.125,
         point_size=10,
         width=3,
-        label=None,
+        label="Boundary Condition",
         show_points=True,
         show_lines=True,
         **kwargs,
@@ -293,8 +289,6 @@ class Boundary:
             )
 
         if len(self.points) > 0:
-            if label is None:
-                label = self.name
 
             if show_points or show_lines:
                 points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))

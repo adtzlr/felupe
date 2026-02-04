@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file. The format 
 - Don't enforce the returned elasticity tensor in `MaterialStrain` to be major-symmetric.
 - Change the default output of the loadcases `dof.uniaxial()`, `dof.shear()` and `dof.biaxial()` to only return the dict of boundary conditions ``boundaries = fem.dof.uniaxial(field)`` (was ``boundaries, loadcase = fem.dof.uniaxial(field)`` before). The additional ``loadcase`` dict is now optional, ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)``. Note that this is a non backward compatible change.
 - Don't support iteration over a `BoundaryDict`. Use `BoundaryDict.items()` or `BoundaryDict.values()` instead.
+- Change the default label value in `Boundary.plot(label="Boundary Condition")` (was `label=None` before). The fall-back to `Boundary.name` is removed.
 
 ### Deprecated
 - Deprecate `bounds` in `dof.symmetry(field, bounds=None)`. Use new equivalent `boundaries` argument, `dof.symmetry(field, boundaries=None)`.
@@ -20,6 +21,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Removed
 - Remove deprecated `SolidBodyGravity`.
 - Remove support for Python 3.9.
+- Remove unused optional `name` argument in `Boundary`.
 
 ## [9.5.0] - 2025-11-05
 

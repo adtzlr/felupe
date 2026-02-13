@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [10.0.0] - 2026-02-13
+
 ### Added
 - Add `MaterialStrain(..., framework="small-strain")` to select a framework. Default is `"small-strain"` (unchanged) but now `"total-lagrange"` and `"co-rotational"` are also supported. Note that `framework="total-lagrange"` will change the linear-elastic material model formulation to the Saint-Venant Kirchhoff material model formulation.
 - Add `MaterialStrain(..., symmetry=True)` to enforce the returned stress and elasticity tensors to be (minor) symmetric. Default is True. `symmetry=False` will improve performance if the provided `material` returns symmetric tensors.
@@ -11,12 +13,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Don't enforce the returned elasticity tensor in `MaterialStrain` to be major-symmetric.
-- Change the default output of the loadcases `dof.uniaxial()`, `dof.shear()` and `dof.biaxial()` to return the dict of boundary conditions, but deprecate this ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=None)`` (was ``boundaries, loadcase = fem.dof.uniaxial(field)`` before). The additional ``loadcase`` dict is now optional, ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)`` is required.
+- Change the default output of the loadcases `dof.uniaxial()`, `dof.shear()` and `dof.biaxial()` to return the dict of boundary conditions, but deprecate this `boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=None)` (was `boundaries, loadcase = fem.dof.uniaxial(field)` before). The additional `loadcase` dict is now optional, `boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)` is required.
 - Don't support iteration over a `BoundaryDict`. Use `BoundaryDict.items()` or `BoundaryDict.values()` instead.
 - Change the default label value in `Boundary.plot(label="Boundary Condition")` (was `label=None` before). The fall-back to `Boundary.name` is removed.
 
 ### Deprecated
 - Deprecate `bounds` in `dof.symmetry(field, bounds=None)`. Use new equivalent `boundaries` argument, `dof.symmetry(field, boundaries=None)`.
+- Deprecate `boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=None)`. Use `return_loadcase=True` or `return_loadcase=False` in new code. `return_loadcase=False` will be the default value in 11.0.0.
 
 ### Removed
 - Remove deprecated `SolidBodyGravity`.

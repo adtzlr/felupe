@@ -289,3 +289,4 @@ if __name__ == "__main__":
     test_loadcase()
     test_symmetry()
     test_boundarydict_iter()
+    test_loadcase_deprecated()

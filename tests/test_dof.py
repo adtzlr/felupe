@@ -274,11 +274,13 @@ def test_loadcase_deprecated():
         fem.RegionQuad(fem.Rectangle(n=3)), dim=2
     ).as_container()
 
-    with pytest.warns(DeprecationWarning):
-        my_loadcase = fem.dof.uniaxial(field)
+    for loadcase in [fem.dof.uniaxial, fem.dof.shear, fem.dof.biaxial]:
 
-    with pytest.warns(DeprecationWarning):
-        my_loadcase = fem.dof.uniaxial(field, return_loadcase=None)
+        with pytest.warns(DeprecationWarning):
+            my_loadcase = loadcase(field)
+
+        with pytest.warns(DeprecationWarning):
+            my_loadcase = loadcase(field, return_loadcase=None)
 
 
 if __name__ == "__main__":

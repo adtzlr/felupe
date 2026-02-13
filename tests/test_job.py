@@ -39,7 +39,7 @@ def pre():
 
     umat = fem.ThreeFieldVariation(fem.NeoHooke(1, 5000))
     body = fem.SolidBody(umat, field)
-    boundaries = fem.dof.uniaxial(field)
+    boundaries = fem.dof.uniaxial(field, return_loadcase=False)
 
     points = mesh.points[:, 0] == 1
     load = fem.PointLoad(field, points)
@@ -121,7 +121,7 @@ def test_job_xdmf_vertex():
         fem.FieldContainer([fem.Field(regions[1], dim=3)]),
     ]
 
-    boundaries = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
     umat = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
     solids = [
         fem.SolidBody(umat=umat, field=fields[0]),
@@ -223,7 +223,7 @@ def test_noramp():
 
     umat = fem.LinearElastic(E=1, nu=0.3)
     solid = fem.SolidBody(umat, field)
-    bounds = fem.dof.uniaxial(field)
+    bounds = fem.dof.uniaxial(field, return_loadcase=False)
 
     step = fem.Step(items=[solid], ramp=None, boundaries=bounds)
     job = fem.Job(steps=[step])

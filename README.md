@@ -45,7 +45,7 @@ mesh = fem.Cube(n=8)
 region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer(fields=[fem.Field(region, dim=3)])
 
-boundaries = fem.dof.uniaxial(field, clamped=True, move=-0.3)
+boundaries = fem.dof.uniaxial(field, clamped=True, move=-0.3, return_loadcase=False)
 solid = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=5), field=field)
 
 step = fem.Step(items=[solid], boundaries=boundaries)

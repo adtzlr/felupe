@@ -31,7 +31,7 @@ import felupe as fem
 mesh = fem.Rectangle(a=(0, 1), b=(1, 3), n=(11, 31))
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
-boundaries = fem.dof.uniaxial(field, clamped=True, sym=False)
+boundaries = fem.dof.uniaxial(field, clamped=True, sym=False, return_loadcase=False)
 solid = fem.SolidBody(fem.NeoHookeCompressible(mu=1, lmbda=10), field)
 move = fem.math.linsteps([0, -0.2], num=3)
 step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)

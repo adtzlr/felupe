@@ -357,7 +357,9 @@ def newtonrhapson(
     >>>
     >>> region = fem.RegionHexahedron(fem.Cube(n=6))
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-    >>> boundaries = fem.dof.uniaxial(field, move=0.2, clamped=True)
+    >>> boundaries = fem.dof.uniaxial(
+    ...     field, move=0.2, clamped=True, return_loadcase=False
+    ... )
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
     >>> res = fem.newtonrhapson(items=[solid], **loadcase)  # doctest: +ELLIPSIS
     <BLANKLINE>

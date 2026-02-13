@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Don't enforce the returned elasticity tensor in `MaterialStrain` to be major-symmetric.
-- Change the default output of the loadcases `dof.uniaxial()`, `dof.shear()` and `dof.biaxial()` to only return the dict of boundary conditions ``boundaries = fem.dof.uniaxial(field)`` (was ``boundaries, loadcase = fem.dof.uniaxial(field)`` before). The additional ``loadcase`` dict is now optional, ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)``. Note that this is a non backward compatible change.
+- Change the default output of the loadcases `dof.uniaxial()`, `dof.shear()` and `dof.biaxial()` to return the dict of boundary conditions, but deprecate this ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=None)`` (was ``boundaries, loadcase = fem.dof.uniaxial(field)`` before). The additional ``loadcase`` dict is now optional, ``boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)`` is required.
 - Don't support iteration over a `BoundaryDict`. Use `BoundaryDict.items()` or `BoundaryDict.values()` instead.
 - Change the default label value in `Boundary.plot(label="Boundary Condition")` (was `label=None` before). The fall-back to `Boundary.name` is removed.
 

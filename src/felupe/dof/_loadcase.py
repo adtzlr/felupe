@@ -154,7 +154,7 @@ def uniaxial(
     axis=0,
     clamped=False,
     sym=True,
-    return_loadcase=False,
+    return_loadcase=None,
 ):
     """Return a dict of boundaries for uniaxial loading between a left (fixed or
     symmetry face) and a right (applied) end face along a given axis with optional
@@ -188,8 +188,13 @@ def uniaxial(
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the direction of the longitudinal axis as well as in the
         directions of the transversal axes.
-    return_loadcase : bool, optional
-        A flag to return a dict with loadcase-related data. Default is False.
+    return_loadcase : bool or None, optional
+        A flag to return a dict with loadcase-related data. Default is None (deprecated,
+        returns the loadcase dict.)
+
+        .. deprecated:: 10.0.0
+           ``None`` will be removed in 11.0.0 and ``False`` will be the future default
+           value. Use explicitly ``True`` or ``False`` in new code.
 
     Returns
     -------
@@ -219,7 +224,9 @@ def uniaxial(
         >>> region = fem.RegionHexahedron(fem.Cube(a=(0, 0, 0), b=(2, 3, 1), n=(6, 11, 5)))
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
         >>>
-        >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)
+        >>> boundaries = fem.dof.uniaxial(
+        ...     field, axis=2, clamped=True, return_loadcase=False
+        ... )
 
     The longitudinal displacement is applied incrementally.
 
@@ -277,6 +284,18 @@ def uniaxial(
 
     bounds["move"] = Boundary(f, skip=active, value=move, **{fx: right})
 
+    if return_loadcase is None:
+        import warnings
+
+        warnings.warn(
+            "return_loadcase=None is deprecated and will be removed in a future release. "
+            "Use return_loadcase=True or False.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        return_loadcase = True
+
     if return_loadcase:
         dof0, dof1 = partition(field, bounds)
         ext0 = apply(field, bounds, dof0)
@@ -296,7 +315,7 @@ def biaxial(
     axes=(0, 1),
     clampes=(False, False),
     sym=True,
-    return_loadcase=False,
+    return_loadcase=None,
 ):
     """Return a dict of boundaries for biaxial loading between a left (applied or
     symmetry face) and a right (applied) end face along a given pair of axes with
@@ -331,8 +350,13 @@ def biaxial(
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the directions of the longitudinal axes as well as in the
         direction of the transversal axis.
-    return_loadcase : bool, optional
-        A flag to return a dict with loadcase-related data. Default is False.
+    return_loadcase : bool or None, optional
+        A flag to return a dict with loadcase-related data. Default is None (deprecated,
+        returns the loadcase dict.)
+
+        .. deprecated:: 10.0.0
+           ``None`` will be removed in 11.0.0 and ``False`` will be the future default
+           value. Use explicitly ``True`` or ``False`` in new code.
 
     Returns
     -------
@@ -373,7 +397,9 @@ def biaxial(
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
-        >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))
+        >>> boundaries = fem.dof.biaxial(
+        ...     field, clampes=(True, True), return_loadcase=False
+        ... )
 
     The longitudinal displacements are applied incrementally.
 
@@ -410,7 +436,9 @@ def biaxial(
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
-        >>> boundaries = fem.dof.biaxial(field, clampes=(False, False))
+        >>> boundaries = fem.dof.biaxial(
+        ...     field, clampes=(False, False), return_loadcase=False
+        ... )
         >>>
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -437,7 +465,12 @@ def biaxial(
         >>> region = fem.RegionHexahedron(mesh)
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
         >>> boundaries = fem.dof.biaxial(
-        ...     field, clampes=(True, False), moves=(0, 0), sym=False, axes=(0, 1)
+        ...     field,
+        ...     clampes=(True, False),
+        ...     moves=(0, 0),
+        ...     sym=False,
+        ...     axes=(0, 1),
+        ...     return_loadcase=False,
         ... )
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -504,6 +537,18 @@ def biaxial(
             f, skip=active, value=move, **{fx: right}
         )
 
+    if return_loadcase is None:
+        import warnings
+
+        warnings.warn(
+            "return_loadcase=None is deprecated and will be removed in a future release. "
+            "Use return_loadcase=True or False.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        return_loadcase = True
+
     if return_loadcase:
         dof0, dof1 = partition(field, bounds)
         ext0 = apply(field, bounds, dof0)
@@ -522,7 +567,7 @@ def shear(
     moves=(0.2, 0.0, 0.0),
     axes=(0, 1),
     sym=True,
-    return_loadcase=False,
+    return_loadcase=None,
 ):
     """Return a dict of boundaries for shear loading with optional combined compression
     between a rigid bottom and a rigid top end face along a given pair of axes. The
@@ -554,8 +599,13 @@ def shear(
         axis of compression (default is (0, 1)).
     sym : bool, optional
         A flag to invoke a symmetry boundary in the direction of the thickness axis.
-    return_loadcase : bool, optional
-        A flag to return a dict with loadcase-related data. Default is False.
+    return_loadcase : bool or None, optional
+        A flag to return a dict with loadcase-related data. Default is None (deprecated,
+        returns the loadcase dict.)
+
+        .. deprecated:: 10.0.0
+           ``None`` will be removed in 11.0.0 and ``False`` will be the future default
+           value. Use explicitly ``True`` or ``False`` in new code.
 
     Returns
     -------
@@ -592,7 +642,7 @@ def shear(
     ..  pyvista-plot::
         :context:
 
-        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))
+        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1), return_loadcase=False)
 
     The shear displacement is applied incrementally.
 
@@ -658,6 +708,18 @@ def shear(
         f, **{fy: top}, skip=not_skip_compression, value=moves[2]
     )
     bounds["move"] = Boundary(f, **{fy: top}, skip=not_skip_shear, value=moves[0])
+
+    if return_loadcase is None:
+        import warnings
+
+        warnings.warn(
+            "return_loadcase=None is deprecated and will be removed in a future release. "
+            "Use return_loadcase=True or False.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        return_loadcase = True
 
     if return_loadcase:
         dof0, dof1 = partition(field, bounds)

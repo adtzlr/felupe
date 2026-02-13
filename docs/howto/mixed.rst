@@ -59,7 +59,7 @@ applied on the first field.
 ..  pyvista-plot::
     :context:
 
-    boundaries = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
 
 The Step and Job definitions are identical to ones used with single field formulations.
 The deformed cube is finally visualized by PyVista. The cell-based means of the maximum

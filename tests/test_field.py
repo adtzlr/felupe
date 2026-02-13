@@ -281,7 +281,7 @@ def test_toplevel():
         fem.FieldContainer([fem.FieldPlaneStrain(regions[0], dim=2)]),
         fem.FieldContainer([fem.FieldPlaneStrain(regions[1], dim=2)]),
     ]
-    boundaries = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
     umats = [
         fem.LinearElastic(E=2.1e5, nu=0.3),
         fem.LinearElastic(E=1.0, nu=0.3),
@@ -308,7 +308,7 @@ def test_toplevel_merge():
     solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), fields[0])
     solid2 = fem.SolidBody(umat, fields[1])
 
-    boundaries = fem.dof.uniaxial(x0, clamped=True)
+    boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
 
     step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(x0=x0)

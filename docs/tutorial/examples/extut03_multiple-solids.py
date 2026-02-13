@@ -27,7 +27,7 @@ mesh_3 = fem.Rectangle(a=(1.5, 0), b=(2, 1), n=(3, 5))
 field_3 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_3), dim=2)
 
 fields, x0 = fem.FieldContainer([field_1, field_2, field_3]).merge()
-boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False)
+boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False, return_loadcase=False)
 
 umat_a = fem.NeoHookeCompressible(mu=3, lmbda=6)
 umat_b = fem.NeoHookeCompressible(mu=1, lmbda=2)

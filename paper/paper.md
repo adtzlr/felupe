@@ -59,7 +59,7 @@ region = fem.RegionHexahedron(mesh=fem.Cube(n=6))
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 umat = fem.NeoHooke(mu=1)
 solid = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)
-boundaries, loadcase = fem.dof.uniaxial(field, clamped=True)
+boundaries, loadcase = fem.dof.uniaxial(field, clamped=True, return_loadcase=True)
 
 move = fem.math.linsteps([0, 1], num=5)
 step = fem.Step([solid], ramp={boundaries["move"]: move}, boundaries=boundaries)

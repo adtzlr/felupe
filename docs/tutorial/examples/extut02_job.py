@@ -29,7 +29,7 @@ mesh = fem.Cube(n=6)
 region = fem.RegionHexahedron(mesh=mesh)
 field = fem.FieldContainer([fem.Field(region=region, dim=3)])
 
-boundaries = fem.dof.uniaxial(field, clamped=True)
+boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
 
 umat = fem.OgdenRoxburgh(material=fem.NeoHooke(mu=1), r=3, m=1, beta=0)
 body = fem.SolidBodyNearlyIncompressible(umat=umat, field=field, bulk=5000)

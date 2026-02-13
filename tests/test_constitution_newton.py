@@ -40,7 +40,7 @@ def test_visco_newton():
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
-    boundaries = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
 
     @mat.isochoric_volumetric_split
     def finite_strain_viscoelastic_newton(C, Cin, mu, eta, dtime):
@@ -92,7 +92,7 @@ def test_visco_newton_jax():
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
-    boundaries = fem.dof.uniaxial(field, clamped=True)
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
 
     @mat.isochoric_volumetric_split
     def finite_strain_viscoelastic_newton(C, statevars, mu, eta, dtime):

@@ -7,10 +7,11 @@ class BoundaryDict(dict):
     def __iter__(self):
         raise TypeError(
             "Iteration over BoundaryDict is not allowed, use `.items()` instead. "
-            "Did you try to run `boundaries, loadcase = fem.dof.uniaxial(field)`? "
-            "Since v10.0.0, the return of `loadcase` in `fem.dof.uniaxial()`, "
+            "Did you try to run"
+            "`boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=False)`? "
+            "Starting with v11.0.0, the return of `loadcase` in `fem.dof.uniaxial()`, "
             "`fem.dof.shear()` and `fem.dof.biaxial()` is optional and must be "
-            "activated by `return_loadcase=True`."
+            "explicitely activated by `return_loadcase=True`."
         )
 
     def plot(

@@ -84,13 +84,15 @@ def test_boundary():
 
 
 def test_loadcase():
-    ux = fem.dof.uniaxial(pre1d())
+    ux = fem.dof.uniaxial(pre1d(), return_loadcase=False)
     assert len(ux) == 2
 
     for u in [pre2d(), pre3d()]:
         v = fem.FieldContainer([u[0], deepcopy(u[0])])
 
-        ux = fem.dof.uniaxial(u, right=1.0, move=0.2, clamped=False, sym=True)
+        ux = fem.dof.uniaxial(
+            u, right=1.0, move=0.2, clamped=False, sym=True, return_loadcase=False
+        )
         ux = fem.dof.uniaxial(
             u, right=1.0, move=0.2, clamped=False, sym=True, return_loadcase=True
         )
@@ -133,7 +135,11 @@ def test_loadcase():
         assert "right" in ux[0]
 
         bx = fem.dof.biaxial(
-            u, rights=(1.0, 1.0), moves=(0.2, 0.2), clampes=(False, False)
+            u,
+            rights=(1.0, 1.0),
+            moves=(0.2, 0.2),
+            clampes=(False, False),
+            return_loadcase=False,
         )
         bx = fem.dof.biaxial(
             u,
@@ -258,9 +264,23 @@ def test_boundarydict_iter():
         fem.RegionQuad(fem.Rectangle(n=3)), dim=2
     ).as_container()
     with pytest.raises(TypeError):
-        boundaries, loadcase = fem.dof.uniaxial(field)
+        boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=False)
 
-    items = fem.dof.uniaxial(field).items()
+    items = fem.dof.uniaxial(field, return_loadcase=False).items()
+
+
+def test_loadcase_deprecated():
+    field = fem.FieldPlaneStrain(
+        fem.RegionQuad(fem.Rectangle(n=3)), dim=2
+    ).as_container()
+
+    for loadcase in [fem.dof.uniaxial, fem.dof.shear, fem.dof.biaxial]:
+
+        with pytest.warns(DeprecationWarning):
+            my_loadcase = loadcase(field)
+
+        with pytest.warns(DeprecationWarning):
+            my_loadcase = loadcase(field, return_loadcase=None)
 
 
 if __name__ == "__main__":
@@ -270,3 +290,5 @@ if __name__ == "__main__":
     test_boundary_plot()
     test_loadcase()
     test_symmetry()
+    test_boundarydict_iter()
+    test_loadcase_deprecated()

@@ -534,7 +534,9 @@ def test_mesh_update():
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldsMixed(region, n=1)
 
-    boundaries = fem.dof.uniaxial(field, axis=0, sym=False, clamped=True)
+    boundaries = fem.dof.uniaxial(
+        field, axis=0, sym=False, clamped=True, return_loadcase=False
+    )
 
     new_points = mesh.rotate(angle_deg=-90, axis=2).points
 

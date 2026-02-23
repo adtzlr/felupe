@@ -158,12 +158,27 @@ class DiscreteGeometry:
         "Return the first column (x-component) of the points array."
         return self.points[:, 0]
 
+    @x.setter
+    def x(self, value):
+        "Enable setting the first column (x-component) of the points array."
+        self.points[:, 0] = value
+
     @property
     def y(self):
         "Return the second column (y-component) of the points array."
         return self.points[:, 1]
 
+    @y.setter
+    def y(self, value):
+        "Enable setting the second column (y-component) of the points array."
+        self.points[:, 1] = value
+
     @property
     def z(self):
         "Return the third column (z-component) of the points array."
         return self.points[:, 2]
+
+    @z.setter
+    def z(self, value):
+        "Enable setting the third column (z-component) of the points array."
+        self.points[:, 2] = value

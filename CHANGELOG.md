@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Make `Mesh.x`, `Mesh.y` and `Mesh.z` writable.
+
 ## [10.0.0] - 2026-02-13
 
 ### Added

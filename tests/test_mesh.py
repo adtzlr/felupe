@@ -635,6 +635,19 @@ def test_subdivide():
         fem.mesh.subdivide(fem.mesh.Line(n=3))
 
 
+def test_get_set_xyz():
+
+    mesh = fem.Cube(n=3)
+
+    x = mesh.x
+    y = mesh.y
+    z = mesh.z
+
+    mesh.x *= 10 * x
+    mesh.y *= 10 * y
+    mesh.z *= 10 * z
+
+
 if __name__ == "__main__":
     test_meshes()
     test_mirror()
@@ -657,3 +670,4 @@ if __name__ == "__main__":
     test_interpolate_line()
     test_expand_revolve_quadratic()
     test_subdivide()
+    test_get_set_xyz()

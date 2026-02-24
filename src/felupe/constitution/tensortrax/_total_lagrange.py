@@ -33,12 +33,12 @@ def total_lagrange(material):
         :label: green_lagrange_strain_tl
 
         \boldsymbol{E} &= \frac{1}{2} \left(
-            \boldsymbol{F}^T\ \boldsymbol{F} - \boldsymbol{1}
+            \boldsymbol{F}^T \boldsymbol{F} - \boldsymbol{1}
         \right)
 
         \delta \boldsymbol{E} &= \frac{1}{2} \left(
-            \delta \boldsymbol{F}^T\ \boldsymbol{F} +
-            \boldsymbol{F}^T\ \delta \boldsymbol{F}
+            \delta \boldsymbol{F}^T \boldsymbol{F} +
+            \boldsymbol{F}^T \delta \boldsymbol{F}
         \right)
 
     This will lead to the variations of the strain energy density function per unit

@@ -67,7 +67,7 @@ def updated_lagrange(material):
 
         \delta \Pi &=  \int_v
             \boldsymbol{\sigma} :
-            \frac{\partial \delta \boldsymbol{x}}{\partial \boldsymbol{X}} \ \mathrm{d}v
+            \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ \mathrm{d}v
 
         \delta \Pi &=  \int_V
             \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J \mathrm{d}V

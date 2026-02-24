@@ -41,10 +41,10 @@ def updated_lagrange(material):
         :label: equilibrium_statics_weak
 
         \int_v \operatorname{div} \boldsymbol{\sigma} \cdot \delta \boldsymbol{u} \ dv
-            + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \dv &= 0
+            + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \ dv &= 0
 
         - \int_v \boldsymbol{\sigma} :
-            \frac{\delta \partial \boldsymbol{u}}{\partial \boldsymbol{x}} \ dv
+            \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ dv
             + \int_{\partial v} \left( \boldsymbol{\sigma} \cdot \boldsymbol{n} \right )
             \cdot \delta \boldsymbol{u} \ da
             + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \ dv &= 0
@@ -55,7 +55,7 @@ def updated_lagrange(material):
     ..  math::
         :label: virtual_work_internal
 
-        \delta W_{\text{int}} &= -\int_v
+        \delta W_{\text{int}} = -\int_v
             \boldsymbol{\sigma} :
             \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ dv
 
@@ -70,13 +70,13 @@ def updated_lagrange(material):
             \frac{\partial \delta \boldsymbol{x}}{\partial \boldsymbol{X}} \ dv
 
         \delta \Pi &=  \int_V
-            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \J dV
+            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J dV
 
         \delta \Pi &=  \int_V
-            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \J dV
+            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J dV
 
         \delta \Pi &=  \int_v
-            \boldsymbol{P} : \delta \boldsymbol{F} \dv
+            \boldsymbol{P} : \delta \boldsymbol{F} \ dv
 
     Finally, the first Piola-Kirchhoff stress tensor is given by Eq.
     :eq:`first_piola_kirchhoff_stress`.

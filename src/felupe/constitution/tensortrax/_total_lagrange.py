@@ -27,10 +27,10 @@ def total_lagrange(material):
     Notes
     -----
     The Green-Lagrange strain tensor and its first variation are given in Eq.
-    :eq:`green_lagrange_strain`.
+    :eq:`green_lagrange_strain_tl`.
 
     ..  math::
-        :label: green_lagrange_strain
+        :label: green_lagrange_strain_tl
 
         \boldsymbol{E} &= \frac{1}{2} \left(
             \boldsymbol{F}^T\ \boldsymbol{F} - \boldsymbol{1}

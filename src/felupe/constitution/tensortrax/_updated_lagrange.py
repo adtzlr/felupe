@@ -72,8 +72,8 @@ def updated_lagrange(material):
         \delta \Pi &=  \int_V
             \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J dV
 
-        \delta \Pi &=  \int_v
-            \boldsymbol{P} : \delta \boldsymbol{F} \ dv
+        \delta \Pi &=  \int_V
+            \boldsymbol{P} : \delta \boldsymbol{F} \ dV
 
     Finally, the first Piola-Kirchhoff stress tensor is given by Eq.
     :eq:`first_piola_kirchhoff_stress`.

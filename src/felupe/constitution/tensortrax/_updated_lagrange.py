@@ -40,14 +40,14 @@ def updated_lagrange(material):
     ..  math::
         :label: equilibrium_statics_weak
 
-        \int_v \operatorname{div} \boldsymbol{\sigma} \cdot \delta \boldsymbol{u} \ \d v
-            + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \ dv &= 0
+        \int_v \operatorname{div} \boldsymbol{\sigma} \cdot \delta \boldsymbol{u} \ \mathrm{d}v
+            + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \ \mathrm{d}v &= 0
 
         - \int_v \boldsymbol{\sigma} :
-            \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ \d v
+            \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ \mathrm{d}v
             + \int_{\partial v} \left( \boldsymbol{\sigma} \cdot \boldsymbol{n} \right )
-            \cdot \delta \boldsymbol{u} \ \d a
-            + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \ \d v &= 0
+            \cdot \delta \boldsymbol{u} \ \mathrm{d}a
+            + \int_v \boldsymbol{b} \cdot \delta \boldsymbol{u} \ \mathrm{d}v &= 0
 
     This leads to the virtual work of internal forces, see Eq.
     :eq:`virtual_work_internal`.
@@ -57,7 +57,7 @@ def updated_lagrange(material):
 
         \delta W_{\text{int}} = -\int_v
             \boldsymbol{\sigma} :
-            \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ \d v
+            \frac{\partial \delta \boldsymbol{u}}{\partial \boldsymbol{x}} \ \mathrm{d}v
 
     The variation of the total potential energy of internal forces is given in Eq.
     :eq:`updated_lagrange_variation`.
@@ -67,13 +67,13 @@ def updated_lagrange(material):
 
         \delta \Pi &=  \int_v
             \boldsymbol{\sigma} :
-            \frac{\partial \delta \boldsymbol{x}}{\partial \boldsymbol{X}} \ \d v
+            \frac{\partial \delta \boldsymbol{x}}{\partial \boldsymbol{X}} \ \mathrm{d}v
 
         \delta \Pi &=  \int_V
-            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J \d V
+            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J \mathrm{d}V
 
         \delta \Pi &=  \int_V
-            \boldsymbol{P} : \delta \boldsymbol{F} \ \d V
+            \boldsymbol{P} : \delta \boldsymbol{F} \ \mathrm{d}V
 
     Finally, the first Piola-Kirchhoff stress tensor is given by Eq.
     :eq:`first_piola_kirchhoff_stress`.

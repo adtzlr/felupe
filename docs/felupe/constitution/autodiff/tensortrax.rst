@@ -88,10 +88,6 @@ and :func:`~felupe.constitution.tensortrax.updated_lagrange` material formulatio
 
 .. autofunction:: felupe.constitution.tensortrax.updated_lagrange
 
-.. autofunction:: felupe.total_lagrange
-
-.. autofunction:: felupe.updated_lagrange
-
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.alexander
 
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.anssari_benam_bucchi

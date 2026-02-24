@@ -72,9 +72,6 @@ def updated_lagrange(material):
         \delta \Pi &=  \int_V
             \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J dV
 
-        \delta \Pi &=  \int_V
-            \boldsymbol{\sigma} : \delta \boldsymbol{F} \boldsymbol{F}^{-1} \ J dV
-
         \delta \Pi &=  \int_v
             \boldsymbol{P} : \delta \boldsymbol{F} \ dv
 

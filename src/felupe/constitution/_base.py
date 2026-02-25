@@ -250,6 +250,16 @@ class ConstitutiveMaterial:
         ..  warning::
             At least one load case, i.e. one of the arguments ``ux``, ``ps`` or ``bx``
             must not be ``None``.
+        
+        ..  note::
+            For JAX-based materials, double-precision is required to optimize material
+            parameters.
+
+            ..  code-block:: python
+                
+                import jax
+
+                jax.config.update("jax_enable_x64", True)
 
         The vector of residuals is given in Eq. :eq:`material-optimize-residuals` in
         case of absolute residuals
@@ -381,9 +391,10 @@ class ConstitutiveMaterial:
             residuals = []
             for predicted, observed in zip(model, experiments):
                 if observed[1] is not None:
-                    res = predicted[1] - observed[1]
+                    active = ~np.isnan(observed[1])
+                    res = (predicted[1] - observed[1])[active]
                     if relative:
-                        observed_reference = np.array(observed[1])
+                        observed_reference = np.array(observed[1])[active]
                         observed_reference[observed_reference == 0] = 1
                         res /= observed_reference
                     residuals.append(res)
@@ -396,7 +407,7 @@ class ConstitutiveMaterial:
 
         def std(hessian, residuals_variance):
             "Return the estimated errors (standard deviations) of parameters."
-            return np.sqrt(np.diag(np.linalg.inv(hessian) * residuals_variance))
+            return np.sqrt(np.diag(np.linalg.pinv(hessian) * residuals_variance))
 
         # estimate the optimization errors for each material parameter
         hess = res.jac.T @ res.jac

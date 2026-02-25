@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Make `Mesh.x`, `Mesh.y` and `Mesh.z` writable.
+- Use the pseudo-inverse instead of the inverse of the Hessian to calculate `dx` in `ConstitutiveMaterial.optimize()`.
+- Ignore NaN values in the observed data in `ConstitutiveMaterial.optimize()`.
 
 ## [10.0.0] - 2026-02-13
 

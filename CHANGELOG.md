@@ -3,10 +3,15 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [10.1.0] - 2026-02-26
+
 ### Changed
 - Make `Mesh.x`, `Mesh.y` and `Mesh.z` writable.
 - Use the pseudo-inverse instead of the inverse of the Hessian to calculate `dx` in `ConstitutiveMaterial.optimize()`.
 - Ignore NaN values in the observed data in `ConstitutiveMaterial.optimize()`.
+
+### Fixed
+- Fix the dimension of the top-level field returned from `FieldContainer.merge()`. Previously, the dimension was taken from the mesh. Now, it is taken from the first field of the first sub-field.
 
 ## [10.0.0] - 2026-02-13
 

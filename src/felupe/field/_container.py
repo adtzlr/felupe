@@ -471,9 +471,10 @@ class FieldContainer:
         new_fields_grouped = group_dual_fields(new_fields)
         Field = self.fields[0].__field__
 
-        vertex_field = Field.from_mesh_container(container).as_container(
-            mesh_container=container
-        )
+        # take the dimension of the first sub-field
+        vertex_field = Field.from_mesh_container(
+            container, dim=new_fields_grouped[0][0].dim
+        ).as_container(mesh_container=container)
 
         return [FieldContainer(f) for f in new_fields_grouped], vertex_field
 

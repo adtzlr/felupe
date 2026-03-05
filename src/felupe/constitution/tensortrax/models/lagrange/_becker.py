@@ -80,7 +80,7 @@ def becker(F, mu, lmbda):
     ..  plot::
         :context: close-figs
 
-        >>> umat = mat.Material(mat.models.lagrange.becker, mu=1.0, bulk=2.0)
+        >>> umat = mat.Material(mat.models.lagrange.becker, mu=1.0, lmbda=2.0)
         >>> ax = umat.plot()
 
     References

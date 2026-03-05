@@ -73,6 +73,7 @@ formulations in :class:`~felupe.constitution.jax.Material`.
 
 .. autosummary::
 
+   becker
    morph
    morph_representative_directions
 
@@ -119,6 +120,8 @@ formulations in :class:`~felupe.constitution.jax.Material`.
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.van_der_waals
 
 .. autofunction:: felupe.constitution.jax.models.hyperelastic.yeoh
+
+.. autofunction:: felupe.constitution.jax.models.lagrange.becker
 
 .. autofunction:: felupe.constitution.jax.models.lagrange.morph
 

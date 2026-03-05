@@ -59,6 +59,7 @@ and :func:`~felupe.constitution.tensortrax.updated_lagrange` material formulatio
 
 .. autosummary::
 
+   becker
    morph
    morph_representative_directions
 
@@ -123,6 +124,8 @@ and :func:`~felupe.constitution.tensortrax.updated_lagrange` material formulatio
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.van_der_waals
 
 .. autofunction:: felupe.constitution.tensortrax.models.hyperelastic.yeoh
+
+.. autofunction:: felupe.constitution.tensortrax.models.lagrange.becker
 
 .. autofunction:: felupe.constitution.tensortrax.models.lagrange.morph
 

@@ -80,12 +80,17 @@ try:
         van_der_waals,
         yeoh,
     )
-    from .tensortrax.models.lagrange import morph, morph_representative_directions
+    from .tensortrax.models.lagrange import (
+        becker,
+        morph,
+        morph_representative_directions,
+    )
 
     __all_tensortrax = [
         "alexander",
         "anssari_benam_bucchi",
         "arruda_boyce",
+        "becker",
         "blatz_ko",
         "extended_tube",
         "finite_strain_viscoelastic",

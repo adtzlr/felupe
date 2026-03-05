@@ -15,7 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-from tensortrax.math import array, maximum, sqrt
+import numpy as np
+from tensortrax.math import array, base, maximum, sqrt
 from tensortrax.math.linalg import det, eigvalsh, expm, inv
 from tensortrax.math.special import dev, from_triu_1d, sym, triu_1d, try_stack
 
@@ -195,7 +196,10 @@ def morph(F, statevars, p):
     dC = C - Cn
 
     # eigenvalues of right Cauchy-Green deformation tensor (sorted in ascending order)
-    λCG = eigvalsh(CG)
+    eps = base.eye(CG) * np.sqrt(np.finfo(float).eps)
+    eps[1, 1] *= -1
+    eps[2, 2] *= 0
+    λCG = eigvalsh(eps + CG)
 
     # Tresca invariant of distortional part of right Cauchy-Green deformation tensor
     CTG = λCG[-1] - λCG[0]
@@ -212,7 +216,7 @@ def morph(F, statevars, p):
     β = p[3] * sigmoid(p[2] * CTS)
     γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
 
-    LG = sym(dev(invC @ dC)) @ CG
+    LG = eps + sym(dev(invC @ dC)) @ CG
     λLG = eigvalsh(LG)
     LTG = λLG[-1] - λLG[0]
 

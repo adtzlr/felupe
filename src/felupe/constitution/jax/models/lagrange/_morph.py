@@ -46,8 +46,8 @@ def morph(F, statevars, p):
     dC = C - Cn
 
     # eigenvalues of right Cauchy-Green deformation tensor (sorted in ascending order)
-    eigvalsh2 = lambda C: eigvalsh(C + diag(array([1e-4, -1e-4, 0])))
-    λCG = eigvalsh2(CG)
+    eps = diag(array([1e-4, -1e-4, 0]))
+    λCG = eigvalsh(eps + CG)
 
     # Tresca invariant of distortional part of right Cauchy-Green deformation tensor
     CTG = λCG[-1] - λCG[0]
@@ -68,7 +68,7 @@ def morph(F, statevars, p):
     sym = lambda C: (C + C.T) / 2
 
     LG = sym(dev(invC @ dC)) @ CG
-    λLG = eigvalsh2(LG)
+    λLG = eigvalsh(eps + LG)
     LTG = λLG[-1] - λLG[0]
 
     # limiting stresses "L" and additional stresses "A"

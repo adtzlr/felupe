@@ -472,6 +472,34 @@ def test_umat_hyperelastic(close_figs=True):
             plt.close(ax.get_figure())
 
 
+def test_umat_lagrange(close_figs=True):
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+
+    import felupe.constitution.tensortrax as mat
+
+    for model, kwargs, incompressible in [
+        (mat.models.lagrange.becker, {"mu": 1, "lmbda": 20.0}, True),
+        (mat.models.lagrange.becker, {"mu": 1, "lmbda": 20.0}, False),
+    ]:
+        umat = mat.Material(model, **kwargs)
+
+        statevars = None
+        s, statevars_new = umat.gradient([F, statevars])
+        dsde = umat.hessian([F, statevars])
+
+    for incompressible in [False, True]:
+        ax = umat.plot(incompressible=incompressible)
+
+        if close_figs:
+            plt.close(ax.get_figure())
+
+        ax = umat.screenshot(incompressible=incompressible)
+
+        if close_figs:
+            plt.close(ax.get_figure())
+
+
 def test_umat_hyperelastic2():
     r, x = pre(sym=False, add_identity=True, add_random=True)
     F = x[0]
@@ -778,14 +806,28 @@ def test_lagrange():
         σ = mu * tm.special.dev(J ** (-2 / 3) * b) / J
         return σ
 
-    for fun in [neo_hooke_total_lagrange, neo_hooke_updated_lagrange]:
-        umat = fem.MaterialAD(fun, mu=1)
-        nh = fem.NeoHooke(mu=1)
+    for fun, kwargs in zip(
+        [neo_hooke_total_lagrange, neo_hooke_updated_lagrange],
+        [{"mu": 1}, {"mu": 1}],
+    ):
+        umat = fem.MaterialAD(fun, **kwargs)
+        nh = fem.NeoHooke(**kwargs)
 
         P = umat.gradient([F])
         A4 = umat.hessian([F])
         assert np.allclose(P[0], nh.gradient([F])[0])
         assert np.allclose(A4[0], nh.hessian([F])[0])
+
+    for fun, kwargs in zip(
+        [fem.becker],
+        [{"mu": 1, "lmbda": 2}],
+    ):
+        umat = fem.MaterialAD(fun, **kwargs)
+
+        P = umat.gradient([F])
+        A4 = umat.hessian([F])
+        assert not np.isnan(P[0]).any()
+        assert not np.isnan(A4[0]).any()
 
 
 def test_lagrange_statevars():
@@ -889,6 +931,7 @@ if __name__ == "__main__":
     test_umat_hyperelastic(close_figs=close_figs)
     test_umat_hyperelastic2()
     test_umat_hyperelastic_statevars(close_figs=close_figs)
+    test_umat_lagrange(close_figs=close_figs)
     test_umat_viscoelastic(close_figs=close_figs)
     test_umat_viscoelastic2()
     test_umat_strain()

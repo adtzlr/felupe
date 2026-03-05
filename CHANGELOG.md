@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add Becker's logarithmic material model.
+
 ## [10.1.0] - 2026-02-26
 
 ### Changed

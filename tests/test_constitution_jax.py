@@ -153,10 +153,11 @@ def test_material_jax_statevars():
 def test_material_included_jax_statevars():
     for fun, nstatevars in zip(
         [
+            mat.models.lagrange.becker,
             mat.models.lagrange.morph,
             mat.models.lagrange.morph_representative_directions,
         ],
-        [13, 84],
+        [0, 13, 84],
     ):
         umat = mat.Material(
             fun,

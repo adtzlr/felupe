@@ -38,7 +38,7 @@ class MultiPointConstraint:
         is not connected. Default is (False, False, False).
     multiplier : float, optional
         A multiplier to penalize the relative displacements between the center-point and
-        the points. Default is 1e-3.
+        the points. Default is 1e3.
 
     Notes
     -----

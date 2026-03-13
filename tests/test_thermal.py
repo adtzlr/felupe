@@ -57,11 +57,10 @@ def test_thermal():
         temperature=10.0,  # K
     )
 
-    solid.assemble.vector()
     solid.assemble.vector(field)
-
-    solid.assemble.matrix()
     solid.assemble.matrix(field)
+    convection.assemble.vector(field)
+    convection.assemble.matrix(field)
 
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)

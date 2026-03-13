@@ -9,6 +9,7 @@ from . import (
     quadrature,
     region,
     solve,
+    thermal,
     tools,
     view,
 )
@@ -143,6 +144,7 @@ __all__ = [
     "quadrature",
     "region",
     "solve",
+    "thermal",
     "tools",
     "Form",
     "FormItem",

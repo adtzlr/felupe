@@ -139,6 +139,8 @@ class SolidBodyThermal(SolidBody):
         # assemble capacity matrix
         self.capacity = self._mass()
 
+        self.evaluate.heat_flux = self.evaluate.stress
+
         if lumped_capacity:
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
 
@@ -146,7 +148,7 @@ class SolidBodyThermal(SolidBody):
         if field is not None:
             self.field = field
 
-        self.results.stress = self._gradient(field)
+        self.results.stress = self.results.heat_flux = self._gradient(field)
         self.results._statevars = self.field[0].values.copy()  # new temperature
 
         self.results.force = IntegralForm(

@@ -111,6 +111,7 @@ class SolidBodyThermal(SolidBody):
     See Also
     --------
     felupe.thermal.TimeStep : A time step item.
+    felupe.thermal.SolidBodyThermalConvection : A thermal convection boundary condition.
 
     """
 

@@ -146,7 +146,7 @@ class SolidBodyThermal(SolidBody):
             self.field = field
 
         self.results.stress = self._gradient(field)
-        self.results._statevars = field[0].values.copy()  # new temperature
+        self.results._statevars = self.field[0].values.copy()  # new temperature
 
         self.results.force = IntegralForm(
             fun=self.results.stress,

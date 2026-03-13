@@ -38,7 +38,7 @@ class SolidBodyThermal(SolidBody):
         The thermal conductivity :math:`k` of the material.
     time_step : float or None, optional
         The time step :math:`\Delta t` (default is None).
-    model : None or felupe. Laplace, optional
+    model : None or felupe.Laplace, optional
         A model for the thermal conductivity. Default is None, which defaults to
         :class:`~felupe.Laplace`.
     lumped_capacity : bool, optional

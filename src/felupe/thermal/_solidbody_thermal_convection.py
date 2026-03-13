@@ -22,6 +22,8 @@ from ..mechanics import Assemble, Results
 
 
 class SolidBodyThermalConvection:
+    "A thermal solid body for thermal convection on a boundary."
+
     def __init__(self, field, coefficient, temperature):
         self.field = field
         self._normals = self.field.region.normals

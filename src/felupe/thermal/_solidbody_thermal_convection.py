@@ -113,7 +113,7 @@ class SolidBodyThermalConvection:
     def update(self, temperature):
         self.results.temperature = temperature
 
-    def _vector(self, field=None, parallel=False, resize=None):
+    def _vector(self, field=None, **kwargs):
         if field is not None:
             self.field = field
 
@@ -122,14 +122,11 @@ class SolidBodyThermalConvection:
 
         self.results.force = IntegralForm(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
-        ).assemble(parallel=parallel)
-
-        if resize is not None:
-            self.results.force.resize(*resize.shape)
+        ).assemble(**kwargs)
 
         return self.results.force
 
-    def _matrix(self, field=None, parallel=False, resize=None):
+    def _matrix(self, field=None, **kwargs):
         if field is not None:
             self.field = field
 
@@ -143,9 +140,6 @@ class SolidBodyThermalConvection:
             dV=self.field.region.dV,
             grad_v=[False],
             grad_u=[False],
-        ).assemble(parallel=parallel)
-
-        if resize is not None:
-            self.results.stiffness.resize(*resize.shape)
+        ).assemble(**kwargs)
 
         return self.results.stiffness

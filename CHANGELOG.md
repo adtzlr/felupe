@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add Becker's logarithmic material model.
-- Add `felupe.thermal` with `felupe.thermal.SolidBodyThermal` and `felupe.thermal.TimeStep`.
+- Add `felupe.thermal` with `felupe.thermal.SolidBodyThermal`, `felupe.thermal.SolidBodyThermalConvection` and `felupe.thermal.TimeStep`.
 
 ## [10.1.0] - 2026-02-26
 

@@ -105,12 +105,18 @@ class SolidBodyThermal(SolidBody):
         ...     cell_data_default=False,
         ... )
         >>>
-        >>> view = mesh.view(point_data={"Temperature in K": temperature.values})
-        >>> view.plot("Temperature in K").show()
+        >>> mesh.view(
+        ...     point_data={"Temperature in K": temperature.values}
+        ... ).plot("Temperature in K").show()
+        >>>
+        >>> mesh.view(
+        ...     cell_data={"Heat Flux": solid.results.heat_flux[0][0].mean(axis=-2).T}
+        ... ).plot("Heat Flux", component=0).show()
 
     See Also
     --------
     felupe.thermal.TimeStep : A time step item.
+    felupe.thermal.SolidBodyThermalConvection : A thermal convection boundary condition.
 
     """
 
@@ -138,6 +144,8 @@ class SolidBodyThermal(SolidBody):
         # assemble capacity matrix
         self.capacity = self._mass()
 
+        self.evaluate.heat_flux = self.evaluate.stress
+
         if lumped_capacity:
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
 
@@ -145,7 +153,7 @@ class SolidBodyThermal(SolidBody):
         if field is not None:
             self.field = field
 
-        self.results.stress = self._gradient(field)
+        self.results.stress = self.results.heat_flux = self._gradient(field)
         self.results._statevars = self.field[0].values.copy()  # new temperature
 
         self.results.force = IntegralForm(

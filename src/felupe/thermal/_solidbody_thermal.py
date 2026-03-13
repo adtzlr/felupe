@@ -62,10 +62,10 @@ class SolidBodyThermal(SolidBody):
     ..  math::
         :label: thermal-solid-body
 
-        \boldsymbol{K} \boldsymbol{T} &= -\boldsymbol{r} \\
+        \boldsymbol{K} \boldsymbol{T} &= -\boldsymbol{r}
     
         \boldsymbol{r} &= \boldsymbol{r}_{\text{conductivity}}
-            + \boldsymbol{C} \frac{\boldsymbol{T} - \boldsymbol{T}_n}{\Delta t} \\
+            + \boldsymbol{C} \frac{\boldsymbol{T} - \boldsymbol{T}_n}{\Delta t}
 
         \boldsymbol{K} &= \boldsymbol{K}_{\text{conductivity}}
             + \frac{\boldsymbol{C}}{\Delta t}

@@ -57,18 +57,18 @@ class SolidBodyThermal(SolidBody):
     at each time step to include the contribution from the capacity matrix. The force
     vector is also updated to include the contribution from the temperature rate, which
     is calculated as the difference between the new temperature and the old temperature
-    divided by the time step, see Eq. :eq:`thermal_solid_body`.
+    divided by the time step, see Eq. :eq:`thermal-solid-body`.
 
     ..  math::
-        :label: thermal_solid_body
+        :label: thermal-solid-body
 
+        \begin{align}
         \boldsymbol{K} \boldsymbol{T} &= -\boldsymbol{r} \\
-
         \boldsymbol{r} &= \boldsymbol{r}_{\text{conductivity}}
             + \boldsymbol{C} \frac{\boldsymbol{T} - \boldsymbol{T}_n}{\Delta t} \\
-    
         \boldsymbol{K} &= \boldsymbol{K}_{\text{conductivity}}
             + \frac{\boldsymbol{C}}{\Delta t}
+        \end{align}
     
     Examples
     --------

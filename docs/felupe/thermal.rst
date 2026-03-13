@@ -10,6 +10,7 @@ Thermal
 .. autosummary::
 
    thermal.SolidBodyThermal
+   thermal.SolidBodyThermalConvection
 
 **Helpers**
 
@@ -19,6 +20,11 @@ Thermal
 **Detailed API Reference**
 
 .. autoclass:: felupe.thermal.SolidBodyThermal
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.thermal.SolidBodyThermalConvection
    :members:
    :undoc-members:
    :show-inheritance:

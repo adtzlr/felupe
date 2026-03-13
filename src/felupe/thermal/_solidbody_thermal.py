@@ -105,8 +105,13 @@ class SolidBodyThermal(SolidBody):
         ...     cell_data_default=False,
         ... )
         >>>
-        >>> view = mesh.view(point_data={"Temperature in K": temperature.values})
-        >>> view.plot("Temperature in K").show()
+        >>> mesh.view(
+        ...     point_data={"Temperature in K": temperature.values}
+        ... ).plot("Temperature in K").show()
+        >>>
+        >>> mesh.view(
+        ...     cell_data={"Heat Flux": solid.results.heat_flux[0][0].mean(axis=-2).T}
+        ... ).plot("Heat Flux", component=0).show()
 
     See Also
     --------

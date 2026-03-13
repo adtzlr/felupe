@@ -86,8 +86,9 @@ class SolidBodyThermalConvection:
         ...     cell_data_default=False,
         ... )
         >>>
-        >>> view = mesh.view(point_data={"Temperature in K": temperature.values})
-        >>> view.plot("Temperature in K").show()
+        >>> mesh.view(
+        ...     point_data={"Temperature in K": temperature.values}
+        ... ).plot("Temperature in K").show()
 
     See Also
     --------

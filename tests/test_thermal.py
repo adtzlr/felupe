@@ -46,6 +46,13 @@ def test_thermal():
         time_step=0.01,  # s
         thermal_conductivity=1.0,  # W/(m*K)
     )
+
+    solid.assemble.vector()
+    solid.assemble.vector(field)
+
+    solid.assemble.matrix()
+    solid.assemble.matrix(field)
+
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)
     ramp = {boundaries["right"]: 10 * table, time: 0.1 * table}

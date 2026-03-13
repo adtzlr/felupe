@@ -66,7 +66,7 @@ def test_thermal():
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)
     ramp = {boundaries["right"]: 10 * table, time: 0.1 * table, convection: 100 * table}
-    step = fem.Step(items=[time, solid], ramp=ramp, boundaries=boundaries)
+    step = fem.Step(items=[time, solid, convection], ramp=ramp, boundaries=boundaries)
     job = fem.Job(steps=[step]).evaluate(
         filename="result.xdmf",  # result file for Paraview
         point_data={"Temperature": lambda field, substep: temperature.values},

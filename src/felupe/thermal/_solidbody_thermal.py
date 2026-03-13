@@ -65,7 +65,7 @@ class SolidBodyThermal(SolidBody):
         \boldsymbol{K} \boldsymbol{T} &= -\boldsymbol{r} \\
 
         \boldsymbol{r} &= \boldsymbol{r}_{\text{conductivity}}
-            + \boldsymbol{C} frac{\Delta \boldsymbol{T}}{\Delta t} \\
+            + \boldsymbol{C} \frac{\boldsymbol{T} - \boldsymbol{T}_n}{\Delta t} \\
     
         \boldsymbol{K} &= \boldsymbol{K}_{\text{conductivity}}
             + \frac{\boldsymbol{C}}{\Delta t}

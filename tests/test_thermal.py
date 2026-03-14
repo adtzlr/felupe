@@ -29,6 +29,10 @@ def test_thermal():
     temperature_convection = fem.Field(region_convection, dim=1)
     field_convection = fem.FieldContainer([temperature_convection])
 
+    region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+    temperature_flux = fem.Field(region_flux, dim=1)
+    field_flux = fem.FieldContainer([temperature_flux])
+
     boundaries = fem.BoundaryDict(
         left=fem.Boundary(temperature, fx=0),
         right=fem.Boundary(temperature, fx=1),
@@ -57,15 +61,29 @@ def test_thermal():
         temperature=10.0,  # K
     )
 
+    heat_flux = fem.thermal.SolidBodyThermalHeatFlux(
+        field=field_flux,
+        heat_flux=1.0,  # W/m^2
+    )
+
     solid.assemble.vector(field)
     solid.assemble.matrix(field)
     convection.assemble.vector(field)
     convection.assemble.matrix(field)
+    heat_flux.assemble.vector(field)
+    heat_flux.assemble.matrix(field)
 
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)
-    ramp = {boundaries["right"]: 10 * table, time: 0.1 * table, convection: 100 * table}
-    step = fem.Step(items=[time, solid, convection], ramp=ramp, boundaries=boundaries)
+    ramp = {
+        boundaries["right"]: 10 * table,
+        time: 0.1 * table,
+        convection: 100 * table,
+        heat_flux: 10 * table,
+    }
+    step = fem.Step(
+        items=[time, solid, convection, heat_flux], ramp=ramp, boundaries=boundaries
+    )
     job = fem.Job(steps=[step]).evaluate(
         filename="result.xdmf",  # result file for Paraview
         point_data={"Temperature": lambda field, substep: temperature.values},

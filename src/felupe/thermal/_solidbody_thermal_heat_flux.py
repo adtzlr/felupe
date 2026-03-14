@@ -21,25 +21,21 @@ from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results
 
 
-class SolidBodyThermalConvection:
-    r"""A thermal convection boundary condition for a thermal solid body.
+class SolidBodyThermalHeatFlux:
+    r"""A thermal heat flux boundary condition for a thermal solid body.
 
     Parameters
     ----------
     field : felupe.FieldContainer
         The field container with the temperature as first field.
     coefficient : float
-        The convection coefficient :math:`h` in W/(m^2*K).
-    temperature : float
-        The ambient temperature :math:`T_\infty` in K.
+        The heat flux coefficient :math:`q` in W/m^2.
 
     Notes
     -----
-    This class represents a thermal convection boundary condition for a thermal solid
-    body, which is used to model heat convection at the boundary of a solid material.
-    The convection coefficient is used to calculate the heat flux at the boundary based
-    on the difference between the temperature at the boundary and the ambient
-    temperature.
+    This class represents a thermal heat flux boundary condition for a thermal solid
+    body, which is used to model heat flux at the boundary of a solid material.
+    The heat flux coefficient is used to calculate the heat flux at the boundary.
 
     Examples
     --------
@@ -52,9 +48,9 @@ class SolidBodyThermalConvection:
         >>> temperature = fem.Field(region, dim=1)
         >>> field = fem.FieldContainer([temperature])
         >>>
-        >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-        >>> temperature_convection = fem.Field(region_convection, dim=1)
-        >>> field_convection = fem.FieldContainer([temperature_convection])
+        >>> region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+        >>> temperature_flux = fem.Field(region_flux, dim=1)
+        >>> field_flux = fem.FieldContainer([temperature_flux])
         >>>
         >>> boundaries = fem.BoundaryDict(
         ...     left=fem.Boundary(temperature, fx=0),
@@ -68,20 +64,19 @@ class SolidBodyThermalConvection:
         ...     time_step=0.01,  # s
         ...     thermal_conductivity=1.0,  # W/(m*K)
         ... )
-        >>> convection = fem.thermal.SolidBodyThermalConvection(
-        ...     field=field_convection,
-        ...     coefficient=1.0,  # W/(m^2*K)
-        ...     temperature=10.0,  # K
+        >>> heat_flux = fem.thermal.SolidBodyThermalHeatFlux(
+        ...     field=field_flux,
+        ...     heat_flux=1.0,  # W/m^2
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {
         ...     boundaries["right"]: 10 * table,
         ...     time: 0.1 * table,
-        ...     convection: 100 * table,
+        ...     heat_flux: 10 * table,
         ... }
         >>> step = fem.Step(
-        ...     items=[time, solid, convection], ramp=ramp, boundaries=boundaries
+        ...     items=[time, solid, heat_flux], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate(
         ...     filename="result.xdmf",  # result file for Paraview
@@ -98,53 +93,30 @@ class SolidBodyThermalConvection:
     --------
     felupe.thermal.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
-    felupe.thermal.SolidBodyThermalHeatFlux : A thermal solid body for heat flux.
+    felupe.thermal.SolidBodyThermalConvection : A thermal solid body for heat
+        convection.
 
     """
 
-    def __init__(self, field, coefficient, temperature):
+    def __init__(self, field, heat_flux=None):
         self.field = field
-
+        self.assemble = Assemble(vector=self._vector, matrix=None, multiplier=-1.0)
         self.results = Results()
-        self.results.temperature = temperature
 
-        if coefficient is not None:
-            self.results.coefficient = coefficient
+        if heat_flux is not None:
+            self.results.heat_flux = heat_flux
 
-        self.assemble = Assemble(
-            vector=self._vector, matrix=self._matrix, multiplier=-1.0
-        )
-
-    def update(self, temperature):
-        self.results.temperature = temperature
+    def update(self, heat_flux):
+        self.results.heat_flux = heat_flux
 
     def _vector(self, field=None, **kwargs):
         if field is not None:
             self.field = field
 
-        temperature = self.field.extract(grad=False)[0]
-        fun = [-self.results.coefficient * (temperature - self.results.temperature)]
+        fun = [-self.results.heat_flux * np.ones((1, 1))]
 
         self.results.force = IntegralForm(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
         ).assemble(**kwargs)
 
         return self.results.force
-
-    def _matrix(self, field=None, **kwargs):
-        if field is not None:
-            self.field = field
-
-        dim = self.field[0].dim
-        fun = [-self.results.coefficient * np.eye(dim).reshape(dim, dim, 1, 1)]
-
-        self.results.stiffness = IntegralForm(
-            fun=fun,
-            v=self.field,
-            u=self.field,
-            dV=self.field.region.dV,
-            grad_v=[False],
-            grad_u=[False],
-        ).assemble(**kwargs)
-
-        return self.results.stiffness

@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
+from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
@@ -26,11 +27,21 @@ from ..math import det
 class Assemble:
     "A class with methods for assembling vectors and matrices of an Item."
 
-    def __init__(self, vector, matrix, mass=None, multiplier=None):
-        self.vector = vector
-        self.matrix = matrix
+    def __init__(self, vector=None, matrix=None, mass=None, multiplier=None):
+
+        self.vector = self._empty_matrix
+        self.matrix = self._empty_matrix
         self.mass = mass
         self.multiplier = multiplier
+
+        if vector is not None:
+            self.vector = vector
+
+        if matrix is not None:
+            self.matrix = matrix
+
+    def _empty_matrix(self, field=None, **kwargs):
+        return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
 
 class Evaluate:

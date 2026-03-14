@@ -63,25 +63,25 @@ class SolidBodyThermal(SolidBody):
         :label: thermal-solid-body
 
         \boldsymbol{K} \boldsymbol{T} &= -\boldsymbol{r}
-    
+
         \boldsymbol{r} &= \boldsymbol{r}_{\text{conductivity}}
             + \boldsymbol{C} \frac{\boldsymbol{T} - \boldsymbol{T}_n}{\Delta t}
 
         \boldsymbol{K} &= \boldsymbol{K}_{\text{conductivity}}
             + \frac{\boldsymbol{C}}{\Delta t}
 
-    
+
     Examples
     --------
     ..  pyvista-plot::
 
         >>> import felupe as fem
-        >>> 
+        >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)
         >>> temperature = fem.Field(region, dim=1)
         >>> field = fem.FieldContainer([temperature])
-        >>> 
+        >>>
         >>> boundaries = fem.BoundaryDict(
         ...     left=fem.Boundary(temperature, fx=0),
         ...     right=fem.Boundary(temperature, fx=1),
@@ -117,6 +117,7 @@ class SolidBodyThermal(SolidBody):
     --------
     felupe.thermal.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermalConvection : A thermal convection boundary condition.
+    felupe.thermal.SolidBodyThermalHeatFlux : A thermal heat flux boundary condition.
 
     """
 

@@ -52,6 +52,10 @@ class SolidBodyThermalConvection:
         >>> temperature = fem.Field(region, dim=1)
         >>> field = fem.FieldContainer([temperature])
         >>>
+        >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+        >>> temperature_convection = fem.Field(region_convection, dim=1)
+        >>> field_convection = fem.FieldContainer([temperature_convection])
+        >>>
         >>> boundaries = fem.BoundaryDict(
         ...     left=fem.Boundary(temperature, fx=0),
         ...     right=fem.Boundary(temperature, fx=1),

@@ -76,21 +76,16 @@ class TimeStep:
 
     def __init__(self, items, time_old=0.0, time_new=None):
         self.field = items[0].field  # get dummy field from first item
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.assemble = Assemble()
         self.results = Results()
         self.time_old = time_old
         self.time_new = time_new
         self.items = items
 
-    def _vector(self, *args, **kwargs):
-        return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
-
-    def _matrix(self, *args, **kwargs):
-        return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
-
     def update(self, time_new):
-        self.time_new = time_new
-        time_step = self.time_new - self.time_old
-        for item in self.items:  # update time step for each item
+        time_step = time_new - self.time_old
+
+        for item in self.items:
             item.time_step = time_step
-        self.time_old = self.time_new
+
+        self.time_old = time_new

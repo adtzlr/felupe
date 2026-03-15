@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `felupe.thermal` with `felupe.thermal.SolidBodyThermal`, `felupe.thermal.SolidBodyThermalConvection`, `felupe.thermal.SolidBodyThermalHeatFlux` and `felupe.thermal.TimeStep`.
 
 ### Changed
-- Don't expand the interpolated vector and gradient for `FieldAxisymmetric` for scalar fields.
+- Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
 
 ## [10.1.0] - 2026-02-26
 

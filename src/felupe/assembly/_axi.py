@@ -146,10 +146,9 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
 
         if v.dim == 1:
             self.is_scalar = True
-
-        if self.is_scalar:
             self._init_scalar(fun, v, self.dV, u=u, grad_v=grad_v, grad_u=grad_u)
         else:
+            self.is_scalar = False
             self._init_vector(fun, v, self.dV, u=u, grad_v=grad_v, grad_u=grad_u)
 
     def _init_scalar(self, fun, v, dV, u, grad_v, grad_u):

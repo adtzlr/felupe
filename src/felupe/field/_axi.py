@@ -110,10 +110,12 @@ class FieldAxisymmetric(Field):
         # if out is not None:
         #     out = out[:2]
 
+        add_row = int(self.dim > 1)
+
         # extend dimension of in-plane 2d-gradient (out-keyword can't be used here)
         return np.pad(
             self._interpolate_2d(dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 0), (0, 0)),
+            ((0, add_row), (0, 0), (0, 0)),
         )
 
     def _grad_2d(self, sym=False, dtype=None, out=None, order="C"):

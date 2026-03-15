@@ -90,7 +90,7 @@ class TimeStep:
 
     def update(self, time_new):
         self.time_new = time_new
+        time_step = self.time_new - self.time_old
         for item in self.items:  # update time step for each item
-            time_step = self.time_new - self.time_old
             item.time_step = time_step
         self.time_old = self.time_new

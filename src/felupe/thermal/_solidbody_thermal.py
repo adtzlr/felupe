@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+import numpy as np
 from scipy.sparse import csr_array, csr_matrix, diags
 
 from ..assembly import IntegralForm
@@ -163,15 +164,15 @@ class SolidBodyThermal(SolidBody):
             dV=self.field.region.dV,
         ).assemble(**kwargs)
 
-        if self.time_step > 0:
-            temperature_old = self.results.statevars  # old temperature
-            temperature_new = self.results._statevars  # new temperature
+        time_step = np.maximum(np.finfo(float).eps, self.time_step)
+        temperature_old = self.results.statevars  # old temperature
+        temperature_new = self.results._statevars  # new temperature
 
-            temperature_rate = (temperature_new - temperature_old) / self.time_step
+        temperature_rate = (temperature_new - temperature_old) / self.time_step
 
-            self.results.force += csr_matrix(
-                self.capacity @ temperature_rate.reshape(-1, 1)
-            )
+        self.results.force += csr_matrix(
+            self.capacity @ temperature_rate.reshape(-1, 1)
+        )
 
         return self.results.force
 
@@ -193,7 +194,7 @@ class SolidBodyThermal(SolidBody):
 
         self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
-        if self.time_step > 0:
-            self.results.stiffness += self.capacity / self.time_step
+        time_step = np.maximum(np.finfo(float).eps, self.time_step)
+        self.results.stiffness += self.capacity / time_step
 
         return self.results.stiffness

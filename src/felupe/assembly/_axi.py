@@ -144,6 +144,21 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
         R = v.radius
         self.dV = 2 * np.pi * R * dV
 
+        if v.dim == 1:
+            self.is_scalar = True
+            self._init_scalar(fun, v, self.dV, u=u, grad_v=grad_v, grad_u=grad_u)
+        else:
+            self.is_scalar = False
+            self._init_vector(fun, v, self.dV, u=u, grad_v=grad_v, grad_u=grad_u)
+
+    def _init_scalar(self, fun, v, dV, u, grad_v, grad_u):
+        self.forms = [
+            IntegralFormCartesian(fun, v, self.dV, u=u, grad_v=grad_v, grad_u=grad_u)
+        ]
+
+    def _init_vector(self, fun, v, dV, u, grad_v, grad_u):
+        R = v.radius
+
         if u is None:
             if isinstance(v, FieldAxisymmetric):
                 self.mode = 1
@@ -234,6 +249,15 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
                 ]
 
     def integrate(self, parallel=False, out=None):
+        if self.is_scalar:
+            return self._integrate_scalar(parallel=parallel, out=out)
+        else:
+            return self._integrate_vector(parallel=parallel, out=out)
+
+    def _integrate_scalar(self, parallel=False, out=None):
+        return self.forms[0].integrate(parallel=parallel, out=out)
+
+    def _integrate_vector(self, parallel=False, out=None):
         values = [form.integrate(parallel=parallel) for form in self.forms]
 
         if self.mode == 1:

@@ -164,11 +164,11 @@ class SolidBodyThermal(SolidBody):
             dV=self.field.region.dV,
         ).assemble(**kwargs)
 
-        time_step = np.maximum(np.finfo(float).eps, self.time_step)
+        time_step = np.maximum(np.finfo(float).eps**0.5, self.time_step)
         temperature_old = self.results.statevars  # old temperature
         temperature_new = self.results._statevars  # new temperature
 
-        temperature_rate = (temperature_new - temperature_old) / self.time_step
+        temperature_rate = (temperature_new - temperature_old) / time_step
 
         self.results.force += csr_matrix(
             self.capacity @ temperature_rate.reshape(-1, 1)
@@ -194,7 +194,7 @@ class SolidBodyThermal(SolidBody):
 
         self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
-        time_step = np.maximum(np.finfo(float).eps, self.time_step)
+        time_step = np.maximum(np.finfo(float).eps**0.5, self.time_step)
         self.results.stiffness += self.capacity / time_step
 
         return self.results.stiffness

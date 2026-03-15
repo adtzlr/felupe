@@ -212,12 +212,19 @@ class FieldAxisymmetric(Field):
         #     out = out[:2, :2]
 
         # extend dimension of in-plane 2d-gradient
+
+        # only add additional field vector component if dim > 1, otherwise the field is
+        # scalar
+        add_row = int(self.dim > 1)
+        add_col = int(self.dim > 1)
+
         g = np.pad(
             self._grad_2d(sym=sym, dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 1), (0, 0), (0, 0)),
+            ((0, add_row), (0, add_col), (0, 0), (0, 0)),
         )
 
-        # set dudX_33 = u_r / R
-        g[-1, -1] = self.interpolate(dtype=dtype, order=order)[1] / self.radius
+        if self.dim > 1:
+            # set dudX_33 = u_r / R
+            g[-1, -1] = self.interpolate(dtype=dtype, order=order)[1] / self.radius
 
         return g

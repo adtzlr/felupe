@@ -21,6 +21,7 @@ from scipy.sparse import csr_array, csr_matrix, diags
 from ..assembly import IntegralForm
 from ..constitution import Laplace
 from ..mechanics import SolidBody
+from ..math import dot
 
 
 class SolidBodyThermal(SolidBody):
@@ -147,6 +148,7 @@ class SolidBodyThermal(SolidBody):
         self.capacity = self._mass()
 
         self.evaluate.heat_flux = self.evaluate.stress
+        self.evaluate.heat_flux_on_boundary = self._heat_flux_on_boundary
 
         if lumped_capacity:
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
@@ -164,7 +166,7 @@ class SolidBodyThermal(SolidBody):
             dV=self.field.region.dV,
         ).assemble(**kwargs)
 
-        time_step = np.maximum(np.finfo(float).eps**0.5, self.time_step)
+        time_step = np.maximum(np.finfo(float).eps ** 0.5, self.time_step)
         temperature_old = self.results.statevars  # old temperature
         temperature_new = self.results._statevars  # new temperature
 
@@ -194,7 +196,46 @@ class SolidBodyThermal(SolidBody):
 
         self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
-        time_step = np.maximum(np.finfo(float).eps**0.5, self.time_step)
+        time_step = np.maximum(np.finfo(float).eps ** 0.5, self.time_step)
         self.results.stiffness += self.capacity / time_step
 
         return self.results.stiffness
+
+    def _heat_flux_on_boundary(
+        self, region, return_total=False, return_mean=False, **kwargs
+    ):
+        """Calculate the heat flux on a boundary region.
+
+        Parameters
+        ----------
+        region : felupe.RegionBoundary
+            The boundary region on which to calculate the heat flux.
+        return_total : bool, optional
+            If True, return the total heat transfer rate (default is False).
+        return_mean : bool, optional
+            If True, return the mean heat flux over the boundary (default is False).
+        **kwargs
+            Additional keyword arguments to be passed to the gradient function.
+
+        Returns
+        -------
+        flux_normal : numpy.ndarray
+            The normal component of the heat flux on the boundary, or the total heat
+            transfer rate if `return_total` is True, or the mean heat flux if
+            `return_mean` is True.
+        """
+
+        Field = self.field[0].__class__
+        field = Field(region, dim=self.field[0].dim).as_container()
+        field.link(self.field)
+
+        flux = self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
+        flux_normal = dot(flux, region.normals, mode=(1, 1))
+
+        if return_mean:  # mean heat flux over the boundary
+            return (flux_normal * region.dV).sum() / region.dV.sum()
+
+        if return_total:  # total heat transfer rate
+            return (flux_normal * region.dV).sum()
+
+        return flux_normal

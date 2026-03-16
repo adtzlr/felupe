@@ -146,6 +146,11 @@ def test_thermal_axi():
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
+    region_boundary = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
+    solid.evaluate.heat_flux_on_boundary(region_boundary)
+    solid.evaluate.heat_flux_on_boundary(region_boundary, return_mean=True)
+    solid.evaluate.heat_flux_on_boundary(region_boundary, return_total=True)
+
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)
     ramp = {

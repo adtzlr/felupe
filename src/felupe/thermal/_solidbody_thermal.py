@@ -206,9 +206,9 @@ class SolidBodyThermal(SolidBody):
         self,
         field=None,
         region=None,
-        return_normal=True,
-        return_total=False,
-        return_mean=False,
+        normal=True,
+        total=False,
+        mean=False,
         **kwargs,
     ):
         """Calculate the heat flux on a boundary region.
@@ -222,11 +222,11 @@ class SolidBodyThermal(SolidBody):
         region : felupe.RegionBoundary or None, optional
             The boundary region on which to calculate the heat flux. If None, the heat
             flux will be calculated on provided field's region (default is None).
-        return_normal : bool, optional
+        normal : bool, optional
             If True, return the normal component of the heat flux (default is True).
-        return_total : bool, optional
+        total : bool, optional
             If True, return the total heat transfer rate (default is False).
-        return_mean : bool, optional
+        mean : bool, optional
             If True, return the mean heat flux over the boundary (default is False).
         **kwargs
             Additional keyword arguments to be passed to the gradient function.
@@ -235,8 +235,50 @@ class SolidBodyThermal(SolidBody):
         -------
         flux_normal : numpy.ndarray
             The normal component of the heat flux on the boundary, or the total heat
-            transfer rate if `return_total` is True, or the mean heat flux if
-            `return_mean` is True.
+            transfer rate if `total` is True, or the mean heat flux if `mean` is True.
+
+        Examples
+        --------
+        Evaluate the normal heat flux on the right boundary of a rectangular region for
+        the final time step of a transient thermal analysis.
+
+        ..  pyvista-plot::
+
+            >>> import felupe as fem
+            >>>
+            >>> mesh = fem.Rectangle(n=6)
+            >>> region = fem.RegionQuad(mesh)
+            >>> temperature = fem.Field(region, dim=1)
+            >>> field = temperature.as_container()
+            >>>
+            >>> solid = fem.thermal.SolidBodyThermal(
+            ...     field,
+            ...     mass_density=1.0,
+            ...     specific_heat_capacity=1.0,
+            ...     thermal_conductivity=1.0,
+            ... )
+            >>> boundaries = fem.BoundaryDict(
+            ...     left=fem.Boundary(temperature, fx=0, value=0.0),
+            ...     right=fem.Boundary(temperature, fx=1, value=100.0),
+            ... )
+            >>>
+            >>> time = fem.thermal.TimeStep(items=[solid])
+            >>> table = fem.math.linsteps([0, 0.01], num=[10])
+            >>> step = fem.Step(
+            ...     items=[time, solid],
+            ...     ramp={time: table},
+            ...     boundaries=boundaries,
+            ... )
+            >>>
+            >>> job = fem.Job(steps=[step]).evaluate()
+            >>>
+            >>> my_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
+            >>> flux = solid.heat_flux_boundary(
+            ...     region=my_region, normal=True, total=True, mean=True
+            ... )
+            >>> flux.round(1)
+            np.float64(402.4)
+
         """
         if (field is None and region is None) or (
             field is not None and region is not None
@@ -252,17 +294,17 @@ class SolidBodyThermal(SolidBody):
         area = field.region.dV  # differential areas for dV = |dA| at the boundary
         normals = field.region.normals  # outward normal vectors at the boundary
 
-        if return_normal:  # normal flux over boundary
+        if normal:  # normal flux over boundary
             flux = dot(flux, normals, mode=(1, 1))
 
-        if return_total:
+        if total:
             flux = (flux * area).sum()  # total heat transfer rate
 
-            if return_mean:
+            if mean:
                 flux /= area.sum()  # mean total heat flux
 
         else:
-            if return_mean:  # mean heat flux per cell
+            if mean:  # mean heat flux per cell
                 flux = (flux * area).sum(axis=0) / area.sum(axis=0)
 
         return flux

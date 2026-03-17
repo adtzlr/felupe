@@ -150,29 +150,25 @@ def test_thermal_axi():
 
     my_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
     solid.heat_flux_boundary(region=my_region)
-    solid.heat_flux_boundary(region=my_region, return_mean=True)
-    solid.heat_flux_boundary(region=my_region, return_total=True)
-    solid.heat_flux_boundary(region=my_region, return_total=True, return_mean=True)
+    solid.heat_flux_boundary(region=my_region, mean=True)
+    solid.heat_flux_boundary(region=my_region, total=True)
+    solid.heat_flux_boundary(region=my_region, total=True, mean=True)
 
-    solid.heat_flux_boundary(region=my_region, return_normal=False)
-    solid.heat_flux_boundary(region=my_region, return_normal=False, return_mean=True)
-    solid.heat_flux_boundary(region=my_region, return_normal=False, return_total=True)
-    solid.heat_flux_boundary(
-        region=my_region, return_normal=False, return_total=True, return_mean=True
-    )
+    solid.heat_flux_boundary(region=my_region, normal=False)
+    solid.heat_flux_boundary(region=my_region, normal=False, mean=True)
+    solid.heat_flux_boundary(region=my_region, normal=False, total=True)
+    solid.heat_flux_boundary(region=my_region, normal=False, total=True, mean=True)
 
     my_field = fem.Field(my_region, dim=1).as_container()
     solid.heat_flux_boundary(field=my_field)
-    solid.heat_flux_boundary(field=my_field, return_mean=True)
-    solid.heat_flux_boundary(field=my_field, return_total=True)
-    solid.heat_flux_boundary(field=my_field, return_total=True, return_mean=True)
+    solid.heat_flux_boundary(field=my_field, mean=True)
+    solid.heat_flux_boundary(field=my_field, total=True)
+    solid.heat_flux_boundary(field=my_field, total=True, mean=True)
 
-    solid.heat_flux_boundary(field=my_field, return_normal=False)
-    solid.heat_flux_boundary(field=my_field, return_normal=False, return_mean=True)
-    solid.heat_flux_boundary(field=my_field, return_normal=False, return_total=True)
-    solid.heat_flux_boundary(
-        field=my_field, return_normal=False, return_total=True, return_mean=True
-    )
+    solid.heat_flux_boundary(field=my_field, normal=False)
+    solid.heat_flux_boundary(field=my_field, normal=False, mean=True)
+    solid.heat_flux_boundary(field=my_field, normal=False, total=True)
+    solid.heat_flux_boundary(field=my_field, normal=False, total=True, mean=True)
 
     with pytest.raises(ValueError):
         solid.heat_flux_boundary(field=None, region=None)

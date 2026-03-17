@@ -148,6 +148,8 @@ def test_thermal_axi():
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
+    solid.heat_flux(field)
+
     my_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
     solid.heat_flux_boundary(region=my_region)
     solid.heat_flux_boundary(region=my_region, mean=True)

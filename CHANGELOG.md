@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
+- Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
+
+### Fixed
+- Fix the typo `Rhapson` and change it to `Raphson`.
 
 ## [10.1.0] - 2026-02-26
 

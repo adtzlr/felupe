@@ -158,7 +158,6 @@ class SolidBodyThermal(SolidBody):
 
         # assemble capacity matrix
         self.capacity = self._mass()
-        self.heat_flux = self.evaluate.stress
 
         if lumped_capacity:
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
@@ -211,6 +210,9 @@ class SolidBodyThermal(SolidBody):
 
         return self.results.stiffness
 
+    def heat_flux(self, field=None, **kwargs):
+        return -self.evaluate.stress(field=field, **kwargs)[0]
+
     def heat_flux_boundary(
         self,
         field=None,
@@ -256,7 +258,7 @@ class SolidBodyThermal(SolidBody):
             Field = self.field[0].__class__
             field = Field(region, values=self.field[0].values).as_container()
 
-        flux = self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
+        flux = -self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
         area = field.region.dV  # differential areas for dV = |dA| at the boundary
         normals = field.region.normals  # outward normal vectors at the boundary
 

@@ -520,7 +520,7 @@ def test_load():
         def cb(dx, x, iteration, xnorm, fnorm, success):
             print("fnorm", fnorm)
 
-        res = fem.newtonrhapson(items=[body, load], dof0=dof0, dof1=dof1, callback=cb)
+        res = fem.newtonraphson(items=[body, load], dof0=dof0, dof1=dof1, callback=cb)
 
         assert res.success
 

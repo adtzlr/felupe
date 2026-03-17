@@ -56,9 +56,9 @@ umat = fem.NeoHooke(mu=1.0, bulk=2.0)
 solid = fem.SolidBody(umat=umat, field=field)
 
 # %%
-# The problem is solved by an iterative :func:`Newton-Rhapson <felupe.newtonrhapson>`
+# The problem is solved by an iterative :func:`Newton-Raphson <felupe.newtonraphson>`
 # procedure. A verbosity level of 2 enables a detailed text-based logging.
-res = fem.newtonrhapson(items=[solid], verbose=2, **loadcase)
+res = fem.newtonraphson(items=[solid], verbose=2, **loadcase)
 
 # %%
 # Results may be viewed in an interactive window.

@@ -24,7 +24,7 @@ This page contains material model formulations with automatic differentiation us
 ..  warning::
 
     JAX uses single-precision (32bit) data types by default. This requires to relax the
-    tolerance of :func:`~felupe.newtonrhapson` to ``tol=1e-4``. If required, JAX may be
+    tolerance of :func:`~felupe.newtonraphson` to ``tol=1e-4``. If required, JAX may be
     enforced to use double-precision at startup,
 
     ..  code-block:: python

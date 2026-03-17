@@ -126,7 +126,7 @@ from .region import (
     RegionTruss,
     RegionVertex,
 )
-from .tools import hello_world, newtonrhapson, project, runs_on, save, topoints
+from .tools import hello_world, newtonraphson, newtonrhapson, project, runs_on, save, topoints
 from .view import ViewField, ViewMesh
 from .view import ViewSolid
 from .view import ViewSolid as View
@@ -255,6 +255,7 @@ __all__ = [
     "RegionTriQuadraticHexahedronBoundary",
     "RegionTruss",
     "RegionVertex",
+    "newtonraphson",
     "newtonrhapson",
     "project",
     "save",

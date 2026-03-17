@@ -7,7 +7,7 @@ Tools
 
 .. autosummary::
 
-   newtonrhapson
+   newtonraphson
    tools.NewtonResult
 
 **Export of Results**
@@ -35,7 +35,7 @@ Tools
 
 .. autoclass:: felupe.tools.NewtonResult
 
-.. autofunction:: felupe.newtonrhapson
+.. autofunction:: felupe.newtonraphson
 
 .. autofunction:: felupe.save
 

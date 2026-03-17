@@ -52,7 +52,7 @@ def test_visco_newton():
 
         # update of state variables by evolution equation
         Cin = from_triu_1d(Cin, like=C)
-        Ci = fem.newtonrhapson(
+        Ci = fem.newtonraphson(
             x0=Cin,
             fun=tr.function(evolution, ntrax=C.ntrax),
             jac=tr.jacobian(evolution, ntrax=C.ntrax),

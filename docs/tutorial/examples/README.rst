@@ -43,7 +43,7 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
    )
 
-The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>` (here, a :class:`characteristic curve <felupe.CharacteristicCurve>` job is used). During :meth:`evaluation <felupe.Job.evaluate>`, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Rhapson <felupe.newtonrhapson>` procedure. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series XDMF file.
+The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>` (here, a :class:`characteristic curve <felupe.CharacteristicCurve>` job is used). During :meth:`evaluation <felupe.Job.evaluate>`, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Raphson <felupe.newtonraphson>` procedure. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series XDMF file.
 
 .. pyvista-plot::
    :context:

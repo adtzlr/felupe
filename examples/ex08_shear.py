@@ -103,7 +103,7 @@ plotter.show()
 
 # %%
 # The shear movement is applied in substeps, which are each solved with an iterative
-# newton-rhapson procedure. Inside an iteration, the force residual vector and the
+# newton-raphson procedure. Inside an iteration, the force residual vector and the
 # tangent stiffness matrix are assembled. The fields are updated with the solution of
 # unknowns. The equilibrium is checked as ratio between the norm of residual forces of
 # the active vs. the norm of the residual forces of the inactive degrees of freedom. If

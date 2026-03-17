@@ -56,7 +56,7 @@ def test_composite():
     rubber = fem.SolidBody(nh1, field_rubber)
     reinforced = fem.SolidBody(nh2, field_reinforced)
 
-    res = fem.newtonrhapson(field, items=[rubber, reinforced], **loadcase)
+    res = fem.newtonraphson(field, items=[rubber, reinforced], **loadcase)
 
     fem.save(region, res.x)
 
@@ -119,7 +119,7 @@ def test_composite_planestrain():
     rubber = fem.SolidBody(nh1, field_rubber)
     reinforced = fem.SolidBody(nh2, field_reinforced)
 
-    res = fem.newtonrhapson(field, items=[rubber, reinforced], **loadcase)
+    res = fem.newtonraphson(field, items=[rubber, reinforced], **loadcase)
 
     fem.save(region, res.x)
 

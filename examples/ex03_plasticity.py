@@ -54,7 +54,7 @@ bodyforce = fem.SolidBodyForce(field)
 b = fem.math.linsteps([0, 200], num=10, axis=0, axes=3)
 
 # %%
-# Inside a Newton-Rhapson procedure, the vectors and matrices are assembled for the
+# Inside a Newton-Raphson procedure, the vectors and matrices are assembled for the
 # given *items* and the boundary conditions are incorporated into the equilibrium
 # equations.
 step = fem.Step(items=[solid, bodyforce], ramp={bodyforce: b}, boundaries=boundaries)

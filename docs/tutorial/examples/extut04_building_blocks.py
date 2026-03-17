@@ -14,7 +14,7 @@ Building Blocks
 
    * apply your own boundary conditions
 
-   * solve the problem (create your own Newton-Rhapson iteration loop)
+   * solve the problem (create your own Newton-Raphson iteration loop)
 
    * export the displaced mesh along with cauchy stress projected to mesh-points
 
@@ -223,10 +223,10 @@ K = bilinearform.assemble()
 # :eq:`eq_partition`. This system may then be passed to the (sparse direct) solver.
 # Given a set of nonlinear equilibrium equations :math:`\boldsymbol{g}` the unknowns
 # :math:`\boldsymbol{u}` are found by linearization at a valid initial state of
-# equilibrium and an iterative Newton-Rhapson solution prodecure. The incremental values
+# equilibrium and an iterative Newton-Raphson solution prodecure. The incremental values
 # of inactive degrees of freedom are given as the difference of external prescribed and
 # current values of unknowns. The (linear) solution is equal to the first result of a
-# Newton-Rhapson iterative solution procedure. The solution ``du`` is finally added to
+# Newton-Raphson iterative solution procedure. The solution ``du`` is finally added to
 # the displacement field.
 #
 # .. math::
@@ -266,7 +266,7 @@ dfield = fem.solve.solve(*system, ext0, solver=spsolve)  # .reshape(*u.shape)
 # field += dfield
 
 # %%
-# A very simple Newton-Rhapson code looks like this:
+# A very simple Newton-Raphson code looks like this:
 for iteration in range(8):
     F = field.extract()
 
@@ -287,12 +287,12 @@ for iteration in range(8):
         break
 
 # %%
-# By alternative, one may also use the :func:`Newton-Rhapson <felupe.newtonrhapson>`
+# By alternative, one may also use the :func:`Newton-Raphson <felupe.newtonraphson>`
 # function of FElupe.
 field[0].fill(0)
 solid = fem.SolidBody(umat, field)
 loadcase = {"dof1": dof1, "dof0": dof0, "ext0": ext0}
-res = fem.newtonrhapson(items=[solid], verbose=2, tol=1e-12, **loadcase)
+res = fem.newtonraphson(items=[solid], verbose=2, tol=1e-12, **loadcase)
 field = res.x
 
 

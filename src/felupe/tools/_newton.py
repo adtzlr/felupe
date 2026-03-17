@@ -204,7 +204,7 @@ def update(x, dx):
     return x + dx
 
 
-def newtonrhapson(
+def newtonraphson(
     x0=None,
     fun=fun,
     jac=jac,
@@ -361,9 +361,9 @@ def newtonrhapson(
     ...     field, move=0.2, clamped=True, return_loadcase=False
     ... )
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
-    >>> res = fem.newtonrhapson(items=[solid], **loadcase)  # doctest: +ELLIPSIS
+    >>> res = fem.newtonraphson(items=[solid], **loadcase)  # doctest: +ELLIPSIS
     <BLANKLINE>
-    Newton-Rhapson solver
+    Newton-Raphson solver
     =====================
     <BLANKLINE>
     | # | norm(fun) |  norm(dx) |
@@ -449,7 +449,7 @@ def newtonrhapson(
 
     if verbose == 2:
         print()
-        print("Newton-Rhapson solver")
+        print("Newton-Raphson solver")
         print("=====================")
         print()
         print("| # | norm(fun) |  norm(dx) |")

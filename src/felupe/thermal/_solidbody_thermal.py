@@ -233,9 +233,9 @@ class SolidBodyThermal(SolidBody):
 
         Returns
         -------
-        flux_normal : numpy.ndarray
-            The normal component of the heat flux on the boundary, or the total heat
-            transfer rate if `total` is True, or the mean heat flux if `mean` is True.
+        heat_flux : numpy.ndarray
+            The heat flux on the boundary, or the total heat transfer rate if `total` is
+            True, or the mean heat flux if `mean` is True.
 
         Examples
         --------

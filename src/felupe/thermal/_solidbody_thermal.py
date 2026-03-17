@@ -80,6 +80,7 @@ class SolidBodyThermal(SolidBody):
     ..  pyvista-plot::
 
         >>> import felupe as fem
+        >>> import numpy as np
         >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)

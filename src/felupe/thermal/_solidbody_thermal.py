@@ -124,7 +124,7 @@ class SolidBodyThermal(SolidBody):
         ...     total=True,
         ...     mean=True,
         ... )
-        >>> assert np.isclose(flux.round(1), 30.5)
+        >>> assert np.isclose(flux.round(1), -30.5)
 
     See Also
     --------

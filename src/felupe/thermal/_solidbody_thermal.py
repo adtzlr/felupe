@@ -116,6 +116,14 @@ class SolidBodyThermal(SolidBody):
         >>> mesh.view(
         ...     cell_data={"Heat Flux": solid.results.heat_flux[0][0].mean(axis=-2).T}
         ... ).plot("Heat Flux", component=0).show()
+        >>>
+        >>> flux = solid.heat_flux_boundary(
+        ...     region=fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0),
+        ...     normal=True,  # normal component of heat flux
+        ...     total=True,
+        ...     mean=True,
+        ... )
+        >>> assert np.isclose(flux.round(1), 30.5)
 
     See Also
     --------
@@ -236,48 +244,6 @@ class SolidBodyThermal(SolidBody):
         heat_flux : numpy.ndarray
             The heat flux on the boundary, or the total heat transfer rate if `total` is
             True, or the mean heat flux if `mean` is True.
-
-        Examples
-        --------
-        Evaluate the normal heat flux on the right boundary of a rectangular region for
-        the final time step of a transient thermal analysis.
-
-        ..  pyvista-plot::
-
-            >>> import felupe as fem
-            >>>
-            >>> mesh = fem.Rectangle(n=6)
-            >>> region = fem.RegionQuad(mesh)
-            >>> temperature = fem.Field(region, dim=1)
-            >>> field = temperature.as_container()
-            >>>
-            >>> solid = fem.thermal.SolidBodyThermal(
-            ...     field,
-            ...     mass_density=1.0,
-            ...     specific_heat_capacity=1.0,
-            ...     thermal_conductivity=1.0,
-            ... )
-            >>> boundaries = fem.BoundaryDict(
-            ...     left=fem.Boundary(temperature, fx=0, value=0.0),
-            ...     right=fem.Boundary(temperature, fx=1, value=100.0),
-            ... )
-            >>>
-            >>> time = fem.thermal.TimeStep(items=[solid])
-            >>> table = fem.math.linsteps([0, 0.01], num=[10])
-            >>> step = fem.Step(
-            ...     items=[time, solid],
-            ...     ramp={time: table},
-            ...     boundaries=boundaries,
-            ... )
-            >>>
-            >>> job = fem.Job(steps=[step]).evaluate()
-            >>>
-            >>> my_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
-            >>> flux = solid.heat_flux_boundary(
-            ...     region=my_region, normal=True, total=True, mean=True
-            ... )
-            >>> flux.round(1)
-            np.float64(402.4)
 
         """
         if (field is None and region is None) or (

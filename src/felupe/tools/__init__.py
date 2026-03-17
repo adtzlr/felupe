@@ -1,3 +1,5 @@
+import warnings
+
 from ._hello_world import hello_world
 from ._misc import logo, runs_on
 from ._newton import NewtonResult
@@ -5,7 +7,18 @@ from ._newton import fun_items as fun
 from ._newton import jac_items as jac
 from ._newton import newtonraphson
 
-newtonrhapson = newtonraphson
+
+def newtonrhapson(*args, **kwargs):
+    """Deprecated alias for :func:`felupe.newtonraphson`."""
+    warnings.warn(
+        "`newtonrhapson` is deprecated since v10.2.0 and will be removed in a future "
+        "release. Use `newtonraphson` in new code.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return newtonraphson(*args, **kwargs)
+
+
 from ._post import curve, force, moment
 from ._project import extrapolate, project, topoints
 from ._save import save

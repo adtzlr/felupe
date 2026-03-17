@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+import pytest
+
 import felupe as fem
 
 
@@ -146,10 +148,37 @@ def test_thermal_axi():
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
-    region_boundary = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
-    solid.evaluate.heat_flux_on_boundary(region_boundary)
-    solid.evaluate.heat_flux_on_boundary(region_boundary, return_mean=True)
-    solid.evaluate.heat_flux_on_boundary(region_boundary, return_total=True)
+    my_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
+    solid.heat_flux_boundary(region=my_region)
+    solid.heat_flux_boundary(region=my_region, return_mean=True)
+    solid.heat_flux_boundary(region=my_region, return_total=True)
+    solid.heat_flux_boundary(region=my_region, return_total=True, return_mean=True)
+
+    solid.heat_flux_boundary(region=my_region, return_normal=False)
+    solid.heat_flux_boundary(region=my_region, return_normal=False, return_mean=True)
+    solid.heat_flux_boundary(region=my_region, return_normal=False, return_total=True)
+    solid.heat_flux_boundary(
+        region=my_region, return_normal=False, return_total=True, return_mean=True
+    )
+
+    my_field = fem.Field(my_region, dim=1).as_container()
+    solid.heat_flux_boundary(field=my_field)
+    solid.heat_flux_boundary(field=my_field, return_mean=True)
+    solid.heat_flux_boundary(field=my_field, return_total=True)
+    solid.heat_flux_boundary(field=my_field, return_total=True, return_mean=True)
+
+    solid.heat_flux_boundary(field=my_field, return_normal=False)
+    solid.heat_flux_boundary(field=my_field, return_normal=False, return_mean=True)
+    solid.heat_flux_boundary(field=my_field, return_normal=False, return_total=True)
+    solid.heat_flux_boundary(
+        field=my_field, return_normal=False, return_total=True, return_mean=True
+    )
+
+    with pytest.raises(ValueError):
+        solid.heat_flux_boundary(field=None, region=None)
+
+    with pytest.raises(ValueError):
+        solid.heat_flux_boundary(field=my_field, region=my_region)
 
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)

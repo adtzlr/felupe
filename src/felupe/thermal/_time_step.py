@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+import numpy as np
 from scipy.sparse import csr_matrix
 
 from ..mechanics import Assemble, Results
@@ -32,6 +33,9 @@ class TimeStep:
         Initial time (default is 0.0).
     time_new : float or None, optional
         New time (default is None).
+    time_step_min : float, optional
+        Minimum time step to avoid numerical issues (default is
+        :math:`\sqrt{\epsilon}`).
 
     Notes
     -----
@@ -74,16 +78,24 @@ class TimeStep:
 
     """
 
-    def __init__(self, items, time_old=0.0, time_new=None):
+    def __init__(
+        self,
+        items,
+        time_old=0.0,
+        time_new=None,
+        time_step_min=np.finfo(float).eps ** 0.5,
+    ):
         self.field = items[0].field  # get dummy field from first item
         self.assemble = Assemble()
         self.results = Results()
         self.time_old = time_old
         self.time_new = time_new
         self.items = items
+        self.time_step_min = time_step_min
 
     def update(self, time_new):
         time_step = time_new - self.time_old
+        time_step = np.maximum(self.time_step_min, time_step)
 
         for item in self.items:
             item.time_step = time_step

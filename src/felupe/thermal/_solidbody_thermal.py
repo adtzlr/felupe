@@ -20,8 +20,8 @@ from scipy.sparse import csr_array, csr_matrix, diags
 
 from ..assembly import IntegralForm
 from ..constitution import Laplace
-from ..mechanics import SolidBody
 from ..math import dot
+from ..mechanics import SolidBody
 
 
 class SolidBodyThermal(SolidBody):
@@ -39,7 +39,9 @@ class SolidBodyThermal(SolidBody):
     thermal_conductivity : float
         The thermal conductivity :math:`k` of the material.
     time_step : float or None, optional
-        The time step :math:`\Delta t` (default is None).
+        The time step :math:`\Delta t` If None, the stationary solution will be
+        calculated. If a float is provided, an implicit time integration scheme will be
+        used. Default is None.
     model : None or felupe.Laplace, optional
         A model for the thermal conductivity. Default is None, which defaults to
         :class:`~felupe.Laplace`.
@@ -142,13 +144,12 @@ class SolidBodyThermal(SolidBody):
             density=mass_density * specific_heat_capacity,  # volumetric heat capacity
             statevars=field[0].values.copy(),  # initial temperature values
         )
+
         self.time_step = time_step
 
         # assemble capacity matrix
         self.capacity = self._mass()
-
-        self.evaluate.heat_flux = self.evaluate.stress
-        self.evaluate.heat_flux_on_boundary = self._heat_flux_on_boundary
+        self.heat_flux = self.evaluate.stress
 
         if lumped_capacity:
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
@@ -166,15 +167,15 @@ class SolidBodyThermal(SolidBody):
             dV=self.field.region.dV,
         ).assemble(**kwargs)
 
-        time_step = np.maximum(np.finfo(float).eps ** 0.5, self.time_step)
         temperature_old = self.results.statevars  # old temperature
         temperature_new = self.results._statevars  # new temperature
 
-        temperature_rate = (temperature_new - temperature_old) / time_step
+        if self.time_step is not None:
+            temperature_rate = (temperature_new - temperature_old) / self.time_step
 
-        self.results.force += csr_matrix(
-            self.capacity @ temperature_rate.reshape(-1, 1)
-        )
+            self.results.force += csr_matrix(
+                self.capacity @ temperature_rate.reshape(-1, 1)
+            )
 
         return self.results.force
 
@@ -196,20 +197,33 @@ class SolidBodyThermal(SolidBody):
 
         self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
-        time_step = np.maximum(np.finfo(float).eps ** 0.5, self.time_step)
-        self.results.stiffness += self.capacity / time_step
+        if self.time_step is not None:
+            self.results.stiffness += self.capacity / self.time_step
 
         return self.results.stiffness
 
-    def _heat_flux_on_boundary(
-        self, region, return_total=False, return_mean=False, **kwargs
+    def heat_flux_boundary(
+        self,
+        field=None,
+        region=None,
+        return_normal=True,
+        return_total=False,
+        return_mean=False,
+        **kwargs,
     ):
         """Calculate the heat flux on a boundary region.
 
         Parameters
         ----------
-        region : felupe.RegionBoundary
-            The boundary region on which to calculate the heat flux.
+        field : felupe.FieldContainer or None, optional
+            The field container with the temperature field as first field on which to
+            calculate the heat flux. If None, a field will be created on the provided
+            region and linked to the body's field (default is None).
+        region : felupe.RegionBoundary or None, optional
+            The boundary region on which to calculate the heat flux. If None, the heat
+            flux will be calculated on provided field's region (default is None).
+        return_normal : bool, optional
+            If True, return the normal component of the heat flux (default is True).
         return_total : bool, optional
             If True, return the total heat transfer rate (default is False).
         return_mean : bool, optional
@@ -224,18 +238,31 @@ class SolidBodyThermal(SolidBody):
             transfer rate if `return_total` is True, or the mean heat flux if
             `return_mean` is True.
         """
+        if (field is None and region is None) or (
+            field is not None and region is not None
+        ):
+            raise ValueError("Either provide a field or a region.")
 
-        Field = self.field[0].__class__
-        field = Field(region, dim=self.field[0].dim).as_container()
-        field.link(self.field)
+        if field is None:
+            Field = self.field[0].__class__
+            field = Field(region, dim=self.field[0].dim).as_container()
+            field.link(self.field)
 
         flux = self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
-        flux_normal = dot(flux, region.normals, mode=(1, 1))
+        area = field.region.dV  # differential areas for dV = |dA| at the boundary
+        normals = field.region.normals  # outward normal vectors at the boundary
 
-        if return_mean:  # mean heat flux over the boundary
-            return (flux_normal * region.dV).sum() / region.dV.sum()
+        if return_normal:  # normal flux over boundary
+            flux = dot(flux, normals, mode=(1, 1))
 
-        if return_total:  # total heat transfer rate
-            return (flux_normal * region.dV).sum()
+        if return_total:
+            flux = (flux * area).sum()  # total heat transfer rate
 
-        return flux_normal
+            if return_mean:
+                flux /= area.sum()  # mean total heat flux
+
+        else:
+            if return_mean:  # mean heat flux per cell
+                flux = (flux * area).sum(axis=0) / area.sum(axis=0)
+
+        return flux

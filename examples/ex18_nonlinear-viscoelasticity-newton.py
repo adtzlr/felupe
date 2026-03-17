@@ -45,7 +45,7 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
         return G - (Cv - Cvn) / dt
 
     # update the state variables
-    Cv = fem.newtonrhapson(
+    Cv = fem.newtonraphson(
         x0=Cvn,
         fun=tr.function(evolution, ntrax=C.ntrax),
         jac=tr.jacobian(evolution, ntrax=C.ntrax),

@@ -38,7 +38,7 @@ def test_axi():
     u = fem.NeoHooke(mu=1, bulk=1)
     b = fem.SolidBody(u, f)
     loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
-    res = fem.newtonrhapson(items=[b], **loadcase)
+    res = fem.newtonraphson(items=[b], **loadcase)
 
     u = f[0].interpolate()
     strain = f[0].grad(sym=True)
@@ -56,7 +56,7 @@ def test_axi_mixed():
     u = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     b = fem.SolidBody(u, f)
     loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
-    res = fem.newtonrhapson(items=[b], **loadcase)
+    res = fem.newtonraphson(items=[b], **loadcase)
 
     u = f[0].interpolate()
     strain = f[0].grad(sym=True)
@@ -81,8 +81,8 @@ def test_planestrain():
     c = fem.SolidBody(v, g)
 
     kwargs = dict(clamped=True, return_loadcase=True)
-    r = fem.newtonrhapson(items=[b], **fem.dof.uniaxial(f, **kwargs)[-1])
-    s = fem.newtonrhapson(items=[c], **fem.dof.uniaxial(f, **kwargs)[-1])
+    r = fem.newtonraphson(items=[b], **fem.dof.uniaxial(f, **kwargs)[-1])
+    s = fem.newtonraphson(items=[c], **fem.dof.uniaxial(f, **kwargs)[-1])
 
     assert np.allclose(r.x.values(), s.x.values())
     assert np.allclose(r.fun, s.fun)
@@ -95,7 +95,7 @@ def test_planestrain_nh():
     u = fem.NeoHooke(mu=1, bulk=2)
     b = fem.SolidBody(u, f)
     loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
-    res = fem.newtonrhapson(items=[b], **loadcase)
+    res = fem.newtonraphson(items=[b], **loadcase)
 
     u = f[0].interpolate()
     strain = f[0].grad(sym=True)
@@ -113,7 +113,7 @@ def test_planestrain_nh_mixed():
     u = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=5000))
     b = fem.SolidBody(u, f)
     loadcase = fem.dof.uniaxial(f, clamped=True, return_loadcase=True)[-1]
-    res = fem.newtonrhapson(items=[b], **loadcase)
+    res = fem.newtonraphson(items=[b], **loadcase)
 
     u = f[0].interpolate()
     strain = f[0].grad(sym=True)

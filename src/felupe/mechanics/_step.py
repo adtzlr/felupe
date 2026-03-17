@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..dof import apply, partition
-from ..tools import newtonrhapson
+from ..tools import newtonraphson
 
 
 class Step:
@@ -106,8 +106,8 @@ class Step:
             dof0, dof1 = partition(field, self.boundaries)
             ext0 = apply(field, self.boundaries, dof0)
 
-            # run newton-rhapson iterations
-            res = newtonrhapson(
+            # run newton-raphson iterations
+            res = newtonraphson(
                 items=self.items,
                 dof0=dof0,
                 dof1=dof1,

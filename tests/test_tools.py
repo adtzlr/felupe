@@ -167,7 +167,7 @@ def test_newton_simple():
 
     os.environ["FELUPE_VERBOSE"] = "true"
 
-    res = fem.tools.newtonrhapson(x0, fun, jac, solve=np.linalg.solve, maxiter=32)
+    res = fem.tools.newtonraphson(x0, fun, jac, solve=np.linalg.solve, maxiter=32)
 
     os.environ.pop("FELUPE_VERBOSE")
 
@@ -175,13 +175,13 @@ def test_newton_simple():
     assert np.isclose(res.x, 3, rtol=1e-2)
 
     with pytest.raises(ValueError):
-        res = fem.tools.newtonrhapson(
+        res = fem.tools.newtonraphson(
             x0, fun, jac, solve=np.linalg.solve, maxiter=4, verbose=False
         )
 
     with pytest.raises(ValueError):
         x0 = np.array([np.nan])
-        res = fem.tools.newtonrhapson(x0, fun, jac, solve=np.linalg.solve)
+        res = fem.tools.newtonraphson(x0, fun, jac, solve=np.linalg.solve)
 
 
 def test_newton():
@@ -199,8 +199,8 @@ def test_newton():
     umat = fem.NeoHooke(mu=1.0, bulk=2.0)
 
     for kwargs in [{"parallel": True, "umat": umat}]:
-        # newton-rhapson procedure
-        res = fem.newtonrhapson(
+        # newton-raphson procedure
+        res = fem.newtonraphson(
             field,
             verbose=True,
             kwargs=kwargs,
@@ -222,8 +222,8 @@ def test_newton_plane():
     # define the constitutive material behavior
     umat = fem.LinearElasticPlaneStress(E=1.0, nu=0.3)
 
-    # newton-rhapson procedure
-    res = fem.newtonrhapson(
+    # newton-raphson procedure
+    res = fem.newtonraphson(
         field,
         verbose=True,
         kwargs=dict(umat=umat),
@@ -235,7 +235,7 @@ def test_newton_plane():
     umat = fem.constitution.LinearElasticPlaneStrain(E=1.0, nu=0.3)
 
     with pytest.raises(ValueError):
-        res = fem.newtonrhapson(
+        res = fem.newtonraphson(
             field,
             verbose=True,
             kwargs=dict(umat=umat),
@@ -243,8 +243,8 @@ def test_newton_plane():
             **loadcase,
         )
 
-    # newton-rhapson procedure
-    res = fem.newtonrhapson(
+    # newton-raphson procedure
+    res = fem.newtonraphson(
         field,
         verbose=True,
         kwargs=dict(umat=umat),
@@ -267,8 +267,8 @@ def test_newton_linearelastic():
     # define the constitutive material behavior
     umat = fem.LinearElastic(E=1.0, nu=0.3)
 
-    # newton-rhapson procedure
-    res = fem.newtonrhapson(
+    # newton-raphson procedure
+    res = fem.newtonraphson(
         field,
         verbose=True,
         kwargs={"umat": umat, "grad": True, "sym": True, "add_identity": False},
@@ -301,8 +301,8 @@ def test_newton_mixed():
     nh = fem.NeoHooke(mu=1.0, bulk=2.0)
     umat = fem.ThreeFieldVariation(nh)
 
-    # newton-rhapson procedure
-    res = fem.newtonrhapson(x0=field, kwargs=dict(umat=umat), **loadcase)
+    # newton-raphson procedure
+    res = fem.newtonraphson(x0=field, kwargs=dict(umat=umat), **loadcase)
 
 
 def test_newton_body():
@@ -331,8 +331,8 @@ def test_newton_body():
     fieldp = fem.FieldContainer([fem.Field(regionp, dim=3)])
     bodyp = fem.SolidBodyPressure(fieldp, pressure=1.0)
 
-    # newton-rhapson procedure
-    res = fem.newtonrhapson(
+    # newton-raphson procedure
+    res = fem.newtonraphson(
         items=[body, bodyp],
         kwargs={},
         **loadcase,

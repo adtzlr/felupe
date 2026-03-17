@@ -13,7 +13,7 @@ dependent on the given fields.
     (e.g. in a :class:`~felupe.SolidBody`) to integrate and/or assemble a
     :class:`constitutive material formulation <felupe.ConstitutiveMaterial>`
     and to provide an ``item`` for a :class:`~felupe.Step`
-    or to use it in :func:`~felupe.newtonrhapson` directly.
+    or to use it in :func:`~felupe.newtonraphson` directly.
 
 **Core**
 

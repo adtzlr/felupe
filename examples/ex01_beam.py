@@ -48,7 +48,7 @@ gravity = [0, 0, 9810]
 force = fem.SolidBodyForce(field, values=gravity, scale=density)
 
 # %%
-# Inside a Newton-Rhapson procedure, the weak form of linear elasticity is assembled
+# Inside a Newton-Raphson procedure, the weak form of linear elasticity is assembled
 # into the stiffness matrix and the applied gravity field is assembled into the body
 # force vector.
 step = fem.Step(items=[solid, force], boundaries=boundaries)

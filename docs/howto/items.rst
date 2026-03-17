@@ -1,7 +1,7 @@
 Create Custom Items
 ~~~~~~~~~~~~~~~~~~~
 Items are supported to be used in a :class:`~felupe.Step` and in
-:func:`~felupe.newtonrhapson`. They provide methods to assemble a vector and a sparse
+:func:`~felupe.newtonraphson`. They provide methods to assemble a vector and a sparse
 matrix. An item has to be created as a class which takes a
 :class:`~felupe.FieldContainer` as input argument. In its ``__init__(self, field)``
 method, the helpers :class:`~felupe.mechanics.Assemble` and

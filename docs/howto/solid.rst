@@ -3,7 +3,7 @@ Solid Bodies as Items for Assembly
 
 The mechanics submodule contains classes for the generation of solid bodies. Solid body
 objects are supported as items of a :class:`~felupe.Step` and the
-:func:`~felupe.newtonrhapson` function.
+:func:`~felupe.newtonraphson` function.
 
 Solid Body
 ----------

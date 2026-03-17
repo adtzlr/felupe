@@ -254,8 +254,7 @@ class SolidBodyThermal(SolidBody):
 
         if field is None:
             Field = self.field[0].__class__
-            field = Field(region, dim=self.field[0].dim).as_container()
-            field.link(self.field)
+            field = Field(region, values=self.field[0].values).as_container()
 
         flux = self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
         area = field.region.dV  # differential areas for dV = |dA| at the boundary

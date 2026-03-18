@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file. The format 
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
 - Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
 
+### Deprecated
+- Deprecate `felupe.newtonrhapson()` and `felupe.tools.newtonrhapson()`. Use `felupe.newtonraphson()` and `felupe.tools.newtonraphson()` in new code.
+
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.
 

@@ -72,7 +72,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             } \right) \qquad \text{and} \qquad \delta \left(\frac{r}{R}\right)
             = \frac{\delta u_r}{R}
 
-    Again, the internal virtual work leads to two seperate terms.
+    Again, the internal virtual work leads to two separate terms.
 
     ..  math::
 

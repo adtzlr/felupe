@@ -31,7 +31,7 @@ def partition(v, K, dof1, dof0, r=None):
     ----------
     v : FieldContainer
         A field container with the fields. It is used to extract and concatenate the
-        1d-array of unknows.
+        1d-array of unknowns.
     K : scipy.sparse.spmatrix
         A two-dimensional sparse (stiffness) matrix.
     dof1 : list of int

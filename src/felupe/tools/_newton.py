@@ -261,7 +261,7 @@ def newtonraphson(
     dof1 : ndarray or None, optional
         1d-array of int with all active degrees of freedom (default is None).
     dof0 : ndarray or None, optional
-        1d-array of int with all prescribed degress of freedom (default is None).
+        1d-array of int with all prescribed degrees of freedom (default is None).
     ext0 : ndarray or None, optional
         Field values at mesh-points for the prescribed components of the unknowns based
         on ``dof0`` (default is None).
@@ -335,7 +335,7 @@ def newtonraphson(
         x &= x_0 + dx
 
     Repeated evaluations lead to an incrementally updated solution of :math:`x`. Herein,
-    :math:`x_n` refer to the inital unknowns whereas :math:`x` are the updated unknowns,
+    :math:`x_n` refer to the initial unknowns whereas :math:`x` are the updated unknowns,
     see Eq. :eq:`newton-update`.
 
     ..  note::

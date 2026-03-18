@@ -242,7 +242,7 @@ def collect_edges(points, cells, cell_type):
     # calculate midpoints on edges as mean
     points_edges = np.mean(points[edges_unique.T], axis=0)
 
-    # create the additionals cells array
+    # create the additional cells array
     cells_edges = inverse.reshape(len(cells), -1)
 
     return points_edges, cells_edges, cell_type
@@ -319,7 +319,7 @@ def collect_faces(points, cells, cell_type):
     # calculate midpoints on edges as mean
     points_faces = np.mean(points[faces_unique.T], axis=0)
 
-    # create the additionals cells array
+    # create the additional cells array
     cells_faces = inverse.reshape(len(cells), -1)
 
     return points_faces, cells_faces, cell_type

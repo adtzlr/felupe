@@ -35,7 +35,7 @@ class Material(ConstitutiveMaterial):
     Parameters
     ----------
     stress : callable
-        A constitutive material definition which returns a list containting the (first
+        A constitutive material definition which returns a list containing the (first
         Piola-Kirchhoff) stress tensor, optional additional constraints as well as the
         state variables. The state variables must always be included even if they are
         None. See template code-blocks for the required function signature.

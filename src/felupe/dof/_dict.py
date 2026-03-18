@@ -11,7 +11,7 @@ class BoundaryDict(dict):
             "`boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=False)`? "
             "Starting with v11.0.0, the return of `loadcase` in `fem.dof.uniaxial()`, "
             "`fem.dof.shear()` and `fem.dof.biaxial()` is optional and must be "
-            "explicitely activated by `return_loadcase=True`."
+            "explicitly activated by `return_loadcase=True`."
         )
 
     def plot(

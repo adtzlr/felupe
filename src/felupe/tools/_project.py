@@ -166,7 +166,7 @@ def extrapolate(values, region, average=True, mean=False):
     if mean:
         # region on disconnected mesh with original quadrature scheme
         # a single-point quadrature would be sufficient
-        # but would require additional (not available) informations
+        # but would require additional (not available) information
         r = Region(m, region.element, region.quadrature, grad=False)
     else:
         # region on disconnected mesh with inverse quadrature scheme

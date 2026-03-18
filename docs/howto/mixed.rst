@@ -3,7 +3,7 @@ Mixed-Field Problems
 
 FElupe supports mixed-field formulations in a similar way it can handle (default)
 single-field formulations. The definition of a mixed-field formulation is shown for the
-hydrostatic-volumetric selective three-field-variation with independend fields for
+hydrostatic-volumetric selective three-field-variation with independent fields for
 displacements :math:`\boldsymbol{u}`, pressure :math:`p` and volume ratio :math:`J`.
 The total potential energy for nearly-incompressible hyperelasticity is formulated with
 a determinant-modified deformation gradient. The built-in Neo-Hookean material model is

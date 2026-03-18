@@ -162,7 +162,7 @@ class Job:
         ----------
         filename : str or None, optional
             The filename of the XDMF result file. Must include the file extension
-            ``my_result.xdmf``. If None, no result file is writte during evaluation.
+            ``my_result.xdmf``. If None, no result file is written during evaluation.
             Default is None.
         mesh : Mesh or None, optional
             A mesh which is used for the XDMF time series writer. If None, it is taken

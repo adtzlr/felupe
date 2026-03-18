@@ -223,7 +223,7 @@ K = bilinearform.assemble()
 # :eq:`eq_partition`. This system may then be passed to the (sparse direct) solver.
 # Given a set of nonlinear equilibrium equations :math:`\boldsymbol{g}` the unknowns
 # :math:`\boldsymbol{u}` are found by linearization at a valid initial state of
-# equilibrium and an iterative Newton-Raphson solution prodecure. The incremental values
+# equilibrium and an iterative Newton-Raphson solution procedure. The incremental values
 # of inactive degrees of freedom are given as the difference of external prescribed and
 # current values of unknowns. The (linear) solution is equal to the first result of a
 # Newton-Raphson iterative solution procedure. The solution ``du`` is finally added to

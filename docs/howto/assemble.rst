@@ -4,7 +4,7 @@ Assemble Vectors and Matrices
 Integral (weak) forms are transformed into sparse vectors and matrices by calling the
 assemble-method of an :class:`integral form<felupe.IntegralForm>`. The
 :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is used to evaluate
-both the variation and linerization of its strain energy density function.
+both the variation and linearization of its strain energy density function.
 
 ..  plot::
     :context:

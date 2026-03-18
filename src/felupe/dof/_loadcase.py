@@ -40,7 +40,7 @@ def symmetry(
     Parameters
     ----------
     field : felupe.Field
-        Field on wich the symmetry boundaries are created.
+        Field on which the symmetry boundaries are created.
     axes : tuple of bool or int
         Flags to invoke symmetries on the x-, y- and z-axis.
     x : float, optional
@@ -165,7 +165,7 @@ def uniaxial(
     Parameters
     ----------
     field : felupe.FieldContainer
-        FieldContainer on wich the symmetry boundaries are created.
+        FieldContainer on which the symmetry boundaries are created.
     left : float or None, optional
         The position of the left end face along the given axis (default is None). If
         None, the outermost left position of the mesh-points is taken, i.e.
@@ -326,7 +326,7 @@ def biaxial(
     Parameters
     ----------
     field : felupe.FieldContainer
-        FieldContainer on wich the symmetry boundaries are created.
+        FieldContainer on which the symmetry boundaries are created.
     lefts : tuple of float or None, optional
         The position of the left end faces where the longitudinal movement is applied
         along the given axes (default is (None, None)). If an item of the tuple is None,
@@ -579,7 +579,7 @@ def shear(
     Parameters
     ----------
     field : felupe.FieldContainer
-        FieldContainer on wich the symmetry boundaries are created.
+        FieldContainer on which the symmetry boundaries are created.
     bottom : float or None, optional
         The position of the bottom end face (default is None). If None, the outermost
         bottom position of the mesh-points is taken, i.e.

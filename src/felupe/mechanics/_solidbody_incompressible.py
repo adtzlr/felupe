@@ -34,7 +34,7 @@ class SolidBodyNearlyIncompressible(Solid):
     vectors/matrices. The constitutive material definition must provide the distortional
     part of the strain energy density function per unit undeformed volume only. The
     volumetric part of the strain energy density function is automatically added on
-    additonal internal (dual) cell-wise constant fields.
+    additional internal (dual) cell-wise constant fields.
 
     Parameters
     ----------

@@ -27,13 +27,13 @@ def miehe_goektepe_lulei(C, mu, N, U, p, q):
     C : tensortrax.Tensor or jax.Array
         Right Cauchy-Green deformation tensor.
     mu : float
-        Shear modulus (ground state stifness).
+        Shear modulus (ground state stiffness).
     N : float
         Number of chain segments (chain locking response).
     U : float
         Tube geometry parameter (3D locking characteristics).
     p : float
-        Non-affine stretch parameter (additional constraint stifness).
+        Non-affine stretch parameter (additional constraint stiffness).
     q : float
         Non-affine tube parameter (shape of constraint stress).
 

@@ -55,7 +55,7 @@ def identity(A=None, dim=None, shape=None, dtype=None):
     Notes
     -----
     The first two axes are the matrix dimensions and all remaining trailing axes are
-    treated as batch dimensions. As the identity matrix is idependent of the input
+    treated as batch dimensions. As the identity matrix is independent of the input
     matrices ``A``, the size of the trailing axes is reduced to one.
     
     The identity matrix is defined by Eq. :eq:`math-identity`
@@ -780,7 +780,7 @@ def eigh(a, UPLO="L"):
     array([1.69      , 2.57066372])
 
     The associated eigenvectors are extracted. The first column is the eigenvector,
-    associated to the greated eigenvalue, for the first right Cauchy-Green deformation
+    associated to the greatest eigenvalue, for the first right Cauchy-Green deformation
     tensor and the second column for the second right Cauchy-Green deformation tensor.
 
     >>> v[:, 0]

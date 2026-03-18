@@ -42,7 +42,7 @@ def get_dof0(field, bounds):
     # obtain prescribed dofs from boundaries
     dof0_bounds = np.concatenate([b.dof for b in bounds.values()])
 
-    # combine all prescribed dofs and remove repeated itmes if there are any
+    # combine all prescribed dofs and remove repeated items if there are any
     return np.unique(np.append(fixmissing.ravel(), dof0_bounds))
 
 
@@ -76,7 +76,7 @@ def partition(field, bounds):
     Returns
     -------
     dof0 : ndarray
-        1d-array of int with all prescribed degress of freedom.
+        1d-array of int with all prescribed degrees of freedom.
     dof1 : ndarray
         1d-array of int with all active degrees of freedom.
 

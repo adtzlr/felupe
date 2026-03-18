@@ -51,7 +51,7 @@ def rotation_matrix(alpha_deg, dim=3, axis=0):
     A three-dimensional rotation matrix is created by inserting zeros in the row and
     column at the given axis of rotation and one at the intersection, see
     Eq. :eq:`rotation-matrix-3d`. If the axis of rotation is the second axis, the two-
-    dimensinal rotation matrix is transposed.
+    dimensional rotation matrix is transposed.
 
     ..  math::
         :label: rotation-matrix-3d

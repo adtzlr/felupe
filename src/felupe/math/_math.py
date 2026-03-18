@@ -81,7 +81,7 @@ def linsteps(points, num=10, endpoint=True, axis=None, axes=None, values=0.0):
            [0.  , 2.5 , 0.  , 0.  ],
            [0.  , 3.5 , 0.  , 0.  ]])
 
-    The ouput degenerates to the end value
+    The output degenerates to the end value
 
     >>> fem.math.linsteps([0, 0.5, 1.5, 3.5], num=0)
     array([3.5])

@@ -573,7 +573,7 @@ class Mesh(DiscreteGeometry):
 
         For each corner point:
 
-        2. Get attached cell and find cell neighours.
+        2. Get attached cell and find cell neighbours.
         3. Get the shared point of the cell and its neighbours.
         4. Get pair-wise shared points which are located on an edge.
         5. Replace the shared points with the corner point.

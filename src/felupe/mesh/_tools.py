@@ -1125,7 +1125,7 @@ def triangulate(points, cells, cell_type, mode=3):
 
     elif cell_type == "hexahedron":
         # tets out of a hex
-        # mode ... no. of diagional through hex-point 6.
+        # mode ... no. of diagonal through hex-point 6.
         if mode == 0:
             i = [0, 0, 0, 0, 2]
             j = [1, 2, 2, 5, 7]

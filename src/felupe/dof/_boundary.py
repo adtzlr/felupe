@@ -26,7 +26,7 @@ class Boundary:
     Parameters
     ----------
     field : felupe.Field
-        Field on wich the boundary is created.
+        Field on which the boundary is created.
     fx : float or callable, optional
         Mask-function for x-component of mesh-points which returns `True` at points
         on which the boundary will be applied (default is ``np.isnan``). If a float is
@@ -151,7 +151,7 @@ class Boundary:
         >>> axes_x = fem.Boundary(displacement, fx=0, fy=0, skip=(False, True))
         >>> axes_x.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
-    Values for the prescribed degress of freedom are either applied during creation
+    Values for the prescribed degrees of freedom are either applied during creation
     or by the update-method.
 
     ..  pyvista-plot::

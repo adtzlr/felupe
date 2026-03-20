@@ -1626,3 +1626,65 @@ class Mesh(DiscreteGeometry):
             volumes.
         """
         return subdivide(self)
+
+    def cells_in(self, other_mesh, decimals=8):
+        """Return a boolean cells-mask for cells that are also present in another mesh.
+
+        Parameters
+        ----------
+        other_mesh : fem.Mesh
+            The mesh to compare with.
+        decimals : int, optional
+            The number of decimals to consider for point comparison. Default is 8.
+
+        Returns
+        -------
+        np.ndarray
+            A boolean array where True indicates that cells are also in the other mesh.
+
+        Examples
+        --------
+        ..  pyvista-plot::
+            :context:
+            :force_static:
+
+            >>> import felupe as fem
+            >>>
+            >>> rect_top = fem.Rectangle(n=(4, 2)).translate(1.0, axis=1)
+            >>> rect_bottom = fem.Rectangle(n=(4, 2)).translate(1e-6, axis=0)
+            >>>
+            >>> meshes = [rect_top, rect_bottom]
+            >>> mesh = fem.MeshContainer(meshes, merge=True, decimals=6).stack()
+            >>>
+            >>> cells_mask = mesh.cells_in(rect_top, decimals=6)
+            >>> cells_mask
+            array([ True,  True,  True, False, False, False])
+
+        """
+
+        def view_points(points, decimals):
+            "Convert point coordinates to integers for comparison."
+            points = np.round(points * 10**decimals).astype(np.int64)
+            return points.view([("x", np.int64), ("y", np.int64)]).ravel()
+
+        # generate views on points
+        view = view_points(self.points, decimals)
+        view_other = view_points(
+            other_mesh.points[other_mesh.cells].reshape(-1, 2), decimals
+        )
+
+        # shared label mapping
+        inverse = np.unique(np.concatenate([view, view_other]), return_inverse=True)[1]
+        labels, local_labels = np.split(inverse, [len(view)])
+
+        # point and cell masks
+        point_mask = np.isin(labels, local_labels)
+        cell_mask = point_mask[self.cells].all(axis=1)
+
+        if cell_mask.sum() < len(other_mesh.cells):
+            raise ValueError("Cells not found, try to use lower values for decimals.")
+
+        if cell_mask.sum() > len(other_mesh.cells):
+            raise ValueError("More cells found, try to use higher values for decimals.")
+
+        return cell_mask

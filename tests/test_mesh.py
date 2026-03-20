@@ -187,6 +187,11 @@ def test_meshes():
     with pytest.raises(Exception):
         m.save()
 
+    other_mesh = m.copy()
+    other_mesh.update(cells=m.cells[:3])
+    mask = m.cells_in(other_mesh)
+    assert mask.sum() == 3
+
 
 def test_mirror():
     for kwargs in [

@@ -5,14 +5,15 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add Becker's logarithmic material model.
-- Add `felupe.thermal` with `felupe.thermal.SolidBodyThermal`, `felupe.thermal.SolidBodyThermalConvection`, `felupe.thermal.SolidBodyThermalHeatFlux` and `felupe.thermal.TimeStep`.
+- Add `felupe.thermal` with `thermal.SolidBodyThermal`, `thermal.SolidBodyThermalConvection`, `thermal.SolidBodyThermalHeatFlux` and `thermal.TimeStep`.
+- Add `Mesh.cells_in(other_mesh, decimals=8)` to generate a cells-mask for cells, which are also included in another mesh.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
 - Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
 
 ### Deprecated
-- Deprecate `felupe.newtonrhapson()` and `felupe.tools.newtonrhapson()`. Use `felupe.newtonraphson()` and `felupe.tools.newtonraphson()` in new code.
+- Deprecate `newtonrhapson()` and `tools.newtonrhapson()`. Use `newtonraphson()` and `tools.newtonraphson()` in new code.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

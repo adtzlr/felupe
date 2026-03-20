@@ -197,11 +197,9 @@ def test_meshes():
 
     with pytest.raises(ValueError):
         m.cells_in(other_mesh, decimals=1)
-    
+
     with pytest.raises(ValueError):
         m.cells_in(other_mesh, decimals=8)
-
-    
 
 
 def test_mirror():

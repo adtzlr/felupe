@@ -192,6 +192,17 @@ def test_meshes():
     mask = m.cells_in(other_mesh)
     assert mask.sum() == 3
 
+    other_mesh = m.translate(1e-6, axis=0)
+    other_mesh.update(cells=m.cells[:3])
+
+    with pytest.raises(ValueError):
+        m.cells_in(other_mesh, decimals=1)
+    
+    with pytest.raises(ValueError):
+        m.cells_in(other_mesh, decimals=8)
+
+    
+
 
 def test_mirror():
     for kwargs in [

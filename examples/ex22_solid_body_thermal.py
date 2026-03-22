@@ -10,7 +10,9 @@ Thermal Analysis
 
 
 This example describes a simple two-dimensional light-weight construction
-system set up with nine SolidBodyThermal solids.
+system set up with nine SolidBodyThermal solids. The temperature boundary
+conditions have a +-1 K sinusoidal variation around their average value
+with a period of 24 h.
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -22,9 +24,9 @@ import felupe as fem
 
 # %%
 # Define material properties as lists [plasterboard, insulation, wood].
-density=[700, 20, 500]  # kg/m^3
-specific_heat=[1125, 1450, 1000]  # J/(kg K)
-thermal_conductivity=[0.4, 0.032, 0.13]  # W/(m K)
+density=[1000, 20, 500]  # kg/m^3
+specific_heat=[1125, 1450, 1600]  # J/(kg K)
+thermal_conductivity=[0.4, 0.035, 0.16]  # W/(m K)
 
 material_index = [0, 0, 0, 1, 2, 1, 0, 0, 0]
 

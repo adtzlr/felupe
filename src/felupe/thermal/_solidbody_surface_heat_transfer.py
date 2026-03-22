@@ -35,11 +35,11 @@ class SolidBodySurfaceHeatTransfer:
 
     Notes
     -----
-    This class represents a thermal convection boundary condition for a thermal solid
-    body, which is used to model heat convection at the boundary of a solid material.
-    The convection coefficient is used to calculate the heat flux at the boundary based
-    on the difference between the temperature at the boundary and the ambient
-    temperature.
+    This class represents a boundary condition for a thermal solid body, which
+    is used to model heat transfer (convection, radiation) at the boundary of a
+    solid material. The coefficient is used to calculate the heat flux at the
+    boundary based on the difference between the temperature at the boundary
+    and the ambient temperature.
 
     Examples
     --------

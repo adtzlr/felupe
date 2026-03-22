@@ -20,157 +20,140 @@ import numpy as np
 
 import felupe as fem
 
-mesh = fem.Mesh(
-    points=[
-        [2.5, 0, 0],
-        [-1.25, 1.25, 0],
-        [1, 2, 0],
-        [-0.5, 1.5, 1.5],
-        [-2.5, 4.5, 2.5],
-    ],
-    cells=[[0, 3], [1, 3], [2, 3], [2, 4], [1, 4], [3, 4]],
-    cell_type="line",
-)
-region = fem.RegionTruss(mesh)
-field = fem.FieldContainer([fem.Field(region, dim=3)])
+# %%
+# Define material properties as lists [plasterboard, insulation, wood].
+density=[700, 20, 500]  # kg/m^3
+specific_heat=[1125, 1450, 1000]  # J/(kg K)
+thermal_conductivity=[0.4, 0.032, 0.13]  # W/(m K)
+
+material_index = [0, 0, 0, 1, 2, 1, 0, 0, 0]
 
 # %%
-# Beside points and cells we have to define displacement boundary conditions, external
-# forces and the constitutive material formulation for the trusses.
-boundaries = fem.BoundaryDict(
-    fixed_xyz=fem.Boundary(field[0], mask=[1, 1, 1, 0, 0]),
-    fixed_y=fem.Boundary(field[0], mask=[0, 0, 0, 0, 1], skip=(1, 0, 1)),
-)
-dof0, dof1 = fem.dof.partition(field, boundaries)
-
-solid = fem.TrussBody(
-    umat=fem.LinearElastic1D(E=1),
-    field=field,
-    area=[0.75, 1, 0.5, 0.75, 1, 1],
-)
-
-force_3 = np.array([1, 1, -1])
-force_4 = np.array([-2, 0, -2])
-
-load_3 = fem.PointLoad(field, [3], force_3)
-load_4 = fem.PointLoad(field, [4], force_4)
-
-# %%
-# The undeformed configuration is plotted in a 3d-view.
-plotter = mesh.plot(
-    line_width=10,
-    render_lines_as_tubes=True,
-    show_edges=False,
-)
-plotter.add_points(
-    mesh.points,
-    color="black",
-    point_size=20,
-    render_points_as_spheres=True,
-)
-plotter = boundaries.plot(plotter=plotter)
-plotter = load_3.plot(plotter=plotter, color="green", deformed=False)
-plotter = load_4.plot(plotter=plotter, color="green", deformed=False)
-
-plotter.show()
-
+# Set up one mesh per material area, split horizontally and vertically leading
+# to nine mesh areas total.
+mesh_list = [fem.mesh.Grid(np.linspace(0, 0.018, 6),  # plasterboard
+                           np.linspace(0, 0.47, 18)),
+             fem.mesh.Grid(np.linspace(0, 0.018, 6),
+                           np.linspace(0.47, 0.53, 8)),
+             fem.mesh.Grid(np.linspace(0, 0.018, 6),
+                           np.linspace(0.53, 1.0, 18)),
+             fem.mesh.Grid(np.linspace(0.018, 0.268, 12),  # insulation
+                           np.linspace(0, 0.47, 18)),
+             fem.mesh.Grid(np.linspace(0.018, 0.268, 12),  # wood
+                           np.linspace(0.47, 0.53, 8)),
+             fem.mesh.Grid(np.linspace(0.018, 0.268, 12),  # insulation
+                           np.linspace(0.53, 1.0, 18)),
+             fem.mesh.Grid(np.linspace(0.268, 0.286, 6),  # plasterboard
+                           np.linspace(0, 0.47, 18)),
+             fem.mesh.Grid(np.linspace(0.268, 0.286, 6),
+                           np.linspace(0.47, 0.53, 8)),
+             fem.mesh.Grid(np.linspace(0.268, 0.286, 6),
+                           np.linspace(0.53, 1.0, 18)),
+]
 
 # %%
-# For the numeric continuation, the equilibrium function ``fun`` and its derivatives
-# w.r.t. the displacement field ``dfun_du`` and the load-proportionality-factor
-# ``dfun_dlpf`` have to be defined. Here, we're only interested in the active degrees of
-# freedom.
-def fun(x, lpf, *args):
-    field[0].values.ravel()[dof1] = x
-    load_3.update(force_3 * lpf)
-    load_4.update(force_4 * lpf)
-    return fem.tools.fun([solid, load_3, load_4], field)[dof1]
+# Beside points and cells we have to define temperature boundary conditions,
+# and the materials for the solid bodies.
+mesh_container = fp.MeshContainer(mesh_list, merge=True)
+regions = [fp.RegionQuad(m) for m in mesh_container]
+field_list = [fp.Field(r, dim=1).as_container() for r in regions]
 
+# top level
+mesh = mesh_container.stack()
+region = fp.RegionQuad(mesh)
+field = fp.Field(region, dim=1).as_container()
 
-def dfun_du(x, lpf, *args):
-    field[0].values.ravel()[dof1] = x
-    K = fem.tools.jac([solid, load_3, load_4], field)
-    return fem.solve.partition(field, K, dof1, dof0)[2]
+temperature = field[0]  # define top-level field values as temperature
 
+external_loc = fp.RegionQuadBoundary(mesh, mask=mesh.x == x.min())
+external_temp = fp.Field(external_loc, dim=1)
+external_fld = fp.FieldContainer([external_temp])
 
-def dfun_dlpf(x, lpf, *args):
-    load_3.update(force_3)
-    load_4.update(force_4)
-    return fem.tools.fun([load_3, load_4], field)[dof1]
+internal_loc = fp.RegionQuadBoundary(mesh, mask=mesh.x == x.max())
+internal_temp = fp.Field(internal_loc, dim=1)
+internal_fld = fp.FieldContainer([internal_temp])
 
+boundaries = { # Heat transfer coefficients.
+    "external" : SolidBodySurfaceHeatTransfer(
+        field=external_fld,
+        coefficient=25.0,  # W/(m^2 K)
+        temperature=20.0,  # °C
+    ),
+    "internal" : SolidBodySurfaceHeatTransfer(
+        field=internal_fld,
+        coefficient=7.69,  # W/(m^2 K)
+        temperature=20.0,  # °C
+    )
+}
 
-# %%
-# Now that the model is finished, some additional settings have to be chosen. Initial
-# allowed incremental system vector components for both the displacement vector and the
-# load-proportionality-factor (LPF) have to be specified. We use ``dlpf = 0.005`` and
-# ``du = 0.05`` (figured out after some trial and error). Both parameters can't be
-# specified automatically, as they depend on the model configuration. The job will be
-# limited to a total amount of 163 increments (again, the total number has been figured
-# out after some job runs to get good looking plots).
-res = contique.solve(
-    fun=fun,
-    jac=[dfun_du, dfun_dlpf],
-    x0=field[0][dof1],
-    lpf0=0,
-    dxmax=0.05,
-    dlpfmax=0.005,
-    maxsteps=163,
-    rebalance=True,
-    overshoot=1.25,
-    tol=1e-8,
-    low=1e-2,
-    high=4,
-    maxiter=8,
-)
-X = np.array([r.x for r in res])
+materials = []
+for imat, fld in enumerate(field_list):
+    cur_mat = material_index[imat]
+    materials.append(
+        SolidBodyThermal(
+            fld,
+            # field_list[idx],
+            density[cur_mat],
+            specific_heat[cur_mat],
+            thermal_conductivity[cur_mat])
+        )
 
 # %%
-# To visualize the deformed state of the model for increment 40 the deformed model plot
-# is generated.
-field[0].values.ravel()[dof1] = X[40, :-1]
-force = solid.evaluate.gradient(field) * solid.area
-plotter = field.view(cell_data={"Force": force}).plot(
-    "Force",
-    line_width=10,
-    show_undeformed=False,
-    view="xy",
-    cmap="coolwarm",
-    clim=[-abs(force).max(), abs(force).max()],
-    render_lines_as_tubes=True,
-    show_edges=False,
-)
-plotter.add_points(
-    mesh.points + field[0].values,
-    color="black",
-    point_size=20,
-    render_points_as_spheres=True,
-)
-plotter.show()
+# Define helper and callback functions for surface flux value retrieval.
+def boundary_flux(bmesh, material, coord_index=0, coord_value=0.):
+    """
+    Extract boundary flux from mesh/material. Code by adtzlr."""
+    points = bmesh.points[bmesh.cells]  # shape(n_cells, 4, 2)
+    mask = np.isclose(points[..., coord_index], coord_value).T  # shape(4, n_cells)
+    flux = material.evaluate.stress()[0][coord_index, mask]  # shape(38)
+    return flux
+
+def callback(stepnumber, substepnumber, substep, flux_data):
+    """
+    Extract stress data (flux), shape(n_cells, 4) per substep."""
+    flux_data[0].append(
+            boundary_flux(mesh_list[0], materials[0],
+                          coord_value=field.region.mesh.x.min())
+    )
+
+    flux_data[1].append(
+            boundary_flux(mesh_list[-1], materials[-1],
+                          coord_value=field.region.mesh.x.max())
+    )
+
+time_steps = fem.math.linsteps([0, 24*3600], num=int(24*3600/720))
+
+t_int = np.around(20 + 1 * np.sin(2*np.pi * time_steps / 86400), 5)
+t_ext = np.around(0 + 1 * np.sin(2*np.pi * time_steps / 86400), 5)
 
 # %%
-# Path-tracing of the displacement-LPF curves
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# The path-tracing of the deformation process is shown as a History Plot of
-# Displacement-LPF curves for all active DOF. Strong geometrical nonlinearities are
-# observed for all active DOF.
-fig, ax = plt.subplots()
-ax.plot(*X[:, [0, -1]].T, ".-", label="Point 3")
-ax.plot(*X[:, [3, -1]].T, ".-", label="Point 4")
-ax.set_xlabel("Displacement X")
-ax.set_ylabel("LPF")
-ax.legend()
+# Set up boundary values, job description and solve.
+time = TimeStep(materials)
+
+ramp = {boundaries["internal"]: t_int,
+        boundaries["external"]: t_ext,
+        time: time_steps}
+
+step = fp.Step(items=[time] + materials,
+                ramp=ramp,
+                boundaries=boundaries)
+
+flux_data = {0: [], 1: []}
+
+job = fp.Job(
+    steps=[step],
+    callback=callback,
+    flux_data=flux_data).evaluate(
+        x0=field,
+        filename="result.xdmf",  # result file for Paraview
+        point_data={"Temperature": lambda field, substep: temperature.values},
+        point_data_default=False,
+        cell_data_default=False,
+    )
 
 # %%
-fig, ax = plt.subplots()
-ax.plot(*X[:, [1, -1]].T, ".-", label="Point 3")
-ax.set_xlabel("Displacement Y")
-ax.set_ylabel("LPF")
-ax.legend()
+# Internal and external surface heat flux vs. time.
 
 # %%
-fig, ax = plt.subplots()
-ax.plot(*X[:, [2, -1]].T, ".-", label="Point 3")
-ax.plot(*X[:, [4, -1]].T, ".-", label="Point 4")
-ax.set_xlabel("Displacement Z")
-ax.set_ylabel("LPF")
-ax.legend()
+# Temperature field at end of simulation period.
+

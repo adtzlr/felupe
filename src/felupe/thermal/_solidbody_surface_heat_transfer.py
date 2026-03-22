@@ -21,8 +21,8 @@ from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results
 
 
-class SolidBodyThermalSurfaceHeatTransfer:
-    r"""A thermal boundary condition for a thermal solid body.
+class SolidBodySurfaceHeatTransfer:
+    r"""A surface boundary condition for a thermal solid body.
 
     Parameters
     ----------
@@ -67,7 +67,7 @@ class SolidBodyThermalSurfaceHeatTransfer:
         ...     time_step=720.0,  # s
         ...     thermal_conductivity=1.0,  # W/(m*K)
         ... )
-        >>> heat_transfer = fem.thermal.SolidBodyThermalSurfaceHeatTransfer(
+        >>> heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
         ...     field=field_heat_transfer,
         ...     coefficient=7.69,  # W/(m^2 K)
         ...     temperature=10.0,  # °C
@@ -77,7 +77,7 @@ class SolidBodyThermalSurfaceHeatTransfer:
         >>> ramp = {
         ...     boundaries["left"]: 10 * table,  # surface temperature
         ...     time: 18000 * table,  # five hours
-        ...     convection: 40 * table,  # air temperature w/ transfer coeff.
+        ...     heat_transfer: 40 * table,  # air temperature w/ transfer coeff.
         ... }
         >>> step = fem.Step(
         ...     items=[time, solid, heat_transfer], ramp=ramp, boundaries=boundaries
@@ -114,8 +114,10 @@ class SolidBodyThermalSurfaceHeatTransfer:
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
         )
 
-    def update(self, temperature):
+    def update(self, temperature, coefficient=None):
         self.results.temperature = temperature
+        if coefficient is not None:
+            self.results.coefficient = coefficient
 
     def _vector(self, field=None, **kwargs):
         if field is not None:

@@ -4,7 +4,7 @@ Thermal Analysis
 
 .. topic:: Thermal analysis of simple construction.
 
-   * use SolidBodyThermal
+   * use SolidBodyThermal and SolidBodySurfaceHeatTransfer
 
    * view the temperature field
 
@@ -54,45 +54,42 @@ mesh_list = [fem.mesh.Grid(np.linspace(0, 0.018, 6),  # plasterboard
 # %%
 # Beside points and cells we have to define temperature boundary conditions,
 # and the materials for the solid bodies.
-mesh_container = fp.MeshContainer(mesh_list, merge=True)
-regions = [fp.RegionQuad(m) for m in mesh_container]
-field_list = [fp.Field(r, dim=1).as_container() for r in regions]
+mesh_container = fem.MeshContainer(mesh_list, merge=True)
+regions = [fem.RegionQuad(m) for m in mesh_container]
+field_list = [fem.Field(r, dim=1).as_container() for r in regions]
 
 # top level
 mesh = mesh_container.stack()
-region = fp.RegionQuad(mesh)
-field = fp.Field(region, dim=1).as_container()
+region = fem.RegionQuad(mesh)
+field = fem.Field(region, dim=1).as_container()
 
 temperature = field[0]  # define top-level field values as temperature
 
-external_loc = fp.RegionQuadBoundary(mesh, mask=mesh.x == x.min())
-external_temp = fp.Field(external_loc, dim=1)
-external_fld = fp.FieldContainer([external_temp])
+external_loc = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.min())
+external_temp = fem.Field(external_loc, dim=1)
+external_fld = fem.FieldContainer([external_temp])
 
-internal_loc = fp.RegionQuadBoundary(mesh, mask=mesh.x == x.max())
-internal_temp = fp.Field(internal_loc, dim=1)
-internal_fld = fp.FieldContainer([internal_temp])
+internal_loc = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.max())
+internal_temp = fem.Field(internal_loc, dim=1)
+internal_fld = fem.FieldContainer([internal_temp])
 
-boundaries = { # Heat transfer coefficients.
-    "external" : SolidBodySurfaceHeatTransfer(
+external_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
         field=external_fld,
         coefficient=25.0,  # W/(m^2 K)
         temperature=20.0,  # °C
-    ),
-    "internal" : SolidBodySurfaceHeatTransfer(
+    )
+internal_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
         field=internal_fld,
         coefficient=7.69,  # W/(m^2 K)
         temperature=20.0,  # °C
     )
-}
 
 materials = []
 for imat, fld in enumerate(field_list):
     cur_mat = material_index[imat]
     materials.append(
-        SolidBodyThermal(
+        fem.thermal.SolidBodyThermal(
             fld,
-            # field_list[idx],
             density[cur_mat],
             specific_heat[cur_mat],
             thermal_conductivity[cur_mat])
@@ -128,19 +125,18 @@ t_ext = np.around(0 + 1 * np.sin(2*np.pi * time_steps / 86400), 5)
 
 # %%
 # Set up boundary values, job description and solve.
-time = TimeStep(materials)
+time = fem.thermal.TimeStep(materials)
 
-ramp = {boundaries["internal"]: t_int,
-        boundaries["external"]: t_ext,
+ramp = {internal_heat_transfer: t_int,
+        external_heat_transfer: t_ext,
         time: time_steps}
 
-step = fp.Step(items=[time] + materials,
-                ramp=ramp,
-                boundaries=boundaries)
+step = fem.Step(items=[time] + materials + [internal_heat_transfer, external_heat_transfer],
+                ramp=ramp)
 
 flux_data = {0: [], 1: []}
 
-job = fp.Job(
+job = fem.Job(
     steps=[step],
     callback=callback,
     flux_data=flux_data).evaluate(
@@ -153,6 +149,10 @@ job = fp.Job(
 
 # %%
 # Internal and external surface heat flux vs. time.
+q_ext = np.mean(flux_data[0], axis=1)  # W/m2 => len=1
+q_int = np.mean(flux_data[1], axis=1)  # W/m2
+
+
 
 # %%
 # Temperature field at end of simulation period.

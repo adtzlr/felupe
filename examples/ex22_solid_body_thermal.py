@@ -152,8 +152,14 @@ job = fem.Job(
 q_ext = np.mean(flux_data[0], axis=1)  # W/m2 => len=1
 q_int = np.mean(flux_data[1], axis=1)  # W/m2
 
-
+fig, ax = plt.subplots()
+ax.plot(time_steps.T/3600, q_int.T)
+ax.plot(time_steps/3600, q_ext)
+ax.set(xlabel='time (h)', ylabel='surface heat flux (W/(m^2 K))')
+# fig.savefig("test.png")
+plt.show()
 
 # %%
 # Temperature field at end of simulation period.
-
+view = mesh.view(point_data={"Field": temperature.values})
+view.plot("Field").show()

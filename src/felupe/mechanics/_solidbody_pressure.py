@@ -19,6 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ._helpers import Assemble, Results
+from ._update import UpdateItem
 
 
 class SolidBodyPressure:
@@ -93,8 +94,14 @@ class SolidBodyPressure:
         )
         self._area_change = AreaChange()
 
+    def __getitem__(self, key):
+        return UpdateItem(self, key)
+
     def update(self, pressure):
-        self.__init__(self.field, pressure)
+        self._update_pressure(pressure)
+
+    def _update_pressure(self, pressure):
+        self.results.pressure = pressure
 
     def _extract(self, field):
         self.field = field

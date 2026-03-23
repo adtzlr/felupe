@@ -116,6 +116,9 @@ class SolidBodySurfaceHeatTransfer:
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
         )
 
+    def __getitem__(self, key):
+        return UpdateItem(self, key)
+
     def update(self, temperature):
         self._update_temperature(temperature)
 
@@ -124,9 +127,6 @@ class SolidBodySurfaceHeatTransfer:
 
     def _update_coefficient(self, coefficient):
         self.results.coefficient = coefficient
-
-    def __getitem__(self, key):
-        return UpdateItem(self, key)
 
     def _vector(self, field=None, **kwargs):
         if field is not None:

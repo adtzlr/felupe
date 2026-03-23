@@ -106,9 +106,7 @@ class SolidBodySurfaceHeatTransfer:
 
         self.results = Results()
         self.results.temperature = temperature
-
-        if coefficient is not None:
-            self.results.coefficient = coefficient
+        self.results.coefficient = coefficient
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0

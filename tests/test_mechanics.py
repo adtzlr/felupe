@@ -117,6 +117,8 @@ def test_pressure():
     c._update(w, v)
     assert np.allclose(w[0].values, v[0].values)
 
+    c["pressure"].update(w, v)
+
 
 def pre(dim, bulk=2):
     umat = fem.NeoHooke(mu=1, bulk=bulk)
@@ -527,6 +529,7 @@ def test_load():
     plotter = load.plot(plotter=field.region.mesh.plot(off_screen=True))
 
     load.update([0, 0.1])
+    load["values"].update([0, 0.1])
     plotter = load.plot(plotter=field.region.mesh.plot(off_screen=True))
 
 
@@ -594,6 +597,9 @@ def test_solidbody_cauchy_stress():
 
         assert matrix.shape == (100, 100)
         assert vector.shape == (100, 1)
+
+        stress.update(np.eye(3))
+        stress["cauchy_stress"].update(np.eye(3))
 
     table = (
         fem.math.linsteps([1], num=0, axis=2, axes=9)

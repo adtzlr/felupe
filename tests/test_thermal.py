@@ -27,9 +27,9 @@ def test_thermal():
     temperature = fem.Field(region, dim=1)
     field = fem.FieldContainer([temperature])
 
-    region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_convection = fem.Field(region_convection, dim=1)
-    field_convection = fem.FieldContainer([temperature_convection])
+    region_heat_transfer = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+    temperature_heat_transfer = fem.Field(region_heat_transfer, dim=1)
+    field_heat_transfer = fem.FieldContainer([temperature_heat_transfer])
 
     region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
     temperature_flux = fem.Field(region_flux, dim=1)
@@ -57,8 +57,8 @@ def test_thermal():
         thermal_conductivity=1.0,  # W/(m*K)
     )
 
-    convection = fem.thermal.SolidBodyThermalConvection(
-        field=field_convection,
+    heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+        field=field_heat_transfer,
         coefficient=1.0,  # W/(m^2*K)
         temperature=10.0,  # K
     )
@@ -70,8 +70,8 @@ def test_thermal():
 
     solid.assemble.vector(field)
     solid.assemble.matrix(field)
-    convection.assemble.vector(field)
-    convection.assemble.matrix(field)
+    heat_transfer.assemble.vector(field)
+    heat_transfer.assemble.matrix(field)
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
@@ -80,11 +80,11 @@ def test_thermal():
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
-        convection: 100 * table,
+        heat_transfer: 100 * table,
         heat_flux: 10 * table,
     }
     step = fem.Step(
-        items=[time, solid, convection, heat_flux], ramp=ramp, boundaries=boundaries
+        items=[time, solid, heat_transfer, heat_flux], ramp=ramp, boundaries=boundaries
     )
     job = fem.Job(steps=[step]).evaluate(
         filename="result.xdmf",  # result file for Paraview
@@ -100,9 +100,9 @@ def test_thermal_axi():
     temperature = fem.Field(region, dim=1)
     field = fem.FieldContainer([temperature])
 
-    region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_convection = fem.FieldAxisymmetric(region_convection, dim=1)
-    field_convection = fem.FieldContainer([temperature_convection])
+    region_heat_transfer = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+    temperature_heat_transfer = fem.FieldAxisymmetric(region_heat_transfer, dim=1)
+    field_heat_transfer = fem.FieldContainer([temperature_heat_transfer])
 
     region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
     temperature_flux = fem.FieldAxisymmetric(region_flux, dim=1)
@@ -130,8 +130,8 @@ def test_thermal_axi():
         thermal_conductivity=1.0,  # W/(m*K)
     )
 
-    convection = fem.thermal.SolidBodyThermalConvection(
-        field=field_convection,
+    heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+        field=field_heat_transfer,
         coefficient=1.0,  # W/(m^2*K)
         temperature=10.0,  # K
     )
@@ -143,8 +143,8 @@ def test_thermal_axi():
 
     solid.assemble.vector(field)
     solid.assemble.matrix(field)
-    convection.assemble.vector(field)
-    convection.assemble.matrix(field)
+    heat_transfer.assemble.vector(field)
+    heat_transfer.assemble.matrix(field)
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
@@ -183,11 +183,11 @@ def test_thermal_axi():
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
-        convection: 100 * table,
+        heat_transfer: 100 * table,
         heat_flux: 10 * table,
     }
     step = fem.Step(
-        items=[time, solid, convection, heat_flux], ramp=ramp, boundaries=boundaries
+        items=[time, solid, heat_transfer, heat_flux], ramp=ramp, boundaries=boundaries
     )
     job = fem.Job(steps=[step]).evaluate(
         filename="result.xdmf",  # result file for Paraview

@@ -21,8 +21,8 @@ from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results
 
 
-class SolidBodyThermalConvection:
-    r"""A thermal convection boundary condition for a thermal solid body.
+class SolidBodySurfaceHeatTransfer:
+    r"""A surface boundary condition for a thermal solid body.
 
     Parameters
     ----------
@@ -31,15 +31,15 @@ class SolidBodyThermalConvection:
     coefficient : float
         The convection coefficient :math:`h` in W/(m^2*K).
     temperature : float
-        The ambient temperature :math:`T_\infty` in K.
+        The ambient temperature :math:`T_\infty` in °C or K.
 
     Notes
     -----
-    This class represents a thermal convection boundary condition for a thermal solid
-    body, which is used to model heat convection at the boundary of a solid material.
-    The convection coefficient is used to calculate the heat flux at the boundary based
-    on the difference between the temperature at the boundary and the ambient
-    temperature.
+    This class represents a boundary condition for a thermal solid body, which
+    is used to model heat transfer (convection, radiation) at the boundary of a
+    solid material. The coefficient is used to calculate the heat flux at the
+    boundary based on the difference between the temperature at the boundary
+    and the ambient temperature.
 
     Examples
     --------
@@ -52,39 +52,38 @@ class SolidBodyThermalConvection:
         >>> temperature = fem.Field(region, dim=1)
         >>> field = fem.FieldContainer([temperature])
         >>>
-        >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-        >>> temperature_convection = fem.Field(region_convection, dim=1)
-        >>> field_convection = fem.FieldContainer([temperature_convection])
+        >>> region_heat_transfer = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
+        >>> temperature_heat_transfer = fem.Field(region_heat_transfer, dim=1)
+        >>> field_heat_transfer = fem.FieldContainer([temperature_heat_transfer])
         >>>
         >>> boundaries = fem.BoundaryDict(
         ...     left=fem.Boundary(temperature, fx=0),
-        ...     right=fem.Boundary(temperature, fx=1),
         ... )
         >>>
         >>> solid = fem.thermal.SolidBodyThermal(
         ...     field=field,
-        ...     mass_density=1.0,  # kg/m^3
-        ...     specific_heat_capacity=1.0,  # J/(kg*K)
-        ...     time_step=0.01,  # s
+        ...     mass_density=1400.0,  # kg/m^3
+        ...     specific_heat_capacity=1000.0,  # J/(kg*K)
+        ...     time_step=720.0,  # s
         ...     thermal_conductivity=1.0,  # W/(m*K)
         ... )
-        >>> convection = fem.thermal.SolidBodyThermalConvection(
-        ...     field=field_convection,
-        ...     coefficient=1.0,  # W/(m^2*K)
-        ...     temperature=10.0,  # K
+        >>> heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+        ...     field=field_heat_transfer,
+        ...     coefficient=7.69,  # W/(m^2 K)
+        ...     temperature=10.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {
-        ...     boundaries["right"]: 10 * table,
-        ...     time: 0.1 * table,
-        ...     convection: 100 * table,
+        ...     boundaries["left"]: 10 * table,  # surface temperature
+        ...     time: 18000 * table,  # five hours
+        ...     heat_transfer: 40 * table,  # air temperature w/ transfer coeff.
         ... }
         >>> step = fem.Step(
-        ...     items=[time, solid, convection], ramp=ramp, boundaries=boundaries
+        ...     items=[time, solid, heat_transfer], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate(
-        ...     filename="result.xdmf",  # result file for Paraview
+        ...     # filename="result.xdmf",  # result file for Paraview
         ...     point_data={"Temperature": lambda field, substep: temperature.values},
         ...     point_data_default=False,
         ...     cell_data_default=False,
@@ -107,9 +106,7 @@ class SolidBodyThermalConvection:
 
         self.results = Results()
         self.results.temperature = temperature
-
-        if coefficient is not None:
-            self.results.coefficient = coefficient
+        self.results.coefficient = coefficient
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0

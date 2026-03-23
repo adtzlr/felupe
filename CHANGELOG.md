@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add Becker's logarithmic material model.
-- Add `felupe.thermal` with `thermal.SolidBodyThermal`, `thermal.SolidBodyThermalConvection`, `thermal.SolidBodyThermalHeatFlux` and `thermal.TimeStep`.
+- Add `felupe.thermal` with `thermal.SolidBodyThermal`, `thermal.SolidBodySurfaceHeatTransfer`, `thermal.SolidBodyThermalHeatFlux` and `thermal.TimeStep`.
 - Add `Mesh.cells_in(other_mesh, decimals=8)` to generate a cells-mask for cells, which are also included in another mesh.
 
 ### Changed

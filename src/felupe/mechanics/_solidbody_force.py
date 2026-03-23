@@ -21,6 +21,7 @@ from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
 from ._helpers import Assemble, Results
+from ._update import UpdateItem
 
 
 class SolidBodyForce:
@@ -87,8 +88,17 @@ class SolidBodyForce:
 
         self.results.scale = scale
 
+    def __getitem__(self, key):
+        return UpdateItem(self, key)
+
     def update(self, values):
-        self.__init__(self.field, values, self.results.scale)
+        self._update_values(values)
+
+    def _update_values(self, values):
+        self.results.values = np.array(values)
+
+    def _update_scale(self, scale):
+        self.results.scale = scale
 
     def _vector(self, field=None, parallel=False):
         if field is not None:

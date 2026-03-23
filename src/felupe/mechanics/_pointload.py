@@ -20,6 +20,7 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from ._helpers import Assemble, Results
+from ._update import UpdateItem
 
 
 class PointLoad:
@@ -80,8 +81,14 @@ class PointLoad:
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
         )
 
+    def __getitem__(self, key):
+        return UpdateItem(self, key)
+
     def update(self, values):
-        self.__init__(self.field, self.points, values, self.apply_on, self.axisymmetric)
+        self._update_values(values)
+
+    def _update_values(self, values):
+        self.values = values
 
     def _vector(self, field=None, parallel=False):
         if field is not None:

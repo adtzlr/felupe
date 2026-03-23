@@ -21,6 +21,7 @@ from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..math import dot
 from ._helpers import Assemble, Results
+from ._update import UpdateItem
 
 
 class SolidBodyCauchyStress:
@@ -97,8 +98,14 @@ class SolidBodyCauchyStress:
         )
         self._area_change = AreaChange()
 
+    def __getitem__(self, key):
+        return UpdateItem(self, key)
+
     def update(self, cauchy_stress):
-        self.__init__(self.field, cauchy_stress)
+        self._update_cauchy_stress(cauchy_stress)
+
+    def _update_cauchy_stress(self, cauchy_stress):
+        self.results.cauchy_stress = cauchy_stress
 
     def _extract(self, field):
         self.field = field

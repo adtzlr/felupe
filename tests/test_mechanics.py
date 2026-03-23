@@ -117,7 +117,7 @@ def test_pressure():
     c._update(w, v)
     assert np.allclose(w[0].values, v[0].values)
 
-    c["pressure"].update(w, v)
+    c["pressure"].update(1.0)
 
 
 def pre(dim, bulk=2):

@@ -438,6 +438,10 @@ def test_solidbody_mixed():
     b = fem.SolidBody(umat=umat, field=u)
     g = fem.SolidBodyForce(field=u, values=[9810, 0, 0], scale=7.85e-9)
 
+    g.update([9810, 0, 0])
+    g["values"].update([9810, 0, 0])
+    g["scale"].update(7.85e-9)
+
     g.assemble.vector()
 
     for parallel in [False, True]:

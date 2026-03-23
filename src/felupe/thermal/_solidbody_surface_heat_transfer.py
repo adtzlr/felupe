@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..assembly import IntegralForm
-from ..mechanics import Assemble, Results
+from ..mechanics import Assemble, Results, UpdateItem
 
 
 class SolidBodySurfaceHeatTransfer:
@@ -46,6 +46,7 @@ class SolidBodySurfaceHeatTransfer:
     ..  pyvista-plot::
 
         >>> import felupe as fem
+        >>> import numpy as np
         >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)
@@ -74,10 +75,13 @@ class SolidBodySurfaceHeatTransfer:
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
+        >>> air_temperature = fem.math.linsteps([0, 40], num=10)  # air temperature
+        >>> coefficient = fem.math.linsteps([7.0, 8.0], num=10)  # heat transfer coeff.
         >>> ramp = {
         ...     boundaries["left"]: 10 * table,  # surface temperature
         ...     time: 18000 * table,  # five hours
-        ...     heat_transfer: 40 * table,  # air temperature w/ transfer coeff.
+        ...     heat_transfer["temperature"]: air_temperature,
+        ...     heat_transfer["coefficient"]: coefficient,
         ... }
         >>> step = fem.Step(
         ...     items=[time, solid, heat_transfer], ramp=ramp, boundaries=boundaries
@@ -113,7 +117,16 @@ class SolidBodySurfaceHeatTransfer:
         )
 
     def update(self, temperature):
+        self._update_temperature(temperature)
+
+    def _update_temperature(self, temperature):
         self.results.temperature = temperature
+
+    def _update_coefficient(self, coefficient):
+        self.results.coefficient = coefficient
+
+    def __getitem__(self, key):
+        return UpdateItem(self, key)
 
     def _vector(self, field=None, **kwargs):
         if field is not None:

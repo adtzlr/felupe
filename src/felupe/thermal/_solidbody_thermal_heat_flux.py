@@ -93,7 +93,7 @@ class SolidBodyThermalHeatFlux:
     --------
     felupe.thermal.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
-    felupe.thermal.SolidBodyThermalConvection : A thermal solid body for heat
+    felupe.thermal.SolidBodySurfaceHeatTransfer : A thermal solid body for heat
         convection.
 
     """

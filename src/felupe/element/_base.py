@@ -161,7 +161,9 @@ class Element:
 
         view = self.view()
         if self.points.shape[1] > 1:
-            view.mesh = view.mesh.extract_surface().extract_feature_edges()
+            view.mesh = view.mesh.extract_surface(
+                algorithm=None
+            ).extract_feature_edges()
 
         plotter = view.plot(
             *args,

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Mesh.cells_in(other_mesh, decimals=8)` to generate a cells-mask for cells, which are also included in another mesh.
 - Add keyword-based ramps for items: `mechanics.UpdateItem` is internally used to access a keyword-specific update method of an item. E.g., for `heat_transfer = thermal.SolidBodySurfaceHeatTransfer(...),` define the heat transfer `coefficient` in a `Step` by `ramp = {heat_transfer["coefficient"]: np.linspace(1.0, 1.1)}`.
 - Add `"temperature"` and `"coefficient"` as keyword-specific update-methods for `thermal.SolidBodySurfaceHeatTransfer`.
+- Add keyword-based ramps for (solid body) classes of the `mechanics` module.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

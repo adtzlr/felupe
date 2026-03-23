@@ -249,7 +249,8 @@ class Scene:
         if mesh.number_of_cells > 0:
             if extract_surface or nonlinear_subdivision > 1:
                 surface = surface.extract_surface(
-                    nonlinear_subdivision=nonlinear_subdivision
+                    algorithm=None,
+                    nonlinear_subdivision=nonlinear_subdivision,
                 )
                 show_edges_surface = False
             else:

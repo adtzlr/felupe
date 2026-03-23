@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
 - Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
+- Set the `algorithm` in `pyvista.UnstructuredGrid.extract_surface(algorithm=None)` to prevent future errors with `nonlinear_subdivision`.
 
 ### Deprecated
 - Deprecate `newtonrhapson()` and `tools.newtonrhapson()`. Use `newtonraphson()` and `tools.newtonraphson()` in new code.

@@ -180,10 +180,12 @@ def test_thermal_axi():
 
     time = fem.thermal.TimeStep([solid])
     table = fem.math.linsteps([0, 1], num=2)
+    table_2 = fem.math.linsteps([1, 1], num=2)
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
         heat_transfer: 100 * table,
+        heat_transfer["coefficient"]: 100 * table_2,
         heat_flux: 10 * table,
     }
     step = fem.Step(

@@ -12,6 +12,7 @@ from ._solidbody_incompressible import SolidBodyNearlyIncompressible
 from ._solidbody_pressure import SolidBodyPressure
 from ._step import Step
 from ._truss import TrussBody
+from ._update import UpdateItem
 
 __all__ = [
     "Assemble",
@@ -32,4 +33,5 @@ __all__ = [
     "MultiPointConstraint",
     "MultiPointContact",
     "TrussBody",
+    "UpdateItem",
 ]

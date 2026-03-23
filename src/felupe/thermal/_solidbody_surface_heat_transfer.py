@@ -83,7 +83,7 @@ class SolidBodySurfaceHeatTransfer:
         ...     items=[time, solid, heat_transfer], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate(
-        ...     filename="result.xdmf",  # result file for Paraview
+        ...     # filename="result.xdmf",  # result file for Paraview
         ...     point_data={"Temperature": lambda field, substep: temperature.values},
         ...     point_data_default=False,
         ...     cell_data_default=False,
@@ -114,10 +114,8 @@ class SolidBodySurfaceHeatTransfer:
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
         )
 
-    def update(self, temperature, coefficient=None):
+    def update(self, temperature):
         self.results.temperature = temperature
-        if coefficient is not None:
-            self.results.coefficient = coefficient
 
     def _vector(self, field=None, **kwargs):
         if field is not None:

@@ -20,7 +20,8 @@ import numpy as np
 from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
-from ._helpers import Assemble, Results, UpdateItem
+from ._helpers import Assemble, Results
+from ._update import UpdateItem
 
 
 class SolidBodyForce:

@@ -32,6 +32,7 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
 
 
     class MyItem:
+    
         def __init__(self, field, my_parameter=1.0, my_other_parameter=2.0):
             self.field = field
             self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
@@ -40,7 +41,31 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
             self.results.my_parameter = my_parameter
             self.results.my_other_parameter = my_other_parameter
         
+        def __getitem__(self, key):
+            """Required for ramping parameters. The keys are taken from the names of the
+            update methods, i.e., ``"my_parameter"`` is taken from the method name
+            ``"_update_my_parameter()"``.
+
+            ..  code-block:: python
+
+                my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
+                ramp = dict(my_item['my_parameter']=my_parameter_value)
+                step = fem.Step(items=[my_item], ramp=ramp)
+
+            """
+            return UpdateItem(self, key)
+        
         def update(self, my_parameter):
+            """Required for ramping the primary parameter. This method is used if no key
+            is given.
+
+            ..  code-block:: python
+
+                my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
+                ramp = dict(my_item=my_parameter_value)
+                step = fem.Step(items=[my_item], ramp=ramp)
+
+            """
             self._update_my_parameter(my_parameter)
         
         def _update_my_parameter(self, my_parameter):
@@ -48,9 +73,6 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
         
         def _update_my_other_parameter(self, my_other_parameter):
             self.results.my_other_parameter = my_other_parameter
-
-        def __getitem__(self, key):
-            return UpdateItem(self, key)
 
         def _vector(self, field=None, **kwargs):
             return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))

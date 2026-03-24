@@ -28,6 +28,7 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
     :context:
     
     from scipy.sparse import csr_matrix
+    import felupe as fem
     from felupe.mechanics import Assemble, Results, UpdateItem
 
 

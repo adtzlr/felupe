@@ -37,7 +37,7 @@ Mechanics
 
 .. autosummary::
 
-   StateNearlyIncompressible
+   mechanics.StateNearlyIncompressible
    mechanics.Assemble
    mechanics.Evaluate
    mechanics.Results
@@ -110,7 +110,7 @@ Mechanics
    :undoc-members:
    :inherited-members:
    
-.. autoclass:: felupe.StateNearlyIncompressible
+.. autoclass:: felupe.mechanics.StateNearlyIncompressible
    :members:
    :undoc-members:
    :inherited-members:

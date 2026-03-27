@@ -4,15 +4,16 @@ Thermal Analysis
 
 .. topic:: Thermal analysis of simple construction.
 
-   * use SolidBodyThermal and SolidBodySurfaceHeatTransfer
+   * use :class:`~felupe.thermal.SolidBodyThermal` and
+     :class:`felupe.thermal.SolidBodySurfaceHeatTransfer`
 
    * view the temperature field
 
 
-This example describes a simple two-dimensional light-weight construction
-system set up with nine SolidBodyThermal solids. The temperature boundary
-conditions have a +-1 K sinusoidal variation around their average value
-with a period of 24 h.
+This example describes a simple two-dimensional light-weight construction system set up
+with nine :class:`solids <felupe.thermal.SolidBodyThermal>`. The temperature boundary
+conditions have a :math:`\pm 1` K sinusoidal variation around their average value with a
+period of 24 h.
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -23,7 +24,7 @@ import numpy as np
 import felupe as fem
 
 # %%
-# Define material properties as lists [plasterboard, insulation, wood].
+# Define material properties as lists ``[plasterboard, insulation, wood]``.
 density = [1000, 20, 500]  # kg/m^3
 specific_heat = [1125, 1450, 1600]  # J/(kg K)
 thermal_conductivity = [0.4, 0.035, 0.16]  # W/(m K)
@@ -52,8 +53,8 @@ mesh_list = [
 ]
 
 # %%
-# Beside points and cells we have to define temperature boundary conditions,
-# and the materials for the solid bodies.
+# Beside points and cells we have to define temperature boundary conditions, and the
+# materials for the solid bodies.
 mesh_container = fem.MeshContainer(mesh_list, merge=True)
 regions = [fem.RegionQuad(m) for m in mesh_container]
 field_list = [fem.Field(r, dim=1).as_container() for r in regions]
@@ -89,7 +90,10 @@ for imat, fld in enumerate(field_list):
     cur_mat = material_index[imat]
     materials.append(
         fem.thermal.SolidBodyThermal(
-            fld, density[cur_mat], specific_heat[cur_mat], thermal_conductivity[cur_mat]
+            field=fld,
+            mass_density=density[cur_mat],
+            specific_heat_capacity=specific_heat[cur_mat],
+            thermal_conductivity=thermal_conductivity[cur_mat],
         )
     )
 
@@ -139,7 +143,7 @@ flux_data = {0: [], 1: []}
 
 job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
     x0=field,
-    filename="result.xdmf",  # result file for Paraview
+    filename="result.xdmf",  # create a result file for Paraview
     point_data={"Temperature": lambda field, substep: temperature.values},
     point_data_default=False,
     cell_data_default=False,
@@ -154,10 +158,8 @@ fig, ax = plt.subplots()
 ax.plot(time_steps.T / 3600, q_int.T)
 ax.plot(time_steps / 3600, q_ext)
 ax.set(xlabel="time (h)", ylabel="surface heat flux (W/(m^2 K))")
-# fig.savefig("test.png")
-plt.show()
 
 # %%
-# Temperature field at end of simulation period.
+# Temperature field at the end of the simulation period.
 view = mesh.view(point_data={"Field": temperature.values})
 view.plot("Field").show()

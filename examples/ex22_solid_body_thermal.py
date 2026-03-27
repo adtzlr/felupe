@@ -5,7 +5,7 @@ Thermal Analysis
 .. topic:: Thermal analysis of simple construction.
 
    * use :class:`~felupe.thermal.SolidBodyThermal` and
-     :class:`felupe.thermal.SolidBodySurfaceHeatTransfer`
+     :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer`
 
    * view the temperature field
 

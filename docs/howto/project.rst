@@ -40,6 +40,7 @@ quadrature points of the cells and extrapolating them to the mesh-points.
             name="Cauchy Stress", 
             label="Cauchy Stress YY",
             component=1,
+            clim=[-7.0, 0.0],
         )
         data = plotter.mesh.cell_data["Cauchy Stress"][..., 1]
         plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")

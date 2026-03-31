@@ -28,25 +28,42 @@ Different methods may be used to *move* the cell-data to the mesh-points.
     :context:
     :force_static:
 
-    import pyvista as pv
-    
-    plotter = pv.Plotter(shape=(2, 2))
-    kwargs = dict(name="Cauchy Stress", component=1, plotter=plotter)
-    
-    plotter.subplot(0, 0)
-    kwargs_sbar = dict(interactive=False, title="Cauchy Stress YY (None)")
-    solid.plot(project=None, **kwargs, scalar_bar_args=kwargs_sbar)
-    
-    plotter.subplot(0, 1)
-    kwargs_sbar = dict(interactive=False, title="Cauchy Stress YY (topoints)")
-    solid.plot(project=fem.topoints, **kwargs, scalar_bar_args=kwargs_sbar)
-    
-    plotter.subplot(1, 0)
-    kwargs_sbar = dict(interactive=False, title="Cauchy Stress YY (project)")
-    solid.plot(project=fem.project, **kwargs, scalar_bar_args=kwargs_sbar)
-    
-    plotter.subplot(1, 1)
-    kwargs_sbar = dict(interactive=False, title="Cauchy Stress YY (extrapolate)")
-    solid.plot(project=fem.tools.extrapolate, **kwargs, scalar_bar_args=kwargs_sbar)
-    
-    plotter.show()
+    solid.plot(
+        name="Cauchy Stress", 
+        label="Cauchy Stress YY",
+        component=1,
+        project=None,
+    ).show()
+
+..  pyvista-plot::
+    :context:
+    :force_static:
+
+    solid.plot(
+        name="Cauchy Stress", 
+        label="Cauchy Stress YY (topoints)",
+        component=1,
+        project=fem.topoints,
+    ).show()
+
+..  pyvista-plot::
+    :context:
+    :force_static:
+
+    solid.plot(
+        name="Cauchy Stress", 
+        label="Cauchy Stress YY (project)",
+        component=1,
+        project=fem.project,
+    ).show()
+
+..  pyvista-plot::
+    :context:
+    :force_static:
+
+    solid.plot(
+        name="Cauchy Stress", 
+        label="Cauchy Stress YY (extrapolate)",
+        component=1,
+        project=fem.tools.extrapolate,
+    ).show()

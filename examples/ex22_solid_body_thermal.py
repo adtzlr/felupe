@@ -5,7 +5,7 @@ Thermal Analysis
 .. topic:: Thermal analysis of simple construction.
 
    * use :class:`~felupe.thermal.SolidBodyThermal` and
-     :class:`felupe.thermal.SolidBodySurfaceHeatTransfer`
+     :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer`
 
    * view the temperature field
 
@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import felupe as fem
+from felupe.mesh import Grid
 
 # %%
 # Define material properties as lists ``[plasterboard, insulation, wood]``.
@@ -29,33 +30,26 @@ density = [1000, 20, 500]  # kg/m^3
 specific_heat = [1125, 1450, 1600]  # J/(kg K)
 thermal_conductivity = [0.4, 0.035, 0.16]  # W/(m K)
 
-material_index = [0, 0, 0, 1, 2, 1, 0, 0, 0]
-
 # %%
 # Set up one mesh per material area, split horizontally and vertically leading
 # to nine mesh areas total.
-mesh_list = [
-    fem.mesh.Grid(np.linspace(0, 0.018, 6), np.linspace(0, 0.47, 18)),  # plasterboard
-    fem.mesh.Grid(np.linspace(0, 0.018, 6), np.linspace(0.47, 0.53, 8)),
-    fem.mesh.Grid(np.linspace(0, 0.018, 6), np.linspace(0.53, 1.0, 18)),
-    fem.mesh.Grid(
-        np.linspace(0.018, 0.268, 12), np.linspace(0, 0.47, 18)  # insulation
-    ),
-    fem.mesh.Grid(np.linspace(0.018, 0.268, 12), np.linspace(0.47, 0.53, 8)),  # wood
-    fem.mesh.Grid(
-        np.linspace(0.018, 0.268, 12), np.linspace(0.53, 1.0, 18)  # insulation
-    ),
-    fem.mesh.Grid(
-        np.linspace(0.268, 0.286, 6), np.linspace(0, 0.47, 18)  # plasterboard
-    ),
-    fem.mesh.Grid(np.linspace(0.268, 0.286, 6), np.linspace(0.47, 0.53, 8)),
-    fem.mesh.Grid(np.linspace(0.268, 0.286, 6), np.linspace(0.53, 1.0, 18)),
+material_index = [0, 0, 0, 1, 2, 1, 0, 0, 0]
+meshes = [
+    Grid(np.linspace(0, 0.018, 6), np.linspace(0, 0.47, 18)),  # plasterboard
+    Grid(np.linspace(0, 0.018, 6), np.linspace(0.47, 0.53, 8)),
+    Grid(np.linspace(0, 0.018, 6), np.linspace(0.53, 1.0, 18)),
+    Grid(np.linspace(0.018, 0.268, 12), np.linspace(0, 0.47, 18)),  # insulation
+    Grid(np.linspace(0.018, 0.268, 12), np.linspace(0.47, 0.53, 8)),  # wood
+    Grid(np.linspace(0.018, 0.268, 12), np.linspace(0.53, 1.0, 18)),  # insulation
+    Grid(np.linspace(0.268, 0.286, 6), np.linspace(0, 0.47, 18)),  # plasterboard
+    Grid(np.linspace(0.268, 0.286, 6), np.linspace(0.47, 0.53, 8)),
+    Grid(np.linspace(0.268, 0.286, 6), np.linspace(0.53, 1.0, 18)),
 ]
 
 # %%
 # Beside points and cells we have to define temperature boundary conditions, and the
 # materials for the solid bodies.
-mesh_container = fem.MeshContainer(mesh_list, merge=True)
+mesh_container = fem.MeshContainer(meshes, merge=True)
 regions = [fem.RegionQuad(m) for m in mesh_container]
 field_list = [fem.Field(r, dim=1).as_container() for r in regions]
 
@@ -113,13 +107,11 @@ def callback(stepnumber, substepnumber, substep, flux_data):
     """
     Extract stress data (flux), shape(n_cells, 4) per substep."""
     flux_data[0].append(
-        boundary_flux(mesh_list[0], materials[0], coord_value=field.region.mesh.x.min())
+        boundary_flux(meshes[0], materials[0], coord_value=field.region.mesh.x.min())
     )
 
     flux_data[1].append(
-        boundary_flux(
-            mesh_list[-1], materials[-1], coord_value=field.region.mesh.x.max()
-        )
+        boundary_flux(meshes[-1], materials[-1], coord_value=field.region.mesh.x.max())
     )
 
 

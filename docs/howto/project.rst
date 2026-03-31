@@ -22,7 +22,7 @@ Cauchy stresses of a rectangular block under compression.
     job = fem.Job(steps=[fem.Step(items=[solid], boundaries=boundaries)]).evaluate()
 
 Cell-based results, like Cauchy stresses, are not projected to mesh-points by default.
-Different methods may be used to *move* the cell-data to the mesh-points.
+The means of the cell-values are plotted if no projection method is specified.
 
 ..  pyvista-plot::
     :context:
@@ -35,6 +35,10 @@ Different methods may be used to *move* the cell-data to the mesh-points.
         project=None,
     ).show()
 
+Different methods may be used to *move* the cell-data to the mesh-points. With
+:func:`~felupe.topoints`, the cell-values are translated to and averaged at the
+mesh-points.
+
 ..  pyvista-plot::
     :context:
     :force_static:
@@ -46,6 +50,9 @@ Different methods may be used to *move* the cell-data to the mesh-points.
         project=fem.topoints,
     ).show()
 
+With :func:`~felupe.project`, the cell-values are projected to the mesh-points by
+solving a least-squares problem.
+
 ..  pyvista-plot::
     :context:
     :force_static:
@@ -56,6 +63,10 @@ Different methods may be used to *move* the cell-data to the mesh-points.
         component=1,
         project=fem.project,
     ).show()
+
+With :func:`~felupe.tools.extrapolate`, the cell-values are extrapolated to the mesh-
+points by evaluating the cell-values at the quadrature points of the cells and
+extrapolating them to the mesh-points.
 
 ..  pyvista-plot::
     :context:

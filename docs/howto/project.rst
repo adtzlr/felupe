@@ -36,12 +36,15 @@ quadrature points of the cells and extrapolating them to the mesh-points.
         :context:
         :force_static:
 
-        solid.plot(
+        plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY",
             component=1,
             project=None,
-        ).show()
+        )
+        data = plotter.mesh.cell_data["Cauchy Stress"][..., 1]
+        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
+        plotter.show()
 
 ..  tab:: shift to points
 
@@ -49,12 +52,16 @@ quadrature points of the cells and extrapolating them to the mesh-points.
         :context:
         :force_static:
 
-        solid.plot(
+        plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY (topoints)",
             component=1,
             project=fem.topoints,
-        ).show()
+            clim=[-7.0, 0.0],
+        )
+        data = plotter.mesh.point_data["Cauchy Stress"][..., 1]
+        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
+        plotter.show()
 
 ..  tab:: project to points
 
@@ -62,12 +69,16 @@ quadrature points of the cells and extrapolating them to the mesh-points.
         :context:
         :force_static:
 
-        solid.plot(
+        plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY (project)",
             component=1,
             project=fem.project,
-        ).show()
+            clim=[-7.0, 0.0],
+        )
+        data = plotter.mesh.point_data["Cauchy Stress"][..., 1]
+        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
+        plotter.show()
 
 ..  tab:: extrapolate to points
 
@@ -75,9 +86,13 @@ quadrature points of the cells and extrapolating them to the mesh-points.
         :context:
         :force_static:
 
-        solid.plot(
+        plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY (extrapolate)",
             component=1,
             project=fem.tools.extrapolate,
-        ).show()
+            clim=[-7.0, 0.0],
+        )
+        data = plotter.mesh.point_data["Cauchy Stress"][..., 1]
+        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
+        plotter.show()

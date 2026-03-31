@@ -23,12 +23,17 @@ Cauchy stresses of a rectangular block under compression.
 
 Cell-based results, like Cauchy stresses, are not projected to mesh-points by default.
 The means of the cell-values are plotted if no projection method is specified. Different
-methods may be used to *move* the cell-data to the mesh-points. With
-:func:`~felupe.topoints`, the cell-values are translated to and averaged at the mesh-
-points. With :func:`~felupe.tools.extrapolate`, the cell-values are extrapolated to the
-mesh-points by evaluating the cell-values at the quadrature points of the cells and
-extrapolating them to the mesh-points. With :func:`~felupe.project`, the cell-values are
-projected to the mesh-points by solving a least-squares problem.
+methods may be used to *move* the cell-data to the mesh-points.
+
+* With :func:`~felupe.topoints`, the cell-values are translated to and averaged at the
+  mesh-points.
+
+* With :func:`~felupe.tools.extrapolate`, the cell-values are extrapolated to the mesh-
+  points by evaluating the cell-values at the quadrature points of the cells and
+  extrapolating them to the mesh-points.
+  
+* With :func:`~felupe.project`, the cell-values are projected to the mesh-points by
+  solving a least-squares problem.
 
 ..  tab:: Average at cells (default)
 

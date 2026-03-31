@@ -22,59 +22,62 @@ Cauchy stresses of a rectangular block under compression.
     job = fem.Job(steps=[fem.Step(items=[solid], boundaries=boundaries)]).evaluate()
 
 Cell-based results, like Cauchy stresses, are not projected to mesh-points by default.
-The means of the cell-values are plotted if no projection method is specified.
+The means of the cell-values are plotted if no projection method is specified. Different
+methods may be used to *move* the cell-data to the mesh-points. With
+:func:`~felupe.topoints`, the cell-values are translated to and averaged at the mesh-
+points. With :func:`~felupe.project`, the cell-values are projected to the mesh-points
+by solving a least-squares problem. With :func:`~felupe.tools.extrapolate`, the cell-
+values are extrapolated to the mesh-points by evaluating the cell-values at the
+quadrature points of the cells and extrapolating them to the mesh-points.
 
-..  pyvista-plot::
-    :context:
-    :force_static:
+..  tab:: average cell-values
 
-    solid.plot(
-        name="Cauchy Stress", 
-        label="Cauchy Stress YY",
-        component=1,
-        project=None,
-    ).show()
+    ..  pyvista-plot::
+        :context:
+        :force_static:
 
-Different methods may be used to *move* the cell-data to the mesh-points. With
-:func:`~felupe.topoints`, the cell-values are translated to and averaged at the
-mesh-points.
+        solid.plot(
+            name="Cauchy Stress", 
+            label="Cauchy Stress YY",
+            component=1,
+            project=None,
+        ).show()
 
-..  pyvista-plot::
-    :context:
-    :force_static:
+..  tab:: shift values to points
 
-    solid.plot(
-        name="Cauchy Stress", 
-        label="Cauchy Stress YY (topoints)",
-        component=1,
-        project=fem.topoints,
-    ).show()
+    ..  pyvista-plot::
+        :context:
+        :force_static:
 
-With :func:`~felupe.project`, the cell-values are projected to the mesh-points by
-solving a least-squares problem.
+        solid.plot(
+            name="Cauchy Stress", 
+            label="Cauchy Stress YY (topoints)",
+            component=1,
+            project=fem.topoints,
+        ).show()
 
-..  pyvista-plot::
-    :context:
-    :force_static:
+..  tab:: project values to points
 
-    solid.plot(
-        name="Cauchy Stress", 
-        label="Cauchy Stress YY (project)",
-        component=1,
-        project=fem.project,
-    ).show()
+    ..  pyvista-plot::
+        :context:
+        :force_static:
 
-With :func:`~felupe.tools.extrapolate`, the cell-values are extrapolated to the mesh-
-points by evaluating the cell-values at the quadrature points of the cells and
-extrapolating them to the mesh-points.
+        solid.plot(
+            name="Cauchy Stress", 
+            label="Cauchy Stress YY (project)",
+            component=1,
+            project=fem.project,
+        ).show()
 
-..  pyvista-plot::
-    :context:
-    :force_static:
+..  tab:: extrapolate values to points
 
-    solid.plot(
-        name="Cauchy Stress", 
-        label="Cauchy Stress YY (extrapolate)",
-        component=1,
-        project=fem.tools.extrapolate,
-    ).show()
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
+        solid.plot(
+            name="Cauchy Stress", 
+            label="Cauchy Stress YY (extrapolate)",
+            component=1,
+            project=fem.tools.extrapolate,
+        ).show()

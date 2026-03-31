@@ -30,7 +30,7 @@ by solving a least-squares problem. With :func:`~felupe.tools.extrapolate`, the 
 values are extrapolated to the mesh-points by evaluating the cell-values at the
 quadrature points of the cells and extrapolating them to the mesh-points.
 
-..  tab:: average cell-values
+..  tab:: average
 
     ..  pyvista-plot::
         :context:
@@ -43,7 +43,7 @@ quadrature points of the cells and extrapolating them to the mesh-points.
             project=None,
         ).show()
 
-..  tab:: shift values to points
+..  tab:: shift to points
 
     ..  pyvista-plot::
         :context:
@@ -56,7 +56,7 @@ quadrature points of the cells and extrapolating them to the mesh-points.
             project=fem.topoints,
         ).show()
 
-..  tab:: project values to points
+..  tab:: project to points
 
     ..  pyvista-plot::
         :context:
@@ -69,7 +69,7 @@ quadrature points of the cells and extrapolating them to the mesh-points.
             project=fem.project,
         ).show()
 
-..  tab:: extrapolate values to points
+..  tab:: extrapolate to points
 
     ..  pyvista-plot::
         :context:

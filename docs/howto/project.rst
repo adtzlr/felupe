@@ -24,7 +24,9 @@ Cauchy stresses of a rectangular block under compression.
 Cell-based results, like Cauchy stresses, are not projected to mesh-points by default.
 Different methods may be used to *move* the cell-data to the mesh-points.
 
-..  code-block::
+..  pyvista-plot::
+    :context:
+    :force_static:
 
     import pyvista as pv
     

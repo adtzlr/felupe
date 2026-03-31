@@ -36,15 +36,21 @@ projected to the mesh-points by solving a least-squares problem.
         :context:
         :force_static:
 
+        stress = solid.evaluate.cauchy_stress()[1, 1]
+        data = stress.mean(axis=0)
+        annotations = {
+            data.min(): "Min.",
+            data.max(): "Max.",
+        }
+
         plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY",
             component=1,
+            project=None,
             clim=[-7.0, 0.0],
-        )
-        data = plotter.mesh.cell_data["Cauchy Stress"][..., 1]
-        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
-        plotter.show()
+            annotations=annotations,
+        ).show()
 
 ..  tab:: Shift to points
 
@@ -52,16 +58,21 @@ projected to the mesh-points by solving a least-squares problem.
         :context:
         :force_static:
 
+        stress = solid.evaluate.cauchy_stress()[1, 1]
+        data = fem.topoints(stress, region)
+        annotations = {
+            data.min(): "Min.",
+            data.max(): "Max.",
+        }
+
         plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY (topoints)",
             component=1,
             project=fem.topoints,
             clim=[-7.0, 0.0],
-        )
-        data = plotter.mesh.point_data["Cauchy Stress"][..., 1]
-        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
-        plotter.show()
+            annotations=annotations,
+        ).show()
 
 ..  tab:: Extrapolate to points
 
@@ -69,16 +80,21 @@ projected to the mesh-points by solving a least-squares problem.
         :context:
         :force_static:
 
+        stress = solid.evaluate.cauchy_stress()[1, 1]
+        data = fem.tools.extrapolate(stress, region)
+        annotations = {
+            data.min(): "Min.",
+            data.max(): "Max.",
+        }
+
         plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY (extrapolate)",
             component=1,
             project=fem.tools.extrapolate,
             clim=[-7.0, 0.0],
-        )
-        data = plotter.mesh.point_data["Cauchy Stress"][..., 1]
-        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
-        plotter.show()
+            annotations=annotations,
+        ).show()
 
 ..  tab:: Project to points
 
@@ -86,13 +102,18 @@ projected to the mesh-points by solving a least-squares problem.
         :context:
         :force_static:
 
+        stress = solid.evaluate.cauchy_stress()[1, 1]
+        data = fem.project(stress, region)
+        annotations = {
+            data.min(): "Min.",
+            data.max(): "Max.",
+        }
+
         plotter = solid.plot(
             name="Cauchy Stress", 
             label="Cauchy Stress YY (project)",
             component=1,
             project=fem.project,
             clim=[-7.0, 0.0],
-        )
-        data = plotter.mesh.point_data["Cauchy Stress"][..., 1]
-        plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
-        plotter.show()
+            annotations=annotations,
+        ).show()

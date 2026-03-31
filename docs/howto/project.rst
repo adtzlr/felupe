@@ -30,7 +30,7 @@ by solving a least-squares problem. With :func:`~felupe.tools.extrapolate`, the 
 values are extrapolated to the mesh-points by evaluating the cell-values at the
 quadrature points of the cells and extrapolating them to the mesh-points.
 
-..  tab:: average
+..  tab:: Average at cells (default)
 
     ..  pyvista-plot::
         :context:
@@ -40,13 +40,12 @@ quadrature points of the cells and extrapolating them to the mesh-points.
             name="Cauchy Stress", 
             label="Cauchy Stress YY",
             component=1,
-            project=None,
         )
         data = plotter.mesh.cell_data["Cauchy Stress"][..., 1]
         plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
         plotter.show()
 
-..  tab:: shift to points
+..  tab:: Shift to points
 
     ..  pyvista-plot::
         :context:
@@ -63,7 +62,7 @@ quadrature points of the cells and extrapolating them to the mesh-points.
         plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
         plotter.show()
 
-..  tab:: project to points
+..  tab:: Project to points
 
     ..  pyvista-plot::
         :context:
@@ -80,7 +79,7 @@ quadrature points of the cells and extrapolating them to the mesh-points.
         plotter.add_text(f"Range {data.min():.2f} ... {data.max():.2f} MPa")
         plotter.show()
 
-..  tab:: extrapolate to points
+..  tab:: Extrapolate to points
 
     ..  pyvista-plot::
         :context:

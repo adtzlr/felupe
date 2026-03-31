@@ -43,10 +43,7 @@ methods may be used to *move* the cell-data to the mesh-points.
 
         stress = solid.evaluate.cauchy_stress()[1, 1]
         data = stress.mean(axis=0)
-        annotations = {
-            data.min(): "Min.",
-            data.max(): "Max.",
-        }
+        annotations = {data.min(): "Min.", data.max(): "Max."}
 
         plotter = solid.plot(
             name="Cauchy Stress", 
@@ -65,10 +62,7 @@ methods may be used to *move* the cell-data to the mesh-points.
 
         stress = solid.evaluate.cauchy_stress()[1, 1]
         data = fem.topoints(stress, region)
-        annotations = {
-            data.min(): "Min.",
-            data.max(): "Max.",
-        }
+        annotations = {data.min(): "Min.", data.max(): "Max."}
 
         plotter = solid.plot(
             name="Cauchy Stress", 
@@ -87,10 +81,7 @@ methods may be used to *move* the cell-data to the mesh-points.
 
         stress = solid.evaluate.cauchy_stress()[1, 1]
         data = fem.tools.extrapolate(stress, region)
-        annotations = {
-            data.min(): "Min.",
-            data.max(): "Max.",
-        }
+        annotations = {data.min(): "Min.", data.max(): "Max."}
 
         plotter = solid.plot(
             name="Cauchy Stress", 
@@ -109,10 +100,7 @@ methods may be used to *move* the cell-data to the mesh-points.
 
         stress = solid.evaluate.cauchy_stress()[1, 1]
         data = fem.project(stress, region)
-        annotations = {
-            data.min(): "Min.",
-            data.max(): "Max.",
-        }
+        annotations = {data.min(): "Min.", data.max(): "Max."}
 
         plotter = solid.plot(
             name="Cauchy Stress", 

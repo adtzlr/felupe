@@ -2,7 +2,6 @@ r"""
 Thermal Analysis
 ----------------
 
-.. topic:: Thermal analysis of simple construction.
 .. topic:: Thermal analysis of a simple construction.
 
    * use :class:`~felupe.thermal.SolidBodyThermal` and

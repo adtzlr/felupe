@@ -119,12 +119,14 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 def callback(stepnumber, substepnumber, substep, flux_data):
     """Save total surface flux at internal and external boundaries."""
 
+    area = mesh.y.max() - mesh.y.min()
+
     flux_data["external"].append(
-        materials[0].heat_flux_boundary(region=external_region, total=True)
+        materials[0].heat_flux_boundary(region=external_region, total=True) / area
     )
 
     flux_data["internal"].append(
-        materials[0].heat_flux_boundary(region=internal_region, total=True)
+        materials[0].heat_flux_boundary(region=internal_region, total=True) / area
     )
 
 
@@ -169,7 +171,7 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
 fig, ax = plt.subplots()
 ax.plot(time_steps / 3600, flux_data["internal"], label="internal")
 ax.plot(time_steps / 3600, flux_data["external"], label="external")
-ax.set(xlabel="time (h)", ylabel=r"surface heat flux (W/(m$^2$ K))")
+ax.set(xlabel="time (h)", ylabel=r"surface heat flux (W/(m$^2$))")
 ax.legend()
 
 # %%

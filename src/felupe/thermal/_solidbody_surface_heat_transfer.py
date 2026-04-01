@@ -74,9 +74,9 @@ class SolidBodySurfaceHeatTransfer:
         ...     temperature=10.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
-        >>> table = fem.math.linsteps([0, 1], num=10)
-        >>> air_temperature = fem.math.linsteps([0, 40], num=10)  # air temperature
-        >>> coefficient = fem.math.linsteps([7.0, 8.0], num=10)  # heat transfer coeff.
+        >>> table = fem.math.linsteps([0, 1], num=15)
+        >>> air_temperature = fem.math.linsteps([0, 40], num=15)  # air temperature
+        >>> coefficient = fem.math.linsteps([7.0, 8.0], num=15)  # heat transfer coeff.
         >>> ramp = {
         ...     boundaries["left"]: 10 * table,  # surface temperature
         ...     time: 18000 * table,  # five hours

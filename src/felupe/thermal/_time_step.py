@@ -33,9 +33,6 @@ class TimeStep:
         Initial time (default is 0.0).
     time_new : float or None, optional
         New time (default is None).
-    time_step_min : float, optional
-        Minimum time step to avoid numerical issues (default is
-        :math:`\sqrt{\epsilon}`).
 
     Notes
     -----
@@ -83,7 +80,6 @@ class TimeStep:
         items,
         time_old=0.0,
         time_new=None,
-        time_step_min=np.finfo(float).eps ** 0.5,
     ):
         self.field = items[0].field  # get dummy field from first item
         self.assemble = Assemble()
@@ -91,11 +87,9 @@ class TimeStep:
         self.time_old = time_old
         self.time_new = time_new
         self.items = items
-        self.time_step_min = time_step_min
 
     def update(self, time_new):
         time_step = time_new - self.time_old
-        time_step = np.maximum(self.time_step_min, time_step)
 
         for item in self.items:
             item.time_step = time_step

@@ -91,6 +91,11 @@ class TimeStep:
     def update(self, time_new):
         time_step = time_new - self.time_old
 
+        if time_step < 0:
+            raise ValueError(
+                f"New time {time_new} is smaller than old time {self.time_old}."
+            )
+
         for item in self.items:
             item.time_step = time_step
 

@@ -199,6 +199,26 @@ def test_thermal_axi():
     )
 
 
+def test_timestep():
+
+    mesh = fem.Rectangle(n=3)
+    region = fem.RegionQuad(mesh)
+    temperature = fem.Field(region, dim=1)
+    field = fem.FieldContainer([temperature])
+
+    solid = fem.thermal.SolidBodyThermal(
+        field=field,
+        mass_density=1.0,  # kg/m^3
+        specific_heat_capacity=1.0,  # J/(kg*K)
+        thermal_conductivity=1.0,  # W/(m*K)
+    )
+
+    time = fem.thermal.TimeStep(items=[solid])
+    with pytest.raises(ValueError):
+        time.update(-0.1)
+
+
 if __name__ == "__main__":
     test_thermal()
     test_thermal_axi()
+    test_timestep()

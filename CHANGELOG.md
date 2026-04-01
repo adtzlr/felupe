@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
 - Set the `algorithm` in `pyvista.UnstructuredGrid.extract_surface(algorithm=None)` to prevent future errors with `nonlinear_subdivision`.
 - Remove modification of minimal allowed time step `time_step_min` in `thermal.TimeStep`.
+- Don't allow negative time steps in `thermal.TimeStep`.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

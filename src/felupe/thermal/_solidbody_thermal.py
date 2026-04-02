@@ -166,7 +166,7 @@ class SolidBodyThermal(SolidBody):
         if field is not None:
             self.field = field
 
-        if self.time_step == 0:
+        if self.time_step == 0:  # inactive time step, only capacity contribution
             self.results._statevars = self.field[0].values.copy()  # new temperature
             temperature_old = self.results.statevars  # old temperature
             temperature_new = self.results._statevars  # new temperature
@@ -198,7 +198,7 @@ class SolidBodyThermal(SolidBody):
         if field is not None:
             self.field = field
 
-        if self.time_step == 0:
+        if self.time_step == 0:  # inactive time step, only capacity contribution
             self.results.stiffness = self.capacity
             return self.results.stiffness
 

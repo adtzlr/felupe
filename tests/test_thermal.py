@@ -75,8 +75,8 @@ def test_thermal():
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
-    time = fem.thermal.TimeStep([solid])
-    table = fem.math.linsteps([0, 1], num=2)
+    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux])
+    table = fem.math.linsteps([0, 0, 1], num=2)
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
@@ -178,9 +178,9 @@ def test_thermal_axi():
     with pytest.raises(ValueError):
         solid.heat_flux_boundary(field=my_field, region=my_region)
 
-    time = fem.thermal.TimeStep([solid])
-    table = fem.math.linsteps([0, 1], num=2)
-    table_2 = fem.math.linsteps([1, 1], num=2)
+    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux])
+    table = fem.math.linsteps([0, 0, 1], num=2)
+    table_2 = fem.math.linsteps([1, 1, 1], num=2)
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
@@ -199,6 +199,30 @@ def test_thermal_axi():
     )
 
 
+def test_timestep():
+
+    mesh = fem.Rectangle(n=3)
+    region = fem.RegionQuad(mesh)
+    temperature = fem.Field(region, dim=1)
+    field = fem.FieldContainer([temperature])
+
+    solid = fem.thermal.SolidBodyThermal(
+        field=field,
+        mass_density=1.0,  # kg/m^3
+        specific_heat_capacity=1.0,  # J/(kg*K)
+        thermal_conductivity=1.0,  # W/(m*K)
+    )
+
+    time = fem.thermal.TimeStep(items=[solid])
+
+    time.update(0.1)
+    assert solid.time_step == 0.1
+
+    with pytest.raises(ValueError):
+        time.update(-0.1)
+
+
 if __name__ == "__main__":
     test_thermal()
     test_thermal_axi()
+    test_timestep()

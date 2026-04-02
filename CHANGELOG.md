@@ -15,12 +15,15 @@ All notable changes to this project will be documented in this file. The format 
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
 - Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
 - Set the `algorithm` in `pyvista.UnstructuredGrid.extract_surface(algorithm=None)` to prevent future errors with `nonlinear_subdivision`.
-
-### Deprecated
-- Deprecate `newtonrhapson()` and `tools.newtonrhapson()`. Use `newtonraphson()` and `tools.newtonraphson()` in new code.
+- Remove modification of minimal allowed time step `time_step_min` in `thermal.TimeStep`.
+- Don't allow negative time steps in `thermal.TimeStep`.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.
+- Fix `thermal.SolidBodyThermal` for zero time steps. The stationary solution is obtained by `time_step=None`, whereas `time_step=0.0` is treated as a time-increment of length zero.
+
+### Deprecated
+- Deprecate `newtonrhapson()` and `tools.newtonrhapson()`. Use `newtonraphson()` and `tools.newtonraphson()` in new code.
 
 ## [10.1.0] - 2026-02-26
 

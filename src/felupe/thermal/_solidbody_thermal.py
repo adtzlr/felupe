@@ -166,6 +166,15 @@ class SolidBodyThermal(SolidBody):
         if field is not None:
             self.field = field
 
+        if self.time_step == 0:  # inactive time step, only capacity contribution
+            self.results._statevars = self.field[0].values.copy()  # new temperature
+            temperature_old = self.results.statevars  # old temperature
+            temperature_new = self.results._statevars  # new temperature
+            temperature_diff = (temperature_new - temperature_old).reshape(-1, 1)
+
+            self.results.force = csr_matrix(self.capacity @ temperature_diff)
+            return self.results.force
+
         self.results.stress = self.results.heat_flux = self._gradient(field)
         self.results._statevars = self.field[0].values.copy()  # new temperature
 
@@ -177,19 +186,21 @@ class SolidBodyThermal(SolidBody):
 
         temperature_old = self.results.statevars  # old temperature
         temperature_new = self.results._statevars  # new temperature
+        temperature_diff = (temperature_new - temperature_old).reshape(-1, 1)
 
-        if self.time_step is not None:
-            temperature_rate = (temperature_new - temperature_old) / self.time_step
-
-            self.results.force += csr_matrix(
-                self.capacity @ temperature_rate.reshape(-1, 1)
-            )
+        if self.time_step is not None and self.time_step > 0:
+            temperature_rate = temperature_diff / self.time_step
+            self.results.force += csr_matrix(self.capacity @ temperature_rate)
 
         return self.results.force
 
     def _matrix(self, field=None, **kwargs):
         if field is not None:
             self.field = field
+
+        if self.time_step == 0:  # inactive time step, only capacity contribution
+            self.results.stiffness = self.capacity
+            return self.results.stiffness
 
         self.results.elasticity = self._hessian(field)
         form = IntegralForm(
@@ -205,7 +216,7 @@ class SolidBodyThermal(SolidBody):
 
         self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
-        if self.time_step is not None:
+        if self.time_step is not None and self.time_step > 0:
             self.results.stiffness += self.capacity / self.time_step
 
         return self.results.stiffness

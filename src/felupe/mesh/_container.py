@@ -302,10 +302,9 @@ class MeshContainer:
             import matplotlib.colors as mcolors
             import pyvista
 
-            colors = [
-                pyvista.global_theme.color,
-                *list(mcolors.TABLEAU_COLORS.values())[1:],
-            ]
+            colors = [pyvista.global_theme.color]
+            colors += list(mcolors.TABLEAU_COLORS.values())[1:]
+            colors += list(mcolors.XKCD_COLORS.values())
 
         if add_legend is None:
             if labels is None:

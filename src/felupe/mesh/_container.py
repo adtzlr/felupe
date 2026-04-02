@@ -313,7 +313,7 @@ class MeshContainer:
                 add_legend = True
 
         if labels is None:
-            labels = [f"Mesh {i + 1}" for i, m in enumerate(self.meshes)]
+            labels = [f"Mesh {i + 1}" for i, _ in enumerate(self.meshes)]
 
         plotter = None
         for mesh, color in zip(self.meshes, colors):

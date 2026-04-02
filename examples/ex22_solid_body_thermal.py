@@ -113,10 +113,10 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 # %%
 # A callback-function records the total surface heat flux at the internal and external
 # boundaries after each completed time step. The total surface heat flux is calculated
-# by the :meth:`~felupe.SolidBodyThermal.heat_flux_boundary` method of the thermal
-# solid body, which returns the total surface heat flux for a given boundary region
-# and time step. The total surface heat flux is stored in the ``flux_data`` dictionary,
-# which is passed to the callback function as an argument.
+# by the :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
+# thermal solid body, which returns the total surface heat flux for a given boundary
+# region and time step. The total surface heat flux is stored in the ``flux_data``
+# dictionary, which is passed to the callback function as an argument.
 def callback(stepnumber, substepnumber, substep, flux_data):
     """Save total surface flux at internal and external boundaries."""
     area = mesh.y.max() - mesh.y.min()

@@ -183,4 +183,4 @@ ax.legend()
 # A view on the temperature field at the end of the simulation period visualizes the
 # temperature distribution.
 view = mesh.view(point_data={"Field": temperature.values})
-view.plot("Field").show()
+view.plot("Field", scalar_bar_vertical=True).show()

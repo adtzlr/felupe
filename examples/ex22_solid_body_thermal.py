@@ -63,6 +63,7 @@ insulations = fem.MeshContainer(
 
 wood = fem.Rectangle(a=(0.018, 0.47), b=(0.268, 0.53), n=(12, 8))
 container = fem.MeshContainer([plasterboards, insulations, wood], merge=True)
+plotter = container.plot(colors=["white", "yellow", "brown"], show_edges=False).show()
 
 # %%
 # A top-level temperature field is defined on the whole construction, and separate

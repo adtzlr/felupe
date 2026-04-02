@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
+from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results
@@ -100,6 +101,8 @@ class SolidBodyThermalHeatFlux:
 
     def __init__(self, field, heat_flux=None):
         self.field = field
+        self.time_step = 0
+
         self.assemble = Assemble(vector=self._vector, matrix=None, multiplier=-1.0)
         self.results = Results()
 
@@ -112,6 +115,9 @@ class SolidBodyThermalHeatFlux:
     def _vector(self, field=None, **kwargs):
         if field is not None:
             self.field = field
+
+        if self.time_step is not None and self.time_step == 0:  # inactive time step
+            return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
         fun = [-self.results.heat_flux * np.ones((1, 1))]
 

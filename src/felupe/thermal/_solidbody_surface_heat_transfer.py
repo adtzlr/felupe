@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
+from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results, UpdateItem
@@ -29,7 +30,7 @@ class SolidBodySurfaceHeatTransfer:
     field : felupe.FieldContainer
         The field container with the temperature as first field.
     coefficient : float
-        The convection coefficient :math:`h` in W/(m^2*K).
+        The convection coefficient :math:`h` in W/(m^2 K).
     temperature : float
         The ambient temperature :math:`T_\infty` in °C or K.
 
@@ -107,6 +108,7 @@ class SolidBodySurfaceHeatTransfer:
 
     def __init__(self, field, coefficient, temperature):
         self.field = field
+        self.time_step = None
 
         self.results = Results()
         self.results.temperature = temperature
@@ -132,6 +134,9 @@ class SolidBodySurfaceHeatTransfer:
         if field is not None:
             self.field = field
 
+        if self.time_step is not None and self.time_step == 0:  # inactive time step
+            return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
+
         temperature = self.field.extract(grad=False)[0]
         fun = [-self.results.coefficient * (temperature - self.results.temperature)]
 
@@ -144,6 +149,9 @@ class SolidBodySurfaceHeatTransfer:
     def _matrix(self, field=None, **kwargs):
         if field is not None:
             self.field = field
+
+        if self.time_step is not None and self.time_step == 0:  # inactive time step
+            return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
         dim = self.field[0].dim
         fun = [-self.results.coefficient * np.eye(dim).reshape(dim, dim, 1, 1)]

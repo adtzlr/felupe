@@ -76,7 +76,7 @@ def test_thermal():
     heat_flux.assemble.matrix(field)
 
     time = fem.thermal.TimeStep([solid])
-    table = fem.math.linsteps([0, 1], num=2)
+    table = fem.math.linsteps([0, 0, 1], num=2)
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
@@ -179,8 +179,8 @@ def test_thermal_axi():
         solid.heat_flux_boundary(field=my_field, region=my_region)
 
     time = fem.thermal.TimeStep([solid])
-    table = fem.math.linsteps([0, 1], num=2)
-    table_2 = fem.math.linsteps([1, 1], num=2)
+    table = fem.math.linsteps([0, 0, 1], num=2)
+    table_2 = fem.math.linsteps([1, 1, 1], num=2)
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
@@ -214,6 +214,10 @@ def test_timestep():
     )
 
     time = fem.thermal.TimeStep(items=[solid])
+
+    time.update(0.1)
+    assert solid.time_step == 0.1
+
     with pytest.raises(ValueError):
         time.update(-0.1)
 

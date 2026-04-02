@@ -144,7 +144,9 @@ t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)
 # callback function, and evaluated with the top-level temperature field. A result file
 # is created for visualization in Paraview, and the temperature field is saved as point-
 # data in the result file.
-time = fem.thermal.TimeStep(materials)
+time = fem.thermal.TimeStep(
+    [*materials, external_heat_transfer, internal_heat_transfer]
+)
 ramp = {
     time: time_steps,
     internal_heat_transfer: t_int,
@@ -163,7 +165,6 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
     point_data={"Temperature": lambda field, substep: temperature.values},
     point_data_default=False,
     cell_data_default=False,
-    verbose=2,
 )
 
 # %%

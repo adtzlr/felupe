@@ -101,7 +101,7 @@ class SolidBodyThermalHeatFlux:
 
     def __init__(self, field, heat_flux=None):
         self.field = field
-        self.time_step = 0
+        self.time_step = None
 
         self.assemble = Assemble(vector=self._vector, matrix=None, multiplier=-1.0)
         self.results = Results()

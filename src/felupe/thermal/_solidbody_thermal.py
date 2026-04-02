@@ -63,10 +63,16 @@ class SolidBodyThermal(SolidBody):
     is calculated as the difference between the new temperature and the old temperature
     divided by the time step, see Eq. :eq:`thermal-solid-body`.
 
+
+
     ..  math::
         :label: thermal-solid-body
 
-        \boldsymbol{K} \boldsymbol{T} &= -\boldsymbol{r}
+        \boldsymbol{r}
+            + \frac{\partial \boldsymbol{r}}{\partial \boldsymbol{T}}
+            \delta \boldsymbol {T} = \boldsymbol{0}
+
+        \boldsymbol{K} \delta \boldsymbol{T} &= -\boldsymbol{r}
 
         \boldsymbol{r} &= \boldsymbol{r}_{\text{conductivity}}
             + \boldsymbol{C} \frac{\boldsymbol{T} - \boldsymbol{T}_n}{\Delta t}

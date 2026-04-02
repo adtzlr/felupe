@@ -288,7 +288,9 @@ class MeshContainer:
         "Return a deepcopy of the mesh container."
         return deepcopy(self)
 
-    def plot(self, *args, colors=None, opacity=0.99, **kwargs):
+    def plot(
+        self, *args, colors=None, opacity=0.99, labels=None, add_legend=None, **kwargs
+    ):
         """Plot the meshes of the mesh container.
 
         See Also
@@ -305,6 +307,15 @@ class MeshContainer:
                 *list(mcolors.TABLEAU_COLORS.values())[1:],
             ]
 
+        if add_legend is None:
+            if labels is None:
+                add_legend = False
+            else:
+                add_legend = True
+
+        if labels is None:
+            labels = [f"Mesh {i + 1}" for i, m in enumerate(self.meshes)]
+
         plotter = None
         for mesh, color in zip(self.meshes, colors):
             plotter = mesh.view().plot(
@@ -314,6 +325,14 @@ class MeshContainer:
                 plotter=plotter,
                 opacity=opacity,
                 **kwargs,
+            )
+
+        if add_legend:
+            plotter.add_legend(
+                [
+                    (f"  {label}", color, "rectangle")
+                    for label, color in zip(labels, colors)
+                ],
             )
 
         return plotter

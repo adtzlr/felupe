@@ -27,7 +27,7 @@ class TimeStep:
 
     Parameters
     ----------
-    items : list of felupe.thermal.SolidBodyThermal, felupe.thermal.SolidBodyThermalHeatFlux, felupe.thermal.SolidBodySurfaceHeatTransfer
+    items : list of felupe.thermal.SolidBodyThermal, felupe.thermal.SolidBodyHeatFlux, felupe.thermal.SolidBodySurfaceHeatTransfer
         List of items to be updated at each time step.
     time_old : float, optional
         Initial time (default is 0.0).

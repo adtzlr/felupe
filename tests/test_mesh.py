@@ -539,6 +539,7 @@ def test_view():
     mesh_stacked = container.stack([0])
     mesh_stacked = container.stack()
     plotter = container.plot(off_screen=True)
+    plotter = container.plot(off_screen=True, labels=["a", "b"])
     # img = container.screenshot(transparent_background=True)
     # ax = container.imshow()
 

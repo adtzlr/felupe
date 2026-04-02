@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add keyword-based ramps for items: `mechanics.UpdateItem` is internally used to access a keyword-specific update method of an item. E.g., for `heat_transfer = thermal.SolidBodySurfaceHeatTransfer(...),` define the heat transfer `coefficient` in a `Step` by `ramp = {heat_transfer["coefficient"]: np.linspace(1.0, 1.1)}`.
 - Add `"temperature"` and `"coefficient"` as keyword-specific update-methods for `thermal.SolidBodySurfaceHeatTransfer`.
 - Add keyword-based ramps for (solid body) classes of the `mechanics` module.
+- Add `labels` and `add_legend` keywords to `MeshContainer.plot()`. By default, no legend is added. If the legend is added, but no labels are given, the meshes are named as Mesh 1, Mesh 2, ... . If labels are given, a legend is added.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

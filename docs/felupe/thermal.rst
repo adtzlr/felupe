@@ -11,7 +11,7 @@ Thermal
 
    thermal.SolidBodyThermal
    thermal.SolidBodySurfaceHeatTransfer
-   thermal.SolidBodyThermalHeatFlux
+   thermal.SolidBodyHeatFlux
 
 **Helpers**
 
@@ -30,7 +30,7 @@ Thermal
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.thermal.SolidBodyThermalHeatFlux
+.. autoclass:: felupe.thermal.SolidBodyHeatFlux
    :members:
    :undoc-members:
    :show-inheritance:

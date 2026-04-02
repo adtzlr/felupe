@@ -102,7 +102,7 @@ class SolidBodySurfaceHeatTransfer:
     --------
     felupe.thermal.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
-    felupe.thermal.SolidBodyThermalHeatFlux : A thermal solid body for heat flux.
+    felupe.thermal.SolidBodyHeatFlux : A thermal solid body for heat flux.
 
     """
 

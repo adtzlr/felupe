@@ -22,7 +22,7 @@ from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results
 
 
-class SolidBodyThermalHeatFlux:
+class SolidBodyHeatFlux:
     r"""A thermal heat flux boundary condition for a thermal solid body.
 
     Parameters
@@ -65,7 +65,7 @@ class SolidBodyThermalHeatFlux:
         ...     time_step=0.01,  # s
         ...     thermal_conductivity=1.0,  # W/(m*K)
         ... )
-        >>> heat_flux = fem.thermal.SolidBodyThermalHeatFlux(
+        >>> heat_flux = fem.thermal.SolidBodyHeatFlux(
         ...     field=field_flux,
         ...     heat_flux=1.0,  # W/m^2
         ... )

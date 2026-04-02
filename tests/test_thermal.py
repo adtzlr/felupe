@@ -63,7 +63,7 @@ def test_thermal():
         temperature=10.0,  # K
     )
 
-    heat_flux = fem.thermal.SolidBodyThermalHeatFlux(
+    heat_flux = fem.thermal.SolidBodyHeatFlux(
         field=field_flux,
         heat_flux=1.0,  # W/m^2
     )
@@ -136,7 +136,7 @@ def test_thermal_axi():
         temperature=10.0,  # K
     )
 
-    heat_flux = fem.thermal.SolidBodyThermalHeatFlux(
+    heat_flux = fem.thermal.SolidBodyHeatFlux(
         field=field_flux,
         heat_flux=1.0,  # W/m^2
     )

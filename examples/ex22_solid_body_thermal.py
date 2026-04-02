@@ -124,13 +124,12 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 # dictionary, which is passed to the callback function as an argument.
 def callback(stepnumber, substepnumber, substep, flux_data):
     """Save total surface flux at internal and external boundaries."""
-    area = mesh.y.max() - mesh.y.min()
 
     flux_data["external"].append(
-        materials[0].heat_flux_boundary(region=external_region, total=True) / area
+        materials[0].heat_flux_boundary(region=external_region, total=True, mean=True)
     )
     flux_data["internal"].append(
-        materials[0].heat_flux_boundary(region=internal_region, total=True) / area
+        materials[0].heat_flux_boundary(region=internal_region, total=True, mean=True)
     )
 
 

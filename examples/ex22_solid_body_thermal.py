@@ -171,7 +171,7 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
 fig, ax = plt.subplots()
 ax.plot(time_steps / 3600, flux_data["internal"], label="internal")
 ax.plot(time_steps / 3600, flux_data["external"], label="external")
-ax.set(xlabel="time (h)", ylabel=r"surface heat flux (W/(m$^2$))")
+ax.set(xlabel="time (h)", ylabel=r"surface heat flux (W/m$^2$)")
 ax.legend()
 
 # %%

@@ -152,25 +152,25 @@ def test_thermal_axi():
 
     my_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1)
     solid.heat_flux_boundary(region=my_region)
-    solid.heat_flux_boundary(region=my_region, mean=True)
-    solid.heat_flux_boundary(region=my_region, integrate=True)
-    solid.heat_flux_boundary(region=my_region, integrate=True, mean=True)
+    solid.heat_flux_boundary(region=my_region, mean=False)
+    solid.heat_flux_boundary(region=my_region, integrate=False)
+    solid.heat_flux_boundary(region=my_region, integrate=False, mean=False)
 
     solid.heat_flux_boundary(region=my_region)
-    solid.heat_flux_boundary(region=my_region, mean=True)
-    solid.heat_flux_boundary(region=my_region, integrate=True)
-    solid.heat_flux_boundary(region=my_region, integrate=True, mean=True)
+    solid.heat_flux_boundary(region=my_region, mean=False)
+    solid.heat_flux_boundary(region=my_region, integrate=False)
+    solid.heat_flux_boundary(region=my_region, integrate=False, mean=False)
 
     my_field = fem.Field(my_region, dim=1).as_container()
     solid.heat_flux_boundary(field=my_field)
-    solid.heat_flux_boundary(field=my_field, mean=True)
-    solid.heat_flux_boundary(field=my_field, integrate=True)
-    solid.heat_flux_boundary(field=my_field, integrate=True, mean=True)
+    solid.heat_flux_boundary(field=my_field, mean=False)
+    solid.heat_flux_boundary(field=my_field, integrate=False)
+    solid.heat_flux_boundary(field=my_field, integrate=False, mean=False)
 
     solid.heat_flux_boundary(field=my_field)
-    solid.heat_flux_boundary(field=my_field, mean=True)
-    solid.heat_flux_boundary(field=my_field, integrate=True)
-    solid.heat_flux_boundary(field=my_field, integrate=True, mean=True)
+    solid.heat_flux_boundary(field=my_field, mean=False)
+    solid.heat_flux_boundary(field=my_field, integrate=False)
+    solid.heat_flux_boundary(field=my_field, integrate=False, mean=False)
 
     with pytest.raises(ValueError):
         solid.heat_flux_boundary(field=None, region=None)

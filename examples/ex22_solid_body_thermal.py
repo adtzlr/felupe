@@ -7,7 +7,7 @@ Thermal Analysis
    * use :class:`~felupe.thermal.SolidBodyThermal` and
      :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer`
 
-   * evaluate the total surface heat flux at internal and external boundaries
+   * evaluate the surface heat flux at internal and external boundaries
      with a callback function
 
    * view the temperature field
@@ -116,14 +116,14 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 
 
 # %%
-# A callback-function records the total surface heat flux at the internal and external
-# boundaries after each completed time step. The total surface heat flux is calculated
+# A callback-function records the mean surface heat flux at the internal and external
+# boundaries after each completed time step. The mean surface heat flux is calculated
 # by the :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
 # thermal solid body, which returns the integrated surface heat flux for a given
-# boundary region and time step. The total surface heat flux is stored in the
+# boundary region and time step. The mean surface heat flux is stored in the
 # ``flux_data`` dictionary, which is passed to the callback function as an argument.
 def callback(stepnumber, substepnumber, substep, flux_data):
-    """Save total surface flux at internal and external boundaries."""
+    """Save mean surface heat flux at internal and external boundaries."""
 
     heat_flux = materials[0].heat_flux_boundary
     flux_data["external"].append(heat_flux(region=external_region))

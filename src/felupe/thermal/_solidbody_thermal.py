@@ -124,8 +124,7 @@ class SolidBodyThermal(SolidBody):
         >>>
         >>> flux = solid.heat_flux_boundary(
         ...     region=fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0),
-        ...     normal=True,  # normal component of heat flux
-        ...     total=True,
+        ...     integrate=True,
         ...     mean=True,
         ... )
         >>> assert np.isclose(flux.round(1), -30.5)
@@ -260,21 +259,19 @@ class SolidBodyThermal(SolidBody):
         integrate : bool, optional
             If True, evaluate the integrated heat transfer rate. Note that if ``mean``
             is also True, the mean heat flux over the boundary is returned. If ``mean``
-            is False, return the integrated heat transfer rate is returned. Default is
-            True.
+            is False, the integrated heat transfer rate is returned. Default is True.
         mean : bool, optional
             If True, return the mean heat flux over the boundary. If ``integrate`` is
             also True, the mean heat flux is calculated as the integrated heat transfer
             rate divided by the total area of the boundary. If ``integrate`` is False,
-            the mean heat flux is calculated as the heat transfer rate at each
-            quadrature point divided by the area at each quadrature point. Default is
-            True.
+            the mean heat flux is calculated as the heat transfer rate per cell, divided
+            by the area per cell. Default is True.
         **kwargs
             Additional keyword arguments to be passed to the gradient function.
 
         Returns
         -------
-        heat_flux : numpy.ndarray
+        heat_flux : numpy.ndarray or float
             The heat flux or heat transfer rate on the boundary.
 
         """

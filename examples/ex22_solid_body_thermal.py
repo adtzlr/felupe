@@ -73,15 +73,15 @@ container.plot(
 # %%
 # A top-level temperature field is defined on the whole construction, and separate
 # fields are defined for each material. The surface heat transfer coefficients and
-# ambient temperatures are defined for the internal and external boundaries.
-# Thermal solid bodies are created for each material.
+# ambient temperatures are defined for the internal and external boundaries. Thermal
+# solid bodies are created for each material.
 regions = [fem.RegionQuad(m) for m in container]
 fields = [fem.Field(r, dim=1).as_container() for r in regions]
 
 # top level temperature field
 mesh = container.stack()
 region = fem.RegionQuad(mesh)
-temperature = fem.Field(region, dim=1, value=0.0)
+temperature = fem.Field(region, dim=1, values=10.0)  # initial temperature 10 °C
 field = fem.FieldContainer([temperature])
 
 external_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.min())
@@ -119,18 +119,15 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 # A callback-function records the total surface heat flux at the internal and external
 # boundaries after each completed time step. The total surface heat flux is calculated
 # by the :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
-# thermal solid body, which returns the total surface heat flux for a given boundary
-# region and time step. The total surface heat flux is stored in the ``flux_data``
-# dictionary, which is passed to the callback function as an argument.
+# thermal solid body, which returns the integrated surface heat flux for a given
+# boundary region and time step. The total surface heat flux is stored in the
+# ``flux_data`` dictionary, which is passed to the callback function as an argument.
 def callback(stepnumber, substepnumber, substep, flux_data):
     """Save total surface flux at internal and external boundaries."""
 
-    flux_data["external"].append(
-        materials[0].heat_flux_boundary(region=external_region, total=True, mean=True)
-    )
-    flux_data["internal"].append(
-        materials[0].heat_flux_boundary(region=internal_region, total=True, mean=True)
-    )
+    heat_flux = materials[0].heat_flux_boundary
+    flux_data["external"].append(heat_flux(region=external_region))
+    flux_data["internal"].append(heat_flux(region=internal_region))
 
 
 time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))
@@ -172,11 +169,27 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
 
 # %%
 # Internal and external surface heat flux values are plotted over time.
+#
+# .. note::
+#
+#    The heat flux is **positive** when **heat leaves the construction** (here, on the
+#    external surface), and **negative** when **heat enters the construction** (here, on
+#    the internal surface).
+#
 fig, ax = plt.subplots()
-ax.plot(time_steps / 3600, flux_data["internal"], label="internal")
-ax.plot(time_steps / 3600, flux_data["external"], label="external")
-ax.set(xlabel="time (h)", ylabel=r"surface heat flux (W/m$^2$)")
+ax.plot(time_steps / 3600, flux_data["external"], color="C3", label="external")
+ax.plot(time_steps / 3600, flux_data["internal"], color="C0", label="internal")
+
+tmin, tmax = ax.get_xlim()
+ax.plot([tmin, tmax], np.zeros(2), "black", lw=0.5)
+
+text_kwargs = dict(transform=ax.transAxes, ha="center", va="center")
+ax.text(0.5, 0.97, "heat leaves construction", **text_kwargs)
+ax.text(0.5, 0.03, "heat enters construction", **text_kwargs)
+
 ax.legend()
+ax.set(xlim=(tmin, tmax), xlabel="time (h)", ylabel=r"surface heat flux (W/m$^2$)")
+
 
 # %%
 # A view on the temperature field at the end of the simulation period visualizes the

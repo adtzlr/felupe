@@ -130,7 +130,7 @@ def callback(stepnumber, substepnumber, substep, flux_data):
     flux_data["internal"].append(heat_flux(region=internal_region))
 
 
-time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))
+time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]
 
 t_ext = 0 + 1 * np.sin(2 * np.pi * time_steps / 86400)
 t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)

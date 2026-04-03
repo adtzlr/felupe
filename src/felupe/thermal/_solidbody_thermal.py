@@ -20,7 +20,7 @@ from scipy.sparse import csr_array, csr_matrix, diags
 
 from ..assembly import IntegralForm
 from ..constitution import Laplace
-from ..math import dot, norm
+from ..math import dot
 from ..mechanics import SolidBody
 
 
@@ -286,7 +286,7 @@ class SolidBodyThermal(SolidBody):
 
         flux = -self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
         area = field.region.dA  # dA differential area at the boundary
-        area_norm = norm(area, axis=0)  # |dA| norm of differential area
+        area_norm = field.region.dV  # dV = |dA| norm of differential area
 
         transfer = dot(flux, area, mode=(1, 1))  # -q·dA normal heat transfer
 

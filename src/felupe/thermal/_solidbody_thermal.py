@@ -201,8 +201,6 @@ class SolidBodyThermal(SolidBody):
         temperature_new = self.results._statevars  # new temperature
         temperature_diff = (temperature_new - temperature_old).reshape(-1, 1)
 
-        print(temperature_old.min(), temperature_new.min())
-
         if self.time_step is not None and self.time_step > 0:
             temperature_rate = temperature_diff / self.time_step
             self.results.force += csr_matrix(self.capacity @ temperature_rate)

@@ -63,8 +63,6 @@ class SolidBodyThermal(SolidBody):
     is calculated as the difference between the new temperature and the old temperature
     divided by the time step, see Eq. :eq:`thermal-solid-body`.
 
-
-
     ..  math::
         :label: thermal-solid-body
 
@@ -126,8 +124,7 @@ class SolidBodyThermal(SolidBody):
         >>>
         >>> flux = solid.heat_flux_boundary(
         ...     region=fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0),
-        ...     normal=True,  # normal component of heat flux
-        ...     total=True,
+        ...     integrate=True,
         ...     mean=True,
         ... )
         >>> assert np.isclose(flux.round(1), -30.5)
@@ -157,7 +154,6 @@ class SolidBodyThermal(SolidBody):
             umat=model(thermal_conductivity),
             field=field,  # the field container containing the temperature field
             density=mass_density * specific_heat_capacity,  # volumetric heat capacity
-            statevars=field[0].values.copy(),  # initial temperature values
         )
 
         self.time_step = time_step
@@ -169,8 +165,18 @@ class SolidBodyThermal(SolidBody):
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
 
     def _vector(self, field=None, **kwargs):
+        # check if state variables need to be initialized
+        # a felupe.mechanics.SolidBody creates a zero-sized array by default
+        init_statevars_required = self.results.statevars.size == 0
+
         if field is not None:
             self.field = field
+            if init_statevars_required:  # initial temperature
+                self.results.statevars = self.field[0].values.copy()
+
+        else:  # field is None
+            if init_statevars_required:
+                raise ValueError("Provide a field to obtain the initial temperature.")
 
         if self.time_step == 0:  # inactive time step, only capacity contribution
             self.results._statevars = self.field[0].values.copy()  # new temperature
@@ -234,12 +240,12 @@ class SolidBodyThermal(SolidBody):
         self,
         field=None,
         region=None,
-        normal=True,
-        total=False,
-        mean=False,
+        integrate=True,
+        mean=True,
         **kwargs,
     ):
-        """Calculate the heat flux on a boundary region.
+        """Calculate the heat flux or the integrated heat transfer rate on a boundary
+        region.
 
         Parameters
         ----------
@@ -249,21 +255,24 @@ class SolidBodyThermal(SolidBody):
             region and linked to the body's field (default is None).
         region : felupe.RegionBoundary or None, optional
             The boundary region on which to calculate the heat flux. If None, the heat
-            flux will be calculated on provided field's region (default is None).
-        normal : bool, optional
-            If True, return the normal component of the heat flux (default is True).
-        total : bool, optional
-            If True, return the total heat transfer rate (default is False).
+            flux will be calculated on the provided field's region (default is None).
+        integrate : bool, optional
+            If True, evaluate the integrated heat transfer rate. Note that if ``mean``
+            is also True, the mean heat flux over the boundary is returned. If ``mean``
+            is False, the integrated heat transfer rate is returned. Default is True.
         mean : bool, optional
-            If True, return the mean heat flux over the boundary (default is False).
+            If True, return the mean heat flux over the boundary. If ``integrate`` is
+            also True, the mean heat flux is calculated as the integrated heat transfer
+            rate divided by the total area of the boundary. If ``integrate`` is False,
+            the mean heat flux is calculated as the heat transfer rate per cell, divided
+            by the area per cell. Default is True.
         **kwargs
             Additional keyword arguments to be passed to the gradient function.
 
         Returns
         -------
-        heat_flux : numpy.ndarray
-            The heat flux on the boundary, or the total heat transfer rate if `total` is
-            True, or the mean heat flux if `mean` is True.
+        heat_flux : numpy.ndarray or float
+            The heat flux or heat transfer rate on the boundary.
 
         """
         if (field is None and region is None) or (
@@ -276,20 +285,22 @@ class SolidBodyThermal(SolidBody):
             field = Field(region, values=self.field[0].values).as_container()
 
         flux = -self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
-        area = field.region.dV  # differential areas for dV = |dA| at the boundary
-        normals = field.region.normals  # outward normal vectors at the boundary
+        area = field.region.dA  # dA differential area at the boundary
+        area_norm = field.region.dV  # dV = |dA| norm of differential area
 
-        if normal:  # normal flux over boundary
-            flux = dot(flux, normals, mode=(1, 1))
+        transfer = dot(flux, area, mode=(1, 1))  # -q·dA normal heat transfer
 
-        if total:
-            flux = (flux * area).sum()  # total heat transfer rate
+        if integrate:
+            res = transfer.sum()  # -∫ q·dA heat transfer rate
 
             if mean:
-                flux /= area.sum()  # mean total heat flux
+                res = transfer.sum() / area_norm.sum()  # -1/A ∫ q·dA  mean heat flux
 
         else:
-            if mean:  # mean heat flux per cell
-                flux = (flux * area).sum(axis=0) / area.sum(axis=0)
+            # normal heat flux per quadrature point per cell
+            res = transfer / area_norm  # -q·dA / |dA|
 
-        return flux
+            if mean:  # mean heat flux per cell
+                res = transfer.sum(axis=0) / area_norm.sum(axis=0)
+
+        return res

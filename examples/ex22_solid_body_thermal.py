@@ -188,7 +188,7 @@ ax.text(0.5, 0.97, "heat leaves construction", **text_kwargs)
 ax.text(0.5, 0.03, "heat enters construction", **text_kwargs)
 
 ax.legend()
-ax.set(xlim=(tmin, tmax), xlabel="time (h)", ylabel=r"surface heat flux (W/m$^2$)")
+ax.set(xlim=(tmin, tmax), xlabel="time in h", ylabel=r"surface heat flux in W/m$^2$")
 
 
 # %%

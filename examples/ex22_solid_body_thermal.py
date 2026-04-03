@@ -71,10 +71,10 @@ container.plot(
 ).show()
 
 # %%
-# A top-level temperature field is defined on the whole construction, and separate
-# fields are defined for each material. The surface heat transfer coefficients and
-# ambient temperatures are defined for the internal and external boundaries. Thermal
-# solid bodies are created for each material.
+# A top-level temperature field is defined on the whole construction with an initial
+# temperature value of 10 °C, and separate fields are defined for each material. The
+# surface heat transfer coefficients and ambient temperatures are defined for the
+# internal and external boundaries. Thermal solid bodies are created for each material.
 regions = [fem.RegionQuad(m) for m in container]
 fields = [fem.Field(r, dim=1).as_container() for r in regions]
 

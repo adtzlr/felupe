@@ -28,19 +28,24 @@ class SolidBodyHeatFlux:
     Parameters
     ----------
     field : felupe.FieldContainer
-        The field container with the temperature as first field.
+        Field container with the temperature as first field.
     coefficient : float
-        The heat flux coefficient :math:`q` in W/m^2.
+        Heat flux per unit area or volume :math:`q` in W/m^2 or W/m^3.
 
     Notes
     -----
     This class represents a thermal heat flux boundary condition for a thermal solid
-    body, which is used to model heat flux at the boundary of a solid material.
-    The heat flux coefficient is used to calculate the heat flux at the boundary.
+    body, which is used to model heat flux in or on the surface of a solid material.
+    The heat flux coefficient is used to calculate the heat flux.
 
     Examples
     --------
+    This class can be used to model a heat flux on a surface of a thermal solid body.
+    Here, the heat flux is applied on the right end face of a rectangular domain, while
+    the left end face is kept at a constant temperature.
+
     ..  pyvista-plot::
+        :force_static:
 
         >>> import felupe as fem
         >>>
@@ -49,9 +54,57 @@ class SolidBodyHeatFlux:
         >>> temperature = fem.Field(region, dim=1)
         >>> field = fem.FieldContainer([temperature])
         >>>
-        >>> region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+        >>> region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
         >>> temperature_flux = fem.Field(region_flux, dim=1)
         >>> field_flux = fem.FieldContainer([temperature_flux])
+        >>>
+        >>> boundaries = fem.BoundaryDict(
+        ...     left=fem.Boundary(temperature, fx=0),
+        ... )
+        >>>
+        >>> solid = fem.thermal.SolidBodyThermal(
+        ...     field=field,
+        ...     mass_density=1.0,  # kg/m^3
+        ...     specific_heat_capacity=1.0,  # J / (kg K)
+        ...     time_step=0.01,  # s
+        ...     thermal_conductivity=1.0,  # W / (m K)
+        ... )
+        >>> heat_flux = fem.thermal.SolidBodyHeatFlux(
+        ...     field=field_flux,
+        ...     heat_flux=1.0,  # W / m^2
+        ... )
+        >>> time = fem.thermal.TimeStep([solid])
+        >>> table = fem.math.linsteps([0, 1], num=10)
+        >>> ramp = {
+        ...     time: 0.1 * table,
+        ...     heat_flux: 10 * table,
+        ... }
+        >>> step = fem.Step(
+        ...     items=[time, solid, heat_flux], ramp=ramp, boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate(
+        ...     filename="result.xdmf",  # result file for Paraview
+        ...     point_data={"Temperature": lambda field, substep: temperature.values},
+        ...     point_data_default=False,
+        ...     cell_data_default=False,
+        ... )
+        >>>
+        >>> mesh.view(
+        ...     point_data={"Temperature in K": temperature.values}
+        ... ).plot("Temperature in K").show()
+
+    It is also possible to model a heat flux in the volume of a thermal solid body,
+    or in other words, a volumetric heat source / heat sink.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Rectangle(n=11)
+        >>> region = fem.RegionQuad(mesh)
+        >>> temperature = fem.Field(region, dim=1)
+        >>> field = fem.FieldContainer([temperature])
         >>>
         >>> boundaries = fem.BoundaryDict(
         ...     left=fem.Boundary(temperature, fx=0),
@@ -60,19 +113,18 @@ class SolidBodyHeatFlux:
         >>>
         >>> solid = fem.thermal.SolidBodyThermal(
         ...     field=field,
-        ...     mass_density=1.0,  # kg/m^3
-        ...     specific_heat_capacity=1.0,  # J/(kg*K)
+        ...     mass_density=1.0,  # kg / m^3
+        ...     specific_heat_capacity=1.0,  # J / (kg K)
         ...     time_step=0.01,  # s
-        ...     thermal_conductivity=1.0,  # W/(m*K)
+        ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
         >>> heat_flux = fem.thermal.SolidBodyHeatFlux(
-        ...     field=field_flux,
-        ...     heat_flux=1.0,  # W/m^2
+        ...     field=field,
+        ...     heat_flux=1.0,  # W / m^3
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {
-        ...     boundaries["right"]: 10 * table,
         ...     time: 0.1 * table,
         ...     heat_flux: 10 * table,
         ... }

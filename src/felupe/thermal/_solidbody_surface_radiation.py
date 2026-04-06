@@ -43,6 +43,11 @@ class SolidBodySurfaceRadiation:
     emissivity is used to calculate the heat flux at the boundary based on the
     difference between the temperature at the boundary and the ambient temperature.
 
+    ..  note:
+
+        A thermal analysis must use temperatures in K, if
+        :class:`~felupe.thermal.SolidBodySurfaceRadiation` is included.
+
     Examples
     --------
     ..  pyvista-plot::

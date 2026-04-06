@@ -20,7 +20,6 @@ from scipy.constants import sigma
 from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
-from ..math import cdya_ik
 from ..mechanics import Assemble, Results, UpdateItem
 
 

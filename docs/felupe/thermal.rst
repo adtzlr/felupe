@@ -3,6 +3,11 @@
 Thermal
 ~~~~~~~
 
+.. note::
+
+   The heat flux is **positive** when **heat leaves** a solid body, and **negative**
+   when **heat enters** a solid body.
+
 .. currentmodule:: felupe
 
 **Solid Bodies**
@@ -11,6 +16,7 @@ Thermal
 
    thermal.SolidBodyThermal
    thermal.SolidBodySurfaceHeatTransfer
+   thermal.SolidBodySurfaceRadiation
    thermal.SolidBodyHeatFlux
 
 **Helpers**
@@ -26,6 +32,11 @@ Thermal
    :show-inheritance:
 
 .. autoclass:: felupe.thermal.SolidBodySurfaceHeatTransfer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.thermal.SolidBodySurfaceRadiation
    :members:
    :undoc-members:
    :show-inheritance:

@@ -131,12 +131,7 @@ class SolidBodyHeatFlux:
         >>> step = fem.Step(
         ...     items=[time, solid, heat_flux], ramp=ramp, boundaries=boundaries
         ... )
-        >>> job = fem.Job(steps=[step]).evaluate(
-        ...     filename="result.xdmf",  # result file for Paraview
-        ...     point_data={"Temperature": lambda field, substep: temperature.values},
-        ...     point_data_default=False,
-        ...     cell_data_default=False,
-        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
         ...     point_data={"Temperature in K": temperature.values}
@@ -146,8 +141,6 @@ class SolidBodyHeatFlux:
     --------
     felupe.thermal.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
-    felupe.thermal.SolidBodySurfaceHeatTransfer : A thermal solid body for heat
-        convection.
 
     """
 

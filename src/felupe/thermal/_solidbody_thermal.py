@@ -132,7 +132,8 @@ class SolidBodyThermal(SolidBody):
     See Also
     --------
     felupe.thermal.TimeStep : A time step item.
-    felupe.thermal.SolidBodySurfaceHeatTransfer : A thermal convection boundary condition.
+    felupe.thermal.SolidBodySurfaceHeatTransfer : A surface heat transfer boundary condition.
+    felupe.thermal.SolidBodySurfaceRadiation : A thermal radiation boundary condition.
     felupe.thermal.SolidBodyHeatFlux : A thermal heat flux boundary condition.
 
     """

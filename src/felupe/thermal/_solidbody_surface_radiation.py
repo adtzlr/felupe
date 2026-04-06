@@ -158,13 +158,14 @@ class SolidBodySurfaceRadiation:
         if self.time_step is not None and self.time_step == 0:  # inactive time step
             return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
+        dim = self.field[0].dim
         temperature = self.field.extract(grad=False)[0]
         fun = [
             -self.results.emissivity
             * self._sigma
             * 4
             * temperature**3
-            * np.ones((1, 1, 1, 1))
+            * np.eye(dim).reshape(dim, dim, 1, 1)
         ]
 
         self.results.stiffness = IntegralForm(

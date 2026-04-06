@@ -95,7 +95,7 @@ def test_thermal():
     table = fem.math.linsteps([0, 0, 1], num=2)
     table_emissivity = fem.math.linsteps([1, 1, 1], num=2) * 0.8
     ramp = {
-        boundaries["right"]: 10 * table,
+        boundaries["right"]: 293.15 + 10 * table,
         time: 0.1 * table,
         heat_transfer: 100 * table,
         heat_flux: 10 * table,

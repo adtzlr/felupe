@@ -83,6 +83,14 @@ def test_thermal():
     heat_radiation.assemble.vector(field)
     heat_radiation.assemble.matrix(field)
 
+    heat_flux.time_step = 0.0
+    heat_flux.assemble.vector(field)
+    heat_flux.assemble.matrix(field)
+
+    heat_radiation.time_step = 0.0
+    heat_radiation.assemble.vector(field)
+    heat_radiation.assemble.matrix(field)
+
     time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux])
     table = fem.math.linsteps([0, 0, 1], num=2)
     table_emissivity = fem.math.linsteps([1, 1, 1], num=2) * 0.8

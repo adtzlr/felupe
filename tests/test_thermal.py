@@ -97,9 +97,9 @@ def test_thermal():
     ramp = {
         boundaries["right"]: 293.15 + 10 * table,
         time: 0.1 * table,
-        heat_transfer: 100 * table,
+        heat_transfer["temperature"]: (293.15 + 10.0) + 100 * table,
         heat_flux: 10 * table,
-        heat_radiation: 100 * table,
+        heat_radiation["temperature"]: (293.15 + 10.0) + 100 * table,
         heat_radiation["emissivity"]: table_emissivity,
     }
     step = fem.Step(

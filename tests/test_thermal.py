@@ -91,7 +91,7 @@ def test_thermal():
     heat_radiation.assemble.vector(field)
     heat_radiation.assemble.matrix(field)
 
-    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux])
+    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux, heat_radiation])
     table = fem.math.linsteps([0, 0, 1], num=2)
     table_emissivity = fem.math.linsteps([1, 1, 1], num=2) * 0.8
     ramp = {

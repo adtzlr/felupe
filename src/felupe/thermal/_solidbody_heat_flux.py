@@ -82,12 +82,7 @@ class SolidBodyHeatFlux:
         >>> step = fem.Step(
         ...     items=[time, solid, heat_flux], ramp=ramp, boundaries=boundaries
         ... )
-        >>> job = fem.Job(steps=[step]).evaluate(
-        ...     filename="result.xdmf",  # result file for Paraview
-        ...     point_data={"Temperature": lambda field, substep: temperature.values},
-        ...     point_data_default=False,
-        ...     cell_data_default=False,
-        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
         ...     point_data={"Temperature in K": temperature.values}
@@ -109,6 +104,8 @@ class SolidBodyHeatFlux:
         >>> boundaries = fem.BoundaryDict(
         ...     left=fem.Boundary(temperature, fx=0),
         ...     right=fem.Boundary(temperature, fx=1),
+        ...     bottom=fem.Boundary(temperature, fy=0),
+        ...     top=fem.Boundary(temperature, fy=1),
         ... )
         >>>
         >>> solid = fem.thermal.SolidBodyThermal(
@@ -126,7 +123,7 @@ class SolidBodyHeatFlux:
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {
         ...     time: 0.1 * table,
-        ...     heat_flux: 10 * table,
+        ...     heat_flux: -10 * table,  # heat source
         ... }
         >>> step = fem.Step(
         ...     items=[time, solid, heat_flux], ramp=ramp, boundaries=boundaries

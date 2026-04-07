@@ -99,6 +99,7 @@ def test_thermal():
         time: 0.1 * table,
         heat_transfer["temperature"]: (293.15 + 10.0) + 100 * table,
         heat_flux: 10 * table,
+        heat_radiation: (293.15 + 10.0) + 100 * table,
         heat_radiation["temperature"]: (293.15 + 10.0) + 100 * table,
         heat_radiation["emissivity"]: table_emissivity,
     }

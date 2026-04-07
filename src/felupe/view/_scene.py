@@ -288,7 +288,10 @@ class Scene:
         ):
             edges = (
                 mesh.separate_cells()
-                .extract_surface(nonlinear_subdivision=nonlinear_subdivision)
+                .extract_surface(
+                    algorithm=None,
+                    nonlinear_subdivision=nonlinear_subdivision,
+                )
                 .extract_feature_edges()
             )
             actor = plotter.add_mesh(edges, color=edge_color, line_width=line_width)

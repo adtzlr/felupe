@@ -75,6 +75,7 @@ class Scene:
         split_sharp_edges=True,
         edge_color="black",
         line_width=1.0,
+        show_logo=False,
         **kwargs,
     ):
         """Plot scalars, selected by name and component.
@@ -139,7 +140,8 @@ class Scene:
             The color of the edge lines (default is "black").
         line_width : float, optional
             The line-width of the edge lines (default is 1.0).
-
+        show_logo : bool, optional
+            A flag to show the FElupe logo in the top right corner (default is False).
 
         Returns
         -------
@@ -163,6 +165,16 @@ class Scene:
             if notebook:
                 plotter_kwargs["notebook"] = notebook
             plotter = pv.Plotter(**plotter_kwargs)
+
+        if show_logo:
+            from importlib.resources import files, as_file
+
+            with as_file(files("felupe.view") / "logo.png") as logo_path:
+                plotter.add_logo_widget(
+                    logo=logo_path,
+                    position=(0.75, 0.85),
+                    size=(0.2, 0.2),
+                )
 
         if scalar_bar_args is None:
             scalar_bar_args = {}

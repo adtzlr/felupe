@@ -180,6 +180,13 @@ def test_model():
         pass
 
 
+def test_logo_path():
+    from importlib.resources import files, as_file
+
+    with as_file(files("felupe.view") / "logo.png") as logo_path:
+        assert logo_path.is_file()
+
+
 if __name__ == "__main__":
     test_xdmf_cell_data()
     test_xdmf_point_data()
@@ -187,3 +194,4 @@ if __name__ == "__main__":
     test_point_data()
     test_mesh()
     test_model()
+    test_logo_path()

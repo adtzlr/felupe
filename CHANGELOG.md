@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add keyword-based ramps for (solid body) classes of the `mechanics` module.
 - Add `labels` and `add_legend` keywords to `MeshContainer.plot()`. By default, no legend is added. If the legend is added, but no labels are given, the meshes are named as Mesh 1, Mesh 2, ... . If labels are given, a legend is added.
 - Add optional `ViewScene(show_logo=False)`.
+- Add `Scene.plot(show_logo=False)` to optionally show the FElupe logo in a PyVista plot
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

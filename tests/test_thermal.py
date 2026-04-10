@@ -183,7 +183,7 @@ def test_thermal_axi():
     solid.heat_flux_boundary(region=my_region, integrate=False)
     solid.heat_flux_boundary(region=my_region, integrate=False, mean=False)
 
-    my_field = fem.Field(my_region, dim=1).as_container()
+    my_field = fem.FieldAxisymmetric(my_region, dim=1).as_container()
     solid.heat_flux_boundary(field=my_field)
     solid.heat_flux_boundary(field=my_field, mean=False)
     solid.heat_flux_boundary(field=my_field, integrate=False)

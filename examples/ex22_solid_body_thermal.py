@@ -15,7 +15,7 @@ Thermal Analysis
 
 This example describes a simple two-dimensional light-weight construction system set up
 with three :class:`solids <felupe.thermal.SolidBodyThermal>`. The temperature boundary
-conditions have a :math:`\pm 1` K sinusoidal variation around their average value with a
+conditions have a :math:`\pm 1` °C sinusoidal variation around their average value with a
 period of 24 h.
 """
 

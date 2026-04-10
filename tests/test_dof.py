@@ -181,7 +181,9 @@ def test_loadcase():
         assert len(bx) == 2
         assert "right-0" in bx[0]
 
-        sh = fem.dof.shear(u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True)
+        sh = fem.dof.shear(
+            u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True, return_loadcase=False
+        )
         sh = fem.dof.shear(
             u, bottom=0.0, top=1.0, moves=(0.2, 0, 0), sym=True, return_loadcase=True
         )

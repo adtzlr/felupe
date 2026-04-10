@@ -110,7 +110,7 @@ class SolidBodySurfaceRadiation:
         self.time_step = None
 
         self.results = Results()
-        self.results.temperature = temperature  # ambient temperature in K
+        self.results.temperature = temperature  # ambient temperature in °C
         self.results.emissivity = emissivity
 
         self._sigma = sigma  # Stefan-Boltzmann constant

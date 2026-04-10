@@ -85,8 +85,8 @@ class SolidBodyHeatFlux:
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in K": temperature.values}
-        ... ).plot("Temperature in K").show()
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
 
     It is also possible to model a heat flux in the volume of a thermal solid body,
     or in other words, a volumetric heat source / heat sink.
@@ -131,8 +131,8 @@ class SolidBodyHeatFlux:
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in K": temperature.values}
-        ... ).plot("Temperature in K").show()
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
 
     See Also
     --------

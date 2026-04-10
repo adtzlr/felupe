@@ -34,7 +34,7 @@ class SolidBodySurfaceRadiation:
         Emissivity :math:`\varepsilon` of the surface (dimensionless,
         :math:`0 \le \varepsilon \le 1`).
     temperature : float
-        The ambient temperature :math:`T_\infty` in K.
+        The ambient temperature :math:`T_\infty` in °C.
 
     Notes
     -----
@@ -45,7 +45,7 @@ class SolidBodySurfaceRadiation:
 
     ..  note:
 
-        A thermal analysis must use temperatures in K, if
+        A thermal analysis must use temperatures in °C, if
         :class:`~felupe.thermal.SolidBodySurfaceRadiation` is included.
 
     Examples
@@ -57,7 +57,7 @@ class SolidBodySurfaceRadiation:
         >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)
-        >>> temperature = fem.Field(region, dim=1, values=293.15)
+        >>> temperature = fem.Field(region, dim=1, values=20.0)
         >>> field = fem.FieldContainer([temperature])
         >>>
         >>> region_radiation = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
@@ -65,7 +65,7 @@ class SolidBodySurfaceRadiation:
         >>> field_radiation = fem.FieldContainer([temperature_radiation])
         >>>
         >>> boundaries = fem.BoundaryDict(
-        ...     left=fem.Boundary(temperature, fx=0, value=293.15),
+        ...     left=fem.Boundary(temperature, fx=0, value=20.0),
         ... )
         >>>
         >>> solid = fem.thermal.SolidBodyThermal(
@@ -78,7 +78,7 @@ class SolidBodySurfaceRadiation:
         >>> radiation = fem.thermal.SolidBodySurfaceRadiation(
         ...     field=field_radiation,
         ...     emissivity=0.8,
-        ...     temperature=293.15 + 0.0,  # K
+        ...     temperature=35.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=15)
@@ -95,8 +95,8 @@ class SolidBodySurfaceRadiation:
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in K": temperature.values}
-        ... ).plot("Temperature in K").show()
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
 
     See Also
     --------
@@ -142,7 +142,7 @@ class SolidBodySurfaceRadiation:
         fun = [
             -self.results.emissivity
             * self._sigma
-            * (temperature**4 - self.results.temperature**4)
+            * ((temperature - 273.15) ** 4 - (self.results.temperature - 273.15) ** 4)
         ]
 
         self.results.force = IntegralForm(
@@ -164,7 +164,7 @@ class SolidBodySurfaceRadiation:
             -self.results.emissivity
             * self._sigma
             * 4
-            * temperature**3
+            * (temperature - 273.15) ** 3
             * np.eye(dim).reshape(dim, dim, 1, 1)
         ]
 

@@ -24,7 +24,7 @@ import felupe as fem
 def test_thermal():
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
-    temperature = fem.Field(region, dim=1, values=293.15)
+    temperature = fem.Field(region, dim=1, values=20.0)
     field = fem.FieldContainer([temperature])
 
     region_bottom = fem.RegionQuadBoundary(mesh, mask=mesh.y == 0.0)
@@ -36,8 +36,8 @@ def test_thermal():
     field_top = fem.FieldContainer([temperature_top])
 
     boundaries = fem.BoundaryDict(
-        left=fem.Boundary(temperature, fx=0, value=293.15),
-        right=fem.Boundary(temperature, fx=1, value=293.15),
+        left=fem.Boundary(temperature, fx=0, value=20.0),
+        right=fem.Boundary(temperature, fx=1, value=20.0),
     )
 
     solid = fem.thermal.SolidBodyThermal(
@@ -60,13 +60,13 @@ def test_thermal():
     heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
         field=field_top,
         coefficient=1.0,  # W/(m^2*K)
-        temperature=293.15 + 10.0,  # K
+        temperature=10.0,  # K
     )
 
     heat_radiation = fem.thermal.SolidBodySurfaceRadiation(
         field=field_top,
         emissivity=0.8,  # dimensionless, between 0 and 1
-        temperature=293.15 + 10.0,  # K
+        temperature=10.0,  # K
     )
 
     heat_flux = fem.thermal.SolidBodyHeatFlux(
@@ -95,12 +95,12 @@ def test_thermal():
     table = fem.math.linsteps([0, 0, 1], num=2)
     table_emissivity = fem.math.linsteps([1, 1, 1], num=2) * 0.8
     ramp = {
-        boundaries["right"]: 293.15 + 10 * table,
+        boundaries["right"]: 10 * table,
         time: 0.1 * table,
-        heat_transfer["temperature"]: (293.15 + 10.0) + 100 * table,
+        heat_transfer["temperature"]: 10 + 100 * table,
         heat_flux: 10 * table,
-        heat_radiation: (293.15 + 10.0) + 100 * table,
-        heat_radiation["temperature"]: (293.15 + 10.0) + 100 * table,
+        heat_radiation: 10 + 100 * table,
+        heat_radiation["temperature"]: 10 + 100 * table,
         heat_radiation["emissivity"]: table_emissivity,
     }
     step = fem.Step(

@@ -32,7 +32,7 @@ class SolidBodySurfaceHeatTransfer:
     coefficient : float
         The convection coefficient :math:`h` in W/(m^2 K).
     temperature : float
-        The ambient temperature :math:`T_\infty` in °C or K.
+        The ambient temperature :math:`T_\infty` in °C.
 
     Notes
     -----
@@ -90,8 +90,8 @@ class SolidBodySurfaceHeatTransfer:
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in K": temperature.values}
-        ... ).plot("Temperature in K").show()
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
 
     See Also
     --------

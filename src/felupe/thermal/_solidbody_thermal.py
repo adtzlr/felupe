@@ -99,9 +99,9 @@ class SolidBodyThermal(SolidBody):
         >>> solid = fem.thermal.SolidBodyThermal(
         ...     field=field,
         ...     mass_density=1.0,  # kg/m^3
-        ...     specific_heat_capacity=1.0,  # J/(kg*K)
+        ...     specific_heat_capacity=1.0,  # J / (kg K)
         ...     time_step=0.01,  # s
-        ...     thermal_conductivity=1.0,  # W/(m*K)
+        ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
@@ -115,8 +115,8 @@ class SolidBodyThermal(SolidBody):
         ... )
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in K": temperature.values}
-        ... ).plot("Temperature in K").show()
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
         >>>
         >>> mesh.view(
         ...     cell_data={"Heat Flux": solid.results.heat_flux[0][0].mean(axis=-2).T}

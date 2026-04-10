@@ -119,15 +119,15 @@ def test_thermal():
 def test_thermal_axi():
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
-    temperature = fem.Field(region, dim=1)
+    temperature = fem.FieldAxisymmetric(region, dim=1)
     field = fem.FieldContainer([temperature])
 
     region_bottom = fem.RegionQuadBoundary(mesh, mask=mesh.y == 0.0)
-    temperature_bottom = fem.Field(region_bottom, dim=1)
+    temperature_bottom = fem.FieldAxisymmetric(region_bottom, dim=1)
     field_bottom = fem.FieldContainer([temperature_bottom])
 
     region_top = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_top = fem.Field(region_top, dim=1)
+    temperature_top = fem.FieldAxisymmetric(region_top, dim=1)
     field_top = fem.FieldContainer([temperature_top])
 
     boundaries = fem.BoundaryDict(

@@ -126,6 +126,8 @@ def test_cell_data():
         plotter = view.plot(
             "Cell Volume",
             off_screen=True,
+            show_logo=True,
+            component=None,
         )
         # plotter.show(screenshot="cube.png")
 

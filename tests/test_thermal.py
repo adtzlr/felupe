@@ -60,13 +60,13 @@ def test_thermal():
     heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
         field=field_top,
         coefficient=1.0,  # W/(m^2*K)
-        temperature=10.0,  # K
+        temperature=10.0,  # °C
     )
 
     heat_radiation = fem.thermal.SolidBodySurfaceRadiation(
         field=field_top,
         emissivity=0.8,  # dimensionless, between 0 and 1
-        temperature=10.0,  # K
+        temperature=10.0,  # °C
     )
 
     heat_flux = fem.thermal.SolidBodyHeatFlux(
@@ -155,7 +155,7 @@ def test_thermal_axi():
     heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
         field=field_top,
         coefficient=1.0,  # W/(m^2*K)
-        temperature=10.0,  # K
+        temperature=10.0,  # °C
     )
 
     heat_flux = fem.thermal.SolidBodyHeatFlux(

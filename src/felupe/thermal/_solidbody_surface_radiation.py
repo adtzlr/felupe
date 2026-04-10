@@ -78,11 +78,11 @@ class SolidBodySurfaceRadiation:
         >>> radiation = fem.thermal.SolidBodySurfaceRadiation(
         ...     field=field_radiation,
         ...     emissivity=0.8,
-        ...     temperature=35.0,  # °C
+        ...     temperature=20.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=15)
-        >>> air_temperature = 293.15 + fem.math.linsteps([0, 40], num=15)  # air temperature
+        >>> air_temperature = fem.math.linsteps([20, 40], num=15)  # air temperature
         >>> emissivity = fem.math.linsteps([0.6, 0.8], num=15)  # a value between 0 ... 1
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
@@ -142,7 +142,7 @@ class SolidBodySurfaceRadiation:
         fun = [
             -self.results.emissivity
             * self._sigma
-            * ((temperature - 273.15) ** 4 - (self.results.temperature - 273.15) ** 4)
+            * ((temperature + 273.15) ** 4 - (self.results.temperature + 273.15) ** 4)
         ]
 
         self.results.force = IntegralForm(
@@ -164,7 +164,7 @@ class SolidBodySurfaceRadiation:
             -self.results.emissivity
             * self._sigma
             * 4
-            * (temperature - 273.15) ** 3
+            * (temperature + 273.15) ** 3
             * np.eye(dim).reshape(dim, dim, 1, 1)
         ]
 

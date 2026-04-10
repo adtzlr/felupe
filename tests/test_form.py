@@ -77,7 +77,7 @@ def pre_axi():
     m = fem.Rectangle(n=3)
     r = fem.RegionQuad(m)
 
-    u = fem.FieldAxisymmetric(r)
+    u = fem.FieldAxisymmetric(r, dim=2)
     v = fem.FieldContainer([u])
 
     W = fem.constitution.NeoHooke(1, 3)

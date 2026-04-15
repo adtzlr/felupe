@@ -99,9 +99,9 @@ class SolidBodyThermal(SolidBody):
         >>> solid = fem.thermal.SolidBodyThermal(
         ...     field=field,
         ...     mass_density=1.0,  # kg/m^3
-        ...     specific_heat_capacity=1.0,  # J/(kg*K)
+        ...     specific_heat_capacity=1.0,  # J / (kg K)
         ...     time_step=0.01,  # s
-        ...     thermal_conductivity=1.0,  # W/(m*K)
+        ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
@@ -115,8 +115,8 @@ class SolidBodyThermal(SolidBody):
         ... )
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in K": temperature.values}
-        ... ).plot("Temperature in K").show()
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
         >>>
         >>> mesh.view(
         ...     cell_data={"Heat Flux": solid.results.heat_flux[0][0].mean(axis=-2).T}
@@ -132,7 +132,8 @@ class SolidBodyThermal(SolidBody):
     See Also
     --------
     felupe.thermal.TimeStep : A time step item.
-    felupe.thermal.SolidBodySurfaceHeatTransfer : A thermal convection boundary condition.
+    felupe.thermal.SolidBodySurfaceHeatTransfer : A surface heat transfer boundary condition.
+    felupe.thermal.SolidBodySurfaceRadiation : A thermal radiation boundary condition.
     felupe.thermal.SolidBodyHeatFlux : A thermal heat flux boundary condition.
 
     """
@@ -282,7 +283,7 @@ class SolidBodyThermal(SolidBody):
 
         if field is None:
             Field = self.field[0].__class__
-            field = Field(region, values=self.field[0].values).as_container()
+            field = Field(region, dim=self.field[0].dim, values=self.field[0].values).as_container()
 
         flux = -self.umat.gradient([*field.extract(), None], **kwargs)[0][0]
         area = field.region.dA  # dA differential area at the boundary

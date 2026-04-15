@@ -138,7 +138,7 @@ def pre_axi(bulk=2):
 
     m = fem.Rectangle(n=3)
     r = fem.RegionQuad(m)
-    u = fem.FieldAxisymmetric(r)
+    u = fem.FieldAxisymmetric(r, dim=2)
 
     np.random.seed(156)
     u.values = np.random.rand(*u.values.shape) / 10

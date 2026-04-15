@@ -48,7 +48,7 @@ def pre_axi():
     q = fem.GaussLegendre(1, 2)
     r = fem.Region(m, e, q)
 
-    u = fem.FieldAxisymmetric(r)
+    u = fem.FieldAxisymmetric(r, dim=2)
     v = fem.FieldContainer([u])
 
     print(m), print(r), print(v)

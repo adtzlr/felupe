@@ -61,6 +61,13 @@ class SolidBodyNearlyIncompressible(Solid):
 
     Notes
     -----
+    ..  note::
+
+        This nearly-incompressible solid body works best with
+        :class:`~felupe.RegionQuad` and :class:`~felupe.RegionHexahedron` regions.
+        :class:`~felupe.RegionQuadraticTriangle` and
+        :class:`~felupe.RegionQuadraticTetra` regions are also supported.
+
     The total potential energy of internal forces for a three-field variational
     approach, suitable for nearly-incompressible material behaviour, is given in Eq.
     :eq:`nearlyincompressible`

@@ -24,20 +24,20 @@ import felupe as fem
 def test_thermal():
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
-    temperature = fem.Field(region, dim=1)
+    temperature = fem.Field(region, dim=1, values=20.0)
     field = fem.FieldContainer([temperature])
 
-    region_heat_transfer = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_heat_transfer = fem.Field(region_heat_transfer, dim=1)
-    field_heat_transfer = fem.FieldContainer([temperature_heat_transfer])
+    region_bottom = fem.RegionQuadBoundary(mesh, mask=mesh.y == 0.0)
+    temperature_bottom = fem.Field(region_bottom, dim=1)
+    field_bottom = fem.FieldContainer([temperature_bottom])
 
-    region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_flux = fem.Field(region_flux, dim=1)
-    field_flux = fem.FieldContainer([temperature_flux])
+    region_top = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+    temperature_top = fem.Field(region_top, dim=1)
+    field_top = fem.FieldContainer([temperature_top])
 
     boundaries = fem.BoundaryDict(
-        left=fem.Boundary(temperature, fx=0),
-        right=fem.Boundary(temperature, fx=1),
+        left=fem.Boundary(temperature, fx=0, value=20.0),
+        right=fem.Boundary(temperature, fx=1, value=20.0),
     )
 
     solid = fem.thermal.SolidBodyThermal(
@@ -58,13 +58,19 @@ def test_thermal():
     )
 
     heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
-        field=field_heat_transfer,
+        field=field_top,
         coefficient=1.0,  # W/(m^2*K)
-        temperature=10.0,  # K
+        temperature=10.0,  # °C
+    )
+
+    heat_radiation = fem.thermal.SolidBodySurfaceRadiation(
+        field=field_top,
+        emissivity=0.8,  # dimensionless, between 0 and 1
+        temperature=10.0,  # °C
     )
 
     heat_flux = fem.thermal.SolidBodyHeatFlux(
-        field=field_flux,
+        field=field_bottom,
         heat_flux=1.0,  # W/m^2
     )
 
@@ -74,17 +80,33 @@ def test_thermal():
     heat_transfer.assemble.matrix(field)
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
+    heat_radiation.assemble.vector(field)
+    heat_radiation.assemble.matrix(field)
 
-    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux])
+    heat_flux.time_step = 0.0
+    heat_flux.assemble.vector(field)
+    heat_flux.assemble.matrix(field)
+
+    heat_radiation.time_step = 0.0
+    heat_radiation.assemble.vector(field)
+    heat_radiation.assemble.matrix(field)
+
+    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux, heat_radiation])
     table = fem.math.linsteps([0, 0, 1], num=2)
+    table_emissivity = fem.math.linsteps([1, 1, 1], num=2) * 0.8
     ramp = {
         boundaries["right"]: 10 * table,
         time: 0.1 * table,
-        heat_transfer: 100 * table,
+        heat_transfer["temperature"]: 10 + 100 * table,
         heat_flux: 10 * table,
+        heat_radiation: 10 + 100 * table,
+        heat_radiation["temperature"]: 10 + 100 * table,
+        heat_radiation["emissivity"]: table_emissivity,
     }
     step = fem.Step(
-        items=[time, solid, heat_transfer, heat_flux], ramp=ramp, boundaries=boundaries
+        items=[time, solid, heat_transfer, heat_flux, heat_radiation],
+        ramp=ramp,
+        boundaries=boundaries,
     )
     job = fem.Job(steps=[step]).evaluate(
         filename="result.xdmf",  # result file for Paraview
@@ -97,16 +119,16 @@ def test_thermal():
 def test_thermal_axi():
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
-    temperature = fem.Field(region, dim=1)
+    temperature = fem.FieldAxisymmetric(region, dim=1)
     field = fem.FieldContainer([temperature])
 
-    region_heat_transfer = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_heat_transfer = fem.FieldAxisymmetric(region_heat_transfer, dim=1)
-    field_heat_transfer = fem.FieldContainer([temperature_heat_transfer])
+    region_bottom = fem.RegionQuadBoundary(mesh, mask=mesh.y == 0.0)
+    temperature_bottom = fem.FieldAxisymmetric(region_bottom, dim=1)
+    field_bottom = fem.FieldContainer([temperature_bottom])
 
-    region_flux = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-    temperature_flux = fem.FieldAxisymmetric(region_flux, dim=1)
-    field_flux = fem.FieldContainer([temperature_flux])
+    region_top = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+    temperature_top = fem.FieldAxisymmetric(region_top, dim=1)
+    field_top = fem.FieldContainer([temperature_top])
 
     boundaries = fem.BoundaryDict(
         left=fem.Boundary(temperature, fx=0),
@@ -131,13 +153,13 @@ def test_thermal_axi():
     )
 
     heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
-        field=field_heat_transfer,
+        field=field_top,
         coefficient=1.0,  # W/(m^2*K)
-        temperature=10.0,  # K
+        temperature=10.0,  # °C
     )
 
     heat_flux = fem.thermal.SolidBodyHeatFlux(
-        field=field_flux,
+        field=field_bottom,
         heat_flux=1.0,  # W/m^2
     )
 
@@ -161,7 +183,7 @@ def test_thermal_axi():
     solid.heat_flux_boundary(region=my_region, integrate=False)
     solid.heat_flux_boundary(region=my_region, integrate=False, mean=False)
 
-    my_field = fem.Field(my_region, dim=1).as_container()
+    my_field = fem.FieldAxisymmetric(my_region, dim=1).as_container()
     solid.heat_flux_boundary(field=my_field)
     solid.heat_flux_boundary(field=my_field, mean=False)
     solid.heat_flux_boundary(field=my_field, integrate=False)

@@ -123,3 +123,5 @@ docs/examples/
 docs/tutorial/*
 !docs/tutorial/examples
 sg_execution_times.rst
+result.h5
+result.xdmf

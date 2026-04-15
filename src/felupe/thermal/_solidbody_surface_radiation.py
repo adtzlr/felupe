@@ -16,31 +16,37 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
+from scipy.constants import sigma
 from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
 from ..mechanics import Assemble, Results, UpdateItem
 
 
-class SolidBodySurfaceHeatTransfer:
-    r"""A surface boundary condition for a thermal solid body.
+class SolidBodySurfaceRadiation:
+    r"""Radiative heat transfer on the surface of a thermal solid body.
 
     Parameters
     ----------
     field : felupe.FieldContainer
-        The field container with the temperature as first field.
-    coefficient : float
-        The convection coefficient :math:`h` in W/(m^2 K).
+        Field container with the temperature as first field.
+    emissivity : float
+        Emissivity :math:`\varepsilon` of the surface (dimensionless,
+        :math:`0 \le \varepsilon \le 1`).
     temperature : float
         The ambient temperature :math:`T_\infty` in °C.
 
     Notes
     -----
     This class represents a boundary condition for a thermal solid body, which
-    is used to model heat transfer (convection, radiation) at the boundary of a
-    solid material. The coefficient is used to calculate the heat flux at the
-    boundary based on the difference between the temperature at the boundary
-    and the ambient temperature.
+    is used to model radiative heat transfer at the boundary of a solid material. The
+    emissivity is used to calculate the heat flux at the boundary based on the
+    difference between the temperature at the boundary and the ambient temperature.
+
+    ..  note:
+
+        A thermal analysis must use temperatures in °C, if
+        :class:`~felupe.thermal.SolidBodySurfaceRadiation` is included.
 
     Examples
     --------
@@ -51,41 +57,40 @@ class SolidBodySurfaceHeatTransfer:
         >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)
-        >>> temperature = fem.Field(region, dim=1)
+        >>> temperature = fem.Field(region, dim=1, values=20.0)
         >>> field = fem.FieldContainer([temperature])
         >>>
-        >>> region_heat_transfer = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
-        >>> temperature_heat_transfer = fem.Field(region_heat_transfer, dim=1)
-        >>> field_heat_transfer = fem.FieldContainer([temperature_heat_transfer])
+        >>> region_radiation = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
+        >>> temperature_radiation = fem.Field(region_radiation, dim=1)
+        >>> field_radiation = fem.FieldContainer([temperature_radiation])
         >>>
         >>> boundaries = fem.BoundaryDict(
-        ...     left=fem.Boundary(temperature, fx=0),
+        ...     left=fem.Boundary(temperature, fx=0, value=20.0),
         ... )
         >>>
         >>> solid = fem.thermal.SolidBodyThermal(
         ...     field=field,
-        ...     mass_density=1400.0,  # kg/m^3
-        ...     specific_heat_capacity=1000.0,  # J/(kg*K)
+        ...     mass_density=1400.0,  # kg / m^3
+        ...     specific_heat_capacity=1000.0,  # J / (kg K)
         ...     time_step=720.0,  # s
-        ...     thermal_conductivity=1.0,  # W/(m*K)
+        ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
-        >>> heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
-        ...     field=field_heat_transfer,
-        ...     coefficient=7.69,  # W/(m^2 K)
-        ...     temperature=10.0,  # °C
+        >>> radiation = fem.thermal.SolidBodySurfaceRadiation(
+        ...     field=field_radiation,
+        ...     emissivity=0.8,
+        ...     temperature=20.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=15)
-        >>> air_temperature = fem.math.linsteps([0, 40], num=15)  # air temperature
-        >>> coefficient = fem.math.linsteps([7.0, 8.0], num=15)  # heat transfer coeff.
+        >>> air_temperature = fem.math.linsteps([20, 40], num=15)  # air temperature
+        >>> emissivity = fem.math.linsteps([0.6, 0.8], num=15)  # a value between 0 ... 1
         >>> ramp = {
-        ...     boundaries["left"]: 10 * table,  # surface temperature
         ...     time: 18000 * table,  # five hours
-        ...     heat_transfer["temperature"]: air_temperature,
-        ...     heat_transfer["coefficient"]: coefficient,
+        ...     radiation["temperature"]: air_temperature,
+        ...     radiation["emissivity"]: emissivity,
         ... }
         >>> step = fem.Step(
-        ...     items=[time, solid, heat_transfer], ramp=ramp, boundaries=boundaries
+        ...     items=[time, solid, radiation], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
@@ -100,13 +105,15 @@ class SolidBodySurfaceHeatTransfer:
 
     """
 
-    def __init__(self, field, coefficient, temperature):
+    def __init__(self, field, emissivity, temperature):
         self.field = field
         self.time_step = None
 
         self.results = Results()
-        self.results.temperature = temperature
-        self.results.coefficient = coefficient
+        self.results.temperature = temperature  # ambient temperature in °C
+        self.results.emissivity = emissivity
+
+        self._sigma = sigma  # Stefan-Boltzmann constant
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
@@ -121,8 +128,8 @@ class SolidBodySurfaceHeatTransfer:
     def _update_temperature(self, temperature):
         self.results.temperature = temperature
 
-    def _update_coefficient(self, coefficient):
-        self.results.coefficient = coefficient
+    def _update_emissivity(self, emissivity):
+        self.results.emissivity = emissivity
 
     def _vector(self, field=None, **kwargs):
         if field is not None:
@@ -132,7 +139,11 @@ class SolidBodySurfaceHeatTransfer:
             return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
         temperature = self.field.extract(grad=False)[0]
-        fun = [-self.results.coefficient * (temperature - self.results.temperature)]
+        fun = [
+            -self.results.emissivity
+            * self._sigma
+            * ((temperature + 273.15) ** 4 - (self.results.temperature + 273.15) ** 4)
+        ]
 
         self.results.force = IntegralForm(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
@@ -148,7 +159,14 @@ class SolidBodySurfaceHeatTransfer:
             return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
         dim = self.field[0].dim
-        fun = [-self.results.coefficient * np.eye(dim).reshape(dim, dim, 1, 1)]
+        temperature = self.field.extract(grad=False)[0]
+        fun = [
+            -self.results.emissivity
+            * self._sigma
+            * 4
+            * (temperature + 273.15) ** 3
+            * np.eye(dim).reshape(dim, dim, 1, 1)
+        ]
 
         self.results.stiffness = IntegralForm(
             fun=fun,

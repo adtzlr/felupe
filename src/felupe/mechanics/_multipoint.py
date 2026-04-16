@@ -305,12 +305,12 @@ class MultiPointContact:
         >>>
         >>> plotter = pv.Plotter()
         >>> actor_1 = plotter.add_points(
-        ...     mesh.points[mpc.points],
+        ...     mesh.points[contact.points],
         ...     point_size=16,
         ...     color="red",
         ... )
         >>> actor_2 = plotter.add_points(
-        ...     mesh.points[[mpc.centerpoint]],
+        ...     mesh.points[[contact.centerpoint]],
         ...     point_size=16,
         ...     color="green",
         ... )

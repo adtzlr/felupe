@@ -199,6 +199,7 @@ class RigidPlaneContact:
         size=None,
         show_point=True,
         show_line=True,
+        sym=(False, False, False),
         **kwargs,
     ):
         import pyvista as pv
@@ -228,6 +229,9 @@ class RigidPlaneContact:
             i_size=size,
             j_size=size,
         )
+        sym_mask = np.array(sym, dtype=bool)
+        plane.scale(~sym_mask / 2 + 0.5, inplace=True)
+        plane.translate(sym_mask * size / 4, inplace=True)
 
         if dim == 2:
             z = plane.points[:, 2]

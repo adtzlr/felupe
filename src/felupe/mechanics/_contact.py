@@ -23,7 +23,7 @@ from ._helpers import Assemble, Results
 
 
 class ContactRigidPlane:
-    """A node-to-surface contact, where the surface is given by a rigid plane.
+    r"""A node-to-surface contact, where the surface is given by a rigid plane.
 
     Parameters
     ----------
@@ -35,15 +35,15 @@ class ContactRigidPlane:
         The index of the centerpoint.
     normal : ndarray
         The outward plane normal vector.
-    stick : bool, optional
-        A flag to activate tangential stick. Default is False (frictionless contact).
+    friction : float, optional
+        Coulomb friction coefficient :math:`\mu`. Default is 0.0.
     multiplier : float, optional
         A multiplier to penalize the relative displacements between the center-point and
-        the points in contact. Default is 1e-6.
+        the points in contact. Default is 1e6.
 
     Notes
     -----
-    A :class:`~felupe.MultiPointContact` is supported as an item in a
+    A :class:`~felupe.ContactRigidPlane` is supported as an item in a
     :class:`~felupe.Step`. It provides the assemble-methods
     :meth:`MultiPointContact.assemble.vector() <felupe.MultiPointContact.assemble.vector>`
     and :meth:`MultiPointContact.assemble.matrix() <felupe.MultiPointContact.assemble.matrix>`.
@@ -95,7 +95,7 @@ class ContactRigidPlane:
         ...     points=np.arange(mesh.npoints)[mesh.x == 1],
         ...     centerpoint=-1,
         ...     normal=[-1.0, 0, 0],
-        ...     stick=False,
+        ...     friction=0.1,
         ... )
         >>>
         >>> plotter = pv.Plotter()
@@ -165,7 +165,7 @@ class ContactRigidPlane:
         points,
         centerpoint,
         normal,
-        stick=False,
+        friction=0.0,
         multiplier=1e6,
     ):
         self.field = field
@@ -180,7 +180,7 @@ class ContactRigidPlane:
         self.projection_normal = np.outer(self.normal, self.normal)
         self.projection_tangential = np.eye(self.mesh.dim) - self.projection_normal
 
-        self.stick = stick
+        self.friction = friction
         self.multiplier = multiplier
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
@@ -188,6 +188,7 @@ class ContactRigidPlane:
 
         self.results.dx_ref = np.zeros_like(self.field.fields[0].values[self.points])
         self.results.active = np.zeros(len(self.points), dtype=bool)
+        self.results.slip = np.zeros(len(self.points), dtype=bool)
 
         # differences of undeformed coordinates between points in potential contact
         # and center-point (initial gap vectors)
@@ -311,11 +312,39 @@ class ContactRigidPlane:
             r[self.points[contact]] += force_n
             r[self.centerpoint] -= force_n.sum(axis=0)
 
-            if self.stick:  # tangential stick contribution
+            if self.friction > 0.0:  # tangential Coulomb friction contribution
                 dx_delta = dx[contact] - self.results.dx_ref[contact]
-                force_t = self.multiplier * (dx_delta @ self.projection_tangential)
+                slip_t = dx_delta @ self.projection_tangential
+                force_t_trial = self.multiplier * slip_t
+
+                force_n_abs = self.multiplier * np.abs(gap[contact])
+                force_t_limit = self.friction * force_n_abs
+                force_t_norm = np.linalg.norm(force_t_trial, axis=1)
+
+                # points with friction: sticking or sliding
+                stick = np.ones(len(contact), dtype=bool)
+                if np.isfinite(self.friction):
+                    tol = np.finfo(float).eps * np.maximum(force_t_limit, 1.0)
+                    stick = force_t_norm <= (force_t_limit + tol)
+
+                force_t = force_t_trial.copy()
+                slide = (~stick) & (force_t_norm > 0)
+                if np.any(slide):
+                    scale = force_t_limit[slide] / force_t_norm[slide]
+                    force_t[slide] = scale.reshape(-1, 1) * force_t_trial[slide]
+
+                    # Return mapping for sliding points: update reference slip to
+                    # current position. This allows the contact stiffness to remain
+                    # at the Coulomb limit and improve Newton convergence.
+                    contact_slide = contact[slide]
+                    self.results.dx_ref[contact_slide] = (
+                        dx[contact_slide] - force_t[slide] / self.multiplier
+                    )
+
+                self.results.slip[contact] = ~stick
 
                 r[self.points[contact]] += force_t
+                r[self.centerpoint] -= force_t.sum(axis=0)
 
         self.results.force = r.reshape(-1, 1).tocsr()
 
@@ -343,10 +372,10 @@ class ContactRigidPlane:
             idx = indices[self.points[contact]]
             idx_center = indices[self.centerpoint]
 
-            # evaluate normal stiffness contribution
+            # evaluate normal stiffness
             stiffness_normal = self.multiplier * self.projection_normal
 
-            if self.stick:  # evaluate tangential stiffness contribution
+            if self.friction > 0.0:  # evaluate tangential stiffness
                 stiffness_tangential = self.multiplier * self.projection_tangential
 
             # assembly
@@ -358,8 +387,14 @@ class ContactRigidPlane:
                 L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_normal
                 L[idx_center.reshape(-1, 1), idx_center] += stiffness_normal
 
-                if self.stick:  # tangential stiffness contribution
-                    L[idx[point].reshape(-1, 1), idx[point]] += stiffness_tangential
+                if self.friction > 0.0:  # tangential stiffness contribution
+                    if self.results.slip[contact[point]]:
+                        pass  # no tangential stiffness contribution for sliding
+                    else:
+                        L[idx[point].reshape(-1, 1), idx[point]] += stiffness_tangential
+                        L[idx[point].reshape(-1, 1), idx_center] -= stiffness_tangential
+                        L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_tangential
+                        L[idx_center.reshape(-1, 1), idx_center] += stiffness_tangential
 
         self.results.stiffness = L.tocsr()
 

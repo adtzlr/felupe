@@ -32,7 +32,13 @@ Mechanics
    PointLoad
    MultiPointConstraint
    MultiPointContact
-   
+
+**Contact**
+
+.. autosummary::
+
+   ContactRigidPlane
+
 **Helpers for Custom Items and State Variables**
 
 .. autosummary::
@@ -109,7 +115,12 @@ Mechanics
    :members:
    :undoc-members:
    :inherited-members:
-   
+
+.. autoclass:: felupe.RigidPlaneContact
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoclass:: felupe.mechanics.StateNearlyIncompressible
    :members:
    :undoc-members:

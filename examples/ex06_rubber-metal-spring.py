@@ -76,7 +76,7 @@ bottom = fem.ContactRigidPlane(
     points=points,
     centerpoint=-2,
     normal=[0, 0, 1],
-    friction=0.3,
+    friction=0.5,
 )
 top = fem.ContactRigidPlane(
     field,

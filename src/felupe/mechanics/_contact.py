@@ -94,7 +94,7 @@ class ContactRigidPlane:
         ...     field=field,
         ...     points=np.arange(mesh.npoints)[mesh.x == 1],
         ...     centerpoint=-1,
-        ...     normal=[1, 0, 0],
+        ...     normal=[-1.0, 0, 0],
         ...     stick=False,
         ... )
         >>>

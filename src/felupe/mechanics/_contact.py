@@ -22,7 +22,7 @@ from scipy.sparse import lil_matrix
 from ._helpers import Assemble, Results
 
 
-class RigidPlaneContact:
+class ContactRigidPlane:
     """A node-to-surface contact, where the surface is given by a rigid plane.
 
     Parameters

@@ -126,8 +126,8 @@ view = field.view(
     point_data={"Logarithmic Strain (Max. Principal)": log_strain(field)},
 )
 plotter = view.plot("Logarithmic Strain (Max. Principal)")
-plotter = top.plot(plotter=plotter, sym=(False, True, False))
-plotter = bottom.plot(plotter=plotter, sym=(False, True, False))
+plotter = top.plot(plotter=plotter, sym=(False, True, False), offset=0.1)
+plotter = bottom.plot(plotter=plotter, sym=(False, True, False), offset=0.1)
 plotter.show()
 
 # %%

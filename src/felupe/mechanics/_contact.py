@@ -170,7 +170,7 @@ class ContactRigidPlane:
     ):
         self.field = field
         self.mesh = field.region.mesh
-        self.points = np.array(points)
+        self.points = np.array(points, dtype=int)
         self.centerpoint = centerpoint
 
         self.normal = np.array(normal, dtype=float)[: self.mesh.dim]

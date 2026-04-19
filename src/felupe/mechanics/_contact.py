@@ -50,15 +50,15 @@ class RigidPlaneContact:
 
     Examples
     --------
-    This example shows how to use a :class:`~felupe.MultiPointContact`.
+    This example shows how to use a :class:`~felupe.ContactRigidPlane`.
 
     An additional center-point is added to a mesh. By default, all *hanging* points are
     collected in the mesh-attribute
     :attr:`Mesh.points_without_cells <felupe.Mesh.points_without_cells>`. The degrees of
     freedom of these points are considered as fixed, i.e. they are ignored. The center-
     point is not connected to any cell and is added to the points-without-cells array
-    on :meth:`Mesh.update <felupe.Mesh.update>`. Hence, center-point has to be removed
-    manually.
+    on :meth:`Mesh.update <felupe.Mesh.update>`. Hence, the center-point has to be
+    removed manually.
 
     ..  pyvista-plot::
         :context:
@@ -79,10 +79,10 @@ class RigidPlaneContact:
         >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
         >>> solid = fem.SolidBody(umat=umat, field=field)
 
-    A :class:`~felupe.MultiPointContact` defines the multi-point contact which
-    connects the displacement degrees of freedom of the center-point with the dofs of
-    points located at :math:`x=1` if they are in contact. Only the :math:`x`-component
-    is considered in this example.
+    A :class:`~felupe.ContactRigidPlane` defines the contact, whichnconnects the
+    displacement degrees of freedom of the center-point with the dofs of points located
+    at :math:`x=1` if they are in contact. Only the :math:`x`-component is considered in
+    this example.
 
     ..  pyvista-plot::
         :context:
@@ -90,11 +90,12 @@ class RigidPlaneContact:
 
         >>> import pyvista as pv
         >>>
-        >>> contact = fem.MultiPointContact(
+        >>> contact = fem.ContactRigidPlane(
         ...     field=field,
         ...     points=np.arange(mesh.npoints)[mesh.x == 1],
         ...     centerpoint=-1,
-        ...     skip=(False, True, True)
+        ...     normal=[1, 0, 0],
+        ...     stick=False,
         ... )
         >>>
         >>> plotter = pv.Plotter()

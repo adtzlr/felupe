@@ -31,7 +31,7 @@ import pypardiso
 
 import felupe as fem
 
-mesh = fem.mesh.read("examples/ex06_rubber-metal-spring_mesh.vtk")[0]
+mesh = fem.mesh.read("ex06_rubber-metal-spring_mesh.vtk")[0]
 mesh.add_points([[0, 0, mesh.z.min()], [0, 0, mesh.z.max() + 1]])
 mesh.clear_points_without_cells()  # used for contact center-points
 

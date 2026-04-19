@@ -116,7 +116,7 @@ Mechanics
    :undoc-members:
    :inherited-members:
 
-.. autoclass:: felupe.RigidPlaneContact
+.. autoclass:: felupe.ContactRigidPlane
    :members:
    :undoc-members:
    :inherited-members:

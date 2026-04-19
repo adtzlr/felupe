@@ -180,7 +180,13 @@ def test_contact_plot_2d():
     )
 
     try:
-        contact.plot()
+        contact.plot(sym=(True, False))
+
+        plane.mesh.x -= 1
+
+        plotter = mesh.plot(off_screen=True)
+        plane.plot(plotter=plotter, sym=(True, False))
+
     except ModuleNotFoundError:
         pass
 

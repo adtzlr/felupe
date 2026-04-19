@@ -74,6 +74,7 @@ from .field import (
 )
 from .mechanics import (
     CharacteristicCurve,
+    ContactRigidPlane,
     FormItem,
     FreeVibration,
     Job,
@@ -221,6 +222,7 @@ __all__ = [
     "CharacteristicCurve",
     "Job",
     "PointLoad",
+    "ContactRigidPlane",
     "SolidBody",
     "SolidBodyCauchyStress",
     "SolidBodyForce",

@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add keyword-based ramps for (solid body) classes of the `mechanics` module.
 - Add `labels` and `add_legend` keywords to `MeshContainer.plot()`. By default, no legend is added. If the legend is added, but no labels are given, the meshes are named as Mesh 1, Mesh 2, ... . If labels are given, a legend is added.
 - Add optional argument `show_logo` in `view.Scene.plot(..., show_logo=False)` show the FElupe logo in a PyVista plot.
+- Add `ContactRigidPlane`, a simplified version of a node-to-surface contact, where the surface is a rigid plane, defined by its normal vector.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

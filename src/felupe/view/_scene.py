@@ -167,7 +167,7 @@ class Scene:
             plotter = pv.Plotter(**plotter_kwargs)
 
         if show_logo:
-            from importlib.resources import files, as_file
+            from importlib.resources import as_file, files
 
             with as_file(files("felupe.view") / "logo.png") as logo_path:
                 plotter.add_logo_widget(

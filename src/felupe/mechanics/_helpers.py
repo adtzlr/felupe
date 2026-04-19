@@ -100,9 +100,8 @@ class StateNearlyIncompressible:
 
     Notes
     -----
-    The internal fields :math:`p` and :math:`\bar{J}` are treated as state variables,
-    directly derived from the displacement field. Hence, these dual fields are not
-    exported to the global degrees of freedom.
+    The internal fields :math:`p` and :math:`\bar{J}` are treated as internal fields, directly derived
+    from the displacement field. Hence, these fields are not exported to the global degrees of freedom.
 
     Parameters
     ----------

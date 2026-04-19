@@ -2,13 +2,13 @@ r"""
 Hyperelastic Spring
 -------------------
 
-.. topic:: A hyperelastic spring with a simplified frictionless contact.
+.. topic:: A hyperelastic spring with rigid plane contacts.
 
    * read a mesh file
 
    * define an isotropic hyperelastic solid body
 
-   * setup a simplified frictionless elastic-to-rigid contact interaction
+   * setup a frictionless or tangential sticking elastic to rigid plane contact
 
    * export and plot the log. strain
 
@@ -31,8 +31,9 @@ import pypardiso
 
 import felupe as fem
 
-mesh = fem.mesh.read("ex06_rubber-metal-spring_mesh.vtk")[0]
-X, Y, Z = mesh.points.T
+mesh = fem.mesh.read("examples/ex06_rubber-metal-spring_mesh.vtk")[0]
+mesh.add_points([[0, 0, mesh.z.min()], [0, 0, mesh.z.max() + 1]])
+mesh.clear_points_without_cells()  # used for contact center-points
 
 mesh.plot().show()
 
@@ -49,10 +50,10 @@ region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 boundaries = fem.dof.symmetry(field[0], axes=(0, 1, 0))
-boundaries["fixed"] = fem.Boundary(field[0], fz=Z.max())
-boundaries["move-x"] = fem.Boundary(field[0], fz=Z.min(), skip=(0, 1, 1))
-boundaries["move-y"] = fem.Boundary(field[0], fz=Z.min(), skip=(1, 0, 1))
-boundaries["move-z"] = fem.Boundary(field[0], fz=Z.min(), skip=(1, 1, 0))
+boundaries["fixed"] = fem.Boundary(field[0], fz=mesh.z.max() - 1)
+boundaries["move-x"] = fem.Boundary(field[0], fz=mesh.z.min(), skip=(0, 1, 1))
+boundaries["move-y"] = fem.Boundary(field[0], fz=mesh.z.min(), skip=(1, 0, 1))
+boundaries["move-z"] = fem.Boundary(field[0], fz=mesh.z.min(), skip=(1, 1, 0))
 
 # %%
 # The material behavior is defined through a built-in hyperelastic isotropic Neo-Hookean
@@ -69,17 +70,20 @@ solid = fem.SolidBody(umat, field)
 surface = np.unique(fem.RegionHexahedronBoundary(mesh).mesh_faces().cells)
 mask = np.isin(np.arange(mesh.npoints), surface)
 points = np.where(mask)[0]
-bottom = fem.MultiPointContact(
+
+bottom = fem.ContactRigidPlane(
     field,
     points=points,
-    centerpoint=np.where(Z == Z.min())[0][0],
-    skip=(1, 1, 0),
+    centerpoint=-2,
+    normal=[0, 0, 1],
+    stick=True,
 )
-top = fem.MultiPointContact(
+top = fem.ContactRigidPlane(
     field,
     points=points,
-    centerpoint=np.where(Z == Z.max())[0][0],
-    skip=(1, 1, 0),
+    centerpoint=-1,
+    normal=[0, 0, -1],
+    stick=True,
 )
 
 
@@ -116,13 +120,14 @@ job.evaluate(
     solver=pypardiso.spsolve,
     point_data={"Logarithmic Strain (Max. Principal)": log_strain},
     tol=1e-1,
+    verbose=1,
 )
 view = field.view(
     point_data={"Logarithmic Strain (Max. Principal)": log_strain(field)},
 )
 plotter = view.plot("Logarithmic Strain (Max. Principal)")
-plotter = top.plot(plotter=plotter, offset=1e-1)
-plotter = bottom.plot(plotter=plotter, offset=-1e-1)
+plotter = top.plot(plotter=plotter, sym=(False, True, False))
+plotter = bottom.plot(plotter=plotter, sym=(False, True, False))
 plotter.show()
 
 # %%

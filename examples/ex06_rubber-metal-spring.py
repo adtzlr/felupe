@@ -8,7 +8,7 @@ Hyperelastic Spring
 
    * define an isotropic hyperelastic solid body
 
-   * setup a frictionless or tangential sticking elastic to rigid plane contact
+   * setup an elastic to rigid plane contact
 
    * export and plot the log. strain
 
@@ -76,14 +76,14 @@ bottom = fem.ContactRigidPlane(
     points=points,
     centerpoint=-2,
     normal=[0, 0, 1],
-    stick=True,
+    friction=0.3,
 )
 top = fem.ContactRigidPlane(
     field,
     points=points,
     centerpoint=-1,
     normal=[0, 0, -1],
-    stick=True,
+    friction=0.5,
 )
 
 
@@ -120,7 +120,6 @@ job.evaluate(
     solver=pypardiso.spsolve,
     point_data={"Logarithmic Strain (Max. Principal)": log_strain},
     tol=1e-1,
-    verbose=1,
 )
 view = field.view(
     point_data={"Logarithmic Strain (Max. Principal)": log_strain(field)},

@@ -1,4 +1,4 @@
-from ._contact import RigidPlaneContact
+from ._contact import ContactRigidPlane
 from ._curve import CharacteristicCurve
 from ._free_vibration import FreeVibration
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
@@ -25,7 +25,7 @@ __all__ = [
     "Job",
     "PointLoad",
     "Results",
-    "RigidPlaneContact",
+    "ContactRigidPlane",
     "SolidBody",
     "SolidBodyCauchyStress",
     "SolidBodyForce",

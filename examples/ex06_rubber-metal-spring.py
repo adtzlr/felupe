@@ -71,14 +71,14 @@ surface = np.unique(fem.RegionHexahedronBoundary(mesh).mesh_faces().cells)
 mask = np.isin(np.arange(mesh.npoints), surface)
 points = np.where(mask)[0]
 
-bottom = fem.RigidPlaneContact(
+bottom = fem.ContactRigidPlane(
     field,
     points=points,
     centerpoint=-2,
     normal=[0, 0, 1],
     stick=True,
 )
-top = fem.RigidPlaneContact(
+top = fem.ContactRigidPlane(
     field,
     points=points,
     centerpoint=-1,

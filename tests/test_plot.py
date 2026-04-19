@@ -183,7 +183,7 @@ def test_model():
 
 
 def test_logo_path():
-    from importlib.resources import files, as_file
+    from importlib.resources import as_file, files
 
     with as_file(files("felupe.view") / "logo.png") as logo_path:
         assert logo_path.is_file()

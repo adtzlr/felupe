@@ -34,7 +34,7 @@ class ContactRigidPlane:
     centerpoint : int
         The index of the centerpoint.
     normal : ndarray
-        The plane normal vector.
+        The outward plane normal vector.
     stick : bool, optional
         A flag to activate tangential stick. Default is False (frictionless contact).
     multiplier : float, optional

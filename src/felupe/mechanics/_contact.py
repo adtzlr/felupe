@@ -333,9 +333,7 @@ class ContactRigidPlane:
                     scale = force_t_limit[slide] / force_t_norm[slide]
                     force_t[slide] = scale.reshape(-1, 1) * force_t_trial[slide]
 
-                    # Return mapping for sliding points: update reference slip to
-                    # current position. This allows the contact stiffness to remain
-                    # at the Coulomb limit and improve Newton convergence.
+                    # return mapping for sliding points
                     contact_slide = contact[slide]
                     self.results.dx_ref[contact_slide] = (
                         dx[contact_slide] - force_t[slide] / self.multiplier

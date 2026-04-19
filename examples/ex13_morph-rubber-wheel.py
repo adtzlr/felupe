@@ -177,6 +177,7 @@ umat = mat.Material(
     p=[0.039, 0.371, 0.174, 2.41, 0.0094, 6.84, 5.65, 0.244],
     nstatevars=13,
 )
+umat = fem.NeoHooke(mu=1.0)
 
 # %%
 # .. note::
@@ -239,11 +240,12 @@ for phi in angles_deg:
 # evaluated in a job. The reaction forces are plotted for the successive rotation angles
 # of the wheel.
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
-bottom = fem.MultiPointContact(
+bottom = fem.ContactRigidPlane(
     field,
     points=np.arange(mesh.npoints)[np.isclose(np.sqrt(x**2 + y**2), 1.0)],
     centerpoint=-1,
-    skip=(1, 0),
+    normal=(0, 1),
+    friction=0.0,
 )
 step = fem.Step(
     items=[solid, bottom], ramp={boundaries["move"]: move}, boundaries=boundaries

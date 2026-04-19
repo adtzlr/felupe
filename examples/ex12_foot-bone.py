@@ -26,8 +26,12 @@ boundaries = {"fixed": fem.Boundary(field[0], fx=lambda x: x <= -110)}
 umat = fem.LinearElastic(E=1000, nu=0.3)
 solid = fem.SolidBody(umat, field)
 gravity = fem.SolidBodyForce(field, values=[0, 0, -7e-2])
-bottom = fem.MultiPointContact(
-    field, points=np.arange(mesh.npoints), centerpoint=-1, skip=(1, 1, 0)
+bottom = fem.ContactRigidPlane(
+    field,
+    points=np.arange(mesh.npoints),
+    centerpoint=-1,
+    normal=[0, 0, 1],
+    friction=0.0,
 )
 
 step = fem.Step(items=[solid, gravity, bottom], boundaries=boundaries)
@@ -38,4 +42,4 @@ plotter = solid.plot(
     show_undeformed=False,
     clim=[0, 10],
 )
-bottom.plot(plotter=plotter, color="white", opacity=1).show()
+bottom.plot(plotter=plotter, color="lightgrey", opacity=1.0).show()

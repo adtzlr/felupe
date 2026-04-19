@@ -58,7 +58,7 @@ def pre_contact_mixed(point, values):
     cpoint = mesh.npoints - 1
 
     CONT = fem.ContactRigidPlane(
-        fields, points=bnd, centerpoint=cpoint, normal=[1, 0, 0], stick=True
+        fields, points=bnd, centerpoint=cpoint, normal=[1, 0, 0], friction=np.inf
     )
 
     try:
@@ -191,7 +191,48 @@ def test_contact_plot_2d():
         pass
 
 
+def test_contact_coulomb_sliding_limit():
+    mesh = fem.mesh.Line(n=3)
+    mesh.update(cells=mesh.cells[:1])
+    mesh.points = np.pad(mesh.points, ((0, 0), (0, 2)))
+    mesh.points[-1] = np.array([1, 0.5, 0.5])
+    mesh.dim = 3
+    mesh.ndof = 9
+
+    element = fem.Line()
+    quadrature = fem.GaussLegendre(order=0, dim=1)
+    region = fem.Region(mesh, element, quadrature, grad=False)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    contact = fem.ContactRigidPlane(
+        field,
+        points=[0, 1],
+        centerpoint=2,
+        multiplier=1e3,
+        normal=[-1, 0, 0],
+        friction=0.5,
+    )
+
+    # initialize contact reference in compression
+    field[0].values[-1] = [-1.1, 0.0, 0.0]
+    contact.assemble.vector()
+
+    # apply tangential relative motion: both points are in sliding regime
+    field[0].values[-1] = [-1.1, 0.5, 0.0]
+    r = contact.assemble.vector().toarray()
+    K = contact.assemble.matrix().toarray()
+
+    # Coulomb limits: point 0 -> 50, point 1 -> 300
+    assert np.allclose(r[[1, 4, 7]].ravel(), [-50, -300, 350])
+
+    # In sliding regime, tangential stiffness should be zero.
+    # Normal stiffness remains full (1000 per point, -1000 cross terms).
+    # Check that K[1,1] and K[4,4] are zero (no tangential contribution in slide).
+    assert np.allclose(K[[1, 4], [1, 4]], [0, 0])
+
+
 if __name__ == "__main__":
     test_contact_mixed()
     test_contact_isolated()
     test_contact_plot_2d()
+    test_contact_coulomb_sliding_limit()

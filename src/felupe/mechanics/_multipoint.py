@@ -245,7 +245,7 @@ class MultiPointContact:
         is not connected. Default is (False, False, False).
     multiplier : float, optional
         A multiplier to penalize the relative displacements between the center-point and
-        the points in contact. Default is 1e-6.
+        the points in contact. Default is 1e6.
 
     Notes
     -----

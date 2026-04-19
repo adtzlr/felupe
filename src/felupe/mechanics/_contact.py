@@ -176,8 +176,8 @@ class RigidPlaneContact:
         self.normal /= np.linalg.norm(self.normal)
 
         # normal and tangential projections
-        self.Pn = np.outer(self.normal, self.normal)
-        self.Pt = np.eye(self.mesh.dim) - self.Pn
+        self.projection_normal = np.outer(self.normal, self.normal)
+        self.projection_tangential = np.eye(self.mesh.dim) - self.projection_normal
 
         self.stick = stick
         self.multiplier = multiplier
@@ -188,6 +188,10 @@ class RigidPlaneContact:
         self.results.dx_ref = np.zeros_like(self.field.fields[0].values[self.points])
         self.results.active = np.zeros(len(self.points), dtype=bool)
 
+        # differences of undeformed coordinates between points in potential contact
+        # and center-point (initial gap vectors)
+        self.dX = self.mesh.points[self.points] - self.mesh.points[self.centerpoint]
+
     def plot(
         self,
         plotter=None,
@@ -197,6 +201,7 @@ class RigidPlaneContact:
         opacity=0.5,
         deformed=True,
         size=None,
+        line_width=None,
         show_point=True,
         show_line=True,
         sym=(False, False, False),
@@ -229,9 +234,15 @@ class RigidPlaneContact:
             i_size=size,
             j_size=size,
         )
-        sym_mask = np.array(sym, dtype=bool)
-        plane.scale(~sym_mask / 2 + 0.5, inplace=True)
-        plane.translate(sym_mask * size / 4, inplace=True)
+
+        axes = ["x", "y", "z"]
+        for ax in np.where(np.array(sym, dtype=bool))[0]:
+
+            invert = False
+            if np.any(self.mesh.points[:, ax] < 0):
+                invert = True
+
+            plane = plane.clip(axes[ax], invert=invert, origin=(0.0, 0.0, 0.0))
 
         if dim == 2:
             z = plane.points[:, 2]
@@ -244,6 +255,7 @@ class RigidPlaneContact:
             show_edges=show_edges,
             opacity=opacity,
             color=color,
+            line_width=line_width,
             **kwargs,
         )
 
@@ -261,6 +273,7 @@ class RigidPlaneContact:
                 pv.Line(center, center - 0.1 * dx * normal),
                 opacity=opacity,
                 color=color,
+                line_width=line_width,
                 **kwargs,
             )
 
@@ -274,12 +287,8 @@ class RigidPlaneContact:
         # displacement field values at mesh points
         u = self.field.fields[0].values
 
-        # deformed coordinates of center-point and points in potential contact
-        xc = u[self.centerpoint] + self.mesh.points[self.centerpoint]
-        x = u[self.points] + self.mesh.points[self.points]
-
         # gap vectors
-        dx = x - xc
+        dx = self.dX + (u[self.points] - u[self.centerpoint])
         gap = dx @ self.normal
         contact_mask = gap < 0.0
 
@@ -303,7 +312,7 @@ class RigidPlaneContact:
 
             if self.stick:  # tangential stick contribution
                 dx_delta = dx[contact] - self.results.dx_ref[contact]
-                force_t = self.multiplier * (dx_delta @ self.Pt)
+                force_t = self.multiplier * (dx_delta @ self.projection_tangential)
 
                 r[self.points[contact]] += force_t
 
@@ -319,12 +328,8 @@ class RigidPlaneContact:
         # displacement field values at mesh points
         u = self.field.fields[0].values
 
-        # deformed coordinates of center-point and points in potential contact
-        xc = u[self.centerpoint] + self.mesh.points[self.centerpoint]
-        x = u[self.points] + self.mesh.points[self.points]
-
         # gap vectors
-        dx = x - xc
+        dx = self.dX + (u[self.points] - u[self.centerpoint])
         gap = dx @ self.normal
         contact_mask = gap < 0.0
         contact = np.where(contact_mask)[0]
@@ -334,26 +339,26 @@ class RigidPlaneContact:
         if len(contact) > 0:
 
             indices = self.field[0].indices.dof
-            t = indices[self.points[contact]]
-            c = indices[self.centerpoint]
+            idx = indices[self.points[contact]]
+            idx_center = indices[self.centerpoint]
 
-            # normal contribution
-            K_n = self.multiplier * self.Pn
+            # evaluate normal stiffness contribution
+            stiffness_normal = self.multiplier * self.projection_normal
 
-            if self.stick:  # tangential contribution
-                K_t = self.multiplier * self.Pt
+            if self.stick:  # evaluate tangential stiffness contribution
+                stiffness_tangential = self.multiplier * self.projection_tangential
 
-            # global assembly
-            for p in range(len(contact)):
+            # assembly
+            for point in range(len(contact)):
 
-                # normal contribution
-                L[t[p].reshape(-1, 1), t[p]] += K_n
-                L[t[p].reshape(-1, 1), c] -= K_n
-                L[c.reshape(-1, 1), t[p]] -= K_n
-                L[c.reshape(-1, 1), c] += K_n
+                # normal stiffness contribution
+                L[idx[point].reshape(-1, 1), idx[point]] += stiffness_normal
+                L[idx[point].reshape(-1, 1), idx_center] -= stiffness_normal
+                L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_normal
+                L[idx_center.reshape(-1, 1), idx_center] += stiffness_normal
 
-                if self.stick:  # tangential contribution
-                    L[t[p].reshape(-1, 1), t[p]] += K_t
+                if self.stick:  # tangential stiffness contribution
+                    L[idx[point].reshape(-1, 1), idx[point]] += stiffness_tangential
 
         self.results.stiffness = L.tocsr()
 

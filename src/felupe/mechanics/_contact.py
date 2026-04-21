@@ -118,7 +118,7 @@ class ContactRigidPlane:
         >>> mesh.plot(plotter=contact.plot(plotter=plotter)).show()
 
     The mesh is fixed on the left end face and a ramped :class:`~felupe.Boundary` is
-    applied on the center-point of the :class:`~felupe.MultiPointContact`. All items
+    applied on the center-point of the :class:`~felupe.ContactRigidPlane`. All items
     are added to a :class:`~felupe.Step` and a :class:`~felupe.Job` is evaluated.
 
     ..  pyvista-plot::
@@ -137,7 +137,7 @@ class ContactRigidPlane:
         ... )
         >>> job = fem.Job([step]).evaluate()
 
-    A view on the deformed mesh including the :class:`~felupe.MultiPointContact` is
+    A view on the deformed mesh including the :class:`~felupe.ContactRigidPlane` is
     plotted.
 
     ..  pyvista-plot::
@@ -157,11 +157,6 @@ class ContactRigidPlane:
         ...     color="green",
         ... )
         >>> field.plot("Displacement", component=None, plotter=contact.plot(plotter=plotter)).show()
-
-    See Also
-    --------
-    felupe.MultiPointConstraint : A Multi-point-constraint which connects a center-point
-        to a list of points.
 
     """
 

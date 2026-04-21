@@ -44,9 +44,15 @@ class ContactRigidPlane:
     Notes
     -----
     A :class:`~felupe.ContactRigidPlane` is supported as an item in a
-    :class:`~felupe.Step`. It provides the assemble-methods
-    :meth:`MultiPointContact.assemble.vector() <felupe.MultiPointContact.assemble.vector>`
-    and :meth:`MultiPointContact.assemble.matrix() <felupe.MultiPointContact.assemble.matrix>`.
+    :class:`~felupe.Step`.
+
+    ..  note::
+
+        The contact formulation is based on a penalty method. The multiplier should be
+        chosen sufficiently large to enforce the contact constraints, but not too large
+        to cause numerical issues. Furthermore, no regularization is applied, which may
+        lead to convergence issues when the contact status changes. Frictionless and
+        nearly sticking contact conditions are supported.
 
     Examples
     --------

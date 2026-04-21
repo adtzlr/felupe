@@ -44,9 +44,15 @@ class ContactRigidPlane:
     Notes
     -----
     A :class:`~felupe.ContactRigidPlane` is supported as an item in a
-    :class:`~felupe.Step`. It provides the assemble-methods
-    :meth:`MultiPointContact.assemble.vector() <felupe.MultiPointContact.assemble.vector>`
-    and :meth:`MultiPointContact.assemble.matrix() <felupe.MultiPointContact.assemble.matrix>`.
+    :class:`~felupe.Step`.
+
+    ..  note::
+
+        The contact formulation is based on a penalty method. The multiplier should be
+        chosen sufficiently large to enforce the contact constraints, but not too large
+        to cause numerical issues. Furthermore, no regularization is applied, which may
+        lead to convergence issues when the contact status changes. Frictionless and
+        nearly sticking contact conditions are supported.
 
     Examples
     --------
@@ -112,7 +118,7 @@ class ContactRigidPlane:
         >>> mesh.plot(plotter=contact.plot(plotter=plotter)).show()
 
     The mesh is fixed on the left end face and a ramped :class:`~felupe.Boundary` is
-    applied on the center-point of the :class:`~felupe.MultiPointContact`. All items
+    applied on the center-point of the :class:`~felupe.ContactRigidPlane`. All items
     are added to a :class:`~felupe.Step` and a :class:`~felupe.Job` is evaluated.
 
     ..  pyvista-plot::
@@ -131,7 +137,7 @@ class ContactRigidPlane:
         ... )
         >>> job = fem.Job([step]).evaluate()
 
-    A view on the deformed mesh including the :class:`~felupe.MultiPointContact` is
+    A view on the deformed mesh including the :class:`~felupe.ContactRigidPlane` is
     plotted.
 
     ..  pyvista-plot::
@@ -151,11 +157,6 @@ class ContactRigidPlane:
         ...     color="green",
         ... )
         >>> field.plot("Displacement", component=None, plotter=contact.plot(plotter=plotter)).show()
-
-    See Also
-    --------
-    felupe.MultiPointConstraint : A Multi-point-constraint which connects a center-point
-        to a list of points.
 
     """
 
@@ -362,38 +363,65 @@ class ContactRigidPlane:
         contact_mask = gap < 0.0
         contact = np.where(contact_mask)[0]
 
-        L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
+        indices = self.field[0].indices.dof
+        K = lil_matrix((self.mesh.ndof, self.mesh.ndof))
 
+        # normal stiffness contribution
         if len(contact) > 0:
 
-            indices = self.field[0].indices.dof
             idx = indices[self.points[contact]]
-            idx_center = indices[self.centerpoint]
+            ctr = indices[self.centerpoint]
 
-            # evaluate normal stiffness
-            stiffness_normal = self.multiplier * self.projection_normal
+            dim = self.mesh.dim
+            npoints = len(contact) * dim
 
-            if self.friction > 0.0:  # evaluate tangential stiffness
-                stiffness_tangential = self.multiplier * self.projection_tangential
+            # evaluate normal stiffness: λ n ⊗ n
+            K_n = self.multiplier * self.projection_normal
 
-            # assembly
-            for point in range(len(contact)):
+            K_n_pp = np.einsum("ab,ij->aibj", np.eye(len(contact)), K_n).reshape(
+                npoints, npoints
+            )
 
-                # normal stiffness contribution
-                L[idx[point].reshape(-1, 1), idx[point]] += stiffness_normal
-                L[idx[point].reshape(-1, 1), idx_center] -= stiffness_normal
-                L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_normal
-                L[idx_center.reshape(-1, 1), idx_center] += stiffness_normal
+            K_n_pc = np.broadcast_to(
+                K_n, (len(contact), self.mesh.dim, self.mesh.dim)
+            ).reshape(npoints, dim)
 
-                if self.friction > 0.0:  # tangential stiffness contribution
-                    if self.results.slip[contact[point]]:
-                        pass  # no tangential stiffness contribution for sliding
-                    else:
-                        L[idx[point].reshape(-1, 1), idx[point]] += stiffness_tangential
-                        L[idx[point].reshape(-1, 1), idx_center] -= stiffness_tangential
-                        L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_tangential
-                        L[idx_center.reshape(-1, 1), idx_center] += stiffness_tangential
+            K_n_cc = K_n_pc.sum(axis=0)
 
-        self.results.stiffness = L.tocsr()
+            K[idx.reshape(-1, 1), idx.ravel()] += K_n_pp
+            K[idx.reshape(-1, 1), ctr.ravel()] -= K_n_pc
+            K[ctr.reshape(-1, 1), idx.ravel()] -= K_n_pc.T
+            K[ctr.reshape(-1, 1), ctr.ravel()] += K_n_cc
+
+            # tangential stiffness contribution
+            if self.friction > 0.0 and np.any(~self.results.slip[contact]):
+                contact = contact[~self.results.slip[contact]]
+
+                idx = indices[self.points[contact]]
+                ctr = indices[self.centerpoint]
+
+                dim = self.mesh.dim
+                npoints = len(contact) * dim
+
+                # evaluate tangential stiffness: λ (1 - n ⊗ n)
+                K_t = self.multiplier * self.projection_tangential
+
+                K_t_pp = np.einsum("ab,ij->aibj", np.eye(len(contact)), K_t).reshape(
+                    npoints, npoints
+                )
+
+                K_t_pc = np.broadcast_to(
+                    K_t,
+                    (len(contact), self.mesh.dim, self.mesh.dim),
+                ).reshape(npoints, dim)
+
+                K_t_cc = K_t_pc.sum(axis=0)
+
+                K[idx.reshape(-1, 1), idx.ravel()] += K_t_pp
+                K[idx.reshape(-1, 1), ctr.ravel()] -= K_t_pc
+                K[ctr.reshape(-1, 1), idx.ravel()] -= K_t_pc.T
+                K[ctr.reshape(-1, 1), ctr.ravel()] += K_t_cc
+
+        self.results.stiffness = K.tocsr()
 
         return self.results.stiffness

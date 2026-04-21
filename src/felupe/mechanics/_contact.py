@@ -362,38 +362,65 @@ class ContactRigidPlane:
         contact_mask = gap < 0.0
         contact = np.where(contact_mask)[0]
 
-        L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
+        indices = self.field[0].indices.dof
+        K = lil_matrix((self.mesh.ndof, self.mesh.ndof))
 
+        # normal stiffness contribution
         if len(contact) > 0:
 
-            indices = self.field[0].indices.dof
             idx = indices[self.points[contact]]
-            idx_center = indices[self.centerpoint]
+            ctr = indices[self.centerpoint]
 
-            # evaluate normal stiffness
-            stiffness_normal = self.multiplier * self.projection_normal
+            dim = self.mesh.dim
+            npoints = len(contact) * dim
 
-            if self.friction > 0.0:  # evaluate tangential stiffness
-                stiffness_tangential = self.multiplier * self.projection_tangential
+            # evaluate normal stiffness: λ n ⊗ n
+            K_n = self.multiplier * self.projection_normal
 
-            # assembly
-            for point in range(len(contact)):
+            K_n_pp = np.einsum("ab,ij->aibj", np.eye(len(contact)), K_n).reshape(
+                npoints, npoints
+            )
 
-                # normal stiffness contribution
-                L[idx[point].reshape(-1, 1), idx[point]] += stiffness_normal
-                L[idx[point].reshape(-1, 1), idx_center] -= stiffness_normal
-                L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_normal
-                L[idx_center.reshape(-1, 1), idx_center] += stiffness_normal
+            K_n_pc = np.broadcast_to(
+                K_n, (len(contact), self.mesh.dim, self.mesh.dim)
+            ).reshape(npoints, dim)
 
-                if self.friction > 0.0:  # tangential stiffness contribution
-                    if self.results.slip[contact[point]]:
-                        pass  # no tangential stiffness contribution for sliding
-                    else:
-                        L[idx[point].reshape(-1, 1), idx[point]] += stiffness_tangential
-                        L[idx[point].reshape(-1, 1), idx_center] -= stiffness_tangential
-                        L[idx_center.reshape(-1, 1), idx[point]] -= stiffness_tangential
-                        L[idx_center.reshape(-1, 1), idx_center] += stiffness_tangential
+            K_n_cc = K_n_pc.sum(axis=0)
 
-        self.results.stiffness = L.tocsr()
+            K[idx.reshape(-1, 1), idx.ravel()] += K_n_pp
+            K[idx.reshape(-1, 1), ctr.ravel()] -= K_n_pc
+            K[ctr.reshape(-1, 1), idx.ravel()] -= K_n_pc.T
+            K[ctr.reshape(-1, 1), ctr.ravel()] += K_n_cc
+
+            # tangential stiffness contribution
+            if self.friction > 0.0 and np.any(~self.results.slip[contact]):
+                contact = contact[~self.results.slip[contact]]
+
+                idx = indices[self.points[contact]]
+                ctr = indices[self.centerpoint]
+
+                dim = self.mesh.dim
+                npoints = len(contact) * dim
+
+                # evaluate tangential stiffness: λ (1 - n ⊗ n)
+                K_t = self.multiplier * self.projection_tangential
+
+                K_t_pp = np.einsum("ab,ij->aibj", np.eye(len(contact)), K_t).reshape(
+                    npoints, npoints
+                )
+
+                K_t_pc = np.broadcast_to(
+                    K_t,
+                    (len(contact), self.mesh.dim, self.mesh.dim),
+                ).reshape(npoints, dim)
+
+                K_t_cc = K_t_pc.sum(axis=0)
+
+                K[idx.reshape(-1, 1), idx.ravel()] += K_t_pp
+                K[idx.reshape(-1, 1), ctr.ravel()] -= K_t_pc
+                K[ctr.reshape(-1, 1), idx.ravel()] -= K_t_pc.T
+                K[ctr.reshape(-1, 1), ctr.ravel()] += K_t_cc
+
+        self.results.stiffness = K.tocsr()
 
         return self.results.stiffness

@@ -325,11 +325,12 @@ class ContactRigidPlane:
                 # points with friction: sticking or sliding
                 stick = np.ones(len(contact), dtype=bool)
                 if np.isfinite(self.friction):
-                    tol = np.finfo(float).eps * np.maximum(force_t_limit, 1.0)
+                    tol = np.sqrt(np.finfo(float).eps) * np.maximum(force_t_limit, 1.0)
                     stick = force_t_norm <= (force_t_limit + tol)
 
                 force_t = force_t_trial.copy()
-                slide = (~stick) & (force_t_norm > 0)
+                eps = np.sqrt(np.finfo(float).eps) * np.maximum(force_n_abs, 1.0)
+                slide = (~stick) & (force_t_norm > eps)
                 if np.any(slide):
                     scale = force_t_limit[slide] / force_t_norm[slide]
                     force_t[slide] = scale.reshape(-1, 1) * force_t_trial[slide]
@@ -393,26 +394,82 @@ class ContactRigidPlane:
             K[ctr.reshape(-1, 1), idx.ravel()] -= K_n_pc.T
             K[ctr.reshape(-1, 1), ctr.ravel()] += K_n_cc
 
-            # tangential stiffness contribution
+            # tangential stiffness contribution (stick)
             if self.friction > 0.0 and np.any(~self.results.slip[contact]):
-                contact = contact[~self.results.slip[contact]]
+                contact_stick = contact[~self.results.slip[contact]]
 
-                idx = indices[self.points[contact]]
+                idx = indices[self.points[contact_stick]]
                 ctr = indices[self.centerpoint]
 
                 dim = self.mesh.dim
-                npoints = len(contact) * dim
+                npoints = len(contact_stick) * dim
 
                 # evaluate tangential stiffness: λ (1 - n ⊗ n)
                 K_t = self.multiplier * self.projection_tangential
 
-                K_t_pp = np.einsum("ab,ij->aibj", np.eye(len(contact)), K_t).reshape(
-                    npoints, npoints
-                )
+                K_t_pp = np.einsum(
+                    "ab,ij->aibj", np.eye(len(contact_stick)), K_t
+                ).reshape(npoints, npoints)
 
                 K_t_pc = np.broadcast_to(
                     K_t,
-                    (len(contact), self.mesh.dim, self.mesh.dim),
+                    (len(contact_stick), self.mesh.dim, self.mesh.dim),
+                ).reshape(npoints, dim)
+
+                K_t_cc = K_t_pc.sum(axis=0)
+
+                K[idx.reshape(-1, 1), idx.ravel()] += K_t_pp
+                K[idx.reshape(-1, 1), ctr.ravel()] -= K_t_pc
+                K[ctr.reshape(-1, 1), idx.ravel()] -= K_t_pc.T
+                K[ctr.reshape(-1, 1), ctr.ravel()] += K_t_cc
+
+            # tangential stiffness contribution (slip)
+            if self.friction > 0.0 and np.any(self.results.slip[contact]):
+                contact_slip = contact[self.results.slip[contact]]
+
+                dx_delta = dx[contact_slip] - self.results.dx_ref[contact_slip]
+                slip_t = dx_delta @ self.projection_tangential
+                force_t_trial = self.multiplier * slip_t
+
+                force_n_abs = self.multiplier * np.abs(gap[contact_slip])
+                force_t_norm = np.linalg.norm(force_t_trial, axis=1)
+
+                idx = indices[self.points[contact_slip]]
+                ctr = indices[self.centerpoint]
+
+                dim = self.mesh.dim
+                npoints = len(contact_slip) * dim
+
+                t = force_t_trial
+                norm_t = force_t_norm
+                t_hat = t / norm_t[:, None]
+                f_n = force_n_abs
+
+                eps = np.sqrt(np.finfo(float).eps) * np.maximum(force_n_abs, 1.0)
+                mask = norm_t > eps
+                t_hat = t[mask] / norm_t[mask, None]
+
+                projection_slip = np.zeros((len(contact_slip), dim, dim))
+                projection_slip[mask] = (
+                    np.eye(dim)[None, :, :] - np.einsum("ai,aj->aij", t_hat, t_hat)
+                ) / norm_t[mask, None, None]
+
+                # evaluate tangential stiffness (slip)
+                K_t = (
+                    self.friction
+                    * self.multiplier
+                    * f_n[:, None, None]
+                    * projection_slip
+                    @ self.projection_tangential
+                )
+
+                K_t_pp = np.einsum(
+                    "ab,aij->aibj", np.eye(len(contact_slip)), K_t
+                ).reshape(npoints, npoints)
+
+                K_t_pc = np.broadcast_to(
+                    K_t,
+                    (len(contact_slip), self.mesh.dim, self.mesh.dim),
                 ).reshape(npoints, dim)
 
                 K_t_cc = K_t_pc.sum(axis=0)

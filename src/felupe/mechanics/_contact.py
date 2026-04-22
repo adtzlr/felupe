@@ -22,7 +22,97 @@ from scipy.sparse import lil_matrix
 from ._helpers import Assemble, Results
 
 
-class ContactRigidPlane:
+class ContactPlane:
+
+    def plot(
+        self,
+        plotter=None,
+        offset=0.0,
+        show_edges=True,
+        color="black",
+        opacity=0.5,
+        deformed=True,
+        size=None,
+        line_width=None,
+        show_point=True,
+        show_line=True,
+        sym=(False, False, False),
+        **kwargs,
+    ):
+        import pyvista as pv
+
+        if plotter is None:
+            plotter = pv.Plotter()
+
+        dim = self.mesh.dim
+        x = self.mesh.points
+
+        if deformed:
+            x = self.mesh.points + self.field[0].values
+
+        center = np.pad(x[self.centerpoint] - offset * self.normal, (0, 3 - dim))
+        normal = np.pad(self.normal, (0, 3 - dim))
+
+        dx = (x.max(axis=0) - x.min(axis=0)).max()
+
+        if size is None:
+            size = 1.05 * dx
+
+        plane = pv.Plane(
+            center=center,
+            direction=normal,
+            i_resolution=1,
+            j_resolution=1,
+            i_size=size,
+            j_size=size,
+        )
+
+        axes = ["x", "y", "z"]
+        for ax in np.where(np.array(sym, dtype=bool))[0]:
+
+            invert = False
+            if np.any(self.mesh.points[:, ax] < 0):
+                invert = True
+
+            plane = plane.clip(axes[ax], invert=invert, origin=(0.0, 0.0, 0.0))
+
+        if dim == 2:
+            z = plane.points[:, 2]
+            points = plane.points[z == z.min()]
+            points[:, 2] = 0
+            plane = pv.Line(*points)
+
+        plotter.add_mesh(
+            plane,
+            show_edges=show_edges,
+            opacity=opacity,
+            color=color,
+            line_width=line_width,
+            **kwargs,
+        )
+
+        if show_point:
+            plotter.add_points(
+                center.reshape(1, -1),
+                opacity=opacity,
+                color=color,
+                point_size=12,
+                **kwargs,
+            )
+
+        if show_line:
+            plotter.add_mesh(
+                pv.Line(center, center - 0.1 * dx * normal),
+                opacity=opacity,
+                color=color,
+                line_width=line_width,
+                **kwargs,
+            )
+
+        return plotter
+
+
+class ContactRigidPlane(ContactPlane):
     r"""A node-to-surface contact, where the surface is given by a rigid plane.
 
     Parameters
@@ -53,6 +143,90 @@ class ContactRigidPlane:
         to cause numerical issues. Furthermore, no regularization is applied, which may
         lead to convergence issues when the contact status changes. Frictionless and
         nearly sticking contact conditions are supported.
+
+    The contact activation is based on the gap between the center-point and the points
+    in potential contact. The gap is evaluated in the deformed configuration in the
+    direction of the plane normal. If the gap is negative, the contact is active, see
+    Eq. :eq:`gap-vector`.
+
+    ..  math::
+        :label: gap-vector
+
+        \Delta \boldsymbol{x} &= \boldsymbol{x} - \boldsymbol{x}_c
+
+        g &= \Delta \boldsymbol{x} \cdot \boldsymbol{n}
+
+        g &\lt 0 \quad \text{(contact active)}
+    
+    The contact normal force and tangent stiffness matrix are evaluated as a penalty
+    contribution proportional to the gap, see Eq. :eq:`contact-force`.
+
+    ..  math::
+        :label: contact-force    
+    
+        \boldsymbol{f} &= \lambda\ g\ \boldsymbol{n}
+
+        \boldsymbol{P}_n &= \boldsymbol{n} \otimes \boldsymbol{n}
+
+        \boldsymbol{K}_n &= \lambda\ \boldsymbol{P}_n
+
+    The tangential contact friction forces are evaluated according to a Coulomb friction
+    law, see Eq. :eq:`contact-friction`.
+
+    ..  math::
+        :label: contact-friction
+
+        \Delta \boldsymbol{x}_t = \Delta \boldsymbol{x} - \Delta \boldsymbol{x}^{ref}
+
+        \boldsymbol{P}_t = \boldsymbol{1} - \boldsymbol{P}_n
+
+        \boldsymbol{f}_t^{trial} &= \lambda \boldsymbol{P}_t\ \Delta \boldsymbol{x}_t
+
+        |\boldsymbol{f}_t^{limit}| &= \mu |\boldsymbol{f}_n|
+
+        \text{state} = \begin{cases}
+            \text{stick} & |\boldsymbol{f}_t^{trial}| \leq |\boldsymbol{f}_t^{limit}| \\
+            \text{slip} & \text{else}
+        \end{cases}
+
+    In case of sticking contact, the tangential forces are equal to the trial forces,
+    see Eq. :eq:`contact-friction-stick`.
+
+    ..  math::
+        :label: contact-friction-stick
+
+        \boldsymbol{f}_t &= \boldsymbol{f}_t^{trial}
+
+        \boldsymbol{K}_t &= \lambda\ \boldsymbol{P}_t
+
+    In case of sliding contact, a scale factor is applied to the tangential forces to
+    enforce the friction limit, see Eq. :eq:`contact-friction-slide`.
+
+    ..  math::
+        :label: contact-friction-slide
+
+        s_t &= \frac{|\boldsymbol{f}_t^{limit}|}{|\boldsymbol{f}_t^{trial}|}
+
+        \boldsymbol{f}_t &= s_t\ \boldsymbol{f}_t^{trial}
+
+        \Delta \boldsymbol{x}^{ref} &=
+            \Delta \boldsymbol{x} - \frac{\boldsymbol{f}_t}{\lambda}
+    
+    The tangential stiffness matrix contribution for sliding contact is given in Eq.
+    :eq:`contact-friction-slide-stiffness`.
+
+    ..  math::
+        :label: contact-friction-slide-stiffness
+
+        \hat{\boldsymbol{f}_t} &= \frac{
+            \boldsymbol{f}_t^{trial}
+        }{|\boldsymbol{f}_t^{trial}|}
+
+        \hat{\boldsymbol{P}}_t &= \frac{1}{|\boldsymbol{f}_t^{trial}|}
+            \boldsymbol{1} - \hat{\boldsymbol{f}}_t \otimes \hat{\boldsymbol{f}}_t}
+        
+        \boldsymbol{K}_t &=
+            \mu\ \lambda\ |\boldsymbol{f}_n|\ \hat{\boldsymbol{P}}_t\ \boldsymbol{P}_t
 
     Examples
     --------
@@ -85,7 +259,7 @@ class ContactRigidPlane:
         >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
         >>> solid = fem.SolidBody(umat=umat, field=field)
 
-    A :class:`~felupe.ContactRigidPlane` defines the contact, whichnconnects the
+    A :class:`~felupe.ContactRigidPlane` defines the contact, which connects the
     displacement degrees of freedom of the center-point with the dofs of points located
     at :math:`x=1` if they are in contact. Only the :math:`x`-component is considered in
     this example.
@@ -194,93 +368,6 @@ class ContactRigidPlane:
         # differences of undeformed coordinates between points in potential contact
         # and center-point (initial gap vectors)
         self.dX = self.mesh.points[self.points] - self.mesh.points[self.centerpoint]
-
-    def plot(
-        self,
-        plotter=None,
-        offset=0.0,
-        show_edges=True,
-        color="black",
-        opacity=0.5,
-        deformed=True,
-        size=None,
-        line_width=None,
-        show_point=True,
-        show_line=True,
-        sym=(False, False, False),
-        **kwargs,
-    ):
-        import pyvista as pv
-
-        if plotter is None:
-            plotter = pv.Plotter()
-
-        dim = self.mesh.dim
-        x = self.mesh.points
-
-        if deformed:
-            x = self.mesh.points + self.field[0].values
-
-        center = np.pad(x[self.centerpoint] - offset * self.normal, (0, 3 - dim))
-        normal = np.pad(self.normal, (0, 3 - dim))
-
-        dx = (x.max(axis=0) - x.min(axis=0)).max()
-
-        if size is None:
-            size = 1.05 * dx
-
-        plane = pv.Plane(
-            center=center,
-            direction=normal,
-            i_resolution=1,
-            j_resolution=1,
-            i_size=size,
-            j_size=size,
-        )
-
-        axes = ["x", "y", "z"]
-        for ax in np.where(np.array(sym, dtype=bool))[0]:
-
-            invert = False
-            if np.any(self.mesh.points[:, ax] < 0):
-                invert = True
-
-            plane = plane.clip(axes[ax], invert=invert, origin=(0.0, 0.0, 0.0))
-
-        if dim == 2:
-            z = plane.points[:, 2]
-            points = plane.points[z == z.min()]
-            points[:, 2] = 0
-            plane = pv.Line(*points)
-
-        plotter.add_mesh(
-            plane,
-            show_edges=show_edges,
-            opacity=opacity,
-            color=color,
-            line_width=line_width,
-            **kwargs,
-        )
-
-        if show_point:
-            plotter.add_points(
-                center.reshape(1, -1),
-                opacity=opacity,
-                color=color,
-                point_size=12,
-                **kwargs,
-            )
-
-        if show_line:
-            plotter.add_mesh(
-                pv.Line(center, center - 0.1 * dx * normal),
-                opacity=opacity,
-                color=color,
-                line_width=line_width,
-                **kwargs,
-            )
-
-        return plotter
 
     def _vector(self, field=None, parallel=False):
 

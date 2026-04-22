@@ -563,11 +563,13 @@ class ContactRigidPlane(ContactPlane):
                     * force_n_abs[:, None, None]
                     * projection_slip
                     @ (self.multiplier_tangential * self.projection_tangential)
-                ) - (
-                    self.friction
-                    * self.multiplier
-                    * np.einsum("ai,j->aij", t_hat, self.normal)
                 )
+                # # tangential-normal coupling term not included
+                # - (
+                #     self.friction
+                #     * self.multiplier
+                #     * np.einsum("ai,j->aij", t_hat, self.normal)
+                # )
 
                 K_t_pp = np.einsum(
                     "ab,aij->aibj", np.eye(len(contact_slip)), K_t

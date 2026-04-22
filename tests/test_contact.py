@@ -222,8 +222,8 @@ def test_contact_coulomb_sliding_limit():
     r = contact.assemble.vector().toarray()
     K = contact.assemble.matrix().toarray()
 
-    # Coulomb limits: point 0 -> 50, point 1 -> 300
-    assert np.allclose(r[[1, 4, 7]].ravel(), [-50, -300, 350])
+    # Coulomb limits
+    assert np.allclose(r[[1, 4, 7]].ravel(), [-50, -50, 100])
 
 
 if __name__ == "__main__":

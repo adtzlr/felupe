@@ -354,6 +354,7 @@ class ContactRigidPlane(ContactPlane):
         normal,
         friction=0.0,
         multiplier=1e6,
+        multiplier_tangential=None,
     ):
         self.field = field
         self.mesh = field.region.mesh
@@ -369,7 +370,10 @@ class ContactRigidPlane(ContactPlane):
 
         self.friction = friction
         self.multiplier = multiplier
-        self.multiplier_tangential = multiplier * 0.1
+        self.multiplier_tangential = multiplier_tangential
+
+        if self.multiplier_tangential is None:
+            self.multiplier_tangential = self.multiplier * 0.1
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self.results = Results(stress=False, elasticity=False)

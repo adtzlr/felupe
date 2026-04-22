@@ -171,7 +171,8 @@ class ContactRigidPlane(ContactPlane):
         \boldsymbol{K}_n &= \lambda\ \boldsymbol{P}_n
 
     The tangential contact friction forces are evaluated according to a Coulomb friction
-    law, see Eq. :eq:`contact-friction`.
+    law, see Eq. :eq:`contact-friction` and Eq.
+    :eq:`contact-friction-state`.
 
     ..  math::
         :label: contact-friction
@@ -184,7 +185,10 @@ class ContactRigidPlane(ContactPlane):
 
         f_t^{limit} &= \mu |\boldsymbol{f}_n|
 
-        \text{state} &= \begin{cases}
+    ..  math::
+        :label: contact-friction-state
+
+        \text{state} = \begin{cases}
             |\boldsymbol{f}_t^{trial}| \leq f_t^{limit} & \text{stick} \\
             \text{else} & \text{slip}
         \end{cases}

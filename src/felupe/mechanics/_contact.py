@@ -276,7 +276,8 @@ class ContactRigidPlane(ContactPlane):
         ...     points=np.arange(mesh.npoints)[mesh.x == 1],
         ...     centerpoint=-1,
         ...     normal=[-1.0, 0, 0],
-        ...     friction=0.1,
+        ...     friction=0.5,
+        ...     multiplier=1e2,
         ... )
         >>>
         >>> plotter = pv.Plotter()
@@ -290,7 +291,7 @@ class ContactRigidPlane(ContactPlane):
         ...     point_size=16,
         ...     color="green",
         ... )
-        >>> mesh.plot(plotter=contact.plot(plotter=plotter)).show()
+        >>> mesh.plot(plotter=contact.plot(size=1.2, plotter=plotter)).show()
 
     The mesh is fixed on the left end face and a ramped :class:`~felupe.Boundary` is
     applied on the center-point of the :class:`~felupe.ContactRigidPlane`. All items
@@ -335,7 +336,8 @@ class ContactRigidPlane(ContactPlane):
         ...     "Displacement", 
         ...     component=None, 
         ...     show_undeformed=False, 
-        ...     plotter=contact.plot(plotter=plotter),
+        ...     plotter=contact.plot(size=1.2, plotter=plotter),
+        ...     clim=[0, 0.5],
         ... ).show()
 
     """

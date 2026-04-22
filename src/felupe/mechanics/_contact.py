@@ -176,17 +176,17 @@ class ContactRigidPlane(ContactPlane):
     ..  math::
         :label: contact-friction
 
-        \Delta \boldsymbol{x}_t = \Delta \boldsymbol{x} - \Delta \boldsymbol{x}^{ref}
+        \Delta \boldsymbol{x}_t &= \Delta \boldsymbol{x} - \Delta \boldsymbol{x}^{ref}
 
-        \boldsymbol{P}_t = \boldsymbol{1} - \boldsymbol{P}_n
+        \boldsymbol{P}_t &= \boldsymbol{1} - \boldsymbol{P}_n
 
         \boldsymbol{f}_t^{trial} &= \lambda \boldsymbol{P}_t\ \Delta \boldsymbol{x}_t
 
-        |\boldsymbol{f}_t^{limit}| &= \mu |\boldsymbol{f}_n|
+        f_t^{limit} &= \mu |\boldsymbol{f}_n|
 
-        \text{state} = \begin{cases}
-            \text{stick} & |\boldsymbol{f}_t^{trial}| \leq |\boldsymbol{f}_t^{limit}| \\
-            \text{slip} & \text{else}
+        \text{state} &= \begin{cases}
+            |\boldsymbol{f}_t^{trial}| \leq f_t^{limit} & \text{stick} \\
+            \text{else} & \text{slip}
         \end{cases}
 
     In case of sticking contact, the tangential forces are equal to the trial forces,
@@ -205,7 +205,7 @@ class ContactRigidPlane(ContactPlane):
     ..  math::
         :label: contact-friction-slide
 
-        s_t &= \frac{|\boldsymbol{f}_t^{limit}|}{|\boldsymbol{f}_t^{trial}|}
+        s_t &= \frac{f_t^{limit}}{|\boldsymbol{f}_t^{trial}|}
 
         \boldsymbol{f}_t &= s_t\ \boldsymbol{f}_t^{trial}
 
@@ -222,8 +222,9 @@ class ContactRigidPlane(ContactPlane):
             \boldsymbol{f}_t^{trial}
         }{|\boldsymbol{f}_t^{trial}|}
 
-        \hat{\boldsymbol{P}}_t &= \frac{1}{|\boldsymbol{f}_t^{trial}|}
-            \boldsymbol{1} - \hat{\boldsymbol{f}}_t \otimes \hat{\boldsymbol{f}}_t}
+        \hat{\boldsymbol{P}}_t &= \frac{1}{|\boldsymbol{f}_t^{trial}|} \left(
+            \boldsymbol{1} - \hat{\boldsymbol{f}}_t \otimes \hat{\boldsymbol{f}}_t
+        \right)
         
         \boldsymbol{K}_t &=
             \mu\ \lambda\ |\boldsymbol{f}_n|\ \hat{\boldsymbol{P}}_t\ \boldsymbol{P}_t

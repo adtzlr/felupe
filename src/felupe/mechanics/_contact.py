@@ -572,7 +572,7 @@ class ContactRigidPlane(ContactPlane):
                 # )
 
                 K_t_pp = np.einsum(
-                    "ab,ij->aibj", np.eye(len(contact_slip)), K_t
+                    "ab,aij->aibj", np.eye(len(contact_slip)), K_t
                 ).reshape(npoints, npoints)
 
                 K_t_pc = np.broadcast_to(

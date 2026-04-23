@@ -276,7 +276,7 @@ plotter = solid.plot(
 )
 plotter.add_text(
     rf"Rotation angle $\varphi$ = {angles_deg[-1]:.0f}°"
-    "\n \n "
+    "\n \n"
     rf"Horizontal displacement $d_1$ = {field[0].values[bottom.centerpoint][0]:.1f} mm",
     position="upper_right",
     font_size=12,

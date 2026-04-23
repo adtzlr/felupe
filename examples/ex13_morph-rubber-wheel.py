@@ -4,11 +4,11 @@ Rotating Rubber Wheel
 This example contains a simulation of a rotating rubber wheel in plane strain with the
 `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_ material model formulation
 [1]_. While the rotation is increased, a constant vertical compression is applied to the
-rubber wheel by a frictionless contact on the bottom. The vertical reaction force is
-then carried out for the rotation angles. The MORPH material model is implemented as a
-second Piola-Kirchhoff stress-based formulation with automatic differentiation (JAX).
-The Tresca invariant of the distortional part of the right Cauchy-Green deformation
-tensor is used as internal state variable, see Eq. :eq:`morph-state-ex`.
+rubber wheel by a contact on the bottom. The vertical reaction force is then carried out
+for the rotation angles. The MORPH material model is implemented as a second Piola-
+Kirchhoff stress-based formulation with automatic differentiation (JAX). The Tresca
+invariant of the distortional part of the right Cauchy-Green deformation tensor is used
+as internal state variable, see Eq. :eq:`morph-state-ex`.
 
 ..  warning::
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
@@ -195,8 +195,9 @@ ax = umat.plot(
 
 # %%
 # A mesh is created for the wheel with :math:`r=0.4` and :math:`R=1`.
-mesh = fem.mesh.Line(a=0.4, n=6).revolve(37, phi=360)
+mesh = fem.mesh.Line(a=0.4, b=1.0, n=6).revolve(37, phi=360)
 mesh.update(points=np.vstack([mesh.points, [0, -1.1]]))
+mesh.clear_points_without_cells()
 x, y = mesh.points.T
 mesh.plot().show()
 
@@ -206,11 +207,6 @@ mesh.plot().show()
 # rotation of the wheel are evaluated for each rotation angle. The center-point of
 # the bottom-edge is moved vertically upwards by ``0.2`` to enforce a vertical reaction
 # force in the rubber wheel.
-#
-# .. note::
-#    Try to simulate more rotation angles and obtain the vertical reaction force of the
-#    wheel, e.g. run two full rotations of the wheel with
-#    ``angles_deg = fem.math.linsteps([0, 360, 720], num=[18, 18])``.
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
@@ -221,7 +217,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 120], num=6)
+angles_deg = fem.math.linsteps([0, 480], num=48)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]
@@ -234,21 +230,30 @@ for phi in angles_deg:
     move.append(center_rotated - center)
 
 # %%
-# A nearly-incompressible solid body is created for the rubber. At the bottom, a
-# frictionless contact edge is created. Both items are added to a step, which is further
-# evaluated in a job. The reaction forces are plotted for the successive rotation angles
-# of the wheel.
+# A nearly-incompressible solid body is created for the rubber. At the bottom, a contact
+# plane is created. Both items are added to a step, which is further evaluated in a job.
+# The vertical displacement of the bottom contact plane is applied in a preliminary job.
+# Afterwards, the horizontal movement of the bottom contact plane is released and the
+# second job is evaluated for the rotation of the wheel. The reaction forces are plotted
+# for the successive rotation angles of the wheel.
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 bottom = fem.ContactRigidPlane(
     field,
     points=np.arange(mesh.npoints)[np.isclose(np.sqrt(x**2 + y**2), 1.0)],
     centerpoint=-1,
     normal=(0, 1),
+    friction=0.3,
+    multiplier=1e1,
 )
-step = fem.Step(
-    items=[solid, bottom], ramp={boundaries["move"]: move}, boundaries=boundaries
-)
+step_compression = fem.Step(items=[solid, bottom], boundaries=boundaries)
+job_compression = fem.Job(steps=[step_compression]).evaluate(tol=1e-1)
 
+boundaries.pop("bottom-x")
+step = fem.Step(
+    items=[solid, bottom],
+    ramp={boundaries["move"]: move},
+    boundaries=boundaries,
+)
 job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
 job.evaluate(tol=1e-1)
 
@@ -263,12 +268,22 @@ ax.set_xticks(angles_deg[::6])
 
 # %%
 # The resulting max. principal values of the Cauchy stresses are shown for the final
-# rotation angle.
-solid.plot(
+# rotation angle of 480. As a result of friction, the bottom contact plane moves
+# horizontally to the right.
+plotter = solid.plot(
     "Principal Values of Cauchy Stress",
-    plotter=bottom.plot(color="black", line_width=5, opacity=1.0),
+    plotter=bottom.plot(color="black", line_width=5, opacity=1.0, size=3),
     project=fem.topoints,
-).show()
+)
+plotter.add_text(
+    rf"Rotation angle $\varphi$ = {angles_deg[-1]:.0f}°"
+    "\n \n "
+    f"Horizontal displacement: {field[0].values[bottom.centerpoint][0]:.1f} mm",
+    position="upper_right",
+    font_size=12,
+)
+plotter.show()
+
 
 # %%
 # References

@@ -131,8 +131,9 @@ class ContactRigidPlane(ContactPlane):
         A multiplier to penalize the relative displacements between the center-point and
         the points in contact. Default is 1e6.
     multiplier_tangential : float or None, optional
-        A multiplier to penalize the relative tangential displacements between the center-point and
-        the points in contact. Default is None, which corresponds to 0.1 times the normal multiplier.
+        A multiplier to penalize the relative tangential displacements between the
+        center-point and the points in contact. Default is None, which corresponds to
+        0.1 times the normal multiplier.
 
     Notes
     -----

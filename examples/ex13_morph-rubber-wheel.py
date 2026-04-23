@@ -99,7 +99,6 @@ this example.
 
 # sphinx_gallery_thumbnail_number = -1
 # sphinx_gallery_start_ignore
-PYVISTA_GALLERY_FORCE_STATIC_IN_DOCUMENT = True
 # sphinx_gallery_end_ignore
 
 import jax.numpy as jnp
@@ -278,7 +277,7 @@ plotter = solid.plot(
 plotter.add_text(
     rf"Rotation angle $\varphi$ = {angles_deg[-1]:.0f}°"
     "\n \n "
-    f"Horizontal displacement: {field[0].values[bottom.centerpoint][0]:.1f} mm",
+    rf"Horizontal displacement $d_1$ = {field[0].values[bottom.centerpoint][0]:.1f} mm",
     position="upper_right",
     font_size=12,
 )

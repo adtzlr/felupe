@@ -34,6 +34,7 @@ class ContactPlane:
         deformed=True,
         size=None,
         line_width=None,
+        line_width_normal=None,
         show_point=True,
         show_line=True,
         sym=(False, False, False),
@@ -105,7 +106,7 @@ class ContactPlane:
                 pv.Line(center, center - 0.1 * dx * normal),
                 opacity=opacity,
                 color=color,
-                line_width=line_width,
+                line_width=line_width_normal,
                 **kwargs,
             )
 

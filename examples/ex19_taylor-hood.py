@@ -35,11 +35,15 @@ field = fem.FieldsMixed(
 # create a nearly-incompressible hyperelastic solid body and the rigid top plate
 umat = fem.NearlyIncompressible(material=fem.NeoHooke(mu=1), bulk=5000)
 solid = fem.SolidBody(umat=umat, field=field)
-top = fem.MultiPointContact(
+top = fem.ContactRigidPlane(
     field=field,
     points=np.arange(mesh.npoints)[np.isclose(mesh.x**2 + mesh.y**2, 1)],
     centerpoint=-1,
-    skip=(1, 0),
+    normal=(0, -1),
+    items=[solid],
+    friction=0.5,
+    multiplier=10,  # increase contact normal multiplier
+    multiplier_tangential=10,  # increase contact tangential multiplier
 )
 mesh.plot(nonlinear_subdivision=4, plotter=top.plot(line_width=5, opacity=1)).show()
 
@@ -48,7 +52,7 @@ mesh.plot(nonlinear_subdivision=4, plotter=top.plot(line_width=5, opacity=1)).sh
 # vertical movement of the top plate is applied in a ramped manner.
 boundaries = fem.dof.symmetry(field[0])
 boundaries["move"] = fem.Boundary(field[0], fy=1.1, skip=(1, 0))
-move = fem.math.linsteps([0, -0.4], num=4)
+move = fem.math.linsteps([0, -0.4], num=6)
 ramp = {boundaries["move"]: move}
 step = fem.Step(items=[solid, top], ramp=ramp, boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate()
@@ -59,6 +63,6 @@ job = fem.Job(steps=[step]).evaluate()
 solid.plot(
     "Principal Values of Cauchy Stress",
     nonlinear_subdivision=4,
-    plotter=top.plot(line_width=5, opacity=1),
+    plotter=top.plot(line_width=5, opacity=1, sym=(True, False), size=2),
     project=partial(fem.project, mean=True),
 ).show()

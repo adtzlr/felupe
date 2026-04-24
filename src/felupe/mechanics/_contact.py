@@ -16,10 +16,14 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from collections import namedtuple
+
 import numpy as np
-from scipy.sparse import lil_matrix
+from scipy.sparse import block_diag, lil_matrix
 
 from ._helpers import Assemble, Results
+
+ContactMultipliers = namedtuple("ContactMultipliers", ["normal", "tangential"])
 
 
 class ContactPlane:
@@ -129,12 +133,19 @@ class ContactRigidPlane(ContactPlane):
     friction : float, optional
         Coulomb friction coefficient :math:`\mu`. Default is 0.0.
     multiplier : float, optional
-        A multiplier to penalize the relative displacements between the center-point and
-        the points in contact. Default is 1e6.
+        A scale factor for the multiplier to penalize the relative displacements between
+        the center-point and the points in contact. Default is 1.0. The final multiplier
+        is scaled times a base multiplier, based on the mean normal stiffness, if items
+        are given.
     multiplier_tangential : float or None, optional
-        A multiplier to penalize the relative tangential displacements between the
-        center-point and the points in contact. Default is None, which corresponds to
-        0.1 times the normal multiplier.
+        A scale factor for the multiplier to penalize the relative tangential
+        displacements between the center-point and the points in contact. Default is
+        0.1. The final multiplier is scaled times a base multiplier, based on the mean
+        tangential stiffness, if items are given.
+    items : list or None, optional
+        A list of items to be considered for the evaluation of the mean stiffness-based
+        multipliers. If None, the multipliers are not based on the mean stiffness.
+        Default is None.
 
     Notes
     -----
@@ -145,9 +156,9 @@ class ContactRigidPlane(ContactPlane):
 
         The contact formulation is based on a penalty method. The multiplier should be
         chosen sufficiently large to enforce the contact constraints, but not too large
-        to cause numerical issues. Furthermore, no regularization is applied, which may
-        lead to convergence issues when the contact status changes. Frictionless and
-        nearly sticking contact conditions are supported.
+        to cause numerical issues. Best practice is to provide ``items``, which are
+        connected to the contact points. This will enable mean stiffness-based
+        multipliers.
 
     The contact activation is based on the gap between the center-point and the points
     in potential contact. The gap is evaluated in the deformed configuration in the
@@ -358,8 +369,9 @@ class ContactRigidPlane(ContactPlane):
         centerpoint,
         normal,
         friction=0.0,
-        multiplier=1e6,
-        multiplier_tangential=None,
+        multiplier=1.0,
+        multiplier_tangential=0.1,
+        items=None,
     ):
         self.field = field
         self.mesh = field.region.mesh
@@ -374,11 +386,11 @@ class ContactRigidPlane(ContactPlane):
         self.projection_tangential = np.eye(self.mesh.dim) - self.projection_normal
 
         self.friction = friction
+        self.items = items
+
         self.multiplier = multiplier
         self.multiplier_tangential = multiplier_tangential
-
-        if self.multiplier_tangential is None:
-            self.multiplier_tangential = self.multiplier * 0.1
+        self.multipliers = None
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self.results = Results(stress=False, elasticity=False)
@@ -390,6 +402,46 @@ class ContactRigidPlane(ContactPlane):
         # differences of undeformed coordinates between points in potential contact
         # and center-point (initial gap vectors)
         self.dX = self.mesh.points[self.points] - self.mesh.points[self.centerpoint]
+
+    def contact_multipliers(self, contact):
+
+        # init base multipliers
+        base_multiplier = 1.0
+        base_multiplier_tangential = 1.0
+
+        # mean stiffness-based multipliers
+        if self.items is not None and len(contact) > 0:
+            dof = self.field[0].indices.dof[contact].ravel()
+
+            projections_normal = block_diag(
+                [self.projection_normal] * len(contact)
+            ).reshape(-1, 1)
+
+            projections_tangential = block_diag(
+                [self.projection_tangential] * len(contact)
+            ).reshape(-1, 1)
+
+            stiffness = []
+
+            for item in self.items:
+                if item.results.stiffness is None:
+                    _ = item.assemble.matrix(self.field)
+
+                stiffness.append(item.results.stiffness[dof.reshape(-1, 1), dof])
+
+            matrix = sum(stiffness).reshape(1, -1)
+            base_multiplier = (matrix @ projections_normal).data[0]
+            base_multiplier_tangential = (matrix @ projections_tangential).data[0]
+
+            base_multiplier /= len(contact)
+            base_multiplier_tangential /= 2 * len(contact)  # two tangential directions
+
+        new_multiplier = self.multiplier * base_multiplier
+        new_multiplier_tangential = (
+            self.multiplier_tangential * base_multiplier_tangential
+        )
+
+        return ContactMultipliers(new_multiplier, new_multiplier_tangential)
 
     def _vector(self, field=None, parallel=False):
 
@@ -415,9 +467,10 @@ class ContactRigidPlane(ContactPlane):
         r = lil_matrix((self.mesh.ndof, self.mesh.dim))
 
         if len(contact) > 0:
+            self.multipliers = self.contact_multipliers(contact)
 
             # normal contribution
-            force_n = self.multiplier * np.outer(gap[contact], self.normal)
+            force_n = self.multipliers.normal * np.outer(gap[contact], self.normal)
 
             r[self.points[contact]] += force_n
             r[self.centerpoint] -= force_n.sum(axis=0)
@@ -425,9 +478,9 @@ class ContactRigidPlane(ContactPlane):
             if self.friction > 0.0:  # tangential Coulomb friction contribution
                 dx_delta = dx[contact] - self.results.dx_ref[contact]
                 slip_t = dx_delta @ self.projection_tangential
-                force_t_trial = self.multiplier_tangential * slip_t
+                force_t_trial = self.multipliers.tangential * slip_t
 
-                force_n_abs = self.multiplier * np.abs(gap[contact])
+                force_n_abs = self.multipliers.normal * np.abs(gap[contact])
                 force_t_limit = self.friction * force_n_abs
                 force_t_norm = np.linalg.norm(force_t_trial, axis=1)
 
@@ -447,7 +500,7 @@ class ContactRigidPlane(ContactPlane):
                     # return mapping for sliding points
                     contact_slide = contact[slide]
                     self.results.dx_ref[contact_slide] = (
-                        dx[contact_slide] - force_t[slide] / self.multiplier_tangential
+                        dx[contact_slide] - force_t[slide] / self.multipliers.tangential
                     )
 
                 self.results.slip[contact] = ~stick
@@ -478,6 +531,7 @@ class ContactRigidPlane(ContactPlane):
 
         # normal stiffness contribution
         if len(contact) > 0:
+            self.multipliers = self.contact_multipliers(contact)
 
             idx = indices[self.points[contact]]
             ctr = indices[self.centerpoint]
@@ -486,7 +540,7 @@ class ContactRigidPlane(ContactPlane):
             npoints = len(contact) * dim
 
             # evaluate normal stiffness: λ n ⊗ n
-            K_n = self.multiplier * self.projection_normal
+            K_n = self.multipliers.normal * self.projection_normal
 
             K_n_pp = np.einsum("ab,ij->aibj", np.eye(len(contact)), K_n).reshape(
                 npoints, npoints
@@ -514,7 +568,7 @@ class ContactRigidPlane(ContactPlane):
                 npoints = len(contact_stick) * dim
 
                 # evaluate tangential stiffness: λ (1 - n ⊗ n)
-                K_t = self.multiplier_tangential * self.projection_tangential
+                K_t = self.multipliers.tangential * self.projection_tangential
 
                 K_t_pp = np.einsum(
                     "ab,ij->aibj", np.eye(len(contact_stick)), K_t
@@ -543,9 +597,9 @@ class ContactRigidPlane(ContactPlane):
 
                 dx_delta = dx[contact_slip] - self.results.dx_ref[contact_slip]
                 slip_t = dx_delta @ self.projection_tangential
-                force_t_trial = self.multiplier_tangential * slip_t
+                force_t_trial = self.multipliers.tangential * slip_t
 
-                force_n_abs = self.multiplier * np.abs(gap[contact_slip])
+                force_n_abs = self.multipliers.normal * np.abs(gap[contact_slip])
                 force_t_norm = np.linalg.norm(force_t_trial, axis=1)
 
                 t = force_t_trial
@@ -567,12 +621,12 @@ class ContactRigidPlane(ContactPlane):
                     self.friction
                     * force_n_abs[:, None, None]
                     * projection_slip
-                    @ (self.multiplier_tangential * self.projection_tangential)
+                    @ (self.multipliers.tangential * self.projection_tangential)
                 )
-                # # tangential-normal coupling term not included
+                # # tangential-normal coupling term (not included)
                 # - (
                 #     self.friction
-                #     * self.multiplier
+                #     * self.multipliers.normal
                 #     * np.einsum("ai,j->aij", t_hat, self.normal)
                 # )
 

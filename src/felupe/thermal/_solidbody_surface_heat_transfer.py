@@ -30,17 +30,17 @@ class SolidBodySurfaceHeatTransfer:
     field : felupe.FieldContainer
         The field container with the temperature as first field.
     coefficient : float
-        The convection coefficient :math:`h` in W/(m^2 K).
+        The heat transfer coefficient :math:`h` in W/(m^2 K).
     temperature : float
-        The ambient temperature :math:`T_\infty` in °C.
+        The ambient temperature :math:`\theta_\infty` in °C.
 
     Notes
     -----
     This class represents a boundary condition for a thermal solid body, which
-    is used to model heat transfer (convection, radiation) at the boundary of a
-    solid material. The coefficient is used to calculate the heat flux at the
-    boundary based on the difference between the temperature at the boundary
-    and the ambient temperature.
+    is used to model heat transfer (typically convection + radiation) at the
+    boundary of a solid material. The coefficient is used to calculate the heat
+    flux at the boundary based on the difference between the temperature at the
+    boundary and the ambient temperature.
 
     Examples
     --------

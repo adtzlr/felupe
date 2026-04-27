@@ -24,24 +24,35 @@ from ..mechanics import Assemble, Results, UpdateItem
 
 
 class SolidBodySurfaceRadiation:
-    r"""Radiative heat transfer on the surface of a thermal solid body.
+    r"""Long wave radiative heat transfer on the surface of a thermal solid body.
 
     Parameters
     ----------
     field : felupe.FieldContainer
-        Field container with the temperature as first field.
+        Field container with the temperature in °C as first field.
     emissivity : float
         Emissivity :math:`\varepsilon` of the surface (dimensionless,
         :math:`0 \le \varepsilon \le 1`).
     temperature : float
-        The ambient temperature :math:`T_\infty` in °C.
+        The surrounding temperature :math:`\theta_{sur}` in °C.
 
     Notes
     -----
     This class represents a boundary condition for a thermal solid body, which
-    is used to model radiative heat transfer at the boundary of a solid material. The
-    emissivity is used to calculate the heat flux at the boundary based on the
-    difference between the temperature at the boundary and the ambient temperature.
+    is used to model long wave radiative heat transfer between the boundary of a
+    solid material and a surrounding hemispherical body with an emissivity of
+    :math: `\epsilon_{sur}` = 1.0 and temperature :math:`\theta_{sur}` in °C.
+
+    The hemispherical long wave surface emissivity :math: `\epsilon`is used to
+    define the corresponding solid surface property.
+
+    The the heat flux at the boundary is calculated according to Eq.
+    :eq:`long-wave-radiation-flux` where 'T' denotes temperatures in K.
+    
+    .. math::
+       :label: long-wave-radiation-flux
+
+       q_r = \epsilon\,\sigma_B\,\left(T_s^4 - T_{sur}^4\right)
 
     ..  note:
 

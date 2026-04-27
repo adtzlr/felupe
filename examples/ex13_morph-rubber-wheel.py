@@ -242,7 +242,8 @@ bottom = fem.ContactRigidPlane(
     centerpoint=-1,
     normal=(0, 1),
     friction=0.3,
-    multiplier=1e1,
+    multiplier=10.0,
+    multiplier_tangential=1.0,
 )
 step_compression = fem.Step(items=[solid, bottom], boundaries=boundaries)
 job_compression = fem.Job(steps=[step_compression]).evaluate(tol=1e-1)

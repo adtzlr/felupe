@@ -166,8 +166,16 @@ def test_contact_isolated():
 
 def test_contact_plot_2d():
     mesh = fem.Rectangle(n=3)
+    mesh.add_points([[0.8, 0.8]])
+
     field = fem.FieldContainer([fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2)])
-    plane = fem.ContactRigidPlane(field, [0, 1], -1, multiplier=1e3, normal=[0, 1, 0])
+    solid = fem.SolidBody(fem.LinearElastic(E=2.1e5, nu=0.3), field)
+    plane = fem.ContactRigidPlane(field, [0, 1], -1, items=[solid], normal=[0, 1, 0])
+
+    v = plane.assemble.vector()
+    m = plane.assemble.matrix()
+
+    assert plane.multipliers is not None
 
     try:
         plotter = mesh.plot(off_screen=True)
@@ -209,8 +217,9 @@ def test_contact_coulomb_sliding_limit():
         points=[0, 1],
         centerpoint=2,
         multiplier=1e3,
+        multiplier_tangential=1e2,
         normal=[-1, 0, 0],
-        friction=0.5,
+        friction=0.1,
     )
 
     # initialize contact reference in compression
@@ -223,7 +232,7 @@ def test_contact_coulomb_sliding_limit():
     K = contact.assemble.matrix().toarray()
 
     # Coulomb limits
-    assert np.allclose(r[[1, 4, 7]].ravel(), [-50, -50, 100])
+    assert np.allclose(r[[1, 4, 7]].ravel(), [-10, -50, 60])
 
 
 if __name__ == "__main__":

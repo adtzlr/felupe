@@ -219,7 +219,7 @@ def test_contact_coulomb_sliding_limit():
         multiplier=1e3,
         multiplier_tangential=1e2,
         normal=[-1, 0, 0],
-        friction=0.5,
+        friction=0.1,
     )
 
     # initialize contact reference in compression
@@ -232,7 +232,7 @@ def test_contact_coulomb_sliding_limit():
     K = contact.assemble.matrix().toarray()
 
     # Coulomb limits
-    assert np.allclose(r[[1, 4, 7]].ravel(), [-50, -50, 100])
+    assert np.allclose(r[[1, 4, 7]].ravel(), [-10, -50, 60])
 
 
 if __name__ == "__main__":

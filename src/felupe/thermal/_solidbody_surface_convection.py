@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 import numpy as np
-from scipy.constants import sigma
 from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
@@ -88,7 +87,7 @@ class SolidBodySurfaceConvection:
         >>> def hc_fun(ts, tamb):
         ...     return((ts-tamb)*2.0)
         >>>
-        >>> mesh = fem.Rectangle(n=11)
+        >>> mesh = fem.Rectangle(n=11)  # rectangle w/ 10x10 cells
         >>> region = fem.RegionQuad(mesh)
         >>> temperature = fem.Field(region, dim=1, values=30.0)
         >>> field = fem.FieldContainer([temperature])
@@ -110,7 +109,7 @@ class SolidBodySurfaceConvection:
         ... )
         >>> convection_constant = fem.thermal.SolidBodySurfaceConvection(
         ...     field=field_convection,
-        ...     convection_coefficient=8.0,  # W/(m^2 K)
+        ...     convection_coefficient=5.0,  # W/(m^2 K)
         ...     temperature=20.0,  # °C
         ... )
         >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
@@ -120,10 +119,10 @@ class SolidBodySurfaceConvection:
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=25)
-        >>> air_temperature = fem.math.linsteps([15, 25], num=10)  # air temperature
+        >>> air_temperature = fem.math.linsteps([15, 25], num=10)
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
-        ...     convection_constant["temperature"]: air_temperature,
+        ...     convection_constant["temperature"]: air_temperature
         ... }
         >>> step = fem.Step(
         ...     items=[time, solid, convection_constant], ramp=ramp, boundaries=boundaries
@@ -163,8 +162,6 @@ class SolidBodySurfaceConvection:
         self.results = Results()
         self.results.temperature = temperature  # ambient temperature in °C
         self.results.convection_coefficient = convection_coefficient
-
-        self._sigma = sigma  # Stefan-Boltzmann constant
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0

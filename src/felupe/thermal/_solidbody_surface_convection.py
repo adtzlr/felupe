@@ -86,7 +86,7 @@ class SolidBodySurfaceConvection:
         >>> import numpy as np
         >>>
         >>> def hc_fun(ts, tamb):
-        >>>     return(abs((ts-tamb)*2.0))
+        ...     return((ts-tamb)*2.0)
         >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)
@@ -94,8 +94,8 @@ class SolidBodySurfaceConvection:
         >>> field = fem.FieldContainer([temperature])
         >>>
         >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
-        >>> temperature_convection = fem.Field(region_radiation, dim=1)
-        >>> field_convection = fem.FieldContainer([temperature_radiation])
+        >>> temperature_convection = fem.Field(region_convection, dim=1)
+        >>> field_convection = fem.FieldContainer([temperature_convection])
         >>>
         >>> boundaries = fem.BoundaryDict(
         ...     bottom=fem.Boundary(temperature, fy=0, value=30.0),
@@ -110,7 +110,7 @@ class SolidBodySurfaceConvection:
         ... )
         >>> convection_constant = fem.thermal.SolidBodySurfaceConvection(
         ...     field=field_convection,
-        ...     convection_coefficient=8.0,
+        ...     convection_coefficient=8.0,  # W/(m^2 K)
         ...     temperature=20.0,  # °C
         ... )
         >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
@@ -119,8 +119,8 @@ class SolidBodySurfaceConvection:
         ...     temperature=20.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
-        >>> table = fem.math.linsteps([0, 1], num=15)
-        >>> air_temperature = fem.math.linsteps([15, 25], num=11)  # air temperature
+        >>> table = fem.math.linsteps([0, 1], num=25)
+        >>> air_temperature = fem.math.linsteps([15, 25], num=10)  # air temperature
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
         ...     convection_constant["temperature"]: air_temperature,
@@ -162,6 +162,7 @@ class SolidBodySurfaceConvection:
 
         self.results = Results()
         self.results.temperature = temperature  # ambient temperature in °C
+        self.results.convection_coefficient = convection_coefficient
 
         self._sigma = sigma  # Stefan-Boltzmann constant
 

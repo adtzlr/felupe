@@ -30,7 +30,7 @@ class SolidBodySurfaceConvection:
     ----------
     field : felupe.FieldContainer
         Field container with the temperature in °C as first field.
-    convection coefficient : float | callable
+    convection_coefficient : float | callable
         Convection coefficient :math:`h_c` in W/(m^2 K).
     temperature : float
         The surrounding temperature :math:`\theta_{sur}` in °C.
@@ -47,8 +47,9 @@ class SolidBodySurfaceConvection:
 
     Eq. :eq: `example-horizontal-plate` gives an example for the detailed
     calculation of the heat transfer coefficient for a warm horizontal plate
-    with heat flux upward. 'T' denotes temperatures in K. `Ra`is the Rayleigh
-    number, `Pr`is the Prandtl number (air) and `Nu` is the Nusselt number.
+    with heat flux upward. `A` is the plate area, `P` is the plate perimeter
+    length. `T` denotes temperatures in K. `Ra` is the Rayleigh
+    number, `Pr` is the Prandtl number (air) and `Nu` is the Nusselt number.
 
     .. math::
        :label: convective-flux
@@ -58,15 +59,19 @@ class SolidBodySurfaceConvection:
     .. math::
        :label: example-horizontal-plate
 
-       \alpha = \frac{\lambda_{air}}{\rho_{air}cp_{air}}
+       L &= \frac{A}{P}
 
-       \T_m = 0.5\left(T_s + T_\infty\right)
+       \alpha &= \frac{\lambda_\text{air}}{\rho_\text{air}cp_{air}}
 
-       Ra = \frac{g \frac{1}{T_m}\left|\theta_s - \theta_\infty\right|\,L^3}{\alpha\mu}
+       \T_m &= 0.5 \left(T_s + T_\infty\right)
 
-       Nu = 
+       Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\mu}
 
-       h_c = Nu\,\lambda_{air}\,L
+       Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} and
+
+       Nu(10^7 < Ra \leq 10^11) &= 0.15 Ra^{1/3}
+
+       h_c &= Nu \lambda_\text{air} L
 
 
     Examples
@@ -76,17 +81,20 @@ class SolidBodySurfaceConvection:
         >>> import felupe as fem
         >>> import numpy as np
         >>>
+        >>> def hc_fun(ts, tamb):
+        >>>     return(abs((ts-tamb)*2.0))
+        >>>
         >>> mesh = fem.Rectangle(n=11)
         >>> region = fem.RegionQuad(mesh)
-        >>> temperature = fem.Field(region, dim=1, values=20.0)
+        >>> temperature = fem.Field(region, dim=1, values=30.0)
         >>> field = fem.FieldContainer([temperature])
         >>>
-        >>> region_radiation = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
-        >>> temperature_radiation = fem.Field(region_radiation, dim=1)
-        >>> field_radiation = fem.FieldContainer([temperature_radiation])
+        >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+        >>> temperature_convection = fem.Field(region_radiation, dim=1)
+        >>> field_convection = fem.FieldContainer([temperature_radiation])
         >>>
         >>> boundaries = fem.BoundaryDict(
-        ...     left=fem.Boundary(temperature, fx=0, value=20.0),
+        ...     bottom=fem.Boundary(temperature, fy=0, value=30.0),
         ... )
         >>>
         >>> solid = fem.thermal.SolidBodyThermal(
@@ -96,22 +104,38 @@ class SolidBodySurfaceConvection:
         ...     time_step=720.0,  # s
         ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
-        >>> radiation = fem.thermal.SolidBodySurfaceConvection(
-        ...     field=field_radiation,
-        ...     emissivity=0.8,
+        >>> convection_constant = fem.thermal.SolidBodySurfaceConvection(
+        ...     field=field_convection,
+        ...     convection_coefficient=8.0,
+        ...     temperature=20.0,  # °C
+        ... )
+        >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
+        ...     field=field_convection,
+        ...     convection_coefficient=hc_fun,
         ...     temperature=20.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=15)
-        >>> air_temperature = fem.math.linsteps([20, 40], num=15)  # air temperature
-        >>> emissivity = fem.math.linsteps([0.6, 0.8], num=15)  # a value between 0 ... 1
+        >>> air_temperature = fem.math.linsteps([15, 25], num=11)  # air temperature
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
-        ...     radiation["temperature"]: air_temperature,
-        ...     radiation["emissivity"]: emissivity,
+        ...     convection_constant["temperature"]: air_temperature,
         ... }
         >>> step = fem.Step(
-        ...     items=[time, solid, radiation], ramp=ramp, boundaries=boundaries
+        ...     items=[time, solid, convection], ramp=ramp, boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate()
+        >>>
+        >>> mesh.view(
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
+        >>>
+        >>> ramp = {
+        ...     time: 18000 * table,  # five hours
+        ...     convection_function["temperature"]: air_temperature,
+        ... }
+        >>> step = fem.Step(
+        ...     items=[time, solid, convection_function], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
@@ -126,13 +150,13 @@ class SolidBodySurfaceConvection:
 
     """
 
-    def __init__(self, field, emissivity, temperature):
+    def __init__(self, field, convection_coefficient, temperature):
         self.field = field
+        self.convection_coefficient = convection_coefficient
         self.time_step = None
 
         self.results = Results()
         self.results.temperature = temperature  # ambient temperature in °C
-        self.results.emissivity = emissivity
 
         self._sigma = sigma  # Stefan-Boltzmann constant
 
@@ -145,12 +169,20 @@ class SolidBodySurfaceConvection:
 
     def update(self, temperature):
         self._update_temperature(temperature)
+        self._update_convection_coefficient()  # adapt hc using cur. temp.
 
     def _update_temperature(self, temperature):
         self.results.temperature = temperature
 
-    def _update_emissivity(self, emissivity):
-        self.results.emissivity = emissivity
+    def _update_convection_coefficient(self):
+        if callable(self.convection_coefficient):
+            self.results.convection_coefficient =\
+                self.convection_coefficient(
+                    self.results.temperature,
+                    self.field.extract(grad=False)[0]
+                )
+        else:
+            self.results.convection_coefficient = self.convection_coefficient
 
     def _vector(self, field=None, **kwargs):
         if field is not None:
@@ -161,9 +193,8 @@ class SolidBodySurfaceConvection:
 
         temperature = self.field.extract(grad=False)[0]
         fun = [
-            -self.results.emissivity
-            * self._sigma
-            * ((temperature + 273.15) ** 4 - (self.results.temperature + 273.15) ** 4)
+            -self.results.convection_coefficient
+            * (temperature - self.results.temperature)
         ]
 
         self.results.force = IntegralForm(
@@ -182,10 +213,7 @@ class SolidBodySurfaceConvection:
         dim = self.field[0].dim
         temperature = self.field.extract(grad=False)[0]
         fun = [
-            -self.results.emissivity
-            * self._sigma
-            * 4
-            * (temperature + 273.15) ** 3
+            -self.results.convection_coefficient
             * np.eye(dim).reshape(dim, dim, 1, 1)
         ]
 

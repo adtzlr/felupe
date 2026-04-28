@@ -68,7 +68,7 @@ class SolidBodyThermal(SolidBody):
 
         \boldsymbol{r}
             + \frac{\partial \boldsymbol{r}}{\partial \boldsymbol{T}}
-            \delta \boldsymbol {T} = \boldsymbol{0}
+            \delta \boldsymbol {T} &= \boldsymbol{0}
 
         \boldsymbol{K} \delta \boldsymbol{T} &= -\boldsymbol{r}
 

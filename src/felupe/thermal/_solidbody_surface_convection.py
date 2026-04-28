@@ -31,14 +31,18 @@ class SolidBodySurfaceConvection:
     field : felupe.FieldContainer
         Field container with the temperature in °C as first field.
     convection_coefficient : float | callable
-        Convection coefficient :math:`h_c` in W/(m^2 K).
+        Convection heat transfer coefficient :math: `h_c` in W/(m^2 K). A
+        callable requires the parameters 'surface temperature' and 'ambient
+        temperature'.
+        Additional parameters should be passed by **kwargs (and are not
+        adapted during simulation).
     temperature : float
-        The surrounding temperature :math:`\theta_{sur}` in °C.
+        The ambient air temperature :math:`\theta_\infty` in °C.
 
     Notes
     -----
     This class represents a boundary condition for a thermal solid body, which
-    is used to model convectinve heat transfer between the boundary of a
+    is used to model convective heat transfer between the boundary of a
     solid material and the adjacent ambient air with temperature
     :math:`\theta_\infty` in °C.
 
@@ -67,7 +71,7 @@ class SolidBodySurfaceConvection:
 
        Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\mu}
 
-       Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} and
+       Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} \text{  and}
 
        Nu(10^7 < Ra \leq 10^11) &= 0.15 Ra^{1/3}
 
@@ -122,7 +126,7 @@ class SolidBodySurfaceConvection:
         ...     convection_constant["temperature"]: air_temperature,
         ... }
         >>> step = fem.Step(
-        ...     items=[time, solid, convection], ramp=ramp, boundaries=boundaries
+        ...     items=[time, solid, convection_constant], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
@@ -142,6 +146,7 @@ class SolidBodySurfaceConvection:
         >>> mesh.view(
         ...     point_data={"Temperature in °C": temperature.values}
         ... ).plot("Temperature in °C").show()
+
 
     See Also
     --------
@@ -178,8 +183,8 @@ class SolidBodySurfaceConvection:
         if callable(self.convection_coefficient):
             self.results.convection_coefficient =\
                 self.convection_coefficient(
-                    self.results.temperature,
-                    self.field.extract(grad=False)[0]
+                    self.field.extract(grad=False)[0],  # ts
+                    self.results.temperature  # tamb
                 )
         else:
             self.results.convection_coefficient = self.convection_coefficient
@@ -211,7 +216,7 @@ class SolidBodySurfaceConvection:
             return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
 
         dim = self.field[0].dim
-        temperature = self.field.extract(grad=False)[0]
+        # temperature = self.field.extract(grad=False)[0]
         fun = [
             -self.results.convection_coefficient
             * np.eye(dim).reshape(dim, dim, 1, 1)

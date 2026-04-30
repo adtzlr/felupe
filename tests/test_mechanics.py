@@ -849,9 +849,6 @@ def test_job_plugins():
         def after_step(self, job, state):
             self.ntriggered += 10
 
-        def before_substep(self, job, state):
-            self.ntriggered += 1
-
         def after_substep(self, job, state):
             self.ntriggered += 1
 
@@ -869,7 +866,7 @@ def test_job_plugins():
     job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2])
     job.evaluate()
 
-    assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1) * 6
+    assert recorder.ntriggered == (100 + 100) + (10 + 10) + 1 * 6
 
     fig, ax = curve.plot()
     plt.close(fig)

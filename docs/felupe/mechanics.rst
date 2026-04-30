@@ -30,6 +30,7 @@ Mechanics
 .. autosummary::
 
    CharacteristicCurvePlugin
+   ProgressPlugin
 
 **Point Load and Multi-Point Constraints**
 

@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import os
 import warnings
 
@@ -22,6 +23,15 @@ from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
 from ..tools import logo, runs_on
+
+HOOKS = (
+    "before_job",
+    "after_job",
+    "before_step",
+    "after_step",
+    "before_substep",
+    "after_substep",
+)
 
 
 def displacement(field, substep=None):
@@ -48,6 +58,22 @@ def print_header():
     print("\n".join([logo(), runs_on(), "", "Run Job", "======="]))
 
 
+class JobState:
+    """A class to keep track of the state of a Job during evaluation.
+
+    Notes
+    -----
+    This is used to pass information to plugins during evaluation. The state is updated
+    before each step and substep.
+    """
+
+    def __init__(self, stepnumber, substepnumber, step, substep):
+        self.stepnumber = stepnumber
+        self.substepnumber = substepnumber
+        self.step = step
+        self.substep = substep
+
+
 class Job:
     r"""A job with a list of steps and a method to evaluate them.
 
@@ -62,28 +88,25 @@ class Job:
         ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
         container of the completed substep is available as ``substep.x``. Default
         is ``callback=lambda stepnumber, substepnumber, substep, **kwargs: None``.
+    plugins : list or None, optional
+        A list of plugins with hooks to be used during evaluation. Available hooks are
+        ``before_job``, ``after_job``, ``before_step``, ``after_step``,
+        ``before_substep`` and ``after_substep``. Each hook takes the job and the
+        current state as arguments. All hooks are optional. Default is None, which is
+        equivalent to an empty list. Simple callable plugins are dispatched at the
+        ``after_substep`` hook.
     **kwargs : dict, optional
         Optional keyword-arguments for the ``callback`` function.
 
     Attributes
     ----------
-    steps : list of Step
-        A list with steps, where each step subsequently depends on the solution of the
-        previous step.
     nsteps : int
         The number of steps.
-    callback : callable
-        A callable which is called after each completed substep. Function signature must
-        be ``lambda stepnumber, substepnumber, substep: None``, where ``substep`` is an
-        instance of :class:`~felupe.tools.NewtonResult`. THe field container of the
-        completed substep is available as ``substep.x``.
     timetrack : list of int
         A list with times at which the results are written to the XDMF result file.
     fnorms : list of list of float
         List with norms of the objective function for each completed substep of each
         step. See also class:`~felupe.tools.NewtonResult`.
-    kwargs : dict
-        Optional keyword-arguments for the ``callback`` function.
 
     Examples
     --------
@@ -125,14 +148,43 @@ class Job:
         self,
         steps,
         callback=lambda stepnumber, substepnumber, substep, **kwargs: None,
+        plugins=None,
         **kwargs,
     ):
         self.steps = steps
         self.nsteps = len(steps)
         self.callback = callback
+
         self.timetrack = []
         self.fnorms = []
         self.kwargs = kwargs
+
+        self.plugins = plugins
+        if self.plugins is None:
+            self.plugins = []
+
+        self._dispatcher = {hook: [] for hook in HOOKS}
+
+        # check if methods are available for the hooks in the plugins
+        # add them to the dispatcher if they are available
+        for plugin in self.plugins:
+
+            # simple callable plugin
+            if callable(plugin):
+                self._dispatcher["after_substep"].append(plugin)
+                continue
+
+            # hook-based plugin
+            for hook in HOOKS:
+                method = getattr(plugin, hook, None)
+                if method is not None:
+                    self._dispatcher[hook].append(method)
+
+    def _trigger(self, hook, state):
+        "Emit a hook with the current state to all registered functions."
+
+        for fun in self._dispatcher[hook]:
+            fun(self, state)
 
     def _write(self, writer, time, substep, point_data, cell_data):
         field = substep.x
@@ -220,6 +272,10 @@ class Job:
         tools.NewtonResult : A data class which represents the result found by
             Newton's method.
         """
+
+        state = JobState(stepnumber=None, substepnumber=None, step=None, substep=None)
+        self._trigger("before_job", state)
+
         if verbose is None:
             FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
             if FELUPE_VERBOSE is None:
@@ -326,13 +382,25 @@ class Job:
                 progress_bar_newton = None
 
             for j, step in enumerate(self.steps):
+
                 if verbose == 2:
                     print(f"Begin Evaluation of Step {j + 1}.")
+
+                state = JobState(
+                    stepnumber=j, substepnumber=None, step=step, substep=None
+                )
+                self._trigger("before_step", state)
 
                 substeps = step.generate(
                     verbose=verbose, progress_bar=progress_bar_newton, **kwargs
                 )
+
                 for i, substep in enumerate(substeps):
+                    state = JobState(
+                        stepnumber=j, substepnumber=i, step=step, substep=substep
+                    )
+                    self._trigger("before_substep", state)
+
                     self.fnorms.append(substep.fnorms)
                     if verbose == 2:
                         _substep = f"Substep {i + 1}/{step.nsubsteps}"
@@ -357,13 +425,24 @@ class Job:
                             cell_data={**cdata, **cell_data},
                         )
 
+                    self._trigger("after_substep", state)
                     time += 1
 
                     if verbose == 1:
                         progress_bar.update(1)
 
+                state = JobState(
+                    stepnumber=j, substepnumber=None, step=step, substep=None
+                )
+                self._trigger("after_step", state)
+
             if verbose == 1:
                 progress_bar.close()
                 progress_bar_newton.close()
+
+            state = JobState(
+                stepnumber=None, substepnumber=None, step=None, substep=None
+            )
+            self._trigger("after_job", state)
 
         return self

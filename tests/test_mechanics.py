@@ -816,6 +816,7 @@ def test_axi_to_3d_quadratic():
 def test_job_plugins():
 
     import felupe as fem
+    import matplotlib.pyplot as plt
 
     mesh = fem.Rectangle(n=3)
     field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
@@ -826,7 +827,10 @@ def test_job_plugins():
     boundaries = fem.dof.uniaxial(
         solid.field, clamped=True, sym=False, return_loadcase=False
     )
-    step = fem.Step(items=[solid], boundaries=boundaries)
+    table = fem.math.linsteps([0, -0.1], num=5)
+    step = fem.Step(
+        items=[solid], boundaries=boundaries, ramp={boundaries["move"]: table}
+    )
 
     class SimplePlugin:
         def __init__(self):
@@ -855,10 +859,22 @@ def test_job_plugins():
     def my_simple_plugin(job, state):
         assert state is not None
 
-    job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin])
+    curve = fem.CharacteristicCurvePlugin(boundary=boundaries["move"])
+    curve_2 = fem.CharacteristicCurvePlugin(boundary=boundaries["move"], items=[solid])
+
+    with pytest.raises(ValueError):
+        curve.plot()
+
+    job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2])
     job.evaluate()
 
-    assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1)
+    assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1) * 6
+
+    fig, ax = curve.plot()
+    plt.close(fig)
+
+    fig, ax = curve.plot(gradient=True, swapaxes=True, xlabel="x", ylabel="y")
+    plt.close(fig)
 
 
 if __name__ == "__main__":

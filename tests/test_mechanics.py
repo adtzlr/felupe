@@ -815,8 +815,9 @@ def test_axi_to_3d_quadratic():
 
 def test_job_plugins():
 
-    import felupe as fem
     import matplotlib.pyplot as plt
+
+    import felupe as fem
 
     mesh = fem.Rectangle(n=3)
     field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])

@@ -826,7 +826,10 @@ def test_job_plugins():
     boundaries = fem.dof.uniaxial(
         solid.field, clamped=True, sym=False, return_loadcase=False
     )
-    step = fem.Step(items=[solid], boundaries=boundaries)
+    table = fem.math.linsteps([0, -0.1], num=5)
+    step = fem.Step(
+        items=[solid], boundaries=boundaries, ramp={boundaries["move"]: table}
+    )
 
     class SimplePlugin:
         def __init__(self):
@@ -855,10 +858,19 @@ def test_job_plugins():
     def my_simple_plugin(job, state):
         assert state is not None
 
-    job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin])
+    curve = fem.CharacteristicCurvePlugin(boundary=boundaries["move"])
+    curve_2 = fem.CharacteristicCurvePlugin(boundary=boundaries["move"], items=[solid])
+
+    job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2])
     job.evaluate()
 
-    assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1)
+    assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1) * 6
+
+    fig, ax = curve.plot()
+    fig.close()
+
+    fig, ax = curve.plot(gradient=True, swapaxes=True, xlabel="x", ylabel="y")
+    fig.close()
 
 
 if __name__ == "__main__":

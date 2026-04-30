@@ -862,6 +862,9 @@ def test_job_plugins():
     curve = fem.CharacteristicCurvePlugin(boundary=boundaries["move"])
     curve_2 = fem.CharacteristicCurvePlugin(boundary=boundaries["move"], items=[solid])
 
+    with pytest.raises(ValueError):
+        curve.plot()
+
     job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2])
     job.evaluate()
 

@@ -7,6 +7,7 @@ from ._newton import NewtonResult
 from ._newton import fun_items as fun
 from ._newton import jac_items as jac
 from ._newton import newtonraphson
+from ._progress import ProgressPlugin
 
 
 def newtonrhapson(*args, **kwargs):
@@ -44,4 +45,5 @@ __all__ = [
     "NewtonResult",
     "EventDispatcher",
     "Context",
+    "ProgressPlugin",
 ]

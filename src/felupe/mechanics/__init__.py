@@ -14,7 +14,7 @@ from ._solidbody_pressure import SolidBodyPressure
 from ._step import Step
 from ._truss import TrussBody
 from ._update import UpdateItem
-from .plugins import CharacteristicCurvePlugin, ProgressPlugin
+from .plugins import CharacteristicCurvePlugin
 
 __all__ = [
     "Assemble",
@@ -36,7 +36,6 @@ __all__ = [
     "Step",
     "MultiPointConstraint",
     "MultiPointContact",
-    "ProgressPlugin",
     "TrussBody",
     "UpdateItem",
 ]

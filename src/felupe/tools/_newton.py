@@ -28,6 +28,7 @@ from .. import solve as fesolve
 from ..assembly import IntegralForm
 from ..math import norm
 from ._event_dispatcher import EventDispatcher
+from ._progress import ProgressPlugin
 
 
 class NewtonResult:
@@ -400,10 +401,10 @@ def newtonraphson(
 
     """
     if dispatcher is None:
-        dispatcher = EventDispatcher()
+        dispatcher = EventDispatcher(plugins=[ProgressPlugin()])
 
     for plugin in dispatcher.plugins:
-        if type(plugin).__name__ == "ProgressPlugin":
+        if isinstance(plugin, ProgressPlugin):
             verbose = plugin.verbose
             progress_bar = plugin.progress_bar_newton
             continue

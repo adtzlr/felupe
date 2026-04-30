@@ -21,8 +21,7 @@ import warnings
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
-from ..tools import Context, EventDispatcher
-from .plugins import ProgressPlugin
+from ..tools import Context, EventDispatcher, ProgressPlugin
 
 
 def displacement(field, substep=None):

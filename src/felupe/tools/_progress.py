@@ -18,7 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
-from ...tools import logo, runs_on
+from ._misc import logo, runs_on
 
 
 def print_header():

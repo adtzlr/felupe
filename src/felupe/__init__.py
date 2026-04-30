@@ -82,7 +82,6 @@ from .mechanics import (
     MultiPointConstraint,
     MultiPointContact,
     PointLoad,
-    ProgressPlugin,
     SolidBody,
     SolidBodyCauchyStress,
     SolidBodyForce,
@@ -137,6 +136,7 @@ from .tools import (
     runs_on,
     save,
     topoints,
+    ProgressPlugin,
 )
 from .view import ViewField, ViewMesh
 from .view import ViewSolid

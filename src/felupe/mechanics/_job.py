@@ -22,7 +22,7 @@ import warnings
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
-from ..tools import logo, runs_on
+from .plugins import ProgressPlugin
 
 HOOKS = (
     "before_job",
@@ -52,10 +52,6 @@ def log_strain_principal(field, substep=None):
 def log_strain(field, substep=None):
     "Return Lagrangian logarithmic strain tensors."
     return [field.evaluate.log_strain(tensor=True, asvoigt=True).mean(-2).T]
-
-
-def print_header():
-    print("\n".join([logo(), runs_on(), "", "Run Job", "======="]))
 
 
 class JobState:
@@ -90,11 +86,10 @@ class Job:
         is ``callback=lambda stepnumber, substepnumber, substep, **kwargs: None``.
     plugins : list or None, optional
         A list of plugins with hooks to be used during evaluation. Available hooks are
-        ``before_job``, ``after_job``, ``before_step``, ``after_step``,
-        ``before_substep`` and ``after_substep``. Each hook takes the job and the
-        current state as arguments. All hooks are optional. Default is None, which is
-        equivalent to an empty list. Simple callable plugins are dispatched at the
-        ``after_substep`` hook.
+        ``before_job``, ``after_job``, ``before_step``, ``after_step`` and
+        ``after_substep``. Each hook takes the job and the current state as arguments.
+        All hooks are optional. Default is None, which is equivalent to an empty list.
+        Simple callable plugins are dispatched at the ``after_substep`` hook.
     **kwargs : dict, optional
         Optional keyword-arguments for the ``callback`` function.
 
@@ -159,9 +154,13 @@ class Job:
         self.fnorms = []
         self.kwargs = kwargs
 
-        self.plugins = plugins
-        if self.plugins is None:
-            self.plugins = []
+        self.plugins = list(plugins) if plugins is not None else []
+        self.plugins.append(ProgressPlugin())
+
+        self._progress_plugin = None
+        for plugin in self.plugins:
+            if isinstance(plugin, ProgressPlugin):
+                self._progress_plugin = plugin
 
         self._dispatcher = {hook: [] for hook in HOOKS}
 
@@ -273,34 +272,11 @@ class Job:
             Newton's method.
         """
 
+        # configure progress plugin
+        self._progress_plugin.configure(verbose=verbose, tqdm=tqdm)
+
         state = JobState(stepnumber=None, substepnumber=None, step=None, substep=None)
         self._trigger("before_job", state)
-
-        if verbose is None:
-            FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
-            if FELUPE_VERBOSE is None:
-                verbose = True
-            else:
-                verbose = FELUPE_VERBOSE == "true"
-
-        if verbose:
-            try:
-                backend = str(tqdm).lower()
-
-                if backend == "tqdm":
-                    from tqdm import tqdm
-                elif backend == "auto":
-                    from tqdm.auto import tqdm
-                elif backend == "notebook":
-                    from tqdm.notebook import tqdm
-                else:
-                    raise ValueError('tqdm must be "tqdm", "auto" or "notebook".')
-
-            except ModuleNotFoundError:  # pragma: no cover
-                verbose = 2  # pragma: no cover
-
-        if verbose == 2:
-            print_header()
 
         if parallel:
             if "kwargs" not in kwargs.keys():
@@ -364,49 +340,24 @@ class Job:
             if filename is not None:
                 writer.write_points_cells(mesh.points, mesh.cells)
 
-            if verbose == 1:
-                total = sum([step.nsubsteps for step in self.steps])
-                progress_bar = tqdm(
-                    total=total,
-                    desc="Step   ",
-                    unit="substep",
-                    colour="green",
-                )
-                progress_bar_newton = tqdm(
-                    total=100,
-                    desc="Substep",
-                    colour="cyan",
-                    unit="%",
-                )
-            else:
-                progress_bar_newton = None
-
             for j, step in enumerate(self.steps):
-
-                if verbose == 2:
-                    print(f"Begin Evaluation of Step {j + 1}.")
-
                 state = JobState(
                     stepnumber=j, substepnumber=None, step=step, substep=None
                 )
                 self._trigger("before_step", state)
 
                 substeps = step.generate(
-                    verbose=verbose, progress_bar=progress_bar_newton, **kwargs
+                    verbose=self._progress_plugin.verbose,
+                    progress_bar=self._progress_plugin.progress_bar_newton,
+                    **kwargs,
                 )
 
                 for i, substep in enumerate(substeps):
                     state = JobState(
                         stepnumber=j, substepnumber=i, step=step, substep=substep
                     )
-                    self._trigger("before_substep", state)
 
                     self.fnorms.append(substep.fnorms)
-                    if verbose == 2:
-                        _substep = f"Substep {i + 1}/{step.nsubsteps}"
-                        _step = f"Step {j + 1}/{self.nsteps}"
-
-                        print(f"{_substep} of {_step} successful.")
 
                     self.callback(j, i, substep, **self.kwargs)
 
@@ -424,21 +375,14 @@ class Job:
                             point_data={**pdata, **point_data},
                             cell_data={**cdata, **cell_data},
                         )
-
-                    self._trigger("after_substep", state)
                     time += 1
 
-                    if verbose == 1:
-                        progress_bar.update(1)
+                    self._trigger("after_substep", state)
 
                 state = JobState(
                     stepnumber=j, substepnumber=None, step=step, substep=None
                 )
                 self._trigger("after_step", state)
-
-            if verbose == 1:
-                progress_bar.close()
-                progress_bar_newton.close()
 
             state = JobState(
                 stepnumber=None, substepnumber=None, step=None, substep=None

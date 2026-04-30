@@ -16,22 +16,13 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
 import warnings
 
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
+from ..tools import Context, EventDispatcher
 from .plugins import ProgressPlugin
-
-HOOKS = (
-    "before_job",
-    "after_job",
-    "before_step",
-    "after_step",
-    "before_substep",
-    "after_substep",
-)
 
 
 def displacement(field, substep=None):
@@ -55,19 +46,11 @@ def log_strain(field, substep=None):
 
 
 class JobState:
-    """A class to keep track of the state of a Job during evaluation.
+    "A class to keep track of the state of a Job during evaluation."
 
-    Notes
-    -----
-    This is used to pass information to plugins during evaluation. The state is updated
-    before each step and substep.
-    """
-
-    def __init__(self, stepnumber, substepnumber, step, substep):
+    def __init__(self, stepnumber=None, substepnumber=None):
         self.stepnumber = stepnumber
         self.substepnumber = substepnumber
-        self.step = step
-        self.substep = substep
 
 
 class Job:
@@ -154,36 +137,9 @@ class Job:
         self.fnorms = []
         self.kwargs = kwargs
 
-        self.plugins = list(plugins) if plugins is not None else []
-        self.plugins.append(ProgressPlugin())
-
-        self._progress_plugin = None
-        for plugin in self.plugins:
-            if isinstance(plugin, ProgressPlugin):
-                self._progress_plugin = plugin
-
-        self._dispatcher = {hook: [] for hook in HOOKS}
-
-        # check if methods are available for the hooks in the plugins
-        # add them to the dispatcher if they are available
-        for plugin in self.plugins:
-
-            # simple callable plugin
-            if callable(plugin):
-                self._dispatcher["after_substep"].append(plugin)
-                continue
-
-            # hook-based plugin
-            for hook in HOOKS:
-                method = getattr(plugin, hook, None)
-                if method is not None:
-                    self._dispatcher[hook].append(method)
-
-    def _trigger(self, hook, state):
-        "Emit a hook with the current state to all registered functions."
-
-        for fun in self._dispatcher[hook]:
-            fun(self, state)
+        self._progress_plugin = ProgressPlugin()
+        self.dispatcher = EventDispatcher(plugins=plugins)
+        self.dispatcher.add_plugin(self._progress_plugin)
 
     def _write(self, writer, time, substep, point_data, cell_data):
         field = substep.x
@@ -275,8 +231,9 @@ class Job:
         # configure progress plugin
         self._progress_plugin.configure(verbose=verbose, tqdm=tqdm)
 
-        state = JobState(stepnumber=None, substepnumber=None, step=None, substep=None)
-        self._trigger("before_job", state)
+        context = Context(job=self)
+        state = JobState()
+        self.dispatcher.trigger("before_job", context, state)
 
         if parallel:
             if "kwargs" not in kwargs.keys():
@@ -341,22 +298,14 @@ class Job:
                 writer.write_points_cells(mesh.points, mesh.cells)
 
             for j, step in enumerate(self.steps):
-                state = JobState(
-                    stepnumber=j, substepnumber=None, step=step, substep=None
-                )
-                self._trigger("before_step", state)
 
-                substeps = step.generate(
-                    verbose=self._progress_plugin.verbose,
-                    progress_bar=self._progress_plugin.progress_bar_newton,
-                    **kwargs,
-                )
+                context = Context(job=self, step=step)
+                state = JobState(stepnumber=j)
+                self.dispatcher.trigger("before_step", context, state)
+
+                substeps = step.generate(dispatcher=self.dispatcher, **kwargs)
 
                 for i, substep in enumerate(substeps):
-                    state = JobState(
-                        stepnumber=j, substepnumber=i, step=step, substep=substep
-                    )
-
                     self.fnorms.append(substep.fnorms)
 
                     self.callback(j, i, substep, **self.kwargs)
@@ -377,16 +326,16 @@ class Job:
                         )
                     time += 1
 
-                    self._trigger("after_substep", state)
+                    context = Context(job=self, step=step, substep=substep)
+                    state = JobState(stepnumber=j, substepnumber=i)
+                    self.dispatcher.trigger("after_substep", context, state)
 
-                state = JobState(
-                    stepnumber=j, substepnumber=None, step=step, substep=None
-                )
-                self._trigger("after_step", state)
+                context = Context(job=self, step=step)
+                state = JobState(stepnumber=j)
+                self.dispatcher.trigger("after_step", context, state)
 
-            state = JobState(
-                stepnumber=None, substepnumber=None, step=None, substep=None
-            )
-            self._trigger("after_job", state)
+            context = Context(job=self)
+            state = JobState()
+            self.dispatcher.trigger("after_job", context, state)
 
         return self

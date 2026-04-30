@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import inspect
 import os
 from time import perf_counter
@@ -26,6 +27,7 @@ from scipy.sparse.linalg import spsolve
 from .. import solve as fesolve
 from ..assembly import IntegralForm
 from ..math import norm
+from ._event_dispatcher import EventDispatcher
 
 
 class NewtonResult:
@@ -225,6 +227,7 @@ def newtonraphson(
     callback_kwargs=None,
     progress_bar=None,
     tqdm="tqdm",
+    dispatcher=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -285,6 +288,9 @@ def newtonraphson(
     tqdm : str, optional
         If verbose is True, choose a backend for ``tqdm`` (``"tqdm"``, ``"auto"`` or
         ``"notebook"``). Default is ``"tqdm"``.
+    dispatcher: EventDispatcher or None, optional
+        An optional EventDispatcher to trigger events during evaluation. Default is
+        None.
 
     Returns
     -------
@@ -393,6 +399,15 @@ def newtonraphson(
     2.7384964752762237e-15
 
     """
+    if dispatcher is None:
+        dispatcher = EventDispatcher()
+
+    for plugin in dispatcher.plugins:
+        if type(plugin).__name__ == "ProgressPlugin":
+            verbose = plugin.verbose
+            progress_bar = plugin.progress_bar_newton
+            continue
+
     if verbose is None:
         FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
         if FELUPE_VERBOSE is None:

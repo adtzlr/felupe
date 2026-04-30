@@ -94,15 +94,15 @@ class CharacteristicCurvePlugin:
         self.y = []
         self.res = None
 
-    def after_substep(self, job, state):
+    def after_substep(self, context, state):
         if self.items is not None:
             fun = sum([item.results.force for item in self.items])
         else:
-            fun = state.substep.fun
+            fun = context.substep.fun
 
-        self.x.append(state.substep.x[0].values[self.boundary.points[0]])
-        self.y.append(force(state.substep.x, fun, self.boundary))
-        self.res = state.substep
+        self.x.append(context.substep.x[0].values[self.boundary.points[0]])
+        self.y.append(force(context.substep.x, fun, self.boundary))
+        self.res = context.substep
 
     def plot(
         self,

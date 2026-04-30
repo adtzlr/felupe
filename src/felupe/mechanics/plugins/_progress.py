@@ -61,7 +61,7 @@ class ProgressPlugin:
         self.verbose = verbose
         self.tqdm = tqdm
 
-    def before_job(self, job, state):
+    def before_job(self, context, state):
 
         if self.verbose is None:
             FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
@@ -90,7 +90,7 @@ class ProgressPlugin:
             print_header()
 
         if self.verbose == 1:
-            total = sum([step.nsubsteps for step in job.steps])
+            total = sum([step.nsubsteps for step in context.job.steps])
             self.progress_bar = tqdm(
                 total=total,
                 desc="Step   ",
@@ -106,21 +106,21 @@ class ProgressPlugin:
         else:
             self.progress_bar_newton = None
 
-    def before_step(self, job, state):
+    def before_step(self, context, state):
         if self.verbose == 2:
             print(f"Begin Evaluation of Step {state.stepnumber + 1}.")
 
-    def after_substep(self, job, state):
+    def after_substep(self, context, state):
         if self.verbose == 2:
-            _substep = f"Substep {state.substepnumber + 1}/{state.step.nsubsteps}"
-            _step = f"Step {state.stepnumber + 1}/{len(job.steps)}"
+            _substep = f"Substep {state.substepnumber + 1}/{context.step.nsubsteps}"
+            _step = f"Step {state.stepnumber + 1}/{len(context.job.steps)}"
 
             print(f"{_substep} of {_step} successful.")
 
         if self.verbose == 1:
             self.progress_bar.update(1)
 
-    def after_job(self, job, state):
+    def after_job(self, context, state):
         if self.verbose == 1:
             self.progress_bar.close()
             self.progress_bar_newton.close()

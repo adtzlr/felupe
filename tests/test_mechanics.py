@@ -813,6 +813,54 @@ def test_axi_to_3d_quadratic():
     solid.revolve(phi=360)
 
 
+def test_job_plugins():
+
+    import felupe as fem
+
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
+
+    umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
+    solid = fem.SolidBody(umat=umat, field=field)
+
+    boundaries = fem.dof.uniaxial(
+        solid.field, clamped=True, sym=False, return_loadcase=False
+    )
+    step = fem.Step(items=[solid], boundaries=boundaries)
+
+    class SimplePlugin:
+        def __init__(self):
+            self.ntriggered = 0
+
+        def before_job(self, job, state):
+            self.ntriggered += 100
+
+        def after_job(self, job, state):
+            self.ntriggered += 100
+
+        def before_step(self, job, state):
+            self.ntriggered += 10
+
+        def after_step(self, job, state):
+            self.ntriggered += 10
+
+        def before_substep(self, job, state):
+            self.ntriggered += 1
+
+        def after_substep(self, job, state):
+            self.ntriggered += 1
+
+    recorder = SimplePlugin()
+
+    def my_simple_plugin(job, state):
+        assert state is not None
+
+    job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin])
+    job.evaluate()
+
+    assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -833,3 +881,4 @@ if __name__ == "__main__":
     test_axi_to_3d_incompressible()
     test_axi_to_3d_mixed()
     test_axi_to_3d_quadratic()
+    test_job_plugins()

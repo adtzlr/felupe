@@ -816,6 +816,7 @@ def test_axi_to_3d_quadratic():
 def test_job_plugins():
 
     import felupe as fem
+    import matplotlib.pyplot as plt
 
     mesh = fem.Rectangle(n=3)
     field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
@@ -867,10 +868,10 @@ def test_job_plugins():
     assert recorder.ntriggered == (100 + 100) + (10 + 10) + (1 + 1) * 6
 
     fig, ax = curve.plot()
-    fig.close()
+    plt.close(fig)
 
     fig, ax = curve.plot(gradient=True, swapaxes=True, xlabel="x", ylabel="y")
-    fig.close()
+    plt.close(fig)
 
 
 if __name__ == "__main__":

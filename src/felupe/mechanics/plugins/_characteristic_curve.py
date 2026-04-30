@@ -29,6 +29,10 @@ class CharacteristicCurvePlugin:
     ----------
     boundary : felupe.Boundary
         The boundary condition for which to record the characteristic curve.
+    items : list of SolidBody, SolidBodyNearlyIncompressible, SolidBodyPressure, SolidBodyGravity, PointLoad, MultiPointConstraint, MultiPointContact or None, optional
+        A list of items with methods for the assembly of sparse vectors/matrices which
+        are used to evaluate the sum of reaction forces. If None, the total reaction
+        forces from the :class:`~felupe.tools.NewtonResult` of the substep are used.
 
     Examples
     --------

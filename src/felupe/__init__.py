@@ -129,6 +129,7 @@ from .region import (
     RegionVertex,
 )
 from .tools import (
+    ProgressPlugin,
     hello_world,
     newtonraphson,
     newtonrhapson,
@@ -136,7 +137,6 @@ from .tools import (
     runs_on,
     save,
     topoints,
-    ProgressPlugin,
 )
 from .view import ViewField, ViewMesh
 from .view import ViewSolid

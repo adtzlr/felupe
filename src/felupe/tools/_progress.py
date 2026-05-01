@@ -17,8 +17,9 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
-import numpy as np
 from time import perf_counter
+
+import numpy as np
 
 from ._misc import logo, runs_on
 

@@ -26,7 +26,7 @@ from scipy.sparse.linalg import spsolve
 from .. import solve as fesolve
 from ..assembly import IntegralForm
 from ..math import norm
-from ._event_dispatcher import EventDispatcher, Context, JobState
+from ._event_dispatcher import Context, EventDispatcher, JobState
 from ._progress import ProgressPlugin
 
 

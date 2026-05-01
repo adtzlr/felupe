@@ -68,7 +68,7 @@ class ProgressPlugin:
         self.verbose = verbose
         self.tqdm = tqdm
 
-    def _configure_progress_bars(self, context):
+    def _create_progress_bars(self, context):
         self.progress_bar = None
         self.progress_bar_newton = None
 
@@ -119,7 +119,7 @@ class ProgressPlugin:
                 )
 
     def before_job(self, context, state):
-        self._configure_progress_bars(context)
+        self._create_progress_bars(context)
 
     def before_step(self, context, state):
         if self.verbose == 2:
@@ -131,7 +131,7 @@ class ProgressPlugin:
 
         if self.verbose == 1:
             if self._tqdm is None:
-                self._configure_progress_bars(context)
+                self._create_progress_bars(context)
 
             if self.progress_bar_newton is None:
                 self.progress_bar_newton = self._tqdm(

@@ -21,7 +21,7 @@ from time import perf_counter
 
 import numpy as np
 
-from ._misc import logo, runs_on
+from ..tools import logo, runs_on
 
 
 def print_header():
@@ -60,11 +60,17 @@ class ProgressPlugin:
     ):
         self.configure(verbose=verbose, tqdm=tqdm)
 
+        self._tqdm = None
+        self.progress_bar = None
+        self.progress_bar_newton = None
+
     def configure(self, verbose, tqdm):
         self.verbose = verbose
         self.tqdm = tqdm
 
-    def before_job(self, context, state):
+    def _configure_progress_bars(self, context):
+        self.progress_bar = None
+        self.progress_bar_newton = None
 
         if self.verbose is None:
             FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
@@ -90,26 +96,30 @@ class ProgressPlugin:
 
             except ModuleNotFoundError:  # pragma: no cover
                 self.verbose = 2  # pragma: no cover
+                self._tqdm = False  # pragma: no cover
 
         if self.verbose == 2:
             print_header()
 
         if self.verbose == 1:
-            total = sum([step.nsubsteps for step in context.job.steps])
-            self.progress_bar = self._tqdm(
-                total=total,
-                desc="Step   ",
-                unit="substep",
-                colour="green",
-            )
             self.progress_bar_newton = self._tqdm(
                 total=100,
                 desc="Substep",
                 colour="cyan",
                 unit="%",
             )
-        else:
-            self.progress_bar_newton = None
+
+            if context.job is not None:
+                total = sum([step.nsubsteps for step in context.job.steps])
+                self.progress_bar = self._tqdm(
+                    total=total,
+                    desc="Step   ",
+                    unit="substep",
+                    colour="green",
+                )
+
+    def before_job(self, context, state):
+        self._configure_progress_bars(context)
 
     def before_step(self, context, state):
         if self.verbose == 2:
@@ -120,6 +130,9 @@ class ProgressPlugin:
             self.decades = None
 
         if self.verbose == 1:
+            if self._tqdm is None:
+                self._configure_progress_bars(context)
+
             if self.progress_bar_newton is None:
                 self.progress_bar_newton = self._tqdm(
                     total=100, colour="yellow", unit="%"

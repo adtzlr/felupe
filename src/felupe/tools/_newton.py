@@ -26,8 +26,18 @@ from scipy.sparse.linalg import spsolve
 from .. import solve as fesolve
 from ..assembly import IntegralForm
 from ..math import norm
-from ._event_dispatcher import Context, EventDispatcher, JobState
-from ._progress import ProgressPlugin
+from ._event_dispatcher import Context, EventDispatcher
+
+
+class IterationState:
+    "A class to keep track of the state of an iteration during evaluation."
+
+    def __init__(self, iteration=None, fnorm=None, xnorm=None, success=None, tol=None):
+        self.iteration = iteration
+        self.fnorm = fnorm
+        self.xnorm = xnorm
+        self.success = success
+        self.tol = tol
 
 
 class NewtonResult:
@@ -400,11 +410,13 @@ def newtonraphson(
 
     """
     if dispatcher is None:
+        from ..plugins import ProgressPlugin
+
         progress = ProgressPlugin(verbose=verbose, tqdm=tqdm)
         dispatcher = EventDispatcher(plugins=[progress])
 
-    context = Context(newton=True)
-    state = JobState()
+    context = Context()
+    state = IterationState()
     dispatcher.trigger("before_newton", context, state)
 
     if x0 is not None:
@@ -466,7 +478,7 @@ def newtonraphson(
 
             callback(dx, x, iteration, xnorm, fnorm, success)
 
-        state = JobState(
+        state = IterationState(
             iteration=iteration, fnorm=fnorm, xnorm=xnorm, success=success, tol=tol
         )
         dispatcher.trigger("after_iteration", context, state)

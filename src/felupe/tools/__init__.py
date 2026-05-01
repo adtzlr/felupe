@@ -1,13 +1,12 @@
 import warnings
 
-from ._event_dispatcher import Context, EventDispatcher, JobState
+from ._event_dispatcher import Context, EventDispatcher
 from ._hello_world import hello_world
 from ._misc import logo, runs_on
 from ._newton import NewtonResult
 from ._newton import fun_items as fun
 from ._newton import jac_items as jac
 from ._newton import newtonraphson
-from ._progress import ProgressPlugin
 
 
 def newtonrhapson(*args, **kwargs):
@@ -44,7 +43,5 @@ __all__ = [
     "solve",
     "NewtonResult",
     "EventDispatcher",
-    "JobState",
     "Context",
-    "ProgressPlugin",
 ]

@@ -426,6 +426,8 @@ def newtonraphson(
     # iteration loop
     for iteration in range(maxiter):
 
+        dispatcher.trigger("before_iteration", context, state)
+
         if items is not None:
             K = jac_items(items, x, *args, **kwargs)
         else:
@@ -439,11 +441,11 @@ def newtonraphson(
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
-        dispatcher.trigger("before_newton_iteration_solve", context, state)
+        dispatcher.trigger("before_linear_solve", context, state)
 
         dx = solve(K, -f, **kwargs_solve)
 
-        dispatcher.trigger("after_newton_iteration_solve", context, state)
+        dispatcher.trigger("after_linear_solve", context, state)
 
         x = update(x, dx)
 
@@ -467,7 +469,7 @@ def newtonraphson(
         state = JobState(
             iteration=iteration, fnorm=fnorm, xnorm=xnorm, success=success, tol=tol
         )
-        dispatcher.trigger("after_newton_iteration", context, state)
+        dispatcher.trigger("after_iteration", context, state)
 
         if success:
             break

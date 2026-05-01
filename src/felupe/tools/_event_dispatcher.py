@@ -24,10 +24,10 @@ HOOKS = (
     "after_substep",
     "before_newton",
     "after_newton",
-    "before_newton_iteration",
-    "after_newton_iteration",
-    "before_newton_iteration_solve",
-    "after_newton_iteration_solve",
+    "before_iteration",
+    "after_iteration",
+    "before_linear_solve",
+    "after_linear_solve",
 )
 
 
@@ -59,7 +59,7 @@ class JobState:
         self.iteration = iteration
         self.fnorm = fnorm
         self.xnorm = xnorm
-        self.success = (success,)
+        self.success = success
         self.tol = tol
 
 

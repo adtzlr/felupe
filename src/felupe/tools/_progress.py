@@ -114,21 +114,6 @@ class ProgressPlugin:
         if self.verbose == 2:
             print(f"Begin Evaluation of Step {state.stepnumber + 1}.")
 
-    def after_substep(self, context, state):
-        if self.verbose == 2:
-            _substep = f"Substep {state.substepnumber + 1}/{context.step.nsubsteps}"
-            _step = f"Step {state.stepnumber + 1}/{len(context.job.steps)}"
-
-            print(f"{_substep} of {_step} successful.")
-
-        if self.verbose == 1:
-            self.progress_bar.update(1)
-
-    def after_job(self, context, state):
-        if self.verbose == 1:
-            self.progress_bar.close()
-            self.progress_bar_newton.close()
-
     def before_newton(self, context, state):
         if self.verbose:
             self.decades = None
@@ -156,17 +141,17 @@ class ProgressPlugin:
             print()
             print("| # | norm(fun) |  norm(dx) |")
             print("|---|-----------|-----------|")
-    
-    def before_newton_iteration_solve(self, context, state):
+
+    def before_linear_solve(self, context, state):
         if self.verbose == 2:
             self.soltime_start = perf_counter()
 
-    def after_newton_iteration_solve(self, context, state):
+    def after_linear_solve(self, context, state):
         if self.verbose == 2:
             self.soltime_end = perf_counter()
             self.soltimes.append([self.soltime_start, self.soltime_end])
 
-    def after_newton_iteration(self, context, state):
+    def after_iteration(self, context, state):
         # update progress bar if norm of residuals is available
         if self.verbose == 1:
             completion = 0.1
@@ -186,10 +171,13 @@ class ProgressPlugin:
             self.progress0 = self.progress
 
         if self.verbose == 2:
-            print("|%2d | %1.3e | %1.3e |" % (1 + state.iteration, state.fnorm, state.xnorm))
-    
+            print(
+                "|%2d | %1.3e | %1.3e |"
+                % (1 + state.iteration, state.fnorm, state.xnorm)
+            )
+
     def after_newton(self, context, state):
-        
+
         if self.verbose == 1:
             self.progress_bar_newton.update(100 - self.progress)
             if self.close_bar:
@@ -203,3 +191,18 @@ class ProgressPlugin:
                 "\nConverged in %d iterations (Assembly: %1.4g s, Solve: %1.4g s).\n"
                 % (state.iteration + 1, runtime - soltime, soltime)
             )
+
+    def after_substep(self, context, state):
+        if self.verbose == 2:
+            _substep = f"Substep {state.substepnumber + 1}/{context.step.nsubsteps}"
+            _step = f"Step {state.stepnumber + 1}/{len(context.job.steps)}"
+
+            print(f"{_substep} of {_step} successful.")
+
+        if self.verbose == 1:
+            self.progress_bar.update(1)
+
+    def after_job(self, context, state):
+        if self.verbose == 1:
+            self.progress_bar.close()
+            self.progress_bar_newton.close()

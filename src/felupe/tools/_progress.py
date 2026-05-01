@@ -160,6 +160,9 @@ class ProgressPlugin:
             if state.fnorm > 0.0:
                 # initial log. ratio of first residual norm vs. tolerance norm
                 if self.decades is None:
+
+                    # estimate convergence speed in log-scale
+                    # (decades of residual reduction)
                     self.decades = max(1.0, np.log10(state.fnorm) - np.log10(state.tol))
 
                 # current log. ratio of first residual norm vs. tolerance norm

@@ -17,6 +17,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import numpy as np
+from time import perf_counter
 
 from ._misc import logo, runs_on
 
@@ -83,6 +85,8 @@ class ProgressPlugin:
                 else:
                     raise ValueError('tqdm must be "tqdm", "auto" or "notebook".')
 
+                self._tqdm = tqdm
+
             except ModuleNotFoundError:  # pragma: no cover
                 self.verbose = 2  # pragma: no cover
 
@@ -91,13 +95,13 @@ class ProgressPlugin:
 
         if self.verbose == 1:
             total = sum([step.nsubsteps for step in context.job.steps])
-            self.progress_bar = tqdm(
+            self.progress_bar = self._tqdm(
                 total=total,
                 desc="Step   ",
                 unit="substep",
                 colour="green",
             )
-            self.progress_bar_newton = tqdm(
+            self.progress_bar_newton = self._tqdm(
                 total=100,
                 desc="Substep",
                 colour="cyan",
@@ -124,3 +128,78 @@ class ProgressPlugin:
         if self.verbose == 1:
             self.progress_bar.close()
             self.progress_bar_newton.close()
+
+    def before_newton(self, context, state):
+        if self.verbose:
+            self.decades = None
+
+        if self.verbose == 1:
+            if self.progress_bar_newton is None:
+                self.progress_bar_newton = self._tqdm(
+                    total=100, colour="yellow", unit="%"
+                )
+                self.close_bar = True
+            else:
+                self.progress_bar_newton.reset()
+                self.close_bar = False
+
+            self.progress0 = 0
+            self.progress = 0
+
+        if self.verbose == 2:
+            self.runtimes = [perf_counter()]
+            self.soltimes = []
+
+            print()
+            print("Newton-Raphson solver")
+            print("=====================")
+            print()
+            print("| # | norm(fun) |  norm(dx) |")
+            print("|---|-----------|-----------|")
+    
+    def before_newton_iteration_solve(self, context, state):
+        if self.verbose == 2:
+            self.soltime_start = perf_counter()
+
+    def after_newton_iteration_solve(self, context, state):
+        if self.verbose == 2:
+            self.soltime_end = perf_counter()
+            self.soltimes.append([self.soltime_start, self.soltime_end])
+
+    def after_newton_iteration(self, context, state):
+        # update progress bar if norm of residuals is available
+        if self.verbose == 1:
+            completion = 0.1
+
+            if state.fnorm > 0.0:
+                # initial log. ratio of first residual norm vs. tolerance norm
+                if self.decades is None:
+                    self.decades = max(1.0, np.log10(state.fnorm) - np.log10(state.tol))
+
+                # current log. ratio of first residual norm vs. tolerance norm
+                dfnorm = np.log10(state.fnorm) - np.log10(state.tol)
+                completion += 0.9 * (1 - dfnorm / self.decades)
+
+            # progress in percent, ensure lower equal 100%
+            self.progress = np.clip(100 * completion, 0, 100).astype(int)
+            self.progress_bar_newton.update(self.progress - self.progress0)
+            self.progress0 = self.progress
+
+        if self.verbose == 2:
+            print("|%2d | %1.3e | %1.3e |" % (1 + state.iteration, state.fnorm, state.xnorm))
+    
+    def after_newton(self, context, state):
+        
+        if self.verbose == 1:
+            self.progress_bar_newton.update(100 - self.progress)
+            if self.close_bar:
+                self.progress_bar_newton.close()
+
+        if self.verbose == 2:
+            self.runtimes.append(perf_counter())
+            runtime = np.diff(self.runtimes)[0]
+            soltime = np.diff(self.soltimes).sum()
+            print(
+                "\nConverged in %d iterations (Assembly: %1.4g s, Solve: %1.4g s).\n"
+                % (state.iteration + 1, runtime - soltime, soltime)
+            )

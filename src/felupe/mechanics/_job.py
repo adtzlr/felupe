@@ -21,7 +21,7 @@ import warnings
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
-from ..tools import Context, EventDispatcher, ProgressPlugin
+from ..tools import Context, EventDispatcher, ProgressPlugin, JobState
 
 
 def displacement(field, substep=None):
@@ -42,14 +42,6 @@ def log_strain_principal(field, substep=None):
 def log_strain(field, substep=None):
     "Return Lagrangian logarithmic strain tensors."
     return [field.evaluate.log_strain(tensor=True, asvoigt=True).mean(-2).T]
-
-
-class JobState:
-    "A class to keep track of the state of a Job during evaluation."
-
-    def __init__(self, stepnumber=None, substepnumber=None):
-        self.stepnumber = stepnumber
-        self.substepnumber = substepnumber
 
 
 class Job:

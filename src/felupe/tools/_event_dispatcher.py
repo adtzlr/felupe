@@ -24,7 +24,10 @@ HOOKS = (
     "after_substep",
     "before_newton",
     "after_newton",
+    "before_newton_iteration",
     "after_newton_iteration",
+    "before_newton_iteration_solve",
+    "after_newton_iteration_solve",
 )
 
 
@@ -36,6 +39,28 @@ class Context:
         self.step = step
         self.substep = substep
         self.newton = newton
+
+
+class JobState:
+    "A class to keep track of the state of a Job during evaluation."
+
+    def __init__(
+        self,
+        stepnumber=None,
+        substepnumber=None,
+        iteration=None,
+        fnorm=None,
+        xnorm=None,
+        tol=None,
+        success=None,
+    ):
+        self.stepnumber = stepnumber
+        self.substepnumber = substepnumber
+        self.iteration = iteration
+        self.fnorm = fnorm
+        self.xnorm = xnorm
+        self.success = (success,)
+        self.tol = tol
 
 
 class EventDispatcher:

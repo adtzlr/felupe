@@ -69,6 +69,8 @@ class ProgressPlugin:
         self.tqdm = tqdm
 
     def _create_progress_bars(self, context):
+        "Create one (Newton) or two (Job, Newton) progress bars, based on the context."
+
         self.progress_bar = None
         self.progress_bar_newton = None
 

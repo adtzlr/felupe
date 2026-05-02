@@ -48,23 +48,9 @@ def log_strain(field, substep=None):
 class JobState:
     "A class to keep track of the state of a Job during evaluation."
 
-    def __init__(
-        self,
-        stepnumber=None,
-        substepnumber=None,
-        iteration=None,
-        fnorm=None,
-        xnorm=None,
-        tol=None,
-        success=None,
-    ):
+    def __init__(self, stepnumber=None, substepnumber=None):
         self.stepnumber = stepnumber
         self.substepnumber = substepnumber
-        self.iteration = iteration
-        self.fnorm = fnorm
-        self.xnorm = xnorm
-        self.success = success
-        self.tol = tol
 
 
 class Job:

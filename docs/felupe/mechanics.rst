@@ -25,6 +25,13 @@ Mechanics
    CharacteristicCurve
    FreeVibration
 
+**Job Plugins**
+
+.. autosummary::
+
+   CharacteristicCurvePlugin
+   ProgressPlugin
+
 **Point Load and Multi-Point Constraints**
 
 .. autosummary::
@@ -102,6 +109,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.FreeVibration
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.CharacteristicCurvePlugin
    :members:
    :undoc-members:
    :show-inheritance:

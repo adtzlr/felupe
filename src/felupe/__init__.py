@@ -74,6 +74,7 @@ from .field import (
 )
 from .mechanics import (
     CharacteristicCurve,
+    CharacteristicCurvePlugin,
     ContactRigidPlane,
     FormItem,
     FreeVibration,
@@ -81,6 +82,7 @@ from .mechanics import (
     MultiPointConstraint,
     MultiPointContact,
     PointLoad,
+    ProgressPlugin,
     SolidBody,
     SolidBodyCauchyStress,
     SolidBodyForce,
@@ -220,6 +222,8 @@ __all__ = [
     "Point",
     "Rectangle",
     "CharacteristicCurve",
+    "CharacteristicCurvePlugin",
+    "ProgressPlugin",
     "Job",
     "PointLoad",
     "ContactRigidPlane",

@@ -60,9 +60,24 @@ class ProgressPlugin:
     ):
         self.configure(verbose=verbose, tqdm=tqdm)
 
+        # tqdm / backend
         self._tqdm = None
-        self.progress_bar = None
-        self.progress_bar_newton = None
+
+        # Progress bars (verbose == 1)
+        self.progress_bar = None  # for steps
+        self.progress_bar_newton = None  # for Newton iterations
+        self.close_bar_newton = False  # for Newton progress bar
+
+        # Progress tracking
+        self.progress = 0
+        self.progress0 = 0
+        self.decades = None
+
+        # Timing (verbose == 2)
+        self.runtimes = None
+        self.soltimes = None
+        self.soltime_start = None
+        self.soltime_end = None
 
     def configure(self, verbose, tqdm):
         self.verbose = verbose
@@ -139,10 +154,10 @@ class ProgressPlugin:
                 self.progress_bar_newton = self._tqdm(
                     total=100, colour="yellow", unit="%"
                 )
-                self.close_bar = True
+                self.close_bar_newton = True
             else:
                 self.progress_bar_newton.reset()
-                self.close_bar = False
+                self.close_bar_newton = False
 
             self.progress0 = 0
             self.progress = 0
@@ -199,7 +214,7 @@ class ProgressPlugin:
 
         if self.verbose == 1:
             self.progress_bar_newton.update(100 - self.progress)
-            if self.close_bar:
+            if self.close_bar_newton:
                 self.progress_bar_newton.close()
 
         if self.verbose == 2:

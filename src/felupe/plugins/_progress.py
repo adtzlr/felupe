@@ -121,7 +121,7 @@ class ProgressPlugin:
         if self.verbose == 1:
             self.progress_bar_newton = self._tqdm(
                 total=100,
-                desc="Solver",
+                desc="Solver ",
                 colour="cyan",
                 unit="%",
             )

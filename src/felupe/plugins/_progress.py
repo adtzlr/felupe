@@ -58,15 +58,15 @@ class ProgressPlugin:
         verbose=None,
         tqdm="tqdm",
     ):
-        self.configure(verbose=verbose, tqdm=tqdm)
-
         # tqdm / backend
         self._tqdm = None
+
+        # in job mode
+        self.in_job = False
 
         # Progress bars (verbose == 1)
         self.progress_bar = None  # for steps
         self.progress_bar_newton = None  # for Newton iterations
-        self.close_bar_newton = False  # for Newton progress bar
 
         # Progress tracking
         self.progress = 0
@@ -79,15 +79,21 @@ class ProgressPlugin:
         self.soltime_start = None
         self.soltime_end = None
 
+        # configure parameters verbosity and tqdm (string)
+        self.configure(verbose=verbose, tqdm=tqdm)
+
     def configure(self, verbose, tqdm):
+        """Configure the plugin. This can be called after initialization to change the
+        parameters.
+        """
+
         self.verbose = verbose
         self.tqdm = tqdm
 
-    def _create_progress_bars(self, context):
-        "Create one (Newton) or two (Job, Newton) progress bars, based on the context."
+        self._resolve_verbosity()
+        self._import_tqdm()
 
-        self.progress_bar = None
-        self.progress_bar_newton = None
+    def _resolve_verbosity(self):
 
         if self.verbose is None:
             FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
@@ -98,35 +104,32 @@ class ProgressPlugin:
 
         if self.verbose:
             try:
-                backend = str(self.tqdm).lower()
+                import tqdm
+            except ModuleNotFoundError:
+                self.verbose = 2  # fall-back
 
-                if backend == "tqdm":
-                    from tqdm import tqdm
-                elif backend == "auto":
-                    from tqdm.auto import tqdm
-                elif backend == "notebook":
-                    from tqdm.notebook import tqdm
-                else:
-                    raise ValueError('tqdm must be "tqdm", "auto" or "notebook".')
-
-                self._tqdm = tqdm
-
-            except ModuleNotFoundError:  # pragma: no cover
-                self.verbose = 2  # pragma: no cover
-                self._tqdm = False  # pragma: no cover
-
-        if self.verbose == 2:
-            print_header()
+    def _import_tqdm(self):
 
         if self.verbose == 1:
-            self.progress_bar_newton = self._tqdm(
-                total=100,
-                desc="Solver ",
-                colour="cyan",
-                unit="%",
-            )
+            backend = str(self.tqdm).lower()
 
-            if context.job is not None:
+            if backend == "tqdm":
+                from tqdm import tqdm
+            elif backend == "auto":
+                from tqdm.auto import tqdm
+            elif backend == "notebook":
+                from tqdm.notebook import tqdm
+            else:
+                raise ValueError('tqdm must be "tqdm", "auto" or "notebook".')
+
+            self._tqdm = tqdm
+
+    def _create_progress_bars_or_header(self, context):
+        "Create one (Newton) or two (Job, Newton) progress bars, based on the context."
+
+        if self.verbose == 1:
+
+            if self.in_job:
                 total = sum([step.nsubsteps for step in context.job.steps])
                 self.progress_bar = self._tqdm(
                     total=total,
@@ -135,34 +138,39 @@ class ProgressPlugin:
                     colour="green",
                 )
 
+            self.progress_bar_newton = self._tqdm(
+                total=100,
+                desc="Solver ",
+                colour="cyan",
+                unit="%",
+            )
+
+        if self.verbose == 2:
+            print_header()
+
     def before_job(self, context, state):
-        self._create_progress_bars(context)
+        self.in_job = True
+        self._create_progress_bars_or_header(context)
 
     def before_step(self, context, state):
         if self.verbose == 2:
             print(f"Begin Evaluation of Step {state.stepnumber + 1}.")
 
     def before_newton(self, context, state):
-        if self.verbose:
-            self.decades = None
+
+        if self.in_job:
+            self.progress_bar_newton.reset()
+        else:
+            self._create_progress_bars_or_header(context)
 
         if self.verbose == 1:
-            if self._tqdm is None:
-                self._create_progress_bars(context)
-
-            if self.progress_bar_newton is None:
-                self.progress_bar_newton = self._tqdm(
-                    total=100, colour="yellow", unit="%"
-                )
-                self.close_bar_newton = True
-            else:
-                self.progress_bar_newton.reset()
-                self.close_bar_newton = False
-
+            self.decades = None
             self.progress0 = 0
             self.progress = 0
 
         if self.verbose == 2:
+            self._print_header(context)
+
             self.runtimes = [perf_counter()]
             self.soltimes = []
 
@@ -200,7 +208,10 @@ class ProgressPlugin:
                 completion += 0.9 * (1 - dfnorm / self.decades)
 
             # progress in percent, ensure lower equal 100%
-            self.progress = np.clip(100 * completion, 0, 100).astype(int)
+            self.progress = max(
+                self.progress0,
+                np.clip(100 * completion, 0, 100).astype(int),
+            )
             self.progress_bar_newton.update(self.progress - self.progress0)
             self.progress0 = self.progress
 
@@ -214,7 +225,7 @@ class ProgressPlugin:
 
         if self.verbose == 1:
             self.progress_bar_newton.update(100 - self.progress)
-            if self.close_bar_newton:
+            if not self.in_job:
                 self.progress_bar_newton.close()
 
         if self.verbose == 2:
@@ -227,16 +238,25 @@ class ProgressPlugin:
             )
 
     def after_substep(self, context, state):
+        if self.verbose == 1:
+            self.progress_bar.update(1)
+
         if self.verbose == 2:
             _substep = f"Substep {state.substepnumber + 1}/{context.step.nsubsteps}"
             _step = f"Step {state.stepnumber + 1}/{len(context.job.steps)}"
 
             print(f"{_substep} of {_step} successful.")
 
-        if self.verbose == 1:
-            self.progress_bar.update(1)
-
     def after_job(self, context, state):
+        self.in_job = False
+
         if self.verbose == 1:
-            self.progress_bar.close()
-            self.progress_bar_newton.close()
+
+            if self.progress_bar is not None:
+                self.progress_bar.close()
+
+            if self.progress_bar_newton is not None:
+                self.progress_bar_newton.close()
+
+            self.progress_bar = None
+            self.progress_bar_newton = None

@@ -80,13 +80,14 @@ sphinx_gallery_conf = {
     "within_subsection_order": FileNameSortKey,
 }
 intersphinx_mapping = {
+    "felupe": ("https://felupe.readthedocs.io/en/stable/", None),
     "jax": ("https://jax.readthedocs.io/en/latest/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
-    "pyvista": ("https://docs.pyvista.org/version/stable/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-    "tensortrax": ("https://tensortrax.readthedocs.io/en/latest/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "tensortrax": ("https://tensortrax.readthedocs.io/en/stable/", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.

@@ -159,7 +159,8 @@ class ProgressPlugin:
     def before_newton(self, context, state):
 
         if self.in_job:
-            self.progress_bar_newton.reset()
+            if self.progress_bar_newton is not None:
+                self.progress_bar_newton.reset()
         else:
             self._create_progress_bars_or_header(context)
 

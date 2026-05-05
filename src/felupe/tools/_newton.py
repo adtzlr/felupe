@@ -228,7 +228,7 @@ def newtonraphson(
     update=update,
     check=check,
     args=(),
-    kwargs={},
+    kwargs=None,
     tol=np.sqrt(np.finfo(float).eps),
     items=None,
     dof1=None,
@@ -430,6 +430,9 @@ def newtonraphson(
 
     kwargs_solve = {}
     sig = inspect.signature(solve)
+
+    if kwargs is None:
+        kwargs = {}
 
     if items is not None:
         f = fun_items(items, x, *args, **kwargs)

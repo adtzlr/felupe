@@ -209,7 +209,7 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
 
     if success and items is not None:
         for item in items:
-            [item.results.update_statevars() for item in items]
+            item.results.update_statevars()
 
     return xnorm, fnorm, success
 

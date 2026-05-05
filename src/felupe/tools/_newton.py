@@ -103,7 +103,8 @@ def fun_items(items, x, parallel=False):
     kwargs = {"parallel": parallel}
 
     # link field of items with global field
-    [item.field.link(x) for item in items]
+    for item in items:
+        item.field.link(x)
 
     # init vector with shape from global field
     shape = (np.sum(x.fieldsizes), 1)

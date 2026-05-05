@@ -18,16 +18,16 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 HOOKS = (
     "before_job",
-    "after_job",
     "before_step",
-    "after_step",
-    "after_substep",
     "before_newton",
-    "after_newton",
     "before_iteration",
-    "after_iteration",
     "before_linear_solve",
     "after_linear_solve",
+    "after_iteration",
+    "after_newton",
+    "after_substep",
+    "after_step",
+    "after_job",
 )
 
 

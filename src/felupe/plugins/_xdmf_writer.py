@@ -153,6 +153,10 @@ class XDMFWriterPlugin:
         if self.filename is not None:
             self.writer.write_points_cells(self.mesh.points, self.mesh.cells)
 
+    def after_iteration(self, context, state):
+        if state.error:
+            self.writer.__exit__(None, None, None)
+
     def after_substep(self, context, state):
         if self.filename is not None:
             self._write(

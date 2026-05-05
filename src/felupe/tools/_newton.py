@@ -32,12 +32,15 @@ from ._event_dispatcher import Context, EventDispatcher
 class IterationState:
     "A class to keep track of the state of an iteration during evaluation."
 
-    def __init__(self, iteration=None, fnorm=None, xnorm=None, success=None, tol=None):
+    def __init__(
+        self, iteration=None, fnorm=None, xnorm=None, success=None, tol=None, error=None
+    ):
         self.iteration = iteration
         self.fnorm = fnorm
         self.xnorm = xnorm
         self.success = success
         self.tol = tol
+        self.error = error
 
 
 class NewtonResult:
@@ -478,18 +481,27 @@ def newtonraphson(
 
             callback(dx, x, iteration, xnorm, fnorm, success)
 
+        isnan = np.any(np.isnan([xnorm, fnorm]))
+        abort = 1 + iteration == maxiter and not success
+        error = isnan or abort
+
         state = IterationState(
-            iteration=iteration, fnorm=fnorm, xnorm=xnorm, success=success, tol=tol
+            iteration=iteration,
+            fnorm=fnorm,
+            xnorm=xnorm,
+            success=success,
+            tol=tol,
+            error=error,
         )
         dispatcher.trigger("after_iteration", context, state)
 
         if success:
             break
 
-        if np.any(np.isnan([xnorm, fnorm])):
+        if isnan:
             raise ValueError("Norm of unknowns is NaN.")
 
-    if 1 + iteration == maxiter and not success:
+    if abort:
         raise ValueError("Maximum number of iterations reached (not converged).\n")
 
     Res = NewtonResult(

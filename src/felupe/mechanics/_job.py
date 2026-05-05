@@ -206,7 +206,7 @@ class Job:
             verbose=verbose,
             tqdm=tqdm,
         )
-        self._xdmf_writer_plugin.configure(
+        self._writer_plugin.configure(
             filename=filename,
             mesh=mesh,
             point_data=point_data,

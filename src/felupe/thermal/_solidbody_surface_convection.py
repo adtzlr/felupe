@@ -87,12 +87,12 @@ class SolidBodySurfaceConvection:
         >>> def hc_fun(ts, tamb):
         ...     return((ts-tamb)*2.0)
         >>>
-        >>> mesh = fem.Rectangle(n=11)  # rectangle w/ 10x10 cells
+        >>> mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells
         >>> region = fem.RegionQuad(mesh)
         >>> temperature = fem.Field(region, dim=1, values=30.0)
         >>> field = fem.FieldContainer([temperature])
         >>>
-        >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 1.0)
+        >>> region_convection = fem.RegionQuadBoundary(mesh, mask=mesh.y == 0.25)
         >>> temperature_convection = fem.Field(region_convection, dim=1)
         >>> field_convection = fem.FieldContainer([temperature_convection])
         >>>
@@ -118,7 +118,7 @@ class SolidBodySurfaceConvection:
         ...     temperature=20.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
-        >>> table = fem.math.linsteps([0, 1], num=25)
+        >>> table = fem.math.linsteps([0, 1], num=10)
         >>> air_temperature = fem.math.linsteps([15, 25], num=10)
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
@@ -128,11 +128,12 @@ class SolidBodySurfaceConvection:
         ...     items=[time, solid, convection_constant], ramp=ramp, boundaries=boundaries
         ... )
         >>> job = fem.Job(steps=[step]).evaluate()
-        >>>
+        >>> ...
         >>> mesh.view(
         ...     point_data={"Temperature in °C": temperature.values}
         ... ).plot("Temperature in °C").show()
         >>>
+        >>> time = fem.thermal.TimeStep([solid])
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
         ...     convection_function["temperature"]: air_temperature,

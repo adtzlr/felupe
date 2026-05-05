@@ -170,8 +170,6 @@ class ProgressPlugin:
             self.progress = 0
 
         if self.verbose == 2:
-            self._print_header(context)
-
             self.runtimes = [perf_counter()]
             self.soltimes = []
 

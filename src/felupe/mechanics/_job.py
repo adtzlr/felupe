@@ -117,10 +117,11 @@ class Job:
         self.kwargs = kwargs
 
         self._progress_plugin = ProgressPlugin()
-        self._xdmf_writer_plugin = XDMFWriterPlugin()
+        self._writer_plugin = XDMFWriterPlugin()
+
         self.dispatcher = EventDispatcher(plugins=plugins)
         self.dispatcher.add_plugin(self._progress_plugin)
-        self.dispatcher.add_plugin(self._xdmf_writer_plugin)
+        self.dispatcher.add_plugin(self._writer_plugin)
 
     def evaluate(
         self,

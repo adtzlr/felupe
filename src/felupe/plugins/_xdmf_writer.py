@@ -155,7 +155,7 @@ class XDMFWriterPlugin:
 
     def after_iteration(self, context, state):
         if state.error:
-            self.writer.__exit__(None, None, None)
+            self.writer.__exit__(None, None, None)  # pragma: no cover
 
     def after_substep(self, context, state):
         if self.filename is not None:

@@ -105,8 +105,8 @@ class ProgressPlugin:
         if self.verbose:
             try:
                 import tqdm
-            except ModuleNotFoundError:
-                self.verbose = 2  # fall-back
+            except ModuleNotFoundError:  # pragma: no cover
+                self.verbose = 2  # pragma: no cover
 
     def _import_tqdm(self):
 

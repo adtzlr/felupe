@@ -16,58 +16,20 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
 import warnings
 
-from ..math import deformation_gradient as defgrad
-from ..math import displacement as disp
+from ..plugins import ProgressPlugin, XDMFWriterPlugin
 from ..region import RegionVertex
-from .plugins import ProgressPlugin
-
-HOOKS = (
-    "before_job",
-    "after_job",
-    "before_step",
-    "after_step",
-    "before_substep",
-    "after_substep",
-)
-
-
-def displacement(field, substep=None):
-    "Return the displacement vvectors."
-    return disp(field, dim=3)
-
-
-def deformation_gradient(field, substep=None):
-    "Return the Deformation Gradient tensors."
-    return [defgrad(field).mean(-2).transpose([2, 0, 1])]
-
-
-def log_strain_principal(field, substep=None):
-    "Return principal values of logarithmic strain tensors."
-    return [field.evaluate.log_strain(tensor=False)[::-1].mean(-2).T]
-
-
-def log_strain(field, substep=None):
-    "Return Lagrangian logarithmic strain tensors."
-    return [field.evaluate.log_strain(tensor=True, asvoigt=True).mean(-2).T]
+from ..tools import Context, EventDispatcher
 
 
 class JobState:
-    """A class to keep track of the state of a Job during evaluation.
+    "A class to keep track of the state of a Job during evaluation."
 
-    Notes
-    -----
-    This is used to pass information to plugins during evaluation. The state is updated
-    before each step and substep.
-    """
-
-    def __init__(self, stepnumber, substepnumber, step, substep):
+    def __init__(self, stepnumber=None, substepnumber=None, time=None):
         self.stepnumber = stepnumber
         self.substepnumber = substepnumber
-        self.step = step
-        self.substep = substep
+        self.time = time
 
 
 class Job:
@@ -154,45 +116,11 @@ class Job:
         self.fnorms = []
         self.kwargs = kwargs
 
-        self.plugins = list(plugins) if plugins is not None else []
-        self.plugins.append(ProgressPlugin())
-
-        self._progress_plugin = None
-        for plugin in self.plugins:
-            if isinstance(plugin, ProgressPlugin):
-                self._progress_plugin = plugin
-
-        self._dispatcher = {hook: [] for hook in HOOKS}
-
-        # check if methods are available for the hooks in the plugins
-        # add them to the dispatcher if they are available
-        for plugin in self.plugins:
-
-            # simple callable plugin
-            if callable(plugin):
-                self._dispatcher["after_substep"].append(plugin)
-                continue
-
-            # hook-based plugin
-            for hook in HOOKS:
-                method = getattr(plugin, hook, None)
-                if method is not None:
-                    self._dispatcher[hook].append(method)
-
-    def _trigger(self, hook, state):
-        "Emit a hook with the current state to all registered functions."
-
-        for fun in self._dispatcher[hook]:
-            fun(self, state)
-
-    def _write(self, writer, time, substep, point_data, cell_data):
-        field = substep.x
-        kwargs = dict(field=field, substep=substep)
-        writer.write_data(
-            time,
-            point_data={key: value(**kwargs) for key, value in point_data.items()},
-            cell_data={key: value(**kwargs) for key, value in cell_data.items()},
-        )
+        self._progress_plugin = ProgressPlugin()
+        self._xdmf_writer_plugin = XDMFWriterPlugin()
+        self.dispatcher = EventDispatcher(plugins=plugins)
+        self.dispatcher.add_plugin(self._progress_plugin)
+        self.dispatcher.add_plugin(self._xdmf_writer_plugin)
 
     def evaluate(
         self,
@@ -272,11 +200,24 @@ class Job:
             Newton's method.
         """
 
-        # configure progress plugin
-        self._progress_plugin.configure(verbose=verbose, tqdm=tqdm)
+        # configure plugins
+        self._progress_plugin.configure(
+            verbose=verbose,
+            tqdm=tqdm,
+        )
+        self._xdmf_writer_plugin.configure(
+            filename=filename,
+            mesh=mesh,
+            point_data=point_data,
+            cell_data=cell_data,
+            point_data_default=point_data_default,
+            cell_data_default=cell_data_default,
+            kwargs=kwargs,
+        )
 
-        state = JobState(stepnumber=None, substepnumber=None, step=None, substep=None)
-        self._trigger("before_job", state)
+        context = Context(job=self)
+        state = JobState()
+        self.dispatcher.trigger("before_job", context, state)
 
         if parallel:
             if "kwargs" not in kwargs.keys():
@@ -285,108 +226,36 @@ class Job:
 
         time = 0
 
-        if filename is not None:
-            from meshio.xdmf import TimeSeriesWriter
+        for j, step in enumerate(self.steps):
 
-            if mesh is None:
+            context = Context(job=self, step=step)
+            state = JobState(stepnumber=j, time=time)
+            self.dispatcher.trigger("before_step", context, state)
+
+            substeps = step.generate(dispatcher=self.dispatcher, **kwargs)
+
+            for i, substep in enumerate(substeps):
+                self.fnorms.append(substep.fnorms)
+
+                self.callback(j, i, substep, **self.kwargs)
+
+                # update x0 after each completed substep
                 if "x0" in kwargs.keys():
-                    mesh = kwargs["x0"].region.mesh.as_meshio()
-                else:
-                    mesh = self.steps[0].items[0].field.region.mesh.as_meshio()
+                    kwargs["x0"].link(substep.x)
 
-            pdata = point_data_default if point_data_default is True else {}
-            cdata = cell_data_default if cell_data_default is not None else {}
+                context = Context(job=self, step=step, substep=substep)
+                state = JobState(stepnumber=j, substepnumber=i, time=time)
+                self.dispatcher.trigger("after_substep", context, state)
 
-            pdata = {}
-            cdata = {}
+                self.timetrack.append(time)
+                time += 1
 
-            if point_data_default is True:
-                pdata = {"Displacement": displacement}
+            context = Context(job=self, step=step)
+            state = JobState(stepnumber=j, time=time)
+            self.dispatcher.trigger("after_step", context, state)
 
-            if cell_data_default is True:
-                cdata = {
-                    "Principal Values of Logarithmic Strain": log_strain_principal,
-                    "Logarithmic Strain": log_strain,
-                    "Deformation Gradient": deformation_gradient,
-                }
-                if "x0" in kwargs.keys():
-                    if isinstance(kwargs["x0"].region, RegionVertex):
-                        # strains and deformation gradient can't be evaluated due to
-                        # missing shape function gradient w.r.t. the undeformed
-                        # coordinates in RegionVertex
-                        cdata = {}
-                        warnings.warn(
-                            " ".join(
-                                [
-                                    "RegionVertex detected as region of the global",
-                                    "field, result-file will only contain points and",
-                                    "default point-data.",
-                                ]
-                            )
-                        )
-
-            if point_data is None:
-                point_data = {}
-
-            if cell_data is None:
-                cell_data = {}
-
-        else:  # fake a mesh and a TimeSeriesWriter
-            from contextlib import nullcontext
-
-            TimeSeriesWriter = nullcontext
-
-        with TimeSeriesWriter(filename) as writer:
-            if filename is not None:
-                writer.write_points_cells(mesh.points, mesh.cells)
-
-            for j, step in enumerate(self.steps):
-                state = JobState(
-                    stepnumber=j, substepnumber=None, step=step, substep=None
-                )
-                self._trigger("before_step", state)
-
-                substeps = step.generate(
-                    verbose=self._progress_plugin.verbose,
-                    progress_bar=self._progress_plugin.progress_bar_newton,
-                    **kwargs,
-                )
-
-                for i, substep in enumerate(substeps):
-                    state = JobState(
-                        stepnumber=j, substepnumber=i, step=step, substep=substep
-                    )
-
-                    self.fnorms.append(substep.fnorms)
-
-                    self.callback(j, i, substep, **self.kwargs)
-
-                    # update x0 after each completed substep
-                    if "x0" in kwargs.keys():
-                        kwargs["x0"].link(substep.x)
-
-                    self.timetrack.append(time)
-
-                    if filename is not None:
-                        self._write(
-                            writer=writer,
-                            time=time,
-                            substep=substep,
-                            point_data={**pdata, **point_data},
-                            cell_data={**cdata, **cell_data},
-                        )
-                    time += 1
-
-                    self._trigger("after_substep", state)
-
-                state = JobState(
-                    stepnumber=j, substepnumber=None, step=step, substep=None
-                )
-                self._trigger("after_step", state)
-
-            state = JobState(
-                stepnumber=None, substepnumber=None, step=None, substep=None
-            )
-            self._trigger("after_job", state)
+        context = Context(job=self)
+        state = JobState()
+        self.dispatcher.trigger("after_job", context, state)
 
         return self

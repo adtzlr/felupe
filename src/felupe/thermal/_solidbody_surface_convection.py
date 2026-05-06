@@ -99,7 +99,7 @@ class SolidBodySurfaceConvection:
         ...     elif (10**7 < ra <= 10**11):
         ...         nu = 0.15 * math.pow(ra, 0.33)
         ...     else:
-        ...         nu = 1
+        ...         nu = 0.15 * math.pow(10**11, 0.33)
         ...     return(nu*lam_air/l)
         >>>
         >>> mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells

@@ -94,12 +94,12 @@ class SolidBodySurfaceConvection:
         ...     pr = 0.707  # air at 300 K
         ...     t_m = 0.5*(ts + tamb) + 273.15  # K
         ...     ra = (9.81 / t_m * abs(ts - tamb) * l**3)/alpha/1.59E-7
-        ...     if (10**4 <= ra <= 10**7) and pr > 0.7:
+        ...     if (1E04 <= ra <= 1E07) and pr > 0.7:
         ...         nu = 0.54 * math.pow(ra, 0.25)
-        ...     elif (10**7 < ra <= 10**11):
+        ...     elif (1E07 < ra <= 1E11):
         ...         nu = 0.15 * math.pow(ra, 0.33)
         ...     else:
-        ...         nu = 0.15 * math.pow(10**11, 0.33)
+        ...         nu = 0.15 * math.pow(1E11, 0.33)
         ...     return(nu*lam_air/l)
         >>>
         >>> mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells

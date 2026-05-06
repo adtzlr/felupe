@@ -58,16 +58,7 @@ class XDMFWriterPlugin:
     felupe.Job : A job with a list of steps and a method to evaluate them.
     """
 
-    def __init__(self):
-        self.filename = None
-        self.mesh = None
-        self.kwargs = None
-        self.point_data = None
-        self.cell_data = None
-        self.point_data_default = None
-        self.cell_data_default = None
-
-    def configure(
+    def __init__(
         self,
         filename=None,
         mesh=None,
@@ -76,6 +67,26 @@ class XDMFWriterPlugin:
         point_data_default=False,
         cell_data_default=False,
         kwargs=None,
+    ):
+        self.configure(
+            filename=filename,
+            mesh=mesh,
+            point_data=point_data,
+            cell_data=cell_data,
+            point_data_default=point_data_default,
+            cell_data_default=cell_data_default,
+            kwargs=kwargs,
+        )
+
+    def configure(
+        self,
+        filename,
+        mesh,
+        point_data,
+        cell_data,
+        point_data_default,
+        cell_data_default,
+        kwargs,
     ):
         self.filename = filename
         self.mesh = mesh

@@ -29,8 +29,9 @@ Mechanics
 
 .. autosummary::
 
-   CharacteristicCurvePlugin
-   ProgressPlugin
+   plugins.CharacteristicCurvePlugin
+   plugins.ProgressPlugin
+   plugins.XDMFWriterPlugin
 
 **Point Load and Multi-Point Constraints**
 
@@ -113,7 +114,17 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.CharacteristicCurvePlugin
+.. autoclass:: felupe.plugins.CharacteristicCurvePlugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.plugins.ProgressPlugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.plugins.XDMFWriterPlugin
    :members:
    :undoc-members:
    :show-inheritance:

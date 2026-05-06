@@ -1,5 +1,6 @@
 import warnings
 
+from ._event_dispatcher import Context, EventDispatcher
 from ._hello_world import hello_world
 from ._misc import logo, runs_on
 from ._newton import NewtonResult
@@ -41,4 +42,6 @@ __all__ = [
     "save",
     "solve",
     "NewtonResult",
+    "EventDispatcher",
+    "Context",
 ]

@@ -15,8 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import inspect
-import os
 from time import perf_counter
 
 import numpy as np
@@ -26,6 +26,21 @@ from scipy.sparse.linalg import spsolve
 from .. import solve as fesolve
 from ..assembly import IntegralForm
 from ..math import norm
+from ._event_dispatcher import Context, EventDispatcher
+
+
+class IterationState:
+    "A class to keep track of the state of an iteration during evaluation."
+
+    def __init__(
+        self, iteration=None, fnorm=None, xnorm=None, success=None, tol=None, error=None
+    ):
+        self.iteration = iteration
+        self.fnorm = fnorm
+        self.xnorm = xnorm
+        self.success = success
+        self.tol = tol
+        self.error = error
 
 
 class NewtonResult:
@@ -88,7 +103,8 @@ def fun_items(items, x, parallel=False):
     kwargs = {"parallel": parallel}
 
     # link field of items with global field
-    [item.field.link(x) for item in items]
+    for item in items:
+        item.field.link(x)
 
     # init vector with shape from global field
     shape = (np.sum(x.fieldsizes), 1)
@@ -193,7 +209,7 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
 
     if success and items is not None:
         for item in items:
-            [item.results.update_statevars() for item in items]
+            item.results.update_statevars()
 
     return xnorm, fnorm, success
 
@@ -213,7 +229,7 @@ def newtonraphson(
     update=update,
     check=check,
     args=(),
-    kwargs={},
+    kwargs=None,
     tol=np.sqrt(np.finfo(float).eps),
     items=None,
     dof1=None,
@@ -225,6 +241,7 @@ def newtonraphson(
     callback_kwargs=None,
     progress_bar=None,
     tqdm="tqdm",
+    dispatcher=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -285,6 +302,9 @@ def newtonraphson(
     tqdm : str, optional
         If verbose is True, choose a backend for ``tqdm`` (``"tqdm"``, ``"auto"`` or
         ``"notebook"``). Default is ``"tqdm"``.
+    dispatcher: EventDispatcher or None, optional
+        An optional EventDispatcher to trigger events during evaluation. Default is
+        None.
 
     Returns
     -------
@@ -393,45 +413,15 @@ def newtonraphson(
     2.7384964752762237e-15
 
     """
-    if verbose is None:
-        FELUPE_VERBOSE = os.environ.get("FELUPE_VERBOSE")
-        if FELUPE_VERBOSE is None:
-            verbose = True
-        else:
-            verbose = FELUPE_VERBOSE == "true"
+    if dispatcher is None:
+        from ..plugins import ProgressPlugin
 
-    if verbose:
-        try:
-            backend = str(tqdm).lower()
+        progress = ProgressPlugin(verbose=verbose, tqdm=tqdm)
+        dispatcher = EventDispatcher(plugins=[progress])
 
-            if backend == "tqdm":
-                from tqdm import tqdm
-            elif backend == "auto":
-                from tqdm.auto import tqdm
-            elif backend == "notebook":
-                from tqdm.notebook import tqdm
-            else:
-                raise ValueError('tqdm must be "tqdm", "auto" or "notebook".')
-
-            decades = None
-
-        except ModuleNotFoundError:  # pragma: no cover
-            verbose = 2  # pragma: no cover
-
-    if verbose == 1:
-        if progress_bar is None:
-            progress_bar = tqdm(total=100, colour="yellow", unit="%")
-            close_bar = True
-        else:
-            progress_bar.reset()
-            close_bar = False
-
-        progress0 = 0
-        progress = 0
-
-    if verbose == 2:
-        runtimes = [perf_counter()]
-        soltimes = []
+    context = Context()
+    state = IterationState()
+    dispatcher.trigger("before_newton", context, state)
 
     if x0 is not None:
         x = x0
@@ -442,23 +432,21 @@ def newtonraphson(
     kwargs_solve = {}
     sig = inspect.signature(solve)
 
+    if kwargs is None:
+        kwargs = {}
+
     if items is not None:
         f = fun_items(items, x, *args, **kwargs)
     else:
         f = fun(x, *args, **kwargs)
 
-    if verbose == 2:
-        print()
-        print("Newton-Raphson solver")
-        print("=====================")
-        print()
-        print("| # | norm(fun) |  norm(dx) |")
-        print("|---|-----------|-----------|")
-
     xnorms, fnorms = [], []
 
     # iteration loop
     for iteration in range(maxiter):
+
+        dispatcher.trigger("before_iteration", context, state)
+
         if items is not None:
             K = jac_items(items, x, *args, **kwargs)
         else:
@@ -472,14 +460,11 @@ def newtonraphson(
             if key in sig.parameters:
                 kwargs_solve[key] = value
 
-        if verbose == 2:
-            soltime_start = perf_counter()
+        dispatcher.trigger("before_linear_solve", context, state)
 
         dx = solve(K, -f, **kwargs_solve)
 
-        if verbose == 2:
-            soltime_end = perf_counter()
-            soltimes.append([soltime_start, soltime_end])
+        dispatcher.trigger("after_linear_solve", context, state)
 
         x = update(x, dx)
 
@@ -500,34 +485,27 @@ def newtonraphson(
 
             callback(dx, x, iteration, xnorm, fnorm, success)
 
-        # update progress bar if norm of residuals is available
-        if verbose == 1:
-            completion = 0.1
+        isnan = np.any(np.isnan([xnorm, fnorm]))
+        abort = 1 + iteration == maxiter and not success
+        error = isnan or abort
 
-            if fnorm > 0.0:
-                # initial log. ratio of first residual norm vs. tolerance norm
-                if decades is None:
-                    decades = max(1.0, np.log10(fnorm) - np.log10(tol))
-
-                # current log. ratio of first residual norm vs. tolerance norm
-                dfnorm = np.log10(fnorm) - np.log10(tol)
-                completion += 0.9 * (1 - dfnorm / decades)
-
-            # progress in percent, ensure lower equal 100%
-            progress = np.clip(100 * completion, 0, 100).astype(int)
-            progress_bar.update(progress - progress0)
-            progress0 = progress
-
-        if verbose == 2:
-            print("|%2d | %1.3e | %1.3e |" % (1 + iteration, fnorm, xnorm))
+        state = IterationState(
+            iteration=iteration,
+            fnorm=fnorm,
+            xnorm=xnorm,
+            success=success,
+            tol=tol,
+            error=error,
+        )
+        dispatcher.trigger("after_iteration", context, state)
 
         if success:
             break
 
-        if np.any(np.isnan([xnorm, fnorm])):
+        if isnan:
             raise ValueError("Norm of unknowns is NaN.")
 
-    if 1 + iteration == maxiter and not success:
+    if abort:
         raise ValueError("Maximum number of iterations reached (not converged).\n")
 
     Res = NewtonResult(
@@ -539,18 +517,6 @@ def newtonraphson(
         fnorms=fnorms,
     )
 
-    if verbose == 1:
-        progress_bar.update(100 - progress)
-        if close_bar:
-            progress_bar.close()
-
-    if verbose == 2:
-        runtimes.append(perf_counter())
-        runtime = np.diff(runtimes)[0]
-        soltime = np.diff(soltimes).sum()
-        print(
-            "\nConverged in %d iterations (Assembly: %1.4g s, Solve: %1.4g s).\n"
-            % (iteration + 1, runtime - soltime, soltime)
-        )
+    dispatcher.trigger("after_newton", context, state)
 
     return Res

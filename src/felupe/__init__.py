@@ -74,7 +74,6 @@ from .field import (
 )
 from .mechanics import (
     CharacteristicCurve,
-    CharacteristicCurvePlugin,
     ContactRigidPlane,
     FormItem,
     FreeVibration,
@@ -82,7 +81,6 @@ from .mechanics import (
     MultiPointConstraint,
     MultiPointContact,
     PointLoad,
-    ProgressPlugin,
     SolidBody,
     SolidBodyCauchyStress,
     SolidBodyForce,
@@ -93,6 +91,7 @@ from .mechanics import (
     TrussBody,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
+from .plugins import CharacteristicCurvePlugin, ProgressPlugin
 from .quadrature import (
     BazantOh,
     GaussLegendre,
@@ -222,8 +221,6 @@ __all__ = [
     "Point",
     "Rectangle",
     "CharacteristicCurve",
-    "CharacteristicCurvePlugin",
-    "ProgressPlugin",
     "Job",
     "PointLoad",
     "ContactRigidPlane",

@@ -8,7 +8,15 @@ Tools
 .. autosummary::
 
    newtonraphson
+   tools.IterationState
    tools.NewtonResult
+
+**Event Dispatcher**
+
+.. autosummary::
+
+   tools.EventDispatcher
+   tools.Context
 
 **Export of Results**
 
@@ -33,9 +41,19 @@ Tools
 
 **Detailed API Reference**
 
-.. autoclass:: felupe.tools.NewtonResult
-
 .. autofunction:: felupe.newtonraphson
+
+.. autofunction:: felupe.tools.IterationState
+   :members:
+
+.. autoclass:: felupe.tools.NewtonResult
+   :members:
+
+.. autoclass:: felupe.tools.EventDispatcher
+   :members:
+
+.. autoclass:: felupe.tools.Context
+   :members:
 
 .. autofunction:: felupe.save
 

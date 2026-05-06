@@ -79,11 +79,14 @@ class SolidBodySurfaceConvection:
 
     Examples
     --------
+    The examples here show how to use the :class:`~felupe.SolidBodySurfaceConvection`
+    both with a constant value for :math:`h_c` and a function
+    :math:`h_c=f(\theta_s, \theta_\infty)` according to
+
     ..  pyvista-plot::
+        :context:
 
         >>> import math
-        >>> import felupe as fem
-        >>> import numpy as np
         >>>
         >>> def hc_fun(ts, tamb):
         ...     l = 0.25  # slab 1 x 1 m^2
@@ -99,6 +102,14 @@ class SolidBodySurfaceConvection:
         ...     else:
         ...         nu = 0.15 * math.pow(1E11, 0.33)
         ...     return(nu*lam_air/l)
+
+    Set up the model (a horizontal slab with dimensions 1 x 1 m^2, 0.25 m thick).
+    
+    ..  pyvista-plot::
+        :context:
+
+        >>> import felupe as fem
+        >>> import numpy as np
         >>>
         >>> mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells
         >>> region = fem.RegionQuad(mesh)
@@ -120,6 +131,43 @@ class SolidBodySurfaceConvection:
         ...     time_step=720.0,  # s
         ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
+
+    We will start with the example using a constant value, this is basically
+    identical in functionality to :class:`~felupe.SolidBodySurfaceHeatTransfer`
+    when the value entered for `coefficient` corresponds to the convective
+    part, only.
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
+        >>> convection_constant = fem.thermal.SolidBodySurfaceConvection(
+        ...     field=field_convection,
+        ...     convection_coefficient=5.0,
+        ...     temperature=20.0,  # °C
+        ... )
+        >>> time = fem.thermal.TimeStep([solid])
+        >>> table = fem.math.linsteps([0, 1], num=10)
+        >>> air_temperature = fem.math.linsteps([15, 25], num=10)
+        >>> ramp = {
+        ...     time: 18000 * table,  # five hours
+        ...     convection_constant["temperature"]: air_temperature,
+        ... }
+        >>> step = fem.Step(
+        ...     items=[time, solid, convection_constant], ramp=ramp, boundaries=boundaries
+        ... )
+        >>> job = fem.Job(steps=[step]).evaluate(verbose=False)
+        >>>
+        >>> mesh.view(
+        ...     point_data={"Temperature in °C": temperature.values}
+        ... ).plot("Temperature in °C").show()
+
+    And now set up convection to use the function for :math:`h_c` defined above
+    using the same air temperature boundary conditions ...
+
+    ..  pyvista-plot::
+        :context:
+
         >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
         ...     field=field_convection,
         ...     convection_coefficient=hc_fun(30, 20),
@@ -132,6 +180,13 @@ class SolidBodySurfaceConvection:
         ...     time: 18000 * table,  # five hours
         ...     convection_function["temperature"]: air_temperature,
         ... }
+    
+    ... and run.
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
         >>> step = fem.Step(
         ...     items=[time, solid, convection_function], ramp=ramp, boundaries=boundaries
         ... )

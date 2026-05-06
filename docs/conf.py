@@ -55,7 +55,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
-    "sphinx-codeautolink",
+    "sphinx_codeautolink",
     "sphinx_inline_tabs",
     "sphinx_copybutton",
     "sphinx_design",

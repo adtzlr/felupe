@@ -70,22 +70,35 @@ class SolidBodySurfaceConvection:
 
        Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\mu}
 
-       Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} \text{  and}
+       Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} \text{(Pr > 0.7)  and}
 
        Nu(10^7 < Ra \leq 10^11) &= 0.15 Ra^{1/3}
 
-       h_c &= Nu \lambda_\text{air} L
+       h_c &= \frac{Nu \lambda_\text{air}}{L}
 
 
     Examples
     --------
     ..  pyvista-plot::
 
+        >>> import math
         >>> import felupe as fem
         >>> import numpy as np
         >>>
         >>> def hc_fun(ts, tamb):
-        ...     return((ts-tamb)*2.0)
+        ...     l = 0.25  # slab 1 x 1 m^2
+        ...     alpha = 2.25E-05 # m^2/s, air at 300 K
+        ...     lam_air = 0.0263  # W/(m K), air at 300 K
+        ...     pr = 0.707  # air at 300 K
+        ...     t_m = 0.5*(ts + tamb) + 273.15  # K
+        ...     ra = (9.81 / t_m * abs(ts - tamb) * l**3)/alpha/1.59E-7
+        ...     if (10**4 <= ra <= 10**7) and pr > 0.7:
+        ...         nu = 0.54 * math.pow(ra, 0.25)
+        ...     elif (10**7 < ra <= 10**11):
+        ...         nu = 0.15 * math.pow(ra, 0.33)
+        ...     else:
+        ...         nu = 1
+        ...     return(nu*lam_air/l)
         >>>
         >>> mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells
         >>> region = fem.RegionQuad(mesh)
@@ -107,11 +120,6 @@ class SolidBodySurfaceConvection:
         ...     time_step=720.0,  # s
         ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
-        >>> convection_constant = fem.thermal.SolidBodySurfaceConvection(
-        ...     field=field_convection,
-        ...     convection_coefficient=5.0,  # W/(m^2 K)
-        ...     temperature=20.0,  # °C
-        ... )
         >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
         ...     field=field_convection,
         ...     convection_coefficient=hc_fun,
@@ -122,20 +130,6 @@ class SolidBodySurfaceConvection:
         >>> air_temperature = fem.math.linsteps([15, 25], num=10)
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
-        ...     convection_constant["temperature"]: air_temperature
-        ... }
-        >>> step = fem.Step(
-        ...     items=[time, solid, convection_constant], ramp=ramp, boundaries=boundaries
-        ... )
-        >>> job = fem.Job(steps=[step]).evaluate()
-        >>> ...
-        >>> mesh.view(
-        ...     point_data={"Temperature in °C": temperature.values}
-        ... ).plot("Temperature in °C").show()
-        >>>
-        >>> time = fem.thermal.TimeStep([solid])
-        >>> ramp = {
-        ...     time: 18000 * table,  # five hours
         ...     convection_function["temperature"]: air_temperature,
         ... }
         >>> step = fem.Step(
@@ -144,8 +138,8 @@ class SolidBodySurfaceConvection:
         >>> job = fem.Job(steps=[step]).evaluate()
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature in °C": temperature.values}
-        ... ).plot("Temperature in °C").show()
+        ...     point_data={"Temperature 2 in °C": temperature.values}
+        ... ).plot("Temperature 2 in °C").show()
 
 
     See Also
@@ -162,7 +156,14 @@ class SolidBodySurfaceConvection:
 
         self.results = Results()
         self.results.temperature = temperature  # ambient temperature in °C
-        self.results.convection_coefficient = convection_coefficient
+        if callable(convection_coefficient):
+            self.results.convection_coefficient =\
+                convection_coefficient(
+                    self.field.extract(grad=False)[0],  # ts
+                    temperature  # tamb
+                )
+        else:
+            self.results.convection_coefficient = convection_coefficient
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
@@ -231,3 +232,19 @@ class SolidBodySurfaceConvection:
         ).assemble(**kwargs)
 
         return self.results.stiffness
+
+# import math
+
+# def hc_fun(ts, tamb):
+#     l = 0.25  # slab 1 x 1 m^2
+#     alpha = 2.25E-05 # m^2/s, air at 300 K
+#     pr = 0.707  # air at 300 K
+#     t_m = 0.5*(ts + tamb) + 273.15  # K
+#     ra = (9.81 / t_m * abs(ts - tamb) * l**3)/alpha/1.59E-5
+#     if (10**4 <= ra <= 10**7) and pr > 0.7:
+#         nu = 0.54 * math.pow(ra, 0.25)
+#     elif (10**7 < ra <= 10**11):
+#         nu = 0.15 * math.pow(ra, 0.33)
+#     else:
+#         nu = 1
+#     return(nu*0.0263/l)

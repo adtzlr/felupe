@@ -216,7 +216,7 @@ boundaries = {
     "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
 }
 
-angles_deg = fem.math.linsteps([0, 480], num=48)
+angles_deg = fem.math.linsteps([0, 120], num=12)
 move = []
 for phi in angles_deg:
     center = mesh.points[boundaries["move"].points]
@@ -242,8 +242,8 @@ bottom = fem.ContactRigidPlane(
     centerpoint=-1,
     normal=(0, 1),
     friction=0.3,
-    multiplier=10.0,
-    multiplier_tangential=1.0,
+    multiplier=40.0,
+    multiplier_tangential=4.0,
 )
 step_compression = fem.Step(items=[solid, bottom], boundaries=boundaries)
 job_compression = fem.Job(steps=[step_compression]).evaluate(tol=1e-1)
@@ -255,7 +255,7 @@ step = fem.Step(
     boundaries=boundaries,
 )
 job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-job.evaluate(tol=1e-1)
+job.evaluate(tol=1e-2)
 
 fig, ax = job.plot(
     x=angles_deg.reshape(-1, 1),
@@ -268,11 +268,12 @@ ax.set_xticks(angles_deg[::6])
 
 # %%
 # The resulting max. principal values of the Cauchy stresses are shown for the final
-# rotation angle of 480. As a result of friction, the bottom contact plane moves
-# horizontally to the right.
+# rotation angle. As a result of friction, the bottom contact plane moves horizontally
+# to the right.
+plotter = bottom.plot(color="black", line_width=2, opacity=1.0, size=6)
 plotter = solid.plot(
     "Principal Values of Cauchy Stress",
-    plotter=bottom.plot(color="black", line_width=5, opacity=1.0, size=3),
+    plotter=plotter,
     project=fem.topoints,
 )
 plotter.add_text(

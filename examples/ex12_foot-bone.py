@@ -32,6 +32,7 @@ bottom = fem.ContactRigidPlane(
     centerpoint=-1,
     normal=[0, 0, 1],
     friction=0.0,
+    items=[solid],
 )
 
 step = fem.Step(items=[solid, gravity, bottom], boundaries=boundaries)

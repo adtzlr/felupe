@@ -55,7 +55,7 @@ class XDMFWriterPlugin:
 
     See Also
     --------
-    Job : A job with a list of steps and a method to evaluate them.
+    felupe.Job : A job with a list of steps and a method to evaluate them.
     """
 
     def __init__(self):

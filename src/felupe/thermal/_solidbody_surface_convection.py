@@ -29,12 +29,10 @@ class SolidBodySurfaceConvection:
     ----------
     field : felupe.FieldContainer
         Field container with the temperature in °C as first field.
-    convection_coefficient : float | callable
-        Convection heat transfer coefficient :math: `h_c` in W/(m^2 K). A
+    convection_coefficient : float or callable
+        Convection heat transfer coefficient :math:`h_c` in W/(m^2 K). A
         callable requires the parameters 'surface temperature' and 'ambient
         temperature'.
-        Additional parameters should be passed by **kwargs (and are not
-        adapted during simulation).
     temperature : float
         The ambient air temperature :math:`\theta_\infty` in °C.
 

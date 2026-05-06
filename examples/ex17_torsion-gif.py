@@ -63,8 +63,7 @@ plotter.open_gif("result.gif", fps=5)
 def record(stepnumber, substepnumber, substep, plotter):
     "Update the mesh-points and the scalars of the plotter."
     if substepnumber in np.arange(len(move), step=2):
-        name = plotter.mesh.active_scalars_info.name
-        raise ValueError(f"name is: {name}, type: {type(name)}")
+        name = "Principal Values of Logarithmic Strain-0"
         data = substep.x.evaluate.log_strain(tensor=False).mean(-2)[-1]
 
         plotter.mesh.points[:] = mesh.points + field[0].values

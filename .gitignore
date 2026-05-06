@@ -122,6 +122,7 @@ examples/result.xdmf
 docs/examples/
 docs/tutorial/*
 !docs/tutorial/examples
+docs/mesh.png
 sg_execution_times.rst
 result.h5
 result.xdmf

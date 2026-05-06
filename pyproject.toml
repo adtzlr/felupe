@@ -59,10 +59,11 @@ dependencies = [
 docs = [
     "pydata-sphinx-theme",
     "sphinx-autoapi",
-    "sphinx-inline-tabs",
+    "sphinx-codeautolink",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
+    "sphinx-inline-tabs",
     "pypandoc",
 ]
 autodiff = ["tensortrax", "jax"]

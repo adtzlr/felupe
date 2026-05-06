@@ -49,10 +49,12 @@ class SolidBodySurfaceConvection:
     :eq:`convective-flux`.
 
     Eq. :eq: `example-horizontal-plate` gives an example for the detailed
-    calculation of the heat transfer coefficient for a warm horizontal plate
-    with heat flux upward. `A` is the plate area, `P` is the plate perimeter
-    length. `T` denotes temperatures in K. `Ra` is the Rayleigh
-    number, `Pr` is the Prandtl number (air) and `Nu` is the Nusselt number.
+    calculation of the convective heat transfer coefficient for a warm
+    horizontal plate with heat flux upward. `A` is the plate area, `P` is the
+    plate perimeter length. `T` denotes temperatures in K, :math:`T_m` is
+    the 'film temperature' for which fluid properties are evaluated. `Ra` is
+    the Rayleigh number, `Pr` is the Prandtl number (air) and `Nu` is the
+    Nusselt number.
 
     .. math::
        :label: convective-flux
@@ -64,9 +66,9 @@ class SolidBodySurfaceConvection:
 
        L &= \frac{A}{P}
 
-       \alpha &= \frac{\lambda_\text{air}}{\rho_\text{air}cp_{air}}
+       T_m &= 0.5 \left(T_s + T_\infty\right)
 
-       \T_m &= 0.5 \left(T_s + T_\infty\right)
+       \alpha\left(T_m\right) &= \frac{\lambda_\text{air}}{\rho_\text{air}cp_{air}}
 
        Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\mu}
 

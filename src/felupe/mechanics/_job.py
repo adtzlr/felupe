@@ -116,12 +116,7 @@ class Job:
         self.fnorms = []
         self.kwargs = kwargs
 
-        self._progress_plugin = ProgressPlugin()
-        self._writer_plugin = XDMFWriterPlugin()
-
         self.dispatcher = EventDispatcher(plugins=plugins)
-        self.dispatcher.add_plugin(self._progress_plugin)
-        self.dispatcher.add_plugin(self._writer_plugin)
 
     def evaluate(
         self,
@@ -202,19 +197,21 @@ class Job:
         """
 
         # configure plugins
-        self._progress_plugin.configure(
-            verbose=verbose,
-            tqdm=tqdm,
-        )
-        self._writer_plugin.configure(
-            filename=filename,
-            mesh=mesh,
-            point_data=point_data,
-            cell_data=cell_data,
-            point_data_default=point_data_default,
-            cell_data_default=cell_data_default,
-            kwargs=kwargs,
-        )
+        if verbose is not False:
+            progress_plugin = ProgressPlugin(verbose=verbose, tqdm=tqdm)
+            self.dispatcher.add_plugin(progress_plugin)
+
+        if filename is not None:
+            writer_plugin = XDMFWriterPlugin(
+                filename=filename,
+                mesh=mesh,
+                point_data=point_data,
+                cell_data=cell_data,
+                point_data_default=point_data_default,
+                cell_data_default=cell_data_default,
+                kwargs=kwargs,
+            )
+            self.dispatcher.add_plugin(writer_plugin)
 
         context = Context(job=self)
         state = JobState()

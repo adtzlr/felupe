@@ -48,7 +48,7 @@ class SolidBodySurfaceConvection:
     The the heat flux at the boundary is calculated according to Eq.
     :eq:`convective-flux`.
 
-    Eq. :eq: `example-horizontal-plate` gives an example for the detailed
+    Eq. :eq:`example-horizontal-plate` gives an example for the detailed
     calculation of the convective heat transfer coefficient for a warm
     horizontal plate with heat flux upward. `A` is the plate area, `P` is the
     plate perimeter length. `T` denotes temperatures in K, :math:`T_m` is
@@ -68,15 +68,15 @@ class SolidBodySurfaceConvection:
 
        T_m &= 0.5 \left(T_s + T_\infty\right)
 
-       \alpha\left(T_m\right) &= \frac{\lambda_\text{air}}{\rho_\text{air}\,cp_{air}}
+       \alpha\left(T_m\right) &= \frac{\lambda_\text{air}}{\rho_\text{air}\,c_{p,air}}
 
-       Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\nu}
+       Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\,\nu}
 
-       Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} \text{(Pr > 0.7)  and}
+       Nu(10^4\leq Ra \leq 10^7) &= 0.54\,Ra^{1/4} \text{   (Pr > 0.7)  and}
 
-       Nu(10^7 < Ra \leq 10^11) &= 0.15 Ra^{1/3}
+       Nu(10^7 < Ra \leq 10^11) &= 0.15\,Ra^{1/3}
 
-       h_c &= \frac{Nu \lambda_\text{air}}{L}
+       h_c &= \frac{Nu\,\lambda_\text{air}}{L}
 
 
     Examples

@@ -68,9 +68,9 @@ class SolidBodySurfaceConvection:
 
        T_m &= 0.5 \left(T_s + T_\infty\right)
 
-       \alpha\left(T_m\right) &= \frac{\lambda_\text{air}}{\rho_\text{air}cp_{air}}
+       \alpha\left(T_m\right) &= \frac{\lambda_\text{air}}{\rho_\text{air}\,cp_{air}}
 
-       Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\mu}
+       Ra &= \frac{g \frac{1}{T_m} \left|\theta_s - \theta_\infty\right| L^3}{\alpha\nu}
 
        Nu(10^4\leq Ra \leq 10^7) &= 0.54 Ra^{1/4} \text{(Pr > 0.7)  and}
 

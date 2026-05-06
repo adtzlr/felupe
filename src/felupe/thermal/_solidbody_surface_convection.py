@@ -128,9 +128,11 @@ class SolidBodySurfaceConvection:
         >>> time = fem.thermal.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> air_temperature = fem.math.linsteps([15, 25], num=10)
+        >>> hc_const = fem.math.linsteps([4, 4], num=10)
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
         ...     convection_function["temperature"]: air_temperature,
+        ...     convection_function["convection_coefficient"]: hc_const,
         ... }
         >>> step = fem.Step(
         ...     items=[time, solid, convection_function], ramp=ramp, boundaries=boundaries
@@ -151,11 +153,12 @@ class SolidBodySurfaceConvection:
 
     def __init__(self, field, convection_coefficient, temperature):
         self.field = field
-        self.convection_coefficient = convection_coefficient
+        self.convection_coefficient = convection_coefficient  # value or callable
         self.time_step = None
 
         self.results = Results()
         self.results.temperature = temperature  # ambient temperature in °C
+
         if callable(convection_coefficient):
             self.results.convection_coefficient =\
                 convection_coefficient(
@@ -174,20 +177,20 @@ class SolidBodySurfaceConvection:
 
     def update(self, temperature):
         self._update_temperature(temperature)
-        self._update_convection_coefficient()  # adapt hc using cur. temp.
+        # self._update_convection_coefficient()  # adapt hc using cur. temp.
 
     def _update_temperature(self, temperature):
         self.results.temperature = temperature
 
-    def _update_convection_coefficient(self):
-        if callable(self.convection_coefficient):
+    def _update_convection_coefficient(self, convection_coefficient):
+        if callable(convection_coefficient):
             self.results.convection_coefficient =\
-                self.convection_coefficient(
+                convection_coefficient(
                     self.field.extract(grad=False)[0],  # ts
                     self.results.temperature  # tamb
                 )
         else:
-            self.results.convection_coefficient = self.convection_coefficient
+            self.results.convection_coefficient = convection_coefficient
 
     def _vector(self, field=None, **kwargs):
         if field is not None:

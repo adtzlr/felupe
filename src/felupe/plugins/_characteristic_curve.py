@@ -18,10 +18,11 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._plugin import Plugin
 from ..tools import force
 
 
-class CharacteristicCurvePlugin:
+class CharacteristicCurvePlugin(Plugin):
     r"""A job plugin to record a characteristic curve. Force-displacement curve data is
     tracked during evaluation for a given :class:`~felupe.Boundary`.
 

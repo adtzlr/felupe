@@ -78,6 +78,7 @@ from .mechanics import (
     FormItem,
     FreeVibration,
     Job,
+    JobState,
     MultiPointConstraint,
     MultiPointContact,
     PointLoad,
@@ -91,7 +92,12 @@ from .mechanics import (
     TrussBody,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
-from .plugins import CharacteristicCurvePlugin, ProgressPlugin
+from .plugins import (
+    CharacteristicCurvePlugin,
+    Plugin,
+    ProgressPlugin,
+    XDMFWriterPlugin,
+)
 from .quadrature import (
     BazantOh,
     GaussLegendre,
@@ -136,6 +142,9 @@ from .tools import (
     runs_on,
     save,
     topoints,
+    EventDispatcher,
+    Context,
+    IterationState,
 )
 from .view import ViewField, ViewMesh
 from .view import ViewSolid
@@ -222,6 +231,7 @@ __all__ = [
     "Rectangle",
     "CharacteristicCurve",
     "Job",
+    "JobState",
     "PointLoad",
     "ContactRigidPlane",
     "SolidBody",
@@ -268,6 +278,9 @@ __all__ = [
     "RegionVertex",
     "newtonraphson",
     "newtonrhapson",
+    "EventDispatcher",
+    "Context",
+    "IterationState",
     "project",
     "save",
     "topoints",
@@ -277,6 +290,10 @@ __all__ = [
     "ViewXdmf",
     "ViewSolid",
     "runs_on",
+    "CharacteristicCurvePlugin",
+    "Plugin",
+    "ProgressPlugin",
+    "XDMFWriterPlugin",
 ]
 
 try:

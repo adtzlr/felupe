@@ -87,19 +87,15 @@ def hc_fun(ts, tamb):
               InputHumidAir.relative_humidity(rh/rhf),
           )
 
-    l = 1.25  # slab 1 x 1 m^2
+    l = 1.25  # assume slab size 5 x 5 m^2 for h_c
     ra = rayleigh(ts, tamb, l)
-    # alpha = 2.25E-05 # m^2/s, air at 300 K
-    # lam_air = 0.0263  # W/(m K), air at 300 K
-    # pr = 0.707  # air at 300 K
-    # t_m = 0.5*(ts + tamb) + 273.15  # K
-    # ra = (9.81 / t_m * abs(ts - tamb) * math.pow(l, 3.0))/alpha/1.59E-7
     if ts > tamb:
         nu = nusselt_horizontal(ra, air.prandtl, hflux='z+')
     else:
         nu = nusselt_horizontal(ra, air.prandtl, hflux='z-')
 
     return(nu*air.conductivity/l)
+
 
 mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells
 region = fem.RegionQuad(mesh)
@@ -128,21 +124,21 @@ convection_function = fem.thermal.SolidBodySurfaceConvection(
     temperature=20.0,  # °C
 )
 
-def callback(stepnumber, substepnumber, substep, flux_data):
-    """Save mean surface heat flux at top (convective) boundary.
+def callback(stepnumber, substepnumber, substep, tstep_data):
+    """Save time step data at top (convective) boundary.
     """
     tamb = list(ramp.values())[1][substepnumber]
     ts = list(convection_function.field.extract(grad=False)[0])[0][0:1][0].mean()
     heat_flux = solid.heat_flux_boundary
     qc = heat_flux(region=region_convection)
-    flux_data["top.W.m-2"].append(qc)
-    flux_data["tamb.degC"].append(tamb)
-    flux_data["ts_top.degC"].append(ts)
-    flux_data["hc_top.W.m-2.K-1"].append(convection_function.results.convection_coefficient)
-    # flux_data["hc_top.W.m-2.K-1"].append(qc/(abs(ts-tamb)))
-    # flux_data["top_t"].append(heat_flux(region=internal_region))
-    # solid.results.statevars.data.tolist()  # current temperature (mesh-points)
-    # region_convection.mask.data.tolist()  # surface points True(!)
+    tstep_data["tstep.s"].append(list(ramp.values())[0][substepnumber])
+    tstep_data["qc_top.W.m-2"].append(qc)
+    tstep_data["tamb.degC"].append(tamb)
+    tstep_data["ts_top.degC"].append(ts)
+    tstep_data["hc_top.W.m-2.K-1"].append(convection_function.results.convection_coefficient)
+    tstep_data["hc_fun_top.W.m-2.K-1"].append(hc_fun(ts, tamb))
+    tstep_data["hc_calc_top.W.m-2.K-1"].append(qc/(abs(ts-tamb)))
+
 
 n_steps = 20
 time = fem.thermal.TimeStep([solid])
@@ -158,9 +154,12 @@ step = fem.Step(
     items=[time, solid, convection_function], ramp=ramp, boundaries=boundaries
 )
 
-flux_data = {"tamb.degC": [], "ts_top.degC": [], "hc_top.W.m-2.K-1": [], "top.W.m-2": []}
+tstep_data = {"tstep.s": [], "tamb.degC": [], "ts_top.degC": [],
+              "hc_top.W.m-2.K-1": [], "qc_top.W.m-2": [],
+              "hc_fun_top.W.m-2.K-1": [],
+              "hc_calc_top.W.m-2.K-1": []}
 
-job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
+job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
     verbose=False
 )
 

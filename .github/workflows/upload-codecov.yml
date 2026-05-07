@@ -26,6 +26,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - uses: actions/checkout@v4
+    - name: Install OSMesa
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libosmesa6
     - name: Test with tox
       run: |
         pip install tox

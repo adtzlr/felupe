@@ -18,10 +18,10 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
 
-from ._plugin import Plugin
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
+from ._plugin import Plugin
 
 
 def displacement(field, substep=None):

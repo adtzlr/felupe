@@ -93,6 +93,7 @@ from .mechanics import (
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .plugins import (
+    AnimationWriterPlugin,
     CharacteristicCurvePlugin,
     Plugin,
     ProgressPlugin,
@@ -135,6 +136,9 @@ from .region import (
     RegionVertex,
 )
 from .tools import (
+    Context,
+    EventDispatcher,
+    IterationState,
     hello_world,
     newtonraphson,
     newtonrhapson,
@@ -142,9 +146,6 @@ from .tools import (
     runs_on,
     save,
     topoints,
-    EventDispatcher,
-    Context,
-    IterationState,
 )
 from .view import ViewField, ViewMesh
 from .view import ViewSolid
@@ -290,6 +291,7 @@ __all__ = [
     "ViewXdmf",
     "ViewSolid",
     "runs_on",
+    "AnimationWriterPlugin",
     "CharacteristicCurvePlugin",
     "Plugin",
     "ProgressPlugin",

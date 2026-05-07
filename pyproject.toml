@@ -74,6 +74,7 @@ examples = [
     "torch",
 ]
 io = [
+    "imageio",
     "h5py",
     "meshio",
 ]

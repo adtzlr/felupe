@@ -32,7 +32,18 @@ HOOKS = (
 
 
 class Context:
-    "A class to keep track of the context of a Job during evaluation."
+    """A class to keep track of the context of a Job during evaluation.
+
+    Parameters
+    ----------
+    job : felupe.Job or None, optional
+        The job object.
+    step : felupe.Step or None, optional
+        The step object.
+    substep : felupe.FieldContainer or None, optional
+        The field container object.
+
+    """
 
     def __init__(self, job=None, step=None, substep=None):
         self.job = job
@@ -41,7 +52,14 @@ class Context:
 
 
 class EventDispatcher:
-    """A class to dispatch events to plugins during evaluation."""
+    """A class to dispatch events to plugins during evaluation.
+    
+    Parameters
+    ----------
+    plugins : list or None, optional
+        The list of plugins.
+
+    """
 
     def __init__(self, plugins=None):
         self.plugins = list(plugins) if plugins is not None else []

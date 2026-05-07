@@ -29,9 +29,14 @@ Mechanics
 
 .. autosummary::
 
-   plugins.CharacteristicCurvePlugin
-   plugins.ProgressPlugin
-   plugins.XDMFWriterPlugin
+   Plugin
+   CharacteristicCurvePlugin
+   ProgressPlugin
+   XDMFWriterPlugin
+   EventDispatcher
+   Context
+   JobState
+   IterationState
 
 **Point Load and Multi-Point Constraints**
 
@@ -114,17 +119,42 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.plugins.CharacteristicCurvePlugin
+.. autoclass:: felupe.CharacteristicCurvePlugin
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.plugins.ProgressPlugin
+.. autoclass:: felupe.ProgressPlugin
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: felupe.plugins.XDMFWriterPlugin
+.. autoclass:: felupe.XDMFWriterPlugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.Plugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.EventDispatcher
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.Context
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.JobState
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.IterationState
    :members:
    :undoc-members:
    :show-inheritance:

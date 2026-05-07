@@ -46,7 +46,7 @@ class SolidBodySurfaceConvection:
     The the heat flux at the boundary is calculated according to Eq.
     :eq:`convective-flux`.
 
-    Eq. :eq:`example-horizontal-plate` gives an example for the detailed
+    Eq. :eq:`example-horizontal-plate` [1]_ gives an example for the detailed
     calculation of the convective heat transfer coefficient for a warm
     horizontal plate with heat flux upward. `A` is the plate area, `P` is the
     plate perimeter length. `T` denotes temperatures in K, :math:`T_m` is
@@ -196,6 +196,11 @@ class SolidBodySurfaceConvection:
         ...     point_data={"Temperature 2 in °C": temperature.values}
         ... ).plot("Temperature 2 in °C").show()
 
+    References
+    ----------
+    ..  [1] F. P. Incropera, D. P. DeWitt, and et. al., Fundamentals of Heat
+            and Mass Transfer, 6th Edition. John Wiley & Sons, 2007;
+            ISBN 0-471-45728-0.
 
     See Also
     --------

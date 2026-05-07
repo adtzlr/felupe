@@ -863,7 +863,11 @@ def test_job_plugins():
     with pytest.raises(ValueError):
         curve.plot()
 
-    job = fem.Job(steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2])
+    base_plugin = fem.Plugin()
+
+    job = fem.Job(
+        steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2, base_plugin]
+    )
     job.evaluate()
 
     assert recorder.ntriggered == (100 + 100) + (10 + 10) + 1 * 6

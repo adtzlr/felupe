@@ -3,7 +3,7 @@ from ._curve import CharacteristicCurve
 from ._free_vibration import FreeVibration
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._item import FormItem
-from ._job import Job
+from ._job import Job, JobState
 from ._multipoint import MultiPointConstraint, MultiPointContact
 from ._pointload import PointLoad
 from ._solidbody import SolidBody
@@ -23,6 +23,7 @@ __all__ = [
     "FormItem",
     "StateNearlyIncompressible",
     "Job",
+    "JobState",
     "PointLoad",
     "Results",
     "ContactRigidPlane",

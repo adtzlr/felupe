@@ -21,6 +21,7 @@ from time import perf_counter
 
 import numpy as np
 
+from ._plugin import Plugin
 from ..tools import logo, runs_on
 
 
@@ -28,7 +29,7 @@ def print_header():
     print("\n".join([logo(), runs_on(), "", "Run Job", "======="]))
 
 
-class ProgressPlugin:
+class ProgressPlugin(Plugin):
     r"""A job plugin to output the progress of a job evaluation in the terminal.
 
     Parameters

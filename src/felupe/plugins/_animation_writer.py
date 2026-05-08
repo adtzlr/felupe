@@ -154,7 +154,7 @@ class AnimationWriterPlugin(Plugin):
                 f"Step {1 + state.stepnumber}, Substep { 1 + state.substepnumber}",
             ]
 
-            mesh = self.plotter.meshes[0]
+            mesh = self.plotter.meshes[-1]
             name = mesh.active_scalars_name
 
             if name is not None:

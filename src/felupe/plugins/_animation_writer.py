@@ -158,11 +158,8 @@ class AnimationWriterPlugin(Plugin):
             name = mesh.active_scalars_name
 
             if name is not None:
-                min_value = f"{mesh[name].min():.3e}"
-                max_value = f"{mesh[name].max():.3e}"
-
-                text.append(f"Min. Value {min_value}")
-                text.append(f"Max. Value {max_value}")
+                text.append(f"Min. Value {mesh[name].min():.3e}")
+                text.append(f"Max. Value {mesh[name].max():.3e}")
 
             self.plotter.add_text("\n".join(text), font_size=10)
 

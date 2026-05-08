@@ -161,15 +161,23 @@ class AnimationWriterPlugin(Plugin):
                 self.plotter.camera.zoom(self.zoom_camera)
 
         if self.show_text:
+
+            min_value = "n/a"
+            max_value = "n/a"
+
             mesh = self.plotter.mesh
             name = mesh.active_scalars_name
+
+            if name is not None:
+                min_value = f"{mesh[name].min():.3e}"
+                max_value = f"{mesh[name].max():.3e}"
 
             self.plotter.add_text(
                 f"FElupe {version}\n"
                 f"Step {1 + state.stepnumber}, "
                 f"Substep { 1 + state.substepnumber}\n"
-                f"Min. Value {mesh[name].min():.3e}\n"
-                f"Max. Value {mesh[name].max():.3e}",
+                f"Min. Value {min_value}\n"
+                f"Max. Value {max_value}",
                 font_size=10,
             )
 

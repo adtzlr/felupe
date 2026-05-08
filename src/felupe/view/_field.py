@@ -81,7 +81,9 @@ class ViewField(ViewMesh):
         point_data_from_field = {}
         cell_data_from_field = {}
 
-        if hasattr(field.region, "dhdX"):
+        field_is_vector = field[0].dim == field.region.mesh.dim
+
+        if hasattr(field.region, "dhdX") and field_is_vector:
 
             if project is None:
                 cell_data_from_field = {
@@ -114,7 +116,10 @@ class ViewField(ViewMesh):
             else:
                 raise TypeError("The project-argument must be callable or None.")
 
-        point_data_from_field["Displacement"] = displacement(field)
+        point_data_from_field["Field"] = field[0].values
+
+        if field_is_vector:
+            point_data_from_field["Displacement"] = displacement(field)
 
         if point_data is None:
             point_data = {}

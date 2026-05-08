@@ -35,7 +35,7 @@ boundaries = {
 }
 solid = fem.SolidBody(umat=fem.NeoHookeCompressible(mu=1, lmbda=2), field=field)
 
-angles_deg = fem.math.linsteps([0, -30, 0], num=5)
+angles_deg = fem.math.linsteps([0, -30, 0], num=5)[:-1]
 move = []
 for phi in angles_deg:
     top = mesh.points[boundaries["top"].points]
@@ -70,6 +70,7 @@ animation = fem.AnimationWriterPlugin(
     name="Principal Values of Logarithmic Strain",
     component=0,  # max. principal value of logarithmic strain
     reset_camera=False,
+    clim=[0, 0.2],
 )
 moment = ReactionMoment()
 step = fem.Step(items=[solid], ramp={boundaries["top"]: move}, boundaries=boundaries)

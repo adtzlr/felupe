@@ -18,6 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import warnings
 
+from ._plugin import Plugin
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
 from ..region import RegionVertex
@@ -43,7 +44,7 @@ def log_strain(field, substep=None):
     return [field.evaluate.log_strain(tensor=True, asvoigt=True).mean(-2).T]
 
 
-class XDMFWriterPlugin:
+class XDMFWriterPlugin(Plugin):
     r"""A job plugin to write XDMF files during job evaluation.
 
     Parameters

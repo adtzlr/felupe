@@ -193,27 +193,26 @@ ax = umat.plot(
 )
 
 # %%
-# A mesh is created for the wheel with :math:`r=0.4` and :math:`R=1`.
-mesh = fem.mesh.Line(a=0.4, b=1.0, n=6).revolve(37, phi=360)
-mesh.update(points=np.vstack([mesh.points, [0, -1.1]]))
+# A mesh is created for the wheel with :math:`r=40` and :math:`R=100`.
+mesh = fem.mesh.Line(a=40, b=100, n=6).revolve(37, phi=360)
+mesh.update(points=np.vstack([mesh.points, [0, -110]]))
 mesh.clear_points_without_cells()
 x, y = mesh.points.T
-mesh.plot().show()
 
 # %%
 # A quad-region and a plane-strain displacement field are created. Mesh-points at
 # :math:`r` are added to the ``move``-boundary condition. The displacements due to the
 # rotation of the wheel are evaluated for each rotation angle. The center-point of
-# the bottom-edge is moved vertically upwards by ``0.2`` to enforce a vertical reaction
+# the bottom-edge is moved vertically upwards by ``20`` to enforce a vertical reaction
 # force in the rubber wheel.
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
-mask = np.isclose(np.sqrt(x**2 + y**2), 0.4)
+mask = np.isclose(np.sqrt(x**2 + y**2), 40)
 boundaries = {
     "move": fem.dof.Boundary(field[0], mask=mask),
-    "bottom-x": fem.dof.Boundary(field[0], fy=-1.1, value=0.0, skip=(0, 1)),
-    "bottom-y": fem.dof.Boundary(field[0], fy=-1.1, value=0.2, skip=(1, 0)),
+    "bottom-x": fem.dof.Boundary(field[0], fy=-110, value=0, skip=(0, 1)),
+    "bottom-y": fem.dof.Boundary(field[0], fy=-110, value=20, skip=(1, 0)),
 }
 
 angles_deg = fem.math.linsteps([0, 120], num=12)
@@ -238,13 +237,16 @@ for phi in angles_deg:
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 bottom = fem.ContactRigidPlane(
     field,
-    points=np.arange(mesh.npoints)[np.isclose(np.sqrt(x**2 + y**2), 1.0)],
+    points=np.arange(mesh.npoints)[np.isclose(np.sqrt(x**2 + y**2), 100)],
     centerpoint=-1,
     normal=(0, 1),
     friction=0.3,
     multiplier=40.0,
     multiplier_tangential=4.0,
 )
+plotter = bottom.plot(color="black", line_width=2, opacity=1.0, size=800)
+mesh.plot(plotter=plotter).show()
+
 step_compression = fem.Step(items=[solid, bottom], boundaries=boundaries)
 job_compression = fem.Job(steps=[step_compression]).evaluate(tol=1e-1)
 
@@ -270,7 +272,7 @@ ax.set_xticks(angles_deg[::6])
 # The resulting max. principal values of the Cauchy stresses are shown for the final
 # rotation angle. As a result of friction, the bottom contact plane moves horizontally
 # to the right.
-plotter = bottom.plot(color="black", line_width=2, opacity=1.0, size=6)
+plotter = bottom.plot(color="black", line_width=2, opacity=1.0, size=600)
 plotter = solid.plot(
     "Principal Values of Cauchy Stress",
     plotter=plotter,

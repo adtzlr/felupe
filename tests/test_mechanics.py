@@ -865,7 +865,7 @@ def test_job_plugins():
 
     base_plugin = fem.Plugin()
     animation_plugin = fem.AnimationWriterPlugin(
-        solid, name="Principal Values of Cauchy Stress", off_screen=True
+        [solid], name="Principal Values of Cauchy Stress", off_screen=True
     )
 
     job = fem.Job(

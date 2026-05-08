@@ -25,8 +25,8 @@ class AnimationWriterPlugin(Plugin):
 
     Parameters
     ----------
-    item : fem.FieldContainer, fem.SolidBody, ...
-        The item to plot.
+    items : list
+        The items to plot.
     filename : str, optional
         The filename of the animation file. Default is "animation.gif". Supported
         formats are GIF and MP4 (or any other format supported by PyVista).
@@ -41,6 +41,11 @@ class AnimationWriterPlugin(Plugin):
         Whether to reset the camera before each frame. Default is True.
     show_text : bool, optional
         Whether to show text on the plot. Default is True.
+
+    Notes
+    -----
+    This plugin should be used with ``off_screen=True``. While it is possible to show
+    the plotter during the job evaluation, it may flicker.
 
     Examples
     --------
@@ -64,7 +69,7 @@ class AnimationWriterPlugin(Plugin):
         >>> step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
         >>>
         >>> animation = fem.AnimationWriterPlugin(
-        ...     item=field,
+        ...     items=[field],
         ...     filename="animation.gif",
         ...     name="Principal Values of Logarithmic Strain",
         ... )
@@ -78,7 +83,7 @@ class AnimationWriterPlugin(Plugin):
 
     def __init__(
         self,
-        item,
+        items,
         filename="animation.gif",
         framerate=5,
         quality=5,
@@ -87,38 +92,16 @@ class AnimationWriterPlugin(Plugin):
         show_text=True,
         **kwargs,
     ):
-        self.plotter = None
-
-        self.configure(
-            item=item,
-            filename=filename,
-            framerate=framerate,
-            quality=quality,
-            zoom_camera=zoom_camera,
-            reset_camera=reset_camera,
-            show_text=show_text,
-            kwargs=kwargs,
-        )
-
-    def configure(
-        self,
-        item,
-        filename,
-        framerate,
-        quality,
-        kwargs,
-        zoom_camera,
-        reset_camera,
-        show_text,
-    ):
-        self.item = item
+        self.items = items
         self.filename = filename
         self.framerate = framerate
         self.quality = quality
-        self.kwargs = kwargs
         self.zoom_camera = zoom_camera
         self.reset_camera = reset_camera
         self.show_text = show_text
+        self.kwargs = kwargs
+
+        self.plotter = None
 
     def _close_plotter(self):
         if self.plotter is not None:
@@ -126,7 +109,10 @@ class AnimationWriterPlugin(Plugin):
             self.plotter = None
 
     def before_job(self, context, state):
-        self.plotter = self.item.plot(**self.kwargs)
+        self.plotter = self.kwargs.pop("plotter", None)
+
+        for item in self.items:
+            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
 
         if self.zoom_camera != 1.0:
             self.plotter.camera.zoom(self.zoom_camera)
@@ -149,10 +135,9 @@ class AnimationWriterPlugin(Plugin):
 
     def after_substep(self, context, state):
         self.plotter.clear_actors()
-        self.plotter = self.item.plot(
-            plotter=self.plotter,
-            **self.kwargs,
-        )
+
+        for item in self.items:
+            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
 
         if self.reset_camera:
             self.plotter.reset_camera()

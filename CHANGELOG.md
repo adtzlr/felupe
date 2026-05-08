@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file. The format 
 - Rename the function `newtonrhapson()` to `newtonraphson()`, and keep the old name as alias.
 - Set the `algorithm` in `pyvista.UnstructuredGrid.extract_surface(algorithm=None)` to prevent future errors with `nonlinear_subdivision`.
 - Change default dimension of an axisymmetric field from 2 to 1, i.e. `FieldAxisymmetric(..., dim=1)`. This fixes errors regarding wrong shapes with `SolidBodyThermal.heat_flux_boundary()`.
+- Change `FieldContainer.plot()`: Add general `"Field"` name for plotting field values of non-vector valued fields, like the temperature in thermal problems. Only activate `warp_by_vector`, if the field is a vector-valued field with the same dimension as the mesh.
+
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

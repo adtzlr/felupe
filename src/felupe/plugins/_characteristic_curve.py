@@ -18,8 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._plugin import Plugin
 from ..tools import force
+from ._plugin import Plugin
 
 
 class CharacteristicCurvePlugin(Plugin):

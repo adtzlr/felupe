@@ -142,6 +142,9 @@ class Scene:
             The line-width of the edge lines (default is 1.0).
         show_logo : bool, optional
             A flag to show the FElupe logo in the top right corner (default is False).
+        **kwargs : dict, optional
+            Additional keyword arguments are passed to the
+            :meth:`~pyvista.Plotter.add_mesh` method of the :class:`~pyvista.Plotter`.
 
         Returns
         -------

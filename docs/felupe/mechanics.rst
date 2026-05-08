@@ -30,6 +30,7 @@ Mechanics
 .. autosummary::
 
    Plugin
+   AnimationWriterPlugin
    CharacteristicCurvePlugin
    ProgressPlugin
    XDMFWriterPlugin
@@ -115,6 +116,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.FreeVibration
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.AnimationWriterPlugin
    :members:
    :undoc-members:
    :show-inheritance:

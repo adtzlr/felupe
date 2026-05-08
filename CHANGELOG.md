@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add optional argument `show_logo` in `view.Scene.plot(..., show_logo=False)` show the FElupe logo in a PyVista plot.
 - Add `ContactRigidPlane`, a simplified version of a node-to-surface contact, where the surface is a rigid plane, defined by its normal vector. This class has Coulomb friction implemented.
 - Add a new plugin framework for `Job(..., plugins=[])`. A plugin `MyPlugin` is a class object and must provide methods (hooks), which are called before/after a job, step, substep, newton, iteration and linear-solve. In the long term, `Job` will be simplified and all extensions will be refactored to plugins. Plugins are similar to a `callback()`, but are triggered more often.
-- Add a new `plugin` module with `Plugin` (base class), `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
+- Add a new `plugin` module with `Plugin` (base class), `AnimationWriterPlugin`, `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

@@ -21,8 +21,8 @@ from time import perf_counter
 
 import numpy as np
 
-from ._plugin import Plugin
 from ..tools import logo, runs_on
+from ._plugin import Plugin
 
 
 def print_header():

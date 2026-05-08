@@ -21,15 +21,22 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.14"]
+
     steps:
+    - uses: actions/checkout@v4
+
+    # - uses: pyvista/setup-headless-display-action@v3
+  
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: actions/checkout@v4
+        cache: "pip"
+  
     - name: Test with tox
       run: |
         pip install tox
         tox -- --cov felupe --cov-report xml --cov-report term
+  
     - name: Upload coverage to Codecov
       if: ${{ matrix.python-version == '3.14' }}
       uses: codecov/codecov-action@v4

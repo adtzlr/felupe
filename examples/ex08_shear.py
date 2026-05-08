@@ -101,6 +101,7 @@ plotter = boundaries.plot()
 plotter = mpc.plot(plotter=plotter)
 plotter.show()
 
+
 # %%
 # The shear movement is applied in substeps, which are each solved with an iterative
 # newton-raphson procedure. Inside an iteration, the force residual vector and the
@@ -109,24 +110,25 @@ plotter.show()
 # the active vs. the norm of the residual forces of the inactive degrees of freedom. If
 # convergence is obtained, the iteration loop ends. Both :math:`y`-displacement and the
 # reaction force in direction :math:`x` of the top plate are saved. This is realized by
-# a callback-function which is called after each successful substep. A step combines all
-# active items along with constant and ramped boundary conditions. Finally, the step is
-# added to a job. A job returns a generator object with the results of all substeps.
+# a plugin, which is called after each successful substep. A step combines all active
+# items along with constant and ramped boundary conditions. Finally, the step is added
+# to a job. A job returns a generator object with the results of all substeps.
+class ForceDisplacementPlugin(fem.Plugin):
+    def __init__(self, UX):
+        self.UX = UX
+        self.UY = []
+        self.FX = []
 
-UX = fem.math.linsteps([0, 15], 15)
-UY = []
-FX = []
+    def after_substep(self, context, state):
+        self.UY.append(context.substep.x[0].values[mpc.centerpoint, 1])
+        self.FX.append(context.substep.fun[2 * mpc.centerpoint] * T)
 
 
-def callback(stepnumber, substepnumber, substep):
-    UY.append(substep.x[0].values[mpc.centerpoint, 1])
-    FX.append(substep.fun[2 * mpc.centerpoint] * T)
-
-
+data = ForceDisplacementPlugin(UX=fem.math.linsteps([0, 15], 15))
 step = fem.Step(
-    items=[rubber, mpc], ramp={boundaries["control"]: UX}, boundaries=boundaries
+    items=[rubber, mpc], ramp={boundaries["control"]: data.UX}, boundaries=boundaries
 )
-job = fem.Job(steps=[step], callback=callback)
+job = fem.Job(steps=[step], plugins=[data])
 res = job.evaluate()
 
 # %%
@@ -163,13 +165,13 @@ import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots(1, 2, sharey=True)
 
-ax[0].plot(UX, FX, "o-")
+ax[0].plot(data.UX, data.FX, "o-")
 ax[0].set_xlim(0, 15)
 ax[0].set_ylim(0, 300)
 ax[0].set_xlabel(r"$u_x$ in mm")
 ax[0].set_ylabel(r"$F_x$ in N")
 
-ax[1].plot(UY, FX, "o-")
+ax[1].plot(data.UY, data.FX, "o-")
 ax[1].set_xlim(-1.2, 0.2)
 ax[1].set_ylim(0, 300)
 ax[1].set_xlabel(r"$u_y$ in mm")

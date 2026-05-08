@@ -864,9 +864,20 @@ def test_job_plugins():
         curve.plot()
 
     base_plugin = fem.Plugin()
+    animation_plugin = fem.AnimationWriterPlugin(
+        [solid], name="Principal Values of Cauchy Stress", off_screen=True
+    )
 
     job = fem.Job(
-        steps=[step], plugins=[recorder, my_simple_plugin, curve, curve_2, base_plugin]
+        steps=[step],
+        plugins=[
+            recorder,
+            my_simple_plugin,
+            curve,
+            curve_2,
+            base_plugin,
+            # animation,
+        ],
     )
     job.evaluate()
 

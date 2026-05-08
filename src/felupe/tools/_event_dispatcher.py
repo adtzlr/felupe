@@ -53,7 +53,7 @@ class Context:
 
 class EventDispatcher:
     """A class to dispatch events to plugins during evaluation.
-    
+
     Parameters
     ----------
     plugins : list or None, optional

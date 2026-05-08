@@ -47,44 +47,37 @@ for phi in angles_deg:
     )
     move.append(top_rotated - top)
 
+
 # %%
-# The reaction moment on the centerpoint of the right end face is tracked by a
-# ``callback()`` function when we :meth:`~felupe.Job.evaluate` the :class:`~felupe.Job`.
-# During the callback, the animated deformed body is recorded in a GIF-file. After all
-# frames are recorded, it is important to ``close()`` the plotter.
-moment = []
+# The reaction moment on the centerpoint of the right end face is tracked by a custom
+# :class:`~felupe.Plugin` during :class:`~felupe.Job` evaluation after each completed
+# substep. The animation of the deformation is written to a GIF-file by
+# :class:`~felupe.AnimationWriterPlugin`.
+class ReactionMoment(fem.Plugin):
+    def __init__(self):
+        self.values = []
 
-plotter = field.plot(
-    "Principal Values of Logarithmic Strain", clim=[0, 0.2], off_screen=True
+    def after_substep(self, context, state):
+        # evaluate the reaction moment at the centerpoint of the right end face
+        forces = context.substep.fun
+        M = fem.tools.moment(field, forces, boundaries["top"], centerpoint=[0, 0, 1])
+        self.values.append(M)
+
+
+animation = fem.AnimationWriterPlugin(
+    items=[field],
+    filename="result.gif",
+    name="Principal Values of Logarithmic Strain",
+    component=0,  # max. principal value of logarithmic strain
+    reset_camera=False,
 )
-plotter.open_gif("result.gif", fps=5)
-
-
-def record(stepnumber, substepnumber, substep, plotter):
-    "Update the mesh-points and the scalars of the plotter."
-    if substepnumber in np.arange(len(move), step=2):
-        name = "Principal Values of Logarithmic Strain-0"
-        data = substep.x.evaluate.log_strain(tensor=False).mean(-2)[-1]
-
-        plotter.mesh.points[:] = mesh.points + field[0].values
-        plotter.mesh[name] = data
-
-        plotter.write_frame()
-
-    # evaluate the reaction moment at the centerpoint of the right end face
-    forces = substep.fun
-    M = fem.tools.moment(field, forces, boundaries["top"], centerpoint=[0, 0, 1])
-    moment.append(M)
-
-
+moment = ReactionMoment()
 step = fem.Step(items=[solid], ramp={boundaries["top"]: move}, boundaries=boundaries)
-job = fem.Job(steps=[step], callback=record, plotter=plotter).evaluate()
-
-plotter.close()
+job = fem.Job(steps=[step], plugins=[animation, moment]).evaluate()
 
 # %%
 # Finally, let's plot the reaction moment vs. torsion angle curve.
 fig, ax = plt.subplots()
-ax.plot(abs(angles_deg), abs(np.array(moment)[:, 2]), "o-")
+ax.plot(abs(angles_deg), abs(np.array(moment.values)[:, 2]), "o-")
 ax.set_xlabel(r"Torsion Angle $|\phi_3|$ in deg $\rightarrow$")
 ax.set_ylabel(r"Torsion Moment $|M_3|$ in Nmm $\rightarrow$")

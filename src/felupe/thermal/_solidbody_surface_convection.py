@@ -293,19 +293,3 @@ class SolidBodySurfaceConvection:
         ).assemble(**kwargs)
 
         return self.results.stiffness
-
-# import math
-
-# def hc_fun(ts, tamb):
-#     l = 0.25  # slab 1 x 1 m^2
-#     alpha = 2.25E-05 # m^2/s, air at 300 K
-#     pr = 0.707  # air at 300 K
-#     t_m = 0.5*(ts + tamb) + 273.15  # K
-#     ra = (9.81 / t_m * abs(ts - tamb) * l**3)/alpha/1.59E-5
-#     if (10**4 <= ra <= 10**7) and pr > 0.7:
-#         nu = 0.54 * math.pow(ra, 0.25)
-#     elif (10**7 < ra <= 10**11):
-#         nu = 0.15 * math.pow(ra, 0.33)
-#     else:
-#         nu = 1
-#     return(nu*0.0263/l)

@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+
 from ..__about__ import __version__ as version
 from ._plugin import Plugin
 
@@ -166,7 +168,8 @@ class AnimationWriterPlugin(Plugin):
                 font_size=10,
             )
 
-        self.plotter.write_frame()
+        if "GITHUB_ACTIONS" not in os.environ:
+            self.plotter.write_frame()
 
     def after_job(self, context, state):
         self._close_plotter()

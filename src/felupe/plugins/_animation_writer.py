@@ -149,8 +149,10 @@ class AnimationWriterPlugin(Plugin):
 
         if self.show_text:
 
-            min_value = "n/a"
-            max_value = "n/a"
+            text = [
+                f"FElupe {version}",
+                f"Step {1 + state.stepnumber}, Substep { 1 + state.substepnumber}",
+            ]
 
             mesh = self.plotter.mesh
             name = mesh.active_scalars_name
@@ -159,14 +161,10 @@ class AnimationWriterPlugin(Plugin):
                 min_value = f"{mesh[name].min():.3e}"
                 max_value = f"{mesh[name].max():.3e}"
 
-            self.plotter.add_text(
-                f"FElupe {version}\n"
-                f"Step {1 + state.stepnumber}, "
-                f"Substep { 1 + state.substepnumber}\n"
-                f"Min. Value {min_value}\n"
-                f"Max. Value {max_value}",
-                font_size=10,
-            )
+                text.append(f"Min. Value {min_value}")
+                text.append(f"Max. Value {max_value}")
+
+            self.plotter.add_text("\n".join(text), font_size=10)
 
         self.plotter.write_frame()
 

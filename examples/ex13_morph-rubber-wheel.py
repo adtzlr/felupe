@@ -193,7 +193,7 @@ ax = umat.plot(
 )
 
 # %%
-# A mesh is created for the wheel with :math:`r=40` and :math:`R=100`.
+# A mesh is created for the wheel with :math:`r=40` mm and :math:`R=100` mm.
 mesh = fem.mesh.Line(a=40, b=100, n=6).revolve(37, phi=360)
 mesh.update(points=np.vstack([mesh.points, [0, -110]]))
 mesh.clear_points_without_cells()
@@ -203,7 +203,7 @@ x, y = mesh.points.T
 # A quad-region and a plane-strain displacement field are created. Mesh-points at
 # :math:`r` are added to the ``move``-boundary condition. The displacements due to the
 # rotation of the wheel are evaluated for each rotation angle. The center-point of
-# the bottom-edge is moved vertically upwards by ``20`` to enforce a vertical reaction
+# the bottom-edge is moved vertically upwards by 20 mm to enforce a vertical reaction
 # force in the rubber wheel.
 region = fem.RegionQuad(mesh)
 field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])

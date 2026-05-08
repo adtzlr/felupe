@@ -168,7 +168,7 @@ class AnimationWriterPlugin(Plugin):
                 font_size=10,
             )
 
-        if "GITHUB_ACTIONS" not in os.environ:
+        if "CI" not in os.environ:
             self.plotter.write_frame()
 
     def after_job(self, context, state):

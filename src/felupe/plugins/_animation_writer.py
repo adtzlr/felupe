@@ -43,6 +43,8 @@ class AnimationWriterPlugin(Plugin):
         Whether to reset the camera before each frame. Default is True.
     show_text : bool, optional
         Whether to show text on the plot. Default is True.
+    **kwargs : dict, optional
+        Additional keyword arguments to pass to the plot method of the items.
 
     Notes
     -----

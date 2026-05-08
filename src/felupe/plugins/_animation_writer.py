@@ -168,8 +168,7 @@ class AnimationWriterPlugin(Plugin):
                 font_size=10,
             )
 
-        if "CI" not in os.environ:
-            self.plotter.write_frame()
+        self.plotter.write_frame()
 
     def after_job(self, context, state):
         self._close_plotter()

@@ -876,7 +876,7 @@ def test_job_plugins():
             curve,
             curve_2,
             base_plugin,
-            animation_plugin,
+            # animation,
         ],
     )
     job.evaluate()

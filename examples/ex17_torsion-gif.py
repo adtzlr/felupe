@@ -35,7 +35,7 @@ boundaries = {
 }
 solid = fem.SolidBody(umat=fem.NeoHookeCompressible(mu=1, lmbda=2), field=field)
 
-angles_deg = fem.math.linsteps([0, -30, 0], num=10)
+angles_deg = fem.math.linsteps([0, -30, 0], num=5)
 move = []
 for phi in angles_deg:
     top = mesh.points[boundaries["top"].points]

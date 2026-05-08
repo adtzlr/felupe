@@ -45,7 +45,8 @@ top = fem.ContactRigidPlane(
     multiplier=10,  # increase contact normal multiplier
     multiplier_tangential=10,  # increase contact tangential multiplier
 )
-mesh.plot(nonlinear_subdivision=4, plotter=top.plot(line_width=5, opacity=1)).show()
+kwargs = dict(line_width=5, opacity=1, sym=(True, False), size=2)
+mesh.plot(nonlinear_subdivision=4, plotter=top.plot(**kwargs)).show()
 
 # %%
 # A step is used containts the solid body and the rigid top plate as items. The rigid
@@ -63,6 +64,6 @@ job = fem.Job(steps=[step]).evaluate()
 solid.plot(
     "Principal Values of Cauchy Stress",
     nonlinear_subdivision=4,
-    plotter=top.plot(line_width=5, opacity=1, sym=(True, False), size=2),
+    plotter=top.plot(**kwargs),
     project=partial(fem.project, mean=True),
 ).show()

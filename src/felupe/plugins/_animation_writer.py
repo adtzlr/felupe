@@ -154,8 +154,10 @@ class AnimationWriterPlugin(Plugin):
                 f"Step {1 + state.stepnumber}, Substep { 1 + state.substepnumber}",
             ]
 
-            mesh = self.plotter.meshes[-1]
-            name = mesh.active_scalars_name
+            for mesh in self.plotter.meshes:
+                name = mesh.active_scalars_name
+                if name is not None:
+                    break
 
             if name is not None:
                 text.append(f"Min. Value {mesh[name].min():.3e}")

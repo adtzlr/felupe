@@ -240,6 +240,7 @@ def test_mpc_isolated():
 
 def test_mpc_plot_2d():
     mesh = fem.Rectangle(n=3)
+    mesh.add_points([10, 10])
     field = fem.FieldContainer([fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2)])
 
     plane = fem.MultiPointContact(field, [], -1, skip=(0, 1))

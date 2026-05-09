@@ -519,6 +519,7 @@ def test_load():
 
         body = fem.SolidBody(umat, field)
 
+        load = fem.PointLoad(field, [], values=values, axisymmetric=axi)
         load = fem.PointLoad(field, mask, values=values, axisymmetric=axi)
         bounds = {"fix": fem.Boundary(field[0], fx=lambda x: x == 0)}
         dof0, dof1 = fem.dof.partition(field, bounds)

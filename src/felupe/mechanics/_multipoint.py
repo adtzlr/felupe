@@ -168,6 +168,9 @@ class MultiPointConstraint:
         self.axes = np.arange(self.mesh.dim)[self.mask]
         self.multiplier = multiplier
 
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
         if self.points.dtype == bool:
             self.points = np.where(self.points)[0]
 
@@ -387,6 +390,9 @@ class MultiPointContact:
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]
         self.multiplier = multiplier
+
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
 
         if self.points.dtype == bool:
             self.points = np.where(self.points)[0]

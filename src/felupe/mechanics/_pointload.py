@@ -68,6 +68,9 @@ class PointLoad:
         self.field = field
         self.points = np.array(points)
 
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
         if self.points.dtype == bool:
             self.points = np.where(self.points)[0]
 

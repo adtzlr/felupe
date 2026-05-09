@@ -241,6 +241,8 @@ def test_mpc_isolated():
 def test_mpc_plot_2d():
     mesh = fem.Rectangle(n=3)
     field = fem.FieldContainer([fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2)])
+
+    plane = fem.MultiPointContact(field, [], -1, skip=(0, 1))
     plane = fem.MultiPointContact(field, [0, 1], -1, skip=(0, 1))
 
     try:
@@ -249,6 +251,7 @@ def test_mpc_plot_2d():
     except ModuleNotFoundError:
         pass
 
+    mpc = fem.MultiPointConstraint(field, [], -1)
     mpc = fem.MultiPointConstraint(field, [0, 1], -1)
 
     try:

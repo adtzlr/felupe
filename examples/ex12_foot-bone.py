@@ -21,7 +21,10 @@ mesh = fem.mesh.read("ex12_foot-bones_mesh-voxels.vtu")[0]
 
 region = fem.RegionHexahedron(mesh, uniform=True)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
-boundaries = {"fixed": fem.Boundary(field[0], fx=lambda x: x <= -110)}
+boundaries = {
+    "fixed": fem.Boundary(field[0], fx=lambda x: x <= -110),
+    "fixed_plane": fem.Boundary(field[0], fz=mesh.z.min()),
+}
 
 umat = fem.LinearElastic(E=1000, nu=0.3)
 solid = fem.SolidBody(umat, field)

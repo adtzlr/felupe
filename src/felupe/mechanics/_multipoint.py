@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import warnings
+
 import numpy as np
 from scipy.sparse import eye, lil_matrix
 
@@ -160,11 +162,25 @@ class MultiPointConstraint:
     ):
         self.field = field
         self.mesh = field.region.mesh
-        self.points = np.asarray(points)
+        self.points = np.array(points)
         self.centerpoint = centerpoint
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]
         self.multiplier = multiplier
+
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
+        if self.points.dtype == bool:
+            self.points = np.where(self.points)[0]
+
+        if self.centerpoint < 0:
+            self.centerpoint = self.mesh.npoints + self.centerpoint
+
+        if self.centerpoint in self.mesh.points_without_cells:
+            self.mesh.points_without_cells = self.mesh.points_without_cells[
+                self.mesh.points_without_cells != self.centerpoint
+            ]
 
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
@@ -369,11 +385,25 @@ class MultiPointContact:
     ):
         self.field = field
         self.mesh = field.region.mesh
-        self.points = np.asarray(points)
+        self.points = np.array(points)
         self.centerpoint = centerpoint
         self.mask = ~np.array(skip, dtype=bool)[: self.mesh.dim]
         self.axes = np.arange(self.mesh.dim)[self.mask]
         self.multiplier = multiplier
+
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
+        if self.points.dtype == bool:
+            self.points = np.where(self.points)[0]
+
+        if self.centerpoint < 0:
+            self.centerpoint = self.mesh.npoints + self.centerpoint
+
+        if self.centerpoint in self.mesh.points_without_cells:
+            self.mesh.points_without_cells = self.mesh.points_without_cells[
+                self.mesh.points_without_cells != self.centerpoint
+            ]
 
         self.results = Results(stress=False, elasticity=False)
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)

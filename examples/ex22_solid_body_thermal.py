@@ -8,7 +8,7 @@ Thermal Analysis
      :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer`
 
    * evaluate the surface heat flux at internal and external boundaries
-     with a callback function
+     with a job :class:`~felupe.Plugin`
 
    * view the temperature field
 

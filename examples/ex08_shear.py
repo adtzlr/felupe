@@ -10,7 +10,7 @@ Non-homogeneous shear
 
    * assign a micro-sphere material formulation
 
-   * define a step and a job along with a callback-function
+   * define a step and a job along with a plugin to record force-displacement data
 
    * export and visualize principal stretches
 
@@ -26,9 +26,7 @@ with a compressive normal force :math:`F`.
 
 
 Let's create the mesh. An additional center-point is created for a multi-point
-constraint (MPC). By default, FElupe stores points not connected to any cells in
-:attr:`Mesh.points_without_cells` and adds them to the list of inactive
-degrees of freedom. Hence, we have to drop our MPC-centerpoint from that list.
+constraint (MPC).
 """
 
 # sphinx_gallery_thumbnail_number = -2
@@ -45,7 +43,6 @@ a = min(L / n, H / n)
 
 mesh = fem.Rectangle((0, 0), (L, H), n=(round(L / a), round(H / a)))
 mesh.add_points([L / 2, 1.3 * H])
-mesh.clear_points_without_cells()
 
 # %%
 # A numeric quad-region created on the mesh in combination with a vector-valued
@@ -54,7 +51,6 @@ mesh.clear_points_without_cells()
 # load case is applied on the displacement field. This involves setting up a y-symmetry
 # plane as well as the absolute value of the prescribed shear movement in direction
 # :math:`x` at the MPC-centerpoint.
-
 region = fem.RegionQuad(mesh)
 field = fem.FieldsMixed(region, n=3, planestrain=True)
 
@@ -70,7 +66,6 @@ dof0, dof1 = fem.dof.partition(field, boundaries)
 # as a :class:`~felupe.Hyperelastic` material. The material
 # formulation is finally applied on the plane-strain field, resulting in a hyperelastic
 # solid body.
-
 import felupe.constitution.tensortrax as mat
 
 # import felupe.constitution.jax as mat
@@ -90,11 +85,10 @@ rubber = fem.SolidBody(umat=fem.NearlyIncompressible(umat, bulk=5000), field=fie
 # At the centerpoint of a multi-point constraint (MPC) the external shear
 # movement is prescribed. It also ensures a force-free top plate in direction
 # :math:`y`.
-
 mpc = fem.MultiPointConstraint(
     field=field,
-    points=np.arange(mesh.npoints)[mesh.points[:, 1] == H],
-    centerpoint=mesh.npoints - 1,
+    points=mesh.points[:, 1] == H,
+    centerpoint=-1,
 )
 
 plotter = boundaries.plot()
@@ -137,7 +131,6 @@ res = job.evaluate()
 # :meth:`FieldContainer.evaluate.strain <felupe.field.EvaluateFieldContainer.strain>`-
 # method to return the principal stretches. For plotting, these values are projected
 # from quadrature-points to mesh-points.
-
 from felupe.math import dot, eigh, transpose
 
 F = field[0].extract()
@@ -160,7 +153,6 @@ plotter.show()
 # %%
 # The shear force :math:`F_x` vs. the displacements :math:`u_x` and :math:`u_y`, all
 # located at the top plate, are plotted.
-
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots(1, 2, sharey=True)

@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 import numpy as np
 import pytest
 
@@ -95,10 +96,10 @@ def pre_mpc_mixed(point, values):
     boundaries["move"] = fem.Boundary(fields[0], fx=f2, skip=(0, 1, 1), value=0.5)
 
     mpc = fem.Boundary(fields[0], fx=f1).points
-    cpoint = mesh.npoints - 1
+    cpoint = -1
 
-    RBE2 = fem.MultiPointConstraint(fields, points=mpc, centerpoint=cpoint)
-    CONT = fem.MultiPointContact(fields, points=mpc, centerpoint=cpoint)
+    RBE2 = fem.MultiPointConstraint(fields, points=f1(mesh.x), centerpoint=cpoint)
+    CONT = fem.MultiPointContact(fields, points=f1(mesh.x), centerpoint=cpoint)
 
     try:
         CONT.plot()

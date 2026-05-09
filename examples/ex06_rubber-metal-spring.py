@@ -33,7 +33,6 @@ import felupe as fem
 
 mesh = fem.mesh.read("ex06_rubber-metal-spring_mesh.vtk")[0]
 mesh.add_points([[0, 0, mesh.z.min()], [0, 0, mesh.z.max() + 1]])
-mesh.clear_points_without_cells()  # used for contact center-points
 
 mesh.plot().show()
 
@@ -68,8 +67,7 @@ solid = fem.SolidBody(umat, field)
 # the solid body are determined. Then, the center (control) point is defined by one of
 # the mesh points on the end faces in direction :math:`z`.
 surface = np.unique(fem.RegionHexahedronBoundary(mesh).mesh_faces().cells)
-mask = np.isin(np.arange(mesh.npoints), surface)
-points = np.where(mask)[0]
+points = np.isin(np.arange(mesh.npoints), surface)
 
 bottom = fem.ContactRigidPlane(
     field,

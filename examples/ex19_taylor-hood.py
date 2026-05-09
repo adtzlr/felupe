@@ -42,7 +42,7 @@ top = fem.ContactRigidPlane(
     items=[solid],
     friction=0.5,
     multiplier=10,  # increase contact normal multiplier
-    multiplier_tangential=1,  # increase contact tangential multiplier
+    multiplier_tangential=2,  # increase contact tangential multiplier
 )
 kwargs = dict(line_width=5, opacity=1, sym=(True, False), size=2)
 mesh.plot(nonlinear_subdivision=4, plotter=top.plot(**kwargs)).show()

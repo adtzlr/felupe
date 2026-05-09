@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file. The format 
 - Change `FieldContainer.plot()`: Add general `"Field"` name for plotting field values of non-vector valued fields, like the temperature in thermal problems. Only activate `warp_by_vector`, if the field is a vector-valued field with the same dimension as the mesh.
 - Clear the centerpoint of `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` from `mesh.points_without_cells`. Previously, this had to be done manually and is now checked when creating one of the above objects.
 - Allow mask-based `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
-
+- Allow empty list for `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

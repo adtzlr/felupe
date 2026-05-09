@@ -32,7 +32,7 @@ import pypardiso
 import felupe as fem
 
 mesh = fem.mesh.read("ex06_rubber-metal-spring_mesh.vtk")[0]
-mesh.add_points([[0, 0, mesh.z.min()], [0, 0, mesh.z.max() + 1]])
+mesh.add_points([[0, 0, mesh.z.min()], [0, 0, mesh.z.max() + 0.1]])
 
 mesh.plot().show()
 
@@ -49,7 +49,8 @@ region = fem.RegionHexahedron(mesh)
 field = fem.FieldContainer([fem.Field(region, dim=3)])
 
 boundaries = fem.dof.symmetry(field[0], axes=(0, 1, 0))
-boundaries["fixed"] = fem.Boundary(field[0], fz=mesh.z.max() - 1)
+boundaries["fixed-contact"] = fem.Boundary(field[0], fz=mesh.z.max())
+boundaries["fixed"] = fem.Boundary(field[0], fz=mesh.z.max() - 0.1)
 boundaries["move-x"] = fem.Boundary(field[0], fz=mesh.z.min(), skip=(0, 1, 1))
 boundaries["move-y"] = fem.Boundary(field[0], fz=mesh.z.min(), skip=(1, 0, 1))
 boundaries["move-z"] = fem.Boundary(field[0], fz=mesh.z.min(), skip=(1, 1, 0))

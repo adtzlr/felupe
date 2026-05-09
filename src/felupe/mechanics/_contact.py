@@ -375,8 +375,22 @@ class ContactRigidPlane(ContactPlane):
     ):
         self.field = field
         self.mesh = field.region.mesh
-        self.points = np.array(points, dtype=int)
+        self.points = np.array(points)
         self.centerpoint = centerpoint
+
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
+        if self.points.dtype == bool:
+            self.points = np.where(self.points)[0]
+
+        if self.centerpoint < 0:
+            self.centerpoint = self.mesh.npoints + self.centerpoint
+
+        if self.centerpoint in self.mesh.points_without_cells:
+            self.mesh.points_without_cells = self.mesh.points_without_cells[
+                self.mesh.points_without_cells != self.centerpoint
+            ]
 
         self.normal = np.array(normal, dtype=float)[: self.mesh.dim]
         self.normal /= np.linalg.norm(self.normal)

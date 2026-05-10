@@ -56,15 +56,8 @@ class MultiPointConstraint:
 
     Examples
     --------
-    This example shows how to use a :class:`~felupe.MultiPointConstraint`.
-
-    An additional center-point is added to a mesh. By default, all *hanging* points are
-    collected in the mesh-attribute
-    :attr:`Mesh.points_without_cells <felupe.Mesh.points_without_cells>`. The degrees of
-    freedom of these points are considered as fixed, i.e. they are ignored. The center-
-    point is not connected to any cell and is added to the points-without-cells array
-    on :meth:`Mesh.update <felupe.Mesh.update>`. Hence, center-point has to be removed
-    manually.
+    This example shows how to use a :class:`~felupe.MultiPointConstraint`. An
+    additional center-point is added to a mesh.
 
     ..  pyvista-plot::
         :context:
@@ -73,10 +66,7 @@ class MultiPointConstraint:
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Cube(n=3)
-        >>> mesh.update(points=np.vstack([mesh.points, [2.0, 0.5, 0.5]]))
-        >>>
-        >>> # prevent the field-values at the center-point to be treated as dof0
-        >>> mesh.points_without_cells = mesh.points_without_cells[:-1]
+        >>> mesh.add_points([2.0, 0.5, 0.5])
         >>>
         >>> region = fem.RegionHexahedron(mesh)
         >>> displacement = fem.Field(region, dim=3)
@@ -272,15 +262,8 @@ class MultiPointContact:
 
     Examples
     --------
-    This example shows how to use a :class:`~felupe.MultiPointContact`.
-
-    An additional center-point is added to a mesh. By default, all *hanging* points are
-    collected in the mesh-attribute
-    :attr:`Mesh.points_without_cells <felupe.Mesh.points_without_cells>`. The degrees of
-    freedom of these points are considered as fixed, i.e. they are ignored. The center-
-    point is not connected to any cell and is added to the points-without-cells array
-    on :meth:`Mesh.update <felupe.Mesh.update>`. Hence, center-point has to be removed
-    manually.
+    This example shows how to use a :class:`~felupe.MultiPointContact`. An additional
+    center-point is added to a mesh.
 
     ..  pyvista-plot::
         :context:
@@ -289,7 +272,7 @@ class MultiPointContact:
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Cube(n=3)
-        >>> mesh.update(points=np.vstack([mesh.points, [2.0, 0.5, 0.5]]))
+        >>> mesh.add_points([2.0, 0.5, 0.5])
         >>>
         >>> # prevent the field-values at the center-point to be treated as dof0
         >>> mesh.points_without_cells = mesh.points_without_cells[:-1]

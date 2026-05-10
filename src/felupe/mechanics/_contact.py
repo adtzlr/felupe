@@ -251,15 +251,8 @@ class ContactRigidPlane(ContactPlane):
 
     Examples
     --------
-    This example shows how to use a :class:`~felupe.ContactRigidPlane`.
-
-    An additional center-point is added to a mesh. By default, all *hanging* points are
-    collected in the mesh-attribute
-    :attr:`Mesh.points_without_cells <felupe.Mesh.points_without_cells>`. The degrees of
-    freedom of these points are considered as fixed, i.e. they are ignored. The center-
-    point is not connected to any cell and is added to the points-without-cells array
-    on :meth:`Mesh.update <felupe.Mesh.update>`. Hence, the center-point has to be
-    removed manually.
+    This example shows how to use a :class:`~felupe.ContactRigidPlane`. An additional
+    center-point is added to a mesh.
 
     ..  pyvista-plot::
         :context:
@@ -268,10 +261,7 @@ class ContactRigidPlane(ContactPlane):
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Cube(n=3)
-        >>> mesh.update(points=np.vstack([mesh.points, [2.0, 0.5, 0.5]]))
-        >>>
-        >>> # prevent the field-values at the center-point to be treated as dof0
-        >>> mesh.points_without_cells = mesh.points_without_cells[:-1]
+        >>> mesh.add_points([2.0, 0.5, 0.5])
         >>>
         >>> region = fem.RegionHexahedron(mesh)
         >>> displacement = fem.Field(region, dim=3)
@@ -375,8 +365,22 @@ class ContactRigidPlane(ContactPlane):
     ):
         self.field = field
         self.mesh = field.region.mesh
-        self.points = np.array(points, dtype=int)
+        self.points = np.array(points)
         self.centerpoint = centerpoint
+
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
+        if self.points.dtype == bool:
+            self.points = np.where(self.points)[0]
+
+        if self.centerpoint < 0:
+            self.centerpoint = self.mesh.npoints + self.centerpoint
+
+        if self.centerpoint in self.mesh.points_without_cells:
+            self.mesh.points_without_cells = self.mesh.points_without_cells[
+                self.mesh.points_without_cells != self.centerpoint
+            ]
 
         self.normal = np.array(normal, dtype=float)[: self.mesh.dim]
         self.normal /= np.linalg.norm(self.normal)

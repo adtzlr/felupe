@@ -195,8 +195,8 @@ ax = umat.plot(
 # %%
 # A mesh is created for the wheel with :math:`r=40` mm and :math:`R=100` mm.
 mesh = fem.mesh.Line(a=40, b=100, n=6).revolve(37, phi=360)
-mesh.update(points=np.vstack([mesh.points, [0, -110]]))
-mesh.clear_points_without_cells()
+mesh.add_points([0, -110])
+
 x, y = mesh.points.T
 
 # %%
@@ -242,7 +242,7 @@ bottom = fem.ContactRigidPlane(
     normal=(0, 1),
     friction=0.3,
     multiplier=40.0,
-    multiplier_tangential=4.0,
+    multiplier_tangential=1.0,
 )
 plotter = bottom.plot(color="black", line_width=2, opacity=1.0, size=800)
 mesh.plot(plotter=plotter).show()

@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 import numpy as np
 import pytest
 
@@ -55,10 +56,14 @@ def pre_contact_mixed(point, values):
     boundaries["move"] = fem.Boundary(fields[0], fx=f2, skip=(0, 1, 1), value=0.5)
 
     bnd = fem.Boundary(fields[0], fx=f1).points
-    cpoint = mesh.npoints - 1
+    cpoint = -1
 
     CONT = fem.ContactRigidPlane(
         fields, points=bnd, centerpoint=cpoint, normal=[1, 0, 0], friction=np.inf
+    )
+
+    CONT = fem.ContactRigidPlane(
+        fields, points=f1(mesh.x), centerpoint=cpoint, normal=[1, 0, 0], friction=np.inf
     )
 
     try:

@@ -8,7 +8,7 @@ Thermal Analysis
      :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer`
 
    * evaluate the surface heat flux at internal and external boundaries
-     with a callback function
+     with a job :class:`~felupe.Plugin`
 
    * view the temperature field
 
@@ -194,5 +194,4 @@ ax.set(xlim=(tmin, tmax), xlabel="time in h", ylabel=r"surface heat flux in W/m$
 # %%
 # A view on the temperature field at the end of the simulation period visualizes the
 # temperature distribution.
-view = mesh.view(point_data={"Field": temperature.values})
-view.plot("Field", scalar_bar_vertical=True).show()
+field.plot("Field", scalar_bar_vertical=True).show()

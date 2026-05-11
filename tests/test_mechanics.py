@@ -870,7 +870,10 @@ def test_job_plugins():
     )
 
     animation_plugin = fem.AnimationWriterPlugin(
-        [solid], filename="result.mp4", name="Principal Values of Cauchy Stress", off_screen=True
+        [solid],
+        filename="result.mp4",
+        name="Principal Values of Cauchy Stress",
+        off_screen=True,
     )
 
     job = fem.Job(

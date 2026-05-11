@@ -114,6 +114,20 @@ class AnimationWriterPlugin(Plugin):
         self.plotter = None
         self.write_frame = False
 
+    def _close_plotter(self):
+        if self.plotter is not None:
+            self.plotter.close()
+            self.plotter = None
+
+    def before_job(self, context, state):
+        self.plotter = self.kwargs.pop("plotter", None)
+
+        for item in self.items:
+            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
+
+        if self.zoom_camera != 1.0:
+            self.plotter.camera.zoom(self.zoom_camera)
+
         if self.filename is not None:
 
             _, extension = os.path.splitext(self.filename)
@@ -131,20 +145,6 @@ class AnimationWriterPlugin(Plugin):
 
             else:
                 raise TypeError('File extension must be either ".gif" or ".mp4".')
-
-    def _close_plotter(self):
-        if self.plotter is not None:
-            self.plotter.close()
-            self.plotter = None
-
-    def before_job(self, context, state):
-        self.plotter = self.kwargs.pop("plotter", None)
-
-        for item in self.items:
-            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
-
-        if self.zoom_camera != 1.0:
-            self.plotter.camera.zoom(self.zoom_camera)
 
     def after_iteration(self, context, state):
         if state.error:

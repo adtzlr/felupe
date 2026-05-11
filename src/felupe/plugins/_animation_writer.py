@@ -29,9 +29,10 @@ class AnimationWriterPlugin(Plugin):
     ----------
     items : list
         The items to plot.
-    filename : str, optional
+    filename : str or None, optional
         The filename of the animation file. Default is "animation.gif". Supported
-        formats are GIF and MP4 (or any other format supported by PyVista).
+        formats are GIF and MP4 (or any other format supported by PyVista). If None, no
+        animation file will be written. Default is "animation.gif".
     framerate : int, optional
         The framerate of the animation. Default is 5.
     quality : int, optional
@@ -43,6 +44,9 @@ class AnimationWriterPlugin(Plugin):
         Whether to reset the camera before each frame. Default is True.
     show_text : bool, optional
         Whether to show text on the plot. Default is True.
+    take_screenshots : bool or None, optional
+        Whether to take screenshots for all substeps per step. If True, the screenshots
+        will be saved in the "figures" folder. Default is False.
     **kwargs : dict, optional
         Additional keyword arguments to pass to the plot method of the items.
 
@@ -94,6 +98,7 @@ class AnimationWriterPlugin(Plugin):
         zoom_camera=1.0,
         reset_camera=True,
         show_text=True,
+        take_screenshots=False,
         **kwargs,
     ):
         self.items = items
@@ -103,9 +108,11 @@ class AnimationWriterPlugin(Plugin):
         self.zoom_camera = zoom_camera
         self.reset_camera = reset_camera
         self.show_text = show_text
+        self.take_screenshots = take_screenshots
         self.kwargs = kwargs
 
         self.plotter = None
+        self.write_frame = False
 
     def _close_plotter(self):
         if self.plotter is not None:
@@ -121,56 +128,71 @@ class AnimationWriterPlugin(Plugin):
         if self.zoom_camera != 1.0:
             self.plotter.camera.zoom(self.zoom_camera)
 
-        extension = self.filename.split(".")[-1]
+        if self.filename is not None:
 
-        if extension == "gif":
-            self.plotter.open_gif(self.filename, fps=self.framerate)
+            _, extension = os.path.splitext(self.filename)
+            if extension == ".gif":
+                self.write_frame = True
+                self.plotter.open_gif(self.filename, fps=self.framerate)
 
-        else:  # "mp4" or any other supported movie format
-            self.plotter.open_movie(
-                self.filename,
-                framerate=self.framerate,
-                quality=self.quality,
-            )
+            elif extension == ".mp4":
+                self.write_frame = True
+                self.plotter.open_movie(
+                    self.filename,
+                    framerate=self.framerate,
+                    quality=self.quality,
+                )
+
+            else:
+                raise TypeError('File extension must be either ".gif" or ".mp4".')
 
     def after_iteration(self, context, state):
         if state.error:
             self._close_plotter()
 
-    def after_substep(self, context, state):  # pragma: no cover
-        self.plotter.clear_actors()  # pragma: no cover
+    def after_substep(self, context, state):
+        self.plotter.clear_actors()
 
-        for item in self.items:  # pragma: no cover
-            self.plotter = item.plot(  # pragma: no cover
-                plotter=self.plotter, **self.kwargs  # pragma: no cover
-            )  # pragma: no cover
+        for item in self.items:
+            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
 
-        if self.reset_camera:  # pragma: no cover
-            self.plotter.reset_camera()  # pragma: no cover
+        if self.reset_camera:
+            self.plotter.reset_camera()
 
-            if self.zoom_camera != 1.0:  # pragma: no cover
-                self.plotter.camera.zoom(self.zoom_camera)  # pragma: no cover
+            if self.zoom_camera != 1.0:
+                self.plotter.camera.zoom(self.zoom_camera)
 
-        if self.show_text:  # pragma: no cover
+        if self.show_text:
 
-            text = [  # pragma: no cover
-                f"FElupe {version}",  # pragma: no cover
-                f"Step {1 + state.stepnumber}"  # pragma: no cover
-                f"Substep { 1 + state.substepnumber}",  # pragma: no cover
-            ]  # pragma: no cover
+            text = [
+                f"FElupe {version}",
+                f"Step {1 + state.stepnumber}, Substep { 1 + state.substepnumber}",
+            ]
 
-            for mesh in self.plotter.meshes:  # pragma: no cover
-                name = mesh.active_scalars_name  # pragma: no cover
-                if name is not None:  # pragma: no cover
-                    break  # pragma: no cover
+            for mesh in self.plotter.meshes:
+                name = mesh.active_scalars_name
+                if name is not None:
+                    break
 
-            if name is not None:  # pragma: no cover
-                text.append(f"Min. Value {mesh[name].min():.3e}")  # pragma: no cover
-                text.append(f"Max. Value {mesh[name].max():.3e}")  # pragma: no cover
+            if name is not None:
+                text.append(f"Min. Value {mesh[name].min():.3e}")
+                text.append(f"Max. Value {mesh[name].max():.3e}")
 
-            self.plotter.add_text("\n".join(text), font_size=10)  # pragma: no cover
+            self.plotter.add_text("\n".join(text), font_size=10)
 
-        self.plotter.write_frame()  # pragma: no cover
+        if self.write_frame:
+            self.plotter.write_frame()
+
+        if self.take_screenshots:
+            path = "figures/"
+            os.makedirs(path, exist_ok=True)
+
+            _ = self.plotter.screenshot(
+                path
+                + f"step-{(1 + state.stepnumber):02d}_"
+                + f"substep-{(1 + state.substepnumber):03d}"
+                + ".png"
+            )
 
     def after_job(self, context, state):
         self._close_plotter()

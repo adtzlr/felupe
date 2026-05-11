@@ -117,11 +117,11 @@ class AnimationWriterPlugin(Plugin):
         if self.filename is not None:
 
             _, extension = os.path.splitext(self.filename)
-            if extension == "gif":
+            if extension == ".gif":
                 self.write_frame = True
                 self.plotter.open_gif(self.filename, fps=self.framerate)
 
-            elif extension == "mp4":
+            elif extension == ".mp4":
                 self.write_frame = True
                 self.plotter.open_movie(
                     self.filename,

@@ -29,10 +29,9 @@ class AnimationWriterPlugin(Plugin):
     ----------
     items : list
         The items to plot.
-    filename : str or None, optional
+    filename : str, optional
         The filename of the animation file. Default is "animation.gif". Supported
-        formats are GIF and MP4 (or any other format supported by PyVista). If None, no
-        animation file will be written. Default is "animation.gif".
+        formats are GIF and MP4 (or any other format supported by PyVista).
     framerate : int, optional
         The framerate of the animation. Default is 5.
     quality : int, optional
@@ -44,9 +43,6 @@ class AnimationWriterPlugin(Plugin):
         Whether to reset the camera before each frame. Default is True.
     show_text : bool, optional
         Whether to show text on the plot. Default is True.
-    take_screenshots : bool or None, optional
-        Whether to take screenshots for all substeps per step. If True, the screenshots
-        will be saved in the "figures" folder. Default is False.
     **kwargs : dict, optional
         Additional keyword arguments to pass to the plot method of the items.
 
@@ -98,7 +94,6 @@ class AnimationWriterPlugin(Plugin):
         zoom_camera=1.0,
         reset_camera=True,
         show_text=True,
-        take_screenshots=False,
         **kwargs,
     ):
         self.items = items
@@ -108,29 +103,9 @@ class AnimationWriterPlugin(Plugin):
         self.zoom_camera = zoom_camera
         self.reset_camera = reset_camera
         self.show_text = show_text
-        self.take_screenshots = take_screenshots
         self.kwargs = kwargs
 
         self.plotter = None
-        self.write_frame = False
-
-        if self.filename is not None:
-
-            _, extension = os.path.splitext(self.filename)
-            if extension == "gif":
-                self.write_frame = True
-                self.plotter.open_gif(self.filename, fps=self.framerate)
-
-            elif extension == "mp4":
-                self.write_frame = True
-                self.plotter.open_movie(
-                    self.filename,
-                    framerate=self.framerate,
-                    quality=self.quality,
-                )
-
-            else:
-                raise TypeError('File extension must be either ".gif" or ".mp4".')
 
     def _close_plotter(self):
         if self.plotter is not None:
@@ -145,6 +120,18 @@ class AnimationWriterPlugin(Plugin):
 
         if self.zoom_camera != 1.0:
             self.plotter.camera.zoom(self.zoom_camera)
+
+        extension = self.filename.split(".")[-1]
+
+        if extension == "gif":
+            self.plotter.open_gif(self.filename, fps=self.framerate)
+
+        else:  # "mp4" or any other supported movie format
+            self.plotter.open_movie(
+                self.filename,
+                framerate=self.framerate,
+                quality=self.quality,
+            )
 
     def after_iteration(self, context, state):
         if state.error:
@@ -180,19 +167,7 @@ class AnimationWriterPlugin(Plugin):
 
             self.plotter.add_text("\n".join(text), font_size=10)
 
-        if self.write_frame:
-            self.plotter.write_frame()
-
-        if self.take_screenshots:
-            path = "figures/"
-            os.makedirs(path, exist_ok=True)
-
-            _ = self.plotter.screenshot(
-                path
-                + f"step-{(1 + state.stepnumber):02d}_"
-                + f"substep-{(1 + state.substepnumber):03d}"
-                + ".png"
-            )
+        self.plotter.write_frame()
 
     def after_job(self, context, state):
         self._close_plotter()

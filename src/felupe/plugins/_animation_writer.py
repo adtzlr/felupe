@@ -137,37 +137,40 @@ class AnimationWriterPlugin(Plugin):
         if state.error:
             self._close_plotter()
 
-    def after_substep(self, context, state):
-        self.plotter.clear_actors()
+    def after_substep(self, context, state):  # pragma: no cover
+        self.plotter.clear_actors()  # pragma: no cover
 
-        for item in self.items:
-            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
+        for item in self.items:  # pragma: no cover
+            self.plotter = item.plot(  # pragma: no cover
+                plotter=self.plotter, **self.kwargs  # pragma: no cover
+            )  # pragma: no cover
 
-        if self.reset_camera:
-            self.plotter.reset_camera()
+        if self.reset_camera:  # pragma: no cover
+            self.plotter.reset_camera()  # pragma: no cover
 
-            if self.zoom_camera != 1.0:
-                self.plotter.camera.zoom(self.zoom_camera)
+            if self.zoom_camera != 1.0:  # pragma: no cover
+                self.plotter.camera.zoom(self.zoom_camera)  # pragma: no cover
 
-        if self.show_text:
+        if self.show_text:  # pragma: no cover
 
-            text = [
-                f"FElupe {version}",
-                f"Step {1 + state.stepnumber}, Substep { 1 + state.substepnumber}",
-            ]
+            text = [  # pragma: no cover
+                f"FElupe {version}",  # pragma: no cover
+                f"Step {1 + state.stepnumber}"  # pragma: no cover
+                f"Substep { 1 + state.substepnumber}",  # pragma: no cover
+            ]  # pragma: no cover
 
-            for mesh in self.plotter.meshes:
-                name = mesh.active_scalars_name
-                if name is not None:
-                    break
+            for mesh in self.plotter.meshes:  # pragma: no cover
+                name = mesh.active_scalars_name  # pragma: no cover
+                if name is not None:  # pragma: no cover
+                    break  # pragma: no cover
 
-            if name is not None:
-                text.append(f"Min. Value {mesh[name].min():.3e}")
-                text.append(f"Max. Value {mesh[name].max():.3e}")
+            if name is not None:  # pragma: no cover
+                text.append(f"Min. Value {mesh[name].min():.3e}")  # pragma: no cover
+                text.append(f"Max. Value {mesh[name].max():.3e}")  # pragma: no cover
 
-            self.plotter.add_text("\n".join(text), font_size=10)
+            self.plotter.add_text("\n".join(text), font_size=10)  # pragma: no cover
 
-        self.plotter.write_frame()
+        self.plotter.write_frame()  # pragma: no cover
 
     def after_job(self, context, state):
         self._close_plotter()

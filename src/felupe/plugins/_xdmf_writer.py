@@ -15,11 +15,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import warnings
 
 from ..math import deformation_gradient as defgrad
 from ..math import displacement as disp
+from ..mesh import Mesh
 from ..region import RegionVertex
 from ._plugin import Plugin
 
@@ -118,6 +118,9 @@ class XDMFWriterPlugin(Plugin):
                     self.mesh = (
                         context.job.steps[0].items[0].field.region.mesh.as_meshio()
                     )
+
+            if isinstance(self.mesh, Mesh):
+                self.mesh = self.mesh.as_meshio()
 
             self.pdata = {}
             self.cdata = {}

@@ -148,6 +148,7 @@ air_temperature = fem.math.linsteps([15, 25], num=n_steps)
 ramp = {
     time: 18000 * table,  # five hours
     convection_function["temperature"]: air_temperature,
+    convection_function["convection_coefficient"]: air_temperature,
 }
 
 step = fem.Step(

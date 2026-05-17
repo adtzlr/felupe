@@ -235,17 +235,18 @@ class SolidBodySurfaceConvection:
 
     def update(self, temperature):
         self._update_temperature(temperature)
-        self._update_convection_coefficient()  # adapt hc using cur. temp.
+        self._update_convection_coefficient(temperature)  # adapt hc using cur. temp.
 
     def _update_temperature(self, temperature):
         self.results.temperature = temperature
 
-    def _update_convection_coefficient(self):
+    def _update_convection_coefficient(self, temperature):
         if callable(self.convection_coefficient):
             self.results.convection_coefficient =\
                 self.convection_coefficient(
                     self.field.extract(grad=False)[0],  # ts
-                    self.results.temperature  # tamb
+                    # self.results.temperature  # tamb
+                    temperature  # tamb
                 )
         else:
             self.results.convection_coefficient = self.convection_coefficient

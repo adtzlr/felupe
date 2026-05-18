@@ -151,7 +151,7 @@ class SolidBodySurfaceConvection:
         >>> air_temperature = fem.math.linsteps([15, 25], num=10)
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
-        ...     convection_constant["temperature"]: air_temperature,
+        ...     convection_constant: air_temperature,
         ... }
         >>> step = fem.Step(
         ...     items=[time, solid, convection_constant], ramp=ramp, boundaries=boundaries
@@ -170,7 +170,7 @@ class SolidBodySurfaceConvection:
 
         >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
         ...     field=field_convection,
-        ...     convection_coefficient=hc_fun(30, 20),
+        ...     convection_coefficient=hc_fun,
         ...     temperature=20.0,  # °C
         ... )
         >>> time = fem.thermal.TimeStep([solid])
@@ -178,9 +178,9 @@ class SolidBodySurfaceConvection:
         >>> air_temperature = fem.math.linsteps([15, 25], num=10)
         >>> ramp = {
         ...     time: 18000 * table,  # five hours
-        ...     convection_function["temperature"]: air_temperature,
+        ...     convection_function: air_temperature,
         ... }
-    
+
     ... and run.
 
     ..  pyvista-plot::
@@ -235,18 +235,17 @@ class SolidBodySurfaceConvection:
 
     def update(self, temperature):
         self._update_temperature(temperature)
-        self._update_convection_coefficient(temperature)  # adapt hc using cur. temp.
+        self._update_convection_coefficient()  # adapt hc using cur. temp.
 
     def _update_temperature(self, temperature):
         self.results.temperature = temperature
 
-    def _update_convection_coefficient(self, temperature):
+    def _update_convection_coefficient(self):
         if callable(self.convection_coefficient):
             self.results.convection_coefficient =\
                 self.convection_coefficient(
                     self.field.extract(grad=False)[0],  # ts
-                    # self.results.temperature  # tamb
-                    temperature  # tamb
+                    self.results.temperature  # tamb
                 )
         else:
             self.results.convection_coefficient = self.convection_coefficient

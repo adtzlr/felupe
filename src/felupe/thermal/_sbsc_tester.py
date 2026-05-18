@@ -3,6 +3,7 @@
 Tester version for _solid_body_surface_convection.py example case.
 """
 import math
+import numpy as np
 
 from pyfluids import HumidAir, InputHumidAir
 from scipy.constants import g
@@ -24,6 +25,7 @@ def pyfluids_units():
     return dt_, rh_
 
 
+@np.vectorize
 def rayleigh(ts_c, ti_c, length_, rh=10):
     """
     Calculate dimensionless Rayleigh number Ra.
@@ -49,6 +51,7 @@ def rayleigh(ts_c, ti_c, length_, rh=10):
 
     return ra
 
+@np.vectorize
 def nusselt_horizontal(ra, pr, hflux='z+'):
     """
     Calculate dimensionless Nusselt number Nu for horizontal plates for various
@@ -73,6 +76,7 @@ def nusselt_horizontal(ra, pr, hflux='z+'):
     return nu
 
 
+@np.vectorize
 def hc_fun(ts, tamb):
     """
     Calculate convection coefficient for horizontal plate.
@@ -120,7 +124,7 @@ solid = fem.thermal.SolidBodyThermal(
 
 convection_function = fem.thermal.SolidBodySurfaceConvection(
     field=field_convection,
-    convection_coefficient=hc_fun(30, 20),
+    convection_coefficient=hc_fun, #(30, 20),
     temperature=20.0,  # °C
 )
 
@@ -135,8 +139,9 @@ def callback(stepnumber, substepnumber, substep, tstep_data):
     tstep_data["qc_top.W.m-2"].append(qc)
     tstep_data["tamb.degC"].append(tamb)
     tstep_data["ts_top.degC"].append(ts)
-    tstep_data["hc_top.W.m-2.K-1"].append(convection_function.results.convection_coefficient)
-    tstep_data["hc_fun_top.W.m-2.K-1"].append(hc_fun(ts, tamb))
+    tstep_data["hc_top.W.m-2.K-1"].append(
+        convection_function.results.convection_coefficient.mean())
+    tstep_data["hc_fun_top.W.m-2.K-1"].append(hc_fun(ts, tamb).mean())
     tstep_data["hc_calc_top.W.m-2.K-1"].append(abs(qc/(ts-tamb)))
 
 
@@ -147,8 +152,7 @@ air_temperature = fem.math.linsteps([15, 25], num=n_steps)
 
 ramp = {
     time: 18000 * table,  # five hours
-    convection_function["temperature"]: air_temperature,
-    convection_function["convection_coefficient"]: air_temperature,
+    convection_function: air_temperature,
 }
 
 step = fem.Step(

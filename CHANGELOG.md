@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file. The format 
 - Clear the centerpoint of `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` from `mesh.points_without_cells`. Previously, this had to be done manually and is now checked when creating one of the above objects.
 - Allow mask-based `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
 - Allow empty list for `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
+- Auto-apply `Mesh.as_meshio()` in `Job.evaluate(filename="result.xdmf", mesh=my_mesh)`, if `mesh` is an instance of `Mesh`. Previously, this required a `meshio.Mesh`.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

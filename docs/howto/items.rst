@@ -70,9 +70,30 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
             self._update_my_parameter(my_parameter)
         
         def _update_my_parameter(self, my_parameter):
+            """Used for ramping the parameter ``my_parameter``. This method is called
+            if the key ``MyItem["my_parameter"]`` is given in the ``ramp``-dict.
+
+            ..  code-block:: python
+
+                my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
+                ramp = dict(my_item["my_parameter"]=my_parameter_value)
+                step = fem.Step(items=[my_item], ramp=ramp)
+
+            """
             self.results.my_parameter = my_parameter
         
         def _update_my_other_parameter(self, my_other_parameter):
+            """Used for ramping the parameter ``my_other_parameter``. This method is
+            called if the key ``MyItem["my_other_parameter"]`` is given in the
+            ``ramp``-dict.
+
+            ..  code-block:: python
+
+                my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
+                ramp = dict(my_item["my_other_parameter"]=my_other_parameter_value)
+                step = fem.Step(items=[my_item], ramp=ramp)
+
+            """
             self.results.my_other_parameter = my_other_parameter
 
         def _vector(self, field=None, **kwargs):

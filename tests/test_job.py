@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 import os
 
 import numpy as np
@@ -135,7 +136,7 @@ def test_job_xdmf_vertex():
     job = fem.Job(steps=[step])
 
     with pytest.warns(UserWarning):
-        job.evaluate(x0=field, filename="result.xdmf")
+        job.evaluate(x0=field, filename="result.xdmf", mesh=container.meshes[0])
 
 
 def test_curve():

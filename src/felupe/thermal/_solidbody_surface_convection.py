@@ -85,10 +85,12 @@ class SolidBodySurfaceConvection:
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> import math
+        >>> import numpy as np
         >>>
-        >>> def hc_fun(ts, tamb):
+        >>> def _hc_fun(ts, tamb):
         ...     l = 0.25  # slab 1 x 1 m^2
         ...     alpha = 2.25E-05 # m^2/s, air at 300 K
         ...     lam_air = 0.0263  # W/(m K), air at 300 K
@@ -102,11 +104,13 @@ class SolidBodySurfaceConvection:
         ...     else:
         ...         nu = 0.15 * math.pow(1E11, 0.33)
         ...     return(nu*lam_air/l)
+        >>> hc_fun = np.vectorize(_hc_fun)
 
     Set up the model (a horizontal slab with dimensions 1 x 1 m^2, 0.25 m thick).
-    
+
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> import felupe as fem
         >>> import numpy as np
@@ -160,13 +164,14 @@ class SolidBodySurfaceConvection:
         >>>
         >>> mesh.view(
         ...     point_data={"Temperature in °C": temperature.values}
-        ... ).plot("Temperature in °C").show()
+        ... ).plot("Temperature in °C", off_screen=True).show()
 
     And now set up convection to use the function for :math:`h_c` defined above
     using the same air temperature boundary conditions ...
 
     ..  pyvista-plot::
         :context:
+        :force_static:
 
         >>> convection_function = fem.thermal.SolidBodySurfaceConvection(
         ...     field=field_convection,
@@ -193,8 +198,8 @@ class SolidBodySurfaceConvection:
         >>> job = fem.Job(steps=[step]).evaluate(verbose=False)
         >>>
         >>> mesh.view(
-        ...     point_data={"Temperature 2 in °C": temperature.values}
-        ... ).plot("Temperature 2 in °C").show()
+        ...     point_data={"Temperature hc_fun() in °C": temperature.values}
+        ... ).plot("Temperature hc_fun() in °C", off_screen=True).show()
 
     References
     ----------

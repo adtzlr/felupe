@@ -184,20 +184,21 @@ host.set_xlabel("Time (s)")
 host.set_ylabel("Convection coefficient (W/(m2 K))")
 par.set_ylabel("Temperature (°C)")
 
-p1, = host.plot(tstep_data["tstep.s"],
-                tstep_data["hc_top.W.m-2.K-1"],
+p1, = host.plot(tstep_data["tstep.s"], tstep_data["hc_top.W.m-2.K-1"],
                 label="hc")
-p2, = par.plot(tstep_data["tstep.s"],
-               tstep_data["tamb.degC"],
+p2, = host.plot(tstep_data["tstep.s"], tstep_data["hc_fun_top.W.m-2.K-1"],
+                label="hc_fun(ts - tamb)")
+p3, = host.plot(tstep_data["tstep.s"], tstep_data["hc_calc_top.W.m-2.K-1"],
+                label="hc from q")
+p4, = par.plot(tstep_data["tstep.s"], tstep_data["tamb.degC"],
                label="t_amb")
-p3, = par.plot(tstep_data["tstep.s"],
-               tstep_data["ts_top.degC"],
+p5, = par.plot(tstep_data["tstep.s"], tstep_data["ts_top.degC"],
                label="ts_top")
-p3.set_color(p2.get_color())
+# p3.set_color(p2.get_color())
 
 host.legend(labelcolor="linecolor")
 
-host.yaxis.label.set_color(p1.get_color())
-par.yaxis.label.set_color(p2.get_color())
+# host.yaxis.label.set_color(p1.get_color())
+# par.yaxis.label.set_color(p2.get_color())
 
 plt.savefig("_test.png")

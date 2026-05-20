@@ -173,10 +173,31 @@ job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
 # ).plot("Temperature 2 in °C").show()
 
 # Plot h_c / surface temp. / air temp. vs. time.
-# https://felupe.readthedocs.io/en/latest/examples/ex21_nonlinear-truss-analysis.html
-# fig, ax = plt.subplots()
-# ax.plot(*X[:, [0, -1]].T, ".-", label="Point 3")
-# ax.plot(*X[:, [3, -1]].T, ".-", label="Point 4")
-# ax.set_xlabel("Displacement X")
-# ax.set_ylabel("LPF")
-# ax.legend()
+# https://matplotlib.org/stable/gallery/axes_grid1/parasite_simple.html
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import host_subplot
+
+host = host_subplot(111)
+par = host.twinx()
+
+host.set_xlabel("Time (s)")
+host.set_ylabel("Convection coefficient (W/(m2 K))")
+par.set_ylabel("Temperature (°C)")
+
+p1, = host.plot(tstep_data["tstep.s"],
+                tstep_data["hc_top.W.m-2.K-1"],
+                label="hc")
+p2, = par.plot(tstep_data["tstep.s"],
+               tstep_data["tamb.degC"],
+               label="t_amb")
+p3, = par.plot(tstep_data["tstep.s"],
+               tstep_data["ts_top.degC"],
+               label="ts_top")
+p3.set_color(p2.get_color())
+
+host.legend(labelcolor="linecolor")
+
+host.yaxis.label.set_color(p1.get_color())
+par.yaxis.label.set_color(p2.get_color())
+
+plt.savefig("_test.png")

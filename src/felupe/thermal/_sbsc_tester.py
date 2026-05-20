@@ -171,3 +171,12 @@ job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
 # mesh.view(
 #     point_data={"Temperature 2 in °C": temperature.values}
 # ).plot("Temperature 2 in °C").show()
+
+# Plot h_c / surface temp. / air temp. vs. time.
+# https://felupe.readthedocs.io/en/latest/examples/ex21_nonlinear-truss-analysis.html
+# fig, ax = plt.subplots()
+# ax.plot(*X[:, [0, -1]].T, ".-", label="Point 3")
+# ax.plot(*X[:, [3, -1]].T, ".-", label="Point 4")
+# ax.set_xlabel("Displacement X")
+# ax.set_ylabel("LPF")
+# ax.legend()

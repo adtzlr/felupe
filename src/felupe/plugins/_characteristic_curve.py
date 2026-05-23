@@ -105,6 +105,90 @@ class CharacteristicCurvePlugin(Plugin):
         self.y.append(force(context.substep.x, fun, self.boundary))
         self.res = context.substep
 
+    def to_arrays(
+        self,
+        x=None,
+        y=None,
+        xaxis=0,
+        yaxis=0,
+        xscale=1.0,
+        yscale=1.0,
+        xoffset=0.0,
+        yoffset=0.0,
+        gradient=False,
+        items=None,
+    ):
+        """Return force-displacement characteristic curves on a pre-evaluated job,
+        tracked on a given :class:`~felupe.Boundary` as arrays.
+
+        Parameters
+        ----------
+        x : list of ndarray or None, optional
+            A list with arrays of displacement data. If None, the displacement is taken
+            from the first field of the field container from each completed substep. The
+            displacement data is then taken from the first point of the tracked
+            :class:`~felupe.Boundary`. Default is None.
+        y : list of ndarray or None, optional
+            A list with arrays of reaction force data. If None, the force is taken
+            from the :class:`~felupe.tools.NewtonResult` of each completed substep.
+            Default is None.
+        xaxis : int, optional
+            The axis for the displacement data (default is 0).
+        yaxis : int, optional
+            The axis for the reaction force data (default is 0).
+        xscale : float, optional
+            A scaling factor for the displacement data (default is 1.0).
+        yscale : float, optional
+            A scaling factor the reaction force data (default is 1.0).
+        xoffset : float, optional
+            An offset for the displacement data (default is 0.0).
+        yoffset : float, optional
+            An offset for the reaction force data (default is 0.0).
+        gradient : bool, optional
+            A flag to plot the gradient of the y-data. Uses
+            ``numpy.gradient(edge_order=2)``. The gradient data is set to ``np.nan`` for
+            absolute values greater than the mean value plus two times the standard
+            deviation. Default is False.
+        items : slice, ndarray or None
+            Indices or a range of data points to plot. If None, all data points are
+            plotted (default is None).
+
+        Returns
+        -------
+        x : ndarray
+            The final x-data.
+        y : ndarray
+            The final y-data.
+
+        """
+
+        if self.res is None:
+            raise ValueError(
+                "Results are empty. Run `job.evaluate()` and call `job.plot()` again."
+            )
+
+        if x is None:
+            x = self.x
+        if y is None:
+            y = self.y
+
+        if items is None:
+            items = slice(None)
+
+        x = np.array(x)[items]
+        y = np.array(y)[items]
+
+        if gradient:
+            y = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
+            z = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
+            cuttoff = np.mean(abs(z[:, yaxis])) + 2 * np.std(abs(z[:, yaxis]))
+            y[abs(z) > cuttoff] = np.nan
+
+        x_final = xoffset + x[:, xaxis] * xscale
+        y_final = yoffset + y[:, yaxis] * yscale
+
+        return x_final, y_final
+
     def plot(
         self,
         x=None,
@@ -177,29 +261,20 @@ class CharacteristicCurvePlugin(Plugin):
 
         """
 
-        if self.res is None:
-            raise ValueError(
-                "Results are empty. Run `job.evaluate()` and call `job.plot()` again."
-            )
+        x, y = self.to_arrays(
+            x=x,
+            y=y,
+            xaxis=xaxis,
+            yaxis=yaxis,
+            xscale=xscale,
+            yscale=yscale,
+            xoffset=xoffset,
+            yoffset=yoffset,
+            gradient=gradient,
+            items=items,
+        )
 
         import matplotlib.pyplot as plt
-
-        if x is None:
-            x = self.x
-        if y is None:
-            y = self.y
-
-        if items is None:
-            items = slice(None)
-
-        x = np.array(x)[items]
-        y = np.array(y)[items]
-
-        if gradient:
-            y = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
-            z = np.gradient(y, x[:, xaxis], edge_order=2, axis=0)
-            cuttoff = np.mean(abs(z[:, yaxis])) + 2 * np.std(abs(z[:, yaxis]))
-            y[abs(z) > cuttoff] = np.nan
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -212,9 +287,7 @@ class CharacteristicCurvePlugin(Plugin):
             xaxis, yaxis = yaxis, xaxis
             xscale, yscale = yscale, xscale
 
-        ax.plot(
-            xoffset + x[:, xaxis] * xscale, yoffset + y[:, yaxis] * yscale, **kwargs
-        )
+        ax.plot(x, y, **kwargs)
 
         if xlabel is not None:
             ax.set_xlabel(xlabel)

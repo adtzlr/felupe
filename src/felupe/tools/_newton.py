@@ -466,6 +466,11 @@ def newtonraphson(
 
         dispatcher.trigger("after_linear_solve", context, state)
 
+        if np.any(np.isnan(dx)):
+            raise ValueError(
+                "Solution contains NaN values. Newton-Raphson method failed."
+            )
+
         x = update(x, dx)
 
         if items is not None:
@@ -501,9 +506,6 @@ def newtonraphson(
 
         if success:
             break
-
-        if isnan:
-            raise ValueError("Norm of unknowns is NaN.")
 
     if abort:
         raise ValueError("Maximum number of iterations reached (not converged).\n")

@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file. The format 
 - Allow empty list for `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
 - Auto-apply `Mesh.as_meshio()` in `Job.evaluate(filename="result.xdmf", mesh=my_mesh)`, if `mesh` is an instance of `Mesh`. Previously, this required a `meshio.Mesh`.
 - Change the description of the package from a simple Python package to an open finite element infrastructure for nonlinear computational mechanics. This should focus on the project's vision more clearly.
+- Return the last converged result if `newtonraphson()` leads to NaN in the solution. 
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

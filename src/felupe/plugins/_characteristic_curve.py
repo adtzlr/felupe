@@ -24,7 +24,7 @@ from ._plugin import Plugin
 
 class CharacteristicCurvePlugin(Plugin):
     r"""A job plugin to record a characteristic curve. Force-displacement curve data is
-    tracked during evaluation for a given :class:`~felupe.Boundary`.
+    tracked during evaluation for a given :class:`~felupe.Boundary`. Optionally, the
 
     Parameters
     ----------
@@ -34,6 +34,10 @@ class CharacteristicCurvePlugin(Plugin):
         A list of items with methods for the assembly of sparse vectors/matrices which
         are used to evaluate the sum of reaction forces. If None, the total reaction
         forces from the :class:`~felupe.tools.NewtonResult` of the substep are used.
+    fun : felupe.tools.force or felupe.tools.moment, optional
+        A function to calculate the y-data of the curve from the x-data.
+    **kwargs : dict, optional
+        Additional keyword arguments for the function ``fun``.
 
     Examples
     --------
@@ -88,12 +92,16 @@ class CharacteristicCurvePlugin(Plugin):
         self,
         boundary,
         items=None,
+        fun=force,
+        **kwargs,
     ):
         self.items = items
         self.boundary = boundary
         self.x = []
         self.y = []
         self.res = None
+        self.fun = fun
+        self.kwargs = kwargs
 
     def after_substep(self, context, state):
         if self.items is not None:
@@ -102,7 +110,7 @@ class CharacteristicCurvePlugin(Plugin):
             fun = context.substep.fun
 
         self.x.append(context.substep.x[0].values[self.boundary.points[0]])
-        self.y.append(force(context.substep.x, fun, self.boundary))
+        self.y.append(self.fun(context.substep.x, fun, self.boundary, **self.kwargs))
         self.res = context.substep
 
     def to_arrays(

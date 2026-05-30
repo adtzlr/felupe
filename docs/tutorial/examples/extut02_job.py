@@ -47,9 +47,10 @@ uniaxial = fem.Step(
 # %%
 # This step is now added to a :class:`~felupe.Job`. The results are exported after each
 # completed and successful substep as a time-series XDMF-file. A
-# :class:`~felupe.CharacteristicCurve`-job logs the displacement and sum of reaction
-# forces on a given boundary condition.
-job = fem.CharacteristicCurve(steps=[uniaxial], boundary=boundaries["move"])
+# :class:`~felupe.CharacteristicCurvePlugin` - job plugin logs the displacement and sum
+# of reaction forces on a given boundary condition.
+curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+job = fem.Job(steps=[uniaxial], plugins=[curve])
 job.evaluate(filename="result.xdmf")
 
 field.plot("Principal Values of Logarithmic Strain").show()
@@ -58,7 +59,7 @@ field.plot("Principal Values of Logarithmic Strain").show()
 # The sum of the reaction force in direction :math:`x` on the boundary condition
 # ``"move"`` is plotted as a function of the displacement :math:`u` on the boundary
 # condition ``"move"`` .
-fig, ax = job.plot(
+fig, ax = curve.plot(
     xlabel=r"Displacement $u$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F$ in N $\longrightarrow$",
 )

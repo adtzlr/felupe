@@ -82,14 +82,14 @@ boundaries.plot(plotter=plotter, scale=0.02).show()
 # modulus which is used for the simulation of the air. The air is meshed and simulated
 # to capture the contacts of the rubber blocks inside the engine mount during the
 # deformation. Hence, its overall stiffness contribution must be as low as possible.
-# Here, ``1 / 25`` of the shear modulus of the rubber is used. The bulk modulus of the
+# Here, ``1 / 75`` of the shear modulus of the rubber is used. The bulk modulus of the
 # rubber is lowered to provide a more realistic deformation for the three-dimensional
-# component simulated by a plane- strain analysis.
+# component simulated by a plane-strain analysis.
 shear_modulus = 1
 rubber = fem.SolidBodyNearlyIncompressible(
     umat=fem.NeoHooke(mu=shear_modulus), field=fields[1], bulk=100
 )
-air = fem.SolidBody(umat=fem.NeoHooke(mu=shear_modulus / 25), field=fields[2])
+air = fem.SolidBody(umat=fem.NeoHooke(mu=shear_modulus / 75), field=fields[2])
 
 # %%
 # After defining the consecutive load steps, the simulation model is ready to be solved.
@@ -102,10 +102,11 @@ vertical = fem.Step(
     ramp={boundaries["u_y"]: fem.math.linsteps([0, 3], num=3)},
     boundaries=boundaries,
 )
-job = fem.CharacteristicCurve(steps=[vertical], boundary=boundaries["u_y"]).evaluate(
+curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
+job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(
     x0=field, tol=1e-1
 )
-figv, axv = job.plot(
+figv, axv = curve.plot(
     xlabel=r"Displacement $u_y$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F_y$ in kN $\longrightarrow$",
     xaxis=1,
@@ -120,10 +121,11 @@ horizontal = fem.Step(
     ramp={boundaries["u_x"]: 8 * fem.math.linsteps([0, 1, 0, -1, 0], num=8)},
     boundaries=boundaries,
 )
-job = fem.CharacteristicCurve(steps=[horizontal], boundary=boundaries["u_y"]).evaluate(
+curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
+job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(
     x0=field, tol=1e-1
 )
-figh, axh = job.plot(
+figh, axh = curve.plot(
     xlabel=r"Displacement $u_x$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F_x$ in kN $\longrightarrow$",
     yscale=1 / 1000 * thickness,
@@ -137,10 +139,11 @@ vertical = fem.Step(
     ramp={boundaries["u_y"]: fem.math.linsteps([3, 0, -6], num=[7, 6])},
     boundaries=boundaries,
 )
-job = fem.CharacteristicCurve(steps=[vertical], boundary=boundaries["u_y"]).evaluate(
+curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
+job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(
     x0=field, tol=1e-1
 )
-figv, axv = job.plot(
+figv, axv = curve.plot(
     xaxis=1,
     yaxis=1,
     yscale=1 / 1000 * thickness,
@@ -151,13 +154,14 @@ figv, axv = job.plot(
 )
 horizontal = fem.Step(
     items=[rubber, air],
-    ramp={boundaries["u_x"]: 5 * fem.math.linsteps([0, 1, 0, -1], num=5)},
+    ramp={boundaries["u_x"]: 5 * fem.math.linsteps([0, 1, 0, -1], num=10)},
     boundaries=boundaries,
 )
-job = fem.CharacteristicCurve(steps=[horizontal], boundary=boundaries["u_y"]).evaluate(
+curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
+job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(
     x0=field, tol=1e-1
 )
-figh, axh = job.plot(
+figh, axh = curve.plot(
     yscale=1 / 1000 * thickness,
     lw=3,
     color="C1",

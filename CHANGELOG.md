@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `ContactRigidPlane`, a simplified version of a node-to-surface contact, where the surface is a rigid plane, defined by its normal vector. This class has Coulomb friction implemented.
 - Add a new plugin framework for `Job(..., plugins=[])`. A plugin `MyPlugin` is a class object and must provide methods (hooks), which are called before/after a job, step, substep, newton, iteration and linear-solve. In the long term, `Job` will be simplified and all extensions will be refactored to plugins. Plugins are similar to a `callback()`, but are triggered more often.
 - Add a new `plugin` module with `Plugin` (base class), `AnimationWriterPlugin`, `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
+- Add `CharacteristicCurvePlugin.to_arrays()` to return the x- and y-data. `CharacteristicCurvePlugin.plot()` uses the `to_arrays()` method internally.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
@@ -26,9 +27,12 @@ All notable changes to this project will be documented in this file. The format 
 - Allow mask-based `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
 - Allow empty list for `points` in `MultiPointContact`, `MultiPointConstraint`, `PointLoad` and `ContactRigidPlane` in addition to point indices.
 - Auto-apply `Mesh.as_meshio()` in `Job.evaluate(filename="result.xdmf", mesh=my_mesh)`, if `mesh` is an instance of `Mesh`. Previously, this required a `meshio.Mesh`.
+- Change the description of the package from a simple Python package to an open finite element infrastructure for nonlinear computational mechanics. This should focus on the project's vision more clearly.
+- Return the last converged result if `newtonraphson()` leads to NaN in the solution. 
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.
+- Fix per-cell material parameter arrays for `NeoHookeCompressible`.
 
 ### Deprecated
 - Deprecate `newtonrhapson()` and `tools.newtonrhapson()`. Use `newtonraphson()` and `tools.newtonraphson()` in new code.

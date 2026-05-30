@@ -185,7 +185,10 @@ class NeoHookeCompressible(ConstitutiveMaterial):
 
         iFTiFT = cdya_il(iFT, iFT, out=out)
         A4a = cdya_ik(eye, eye)
-        np.multiply(mu, A4a, out=A4a)
+        try:
+            np.multiply(mu, A4a, out=A4a)
+        except ValueError:
+            A4a = A4a * mu
 
         if lmbda is not None:
             lmbda_lnJ = np.multiply(lmbda, lnJ, out=lnJ)

@@ -43,15 +43,16 @@ A :class:`step <felupe.Step>` generates the consecutive substep-movements of a g
        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
    )
 
-The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>` (here, a :class:`characteristic curve <felupe.CharacteristicCurve>` job is used). During :meth:`evaluation <felupe.Job.evaluate>`, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Raphson <felupe.newtonraphson>` procedure. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series XDMF file.
+The :class:`step <felupe.Step>` is further added to a list of steps of a :class:`job <felupe.Job>`. During :meth:`evaluation <felupe.Job.evaluate>`, each substep of each :class:`step <felupe.Step>` is solved by an iterative :func:`Newton-Raphson <felupe.newtonraphson>` procedure. The :func:`solution <felupe.tools.NewtonResult>` is exported after each completed substep as a time-series XDMF file. A :class:`characteristic curve plugin <felupe.CharacteristicCurvePlugin>` is used to record and plot the normal force versus the applied displacement at the right-end face of the cube.
 
 .. pyvista-plot::
    :context:
 
-   job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+   curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+   job = fem.Job(steps=[step], plugins=[curve])
    job.evaluate(filename="result.xdmf")
 
-   fig, ax = job.plot(
+   fig, ax = curve.plot(
        xlabel=r"Displacement $d_1$ in mm $\longrightarrow$",
        ylabel=r"Normal Force $F_1$ in N $\longrightarrow$",
    )
@@ -100,9 +101,11 @@ Slightly modified code-blocks are provided for different kind of analyses
              items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
          )
 
-         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-         job.evaluate(filename="result.xdmf")
-         fig, ax = job.plot(
+         curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+         job = fem.Job(steps=[step], plugins=[curve])
+         job.evaluate()
+
+         fig, ax = curve.plot(
              xlabel=r"Displacement $d_1$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F_1$ in N $\longrightarrow$",
          )
@@ -130,9 +133,11 @@ Slightly modified code-blocks are provided for different kind of analyses
              items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
          )
 
-         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+         job = fem.Job(steps=[step], plugins=[curve])
          job.evaluate()
-         fig, ax = job.plot(
+
+         fig, ax = curve.plot(
              xlabel=r"Displacement $u$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F$ in N $\longrightarrow$",
          )
@@ -160,9 +165,11 @@ Slightly modified code-blocks are provided for different kind of analyses
              items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
          )
 
-         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+         curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+         job = fem.Job(steps=[step], plugins=[curve])
          job.evaluate()
-         fig, ax = job.plot(
+
+         fig, ax = curve.plot(
              xlabel=r"Displacement $u$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F$ in N $\longrightarrow$",
          )
@@ -194,9 +201,11 @@ Slightly modified code-blocks are provided for different kind of analyses
              items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
          )
 
-         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-         job.evaluate(filename="result.xdmf")
-         fig, ax = job.plot(
+         curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+         job = fem.Job(steps=[step], plugins=[curve])
+         job.evaluate()
+
+         fig, ax = curve.plot(
              xlabel=r"Displacement $d_1$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F_1$ in N $\longrightarrow$",
          )
@@ -228,8 +237,10 @@ Slightly modified code-blocks are provided for different kind of analyses
              items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
          )
 
-         job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-         job.evaluate(filename="result.xdmf")
+         curve = fem.CharacteristicCurvePlugin(boundaries["move"])
+         job = fem.Job(steps=[step], plugins=[curve])
+         job.evaluate()
+
          fig, ax = job.plot(
              xlabel=r"Displacement $d_1$ in mm $\longrightarrow$",
              ylabel=r"Normal Force $F_1$ in N $\longrightarrow$",

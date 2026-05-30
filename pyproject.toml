@@ -10,7 +10,7 @@ profile = "black"
 
 [project]
 name = "felupe"
-description = "Finite Element Analysis"
+description = "Open finite element infrastructure for nonlinear computational mechanics. "
 readme = "README.md"
 authors = [
   {name = "Andreas Dutzler", email = "a.dutzler@gmail.com"},
@@ -26,6 +26,8 @@ keywords = [
   "finite-elements-analysis",
   "finite-elements-methods",
   "hyperelasticity",
+  "infrastructure",
+  "open-source",
   "partial-differential-equations",
   "pde",
   "python", 

@@ -95,27 +95,8 @@ fields = [fem.Field(r, dim=1).as_container() for r in regions]
 # top level temperature field
 mesh = container.stack()
 region = fem.RegionQuad(mesh)
-temperature = fem.Field(region, dim=1, values=10.0)  # initial temperature 10 °C
+temperature = fem.Field(region, dim=1, values=20.0)  # initial temperature 10 °C
 field = fem.FieldContainer([temperature])
-
-external_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.min())
-external_temperature = fem.Field(external_region, dim=1)
-external_field = fem.FieldContainer([external_temperature])
-
-internal_region = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.max())
-internal_temperature = fem.Field(internal_region, dim=1)
-internal_field = fem.FieldContainer([internal_temperature])
-
-external_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
-    field=external_field,
-    coefficient=25.0,  # W/(m^2 K)
-    temperature=0.0,  # °C
-)
-internal_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
-    field=internal_field,
-    coefficient=7.69,  # W/(m^2 K)
-    temperature=20.0,  # °C
-)
 
 materials = []
 for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivity):
@@ -127,6 +108,44 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
             thermal_conductivity=k,
         )
     )
+
+# %%
+# The surface heat transfer coefficients and ambient temperatures are defined
+# for the top and bottom surfaces.
+bottom_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.min())
+bottom_temperature = fem.Field(external_region, dim=1)
+bottom_field = fem.FieldContainer([external_temperature])
+
+top_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.max())
+top_temperature = fem.Field(internal_region, dim=1)
+top_field = fem.FieldContainer([internal_temperature])
+
+top_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+    field=external_field,
+    coefficient=7.69,  # W/(m^2 K)
+    temperature=20.0,  # °C
+)
+bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+    field=internal_field,
+    coefficient=5.0,  # W/(m^2 K)
+    temperature=20.0,  # °C
+)
+
+# %%
+# Heat flux on pipe walls is defined.
+center_points = np.array([[0.2, 0.1], [0.4, 0.], [0.6, 0.1], [0.8, 0.1]])
+
+pipe_region = []
+pipe_field = []
+pipe_flux = []
+for idx, p in enumerate(center_points):
+    mask = (mesh.points[:, None, :] == p[None, :, :]).all(axis=2).any(axis=1)
+    pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
+    pipe_field.append(fem.FieldContainer([fem.Field(pipe_region[idx], dim=1)]))
+    pipe_flux.append(fem.thermal.SolidBodyHeatFlux(
+        field=pipe_field[idx],
+        heat_flux=-294.6,  # W / m^2, 74/(4*3.14*2*ri)
+    ))
 
 
 # %%
@@ -140,8 +159,8 @@ def callback(stepnumber, substepnumber, substep, flux_data):
     """Save mean surface heat flux at internal and external boundaries."""
 
     heat_flux = materials[0].heat_flux_boundary
-    flux_data["external"].append(heat_flux(region=external_region))
-    flux_data["internal"].append(heat_flux(region=internal_region))
+    flux_data["top"].append(heat_flux(region=top_region))
+    flux_data["bottom"].append(heat_flux(region=bottom_region))
 
 
 time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]

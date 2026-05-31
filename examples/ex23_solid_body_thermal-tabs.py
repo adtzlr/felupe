@@ -45,8 +45,38 @@ thermal_conductivity = [2.1, 0.3, 0.035]  # W/(m K)
 # are collected in a :class:`mesh container <felupe.MeshContainer>` and are
 # merged into one mesh per material. These meshes per material are then added
 # to a mesh container for the construction.
+concrete_1a = fem.Rectangle(a=(0.02, 0.0), b=(0.20, 0.22), n=(11, 16))  # left / right
+concrete_1b = fem.Rectangle(a=(0.20, 0.0), b=(0.22, 0.10), n=(5, 8))  # pipe bottom / top
+concrete_1 = fem.MeshContainer(
+    [
+        concrete_1a,  # left
+        concrete_1b,  # pipe 1, bottom
+        concrete_1b.translate(0.12, axis=1),  # pipe1, top
+    ],
+    merge=True,
+).stack()
 
-# << copy ex22 approach >>
+concrete = fem.MeshContainer(
+    [
+        concrete_1,  # left
+        concrete_1.translate(0.2, axis=0),  #
+        concrete_1.translate(0.4, axis=0),  #
+        concrete_1.translate(0.6, axis=0),  #
+        concrete_1a.translate(0.8, axis=0),  # right
+    ],
+    merge=True,
+).stack()
+
+insulation_1 = fem.Rectangle(a=(0.0, 0.0), b=(0.02, 0.22), n=(4, 16))  # left / right
+insulation = fem.MeshContainer(
+    [
+        insulation_1,
+        insulation_1.translate(1.0, axis=0),
+    ],
+    merge=True,
+).stack()
+
+container = fem.MeshContainer([concrete, insulation], merge=True)
 
 container.plot(
     colors=["lightgrey", "sepia"],

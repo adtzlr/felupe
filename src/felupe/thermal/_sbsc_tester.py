@@ -174,29 +174,48 @@ job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
 
 # Plot h_c / surface temp. / air temp. vs. time.
 # https://matplotlib.org/stable/gallery/axes_grid1/parasite_simple.html
+# or
+# https://stackoverflow.com/questions/9103166/multiple-axis-in-matplotlib-with-different-scales
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import host_subplot
 
-host = host_subplot(111)
-par = host.twinx()
+# host = host_subplot(111)
+# par = host.twinx()
+# par2 = host.twinx()
 
-host.set_xlabel("Time (s)")
-host.set_ylabel("Convection coefficient (W/(m2 K))")
-par.set_ylabel("Temperature (°C)")
 
-p1, = host.plot(tstep_data["tstep.s"], tstep_data["hc_top.W.m-2.K-1"],
+fig, ax = plt.subplots()
+fig.subplots_adjust(right=0.75)
+
+twin1 = ax.twinx()
+twin2 = ax.twinx()
+
+# twin2.spines.right.set_position(("axes", 1.2))
+
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Convection coefficient (W/(m2 K))")
+twin1.set_ylabel("Temperature (°C)")
+twin2.set_ylabel("Heat flux (W/m2)")
+
+p1 = ax.plot(tstep_data["tstep.s"], tstep_data["hc_top.W.m-2.K-1"],
                 label="hc")
-p2, = host.plot(tstep_data["tstep.s"], tstep_data["hc_fun_top.W.m-2.K-1"],
-                label="hc_fun(ts - tamb)")
-p3, = host.plot(tstep_data["tstep.s"], tstep_data["hc_calc_top.W.m-2.K-1"],
-                label="hc from q")
-p4, = par.plot(tstep_data["tstep.s"], tstep_data["tamb.degC"],
-               label="t_amb")
-p5, = par.plot(tstep_data["tstep.s"], tstep_data["ts_top.degC"],
-               label="ts_top")
+p2 = ax.plot(tstep_data["tstep.s"], tstep_data["hc_fun_top.W.m-2.K-1"],
+                label="hc_fun(ts_top - t_amb)")
+p3 = twin1.plot(tstep_data["tstep.s"], tstep_data["tamb.degC"],
+                 label="t_amb")
+p4 = twin1.plot(tstep_data["tstep.s"], tstep_data["ts_top.degC"],
+                 label="ts_top")
+# p3, = host.plot(tstep_data["tstep.s"], tstep_data["hc_calc_top.W.m-2.K-1"],
+#                 label="hc from q")
 # p3.set_color(p2.get_color())
+p5 = twin2.plot(tstep_data["tstep.s"], tstep_data["qc_top.W.m-2"],
+                 label="qc_top")
 
-host.legend(labelcolor="linecolor")
+ax.legend(handles=p1+p2+p3+p4+p5, loc='best')
+
+ax.legend(labelcolor="linecolor")
+
+twin2.spines['right'].set_position(('outward', 45))
 
 # host.yaxis.label.set_color(p1.get_color())
 # par.yaxis.label.set_color(p2.get_color())

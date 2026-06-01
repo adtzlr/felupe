@@ -50,8 +50,8 @@ concrete_1b = fem.Rectangle(a=(0.0, 0.0), b=(0.02, 0.10), n=(3, 11))  # pipe bot
 concrete_1 = fem.MeshContainer(
     [
         concrete_1a.translate(0.02, axis=0),  # left
-        concrete_1b.translate(0.18, axis=0),  # pipe 1, bottom
-        concrete_1b.translate(0.18, axis=0).translate(0.12, axis=1),  # pipe1, top
+        concrete_1b.translate(0.20, axis=0),  # pipe 1, bottom
+        concrete_1b.translate(0.20, axis=0).translate(0.12, axis=1),  # pipe1, top
     ],
     merge=True,
 ).stack()
@@ -62,7 +62,7 @@ concrete = fem.MeshContainer(
         concrete_1.translate(0.2, axis=0),  #
         concrete_1.translate(0.4, axis=0),  #
         concrete_1.translate(0.6, axis=0),  #
-        concrete_1a.translate(0.8, axis=0),  # right
+        concrete_1a.translate(0.82, axis=0),  # right
     ],
     merge=True,
 ).stack()
@@ -78,11 +78,11 @@ insulation = fem.MeshContainer(
 
 container = fem.MeshContainer([concrete, insulation], merge=True)
 
-container.plot(
-    colors=["lightgrey", "sepia"],
-    labels=["Concrete", "Insulation"],
-    show_edges=False,
-).show()
+# container.plot(
+#     colors=["lightgrey", "sepia"],
+#     labels=["Concrete", "Insulation"],
+#     show_edges=False,
+# ).show()
 
 # %%
 # A top-level temperature field is defined on the whole construction with an initial
@@ -139,7 +139,7 @@ pipe_region = []
 pipe_field = []
 pipe_flux = []
 for idx, p in enumerate(center_points):
-    mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.11, atol=0.015).all(axis=2).any(axis=1)
+    mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.048, atol=0.0101).all(axis=2).any(axis=1)
     pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
     pipe_field.append(fem.FieldContainer([fem.Field(pipe_region[idx], dim=1)]))
     pipe_flux.append(fem.thermal.SolidBodyHeatFlux(

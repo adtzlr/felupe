@@ -45,13 +45,13 @@ thermal_conductivity = [2.1, 0.3, 0.035]  # W/(m K)
 # are collected in a :class:`mesh container <felupe.MeshContainer>` and are
 # merged into one mesh per material. These meshes per material are then added
 # to a mesh container for the construction.
-concrete_1a = fem.Rectangle(a=(0.02, 0.0), b=(0.20, 0.22), n=(11, 16))  # left / right
-concrete_1b = fem.Rectangle(a=(0.20, 0.0), b=(0.22, 0.10), n=(5, 8))  # pipe bottom / top
+concrete_1a = fem.Rectangle(a=(0.0, 0.0), b=(0.18, 0.22), n=(19, 23))  # left / right
+concrete_1b = fem.Rectangle(a=(0.0, 0.0), b=(0.02, 0.10), n=(3, 11))  # pipe bottom / top
 concrete_1 = fem.MeshContainer(
     [
-        concrete_1a,  # left
-        concrete_1b,  # pipe 1, bottom
-        concrete_1b.translate(0.12, axis=1),  # pipe1, top
+        concrete_1a.translate(0.02, axis=0),  # left
+        concrete_1b.translate(0.18, axis=0),  # pipe 1, bottom
+        concrete_1b.translate(0.18, axis=0).translate(0.12, axis=1),  # pipe1, top
     ],
     merge=True,
 ).stack()
@@ -67,7 +67,7 @@ concrete = fem.MeshContainer(
     merge=True,
 ).stack()
 
-insulation_1 = fem.Rectangle(a=(0.0, 0.0), b=(0.02, 0.22), n=(4, 16))  # left / right
+insulation_1 = fem.Rectangle(a=(0.0, 0.0), b=(0.02, 0.22), n=(3, 23))  # left / right
 insulation = fem.MeshContainer(
     [
         insulation_1,
@@ -78,11 +78,11 @@ insulation = fem.MeshContainer(
 
 container = fem.MeshContainer([concrete, insulation], merge=True)
 
-# container.plot(
-#     colors=["lightgrey", "sepia"],
-#     labels=["Concrete", "Insulation"],
-#     show_edges=False,
-# ).show()
+container.plot(
+    colors=["lightgrey", "sepia"],
+    labels=["Concrete", "Insulation"],
+    show_edges=False,
+).show()
 
 # %%
 # A top-level temperature field is defined on the whole construction with an initial
@@ -133,13 +133,13 @@ bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
 
 # %%
 # Heat flux on pipe walls is defined.
-center_points = np.asarray([[0.2, 0.1], [0.4, 0.1], [0.6, 0.1], [0.8, 0.1]])
+center_points = np.asarray([[0.21, 0.11], [0.41, 0.11], [0.61, 0.11], [0.81, 0.11]])
 
 pipe_region = []
 pipe_field = []
 pipe_flux = []
 for idx, p in enumerate(center_points):
-    mask = np.isclose(mesh.points[:, None, :], p[:], atol=0.015).all(axis=2).any(axis=1)
+    mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.11, atol=0.015).all(axis=2).any(axis=1)
     pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
     pipe_field.append(fem.FieldContainer([fem.Field(pipe_region[idx], dim=1)]))
     pipe_flux.append(fem.thermal.SolidBodyHeatFlux(
@@ -160,12 +160,16 @@ def callback(stepnumber, substepnumber, substep, flux_data):
     heat_flux = materials[0].heat_flux_boundary
     flux_data["top"].append(heat_flux(region=top_region))
     flux_data["bottom"].append(heat_flux(region=bottom_region))
+    pflux = 0
+    for p_ in pipe_region:
+        pflux += heat_flux(region=p_)
+    flux_data["pipes"].append(pflux)
 
 
 time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]
 
-t_ext = 0 + 1 * np.sin(2 * np.pi * time_steps / 86400)
-t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)
+t_ext = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
+t_int = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
 
 
 # %%
@@ -177,19 +181,19 @@ t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)
 # is created for visualization in Paraview, and the temperature field is saved as point-
 # data in the result file.
 time = fem.thermal.TimeStep(
-    [*materials, external_heat_transfer, internal_heat_transfer]
+    [*materials, top_heat_transfer, bottom_heat_transfer]
 )
 ramp = {
     time: time_steps,
-    internal_heat_transfer: t_int,
-    external_heat_transfer: t_ext,
+    top_heat_transfer: t_int,
+    bottom_heat_transfer: t_ext,
 }
 step = fem.Step(
-    items=[time, *materials, internal_heat_transfer, external_heat_transfer],
+    items=[time, *materials, top_heat_transfer, bottom_heat_transfer] + pipe_flux,
     ramp=ramp,
 )
 
-flux_data = {"external": [], "internal": []}
+flux_data = {"top": [], "bottom": [], "pipes": []}
 
 job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
     x0=field,
@@ -209,8 +213,8 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
 #    the internal surface).
 #
 fig, ax = plt.subplots()
-ax.plot(time_steps / 3600, flux_data["external"], color="C3", label="external")
-ax.plot(time_steps / 3600, flux_data["internal"], color="C0", label="internal")
+ax.plot(time_steps / 3600, flux_data["top"], color="C3", label="top")
+ax.plot(time_steps / 3600, flux_data["bottom"], color="C0", label="bottom")
 
 tmin, tmax = ax.get_xlim()
 ax.plot([tmin, tmax], np.zeros(2), "black", lw=0.5)

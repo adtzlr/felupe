@@ -113,7 +113,15 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 
 # %%
 # The surface heat transfer coefficients and ambient temperatures are defined
-# for the top and bottom surfaces.
+# for the side, top and bottom surfaces.
+side_region1 = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.min())
+side_temperature1 = fem.Field(side_region1, dim=1)
+
+side_region2 = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.max())
+side_temperature2 = fem.Field(side_region2, dim=1)
+
+side_field = fem.FieldContainer([side_temperature1, side_temperature2])
+
 bottom_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.min())
 bottom_temperature = fem.Field(bottom_region, dim=1)
 bottom_field = fem.FieldContainer([bottom_temperature])
@@ -122,9 +130,14 @@ top_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.max())
 top_temperature = fem.Field(top_region, dim=1)
 top_field = fem.FieldContainer([top_temperature])
 
+side_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+    field=side_field,
+    coefficient=7.69,  # W/(m^2 K)
+    temperature=20.0,  # °C
+)
 top_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
     field=top_field,
-    coefficient=7.69,  # W/(m^2 K)
+    coefficient=10.0,  # W/(m^2 K)
     temperature=20.0,  # °C
 )
 bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
@@ -137,64 +150,9 @@ bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
 # Heat flux on pipe walls is defined.
 center_points = np.asarray([[0.21, 0.11], [0.41, 0.11], [0.61, 0.11], [0.81, 0.11]])
 
-# Calculate Square Coordinates (code by MS Copilot, three iterations).
-# def calculate_square_edge_points(centers, size, sections, tol=1e-12):
-#     centers = np.atleast_2d(centers)  # (N, 2)
-#     cx = centers[:, 0][:, None]       # (N, 1)
-#     cy = centers[:, 1][:, None]       # (N, 1)
-
-#     half = size / 2
-#     t = np.linspace(0, size, sections + 1)  # (sections+1,)
-
-#     # --- Build edges (broadcasting ensures matching shapes) ---
-
-#     # Bottom edge: left → right
-#     bottom_x = cx - half + t
-#     bottom_y = np.full_like(bottom_x, cy - half)
-#     bottom = np.stack((bottom_x, bottom_y), axis=2)
-
-#     # Right edge: bottom → top (skip first)
-#     right_y = cy - half + t[1:]
-#     right_x = np.full_like(right_y, cx + half)
-#     right = np.stack((right_x, right_y), axis=2)
-
-#     # Top edge: right → left (skip first)
-#     top_x = cx + half - t[1:]
-#     top_y = np.full_like(top_x, cy + half)
-#     top = np.stack((top_x, top_y), axis=2)
-
-#     # Left edge: top → bottom (skip first)
-#     left_y = cy + half - t[1:]
-#     left_x = np.full_like(left_y, cx - half)
-#     left = np.stack((left_x, left_y), axis=2)
-
-#     # --- Flatten each edge to 2‑D ---
-#     bottom = bottom.reshape(-1, 2)
-#     right  = right.reshape(-1, 2)
-#     top    = top.reshape(-1, 2)
-#     left   = left.reshape(-1, 2)
-
-#     # --- Combine ---
-#     pts = np.vstack((bottom, right, top, left))
-
-#     # --- Deduplicate with tolerance ---
-#     pts_rounded = np.round(pts / tol) * tol
-#     _, idx = np.unique(pts_rounded, axis=0, return_index=True)
-
-#     return pts[idx]
-
-# coords = calculate_square_edge_points(center_points, 0.02, 2)
-
 pipe_region = []
 pipe_field = []
 pipe_flux = []
-
-# tolerance = 0.001  # 1 mm if your units are meters
-# mask = (
-#     np.abs(mesh.points[:, None, :] - coords[None, :, :]) < tolerance
-# ).all(axis=2).any(axis=1)
-
-# for idx, p in enumerate(coords):
 for idx, p in enumerate(center_points):
     mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.05, atol=0.0101).all(axis=2).any(axis=1)
     pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
@@ -224,8 +182,8 @@ def callback(stepnumber, substepnumber, substep, flux_data):
 
 time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]
 
-t_ext = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
-t_int = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
+t_air = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
+# t_int = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
 
 
 # %%
@@ -236,16 +194,18 @@ t_int = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
 # callback function, and evaluated with the top-level temperature field. A result file
 # is created for visualization in Paraview, and the temperature field is saved as point-
 # data in the result file.
-time = fem.thermal.TimeStep(
-    [*materials, top_heat_transfer, bottom_heat_transfer]
-)
+model_list = [*materials, top_heat_transfer, bottom_heat_transfer]
+# model_list = [*materials, side_heat_transfer, top_heat_transfer, bottom_heat_transfer]
+
+time = fem.thermal.TimeStep(model_list)
 ramp = {
     time: time_steps,
-    top_heat_transfer: t_int,
-    bottom_heat_transfer: t_ext,
+    side_heat_transfer: t_air,
+    top_heat_transfer: t_air,
+    bottom_heat_transfer: t_air,
 }
 step = fem.Step(
-    items=[time, *materials, top_heat_transfer, bottom_heat_transfer] + pipe_flux,
+    items=[time] + model_list + pipe_flux,
     ramp=ramp,
 )
 

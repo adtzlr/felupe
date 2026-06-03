@@ -116,11 +116,11 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 # for the side, top and bottom surfaces.
 side_region1 = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.min())
 side_temperature1 = fem.Field(side_region1, dim=1)
+side_field1 = fem.FieldContainer([side_temperature1])
 
 side_region2 = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.max())
 side_temperature2 = fem.Field(side_region2, dim=1)
-
-side_field = fem.FieldContainer([side_temperature1, side_temperature2])
+side_field2 = fem.FieldContainer([side_temperature2])
 
 bottom_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.min())
 bottom_temperature = fem.Field(bottom_region, dim=1)
@@ -130,8 +130,13 @@ top_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.max())
 top_temperature = fem.Field(top_region, dim=1)
 top_field = fem.FieldContainer([top_temperature])
 
-side_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
-    field=side_field,
+side1_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+    field=side_field1,
+    coefficient=7.69,  # W/(m^2 K)
+    temperature=20.0,  # °C
+)
+side2_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+    field=side_field2,
     coefficient=7.69,  # W/(m^2 K)
     temperature=20.0,  # °C
 )
@@ -194,13 +199,15 @@ t_air = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
 # callback function, and evaluated with the top-level temperature field. A result file
 # is created for visualization in Paraview, and the temperature field is saved as point-
 # data in the result file.
-model_list = [*materials, top_heat_transfer, bottom_heat_transfer]
-# model_list = [*materials, side_heat_transfer, top_heat_transfer, bottom_heat_transfer]
+# model_list = [*materials, top_heat_transfer, bottom_heat_transfer]
+model_list = [*materials, side1_heat_transfer, side2_heat_transfer,
+              top_heat_transfer, bottom_heat_transfer]
 
 time = fem.thermal.TimeStep(model_list)
 ramp = {
     time: time_steps,
-    side_heat_transfer: t_air,
+    side1_heat_transfer: t_air,
+    side2_heat_transfer: t_air,
     top_heat_transfer: t_air,
     bottom_heat_transfer: t_air,
 }

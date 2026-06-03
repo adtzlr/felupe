@@ -53,6 +53,7 @@ concrete_1 = fem.MeshContainer(
         concrete_1b.translate(0.20, axis=0).translate(0.12, axis=1),  # pipe1, top
     ],
     merge=True,
+    decimals=6,
 ).stack()
 
 concrete = fem.MeshContainer(
@@ -64,6 +65,7 @@ concrete = fem.MeshContainer(
         concrete_1a.translate(0.82, axis=0),  # right
     ],
     merge=True,
+    decimals=6,
 ).stack()
 
 insulation_1 = fem.Rectangle(a=(0.0, 0.0), b=(0.02, 0.22), n=(3, 23))  # left / right
@@ -73,9 +75,10 @@ insulation = fem.MeshContainer(
         insulation_1.translate(1.0, axis=0),
     ],
     merge=True,
+    decimals=6,
 ).stack()
 
-container = fem.MeshContainer([concrete, insulation], merge=True)
+container = fem.MeshContainer([concrete, insulation], merge=True, decimals=6)
 
 # container.plot(
 #     colors=["lightgrey", "sepia"],
@@ -134,50 +137,66 @@ bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
 # Heat flux on pipe walls is defined.
 center_points = np.asarray([[0.21, 0.11], [0.41, 0.11], [0.61, 0.11], [0.81, 0.11]])
 
-# Calculate Square Coordinates
-def calculate_square_coordinates(center_x, center_y, size, sections):
-    step = size / sections
-    coordinates = []
-    
-    for i in range(sections + 1):
-        for j in range(sections + 1):
-            x = round(center_x - (size / 2) + (i * step), 6)
-            y = round(center_y - (size / 2) + (j * step), 6)
-            coordinates.append([x, y])
-    
-    return coordinates
+# Calculate Square Coordinates (code by MS Copilot, three iterations).
+# def calculate_square_edge_points(centers, size, sections, tol=1e-12):
+#     centers = np.atleast_2d(centers)  # (N, 2)
+#     cx = centers[:, 0][:, None]       # (N, 1)
+#     cy = centers[:, 1][:, None]       # (N, 1)
 
-# Calculate Square Edge Points
-def calculate_square_edge_points(center_x, center_y, size, sections):
-    points = []
-    step = size / sections
-    
-    for i in range(sections + 1):
-        # Bottom edge
-        points.append((center_x - size / 2 + i * step, center_y + size / 2))
-        # Right edge
-        points.append((center_x + size / 2, center_y - size / 2 + i * step))
-        # Top edge
-        points.append((center_x + size / 2 - i * step, center_y - size / 2))
-        # Left edge
-        points.append((center_x - size / 2, center_y + size / 2 - i * step))
-    
-    return list(set(points))
+#     half = size / 2
+#     t = np.linspace(0, size, sections + 1)  # (sections+1,)
 
+#     # --- Build edges (broadcasting ensures matching shapes) ---
 
-coords = []
-for p in center_points:
-    coords = coords + calculate_square_edge_points(p[0], p[1], 0.02, 2)
+#     # Bottom edge: left → right
+#     bottom_x = cx - half + t
+#     bottom_y = np.full_like(bottom_x, cy - half)
+#     bottom = np.stack((bottom_x, bottom_y), axis=2)
 
-coords = np.asarray(coords)
+#     # Right edge: bottom → top (skip first)
+#     right_y = cy - half + t[1:]
+#     right_x = np.full_like(right_y, cx + half)
+#     right = np.stack((right_x, right_y), axis=2)
+
+#     # Top edge: right → left (skip first)
+#     top_x = cx + half - t[1:]
+#     top_y = np.full_like(top_x, cy + half)
+#     top = np.stack((top_x, top_y), axis=2)
+
+#     # Left edge: top → bottom (skip first)
+#     left_y = cy + half - t[1:]
+#     left_x = np.full_like(left_y, cx - half)
+#     left = np.stack((left_x, left_y), axis=2)
+
+#     # --- Flatten each edge to 2‑D ---
+#     bottom = bottom.reshape(-1, 2)
+#     right  = right.reshape(-1, 2)
+#     top    = top.reshape(-1, 2)
+#     left   = left.reshape(-1, 2)
+
+#     # --- Combine ---
+#     pts = np.vstack((bottom, right, top, left))
+
+#     # --- Deduplicate with tolerance ---
+#     pts_rounded = np.round(pts / tol) * tol
+#     _, idx = np.unique(pts_rounded, axis=0, return_index=True)
+
+#     return pts[idx]
+
+# coords = calculate_square_edge_points(center_points, 0.02, 2)
 
 pipe_region = []
 pipe_field = []
 pipe_flux = []
-for idx, p in enumerate(coords):
-    mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.048, atol=0.0101).all(axis=2).any(axis=1)
-    # mask = np.isclose(mesh.points[:, None, :], p[:]).all(axis=2).any(axis=1)
-    # mask = (mesh.points[:, None, :] == p[:]).all(axis=2).any(axis=1)
+
+# tolerance = 0.001  # 1 mm if your units are meters
+# mask = (
+#     np.abs(mesh.points[:, None, :] - coords[None, :, :]) < tolerance
+# ).all(axis=2).any(axis=1)
+
+# for idx, p in enumerate(coords):
+for idx, p in enumerate(center_points):
+    mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.05, atol=0.0101).all(axis=2).any(axis=1)
     pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
     pipe_field.append(fem.FieldContainer([fem.Field(pipe_region[idx], dim=1)]))
     pipe_flux.append(fem.thermal.SolidBodyHeatFlux(
@@ -202,7 +221,6 @@ def callback(stepnumber, substepnumber, substep, flux_data):
     for p_ in pipe_region:
         pflux += heat_flux(region=p_)
     flux_data["pipes"].append(pflux)
-
 
 time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]
 

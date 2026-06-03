@@ -188,7 +188,7 @@ def callback(stepnumber, substepnumber, substep, flux_data):
 time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]
 
 t_air = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
-# t_int = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
+# t_sur = 20 + 0.5 * np.sin(2 * np.pi * time_steps / 86400)
 
 
 # %%

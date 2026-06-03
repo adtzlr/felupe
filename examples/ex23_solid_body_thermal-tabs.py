@@ -33,12 +33,11 @@ import numpy as np
 import felupe as fem
 
 # %%
-# Define material properties as lists for (reinforced) concrete, plastic and
-# insulation. This includes mass density, specific heat capacity and thermal
-# conductivity.
-density = [2100, 700, 20]  # kg/m^3
-specific_heat = [1000, 1000, 1450]  # J/(kg K)
-thermal_conductivity = [2.1, 0.3, 0.035]  # W/(m K)
+# Define material properties as lists for (reinforced) concrete and insulation.
+# This includes mass density, specific heat capacity and thermal conductivity.
+density = [2100, 20]  # kg/m^3
+specific_heat = [1000, 1450]  # J/(kg K)
+thermal_conductivity = [2.1, 0.035]  # W/(m K)
 
 # %%
 # Set up one mesh per material. If a material consists of multiple areas, these
@@ -135,11 +134,50 @@ bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
 # Heat flux on pipe walls is defined.
 center_points = np.asarray([[0.21, 0.11], [0.41, 0.11], [0.61, 0.11], [0.81, 0.11]])
 
+# Calculate Square Coordinates
+def calculate_square_coordinates(center_x, center_y, size, sections):
+    step = size / sections
+    coordinates = []
+    
+    for i in range(sections + 1):
+        for j in range(sections + 1):
+            x = round(center_x - (size / 2) + (i * step), 6)
+            y = round(center_y - (size / 2) + (j * step), 6)
+            coordinates.append([x, y])
+    
+    return coordinates
+
+# Calculate Square Edge Points
+def calculate_square_edge_points(center_x, center_y, size, sections):
+    points = []
+    step = size / sections
+    
+    for i in range(sections + 1):
+        # Bottom edge
+        points.append((center_x - size / 2 + i * step, center_y + size / 2))
+        # Right edge
+        points.append((center_x + size / 2, center_y - size / 2 + i * step))
+        # Top edge
+        points.append((center_x + size / 2 - i * step, center_y - size / 2))
+        # Left edge
+        points.append((center_x - size / 2, center_y + size / 2 - i * step))
+    
+    return list(set(points))
+
+
+coords = []
+for p in center_points:
+    coords = coords + calculate_square_edge_points(p[0], p[1], 0.02, 2)
+
+coords = np.asarray(coords)
+
 pipe_region = []
 pipe_field = []
 pipe_flux = []
-for idx, p in enumerate(center_points):
+for idx, p in enumerate(coords):
     mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.048, atol=0.0101).all(axis=2).any(axis=1)
+    # mask = np.isclose(mesh.points[:, None, :], p[:]).all(axis=2).any(axis=1)
+    # mask = (mesh.points[:, None, :] == p[:]).all(axis=2).any(axis=1)
     pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
     pipe_field.append(fem.FieldContainer([fem.Field(pipe_region[idx], dim=1)]))
     pipe_flux.append(fem.thermal.SolidBodyHeatFlux(

@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import math
 import numpy as np
 
 from pyfluids import HumidAir, InputHumidAir
@@ -25,12 +26,18 @@ from scipy.constants import g
 class FreeConvection:
     r"Free convection heat transfer formulation for flat plates."
 
-    def __init__(self):
+    def __init__(self, plate_width, plate_length, rh=50):
         self.T0 = 273.15
         self.P0 = 101325
+        self.plate_width = plate_width
+        self.plate_length = plate_length
+        self.rh = rh
 
+        # Characteristic length for horizontal plate.
+        self.length = self.plate_width*self.plate_length/\
+                           (2*(self.plate_width+self.plate_length))
 
-    def _pyfluids_units():
+    def _pyfluids_units(self):
         check = HumidAir().factory()
         if str(check.units_system) == 'SIWithCelsiusAndPercents':
             dt_ = 0  # use °C
@@ -41,8 +48,8 @@ class FreeConvection:
         return dt_, rh_
 
 
-    @np.vectorize
-    def _rayleigh(ts_c, ti_c, length_, rh=10):
+    # @np.vectorize
+    def _rayleigh(self, ts_c, ti_c, length_, rh=10):
         """
         Calculate dimensionless Rayleigh number Ra.
         """
@@ -67,8 +74,7 @@ class FreeConvection:
 
         return ra
 
-    @np.vectorize
-    def _nusselt_horizontal(ra, pr, hflux='z+'):
+    def _nusselt_horizontal(self, ra, pr, hflux='z+'):
         """
         Calculate dimensionless Nusselt number Nu for horizontal plates for various
         cases of heat flux direction.
@@ -92,26 +98,23 @@ class FreeConvection:
         return nu
 
 
-    @np.vectorize
-    def hc_fun(ts, tamb):
+    def hc_fun(self, ts, tamb):
         """
         Calculate convection coefficient for horizontal plate.
         """
         dtk, rhf = self._pyfluids_units()
         tm_c = (ts + tamb)/2
-        rh = 50
 
         air = HumidAir().with_state(
                   InputHumidAir.pressure(self.P0),
                   InputHumidAir.temperature(tm_c + dtk),
-                  InputHumidAir.relative_humidity(rh/rhf),
+                  InputHumidAir.relative_humidity(self.rh/rhf),
               )
-    
-        l = 1.25  # assume slab size 5 x 5 m^2 for h_c
-        ra = rayleigh(ts, tamb, l)
+
+        ra = self._rayleigh(ts_c=ts, ti_c=tamb, length_=self.length)
         if ts > tamb:
-            nu = nusselt_horizontal(ra, air.prandtl, hflux='z+')
+            nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z+')
         else:
-            nu = nusselt_horizontal(ra, air.prandtl, hflux='z-')
-    
-        return(nu*air.conductivity/l)
+            nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z-')
+
+        return(nu*air.conductivity/self.length)

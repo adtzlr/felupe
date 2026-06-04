@@ -3,7 +3,11 @@
 Tester version for _solid_body_surface_convection.py example case.
 """
 
+import numpy as np
 import felupe as fem
+
+hc_fun = np.vectorize(fem.FreeConvection(5, 5).hc_fun)
+
 
 mesh = fem.Rectangle(b=(1.0, 0.25), n=(11, 11))  # rectangle w/ 10x10 cells
 region = fem.RegionQuad(mesh)
@@ -28,7 +32,7 @@ solid = fem.thermal.SolidBodyThermal(
 
 convection_function = fem.thermal.SolidBodySurfaceConvection(
     field=field_convection,
-    convection_coefficient=fem.FreeConvection.hc_fun, #(30, 20),
+    convection_coefficient=hc_fun,
     temperature=20.0,  # °C
 )
 

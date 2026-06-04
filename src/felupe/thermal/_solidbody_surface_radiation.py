@@ -123,6 +123,8 @@ class SolidBodySurfaceRadiation:
         self.results = Results()
         self.results.temperature = temperature  # ambient temperature in °C
         self.results.emissivity = emissivity
+        self.results.radiation_coefficient =\
+                          4 * emissivity * sigma * (temperature + 273.15) ** 3
 
         self._sigma = sigma  # Stefan-Boltzmann constant
 
@@ -171,11 +173,16 @@ class SolidBodySurfaceRadiation:
 
         dim = self.field[0].dim
         temperature = self.field.extract(grad=False)[0]
+        self.results.radiation_coefficient = 4 * self.results.emissivity\
+            * self._sigma\
+            * ((temperature + self.results.temperature)/2 + 273.15) ** 3
+
         fun = [
-            -self.results.emissivity
-            * self._sigma
-            * 4
-            * (temperature + 273.15) ** 3
+            -self.results.radiation_coefficient
+            # -self.results.emissivity
+            # * self._sigma
+            # * 4
+            # * (temperature + 273.15) ** 3
             * np.eye(dim).reshape(dim, dim, 1, 1)
         ]
 

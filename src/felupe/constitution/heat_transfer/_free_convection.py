@@ -23,7 +23,35 @@ from scipy.constants import g
 
 
 class FreeConvection:
-    r"Free convection heat transfer formulation for flat plates."
+    r"""Free convection heat transfer formulation for flat plates.
+
+    Parameters
+    ----------
+    plate_width : float
+        Horizontal plate width in (m).
+    plate_length : float
+        Horizontal plate length in (m).
+    rh : float (optional, default 50 %)
+        Relative humidity of air in (%).
+
+    Notes
+    -----
+    This class represents ...
+
+    References
+    ----------
+    ..  [1] F. P. Incropera, D. P. DeWitt, and et. al., Fundamentals of Heat
+            and Mass Transfer, 6th Edition. John Wiley & Sons, 2007;
+            ISBN 0-471-45728-0.
+
+    See Also
+    --------
+    felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
+    felupe.thermal.SolidBodySurfaceConvection : Detailed surface convection
+      heat transfer.
+
+
+    """
 
     def __init__(self, plate_width, plate_length, rh=50):
         self.T0 = 273.15

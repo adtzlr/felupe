@@ -17,7 +17,6 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import math
-import numpy as np
 
 from pyfluids import HumidAir, InputHumidAir
 from scipy.constants import g
@@ -48,7 +47,6 @@ class FreeConvection:
         return dt_, rh_
 
 
-    # @np.vectorize
     def _rayleigh(self, ts_c, ti_c, length_, rh=10):
         """
         Calculate dimensionless Rayleigh number Ra.

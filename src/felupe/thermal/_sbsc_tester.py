@@ -49,7 +49,7 @@ def callback(stepnumber, substepnumber, substep, tstep_data):
     tstep_data["ts_top.degC"].append(ts)
     tstep_data["hc_top.W.m-2.K-1"].append(
         convection_function.results.convection_coefficient.mean())
-    tstep_data["hc_fun_top.W.m-2.K-1"].append(fem.FreeConvection.hc_fun(ts, tamb).mean())
+    tstep_data["hc_fun_top.W.m-2.K-1"].append(hc_fun(ts, tamb).mean())
     tstep_data["hc_calc_top.W.m-2.K-1"].append(abs(qc/(ts-tamb)))
 
 

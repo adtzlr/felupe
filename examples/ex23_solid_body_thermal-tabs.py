@@ -18,11 +18,11 @@ Thermal Analysis
 This example describes a thermally activated concrete slab using a simplified
 model and geometry. The model is two-dimensional. The system is set up with two
 :class:`solids <felupe.thermal.SolidBodyThermal>`. The temperature boundary
-conditions include the floor temperature (constant), the ceiling temperature
-(constant) and the room air temperature with a :math:`\pm 2` K sinusoidal
-variation around its average value with a period of 24 h.
+conditions include the floor temperature, the ceiling temperature and the room
+air temperatures, each with a :math:`\pm \Delta\theta` K sinusoidal variation
+around its average value with a period of 24 h.
 
-The heat injection via the pipe layer is constant at 295 W/m2 and directly
+The heat injection via the pipe layer is constant at 231 W/m2 and directly
 injected at the internal concrete surfaces (no pipe material is modelled).
 
 Surface heat transfer is modelled separately for convection and radiation.
@@ -140,14 +140,29 @@ side2_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
     coefficient=7.69,  # W/(m^2 K)
     temperature=20.0,  # °C
 )
-top_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+
+hc_fun = np.vectorize(fem.FreeConvection(5, 5).hc_fun)
+
+top_convection = fem.thermal.SolidBodySurfaceConvection(
     field=top_field,
-    coefficient=10.0,  # W/(m^2 K)
+    convection_coefficient=hc_fun,  # W/(m^2 K)
     temperature=20.0,  # °C
 )
-bottom_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+bottom_convection = fem.thermal.SolidBodySurfaceConvection(
     field=bottom_field,
-    coefficient=5.0,  # W/(m^2 K)
+    convection_coefficient=hc_fun,  # W/(m^2 K)
+    temperature=20.0,  # °C
+)
+
+top_radiation = fem.thermal.SolidBodySurfaceRadiation(
+    field=top_field,
+    emissivity=0.9,
+    temperature=20.0,  # °C
+)
+
+bottom_radiation = fem.thermal.SolidBodySurfaceRadiation(
+    field=bottom_field,
+    emissivity=0.9,
     temperature=20.0,  # °C
 )
 
@@ -173,22 +188,36 @@ for idx, p in enumerate(center_points):
 # by the :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
 # thermal solid body, which returns the integrated surface heat flux for a given
 # boundary region and time step. The mean surface heat flux is stored in the
-# ``flux_data`` dictionary, which is passed to the callback function as an argument.
-def callback(stepnumber, substepnumber, substep, flux_data):
+# ``tstep_data`` dictionary, which is passed to the callback function as an argument.
+def callback(stepnumber, substepnumber, substep, tstep_data):
     """Save mean surface heat flux at internal and external boundaries."""
 
     heat_flux = materials[0].heat_flux_boundary
-    flux_data["top"].append(heat_flux(region=top_region))
-    flux_data["bottom"].append(heat_flux(region=bottom_region))
+    tstep_data["top"].append(heat_flux(region=top_region))
+    tstep_data["bottom"].append(heat_flux(region=bottom_region))
+
+    tstep_data["hc_top.W.m-2.K-1"].append(
+        top_convection.results.convection_coefficient.mean())
+    tstep_data["hr_top.W.m-2.K-1"].append(
+        top_radiation.results.radiation_coefficient.mean())
+
+    tstep_data["hc_bottom.W.m-2.K-1"].append(
+        bottom_convection.results.convection_coefficient.mean())
+    tstep_data["hr_bottom.W.m-2.K-1"].append(
+        bottom_radiation.results.radiation_coefficient.mean())
+
     pflux = 0
     for p_ in pipe_region:
         pflux += heat_flux(region=p_)
-    flux_data["pipes"].append(pflux)
+    tstep_data["pipes"].append(pflux)
 
-time_steps = fem.math.linsteps([0, 24 * 3600], num=int(24 * 3600 / 720))[1:]
+N_DAYS = 2
+time_steps = fem.math.linsteps([0, N_DAYS * 24 * 3600],
+                               num=int(N_DAYS * 24 * 3600 / 720))[1:]
 
 t_air = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
-# t_sur = 20 + 0.5 * np.sin(2 * np.pi * time_steps / 86400)
+t_ceil = 20 + 0.5 * np.sin(2 * np.pi * time_steps / 86400)
+t_floor = 18 + 0.5 * np.sin(2 * np.pi * time_steps / 86400)
 
 
 # %%
@@ -201,24 +230,29 @@ t_air = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
 # data in the result file.
 # model_list = [*materials, top_heat_transfer, bottom_heat_transfer]
 model_list = [*materials, side1_heat_transfer, side2_heat_transfer,
-              top_heat_transfer, bottom_heat_transfer]
+              top_convection, bottom_convection, top_radiation, bottom_radiation]
 
 time = fem.thermal.TimeStep(model_list)
 ramp = {
     time: time_steps,
     side1_heat_transfer: t_air,
     side2_heat_transfer: t_air,
-    top_heat_transfer: t_air,
-    bottom_heat_transfer: t_air,
+    top_convection: t_air,
+    bottom_convection: t_air,
+    top_radiation: t_ceil,
+    bottom_radiation: t_floor,
 }
 step = fem.Step(
     items=[time] + model_list + pipe_flux,
     ramp=ramp,
 )
 
-flux_data = {"top": [], "bottom": [], "pipes": []}
+tstep_data = {"top": [], "bottom": [],
+              "hc_top.W.m-2.K-1": [], "hr_top.W.m-2.K-1": [],
+              "hc_bottom.W.m-2.K-1": [], "hr_bottom.W.m-2.K-1": [],
+              "pipes": []}
 
-job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
+job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
     x0=field,
     filename="result.xdmf",  # create a result file for Paraview
     point_data={"Temperature": lambda field, substep: temperature.values},
@@ -227,7 +261,7 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
 )
 
 # %%
-# Internal and external surface heat flux values are plotted over time.
+# Top and bottom surface heat flux values are plotted over time.
 #
 # .. note::
 #
@@ -236,8 +270,8 @@ job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
 #    the internal surface).
 #
 fig, ax = plt.subplots()
-ax.plot(time_steps / 3600, flux_data["top"], color="C3", label="top")
-ax.plot(time_steps / 3600, flux_data["bottom"], color="C0", label="bottom")
+ax.plot(time_steps / 3600, tstep_data["top"], color="C3", label="top")
+ax.plot(time_steps / 3600, tstep_data["bottom"], color="C0", label="bottom")
 
 tmin, tmax = ax.get_xlim()
 ax.plot([tmin, tmax], np.zeros(2), "black", lw=0.5)
@@ -249,8 +283,10 @@ ax.text(0.5, 0.03, "heat enters construction", **text_kwargs)
 ax.legend()
 ax.set(xlim=(tmin, tmax), xlabel="time in h", ylabel=r"surface heat flux in W/m$^2$")
 
+plt.savefig("_ex23.png")
+
 
 # %%
 # A view on the temperature field at the end of the simulation period visualizes the
 # temperature distribution.
-field.plot("Field", scalar_bar_vertical=True).show()
+# field.plot("Field", scalar_bar_vertical=True).show()

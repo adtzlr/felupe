@@ -174,6 +174,7 @@ pipe_region = []
 pipe_field = []
 pipe_flux = []
 for idx, p in enumerate(center_points):
+    # Inelegant, but seems to work:
     mask = np.isclose(mesh.points[:, None, :], p[:], rtol=0.05, atol=0.0101).all(axis=2).any(axis=1)
     pipe_region.append(fem.RegionQuadBoundary(mesh, mask=mask))
     pipe_field.append(fem.FieldContainer([fem.Field(pipe_region[idx], dim=1)]))
@@ -219,6 +220,11 @@ t_air = 20 + 2 * np.sin(2 * np.pi * time_steps / 86400)
 t_ceil = 20 + 0.5 * np.sin(2 * np.pi * time_steps / 86400)
 t_floor = 18 + 0.5 * np.sin(2 * np.pi * time_steps / 86400)
 
+pipe_heat_flux = np.concatenate(
+    (fem.math.linsteps([-231.25, -231.25], num=int(len(time_steps)/2)-1),
+    fem.math.linsteps([231.25, 231.25], num=int(len(time_steps)/2)-1))
+)
+
 
 # %%
 # The time step item is created with the thermal solid bodies. It must be located as the
@@ -241,6 +247,10 @@ ramp = {
     bottom_convection: t_air,
     top_radiation: t_ceil,
     bottom_radiation: t_floor,
+    pipe_flux[0]: pipe_heat_flux,
+    pipe_flux[1]: pipe_heat_flux,
+    pipe_flux[2]: pipe_heat_flux,
+    pipe_flux[3]: pipe_heat_flux,
 }
 step = fem.Step(
     items=[time] + model_list + pipe_flux,

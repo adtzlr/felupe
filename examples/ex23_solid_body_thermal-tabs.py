@@ -279,6 +279,7 @@ job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
 #    external surface), and **negative** when **heat enters the construction** (here, on
 #    the internal surface).
 #
+# "engine mount, ex07" => further graphic examples.
 fig, ax = plt.subplots()
 ax.plot(time_steps / 3600, tstep_data["top"], color="C3", label="top")
 ax.plot(time_steps / 3600, tstep_data["bottom"], color="C0", label="bottom")

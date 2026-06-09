@@ -112,8 +112,7 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
     )
 
 # %%
-# The surface heat transfer coefficients and ambient temperatures are defined
-# for the side, top and bottom surfaces.
+# The surface heat transfer is defined for the side, top and bottom surfaces.
 side_region1 = fem.RegionQuadBoundary(mesh, mask=mesh.x == mesh.x.min())
 side_temperature1 = fem.Field(side_region1, dim=1)
 side_field1 = fem.FieldContainer([side_temperature1])
@@ -130,6 +129,7 @@ top_region = fem.RegionQuadBoundary(mesh, mask=mesh.y == mesh.y.max())
 top_temperature = fem.Field(top_region, dim=1)
 top_field = fem.FieldContainer([top_temperature])
 
+# For the sides, combined transfer coefficients are used.
 side1_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
     field=side_field1,
     coefficient=7.69,  # W/(m^2 K)
@@ -141,6 +141,12 @@ side2_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
     temperature=20.0,  # °C
 )
 
+# For the top and bottom surfaces, the detailed calculation approaches defined
+# in :class:`~felupe.thermal.SolidBodySurfaceConvection` and
+# :class:`~felupe.thermal.SolidBodySurfaceRadiation` are used for convection
+# and radiation, respectively. For convection, the convection coefficient
+# function defined in :class:`~felupe.constitution.heat_transfer.FreeConvection`
+# is used.
 hc_fun = np.vectorize(fem.FreeConvection(5, 5).hc_fun)
 
 top_convection = fem.thermal.SolidBodySurfaceConvection(
@@ -184,11 +190,19 @@ for idx, p in enumerate(center_points):
     ))
 
 # %%
-# A callback-function records the mean surface heat flux at the internal and external
-# boundaries after each completed time step. The mean surface heat flux is calculated
-# by the :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
+# A callback-function records the mean surface heat flux at the top and bottom
+# boundaries, the top and bottom convection coefficients as well as the top and
+# bottom radiation coefficients after each completed time step.
+# The mean surface heat flux is calculated by the
+# :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
 # thermal solid body, which returns the integrated surface heat flux for a given
-# boundary region and time step. The mean surface heat flux is stored in the
+# boundary region and time step.
+#
+# The convection coefficient values are calculated by ...
+#
+# The radiation coefficient values are calculated by ...
+#
+# All values are stored in the
 # ``tstep_data`` dictionary, which is passed to the callback function as an argument.
 def callback(stepnumber, substepnumber, substep, tstep_data):
     """Save mean surface heat flux at internal and external boundaries."""
@@ -234,7 +248,6 @@ pipe_heat_flux = np.concatenate(
 # callback function, and evaluated with the top-level temperature field. A result file
 # is created for visualization in Paraview, and the temperature field is saved as point-
 # data in the result file.
-# model_list = [*materials, top_heat_transfer, bottom_heat_transfer]
 model_list = [*materials, side1_heat_transfer, side2_heat_transfer,
               top_convection, bottom_convection, top_radiation, bottom_radiation]
 
@@ -275,11 +288,10 @@ job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
 #
 # .. note::
 #
-#    The heat flux is **positive** when **heat leaves the construction** (here, on the
-#    external surface), and **negative** when **heat enters the construction** (here, on
-#    the internal surface).
-#
-# "engine mount, ex07" => further graphic examples.
+#    The heat flux is **positive** when **heat leaves the construction** (here,
+#    on both top and bottom surfaces in 'heating mode', and **negative** when
+#    **heat enters the construction** (here, on both the top and bottom
+#    surfaces in 'cooling mode'.
 fig, ax = plt.subplots()
 ax.plot(time_steps / 3600, tstep_data["top"], color="C3", label="top")
 ax.plot(time_steps / 3600, tstep_data["bottom"], color="C0", label="bottom")
@@ -294,10 +306,43 @@ ax.text(0.5, 0.03, "heat enters construction", **text_kwargs)
 ax.legend()
 ax.set(xlim=(tmin, tmax), xlabel="time in h", ylabel=r"surface heat flux in W/m$^2$")
 
-plt.savefig("_ex23.png")
+plt.savefig("_ex23a.png")
+
+# %%
+# Top and bottom surface heat transfer coefficients and pipe heat flux are
+# plotted over time.
+fig, ax = plt.subplots()
+fig.subplots_adjust(right=0.75)
+
+twin1 = ax.twinx()
+twin2 = ax.twinx()
+
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Convection coefficient (W/(m2 K))")
+twin1.set_ylabel("Temperature (°C)")
+twin2.set_ylabel("Pipe heat flux (W/m2)")
+
+time_steps_h = time_steps / 3600
+
+p1 = ax.plot(time_steps_h, tstep_data["hc_top.W.m-2.K-1"],
+                label="hc_top", color='lightblue')
+p2 = ax.plot(time_steps_h, tstep_data["hc_bottom.W.m-2.K-1"],
+                label="hc_bottom", color='darkblue')
+p3 = twin1.plot(time_steps_h, tstep_data["hr_top.W.m-2.K-1"],
+                 label="hr_top", color='blue')
+p4 = twin1.plot(time_steps_h, tstep_data["hr_bottom.W.m-2.K-1"],
+                 label="hr_bottom", color='red')
+p5 = twin2.plot(time_steps_h, tstep_data["pipes"],
+                 label="pipe_flux", color='magenta')
+
+ax.legend(handles=p1+p2+p3+p4+p5, labelcolor="linecolor")
+
+twin2.spines['right'].set_position(('outward', 45))
+
+plt.savefig("_ex23b.png")
 
 
 # %%
-# A view on the temperature field at the end of the simulation period visualizes the
-# temperature distribution.
+# A view on the temperature field at the end of the simulation period visualizes
+# the temperature distribution.
 # field.plot("Field", scalar_bar_vertical=True).show()

@@ -86,18 +86,11 @@ job = fem.Job(steps=[step], callback=callback, tstep_data=tstep_data).evaluate(
 # https://stackoverflow.com/questions/9103166/multiple-axis-in-matplotlib-with-different-scales
 import matplotlib.pyplot as plt
 
-# host = host_subplot(111)
-# par = host.twinx()
-# par2 = host.twinx()
-
-
 fig, ax = plt.subplots()
 fig.subplots_adjust(right=0.75)
 
 twin1 = ax.twinx()
 twin2 = ax.twinx()
-
-# twin2.spines.right.set_position(("axes", 1.2))
 
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Convection coefficient (W/(m2 K))")
@@ -105,26 +98,18 @@ twin1.set_ylabel("Temperature (°C)")
 twin2.set_ylabel("Heat flux (W/m2)")
 
 p1 = ax.plot(tstep_data["tstep.s"], tstep_data["hc_top.W.m-2.K-1"],
-                label="hc")
+                label="hc", color='lightblue')
 p2 = ax.plot(tstep_data["tstep.s"], tstep_data["hc_fun_top.W.m-2.K-1"],
-                label="hc_fun(ts_top - t_amb)")
+                label="hc_fun(ts_top - t_amb)", color='darkblue')
 p3 = twin1.plot(tstep_data["tstep.s"], tstep_data["tamb.degC"],
-                 label="t_amb")
+                 label="t_amb", color='blue')
 p4 = twin1.plot(tstep_data["tstep.s"], tstep_data["ts_top.degC"],
-                 label="ts_top")
-# p3, = host.plot(tstep_data["tstep.s"], tstep_data["hc_calc_top.W.m-2.K-1"],
-#                 label="hc from q")
-# p3.set_color(p2.get_color())
+                 label="ts_top", color='red')
 p5 = twin2.plot(tstep_data["tstep.s"], tstep_data["qc_top.W.m-2"],
-                 label="qc_top")
+                 label="qc_top", color='magenta')
 
-ax.legend(handles=p1+p2+p3+p4+p5, loc='best')
-
-ax.legend(labelcolor="linecolor")
+ax.legend(handles=p1+p2+p3+p4+p5, labelcolor="linecolor")
 
 twin2.spines['right'].set_position(('outward', 45))
-
-# host.yaxis.label.set_color(p1.get_color())
-# par.yaxis.label.set_color(p2.get_color())
 
 plt.savefig("_test.png")

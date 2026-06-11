@@ -42,6 +42,13 @@ class FreeConvection:
     -----
     This class provides a convection heat transfer coefficient for horizontal
     plates based on detailed empirical approaches from [1]_.
+    
+    The convection coefficient is calculated according to :eq:`hc`.
+
+    .. math::
+       :label: hc
+
+       h_c\,=\,\text{Nu}\,\lambda_\text{air}\frac{1}{L}
 
     The dimensionless Rayleigh number Ra is a function of gravity g, inverse
     mean temperature (film temperature) :math:`\beta` (see :eq:`film-temperature`),
@@ -61,7 +68,7 @@ class FreeConvection:
        \beta\,=\,\frac{2}{T_s + T_i}\,\text{ in K}^{-1}.
 
     The characteristic length :math:`L` for horizontal plates is defined as
-    (eqn 9.29 from [1]_)
+    given in :eq:`l-horiz-plate` (eqn 9.29 from [1]_).
 
     .. math::
        :label: l-horiz-plate

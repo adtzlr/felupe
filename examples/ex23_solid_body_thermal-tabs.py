@@ -147,16 +147,17 @@ side2_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
 # and radiation, respectively. For convection, the convection coefficient
 # function defined in :class:`~felupe.constitution.heat_transfer.FreeConvection`
 # is used.
-hc_fun = np.vectorize(fem.FreeConvection(5, 5).hc_fun)
+hc_top = np.vectorize(fem.FreeConvection(5, 5, 'top').hc_fun)
+hc_bottom = np.vectorize(fem.FreeConvection(5, 5, 'bottom').hc_fun)
 
 top_convection = fem.thermal.SolidBodySurfaceConvection(
     field=top_field,
-    convection_coefficient=hc_fun,  # W/(m^2 K)
+    convection_coefficient=hc_top,  # W/(m^2 K)
     temperature=20.0,  # °C
 )
 bottom_convection = fem.thermal.SolidBodySurfaceConvection(
     field=bottom_field,
-    convection_coefficient=hc_fun,  # W/(m^2 K)
+    convection_coefficient=hc_bottom,  # W/(m^2 K)
     temperature=20.0,  # °C
 )
 

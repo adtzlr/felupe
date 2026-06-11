@@ -106,6 +106,11 @@ class SolidBodySurfaceConvection:
         ...     return(nu*lam_air/l)
         >>> hc_fun = np.vectorize(_hc_fun)
 
+    using constant air properties for brevity. 
+    In :class:`~felupe.constitution.heat_transfer.free_convection` a more
+    detailed calculation of convection coefficients for horizontal plates is
+    given which use air properties based on current temperatures.
+
     Set up the model (a horizontal slab with dimensions 1 x 1 m^2, 0.25 m thick).
 
     ..  pyvista-plot::

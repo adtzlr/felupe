@@ -25,12 +25,16 @@ from scipy.constants import g
 class FreeConvection:
     r"""Free convection heat transfer formulation for flat plates.
 
+    <<todo: add top/bottom of plate switch! >>
+
     Parameters
     ----------
     plate_width : float
         Horizontal plate width in (m).
     plate_length : float
         Horizontal plate length in (m).
+    p_abs: float (optional, default 101325)
+        Absolute (total) air pressure in (Pa).
     rh : float (optional, default 50 %)
         Relative humidity of air in (%).
 
@@ -53,12 +57,12 @@ class FreeConvection:
 
     """
 
-    def __init__(self, plate_width, plate_length, rh=50):
-        self.T0 = 273.15
-        self.P0 = 101325
+    def __init__(self, plate_width, plate_length, p_abs=101325, rh=50):
+        self.T0 = 273.15  # 0 °C in Kelvin, for °C <=> K conversion
         self.plate_width = plate_width
         self.plate_length = plate_length
         self.rh = rh
+        self.p_abs = p_abs
 
         # Characteristic length for horizontal plate.
         self.length = self.plate_width*self.plate_length/\
@@ -84,7 +88,7 @@ class FreeConvection:
 
         # Humid air properties at p0 and Tm (indoors).
         air = HumidAir().with_state(
-                  InputHumidAir.pressure(self.P0),
+                  InputHumidAir.pressure(self.p_abs),
                   InputHumidAir.temperature(tm_c + dtk),
                   InputHumidAir.relative_humidity(rh/rhf),
               )
@@ -107,20 +111,20 @@ class FreeConvection:
         """
         if hflux == 'z+':  # warm plate, top face or cold plate, bottom face
             if ra < 1E04:
-                nu = 0.54*math.pow(1E04,0.25)
+                nu = 0.54*math.pow(1E04, 0.25)
             elif (1E04 <= ra <= 1E07) and (pr >= 0.7):
-                nu = 0.54*math.pow(ra,0.25)
+                nu = 0.54*math.pow(ra, 0.25)
             elif 1E07 < ra <= 1E11:
-                nu = 0.15*math.pow(ra,0.33333)
+                nu = 0.15*math.pow(ra, 0.33333)
             else:
-                nu = 0.15*math.pow(1E11,0.33333)
+                nu = 0.15*math.pow(1E11, 0.33333)
         else:  # warm plate, bottom face or cold plate, top face
             if ra < 1E04:
-                nu = 0.52*math.pow(1E04,0.2)
+                nu = 0.52*math.pow(1E04, 0.2)
             elif 1E04 <= ra <= 1E09 and pr >= 0.7:
-                nu = 0.52*math.pow(ra,0.2)
+                nu = 0.52*math.pow(ra, 0.2)
             else:
-                nu = 0.52*math.pow(1E09,0.2)
+                nu = 0.52*math.pow(1E09, 0.2)
         return nu
 
 
@@ -132,7 +136,7 @@ class FreeConvection:
         tm_c = (ts + tamb)/2
 
         air = HumidAir().with_state(
-                  InputHumidAir.pressure(self.P0),
+                  InputHumidAir.pressure(self.p_abs),
                   InputHumidAir.temperature(tm_c + dtk),
                   InputHumidAir.relative_humidity(self.rh/rhf),
               )

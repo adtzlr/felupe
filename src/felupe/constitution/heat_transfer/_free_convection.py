@@ -25,14 +25,14 @@ from scipy.constants import g
 class FreeConvection:
     r"""Free convection heat transfer formulation for flat plates.
 
-    <<todo: add top/bottom of plate switch! >>
-
     Parameters
     ----------
     plate_width : float
         Horizontal plate width in (m).
     plate_length : float
         Horizontal plate length in (m).
+    plate_side : string
+        Face of plate considered, 'top' or 'bottom'.
     p_abs: float (optional, default 101325)
         Absolute (total) air pressure in (Pa).
     rh : float (optional, default 50 %)
@@ -40,7 +40,36 @@ class FreeConvection:
 
     Notes
     -----
-    This class represents ...
+    This class provides a convection heat transfer coefficient for horizontal
+    plates based on detailed empirical approaches from [1]_.
+
+    The dimensionless Rayleigh number Ra is a function of gravity g, inverse
+    mean temperature (film temperature) :math:`\beta` (see :eq:`film-temperature`),
+    characteristic length L, thermal diffusivity :math:`\alpha` and kinematic
+    viscosity of the air :math:`\nu_v` according to :eq:`rayleigh`.
+
+    .. math::
+       :label: rayleigh
+
+       Ra\,=\,\frac{g\,\beta\,|\theta_s - \theta_i|\,L^3}{\alpha\nu_v}
+
+     where
+
+    .. math::
+       :label: film-temperature
+
+       \beta\,=\,\frac{2}{T_s + T_i}\,\text{ in K}^{-1}.
+
+    The characteristic length :math:`L` for horizontal plates is defined as
+    (eqn 9.29 from [1]_)
+
+    .. math::
+       :label: l-horiz-plate
+
+       L\,=\,\frac{A_s}{P}
+
+    where :math:`A_s` is the plate surface (one side) and :math:`P` is the
+    plate perimeter.
 
     References
     ----------
@@ -57,10 +86,12 @@ class FreeConvection:
 
     """
 
-    def __init__(self, plate_width, plate_length, p_abs=101325, rh=50):
+    def __init__(self, plate_width, plate_length, plate_side,
+                 p_abs=101325, rh=50):
         self.T0 = 273.15  # 0 °C in Kelvin, for °C <=> K conversion
         self.plate_width = plate_width
         self.plate_length = plate_length
+        self.plate_side = plate_side
         self.rh = rh
         self.p_abs = p_abs
 
@@ -142,9 +173,15 @@ class FreeConvection:
               )
 
         ra = self._rayleigh(ts_c=ts, ti_c=tamb, length_=self.length)
-        if ts > tamb:
-            nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z+')
-        else:
-            nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z-')
+        if self.plate_side == 'top':
+            if ts > tamb:
+                nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z+')
+            else:
+                nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z-')
+        else:  # self.plate_side == 'bottom' (or actually any other string)
+            if ts < tamb:
+                nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z+')
+            else:
+                nu = self._nusselt_horizontal(ra, air.prandtl, hflux='z-')
 
         return(nu*air.conductivity/self.length)

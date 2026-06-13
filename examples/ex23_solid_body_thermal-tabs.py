@@ -9,10 +9,14 @@ Thermal Analysis
      :class:`~felupe.thermal.SolidBodySurfaceRadiation` and
      :class:`~felupe.thermal.SolidBodySurfaceConvection`
 
-   * evaluate the surface heat flux at internal and external boundaries
+   * calculate detailed convection transfer coefficient using
+     :class:`~felupe.constitution.heat_transfer.FreeConvection`
+
+   * evaluate the surface heat flux at top and bottom boundaries
      with a job :class:`~felupe.Plugin`
 
-   * view the temperature field
+   * view top/bottom surface heat flux, convective and radiative transfer
+     coefficients and the temperature field
 
 
 This example describes a thermally activated concrete slab using a simplified
@@ -25,7 +29,8 @@ around its average value with a period of 24 h.
 The heat injection via the pipe layer is constant at 231 W/m2 and directly
 injected at the internal concrete surfaces (no pipe material is modelled).
 
-Surface heat transfer is modelled separately for convection and radiation.
+Surface heat transfer at the top and bottom surfaces is modelled separately for
+convection and radiation.
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -33,14 +38,14 @@ import numpy as np
 import felupe as fem
 
 # %%
-# Define material properties as lists for (reinforced) concrete and insulation.
+# Material properties are defined as lists for (reinforced) concrete and insulation.
 # This includes mass density, specific heat capacity and thermal conductivity.
 density = [2100, 20]  # kg/m^3
 specific_heat = [1000, 1450]  # J/(kg K)
 thermal_conductivity = [2.1, 0.035]  # W/(m K)
 
 # %%
-# Set up one mesh per material. If a material consists of multiple areas, these
+# One mesh per material is set up. If a material consists of multiple areas, these
 # are collected in a :class:`mesh container <felupe.MeshContainer>` and are
 # merged into one mesh per material. These meshes per material are then added
 # to a mesh container for the construction.
@@ -80,24 +85,21 @@ insulation = fem.MeshContainer(
 
 container = fem.MeshContainer([concrete, insulation], merge=True, decimals=6)
 
-# container.plot(
-#     colors=["lightgrey", "sepia"],
-#     labels=["Concrete", "Insulation"],
-#     show_edges=False,
-# ).show()
+container.plot(
+    colors=["lightgrey", "sepia"],
+    labels=["Concrete", "Insulation"],
+    show_edges=False,
+).show()
 
 # %%
-# A top-level temperature field is defined on the whole construction with an initial
-# temperature value of 10 °C, and separate fields are defined for each material. The
-# surface heat transfer coefficients and ambient temperatures are defined for the
-# internal and external boundaries. Thermal solid bodies are created for each material.
+# A top-level temperature field is defined on the whole construction with an
+# initial temperature value of 20 °C, and separate fields are defined for each
+# material. Thermal solid bodies are created for each material.
 regions = [fem.RegionQuad(m) for m in container]
 fields = [fem.Field(r, dim=1).as_container() for r in regions]
-
-# top level temperature field
 mesh = container.stack()
 region = fem.RegionQuad(mesh)
-temperature = fem.Field(region, dim=1, values=20.0)  # initial temperature 10 °C
+temperature = fem.Field(region, dim=1, values=20.0)  # initial temperature 20 °C
 field = fem.FieldContainer([temperature])
 
 materials = []
@@ -141,6 +143,7 @@ side2_heat_transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
     temperature=20.0,  # °C
 )
 
+# %%
 # For the top and bottom surfaces, the detailed calculation approaches defined
 # in :class:`~felupe.thermal.SolidBodySurfaceConvection` and
 # :class:`~felupe.thermal.SolidBodySurfaceRadiation` are used for convection
@@ -199,12 +202,8 @@ for idx, p in enumerate(center_points):
 # thermal solid body, which returns the integrated surface heat flux for a given
 # boundary region and time step.
 #
-# The convection coefficient values are calculated by ...
-#
-# The radiation coefficient values are calculated by ...
-#
-# All values are stored in the
-# ``tstep_data`` dictionary, which is passed to the callback function as an argument.
+# All values are stored in the ``tstep_data`` dictionary, which is passed to
+# the callback function as an argument.
 def callback(stepnumber, substepnumber, substep, tstep_data):
     """Save mean surface heat flux at internal and external boundaries."""
 
@@ -242,13 +241,14 @@ pipe_heat_flux = np.concatenate(
 
 
 # %%
-# The time step item is created with the thermal solid bodies. It must be located as the
-# first item in the step to properly update the time step in the materials. The internal
-# and external heat transfer item values are defined in the ramp, which specifies how
-# their values change over time. Finally, a job is created with the step and the
-# callback function, and evaluated with the top-level temperature field. A result file
-# is created for visualization in Paraview, and the temperature field is saved as point-
-# data in the result file.
+# The time step item is created with the thermal solid bodies. It must be located
+# as the first item in the step to properly update the time step in the materials.
+# The side, top and bottom heat transfer item values as well as the pipe flux
+# values are defined in the ramp, which specifies how their values change over
+# time. Finally, a job is created with the step and the callback function, and
+# evaluated with the top-level temperature field. A result file is created for
+# visualization in Paraview, and the temperature field is saved as point-data
+# in the result file.
 model_list = [*materials, side1_heat_transfer, side2_heat_transfer,
               top_convection, bottom_convection, top_radiation, bottom_radiation]
 
@@ -307,11 +307,9 @@ ax.text(0.5, 0.03, "heat enters construction", **text_kwargs)
 ax.legend()
 ax.set(xlim=(tmin, tmax), xlabel="time in h", ylabel=r"surface heat flux in W/m$^2$")
 
-plt.savefig("_ex23a.png")
-
 # %%
-# Top and bottom surface heat transfer coefficients and pipe heat flux are
-# plotted over time.
+# Top and bottom convection and radiation surface heat transfer coefficients
+# and pipe heat flux are plotted over time.
 fig, ax = plt.subplots()
 fig.subplots_adjust(right=0.75)
 
@@ -319,9 +317,9 @@ twin1 = ax.twinx()
 twin2 = ax.twinx()
 
 ax.set_xlabel("Time (s)")
-ax.set_ylabel("Convection coefficient (W/(m2 K))")
-twin1.set_ylabel("Temperature (°C)")
-twin2.set_ylabel("Pipe heat flux (W/m2)")
+ax.set_ylabel("Convection coefficient in W/(m$^2$ K)")
+twin1.set_ylabel("Temperature in °C")
+twin2.set_ylabel("Pipe heat flux in W/m$^2$")
 
 time_steps_h = time_steps / 3600
 
@@ -340,10 +338,7 @@ ax.legend(handles=p1+p2+p3+p4+p5, labelcolor="linecolor")
 
 twin2.spines['right'].set_position(('outward', 45))
 
-plt.savefig("_ex23b.png")
-
-
 # %%
 # A view on the temperature field at the end of the simulation period visualizes
 # the temperature distribution.
-# field.plot("Field", scalar_bar_vertical=True).show()
+field.plot("Field", scalar_bar_vertical=True).show()

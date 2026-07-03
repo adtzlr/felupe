@@ -89,6 +89,13 @@ all = ["felupe[autodiff,io,parallel,plot,progress,view]"]
 [dependency-groups]
 rtd = ["felupe[all,docs,examples]"]
 
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+
+[tool.uv.sources]
+torch = {index = "pytorch-cpu"}
+
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}
 

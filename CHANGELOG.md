@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file. The format 
 - Auto-apply `Mesh.as_meshio()` in `Job.evaluate(filename="result.xdmf", mesh=my_mesh)`, if `mesh` is an instance of `Mesh`. Previously, this required a `meshio.Mesh`.
 - Change the description of the package from a simple Python package to an open finite element infrastructure for nonlinear computational mechanics. This should focus on the project's vision more clearly.
 - Return the last converged result if `newtonraphson()` leads to NaN in the solution. 
+- Move the evaluated element shape function / gradient / hessian from `Region.element.h` to `Region.element_h`, from `Region.element_dhdr` to `Region.element_dhdr` and from `Region.element.d2hdrdr` to `Region.element_d2hdrdr`. Now all results, which are generated inside `Region` are stored in a `region = Region(mesh, element, quadrature)` object. No `element` is used to store results.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

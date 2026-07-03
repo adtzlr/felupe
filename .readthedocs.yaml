@@ -20,7 +20,7 @@ python:
     - method: uv
       command: pip
       path: .
-      extra_requirements:
+      extras:
         - all
         - docs
         - examples

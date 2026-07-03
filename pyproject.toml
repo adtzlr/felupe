@@ -87,34 +87,7 @@ view = ["pyvista[jupyter]"]
 all = ["felupe[autodiff,io,parallel,plot,progress,view]"]
 
 [dependency-groups]
-docs = [
-    "sphinx",
-    "pydata-sphinx-theme",
-    "sphinx-autoapi",
-    "sphinx-codeautolink",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinx-inline-tabs",
-    "pypandoc",
-]
-autodiff = ["tensortrax", "jax"]
-examples = [
-    "contique",
-    "imageio",
-    "pypardiso",
-    "torch",
-]
-io = [
-    "imageio",
-    "h5py",
-    "meshio",
-]
-parallel = ["einsumt"]
-progress = ["tqdm"]
-plot = ["matplotlib"]
-view = ["pyvista[jupyter]"]
-all = ["felupe[autodiff,io,parallel,plot,progress,view]"]
+rtd = ["felupe[all,docs,examples]"]
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

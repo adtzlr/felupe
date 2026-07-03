@@ -17,7 +17,7 @@ sphinx:
 
 python:
   install:
-    - method: pip
+    - method: uv
       path: .
       extra_requirements:
         - all

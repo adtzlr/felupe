@@ -101,6 +101,7 @@ url = "https://download.pytorch.org/whl/cpu"
 [tool.uv.sources]
 setuptools = {index = "pypi"}
 torch = {index = "pytorch-cpu"}
+torchvision = {index = "pytorch-cpu"}
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

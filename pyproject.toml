@@ -99,6 +99,7 @@ name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
 
 [tool.uv.sources]
+felupe = {index = "pypi"}
 torch = {index = "pytorch-cpu"}
 
 [tool.setuptools.dynamic]

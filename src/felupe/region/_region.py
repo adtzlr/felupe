@@ -342,17 +342,17 @@ class Region:
             or uniform is not None
         ):
             # element shape function
-            region.element.h = np.array(
+            region.element_h = np.array(
                 [region.element.function(q) for q in region.quadrature.points]
             ).T
-            region.h = np.ascontiguousarray(np.expand_dims(region.element.h, -1))
+            region.h = np.ascontiguousarray(np.expand_dims(region.element_h, -1))
 
             # partial derivative of element shape function
-            region.element.dhdr = np.array(
+            region.element_dhdr = np.array(
                 [region.element.gradient(q) for q in region.quadrature.points]
             ).transpose(1, 2, 0)
 
-            region.dhdr = np.ascontiguousarray(np.expand_dims(region.element.dhdr, -1))
+            region.dhdr = np.ascontiguousarray(np.expand_dims(region.element_dhdr, -1))
 
             if region.evaluate_gradient:
                 # geometric gradient
@@ -393,12 +393,12 @@ class Region:
                 # Second partial derivative of element shape function w.r.t. undeformed
                 # coordinates
                 if region.evaluate_hessian:
-                    region.element.d2hdrdr = np.array(
+                    region.element_d2hdrdr = np.array(
                         [region.element.hessian(q) for q in region.quadrature.points]
                     ).transpose(1, 2, 3, 0)
 
                     region.d2hdrdr = np.ascontiguousarray(
-                        np.expand_dims(region.element.d2hdrdr, -1)
+                        np.expand_dims(region.element_d2hdrdr, -1)
                     )
 
                     region.d2hdXdX = np.einsum(

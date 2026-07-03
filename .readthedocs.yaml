@@ -21,6 +21,4 @@ python:
       command: sync
       path: .
       groups:
-        - all
-        - docs
-        - examples
+        - rtd

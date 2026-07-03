@@ -58,6 +58,7 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = [
+    "sphinx",
     "pydata-sphinx-theme",
     "sphinx-autoapi",
     "sphinx-codeautolink",
@@ -84,6 +85,22 @@ progress = ["tqdm"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
 all = ["felupe[autodiff,io,parallel,plot,progress,view]"]
+
+[dependency-groups]
+read-the-docs = ["felupe[all,docs,examples]"]
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+
+[tool.uv.sources]
+setuptools = {index = "pypi"}
+torch = {index = "pytorch-cpu"}
 
 [tool.setuptools.dynamic]
 version = {attr = "felupe.__about__.__version__"}

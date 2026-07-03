@@ -58,6 +58,7 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = [
+    "sphinx",
     "pydata-sphinx-theme",
     "sphinx-autoapi",
     "sphinx-codeautolink",

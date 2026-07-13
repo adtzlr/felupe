@@ -240,8 +240,218 @@ def test_contact_coulomb_sliding_limit():
     assert np.allclose(r[[1, 4, 7]].ravel(), [-10, -50, 60])
 
 
+def _two_blocks_2d(friction=0.0, symmetric=False, multiplier=5.0, n=5):
+    "Two stacked plane-strain blocks with a small initial gap and a contact item."
+
+    bottom = fem.Rectangle(a=(0, 0), b=(1, 1), n=(n, n))
+    top = fem.Rectangle(a=(0, 1.1), b=(1, 2.1), n=(n, n))
+    container = fem.MeshContainer([bottom, top], merge=True)
+
+    regions = [fem.RegionQuad(m) for m in container.meshes]
+    fields = [fem.FieldContainer([fem.FieldPlaneStrain(r, dim=2)]) for r in regions]
+
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    solids = [fem.SolidBody(umat, f) for f in fields]
+
+    mask = container.meshes[0].points[:, 1] == 1
+    boundary_bottom = fem.RegionQuadBoundary(
+        container.meshes[0], mask=mask, ensure_3d=False
+    )
+    field_bottom = fem.FieldContainer([fem.FieldPlaneStrain(boundary_bottom, dim=2)])
+
+    mask = container.meshes[1].points[:, 1] == 1.1
+    boundary_top = fem.RegionQuadBoundary(
+        container.meshes[1], mask=mask, ensure_3d=False
+    )
+    field_top = fem.FieldContainer([fem.FieldPlaneStrain(boundary_top, dim=2)])
+
+    contact = fem.SolidBodyContact(
+        field_bottom,
+        field_top,
+        items=solids,
+        friction=friction,
+        symmetric=symmetric,
+        multiplier=multiplier,
+    )
+
+    region = fem.RegionQuad(container.stack())
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    return container, solids, contact, field
+
+
+def test_solidbody_contact_2d():
+    "Frictionless 2D contact between two blocks - the upper block is pressed down."
+
+    container, solids, contact, field = _two_blocks_2d()
+
+    boundaries = {
+        "fixed": fem.Boundary(field[0], fy=0),
+        "move": fem.Boundary(field[0], fy=2.1),
+    }
+    move = fem.math.linsteps([0, -0.2], num=10)
+    step = fem.Step(
+        items=[*solids, contact],
+        ramp={boundaries["move"]: move},
+        boundaries=boundaries,
+    )
+    job = fem.Job(steps=[step]).evaluate(x0=field, verbose=0)
+
+    # contact is active and the deformation is as prescribed
+    assert contact.results.active.sum() > 0
+    assert np.isclose(field[0].values[:, 1].min(), -0.2)
+
+    # no significant penetration (deformed surfaces do not cross too much)
+    points_bottom = container.meshes[0].points
+    points_top = container.meshes[1].points
+    y_bottom = (points_bottom + field[0].values)[points_bottom[:, 1] == 1][:, 1].max()
+    y_top = (points_top + field[0].values)[points_top[:, 1] == 1.1][:, 1].min()
+    assert (y_bottom - y_top) < 0.1
+
+
+def test_solidbody_contact_assemble():
+    "Assembly of the residual vector and the (symmetric) tangent stiffness matrix."
+
+    container, solids, contact, field = _two_blocks_2d()
+
+    # impose a penetration by moving the upper block down
+    x = field.region.mesh.points
+    values = field[0].values
+    values[x[:, 1] >= 1.1, 1] = -0.2
+
+    r = contact.assemble.vector(field=field)
+    K = contact.assemble.matrix(field=field)
+
+    ndof = np.sum(field.fieldsizes)
+    assert r.shape == (ndof, 1)
+    assert K.shape == (ndof, ndof)
+
+    # the contact contributes non-zero residual forces and tangent stiffness
+    assert contact.results.active.sum() > 0
+    assert np.abs(r.toarray()).max() > 0
+    assert K.nnz > 0
+
+    # a larger penalty-multiplier reduces the penetration
+    _, solids_a, contact_a, field_a = _two_blocks_2d(multiplier=1.0)
+    _, solids_b, contact_b, field_b = _two_blocks_2d(multiplier=20.0)
+    for con, sol, fld in [(contact_a, solids_a, field_a), (contact_b, solids_b, field_b)]:
+        boundaries = {
+            "fixed": fem.Boundary(fld[0], fy=0),
+            "move": fem.Boundary(fld[0], fy=2.1),
+        }
+        step = fem.Step(
+            items=[*sol, con],
+            ramp={boundaries["move"]: fem.math.linsteps([0, -0.15], num=8)},
+            boundaries=boundaries,
+        )
+        fem.Job(steps=[step]).evaluate(x0=fld, verbose=0)
+
+    pb = container.meshes[0].points
+    pt = container.meshes[1].points
+
+    def penetration(fld):
+        yb = (pb + fld[0].values)[pb[:, 1] == 1][:, 1].max()
+        yt = (pt + fld[0].values)[pt[:, 1] == 1.1][:, 1].min()
+        return max(0.0, yb - yt)
+
+    assert penetration(field_b) <= penetration(field_a) + 1e-8
+
+
+def test_solidbody_contact_friction():
+    "2D contact with Coulomb friction - the upper block is pressed down."
+
+    container, solids, contact, field = _two_blocks_2d(friction=0.4)
+
+    boundaries = {
+        "fixed": fem.Boundary(field[0], fy=0),
+        "move": fem.Boundary(field[0], fy=2.1, skip=(1, 0)),
+    }
+    move = fem.math.linsteps([0, -0.15], num=8)
+    step = fem.Step(
+        items=[*solids, contact],
+        ramp={boundaries["move"]: move},
+        boundaries=boundaries,
+    )
+    fem.Job(steps=[step]).evaluate(x0=field, verbose=0)
+
+    assert contact.results.active.sum() > 0
+    assert contact.friction == 0.4
+    assert contact.results.slip.shape == contact.results.active.shape
+
+
+def test_solidbody_contact_symmetric():
+    "Symmetric two-pass contact search (slave and master roles are swapped)."
+
+    container, solids, contact, field = _two_blocks_2d(symmetric=True)
+
+    assert len(contact._passes) == 2
+    assert len(contact._states) == 2
+
+    boundaries = {
+        "fixed": fem.Boundary(field[0], fy=0),
+        "move": fem.Boundary(field[0], fy=2.1),
+    }
+    move = fem.math.linsteps([0, -0.15], num=8)
+    step = fem.Step(
+        items=[*solids, contact],
+        ramp={boundaries["move"]: move},
+        boundaries=boundaries,
+    )
+    fem.Job(steps=[step]).evaluate(x0=field, verbose=0)
+
+    assert contact._states[0]["active"].sum() > 0
+    assert contact._states[1]["active"].sum() > 0
+
+
+def test_solidbody_contact_3d():
+    "Frictionless 3D contact between two cubes - the upper cube is pressed down."
+
+    bottom = fem.Cube(a=(0, 0, 0), b=(1, 1, 1), n=(4, 4, 4))
+    top = fem.Cube(a=(0, 0, 1.1), b=(1, 1, 2.1), n=(4, 4, 4))
+    container = fem.MeshContainer([bottom, top], merge=True)
+
+    regions = [fem.RegionHexahedron(m) for m in container.meshes]
+    fields = [fem.FieldContainer([fem.Field(r, dim=3)]) for r in regions]
+
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    solids = [fem.SolidBody(umat, f) for f in fields]
+
+    mask = container.meshes[0].points[:, 2] == 1
+    boundary_bottom = fem.RegionHexahedronBoundary(container.meshes[0], mask=mask)
+    field_bottom = fem.FieldContainer([fem.Field(boundary_bottom, dim=3)])
+
+    mask = container.meshes[1].points[:, 2] == 1.1
+    boundary_top = fem.RegionHexahedronBoundary(container.meshes[1], mask=mask)
+    field_top = fem.FieldContainer([fem.Field(boundary_top, dim=3)])
+
+    contact = fem.SolidBodyContact(field_bottom, field_top, items=solids, multiplier=5.0)
+
+    region = fem.RegionHexahedron(container.stack())
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    boundaries = {
+        "fixed": fem.Boundary(field[0], fz=0),
+        "move": fem.Boundary(field[0], fz=2.1),
+    }
+    move = fem.math.linsteps([0, -0.2], num=10)
+    step = fem.Step(
+        items=[*solids, contact],
+        ramp={boundaries["move"]: move},
+        boundaries=boundaries,
+    )
+    fem.Job(steps=[step]).evaluate(x0=field, verbose=0)
+
+    assert contact.results.active.sum() > 0
+    assert np.isclose(field[0].values[:, 2].min(), -0.2)
+
+
 if __name__ == "__main__":
     test_contact_mixed()
     test_contact_isolated()
     test_contact_plot_2d()
     test_contact_coulomb_sliding_limit()
+    test_solidbody_contact_2d()
+    test_solidbody_contact_assemble()
+    test_solidbody_contact_friction()
+    test_solidbody_contact_symmetric()
+    test_solidbody_contact_3d()

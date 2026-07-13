@@ -52,6 +52,7 @@ Mechanics
 .. autosummary::
 
    ContactRigidPlane
+   SolidBodyContact
 
 **Helpers for Custom Items and State Variables**
 
@@ -176,6 +177,11 @@ Mechanics
    :inherited-members:
 
 .. autoclass:: felupe.ContactRigidPlane
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.SolidBodyContact
    :members:
    :undoc-members:
    :inherited-members:

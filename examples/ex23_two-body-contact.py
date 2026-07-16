@@ -49,10 +49,14 @@ solids = [fem.SolidBody(umat, field) for umat, field in zip(umats, fields)]
 # search is performed in two passes, where the roles of the slave (contactor) and master
 # (target) surface are swapped. This is useful here, because a curved surface contacts a
 # flat one and neither surface fully covers the other.
-boundary_bottom = fem.RegionQuadBoundary(container.meshes[0])
+boundary_bottom = fem.RegionQuadBoundary(
+    mesh=container.meshes[0], quadrature=fem.GaussLegendreBoundary(0, dim=2)
+)
 field_bottom = fem.FieldContainer([fem.FieldPlaneStrain(boundary_bottom, dim=2)])
 
-boundary_top = fem.RegionQuadBoundary(container.meshes[1])
+boundary_top = fem.RegionQuadBoundary(
+    mesh=container.meshes[1], quadrature=fem.GaussLegendreBoundary(0, dim=2)
+)
 field_top = fem.FieldContainer([fem.FieldPlaneStrain(boundary_top, dim=2)])
 
 contact = fem.SolidBodyContact(
@@ -61,6 +65,7 @@ contact = fem.SolidBodyContact(
     items=solids,
     symmetric=True,
     multiplier=5.0,
+    friction=0.1,
 )
 
 # %%

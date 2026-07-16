@@ -220,37 +220,34 @@ class SolidBodyContact:
         # undeformed (global) point coordinates
         self.points = self.mesh.points
 
-        # number of corner-nodes per facet (2 for edges, 4 for faces)
-        ncorner = 2 if self.dim == 2 else 4
-
-        # extract surface facets (global point-connectivity) and reference normals
-        slave = self._surface(field.region, ncorner)
-        master = self._surface(other_field.region, ncorner)
+        # extract points, cells and undeformed normals of a boundary region
+        slave = self._surface(field.region)
+        master = self._surface(other_field.region)
 
         # capture (search) distance per segment-surface, based on the mean facet-size.
         # A slave-point is only in contact with a segment if the projection is closer
         # than this distance - this avoids spurious contact of far-away points, which
         # happen to lie on the inner side of the infinite plane of a segment.
-        slave_capture = self.capture * self._facet_size(slave["corners"])
-        master_capture = self.capture * self._facet_size(master["corners"])
+        slave_capture = self.capture * self._facet_size(slave["cells"])
+        master_capture = self.capture * self._facet_size(master["cells"])
 
         # a pass is defined by a set of slave-points and master-segments
         self._passes = [
-            (slave["nodes"], master["corners"], master["normals"], master_capture)
+            (slave["points"], master["cells"], master["normals"], master_capture)
         ]
         if self.symmetric:
             self._passes.append(
-                (master["nodes"], slave["corners"], slave["normals"], slave_capture)
+                (master["points"], slave["cells"], slave["normals"], slave_capture)
             )
 
         # per-pass history (reference gap-vectors, active- and slip-state)
         self._states = [
             {
-                "dx_ref": np.zeros((len(nodes), self.dim)),
-                "active": np.zeros(len(nodes), dtype=bool),
-                "slip": np.zeros(len(nodes), dtype=bool),
+                "dx_ref": np.zeros((len(points), self.dim)),
+                "active": np.zeros(len(points), dtype=bool),
+                "slip": np.zeros(len(points), dtype=bool),
             }
-            for nodes, *_ in self._passes
+            for points, *_ in self._passes
         ]
 
         # expose the first pass for introspection / plotting
@@ -260,30 +257,26 @@ class SolidBodyContact:
         self.results.slip = self._states[0]["slip"]
 
         # cache of contact degrees of freedom for the penalty scaling
-        contact_nodes = np.unique(np.concatenate([slave["nodes"], master["nodes"]]))
-        self._contact_dof = field[0].indices.dof[contact_nodes].ravel()
+        contact_points = np.unique(np.concatenate([slave["points"], master["points"]]))
+        self._contact_dof = field[0].indices.dof[contact_points].ravel()
 
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
 
     @staticmethod
-    def _surface(region, ncorner):
-        "Extract surface nodes, facet-corners and reference normals of a region."
+    def _surface(region):
+        "Extract surface point-ids, cells and undeformed normals of a boundary region."
 
-        corners = np.asarray(region.mesh.cells_faces)[:, :ncorner]
-        nodes = np.unique(corners)
+        return {
+            "points": np.unique(region.mesh.cells_faces),
+            "cells": region.mesh.cells_faces,
+            "normals": region.normals[:, 0].T,
+        }
 
-        # mean reference (outward) unit normal per facet
-        normals = region.normals.mean(axis=1).T
-        normals = normals[:, : region.mesh.dim]
-        normals = normals / np.linalg.norm(normals, axis=1, keepdims=True)
-
-        return {"nodes": nodes, "corners": corners, "normals": normals}
-
-    def _facet_size(self, corners):
+    def _facet_size(self, cells):
         "Return the mean length of the first edge of the given facets."
 
-        edges = self.points[corners[:, 1]] - self.points[corners[:, 0]]
-        return float(np.linalg.norm(edges, axis=1).mean())
+        edges = self.points[cells[:, 1]] - self.points[cells[:, 0]]
+        return np.linalg.norm(edges, axis=1).mean()
 
     def _penalties(self):
         "Return the normal and tangential penalty stiffness scale factors."
@@ -318,12 +311,12 @@ class SolidBodyContact:
         if self.dim == 2:
             a, b = corners_coords[0], corners_coords[1]
             tangent = b - a
-            length_sq = tangent @ tangent
+            length_squared = tangent @ tangent
 
-            if length_sq == 0.0:
+            if length_squared == 0.0:
                 return None
 
-            xi = (xs - a) @ tangent / length_sq
+            xi = (xs - a) @ tangent / length_squared
             inside = (-tol <= xi) and (xi <= 1.0 + tol)
             xi = min(max(xi, 0.0), 1.0)
 
@@ -345,9 +338,7 @@ class SolidBodyContact:
                 t1 = dshape[0] @ corners_coords
                 t2 = dshape[1] @ corners_coords
                 residual = np.array([(xs - projection) @ t1, (xs - projection) @ t2])
-                jacobian = -np.array(
-                    [[t1 @ t1, t1 @ t2], [t2 @ t1, t2 @ t2]]
-                )
+                jacobian = -np.array([[t1 @ t1, t1 @ t2], [t2 @ t1, t2 @ t2]])
                 if np.linalg.det(jacobian) == 0.0:
                     return None
                 dxi = np.linalg.solve(jacobian, residual)
@@ -425,7 +416,7 @@ class SolidBodyContact:
             if distance > capture:
                 continue
 
-            result["corners"] = corners
+            result["cells"] = corners
             result["normal_ref"] = normals_ref[facet]
 
             # nearest facet by the true (Euclidean) distance to the projection point
@@ -544,10 +535,8 @@ class SolidBodyContact:
                         contact, state["dx_ref"][i], eps_n, eps_t
                     )
 
-                corners = contact["corners"]
-                coords = np.vstack(
-                    [xs, self.points[corners] + displacement[corners]]
-                )
+                corners = contact["cells"]
+                coords = np.vstack([xs, self.points[corners] + displacement[corners]])
 
                 # evaluate the local force-vector (shared with the tangent assembly)
                 local = self._local_force(
@@ -590,10 +579,8 @@ class SolidBodyContact:
                 if contact is None or contact["gap"] >= 0.0:
                     continue
 
-                corners = contact["corners"]
-                coords = np.vstack(
-                    [xs, self.points[corners] + displacement[corners]]
-                )
+                corners = contact["cells"]
+                coords = np.vstack([xs, self.points[corners] + displacement[corners]])
 
                 # consistent local tangent by finite-differences of the local force,
                 # with the friction reference state held fixed

@@ -240,7 +240,7 @@ def test_contact_coulomb_sliding_limit():
     assert np.allclose(r[[1, 4, 7]].ravel(), [-10, -50, 60])
 
 
-def _two_blocks_2d(friction=0.0, symmetric=False, multiplier=5.0, n=5):
+def _two_blocks_2d(friction=0.0, symmetric=False, multiplier=5.0, n=5, capture=2.0):
     "Two stacked plane-strain blocks with a small initial gap and a contact item."
 
     bottom = fem.Rectangle(a=(0, 0), b=(1, 1), n=(n, n))
@@ -272,6 +272,7 @@ def _two_blocks_2d(friction=0.0, symmetric=False, multiplier=5.0, n=5):
         friction=friction,
         symmetric=symmetric,
         multiplier=multiplier,
+        capture=capture,
     )
 
     region = fem.RegionQuad(container.stack())
@@ -401,6 +402,43 @@ def test_solidbody_contact_symmetric():
 
     assert contact._states[0]["active"].sum() > 0
     assert contact._states[1]["active"].sum() > 0
+
+
+def test_solidbody_contact_state_transition():
+    "Open->close->open transitions update the active and slip masks."
+
+    _, _, contact, field = _two_blocks_2d(friction=0.2)
+    x = field.region.mesh.points
+    top = x[:, 1] >= 1.1
+
+    field[0].values[:] = 0.0
+    contact.assemble.vector(field=field)
+    assert not np.any(contact.results.active)
+
+    field[0].values[top, 1] = -0.2
+    contact.assemble.vector(field=field)
+    assert np.any(contact.results.active)
+
+    field[0].values[:] = 0.0
+    contact.assemble.vector(field=field)
+    assert not np.any(contact.results.active)
+    assert not np.any(contact.results.slip)
+
+
+def test_solidbody_contact_capture_distance():
+    "Tiny capture distance suppresses contact contributions."
+
+    _, _, contact, field = _two_blocks_2d(capture=0.01)
+    x = field.region.mesh.points
+    top = x[:, 1] >= 1.1
+    field[0].values[top, 1] = -0.2
+
+    r = contact.assemble.vector(field=field)
+    K = contact.assemble.matrix(field=field)
+
+    assert not np.any(contact.results.active)
+    assert np.max(np.abs(r.toarray())) == 0.0
+    assert K.nnz == 0
 
 
 def test_solidbody_contact_3d():

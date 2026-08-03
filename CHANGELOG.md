@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.
+- Fix docstring parameter names which do not match the signatures: `kawargs` in `IntegralFormExpression.integrate()` and `IntegralFormExpressionMixed.assemble()`, `cells_neighbours` in `Mesh.get_point_ids_shared()` and `orders` in `FieldContainer.extract()`. Also document the missing `sym` argument of `IntegralFormExpressionMixed.integrate()` and `.assemble()`.
 - Fix per-cell material parameter arrays for `NeoHookeCompressible`.
 
 ### Deprecated

@@ -149,6 +149,8 @@ class BilinearFormExpression:
             Optional named arguments for callable weakform (default is None).
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
+        sym : bool, optional
+            Flag to active symmetric integration/assembly (default is False).
 
         Returns
         -------
@@ -171,10 +173,12 @@ class BilinearFormExpression:
         ----------
         weakform : callable
             A callable function ``weakform(v, u, **kwargs)``.
-        kawargs : dict or None, optional
+        kwargs : dict or None, optional
             Optional named arguments for callable weakform (default is None).
         parallel : bool, optional
             Flag to activate parallel threading (default is False).
+        sym : bool, optional
+            Flag to active symmetric integration/assembly (default is False).
 
         Returns
         -------

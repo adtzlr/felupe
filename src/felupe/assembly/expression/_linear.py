@@ -50,7 +50,7 @@ class LinearForm:
         ----------
         weakform : callable
             A callable function ``weakform(v, **kwargs)``.
-        kawargs : dict, optional
+        kwargs : dict, optional
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.

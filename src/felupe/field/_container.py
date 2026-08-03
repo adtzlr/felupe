@@ -168,7 +168,7 @@ class FieldContainer:
             A location into which the result is stored. If provided, it must have a
             shape that the inputs broadcast to. If not provided or None, a freshly-
             allocated array is returned (default is None).
-        orders : str or list of str, optional
+        order : str or list of str, optional
             Controls the memory layout of the outputs. 'C' means it should be C
             contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
             be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as

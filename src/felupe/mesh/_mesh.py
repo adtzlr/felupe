@@ -487,7 +487,7 @@ class Mesh(DiscreteGeometry):
 
         Parameters
         ----------
-        cells_neighbours : list or ndarray
+        cell_ids_neighbours : list or ndarray
             Array with cell ids.
 
         Returns

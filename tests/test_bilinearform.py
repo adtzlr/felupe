@@ -28,6 +28,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 import felupe as fem
+from felupe.assembly.expression._bilinear import BilinearForm
+from felupe.assembly.expression._linear import LinearForm
 from felupe.math import dddot, ddot, dot, dya, grad, hess, sym, trace
 
 
@@ -102,6 +104,11 @@ def test_form_decorator():
     L.assemble(field, kwargs=dict(F=F, p=p), parallel=True)
     L.assemble(field, kwargs=dict(F=F, p=p), parallel=False, sym=True)
     L.assemble(field, kwargs=dict(F=F, p=p), parallel=True, sym=True)
+
+
+def test_expression_integrate_uses_nonmutable_kwargs_default():
+    assert LinearForm.integrate.__defaults__[0] is None
+    assert BilinearForm.integrate.__defaults__[0] is None
 
 
 def test_linear_elastic():

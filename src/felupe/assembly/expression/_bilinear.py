@@ -50,7 +50,7 @@ class BilinearForm:
             fun=None, v=v.field, dV=self.dx, u=u.field, **kwargs
         )
 
-    def integrate(self, weakform, kwargs={}, parallel=False, sym=False):
+    def integrate(self, weakform, kwargs=None, parallel=False, sym=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
@@ -69,6 +69,9 @@ class BilinearForm:
         values : ndarray
             Integrated (but not assembled) matrix values.
         """
+
+        if kwargs is None:
+            kwargs = {}
 
         values = np.zeros(
             (

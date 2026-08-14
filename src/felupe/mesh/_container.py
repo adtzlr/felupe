@@ -289,7 +289,14 @@ class MeshContainer:
         return deepcopy(self)
 
     def plot(
-        self, *args, colors=None, opacity=0.99, labels=None, add_legend=None, **kwargs
+        self,
+        *args,
+        colors=None,
+        opacity=0.99,
+        labels=None,
+        add_legend=None,
+        plotter=None,
+        **kwargs,
     ):
         """Plot the meshes of the mesh container.
 
@@ -315,7 +322,6 @@ class MeshContainer:
         if labels is None:
             labels = [f"Mesh {i + 1}" for i, _ in enumerate(self.meshes)]
 
-        plotter = None
         for mesh, color in zip(self.meshes, colors):
             plotter = mesh.view().plot(
                 *args,

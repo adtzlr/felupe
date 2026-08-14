@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new plugin framework for `Job(..., plugins=[])`. A plugin `MyPlugin` is a class object and must provide methods (hooks), which are called before/after a job, step, substep, newton, iteration and linear-solve. In the long term, `Job` will be simplified and all extensions will be refactored to plugins. Plugins are similar to a `callback()`, but are triggered more often.
 - Add a new `plugin` module with `Plugin` (base class), `AnimationWriterPlugin`, `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
 - Add `CharacteristicCurvePlugin.to_arrays()` to return the x- and y-data. `CharacteristicCurvePlugin.plot()` uses the `to_arrays()` method internally.
+- Add a `plotter` argument to `MeshContainer.plot(plotter=None)`.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

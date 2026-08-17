@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new `plugin` module with `Plugin` (base class), `AnimationWriterPlugin`, `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
 - Add `CharacteristicCurvePlugin.to_arrays()` to return the x- and y-data. `CharacteristicCurvePlugin.plot()` uses the `to_arrays()` method internally.
 - Add a `plotter` argument to `MeshContainer.plot(plotter=None)`.
+- Add `SolidBodyContact`, a frictionless three-dimensional segment-to-segment (surface-to-surface) contact between the surfaces of two solid bodies. The weak form of the contact is integrated on the faces of a boundary region of the secondary surface, e.g. a `RegionHexahedronBoundary`. Its integration points are projected on the faces of the primary surface by a vectorized closest-point projection. The contact constraints are enforced by a regularized penalty method with a consistent (symmetric) tangent stiffness matrix. The penalty stiffness is estimated automatically from the mean stiffness of the degrees of freedom on both contact surfaces, which requires no manual tuning for rubber-to-rubber and rubber-to-metal contacts.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.

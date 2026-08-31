@@ -41,6 +41,9 @@ class FieldContainer:
     ----------
     fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric`, :class:``~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`
         List with fields. The region is linked to the first field.
+    bundle : FieldContainerBundle or None, optional
+        The field container bundle, if this field container is part of one. Default is
+        None, which means that the field container is not part of a bundle.
     **kwargs : dict, optional
         Extra class attributes for the field container.
 
@@ -107,10 +110,11 @@ class FieldContainer:
 
     """
 
-    def __init__(self, fields, **kwargs):
+    def __init__(self, fields, bundle=None, **kwargs):
 
         # flatten the given list of fields (unpack field containers)
         self.fields = []
+        self.bundle = bundle
 
         for field in fields:
             if isinstance(field, FieldContainer):

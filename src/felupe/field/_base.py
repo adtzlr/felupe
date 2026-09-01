@@ -98,9 +98,7 @@ class Field:
     """
 
     def __init__(self, region, dim=1, values=0.0, dtype=None, **kwargs):
-        self.region = region
-        self.dim = dim
-        self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
+        self.__field__ = Field
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
@@ -124,26 +122,36 @@ class Field:
                 shape=(region.mesh.npoints, dim), fill_value=values, dtype=dtype
             )
 
-        eai, ai = self._indices_per_cell(self.region.mesh.cells, dim)
-        self.indices = Indices(eai, ai, region, dim)
+        self.dim = dim
+        self.reload(region=region)
 
-        self.__field__ = Field
+    def reload(self, region, mode="edge", **kwargs):
+        """Reload the field with a new region in-place. The field values are extended
+        to the new region if necessary.
 
-    def reload(self, region=None, mode="edge"):
+        Parameters
+        ----------
+        region : Region
+            The new region for the field.
+        mode : str, optional
+            The padding mode to use if the field values need to be extended. Default is
+            "edge".
+        **kwargs : dict, optional
+            Additional keyword arguments are passed to :func:`numpy.pad`.
+        """
 
         if region is not None:
             self.region = region
             self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
 
             shape = (self.region.mesh.npoints, self.dim)
-            self.values = np.pad(
-                self.values,
-                pad_width=(
-                    (0, shape[0] - self.values.shape[0]),
-                    (0, shape[1] - self.values.shape[1]),
-                ),
-                mode=mode,
-            )
+            if shape != self.values.shape:
+                self.values = np.pad(
+                    self.values,
+                    pad_width=((0, shape[0] - self.values.shape[0]), (0, 0)),
+                    mode=mode,
+                    **kwargs,
+                )
 
             eai, ai = self._indices_per_cell(self.region.mesh.cells, self.dim)
             self.indices = Indices(eai, ai, region, self.dim)

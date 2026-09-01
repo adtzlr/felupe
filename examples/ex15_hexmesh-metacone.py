@@ -60,9 +60,8 @@ mesh = fem.MeshContainer(
 # Two solid bodies are created, one for the rubber and one for the metal. The top-level
 # field is passed as the ``x0``-argument to the evaluate-method of the job. The part is
 # displaced along the rotation axis.
-fields, x0 = fem.FieldContainer(
-    [fem.FieldAxisymmetric(fem.RegionQuad(m), dim=2) for m in mesh]
-).merge()
+fields = [fem.FieldAxisymmetric(fem.RegionQuad(m), dim=2).as_container() for m in mesh]
+x0 = fem.FieldContainer(fields).merge()
 
 rubber = fem.NeoHooke(mu=1)
 metal = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)

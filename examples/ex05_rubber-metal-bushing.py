@@ -61,7 +61,8 @@ metal = fem.MeshContainer(
 # valued displacement fields. However, the fields must be merged in a top-level field-
 # container. This modifies the sub-fields to be used in the solid bodies.
 regions = [fem.RegionHexahedron(m) for m in [rubber, metal]]
-fields, field = fem.FieldContainer([fem.Field(r, dim=3) for r in regions]).merge()
+fields = [fem.Field(r, dim=3).as_container() for r in regions]
+field = fem.FieldContainer(fields).merge()
 
 # material formulations and solid bodies for the rubber and the metal sheets
 umats = [fem.NeoHooke(mu=1), fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)]

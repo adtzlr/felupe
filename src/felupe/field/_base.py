@@ -129,6 +129,25 @@ class Field:
 
         self.__field__ = Field
 
+    def reload(self, region=None, mode="edge"):
+
+        if region is not None:
+            self.region = region
+            self.shape = self.region.quadrature.npoints, self.region.mesh.ncells
+
+            shape = (self.region.mesh.npoints, self.dim)
+            self.values = np.pad(
+                self.values,
+                pad_width=(
+                    (0, shape[0] - self.values.shape[0]),
+                    (0, shape[1] - self.values.shape[1]),
+                ),
+                mode=mode,
+            )
+
+            eai, ai = self._indices_per_cell(self.region.mesh.cells, self.dim)
+            self.indices = Indices(eai, ai, region, self.dim)
+
     def _indices_per_cell(self, cells, dim):
         "Calculate pre-defined indices for sparse matrices."
 

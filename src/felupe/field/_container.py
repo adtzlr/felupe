@@ -420,67 +420,25 @@ class FieldContainer:
         container = MeshContainer(meshes, merge=True, decimals=decimals)
 
         new_fields = []
-
-        # only take meshes of non-dual fields
         current_mesh = container.meshes[0]
 
+        # reload regions of fields in-place
         for field, mesh in zip(self.fields, container.meshes):
 
-            if "Dual" in type(field).__name__:
-                RegionOriginal = type(field.__args__[0])
-                region = RegionOriginal(current_mesh)
-                new_field = type(field)(region, *field.__args__[1:], **field.__kwargs__)
-
-            else:
-
-                # update the current mesh
+            # only take meshes of non-dual fields
+            if not "Dual" in type(field).__name__:
                 current_mesh = mesh
 
-                RegionOriginal = type(field.region)
-                region = RegionOriginal(current_mesh)
-                new_field = type(field)(region, dim=field.dim, dtype=field.values.dtype)
-
-            new_fields.append(new_field)
-
-        def group_dual_fields(fields):
-
-            # init lists for new fields and subfields per container
-            new_fields = []
-            subfields = []
-
-            # loop over fields
-            for field in fields:
-
-                # check if type of field is not FieldDual (without importing FieldDual)
-                if "Dual" not in type(field).__name__:
-
-                    # finalize the subfields to the list of new fields
-                    # if it is not empty
-                    if len(subfields) > 0:
-                        new_fields.append(subfields)
-
-                    # start a new list of subfields
-                    subfields = [field]
-
-                # append the dual field to the list of subfields
-                else:
-                    subfields.append(field)
-
-            # finally add the last subfields to the list of new fields
-            if len(subfields) > 0:
-                new_fields.append(subfields)
-
-            return new_fields
-
-        new_fields_grouped = group_dual_fields(new_fields)
-        Field = self.fields[0].__field__
+            field.region.reload(mesh=current_mesh)
+            field.reload(field.region)
 
         # take the dimension of the first sub-field
-        vertex_field = Field.from_mesh_container(
-            container, dim=new_fields_grouped[0][0].dim
-        ).as_container(mesh_container=container)
+        Field = self.fields[0].__field__
 
-        return [FieldContainer(f) for f in new_fields_grouped], vertex_field
+        # create a new top-level (global) vertex field container
+        return Field.from_mesh_container(
+            container, dim=self.fields[0].dim
+        ).as_container(mesh_container=container)
 
     def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.

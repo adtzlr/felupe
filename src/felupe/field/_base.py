@@ -146,9 +146,11 @@ class Field:
 
             shape = (self.region.mesh.npoints, self.dim)
             if shape != self.values.shape:
+                pad_width = ((0, shape[0] - self.values.shape[0]), (0, 0))
+
                 self.values = np.pad(
                     self.values,
-                    pad_width=((0, shape[0] - self.values.shape[0]), (0, 0)),
+                    pad_width=pad_width[: len(self.values.shape)],
                     mode=mode,
                     **kwargs,
                 )

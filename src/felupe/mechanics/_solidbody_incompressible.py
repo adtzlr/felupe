@@ -478,7 +478,7 @@ class SolidBodyNearlyIncompressible(Solid):
         self.results.force = None
         self.results.stiffness = None
 
-    def revolve(self, n=11, phi=180):
+    def revolve(self, n=11, phi=180, x0=None):
         """Return a revolved solid body.
 
         Parameters
@@ -487,6 +487,8 @@ class SolidBodyNearlyIncompressible(Solid):
             Number of n-point revolutions (or (n-1) cell revolutions), default is 11.
         phi : float or ndarray, optional
             Revolution angle in degree (default is 180).
+        x0 : FieldContainer or None, optional
+            The revolved top-level field container. Default is None.
 
         Returns
         -------
@@ -500,6 +502,13 @@ class SolidBodyNearlyIncompressible(Solid):
         """
 
         new_field = self.field.revolve(n=n, phi=phi)
+        if hasattr(self.field, "x0"):
+            if x0 is None:
+                raise ValueError(
+                    "The revolved top-level field container must be provided as the"
+                    " x0-argument."
+                )
+            new_field.x0 = x0
 
         # create a new solid body
         new_solid = SolidBodyNearlyIncompressible(

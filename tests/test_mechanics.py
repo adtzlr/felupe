@@ -751,6 +751,10 @@ def test_axi_to_3d():
     step = fem.Step(items=[new_solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
+    solid.field.x0 = None
+    with pytest.raises(ValueError):
+        solid.revolve(n=11, phi=180)
+
 
 def test_axi_to_3d_mixed():
 
@@ -794,6 +798,10 @@ def test_axi_to_3d_incompressible():
 
     step = fem.Step(items=[new_solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
+
+    solid.field.x0 = None
+    with pytest.raises(ValueError):
+        solid.revolve(n=11, phi=180)
 
 
 def test_axi_to_3d_quadratic():

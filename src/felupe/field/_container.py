@@ -128,23 +128,24 @@ class FieldContainer:
 
         return "\n".join([header, size, fields_header, *fields])
 
-    def reload(self, fields):
+    def reload(self, fields=None):
         """Reload the Field Container with new fields.
-        
+
         Parameters
         ----------
         fields : list
             List of fields.
 
         """
-        # create list of fields (unpack field containers)
-        self.fields = []
+        if fields is not None:
+            # create list of fields (unpack field containers)
+            self.fields = []
 
-        for field in fields:
-            if isinstance(field, FieldContainer):
-                self.fields.extend(field.fields)
-            else:
-                self.fields.append(field)
+            for field in fields:
+                if isinstance(field, FieldContainer):
+                    self.fields.extend(field.fields)
+                else:
+                    self.fields.append(field)
 
         self.region = self.fields[0].region
 
@@ -426,6 +427,16 @@ class FieldContainer:
 
         container = MeshContainer(meshes, merge=True, decimals=decimals)
 
+        # take the type and the dimension
+        # of the first sub-field of the first field container
+        Field = self.fields[0].__field__
+        dim = self.fields[0].dim
+
+        # create a new top-level (global) vertex field container
+        x0 = Field.from_mesh_container(container, dim=dim).as_container(
+            mesh_container=container
+        )
+
         # take the first new mesh
         new_mesh = container.meshes[0]
 
@@ -436,16 +447,16 @@ class FieldContainer:
             if not "Dual" in type(field).__name__:
                 new_mesh = mesh
 
+            # reload the region of the field with the new mesh
             field.region.reload(mesh=new_mesh)
+
+            # reload the field
             field.reload(field.region)
 
-        # take the type of the first sub-field
-        Field = self.fields[0].__field__
+            # add the top-level field container as attribute x0
+            field.x0 = x0
 
-        # create a new top-level (global) vertex field container
-        return Field.from_mesh_container(
-            container, dim=self.fields[0].dim
-        ).as_container(mesh_container=container)
+        return x0
 
     def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.

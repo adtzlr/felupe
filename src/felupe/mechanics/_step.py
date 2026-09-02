@@ -89,7 +89,19 @@ class Step:
         substeps = np.arange(self.nsubsteps)
 
         if "x0" not in kwargs.keys():
-            field = self.items[0].field
+            # use x0 attribute of first field if it exists
+            # otherwise use the field itself
+            # register this field as x0 in kwargs
+            first_field = self.items[0].field
+            field = kwargs["x0"] = getattr(first_field, "x0", first_field)
+
+            # check if all items have the same top-level field (x0-attribute)
+            if hasattr(first_field, "x0"):
+                for item in self.items:
+                    if not (field is getattr(item.field, "x0", None)):
+                        raise ValueError(
+                            "All items must have the same top-level field."
+                        )
         else:
             field = kwargs["x0"]
 

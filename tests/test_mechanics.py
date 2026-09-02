@@ -751,7 +751,8 @@ def test_axi_to_3d():
     step = fem.Step(items=[new_solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 
-    solid.field.x0 = None
+    solid.field.x0 = solid.field
+    solid.revolve(n=11, phi=180, x0=solid.field.revolve(n=11, phi=180))
     with pytest.raises(ValueError):
         solid.revolve(n=11, phi=180)
 
@@ -800,6 +801,7 @@ def test_axi_to_3d_incompressible():
     fem.Job(steps=[step]).evaluate()
 
     solid.field.x0 = None
+    solid.revolve(n=11, phi=180, x0=solid.field.revolve(n=11, phi=180))
     with pytest.raises(ValueError):
         solid.revolve(n=11, phi=180)
 

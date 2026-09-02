@@ -10,31 +10,33 @@ Multiple solid bodies
 
 This tutorial shows how to handle multiple solid bodies. There are different ways to
 approach this, but the method presented here is by far the most straightforward. We'll
-start with the meshes, regions, and fields. After that, a top-level field container will
-be introduced for the boundary conditions. When creating the solid bodies, make sure to
-use the fields from this merged container.
+start with the meshes, regions, and fields as usual. After that, a top-level field
+container will be introduced for the boundary conditions.
 """
 
 import felupe as fem
 
 mesh_1 = fem.Rectangle(a=(0, 0), b=(0.5, 1), n=(3, 5))
-field_1 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_1), dim=2)
+displacement_1 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_1), dim=2)
+field_1 = fem.FieldContainer([displacement_1])
 
 mesh_2 = fem.Rectangle(a=(0.5, 0), b=(1.5, 1), n=5)
-field_2 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_2), dim=2)
+displacement_2 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_2), dim=2)
+field_2 = fem.FieldContainer([displacement_2])
 
 mesh_3 = fem.Rectangle(a=(1.5, 0), b=(2, 1), n=(3, 5))
-field_3 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_3), dim=2)
+displacement_3 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_3), dim=2)
+field_3 = fem.FieldContainer([displacement_3])
 
-fields, x0 = fem.FieldContainer([field_1, field_2, field_3]).merge()
+x0 = fem.FieldContainer([field_1, field_2, field_3]).merge()
 boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False, return_loadcase=False)
 
 umat_a = fem.NeoHookeCompressible(mu=3, lmbda=6)
 umat_b = fem.NeoHookeCompressible(mu=1, lmbda=2)
 
-solid_1 = fem.SolidBody(umat=umat_a, field=fields[0])
-solid_2 = fem.SolidBody(umat=umat_b, field=fields[1])
-solid_3 = fem.SolidBody(umat=umat_a, field=fields[2])
+solid_1 = fem.SolidBody(umat=umat_a, field=field_1)
+solid_2 = fem.SolidBody(umat=umat_b, field=field_2)
+solid_3 = fem.SolidBody(umat=umat_a, field=field_3)
 
 # %%
 # The ramped prescribed displacements for 5 substeps are created with
@@ -49,10 +51,9 @@ uniaxial = fem.Step(
 )
 
 # %%
-# This step is now added to a :class:`~felupe.Job`. The top-level field ``x0`` is passed
-# to :meth:`~felupe.Job.evaluate`.
+# This step is now added to a :class:`~felupe.Job`.
 job = fem.Job(steps=[uniaxial])
-job.evaluate(x0=x0)
+job.evaluate()
 
 plotter = solid_1.plot(style="wireframe")
 plotter = solid_3.plot(style="wireframe", plotter=plotter)

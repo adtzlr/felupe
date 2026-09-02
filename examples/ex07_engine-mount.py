@@ -101,7 +101,7 @@ vertical = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(x0=field, tol=1e-1)
+job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(tol=1e-1)
 figv, axv = curve.plot(
     xlabel=r"Displacement $u_y$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F_y$ in kN $\longrightarrow$",
@@ -118,7 +118,7 @@ horizontal = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(x0=field, tol=1e-1)
+job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(tol=1e-1)
 figh, axh = curve.plot(
     xlabel=r"Displacement $u_x$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F_x$ in kN $\longrightarrow$",
@@ -134,7 +134,7 @@ vertical = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(x0=field, tol=1e-1)
+job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(tol=1e-1)
 figv, axv = curve.plot(
     xaxis=1,
     yaxis=1,
@@ -150,7 +150,7 @@ horizontal = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(x0=field, tol=1e-1)
+job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(tol=1e-1)
 figh, axh = curve.plot(
     yscale=1 / 1000 * thickness,
     lw=3,

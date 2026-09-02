@@ -41,9 +41,6 @@ class FieldContainer:
     ----------
     fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric`, :class:``~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`
         List with fields. The region is linked to the first field.
-    bundle : FieldContainerBundle or None, optional
-        The field container bundle, if this field container is part of one. Default is
-        None, which means that the field container is not part of a bundle.
     **kwargs : dict, optional
         Extra class attributes for the field container.
 
@@ -110,29 +107,15 @@ class FieldContainer:
 
     """
 
-    def __init__(self, fields, bundle=None, **kwargs):
+    def __init__(self, fields, **kwargs):
 
-        # flatten the given list of fields (unpack field containers)
-        self.fields = []
-        self.bundle = bundle
-
-        for field in fields:
-            if isinstance(field, FieldContainer):
-                self.fields.extend(field.fields)
-            else:
-                self.fields.append(field)
+        self.evaluate = EvaluateFieldContainer(self)
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.region = self.fields[0].region
-
-        # get sizes of fields and calculate offsets
-        self.fieldsizes = [f.indices.dof.size for f in self.fields]
-        self.offsets = np.cumsum(self.fieldsizes)[:-1]
-
-        self.evaluate = EvaluateFieldContainer(self)
+        self.reload(fields)
 
     def __repr__(self):
         header = "<felupe FieldContainer object>"
@@ -144,6 +127,30 @@ class FieldContainer:
         ]
 
         return "\n".join([header, size, fields_header, *fields])
+
+    def reload(self, fields):
+        """Reload the Field Container with new fields.
+        
+        Parameters
+        ----------
+        fields : list
+            List of fields.
+
+        """
+        # create list of fields (unpack field containers)
+        self.fields = []
+
+        for field in fields:
+            if isinstance(field, FieldContainer):
+                self.fields.extend(field.fields)
+            else:
+                self.fields.append(field)
+
+        self.region = self.fields[0].region
+
+        # get sizes of fields and calculate offsets
+        self.fieldsizes = [f.indices.dof.size for f in self.fields]
+        self.offsets = np.cumsum(self.fieldsizes)[:-1]
 
     def extract(
         self, grad=True, sym=False, add_identity=True, dtype=None, out=None, order="C"
@@ -419,20 +426,20 @@ class FieldContainer:
 
         container = MeshContainer(meshes, merge=True, decimals=decimals)
 
-        new_fields = []
-        current_mesh = container.meshes[0]
+        # take the first new mesh
+        new_mesh = container.meshes[0]
 
         # reload regions of fields in-place
         for field, mesh in zip(self.fields, container.meshes):
 
-            # only take meshes of non-dual fields
+            # only take and use new meshes of non-dual fields
             if not "Dual" in type(field).__name__:
-                current_mesh = mesh
+                new_mesh = mesh
 
-            field.region.reload(mesh=current_mesh)
+            field.region.reload(mesh=new_mesh)
             field.reload(field.region)
 
-        # take the dimension of the first sub-field
+        # take the type of the first sub-field
         Field = self.fields[0].__field__
 
         # create a new top-level (global) vertex field container

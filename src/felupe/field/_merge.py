@@ -74,8 +74,15 @@ def merge(fields, decimals=None, **kwargs):
 
     # take the type and the dimension
     # of the first sub-field of the first field container
-    Field = fields[0][0].__field__
-    dim = fields[0][0].dim
+    for field in fields:
+        if not hasattr(field, "is_container"):
+            raise TypeError(
+                "The given fields are not field containers. Please use a list of "
+                "field containers as input for the merge function."
+            )
+
+    Field = field[0].__field__
+    dim = field[0].dim
 
     # create a new top-level (global) vertex field container
     x0 = Field.from_mesh_container(container, dim=dim).as_container(

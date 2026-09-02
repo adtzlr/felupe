@@ -300,13 +300,17 @@ def test_toplevel_merge():
     field1 = fem.FieldsMixed(fem.RegionQuad(mesh1), n=3, axisymmetric=True)
 
     mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
-    field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+    displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+    field2 = fem.FieldContainer([displacement2])
 
-    fields, x0 = (field1 & field2).merge()
+    with pytest.raises(TypeError):
+        x0 = (field1 & displacement2).merge()
+
+    x0 = (field1 & field2).merge()
 
     umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-    solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), fields[0])
-    solid2 = fem.SolidBody(umat, fields[1])
+    solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), field1)
+    solid2 = fem.SolidBody(umat, field2)
 
     boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
 

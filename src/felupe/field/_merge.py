@@ -29,6 +29,8 @@ def merge(fields, decimals=None, **kwargs):
         The list of field containers to be merged.
     decimals : int or None, optional
         Precision decimals for merging duplicated mesh points. Default is None.
+    **kwargs : dict, optional
+        Additional keyword arguments for :class:`~felupe.MeshContainer`.
 
     Returns
     -------
@@ -68,7 +70,7 @@ def merge(fields, decimals=None, **kwargs):
     regions = [field.region for field in fields]
     meshes = [region.mesh for region in regions]
 
-    container = MeshContainer(meshes, merge=True, decimals=decimals)
+    container = MeshContainer(meshes, merge=True, decimals=decimals, **kwargs)
 
     # take the type and the dimension
     # of the first sub-field of the first field container

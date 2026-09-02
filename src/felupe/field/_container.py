@@ -372,7 +372,7 @@ class FieldContainer:
             [Field(new_region, dim=dim, values=np.array(new_values).reshape(-1, dim))]
         )
 
-    def merge(self, decimals=None):
+    def merge(self, decimals=None, **kwargs):
         """Merge all fields and return a list of field containers as well as the
         top-level field container.
 
@@ -380,6 +380,8 @@ class FieldContainer:
         ----------
         decimals : int or None, optional
             Precision decimals for merging duplicated mesh points. Default is None.
+        **kwargs : dict, optional
+            Additional keyword arguments for :class:`~felupe.MeshContainer`.
 
         Returns
         -------
@@ -425,7 +427,7 @@ class FieldContainer:
         regions = [field.region for field in self.fields]
         meshes = [region.mesh for region in regions]
 
-        container = MeshContainer(meshes, merge=True, decimals=decimals)
+        container = MeshContainer(meshes, merge=True, decimals=decimals, **kwargs)
 
         # take the type and the dimension
         # of the first sub-field of the first field container

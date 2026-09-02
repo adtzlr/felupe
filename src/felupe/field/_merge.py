@@ -1,0 +1,105 @@
+# -*- coding: utf-8 -*-
+"""
+This file is part of FElupe.
+
+FElupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+FElupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+from ..mesh import MeshContainer
+
+
+def merge(fields, decimals=None, **kwargs):
+    """Merge a list of field containers into a single top-level field container and
+    modify the field containers and the underlying fields in-place.
+
+    Parameters
+    ----------
+    fields : list of FieldContainer
+        The list of field containers to be merged.
+    decimals : int or None, optional
+        Precision decimals for merging duplicated mesh points. Default is None.
+
+    Returns
+    -------
+    FieldContainer
+        The top-level field container, to be used as the ``x0``-argument in
+        `meth:`~felupe.Job.evaluate and for the creation of boundary conditions. The
+        given field containers are modified & reloaded in-place, along with a new
+        attribute ``x0`` that points to this top-level field container.
+
+    Examples
+    --------
+    ..  pyvista-plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh1 = fem.Rectangle(n=3)
+        >>> displacement1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+        >>> field1 = fem.FieldContainer([displacement1])
+        >>>
+        >>> mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
+        >>> displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+        >>> field2 = fem.FieldContainer([displacement2])
+        >>>
+        >>> field = fem.field.merge([field1, field2])
+        >>>
+        >>> umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
+        >>> solid1 = fem.SolidBody(umat, field1)
+        >>> solid2 = fem.SolidBody(umat, field2)
+        >>>
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>>
+        >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
+        >>> job = fem.Job(steps=[step]).evaluate()
+
+    """
+
+    regions = [field.region for field in fields]
+    meshes = [region.mesh for region in regions]
+
+    container = MeshContainer(meshes, merge=True, decimals=decimals)
+
+    # take the type and the dimension
+    # of the first sub-field of the first field container
+    Field = fields[0][0].__field__
+    dim = fields[0][0].dim
+
+    # create a new top-level (global) vertex field container
+    x0 = Field.from_mesh_container(container, dim=dim).as_container(
+        mesh_container=container
+    )
+
+    # take the first new mesh
+    new_mesh = container.meshes[0]
+
+    # reload regions of fields in-place
+    for field, mesh in zip(fields, container.meshes):
+
+        # only take and use new meshes of non-dual fields
+        if not "Dual" in type(field).__name__:
+            new_mesh = mesh
+
+        # reload the region of the field container with the new mesh
+        field.region.reload(mesh=new_mesh)
+
+        # reload the field container (indices and offsets)
+        field.reload()
+
+        # add the top-level field container as attribute x0
+        field.x0 = x0
+
+        for f in field.fields:
+            f.reload(region=field.region)
+
+    return x0

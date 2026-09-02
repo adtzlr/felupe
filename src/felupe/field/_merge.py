@@ -36,7 +36,7 @@ def merge(fields, decimals=None, **kwargs):
     -------
     FieldContainer
         The top-level field container, to be used as the ``x0``-argument in
-        `meth:`~felupe.Job.evaluate and for the creation of boundary conditions. The
+        :meth:`~felupe.Job.evaluate` and for the creation of boundary conditions. The
         given field containers are modified & reloaded in-place, along with a new
         attribute ``x0`` that points to this top-level field container.
 

@@ -31,6 +31,7 @@ from ..region import (
 )
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
+from ._merge import merge
 
 
 class FieldContainer:
@@ -138,6 +139,8 @@ class FieldContainer:
 
         """
         if fields is not None:
+            self._list_of_fields_and_field_containers = fields
+
             # create list of fields (unpack field containers)
             self.fields = []
 
@@ -385,19 +388,11 @@ class FieldContainer:
 
         Returns
         -------
-        list of FieldContainer
-            A list with field containers to be used in different items (solid bodies).
         FieldContainer
             The top-level field container, to be used as the ``x0``-argument in
-            `meth:`~felupe.Job.evaluate and for the creation of boundary conditions.
-
-        Notes
-        -----
-        ..  note::
-
-            This works only if all regions are template regions, like
-            :class:`~felupe.RegionQuad` or :class:`~felupe.RegionHexahedron`, which are
-            supported by :class:`~felupe.FieldDual`.
+            :meth:`~felupe.Job.evaluate` and for the creation of boundary conditions.
+            The given field containers are modified & reloaded in-place, along with a
+            new attribute ``x0`` that points to this top-level field container.
 
         Examples
         --------
@@ -424,41 +419,11 @@ class FieldContainer:
 
         """
 
-        regions = [field.region for field in self.fields]
-        meshes = [region.mesh for region in regions]
-
-        container = MeshContainer(meshes, merge=True, decimals=decimals, **kwargs)
-
-        # take the type and the dimension
-        # of the first sub-field of the first field container
-        Field = self.fields[0].__field__
-        dim = self.fields[0].dim
-
-        # create a new top-level (global) vertex field container
-        x0 = Field.from_mesh_container(container, dim=dim).as_container(
-            mesh_container=container
+        return merge(
+            self._list_of_fields_and_field_containers,
+            decimals=decimals,
+            **kwargs,
         )
-
-        # take the first new mesh
-        new_mesh = container.meshes[0]
-
-        # reload regions of fields in-place
-        for field, mesh in zip(self.fields, container.meshes):
-
-            # only take and use new meshes of non-dual fields
-            if not "Dual" in type(field).__name__:
-                new_mesh = mesh
-
-            # reload the region of the field with the new mesh
-            field.region.reload(mesh=new_mesh)
-
-            # reload the field
-            field.reload(field.region)
-
-            # add the top-level field container as attribute x0
-            field.x0 = x0
-
-        return x0
 
     def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.

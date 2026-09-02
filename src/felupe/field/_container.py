@@ -111,6 +111,7 @@ class FieldContainer:
     def __init__(self, fields, **kwargs):
 
         self.evaluate = EvaluateFieldContainer(self)
+        self.is_container = True
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
@@ -401,21 +402,23 @@ class FieldContainer:
             >>> import felupe as fem
             >>>
             >>> mesh1 = fem.Rectangle(n=3)
-            >>> field1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+            >>> displacement1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+            >>> field1 = fem.FieldContainer([displacement1])
             >>>
             >>> mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
-            >>> field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+            >>> displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+            >>> field2 = fem.FieldContainer([displacement2])
             >>>
-            >>> fields, x0 = (field1 & field2).merge()
+            >>> x0 = (field1 & field2).merge()
             >>>
             >>> umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-            >>> solid1 = fem.SolidBody(umat, fields[0])
-            >>> solid2 = fem.SolidBody(umat, fields[1])
+            >>> solid1 = fem.SolidBody(umat, field1)
+            >>> solid2 = fem.SolidBody(umat, field2)
             >>>
             >>> boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
             >>>
             >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
-            >>> job = fem.Job(steps=[step]).evaluate(x0=x0)
+            >>> job = fem.Job(steps=[step]).evaluate()
 
         """
 

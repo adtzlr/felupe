@@ -67,6 +67,9 @@ def merge(fields, decimals=None, **kwargs):
 
     """
 
+    if len(fields) < 1:
+        raise ValueError("The list of field containers to be merged is empty.")
+
     regions = [field.region for field in fields]
     meshes = [region.mesh for region in regions]
 
@@ -81,8 +84,8 @@ def merge(fields, decimals=None, **kwargs):
                 "field containers as input for the merge function."
             )
 
-    Field = field[0].__field__
-    dim = field[0].dim
+    Field = fields[0][0].__field__
+    dim = fields[0][0].dim
 
     # create a new top-level (global) vertex field container
     x0 = Field.from_mesh_container(container, dim=dim).as_container(

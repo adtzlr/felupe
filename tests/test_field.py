@@ -318,6 +318,10 @@ def test_toplevel_merge():
     fem.Job(steps=[step]).evaluate(x0=x0)
 
 
+def test_merge_empty():
+    with pytest.raises(ValueError):
+        fem.field.merge([])
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -327,3 +331,4 @@ if __name__ == "__main__":
     test_link()
     test_toplevel()
     test_toplevel_merge()
+    test_merge_empty()

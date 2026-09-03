@@ -223,7 +223,7 @@ class Job:
             kwargs["kwargs"]["parallel"] = True
 
         # use x0-attribute of first field of first step for kwargs["x0"]
-        if "x0" not in kwargs.keys():
+        if kwargs.get("x0") is None:
             first_field = self.steps[0].items[0].field
             kwargs["x0"] = getattr(first_field, "x0", first_field)
 

@@ -105,9 +105,6 @@ def merge(fields, decimals=None, **kwargs):
         mesh_container=container
     )
 
-    # take the first new mesh
-    new_mesh = container.meshes[0]
-
     # reload regions of field containers in-place
     for field, new_mesh in zip(fields, container.meshes):
 

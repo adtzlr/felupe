@@ -146,14 +146,22 @@ class Field:
 
             shape = (self.region.mesh.npoints, self.dim)
             if shape != self.values.shape:
-                pad_width = ((0, shape[0] - self.values.shape[0]), (0, 0))
+                length = shape[0] - self.values.shape[0]
 
-                self.values = np.pad(
-                    self.values,
-                    pad_width=pad_width[: len(self.values.shape)],
-                    mode=mode,
-                    **kwargs,
-                )
+                if length >= 0:
+                    pad_width = ((0, length), (0, 0))
+
+                    # expand values
+                    self.values = np.pad(
+                        self.values,
+                        pad_width=pad_width[: len(self.values.shape)],
+                        mode=mode,
+                        **kwargs,
+                    )
+
+                else:  # trim values
+                    self.values = self.values[: length]
+
 
             eai, ai = self._indices_per_cell(self.region.mesh.cells, self.dim)
             self.indices = Indices(eai, ai, region, self.dim)

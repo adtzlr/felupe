@@ -333,6 +333,18 @@ def test_merge():
         fem.field.merge([field])
 
 
+def test_merge_fewer_points():
+
+    mesh = fem.Rectangle(n=2)
+    mesh.points[2] = mesh.points[0]
+
+    displacement = fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)
+    field = fem.FieldContainer([displacement])
+
+    x0 = fem.field.merge([field])
+    assert len(field[0].values) == len(x0[0].values) == 3
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -343,3 +355,4 @@ if __name__ == "__main__":
     test_toplevel()
     test_toplevel_merge()
     test_merge()
+    test_merge_fewer_points()

@@ -27,6 +27,10 @@ def test_thermal():
     temperature = fem.Field(region, dim=1, values=20.0)
     field = fem.FieldContainer([temperature])
 
+    region_right = fem.RegionQuadBoundary(mesh, mask=mesh.x == 1.0)
+    temperature_right = fem.Field(region_right, dim=1)
+    field_right = fem.FieldContainer([temperature_right])
+
     region_bottom = fem.RegionQuadBoundary(mesh, mask=mesh.y == 0.0)
     temperature_bottom = fem.Field(region_bottom, dim=1)
     field_bottom = fem.FieldContainer([temperature_bottom])
@@ -37,7 +41,7 @@ def test_thermal():
 
     boundaries = fem.BoundaryDict(
         left=fem.Boundary(temperature, fx=0, value=20.0),
-        right=fem.Boundary(temperature, fx=1, value=20.0),
+        # right=fem.Boundary(temperature, fx=1, value=20.0),
     )
 
     solid = fem.thermal.SolidBodyThermal(
@@ -63,6 +67,12 @@ def test_thermal():
         temperature=10.0,  # °C
     )
 
+    heat_convection = fem.thermal.SolidBodySurfaceConvection(
+        field=field_right,
+        convection_coefficient=7.69,  # W/(m2 K)
+        temperature=10.0,  # °C
+    )
+
     heat_radiation = fem.thermal.SolidBodySurfaceRadiation(
         field=field_top,
         emissivity=0.8,  # dimensionless, between 0 and 1
@@ -80,6 +90,8 @@ def test_thermal():
     heat_transfer.assemble.matrix(field)
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
+    heat_convection.assemble.vector(field)
+    heat_convection.assemble.matrix(field)
     heat_radiation.assemble.vector(field)
     heat_radiation.assemble.matrix(field)
 
@@ -87,11 +99,15 @@ def test_thermal():
     heat_flux.assemble.vector(field)
     heat_flux.assemble.matrix(field)
 
+    heat_convection.time_step = 0.0
+    heat_convection.assemble.vector(field)
+    heat_convection.assemble.matrix(field)
+
     heat_radiation.time_step = 0.0
     heat_radiation.assemble.vector(field)
     heat_radiation.assemble.matrix(field)
 
-    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux, heat_radiation])
+    time = fem.thermal.TimeStep([solid, heat_transfer, heat_flux, heat_convection, heat_radiation])
     table = fem.math.linsteps([0, 0, 1], num=2)
     table_emissivity = fem.math.linsteps([1, 1, 1], num=2) * 0.8
     ramp = {
@@ -104,7 +120,7 @@ def test_thermal():
         heat_radiation["emissivity"]: table_emissivity,
     }
     step = fem.Step(
-        items=[time, solid, heat_transfer, heat_flux, heat_radiation],
+        items=[time, solid, heat_transfer, heat_flux, heat_convection, heat_radiation],
         ramp=ramp,
         boundaries=boundaries,
     )

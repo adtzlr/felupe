@@ -694,7 +694,7 @@ def test_checkpoint_x0():
 
     # test checkpoint/restore with a global field x0
     checkpoint = solid.checkpoint()
-    
+
     boundaries = fem.dof.uniaxial(global_field, return_loadcase=False)
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()

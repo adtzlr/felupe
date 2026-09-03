@@ -40,6 +40,10 @@ def merge(fields, decimals=None, **kwargs):
         given field containers are modified & reloaded in-place, along with a new
         attribute ``x0`` that points to this top-level field container.
 
+    Notes
+    -----
+    Field containers with dual fields are not supported.
+
     Examples
     --------
     ..  pyvista-plot::
@@ -70,13 +74,6 @@ def merge(fields, decimals=None, **kwargs):
     if len(fields) < 1:
         raise ValueError("The list of field containers to be merged is empty.")
 
-    regions = [field.region for field in fields]
-    meshes = [region.mesh for region in regions]
-
-    container = MeshContainer(meshes, merge=True, decimals=decimals, **kwargs)
-
-    # take the type and the dimension
-    # of the first sub-field of the first field container
     for field in fields:
         if not hasattr(field, "is_container"):
             raise TypeError(
@@ -84,6 +81,22 @@ def merge(fields, decimals=None, **kwargs):
                 "field containers as input for the merge function."
             )
 
+    for field in fields:
+        for f in field.fields:
+            if "Dual" in type(f).__name__:
+                raise TypeError(
+                    "Dual fields can't be merged. "
+                    "Please use a list of field containers without dual fields as "
+                    "input for the merge function."
+                )
+
+    regions = [field.region for field in fields]
+    meshes = [region.mesh for region in regions]
+
+    container = MeshContainer(meshes, merge=True, decimals=decimals, **kwargs)
+
+    # take the type and the dimension
+    # of the first sub-field of the first field container
     Field = fields[0][0].__field__
     dim = fields[0][0].dim
 
@@ -95,12 +108,8 @@ def merge(fields, decimals=None, **kwargs):
     # take the first new mesh
     new_mesh = container.meshes[0]
 
-    # reload regions of fields in-place
-    for field, mesh in zip(fields, container.meshes):
-
-        # only take and use new meshes of non-dual fields
-        if not "Dual" in type(field).__name__:
-            new_mesh = mesh
+    # reload regions of field containers in-place
+    for field, new_mesh in zip(fields, container.meshes):
 
         # reload the region of the field container with the new mesh
         field.region.reload(mesh=new_mesh)

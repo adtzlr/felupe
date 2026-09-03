@@ -297,7 +297,8 @@ def test_toplevel():
 def test_toplevel_merge():
 
     mesh1 = fem.Rectangle(n=3)
-    field1 = fem.FieldsMixed(fem.RegionQuad(mesh1), n=3, axisymmetric=True)
+    displacement1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+    field1 = fem.FieldContainer([displacement1])
 
     mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
     displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
@@ -309,7 +310,7 @@ def test_toplevel_merge():
     x0 = (field1 & field2).merge()
 
     umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-    solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), field1)
+    solid1 = fem.SolidBody(umat, field1)
     solid2 = fem.SolidBody(umat, field2)
 
     boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
@@ -318,9 +319,19 @@ def test_toplevel_merge():
     fem.Job(steps=[step]).evaluate(x0=x0)
 
 
-def test_merge_empty():
+def test_merge():
+
+    # empty list of field containers can't be merged
     with pytest.raises(ValueError):
         fem.field.merge([])
+
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3, axisymmetric=True)
+
+    # field containers with dual fields can't be merged
+    with pytest.raises(TypeError):
+        fem.field.merge([field])
+
 
 if __name__ == "__main__":
     test_axi()
@@ -331,4 +342,4 @@ if __name__ == "__main__":
     test_link()
     test_toplevel()
     test_toplevel_merge()
-    test_merge_empty()
+    test_merge()

@@ -406,6 +406,10 @@ class FieldContainer:
             The given field containers are modified & reloaded in-place, along with a
             new attribute ``x0`` that points to this top-level field container.
 
+        Notes
+        -----
+        Field containers with dual fields are not supported.
+
         Examples
         --------
         ..  pyvista-plot::

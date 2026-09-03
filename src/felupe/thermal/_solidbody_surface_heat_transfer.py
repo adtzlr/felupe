@@ -30,7 +30,7 @@ class SolidBodySurfaceHeatTransfer:
     field : felupe.FieldContainer
         The field container with the temperature as first field.
     coefficient : float
-        The convection coefficient :math:`h` in W/(m^2 K).
+        The heat transfer coefficient :math:`h` in W/(m^2 K).
     temperature : float
         The ambient temperature :math:`T_\infty` in °C.
 

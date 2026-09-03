@@ -105,13 +105,14 @@ def merge(fields, decimals=None, **kwargs):
         # reload the region of the field container with the new mesh
         field.region.reload(mesh=new_mesh)
 
+        # reload the underlying fields of the current field container
+        for f in field.fields:
+            f.reload(region=field.region)
+
         # reload the field container (indices and offsets)
         field.reload()
 
         # add the top-level field container as attribute x0
         field.x0 = x0
-
-        for f in field.fields:
-            f.reload(region=field.region)
 
     return x0

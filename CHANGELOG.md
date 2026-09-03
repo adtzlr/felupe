@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file. The format 
 - Rebase `FieldContainer.merge()` on `field.merge()`. Add `FieldContainer.x0` to all field containers, which are part of the merge.
 - Modify the field containers in `field.merge(fields)` in-place. This greatly simplifies the multi-body workflow.
 - Change `SolidBody.revolve(..., x0=None)` to require an optional x0-argument, if the field of the solid body has an x0-argument.
+- Change `FieldContainer.checkpoint()` and `FieldContainer.restore()`, that they take care of the optional global-field container `x0` attribute.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new `plugin` module with `Plugin` (base class), `AnimationWriterPlugin`, `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
 - Add `CharacteristicCurvePlugin.to_arrays()` to return the x- and y-data. `CharacteristicCurvePlugin.plot()` uses the `to_arrays()` method internally.
 - Add a `plotter` argument to `MeshContainer.plot(plotter=None)`.
+- Add `field.merge()` to merge a list of field containers to a top-level field container.
+- Add `FieldContainer.is_container` attribute.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
@@ -31,6 +33,12 @@ All notable changes to this project will be documented in this file. The format 
 - Change the description of the package from a simple Python package to an open finite element infrastructure for nonlinear computational mechanics. This should focus on the project's vision more clearly.
 - Return the last converged result if `newtonraphson()` leads to NaN in the solution. 
 - Move the evaluated element shape function / gradient / hessian from `Region.element.h` to `Region.element_h`, from `Region.element_dhdr` to `Region.element_dhdr` and from `Region.element.d2hdrdr` to `Region.element_d2hdrdr`. Now all results, which are generated inside `Region` are stored in a `region = Region(mesh, element, quadrature)` object. No `element` is used to store results.
+- Change the return of `x0 = FieldContainer.merge()`, was `fields, x0 = FieldContainer.merge()` before.
+- Rebase `FieldContainer.merge()` on `field.merge()`. Add `FieldContainer.x0` to all field containers, which are part of the merge.
+- Modify the field containers in `field.merge(fields)` in-place. This greatly simplifies the multi-body workflow.
+- Change `SolidBody.revolve(..., x0=None)` to require an optional x0-argument, if the field of the solid body has an x0-argument.
+- Change `FieldContainer.checkpoint()` and `FieldContainer.restore()`, that they take care of the optional global-field container `x0` attribute.
+- `FieldContainer.merge()` can't merge dual containers with fields and hence, an error is raised. This has not been supported in the past, but no error was raised.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.

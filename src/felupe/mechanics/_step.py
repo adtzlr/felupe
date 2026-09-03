@@ -87,11 +87,7 @@ class Step:
         "Yield all generated substeps."
 
         substeps = np.arange(self.nsubsteps)
-
-        if "x0" not in kwargs.keys():
-            field = self.items[0].field
-        else:
-            field = kwargs["x0"]
+        field = kwargs["x0"]
 
         stop = False
         for substep in substeps:

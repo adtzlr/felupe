@@ -643,8 +643,6 @@ def test_truss():
 
 def test_checkpoint():
 
-    import felupe as fem
-
     mesh = fem.Rectangle(b=(3, 1), n=(7, 3))
     region = fem.RegionQuad(mesh)
     field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
@@ -683,9 +681,36 @@ def test_checkpoint():
     fem.Job(steps=[step]).evaluate()
 
 
-def test_checkpoint_incompressible():
+def test_checkpoint_x0():
 
-    import felupe as fem
+    mesh = fem.Rectangle(n=2)
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+    global_field = fem.field.merge([field])
+
+    umat = fem.NeoHooke(mu=1, bulk=2)
+    solid = fem.SolidBody(umat=umat, field=field)
+
+    # test checkpoint/restore with a global field x0
+    checkpoint = solid.checkpoint()
+    
+    boundaries = fem.dof.uniaxial(global_field, return_loadcase=False)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    solid.restore(checkpoint)
+
+    # test if global field x0 is restored: solid --> field --> x0
+    assert np.allclose(global_field[0].values, 0)
+
+    # run the same job again
+    boundaries = fem.dof.uniaxial(global_field, return_loadcase=False, move=-0.2)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+
+def test_checkpoint_incompressible():
 
     mesh = fem.Rectangle(b=(3, 1), n=(7, 3))
     region = fem.RegionQuad(mesh)
@@ -726,8 +751,6 @@ def test_checkpoint_incompressible():
 
 
 def test_axi_to_3d():
-
-    import felupe as fem
 
     mesh = fem.Rectangle(n=6)
     field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
@@ -923,6 +946,7 @@ if __name__ == "__main__":
     test_threefield()
     test_truss
     test_checkpoint()
+    test_checkpoint_x0()
     test_checkpoint_incompressible()
     test_axi_to_3d()
     test_axi_to_3d_incompressible()

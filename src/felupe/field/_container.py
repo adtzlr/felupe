@@ -31,6 +31,7 @@ from ..region import (
 )
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
+from ._merge import merge
 
 
 class FieldContainer:
@@ -109,26 +110,14 @@ class FieldContainer:
 
     def __init__(self, fields, **kwargs):
 
-        # flatten the given list of fields (unpack field containers)
-        self.fields = []
-
-        for field in fields:
-            if isinstance(field, FieldContainer):
-                self.fields.extend(field.fields)
-            else:
-                self.fields.append(field)
+        self.evaluate = EvaluateFieldContainer(self)
+        self.is_container = True
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.region = self.fields[0].region
-
-        # get sizes of fields and calculate offsets
-        self.fieldsizes = [f.indices.dof.size for f in self.fields]
-        self.offsets = np.cumsum(self.fieldsizes)[:-1]
-
-        self.evaluate = EvaluateFieldContainer(self)
+        self.reload(fields)
 
     def __repr__(self):
         header = "<felupe FieldContainer object>"
@@ -140,6 +129,33 @@ class FieldContainer:
         ]
 
         return "\n".join([header, size, fields_header, *fields])
+
+    def reload(self, fields=None):
+        """Reload the Field Container with new fields.
+
+        Parameters
+        ----------
+        fields : list
+            List of fields.
+
+        """
+        if fields is not None:
+            self._list_of_fields_and_field_containers = fields
+
+            # create list of fields (unpack field containers)
+            self.fields = []
+
+            for field in fields:
+                if isinstance(field, FieldContainer):
+                    self.fields.extend(field.fields)
+                else:
+                    self.fields.append(field)
+
+        self.region = self.fields[0].region
+
+        # get sizes of fields and calculate offsets
+        self.fieldsizes = [f.indices.dof.size for f in self.fields]
+        self.offsets = np.cumsum(self.fieldsizes)[:-1]
 
     def extract(
         self, grad=True, sym=False, add_identity=True, dtype=None, out=None, order="C"
@@ -256,7 +272,13 @@ class FieldContainer:
         felupe.FieldContainer.restore : Restore a checkpoint of a field container
             inplace.
         """
-        return {"field": self.copy()}
+        state = {"field": self.copy()}
+
+        x0 = getattr(self, "x0", None)
+        if x0 is not None:
+            state["field.x0"] = self.x0.copy()
+
+        return state
 
     def restore(self, checkpoint):
         """Restore a checkpoint inplace.
@@ -273,6 +295,11 @@ class FieldContainer:
 
         for field, newfield in zip(self.fields, checkpoint["field"].fields):
             field.values[:] = newfield.values
+
+        x0 = checkpoint.get("field.x0")
+        if x0 is not None:
+            for field, newfield in zip(self.x0.fields, checkpoint["field.x0"].fields):
+                field.values[:] = newfield.values
 
     def revolve(self, n=11, phi=180):
         """Return a revolved field container.
@@ -360,7 +387,7 @@ class FieldContainer:
             [Field(new_region, dim=dim, values=np.array(new_values).reshape(-1, dim))]
         )
 
-    def merge(self, decimals=None):
+    def merge(self, decimals=None, **kwargs):
         """Merge all fields and return a list of field containers as well as the
         top-level field container.
 
@@ -368,22 +395,20 @@ class FieldContainer:
         ----------
         decimals : int or None, optional
             Precision decimals for merging duplicated mesh points. Default is None.
+        **kwargs : dict, optional
+            Additional keyword arguments for :class:`~felupe.MeshContainer`.
 
         Returns
         -------
-        list of FieldContainer
-            A list with field containers to be used in different items (solid bodies).
         FieldContainer
             The top-level field container, to be used as the ``x0``-argument in
-            `meth:`~felupe.Job.evaluate and for the creation of boundary conditions.
+            :meth:`~felupe.Job.evaluate` and for the creation of boundary conditions.
+            The given field containers are modified & reloaded in-place, along with a
+            new attribute ``x0`` that points to this top-level field container.
 
         Notes
         -----
-        ..  note::
-
-            This works only if all regions are template regions, like
-            :class:`~felupe.RegionQuad` or :class:`~felupe.RegionHexahedron`, which are
-            supported by :class:`~felupe.FieldDual`.
+        Field containers with dual fields are not supported.
 
         Examples
         --------
@@ -392,91 +417,31 @@ class FieldContainer:
             >>> import felupe as fem
             >>>
             >>> mesh1 = fem.Rectangle(n=3)
-            >>> field1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+            >>> displacement1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+            >>> field1 = fem.FieldContainer([displacement1])
             >>>
             >>> mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
-            >>> field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+            >>> displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+            >>> field2 = fem.FieldContainer([displacement2])
             >>>
-            >>> fields, x0 = (field1 & field2).merge()
+            >>> x0 = (field1 & field2).merge()
             >>>
             >>> umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-            >>> solid1 = fem.SolidBody(umat, fields[0])
-            >>> solid2 = fem.SolidBody(umat, fields[1])
+            >>> solid1 = fem.SolidBody(umat, field1)
+            >>> solid2 = fem.SolidBody(umat, field2)
             >>>
             >>> boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
             >>>
             >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
-            >>> job = fem.Job(steps=[step]).evaluate(x0=x0)
+            >>> job = fem.Job(steps=[step]).evaluate()
 
         """
 
-        regions = [field.region for field in self.fields]
-        meshes = [region.mesh for region in regions]
-
-        container = MeshContainer(meshes, merge=True, decimals=decimals)
-
-        new_fields = []
-
-        # only take meshes of non-dual fields
-        current_mesh = container.meshes[0]
-
-        for field, mesh in zip(self.fields, container.meshes):
-
-            if "Dual" in type(field).__name__:
-                RegionOriginal = type(field.__args__[0])
-                region = RegionOriginal(current_mesh)
-                new_field = type(field)(region, *field.__args__[1:], **field.__kwargs__)
-
-            else:
-
-                # update the current mesh
-                current_mesh = mesh
-
-                RegionOriginal = type(field.region)
-                region = RegionOriginal(current_mesh)
-                new_field = type(field)(region, dim=field.dim, dtype=field.values.dtype)
-
-            new_fields.append(new_field)
-
-        def group_dual_fields(fields):
-
-            # init lists for new fields and subfields per container
-            new_fields = []
-            subfields = []
-
-            # loop over fields
-            for field in fields:
-
-                # check if type of field is not FieldDual (without importing FieldDual)
-                if "Dual" not in type(field).__name__:
-
-                    # finalize the subfields to the list of new fields
-                    # if it is not empty
-                    if len(subfields) > 0:
-                        new_fields.append(subfields)
-
-                    # start a new list of subfields
-                    subfields = [field]
-
-                # append the dual field to the list of subfields
-                else:
-                    subfields.append(field)
-
-            # finally add the last subfields to the list of new fields
-            if len(subfields) > 0:
-                new_fields.append(subfields)
-
-            return new_fields
-
-        new_fields_grouped = group_dual_fields(new_fields)
-        Field = self.fields[0].__field__
-
-        # take the dimension of the first sub-field
-        vertex_field = Field.from_mesh_container(
-            container, dim=new_fields_grouped[0][0].dim
-        ).as_container(mesh_container=container)
-
-        return [FieldContainer(f) for f in new_fields_grouped], vertex_field
+        return merge(
+            self._list_of_fields_and_field_containers,
+            decimals=decimals,
+            **kwargs,
+        )
 
     def view(self, point_data=None, cell_data=None, cell_type=None, project=None):
         """View the field with optional given dicts of point- and cell-data items.

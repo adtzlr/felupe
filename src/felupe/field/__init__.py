@@ -4,6 +4,7 @@ from ._container import FieldContainer
 from ._dual import FieldDual
 from ._evaluate import EvaluateFieldContainer
 from ._fields import FieldsMixed
+from ._merge import merge
 from ._planestrain import FieldPlaneStrain
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "FieldPlaneStrain",
     "FieldDual",
     "EvaluateFieldContainer",
+    "merge",
 ]

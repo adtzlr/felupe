@@ -297,21 +297,52 @@ def test_toplevel():
 def test_toplevel_merge():
 
     mesh1 = fem.Rectangle(n=3)
-    field1 = fem.FieldsMixed(fem.RegionQuad(mesh1), n=3, axisymmetric=True)
+    displacement1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+    field1 = fem.FieldContainer([displacement1])
 
     mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
-    field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+    displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+    field2 = fem.FieldContainer([displacement2])
 
-    fields, x0 = (field1 & field2).merge()
+    with pytest.raises(TypeError):
+        x0 = (field1 & displacement2).merge()
+
+    x0 = (field1 & field2).merge()
 
     umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-    solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), fields[0])
-    solid2 = fem.SolidBody(umat, fields[1])
+    solid1 = fem.SolidBody(umat, field1)
+    solid2 = fem.SolidBody(umat, field2)
 
     boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
 
     step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(x0=x0)
+
+
+def test_merge():
+
+    # empty list of field containers can't be merged
+    with pytest.raises(ValueError):
+        fem.field.merge([])
+
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3, axisymmetric=True)
+
+    # field containers with dual fields can't be merged
+    with pytest.raises(TypeError):
+        fem.field.merge([field])
+
+
+def test_merge_fewer_points():
+
+    mesh = fem.Rectangle(n=2)
+    mesh.points[2] = mesh.points[0]
+
+    displacement = fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)
+    field = fem.FieldContainer([displacement])
+
+    x0 = fem.field.merge([field])
+    assert len(field[0].values) == len(x0[0].values) == 3
 
 
 if __name__ == "__main__":
@@ -323,3 +354,5 @@ if __name__ == "__main__":
     test_link()
     test_toplevel()
     test_toplevel_merge()
+    test_merge()
+    test_merge_fewer_points()

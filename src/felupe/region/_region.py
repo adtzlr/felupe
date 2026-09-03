@@ -211,14 +211,14 @@ class Region:
         quadrature: Quadrature or None, optional
             An element-compatible numeric integration scheme with points and weights
             (default is None).
-        grad : bool, optional
-            A flag to invoke gradient evaluation (default is True). If True, the partial
+        grad : bool or None, optional
+            A flag to invoke gradient evaluation (default is None). If True, the partial
             derivatives of the element shape functions w.r.t. undeformed coordinates
             :math:`\frac{\partial \boldsymbol{h}}{\partial \boldsymbol{X}}`
             and the differential volumes :math:`dV` are evaluated.
-        hess : bool, optional
+        hess : bool or None, optional
             A flag to invoke hessian evaluation in addition to the gradient (default is
-            False). If True, the second partial derivatives of the element shape functions
+            None). If True, the second partial derivatives of the element shape functions
             w.r.t. undeformed coordinates
             :math:`\frac{\partial^2 \boldsymbol{h}}{\partial \boldsymbol{X}\ \partial \boldsymbol{X}}`
             are evaluated.
@@ -269,14 +269,14 @@ class Region:
         quadrature: Quadrature or None, optional
             An element-compatible numeric integration scheme with points and weights
             (default is None).
-        grad : bool, optional
-            A flag to invoke gradient evaluation (default is True). If True, the partial
+        grad : bool or None, optional
+            A flag to invoke gradient evaluation (default is None). If True, the partial
             derivatives of the element shape functions w.r.t. undeformed coordinates
             :math:`\frac{\partial \boldsymbol{h}}{\partial \boldsymbol{X}}`
             and the differential volumes :math:`dV` are evaluated.
-        hess : bool, optional
+        hess : bool or None, optional
             A flag to invoke hessian evaluation in addition to the gradient (default is
-            False). If True, the second partial derivatives of the element shape functions
+            None). If True, the second partial derivatives of the element shape functions
             w.r.t. undeformed coordinates
             :math:`\frac{\partial^2 \boldsymbol{h}}{\partial \boldsymbol{X}\ \partial \boldsymbol{X}}`
             are evaluated.

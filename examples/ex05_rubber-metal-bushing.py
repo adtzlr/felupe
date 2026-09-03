@@ -57,11 +57,12 @@ metal = fem.MeshContainer(
 
 # %%
 # Sub-regions are generated for all materials. The same applies to the material
-# formulations as well as the solid bodies. The sub-fields are also created as vector-
-# valued displacement fields. However, the fields must be merged in a top-level field-
-# container. This modifies the sub-fields to be used in the solid bodies.
+# formulations as well as the solid bodies. The sub-fields are created as vector-
+# valued displacement fields. These fields must be merged in a top-level field-
+# container. This modifies the sub-fields in-place to be used in the solid bodies.
 regions = [fem.RegionHexahedron(m) for m in [rubber, metal]]
-fields, field = fem.FieldContainer([fem.Field(r, dim=3) for r in regions]).merge()
+fields = [fem.Field(r, dim=3).as_container() for r in regions]
+field = fem.FieldContainer(fields).merge()
 
 # material formulations and solid bodies for the rubber and the metal sheets
 umats = [fem.NeoHooke(mu=1), fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)]
@@ -110,7 +111,7 @@ for progress in table:
 # After defining the load step, the simulation model is ready to be solved.
 step = fem.Step(items=solids, ramp={boundaries["inner"]: move}, boundaries=boundaries)
 job = fem.Job(steps=[step])
-job.evaluate(x0=field, parallel=True, solver=pypardiso.spsolve)
+job.evaluate(parallel=True, solver=pypardiso.spsolve)
 
 # %%
 # The maximum principal values of the logarithmic strain are plotted on the total

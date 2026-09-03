@@ -27,7 +27,7 @@ class TimeStep:
 
     Parameters
     ----------
-    items : list of felupe.thermal.SolidBodyThermal, felupe.thermal.SolidBodyHeatFlux, felupe.thermal.SolidBodySurfaceHeatTransfer
+    items : list of felupe.thermal.SolidBodyThermal, felupe.thermal.SolidBodyHeatFlux, felupe.thermal.SolidBodySurfaceHeatTransfer, felupe.thermal.SolidBodySurfaceRadiation
         List of items to be updated at each time step.
     time_old : float, optional
         Initial time (default is 0.0).
@@ -36,9 +36,9 @@ class TimeStep:
 
     Notes
     -----
-    This class is used to update the time step for each item in the list of items. The
-    time step is calculated as the difference between the new time and the old time, and
-    is assigned to each item in the list.
+    This class is used to update the time step for each thermal item in a
+    :class:`~felupe.Step`. The time step is calculated as the difference between the new
+    time and the old time, and is assigned to each item in the list.
 
     .. note::
 

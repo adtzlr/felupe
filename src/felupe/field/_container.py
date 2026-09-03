@@ -272,7 +272,13 @@ class FieldContainer:
         felupe.FieldContainer.restore : Restore a checkpoint of a field container
             inplace.
         """
-        return {"field": self.copy()}
+        state = {"field": self.copy()}
+
+        x0 = getattr(self, "x0", None)
+        if x0 is not None:
+            state["field.x0"] = self.x0.copy()
+
+        return state
 
     def restore(self, checkpoint):
         """Restore a checkpoint inplace.
@@ -289,6 +295,11 @@ class FieldContainer:
 
         for field, newfield in zip(self.fields, checkpoint["field"].fields):
             field.values[:] = newfield.values
+
+        x0 = checkpoint.get("field.x0")
+        if x0 is not None:
+            for field, newfield in zip(self.x0.fields, checkpoint["field.x0"].fields):
+                field.values[:] = newfield.values
 
     def revolve(self, n=11, phi=180):
         """Return a revolved field container.

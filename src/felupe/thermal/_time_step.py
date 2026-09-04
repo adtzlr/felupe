@@ -36,9 +36,9 @@ class TimeStep:
 
     Notes
     -----
-    This class is used to update the time step for all thermal items in a
-    :class:`~felupe.Step`. The time step is calculated as the difference between the
-    new time and the old time, and is assigned to each item in the list.
+    This class is used to update the time step for each thermal item in a
+    :class:`~felupe.Step`. The time step is calculated as the difference between the new
+    time and the old time, and is assigned to each item in the list.
 
     .. note::
 

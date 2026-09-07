@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [11.0.0] - 2026-09-07
+
 ### Added
 - Add Becker's logarithmic material model.
 - Add `felupe.thermal` with `thermal.SolidBodyThermal`, `thermal.SolidBodySurfaceHeatTransfer`, `thermal.SolidBodySurfaceRadiation`, `thermal.SolidBodyHeatFlux` and `thermal.TimeStep`. The time step class must include all thermal items and must be the first item in a step. Thermal transient zero-valued time-steps are supported. The stationary solution is obtained by `time_step=None`, whereas `time_step=0.0` is treated as a time-increment of length zero.

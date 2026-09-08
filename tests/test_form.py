@@ -147,19 +147,25 @@ def test_axi():
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-        a = fem.IntegralForm([A[0][:, 0, :, :]], u, r.dV, u, grad_v=[False], grad_u=[True])
+        a = fem.IntegralForm(
+            [A[0][:, 0, :, :]], u, r.dV, u, grad_v=[False], grad_u=[True]
+        )
         y = a.integrate(parallel=parallel)
 
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-        a = fem.IntegralForm([A[0][:, :, :, 0]], u, r.dV, u, grad_v=[True], grad_u=[False])
+        a = fem.IntegralForm(
+            [A[0][:, :, :, 0]], u, r.dV, u, grad_v=[True], grad_u=[False]
+        )
         y = a.integrate(parallel=parallel)
 
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
-        a = fem.IntegralForm([A[0][:, 0, :, 0]], u, r.dV, u, grad_v=[False], grad_u=[False])
+        a = fem.IntegralForm(
+            [A[0][:, 0, :, 0]], u, r.dV, u, grad_v=[False], grad_u=[False]
+        )
         y = a.integrate(parallel=parallel)
 
         K = a.assemble(parallel=parallel).toarray()

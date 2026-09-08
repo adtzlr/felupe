@@ -3,8 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
-## Added
-- Add missing modes (combinations of boolean `grad_v` and `grad_u`) to `IntegralFormAxisymmetric.`
+### Added
+- Add missing modes (combinations of boolean `grad_v` and `grad_u`) to `IntegralFormAxisymmetric`.
 
 ## [11.0.0] - 2026-09-07
 

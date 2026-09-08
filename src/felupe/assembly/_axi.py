@@ -185,9 +185,10 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
 
         else:
             if isinstance(v, FieldAxisymmetric) and isinstance(u, FieldAxisymmetric):
-                self.mode = 2
 
                 if grad_v and grad_u:
+                    self.mode = 2
+
                     form_aa = IntegralFormCartesian(
                         fun[:-1, :-1, :-1, :-1], v, self.dV, u, True, True
                     )
@@ -206,7 +207,9 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
                         fun[:-1, :-1, -1, -1] / R, v, self.dV, u.scalar, True, False
                     )
 
-                if not grad_v and grad_u:
+                elif not grad_v and grad_u:
+                    self.mode = 21
+
                     form_aa = IntegralFormCartesian(
                         fun[:-1, :-1, :-1], v, self.dV, u, False, True
                     )
@@ -223,6 +226,48 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
                     )
                     form_ab = IntegralFormCartesian(
                         fun[:-1, -1, -1] / R, v, self.dV, u.scalar, False, False
+                    )
+
+                elif grad_v and not grad_u:
+                    self.mode = 22
+
+                    form_aa = IntegralFormCartesian(
+                        fun[:-1, :-1, :-1], v, self.dV, u, True, False
+                    )
+                    form_bb = IntegralFormCartesian(
+                        fun[-1, -1, -1] / R**2,
+                        v.scalar,
+                        self.dV,
+                        u.scalar,
+                        False,
+                        False,
+                    )
+                    form_ba = IntegralFormCartesian(
+                        fun[-1, -1, :-1] / R, v.scalar, self.dV, u, False, False
+                    )
+                    form_ab = IntegralFormCartesian(
+                        fun[:-1, :-1, -1] / R, v, self.dV, u.scalar, True, False
+                    )
+
+                else:  # if not grad_v and not grad_u
+                    self.mode = 23
+
+                    form_aa = IntegralFormCartesian(
+                        fun[:-1, :-1], v, self.dV, u, False, False
+                    )
+                    form_bb = IntegralFormCartesian(
+                        fun[-1, -1] / R**2,
+                        v.scalar,
+                        self.dV,
+                        u.scalar,
+                        False,
+                        False,
+                    )
+                    form_ba = IntegralFormCartesian(
+                        fun[-1, :-1] / R, v.scalar, self.dV, u, False, False
+                    )
+                    form_ab = IntegralFormCartesian(
+                        fun[:-1, -1] / R, v, self.dV, u.scalar, False, False
                     )
 
                 self.forms = [form_aa, form_bb, form_ba, form_ab]
@@ -275,7 +320,8 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0), (0, 0)))
             val = values[0]
 
-        elif self.mode == 2:
+        elif self.mode == 2 or self.mode == 21:
+
             a, b, e = values[1].shape
             values[1] = values[1].reshape(a, 1, b, 1, e)
             values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
@@ -283,6 +329,25 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             a, b, i, e = values[2].shape
             values[2] = values[2].reshape(a, 1, b, i, e)
             values[2] = np.pad(values[2], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+
+            a, i, b, e = values[3].shape
+            values[3] = values[3].reshape(a, i, b, 1, e)
+            values[3] = np.pad(values[3], ((0, 0), (0, 0), (0, 0), (1, 0), (0, 0)))
+
+            for i in range(1, len(values)):
+                values[0] += values[i]
+
+            val = values[0]
+
+        elif self.mode == 22 or self.mode == 23:
+
+            a, b, e = values[1].shape
+            values[1] = values[1].reshape(a, 1, b, 1, e)
+            values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
+
+            a, i, b, e = values[2].shape
+            values[2] = values[2].reshape(a, i, b, 1, e)
+            values[2] = np.pad(values[2], ((0, 0), (0, 0), (0, 0), (1, 0), (0, 0)))
 
             a, i, b, e = values[3].shape
             values[3] = values[3].reshape(a, i, b, 1, e)

@@ -232,7 +232,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
                     self.mode = 22
 
                     form_aa = IntegralFormCartesian(
-                        fun[:-1, :-1, :-1], v, self.dV, u, False, True
+                        fun[:-1, :-1, :-1], v, self.dV, u, True, False
                     )
                     form_bb = IntegralFormCartesian(
                         fun[-1, -1, -1] / R**2,
@@ -321,6 +321,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             val = values[0]
 
         elif self.mode == 2 or self.mode == 21:
+
             a, b, e = values[1].shape
             values[1] = values[1].reshape(a, 1, b, 1, e)
             values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
@@ -339,6 +340,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             val = values[0]
 
         elif self.mode == 22 or self.mode == 23:
+
             a, b, e = values[1].shape
             values[1] = values[1].reshape(a, 1, b, 1, e)
             values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))

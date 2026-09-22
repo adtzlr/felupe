@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 - Add missing modes (combinations of boolean `grad_v` and `grad_u`) to `IntegralFormAxisymmetric`.
+- Add `SolidBody(..., grad=None)`, an additional argument to define which fields of the field container should use their gradients. By default, the first (displacement) field uses the gradient, and the other fields use their field values (no gradient).
 
 ## [11.0.0] - 2026-09-07
 

@@ -174,9 +174,12 @@ class FieldContainer:
             (default is True).
         sym : bool, optional
             Flag for symmetric part if the gradient is evaluated (default is False).
-        add_identity : bool, optional
-            Flag for the addition of the identity matrix if the gradient is evaluated
-            (default is True).
+        add_identity : bool or list of bool, optional
+            Flag(s) for the addition of the identity matrix if the gradient is
+            evaluated. A boolean value is applied on the first gradient only and all
+            other gradients are extracted with ``add_identity=False``. To
+            enable or disable the addition of the identity matrix on gradients
+            per-field, use a list of boolean values instead (default is True).
         dtype : data-type or None, optional
             If provided, forces the calculation to use the data type specified. Default
             is None.
@@ -228,6 +231,9 @@ class FieldContainer:
         if isinstance(grad, bool):
             grad = (grad,)
 
+        if isinstance(add_identity, bool):
+            add_identity = (add_identity,)
+
         if isinstance(order, str):
             order = (order,)
 
@@ -235,11 +241,14 @@ class FieldContainer:
             out = [None] * len(self.fields)
 
         grads = np.pad(grad, (0, len(self.fields) - 1))
+        add_identities = np.pad(add_identity, (0, len(self.fields) - 1))
         orders = order * len(self.fields)
 
         return tuple(
-            f.extract(g, sym, add_identity=add_identity, dtype=dtype, out=res, order=od)
-            for g, f, res, od in zip(grads, self.fields, out, orders)
+            f.extract(g, sym, add_identity=ai, dtype=dtype, out=res, order=od)
+            for g, ai, f, res, od in zip(
+                grads, add_identities, self.fields, out, orders
+            )
         )
 
     def values(self):

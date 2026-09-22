@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add missing modes (combinations of boolean `grad_v` and `grad_u`) to `IntegralFormAxisymmetric`.
 - Add `SolidBody(..., grad=None)`, an additional argument to define which fields of the field container should use their gradients. By default, the first (displacement) field uses the gradient, and the other fields use their field values (no gradient).
+- Add `FieldDual(..., calc_points=None)` to calculate the points array for a dual mesh.
+
+### Changed
+- Change the default boolean value of `FieldContainer(..., add_identity=True)`: the identity matrix will now only be applied to the gradient of the first field (applied to all gradients before). The addition of the identity matrix can now be turned on/off individually per-field with a list of boolean flags.
 
 ## [11.0.0] - 2026-09-07
 

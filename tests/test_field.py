@@ -345,6 +345,21 @@ def test_merge_fewer_points():
     assert len(field[0].values) == len(x0[0].values) == 3
 
 
+def test_field_dual():
+
+    mesh = fem.Cube(n=3).convert(2, 1, 1, 1)
+    region = fem.RegionTriQuadraticHexahedron(mesh)
+    field_dual = fem.FieldDual(
+        region,
+        dim=3,
+        calc_points=True,
+        disconnect=False,
+        grad=True,
+    )
+    field_container = fem.FieldContainer([field_dual])
+    assert field_container[0] is field_dual
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -356,3 +371,4 @@ if __name__ == "__main__":
     test_toplevel_merge()
     test_merge()
     test_merge_fewer_points()
+    test_field_dual()

@@ -60,6 +60,8 @@ class FieldDual(Field):
         A flag to disconnect the dual mesh (default is None). If None, a disconnected
         mesh is used except for regions with quadratic-triangle or -tetra or MINI
         element formulations.
+    calc_points : bool or None, optional
+        A flag to calculate points for the dual mesh (default is None).
     **kwargs : dict, optional
         Optional keyword arguments for the dual region.
 
@@ -105,6 +107,7 @@ class FieldDual(Field):
         npoints=None,
         mesh=None,
         disconnect=None,
+        calc_points=None,
         **kwargs,
     ):
 
@@ -144,6 +147,9 @@ class FieldDual(Field):
 
         if disconnect is not None:
             mesh_kwargs["disconnect"] = disconnect
+
+        if calc_points is not None:
+            mesh_kwargs["calc_points"] = calc_points
 
         points_per_cell = {
             RegionConstantHexahedron: 1,

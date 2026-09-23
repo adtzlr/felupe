@@ -115,10 +115,7 @@ class FieldContainer:
 
         self.evaluate = EvaluateFieldContainer(self)
         self.is_container = True
-
         self.take = take
-        if self.take is None:
-            self.take = list(range(len(fields)))
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
@@ -165,6 +162,9 @@ class FieldContainer:
                     self.list_of_fields.extend(field.fields)
                 else:
                     self.list_of_fields.append(field)
+
+        if self.take is None:
+            self.take = list(range(len(self.list_of_fields)))
 
         self.region = self.fields[0].region
 

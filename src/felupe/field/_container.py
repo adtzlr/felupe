@@ -42,6 +42,9 @@ class FieldContainer:
     ----------
     fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric`, :class:``~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`
         List with fields. The region is linked to the first field.
+    take : list of int, optional
+        Take custom fields, used for :meth:`~felupe.FieldContainer.extract`. If None,
+        the fields are used in their original order. Default is None.
     **kwargs : dict, optional
         Extra class attributes for the field container.
 
@@ -108,10 +111,14 @@ class FieldContainer:
 
     """
 
-    def __init__(self, fields, **kwargs):
+    def __init__(self, fields, take=None, **kwargs):
 
         self.evaluate = EvaluateFieldContainer(self)
         self.is_container = True
+
+        self.take = take
+        if self.take is None:
+            self.take = list(range(len(fields)))
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
@@ -130,6 +137,14 @@ class FieldContainer:
 
         return "\n".join([header, size, fields_header, *fields])
 
+    @property
+    def fields(self):
+        return [self.list_of_fields[i] for i in self.take]
+
+    @fields.setter
+    def fields(self, list_of_fields):
+        self.list_of_fields = list_of_fields
+
     def reload(self, fields=None):
         """Reload the Field Container with new fields.
 
@@ -143,13 +158,13 @@ class FieldContainer:
             self._list_of_fields_and_field_containers = fields
 
             # create list of fields (unpack field containers)
-            self.fields = []
+            self.list_of_fields = []
 
             for field in fields:
                 if isinstance(field, FieldContainer):
-                    self.fields.extend(field.fields)
+                    self.list_of_fields.extend(field.fields)
                 else:
-                    self.fields.append(field)
+                    self.list_of_fields.append(field)
 
         self.region = self.fields[0].region
 

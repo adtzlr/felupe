@@ -252,7 +252,7 @@ def test_bilinearform():
     fun = np.ones((3, 1, 1, 3, 1, nq, nc))
     form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
     with pytest.raises(ValueError):
-            form.assemble()
+        form.assemble()
 
 
 def test_bilinearform_broadcast():

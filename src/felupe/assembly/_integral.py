@@ -193,7 +193,7 @@ class IntegralForm:
 
     def __init__(self, fun, v, dV, u=None, grad_v=None, grad_u=None):
         self.fun = fun
-        self.v = v.fields
+        self.v = v.extracted_fields()
         self.nv = len(self.v)
         self.dV = dV
 
@@ -201,7 +201,7 @@ class IntegralForm:
         self._u = u
 
         if u is not None:
-            self.u = u.fields
+            self.u = u.extracted_fields()
             self.nu = len(self.u)
         else:
             self.u = None
@@ -287,8 +287,8 @@ class IntegralForm:
             res.append(form.assemble(val, parallel=parallel, out=out))
 
         if block and (self.mode == 2 or self.mode == 3):
-            nv = len(self._v.list_of_fields)
-            nu = len(self._u.list_of_fields)
+            nv = len(self._v.fields)
+            nu = len(self._u.fields)
 
             K = np.zeros((nv, nu), dtype=object)
 
@@ -310,7 +310,7 @@ class IntegralForm:
             res = bmat(K).tocsr()
 
         if block and self.mode == 1:
-            nv = len(self._v.list_of_fields)
+            nv = len(self._v.fields)
             vector = [None] * nv
 
             idx_v = self._v.take

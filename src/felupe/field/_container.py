@@ -257,9 +257,7 @@ class FieldContainer:
 
         return tuple(
             f.extract(g, sym, add_identity=ai, dtype=dtype, out=res, order=od)
-            for g, ai, f, res, od in zip(
-                grads, add_identities, fields, out, orders
-            )
+            for g, ai, f, res, od in zip(grads, add_identities, fields, out, orders)
         )
 
     def values(self):

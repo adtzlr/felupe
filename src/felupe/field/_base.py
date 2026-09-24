@@ -160,8 +160,7 @@ class Field:
                     )
 
                 else:  # trim values
-                    self.values = self.values[: length]
-
+                    self.values = self.values[:length]
 
             eai, ai = self._indices_per_cell(self.region.mesh.cells, self.dim)
             self.indices = Indices(eai, ai, region, self.dim)

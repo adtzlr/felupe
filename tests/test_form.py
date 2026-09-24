@@ -228,6 +228,32 @@ def test_bilinearform():
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
 
+    nc = r.mesh.ncells
+    nq = r.quadrature.npoints
+
+    fun = np.ones((3, 3, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    form.assemble()
+
+    fun = np.ones((3, 1, 3, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    with pytest.raises(ValueError):
+        form.assemble()
+
+    fun = np.ones((3, 3, 1, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    with pytest.raises(ValueError):
+        form.assemble()
+
+    fun = np.ones((3, 1, 3, 1, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    form.assemble()
+
+    fun = np.ones((3, 1, 1, 3, 1, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    with pytest.raises(ValueError):
+            form.assemble()
+
 
 def test_bilinearform_broadcast():
     r, u, p, P, A = pre_broadcast()

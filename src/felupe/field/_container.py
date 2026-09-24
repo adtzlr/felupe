@@ -135,19 +135,6 @@ class FieldContainer:
 
         return "\n".join([header, size, fields_header, *fields])
 
-    @property
-    def fields(self):
-
-        take = self.take
-        if take is None:
-            take = range(len(self.list_of_fields))
-
-        return [self.list_of_fields[i] for i in take]
-
-    @fields.setter
-    def fields(self, fields):
-        self.reload(fields)
-
     def reload(self, fields=None):
         """Reload the Field Container with new fields.
 
@@ -161,19 +148,24 @@ class FieldContainer:
             self._list_of_fields_and_field_containers = fields
 
             # create list of fields (unpack field containers)
-            self.list_of_fields = []
+            self.fields = []
 
             for field in fields:
                 if isinstance(field, FieldContainer):
-                    self.list_of_fields.extend(field.fields)
+                    self.fields.extend(field.fields)
                 else:
-                    self.list_of_fields.append(field)
+                    self.fields.append(field)
 
         self.region = self.fields[0].region
 
         # get sizes of fields and calculate offsets
         self.fieldsizes = [f.indices.dof.size for f in self.fields]
         self.offsets = np.cumsum(self.fieldsizes)[:-1]
+
+    def extracted_fields(self):
+        if self.take is None:
+            return self.fields
+        return [self.fields[i] for i in self.take]
 
     def extract(
         self, grad=True, sym=False, add_identity=True, dtype=None, out=None, order="C"
@@ -245,6 +237,7 @@ class FieldContainer:
             undeformed coordinates.
 
         """
+        fields = self.extracted_fields()
 
         if isinstance(grad, bool):
             grad = (grad,)
@@ -256,16 +249,16 @@ class FieldContainer:
             order = (order,)
 
         if out is None:
-            out = [None] * len(self.fields)
+            out = [None] * len(fields)
 
-        grads = np.pad(grad, (0, len(self.fields) - 1))
-        add_identities = np.pad(add_identity, (0, len(self.fields) - 1))
-        orders = order * len(self.fields)
+        grads = np.pad(grad, (0, len(fields) - 1))
+        add_identities = np.pad(add_identity, (0, len(fields) - 1))
+        orders = order * len(fields)
 
         return tuple(
             f.extract(g, sym, add_identity=ai, dtype=dtype, out=res, order=od)
             for g, ai, f, res, od in zip(
-                grads, add_identities, self.fields, out, orders
+                grads, add_identities, fields, out, orders
             )
         )
 

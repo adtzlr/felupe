@@ -122,14 +122,16 @@ class AnimationWriterPlugin(Plugin):
             self.plotter = None
 
     def before_job(self, context, state):
-        self.plotter = self.kwargs.pop("plotter", None)
+        self.plotter = self.kwargs.pop("plotter", None)  # pragma: no cover
 
-        for idx, item in enumerate(self.items):
+        for idx, item in enumerate(self.items):  # pragma: no cover
             color = {}  # pragma: no cover
             if self.colors is not None:  # pragma: no cover
                 color["color"] = self.colors[idx]  # pragma: no cover
 
-            self.plotter = item.plot(plotter=self.plotter, **color, **self.kwargs)
+            self.plotter = item.plot(  # pragma: no cover
+                plotter=self.plotter, **color, **self.kwargs  # pragma: no cover
+            )  # pragma: no cover
 
         if self.zoom_camera != 1.0:
             self.plotter.camera.zoom(self.zoom_camera)

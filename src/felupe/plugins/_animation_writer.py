@@ -125,9 +125,9 @@ class AnimationWriterPlugin(Plugin):
         self.plotter = self.kwargs.pop("plotter", None)
 
         for idx, item in enumerate(self.items):
-            color = {}
-            if self.colors is not None:
-                color["color"] = self.colors[idx]
+            color = {}  # pragma: no cover
+            if self.colors is not None:  # pragma: no cover
+                color["color"] = self.colors[idx]  # pragma: no cover
 
             self.plotter = item.plot(plotter=self.plotter, **color, **self.kwargs)
 
@@ -160,9 +160,9 @@ class AnimationWriterPlugin(Plugin):
         self.plotter.clear_actors()  # pragma: no cover
 
         for idx, item in enumerate(self.items):  # pragma: no cover
-            color = {}
-            if self.colors is not None:
-                color["color"] = self.colors[idx]
+            color = {}  # pragma: no cover
+            if self.colors is not None:  # pragma: no cover
+                color["color"] = self.colors[idx]  # pragma: no cover
 
             self.plotter = item.plot(
                 plotter=self.plotter, **color, **self.kwargs

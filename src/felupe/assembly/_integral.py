@@ -197,6 +197,9 @@ class IntegralForm:
         self.nv = len(self.v)
         self.dV = dV
 
+        self._v = v
+        self._u = u
+
         if u is not None:
             self.u = u.fields
             self.nu = len(self.u)
@@ -284,16 +287,38 @@ class IntegralForm:
             res.append(form.assemble(val, parallel=parallel, out=out))
 
         if block and (self.mode == 2 or self.mode == 3):
-            K = np.zeros((self.nv, self.nu), dtype=object)
+            nv = len(self._v.list_of_fields)
+            nu = len(self._u.list_of_fields)
+
+            K = np.zeros((nv, nu), dtype=object)
+
+            idx_v = self._v.take
+            idx_u = self._u.take
+
+            if idx_v is None:
+                idx_v = lambda idx: idx
+
+            if idx_u is None:
+                idx_u = lambda idx: idx
+
             for a, (i, j) in enumerate(zip(self.i, self.j)):
-                K[i, j] = res[a]
+
+                K[idx_v[i], idx_u[j]] += res[a]
                 if self.mode == 2 and i != j:
-                    K[j, i] = res[a].T
+                    K[idx_v[j], idx_u[i]] += res[a].T
 
             res = bmat(K).tocsr()
 
         if block and self.mode == 1:
-            res = vstack(res).tocsr()
+            nv = len(self._v.list_of_fields)
+            vector = [None] * nv
+
+            idx_v = self._v.take
+
+            for i, vec in zip(idx_v, vector):
+                vector[i] = res[i] if vector[i] is None else vector[i] + res[i]
+
+            res = vstack(vector).tocsr()
 
         return res
 

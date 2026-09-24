@@ -360,6 +360,24 @@ def test_field_dual():
     assert field_container[0] is field_dual
 
 
+def test_field_take():
+
+    mesh = fem.Cube(n=3).convert(2, 1, 1, 1)
+    region = fem.RegionTriQuadraticHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)], take=[0, 0])
+
+    F, u = field.extract(grad=[True, False])
+
+    assert F.shape[:2] == (3, 3)
+    assert u.shape[:1] == (3,)
+
+    assert len(F.shape) == 4
+    assert len(u.shape) == 3
+
+    assert len(field.fieldsizes) == 1
+    assert len(field.offsets) == 0
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -372,3 +390,4 @@ if __name__ == "__main__":
     test_merge()
     test_merge_fewer_points()
     test_field_dual()
+    test_field_take()

@@ -296,10 +296,10 @@ class IntegralForm:
             idx_u = self._u.take
 
             if idx_v is None:
-                idx_v = lambda idx: idx
+                idx_v = range(nv)
 
             if idx_u is None:
-                idx_u = lambda idx: idx
+                idx_u = range(nu)
 
             for a, (i, j) in enumerate(zip(self.i, self.j)):
 
@@ -314,6 +314,9 @@ class IntegralForm:
             vector = [None] * nv
 
             idx_v = self._v.take
+
+            if idx_v is None:
+                idx_v = range(nv)
 
             for i, vec in zip(idx_v, vector):
                 vector[i] = res[i] if vector[i] is None else vector[i] + res[i]

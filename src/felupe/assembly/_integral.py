@@ -318,8 +318,8 @@ class IntegralForm:
             if idx_v is None:
                 idx_v = range(nv)
 
-            for i, vec in zip(idx_v, vector):
-                vector[i] = res[i] if vector[i] is None else vector[i] + res[i]
+            for a, i in enumerate(idx_v):
+                vector[i] = res[a] if vector[i] is None else vector[i] + res[a]
 
             res = vstack(vector).tocsr()
 

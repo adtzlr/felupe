@@ -43,8 +43,9 @@ class FieldContainer:
     fields : list or tuple of :class:`~felupe.Field`, :class:``~felupe.FieldAxisymmetric`, :class:``~felupe.FieldPlaneStrain` or :class:`~felupe.FieldContainer`
         List with fields. The region is linked to the first field.
     take : list of int, optional
-        Take custom fields, used for :meth:`~felupe.FieldContainer.extract`. If None,
-        the fields are used in their original order. Default is None.
+        Take custom fields by field indices, used for
+        :meth:`~felupe.FieldContainer.extract`. If None, the fields are used in their
+        original list item order. Default is None.
     **kwargs : dict, optional
         Extra class attributes for the field container.
 
@@ -136,11 +137,16 @@ class FieldContainer:
 
     @property
     def fields(self):
-        return [self.list_of_fields[i] for i in self.take]
+
+        take = self.take
+        if take is None:
+            take = range(len(self.list_of_fields))
+
+        return [self.list_of_fields[i] for i in take]
 
     @fields.setter
-    def fields(self, list_of_fields):
-        self.list_of_fields = list_of_fields
+    def fields(self, fields):
+        self.reload(fields)
 
     def reload(self, fields=None):
         """Reload the Field Container with new fields.
@@ -162,9 +168,6 @@ class FieldContainer:
                     self.list_of_fields.extend(field.fields)
                 else:
                     self.list_of_fields.append(field)
-
-        if self.take is None:
-            self.take = list(range(len(self.list_of_fields)))
 
         self.region = self.fields[0].region
 

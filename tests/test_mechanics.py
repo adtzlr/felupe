@@ -907,6 +907,7 @@ def test_job_plugins():
         filename="result.mp4",
         name="Principal Values of Cauchy Stress",
         off_screen=True,
+        colors=["lightblue"],
     )
 
     job = fem.Job(

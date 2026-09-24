@@ -99,6 +99,7 @@ class AnimationWriterPlugin(Plugin):
         reset_camera=True,
         show_text=True,
         take_screenshots=False,
+        colors=None,
         **kwargs,
     ):
         self.items = items
@@ -109,6 +110,7 @@ class AnimationWriterPlugin(Plugin):
         self.reset_camera = reset_camera
         self.show_text = show_text
         self.take_screenshots = take_screenshots
+        self.colors = colors
         self.kwargs = kwargs
 
         self.plotter = None
@@ -122,8 +124,12 @@ class AnimationWriterPlugin(Plugin):
     def before_job(self, context, state):
         self.plotter = self.kwargs.pop("plotter", None)
 
-        for item in self.items:
-            self.plotter = item.plot(plotter=self.plotter, **self.kwargs)
+        for idx, item in enumerate(self.items):
+            color = {}
+            if self.colors is not None:
+                color["color"] = self.colors[idx]
+
+            self.plotter = item.plot(plotter=self.plotter, **color, **self.kwargs)
 
         if self.zoom_camera != 1.0:
             self.plotter.camera.zoom(self.zoom_camera)
@@ -153,9 +159,13 @@ class AnimationWriterPlugin(Plugin):
     def after_substep(self, context, state):  # pragma: no cover
         self.plotter.clear_actors()  # pragma: no cover
 
-        for item in self.items:  # pragma: no cover
+        for idx, item in enumerate(self.items):  # pragma: no cover
+            color = {}
+            if self.colors is not None:
+                color["color"] = self.colors[idx]
+
             self.plotter = item.plot(
-                plotter=self.plotter, **self.kwargs
+                plotter=self.plotter, **color, **self.kwargs
             )  # pragma: no cover
 
         if self.reset_camera:  # pragma: no cover

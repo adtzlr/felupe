@@ -517,6 +517,15 @@ def test_extrapolate():
     with pytest.raises(ValueError):
         projected = fem.tools.extrapolate(values, region, average=True)
 
+def test_resize():
+    from scipy.sparse import csr_matrix
+
+    # empty csr matrix with shape 100, 3
+    matrix = csr_matrix((100, 3))
+
+    with pytest.raises(ValueError):
+        fem.tools._newton.spresize(matrix, shape=(50, 3))
+
 
 if __name__ == "__main__":
     test_hello_world()
@@ -531,3 +540,4 @@ if __name__ == "__main__":
     test_project()
     test_topoints()
     test_extrapolate()
+    test_resize()

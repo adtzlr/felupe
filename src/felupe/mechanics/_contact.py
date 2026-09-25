@@ -468,7 +468,7 @@ class ContactRigidPlane(ContactPlane):
         self.results.active = contact_mask.copy()
         contact = np.where(contact_mask)[0]
 
-        r = lil_matrix((self.mesh.ndof, self.mesh.dim))
+        r = lil_matrix((self.mesh.ndof, 1))
 
         if len(contact) > 0:
             self.multipliers = self.contact_multipliers(contact)

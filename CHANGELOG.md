@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [11.1.1] - 2026-09-25
+
+### Fixed
+- Only increase an assembled sparse vector / matrix, do not trim the shape. This will raise an error now to avoid wrong results.
+- Restrict `field.merge()` to accept single-field field containers only, otherwise, a type error will be raised to avoid wrong results.
+- Fix wrong shape in `ContactRigidPlane`, shape is now `(mesh.ndof, 1)`, was `(mesh.ndof, mesh.dim)` before.
+
 ## [11.1.0] - 2026-09-24
 
 ### Added

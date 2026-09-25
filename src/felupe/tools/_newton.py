@@ -96,6 +96,42 @@ class NewtonResult:
         self.fnorms = fnorms
 
 
+def spresize(a, shape):
+    """Increase (pad) the size of a sparse vector or matrix with zeros to a given shape.
+
+    Parameters
+    ----------
+    a : csr_matrix
+        Sparse vector or matrix to be resized.
+    shape : tuple of int
+        Target shape for the sparse vector or matrix.
+
+    Returns
+    -------
+    csr_matrix
+        Resized sparse vector or matrix with zeros added to match the target shape.
+
+    Notes
+    -----
+    This function will increase the size of the sparse vector or matrix by adding zeros
+    to match the target shape. It will raise a ValueError if the current shape exceeds
+    the target shape.
+    """
+
+    if a.shape == shape:
+        return a
+
+    if any(ai > si for ai, si in zip(a.shape, shape)):
+        raise ValueError(
+            f"The assembled item has shape {a.shape}, which exceeds the global "
+            f"shape {shape}. The item's field container has more degrees of "
+            "freedom than the top-level field container."
+        )
+
+    a.resize(*shape)  # in-place
+    return a
+
+
 def fun_items(items, x, parallel=False):
     "Assemble the sparse system vector for each item."
 
@@ -117,9 +153,8 @@ def fun_items(items, x, parallel=False):
         if body.assemble.multiplier is not None:
             r *= body.assemble.multiplier
 
-        # check and reshape vector
-        if r.shape != shape:
-            r.resize(*shape)
+        # reshape vector
+        r = spresize(r, shape)
 
         # add vector
         vector += r
@@ -144,9 +179,8 @@ def jac_items(items, x, parallel=False):
         if body.assemble.multiplier is not None:
             K *= body.assemble.multiplier
 
-        # check and reshape matrix
-        if K.shape != matrix.shape:
-            K.resize(*shape)
+        # reshape matrix
+        K = spresize(K, shape)
 
         # add matrix
         matrix += K

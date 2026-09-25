@@ -332,6 +332,18 @@ def test_merge():
     with pytest.raises(TypeError):
         fem.field.merge([field])
 
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldContainer(
+        [
+            fem.Field(fem.RegionQuad(mesh), dim=3),
+            fem.Field(fem.RegionQuad(mesh), dim=3),
+        ]
+    )
+
+    # field containers with multiple fields can't be merged
+    with pytest.raises(TypeError):
+        fem.field.merge([field])
+
 
 def test_merge_fewer_points():
 

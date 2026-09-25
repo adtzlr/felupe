@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Only increase an assembled sparse vector / matrix, do not trim the shape. This will raise an error now to avoid wrong results.
+
 ## [11.1.0] - 2026-09-24
 
 ### Added

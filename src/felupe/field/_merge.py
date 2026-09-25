@@ -90,6 +90,15 @@ def merge(fields, decimals=None, **kwargs):
                     "input for the merge function."
                 )
 
+    for field in fields:
+        if len(field.fields) > 1:
+            raise TypeError(
+                "Only field containers with a single field can be merged. For mixed "
+                "fields, merge the meshes with MeshContainer(..., merge=True), create "
+                "the top-level field container manually on a region with all cells "
+                "and pass it to Job.evaluate(x0=x0)."
+            )
+
     regions = [field.region for field in fields]
     meshes = [region.mesh for region in regions]
 

@@ -68,7 +68,7 @@ class SolidBodyThermal(SolidBody):
 
         \boldsymbol{r}
             + \frac{\partial \boldsymbol{r}}{\partial \boldsymbol{T}}
-            \delta \boldsymbol {T} = \boldsymbol{0}
+            \delta \boldsymbol {T} &= \boldsymbol{0}
 
         \boldsymbol{K} \delta \boldsymbol{T} &= -\boldsymbol{r}
 
@@ -132,7 +132,8 @@ class SolidBodyThermal(SolidBody):
     See Also
     --------
     felupe.thermal.TimeStep : A time step item.
-    felupe.thermal.SolidBodySurfaceHeatTransfer : A surface heat transfer boundary condition.
+    felupe.thermal.SolidBodySurfaceHeatTransfer : A general surface heat transfer boundary condition.
+    felupe.thermal.SolidBodySurfaceConvection : A thermal convection boundary condition.
     felupe.thermal.SolidBodySurfaceRadiation : A thermal radiation boundary condition.
     felupe.thermal.SolidBodyHeatFlux : A thermal heat flux boundary condition.
 

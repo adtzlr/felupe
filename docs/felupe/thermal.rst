@@ -16,6 +16,7 @@ Thermal
 
    thermal.SolidBodyThermal
    thermal.SolidBodySurfaceHeatTransfer
+   thermal.SolidBodySurfaceConvection
    thermal.SolidBodySurfaceRadiation
    thermal.SolidBodyHeatFlux
 
@@ -32,6 +33,11 @@ Thermal
    :show-inheritance:
 
 .. autoclass:: felupe.thermal.SolidBodySurfaceHeatTransfer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.thermal.SolidBodySurfaceConvection
    :members:
    :undoc-members:
    :show-inheritance:

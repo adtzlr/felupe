@@ -23,6 +23,7 @@ from .strain.models import (
     linear_elastic_plastic_isotropic_hardening,
     linear_elastic_viscoelastic,
 )
+from .heat_transfer import FreeConvection
 
 __all__ = [
     "NeoHooke",
@@ -55,6 +56,7 @@ __all__ = [
     "constitutive_material",
     "CompositeMaterial",
     "Volumetric",
+    "FreeConvection",
 ]
 try:
     from .tensortrax import Hyperelastic

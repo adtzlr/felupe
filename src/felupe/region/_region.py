@@ -403,7 +403,7 @@ class Region:
 
                     d2Xdrdr = np.einsum(
                         "caM,aIJqc->MIJqc",
-                        region.mesh.points[region.mesh.cells],
+                        region.mesh.points[cells],
                         region.d2hdrdr,
                     )
                     region.d2hdXdX -= np.einsum(

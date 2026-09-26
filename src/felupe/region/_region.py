@@ -401,6 +401,13 @@ class Region:
                         np.expand_dims(region.element_d2hdrdr, -1)
                     )
 
+                    region.d2hdXdX = np.einsum(
+                        "aIJqc,IKqc,JLqc->aKLqc",
+                        region.d2hdrdr,
+                        region.drdX,
+                        region.drdX,
+                    )
+
                     d2Xdrdr = np.einsum(
                         "caM,aIJqc->MIJqc",
                         region.mesh.points[cells],

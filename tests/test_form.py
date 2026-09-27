@@ -147,6 +147,30 @@ def test_axi():
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
+        a = fem.IntegralForm(
+            [A[0][:, 0, :, :]], u, r.dV, u, grad_v=[False], grad_u=[True]
+        )
+        y = a.integrate(parallel=parallel)
+
+        K = a.assemble(parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+
+        a = fem.IntegralForm(
+            [A[0][:, :, :, 0]], u, r.dV, u, grad_v=[True], grad_u=[False]
+        )
+        y = a.integrate(parallel=parallel)
+
+        K = a.assemble(parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+
+        a = fem.IntegralForm(
+            [A[0][:, 0, :, 0]], u, r.dV, u, grad_v=[False], grad_u=[False]
+        )
+        y = a.integrate(parallel=parallel)
+
+        K = a.assemble(parallel=parallel).toarray()
+        assert K.shape == (r.mesh.ndof, r.mesh.ndof)
+
 
 def test_linearform():
     r, u, p, P, A = pre()
@@ -203,6 +227,32 @@ def test_bilinearform():
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
         K = a.assemble(parallel=parallel).toarray()
         assert K.shape == (r.mesh.ndof, r.mesh.npoints)
+
+    nc = r.mesh.ncells
+    nq = r.quadrature.npoints
+
+    fun = np.ones((3, 3, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    form.assemble()
+
+    fun = np.ones((3, 1, 3, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    with pytest.raises(ValueError):
+        form.assemble()
+
+    fun = np.ones((3, 3, 1, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    with pytest.raises(ValueError):
+        form.assemble()
+
+    fun = np.ones((3, 1, 3, 1, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    form.assemble()
+
+    fun = np.ones((3, 1, 1, 3, 1, nq, nc))
+    form = fem.IntegralForm([fun], u, r.dV, u, grad_v=[False], grad_u=[False])
+    with pytest.raises(ValueError):
+        form.assemble()
 
 
 def test_bilinearform_broadcast():

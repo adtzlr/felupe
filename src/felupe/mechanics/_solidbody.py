@@ -170,6 +170,10 @@ class SolidBody(Solid):
         Apply a callable on the assembled vectors and sparse matrices. Default is None.
     multiplier : float or None, optional
         A scale factor for the assembled vector and matrix. Default is None.
+    grad : list of bool or None, optional
+        A list with gradient flags for the individual fields. If None, the gradient
+        will be computed for the first field, whereas the for the remaining fields, the
+        field values (no gradient) will be used. Default is None.
 
     Notes
     -----
@@ -256,12 +260,14 @@ class SolidBody(Solid):
         block=True,
         apply=None,
         multiplier=None,
+        grad=None,
     ):
         self.umat = umat
         self.field = field
         self.density = density
         self.block = block
         self.apply = apply
+        self.grad = grad
 
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
@@ -393,7 +399,7 @@ class SolidBody(Solid):
         self.results.force = None
         self.results.stiffness = None
 
-    def revolve(self, n=11, phi=180):
+    def revolve(self, n=11, phi=180, x0=None):
         """Return a revolved solid body.
 
         Parameters
@@ -402,6 +408,8 @@ class SolidBody(Solid):
             Number of n-point revolutions (or (n-1) cell revolutions), default is 11.
         phi : float or ndarray, optional
             Revolution angle in degree (default is 180).
+        x0 : FieldContainer or None, optional
+            The revolved top-level field container. Default is None.
 
         Returns
         -------
@@ -458,6 +466,13 @@ class SolidBody(Solid):
         """
 
         new_field = self.field.revolve(n=n, phi=phi)
+        if hasattr(self.field, "x0"):
+            if x0 is None:
+                raise ValueError(
+                    "The revolved top-level field container must be provided as the"
+                    " x0-argument."
+                )
+            new_field.x0 = x0
 
         # create a new solid body
         new_solid = SolidBody(
@@ -512,6 +527,7 @@ class SolidBody(Solid):
             fun=self.results.stress[slice(items)],
             v=self.field,
             dV=self.field.region.dV,
+            grad_v=self.grad,
         ).assemble(parallel=parallel, block=block)
 
         # apply a callback on the assembled internal force vector
@@ -555,6 +571,8 @@ class SolidBody(Solid):
             v=self.field,
             u=self.field,
             dV=self.field.region.dV,
+            grad_v=self.grad,
+            grad_u=self.grad,
         )
 
         # in a first step, integrate the weak-form and store the stiffness values
@@ -580,7 +598,13 @@ class SolidBody(Solid):
         "Evaluate and return the kinematics (the deformation gradient tensor)."
 
         self.field = field
-        self.results.kinematics = self.field.extract(out=self.results.kinematics)
+
+        kwargs = dict(out=self.results.kinematics, grad=self.grad)
+
+        if kwargs["grad"] is None:
+            kwargs.pop("grad")  # grad=None is not supported in FieldContainer.extract()
+
+        self.results.kinematics = self.field.extract(**kwargs)
 
         return self.results.kinematics
 

@@ -60,9 +60,8 @@ mesh = fem.MeshContainer(
 # Two solid bodies are created, one for the rubber and one for the metal. The top-level
 # field is passed as the ``x0``-argument to the evaluate-method of the job. The part is
 # displaced along the rotation axis.
-fields, x0 = fem.FieldContainer(
-    [fem.FieldAxisymmetric(fem.RegionQuad(m), dim=2) for m in mesh]
-).merge()
+fields = [fem.FieldAxisymmetric(fem.RegionQuad(m), dim=2).as_container() for m in mesh]
+x0 = fem.FieldContainer(fields).merge()
 
 rubber = fem.NeoHooke(mu=1)
 metal = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
@@ -73,7 +72,7 @@ solid2 = fem.SolidBody(metal, fields[1])
 boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False, return_loadcase=False)
 ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=5) * -1.5}
 step = fem.Step(items=[solid1, solid2], ramp=ramp, boundaries=boundaries)
-job = fem.Job(steps=[step]).evaluate(x0=x0, solver=pypardiso.spsolve)
+job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve)
 
 solid1.plot(
     "Principal Values of Cauchy Stress",
@@ -84,15 +83,15 @@ solid1.plot(
 # In order to obtain a 3d-model, the top-level field and the solid bodies are revolved.
 # For simplicity, the same load case is applied on the 3d-model. This may be used as a
 # starting point for further non-axisymmetric loads applied on the model.
-solid1_3d = solid1.revolve(n=6, phi=90)
-solid2_3d = solid2.revolve(n=6, phi=90)
 x0_3d = x0.revolve(n=6, phi=90)
+solid1_3d = solid1.revolve(n=6, phi=90, x0=x0_3d)
+solid2_3d = solid2.revolve(n=6, phi=90, x0=x0_3d)
 
 boundaries = fem.dof.uniaxial(
     x0_3d, clamped=True, sym=(0, 1, 1), move=-1.5, return_loadcase=False
 )
 step = fem.Step(items=[solid1_3d, solid2_3d], boundaries=boundaries)
-job = fem.Job(steps=[step]).evaluate(x0=x0_3d, solver=pypardiso.spsolve)
+job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve)
 
 solid1_3d.plot(
     "Principal Values of Cauchy Stress",

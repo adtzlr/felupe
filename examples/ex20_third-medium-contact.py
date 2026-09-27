@@ -76,17 +76,18 @@ bounds = fem.BoundaryDict(
 )
 
 # %%
-# The so-called HuHu-LuLu-regularization is created by two weak-
-# :func:`forms <felupe.Form>`, which are derived from the regularization
-# potential, see Eq. :eq:`huhu-lulu-regularization` [3]_.
+# The so-called HuHu-regularization [3]_, here enhanced by the HuHu-LuLu-regularization
+# [4]_, is created by two weak-:func:`forms <felupe.Form>`, which are derived from the
+# regularization potential, see Eq. :eq:`huhu-lulu-regularization` [4]_.
 #
 # .. math::
 #    :label: huhu-lulu-regularization
 #
-#    \Psi(\boldsymbol{u}) = W(\boldsymbol{u}) +
+#    \Psi(\boldsymbol{u}) = W(\boldsymbol{u}) + \frac{k_r}{2} \left (
 #        \mathbb{H}(\boldsymbol{u})~\vdots~\mathbb{H}(\boldsymbol{u})
 #        - \frac{1}{\text{tr}(\boldsymbol{1})}
 #          \mathbb{L}(\boldsymbol{u}) \cdot \mathbb{L}(\boldsymbol{u})
+#    \right )
 #
 from felupe.math import dddot, dot, hess
 
@@ -162,9 +163,16 @@ plotter.show()
 #        contacting structures", Computational Mechanics, vol. 73, no. 4. Springer
 #        Science and Business Media LLC, pp. 967–981, Oct. 07, 2023. |DOI-3|.
 #
+# .. [4] [1] A. H. Frederiksen, A. Dalklint, O. Sigmund, and K. Poulios, "Improved third
+#        medium formulation for 3D topology optimization with contact", Computer Methods
+#        in Applied Mechanics and Engineering, vol. 436, p. 117595, Mar. 2025. |DOI-4|.
+#
 # .. |DOI-2| image:: https://zenodo.org/badge/DOI/10.1007/s00466-021-01974-x.svg
 #    :target: https://www.doi.org/10.1007/s00466-021-01974-x
 #
 # .. |DOI-3| image:: https://zenodo.org/badge/DOI/10.1007/s00466-023-02396-7.svg
 #    :target: https://www.doi.org/10.1007/s00466-023-02396-7
+#
+# .. [DOI-4] image:: https://zenodo.org/badge/DOI/10.1016/j.cma.2024.117595.svg
+#    :target: https://www.doi.org/10.1016/j.cma.2024.117595
 #

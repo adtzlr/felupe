@@ -42,12 +42,10 @@ air = fem.mesh.read("ex07_engine-mount_mesh-air.vtk", dim=2)[0]
 
 # %%
 # Sub-regions and fields for all materials are generated. The sub-fields must be merged
-# to generate both the displacement fields for metal / rubber / air and a top-level
-# displacement field.
+# to generate a top-level displacement field.
 regions = [fem.RegionQuad(m) for m in [metal, rubber, air]]
-fields, field = fem.FieldContainer(
-    [fem.FieldsMixed(r, n=1, planestrain=True) for r in regions]
-).merge()
+fields = [fem.FieldsMixed(r, n=1, planestrain=True) for r in regions]
+field = fem.FieldContainer(fields).merge()
 
 
 # %%
@@ -103,9 +101,7 @@ vertical = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(
-    x0=field, tol=1e-1
-)
+job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(tol=1e-1)
 figv, axv = curve.plot(
     xlabel=r"Displacement $u_y$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F_y$ in kN $\longrightarrow$",
@@ -122,9 +118,7 @@ horizontal = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(
-    x0=field, tol=1e-1
-)
+job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(tol=1e-1)
 figh, axh = curve.plot(
     xlabel=r"Displacement $u_x$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F_x$ in kN $\longrightarrow$",
@@ -140,9 +134,7 @@ vertical = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(
-    x0=field, tol=1e-1
-)
+job = fem.Job(steps=[vertical], plugins=[curve]).evaluate(tol=1e-1)
 figv, axv = curve.plot(
     xaxis=1,
     yaxis=1,
@@ -158,9 +150,7 @@ horizontal = fem.Step(
     boundaries=boundaries,
 )
 curve = fem.CharacteristicCurvePlugin(boundaries["u_y"])
-job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(
-    x0=field, tol=1e-1
-)
+job = fem.Job(steps=[horizontal], plugins=[curve]).evaluate(tol=1e-1)
 figh, axh = curve.plot(
     yscale=1 / 1000 * thickness,
     lw=3,

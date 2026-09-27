@@ -3,6 +3,33 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Fix Hessian evaluation in `Region`, the contribution from `d2Xdrdr` was missing.
+
+## [11.1.1] - 2026-09-25
+
+### Fixed
+- Only increase an assembled sparse vector / matrix, do not trim the shape. This will raise an error now to avoid wrong results.
+- Restrict `field.merge()` to accept single-field field containers only, otherwise, a type error will be raised to avoid wrong results.
+- Fix wrong shape in `ContactRigidPlane`, shape is now `(mesh.ndof, 1)`, was `(mesh.ndof, mesh.dim)` before.
+
+## [11.1.0] - 2026-09-24
+
+### Added
+- Add missing modes (combinations of boolean `grad_v` and `grad_u`) to `IntegralFormAxisymmetric`.
+- Add `SolidBody(..., grad=None)`, an additional argument to define which fields of the field container should use their gradients. By default, the first (displacement) field uses the gradient, and the other fields use their field values (no gradient).
+- Add `FieldDual(..., calc_points=None)` to calculate the points array for a dual mesh.
+- Add `FieldContainer(..., take=None)`, where take is a list of field indices to be used for `FieldContainer.extract()`.
+- Add `AnimationWriterPlugin(..., colors=None)` to use custom colors for the items.
+
+### Changed
+- Change the default boolean value of `FieldContainer(..., add_identity=True)`: the identity matrix will now only be applied to the gradient of the first field (applied to all gradients before). The addition of the identity matrix can now be turned on/off individually per-field with a list of boolean flags.
+
+### Fixed
+- Fix the assembly of integral forms with both non-gradients on v and u for different numbers of trailing axes and the out-argument is used. Also, a value error is now raised if the shape is wrong.
+
+## [11.0.0] - 2026-09-07
+
 ### Added
 - Add Becker's logarithmic material model.
 - Add `felupe.thermal` with `thermal.SolidBodyThermal`, `thermal.SolidBodySurfaceHeatTransfer`, `thermal.SolidBodySurfaceRadiation`, `thermal.SolidBodyHeatFlux` and `thermal.TimeStep`. The time step class must include all thermal items and must be the first item in a step. Thermal transient zero-valued time-steps are supported. The stationary solution is obtained by `time_step=None`, whereas `time_step=0.0` is treated as a time-increment of length zero.
@@ -16,6 +43,9 @@ All notable changes to this project will be documented in this file. The format 
 - Add a new plugin framework for `Job(..., plugins=[])`. A plugin `MyPlugin` is a class object and must provide methods (hooks), which are called before/after a job, step, substep, newton, iteration and linear-solve. In the long term, `Job` will be simplified and all extensions will be refactored to plugins. Plugins are similar to a `callback()`, but are triggered more often.
 - Add a new `plugin` module with `Plugin` (base class), `AnimationWriterPlugin`, `CharacteristicCurvePlugin`, `ProgressPlugin` and `XDMFWriterPlugin` for `Job`.
 - Add `CharacteristicCurvePlugin.to_arrays()` to return the x- and y-data. `CharacteristicCurvePlugin.plot()` uses the `to_arrays()` method internally.
+- Add a `plotter` argument to `MeshContainer.plot(plotter=None)`.
+- Add `field.merge()` to merge a list of field containers to a top-level field container.
+- Add `FieldContainer.is_container` attribute.
 
 ### Changed
 - Don't expand the interpolated function and gradient for `FieldAxisymmetric` for scalar fields.
@@ -29,9 +59,17 @@ All notable changes to this project will be documented in this file. The format 
 - Auto-apply `Mesh.as_meshio()` in `Job.evaluate(filename="result.xdmf", mesh=my_mesh)`, if `mesh` is an instance of `Mesh`. Previously, this required a `meshio.Mesh`.
 - Change the description of the package from a simple Python package to an open finite element infrastructure for nonlinear computational mechanics. This should focus on the project's vision more clearly.
 - Return the last converged result if `newtonraphson()` leads to NaN in the solution. 
+- Move the evaluated element shape function / gradient / hessian from `Region.element.h` to `Region.element_h`, from `Region.element_dhdr` to `Region.element_dhdr` and from `Region.element.d2hdrdr` to `Region.element_d2hdrdr`. Now all results, which are generated inside `Region` are stored in a `region = Region(mesh, element, quadrature)` object. No `element` is used to store results.
+- Change the return of `x0 = FieldContainer.merge()`, was `fields, x0 = FieldContainer.merge()` before.
+- Rebase `FieldContainer.merge()` on `field.merge()`. Add `FieldContainer.x0` to all field containers, which are part of the merge.
+- Modify the field containers in `field.merge(fields)` in-place. This greatly simplifies the multi-body workflow.
+- Change `SolidBody.revolve(..., x0=None)` to require an optional x0-argument, if the field of the solid body has an x0-argument.
+- Change `FieldContainer.checkpoint()` and `FieldContainer.restore()`, that they take care of the optional global-field container `x0` attribute.
+- `FieldContainer.merge()` can't merge dual containers with fields and hence, an error is raised. This has not been supported in the past, but no error was raised.
 
 ### Fixed
 - Fix the typo `Rhapson` and change it to `Raphson`.
+- Fix docstring parameter names which do not match the signatures: `kawargs` in `IntegralFormExpression.integrate()` and `IntegralFormExpressionMixed.assemble()`, `cells_neighbours` in `Mesh.get_point_ids_shared()` and `orders` in `FieldContainer.extract()`. Also document the missing `sym` argument of `IntegralFormExpressionMixed.integrate()` and `.assemble()`.
 - Fix per-cell material parameter arrays for `NeoHookeCompressible`.
 
 ### Deprecated

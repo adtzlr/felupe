@@ -206,13 +206,23 @@ class IntegralFormCartesian:
 
         else:
             if not grad_v and not grad_u:
-                res = einsum(
-                    "aqc,...qc,bqc,qc->a...bc", vb, fun, ub, dV, optimize=True, out=out
-                )
-                if len(res.shape) == 5:
+                res = einsum("aqc,...qc,bqc,qc->a...bc", vb, fun, ub, dV, optimize=True)
+                extra_axes = len(res.shape) - 3  # (a, b, c) are always present
+                if extra_axes == 4:
+                    return einsum("aijklbc->aijbklc", res, out=out)
+                elif extra_axes == 2:
                     return einsum("aijbc->aibjc", res, out=out)
-                else:
+                elif extra_axes in (0, 1):
+                    if out is not None:
+                        out[...] = res
+                        return out
                     return res
+                else:
+                    raise ValueError(
+                        f"Unexpected number of extra axes: {extra_axes}. "
+                        "Each field with dim > 1 is allowed to contribute at most one "
+                        "extra axis."
+                    )
             elif grad_v and not grad_u:
                 return einsum(
                     "aJqc,iJ...qc,bqc,qc->aib...c",

@@ -43,14 +43,14 @@ class LinearForm:
         self.dx = dx
         self._form = IntegralFormCartesian(fun=None, v=v.field, dV=self.dx, **kwargs)
 
-    def integrate(self, weakform, kwargs={}, parallel=False):
+    def integrate(self, weakform, kwargs=None, parallel=False):
         r"""Return evaluated (but not assembled) integrals.
 
         Parameters
         ----------
         weakform : callable
             A callable function ``weakform(v, **kwargs)``.
-        kawargs : dict, optional
+        kwargs : dict, optional
             Optional named arguments for callable weakform
         parallel : bool, optional (default is False)
             Flag to activate parallel threading.
@@ -60,6 +60,9 @@ class LinearForm:
         values : ndarray
             Integrated (but not assembled) vector values.
         """
+
+        if kwargs is None:
+            kwargs = {}
 
         values = np.zeros(
             (

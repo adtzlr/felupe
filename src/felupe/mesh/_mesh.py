@@ -487,7 +487,7 @@ class Mesh(DiscreteGeometry):
 
         Parameters
         ----------
-        cells_neighbours : list or ndarray
+        cell_ids_neighbours : list or ndarray
             Array with cell ids.
 
         Returns
@@ -735,8 +735,6 @@ class Mesh(DiscreteGeometry):
             expansion and ``n`` is ignored.
         axis : int, optional
             Axis of expansion (default is -1).
-        mask : ndarray or None, optional
-            A boolean mask to select points which are rotated (default is None).
         expand_dim : bool, optional
             Expand the dimension of the point coordinates (default is True).
 

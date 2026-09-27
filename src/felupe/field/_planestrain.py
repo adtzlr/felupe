@@ -239,13 +239,10 @@ class FieldPlaneStrain(Field):
     def hess(self, dtype=None, out=None, order="C"):
         """3D-Hessian as second partial derivative of field values at points w.r.t.
         the undeformed coordinates, evaluated at the integration points of all
-        cells in the region. Optionally, the symmetric part of the gradient is
-        returned.
+        cells in the region.
 
         Parameters
         ----------
-        sym : bool, optional
-            Calculate the symmetric part of the gradient (default is False).
         dtype : data-type or None, optional
             If provided, forces the calculation to use the data type specified. Default
             is None.

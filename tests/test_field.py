@@ -297,21 +297,97 @@ def test_toplevel():
 def test_toplevel_merge():
 
     mesh1 = fem.Rectangle(n=3)
-    field1 = fem.FieldsMixed(fem.RegionQuad(mesh1), n=3, axisymmetric=True)
+    displacement1 = fem.FieldAxisymmetric(fem.RegionQuad(mesh1), dim=2)
+    field1 = fem.FieldContainer([displacement1])
 
     mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
-    field2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+    displacement2 = fem.FieldAxisymmetric(fem.RegionQuad(mesh2), dim=2)
+    field2 = fem.FieldContainer([displacement2])
 
-    fields, x0 = (field1 & field2).merge()
+    with pytest.raises(TypeError):
+        x0 = (field1 & displacement2).merge()
+
+    x0 = (field1 & field2).merge()
 
     umat = fem.NeoHookeCompressible(mu=1, lmbda=2)
-    solid1 = fem.SolidBody(fem.ThreeFieldVariation(umat), fields[0])
-    solid2 = fem.SolidBody(umat, fields[1])
+    solid1 = fem.SolidBody(umat, field1)
+    solid2 = fem.SolidBody(umat, field2)
 
     boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
 
     step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(x0=x0)
+
+
+def test_merge():
+
+    # empty list of field containers can't be merged
+    with pytest.raises(ValueError):
+        fem.field.merge([])
+
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3, axisymmetric=True)
+
+    # field containers with dual fields can't be merged
+    with pytest.raises(TypeError):
+        fem.field.merge([field])
+
+    mesh = fem.Rectangle(n=3)
+    field = fem.FieldContainer(
+        [
+            fem.Field(fem.RegionQuad(mesh), dim=3),
+            fem.Field(fem.RegionQuad(mesh), dim=3),
+        ]
+    )
+
+    # field containers with multiple fields can't be merged
+    with pytest.raises(TypeError):
+        fem.field.merge([field])
+
+
+def test_merge_fewer_points():
+
+    mesh = fem.Rectangle(n=2)
+    mesh.points[2] = mesh.points[0]
+
+    displacement = fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)
+    field = fem.FieldContainer([displacement])
+
+    x0 = fem.field.merge([field])
+    assert len(field[0].values) == len(x0[0].values) == 3
+
+
+def test_field_dual():
+
+    mesh = fem.Cube(n=3).convert(2, 1, 1, 1)
+    region = fem.RegionTriQuadraticHexahedron(mesh)
+    field_dual = fem.FieldDual(
+        region,
+        dim=3,
+        calc_points=True,
+        disconnect=False,
+        grad=True,
+    )
+    field_container = fem.FieldContainer([field_dual])
+    assert field_container[0] is field_dual
+
+
+def test_field_take():
+
+    mesh = fem.Cube(n=3).convert(2, 1, 1, 1)
+    region = fem.RegionTriQuadraticHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)], take=[0, 0])
+
+    F, u = field.extract(grad=[True, False])
+
+    assert F.shape[:2] == (3, 3)
+    assert u.shape[:1] == (3,)
+
+    assert len(F.shape) == 4
+    assert len(u.shape) == 3
+
+    assert len(field.fieldsizes) == 1
+    assert len(field.offsets) == 0
 
 
 if __name__ == "__main__":
@@ -323,3 +399,7 @@ if __name__ == "__main__":
     test_link()
     test_toplevel()
     test_toplevel_merge()
+    test_merge()
+    test_merge_fewer_points()
+    test_field_dual()
+    test_field_take()

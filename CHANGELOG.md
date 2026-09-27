@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [11.1.2] - 2026-09-27
+
 ### Fixed
 - Fix Hessian evaluation in `Region`, the contribution from `d2Xdrdr` was missing.
 

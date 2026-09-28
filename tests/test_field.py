@@ -330,11 +330,27 @@ def test_merge():
     with pytest.raises(TypeError):
         fem.field.merge([fem.Field(fem.RegionQuad(mesh))])
 
-    # field containers with a different number of fields can't be merged
+    # field containers with a different number of fields
     field1 = fem.FieldsMixed(fem.RegionQuad(mesh), n=3)
-    field2 = fem.FieldsMixed(fem.RegionQuad(mesh.translate(1, 0)), n=2)
-    with pytest.raises(TypeError):
-        fem.field.merge([field1, field2])
+    field2 = fem.FieldsMixed(fem.RegionQuad(mesh.copy().translate(1, 0)), n=2)
+    x0 = fem.field.merge([field2, field1])
+    assert x0.fieldsizes == field1.fieldsizes == [30, 8, 4]
+    assert field2.fieldsizes == [30, 8]
+    assert field2.x0 is field1.x0 is x0
+
+    # a field on the region of the first field, not available in all containers
+    region1 = fem.RegionQuad(fem.Rectangle(n=3))
+    field1 = fem.FieldContainer(
+        [fem.Field(region1, dim=2), fem.Field(region1, values=1)]
+    )
+    region2 = fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=3))
+    field2 = fem.FieldContainer([fem.Field(region2, dim=2)])
+    x0 = fem.field.merge([field1, field2])
+    assert x0.fieldsizes == [30, 9]
+    assert field1.fieldsizes == [30, 9]
+    assert field2.fieldsizes == [30]
+    assert field1[1].region is not field1[0].region
+    assert np.allclose(x0[1].values, 1.0)
 
     # fields with different dimensions can't be merged
     field1 = fem.FieldsMixed(fem.RegionQuad(mesh), n=2)
@@ -465,6 +481,47 @@ def test_merge_mixed_element_types():
 
     umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=500)
     solids = [fem.SolidBody(umat, field) for field in fields]
+    reference_solution(x0, solids)
+
+    assert np.isclose(x0[0].values[:, 0].max(), 0.2)
+
+
+@pytest.mark.parametrize("taylor_hood", [False, True])
+def test_merge_different_number_of_fields(taylor_hood):
+
+    def create_mesh(a, b, n=4):
+        mesh = fem.Rectangle(a=a, b=b, n=n)
+        if taylor_hood:
+            mesh = mesh.triangulate().add_midpoints_edges()
+        return mesh
+
+    Region = fem.RegionQuadraticTriangle if taylor_hood else fem.RegionQuad
+
+    # a displacement-only field container between two mixed-field containers
+    displacement = fem.FieldPlaneStrain(Region(create_mesh((1, 0), (2, 1))), dim=2)
+    field1 = fem.FieldsMixed(Region(create_mesh((0, 0), (1, 1))), n=3, planestrain=True)
+    field2 = fem.FieldContainer([displacement])
+    field3 = fem.FieldsMixed(Region(create_mesh((2, 0), (3, 1))), n=3, planestrain=True)
+
+    x0 = fem.field.merge([field2, field1, field3])
+
+    assert field1.fieldsizes == field3.fieldsizes == x0.fieldsizes
+    assert field2.fieldsizes == x0.fieldsizes[:1]
+    assert field1.x0 is field2.x0 is field3.x0 is x0
+
+    if taylor_hood:
+        # continuous pressure on the (not connected) corner points
+        assert x0[1].values.shape == (2 * 16, 1)
+    else:
+        # cell-wise constant pressure
+        assert x0[1].values.shape == (2 * 9, 1)
+
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=500)
+    solids = [
+        fem.SolidBody(umat, field1),
+        fem.SolidBody(fem.NeoHookeCompressible(mu=1, lmbda=2), field2),
+        fem.SolidBody(umat, field3),
+    ]
     reference_solution(x0, solids)
 
     assert np.isclose(x0[0].values[:, 0].max(), 0.2)

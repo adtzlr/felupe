@@ -66,10 +66,13 @@ def _merge_primary(field_containers, decimals, **kwargs):
     return mesh_container, [m.cells for m in mesh_container.meshes], values
 
 
-def _merge_secondary(field_containers, k, primary_cells, primary_points, decimals, **kw):
+def _merge_secondary(
+    field_containers, k, primary_cells, primary_points, decimals, **kw
+):
     """Merge the k-th (secondary) fields of the field containers. The global point
     numbering is compacted to the used points and ordered by shared, connected and
-    disconnected points."""
+    disconnected points. Only the given field containers (which all must contain a
+    k-th field) along with their merged primary cells are considered."""
 
     fields = [c.fields[k] for c in field_containers]
     meshes = [f.region.mesh for f in fields]
@@ -185,10 +188,13 @@ def merge(fields, decimals=None, **kwargs):
 
     Notes
     -----
-    All field containers must have the same number of fields and the fields at the same
-    position must have the same dimension. The first fields are merged on duplicated
-    mesh points. The additional (e.g. dual) fields are merged per position, depending on
-    their meshes:
+    The field containers may have a different number of fields, e.g. mixed-field
+    containers may be merged with displacement-only field containers. The fields at the
+    same position must have the same dimension. The top-level field container holds as
+    many fields as the field container with the most fields. The first fields are merged
+    on duplicated mesh points. The additional (e.g. dual) fields are merged per
+    position, only for those field containers which contain a field at this position,
+    depending on their meshes:
 
     * a mesh which shares the topology of the first field (e.g. continuous pressure for
       Taylor-Hood or MINI elements) is merged along with the first field,
@@ -196,7 +202,9 @@ def merge(fields, decimals=None, **kwargs):
       merging any points and
     * any other mesh is merged on duplicated point coordinates.
 
-    For each additional field, only the used points of the meshes are kept. The field
+    For each additional field, only the used points of the meshes are kept. If a field
+    shares the region of the first field, but it is not available in all field
+    containers, a copy of the region is created for this field. The field
     values are mapped to the new point numbering and the fields of the given field
     containers are linked to the fields of the top-level field container.
 
@@ -248,6 +256,32 @@ def merge(fields, decimals=None, **kwargs):
         >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()
 
+    Field containers with a different number of fields are merged, e.g. a mixed-field
+    container along with a displacement-only field container.
+
+    ..  pyvista-plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> mesh1 = fem.Rectangle(n=3)
+        >>> field1 = fem.FieldsMixed(fem.RegionQuad(mesh1), n=3, planestrain=True)
+        >>>
+        >>> mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
+        >>> displacement2 = fem.FieldPlaneStrain(fem.RegionQuad(mesh2), dim=2)
+        >>> field2 = fem.FieldContainer([displacement2])
+        >>>
+        >>> field = fem.field.merge([field1, field2])
+        >>>
+        >>> umat1 = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
+        >>> umat2 = fem.NeoHookeCompressible(mu=1, lmbda=2)
+        >>> solid1 = fem.SolidBody(umat1, field1)
+        >>> solid2 = fem.SolidBody(umat2, field2)
+        >>>
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>>
+        >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
+        >>> job = fem.Job(steps=[step]).evaluate()
+
     """
 
     if len(fields) < 1:
@@ -260,16 +294,11 @@ def merge(fields, decimals=None, **kwargs):
                 "field containers as input for the merge function."
             )
 
-    nfields = len(fields[0].fields)
-    for field in fields:
-        if len(field.fields) != nfields:
-            raise TypeError(
-                "All field containers must have the same number of fields. Got "
-                f"{[len(field.fields) for field in fields]}."
-            )
+    # number of fields per field container and of the top-level field container
+    nfields = [len(field.fields) for field in fields]
 
-    for k in range(nfields):
-        dims = [field.fields[k].dim for field in fields]
+    for k in range(max(nfields)):
+        dims = [field.fields[k].dim for field in fields if len(field.fields) > k]
         if len(set(dims)) > 1:
             raise ValueError(
                 f"The fields at position {k} must have the same dimension. Got {dims}."
@@ -282,21 +311,32 @@ def merge(fields, decimals=None, **kwargs):
 
     # merge the additional fields (all data is evaluated before any reload)
     secondary = {}
-    for k in range(1, nfields):
+    for k in range(1, max(nfields)):
+        # indices of the field containers which contain a field at position k
+        idx = [i for i, n in enumerate(nfields) if n > k]
+        containers = [fields[i] for i in idx]
+
         # a field which shares the region of the first field is merged with it
-        shares_region = [f.fields[k].region is f.fields[0].region for f in fields]
+        shares_region = [f.fields[k].region is f.fields[0].region for f in containers]
 
-        if all(shares_region):
-            continue
-
-        if any(shares_region):
+        if any(shares_region) and not all(shares_region):
             raise TypeError(
                 f"The fields at position {k} must either all or none share the region "
                 "with the first field of their field container."
             )
 
+        # all field containers contain the k-th field on the region of the first field
+        if all(shares_region) and len(idx) == len(fields):
+            continue
+
+        # otherwise, the fields are merged separately (only the used points are kept)
         secondary[k] = _merge_secondary(
-            fields, k, primary_cells, container.points, decimals=decimals, **kwargs
+            containers,
+            k,
+            [primary_cells[i] for i in idx],
+            container.points,
+            decimals=decimals,
+            **kwargs,
         )
 
     # create a new top-level (global) vertex field container
@@ -307,14 +347,17 @@ def merge(fields, decimals=None, **kwargs):
         )
     ]
 
-    for k in range(1, nfields):
+    for k in range(1, max(nfields)):
+        idx = [i for i, n in enumerate(nfields) if n > k]
+        first = fields[idx[0]][k]
+
         if k in secondary:
             points, cells, values = secondary[k]
         else:
             points, cells, values = (
                 container.points,
                 primary_cells,
-                np.zeros((len(container.points), fields[0][k].dim)),
+                np.zeros((len(container.points), first.dim)),
             )
             for field, c in zip(fields, cells):
                 _map_values(values, c, field[k].values, field[k].region.mesh.cells)
@@ -322,9 +365,7 @@ def merge(fields, decimals=None, **kwargs):
         used = np.unique(np.concatenate([c.ravel() for c in cells]))
         vertex_mesh = Mesh(points, used.reshape(-1, 1), cell_type="vertex")
         x0_fields.append(
-            fields[0][k].__field__(
-                RegionVertex(vertex_mesh), dim=fields[0][k].dim, values=values
-            )
+            first.__field__(RegionVertex(vertex_mesh), dim=first.dim, values=values)
         )
 
     x0 = x0_fields[0].as_container(mesh_container=container)
@@ -338,10 +379,19 @@ def merge(fields, decimals=None, **kwargs):
         primary_region.reload(mesh=new_mesh)
 
         for k, f in enumerate(field.fields):
-            if k in secondary and f.region is not primary_region:
+            if k in secondary:
                 points, cells, values = secondary[k]
-                mesh = Mesh(points, cells[i], cell_type=f.region.mesh.cell_type)
-                f.region.reload(mesh=mesh)
+
+                # position of this field container in the list of merged k-th fields
+                j = [m for m, n in enumerate(nfields) if n > k].index(i)
+                mesh = Mesh(points, cells[j], cell_type=f.region.mesh.cell_type)
+
+                if f.region is primary_region:
+                    # the (already reloaded) region of the first field is shared, but
+                    # the k-th field is not available in all field containers
+                    f.region = primary_region.copy(mesh=mesh)
+                else:
+                    f.region.reload(mesh=mesh)
 
             # reload the underlying field with the (reloaded) region
             f.reload(region=f.region)

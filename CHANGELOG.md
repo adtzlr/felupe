@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- Enhance `field.merge()` and `FieldContainer.merge()` to support mixed-field containers as well as field containers with a different number of fields, e.g. mixed-field containers along with displacement-only field containers.
+
 ## [11.1.3] - 2026-09-28
 
 ### Fixed

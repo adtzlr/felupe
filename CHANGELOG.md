@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [11.1.3] - 2026-09-28
+
+### Fixed
+- Fix typos, which lead to wrong results, in `Hexahedron.hessian()` for points 3 and 5.
+
 ## [11.1.2] - 2026-09-27
 
 ### Fixed

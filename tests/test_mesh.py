@@ -475,6 +475,121 @@ def test_mesh_fill_between():
     assert np.all(region.dV > 0)
 
 
+def test_mesh_extrude():
+    # straight path: equal to expand
+    rect = fem.Rectangle(n=(4, 5))
+    path = fem.mesh.Line(b=2, n=7)
+    path.update(points=np.pad(path.points, ((0, 0), (2, 0))))
+
+    cube = fem.mesh.extrude(rect.expand(n=1), path)
+    assert np.allclose(cube.points, rect.expand(n=7, z=2).points)
+    assert np.all(fem.RegionHexahedron(cube).dV > 0)
+
+    # helix with a tilted section, the angle to the path is preserved
+    phi = np.linspace(0, 4 * np.pi, 81)
+    helix = np.vstack([3 * np.cos(phi), 3 * np.sin(phi), phi / 2]).T
+    path = fem.mesh.Line(n=81)
+    path.update(points=helix)
+
+    section = (
+        fem.Circle(radius=0.5, n=4)
+        .expand(n=1)
+        .rotate(90, axis=0)
+        .rotate(15, axis=2)
+        .translate(3, axis=0)
+    )
+
+    mesh1 = fem.mesh.extrude(section, path)
+    mesh2 = section.extrude(path)
+    mesh3 = section.extrude(helix)
+
+    assert isinstance(mesh2, fem.Mesh)
+    assert mesh1.cell_type == "hexahedron"
+    assert mesh1.npoints == section.npoints * 81
+    assert mesh1.ncells == section.ncells * 80
+    assert np.allclose(mesh1.points, mesh2.points)
+    assert np.allclose(mesh1.points, mesh3.points)
+    assert np.all(fem.RegionHexahedron(mesh1).dV > 0)
+
+    def normal(points):
+        return np.linalg.svd(points - points.mean(axis=0))[2][-1]
+
+    def angle(points, tangent):
+        return np.arccos(abs(normal(points) @ tangent / np.linalg.norm(tangent)))
+
+    first = mesh1.points[: section.npoints]
+    last = mesh1.points[-section.npoints :]
+    assert np.isclose(
+        angle(first, helix[1] - helix[0]), angle(last, helix[-1] - helix[-2])
+    )
+
+    # section size is preserved (rigid transport)
+    assert np.isclose(np.ptp(first, axis=0) @ [0, 0, 1], np.ptp(section.z))
+    assert np.allclose(
+        np.linalg.norm(first - first.mean(axis=0), axis=1),
+        np.linalg.norm(last - last.mean(axis=0), axis=1),
+    )
+
+    # flipped section: cells are flipped to ensure positive volumes
+    mesh = section.flip().extrude(path)
+    assert np.all(fem.RegionHexahedron(mesh).dV > 0)
+
+    # line-mesh in 2d along a 2d-path with interpolation
+    phi = np.linspace(0, np.pi / 2, 21)
+    path = fem.mesh.Line(n=21)
+    path.update(points=2 * np.vstack([np.cos(phi), np.sin(phi)]).T)
+
+    section = fem.mesh.Line(a=1.8, b=2.2, n=5)
+    section.update(points=np.pad(section.points, ((0, 0), (0, 1))))
+    other = fem.mesh.Line(a=1.5, b=2.5, n=5)
+    other.update(points=np.pad(other.points, ((0, 0), (0, 1))))
+
+    face = fem.mesh.extrude(section, path, other)
+    assert face.cell_type == "quad"
+    assert face.dim == 2
+    assert np.allclose(face.points[: section.npoints], section.points)
+    assert np.isclose(
+        np.linalg.norm(face.points[-1] - face.points[-section.npoints]), 1.0
+    )
+    assert np.all(fem.RegionQuad(face).dV > 0)
+
+    face = fem.mesh.extrude(section.flip(), path)
+    assert np.all(fem.RegionQuad(face).dV > 0)
+
+    # line-mesh in 3d
+    surface = fem.mesh.extrude(section.expand(n=1), path)
+    assert surface.cell_type == "quad"
+    assert surface.dim == 3
+
+    # errors
+    with pytest.raises(TypeError):
+        fem.mesh.extrude(fem.Cube(n=3), path)
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(section, path, fem.mesh.Line(n=4))
+
+    with pytest.raises(TypeError):
+        fem.mesh.extrude(section, fem.Rectangle(n=3))
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(section, path.copy(cells=path.cells[::-1]))
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(section, [[2, 0]])
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(section, [[2, 0], [2, 1], [2, 1]])
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(section, [[2, 0], [2, 1], [2, 0]])
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(section, [[2, 0], [3, 0]])
+
+    with pytest.raises(ValueError):
+        fem.mesh.extrude(fem.Rectangle(n=3), [[0, 0], [1, 0]])
+
+
 def test_circle():
     centerpoint = [0, 0]
     radius = 1.5
@@ -676,6 +791,7 @@ if __name__ == "__main__":
     test_mesh_methods()
     test_read_nocells(filename="mesh_no-cells.bdf")
     test_mesh_fill_between()
+    test_mesh_extrude()
     test_circle()
     test_triangle()
     test_view()

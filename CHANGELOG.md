@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `mesh.extrude(mesh, path, other_mesh=None)` and `Mesh.extrude(path, other_mesh=None)` to extrude a line- or quad-mesh along a given path. The section is transported by rotation-minimizing frames and its initial orientation w.r.t. the tangent of the path is preserved. Optionally, the section is interpolated between two meshes.
+
 ## [11.1.3] - 2026-09-28
 
 ### Fixed

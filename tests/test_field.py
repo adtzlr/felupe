@@ -325,24 +325,149 @@ def test_merge():
     with pytest.raises(ValueError):
         fem.field.merge([])
 
+    # only field containers can be merged
     mesh = fem.Rectangle(n=3)
-    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3, axisymmetric=True)
-
-    # field containers with dual fields can't be merged
     with pytest.raises(TypeError):
-        fem.field.merge([field])
+        fem.field.merge([fem.Field(fem.RegionQuad(mesh))])
 
-    mesh = fem.Rectangle(n=3)
+    # field containers with a different number of fields can't be merged
+    field1 = fem.FieldsMixed(fem.RegionQuad(mesh), n=3)
+    field2 = fem.FieldsMixed(fem.RegionQuad(mesh.translate(1, 0)), n=2)
+    with pytest.raises(TypeError):
+        fem.field.merge([field1, field2])
+
+    # fields with different dimensions can't be merged
+    field1 = fem.FieldsMixed(fem.RegionQuad(mesh), n=2)
+    field2 = fem.FieldsMixed(fem.RegionQuad(mesh.translate(1, 0)), n=2, dim=2)
+    with pytest.raises(ValueError):
+        fem.field.merge([field1, field2])
+
+    # field containers with multiple fields on the same region
+    region = fem.RegionQuad(fem.Rectangle(n=3))
     field = fem.FieldContainer(
-        [
-            fem.Field(fem.RegionQuad(mesh), dim=3),
-            fem.Field(fem.RegionQuad(mesh), dim=3),
-        ]
+        [fem.Field(region, dim=2), fem.Field(region, dim=3, values=1.0)]
+    )
+    x0 = fem.field.merge([field])
+    assert field.fieldsizes == x0.fieldsizes == [18, 27]
+    assert np.allclose(x0[1].values, 1.0)
+
+    # a mixture of fields on shared and on separate regions is not supported
+    region1 = fem.RegionQuad(fem.Rectangle(n=3))
+    field1 = fem.FieldContainer([fem.Field(region1, dim=2), fem.Field(region1)])
+    region2 = fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=3))
+    field2 = fem.FieldContainer(
+        [fem.Field(region2, dim=2), fem.Field(fem.RegionQuad(region2.mesh))]
+    )
+    with pytest.raises(TypeError):
+        fem.field.merge([field1, field2])
+
+    # dual meshes without point coordinates can't be merged by coordinates
+    mesh1 = fem.Rectangle(n=3)
+    mesh2 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3)
+    fields = []
+    for mesh in [mesh1, mesh2]:
+        dual = fem.Mesh(np.zeros_like(mesh.points), mesh.cells[::-1], "quad")
+        fields.append(
+            fem.FieldContainer(
+                [
+                    fem.Field(fem.RegionQuad(mesh), dim=2),
+                    fem.Field(fem.RegionQuad(dual, grad=False)),
+                ]
+            )
+        )
+    with pytest.raises(ValueError):
+        fem.field.merge(fields)
+
+
+def reference_solution(field, items, move=0.2):
+    boundaries = fem.dof.uniaxial(field, clamped=True, move=move, return_loadcase=False)
+    step = fem.Step(items=items, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate(x0=field)
+    return field
+
+
+def max_difference_by_points(field, reference):
+    points = np.round(field.fields[0].region.mesh.points, 8)
+    points_reference = np.round(reference.fields[0].region.mesh.points, 8)
+    values = dict(zip(map(tuple, points_reference), reference[0].values))
+
+    return max(
+        np.abs(values[tuple(p)] - v).max()
+        for p, v in zip(points, field[0].values)
+        if tuple(p) in values
     )
 
-    # field containers with multiple fields can't be merged
-    with pytest.raises(TypeError):
-        fem.field.merge([field])
+
+@pytest.mark.parametrize("taylor_hood", [False, True])
+def test_merge_mixed(taylor_hood):
+
+    def create_mesh(a, b, n):
+        mesh = fem.Rectangle(a=a, b=b, n=n)
+        if taylor_hood:
+            mesh = mesh.triangulate().add_midpoints_edges()
+        return mesh
+
+    Region = fem.RegionQuadraticTriangle if taylor_hood else fem.RegionQuad
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=500)
+
+    # two mixed-field containers (u, p, J)
+    mesh1 = create_mesh(a=(0, 0), b=(1, 1), n=4)
+    mesh2 = create_mesh(a=(1, 0), b=(2, 1), n=4)
+    field1 = fem.FieldsMixed(Region(mesh1), n=3, planestrain=True)
+    field2 = fem.FieldsMixed(Region(mesh2), n=3, planestrain=True)
+
+    x0 = (field1 & field2).merge()
+
+    assert field1.fieldsizes == field2.fieldsizes == x0.fieldsizes
+    assert np.allclose(field1.offsets, x0.offsets)
+    assert np.allclose(x0[2].values, 1.0)
+    assert field1.x0 is field2.x0 is x0
+
+    if taylor_hood:
+        # continuous pressure on the (merged) corner points
+        assert x0[1].values.shape == (7 * 4, 1)
+    else:
+        # cell-wise constant pressure
+        assert x0[1].values.shape == (2 * 9, 1)
+
+    solids = [fem.SolidBody(umat, field1), fem.SolidBody(umat, field2)]
+    reference_solution(x0, solids)
+
+    # compare with the solution on a single mesh
+    mesh = create_mesh(a=(0, 0), b=(2, 1), n=(7, 4))
+    field = fem.FieldsMixed(Region(mesh), n=3, planestrain=True)
+    reference_solution(field, [fem.SolidBody(umat, field)])
+
+    assert max_difference_by_points(x0, field) < 1e-10
+
+
+def test_merge_mixed_element_types():
+
+    # hexahedrons with disconnected (constant) and quadratic tetrahedrons with
+    # continuous dual fields
+    mesh1 = fem.Cube(n=3)
+    mesh2 = fem.Cube(a=(1, 0, 0), b=(2, 1, 1), n=3).triangulate().add_midpoints_edges()
+    mesh3 = fem.Cube(a=(2, 0, 0), b=(3, 1, 1), n=3)
+
+    fields = [
+        fem.FieldsMixed(fem.RegionHexahedron(mesh1), n=3),
+        fem.FieldsMixed(fem.RegionQuadraticTetra(mesh2), n=3),
+        fem.FieldsMixed(fem.RegionHexahedron(mesh3), n=3),
+    ]
+
+    x0 = fem.field.merge(fields, decimals=8)
+
+    # 2 x 8 hexahedrons (constant) + 27 corner points of the tetrahedrons
+    assert x0[1].values.shape == (2 * 8 + 27, 1)
+
+    for field in fields:
+        assert field.fieldsizes == x0.fieldsizes
+
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=500)
+    solids = [fem.SolidBody(umat, field) for field in fields]
+    reference_solution(x0, solids)
+
+    assert np.isclose(x0[0].values[:, 0].max(), 0.2)
 
 
 def test_merge_fewer_points():

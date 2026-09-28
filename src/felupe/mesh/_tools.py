@@ -233,6 +233,261 @@ def fill_between(mesh, other_mesh, n=11):
     return new_mesh
 
 
+def _rotation_minimizing_frames(points, tangents):
+    """Return rotation-minimizing frames along a discrete path by the double-reflection
+    method. The columns of each frame are the tangent and two normal vectors."""
+
+    # an arbitrary normal vector at the start of the path
+    normal = np.cross(tangents[0], np.eye(3)[np.argmin(np.abs(tangents[0]))])
+    normal /= np.linalg.norm(normal)
+
+    frames = np.zeros((len(points), 3, 3))
+    frames[0] = np.column_stack([tangents[0], normal, np.cross(tangents[0], normal)])
+
+    for i in range(len(points) - 1):
+        # reflection at the bisecting plane of the two points
+        v1 = points[i + 1] - points[i]
+        c1 = v1 @ v1
+        normal_left = normal - 2 / c1 * (v1 @ normal) * v1
+        tangent_left = tangents[i] - 2 / c1 * (v1 @ tangents[i]) * v1
+
+        # second reflection to align the reflected tangent with the next tangent
+        v2 = tangents[i + 1] - tangent_left
+        c2 = v2 @ v2
+        normal = normal_left
+        if c2 > np.finfo(float).eps:
+            normal = normal_left - 2 / c2 * (v2 @ normal_left) * v2
+
+        frames[i + 1] = np.column_stack(
+            [tangents[i + 1], normal, np.cross(tangents[i + 1], normal)]
+        )
+
+    return frames
+
+
+def extrude(mesh, path, other_mesh=None):
+    r"""Extrude a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh along a
+    given path. Optionally, the section is interpolated between the mesh and another
+    mesh.
+
+    Parameters
+    ----------
+    mesh : felupe.Mesh
+        A line- or quad-mesh (the section) in its position at the start of the path.
+    path : felupe.Mesh or ndarray
+        A line-mesh or an array of point coordinates, which defines the path. The
+        points of the path define the positions of the extruded sections. The cells of
+        a line-mesh must be ordered consecutively along the path.
+    other_mesh : felupe.Mesh or None, optional
+        Another line- or quad-mesh with equal cells and number of points, also located
+        at the start of the path (default is None). If given, the section is linearly
+        interpolated between the mesh (at the start) and the other mesh (at the end of
+        the path) w.r.t. the normalized arc length of the path.
+
+    Returns
+    -------
+    felupe.Mesh
+        The extruded mesh.
+
+    Notes
+    -----
+    The section is transported along the path by rotation-minimizing frames [1]_,
+    i.e. the section is not twisted around the path. The section is not required to be
+    perpendicular to the path. Instead, the (initial) orientation of the section w.r.t.
+    the tangent of the path is preserved. The tangents are evaluated as the normalized
+    mean of the two adjacent segment directions at each point of the path. For each
+    point :math:`\boldsymbol{p}_i` of the path, the points of the section are given by
+    Eq. :eq:`extrude`
+
+    ..  math::
+        :label: extrude
+
+        \boldsymbol{x}_i = \boldsymbol{p}_i + \boldsymbol{Q}_i \left(
+            \boldsymbol{X} - \boldsymbol{p}_0
+        \right)
+
+    where :math:`\boldsymbol{Q}_i` is the rotation matrix from the frame at the start
+    to the frame at the :math:`i`-th point of the path.
+
+    ..  note::
+        The mesh must be located at the start of the path. The path must not contain
+        duplicate consecutive points. Duplicate points of closed paths are not merged.
+
+    If the mesh is a line-mesh and both the mesh and the path are embedded in 2d-space,
+    the extruded quad-mesh is also embedded in 2d-space. Otherwise, the extruded mesh
+    is embedded in 3d-space. The cells of the extruded mesh are flipped, if required,
+    to ensure positive cell volumes (for meshes embedded in 2d-space with quads and for
+    hexahedrons).
+
+    Examples
+    --------
+    Extrude a circular section along a helix. The section is not perpendicular to the
+    path, it is tilted by 20 degrees.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> phi = np.linspace(0, 4 * np.pi, 97)
+        >>> path = fem.mesh.Line(n=97)
+        >>> path.update(points=np.vstack([np.cos(phi), np.sin(phi), phi / 8]).T)
+        >>>
+        >>> section = (
+        ...     fem.Circle(radius=0.2, n=4)
+        ...     .expand(n=1)
+        ...     .rotate(90, axis=0)
+        ...     .rotate(20, axis=2)
+        ...     .translate(1, axis=0)
+        ... )
+        >>> mesh = fem.mesh.extrude(section, path)
+        >>>
+        >>> mesh.plot().show()
+
+    Optionally, the section may be interpolated between two sections with equal cells.
+    Both sections are located at the start of the path.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> phi = np.linspace(0, np.pi / 2, 21)
+        >>> path = fem.mesh.Line(n=21)
+        >>> path.update(points=2 * np.vstack([np.cos(phi), np.sin(phi)]).T)
+        >>>
+        >>> section = fem.mesh.Line(a=1.8, b=2.2, n=5)
+        >>> section.update(points=np.pad(section.points, ((0, 0), (0, 1))))
+        >>> other_section = fem.mesh.Line(a=1.5, b=2.5, n=5)
+        >>> other_section.update(points=np.pad(other_section.points, ((0, 0), (0, 1))))
+        >>>
+        >>> mesh = fem.mesh.extrude(section, path, other_section)
+        >>>
+        >>> mesh.plot().show()
+
+    References
+    ----------
+    .. [1] W. Wang, B. Jüttler, D. Zheng and Y. Liu, "Computation of rotation minimizing
+       frames", ACM Transactions on Graphics, vol. 27, no. 1, pp. 1–18, 2008,
+       doi: `10.1145/1330511.1330513 <https://doi.org/10.1145/1330511.1330513>`_.
+
+    See Also
+    --------
+    felupe.Mesh.extrude : Extrude a 1d-Line to a 2d-Quad or a 2d-Quad to a
+        3d-Hexahedron Mesh along a given path.
+    felupe.mesh.expand : Expand a 0d-Point to a 1d-Line, a 1d-Line to a 2d-Quad or a
+        2d-Quad to a 3d-Hexahedron Mesh.
+    felupe.mesh.fill_between : Fill a 2d-Quad Mesh between two 1d-Line Meshes, embedded
+        in 2d-space, or a 3d-Hexahedron Mesh between two 2d-Quad Meshes, embedded in
+        3d-space, by expansion.
+    felupe.mesh.interpolate_line : Return an interpolated line mesh from an existing
+        line mesh with provided interpolation points on a given axis.
+
+    """
+
+    if mesh.cell_type not in ["line", "quad"]:
+        raise TypeError("The cell type of the mesh must be either line or quad.")
+
+    if other_mesh is not None and (
+        other_mesh.points.shape != mesh.points.shape
+        or not np.array_equal(other_mesh.cells, mesh.cells)
+    ):
+        raise ValueError("Both meshes must have equal points-shape and cells.")
+
+    # get the ordered points of the path
+    if hasattr(path, "cells"):
+        if path.cell_type != "line":
+            raise TypeError("The cell type of the path must be line.")
+
+        cells = path.cells
+        if not np.all(cells[1:, 0] == cells[:-1, 1]):
+            raise ValueError("The cells of the path must be ordered consecutively.")
+
+        path_points = path.points[np.append(cells[:, 0], cells[-1, 1])]
+
+    else:
+        path_points = np.asarray(path, dtype=float)
+
+    if path_points.ndim != 2 or len(path_points) < 2:
+        raise ValueError("The path must contain at least two points.")
+
+    # dimension of the extruded mesh
+    dim = 3
+    if mesh.cell_type == "line" and mesh.dim == 2 and path_points.shape[1] == 2:
+        dim = 2
+
+    def pad(points):
+        return np.pad(points, ((0, 0), (0, 3 - points.shape[1])))
+
+    path_points = pad(path_points)
+    section = pad(mesh.points)
+    other_section = section
+    if other_mesh is not None:
+        other_section = pad(other_mesh.points)
+
+    # segment lengths and tangents
+    segments = np.diff(path_points, axis=0)
+    lengths = np.linalg.norm(segments, axis=1)
+
+    if np.any(np.isclose(lengths, 0)):
+        raise ValueError("The path must not contain duplicate consecutive points.")
+
+    directions = segments / lengths.reshape(-1, 1)
+    tangents = np.zeros_like(path_points)
+    tangents[:-1] += directions
+    tangents[1:] += directions
+    norm = np.linalg.norm(tangents, axis=1)
+
+    if np.any(np.isclose(norm, 0)):
+        raise ValueError("The path must not reverse its direction.")
+
+    tangents /= norm.reshape(-1, 1)
+
+    # rotation matrices from the frame at the start to the frames along the path
+    frames = _rotation_minimizing_frames(path_points, tangents)
+    rotations = np.einsum("nij,kj->nik", frames, frames[0])
+
+    # interpolated sections, relative to the start of the path
+    progress = np.insert(np.cumsum(lengths), 0, 0) / np.sum(lengths)
+    progress = progress.reshape(-1, 1, 1)
+    sections = (1 - progress) * section + progress * other_section - path_points[0]
+
+    points = path_points.reshape(-1, 1, 3) + np.einsum(
+        "nij,nkj->nki", rotations, sections
+    )
+
+    # take the cells from the expanded mesh
+    new_mesh = mesh.copy().expand(n=len(path_points))
+    new_mesh = new_mesh.copy(points=points.reshape(-1, 3)[:, :dim])
+
+    # ensure positive cell volumes
+    if new_mesh.cell_type == "hexahedron" or dim == 2:
+        x = new_mesh.points[new_mesh.cells[: mesh.ncells]]
+
+        if new_mesh.cell_type == "quad":
+            dxdr = x[:, [1, 2]].mean(axis=1) - x[:, [0, 3]].mean(axis=1)
+            dxds = x[:, [2, 3]].mean(axis=1) - x[:, [0, 1]].mean(axis=1)
+            volumes = dxdr[:, 0] * dxds[:, 1] - dxdr[:, 1] * dxds[:, 0]
+
+        else:
+            dxdr = x[:, [1, 2, 5, 6]].mean(axis=1) - x[:, [0, 3, 4, 7]].mean(axis=1)
+            dxds = x[:, [2, 3, 6, 7]].mean(axis=1) - x[:, [0, 1, 4, 5]].mean(axis=1)
+            dxdt = x[:, [4, 5, 6, 7]].mean(axis=1) - x[:, [0, 1, 2, 3]].mean(axis=1)
+            volumes = np.einsum("ci,ci->c", dxdr, np.cross(dxds, dxdt))
+
+        if not (np.all(volumes > 0) or np.all(volumes < 0)):
+            raise ValueError(
+                "The path must not be tangent to the section at the start of the path."
+            )
+
+        if np.all(volumes < 0):
+            new_mesh = flip(new_mesh)
+
+    return new_mesh
+
+
 @mesh_or_data
 def rotate(points, cells, cell_type, angle_deg, axis, center=None, mask=None):
     """Rotate a Mesh.

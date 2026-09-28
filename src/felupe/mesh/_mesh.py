@@ -36,6 +36,7 @@ from ._discrete_geometry import DiscreteGeometry
 from ._dual import dual
 from ._tools import (
     expand,
+    extrude,
     fill_between,
     flip,
     merge_duplicate_cells,
@@ -1058,6 +1059,69 @@ class Mesh(DiscreteGeometry):
             identical dimensions.
         """
         return as_mesh(merge_duplicate_cells(self))
+
+    def extrude(self, path, other_mesh=None):
+        r"""Extrude a 1d-Line to a 2d-Quad or a 2d-Quad to a 3d-Hexahedron Mesh along a
+        given path. Optionally, the section is interpolated between the mesh and another
+        mesh.
+
+        Parameters
+        ----------
+        path : felupe.Mesh or ndarray
+            A line-mesh or an array of point coordinates, which defines the path. The
+            points of the path define the positions of the extruded sections. The cells
+            of a line-mesh must be ordered consecutively along the path.
+        other_mesh : felupe.Mesh or None, optional
+            Another line- or quad-mesh with equal cells and number of points, also
+            located at the start of the path (default is None). If given, the section is
+            linearly interpolated between the mesh (at the start) and the other mesh (at
+            the end of the path) w.r.t. the normalized arc length of the path.
+
+        Returns
+        -------
+        felupe.Mesh
+            The extruded mesh.
+
+        Notes
+        -----
+        The section is transported along the path by rotation-minimizing frames, i.e.
+        the section is not twisted around the path. The section is not required to be
+        perpendicular to the path. Instead, the (initial) orientation of the section
+        w.r.t. the tangent of the path is preserved. The mesh must be located at the
+        start of the path.
+
+        Examples
+        --------
+        Extrude a circular section along a helix. The section is not perpendicular to
+        the path, it is tilted by 20 degrees.
+
+        ..  pyvista-plot::
+            :force_static:
+
+            >>> import numpy as np
+            >>> import felupe as fem
+            >>>
+            >>> phi = np.linspace(0, 4 * np.pi, 97)
+            >>> path = fem.mesh.Line(n=97)
+            >>> path.update(points=np.vstack([np.cos(phi), np.sin(phi), phi / 8]).T)
+            >>>
+            >>> section = (
+            ...     fem.Circle(radius=0.2, n=4)
+            ...     .expand(n=1)
+            ...     .rotate(90, axis=0)
+            ...     .rotate(20, axis=2)
+            ...     .translate(1, axis=0)
+            ... )
+            >>> mesh = section.extrude(path)
+            >>>
+            >>> mesh.plot().show()
+
+        See Also
+        --------
+        felupe.mesh.extrude : Extrude a 1d-Line to a 2d-Quad or a 2d-Quad to a
+            3d-Hexahedron Mesh along a given path.
+        """
+        return as_mesh(extrude(self, path=path, other_mesh=other_mesh))
 
     def fill_between(self, other_mesh, n=11):
         """Fill a 2d-Quad Mesh between two 1d-Line Meshes, embedded in 2d-space, or a

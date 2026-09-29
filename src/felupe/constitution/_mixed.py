@@ -20,7 +20,18 @@ import inspect
 
 import numpy as np
 
-from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
+from ..math import (
+    cdya_ik,
+    cdya_il,
+    ddot,
+    det,
+    dya,
+    identity,
+    inv,
+    ravel,
+    reshape,
+    transpose,
+)
 from ._base import ConstitutiveMaterial
 
 
@@ -726,3 +737,149 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             p,J - part of hessian
         """
         return -np.ones_like(J)
+
+
+class ThirdMediumContactMixed(ConstitutiveMaterial):
+    r"""A mixed formulation for a stabilized third medium contact [1]_.
+
+    The second-order regularization of the third medium is expressed by an additional
+    tensor-valued field :math:`\boldsymbol{\theta}` which approximates the displacement
+    gradient :math:`\boldsymbol{H} = \boldsymbol{F} - \boldsymbol{1}`. Hence, only
+    first-order derivatives of the fields are required.
+
+    Parameters
+    ----------
+    material : ConstitutiveMaterial
+        A hyperelastic material definition for the strain energy density function
+        :math:`\psi(\boldsymbol{F})` of the third medium with methods for the
+        ``gradient`` and the ``hessian`` w.r.t. the deformation gradient tensor.
+    gamma : float
+        The scaling factor :math:`\gamma` of the strain energy density function of the
+        third medium.
+    alpha_r : float
+        The regularization parameter :math:`\alpha_r` for the gradient of the
+        tensor-valued field.
+    p_r : float
+        The penalty parameter :math:`p_r` which enforces the constraint
+        :math:`\boldsymbol{\theta} = \boldsymbol{H}`.
+    parallel : bool, optional
+        A flag to invoke parallel (threaded) math operations (default is False).
+
+    Notes
+    -----
+    The strain energy density function is given in Eq.
+    :eq:`third-medium-contact-mixed`.
+
+    ..  math::
+        :label: third-medium-contact-mixed
+
+        \Psi(\boldsymbol{F}, \boldsymbol{\theta}, \nabla \boldsymbol{\theta}) =
+            \gamma\ \psi(\boldsymbol{F})
+            + \frac{p_r}{2} \left( \boldsymbol{\theta} - \boldsymbol{H} \right) :
+              \left( \boldsymbol{\theta} - \boldsymbol{H} \right)
+            + \frac{\alpha_r}{2}\ \nabla \boldsymbol{\theta} ~\vdots~
+              \nabla \boldsymbol{\theta}
+
+    The field :math:`\boldsymbol{\theta}` is a (non-axisymmetric) :class:`~felupe.Field`
+    with nine components. It is taken twice in the field container, where the
+    gradient is evaluated only for the second occurrence. This results in the list of
+    kinematic quantities :math:`(\boldsymbol{F}, \boldsymbol{\theta},
+    \nabla \boldsymbol{\theta})`. For two-dimensional regions, the gradient
+    :math:`\nabla \boldsymbol{\theta}` is evaluated w.r.t. the in-plane coordinates.
+
+    Examples
+    --------
+
+    ..  plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> region = fem.RegionQuad(fem.Rectangle(n=6))
+        >>> field = fem.FieldContainer(
+        ...     [fem.FieldPlaneStrain(region, dim=2), fem.Field(region, dim=9)],
+        ...     take=[0, 1, 1],
+        ... )
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> umat = fem.ThirdMediumContactMixed(
+        ...     fem.NeoHooke(mu=1, bulk=20), gamma=1e-5, alpha_r=1e-4, p_r=1e-2
+        ... )
+        >>> solid = fem.SolidBody(umat, field, grad=[True, False, True])
+
+    References
+    ----------
+    ..  [1] M. Vorwerk, J. Schröder, and P. Wriggers, "A mixed finite element
+        formulation for stabilized third medium contact", Computer Methods in Applied
+        Mechanics and Engineering, vol. 463, p. 119416, Jan. 2027. doi:
+        `10.1016/j.cma.2026.119416 <https://doi.org/10.1016/j.cma.2026.119416>`_.
+
+    """
+
+    def __init__(
+        self,
+        material,
+        gamma,
+        alpha_r,
+        p_r,
+        parallel=False,
+    ):
+        self.material = self.fun = material
+        self.parallel = parallel
+        self.gamma = gamma
+        self.alpha_r = alpha_r
+        self.p_r = p_r
+
+        # for plane-strain or axisymmetric first-fields, x[2].shape is (9, 2)
+        # for cartesian 3d fields, x[2].shape is (9, 3)
+        self.x = [material.x[0], np.ones(9), np.ones((9, 3)), material.x[-1]]
+
+    def gradient(self, x, out=None):
+        kwargs = {}
+        if "out" in inspect.signature(self.material.gradient).parameters:
+            kwargs["out"] = out
+
+        [F, θ, grad_θ], statevars = x[:3], x[-1]
+        dWdF, statevars_new = self.material.gradient([F, statevars], **kwargs)
+        dWdF *= self.gamma
+
+        # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
+        # ψ_g = α_r * (∇θ : ∇θ) / 2
+
+        dudX = ravel(F - identity(F))
+        dWdθ = self.p_r * (θ - dudX)
+        dWdgradθ = self.alpha_r * grad_θ
+
+        dWdF -= reshape(dWdθ, (3, 3))
+
+        return [dWdF, dWdθ, dWdgradθ, statevars_new]
+
+    def hessian(self, x, out=None):
+        kwargs = {}
+        if "out" in inspect.signature(self.material.hessian).parameters:
+            kwargs["out"] = out
+
+        [F, θ, grad_θ], statevars = x[:3], x[-1]
+
+        # for plane-strain or axisymmetric first-fields, grad_θ.shape is (9, 2)
+        # for cartesian 3d fields, grad_θ.shape is (9, 3)
+        grad_θ_size = np.prod(grad_θ.shape[:2])
+        grad_θ_inplane_dim = grad_θ.shape[1]
+
+        identity_9_9 = identity(dim=9, shape=(1, 1))
+        identity_grad_θ = identity(dim=grad_θ_size, shape=(1, 1))
+
+        # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
+        # ψ_g = α_r * (∇θ : ∇θ) / 2
+
+        d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
+        d2WdFdF *= self.gamma
+        d2WdFdF += self.p_r * reshape(identity_9_9, (3, 3, 3, 3))
+
+        d2WdFdθ = -self.p_r * reshape(identity_9_9, (3, 3, 9))
+        d2WdFdgradθ = None
+        d2Wdθdθ = self.p_r * identity_9_9
+        d2Wdθdgradθ = None
+        d2Wdgradθdgradθ = self.alpha_r * reshape(
+            identity_grad_θ,
+            shape=(9, grad_θ_inplane_dim, 9, grad_θ_inplane_dim),
+        )
+        return [d2WdFdF, d2WdFdθ, d2WdFdgradθ, d2Wdθdθ, d2Wdθdgradθ, d2Wdgradθdgradθ]

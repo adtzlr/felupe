@@ -939,15 +939,16 @@ def test_thirdmediumcontactmixed():
         [
             fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2),  # F
             fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2),  # theta
-        ], take=[0, 1, 1],
+        ],
+        take=[0, 1, 1],
     )
 
     neo_hooke = fem.NeoHooke(mu=1, bulk=20)
     solid = fem.SolidBody(
         umat=fem.ThirdMediumContactMixed(
             material=neo_hooke,
-            gamma=1e-4,
-            alpha_r=1e-3,
+            gamma=1e-5,
+            alpha_r=1e-4,
             p_r=1e-2,
         ),
         field=field,

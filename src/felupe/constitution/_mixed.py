@@ -753,7 +753,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         self.gamma = gamma
         self.alpha_r = alpha_r
         self.p_r = p_r
-        self.x = [material.x[0], np.ones((3, 3)), np.ones((3, 3, 3)), material.x[-1]]
+        self.x = [material.x[0], np.ones(9), np.ones((9, 3)), material.x[-1]]
 
     def gradient(self, x, out=None):
         kwargs = {}
@@ -762,6 +762,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
 
         [F, θ, grad_θ], statevars = x[:3], x[-1]
         dWdF, statevars_new = self.material.gradient([F, statevars], **kwargs)
+        dWdF *= self.gamma
 
         # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
         # ψ_g = α_r * (∇θ : ∇θ) / 2
@@ -785,6 +786,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         identity_27_27 = identity(dim=27, shape=(1, 1))
 
         d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
+        d2WdFdF *= self.gamma
         d2WdFdF += self.p_r * reshape(identity_9_9, (3, 3, 3, 3))
 
         d2WdFdθ = -self.p_r * reshape(identity_9_9, (3, 3, 9))

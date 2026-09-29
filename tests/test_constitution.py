@@ -108,6 +108,35 @@ def test_nh():
     assert np.all(nh.is_stable(F))
 
 
+def test_nh_out():
+    r, F = pre(sym=False, add_identity=True, add_random=True)
+
+    for parallel in [False, True]:
+        for kwargs in [
+            dict(mu=None, bulk=1.0),
+            dict(mu=1.0, bulk=None),
+            dict(mu=1.0, bulk=2.0),
+        ]:
+            nh = fem.constitution.NeoHooke(**kwargs, parallel=parallel)
+
+            P = nh.gradient(F)[0]
+            A = nh.hessian(F)[0]
+
+            # re-used output arrays with non-zero, NaN and inf values must be reset
+            for value in [1.0, np.nan, np.inf]:
+                Pout = np.full_like(P, value)
+                Aout = np.full_like(A, value)
+
+                Px = nh.gradient(F, out=Pout)[0]
+                Ax = nh.hessian(F, out=Aout)[0]
+
+                assert Px is Pout
+                assert Ax is Aout
+
+                assert np.allclose(Px, P)
+                assert np.allclose(Ax, A)
+
+
 def test_linear():
     r, F = pre(sym=False, add_identity=True)
 
@@ -922,6 +951,7 @@ if __name__ == "__main__":
     close_figs = True
 
     test_nh()
+    test_nh_out()
     test_linear()
     test_linear_orthotropic()
     test_linear_planestress()

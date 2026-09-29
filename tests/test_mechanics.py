@@ -938,7 +938,7 @@ def test_thirdmediumcontactmixed():
     field = fem.FieldContainer(
         [
             fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2),  # F
-            fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2),  # theta
+            fem.Field(fem.RegionQuad(mesh), dim=9),  # theta
         ],
         take=[0, 1, 1],
     )

@@ -246,6 +246,9 @@ class NeoHooke(ConstitutiveMaterial):
         P = out
         if P is None:
             P = np.zeros_like(F)
+        else:
+            # reset the (re-used) output array, NaN or inf entries must be removed
+            P.fill(0.0)
 
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P
@@ -292,7 +295,8 @@ class NeoHooke(ConstitutiveMaterial):
         if A4 is None:
             A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]), dtype=F.dtype)
         else:
-            np.multiply(A4, 0, out=A4)
+            # reset the (re-used) output array, NaN or inf entries must be removed
+            A4.fill(0.0)
 
         trC = None
         A4b = None

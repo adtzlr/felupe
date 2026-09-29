@@ -176,7 +176,18 @@ class IntegralFormCartesian:
         field_is_2d = v.dim == 2
 
         if function_is_vector and function_is_3d and field_is_2d:
-            fun = fun[tuple([slice(2)] * function_dimension)]
+            if u is None:
+                fun = fun[tuple([slice(2)] * function_dimension)]
+            else:
+                # trim only the axes which belong to two-dimensional fields, i.e.
+                # the leading axes of v and the following axes of u
+                nv = int(v.dim > 1) + int(bool(grad_v))
+                nu = int(u.dim > 1) + int(bool(grad_u))
+                trim = [slice(None)] * function_dimension
+                trim[:nv] = [slice(2)] * nv
+                if u.dim == 2 and fun.shape[nv] == 3:
+                    trim[nv : nv + nu] = [slice(2)] * nu
+                fun = fun[tuple(trim)]
 
         if parallel:
             einsum = einsumt

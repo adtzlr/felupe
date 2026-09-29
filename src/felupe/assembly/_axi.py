@@ -159,7 +159,13 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
     def _init_vector(self, fun, v, dV, u, grad_v, grad_u):
         R = v.radius
 
-        if u is None:
+        if u is not None and fun is None:
+            # an empty (None) block of a bilinear form, e.g. a zero-valued coupling
+            # between two fields, is handled by the cartesian integral form
+            self.mode = 40
+            self.forms = [IntegralFormCartesian(None, v, self.dV, u, False, False)]
+
+        elif u is None:
             if isinstance(v, FieldAxisymmetric):
                 self.mode = 1
 
@@ -178,7 +184,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             else:
                 self.mode = 10
 
-                form_a = IntegralFormCartesian(fun, v, self.dV, grad_v=False)
+                form_a = IntegralFormCartesian(fun, v, self.dV, grad_v=grad_v)
                 self.forms = [
                     form_a,
                 ]
@@ -287,7 +293,7 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             elif isinstance(v, Field) and isinstance(u, Field):
                 self.mode = 40
 
-                form_a = IntegralFormCartesian(fun, v, self.dV, u, False, False)
+                form_a = IntegralFormCartesian(fun, v, self.dV, u, grad_v, grad_u)
 
                 self.forms = [
                     form_a,
@@ -309,7 +315,15 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0)))
             val = values[0]
 
-        if self.mode == 30:
+        if self.mode == 30 and self.forms[1].u.dim > 1:
+            # coupling of an axisymmetric field with a vector-valued field
+            # values[0]: in-plane part, shape (a, i, b, k, c)
+            # values[1]: out-of-plane part (δu_r), shape (a, k, b, c)
+            values[1] = np.einsum("akbc->abkc", values[1])[:, None]
+            values[0] += np.pad(values[1], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
+            val = values[0]
+
+        elif self.mode == 30:
             if len(values[0].shape) > 4:
                 values[0] = values[0][:, :, 0, 0]
             if len(values[1].shape) > 4:

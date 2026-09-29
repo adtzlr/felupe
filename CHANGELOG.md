@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file. The format 
 - Add `mesh.extrude(mesh, path, other_mesh=None)` and `Mesh.extrude(path, other_mesh=None)` to extrude a line- or quad-mesh along a given path. The section is transported by rotation-minimizing frames and its initial orientation w.r.t. the tangent of the path is preserved. Optionally, the section is interpolated between two meshes.
 - Add `constitution.ThirdMediumContactMixed`, a mixed-formulation for a stabilized third medium contact.
 
+### Fixed
+- Fix the assembly of bilinear forms with plane-strain fields and additional vector-valued fields in `IntegralFormCartesian`. Only the axes of two-dimensional fields are trimmed, e.g. a coupling block of shape `(3, 3, 9)` is now trimmed to `(2, 2, 9)` instead of `(2, 2, 2)`.
+- Fix the assembly of mixed-field formulations in `IntegralFormAxisymmetric`: the gradient flags of non-axisymmetric fields are now passed to the linear and bilinear forms, empty (`None`) blocks of bilinear forms are supported and an axisymmetric field may be coupled with a vector-valued field.
+
 ## [11.1.3] - 2026-09-28
 
 ### Fixed

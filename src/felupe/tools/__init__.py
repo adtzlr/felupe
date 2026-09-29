@@ -2,6 +2,7 @@ import warnings
 
 from ._event_dispatcher import Context, EventDispatcher
 from ._hello_world import hello_world
+from ._linesearch import LineSearch, LineSearchState
 from ._misc import logo, runs_on
 from ._newton import IterationState, NewtonResult
 from ._newton import fun_items as fun
@@ -45,4 +46,6 @@ __all__ = [
     "EventDispatcher",
     "Context",
     "IterationState",
+    "LineSearch",
+    "LineSearchState",
 ]

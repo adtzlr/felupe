@@ -10,6 +10,8 @@ Tools
    newtonraphson
    tools.IterationState
    tools.NewtonResult
+   tools.LineSearch
+   tools.LineSearchState
 
 **Event Dispatcher**
 
@@ -47,6 +49,14 @@ Tools
    :members:
 
 .. autoclass:: felupe.tools.NewtonResult
+   :members:
+
+.. autoclass:: felupe.tools.LineSearch
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.tools.LineSearchState
    :members:
 
 .. autoclass:: felupe.tools.EventDispatcher

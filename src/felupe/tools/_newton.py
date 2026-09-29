@@ -27,13 +27,21 @@ from .. import solve as fesolve
 from ..assembly import IntegralForm
 from ..math import norm
 from ._event_dispatcher import Context, EventDispatcher
+from ._linesearch import LineSearch
 
 
 class IterationState:
     "A class to keep track of the state of an iteration during evaluation."
 
     def __init__(
-        self, iteration=None, fnorm=None, xnorm=None, success=None, tol=None, error=None
+        self,
+        iteration=None,
+        fnorm=None,
+        xnorm=None,
+        success=None,
+        tol=None,
+        error=None,
+        alpha=None,
     ):
         self.iteration = iteration
         self.fnorm = fnorm
@@ -41,6 +49,7 @@ class IterationState:
         self.success = success
         self.tol = tol
         self.error = error
+        self.alpha = alpha
 
 
 class NewtonResult:
@@ -63,6 +72,9 @@ class NewtonResult:
         List with norms of the values of the solution (default is None).
     fnorms : float or None, optional
         List with norms of the objective function (default is None).
+    alphas : list of float or None, optional
+        List with the accepted step lengths of the line search (default is None). All
+        step lengths are one if no line search is used.
 
     Notes
     -----
@@ -86,6 +98,7 @@ class NewtonResult:
         iterations=None,
         xnorms=None,
         fnorms=None,
+        alphas=None,
     ):
         self.x = x
         self.fun = fun
@@ -94,6 +107,7 @@ class NewtonResult:
         self.iterations = iterations
         self.xnorms = xnorms
         self.fnorms = fnorms
+        self.alphas = alphas
 
 
 def spresize(a, shape):
@@ -276,6 +290,7 @@ def newtonraphson(
     progress_bar=None,
     tqdm="tqdm",
     dispatcher=None,
+    linesearch=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -339,6 +354,10 @@ def newtonraphson(
     dispatcher: EventDispatcher or None, optional
         An optional EventDispatcher to trigger events during evaluation. Default is
         None.
+    linesearch : felupe.tools.LineSearch or bool or None, optional
+        An optional backtracking line search, see :class:`~felupe.tools.LineSearch`.
+        If True, a line search with default arguments is used. If None or False, the
+        full Newton increment is applied in each iteration. Default is None.
 
     Returns
     -------
@@ -405,6 +424,22 @@ def newtonraphson(
     Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
     :math:`f(x)`. The procedure is repeated until convergence is reached.
 
+    Optionally, a backtracking line search scales the Newton increment by a step length
+    :math:`\alpha \in (0, 1]`, see Eq. :eq:`newton-linesearch`.
+
+    ..  math::
+        :label: newton-linesearch
+
+        x = x_n + \alpha\ dx
+
+    Starting with :math:`\alpha = 1`, the step length is halved until the acceptance
+    criteria of the line search are fulfilled, e.g. positive determinants of the
+    deformation gradients and a sufficient decrease of the residuals, see
+    :class:`~felupe.tools.LineSearch`. A given ``update`` function is called with the
+    scaled increment, ``update(x_n, alpha * dx)``, and the scaled increment is passed to
+    ``check`` and ``callback``. The residuals of the accepted trial are re-used, i.e.
+    no additional assembly is required for the accepted step.
+
     Examples
     --------
     >>> import felupe as fem
@@ -469,12 +504,30 @@ def newtonraphson(
     if kwargs is None:
         kwargs = {}
 
+    if linesearch is True:
+        linesearch = LineSearch()
+
+    elif linesearch is False:
+        linesearch = None
+
+    def evaluate(x):
+        "Evaluate the objective function."
+        if items is not None:
+            return fun_items(items, x, *args, **kwargs)
+        return fun(x, *args, **kwargs)
+
+    def converged(dx, x, f):
+        "Check if a trial of the line search is converged (without side effects)."
+        return check(
+            dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=None
+        )[2]
+
     if items is not None:
         f = fun_items(items, x, *args, **kwargs)
     else:
         f = fun(x, *args, **kwargs)
 
-    xnorms, fnorms = [], []
+    xnorms, fnorms, alphas = [], [], []
 
     # iteration loop
     for iteration in range(maxiter):
@@ -505,12 +558,40 @@ def newtonraphson(
                 "Solution contains NaN values. Newton-Raphson method failed."
             )
 
-        x = update(x, dx)
+        if linesearch is None:
+            alpha = 1.0
+            x = update(x, dx)
 
-        if items is not None:
-            f = fun_items(items, x, *args, **kwargs)
+            if items is not None:
+                f = fun_items(items, x, *args, **kwargs)
+            else:
+                f = fun(x, *args, **kwargs)
+
         else:
-            f = fun(x, *args, **kwargs)
+            # the residuals of the accepted trial are re-used, the accepted trial is
+            # the last evaluated trial (the temporary state variables belong to it)
+            x, f, alpha = linesearch(
+                x=x,
+                dx=dx,
+                f=f,
+                fun=evaluate,
+                update=update,
+                jac=K,
+                items=items,
+                dof1=dof1,
+                dof0=dof0,
+                check=converged,
+                iteration=iteration,
+            )
+
+            # the actually applied increment
+            if alpha != 1.0:
+                if isinstance(dx, (list, tuple)):
+                    dx = [alpha * d for d in dx]
+                else:
+                    dx = alpha * dx
+
+        alphas.append(alpha)
 
         xnorm, fnorm, success = check(
             dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
@@ -535,6 +616,7 @@ def newtonraphson(
             success=success,
             tol=tol,
             error=error,
+            alpha=None if linesearch is None else alpha,
         )
         dispatcher.trigger("after_iteration", context, state)
 
@@ -551,6 +633,7 @@ def newtonraphson(
         iterations=1 + iteration,
         xnorms=xnorms,
         fnorms=fnorms,
+        alphas=alphas,
     )
 
     dispatcher.trigger("after_newton", context, state)

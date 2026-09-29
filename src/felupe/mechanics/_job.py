@@ -173,7 +173,10 @@ class Job:
             Optional keyword arguments for :meth:`~felupe.Step.generate`. If
             ``parallel=True``, it is added as ``kwargs["parallel"] = True`` to the dict
             of additional keyword arguments. If ``x0`` is present in ``kwargs.keys()``,
-            it is used as the mesh for the XDMF time series writer.
+            it is used as the mesh for the XDMF time series writer. All keyword
+            arguments are passed to :func:`~felupe.newtonraphson`, e.g. an optional
+            line search by ``linesearch=True`` or
+            ``linesearch=fem.tools.LineSearch(...)``.
 
         Returns
         -------

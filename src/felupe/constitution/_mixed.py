@@ -753,6 +753,9 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         self.gamma = gamma
         self.alpha_r = alpha_r
         self.p_r = p_r
+
+        # for plane-strain or axisymmetric first-fields, x[2].shape is (9, 2)
+        # for cartesian 3d fields, x[2].shape is (9, 3)
         self.x = [material.x[0], np.ones(9), np.ones((9, 3)), material.x[-1]]
 
     def gradient(self, x, out=None):
@@ -782,8 +785,16 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
 
         [F, θ, grad_θ], statevars = x[:3], x[-1]
 
+        # for plane-strain or axisymmetric first-fields, grad_θ.shape is (9, 2)
+        # for cartesian 3d fields, grad_θ.shape is (9, 3)
+        grad_θ_size = np.prod(grad_θ.shape[:2])
+        grad_θ_inplane_dim = grad_θ.shape[1]
+
         identity_9_9 = identity(dim=9, shape=(1, 1))
-        identity_27_27 = identity(dim=27, shape=(1, 1))
+        identity_grad_θ = identity(dim=grad_θ_size, shape=(1, 1))
+
+        # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
+        # ψ_g = α_r * (∇θ : ∇θ) / 2
 
         d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
         d2WdFdF *= self.gamma
@@ -793,5 +804,8 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         d2WdFdgradθ = None
         d2Wdθdθ = self.p_r * identity_9_9
         d2Wdθdgradθ = None
-        d2Wdgradθdgradθ = self.alpha_r * reshape(identity_27_27, (9, 3, 9, 3))
+        d2Wdgradθdgradθ = self.alpha_r * reshape(
+            identity_grad_θ,
+            shape=(9, grad_θ_inplane_dim, 9, grad_θ_inplane_dim),
+        )
         return [d2WdFdF, d2WdFdθ, d2WdFdgradθ, d2Wdθdθ, d2Wdθdgradθ, d2Wdgradθdgradθ]

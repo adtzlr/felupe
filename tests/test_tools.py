@@ -517,6 +517,7 @@ def test_extrapolate():
     with pytest.raises(ValueError):
         projected = fem.tools.extrapolate(values, region, average=True)
 
+
 def test_resize():
     from scipy.sparse import csr_matrix
 

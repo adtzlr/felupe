@@ -20,7 +20,18 @@ import inspect
 
 import numpy as np
 
-from ..math import cdya_ik, cdya_il, ddot, det, dya, identity, inv, transpose
+from ..math import (
+    cdya_ik,
+    cdya_il,
+    ddot,
+    det,
+    dya,
+    identity,
+    inv,
+    ravel,
+    reshape,
+    transpose,
+)
 from ._base import ConstitutiveMaterial
 
 
@@ -726,3 +737,59 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             p,J - part of hessian
         """
         return -np.ones_like(J)
+
+
+class ThirdMediumContactMixed(ConstitutiveMaterial):
+    def __init__(
+        self,
+        material,
+        gamma,
+        alpha_r,
+        p_r,
+        parallel=False,
+    ):
+        self.material = self.fun = material
+        self.parallel = parallel
+        self.gamma = gamma
+        self.alpha_r = alpha_r
+        self.p_r = p_r
+        self.x = [material.x[0], np.ones((3, 3)), np.ones((3, 3, 3)), material.x[-1]]
+
+    def gradient(self, x, out=None):
+        kwargs = {}
+        if "out" in inspect.signature(self.material.gradient).parameters:
+            kwargs["out"] = out
+
+        [F, θ, grad_θ], statevars = x[:3], x[-1]
+        dWdF, statevars_new = self.material.gradient([F, statevars], **kwargs)
+
+        # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
+        # ψ_g = α_r * (∇θ : ∇θ) / 2
+
+        dudX = ravel(F - identity(F))
+        dWdθ = self.p_r * (θ - dudX)
+        dWdgradθ = self.alpha_r * grad_θ
+
+        dWdF -= reshape(dWdθ, (3, 3))
+
+        return [dWdF, dWdθ, dWdgradθ, statevars_new]
+
+    def hessian(self, x, out=None):
+        kwargs = {}
+        if "out" in inspect.signature(self.material.hessian).parameters:
+            kwargs["out"] = out
+
+        [F, θ, grad_θ], statevars = x[:3], x[-1]
+
+        identity_9_9 = identity(dim=9, shape=(1, 1))
+        identity_27_27 = identity(dim=27, shape=(1, 1))
+
+        d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
+        d2WdFdF += self.p_r * reshape(identity_9_9, (3, 3, 3, 3))
+
+        d2WdFdθ = -self.p_r * reshape(identity_9_9, (3, 3, 9))
+        d2WdFdgradθ = None
+        d2Wdθdθ = self.p_r * identity_9_9
+        d2Wdθdgradθ = None
+        d2Wdgradθdgradθ = self.alpha_r * reshape(identity_27_27, (9, 3, 9, 3))
+        return [d2WdFdF, d2WdFdθ, d2WdFdgradθ, d2Wdθdθ, d2Wdθdgradθ, d2Wdgradθdgradθ]

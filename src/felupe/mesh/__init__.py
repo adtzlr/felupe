@@ -38,7 +38,15 @@ from ._tools import (
 )
 from ._tools import merge_duplicate_points
 from ._tools import merge_duplicate_points as sweep
-from ._tools import mirror, revolve, rotate, runouts, stack, translate, triangulate
+from ._tools import (
+    mirror,
+    revolve,
+    rotate,
+    runouts,
+    stack,
+    translate,
+    triangulate,
+)
 
 __all__ = [
     "_cube_hexa",

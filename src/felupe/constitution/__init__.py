@@ -1,7 +1,7 @@
 from ._base import CompositeMaterial, ConstitutiveMaterial, constitutive_material
 from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
-from ._mixed import NearlyIncompressible, ThreeFieldVariation
+from ._mixed import NearlyIncompressible, ThirdMediumContactMixed, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
 from .hyperelasticity import NeoHooke, NeoHookeCompressible, OgdenRoxburgh, Volumetric
 from .linear_elasticity import (
@@ -55,6 +55,7 @@ __all__ = [
     "constitutive_material",
     "CompositeMaterial",
     "Volumetric",
+    "ThirdMediumContactMixed",
 ]
 try:
     from .tensortrax import Hyperelastic

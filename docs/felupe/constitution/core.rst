@@ -46,6 +46,12 @@ This page contains the core (hard-coded) constitutive material model formulation
    ThreeFieldVariation
    NearlyIncompressible
 
+**Third Medium Contact** :math:`(\boldsymbol{u}, \boldsymbol{\theta})`
+
+.. autosummary::
+
+   ThirdMediumContactMixed
+
 **Strain-based Materials**
 
 .. autosummary::
@@ -129,6 +135,11 @@ This page contains the core (hard-coded) constitutive material model formulation
    :inherited-members:
 
 .. autoclass:: felupe.OgdenRoxburgh
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.ThirdMediumContactMixed
    :members:
    :undoc-members:
    :inherited-members:

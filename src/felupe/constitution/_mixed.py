@@ -740,6 +740,80 @@ class ThreeFieldVariation(ConstitutiveMaterial):
 
 
 class ThirdMediumContactMixed(ConstitutiveMaterial):
+    r"""A mixed formulation for a stabilized third medium contact [1]_.
+
+    The second-order regularization of the third medium is expressed by an additional
+    tensor-valued field :math:`\boldsymbol{\theta}` which approximates the displacement
+    gradient :math:`\boldsymbol{H} = \boldsymbol{F} - \boldsymbol{1}`. Hence, only
+    first-order derivatives of the fields are required.
+
+    Parameters
+    ----------
+    material : ConstitutiveMaterial
+        A hyperelastic material definition for the strain energy density function
+        :math:`\psi(\boldsymbol{F})` of the third medium with methods for the
+        ``gradient`` and the ``hessian`` w.r.t. the deformation gradient tensor.
+    gamma : float
+        The scaling factor :math:`\gamma` of the strain energy density function of the
+        third medium.
+    alpha_r : float
+        The regularization parameter :math:`\alpha_r` for the gradient of the
+        tensor-valued field.
+    p_r : float
+        The penalty parameter :math:`p_r` which enforces the constraint
+        :math:`\boldsymbol{\theta} = \boldsymbol{H}`.
+    parallel : bool, optional
+        A flag to invoke parallel (threaded) math operations (default is False).
+
+    Notes
+    -----
+    The strain energy density function is given in Eq.
+    :eq:`third-medium-contact-mixed`.
+
+    ..  math::
+        :label: third-medium-contact-mixed
+
+        \Psi(\boldsymbol{F}, \boldsymbol{\theta}, \nabla \boldsymbol{\theta}) =
+            \gamma\ \psi(\boldsymbol{F})
+            + \frac{p_r}{2} \left( \boldsymbol{\theta} - \boldsymbol{H} \right) :
+              \left( \boldsymbol{\theta} - \boldsymbol{H} \right)
+            + \frac{\alpha_r}{2}\ \nabla \boldsymbol{\theta} ~\vdots~
+              \nabla \boldsymbol{\theta}
+
+    The field :math:`\boldsymbol{\theta}` is a (non-axisymmetric) :class:`~felupe.Field`
+    with nine components. It is taken twice in the field container, where the
+    gradient is evaluated only for the second occurrence. This results in the list of
+    kinematic quantities :math:`(\boldsymbol{F}, \boldsymbol{\theta},
+    \nabla \boldsymbol{\theta})`. For two-dimensional regions, the gradient
+    :math:`\nabla \boldsymbol{\theta}` is evaluated w.r.t. the in-plane coordinates.
+
+    Examples
+    --------
+
+    ..  plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> region = fem.RegionQuad(fem.Rectangle(n=6))
+        >>> field = fem.FieldContainer(
+        ...     [fem.FieldPlaneStrain(region, dim=2), fem.Field(region, dim=9)],
+        ...     take=[0, 1, 1],
+        ... )
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> umat = fem.ThirdMediumContactMixed(
+        ...     fem.NeoHooke(mu=1, bulk=20), gamma=1e-5, alpha_r=1e-4, p_r=1e-2
+        ... )
+        >>> solid = fem.SolidBody(umat, field, grad=[True, False, True])
+
+    References
+    ----------
+    ..  [1] M. Vorwerk, J. Schröder, and P. Wriggers, "A mixed finite element
+        formulation for stabilized third medium contact", Computer Methods in Applied
+        Mechanics and Engineering, vol. 463, p. 119416, Jan. 2027. doi:
+        `10.1016/j.cma.2026.119416 <https://doi.org/10.1016/j.cma.2026.119416>`_.
+
+    """
+
     def __init__(
         self,
         material,

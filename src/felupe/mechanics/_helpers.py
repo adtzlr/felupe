@@ -120,7 +120,7 @@ class StateNearlyIncompressible:
         self.v = None
 
         # initial values (on mesh-points) of the displacement field
-        self.u = field[0].values
+        self.u = field[0].values.copy()
 
         # deformation gradient
         self.F = field.extract()

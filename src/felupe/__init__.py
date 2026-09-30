@@ -6,6 +6,7 @@ from . import (
     math,
     mechanics,
     mesh,
+    plugins,
     quadrature,
     region,
     solve,
@@ -96,6 +97,7 @@ from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .plugins import (
     AnimationWriterPlugin,
     CharacteristicCurvePlugin,
+    LinesearchPlugin,
     Plugin,
     ProgressPlugin,
     XDMFWriterPlugin,
@@ -295,6 +297,7 @@ __all__ = [
     "runs_on",
     "AnimationWriterPlugin",
     "CharacteristicCurvePlugin",
+    "LinesearchPlugin",
     "Plugin",
     "ProgressPlugin",
     "XDMFWriterPlugin",

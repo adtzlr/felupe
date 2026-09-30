@@ -125,3 +125,9 @@ docs/tutorial/*
 sg_execution_times.rst
 result.h5
 result.xdmf
+
+# Test artifacts (only in the root directory, *.vtk files are inputs in examples/)
+/*.vtk
+/*.vtu
+/umat.png
+/result.mp4

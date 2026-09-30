@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 - Add `mesh.extrude(mesh, path, other_mesh=None)` and `Mesh.extrude(path, other_mesh=None)` to extrude a line- or quad-mesh along a given path. The section is transported by rotation-minimizing frames and its initial orientation w.r.t. the tangent of the path is preserved. Optionally, the section is interpolated between two meshes.
 - Add `constitution.ThirdMediumContactMixed`, a mixed-formulation for a stabilized third medium contact.
+- Add `LinesearchPlugin(admissible=True, residual=True, c=1e-4, max_halvings=10, criteria=None)`, a backtracking line search for the Newton-Raphson method, which is enabled by `Job(steps, plugins=[LinesearchPlugin()])` or `newtonraphson(..., plugins=[LinesearchPlugin()])`. The Newton increment is scaled by a step length `alpha` (starting with one) which is halved until all acceptance criteria are fulfilled: positive determinants of the deformation gradients of all items (evaluated first, without assembly) and a sufficient decrease of the norm of the residuals (Armijo-type, the change of the prescribed degrees of freedom is included by its linearization). Custom criteria `criterion(trial) -> bool` get a `plugins.LinesearchTrial`. The residuals of the accepted trial are re-used and a `ValueError` is raised if the maximum number of halvings is exceeded. The accepted step lengths are available in `LinesearchPlugin.alphas` and `IterationState.alpha`, and reduced step lengths are shown by the `ProgressPlugin`.
+- Add the keyword-argument `plugins=None` to `newtonraphson()`, to use plugins with hooks for the Newton-Raphson method without a job.
+- Add the attributes `x`, `dx`, `fun`, `jac`, `alpha` and `updated` to `IterationState` and the attributes `items`, `dof1`, `dof0`, `ext0`, `fun`, `update` and `check` to `Context` in the hooks of `newtonraphson()`. In the `after_linear_solve` hook, plugins may replace the Newton increment or perform the update of the unknowns on their own, see `IterationState`.
+
+### Changed
+- `newtonraphson()` creates one `IterationState` which is updated in-place during all iterations. Before, a new state was created after each iteration and the hooks `before_newton` and `before_iteration` got an empty state or the state of the previous iteration. The `before_newton` hook is now triggered after the unknowns are determined and before the initial assembly of the objective function.
+- The check for NaN values in the Newton increment is now performed before the `after_linear_solve` hook is triggered.
+- Copy `StateNearlyIncompressible.u` from `field[0].values`, instead of using it directly.
 
 ### Fixed
 - Fix the assembly of bilinear forms with plane-strain fields and additional vector-valued fields in `IntegralFormCartesian`. Only the axes of two-dimensional fields are trimmed, e.g. a coupling block of shape `(3, 3, 9)` is now trimmed to `(2, 2, 9)` instead of `(2, 2, 2)`.

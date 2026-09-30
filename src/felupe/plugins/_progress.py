@@ -161,6 +161,8 @@ class ProgressPlugin(Plugin):
 
         if self.in_job:
             if self.progress_bar_newton is not None:
+                # a reset of the progress bar keeps the postfix (step length)
+                self.progress_bar_newton.set_postfix_str("", refresh=False)
                 self.progress_bar_newton.reset()
         else:
             self._create_progress_bars_or_header(context)
@@ -212,14 +214,30 @@ class ProgressPlugin(Plugin):
                 self.progress0,
                 np.clip(100 * completion, 0, 100).astype(int),
             )
+            # show the step length, e.g. of a line search (only if reduced). A reduced
+            # step length is shown immediately, the (empty) postfix of a full step on
+            # the next refresh of the progress bar.
+            alpha = getattr(state, "alpha", None)
+            reduced = alpha is not None and alpha < 1
+            postfix = f"alpha={alpha:.4g}" if reduced else ""
+            self.progress_bar_newton.set_postfix_str(postfix, refresh=reduced)
+
             self.progress_bar_newton.update(self.progress - self.progress0)
             self.progress0 = self.progress
 
         if self.verbose == 2:
-            print(
-                "|%2d | %1.3e | %1.3e |"
-                % (1 + state.iteration, state.fnorm, state.xnorm)
+            row = "|%2d | %1.3e | %1.3e |" % (
+                1 + state.iteration,
+                state.fnorm,
+                state.xnorm,
             )
+
+            # show the step length, e.g. of a line search (only if reduced)
+            alpha = getattr(state, "alpha", None)
+            if alpha is not None and alpha < 1:
+                row += " alpha=%.4g" % alpha
+
+            print(row)
 
     def after_newton(self, context, state):
 

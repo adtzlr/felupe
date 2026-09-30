@@ -30,10 +30,130 @@ from ._event_dispatcher import Context, EventDispatcher
 
 
 class IterationState:
-    "A class to keep track of the state of an iteration during evaluation."
+    r"""A class to keep track of the state of an iteration during evaluation.
+
+    Parameters
+    ----------
+    iteration : int or None, optional
+        The (zero-based) index of the current iteration (default is None).
+    fnorm : float or None, optional
+        The norm of the objective function of the current iteration (default is None).
+    xnorm : float or None, optional
+        The norm of the increment of the current iteration (default is None).
+    success : bool or None, optional
+        A flag if the current iteration has converged (default is None).
+    tol : float or None, optional
+        The tolerance of the Newton-Raphson method (default is None).
+    error : bool or None, optional
+        A flag if an error occured in the current iteration (default is None).
+    x : felupe.FieldContainer or ndarray or None, optional
+        The unknowns (default is None). Before the update of an iteration, these are
+        the unknowns of the last accepted iteration :math:`x_n`. After the update, these
+        are the updated unknowns :math:`x`.
+    dx : ndarray or None, optional
+        The increment of the unknowns of the current iteration (default is None).
+    fun : ndarray or None, optional
+        The values of the objective function (the residuals), evaluated at the unknowns
+        ``x`` (default is None).
+    jac : sparse matrix or ndarray or None, optional
+        The Jacobian of the objective function of the current iteration, evaluated at
+        the unknowns of the last accepted iteration :math:`x_n` (default is None).
+    alpha : float or None, optional
+        The step length which scales the Newton increment of the current iteration,
+        e.g. of a line search (default is None). None means that the full Newton
+        increment is applied.
+    updated : bool, optional
+        A flag if the unknowns (and the values of the objective function) are already
+        updated in the current iteration (default is False).
+
+    Notes
+    -----
+    One state is created by :func:`~felupe.newtonraphson` and its attributes are
+    updated in-place during the iterations. Hence, a plugin may keep a reference to the
+    state and attributes set by a plugin persist until they are updated by the
+    Newton-Raphson method. The attributes ``alpha`` and ``updated`` are reset in the
+    beginning of each iteration.
+
+    ..  list-table:: Attributes of the state in the hooks of an iteration.
+        :header-rows: 1
+
+        * - Hook
+          - ``x``
+          - ``fun``
+          - ``jac``
+          - ``dx``
+          - ``updated``
+        * - ``before_iteration``
+          - :math:`x_n`
+          - :math:`f(x_n)`
+          - previous
+          - previous
+          - False
+        * - ``before_linear_solve``
+          - :math:`x_n`
+          - :math:`f(x_n)`
+          - :math:`K(x_n)`
+          - previous
+          - False
+        * - ``after_linear_solve``
+          - :math:`x_n`
+          - :math:`f(x_n)`
+          - :math:`K(x_n)`
+          - :math:`dx`
+          - False
+        * - ``after_iteration``
+          - :math:`x`
+          - :math:`f(x)`
+          - :math:`K(x_n)`
+          - :math:`dx`
+          - True
+
+    A plugin may modify the update of the unknowns in the ``after_linear_solve`` hook.
+    Either the increment ``dx`` is replaced, e.g. by a scaled increment, which is then
+    used by the Newton-Raphson method to update the unknowns ``x = update(x_n, dx)`` and
+    to evaluate the objective function ``f(x)``. Or the plugin performs the update on
+    its own, e.g. by the callables ``update`` and ``fun`` of the
+    :class:`~felupe.tools.Context`. Then, the plugin has to set the updated unknowns
+    ``x``, the values of the objective function ``fun`` evaluated at the updated
+    unknowns, the applied increment ``dx`` and the flag ``updated=True``. The
+    Newton-Raphson method re-uses the values of the objective function and no
+    additional assembly is performed. If the objective function is evaluated for more
+    than one trial, the accepted trial must be evaluated last, because the (temporary)
+    state variables of the items belong to the last evaluation.
+
+    ..  note::
+
+        The evaluation of the objective function for a list of items links the fields
+        of the items to the evaluated unknowns. If the unknowns of the last accepted
+        iteration :math:`x_n` are the field container of an item (e.g. in the first
+        iteration of a job), the value arrays of :math:`x_n` are replaced by the value
+        arrays of the evaluated trial. A plugin which evaluates more than one trial
+        must restore the value arrays of :math:`x_n` before the next trial is created.
+        If a plugin does not perform the update, the value arrays of :math:`x_n` are
+        restored by the Newton-Raphson method.
+
+    See Also
+    --------
+    felupe.Plugin : Base class for plugins.
+    felupe.tools.Context : A class to keep track of the context of a Job during
+        evaluation.
+    felupe.LinesearchPlugin : A backtracking line search for the Newton-Raphson method.
+    """
 
     def __init__(
-        self, iteration=None, fnorm=None, xnorm=None, success=None, tol=None, error=None
+        self,
+        iteration=None,
+        fnorm=None,
+        xnorm=None,
+        success=None,
+        tol=None,
+        error=None,
+        x=None,
+        dx=None,
+        fun=None,
+        jac=None,
+        alpha=None,
+        updated=False,
     ):
         self.iteration = iteration
         self.fnorm = fnorm
@@ -41,6 +161,12 @@ class IterationState:
         self.success = success
         self.tol = tol
         self.error = error
+        self.x = x
+        self.dx = dx
+        self.fun = fun
+        self.jac = jac
+        self.alpha = alpha
+        self.updated = updated
 
 
 class NewtonResult:
@@ -130,6 +256,24 @@ def spresize(a, shape):
 
     a.resize(*shape)  # in-place
     return a
+
+
+def _snapshot(x):
+    """Return the value arrays of the fields of a field container (or None). The fields
+    of the items are linked to the evaluated unknowns. If the unknowns are the field
+    container of an item (e.g. in the first iteration of a job), the value arrays of
+    the unknowns are replaced by the linked value arrays (in-place)."""
+    fields = getattr(x, "fields", None)
+    if fields is None:
+        return None
+    return [field.values for field in fields]
+
+
+def _restore(x, snapshot):
+    "Restore the value arrays of the fields of a field container."
+    if snapshot is not None:
+        for field, values in zip(x.fields, snapshot):
+            field.values = values
 
 
 def fun_items(items, x, parallel=False):
@@ -276,6 +420,7 @@ def newtonraphson(
     progress_bar=None,
     tqdm="tqdm",
     dispatcher=None,
+    plugins=None,
 ):
     r"""Find a root of a real function using the Newton-Raphson method.
 
@@ -339,6 +484,10 @@ def newtonraphson(
     dispatcher: EventDispatcher or None, optional
         An optional EventDispatcher to trigger events during evaluation. Default is
         None.
+    plugins : list or None, optional
+        A list of plugins with hooks to be used during evaluation, e.g. a
+        :class:`~felupe.LinesearchPlugin`. If a ``dispatcher`` is given, the plugins
+        are added to a copy of the dispatcher for this evaluation. Default is None.
 
     Returns
     -------
@@ -405,6 +554,16 @@ def newtonraphson(
     Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
     :math:`f(x)`. The procedure is repeated until convergence is reached.
 
+    Plugins may modify the update of the unknowns in the ``after_linear_solve`` hook,
+    see :class:`~felupe.tools.IterationState`. E.g., a backtracking line search
+    (:class:`~felupe.LinesearchPlugin`) scales the Newton increment by a step length
+    :math:`\alpha \in (0, 1]`, see Eq. :eq:`newton-update-alpha`.
+
+    ..  math::
+        :label: newton-update-alpha
+
+        x = x_n + \alpha\ dx
+
     Examples
     --------
     >>> import felupe as fem
@@ -451,11 +610,11 @@ def newtonraphson(
         from ..plugins import ProgressPlugin
 
         progress = ProgressPlugin(verbose=verbose, tqdm=tqdm)
-        dispatcher = EventDispatcher(plugins=[progress])
+        dispatcher = EventDispatcher(plugins=[*(plugins or []), progress])
 
-    context = Context()
-    state = IterationState()
-    dispatcher.trigger("before_newton", context, state)
+    elif plugins is not None:
+        # don't modify the given dispatcher (e.g. of a job)
+        dispatcher = EventDispatcher(plugins=[*dispatcher.plugins, *plugins])
 
     if x0 is not None:
         x = x0
@@ -469,15 +628,43 @@ def newtonraphson(
     if kwargs is None:
         kwargs = {}
 
-    if items is not None:
-        f = fun_items(items, x, *args, **kwargs)
-    else:
-        f = fun(x, *args, **kwargs)
+    def evaluate(x):
+        "Evaluate the objective function for given unknowns."
+        if items is not None:
+            return fun_items(items, x, *args, **kwargs)
+        return fun(x, *args, **kwargs)
+
+    def converged(dx, x, f):
+        "Check the convergence without side effects (no update of state variables)."
+        return check(
+            dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=None
+        )
+
+    context = Context(
+        items=items,
+        dof1=dof1,
+        dof0=dof0,
+        ext0=ext0,
+        fun=evaluate,
+        update=update,
+        check=converged,
+    )
+
+    # one state for all iterations, its attributes are updated in-place
+    state = IterationState(tol=tol, x=x)
+    dispatcher.trigger("before_newton", context, state)
+
+    f = evaluate(x)
+    state.fun = f
 
     xnorms, fnorms = [], []
 
     # iteration loop
     for iteration in range(maxiter):
+
+        state.iteration = iteration
+        state.alpha = None
+        state.updated = False
 
         dispatcher.trigger("before_iteration", context, state)
 
@@ -485,6 +672,8 @@ def newtonraphson(
             K = jac_items(items, x, *args, **kwargs)
         else:
             K = jac(x, *args, **kwargs)
+
+        state.jac = K
 
         # create keyword-arguments for solving the linear system
         keys = ["x", "dof1", "dof0", "ext0", "solver"]
@@ -498,19 +687,27 @@ def newtonraphson(
 
         dx = solve(K, -f, **kwargs_solve)
 
-        dispatcher.trigger("after_linear_solve", context, state)
-
         if np.any(np.isnan(dx)):
             raise ValueError(
                 "Solution contains NaN values. Newton-Raphson method failed."
             )
 
-        x = update(x, dx)
+        state.dx = dx
 
-        if items is not None:
-            f = fun_items(items, x, *args, **kwargs)
+        # plugins may replace the increment or perform the update on their own
+        snapshot = _snapshot(x)
+        dispatcher.trigger("after_linear_solve", context, state)
+
+        dx = state.dx
+
+        if state.updated:
+            # re-use the updated unknowns and the objective function of a plugin
+            x, f = state.x, state.fun
         else:
-            f = fun(x, *args, **kwargs)
+            # the unknowns may be linked to a trial, evaluated by a plugin
+            _restore(x, snapshot)
+            x = update(x, dx)
+            f = evaluate(x)
 
         xnorm, fnorm, success = check(
             dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
@@ -528,14 +725,14 @@ def newtonraphson(
         abort = 1 + iteration == maxiter and not success
         error = isnan or abort
 
-        state = IterationState(
-            iteration=iteration,
-            fnorm=fnorm,
-            xnorm=xnorm,
-            success=success,
-            tol=tol,
-            error=error,
-        )
+        state.x = x
+        state.fun = f
+        state.updated = True
+        state.xnorm = xnorm
+        state.fnorm = fnorm
+        state.success = success
+        state.error = error
+
         dispatcher.trigger("after_iteration", context, state)
 
         if success:

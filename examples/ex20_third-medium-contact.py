@@ -128,7 +128,7 @@ regularization = fem.FormItem(
 
 # %%
 # The prescribed displacement is ramped up to the maximum value.
-move = fem.math.linsteps([0, 1], num=20)
+move = fem.math.linsteps([0, 1], num=5)
 step = fem.Step(
     items=[*solids, regularization],
     ramp={bounds["move"]: -0.62 * move * L},
@@ -138,7 +138,14 @@ step = fem.Step(
 # %%
 # The top-level field has to be passed as the ``x0``-argument of the job.
 # The deformation configuration is plotted.
-job = fem.Job([step]).evaluate(x0=field)
+#
+# ..  note::
+#     For larger load increments, a full Newton step may lead to inadmissible
+#     deformations of the third medium (:math:`\det \boldsymbol{F} \le 0`). An
+#     optional backtracking line search (:class:`~felupe.LinesearchPlugin`) scales down
+#     such Newton increments.
+linesearch = fem.LinesearchPlugin()
+job = fem.Job([step]).evaluate(x0=field, plugins=[linesearch])
 
 plotter = solids[1].plot(nonlinear_subdivision=2, opacity=0.2, edge_color="grey")
 plotter = solids[0].plot(

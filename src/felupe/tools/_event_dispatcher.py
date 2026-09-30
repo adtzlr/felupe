@@ -40,15 +40,70 @@ class Context:
         The job object.
     step : felupe.Step or None, optional
         The step object.
-    substep : felupe.FieldContainer or None, optional
-        The field container object.
+    substep : felupe.tools.NewtonResult or None, optional
+        The result of the completed substep. The field container of the substep is
+        available as ``substep.x``.
+    items : list or None, optional
+        The list of items of the Newton-Raphson method (default is None). Only
+        available in the hooks of :func:`~felupe.newtonraphson`.
+    dof1 : ndarray or None, optional
+        The active degrees of freedom of the Newton-Raphson method (default is None).
+        Only available in the hooks of :func:`~felupe.newtonraphson`.
+    dof0 : ndarray or None, optional
+        The prescribed degrees of freedom of the Newton-Raphson method (default is
+        None). Only available in the hooks of :func:`~felupe.newtonraphson`.
+    ext0 : ndarray or None, optional
+        The external values of the prescribed degrees of freedom of the Newton-Raphson
+        method (default is None). Only available in the hooks of
+        :func:`~felupe.newtonraphson`.
+    fun : callable or None, optional
+        A callable ``f = fun(x)`` which evaluates the objective function (the
+        residuals) for given unknowns ``x``. For a list of items, the vectors of all
+        items are assembled and the fields of the items are linked to ``x``.
+        Additional arguments of the Newton-Raphson method are already bound. Default is
+        None. Only available in the hooks of :func:`~felupe.newtonraphson`.
+    update : callable or None, optional
+        The callable ``x = update(x, dx)`` of the Newton-Raphson method which updates
+        the unknowns (default is None). Only available in the hooks of
+        :func:`~felupe.newtonraphson`.
+    check : callable or None, optional
+        A callable ``xnorm, fnorm, success = check(dx, x, f)`` which checks the
+        convergence of the Newton-Raphson method for given unknowns ``x`` with the
+        values of the objective function ``f`` (default is None). In contrast to the
+        ``check``-argument of :func:`~felupe.newtonraphson`, the state variables of
+        the items are not updated. Only available in the hooks of
+        :func:`~felupe.newtonraphson`.
+
+    See Also
+    --------
+    felupe.Plugin : Base class for plugins.
+    felupe.IterationState : A class to keep track of the state of an iteration.
 
     """
 
-    def __init__(self, job=None, step=None, substep=None):
+    def __init__(
+        self,
+        job=None,
+        step=None,
+        substep=None,
+        items=None,
+        dof1=None,
+        dof0=None,
+        ext0=None,
+        fun=None,
+        update=None,
+        check=None,
+    ):
         self.job = job
         self.step = step
         self.substep = substep
+        self.items = items
+        self.dof1 = dof1
+        self.dof0 = dof0
+        self.ext0 = ext0
+        self.fun = fun
+        self.update = update
+        self.check = check
 
 
 class EventDispatcher:

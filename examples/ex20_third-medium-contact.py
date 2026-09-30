@@ -138,6 +138,13 @@ step = fem.Step(
 # %%
 # The top-level field has to be passed as the ``x0``-argument of the job.
 # The deformation configuration is plotted.
+#
+# ..  note::
+#     For larger load increments, a full Newton step may lead to inadmissible
+#     deformations of the third medium (:math:`\det \boldsymbol{F} \le 0`). An
+#     optional backtracking line search (:class:`~felupe.LinesearchPlugin`) scales down
+#     such Newton increments, e.g. by
+#     ``fem.Job([step], plugins=[fem.LinesearchPlugin()]).evaluate(x0=field)``.
 job = fem.Job([step]).evaluate(x0=field)
 
 plotter = solids[1].plot(nonlinear_subdivision=2, opacity=0.2, edge_color="grey")

@@ -68,6 +68,7 @@ class ProgressPlugin(Plugin):
         # Progress bars (verbose == 1)
         self.progress_bar = None  # for steps
         self.progress_bar_newton = None  # for Newton iterations
+        self._postfix = False  # flag for a postfix (step length) in the Newton bar
 
         # Progress tracking
         self.progress = 0
@@ -170,6 +171,10 @@ class ProgressPlugin(Plugin):
             self.progress0 = 0
             self.progress = 0
 
+            if self._postfix:
+                self.progress_bar_newton.set_postfix_str("")
+                self._postfix = False
+
         if self.verbose == 2:
             self.runtimes = [perf_counter()]
             self.soltimes = []
@@ -215,11 +220,28 @@ class ProgressPlugin(Plugin):
             self.progress_bar_newton.update(self.progress - self.progress0)
             self.progress0 = self.progress
 
+            # show the step length, e.g. of a line search (only if reduced)
+            alpha = getattr(state, "alpha", None)
+            if alpha is not None and alpha < 1:
+                self.progress_bar_newton.set_postfix_str(f"alpha={alpha:.4g}")
+                self._postfix = True
+            elif self._postfix:
+                self.progress_bar_newton.set_postfix_str("")
+                self._postfix = False
+
         if self.verbose == 2:
-            print(
-                "|%2d | %1.3e | %1.3e |"
-                % (1 + state.iteration, state.fnorm, state.xnorm)
+            row = "|%2d | %1.3e | %1.3e |" % (
+                1 + state.iteration,
+                state.fnorm,
+                state.xnorm,
             )
+
+            # show the step length, e.g. of a line search (only if reduced)
+            alpha = getattr(state, "alpha", None)
+            if alpha is not None and alpha < 1:
+                row += " alpha=%.4g" % alpha
+
+            print(row)
 
     def after_newton(self, context, state):
 

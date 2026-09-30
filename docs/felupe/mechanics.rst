@@ -32,8 +32,10 @@ Mechanics
    Plugin
    AnimationWriterPlugin
    CharacteristicCurvePlugin
+   LinesearchPlugin
    ProgressPlugin
    XDMFWriterPlugin
+   plugins.LinesearchTrial
    EventDispatcher
    Context
    JobState
@@ -129,6 +131,14 @@ Mechanics
    :members:
    :undoc-members:
    :show-inheritance:
+
+.. autoclass:: felupe.LinesearchPlugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.plugins.LinesearchTrial
+   :members:
 
 .. autoclass:: felupe.ProgressPlugin
    :members:

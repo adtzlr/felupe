@@ -19,12 +19,14 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 HOOKS = (
     "before_job",
     "before_step",
+    "before_substep",
     "before_newton",
     "before_iteration",
     "before_linear_solve",
     "after_linear_solve",
     "after_iteration",
     "after_newton",
+    "after_failed_substep",
     "after_substep",
     "after_step",
     "after_job",
@@ -44,8 +46,9 @@ class Context:
         The result of the completed substep. The field container of the substep is
         available as ``substep.x``.
     items : list or None, optional
-        The list of items of the Newton-Raphson method (default is None). Only
-        available in the hooks of :func:`~felupe.newtonraphson`.
+        The list of items of the Newton-Raphson method or of a step (default is None).
+        Only available in the hooks of :func:`~felupe.newtonraphson` and in the hooks
+        of a substep, see :meth:`~felupe.Step.generate`.
     dof1 : ndarray or None, optional
         The active degrees of freedom of the Newton-Raphson method (default is None).
         Only available in the hooks of :func:`~felupe.newtonraphson`.
@@ -73,11 +76,24 @@ class Context:
         ``check``-argument of :func:`~felupe.newtonraphson`, the state variables of
         the items are not updated. Only available in the hooks of
         :func:`~felupe.newtonraphson`.
+    x0 : felupe.FieldContainer or None, optional
+        The field container with the unknowns of a step, which is the starting point
+        of the Newton-Raphson method of a substep (default is None). Only available in
+        the hooks of a substep, see :meth:`~felupe.Step.generate`.
+    solve : callable or None, optional
+        A callable ``res = solve(values)`` which updates the ramped items (and
+        boundaries) of a step with a dict of ``values``, updates the load case and
+        evaluates the Newton-Raphson method, starting from the unknowns ``x0``. It
+        returns a :class:`~felupe.tools.NewtonResult` and errors of the Newton-Raphson
+        method are raised. The unknowns ``x0`` are not linked to the result. Default
+        is None. Only available in the hooks of a substep, see
+        :meth:`~felupe.Step.generate`.
 
     See Also
     --------
     felupe.Plugin : Base class for plugins.
     felupe.IterationState : A class to keep track of the state of an iteration.
+    felupe.SubstepState : A class to keep track of the state of a substep.
 
     """
 
@@ -93,6 +109,8 @@ class Context:
         fun=None,
         update=None,
         check=None,
+        x0=None,
+        solve=None,
     ):
         self.job = job
         self.step = step
@@ -104,6 +122,8 @@ class Context:
         self.fun = fun
         self.update = update
         self.check = check
+        self.x0 = x0
+        self.solve = solve
 
 
 class EventDispatcher:

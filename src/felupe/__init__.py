@@ -91,6 +91,7 @@ from .mechanics import (
     SolidBodyPressure,
     StateNearlyIncompressible,
     Step,
+    SubstepState,
     TrussBody,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
@@ -246,6 +247,7 @@ __all__ = [
     "SolidBodyPressure",
     "StateNearlyIncompressible",
     "Step",
+    "SubstepState",
     "TrussBody",
     "MultiPointConstraint",
     "MultiPointContact",

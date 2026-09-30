@@ -11,7 +11,7 @@ from ._solidbody_cauchy_stress import SolidBodyCauchyStress
 from ._solidbody_force import SolidBodyForce
 from ._solidbody_incompressible import SolidBodyNearlyIncompressible
 from ._solidbody_pressure import SolidBodyPressure
-from ._step import Step
+from ._step import Step, SubstepState
 from ._truss import TrussBody
 from ._update import UpdateItem
 
@@ -33,6 +33,7 @@ __all__ = [
     "SolidBodyNearlyIncompressible",
     "SolidBodyPressure",
     "Step",
+    "SubstepState",
     "MultiPointConstraint",
     "MultiPointContact",
     "TrussBody",

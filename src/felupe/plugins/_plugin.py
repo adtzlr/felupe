@@ -28,9 +28,32 @@ class Plugin:
 
     The :class:`~felupe.Context` object holds information about the current job,
     step or substep. In the hooks of the Newton-Raphson method, it holds the items, the
-    degrees of freedom and the callables of :func:`~felupe.newtonraphson`. `state`
-    depends on the method and can be used to access the current state, i.e.
-    :class:`~felupe.JobState` or :class:`~felupe.IterationState`.
+    degrees of freedom and the callables of :func:`~felupe.newtonraphson`. In the hooks
+    of a substep, it holds the items, the unknowns and a callable to solve the substep
+    for given values of the ramp, see :meth:`~felupe.Step.generate`. `state` depends on
+    the method and can be used to access the current state, i.e.
+    :class:`~felupe.JobState`, :class:`~felupe.SubstepState` or
+    :class:`~felupe.IterationState`.
+
+    The hooks are called in the following order during the evaluation of a
+    :class:`~felupe.Job`. The hook ``after_failed_substep`` is only called if the
+    Newton-Raphson method of a substep raised an error.
+
+    ..  code-block:: text
+
+        before_job
+            before_step
+                before_substep
+                    before_newton
+                        before_iteration
+                            before_linear_solve
+                            after_linear_solve
+                        after_iteration
+                    after_newton
+                    after_failed_substep
+                after_substep
+            after_step
+        after_job
 
     ..  note::
 
@@ -42,8 +65,10 @@ class Plugin:
     felupe.EventDispatcher : A class to dispatch events to plugins during evaluation.
     felupe.Context : A class to keep track of the context of a Job during evaluation.
     felupe.JobState : A class to keep track of the state of a Job during evaluation.
+    felupe.SubstepState : A class to keep track of the state of a substep.
     felupe.IterationState : A class to keep track of the state of an iteration.
     felupe.LinesearchPlugin : A backtracking line search for the Newton-Raphson method.
+    felupe.CutbackPlugin : A cutback of the increment of failed substeps.
     """
 
     def before_job(self, context, state):
@@ -68,6 +93,21 @@ class Plugin:
             The context object.
         state : felupe.JobState
             The state of the job.
+
+        """
+        pass
+
+    def before_substep(self, context, state):
+        """This method is called before a substep, i.e. before the ramped items of the
+        step are updated and before the Newton-Raphson method is evaluated.
+
+        Parameters
+        ----------
+        context : felupe.Context
+            The context object with the step, the items, the unknowns ``x0`` and the
+            callable ``solve``.
+        state : felupe.SubstepState
+            The state of the substep.
 
         """
         pass
@@ -149,6 +189,22 @@ class Plugin:
             The context object.
         state : felupe.IterationState
             The state of the iteration.
+
+        """
+        pass
+
+    def after_failed_substep(self, context, state):
+        """This method is called after the Newton-Raphson method of a substep raised
+        an error. A plugin may recover the substep in this hook, see
+        :class:`~felupe.SubstepState`.
+
+        Parameters
+        ----------
+        context : felupe.Context
+            The context object with the step, the items, the unknowns ``x0`` and the
+            callable ``solve``.
+        state : felupe.SubstepState
+            The state of the substep with the raised error.
 
         """
         pass

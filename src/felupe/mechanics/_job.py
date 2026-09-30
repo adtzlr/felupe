@@ -49,14 +49,16 @@ class Job:
     plugins : list or None, optional
         A list of plugins with hooks to be used during evaluation. Available hooks are
         ``before_job``, ``after_job``, ``before_step``, ``after_step`` and
-        ``after_substep`` as well as the hooks of the Newton-Raphson method
+        ``after_substep``, the hooks of a substep ``before_substep`` and
+        ``after_failed_substep`` as well as the hooks of the Newton-Raphson method
         ``before_newton``, ``before_iteration``, ``before_linear_solve``,
         ``after_linear_solve``, ``after_iteration`` and ``after_newton``, see
         :class:`~felupe.Plugin`. Each hook takes the context and the current state as
         arguments. All hooks are optional. Default is None, which is equivalent to an
         empty list. Simple callable plugins are dispatched at the ``after_substep``
         hook. E.g., a backtracking line search is enabled by
-        ``Job(steps, plugins=[LinesearchPlugin()])``.
+        ``Job(steps, plugins=[LinesearchPlugin()])`` and failed substeps are subdivided
+        by ``Job(steps, plugins=[CutbackPlugin()])``.
     **kwargs : dict, optional
         Optional keyword-arguments for the ``callback`` function.
 
@@ -104,6 +106,7 @@ class Job:
     tools.NewtonResult : A data class which represents the result found by
         Newton's method.
     LinesearchPlugin : A backtracking line search for the Newton-Raphson method.
+    CutbackPlugin : A cutback of the increment of failed substeps.
 
     """
 

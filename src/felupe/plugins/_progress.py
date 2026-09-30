@@ -157,6 +157,28 @@ class ProgressPlugin(Plugin):
         if self.verbose == 2:
             print(f"Begin Evaluation of Step {state.stepnumber + 1}.")
 
+    def before_substep(self, context, state):
+        # clear the postfix of a subdivided substep (shown on the next refresh)
+        if self.verbose == 1 and self.progress_bar is not None:
+            self.progress_bar.set_postfix_str("", refresh=False)
+
+    def after_failed_substep(self, context, state):
+        # show the increments of a recovered (subdivided) substep, e.g. of a cutback
+        if state.result is None or not state.load_factors:
+            return
+
+        increments = len(state.load_factors)
+
+        if self.verbose == 1 and self.progress_bar is not None:
+            self.progress_bar.set_postfix_str(f"increments={increments}")
+
+        if self.verbose == 2:
+            load_factors = ", ".join(f"{t:.4g}" for t in state.load_factors)
+            print(
+                f"Substep {state.substepnumber + 1} recovered in {increments} "
+                f"increments (load factors {load_factors})."
+            )
+
     def before_newton(self, context, state):
 
         if self.in_job:

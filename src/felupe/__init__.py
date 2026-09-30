@@ -98,6 +98,7 @@ from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .plugins import (
     AnimationWriterPlugin,
     CharacteristicCurvePlugin,
+    CutbackPlugin,
     LinesearchPlugin,
     Plugin,
     ProgressPlugin,
@@ -299,6 +300,7 @@ __all__ = [
     "runs_on",
     "AnimationWriterPlugin",
     "CharacteristicCurvePlugin",
+    "CutbackPlugin",
     "LinesearchPlugin",
     "Plugin",
     "ProgressPlugin",

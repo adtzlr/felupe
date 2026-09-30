@@ -154,10 +154,6 @@ class AnimationWriterPlugin(Plugin):
             else:
                 raise TypeError('File extension must be either ".gif" or ".mp4".')
 
-    def after_iteration(self, context, state):
-        if state.error:
-            self._close_plotter()
-
     def after_substep(self, context, state):  # pragma: no cover
         self.plotter.clear_actors()  # pragma: no cover
 

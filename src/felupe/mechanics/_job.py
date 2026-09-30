@@ -24,12 +24,38 @@ from ..tools import Context, EventDispatcher
 
 
 class JobState:
-    "A class to keep track of the state of a Job during evaluation."
+    r"""A class to keep track of the state of a Job during evaluation.
 
-    def __init__(self, stepnumber=None, substepnumber=None, time=None):
+    Parameters
+    ----------
+    stepnumber : int or None, optional
+        The (zero-based) index of the step (default is None).
+    substepnumber : int or None, optional
+        The (zero-based) index of the substep within the step (default is None).
+    time : int or None, optional
+        The (zero-based) index of the substep within the job, e.g. the time of the
+        XDMF result file (default is None).
+    error : Exception or None, optional
+        The error which was raised during evaluation (default is None). In the hook
+        ``after_job``, this is the error which stopped the evaluation of the job.
+
+    Notes
+    -----
+    The hook ``after_job`` is also triggered if the evaluation of the job fails, e.g.
+    to close result files. Then, the error is available as ``state.error`` and it is
+    raised after all plugins are called.
+
+    See Also
+    --------
+    felupe.SubstepState : A class to keep track of the state of a substep during
+        evaluation.
+    """
+
+    def __init__(self, stepnumber=None, substepnumber=None, time=None, error=None):
         self.stepnumber = stepnumber
         self.substepnumber = substepnumber
         self.time = time
+        self.error = error
 
 
 class Job:
@@ -226,6 +252,26 @@ class Job:
         state = JobState()
         self.dispatcher.trigger("before_job", context, state)
 
+        # the hook "after_job" is also triggered on errors (e.g. to close files)
+        error = None
+
+        try:
+            self._evaluate_steps(parallel=parallel, **kwargs)
+
+        except BaseException as job_error:
+            error = job_error
+            raise
+
+        finally:
+            context = Context(job=self)
+            state = JobState(error=error)
+            self.dispatcher.trigger("after_job", context, state)
+
+        return self
+
+    def _evaluate_steps(self, parallel=False, **kwargs):
+        "Evaluate all steps of the job."
+
         if parallel:
             if "kwargs" not in kwargs.keys():
                 kwargs["kwargs"] = {}
@@ -244,19 +290,18 @@ class Job:
             state = JobState(stepnumber=j, time=time)
             self.dispatcher.trigger("before_step", context, state)
 
-            substeps = step.generate(dispatcher=self.dispatcher, **kwargs)
+            # the unknowns x0 are linked to the result of each completed substep
+            states = step.generate_states(
+                stepnumber=j, time=time, dispatcher=self.dispatcher, **kwargs
+            )
 
-            for i, substep in enumerate(substeps):
+            for state in states:
+                substep = state.result
                 self.fnorms.append(substep.fnorms)
 
-                self.callback(j, i, substep, **self.kwargs)
-
-                # update x0 after each completed substep
-                if "x0" in kwargs.keys():
-                    kwargs["x0"].link(substep.x)
+                self.callback(j, state.substepnumber, substep, **self.kwargs)
 
                 context = Context(job=self, step=step, substep=substep)
-                state = JobState(stepnumber=j, substepnumber=i, time=time)
                 self.dispatcher.trigger("after_substep", context, state)
 
                 self.timetrack.append(time)
@@ -265,9 +310,3 @@ class Job:
             context = Context(job=self, step=step)
             state = JobState(stepnumber=j, time=time)
             self.dispatcher.trigger("after_step", context, state)
-
-        context = Context(job=self)
-        state = JobState()
-        self.dispatcher.trigger("after_job", context, state)
-
-        return self

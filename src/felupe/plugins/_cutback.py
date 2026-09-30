@@ -90,8 +90,8 @@ class CutbackPlugin(Plugin):
     Notes
     -----
     The plugin requires a :class:`~felupe.Job` (or the hooks of
-    :meth:`~felupe.Step.generate`). Before each substep, a checkpoint of the unknowns
-    and of the (history-dependent) state of the items is created, see
+    :meth:`~felupe.Step.generate_states`). Before each substep, a checkpoint of the
+    unknowns and of the (history-dependent) state of the items is created, see
     :meth:`checkpoint`. If the Newton-Raphson method of a substep raises one of the
     given ``exceptions``, the checkpoint is restored and the substep is subdivided into
     increments with load factors :math:`t \in (0, 1]`, starting with the reduced
@@ -106,7 +106,8 @@ class CutbackPlugin(Plugin):
         \boldsymbol{v}(t) = \boldsymbol{v}_0 + t\ \left(
             \boldsymbol{v}_1 - \boldsymbol{v}_0 \right)
 
-    After a converged increment, a new checkpoint is created, the load factor is
+    After a converged increment, the unknowns are linked to its result by
+    ``context.solve()``, a new checkpoint is created, the load factor is
     increased :math:`t \leftarrow t + \Delta t` and the next increment is
     :math:`\Delta t \leftarrow \min(g\ \Delta t, 1 - t)`. After a failed attempt, the
     checkpoint of the last converged increment is restored and the increment is reduced,
@@ -410,8 +411,7 @@ class CutbackPlugin(Plugin):
                     self.restore(context, checkpoint)
                     break
 
-                # the increment has converged
-                context.x0.link(res.x)
+                # the increment has converged (the unknowns are linked to its result)
                 load_factors.append(t_new)
                 values_converged = values
                 t = t_new

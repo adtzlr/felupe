@@ -157,28 +157,6 @@ class ProgressPlugin(Plugin):
         if self.verbose == 2:
             print(f"Begin Evaluation of Step {state.stepnumber + 1}.")
 
-    def before_substep(self, context, state):
-        # clear the postfix of a subdivided substep (shown on the next refresh)
-        if self.verbose == 1 and self.progress_bar is not None:
-            self.progress_bar.set_postfix_str("", refresh=False)
-
-    def after_failed_substep(self, context, state):
-        # show the increments of a recovered (subdivided) substep, e.g. of a cutback
-        if state.result is None or not state.load_factors:
-            return
-
-        increments = len(state.load_factors)
-
-        if self.verbose == 1 and self.progress_bar is not None:
-            self.progress_bar.set_postfix_str(f"increments={increments}")
-
-        if self.verbose == 2:
-            load_factors = ", ".join(f"{t:.4g}" for t in state.load_factors)
-            print(
-                f"Substep {state.substepnumber + 1} recovered in {increments} "
-                f"increments (load factors {load_factors})."
-            )
-
     def before_newton(self, context, state):
 
         if self.in_job:
@@ -278,14 +256,26 @@ class ProgressPlugin(Plugin):
             )
 
     def after_substep(self, context, state):
+        # the load factors of the increments of a subdivided substep, e.g. of a cutback
+        load_factors = getattr(state, "load_factors", None)
+
         if self.verbose == 1:
+            postfix = f"increments={len(load_factors)}" if load_factors else ""
+            self.progress_bar.set_postfix_str(postfix, refresh=False)
             self.progress_bar.update(1)
 
         if self.verbose == 2:
             _substep = f"Substep {state.substepnumber + 1}/{context.step.nsubsteps}"
             _step = f"Step {state.stepnumber + 1}/{len(context.job.steps)}"
+            _increments = ""
 
-            print(f"{_substep} of {_step} successful.")
+            if load_factors:
+                factors = ", ".join(f"{t:.4g}" for t in load_factors)
+                _increments = (
+                    f" in {len(load_factors)} increments (load factors {factors})"
+                )
+
+            print(f"{_substep} of {_step} successful{_increments}.")
 
     def after_job(self, context, state):
         self.in_job = False

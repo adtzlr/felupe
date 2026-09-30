@@ -30,10 +30,10 @@ class Plugin:
     step or substep. In the hooks of the Newton-Raphson method, it holds the items, the
     degrees of freedom and the callables of :func:`~felupe.newtonraphson`. In the hooks
     of a substep, it holds the items, the unknowns and a callable to solve the substep
-    for given values of the ramp, see :meth:`~felupe.Step.generate`. `state` depends on
-    the method and can be used to access the current state, i.e.
-    :class:`~felupe.JobState`, :class:`~felupe.SubstepState` or
-    :class:`~felupe.IterationState`.
+    for given values of the ramp, see :meth:`~felupe.Step.generate_states`. `state`
+    depends on the method and can be used to access the current state, i.e.
+    :class:`~felupe.JobState`, :class:`~felupe.SubstepState` (in the hooks of a
+    substep, including ``after_substep``) or :class:`~felupe.IterationState`.
 
     The hooks are called in the following order during the evaluation of a
     :class:`~felupe.Job`. The hook ``after_failed_substep`` is only called if the
@@ -210,14 +210,18 @@ class Plugin:
         pass
 
     def after_substep(self, context, state):
-        """This method is called after a substep.
+        """This method is called after a completed substep.
 
         Parameters
         ----------
         context : felupe.Context
-            The context object.
-        state : felupe.JobState
-            The state of the job.
+            The context object with the job, the step and the result of the substep
+            ``context.substep``.
+        state : felupe.SubstepState
+            The state of the substep (the same object as in the hooks
+            ``before_substep`` and ``after_failed_substep``), which is also a
+            :class:`~felupe.JobState` with the step number, the substep number and the
+            time.
 
         """
         pass
@@ -236,7 +240,9 @@ class Plugin:
         pass
 
     def after_job(self, context, state):
-        """This method is called after the evaluation of a job.
+        """This method is called after the evaluation of a job, also if the evaluation
+        failed (e.g. to close result files). Then, the error is available as
+        ``state.error`` and it is raised after all plugins are called.
 
         Parameters
         ----------

@@ -25,6 +25,11 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import contextlib
+import os
+import pathlib
+import tempfile
+
 import numpy as np
 import pytest
 
@@ -226,8 +231,21 @@ def test_step_hooks():
     assert context.x0 is field
     assert callable(context.solve)
     assert isinstance(state, fem.SubstepState)
+    assert isinstance(state, fem.JobState)
+    assert state.stepnumber == 0
     assert state.substepnumber == 2
+    assert state.time == 2
     assert state.values == {move: ramp[2]}
+
+    # one state per substep, which is passed to all hooks of the substep
+    for substep in range(3):
+        hooks = recorder.hooks[4 * substep :]
+        states = recorder.states[4 * substep :]
+        before = states[hooks.index("before_substep")][1]
+        after = states[hooks.index("after_substep")][1]
+        assert after is before
+        assert after.substepnumber == after.time == substep
+        assert after.result.success
 
     context, state = recorder.states[12]
     assert state.error is failing.raised[0]
@@ -287,6 +305,31 @@ def test_step_generate_without_dispatcher():
     results = list(step.generate(x0=field, verbose=0))
     assert len(results) == 3
     assert all(res.success for res in results)
+
+    states = list(step.generate_states(x0=field, verbose=0, stepnumber=4, time=7))
+    assert [state.substepnumber for state in states] == [0, 1, 2]
+    assert [state.time for state in states] == [7, 8, 9]
+    assert all(state.stepnumber == 4 for state in states)
+
+    # the unknowns are linked to the results, also for a top-level field container
+    # which is not the field container of an item
+    mesh_1 = fem.Cube(a=(0, 0, 0), b=(1, 1, 1), n=3)
+    mesh_2 = fem.Cube(a=(1, 0, 0), b=(2, 1, 1), n=3)
+    field_1 = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh_1), dim=3)])
+    field_2 = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh_2), dim=3)])
+    x0 = fem.field.merge([field_1, field_2])
+    solids = [
+        fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=5.0), field_1),
+        fem.SolidBody(fem.NeoHooke(mu=3.0, bulk=5.0), field_2),
+    ]
+    boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
+    step = fem.Step(
+        items=solids, ramp={boundaries["move"]: ramp}, boundaries=boundaries
+    )
+    for res in step.generate(x0=x0, verbose=0):
+        assert x0[0].values is res.x[0].values
+
+    assert np.all(x0[0].values[boundaries["move"].points, 0] == 0.2)
 
     # errors are raised
     step = fem.Step(
@@ -978,9 +1021,56 @@ def test_cutback_merged_fields():
     assert solid.field.x0 is field
     assert cutback.load_factors[-1] == [0.25, 0.5, 0.75, 1.0]
 
+    # the top-level field container holds the prescribed displacement of the end face
+    assert np.isclose(field[0].values[:, 0].max(), 1.0)
+
     field_ref, _, history_ref = evaluate(refine(ramp, cutback.load_factors))
     assert_same_history(history, history_ref)
     assert np.allclose(field[0].values, field_ref[0].values, rtol=1e-12, atol=1e-14)
+
+
+@contextlib.contextmanager
+def working_directory(path):
+    "Change the working directory (meshio writes the h5-file relative to it)."
+    cwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(cwd)
+
+
+def test_cutback_xdmf(tmp_path):
+    """A result file is written for all substeps, if the Newton-Raphson method of a
+    substep reaches the maximum number of iterations and the substep is recovered."""
+
+    meshio = pytest.importorskip("meshio")
+    pytest.importorskip("h5py")
+
+    field, boundaries, solid = cube()
+    ramp = np.array([0.0, 1.0, 1.2])
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: ramp}, boundaries=boundaries
+    )
+    cutback = fem.CutbackPlugin()
+    job = fem.Job(steps=[step], plugins=[cutback])
+
+    with working_directory(tmp_path):
+        job.evaluate(verbose=0, filename="result.xdmf", maxiter=4)
+
+        with meshio.xdmf.TimeSeriesReader("result.xdmf") as reader:
+            reader.read_points_cells()
+            num_steps = reader.num_steps
+            data = [reader.read_data(k) for k in range(num_steps)]
+
+    assert max(cutback.cutbacks) > 0
+    assert job.timetrack == [0, 1, 2]
+    assert num_steps == 3
+    assert [time for time, point_data, cell_data in data] == [0, 1, 2]
+    point_data = data[-1][1]
+
+    # the displacements of the last substep
+    assert np.allclose(point_data["Displacement"], field[0].values)
 
 
 def test_cutback_characteristic_curve():
@@ -1017,7 +1107,11 @@ def test_cutback_verbose(capsys):
     job.evaluate(verbose=2)
 
     out = capsys.readouterr().out
-    assert "Substep 2 recovered in 2 increments (load factors 0.5, 1)." in out
+    assert "Substep 1/2 of Step 1/1 successful.\n" in out
+    assert (
+        "Substep 2/2 of Step 1/1 successful in 2 increments (load factors 0.5, 1)."
+        in out
+    )
 
     # progress bar with a postfix
     failing = FailingNewton(calls=[1])
@@ -1067,5 +1161,7 @@ if __name__ == "__main__":
     test_cutback_linesearch()
     test_cutback_thermal()
     test_cutback_contact_friction()
+    with tempfile.TemporaryDirectory() as tmp:
+        test_cutback_xdmf(tmp_path=pathlib.Path(tmp))
     test_cutback_characteristic_curve()
     test_cutback_invalid_parameters()

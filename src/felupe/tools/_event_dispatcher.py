@@ -48,7 +48,7 @@ class Context:
     items : list or None, optional
         The list of items of the Newton-Raphson method or of a step (default is None).
         Only available in the hooks of :func:`~felupe.newtonraphson` and in the hooks
-        of a substep, see :meth:`~felupe.Step.generate`.
+        of a substep, see :meth:`~felupe.Step.generate_states`.
     dof1 : ndarray or None, optional
         The active degrees of freedom of the Newton-Raphson method (default is None).
         Only available in the hooks of :func:`~felupe.newtonraphson`.
@@ -79,15 +79,16 @@ class Context:
     x0 : felupe.FieldContainer or None, optional
         The field container with the unknowns of a step, which is the starting point
         of the Newton-Raphson method of a substep (default is None). Only available in
-        the hooks of a substep, see :meth:`~felupe.Step.generate`.
+        the hooks of a substep, see :meth:`~felupe.Step.generate_states`.
     solve : callable or None, optional
         A callable ``res = solve(values)`` which updates the ramped items (and
         boundaries) of a step with a dict of ``values``, updates the load case and
         evaluates the Newton-Raphson method, starting from the unknowns ``x0``. It
         returns a :class:`~felupe.tools.NewtonResult` and errors of the Newton-Raphson
-        method are raised. The unknowns ``x0`` are not linked to the result. Default
-        is None. Only available in the hooks of a substep, see
-        :meth:`~felupe.Step.generate`.
+        method are raised. On success, the unknowns ``x0`` are linked to the result,
+        i.e. the result is the starting point of the next evaluation. Default is None.
+        Only available in the hooks of a substep, see
+        :meth:`~felupe.Step.generate_states`.
 
     See Also
     --------

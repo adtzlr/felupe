@@ -27,8 +27,10 @@ class Plugin:
     a plugin to access and / or modify a simulation as needed.
 
     The :class:`~felupe.Context` object holds information about the current job,
-    step or substep. `state` depends on the method and can be used to access the
-    current state, i.e. :class:`~felupe.JobState` or :class:`~felupe.IterationState`.
+    step or substep. In the hooks of the Newton-Raphson method, it holds the items, the
+    degrees of freedom and the callables of :func:`~felupe.newtonraphson`. `state`
+    depends on the method and can be used to access the current state, i.e.
+    :class:`~felupe.JobState` or :class:`~felupe.IterationState`.
 
     ..  note::
 
@@ -41,6 +43,7 @@ class Plugin:
     felupe.Context : A class to keep track of the context of a Job during evaluation.
     felupe.JobState : A class to keep track of the state of a Job during evaluation.
     felupe.IterationState : A class to keep track of the state of an iteration.
+    felupe.LinesearchPlugin : A backtracking line search for the Newton-Raphson method.
     """
 
     def before_job(self, context, state):
@@ -111,7 +114,8 @@ class Plugin:
 
     def after_linear_solve(self, context, state):
         """This method is called after the linear solver inside a Newton-Raphson
-        iteration.
+        iteration. A plugin may modify the update of the unknowns in this hook, see
+        :class:`~felupe.IterationState`.
 
         Parameters
         ----------
@@ -156,8 +160,8 @@ class Plugin:
         ----------
         context : felupe.Context
             The context object.
-        state : felupe.IterationState
-            The state of the iteration.
+        state : felupe.JobState
+            The state of the job.
 
         """
         pass

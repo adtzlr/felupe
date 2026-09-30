@@ -43,7 +43,7 @@ Tools
 
 .. autofunction:: felupe.newtonraphson
 
-.. autofunction:: felupe.tools.IterationState
+.. autoclass:: felupe.tools.IterationState
    :members:
 
 .. autoclass:: felupe.tools.NewtonResult

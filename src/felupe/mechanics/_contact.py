@@ -407,6 +407,55 @@ class ContactRigidPlane(ContactPlane):
         # and center-point (initial gap vectors)
         self.dX = self.mesh.points[self.points] - self.mesh.points[self.centerpoint]
 
+    def checkpoint(self):
+        """Return a checkpoint of the state of the contact.
+
+        Returns
+        -------
+        dict
+            A dict with copies of the reference gap vectors of the tangential
+            (frictional) contact, the mask of active contact points and the mask of
+            sliding contact points.
+
+        Notes
+        -----
+        The state of the contact is updated in each evaluation of the residuals. The
+        field is not included in the checkpoint, see e.g.
+        :meth:`SolidBody.checkpoint() <felupe.SolidBody.checkpoint>`.
+
+        See Also
+        --------
+        felupe.ContactRigidPlane.restore : Restore a checkpoint of the contact.
+        felupe.CutbackPlugin : A cutback of the increment of failed substeps.
+        """
+
+        return {
+            "results.dx_ref": self.results.dx_ref.copy(),
+            "results.active": self.results.active.copy(),
+            "results.slip": self.results.slip.copy(),
+        }
+
+    def restore(self, checkpoint):
+        """Restore a checkpoint of the state of the contact inplace.
+
+        Parameters
+        ----------
+        checkpoint : dict
+            A dict with checkpoint arrays.
+
+        See Also
+        --------
+        felupe.ContactRigidPlane.checkpoint : Return a checkpoint of the contact.
+        """
+
+        self.results.dx_ref = checkpoint["results.dx_ref"].copy()
+        self.results.active = checkpoint["results.active"].copy()
+        self.results.slip = checkpoint["results.slip"].copy()
+
+        # reset force and stiffness
+        self.results.force = None
+        self.results.stiffness = None
+
     def contact_multipliers(self, contact):
 
         # init base multipliers

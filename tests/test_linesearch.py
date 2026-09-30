@@ -29,7 +29,7 @@ import numpy as np
 import pytest
 
 import felupe as fem
-from felupe.plugins._linesearch import deformation_gradients
+from felupe.plugins._linesearch import _is_deformation_gradient, deformation_gradients
 
 
 def easy(umat=None):
@@ -466,6 +466,61 @@ def test_linesearch_trial():
     assert len(Fs) == 1
     assert deformation_gradients(np.zeros(3)) == []
 
+    # a scalar-valued field has no deformation gradient
+    temperature = fem.FieldContainer([fem.Field(field.region, dim=1)])
+    assert deformation_gradients(temperature) == []
+
+    # values of a first field without gradient (dim=3, three quadrature points)
+    assert not _is_deformation_gradient(np.ones((3, 3, 8)))
+    assert _is_deformation_gradient(np.ones((3, 3, 3, 8)))
+
+
+def test_linesearch_without_items():
+    "A system of equations without items and without degrees of freedom."
+
+    def fun(x):
+        return x**3 - 8.0
+
+    def jac(x):
+        return np.diag(3 * x**2)
+
+    def solve(A, b):
+        return np.linalg.solve(A, b)
+
+    x0 = np.array([0.1, 5.0, 20.0])
+    kwargs = dict(x0=x0, fun=fun, jac=jac, solve=solve, verbose=0, maxiter=100)
+
+    ref = fem.newtonraphson(**kwargs)
+
+    linesearch = fem.LinesearchPlugin()
+    res = fem.newtonraphson(**kwargs, plugins=[linesearch])
+
+    assert res.success
+    assert np.allclose(res.x, 2.0)
+    assert res.iterations < ref.iterations
+    assert min(linesearch.alphas[-1]) < 1
+    assert np.allclose(x0, [0.1, 5.0, 20.0])
+
+
+@pytest.mark.filterwarnings("ignore:Matrix is exactly singular")
+def test_linesearch_finite_residuals():
+    "Trials with non-finite residuals are rejected, even without any criteria."
+
+    field, solid, loadcase = hard()
+    linesearch = fem.LinesearchPlugin(admissible=False, residual=False)
+    assert linesearch.criteria == []
+
+    with np.errstate(all="ignore"):
+        res = fem.newtonraphson(
+            items=[solid], verbose=0, plugins=[linesearch], **loadcase
+        )
+
+    assert res.success
+    assert np.all(np.isfinite(res.fun))
+
+    # a reduced step length is only possible by non-finite residuals
+    assert min(linesearch.alphas[-1]) < 1
+
 
 def test_linesearch_without_newton_context():
     "The line search requires the context and the state of Newton's method."
@@ -489,4 +544,6 @@ if __name__ == "__main__":
     test_linesearch_items_without_deformation_gradient()
     test_linesearch_pressure()
     test_linesearch_trial()
+    test_linesearch_without_items()
+    test_linesearch_finite_residuals()
     test_linesearch_without_newton_context()

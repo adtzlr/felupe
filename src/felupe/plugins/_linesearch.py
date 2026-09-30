@@ -23,47 +23,20 @@ from ..tools._newton import _restore, _snapshot
 from ._plugin import Plugin
 
 
-def _flatten(dx):
-    "Return a flat 1d-array of a (list of) array(s)."
-    if isinstance(dx, (list, tuple)):
-        return np.concatenate([np.ravel(d) for d in dx])
-    return np.ravel(dx)
-
-
-def _scale(dx, alpha):
-    "Scale a (list of) array(s) by a step length. Returns ``dx`` itself for alpha=1."
-    if alpha == 1.0:
-        return dx
-    if isinstance(dx, (list, tuple)):
-        return [alpha * d for d in dx]
-    return alpha * dx
-
-
-def _first_gradient_flag(grad):
-    "Return the gradient-flag of the first field for a given ``grad``-argument."
-    if grad is None:
-        return True
-    if isinstance(grad, (list, tuple)):
-        return bool(grad[0]) if len(grad) > 0 else True
-    return bool(grad)
-
-
-def _is_square_tensor(A):
-    "Check if an array is a batch of (2, 2) or (3, 3) second-order tensors."
+def _is_deformation_gradient(A):
+    """Check if an array is a batch of (2, 2) or (3, 3) second-order tensors at the
+    quadrature points of all cells, i.e. an array with the shape ``(i, j, q, c)``."""
     return (
         isinstance(A, np.ndarray)
-        and A.ndim > 2
+        and A.ndim == 4
         and A.shape[0] == A.shape[1]
         and A.shape[0] in (2, 3)
     )
 
 
-def _first_extracted_field(field):
-    "Return the first extracted field of a field container."
-    fields = field.extracted_fields
-    if callable(fields):
-        fields = fields()
-    return fields[0]
+def _deformation_gradient(field):
+    "Return the deformation gradient of the first extracted field of a container."
+    return field.extracted_fields()[0].extract(grad=True, sym=False, add_identity=True)
 
 
 def deformation_gradients(x, items=None):
@@ -88,53 +61,34 @@ def deformation_gradients(x, items=None):
     The fields of the items are linked to the unknowns ``x``. The deformation gradient
     of an item is evaluated by the first extracted field of the item's field container
     (in the same way as the kinematics of the item), without modifying the results of
-    the item. Only items whose first kinematic quantity is a second-order tensor (with
-    a gradient-flag of the first field, if given) are considered. This includes
-    plane-strain, axisymmetric and mixed-field formulations. Items without a
-    deformation gradient, e.g. trusses, point loads or multi-point constraints, are
-    skipped.
+    the item. Only items whose first kinematic quantity is a second-order tensor at the
+    quadrature points of all cells are considered. This includes plane-strain,
+    axisymmetric and mixed-field formulations. Items without a deformation gradient,
+    e.g. trusses, point loads or multi-point constraints, are skipped.
     """
 
     Fs = []
 
     if items is None:
         if hasattr(x, "extracted_fields"):
-            F = _first_extracted_field(x).extract(
-                grad=True, sym=False, add_identity=True
-            )
-            if _is_square_tensor(F):
+            F = _deformation_gradient(x)
+            if _is_deformation_gradient(F):
                 Fs.append(F)
         return Fs
 
     for item in items:
-        field = getattr(item, "field", None)
-        results = getattr(item, "results", None)
-        kinematics = getattr(results, "kinematics", None)
-
-        if field is None or kinematics is None or not hasattr(field, "link"):
-            continue
+        kinematics = getattr(getattr(item, "results", None), "kinematics", None)
 
         if isinstance(kinematics, (list, tuple)):
-            if len(kinematics) == 0:
-                continue
             kinematics = kinematics[0]
 
-        if not _is_square_tensor(kinematics):
+        # the first kinematic quantity of an item without a gradient of its first
+        # field has the shape (dim, q, c)
+        if not _is_deformation_gradient(kinematics):
             continue
 
-        if not _first_gradient_flag(getattr(item, "grad", None)):
-            continue
-
-        if not hasattr(field, "extracted_fields"):
-            continue
-
-        field.link(x)
-        F = _first_extracted_field(field).extract(
-            grad=True, sym=False, add_identity=True
-        )
-
-        if _is_square_tensor(F):
-            Fs.append(F)
+        item.field.link(x)
+        Fs.append(_deformation_gradient(item.field))
 
     return Fs
 
@@ -415,9 +369,8 @@ class LinesearchPlugin(Plugin):
         of freedom decreases sufficiently, see Eqs. :eq:`linesearch-residual` and
         :eq:`linesearch-residual-effective`."""
 
-        if not trial.finite:
-            return False
-
+        # non-finite residuals are rejected: `converged` is False and the comparison of
+        # non-finite norms is False
         if trial.converged:
             return True
 
@@ -445,7 +398,7 @@ class LinesearchPlugin(Plugin):
         if jac is None or dof0 is None or dof1 is None:
             return None
 
-        dxflat = _flatten(dx)
+        dxflat = np.ravel(dx)
         dx0 = np.zeros_like(dxflat)
         dx0[dof0] = dxflat[dof0]
 
@@ -485,7 +438,7 @@ class LinesearchPlugin(Plugin):
             # the unknowns may be linked to a rejected trial (via the items)
             _restore(x, snapshot)
 
-            dx_trial = _scale(dx, alpha)
+            dx_trial = alpha * dx
             x_trial = context.update(x, dx_trial)
 
             if x_trial is x:
@@ -521,9 +474,6 @@ class LinesearchPlugin(Plugin):
                     state.alpha = alpha
                     state.updated = True
 
-                    if len(self.alphas) == 0:  # `before_newton` was not called
-                        self.alphas.append([])
-
                     self.alphas[-1].append(alpha)
                     return
 
@@ -535,19 +485,13 @@ class LinesearchPlugin(Plugin):
         # iteration (e.g. for a subsequent cutback)
         _restore(x, snapshot)
 
-        if context.items is not None and hasattr(x, "fields"):
-            for item in context.items:
-                field = getattr(item, "field", None)
-                if field is not None and hasattr(field, "link"):
-                    field.link(x)
-
-        where = ""
-        if state.iteration is not None:
-            where = f" in Newton iteration {1 + state.iteration}"
+        for item in context.items or []:
+            item.field.link(x)
 
         raise ValueError(
             "Line search failed: no acceptable step length found after "
-            f"{self.max_halvings} halvings{where} (smallest step length "
+            f"{self.max_halvings} halvings in Newton iteration {1 + state.iteration} "
+            f"(smallest step length "
             f"{2.0 ** -self.max_halvings:1.3e}, last trial rejected by "
             f"`{rejected_by}`)."
         )

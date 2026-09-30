@@ -570,8 +570,8 @@ def newtonraphson(
     >>>
     >>> region = fem.RegionHexahedron(fem.Cube(n=6))
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-    >>> boundaries = fem.dof.uniaxial(
-    ...     field, move=0.2, clamped=True, return_loadcase=False
+    >>> boundaries, loadcase = fem.dof.uniaxial(
+    ...     field, move=0.2, clamped=True, return_loadcase=True
     ... )
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
     >>> res = fem.newtonraphson(items=[solid], **loadcase)  # doctest: +ELLIPSIS

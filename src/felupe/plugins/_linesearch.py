@@ -270,6 +270,26 @@ class LinesearchPlugin(Plugin):
     called with the scaled increment, ``update(x_n, alpha * dx)``, and must return a
     new object. The scaled increment is passed to ``check`` and ``callback``.
 
+    ..  note::
+
+        The line search is not optimal for a
+        :class:`~felupe.SolidBodyNearlyIncompressible`. Its internal fields, the
+        pressure and the volume ratio, are statically condensed and updated by the full
+        Newton increment in each evaluation. They are neither scaled by the step length
+        nor included in the assembled residuals (they cancel out), but they are included
+        in the tangent stiffness matrix. Hence, the Newton increment of this three-field
+        formulation does not match the residual criterion of the line search, which may
+        fail for large load increments. The admissibility criterion is not affected. For
+        a line search with (nearly) incompressible materials, a mixed-field formulation
+        with the pressure and the volume ratio as fields of the field container is
+        recommended. Then, all fields are scaled by the step length and all residuals
+        are checked.
+
+        ..  code-block:: python
+
+            field = fem.FieldsMixed(region, n=3)
+            solid = fem.SolidBody(fem.ThreeFieldVariation(umat), field)
+
     Examples
     --------
     A coarse cube is compressed by 70% in a single step. Without a line search, the
@@ -318,6 +338,8 @@ class LinesearchPlugin(Plugin):
         method.
     felupe.plugins.LinesearchTrial : A trial of a line search.
     felupe.tools.IterationState : A class to keep track of the state of an iteration.
+    felupe.ThreeFieldVariation : Hu-Washizu hydrostatic-volumetric selective
+        three-field variation.
     """
 
     # note: a plugin must not be callable, otherwise it is dispatched as simple

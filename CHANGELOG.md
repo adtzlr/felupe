@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 - `newtonraphson()` creates one `IterationState` which is updated in-place during all iterations. Before, a new state was created after each iteration and the hooks `before_newton` and `before_iteration` got an empty state or the state of the previous iteration. The `before_newton` hook is now triggered after the unknowns are determined and before the initial assembly of the objective function.
 - The check for NaN values in the Newton increment is now performed before the `after_linear_solve` hook is triggered.
+- Copy `StateNearlyIncompressible.u` from `field[0].values`, instead of using it directly.
 
 ### Fixed
 - Fix the assembly of bilinear forms with plane-strain fields and additional vector-valued fields in `IntegralFormCartesian`. Only the axes of two-dimensional fields are trimmed, e.g. a coupling block of shape `(3, 3, 9)` is now trimmed to `(2, 2, 9)` instead of `(2, 2, 2)`.

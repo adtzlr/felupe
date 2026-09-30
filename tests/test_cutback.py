@@ -253,6 +253,30 @@ def test_step_hooks():
     assert recorder.states[-1][1].error is failing.raised[0]
 
 
+def test_step_unsuccessful_result():
+    """A plugin may hand back an unsuccessful result of a failed substep. Then, the
+    generation of the substeps of the step is stopped (without an error)."""
+
+    class GiveUp(fem.Plugin):
+        def after_failed_substep(self, context, state):
+            state.result = fem.tools.NewtonResult(x=context.x0, success=False)
+
+    field, boundaries, solid = cube()
+    ramp = fem.math.linsteps([0, 0.2, 0.4], num=1)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: ramp}, boundaries=boundaries
+    )
+    failing = FailingNewton(calls=[1])
+    recorder = Recorder()
+    job = fem.Job(steps=[step], plugins=[failing, GiveUp(), recorder])
+    job.evaluate(verbose=0)
+
+    # only the first substep is completed, the third substep is not evaluated
+    assert len(job.fnorms) == 1
+    assert recorder.hooks.count("before_substep") == 2
+    assert recorder.hooks.count("after_substep") == 1
+
+
 def test_step_generate_without_dispatcher():
     field, boundaries, solid = cube()
     ramp = fem.math.linsteps([0, 0.2], num=2)
@@ -541,6 +565,65 @@ def test_cutback_exceptions():
 
     assert cutback.exceptions == (TypeError,)
     assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+
+
+def test_cutback_recovered_by_other_plugin():
+    """A substep which is already recovered by a previous plugin is not modified by
+    the cutback. Its values of the ramp are used for a later cutback."""
+
+    class RetryOnce(fem.Plugin):
+        "Recover the first failed substep by a second evaluation."
+
+        def __init__(self):
+            self.results = []
+
+        def after_failed_substep(self, context, state):
+            if len(self.results) == 0:
+                state.result = context.solve(state.values)
+                self.results.append(state.result)
+
+    ramp = fem.math.linsteps([0, 0.2, 0.4], num=1)
+    retry = RetryOnce()
+    cutback = fem.CutbackPlugin()
+
+    # count the restores of the cutback
+    restores = []
+    restore = cutback.restore
+
+    def spy(context, checkpoint):
+        restores.append(checkpoint)
+        return restore(context, checkpoint)
+
+    cutback.restore = spy
+
+    # the second substep is recovered by the first plugin, the third substep (the
+    # fourth evaluation of the Newton-Raphson method) by the cutback
+    failing = FailingNewton(calls=[1, 3])
+    recorder = Recorder()
+    field, solid, job = run(ramp, plugins=[failing, retry, cutback, recorder])
+
+    assert len(failing.raised) == 2
+    assert len(retry.results) == 1
+
+    # the result of the first plugin is used for the second substep
+    failed = [
+        state
+        for hook, (context, state) in zip(recorder.hooks, recorder.states)
+        if hook == "after_failed_substep"
+    ]
+    assert failed[0].substepnumber == 1
+    assert failed[0].result is retry.results[0]
+    assert failed[0].load_factors is None
+    assert failed[1].substepnumber == 2
+    assert failed[1].load_factors == [0.5, 1.0]
+
+    # the second substep is neither restored nor subdivided by the cutback
+    assert len(restores) == 1
+    assert cutback.load_factors == [[1.0], [1.0], [0.5, 1.0]]
+    assert cutback.cutbacks == [0, 0, 1]
+
+    reference, _, _ = run(refine(ramp, cutback.load_factors))
+    assert np.allclose(field[0].values, reference[0].values)
 
 
 def test_cutback_unknown_values():
@@ -967,6 +1050,7 @@ def test_cutback_invalid_parameters():
 if __name__ == "__main__":
     test_interpolate()
     test_step_hooks()
+    test_step_unsuccessful_result()
     test_step_generate_without_dispatcher()
     test_cutback_divergence()
     test_cutback_statevars(nearly_incompressible=False)
@@ -977,6 +1061,7 @@ if __name__ == "__main__":
     test_cutback_growth_and_factor()
     test_cutback_max_cutbacks()
     test_cutback_exceptions()
+    test_cutback_recovered_by_other_plugin()
     test_cutback_unknown_values()
     test_cutback_multiple_steps_and_jobs()
     test_cutback_linesearch()

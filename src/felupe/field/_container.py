@@ -22,7 +22,9 @@ import numpy as np
 
 from ..math import rotate_points
 from ..mesh import MeshContainer
+from ..mesh._discrete_geometry import DiscreteGeometry
 from ..region import (
+    Region,
     RegionBiQuadraticQuad,
     RegionHexahedron,
     RegionQuad,
@@ -31,7 +33,67 @@ from ..region import (
 )
 from ..view import ViewField
 from ._evaluate import EvaluateFieldContainer
+from ._indices import Indices
 from ._merge import merge
+
+# objects which are shared by a checkpoint of a field container (they are not modified
+# during the evaluation of a job)
+SHARED_BY_CHECKPOINT = (Region, DiscreteGeometry, MeshContainer, Indices)
+
+
+def shared_geometry_memo(*objects):
+    """Return a memo for :func:`copy.deepcopy`, which shares the regions, meshes, mesh
+    containers and indices of the given objects (e.g. field containers).
+
+    Parameters
+    ----------
+    *objects : object
+        The objects, e.g. field containers, which are searched for regions, meshes, mesh
+        containers and indices.
+
+    Returns
+    -------
+    dict
+        A memo for :func:`copy.deepcopy`, where the shared objects are mapped to
+        themselves.
+
+    Notes
+    -----
+    The attributes of FElupe objects (e.g. field containers, fields and their helpers)
+    as well as lists, tuples and dicts are searched recursively. Shared objects are not
+    searched. Other objects, e.g. user-defined attributes of other packages, are not
+    searched and they are copied by :func:`copy.deepcopy` as usual.
+    """
+
+    memo = {}
+    visited = set()
+    stack = list(objects)
+
+    while stack:
+        obj = stack.pop()
+
+        if id(obj) in visited:
+            continue
+
+        visited.add(id(obj))
+
+        if isinstance(obj, SHARED_BY_CHECKPOINT):
+            memo[id(obj)] = obj
+
+        elif isinstance(obj, (list, tuple)):
+            stack.extend(obj)
+
+        elif isinstance(obj, dict):
+            stack.extend(obj.values())
+
+        elif (
+            not isinstance(obj, type)
+            and type(obj).__module__.startswith("felupe")
+            and hasattr(obj, "__dict__")
+        ):
+            stack.extend(vars(obj).values())
+
+    return memo
 
 
 class FieldContainer:
@@ -283,18 +345,35 @@ class FieldContainer:
         Returns
         -------
         dict
-            A dict with the checkpoint array.
+            A dict with a copy of the field container ``"field"`` and, if available, a
+            copy of the top-level field container ``"field.x0"``.
+
+        Notes
+        -----
+        The field containers, their fields and the values of the fields are copied.
+        The regions, meshes, mesh containers and indices of the fields are not copied,
+        i.e. they are shared with the field container. These are not modified during
+        the evaluation of a job. Changes of the region or the mesh after a checkpoint
+        is created (e.g. by :func:`~felupe.field.merge`) are also visible in the copied
+        field container of the checkpoint, but they do not affect
+        :meth:`~felupe.FieldContainer.restore`, which only restores the values of the
+        fields. The copied field container of the checkpoint holds the copied
+        top-level field container ``"field.x0"`` as attribute ``x0``.
 
         See Also
         --------
         felupe.FieldContainer.restore : Restore a checkpoint of a field container
             inplace.
         """
-        state = {"field": self.copy()}
+
+        # share the regions, meshes, mesh containers and indices, copy the values
+        memo = shared_geometry_memo(self)
+        state = {"field": deepcopy(self, memo)}
 
         x0 = getattr(self, "x0", None)
         if x0 is not None:
-            state["field.x0"] = self.x0.copy()
+            # the copied field container holds the same copy of x0
+            state["field.x0"] = deepcopy(x0, memo)
 
         return state
 

@@ -26,6 +26,7 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import contextlib
+import io
 import os
 import pathlib
 import tempfile
@@ -307,6 +308,75 @@ def test_job_after_job_on_error(tmp_path):
     assert recorder.states[0].error is None
 
 
+def test_job_repeated_evaluate(tmp_path):
+    """Repeated evaluations of a job don't register the plugins multiple times, see
+    https://github.com/adtzlr/felupe/issues/1124."""
+
+    pytest.importorskip("meshio")
+    pytest.importorskip("h5py")
+
+    class Recorder(fem.Plugin):
+        def __init__(self):
+            self.hooks = []
+
+        def before_job(self, context, state):
+            self.hooks.append("before_job")
+
+        def after_substep(self, context, state):
+            self.hooks.append("after_substep")
+
+        def after_job(self, context, state):
+            self.hooks.append("after_job")
+
+    region = fem.RegionHexahedron(fem.Cube(n=2))
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
+    move = fem.math.linsteps([0, 0.1], num=2)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+
+    recorder = Recorder()
+    substeps = []
+    plugins = [recorder, lambda context, state: substeps.append(state.substepnumber)]
+    job = fem.Job(steps=[step], plugins=plugins)
+
+    hooks = ["before_job", *["after_substep"] * step.nsubsteps, "after_job"]
+
+    for _ in range(3):
+        recorder.hooks.clear()
+        substeps.clear()
+
+        with contextlib.redirect_stdout(io.StringIO()) as stdout:
+            job.evaluate(verbose=2)
+
+        # the plugins of the job are called once per hook in each evaluation
+        assert recorder.hooks == hooks
+        assert substeps == list(range(step.nsubsteps))
+
+        # the built-in progress plugin is not added to the dispatcher of the job
+        assert job.dispatcher.plugins == plugins
+
+        # one header is printed by one progress plugin in each evaluation
+        assert stdout.getvalue().count("Run Job") == 1
+
+    with working_directory(tmp_path):
+        job.evaluate(filename="first.xdmf", verbose=0)
+        assert (tmp_path / "first.xdmf").exists()
+
+        for path in tmp_path.iterdir():
+            path.unlink()
+
+        # the writer of the first result file is not re-used (the file is not
+        # overwritten by the second evaluation)
+        job.evaluate(filename="second.xdmf", verbose=0)
+
+    assert (tmp_path / "second.xdmf").exists()
+    assert not (tmp_path / "first.xdmf").exists()
+    assert job.dispatcher.plugins == plugins
+
+
 if __name__ == "__main__":
     test_job()
     test_job_xdmf()
@@ -320,3 +390,6 @@ if __name__ == "__main__":
 
     with tempfile.TemporaryDirectory() as tmp:
         test_job_after_job_on_error(tmp_path=pathlib.Path(tmp))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        test_job_repeated_evaluate(tmp_path=pathlib.Path(tmp))

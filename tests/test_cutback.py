@@ -43,7 +43,7 @@ class FailingNewton(fem.Plugin):
     For ``iteration > 0``, the items are already evaluated for the updated unknowns of
     the previous iterations, i.e. their states are modified by the failed attempt."""
 
-    def __init__(self, calls, iteration=1, error=ValueError):
+    def __init__(self, calls, iteration=1, error=fem.NewtonConvergenceError):
         self.calls = set(calls)
         self.iteration = iteration
         self.error = error
@@ -346,7 +346,7 @@ def test_cutback_divergence():
 
     ramp = fem.math.linsteps([0, -0.7], num=1)
 
-    with pytest.raises(ValueError, match="NaN"):
+    with pytest.raises(fem.NewtonConvergenceError, match="NaN"):
         with np.errstate(all="ignore"):
             run(ramp)
 
@@ -543,7 +543,9 @@ def test_cutback_max_cutbacks():
     cutback = fem.CutbackPlugin(max_cutbacks=2)
     failing = FailingNewton(calls=range(1, 10), iteration=1)
 
-    with pytest.raises(ValueError, match="smallest increment 2.500e-01") as excinfo:
+    with pytest.raises(
+        fem.NewtonConvergenceError, match="smallest increment 2.500e-01"
+    ) as excinfo:
         run(ramp, plugins=[failing, cutback])
 
     assert "after 2 cutbacks" in str(excinfo.value)
@@ -597,6 +599,11 @@ def test_cutback_defaults():
     assert cutback.factor == 0.5
     assert cutback.max_cutbacks == 10
     assert cutback.growth == 2.0
+    assert cutback.exceptions == (
+        fem.NewtonConvergenceError,
+        ArithmeticError,
+        np.linalg.LinAlgError,
+    )
 
 
 def test_cutback_growth_failures_not_counted():
@@ -642,7 +649,7 @@ class IncrementLimit(fem.Plugin):
 
     def after_linear_solve(self, context, state):
         if self.failed:
-            raise ValueError("The increment is too large.")
+            raise fem.NewtonConvergenceError("The increment is too large.")
 
     def after_newton(self, context, state):
         self.converged = float(np.max(self.boundary.value))
@@ -705,6 +712,32 @@ def test_cutback_exceptions():
 
     assert cutback.exceptions == (TypeError,)
     assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+
+    # a value error which is not a convergence error (e.g. of mismatching shapes) is
+    # raised without a cutback
+    cutback = fem.CutbackPlugin()
+    failing = FailingNewton(calls=[1], error=ValueError)
+
+    with pytest.raises(ValueError, match="Injected failure") as excinfo:
+        run(ramp, plugins=[failing, cutback])
+
+    assert excinfo.value is failing.raised[0]
+    assert not isinstance(excinfo.value, fem.NewtonConvergenceError)
+    assert cutback.load_factors == [[1.0], []]
+    assert cutback.cutbacks == [0, 0]
+
+    # numerical errors lead to a cutback with the default exceptions
+    for error in [
+        fem.NewtonConvergenceError,
+        np.linalg.LinAlgError,
+        FloatingPointError,
+        ZeroDivisionError,
+    ]:
+        cutback = fem.CutbackPlugin()
+        failing = FailingNewton(calls=[1], error=error)
+        run(ramp, plugins=[failing, cutback])
+
+        assert cutback.load_factors == [[1.0], [0.5, 1.0]]
 
 
 def test_cutback_recovered_by_other_plugin():
@@ -842,7 +875,7 @@ def test_cutback_linesearch():
     ramp = fem.math.linsteps([0, -0.7], num=1)
 
     linesearch = fem.LinesearchPlugin(max_halvings=0)
-    with pytest.raises(ValueError, match="Line search failed"):
+    with pytest.raises(fem.NewtonConvergenceError, match="Line search failed"):
         with np.errstate(all="ignore"):
             run(ramp, plugins=[linesearch])
 
@@ -1015,7 +1048,9 @@ def test_cutback_contact_friction():
     # with stiffness-based multipliers
     tangential = np.array([0, 0, 0.5, 1.0])
 
-    with pytest.raises(ValueError, match="Maximum number of iterations"):
+    with pytest.raises(
+        fem.NewtonConvergenceError, match="Maximum number of iterations"
+    ):
         evaluate(normal, tangential, stiffness_based=True)
 
     cutback = fem.CutbackPlugin()

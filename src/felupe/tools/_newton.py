@@ -29,6 +29,34 @@ from ..math import norm
 from ._event_dispatcher import Context, EventDispatcher
 
 
+class NewtonConvergenceError(ValueError):
+    r"""An error which is raised if the Newton-Raphson method fails to converge.
+
+    This error is raised by :func:`~felupe.newtonraphson` if the solution of the
+    linearized equation system contains NaN values or if the maximum number of
+    iterations is reached, by a :class:`~felupe.LinesearchPlugin` if no acceptable
+    step length is found and by a :class:`~felupe.CutbackPlugin` if a failed substep
+    is not recovered.
+
+    Notes
+    -----
+    It is a subclass of :class:`ValueError`. Hence, existing code which catches a
+    :class:`ValueError` is not affected. Plugins like the
+    :class:`~felupe.CutbackPlugin` catch this error to recover a failed substep,
+    while other errors, e.g. a :class:`ValueError` of mismatching shapes of arrays,
+    are raised without a recovery.
+
+    Examples
+    --------
+    ..  code-block::
+
+        try:
+            res = fem.newtonraphson(items=[solid], ...)
+        except fem.NewtonConvergenceError:
+            ...  # e.g. reduce the load increment
+    """
+
+
 class IterationState:
     r"""A class to keep track of the state of an iteration during evaluation.
 
@@ -494,6 +522,13 @@ def newtonraphson(
     felupe.tools.NewtonResult
         The result object.
 
+    Raises
+    ------
+    NewtonConvergenceError
+        If the solution of the linearized equation system contains NaN values or if
+        the maximum number of iterations is reached (a subclass of
+        :class:`ValueError`).
+
     Notes
     -----
     Nonlinear equilibrium equations :math:`f(x)` as a function of the unknowns :math:`x`
@@ -689,7 +724,7 @@ def newtonraphson(
         dx = solve(K, -f, **kwargs_solve)
 
         if np.any(np.isnan(dx)):
-            raise ValueError(
+            raise NewtonConvergenceError(
                 "Solution contains NaN values. Newton-Raphson method failed."
             )
 
@@ -740,7 +775,9 @@ def newtonraphson(
             break
 
     if abort:
-        raise ValueError("Maximum number of iterations reached (not converged).\n")
+        raise NewtonConvergenceError(
+            "Maximum number of iterations reached (not converged).\n"
+        )
 
     Res = NewtonResult(
         x=x,

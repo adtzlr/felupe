@@ -19,7 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ..math import det
-from ..tools._newton import _restore, _snapshot
+from ..tools._newton import NewtonConvergenceError, _restore, _snapshot
 from ._plugin import Plugin
 
 
@@ -213,8 +213,9 @@ class LinesearchPlugin(Plugin):
 
     The step length is halved, :math:`\alpha \leftarrow \alpha / 2`, until all
     acceptance criteria are fulfilled. If the maximum number of halvings is exceeded, a
-    :class:`ValueError` is raised. The acceptance criteria are evaluated in the order
-    of the list :attr:`criteria` and the evaluation stops at the first rejection.
+    :class:`~felupe.NewtonConvergenceError` is raised. The acceptance criteria are
+    evaluated in the order of the list :attr:`criteria` and the evaluation stops at
+    the first rejection.
 
     **Admissibility** (``admissible=True``): The determinants of the deformation
     gradients at all quadrature points of all cells of all items must be positive, see
@@ -510,7 +511,7 @@ class LinesearchPlugin(Plugin):
         for item in context.items or []:
             item.field.link(x)
 
-        raise ValueError(
+        raise NewtonConvergenceError(
             "Line search failed: no acceptable step length found after "
             f"{self.max_halvings} halvings in Newton iteration {1 + state.iteration} "
             f"(smallest step length "

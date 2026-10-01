@@ -163,7 +163,7 @@ def test_linesearch_max_halvings():
     field, solid, loadcase = hard()
     x0 = field[0].values.copy()
 
-    with pytest.raises(ValueError, match="Line search failed"):
+    with pytest.raises(fem.NewtonConvergenceError, match="Line search failed"):
         fem.newtonraphson(
             items=[solid],
             verbose=0,
@@ -270,7 +270,7 @@ def test_linesearch_custom_criterion_and_update():
         return x
 
     field, solid, loadcase = easy()
-    with pytest.raises(ValueError, match="in-place"):
+    with pytest.raises(ValueError, match="in-place") as excinfo:
         fem.newtonraphson(
             items=[solid],
             verbose=0,
@@ -278,6 +278,9 @@ def test_linesearch_custom_criterion_and_update():
             plugins=[fem.LinesearchPlugin()],
             **loadcase,
         )
+
+    # a wrong usage is not a convergence error (no recovery, e.g. by a cutback)
+    assert not isinstance(excinfo.value, fem.NewtonConvergenceError)
 
 
 @pytest.mark.filterwarnings("ignore:Matrix is exactly singular")

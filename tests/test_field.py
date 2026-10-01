@@ -390,6 +390,149 @@ def test_field_take():
     assert len(field.offsets) == 0
 
 
+def assert_checkpoint_shares_geometry(field, checkpoint):
+    "The geometry is shared, the field containers, fields and values are copied."
+    copy = checkpoint["field"]
+
+    assert copy is not field
+    assert copy.evaluate.field is copy
+    assert copy.region is field.region
+
+    for f, c in zip(field.fields, copy.fields):
+        assert c is not f
+        assert c.region is f.region
+        assert c.indices is f.indices
+        assert c.values is not f.values
+        assert np.all(c.values == f.values)
+
+    # the internal list of fields refers to the copied fields
+    for c in copy._list_of_fields_and_field_containers:
+        assert any(c is other for other in copy.fields)
+
+
+def test_container_checkpoint():
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    field[0].values[:] = np.random.default_rng(1).random(field[0].values.shape)
+    values = field[0].values.copy()
+
+    checkpoint = field.checkpoint()
+    assert_checkpoint_shares_geometry(field, checkpoint)
+    assert "field.x0" not in checkpoint
+
+    # the copy is independent of the field container
+    F = field.extract()[0].copy()
+    field[0].values *= 2
+    assert np.allclose(checkpoint["field"][0].values, values)
+    assert np.allclose(checkpoint["field"].extract()[0], F)
+
+    # a checkpoint may be restored several times
+    for repeat in range(2):
+        field.restore(checkpoint)
+        assert np.allclose(field[0].values, values)
+        field[0].values += 1.0
+
+    assert np.allclose(checkpoint["field"][0].values, values)
+
+    # the copied field container may be pickled
+    import pickle
+
+    checkpoint_pickled = pickle.loads(pickle.dumps(checkpoint))
+    field.restore(checkpoint_pickled)
+    assert np.allclose(field[0].values, values)
+
+
+def test_container_checkpoint_mixed():
+    mesh = fem.Cube(n=3)
+
+    fields = {
+        "mixed": fem.FieldsMixed(fem.RegionHexahedron(mesh), n=3),
+        "dual": fem.FieldsMixed(
+            fem.RegionQuadraticHexahedron(fem.Cube(n=3).add_midpoints_edges()),
+            n=2,
+        ),
+        "axisymmetric": fem.FieldContainer(
+            [fem.FieldAxisymmetric(fem.RegionQuad(fem.Rectangle(n=3)), dim=2)]
+        ),
+        "planestrain": fem.FieldContainer(
+            [fem.FieldPlaneStrain(fem.RegionQuad(fem.Rectangle(n=3)), dim=2)]
+        ),
+    }
+
+    assert any(isinstance(f, fem.FieldDual) for f in fields["dual"].fields)
+
+    for field in fields.values():
+        for f in field.fields:
+            f.values[:] = np.random.default_rng(2).random(f.values.shape)
+
+        values = [f.values.copy() for f in field.fields]
+        checkpoint = field.checkpoint()
+        assert_checkpoint_shares_geometry(field, checkpoint)
+
+        for f in field.fields:
+            f.values += 1.0
+
+        field.restore(checkpoint)
+
+        for f, v in zip(field.fields, values):
+            assert np.allclose(f.values, v)
+
+    # the parent region of a dual field is shared
+    dual = [f for f in fields["dual"].fields if isinstance(f, fem.FieldDual)][0]
+    copy = fields["dual"].checkpoint()["field"]
+    dual_copy = [f for f in copy.fields if isinstance(f, fem.FieldDual)][0]
+    assert dual_copy.__args__[0] is dual.__args__[0]
+
+
+def test_container_checkpoint_x0():
+    mesh_1 = fem.Cube(a=(0, 0, 0), b=(1, 1, 1), n=3)
+    mesh_2 = fem.Cube(a=(1, 0, 0), b=(2, 1, 1), n=3)
+    field_1 = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh_1), dim=3)])
+    field_2 = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh_2), dim=3)])
+    x0 = fem.field.merge([field_1, field_2])
+
+    x0[0].values[:] = np.random.default_rng(3).random(x0[0].values.shape)
+    values = x0[0].values.copy()
+    values_1 = field_1[0].values.copy()
+
+    checkpoint = field_1.checkpoint()
+    assert_checkpoint_shares_geometry(field_1, checkpoint)
+
+    # one copy of the top-level field container (with the shared mesh container)
+    copy_x0 = checkpoint["field.x0"]
+    assert checkpoint["field"].x0 is copy_x0
+    assert copy_x0 is not x0
+    assert copy_x0.region is x0.region
+    assert copy_x0.mesh_container is x0.mesh_container
+    assert copy_x0[0].values is not x0[0].values
+
+    x0[0].values += 1.0
+    field_1[0].values += 1.0
+    field_1.restore(checkpoint)
+
+    assert np.allclose(x0[0].values, values)
+    assert np.allclose(field_1[0].values, values_1)
+
+
+def test_container_checkpoint_shared_mesh():
+    """Changes of the mesh after a checkpoint is created are visible in the copied
+    field container of the checkpoint (the mesh is shared), the restore of the values
+    is not affected."""
+
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    checkpoint = field.checkpoint()
+    mesh.points[:, 0] *= 2
+
+    assert np.all(checkpoint["field"].region.mesh.points[:, 0] == mesh.points[:, 0])
+
+    field[0].values += 1.0
+    field.restore(checkpoint)
+    assert np.allclose(field[0].values, 0.0)
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -403,3 +546,7 @@ if __name__ == "__main__":
     test_merge_fewer_points()
     test_field_dual()
     test_field_take()
+    test_container_checkpoint()
+    test_container_checkpoint_mixed()
+    test_container_checkpoint_x0()
+    test_container_checkpoint_shared_mesh()

@@ -91,12 +91,14 @@ from .mechanics import (
     SolidBodyPressure,
     StateNearlyIncompressible,
     Step,
+    SubstepState,
     TrussBody,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
 from .plugins import (
     AnimationWriterPlugin,
     CharacteristicCurvePlugin,
+    CutbackPlugin,
     LinesearchPlugin,
     Plugin,
     ProgressPlugin,
@@ -246,6 +248,7 @@ __all__ = [
     "SolidBodyPressure",
     "StateNearlyIncompressible",
     "Step",
+    "SubstepState",
     "TrussBody",
     "MultiPointConstraint",
     "MultiPointContact",
@@ -297,6 +300,7 @@ __all__ = [
     "runs_on",
     "AnimationWriterPlugin",
     "CharacteristicCurvePlugin",
+    "CutbackPlugin",
     "LinesearchPlugin",
     "Plugin",
     "ProgressPlugin",

@@ -25,7 +25,10 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import contextlib
 import os
+import pathlib
+import tempfile
 
 import numpy as np
 import pytest
@@ -231,6 +234,75 @@ def test_noramp():
     job.evaluate()
 
 
+@contextlib.contextmanager
+def working_directory(path):
+    "Change the working directory (meshio writes the h5-file relative to it)."
+    cwd = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(cwd)
+
+
+@pytest.mark.filterwarnings("ignore:Matrix is exactly singular")
+def test_job_after_job_on_error(tmp_path):
+    """The hook ``after_job`` is also triggered if the evaluation of a job fails, e.g.
+    to close the result file. The error is raised after all plugins are called."""
+
+    meshio = pytest.importorskip("meshio")
+    pytest.importorskip("h5py")
+
+    class Recorder(fem.Plugin):
+        def __init__(self):
+            self.states = []
+
+        def after_job(self, context, state):
+            self.states.append(state)
+
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
+
+    # the second substep fails (NaN values)
+    move = fem.math.linsteps([0, -0.7], num=1)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+
+    recorder = Recorder()
+    job = fem.Job(steps=[step], plugins=[recorder])
+
+    with working_directory(tmp_path):
+        with pytest.raises(ValueError, match="NaN") as excinfo:
+            with np.errstate(all="ignore"):
+                job.evaluate(filename="result.xdmf", verbose=0)
+
+        # the result file is closed and holds the completed substep
+        with meshio.xdmf.TimeSeriesReader("result.xdmf") as reader:
+            reader.read_points_cells()
+            num_steps = reader.num_steps
+
+    assert num_steps == 1
+    assert len(recorder.states) == 1
+    assert isinstance(recorder.states[0], fem.JobState)
+    assert recorder.states[0].error is excinfo.value
+
+    # without an error (a new model, the solid body is modified by the failed job)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
+    recorder = Recorder()
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: [0.0, 0.1]}, boundaries=boundaries
+    )
+    fem.Job(steps=[step], plugins=[recorder]).evaluate(verbose=0)
+
+    assert len(recorder.states) == 1
+    assert recorder.states[0].error is None
+
+
 if __name__ == "__main__":
     test_job()
     test_job_xdmf()
@@ -241,3 +313,6 @@ if __name__ == "__main__":
     test_curve_custom_items()
     test_empty()
     test_noramp()
+
+    with tempfile.TemporaryDirectory() as tmp:
+        test_job_after_job_on_error(tmp_path=pathlib.Path(tmp))

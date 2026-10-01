@@ -256,14 +256,26 @@ class ProgressPlugin(Plugin):
             )
 
     def after_substep(self, context, state):
+        # the load factors of the increments of a subdivided substep, e.g. of a cutback
+        load_factors = getattr(state, "load_factors", None)
+
         if self.verbose == 1:
+            postfix = f"increments={len(load_factors)}" if load_factors else ""
+            self.progress_bar.set_postfix_str(postfix, refresh=False)
             self.progress_bar.update(1)
 
         if self.verbose == 2:
             _substep = f"Substep {state.substepnumber + 1}/{context.step.nsubsteps}"
             _step = f"Step {state.stepnumber + 1}/{len(context.job.steps)}"
+            _increments = ""
 
-            print(f"{_substep} of {_step} successful.")
+            if load_factors:
+                factors = ", ".join(f"{t:.4g}" for t in load_factors)
+                _increments = (
+                    f" in {len(load_factors)} increments (load factors {factors})"
+                )
+
+            print(f"{_substep} of {_step} successful{_increments}.")
 
     def after_job(self, context, state):
         self.in_job = False

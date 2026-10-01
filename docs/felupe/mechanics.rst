@@ -32,6 +32,7 @@ Mechanics
    Plugin
    AnimationWriterPlugin
    CharacteristicCurvePlugin
+   CutbackPlugin
    LinesearchPlugin
    ProgressPlugin
    XDMFWriterPlugin
@@ -39,6 +40,7 @@ Mechanics
    EventDispatcher
    Context
    JobState
+   SubstepState
    IterationState
 
 **Point Load and Multi-Point Constraints**
@@ -132,6 +134,11 @@ Mechanics
    :undoc-members:
    :show-inheritance:
 
+.. autoclass:: felupe.CutbackPlugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 .. autoclass:: felupe.LinesearchPlugin
    :members:
    :undoc-members:
@@ -166,6 +173,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.JobState
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.SubstepState
    :members:
    :undoc-members:
    :show-inheritance:

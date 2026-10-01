@@ -444,7 +444,7 @@ class SolidBodyNearlyIncompressible(Solid):
         }
 
     def restore(self, checkpoint, restore_statevars=True, restore_state=True):
-        """Restore a checkpoint inplace.
+        r"""Restore a checkpoint inplace.
 
         Parameters
         ----------
@@ -453,6 +453,18 @@ class SolidBodyNearlyIncompressible(Solid):
         restore_statevars : bool, optional
             Flag to restore state variables. This is a power feature and must be used
             with caution! Default is True.
+        restore_state : bool, optional
+            Flag to restore the internal fields, i.e. the pressure :math:`p` and the
+            volume ratio :math:`\bar{J}`, of the checkpoint. If False, the internal
+            fields are re-initialized by the deformation of the restored field,
+            :math:`\bar{J} = v / V` and :math:`p = K (\bar{J} - 1)`. Default is True.
+
+        Notes
+        -----
+        The deformation gradient is evaluated for the restored field before the
+        results are re-evaluated. Hence, the internal fields are not updated by the
+        deformation gradient of the last evaluation (e.g. of a failed Newton
+        iteration).
 
         See Also
         --------
@@ -462,17 +474,28 @@ class SolidBodyNearlyIncompressible(Solid):
 
         self.field.restore(checkpoint)
 
+        # deformation gradient of the restored field. The internal fields must not be
+        # updated w.r.t. the deformation gradient of the last evaluation.
+        state = self.results.state
+        self.results.kinematics = state.F = self.field.extract(
+            out=self.results.kinematics
+        )
+
         if restore_state:
-            self.results.state.u[:] = checkpoint["results.state.u"]
-            self.results.state.p[:] = checkpoint["results.state.p"]
-            self.results.state.J[:] = checkpoint["results.state.J"]
+            state.u[:] = checkpoint["results.state.u"]
+            state.p[:] = checkpoint["results.state.p"]
+            state.J[:] = checkpoint["results.state.J"]
+        else:
+            state.u[:] = self.field[0].values
+            state.J[:] = state.volume() / self.V
+            state.p[:] = self.bulk * (state.J - 1)
 
         if restore_statevars:
             self.results.statevars[:] = checkpoint["results.statevars"]
 
-        # results must be re-evaluated
-        self.evaluate.gradient(self.field)
-        self.evaluate.hessian(self.field)
+        # results must be re-evaluated (without an update of the internal fields)
+        self.evaluate.gradient()
+        self.evaluate.hessian()
 
         # reset force and stiffness
         self.results.force = None

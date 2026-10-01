@@ -389,7 +389,10 @@ class SolidBody(Solid):
 
         self.field.restore(checkpoint)
         if restore_statevars:
-            self.results.statevars[:] = checkpoint["results.statevars"]
+            # a copy is assigned, because the state variables may be initialized
+            # after the checkpoint was created (e.g. the temperature of a thermal
+            # solid body)
+            self.results.statevars = checkpoint["results.statevars"].copy()
 
         # results must be re-evaluated
         self.evaluate.gradient(self.field)

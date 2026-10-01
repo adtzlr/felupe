@@ -100,3 +100,34 @@ class TimeStep:
             item.time_step = time_step
 
         self.time_old = time_new
+
+    def checkpoint(self):
+        """Return a checkpoint of the time step item.
+
+        Returns
+        -------
+        dict
+            A dict with the old time.
+
+        See Also
+        --------
+        felupe.thermal.TimeStep.restore : Restore a checkpoint of the time step item.
+        felupe.CutbackPlugin : A cutback of the increment of failed substeps.
+        """
+
+        return {"time_old": self.time_old}
+
+    def restore(self, checkpoint):
+        """Restore a checkpoint inplace.
+
+        Parameters
+        ----------
+        checkpoint : dict
+            A dict with the old time.
+
+        See Also
+        --------
+        felupe.thermal.TimeStep.checkpoint : Return a checkpoint of the time step item.
+        """
+
+        self.time_old = checkpoint["time_old"]

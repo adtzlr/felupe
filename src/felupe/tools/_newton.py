@@ -566,6 +566,7 @@ def newtonraphson(
 
     Examples
     --------
+    >>> import numpy as np
     >>> import felupe as fem
     >>>
     >>> region = fem.RegionHexahedron(fem.Cube(n=6))
@@ -575,7 +576,7 @@ def newtonraphson(
     ... )
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
     >>> res = fem.newtonraphson(items=[solid], **loadcase, verbose=2)  # doctest: +ELLIPSIS
-     ...
+     _______  _______  ___ ...
     Newton-Raphson solver
     =====================
     <BLANKLINE>
@@ -591,7 +592,7 @@ def newtonraphson(
 
     Newton's method had success
 
-    >>> res.success
+    >>> print(res.success)
     True
 
     and 4 iterations were needed to converge within the specified tolerance.
@@ -602,8 +603,8 @@ def newtonraphson(
     The norm of the objective function for all active degrees of freedom is lower than
     3e-15.
 
-    >>> np.linalg.norm(res.fun[loadcase["dof1"]])
-    2.7384964752762237e-15
+    >>> print(np.linalg.norm(res.fun[loadcase["dof1"]]) < 3e-15)
+    True
 
     """
     if dispatcher is None:

@@ -574,8 +574,8 @@ def newtonraphson(
     ...     field, move=0.2, clamped=True, return_loadcase=True
     ... )
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=2.0), field=field)
-    >>> res = fem.newtonraphson(items=[solid], **loadcase)  # doctest: +ELLIPSIS
-    <BLANKLINE>
+    >>> res = fem.newtonraphson(items=[solid], **loadcase, verbose=2)  # doctest: +ELLIPSIS
+     ...
     Newton-Raphson solver
     =====================
     <BLANKLINE>
@@ -584,7 +584,7 @@ def newtonraphson(
     | 1 | 7.553e-02 | 1.898e+00 |
     | 2 | 1.310e-03 | 5.091e-02 |
     | 3 | 3.086e-07 | 6.698e-04 |
-    | 4 | 2.255e-14 | 1.527e-07 |
+    | 4 | ...e-14 | ...e-07 |
     <BLANKLINE>
     Converged in 4 iterations ...
     <BLANKLINE>

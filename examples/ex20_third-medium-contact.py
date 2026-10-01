@@ -143,9 +143,10 @@ step = fem.Step(
 #     For larger load increments, a full Newton step may lead to inadmissible
 #     deformations of the third medium (:math:`\det \boldsymbol{F} \le 0`). An
 #     optional backtracking line search (:class:`~felupe.LinesearchPlugin`) scales down
-#     such Newton increments.
+#     such Newton increments. By alternative, an incremental cutback strategy
+#     (:class:`~felupe.CutbackPlugin`) can be used.
 linesearch = fem.LinesearchPlugin()
-job = fem.Job([step]).evaluate(x0=field, plugins=[linesearch])
+job = fem.Job([step], plugins=[linesearch]).evaluate(x0=field)
 
 plotter = solids[1].plot(nonlinear_subdivision=2, opacity=0.2, edge_color="grey")
 plotter = solids[0].plot(

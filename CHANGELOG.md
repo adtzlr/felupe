@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix the assembly of bilinear forms with plane-strain fields and additional vector-valued fields in `IntegralFormCartesian`. Only the axes of two-dimensional fields are trimmed, e.g. a coupling block of shape `(3, 3, 9)` is now trimmed to `(2, 2, 9)` instead of `(2, 2, 2)`.
 - Fix the assembly of mixed-field formulations in `IntegralFormAxisymmetric`: the gradient flags of non-axisymmetric fields are now passed to the linear and bilinear forms, empty (`None`) blocks of bilinear forms are supported and an axisymmetric field may be coupled with a vector-valued field.
 - Fix re-used output arrays in `NeoHooke.gradient(x, out=P)` and `NeoHooke.hessian(x, out=A4)`: the arrays are now reset with `fill(0.0)`. Before, `P` was not reset at all (wrong, accumulated stresses for `NeoHooke(mu=None, bulk=...)`) and `A4` was multiplied by zero, which kept NaN and inf values in the output array.
+- Fix `CharacteristicCurve.res` by using a property. This was always `None` before, because it was not linked to / updated by `CharacteristicCurve._curve.res`. The attributes `x` and `y` are not affected, because these initially empty lists are updated in-place.
 
 ## [11.1.3] - 2026-09-28
 

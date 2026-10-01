@@ -110,8 +110,17 @@ class CharacteristicCurve(Job):
 
         self.items = self._curve.items
         self.boundary = self._curve.boundary
-        self.x = self._curve.x
-        self.y = self._curve.y
-        self.res = self._curve.res
 
         self.plot = self._curve.plot
+
+    @property
+    def x(self):
+        return self._curve.x
+
+    @property
+    def y(self):
+        return self._curve.y
+
+    @property
+    def res(self):
+        return self._curve.res

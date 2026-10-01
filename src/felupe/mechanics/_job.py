@@ -97,6 +97,12 @@ class Job:
     fnorms : list of list of float
         List with norms of the objective function for each completed substep of each
         step. See also class:`~felupe.tools.NewtonResult`.
+    dispatcher : EventDispatcher
+        The event dispatcher with the plugins of the job. The built-in plugins of an
+        evaluation, i.e. the :class:`~felupe.ProgressPlugin` and the
+        :class:`~felupe.XDMFWriterPlugin`, are not added to this dispatcher. Instead,
+        :meth:`~felupe.Job.evaluate` creates a new dispatcher for each evaluation with
+        the plugins of the job and the built-in plugins.
 
     Examples
     --------
@@ -231,10 +237,14 @@ class Job:
             Newton's method.
         """
 
-        # configure plugins
+        # configure plugins: the built-in plugins of this evaluation are added to a
+        # local, freshly created dispatcher. The dispatcher of the job is not modified,
+        # i.e. the built-in plugins are not registered again on repeated evaluations.
+        plugins = list(self.dispatcher.plugins)
+
         if verbose is not False:
             progress_plugin = ProgressPlugin(verbose=verbose, tqdm=tqdm)
-            self.dispatcher.add_plugin(progress_plugin)
+            plugins.append(progress_plugin)
 
         if filename is not None:
             writer_plugin = XDMFWriterPlugin(
@@ -246,17 +256,19 @@ class Job:
                 cell_data_default=cell_data_default,
                 kwargs=kwargs,
             )
-            self.dispatcher.add_plugin(writer_plugin)
+            plugins.append(writer_plugin)
+
+        dispatcher = EventDispatcher(plugins=plugins)
 
         context = Context(job=self)
         state = JobState()
-        self.dispatcher.trigger("before_job", context, state)
+        dispatcher.trigger("before_job", context, state)
 
         # the hook "after_job" is also triggered on errors (e.g. to close files)
         error = None
 
         try:
-            self._evaluate_steps(parallel=parallel, **kwargs)
+            self._evaluate_steps(dispatcher=dispatcher, parallel=parallel, **kwargs)
 
         except BaseException as job_error:
             error = job_error
@@ -265,12 +277,12 @@ class Job:
         finally:
             context = Context(job=self)
             state = JobState(error=error)
-            self.dispatcher.trigger("after_job", context, state)
+            dispatcher.trigger("after_job", context, state)
 
         return self
 
-    def _evaluate_steps(self, parallel=False, **kwargs):
-        "Evaluate all steps of the job."
+    def _evaluate_steps(self, dispatcher, parallel=False, **kwargs):
+        "Evaluate all steps of the job with the hooks of the plugins of a dispatcher."
 
         if parallel:
             if "kwargs" not in kwargs.keys():
@@ -288,11 +300,11 @@ class Job:
 
             context = Context(job=self, step=step)
             state = JobState(stepnumber=j, time=time)
-            self.dispatcher.trigger("before_step", context, state)
+            dispatcher.trigger("before_step", context, state)
 
             # the unknowns x0 are linked to the result of each completed substep
             states = step.generate_states(
-                stepnumber=j, time=time, dispatcher=self.dispatcher, **kwargs
+                stepnumber=j, time=time, dispatcher=dispatcher, **kwargs
             )
 
             for state in states:
@@ -302,11 +314,11 @@ class Job:
                 self.callback(j, state.substepnumber, substep, **self.kwargs)
 
                 context = Context(job=self, step=step, substep=substep)
-                self.dispatcher.trigger("after_substep", context, state)
+                dispatcher.trigger("after_substep", context, state)
 
                 self.timetrack.append(time)
                 time += 1
 
             context = Context(job=self, step=step)
             state = JobState(stepnumber=j, time=time)
-            self.dispatcher.trigger("after_step", context, state)
+            dispatcher.trigger("after_step", context, state)

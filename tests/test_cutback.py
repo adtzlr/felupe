@@ -543,8 +543,10 @@ def test_cutback_max_cutbacks():
     cutback = fem.CutbackPlugin(max_cutbacks=2)
     failing = FailingNewton(calls=range(1, 10), iteration=1)
 
-    with pytest.raises(ValueError, match="not recovered after 2 cutbacks") as excinfo:
+    with pytest.raises(ValueError, match="smallest increment 2.500e-01") as excinfo:
         run(ramp, plugins=[failing, cutback])
+
+    assert "after 2 cutbacks" in str(excinfo.value)
 
     assert excinfo.value.__cause__ is failing.raised[-1]
     assert len(failing.raised) == 3
@@ -555,8 +557,10 @@ def test_cutback_max_cutbacks():
     cutback = fem.CutbackPlugin(max_cutbacks=0)
     failing = FailingNewton(calls=[1], iteration=1)
 
-    with pytest.raises(ValueError, match="after 0 cutbacks") as excinfo:
+    with pytest.raises(ValueError, match="smallest increment 1.000e") as excinfo:
         run(ramp, plugins=[failing, cutback])
+
+    assert "after 0 cutbacks" in str(excinfo.value)
 
     assert excinfo.value.__cause__ is failing.raised[0]
 
@@ -586,6 +590,99 @@ def test_cutback_max_cutbacks():
         value = getattr(solid.results.state, name)
         value_ref = getattr(solid_ref.results.state, name)
         assert np.allclose(value, value_ref, rtol=1e-12, atol=1e-14)
+
+
+def test_cutback_defaults():
+    cutback = fem.CutbackPlugin()
+    assert cutback.factor == 0.5
+    assert cutback.max_cutbacks == 10
+    assert cutback.growth == 2.0
+
+
+def test_cutback_growth_failures_not_counted():
+    """Failed attempts with increased increments do not count towards the maximum
+    number of cutbacks, only the reductions below the smallest increment so far."""
+
+    ramp = fem.math.linsteps([0, 0.4], num=1)
+
+    # call 1: t=1 (fails), call 2: t=0.5 (fails), call 3: t=0.25 (converges),
+    # call 4: t=0.75 (increased increment 0.5, fails), call 5: t=0.5 (reduced increment
+    # 0.25, converges), call 6: t=1 (increased increment 0.5, converges)
+    cutback = fem.CutbackPlugin(max_cutbacks=2)
+    failing = FailingNewton(calls=[1, 2, 4])
+    field, solid, job = run(ramp, plugins=[failing, cutback])
+
+    assert len(failing.raised) == 3
+    assert cutback.load_factors == [[1.0], [0.25, 0.5, 1.0]]
+
+    # three reductions, but the smallest increment is f^2 = 0.25
+    assert cutback.cutbacks == [0, 3]
+
+    reference, _, job_ref = run(refine(ramp, cutback.load_factors))
+    assert_same_history(job.history, job_ref.history)
+    assert np.allclose(field[0].values, reference[0].values, rtol=1e-12, atol=1e-14)
+
+
+class IncrementLimit(fem.Plugin):
+    """Fail all evaluations of the Newton-Raphson method with an increment of the
+    prescribed displacement larger than a given limit (a model for a load increment
+    which is too large)."""
+
+    def __init__(self, boundary, limit):
+        self.boundary = boundary
+        self.limit = limit
+        self.converged = 0.0
+        self.attempts = []
+        self.failed = False
+
+    def before_newton(self, context, state):
+        increment = abs(float(np.max(self.boundary.value)) - self.converged)
+        self.attempts.append(increment)
+        self.failed = increment > self.limit + 1e-12
+
+    def after_linear_solve(self, context, state):
+        if self.failed:
+            raise ValueError("The increment is too large.")
+
+    def after_newton(self, context, state):
+        self.converged = float(np.max(self.boundary.value))
+
+
+def test_cutback_growth_oscillation():
+    """All increments larger than a quarter of the substep fail. With a growth factor,
+    an increased increment fails again and is reduced again (oscillation). These
+    failed attempts do not count towards the maximum number of cutbacks, and the
+    substep is recovered as long as the smallest increment is not exceeded."""
+
+    def evaluate(max_cutbacks, growth):
+        field, boundaries, solid = cube()
+        move = boundaries["move"]
+        step = fem.Step(
+            items=[solid], ramp={move: np.array([0.0, 0.4])}, boundaries=boundaries
+        )
+        limit = IncrementLimit(move, limit=0.1)
+        cutback = fem.CutbackPlugin(max_cutbacks=max_cutbacks, growth=growth)
+        fem.Job(steps=[step], plugins=[limit, cutback]).evaluate(verbose=0)
+        return field, limit, cutback
+
+    # the smallest increment f^2 = 0.25 is sufficient
+    field, limit, cutback = evaluate(max_cutbacks=2, growth=2.0)
+
+    assert cutback.load_factors[-1] == [0.25, 0.5, 0.75, 1.0]
+    assert cutback.cutbacks[-1] == 4
+    assert np.allclose(limit.attempts[1:], [0.4, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.1])
+
+    # without growth: no oscillation, the same increments
+    field_ref, limit_ref, cutback_ref = evaluate(max_cutbacks=2, growth=1.0)
+
+    assert cutback_ref.load_factors[-1] == [0.25, 0.5, 0.75, 1.0]
+    assert cutback_ref.cutbacks[-1] == 2
+    assert np.allclose(limit_ref.attempts[1:], [0.4, 0.2, 0.1, 0.1, 0.1, 0.1])
+    assert np.allclose(field[0].values, field_ref[0].values, rtol=1e-12, atol=1e-14)
+
+    # the smallest increment f^1 = 0.5 is too large
+    with pytest.raises(ValueError, match="smallest increment 5.000e-01"):
+        evaluate(max_cutbacks=1, growth=2.0)
 
 
 def test_cutback_exceptions():
@@ -1019,7 +1116,7 @@ def test_cutback_merged_fields():
     field, solid, history = evaluate(ramp, plugins=[failing, cutback])
 
     assert solid.field.x0 is field
-    assert cutback.load_factors[-1] == [0.25, 0.5, 0.75, 1.0]
+    assert cutback.load_factors[-1] == [0.25, 0.75, 1.0]
 
     # the top-level field container holds the prescribed displacement of the end face
     assert np.isclose(field[0].values[:, 0].max(), 1.0)
@@ -1154,6 +1251,9 @@ if __name__ == "__main__":
     test_cutback_nearly_incompressible_divergence()
     test_cutback_growth_and_factor()
     test_cutback_max_cutbacks()
+    test_cutback_defaults()
+    test_cutback_growth_failures_not_counted()
+    test_cutback_growth_oscillation()
     test_cutback_exceptions()
     test_cutback_recovered_by_other_plugin()
     test_cutback_unknown_values()

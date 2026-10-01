@@ -63,12 +63,16 @@ class CutbackPlugin(Plugin):
         The factor :math:`0 < f < 1` by which the increment is reduced after a failed
         attempt (default is 0.5).
     max_cutbacks : int, optional
-        The maximum number of cutbacks of a substep (default is 5). The smallest
-        increment is :math:`\Delta t = f^{\text{max\_cutbacks}}`.
+        The maximum number of successive cutbacks of the increment (default is 10),
+        i.e. the smallest increment of a substep is
+        :math:`\Delta t_{\min} = f^{\text{max\_cutbacks}}` (e.g.
+        :math:`0.5^{10} \approx 10^{-3}`). Only reductions below the smallest
+        increment reached so far are limited. A failed attempt with an increased
+        increment (see ``growth``) and the following reduction do not count.
     growth : float, optional
         The factor :math:`g \ge 1` by which the increment is increased after a
-        converged increment (default is 1.0), limited by the remaining part of the
-        substep. With the default value, the increment is kept constant.
+        converged increment (default is 2.0), limited by the remaining part of the
+        substep. With ``growth=1.0``, the increment is kept constant.
     exceptions : type or tuple of type, optional
         The errors of the Newton-Raphson method which lead to a cutback (default is
         ``(ValueError, ArithmeticError)``). Errors of other types are raised without a
@@ -85,7 +89,10 @@ class CutbackPlugin(Plugin):
         which was subdivided into two increments. The list of a substep which was not
         recovered ends with a load factor lower than one (or is empty).
     cutbacks : list of int
-        The number of cutbacks for each substep.
+        The number of cutbacks for each substep, i.e. the number of reductions of the
+        increment after failed attempts. This includes the reductions after failed
+        attempts with increased increments. Hence, it may be larger than
+        ``max_cutbacks``.
 
     Notes
     -----
@@ -111,11 +118,21 @@ class CutbackPlugin(Plugin):
     increased :math:`t \leftarrow t + \Delta t` and the next increment is
     :math:`\Delta t \leftarrow \min(g\ \Delta t, 1 - t)`. After a failed attempt, the
     checkpoint of the last converged increment is restored and the increment is reduced,
-    :math:`\Delta t \leftarrow f\ \Delta t`. If the maximum number of cutbacks is
-    exceeded, a :class:`ValueError` is raised, which is caused by the error of the last
-    attempt. Then, the unknowns and the items are restored to the last converged
-    increment. The last increment of a substep always uses the values of the ramp of
-    the substep (without interpolation).
+    :math:`\Delta t \leftarrow f\ \Delta t`. If the reduced increment would be smaller
+    than the smallest increment :math:`\Delta t_{\min} = f^{\text{max\_cutbacks}}`, a
+    :class:`ValueError` is raised, which is caused by the error of the last attempt.
+    Then, the unknowns and the items are restored to the last converged increment. The
+    last increment of a substep always uses the values of the ramp of the substep
+    (without interpolation).
+
+    The limit applies to the size of the increment, not to the number of failed
+    attempts. An increased increment which fails is reduced again without counting
+    towards ``max_cutbacks``, as long as the reduced increment is not smaller than
+    :math:`\Delta t_{\min}`. Each converged increment (except the last one) is at least
+    :math:`\Delta t_{\min}`, hence the subdivision of a substep terminates. With
+    :math:`g > 1`, an increased increment may fail repeatedly, which costs one
+    additional (failed) evaluation of the Newton-Raphson method per attempt. Use
+    ``growth=1.0`` if failed attempts are expensive.
 
     The increments are internal to the substep, i.e. only the result of the last
     increment is handed back to the :class:`~felupe.Step` and the hooks
@@ -209,8 +226,8 @@ class CutbackPlugin(Plugin):
     def __init__(
         self,
         factor=0.5,
-        max_cutbacks=5,
-        growth=1.0,
+        max_cutbacks=10,
+        growth=2.0,
         exceptions=(ValueError, ArithmeticError),
     ):
         self.factor = float(factor)
@@ -380,16 +397,19 @@ class CutbackPlugin(Plugin):
 
         values0 = {key: self._values[key] for key in values1.keys()}
 
+        # the smallest increment (with a tolerance for the products of the factors)
+        dt_min = self.factor**self.max_cutbacks
+        dt_min_tol = dt_min * (1 - 1e-9)
+
         t = 0.0  # load factor of the last converged increment
         dt = 1.0  # the increment of the failed attempt
         error = state.error  # the error of the last failed attempt
         values_converged = None  # values of the last converged increment
         load_factors = []
-        cutbacks = 0
+        cutbacks = 0  # number of reductions of the increment (failed attempts)
 
-        while cutbacks < self.max_cutbacks:
-
-            # a failed attempt: reduce the increment
+        # a failed attempt: reduce the increment (but not below the smallest increment)
+        while self.factor * dt >= dt_min_tol:
             cutbacks += 1
             dt *= self.factor
 
@@ -426,6 +446,8 @@ class CutbackPlugin(Plugin):
                     return
 
                 checkpoint = self.checkpoint(context)
+
+                # an increased increment, limited by the remaining part of the substep
                 dt = min(self.growth * dt, 1.0 - t)
 
         # the substep is not recovered, the checkpoint of the last converged increment
@@ -439,8 +461,10 @@ class CutbackPlugin(Plugin):
 
         self._failed(
             state,
-            f"was not recovered after {self.max_cutbacks} cutbacks (last converged "
-            f"load factor {t:.4g}, last increment {dt:1.3e}). The unknowns and "
-            "the items are restored to the last converged increment.",
+            f"was not recovered: the increment {dt:1.3e} of the last failed attempt "
+            f"can not be reduced below the smallest increment {dt_min:1.3e} "
+            f"(factor={self.factor:g}, max_cutbacks={self.max_cutbacks}) after "
+            f"{cutbacks} cutbacks (last converged load factor {t:.4g}). The unknowns "
+            "and the items are restored to the last converged increment.",
             error,
         )

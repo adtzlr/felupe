@@ -161,6 +161,10 @@ def test_curve():
     curve.plot(xaxis=0, yaxis=0)
     curve.plot(x=np.zeros((10, 2)), y=np.ones((10, 2)), xaxis=0, yaxis=0)
 
+    assert curve.res is not None
+    assert curve.x is not None
+    assert curve.y is not None
+
     stretch = 1 + np.array(curve.x)[:, 0]
     area = 1**2 * np.pi
     force = (stretch - 1 / stretch**2) * area

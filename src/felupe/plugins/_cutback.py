@@ -18,6 +18,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ..tools._newton import NewtonConvergenceError
 from ._plugin import Plugin
 
 
@@ -75,11 +76,18 @@ class CutbackPlugin(Plugin):
         substep. With ``growth=1.0``, the increment is kept constant.
     exceptions : type or tuple of type, optional
         The errors of the Newton-Raphson method which lead to a cutback (default is
-        ``(ValueError, ArithmeticError)``). Errors of other types are raised without a
-        cutback. The default types include the errors of
-        :func:`~felupe.newtonraphson` if the maximum number of iterations is reached
-        or if the solution contains NaN values, the error of a failed
-        :class:`~felupe.LinesearchPlugin` as well as errors of :mod:`numpy.linalg`.
+        ``(NewtonConvergenceError, ArithmeticError, numpy.linalg.LinAlgError)``).
+        Errors of other types are raised without a cutback, e.g. a
+        :class:`ValueError` of mismatching shapes of arrays. The default types include
+        the :class:`~felupe.NewtonConvergenceError` of :func:`~felupe.newtonraphson`
+        if the maximum number of iterations is reached or if the solution contains NaN
+        values and of a failed :class:`~felupe.LinesearchPlugin`, floating-point errors
+        (e.g. of ``numpy.errstate(invalid="raise")``) as well as errors of
+        :mod:`numpy.linalg`, e.g. of a singular matrix. The sparse solvers
+        :func:`scipy.sparse.linalg.spsolve` and :func:`pypardiso.spsolve` do not raise
+        an error for a singular matrix. Instead, :func:`scipy.sparse.linalg.spsolve`
+        returns NaN values (which leads to a :class:`~felupe.NewtonConvergenceError`)
+        and :func:`pypardiso.spsolve` returns a perturbed solution.
 
     Attributes
     ----------
@@ -120,7 +128,8 @@ class CutbackPlugin(Plugin):
     checkpoint of the last converged increment is restored and the increment is reduced,
     :math:`\Delta t \leftarrow f\ \Delta t`. If the reduced increment would be smaller
     than the smallest increment :math:`\Delta t_{\min} = f^{\text{max\_cutbacks}}`, a
-    :class:`ValueError` is raised, which is caused by the error of the last attempt.
+    :class:`~felupe.NewtonConvergenceError` is raised, which is caused by the error of
+    the last attempt.
     Then, the unknowns and the items are restored to the last converged increment. The
     last increment of a substep always uses the values of the ramp of the substep
     (without interpolation).
@@ -228,7 +237,7 @@ class CutbackPlugin(Plugin):
         factor=0.5,
         max_cutbacks=10,
         growth=2.0,
-        exceptions=(ValueError, ArithmeticError),
+        exceptions=(NewtonConvergenceError, ArithmeticError, np.linalg.LinAlgError),
     ):
         self.factor = float(factor)
         self.max_cutbacks = int(max_cutbacks)
@@ -352,7 +361,7 @@ class CutbackPlugin(Plugin):
     def _failed(self, state, message, cause):
         "Replace the error of the substep by a descriptive error."
 
-        error = ValueError(
+        error = NewtonConvergenceError(
             f"Cutback failed: substep {1 + state.substepnumber} {message}"
         )
         error.__cause__ = cause

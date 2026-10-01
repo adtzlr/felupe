@@ -10,6 +10,7 @@ Tools
    newtonraphson
    tools.IterationState
    tools.NewtonResult
+   NewtonConvergenceError
 
 **Event Dispatcher**
 
@@ -48,6 +49,8 @@ Tools
 
 .. autoclass:: felupe.tools.NewtonResult
    :members:
+
+.. autoclass:: felupe.NewtonConvergenceError
 
 .. autoclass:: felupe.tools.EventDispatcher
    :members:

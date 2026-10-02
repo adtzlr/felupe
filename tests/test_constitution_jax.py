@@ -244,6 +244,70 @@ def test_morph_jax_tensortrax():
         jax.config.update("jax_enable_x64", x64)
 
 
+def test_eigenvalue_models_jax_tensortrax():
+    import jax
+
+    x64 = jax.config.jax_enable_x64
+    jax.config.update("jax_enable_x64", True)
+
+    try:
+        models = [
+            (
+                mat.Hyperelastic(
+                    mat.models.hyperelastic.ogden, mu=[1.0, 0.2], alpha=[2.5, -1.5]
+                ),
+                fem.Hyperelastic(fem.ogden, mu=[1.0, 0.2], alpha=[2.5, -1.5]),
+            ),
+            (
+                mat.Hyperelastic(
+                    mat.models.hyperelastic.extended_tube,
+                    Gc=0.1867,
+                    Ge=0.2169,
+                    beta=0.2,
+                    delta=0.09693,
+                ),
+                fem.Hyperelastic(
+                    fem.extended_tube, Gc=0.1867, Ge=0.2169, beta=0.2, delta=0.09693
+                ),
+            ),
+            (
+                mat.Hyperelastic(
+                    mat.models.hyperelastic.storakers,
+                    mu=[4.5 * (1.85 / 2), -4.5 * (-9.2 / 2)],
+                    alpha=[1.85, -9.2],
+                    beta=[0.92, 0.92],
+                ),
+                fem.Hyperelastic(
+                    fem.storakers,
+                    mu=[4.5 * (1.85 / 2), -4.5 * (-9.2 / 2)],
+                    alpha=[1.85, -9.2],
+                    beta=[0.92, 0.92],
+                ),
+            ),
+        ]
+
+        # uniaxial loading at 45° in the xy-plane (repeated eigenvalues)
+        a = np.array([1.0, -1.0, 0.0]) / np.sqrt(2)
+        U = np.eye(3) / np.sqrt(1.5) + (1.5 - 1 / np.sqrt(1.5)) * np.outer(a, a)
+
+        for umat_jax, umat_ttx in models:
+            for F in [np.eye(3), U]:
+                x = [F.reshape(3, 3, 1, 1), None]
+
+                P_jax = umat_jax.gradient(x)[0]
+                P_ttx = umat_ttx.gradient(x)[0]
+
+                A_jax = umat_jax.hessian(x)[0]
+                A_ttx = umat_ttx.hessian(x)[0]
+
+                atol = 1e-7 * np.abs(A_ttx).max()
+                assert np.allclose(P_jax, P_ttx, rtol=1e-6, atol=atol)
+                assert np.allclose(A_jax, A_ttx, rtol=1e-6, atol=atol)
+
+    finally:
+        jax.config.update("jax_enable_x64", x64)
+
+
 if __name__ == "__main__":
     test_vmap()
     test_hyperelastic_jax()
@@ -253,3 +317,4 @@ if __name__ == "__main__":
     test_material_included_jax_statevars()
     test_eigvalsh_perturbation()
     test_morph_jax_tensortrax()
+    test_eigenvalue_models_jax_tensortrax()

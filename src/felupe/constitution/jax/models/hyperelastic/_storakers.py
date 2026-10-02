@@ -17,16 +17,16 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
-from jax.numpy import array, diag, sqrt
+from jax.numpy import array, sqrt
 from jax.numpy import sum as asum
-from jax.numpy.linalg import eigvalsh
 
 from ....tensortrax.models.hyperelastic import storakers as storakers_docstring
+from ..._helpers import eigvalsh
 
 
 @wraps(storakers_docstring)
 def storakers(C, mu, alpha, beta):
-    λ1, λ2, λ3 = sqrt(eigvalsh(C + diag(array([0, -1e-4, 1e-4]))))
+    λ1, λ2, λ3 = sqrt(eigvalsh(C))
     J = λ1 * λ2 * λ3
 
     μ = array(mu)

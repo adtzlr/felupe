@@ -176,12 +176,22 @@ def test_material_included_jax_statevars():
 def test_eigvalsh_perturbation():
     import jax
 
-    from felupe.constitution.jax._helpers import eigvalsh
+    from felupe.constitution.jax._helpers import PERTURBATION, eigvalsh, perturb
 
     x64 = jax.config.jax_enable_x64
     jax.config.update("jax_enable_x64", True)
 
     try:
+        # default relative perturbation: sqrt(machine eps) in double precision (as in
+        # tensortrax) and 1e-4 in single precision
+        cases = [(jnp.float32, 1e-4), (jnp.float64, np.sqrt(np.finfo(float).eps))]
+        for dtype, eps in cases:
+            A = 2 * jnp.eye(3, dtype=dtype)
+            dA = perturb(A) - A
+            assert dA.dtype == dtype
+            ref = eps * np.linalg.norm(A) * PERTURBATION
+            assert np.allclose(dA, ref, rtol=0, atol=1e-2 * eps * np.linalg.norm(A))
+
         eps = np.sqrt(np.finfo(float).eps)
         ogden = lambda C: jnp.sum(jnp.linalg.det(C) ** (-1 / 3) * eigvalsh(C))
         neo_hooke = lambda C: jnp.linalg.det(C) ** (-1 / 3) * jnp.trace(C)  # = ogden

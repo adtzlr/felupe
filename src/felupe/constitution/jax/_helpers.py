@@ -49,7 +49,8 @@ def perturb(A, eps=None):
         with ``M <= 3``.
     eps : float or None, optional
         The relative magnitude of the perturbation. Default is None, where the square
-        root of the machine epsilon of the data type of ``A`` is used.
+        root of the machine epsilon is used in double precision (as in tensortrax) and
+        ``1e-4`` otherwise.
 
     Returns
     -------
@@ -62,12 +63,21 @@ def perturb(A, eps=None):
     norm is zero) and it is treated as a constant, i.e. it does not contribute to the
     derivatives. The derivatives are those of the unperturbed matrix, evaluated at the
     perturbed matrix.
+
+    The perturbation shifts the eigenvalues (bias, proportional to ``eps``) and the
+    round-off of the separated eigenvalues enters the second derivatives (proportional
+    to the machine epsilon divided by ``eps``). In single precision, the square root of
+    the machine epsilon (approx. ``3.5e-4``) leads to an unnecessarily large bias,
+    whereas ``1e-4`` balances both errors better.
     """
 
     x = jax.lax.stop_gradient(A)
 
     if eps is None:
-        eps = np.sqrt(jnp.finfo(x.dtype).eps)
+        if jnp.finfo(x.dtype).bits >= 64:
+            eps = np.sqrt(jnp.finfo(x.dtype).eps)
+        else:
+            eps = 1e-4
 
     dim = x.shape[-1]
     norm = jnp.sqrt(jnp.sum(x**2, axis=(-2, -1), keepdims=True))
@@ -86,8 +96,8 @@ def eigvalsh(A, eps=None):
         A symmetric matrix or a batch of symmetric matrices of shape ``(..., M, M)``
         with ``M <= 3``.
     eps : float or None, optional
-        The relative magnitude of the perturbation. Default is None, where the square
-        root of the machine epsilon of the data type of ``A`` is used.
+        The relative magnitude of the perturbation. Default is None, see
+        :func:`perturb`.
 
     Returns
     -------
@@ -112,8 +122,8 @@ def eigh(A, eps=None):
         A symmetric matrix or a batch of symmetric matrices of shape ``(..., M, M)``
         with ``M <= 3``.
     eps : float or None, optional
-        The relative magnitude of the perturbation. Default is None, where the square
-        root of the machine epsilon of the data type of ``A`` is used.
+        The relative magnitude of the perturbation. Default is None, see
+        :func:`perturb`.
 
     Returns
     -------

@@ -17,17 +17,18 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
-from jax.numpy import array, diag, log, sqrt, trace
-from jax.numpy.linalg import det, eigvalsh
+from jax.numpy import log, sqrt, trace
+from jax.numpy.linalg import det
 
 from ....tensortrax.models.hyperelastic import extended_tube as extended_tube_docstring
+from ..._helpers import eigvalsh
 
 
 @wraps(extended_tube_docstring)
 def extended_tube(C, Gc, delta, Ge, beta):
     J3 = det(C) ** (-1 / 3)
     D = J3 * trace(C)
-    λ1, λ2, λ3 = sqrt(J3 * eigvalsh(C + diag(array([0, 1e-4, -1e-4]))))
+    λ1, λ2, λ3 = sqrt(J3 * eigvalsh(C))
     β = beta
     δ = delta
     γ = (1 - δ**2) * (D - 3) / (1 - δ**2 * (D - 3))

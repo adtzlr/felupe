@@ -20,7 +20,125 @@ from functools import wraps
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 from jax.numpy.linalg import det
+
+# Perturbation to separate repeated eigenvalues. A fixed perturbation can't separate
+# a repeated eigenvalue if its eigenspace is a plane on which the perturbation is
+# isotropic. For diag(1, -1, 0), these are the planes with normals (1, +/-1, 0), e.g.
+# uniaxial loading at 45° in the xy-plane. This generic matrix with eigenvalues
+# (-1, 0, 1) moves these planes to directions without any symmetry. This is the same
+# perturbation as used in tensortrax.
+PERTURBATION = np.array(
+    [
+        [0.03, 0.44, -0.66],
+        [0.44, 0.55, -0.24],
+        [-0.66, -0.24, -0.58],
+    ]
+)
+
+
+def perturb(A, eps=None):
+    r"""Add a relative perturbation, scaled by the norm of a symmetric matrix ``A``, to
+    separate repeated eigenvalues.
+
+    Parameters
+    ----------
+    A : jax.Array
+        A symmetric matrix or a batch of symmetric matrices of shape ``(..., M, M)``
+        with ``M <= 3``.
+    eps : float or None, optional
+        The relative magnitude of the perturbation. Default is None, where the square
+        root of the machine epsilon is used in double precision (as in tensortrax) and
+        ``1e-4`` otherwise.
+
+    Returns
+    -------
+    jax.Array
+        The perturbed matrix (or batch of matrices).
+
+    Notes
+    -----
+    The perturbation is scaled by the Frobenius norm of the matrix (or by one, if the
+    norm is zero) and it is treated as a constant, i.e. it does not contribute to the
+    derivatives. The derivatives are those of the unperturbed matrix, evaluated at the
+    perturbed matrix.
+
+    The perturbation shifts the eigenvalues (bias, proportional to ``eps``) and the
+    round-off of the separated eigenvalues enters the second derivatives (proportional
+    to the machine epsilon divided by ``eps``). In single precision, the square root of
+    the machine epsilon (approx. ``3.5e-4``) leads to an unnecessarily large bias,
+    whereas ``1e-4`` balances both errors better.
+    """
+
+    x = jax.lax.stop_gradient(A)
+
+    if eps is None:
+        if jnp.finfo(x.dtype).bits >= 64:
+            eps = np.sqrt(jnp.finfo(x.dtype).eps)
+        else:
+            eps = 1e-4
+
+    dim = x.shape[-1]
+    norm = jnp.sqrt(jnp.sum(x**2, axis=(-2, -1), keepdims=True))
+    scale = eps * jnp.where(norm > 0, norm, 1.0)
+
+    return A + scale * jnp.asarray(PERTURBATION[:dim, :dim], dtype=x.dtype)
+
+
+def eigvalsh(A, eps=None):
+    r"""Return the eigenvalues (in ascending order) of a symmetric matrix ``A``, which
+    is perturbed (relative to its norm) to separate repeated eigenvalues.
+
+    Parameters
+    ----------
+    A : jax.Array
+        A symmetric matrix or a batch of symmetric matrices of shape ``(..., M, M)``
+        with ``M <= 3``.
+    eps : float or None, optional
+        The relative magnitude of the perturbation. Default is None, see
+        :func:`perturb`.
+
+    Returns
+    -------
+    jax.Array
+        The eigenvalues in ascending order.
+
+    See Also
+    --------
+    jax.numpy.linalg.eigvalsh : Compute the eigenvalues of a Hermitian matrix.
+    """
+    return jnp.linalg.eigvalsh(perturb(A, eps=eps))
+
+
+def eigh(A, eps=None):
+    r"""Return the eigenvalues (in ascending order) and eigenvectors (as columns) of a
+    symmetric matrix ``A``, which is perturbed (relative to its norm) to separate
+    repeated eigenvalues.
+
+    Parameters
+    ----------
+    A : jax.Array
+        A symmetric matrix or a batch of symmetric matrices of shape ``(..., M, M)``
+        with ``M <= 3``.
+    eps : float or None, optional
+        The relative magnitude of the perturbation. Default is None, see
+        :func:`perturb`.
+
+    Returns
+    -------
+    eigenvalues : jax.Array
+        The eigenvalues in ascending order.
+    eigenvectors : jax.Array
+        The normalized eigenvectors, where the column ``eigenvectors[:, i]`` is the
+        eigenvector of the eigenvalue ``eigenvalues[i]``.
+
+    See Also
+    --------
+    jax.numpy.linalg.eigh : Compute the eigenvalues and eigenvectors of a Hermitian
+        matrix.
+    """
+    return jnp.linalg.eigh(perturb(A, eps=eps))
 
 
 def vmap(fun, in_axes=0, out_axes=0, method=jax.vmap, **kwargs):

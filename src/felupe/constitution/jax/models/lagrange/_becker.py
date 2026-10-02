@@ -17,10 +17,11 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 
-from jax.numpy import array, diag, einsum, eye, log, sqrt, trace
-from jax.numpy.linalg import eigh, inv
+from jax.numpy import einsum, eye, log, sqrt, trace
+from jax.numpy.linalg import inv
 
 from ....tensortrax.models.lagrange import becker as becker_docstring
+from ..._helpers import eigh
 from ..._total_lagrange import total_lagrange
 
 
@@ -28,11 +29,10 @@ from ..._total_lagrange import total_lagrange
 @total_lagrange
 def becker(F, mu, lmbda):
     # right Cauchy-Green deformation tensor C
-    # (perturbed deformation gradient for stable eigh-gradient)
-    eps = diag(array([0, 1e-4, -1e-4]))
-    C = (F + eps).T @ (F + eps)
+    C = F.T @ F
 
     # eigenvalues λC, principal stretches λ and eigenbases M
+    # (perturbed relative to the norm of C to separate repeated eigenvalues)
     λC, N = eigh(C)
     M = einsum("ia,ja->aij", N, N)
     λ = sqrt(λC)

@@ -106,7 +106,10 @@ class CharacteristicCurve(Job):
         **kwargs,
     ):
         self._curve = CharacteristicCurvePlugin(boundary=boundary, items=items)
-        super().__init__(steps, plugins=[self._curve], callback=callback, **kwargs)
+
+        kwargs_internal = kwargs.copy()
+        plugins = kwargs_internal.pop("plugins", []) + [self._curve]
+        super().__init__(steps, plugins=plugins, callback=callback, **kwargs_internal)
 
         self.items = self._curve.items
         self.boundary = self._curve.boundary

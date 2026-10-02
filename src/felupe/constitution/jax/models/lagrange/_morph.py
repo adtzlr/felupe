@@ -18,11 +18,12 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from functools import wraps
 
-from jax.numpy import array, concatenate, diag, eye, maximum, sqrt, trace, triu_indices
-from jax.numpy.linalg import det, eigvalsh, inv
+from jax.numpy import array, concatenate, eye, maximum, sqrt, trace, triu_indices
+from jax.numpy.linalg import det, inv
 from jax.scipy.linalg import expm
 
 from ....tensortrax.models.lagrange import morph as morph_docstring
+from ..._helpers import eigvalsh
 from ..._total_lagrange import total_lagrange
 
 
@@ -47,8 +48,8 @@ def morph(F, statevars, p):
     dC = C - Cn
 
     # eigenvalues of right Cauchy-Green deformation tensor (sorted in ascending order)
-    eigvalsh2 = lambda C: eigvalsh(C + diag(array([1e-4, -1e-4, 0])))
-    λCG = eigvalsh2(CG)
+    # (perturbed relative to the norm of the tensor to separate repeated eigenvalues)
+    λCG = eigvalsh(CG)
 
     # Tresca invariant of distortional part of right Cauchy-Green deformation tensor
     CTG = λCG[-1] - λCG[0]
@@ -69,7 +70,7 @@ def morph(F, statevars, p):
     sym = lambda C: (C + C.T) / 2
 
     LG = I3 ** (-1 / 3) * F @ sym(dev(invC @ dC)) @ F.T
-    λLG = eigvalsh2(LG)
+    λLG = eigvalsh(LG)
     LTG = λLG[-1] - λLG[0]
 
     # limiting stresses "L" and additional stresses "A"

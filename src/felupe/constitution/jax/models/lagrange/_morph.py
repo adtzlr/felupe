@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from functools import wraps
 
 from jax.numpy import array, concatenate, diag, eye, maximum, sqrt, trace, triu_indices
@@ -67,7 +68,7 @@ def morph(F, statevars, p):
     dev = lambda C: C - trace(C) / 3 * eye(3)
     sym = lambda C: (C + C.T) / 2
 
-    LG = sym(dev(invC @ dC)) @ CG
+    LG = I3 ** (-1 / 3) * F @ sym(dev(invC @ dC)) @ F.T
     λLG = eigvalsh2(LG)
     LTG = λLG[-1] - λLG[0]
 

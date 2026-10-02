@@ -89,9 +89,9 @@ def morph(F, statevars, p):
     ..  math::
         :label: morph-rate-of-deformation
 
-        \hat{\boldsymbol{L}} &= \text{sym}\left(
+        \hat{\boldsymbol{L}} &= \hat{\boldsymbol{F}} \text{sym}\left(
                 \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
-            \right) \hat{\boldsymbol{C}}
+            \right) \hat{\boldsymbol{F}}^T
 
         \lambda_{\hat{\boldsymbol{L}}, \alpha} &= \text{eigvals}(\hat{\boldsymbol{L}})
 
@@ -212,7 +212,7 @@ def morph(F, statevars, p):
     β = p[3] * sigmoid(p[2] * CTS)
     γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
 
-    LG = sym(dev(invC @ dC)) @ CG
+    LG = I3**(-1 / 3) * F @ sym(dev(invC @ dC)) @ F.T
     λLG = eigvalsh(LG)
     LTG = λLG[-1] - λLG[0]
 

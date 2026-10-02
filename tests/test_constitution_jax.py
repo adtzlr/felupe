@@ -284,6 +284,10 @@ def test_eigenvalue_models_jax_tensortrax():
                     beta=[0.92, 0.92],
                 ),
             ),
+            (
+                mat.Material(mat.models.lagrange.becker, mu=1.0, lmbda=2.0),
+                fem.MaterialAD(fem.becker, mu=1.0, lmbda=2.0),
+            ),
         ]
 
         # uniaxial loading at 45° in the xy-plane (repeated eigenvalues)

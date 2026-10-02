@@ -101,6 +101,36 @@ def eigvalsh(A, eps=None):
     return jnp.linalg.eigvalsh(perturb(A, eps=eps))
 
 
+def eigh(A, eps=None):
+    r"""Return the eigenvalues (in ascending order) and eigenvectors (as columns) of a
+    symmetric matrix ``A``, which is perturbed (relative to its norm) to separate
+    repeated eigenvalues.
+
+    Parameters
+    ----------
+    A : jax.Array
+        A symmetric matrix or a batch of symmetric matrices of shape ``(..., M, M)``
+        with ``M <= 3``.
+    eps : float or None, optional
+        The relative magnitude of the perturbation. Default is None, where the square
+        root of the machine epsilon of the data type of ``A`` is used.
+
+    Returns
+    -------
+    eigenvalues : jax.Array
+        The eigenvalues in ascending order.
+    eigenvectors : jax.Array
+        The normalized eigenvectors, where the column ``eigenvectors[:, i]`` is the
+        eigenvector of the eigenvalue ``eigenvalues[i]``.
+
+    See Also
+    --------
+    jax.numpy.linalg.eigh : Compute the eigenvalues and eigenvectors of a Hermitian
+        matrix.
+    """
+    return jnp.linalg.eigh(perturb(A, eps=eps))
+
+
 def vmap(fun, in_axes=0, out_axes=0, method=jax.vmap, **kwargs):
     """Vectorizing map. Creates a function which maps ``fun`` over argument axes. This
     decorator treats all non-specified arguments and keyword-arguments as static.

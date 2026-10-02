@@ -26,7 +26,8 @@ All notable changes to this project will be documented in this file. The format 
 - The hook `after_substep` gets the `SubstepState` of the substep (a subclass of `JobState` with the same attributes `stepnumber`, `substepnumber` and `time`). The `ProgressPlugin` shows the increments of subdivided substeps in this hook.
 - The hook `after_job` is now also triggered if the evaluation of a job fails. The error is available as `JobState.error` and it is raised after all plugins are called.
 - `FieldContainer.checkpoint()` shares the regions, meshes, mesh containers and indices of the fields with the field container, only the field containers, the fields and their values are copied. Before, the whole field container was deep-copied, including the regions with the gradients of the shape functions, e.g. 84 MB instead of 0.7 MB for a checkpoint of 8000 hexahedrons. This also applies to `SolidBody.checkpoint()`, `SolidBodyNearlyIncompressible.checkpoint()` and the `CutbackPlugin`, which creates a checkpoint before each substep. Changes of the region or the mesh after a checkpoint is created are visible in the field container of the checkpoint, the restore of the values is not affected. The field container of the checkpoint holds the copied top-level field container `"field.x0"` as `x0` (before, `x0` was copied twice).
-- Change the perturbation in `eigh` and `eigvalsh` with new helpers in the JAX backend. The helper is enabled in `becker()`, `storakers()`, `extended_tube()`, `ogden()` and `morph`.
+- Change the perturbation in `eigh` and `eigvalsh` with new helpers in the JAX backend. The helper is enabled in `becker()`, `storakers()`, `extended_tube()`, `ogden()` and `morph()`.
+- Change the rate tensor in `morph()` to a symmetric tensor.
 
 ### Fixed
 - Fix the `XDMFWriterPlugin` and the `AnimationWriterPlugin`, which closed their file (or plotter) in the hook `after_iteration` if the Newton-Raphson method reached the maximum number of iterations or had NaN-valued norms. A substep which was recovered afterwards (e.g. by a cutback) could not be written. Both plugins now close their file only in `after_job`, which is also triggered if the evaluation fails. Before, the file was not closed for other errors (e.g. NaN values in the solution).
@@ -37,7 +38,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix re-used output arrays in `NeoHooke.gradient(x, out=P)` and `NeoHooke.hessian(x, out=A4)`: the arrays are now reset with `fill(0.0)`. Before, `P` was not reset at all (wrong, accumulated stresses for `NeoHooke(mu=None, bulk=...)`) and `A4` was multiplied by zero, which kept NaN and inf values in the output array.
 - Fix `CharacteristicCurve.res` by using a property. This was always `None` before, because it was not linked to / updated by `CharacteristicCurve._curve.res`. The attributes `x` and `y` are not affected, because these initially empty lists are updated in-place.
 - Fix repeated evaluations of a `Job` or a `CharacteristicCurve`. Before, `Job.evaluate()` added its built-in plugins, i.e. the `ProgressPlugin` and the `XDMFWriterPlugin`, to the dispatcher of the job on each call. Hence, the built-in plugins of all previous evaluations were triggered again, e.g. the progress was shown multiple times and the result file of a previous evaluation was overwritten. Now, `Job.evaluate()` creates a new dispatcher for each evaluation with the plugins of the job and the built-in plugins of this evaluation. The dispatcher of the job, `Job.dispatcher`, is not modified.
-- Fix wrong contraction in `saint_venant_kirchhoff_orthotropic()` (tensortrax backend).
+- Fix a wrong contraction in `saint_venant_kirchhoff_orthotropic()` (tensortrax backend).
 
 ## [11.1.3] - 2026-09-28
 

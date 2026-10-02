@@ -39,6 +39,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix `CharacteristicCurve.res` by using a property. This was always `None` before, because it was not linked to / updated by `CharacteristicCurve._curve.res`. The attributes `x` and `y` are not affected, because these initially empty lists are updated in-place.
 - Fix repeated evaluations of a `Job` or a `CharacteristicCurve`. Before, `Job.evaluate()` added its built-in plugins, i.e. the `ProgressPlugin` and the `XDMFWriterPlugin`, to the dispatcher of the job on each call. Hence, the built-in plugins of all previous evaluations were triggered again, e.g. the progress was shown multiple times and the result file of a previous evaluation was overwritten. Now, `Job.evaluate()` creates a new dispatcher for each evaluation with the plugins of the job and the built-in plugins of this evaluation. The dispatcher of the job, `Job.dispatcher`, is not modified.
 - Fix a wrong contraction in `saint_venant_kirchhoff_orthotropic()` (tensortrax backend).
+- Fix `CharacteristicCurve`, when additional plugins are passed.
 
 ## [11.1.3] - 2026-09-28
 

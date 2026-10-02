@@ -98,9 +98,9 @@ def saint_venant_kirchhoff_orthotropic(C, mu, lmbda, r1, r2, r3=None, k=2):
     else:
         λ2, M = eigh(C)
         if k == 0:
-            E = einsum("a...,aij...,->ij...", log(λ2) / 2, M)
+            E = einsum("a...,aij...->ij...", log(λ2) / 2, M)
         else:
-            E = einsum("a...,aij...,->ij...", (λ2 ** (k / 2) - 1) / k, M)
+            E = einsum("a...,aij...->ij...", (λ2 ** (k / 2) - 1) / k, M)
 
     μ = array(mu)
     λ = from_triu_1d(array(lmbda))

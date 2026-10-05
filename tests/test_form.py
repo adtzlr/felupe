@@ -283,6 +283,46 @@ def test_bilinearform_broadcast():
         assert K.shape == (r.mesh.npoints, r.mesh.npoints)
 
 
+def test_bilinearform_grad_grad_chunks():
+    "The chunked evaluation of the gradient-gradient form matches a single einsum."
+
+    import felupe.assembly._cartesian as cartesian
+
+    mesh = fem.Cube(n=4)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    field[0].values[:] = 0.1 * mesh.points**2
+
+    F = field.extract()
+    hessians = [
+        fem.NeoHooke(mu=1.0, bulk=2.0).hessian(F)[0],  # one tensor per point
+        fem.LinearElastic(E=1.0, nu=0.3).hessian()[0],  # broadcasted tensor
+    ]
+
+    chunksize_bytes = cartesian.CHUNKSIZE_BYTES
+
+    try:
+        for A in hessians:
+            expected = np.einsum(
+                "aJqc,iJkLqc,bLqc,qc->aibkc", region.dhdX, A, region.dhdX, region.dV
+            )
+
+            # chunks of one cell, chunks of 7 of 27 cells and a single chunk
+            for nbytes in [1, 200_000, 2**30]:
+                cartesian.CHUNKSIZE_BYTES = nbytes
+
+                form = fem.IntegralForm([A], field, region.dV, field)
+                assert np.allclose(form.integrate()[0], expected)
+
+                out = np.zeros_like(expected)
+                values = form.integrate(out=[out])[0]
+                assert values is out
+                assert np.allclose(out, expected)
+
+    finally:
+        cartesian.CHUNKSIZE_BYTES = chunksize_bytes
+
+
 def test_mixed():
     r, v, f, A = pre_mixed()
 
@@ -340,5 +380,6 @@ if __name__ == "__main__":
     test_linearform_broadcast()
     test_bilinearform()
     test_bilinearform_broadcast()
+    test_bilinearform_grad_grad_chunks()
     test_axi()
     test_mixed()

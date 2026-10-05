@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+from concurrent.futures import ThreadPoolExecutor
 from functools import cached_property
 
 import numpy as np
@@ -45,17 +47,43 @@ PATH_GRAD_GRAD = ["einsum_path", (0, 3), (0, 1), (0, 1)]
 CHUNKSIZE_BYTES = 2**21
 
 
-def einsum_chunks(subscripts, *operands, out, chunksize, optimize):
+def cpu_count():
+    """Return the number of CPUs which may be used by the current process. Unlike
+    :func:`os.cpu_count`, this respects the CPU affinity of the process, e.g. the CPUs
+    of a job on a shared HPC-node. For Python 3.13+, the number of CPUs may be
+    overridden by the environment variable ``PYTHON_CPU_COUNT``."""
+
+    if hasattr(os, "process_cpu_count"):  # Python 3.13+
+        return os.process_cpu_count() or 1
+
+    if hasattr(os, "sched_getaffinity"):  # Linux
+        return len(os.sched_getaffinity(0))
+
+    return os.cpu_count() or 1
+
+
+def einsum_chunks(subscripts, *operands, out, chunksize, optimize, parallel=False):
     """Evaluate :func:`numpy.einsum` in chunks of the last axis (the cells) and write
     the results into the given output array. Operands with a broadcasted last axis
-    (length one) are not sliced."""
+    (length one) are not sliced. If ``parallel`` is True, the chunks are evaluated by
+    a pool of threads (one per usable CPU, at most one per chunk)."""
 
     ncells = out.shape[-1]
 
-    for start in range(0, ncells, chunksize):
+    def evaluate(start):
         cells = slice(start, start + chunksize)
         chunk = [x[..., cells] if x.shape[-1] == ncells else x for x in operands]
         np.einsum(subscripts, *chunk, optimize=optimize, out=out[..., cells])
+
+    starts = range(0, ncells, chunksize)
+    workers = min(cpu_count(), len(starts)) if parallel else 1
+
+    if workers > 1:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            list(pool.map(evaluate, starts))
+    else:
+        for start in starts:
+            evaluate(start)
 
     return out
 
@@ -304,17 +332,6 @@ class IntegralFormCartesian:
                     out=out,
                 )
             else:  # grad_v and grad_u
-                if parallel:
-                    return einsum(
-                        "aJqc,iJkLqc,bLqc,qc->aibkc",
-                        vb,
-                        fun,
-                        ub,
-                        dV,
-                        optimize=True,
-                        out=out,
-                    )
-
                 operands = (vb, fun, ub, dV)
                 ncells = max(x.shape[-1] for x in operands)
 
@@ -338,4 +355,5 @@ class IntegralFormCartesian:
                     out=out,
                     chunksize=chunksize,
                     optimize=PATH_GRAD_GRAD,
+                    parallel=parallel,
                 )

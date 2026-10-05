@@ -314,15 +314,48 @@ def test_bilinearform_grad_grad_chunks():
                 cartesian.CHUNKSIZE_BYTES = nbytes
 
                 form = fem.IntegralForm([A], field, region.dV, field)
-                assert np.allclose(form.integrate()[0], expected)
 
-                out = np.zeros_like(expected)
-                values = form.integrate(out=[out])[0]
-                assert values is out
-                assert np.allclose(out, expected)
+                for parallel in [False, True]:
+                    values = form.integrate(parallel=parallel)[0]
+                    assert np.allclose(values, expected)
+
+                    out = np.zeros_like(expected)
+                    values = form.integrate(parallel=parallel, out=[out])[0]
+                    assert values is out
+                    assert np.allclose(out, expected)
 
     finally:
         cartesian.CHUNKSIZE_BYTES = chunksize_bytes
+
+
+def test_bilinearform_grad_grad_threads(monkeypatch):
+    "The chunks are evaluated by threads (one per usable CPU, at most one per chunk)."
+
+    import os
+
+    import felupe.assembly._cartesian as cartesian
+
+    monkeypatch.setattr(cartesian, "CHUNKSIZE_BYTES", 200_000)  # 4 chunks of 27 cells
+
+    # the number of usable CPUs, also without the newer functions of os
+    assert cartesian.cpu_count() >= 1
+    monkeypatch.delattr(os, "process_cpu_count", raising=False)
+    assert cartesian.cpu_count() >= 1
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
+    assert cartesian.cpu_count() >= 1
+
+    mesh = fem.Cube(n=4)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    A = fem.NeoHooke(mu=1.0, bulk=2.0).hessian(field.extract())[0]
+
+    form = fem.IntegralForm([A], field, region.dV, field)
+    expected = form.integrate(parallel=False)[0]
+
+    # one thread (serial), less threads than chunks and more CPUs than chunks
+    for cpus in [1, 2, 64]:
+        monkeypatch.setattr(cartesian, "cpu_count", lambda: cpus)
+        assert np.allclose(form.integrate(parallel=True)[0], expected)
 
 
 def test_sparsity_pattern():

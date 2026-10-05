@@ -25,6 +25,36 @@ except ModuleNotFoundError:
 
 from scipy.sparse import csr_matrix as sparsematrix
 
+# Contraction path for the bilinear form of the gradients of the test and the trial
+# field, ``aJqc,iJkLqc,bLqc,qc->aibkc``: (1) multiply the test gradients by the
+# differential volumes, (2) contract the fourth-order tensor with the trial gradients
+# and (3) contract the two remaining arrays. NumPy's default path (``optimize=True``)
+# limits all intermediate arrays to the size of the largest input array. For many
+# element types, it contracts the last three operands at once, with a multiple of the
+# number of operations. As the intermediate arrays are evaluated in chunks of cells,
+# their size is limited anyway.
+PATH_GRAD_GRAD = ["einsum_path", (0, 3), (0, 1), (0, 1)]
+
+# Approximate number of bytes of all arrays which are processed per chunk of cells.
+# The arrays of a chunk should fit into the CPU caches, about the size of the L2 cache
+# of one core. Smaller chunks increase the overhead of the einsum-calls per chunk.
+CHUNKSIZE_BYTES = 2**21
+
+
+def einsum_chunks(subscripts, *operands, out, chunksize, optimize):
+    """Evaluate :func:`numpy.einsum` in chunks of the last axis (the cells) and write
+    the results into the given output array. Operands with a broadcasted last axis
+    (length one) are not sliced."""
+
+    ncells = out.shape[-1]
+
+    for start in range(0, ncells, chunksize):
+        cells = slice(start, start + chunksize)
+        chunk = [x[..., cells] if x.shape[-1] == ncells else x for x in operands]
+        np.einsum(subscripts, *chunk, optimize=optimize, out=out[..., cells])
+
+    return out
+
 
 class IntegralFormCartesian:
     r"""Single-field integral form constructed by a function result ``fun``, a test
@@ -255,12 +285,38 @@ class IntegralFormCartesian:
                     out=out,
                 )
             else:  # grad_v and grad_u
-                return einsum(
+                if parallel:
+                    return einsum(
+                        "aJqc,iJkLqc,bLqc,qc->aibkc",
+                        vb,
+                        fun,
+                        ub,
+                        dV,
+                        optimize=True,
+                        out=out,
+                    )
+
+                operands = (vb, fun, ub, dV)
+                ncells = max(x.shape[-1] for x in operands)
+
+                a, J, q = vb.shape[:3]
+                b, L = ub.shape[:2]
+                i, k = fun.shape[0], fun.shape[2]
+
+                if out is None:
+                    shape = (a, i, b, k, ncells)
+                    out = np.empty(shape, dtype=np.result_type(*operands))
+
+                # number of array items per cell: intermediate (iJkbq), result (aibk),
+                # function (iJkLq), test and trial gradients (aJq, bLq), volumes (q)
+                size = i * J * k * b * q + a * i * b * k + fun[..., 0].size
+                size += a * J * q + b * L * q + q
+                chunksize = max(1, CHUNKSIZE_BYTES // (out.itemsize * size))
+
+                return einsum_chunks(
                     "aJqc,iJkLqc,bLqc,qc->aibkc",
-                    vb,
-                    fun,
-                    ub,
-                    dV,
-                    optimize=True,
+                    *operands,
                     out=out,
+                    chunksize=chunksize,
+                    optimize=PATH_GRAD_GRAD,
                 )

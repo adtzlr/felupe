@@ -314,12 +314,15 @@ def test_bilinearform_grad_grad_chunks():
                 cartesian.CHUNKSIZE_BYTES = nbytes
 
                 form = fem.IntegralForm([A], field, region.dV, field)
-                assert np.allclose(form.integrate()[0], expected)
 
-                out = np.zeros_like(expected)
-                values = form.integrate(out=[out])[0]
-                assert values is out
-                assert np.allclose(out, expected)
+                for parallel in [False, True]:
+                    values = form.integrate(parallel=parallel)[0]
+                    assert np.allclose(values, expected)
+
+                    out = np.zeros_like(expected)
+                    values = form.integrate(parallel=parallel, out=[out])[0]
+                    assert values is out
+                    assert np.allclose(out, expected)
 
     finally:
         cartesian.CHUNKSIZE_BYTES = chunksize_bytes

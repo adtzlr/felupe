@@ -402,6 +402,20 @@ def test_sparsity_pattern():
     assert np.allclose(matrix.toarray(), assemble_coo(values, field, field).toarray())
 
 
+def test_bilinearform_lazy_indices():
+    "The COO-indices of a bilinear form are only evaluated on demand."
+
+    r, u, p, P, A = pre()
+
+    form = fem.IntegralForm(A, u, r.dV, u).forms[0]
+    form.assemble()
+    assert "indices" not in vars(form)  # not required with a sparsity pattern
+
+    rows, cols = form.indices
+    assert rows.size == cols.size == form.integrate().size
+    assert form.indices is form.indices  # evaluated only once
+
+
 def test_mixed():
     r, v, f, A = pre_mixed()
 
@@ -461,5 +475,6 @@ if __name__ == "__main__":
     test_bilinearform_broadcast()
     test_bilinearform_grad_grad_chunks()
     test_sparsity_pattern()
+    test_bilinearform_lazy_indices()
     test_axi()
     test_mixed()

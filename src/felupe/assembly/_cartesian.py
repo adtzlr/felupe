@@ -259,8 +259,9 @@ class IntegralFormCartesian:
                     "aqc,...qc,qc->a...c", vb, fun, dV, optimize=True, out=out
                 )
             else:
+                # a single contraction is faster than the default path
                 return einsum(
-                    "aJqc,...Jqc,qc->a...c", vb, fun, dV, optimize=True, out=out
+                    "aJqc,...Jqc,qc->a...c", vb, fun, dV, optimize=False, out=out
                 )
 
         else:

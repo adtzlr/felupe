@@ -217,10 +217,16 @@ def test_empty():
     solid = fem.SolidBody(umat, field)
 
     step = fem.Step(items=[solid], ramp=None, boundaries=None)
+    assert step.boundaries == {}
+
     job = fem.Job(steps=[step])
 
     with pytest.raises(ValueError):
         job.evaluate(tqdm="my_fancy_backend")
+
+    boundaries = fem.dof.symmetry(field[0])
+    step = fem.Step(items=[solid], ramp=None, boundaries=boundaries)
+    job = fem.Job(steps=[step])
 
     job.evaluate(tqdm="notebook")
 

@@ -136,7 +136,7 @@ This is a simple benchmark to compare assembly times for linear elasticity and h
    | Hyperelastic   |  213350 +/-41843  |
    +----------------+-------------------+
 
-   Tested on: Windows 10, Python 3.11, Intel® Core™ i7-11850H @ 2.50GHz, 32GB RAM.
+   Tested on: Windows 11, Python 3.13, Intel® Core™ i7-11850H @ 2.50GHz, 32GB RAM.
 
 
 .. tab:: Source Code

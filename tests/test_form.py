@@ -178,6 +178,8 @@ def test_linearform():
     for parallel in [False, True]:
         L = fem.IntegralForm(P, u, r.dV, grad_v=[True])
         x = L.integrate(parallel=parallel)
+        y = np.einsum("aJqc,iJqc,qc->aic", r.dhdX, P[0], r.dV, optimize=True)
+        assert np.allclose(x[0], y)
         b = L.assemble(x, parallel=parallel).toarray()
         assert b.shape == (r.mesh.ndof, 1)
         b = L.assemble(parallel=parallel).toarray()

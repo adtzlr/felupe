@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import inspect
+from copy import deepcopy
 from time import perf_counter
 
 import numpy as np
@@ -25,6 +26,8 @@ from scipy.sparse.linalg import spsolve
 
 from .. import solve as fesolve
 from ..assembly import IntegralForm
+from ..field import FieldContainer
+from ..field._container import shared_geometry_memo
 from ..math import norm
 from ._event_dispatcher import Context, EventDispatcher
 
@@ -423,6 +426,14 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
 def update(x, dx):
     "Update field."
     # x += dx # in-place
+
+    if isinstance(x, FieldContainer):
+        # the new field container shares the regions, meshes and indices with the old
+        # one, only the field containers, the fields and their values are copied
+        x = deepcopy(x, shared_geometry_memo(x))
+        x += dx
+        return x
+
     return x + dx
 
 

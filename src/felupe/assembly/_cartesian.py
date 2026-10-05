@@ -16,6 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from functools import cached_property
+
 import numpy as np
 
 try:
@@ -155,16 +157,23 @@ class IntegralFormCartesian:
             self.indices = self.v.indices.ai
             self.shape = self.v.indices.shape
 
-        # # bilinear form
+        # # bilinear form (the indices are evaluated on demand)
         else:
-            cai = self.v.indices.cai
-            cbk = self.u.indices.cai
-
-            caibk0 = np.repeat(cai, cbk.shape[1] * self.u.dim)
-            caibk1 = np.tile(cbk, (1, cai.shape[1] * self.v.dim, 1)).ravel()
-
-            self.indices = (caibk0, caibk1)
             self.shape = (self.v.indices.shape[0], self.u.indices.shape[0])
+
+    @cached_property
+    def indices(self):
+        """The (row, column) indices of the values of a bilinear form in COO-format.
+        These are only required if the form is not assembled with a sparsity pattern.
+        """
+
+        cai = self.v.indices.cai
+        cbk = self.u.indices.cai
+
+        caibk0 = np.repeat(cai, cbk.shape[1] * self.u.dim)
+        caibk1 = np.tile(cbk, (1, cai.shape[1] * self.v.dim, 1)).ravel()
+
+        return caibk0, caibk1
 
     def assemble(self, values=None, parallel=False, out=None):
         "Assembly of sparse region vectors or matrices."

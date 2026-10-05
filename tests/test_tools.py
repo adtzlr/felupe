@@ -156,6 +156,30 @@ def test_solve_mixed():
         curve = fem.tools.curve(np.arange(a), np.ones(a) * force[0])
 
 
+def test_newton_update():
+    "The updated field container shares the geometry with the old one."
+
+    from felupe.tools._newton import update
+
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    x = fem.FieldContainer([fem.Field(region, dim=3), fem.Field(region)])
+    dx = np.ones(sum(x.fieldsizes))
+
+    y = update(x, dx)
+
+    for field, other in zip(x.fields, y.fields):
+        assert other is not field
+        assert other.region is field.region
+        assert other.indices is field.indices
+        assert other.values is not field.values
+        assert np.allclose(field.values, 0)
+        assert np.allclose(other.values, 1)
+
+    # unchanged update of an array
+    assert np.allclose(update(np.zeros(3), np.ones(3)), 1)
+
+
 def test_newton_simple():
     def fun(x):
         return (x - 3) ** 2
@@ -532,6 +556,7 @@ if __name__ == "__main__":
     test_hello_world()
     test_solve()
     test_solve_mixed()
+    test_newton_update()
     test_newton_simple()
     test_newton()
     test_newton_mixed()

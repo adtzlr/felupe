@@ -25,6 +25,8 @@ except ModuleNotFoundError:
 
 from scipy.sparse import csr_matrix as sparsematrix
 
+from ._sparsity import sparsity_pattern
+
 # Contraction path for the bilinear form of the gradients of the test and the trial
 # field, ``aJqc,iJkLqc,bLqc,qc->aibkc``: (1) multiply the test gradients by the
 # differential volumes, (2) contract the fourth-order tensor with the trial gradients
@@ -171,6 +173,13 @@ class IntegralFormCartesian:
             values = self.integrate(parallel=parallel, out=out)
 
         if values is not None:
+            # sum up the values of bilinear forms into a cached sparsity pattern
+            if self.u is not None:
+                pattern = sparsity_pattern(self.v, self.u)
+
+                if pattern is not None:
+                    return pattern.assemble(values)
+
             permute = np.append(
                 len(values.shape) - 1, range(len(values.shape) - 1)
             ).astype(int)

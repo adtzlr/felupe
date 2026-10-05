@@ -402,6 +402,24 @@ def test_sparsity_pattern():
     assert np.allclose(matrix.toarray(), assemble_coo(values, field, field).toarray())
 
 
+def test_single_block():
+    "A single block is returned without the block-assembly."
+
+    from scipy.sparse import bmat, vstack
+
+    r, u, p, P, A = pre()
+
+    a = fem.IntegralForm(A, u, r.dV, u)
+    K = a.assemble()
+    assert K.format == "csr"
+    assert np.allclose(K.toarray(), bmat([[a.forms[0].assemble()]]).toarray())
+
+    L = fem.IntegralForm(P, u, r.dV)
+    b = L.assemble()
+    assert b.format == "csr"
+    assert np.allclose(b.toarray(), vstack([L.forms[0].assemble()]).toarray())
+
+
 def test_bilinearform_lazy_indices():
     "The COO-indices of a bilinear form are only evaluated on demand."
 
@@ -475,6 +493,7 @@ if __name__ == "__main__":
     test_bilinearform_broadcast()
     test_bilinearform_grad_grad_chunks()
     test_sparsity_pattern()
+    test_single_block()
     test_bilinearform_lazy_indices()
     test_axi()
     test_mixed()

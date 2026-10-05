@@ -290,6 +290,10 @@ class IntegralForm:
             nv = len(self._v.fields)
             nu = len(self._u.fields)
 
+            # a single block is already the assembled sparse matrix
+            if nv == nu == len(res) == 1:
+                return res[0].tocsr()
+
             K = np.zeros((nv, nu), dtype=object)
 
             idx_v = self._v.take
@@ -311,6 +315,11 @@ class IntegralForm:
 
         if block and self.mode == 1:
             nv = len(self._v.fields)
+
+            # a single block is already the assembled sparse vector
+            if nv == len(res) == 1:
+                return res[0].tocsr()
+
             vector = [None] * nv
 
             idx_v = self._v.take

@@ -323,6 +323,85 @@ def test_bilinearform_grad_grad_chunks():
         cartesian.CHUNKSIZE_BYTES = chunksize_bytes
 
 
+def test_sparsity_pattern():
+    "The assembly with a cached sparsity pattern is equal to the COO-assembly."
+
+    import gc
+    import weakref
+
+    from scipy.sparse import coo_matrix
+
+    from felupe.assembly._sparsity import _patterns, sparsity_pattern
+
+    mesh = fem.Cube(n=4)
+    region = fem.RegionHexahedron(mesh)
+    rng = np.random.default_rng(0)
+
+    def assemble_coo(values, v, u):
+        "Assemble the (duplicate) values of shape (a, i, b, k, c) in COO-format."
+        rows = v.indices.cai.transpose(1, 2, 0)[:, :, None, None, :]
+        cols = u.indices.cai.transpose(1, 2, 0)[None, None, :, :, :]
+        rows, cols = [np.broadcast_to(x, values.shape).ravel() for x in [rows, cols]]
+        shape = (v.indices.shape[0], u.indices.shape[0])
+        matrix = coo_matrix((values.ravel(), (rows, cols)), shape=shape).tocsr()
+        matrix.sort_indices()
+        return matrix
+
+    displacement = fem.Field(region, dim=3)
+    pressure = fem.Field(region, dim=1)
+
+    for v, u in [
+        (displacement, displacement),
+        (displacement, pressure),
+        (pressure, displacement),
+        (pressure, pressure),
+    ]:
+        shape = (8, v.dim, 8, u.dim, mesh.ncells)
+        values = rng.normal(size=shape)
+        form = fem.assembly.IntegralFormCartesian(values, v, region.dV, u=u)
+
+        matrix = form.assemble(values=values)
+        expected = assemble_coo(values, v, u)
+
+        assert matrix.has_canonical_format
+        assert np.array_equal(matrix.indptr, expected.indptr)
+        assert np.array_equal(matrix.indices, expected.indices)
+        assert np.allclose(matrix.data, expected.data)
+
+        # the cached pattern is not modified by in-place changes of the matrix
+        matrix.indices[:] = 0
+        matrix = form.assemble(values=values)
+        assert np.array_equal(matrix.indices, expected.indices)
+
+        # broadcasted values of a uniform grid mesh
+        matrix = form.assemble(values=values[..., :1])
+        expected = assemble_coo(np.broadcast_to(values[..., :1], shape), v, u)
+        assert np.allclose(matrix.toarray(), expected.toarray())
+
+    # the pattern is cached and not copied with the field
+    field = fem.Field(region, dim=3)
+    assert sparsity_pattern(field, field) is sparsity_pattern(field, field)
+    assert field.indices in _patterns
+    assert field.copy().indices not in _patterns
+
+    # the cache does not keep the indices alive, the pattern is released with them
+    indices = weakref.ref(field.indices)
+    del field
+    gc.collect()
+    assert indices() is None
+
+    # fall back to the COO-assembly for degrees of freedom which are not point-wise
+    field = fem.Field(region, dim=3)
+    field.indices.cai = field.indices.cai[..., ::-1]
+    assert sparsity_pattern(field, field) is None
+
+    shape = (8, 3, 8, 3, mesh.ncells)
+    values = rng.normal(size=shape)
+    form = fem.assembly.IntegralFormCartesian(values, field, region.dV, u=field)
+    matrix = form.assemble(values=values)
+    assert np.allclose(matrix.toarray(), assemble_coo(values, field, field).toarray())
+
+
 def test_mixed():
     r, v, f, A = pre_mixed()
 
@@ -381,5 +460,6 @@ if __name__ == "__main__":
     test_bilinearform()
     test_bilinearform_broadcast()
     test_bilinearform_grad_grad_chunks()
+    test_sparsity_pattern()
     test_axi()
     test_mixed()

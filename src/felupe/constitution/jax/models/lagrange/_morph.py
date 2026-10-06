@@ -69,17 +69,22 @@ def morph(F, statevars, p):
     dev = lambda C: C - trace(C) / 3 * eye(3)
     sym = lambda C: (C + C.T) / 2
 
-    LG = I3 ** (-1 / 3) * F @ sym(dev(invC @ dC)) @ F.T
-    λLG = eigvalsh(LG)
-    LTG = λLG[-1] - λLG[0]
+    invF = inv(F)
+    dbG = det(F) ** (-2 / 3) * F @ sym(dev(invC @ dC)) @ F.T
+
+    λdbG = eigvalsh(dbG)
+    dbTG = λdbG[-1] - λdbG[0]
 
     # limiting stresses "L" and additional stresses "A"
-    SL = (γ * expm(p[6] * LG / LTG * CTG / CTS) + p[7] * LG / LTG) @ invC
-    SA = (SAn + β * LTG * SL) / (1 + β * LTG)
+    # τ is a Kirchhoff stress tensor, S are 2nd Piola-Kirchhoff stress tensors
+    τL = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
+    SL = invF @ τL @ invF.T
+    SA = (SAn + β * dbTG * SL) / (1 + β * dbTG)
 
     # second Piola-Kirchhoff stress tensor
     S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
 
+    # update the state variables
     i, j = triu_indices(3)
     to_triu = lambda C: C[i, j]
     statevars_new = concatenate([array([CTS]), to_triu(C), to_triu(SA)])

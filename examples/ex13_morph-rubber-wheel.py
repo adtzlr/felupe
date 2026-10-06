@@ -14,9 +14,7 @@ as internal state variable, see Eq. :eq:`morph-state-ex`.
     While the `MORPH <https://doi.org/10.1016/s0749-6419(02)00091-8>`_-material
     formulation captures the Mullins effect and quasi-static hysteresis effects of
     rubber mixtures very nicely, it has been observed to be unstable for medium- to
-    highly-distorted states of deformation. An alternative implementation by the method
-    of `representative directions <https://nbn-resolving.org/urn:nbn:de:bsz:ch1-qucosa-114428>`_
-    provides better stability but is computationally more costly [2]_, [3]_.
+    highly-distorted states of deformation.
 
 ..  math::
     :label: morph-state-ex
@@ -33,62 +31,68 @@ as internal state variable, see Eq. :eq:`morph-state-ex`.
 
     \hat{C}_T^S &= \max \left( \hat{C}_T, \hat{C}_{T,n}^S \right)
 
-A sigmoid-function is used inside the deformation-dependent variables :math:`\alpha`,
-:math:`\beta` and :math:`\gamma`, see Eq. :eq:`morph-sigmoid-ex`.
+A sigmoid-function is used inside the deformation-dependent variables
+:math:`\alpha`, :math:`\beta` and :math:`\gamma`, see Eq. :eq:`morph-sigmoid-ex`.
 
 ..  math::
     :label: morph-sigmoid-ex
 
     f(x) &= \frac{1}{\sqrt{1 + x^2}}
 
-    \alpha &= p_1 + p_2 \ f(p_3\ C_T^S)
+    \alpha &= p_1 + p_2 \ f(p_3\ \hat{C}_T^S)
 
-    \beta &= p_4\ f(p_3\ C_T^S)
+    \beta &= p_4\ f(p_3\ \hat{C}_T^S)
 
-    \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
+    \gamma &= p_5\ \hat{C}_T^S\ \left(
+        1 - f\left(\frac{\hat{C}_T^S}{p_6}\right)
+    \right)
 
-The rate of deformation is described by the Lagrangian tensor and its Tresca-invariant,
-see Eq. :eq:`morph-rate-of-deformation-ex`.
-
-..  note::
-    It is important to evaluate the incremental right Cauchy-Green tensor by the
-    difference of the final and the previous state of deformation, not by its variation
-    with respect to the deformation gradient tensor.
+The rate of deformation is described by the incremental modified Jaumann rate of
+the left Cauchy-Green deformation tensor and its Tresca-invariant, see Eq.
+:eq:`morph-rate-of-deformation-ex`. It is the push-forward of the non-symmetric
+Lagrangian rate tensor :math:`\hat{\boldsymbol{L}}` of [1]_. Both tensors are
+similar and share their eigenvalues, but only the push-forward is symmetric. Note
+that :math:`\Delta\hat{\boldsymbol{b}}^\ast` is not the difference of the left
+Cauchy-Green deformation tensors of the current and the previous state.
 
 ..  math::
     :label: morph-rate-of-deformation-ex
+
+    \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
 
     \hat{\boldsymbol{L}} &= \text{sym}\left(
             \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
         \right) \hat{\boldsymbol{C}}
 
-    \lambda_{\hat{\boldsymbol{L}}, \alpha} &= \text{eigvals}(\hat{\boldsymbol{L}})
+    \Delta\hat{\boldsymbol{b}}^\ast &= \boldsymbol{F}\ \hat{\boldsymbol{L}}\
+        \boldsymbol{F}^{-1} = I_3^{-1/3}\ \boldsymbol{F}\ \text{sym}\left(
+            \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
+        \right) \boldsymbol{F}^T
 
-    \hat{L}_T &= \max \left(
-        \lambda_{\hat{\boldsymbol{L}}, \alpha} - \lambda_{\hat{\boldsymbol{L}}, \beta}
-    \right)
+    \lambda_\alpha &= \text{eigvals}(\Delta\hat{\boldsymbol{b}}^\ast)
 
-    \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
+    \Delta\hat{b}^\ast_T &= \max \left( \lambda_\alpha - \lambda_\beta \right)
 
 The additional stresses evolve between the limiting stresses, see Eq.
-:eq:`morph-stresses-ex`. The additional deviatoric-enforcement terms [1]_ are neglected in
-this example.
+:eq:`morph-stresses-ex`. The additional deviatoric-enforcement terms [1]_ are neglected
+in this implementation.
 
 ..  math::
     :label: morph-stresses-ex
 
-    \boldsymbol{S}_L &= \left(
-        \gamma \exp \left(p_7 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
-            \frac{\hat{C}_T}{\hat{C}_T^S} \right) +
-            p8 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
-    \right) \boldsymbol{C}^{-1}
+    \boldsymbol{\tau}_L &= \gamma \exp \left(
+            p_7 \frac{\Delta\hat{\boldsymbol{b}}^\ast}{\Delta\hat{b}^\ast_T}
+            \frac{\hat{C}_T}{\hat{C}_T^S}
+        \right) + p_8 \frac{\Delta\hat{\boldsymbol{b}}^\ast}{\Delta\hat{b}^\ast_T}
+
+    \boldsymbol{S}_L &= \boldsymbol{F}^{-1}\ \boldsymbol{\tau}_L\ \boldsymbol{F}^{-T}
 
     \boldsymbol{S}_A &= \frac{
-        \boldsymbol{S}_{A,n} + \beta\ \hat{L}_T\ \boldsymbol{S}_L
-    }{1 + \beta\ \hat{L}_T}
+        \boldsymbol{S}_{A,n} + \beta\ \Delta\hat{b}^\ast_T\ \boldsymbol{S}_L
+    }{1 + \beta\ \Delta\hat{b}^\ast_T}
 
     \boldsymbol{S} &= 2 \alpha\ \text{dev}( \hat{\boldsymbol{C}} )
-        \boldsymbol{C}^{-1} + \text{dev}\left( \boldsymbol{S}_A\ \boldsymbol{C} \right)
+        \boldsymbol{C}^{-1}+\text{dev}\left(\boldsymbol{S}_A\ \boldsymbol{C}\right)
         \boldsymbol{C}^{-1}
 
 ..  note::
@@ -110,8 +114,6 @@ import felupe.constitution.jax as mat
 
 
 def morph(F, statevars, p):
-    "MORPH material model formulation."
-
     # right Cauchy-Green deformation tensor
     C = F.T @ F
 
@@ -152,13 +154,17 @@ def morph(F, statevars, p):
     dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
     sym = lambda C: (C + C.T) / 2
 
-    LG = sym(dev(invC @ dC)) @ CG
-    λLG = eigvalsh_ε(LG)
-    LTG = λLG[-1] - λLG[0]
+    invF = jnp.linalg.inv(F)
+    dbG = jnp.linalg.det(F) ** (-2 / 3) * F @ sym(dev(invC @ dC)) @ F.T
+
+    λdbG = eigvalsh_ε(dbG)
+    dbTG = λdbG[-1] - λdbG[0]
 
     # limiting stresses "L" and additional stresses "A"
-    SL = (γ * expm(p[6] * LG / LTG * CTG / CTS) + p[7] * LG / LTG) @ invC
-    SA = (SAn + β * LTG * SL) / (1 + β * LTG)
+    # τ is a Kirchhoff stress tensor, S are 2nd Piola-Kirchhoff stress tensors
+    τL = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
+    SL = invF @ τL @ invF.T
+    SA = (SAn + β * dbTG * SL) / (1 + β * dbTG)
 
     # second Piola-Kirchhoff stress tensor
     S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
@@ -257,7 +263,7 @@ step = fem.Step(
     boundaries=boundaries,
 )
 job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-job.evaluate(tol=1e-2)
+job.evaluate(tol=1e-4)
 
 fig, ax = job.plot(
     x=angles_deg.reshape(-1, 1),

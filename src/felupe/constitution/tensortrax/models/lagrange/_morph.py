@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from tensortrax.math import array, maximum, sqrt
 from tensortrax.math.linalg import det, eigvalsh, expm, inv
 from tensortrax.math.special import dev, from_triu_1d, sym, triu_1d, try_stack
@@ -72,34 +73,39 @@ def morph(F, statevars, p):
 
         f(x) &= \frac{1}{\sqrt{1 + x^2}}
 
-        \alpha &= p_1 + p_2 \ f(p_3\ C_T^S)
+        \alpha &= p_1 + p_2 \ f(p_3\ \hat{C}_T^S)
 
-        \beta &= p_4\ f(p_3\ C_T^S)
+        \beta &= p_4\ f(p_3\ \hat{C}_T^S)
 
-        \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
+        \gamma &= p_5\ \hat{C}_T^S\ \left(
+            1 - f\left(\frac{\hat{C}_T^S}{p_6}\right)
+        \right)
 
-    The rate of deformation is described by the Lagrangian tensor and its Tresca-
-    invariant, see Eq. :eq:`morph-rate-of-deformation`.
-
-    ..  note::
-        It is important to evaluate the incremental right Cauchy-Green tensor by the
-        difference of the final and the previous state of deformation, not by its
-        variation with respect to the deformation gradient tensor.
+    The rate of deformation is described by the incremental modified Jaumann rate of
+    the left Cauchy-Green deformation tensor and its Tresca-invariant, see Eq.
+    :eq:`morph-rate-of-deformation`. It is the push-forward of the non-symmetric
+    Lagrangian rate tensor :math:`\hat{\boldsymbol{L}}` of [1]_. Both tensors are
+    similar and share their eigenvalues, but only the push-forward is symmetric. Note
+    that :math:`\Delta\hat{\boldsymbol{b}}^\ast` is not the difference of the left
+    Cauchy-Green deformation tensors of the current and the previous state.
 
     ..  math::
         :label: morph-rate-of-deformation
 
-        \hat{\boldsymbol{L}} &= \hat{\boldsymbol{F}} \text{sym}\left(
-                \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
-            \right) \hat{\boldsymbol{F}}^T
-
-        \lambda_{\hat{\boldsymbol{L}}, \alpha} &= \text{eigvals}(\hat{\boldsymbol{L}})
-
-        \hat{L}_T &= \max \left(
-            \lambda_{\hat{\boldsymbol{L}}, \alpha}-\lambda_{\hat{\boldsymbol{L}}, \beta}
-        \right)
-
         \Delta\boldsymbol{C} &= \boldsymbol{C} - \boldsymbol{C}_n
+
+        \hat{\boldsymbol{L}} &= \text{sym}\left(
+                \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
+            \right) \hat{\boldsymbol{C}}
+
+        \Delta\hat{\boldsymbol{b}}^\ast &= \boldsymbol{F}\ \hat{\boldsymbol{L}}\
+            \boldsymbol{F}^{-1} = I_3^{-1/3}\ \boldsymbol{F}\ \text{sym}\left(
+                \text{dev}(\boldsymbol{C}^{-1} \Delta\boldsymbol{C})
+            \right) \boldsymbol{F}^T
+
+        \lambda_\alpha &= \text{eigvals}(\Delta\hat{\boldsymbol{b}}^\ast)
+
+        \Delta\hat{b}^\ast_T &= \max \left( \lambda_\alpha - \lambda_\beta \right)
 
     The additional stresses evolve between the limiting stresses, see Eq.
     :eq:`morph-stresses`. The additional deviatoric-enforcement terms [1]_ are neglected
@@ -108,15 +114,16 @@ def morph(F, statevars, p):
     ..  math::
         :label: morph-stresses
 
-        \boldsymbol{S}_L &= \left(
-            \gamma \exp \left(p_7 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
-                \frac{\hat{C}_T}{\hat{C}_T^S} \right) +
-                p8 \frac{\hat{\boldsymbol{L}}}{\hat{L}_T}
-        \right) \boldsymbol{C}^{-1}
+        \boldsymbol{\tau}_L &= \gamma \exp \left(
+                p_7 \frac{\Delta\hat{\boldsymbol{b}}^\ast}{\Delta\hat{b}^\ast_T}
+                \frac{\hat{C}_T}{\hat{C}_T^S}
+            \right) + p_8 \frac{\Delta\hat{\boldsymbol{b}}^\ast}{\Delta\hat{b}^\ast_T}
+
+        \boldsymbol{S}_L &= \boldsymbol{F}^{-1}\ \boldsymbol{\tau}_L\ \boldsymbol{F}^{-T}
 
         \boldsymbol{S}_A &= \frac{
-            \boldsymbol{S}_{A,n} + \beta\ \hat{L}_T\ \boldsymbol{S}_L
-        }{1 + \beta\ \hat{L}_T}
+            \boldsymbol{S}_{A,n} + \beta\ \Delta\hat{b}^\ast_T\ \boldsymbol{S}_L
+        }{1 + \beta\ \Delta\hat{b}^\ast_T}
 
         \boldsymbol{S} &= 2 \alpha\ \text{dev}( \hat{\boldsymbol{C}} )
             \boldsymbol{C}^{-1}+\text{dev}\left(\boldsymbol{S}_A\ \boldsymbol{C}\right)
@@ -212,16 +219,22 @@ def morph(F, statevars, p):
     β = p[3] * sigmoid(p[2] * CTS)
     γ = p[4] * CTS * (1 - sigmoid(CTS / p[5]))
 
-    LG = I3**(-1 / 3) * F @ sym(dev(invC @ dC)) @ F.T
-    λLG = eigvalsh(LG)
-    LTG = λLG[-1] - λLG[0]
+    invF = inv(F)
+    dbG = det(F) ** (-2 / 3) * F @ sym(dev(invC @ dC)) @ F.T
+
+    λdbG = eigvalsh(dbG)
+    dbTG = λdbG[-1] - λdbG[0]
 
     # limiting stresses "L" and additional stresses "A"
-    SL = (γ * expm(p[6] * LG / LTG * CTG / CTS) + p[7] * LG / LTG) @ invC
-    SA = (SAn + β * LTG * SL) / (1 + β * LTG)
+    # 𝜏 is a Kirchhoff stress tensor, S are 2nd Piola-Kirchhoff stress tensors
+    τL = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
+    SL = invF @ τL @ invF.T
+    SA = (SAn + β * dbTG * SL) / (1 + β * dbTG)
 
     # second Piola-Kirchhoff stress tensor
     S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
+
+    # update the state variables
     statevars_new = try_stack([[CTS], triu_1d(C), triu_1d(SA)], fallback=statevars)
 
     return S, statevars_new

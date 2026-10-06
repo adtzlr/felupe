@@ -76,9 +76,9 @@ def morph(F, statevars, p):
     dbTG = λdbG[-1] - λdbG[0]
 
     # limiting stresses "L" and additional stresses "A"
-    # 𝜏 is a Kirchhoff stress tensor, S are 2nd Piola-Kirchhoff stress tensors
-    𝜏L = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
-    SL = invF @ 𝜏L @ invF.T
+    # τ is a Kirchhoff stress tensor, S are 2nd Piola-Kirchhoff stress tensors
+    τL = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
+    SL = invF @ τL @ invF.T
     SA = (SAn + β * dbTG * SL) / (1 + β * dbTG)
 
     # second Piola-Kirchhoff stress tensor

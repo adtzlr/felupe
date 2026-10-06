@@ -73,11 +73,13 @@ def morph(F, statevars, p):
 
         f(x) &= \frac{1}{\sqrt{1 + x^2}}
 
-        \alpha &= p_1 + p_2 \ f(p_3\ C_T^S)
+        \alpha &= p_1 + p_2 \ f(p_3\ \hat{C}_T^S)
 
-        \beta &= p_4\ f(p_3\ C_T^S)
+        \beta &= p_4\ f(p_3\ \hat{C}_T^S)
 
-        \gamma &= p_5\ C_T^S\ \left( 1 - f\left(\frac{C_T^S}{p_6}\right) \right)
+        \gamma &= p_5\ \hat{C}_T^S\ \left(
+            1 - f\left(\frac{\hat{C}_T^S}{p_6}\right)
+        \right)
 
     The rate of deformation is described by the incremental modified Jaumann rate of
     the left Cauchy-Green deformation tensor and its Tresca-invariant, see Eq.
@@ -225,8 +227,8 @@ def morph(F, statevars, p):
 
     # limiting stresses "L" and additional stresses "A"
     # 𝜏 is a Kirchhoff stress tensor, S are 2nd Piola-Kirchhoff stress tensors
-    𝜏L = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
-    SL = invF @ 𝜏L @ invF.T
+    τL = γ * expm(p[6] * dbG / dbTG * CTG / CTS) + p[7] * dbG / dbTG
+    SL = invF @ τL @ invF.T
     SA = (SAn + β * dbTG * SL) / (1 + β * dbTG)
 
     # second Piola-Kirchhoff stress tensor

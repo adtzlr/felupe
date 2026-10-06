@@ -231,6 +231,8 @@ def morph(F, statevars, p):
 
     # second Piola-Kirchhoff stress tensor
     S = 2 * α * dev(CG) @ invC + dev(SA @ C) @ invC
+
+    # update the state variables
     statevars_new = try_stack([[CTS], triu_1d(C), triu_1d(SA)], fallback=statevars)
 
     return S, statevars_new

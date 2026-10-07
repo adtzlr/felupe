@@ -319,7 +319,10 @@ def fun_items(items, x, parallel=False):
 
     # init vector with shape from global field
     shape = (np.sum(x.fieldsizes), 1)
-    vector = csr_matrix(shape)
+
+    # assume a matrix type based on the first field values
+    dtype = x.fields[0].values.dtype
+    vector = csr_matrix(shape, dtype=dtype)
 
     for body in items:
         # assemble vector
@@ -345,7 +348,10 @@ def jac_items(items, x, parallel=False):
 
     # init matrix with shape from global field
     shape = (np.sum(x.fieldsizes), np.sum(x.fieldsizes))
-    matrix = csr_matrix(shape)
+
+    # assume a matrix type based on the first field values
+    dtype = x.fields[0].values.dtype
+    matrix = csr_matrix(shape, dtype=dtype)
 
     for body in items:
         # assemble matrix

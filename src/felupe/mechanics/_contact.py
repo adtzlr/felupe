@@ -517,7 +517,7 @@ class ContactRigidPlane(ContactPlane):
         self.results.active = contact_mask.copy()
         contact = np.where(contact_mask)[0]
 
-        r = lil_matrix((self.mesh.npoints, self.mesh.dim))
+        r = lil_matrix((self.mesh.npoints, self.mesh.dim), dtype=u.dtype)
 
         if len(contact) > 0:
             self.multipliers = self.contact_multipliers(contact)
@@ -580,7 +580,7 @@ class ContactRigidPlane(ContactPlane):
         contact = np.where(contact_mask)[0]
 
         indices = self.field[0].indices.dof
-        K = lil_matrix((self.mesh.ndof, self.mesh.ndof))
+        K = lil_matrix((self.mesh.ndof, self.mesh.ndof), dtype=u.dtype)
 
         # normal stiffness contribution
         if len(contact) > 0:

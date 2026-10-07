@@ -152,13 +152,13 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=spsolve):
 
     # init active residuals
     if r1 is None:
-        r1 = np.zeros(len(dof1))
+        r1 = np.zeros(len(dof1), dtype=u.dtype)
 
     # init external displacements
     if ext0 is None:
         ext0 = 0
         # init inactive dofs of residuals
-        dr0 = np.zeros(len(dof1))
+        dr0 = np.zeros(len(dof1), dtype=u.dtype)
     else:
         # evaluate inactive dofs of residuals
         dr0 = K10.dot(ext0 - u0)
@@ -167,7 +167,7 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=spsolve):
     du1 = solver(K11, -r1 - dr0.reshape(*r1.shape))
 
     # full solution
-    du = np.empty(u.size)
+    du = np.empty(u.size, dtype=du1.dtype)
     du[dof1] = du1
     du[dof0] = ext0 - u0
 

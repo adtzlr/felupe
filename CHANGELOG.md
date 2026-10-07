@@ -38,7 +38,6 @@ All notable changes to this project will be documented in this file. The format 
 - Use the `dtype` from the `field` values for the `statevars` in `SolidBody`.
 - Use the `dtype` from the `field` values for `SparsityPattern.assemble()`.
 
-
 ### Fixed
 - Fix the `XDMFWriterPlugin` and the `AnimationWriterPlugin`, which closed their file (or plotter) in the hook `after_iteration` if the Newton-Raphson method reached the maximum number of iterations or had NaN-valued norms. A substep which was recovered afterwards (e.g. by a cutback) could not be written. Both plugins now close their file only in `after_job`, which is also triggered if the evaluation fails. Before, the file was not closed for other errors (e.g. NaN values in the solution).
 - Fix `SolidBodyNearlyIncompressible.restore()`: the internal fields (pressure and volume ratio) of the checkpoint are now restored exactly. Before, they were overwritten by the re-evaluation of the results, which updated the internal fields with the deformation gradient of the last evaluation (e.g. of a failed Newton iteration). With `restore_state=False`, the internal fields are re-initialized by the deformation of the restored field.

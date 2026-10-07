@@ -292,7 +292,8 @@ class SolidBody(Solid):
                     *statevars_shape,
                     field.region.quadrature.npoints,
                     field.region.mesh.ncells,
-                )
+                ),
+                dtype=self.field[0].values.dtype,
             )
 
         self.assemble = Assemble(

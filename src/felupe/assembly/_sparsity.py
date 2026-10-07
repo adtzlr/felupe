@@ -112,7 +112,9 @@ class SparsityPattern:
         if values.shape[-1] != self.ncells:
             values = np.broadcast_to(values, (*values.shape[:-1], self.ncells))
 
-        data = np.bincount(self.position, weights=values.ravel(), minlength=self.nnz)
+        data = np.bincount(
+            self.position, weights=values.ravel(), minlength=self.nnz
+        ).astype(dtype=values.dtype, copy=False)
 
         # copies of the indices, the sparse matrix may be modified in-place
         matrix = csr_matrix(

@@ -167,7 +167,7 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=spsolve):
     du1 = solver(K11, -r1 - dr0.reshape(*r1.shape))
 
     # full solution
-    du = np.empty(u.size)
+    du = np.empty(u.size, dtype=du1.dtype)
     du[dof1] = du1
     du[dof0] = ext0 - u0
 

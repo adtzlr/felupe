@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file. The format 
 - Evaluate the chunks of the bilinear form of the gradients of the test and the trial field in `IntegralFormCartesian.integrate(parallel=True)` by a pool of threads (one per usable CPU of the process, e.g. the CPUs of a job on a shared HPC-node), instead of `einsumt` with NumPy's default contraction path. With a multi-threaded BLAS-library, limit its number of threads to avoid an oversubscription of the CPUs.
 - Use the `dtype` from the `field` values for the `statevars` in `SolidBody` and `SolidBodyNearlyIncompressible` and `ContactRigidPlane`.
 - Use the `dtype` from the `field` values for `SparsityPattern.assemble()`.
+- Keep the `dtype` in `solve()` and `newtonraphson()` when `items` are used.
 
 ### Fixed
 - Fix the `XDMFWriterPlugin` and the `AnimationWriterPlugin`, which closed their file (or plotter) in the hook `after_iteration` if the Newton-Raphson method reached the maximum number of iterations or had NaN-valued norms. A substep which was recovered afterwards (e.g. by a cutback) could not be written. Both plugins now close their file only in `after_job`, which is also triggered if the evaluation fails. Before, the file was not closed for other errors (e.g. NaN values in the solution).

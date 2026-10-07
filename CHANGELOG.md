@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file. The format 
 - Evaluate the linear form of the gradient of the test field in `IntegralFormCartesian.integrate()` by a single contraction (`optimize=False`). This is about 1.1-11x faster than NumPy's default contraction path, e.g. for the internal force vector.
 - The update of a field container in `newtonraphson()` shares the regions, meshes and indices of the fields with the field container of the last iteration (like `FieldContainer.checkpoint()`), only the field containers, the fields and their values are copied. Before, the whole field container was deep-copied in each iteration, including the regions with the gradients of the shape functions. The arithmetic operators of a field container, e.g. `x + dx`, are not changed.
 - Evaluate the chunks of the bilinear form of the gradients of the test and the trial field in `IntegralFormCartesian.integrate(parallel=True)` by a pool of threads (one per usable CPU of the process, e.g. the CPUs of a job on a shared HPC-node), instead of `einsumt` with NumPy's default contraction path. With a multi-threaded BLAS-library, limit its number of threads to avoid an oversubscription of the CPUs.
-- Use the `dtype` from the `field` values for the `statevars` in `SolidBody`.
+- Use the `dtype` from the `field` values for the `statevars` in `SolidBody` and `SolidBodyNearlyIncompressible`.
 - Use the `dtype` from the `field` values for `SparsityPattern.assemble()`.
 
 ### Fixed

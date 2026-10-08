@@ -51,15 +51,20 @@ def _extract_surface(mesh):
     import pyvista as pv
 
     mesh = pv.wrap(mesh)
+
+    # pass the point ids as point data, ``vtkOriginalPointIds`` of the extracted
+    # surface are wrong for quadratic cells (e.g. hexahedron20 or tetra10)
+    mesh.point_data["point_ids"] = np.arange(mesh.n_points)
     try:
         surface = mesh.extract_surface(
-            pass_pointid=True, pass_cellid=True, algorithm=None
+            pass_pointid=False, pass_cellid=False, algorithm=None
         )
-    except TypeError:  # older PyVista without ``algorithm``
-        surface = mesh.extract_surface(pass_pointid=True, pass_cellid=True)
+    except TypeError:  # pragma: no cover (older PyVista without ``algorithm``)
+        surface = mesh.extract_surface(pass_pointid=False, pass_cellid=False)
 
-    if "vtkOriginalPointIds" not in surface.point_data:
-        surface.point_data["vtkOriginalPointIds"] = np.arange(surface.n_points)
+    # check before the normals are computed (PyVista raises a TypeError otherwise)
+    if surface.GetNumberOfPolys() != surface.n_cells:
+        raise ValueError("The extracted surface must only contain polygons.")
 
     # consistent orientation, so that the angle between neighbouring normals
     # is the kink angle of the surface (no point splitting -> ids unchanged)
@@ -70,8 +75,6 @@ def _extract_surface(mesh):
         consistent_normals=True,
         auto_orient_normals=False,
     )
-    if surface.GetNumberOfPolys() != surface.n_cells:
-        raise ValueError("The extracted surface must only contain polygons.")
     return surface
 
 
@@ -183,12 +186,12 @@ def select_surface_points(
     Right click   finish (a drag zooms as usual), same as q or closing the window
     Button / c    clear the selection
     """
-    from vtkmodules.vtkRenderingCore import vtkCellPicker
     import pyvista as pv
+    from vtkmodules.vtkRenderingCore import vtkCellPicker
 
     surface = _extract_surface(mesh.as_unstructured_grid())
     topology = _topology(surface)
-    point_ids = np.asarray(surface.point_data["vtkOriginalPointIds"])
+    point_ids = np.asarray(surface.point_data["point_ids"])
 
     state = dict(
         angle=float(angle),
@@ -207,7 +210,12 @@ def select_surface_points(
         return np.unique(topology["conn"][mask])
 
     if selected_color is None:
-        selected_color = pv.global_theme.color.name
+        selected_color = pv.global_theme.color
+
+    # the colormap is created by matplotlib, which doesn't know all PyVista color
+    # names (e.g. "light_blue" of the default theme) -> use hex strings instead
+    color = pv.Color(color).hex_rgb
+    selected_color = pv.Color(selected_color).hex_rgb
 
     # always use a native, blocking window
     plotter = pv.Plotter(notebook=False, **kwargs)

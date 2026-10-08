@@ -175,6 +175,12 @@ def _show(plotter, name, toggle, clear, set_angle, angle, slider):
         )
 
     set_angle(angle)
+
+    # look at planar meshes from the top, same as ``Scene.plot()``
+    if np.allclose(plotter.bounds[4:], 0):
+        plotter.view_xy()
+        plotter.enable_parallel_projection()
+
     plotter.show()
 
 

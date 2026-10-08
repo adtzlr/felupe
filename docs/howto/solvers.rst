@@ -1,7 +1,13 @@
 Use external solvers
 --------------------
 
-FElupe uses SuperLU as direct sparse solver by default because it is shipped with SciPy (and SciPy is already a dependency of FElupe). While it is definitely a good choice for small to mid-sized problems, faster alternatives are easy to install and use. This section demonstrates several possibilities, e.g. a fast direct solver from `PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``) and the :func:`~scipy.sparse.linalg.minres` iterative solver from ``SciPy``. Custom solvers may be passed to the evaluation of a :class:`~felupe.Job`.
+FElupe uses SuperLU as direct sparse solver by default because it is shipped with SciPy
+(and SciPy is already a dependency of FElupe). While it is definitely a good choice for
+small to mid-sized problems, faster alternatives are easy to install and use. This
+section demonstrates several possibilities, e.g. a fast direct solver from
+`PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``)
+and the :func:`~scipy.sparse.linalg.minres` iterative solver from ``SciPy``. Custom
+solvers may be passed to the evaluation of a :class:`~felupe.Job`.
 
 ..  code-block:: python
 

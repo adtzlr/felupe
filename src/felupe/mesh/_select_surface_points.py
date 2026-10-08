@@ -286,4 +286,6 @@ def select_surface_points(
     plotter.show()
 
     selected = surface.extract_cells(np.flatnonzero(selected_faces()))
-    return np.unique(selected.point_data["point_ids"])
+
+    point_ids = selected.point_data.get("point_ids", np.array([], dtype=int))
+    return np.unique(point_ids)

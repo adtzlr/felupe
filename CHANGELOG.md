@@ -50,6 +50,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix repeated evaluations of a `Job` or a `CharacteristicCurve`. Before, `Job.evaluate()` added its built-in plugins, i.e. the `ProgressPlugin` and the `XDMFWriterPlugin`, to the dispatcher of the job on each call. Hence, the built-in plugins of all previous evaluations were triggered again, e.g. the progress was shown multiple times and the result file of a previous evaluation was overwritten. Now, `Job.evaluate()` creates a new dispatcher for each evaluation with the plugins of the job and the built-in plugins of this evaluation. The dispatcher of the job, `Job.dispatcher`, is not modified.
 - Fix a wrong contraction in `saint_venant_kirchhoff_orthotropic()` (tensortrax backend).
 - Fix `CharacteristicCurve`, when additional plugins are passed.
+- Fix the matrix in `ContactRigidPlane` for center points, which are only partly constrained.
 
 ## [11.1.3] - 2026-09-28
 

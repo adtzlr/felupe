@@ -20,7 +20,7 @@ from functools import wraps
 
 import numpy as np
 
-from ..view import ViewMesh
+from ..view import ViewMesh, select_surface_points
 from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,
@@ -34,7 +34,6 @@ from ._convert import (
 )
 from ._discrete_geometry import DiscreteGeometry
 from ._dual import dual
-from ._select_surface_points import select_surface_points
 from ._tools import (
     expand,
     extrude,

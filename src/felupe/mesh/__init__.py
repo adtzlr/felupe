@@ -28,7 +28,6 @@ from ._line_rectangle_cube import line_line as _line_line
 from ._line_rectangle_cube import rectangle_quad as _rectangle_quad
 from ._mesh import Mesh
 from ._read import read
-from ._select_surface_points import select_surface_points
 from ._tools import (
     concatenate,
     expand,
@@ -86,7 +85,6 @@ __all__ = [
     "revolve",
     "rotate",
     "runouts",
-    "select_surface_points",
     "stack",
     "subdivide",
     "sweep",

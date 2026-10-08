@@ -142,7 +142,7 @@ def test_select_surface_points():
             click((2, 2)),  # click on the background, no selection
             finish,
         ):
-            selected = fem.mesh.select_surface_points(mesh)
+            selected = fem.view.select_surface_points(mesh)
 
         assert np.array_equal(selected, point_ids(np.isclose(x, 1)))
 

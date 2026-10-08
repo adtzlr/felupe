@@ -133,11 +133,14 @@ def select_surface_points(
     numpy.ndarray
         Sorted point ids (of ``mesh``) of all faces on the selected patches.
 
-    Controls
-    --------
-    Left click    toggle the patch under the cursor (a drag rotates as usual)
-    Right click   finish (a drag zooms as usual), same as q or closing the window
-    Button / c    clear the selection
+    Notes
+    -----
+    The selection is controlled by the mouse and the keyboard.
+
+    * **Left click**: toggle the patch under the cursor (a drag rotates as usual).
+    * **Right click**: finish (a drag zooms as usual), same as ``q`` or closing the
+      window.
+    * **Button** or ``c``: clear the selection.
     """
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker

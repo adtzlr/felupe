@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add `Step.generate_states(stepnumber=None, time=None, **kwargs)`, which yields the `SubstepState` of each completed substep. `Step.generate()` still yields the results of the substeps.
 - Add the attribute `error` to `JobState`.
 - Add the methods `checkpoint()` and `restore(checkpoint)` to `thermal.TimeStep` (the old time) and to `ContactRigidPlane` (the state of the frictional contact).
-- Add `mesh.select_surface_points()` and `Mesh.select_surface_points()` to interactively select points by surface patches.
+- Add `view.select_surface_points()` and `Mesh.select_surface_points()` to interactively select points by surface patches.
 - Add `Boundary(..., select=False)` to interactively select points for the boundary condition by surface patches.
 
 ### Changed

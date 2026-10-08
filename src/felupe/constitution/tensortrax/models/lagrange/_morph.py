@@ -135,6 +135,13 @@ def morph(F, statevars, p):
         variables with :func:`tm.special.from_triu_1d` and export them as
         :func:`tm.special.triu_1d`.
 
+    
+    ..  warning::
+        The MORPH material model starts with an initially major-symmetric fourth-order
+        elasticity tensor, which becomes unsymmetric due to the evolution of the
+        internal state variables. Hence, don't use a symmetric solver for this material
+        model.
+
     Examples
     --------
     First, choose the desired automatic differentiation backend

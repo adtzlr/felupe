@@ -52,8 +52,12 @@ class Boundary:
     mode : string, optional
         A string which defines the logical operation for the selected points per
         axis (default is ``"or"``).
-    select : bool, optional
-        Whether to interactively select surface points on the mesh (default is False).
+    select_points : str or None, optional
+        Interactively select the points of the boundary on the mesh, either by surface
+        patches (``"surfaces"``, see :func:`~felupe.view.select_surface_points`) or by
+        edge patches (``"edges"``, see :func:`~felupe.view.select_edge_points`). If
+        given, ``fx``, ``fy``, ``fz`` and ``mask`` are ignored. However, ``skip`` is
+        still applied on the selected points. Default is None.
 
     Attributes
     ----------
@@ -189,7 +193,7 @@ class Boundary:
         skip=None,
         mask=None,
         mode="or",
-        select=False,
+        select_points=None,
     ):
         mesh = field.region.mesh
 
@@ -209,9 +213,13 @@ class Boundary:
         if self.skip is None:
             self.skip = (False, False, False)
 
-        if select:
+        if select_points is not None:
+            select = {
+                "surfaces": mesh.select_surface_points,
+                "edges": mesh.select_edge_points,
+            }[select_points]
             mask = np.zeros(mesh.npoints, dtype=bool)
-            mask[mesh.select_surface_points()] = True
+            mask[select()] = True
 
         if mask is None:
             self.skip = np.array(self.skip).astype(int)[: self.dim]

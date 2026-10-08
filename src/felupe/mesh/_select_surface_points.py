@@ -17,8 +17,6 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from scipy.sparse import coo_matrix
-from scipy.sparse.csgraph import connected_components
 
 
 def _on_click(interactor, button, callback, tolerance=6):
@@ -47,102 +45,57 @@ def _on_click(interactor, button, callback, tolerance=6):
 
 
 def _extract_surface(mesh):
-    "Return the boundary surface with cell normals and original point ids."
-    import pyvista as pv
-
-    mesh = pv.wrap(mesh)
+    "Return the boundary surface of a mesh with the original point ids."
 
     # pass the point ids as point data, ``vtkOriginalPointIds`` of the extracted
     # surface are wrong for quadratic cells (e.g. hexahedron20 or tetra10)
-    mesh.point_data["point_ids"] = np.arange(mesh.n_points)
+    grid = mesh.as_unstructured_grid()
+    grid.point_data["point_ids"] = np.arange(grid.n_points)
     try:
-        surface = mesh.extract_surface(
+        surface = grid.extract_surface(
             pass_pointid=False, pass_cellid=False, algorithm=None
         )
     except TypeError:  # pragma: no cover (older PyVista without ``algorithm``)
-        surface = mesh.extract_surface(pass_pointid=False, pass_cellid=False)
+        surface = grid.extract_surface(pass_pointid=False, pass_cellid=False)
 
-    # check before the normals are computed (PyVista raises a TypeError otherwise)
     if surface.GetNumberOfPolys() != surface.n_cells:
         raise ValueError("The extracted surface must only contain polygons.")
 
-    # consistent orientation, so that the angle between neighbouring normals
-    # is the kink angle of the surface (no point splitting -> ids unchanged)
-    surface = surface.compute_normals(
-        cell_normals=True,
-        point_normals=False,
-        split_vertices=False,
-        consistent_normals=True,
-        auto_orient_normals=False,
-    )
     return surface
 
 
-def _topology(surface):
+def _surface_patches(surface, angle):
+    """Split the surface at all edges with a kink angle above ``angle`` (in degrees).
+    Return the patch label per face (the connected regions of the split surface) and
+    the borders of the patches (the boundary edges of the split surface)."""
     from vtkmodules.util.numpy_support import vtk_to_numpy
+    from vtkmodules.vtkFiltersCore import vtkConnectivityFilter
 
-    "Face connectivity, edges and all pairs of faces which share an edge."
-    polys = surface.GetPolys()
-    offsets = vtk_to_numpy(polys.GetOffsetsArray()).astype(np.int64)
-    conn = vtk_to_numpy(polys.GetConnectivityArray()).astype(np.int64)
-    n_faces = len(offsets) - 1
-
-    # face id of each connectivity entry and the edge to the next vertex
-    face = np.repeat(np.arange(n_faces), np.diff(offsets))
-    nxt = np.arange(1, len(conn) + 1)
-    nxt[offsets[1:] - 1] = offsets[:-1]
-    edges = np.sort(np.column_stack([conn, conn[nxt]]), axis=1)
-
-    unique_edges, edge_id = np.unique(edges, axis=0, return_inverse=True)
-    edge_id = edge_id.ravel()
-    order = np.argsort(edge_id, kind="stable")
-    edge_faces = face[order]  # faces grouped by edge
-    counts = np.bincount(edge_id, minlength=len(unique_edges))
-    starts = np.concatenate([[0], np.cumsum(counts)[:-1]])
-
-    # all pairs of faces per edge (also for non-manifold edges)
-    pairs = [np.zeros((0, 2), dtype=np.int64)]
-    for k in np.unique(counts[counts > 1]):
-        idx = starts[counts == k][:, None] + np.arange(k)
-        f = edge_faces[idx]
-        i, j = np.triu_indices(k, 1)
-        pairs.append(np.column_stack([f[:, i].ravel(), f[:, j].ravel()]))
-    pairs = np.concatenate(pairs)
-
-    return dict(
-        n_faces=n_faces,
-        face=face,
-        conn=conn,
-        pairs=pairs,
-        edges=unique_edges,
-        edge_faces=edge_faces,
-        counts=counts,
-        starts=starts,
+    # consistent orientation, so that the angle between neighbouring normals
+    # is the kink angle of the surface (the order of the faces is not changed)
+    split = surface.compute_normals(
+        cell_normals=False,
+        point_normals=True,
+        split_vertices=True,
+        feature_angle=angle,
+        consistent_normals=True,
+        auto_orient_normals=False,
     )
 
+    connectivity = vtkConnectivityFilter()
+    connectivity.SetInputData(split)
+    connectivity.SetExtractionModeToAllRegions()
+    connectivity.ColorRegionsOn()
+    connectivity.Update()
+    regions = connectivity.GetOutput().GetCellData().GetArray("RegionId")
 
-def surface_patches(surface, topology, angle):
-    "Patch label per face: connected faces with normal angles below ``angle``."
-
-    normals = surface.cell_data["Normals"]
-    a, b = topology["pairs"].T
-    cos = np.einsum("ij,ij->i", normals[a], normals[b])
-    keep = cos >= np.cos(np.deg2rad(angle))
-    n = topology["n_faces"]
-    graph = coo_matrix((np.ones(keep.sum()), (a[keep], b[keep])), shape=(n, n))
-    return connected_components(graph, directed=False)[1]
-
-
-def _feature_edges(surface, topology, labels):
-    "Lines along patch borders and open boundaries."
-    import pyvista as pv
-
-    lab = labels[topology["edge_faces"]]
-    lo = np.minimum.reduceat(lab, topology["starts"])
-    hi = np.maximum.reduceat(lab, topology["starts"])
-    edges = topology["edges"][(topology["counts"] == 1) | (lo != hi)]
-    lines = np.column_stack([np.full(len(edges), 2), edges]).ravel()
-    return pv.PolyData(surface.points, lines=lines)
+    borders = split.extract_feature_edges(
+        boundary_edges=True,
+        feature_edges=False,
+        manifold_edges=False,
+        non_manifold_edges=False,
+    )
+    return vtk_to_numpy(regions), borders
 
 
 def select_surface_points(
@@ -189,25 +142,12 @@ def select_surface_points(
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker
 
-    surface = _extract_surface(mesh.as_unstructured_grid())
-    topology = _topology(surface)
-    point_ids = np.asarray(surface.point_data["point_ids"])
-
-    state = dict(
-        angle=float(angle),
-        labels=surface_patches(surface, topology, angle),
-        seeds=[],  # clicked faces, patches are re-evaluated if the angle changes
-    )
+    surface = _extract_surface(mesh)
+    state = dict(seeds=[])  # clicked faces, re-evaluated if the angle changes
     surface.cell_data["selected"] = np.zeros(surface.n_cells, dtype=np.uint8)
 
     def selected_faces():
-        if not state["seeds"]:
-            return np.zeros(topology["n_faces"], dtype=bool)
         return np.isin(state["labels"], state["labels"][state["seeds"]])
-
-    def selected_surface_points():
-        mask = selected_faces()[topology["face"]]
-        return np.unique(topology["conn"][mask])
 
     if selected_color is None:
         selected_color = pv.global_theme.color
@@ -243,17 +183,10 @@ def select_surface_points(
     def update():
         faces = selected_faces()
         surface.cell_data["selected"] = faces.astype(np.uint8)
-        plotter.add_mesh(
-            _feature_edges(surface, topology, state["labels"]),
-            color="black",
-            line_width=3,
-            name="feature_edges",
-            pickable=False,
-        )
-        points = selected_surface_points()
-        if len(points) > 0:
+        selected = surface.extract_cells(np.flatnonzero(faces))
+        if selected.n_points > 0:
             plotter.add_points(
-                surface.points[points],
+                selected.points,
                 color=selected_color,
                 point_size=8,
                 name="selected_points",
@@ -264,7 +197,7 @@ def select_surface_points(
         n_patches = len(np.unique(state["labels"][state["seeds"]]))
         plotter.add_text(
             f"Angle: {state['angle']:.0f} deg   "
-            f"Surface patches: {n_patches}   Points: {len(points)}",
+            f"Surface patches: {n_patches}   Points: {selected.n_points}",
             position="upper_left",
             font_size=10,
             name="info",
@@ -309,8 +242,17 @@ def select_surface_points(
         clear()
 
     def set_angle(value):
-        state["angle"] = np.round(float(value))
-        state["labels"] = surface_patches(surface, topology, value)
+        state["angle"] = float(value)
+        state["labels"], borders = _surface_patches(surface, value)
+        plotter.remove_actor("patch_borders")
+        if borders.n_cells > 0:
+            plotter.add_mesh(
+                borders,
+                color="black",
+                line_width=3,
+                name="patch_borders",
+                pickable=False,
+            )
         update()
 
     _on_click(plotter.iren.interactor, "Left", toggle_patch)
@@ -340,7 +282,8 @@ def select_surface_points(
             interaction_event="end",
         )
 
-    update()
+    set_angle(angle)
     plotter.show()
 
-    return np.unique(point_ids[selected_surface_points()])
+    selected = surface.extract_cells(np.flatnonzero(selected_faces()))
+    return np.unique(selected.point_data["point_ids"])

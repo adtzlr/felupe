@@ -38,20 +38,30 @@ import felupe as fem
 def interact(*actions):
     """Run an interactive selection off-screen. Instead of starting the event loop,
     ``Plotter.show()`` applies the given actions to the plotter, i.e. it simulates
-    the clicks, key presses and widget interactions of a user."""
+    the clicks, key presses and widget interactions of a user.
+
+    Nothing is rendered, because the CI runners have no (virtual) display. The cell
+    picker works on the geometry and the camera only. The interactor isn't enabled
+    without rendering, hence the events are invoked directly. The interactor style
+    (rotate, zoom, ...) and the widgets must not process the mouse events (they
+    would crash without a render window).
+    """
 
     pv = pytest.importorskip("pyvista")
-    show = pv.Plotter.show
 
-    def show_and_interact(plotter, *args, **kwargs):
+    def show(plotter, *args, **kwargs):
         plotter.view_isometric()  # camera looks at the faces x=1, y=1 and z=1
-        plotter.renderer.GetRenderWindow().Render()
+        plotter.iren.interactor.SetInteractorStyle(None)
+        for widget in [
+            *widgets(plotter).button_widgets,
+            *widgets(plotter).slider_widgets,
+        ]:
+            widget.ProcessEventsOff()
         for action in actions:
             action(plotter)
-        return show(plotter, *args, **kwargs)
 
     with mock.patch.object(pv, "OFF_SCREEN", True):
-        with mock.patch.object(pv.Plotter, "show", show_and_interact):
+        with mock.patch.object(pv.Plotter, "show", show):
             yield
 
 
@@ -71,9 +81,9 @@ def click(point, button="Left", drag=0):
         x, y = int(round(x)), int(round(y))
         interactor = plotter.iren.interactor
         interactor.SetEventPosition(x, y)
-        getattr(interactor, f"{button}ButtonPressEvent")()
+        interactor.InvokeEvent(f"{button}ButtonPressEvent")
         interactor.SetEventPosition(x + drag, y + drag)
-        getattr(interactor, f"{button}ButtonReleaseEvent")()
+        interactor.InvokeEvent(f"{button}ButtonReleaseEvent")
 
     return action
 
@@ -82,7 +92,7 @@ def press_key(key):
     def action(plotter):
         interactor = plotter.iren.interactor
         interactor.SetKeySym(key)
-        interactor.KeyPressEvent()
+        interactor.InvokeEvent("KeyPressEvent")
 
     return action
 

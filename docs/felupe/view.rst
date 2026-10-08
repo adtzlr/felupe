@@ -14,6 +14,7 @@ Visualization methods for meshes, mesh and field containers as well as solid bod
    ViewSolid
    ViewXdmf
    view.select_surface_points
+   view.select_edge_points
 
 **Detailed API Reference**
 
@@ -28,3 +29,5 @@ Visualization methods for meshes, mesh and field containers as well as solid bod
 .. autofunction:: felupe.ViewXdmf
 
 .. autofunction:: felupe.view.select_surface_points
+
+.. autofunction:: felupe.view.select_edge_points

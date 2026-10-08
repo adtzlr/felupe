@@ -227,6 +227,11 @@ def select_surface_points(
     * **Right click**: finish (a drag zooms as usual), same as ``q`` or closing the
       window.
     * **Button** or ``c``: clear the selection.
+
+    See Also
+    --------
+    felupe.view.select_edge_points : Interactively select smooth edge patches and
+        return their point ids.
     """
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker

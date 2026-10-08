@@ -65,9 +65,10 @@ def interact(*actions):
             yield
 
 
-def click(point, button="Left", drag=0):
-    """Click on a point given in world (x, y, z) or display (x, y) coordinates. The
-    button is released ``drag`` pixels away from the position where it was pressed.
+def click(point, button="Left", drag=0, offset=(0, 0)):
+    """Click on a point given in world (x, y, z) or display (x, y) coordinates, moved
+    by ``offset`` pixels. The button is released ``drag`` pixels away from the position
+    where it was pressed.
     """
 
     def action(plotter):
@@ -78,7 +79,7 @@ def click(point, button="Left", drag=0):
         else:
             x, y = point
 
-        x, y = int(round(x)), int(round(y))
+        x, y = int(round(x + offset[0])), int(round(y + offset[1]))
         interactor = plotter.iren.interactor
         interactor.SetEventPosition(x, y)
         interactor.InvokeEvent(f"{button}ButtonPressEvent")
@@ -113,6 +114,16 @@ def move_slider(value):
         slider = widgets(plotter).slider_widgets[0]
         slider.GetRepresentation().SetValue(value)
         slider.InvokeEvent("EndInteractionEvent")
+
+    return action
+
+
+def parallel_projection(expected):
+    "Check the camera projection (it is not changed by the isometric view)."
+
+    def action(plotter):
+        camera = plotter.renderer.GetActiveCamera()
+        assert bool(camera.GetParallelProjection()) == expected
 
     return action
 
@@ -231,15 +242,178 @@ def test_select_surface_points_without_polygons():
         fem.mesh.Line(n=3).select_surface_points()
 
 
-def test_boundary_select():
+def test_select_edge_points():
+    meshes = [
+        fem.Cube(n=3),
+        fem.Cube(n=3).triangulate(),
+        fem.Cube(n=3).add_midpoints_edges(),
+    ]
+
+    for mesh in meshes:
+        x, y, z = mesh.points.T
+
+        with interact(
+            parallel_projection(False),
+            click((1.0, 1.0, 0.25)),  # select the edge x=1, y=1
+            click((0.5, 1.0, 1.0)),  # select the edge y=1, z=1
+            click((0.5, 1.0, 1.0)),  # deselect the edge y=1, z=1
+            click((1.0, 0.5, 0.5)),  # the edge behind the face x=1 is hidden
+            click((0.5, 0.5, 1.0)),  # the edge behind the face z=1 is hidden
+            click((0.5, 1.0, 1.0), drag=50),  # a drag rotates, no selection
+            click((2, 2)),  # click on the background, no selection
+            finish,
+        ):
+            selected = fem.view.select_edge_points(mesh)
+
+        assert np.array_equal(selected, point_ids(np.isclose(x, 1) & np.isclose(y, 1)))
+
+        # click next to the edges, outside and inside of the silhouette
+        with interact(
+            click((1.0, 0.5, 0.0), offset=(3, -3)),
+            click((0.0, 0.5, 1.0), offset=(3, -3)),
+            finish,
+        ):
+            selected = mesh.select_edge_points(slider=False, color="grey")
+
+        assert np.array_equal(
+            selected,
+            point_ids(
+                (np.isclose(x, 1) & np.isclose(z, 0))
+                | (np.isclose(x, 0) & np.isclose(z, 1))
+            ),
+        )
+
+
+def test_select_edge_points_clear():
+    mesh = fem.Cube(n=3)
+    x, y, z = mesh.points.T
+
+    with interact(
+        click((1.0, 1.0, 0.25)),
+        press_key("c"),  # clear the selection
+        click((0.5, 1.0, 1.0)),
+        push_clear_button,  # clear the selection
+        click((1.0, 0.5, 1.0)),
+        finish,
+    ):
+        selected = mesh.select_edge_points(selected_color="red")
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & np.isclose(z, 1)))
+
+    # no selection
+    with interact(finish):
+        selected = mesh.select_edge_points()
+
+    assert len(selected) == 0
+
+
+def test_select_edge_points_angle():
+    mesh = fem.Cube(n=3)
+    x, y, z = mesh.points.T
+
+    # there are no edges for angles above 90 degrees
+    with interact(click((1.0, 1.0, 0.25)), move_slider(120), finish):
+        selected = mesh.select_edge_points()
+
+    assert len(selected) == 0
+
+    with interact(click((1.0, 1.0, 0.25)), finish):
+        selected = mesh.select_edge_points(angle=120)
+
+    assert len(selected) == 0
+
+    # the clicked edge is selected again
+    with interact(click((1.0, 1.0, 0.25)), move_slider(120), move_slider(30), finish):
+        selected = mesh.select_edge_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & np.isclose(y, 1)))
+
+
+def test_select_edge_points_planar():
+    mesh = fem.Rectangle(n=4)
+    x, y = mesh.points.T
+
+    with interact(parallel_projection(True), click((1.0, 0.5, 0.0)), finish):
+        selected = mesh.select_edge_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1)))
+
+    # all edges of the boundary are on one patch for angles above 90 degrees
+    with interact(click((1.0, 0.5, 0.0)), move_slider(120), finish):
+        selected = mesh.select_edge_points()
+
+    boundary = np.isclose(x, 0) | np.isclose(x, 1) | np.isclose(y, 0) | np.isclose(y, 1)
+    assert np.array_equal(selected, point_ids(boundary))
+
+
+def test_select_edge_points_curved():
+    # a ring with inner radius 1 and outer radius 2, revolved around the x-axis
+    mesh = fem.Rectangle(a=(0, 1), b=(1, 2), n=3).revolve(n=37, phi=360)
+    x, y, z = mesh.points.T
+    radius = np.hypot(y, z)
+
+    # the outer circle is a smooth patch (10 degrees between neighbouring edges)
+    with interact(click((1.0, np.sqrt(2), np.sqrt(2))), finish):
+        selected = mesh.select_edge_points(angle=30)
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & np.isclose(radius, 2)))
+
+    # one edge
+    with interact(click((1.0, np.sqrt(2), np.sqrt(2))), finish):
+        selected = mesh.select_edge_points(angle=5)
+
+    assert len(selected) == 2
+    assert np.allclose(x[selected], 1)
+    assert np.allclose(radius[selected], 2)
+
+
+def test_select_edge_points_without_polygons():
+    pytest.importorskip("pyvista")
+
+    with pytest.raises(ValueError):
+        fem.mesh.Line(n=3).select_edge_points()
+
+
+def test_boundary_select_points():
     mesh = fem.Cube(n=3)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
 
     with interact(click((1.0, 0.5, 0.5)), finish):
-        boundary = fem.Boundary(field[0], select=True, skip=(0, 1, 1), value=0.2)
+        boundary = fem.Boundary(
+            field[0], select_points="surfaces", skip=(0, 1, 1), value=0.2
+        )
 
     expected = fem.Boundary(field[0], fx=1, skip=(0, 1, 1), value=0.2)
+
+    assert np.array_equal(boundary.mask, expected.mask)
+    assert np.array_equal(boundary.points, expected.points)
+    assert np.array_equal(boundary.dof, expected.dof)
+
+    with interact(click((1.0, 1.0, 0.25)), finish):
+        boundary = fem.Boundary(
+            field[0], select_points="edges", skip=(0, 1, 1), value=0.2
+        )
+
+    expected = fem.Boundary(field[0], fx=1, fy=1, mode="and", skip=(0, 1, 1))
+
+    assert np.array_equal(boundary.mask, expected.mask)
+    assert np.array_equal(boundary.points, expected.points)
+    assert np.array_equal(boundary.dof, expected.dof)
+
+    with pytest.raises(KeyError):
+        fem.Boundary(field[0], select_points="points")
+
+
+def test_boundary_select_points_planar():
+    mesh = fem.Rectangle(n=3)
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=2)])
+
+    with interact(click((0.0, 0.5, 0.0)), finish):
+        boundary = fem.Boundary(field[0], select_points="edges")
+
+    expected = fem.Boundary(field[0], fx=0)
 
     assert np.array_equal(boundary.mask, expected.mask)
     assert np.array_equal(boundary.points, expected.points)
@@ -252,4 +426,11 @@ if __name__ == "__main__":
     test_select_surface_points_angle()
     test_select_surface_points_curved()
     test_select_surface_points_without_polygons()
-    test_boundary_select()
+    test_select_edge_points()
+    test_select_edge_points_clear()
+    test_select_edge_points_angle()
+    test_select_edge_points_planar()
+    test_select_edge_points_curved()
+    test_select_edge_points_without_polygons()
+    test_boundary_select_points()
+    test_boundary_select_points_planar()

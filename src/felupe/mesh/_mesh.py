@@ -20,7 +20,7 @@ from functools import wraps
 
 import numpy as np
 
-from ..view import ViewMesh, select_surface_points
+from ..view import ViewMesh, select_edge_points, select_surface_points
 from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,
@@ -1754,3 +1754,7 @@ class Mesh(DiscreteGeometry):
     @wraps(select_surface_points)
     def select_surface_points(self, **kwargs):
         return select_surface_points(self, **kwargs)
+
+    @wraps(select_edge_points)
+    def select_edge_points(self, **kwargs):
+        return select_edge_points(self, **kwargs)

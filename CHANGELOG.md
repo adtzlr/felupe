@@ -17,7 +17,8 @@ All notable changes to this project will be documented in this file. The format 
 - Add the attribute `error` to `JobState`.
 - Add the methods `checkpoint()` and `restore(checkpoint)` to `thermal.TimeStep` (the old time) and to `ContactRigidPlane` (the state of the frictional contact).
 - Add `view.select_surface_points()` and `Mesh.select_surface_points()` to interactively select points by surface patches.
-- Add `Boundary(..., select=False)` to interactively select points for the boundary condition by surface patches.
+- Add `view.select_edge_points()` and `Mesh.select_edge_points()` to interactively select points by edge patches. The edges are the borders of the surface patches, i.e. the edges between faces with a kink angle above `angle` and the boundary edges of open surfaces, e.g. of 2d-meshes. An edge patch is a chain of connected edges, which is split at points with a kink angle above `angle` and at points with more than two edges. Edges which are hidden behind the surface are not selected.
+- Add `Boundary(..., select_points=None)` to interactively select points for the boundary condition by surface patches (`select_points="surfaces"`) or by edge patches (`select_points="edges"`).
 
 ### Changed
 - `newtonraphson()` creates one `IterationState` which is updated in-place during all iterations. Before, a new state was created after each iteration and the hooks `before_newton` and `before_iteration` got an empty state or the state of the previous iteration. The `before_newton` hook is now triggered after the unknowns are determined and before the initial assembly of the objective function.

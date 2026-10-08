@@ -210,9 +210,8 @@ class Boundary:
             self.skip = (False, False, False)
 
         if select:
-            selected_point_ids = self.field.region.mesh.select_surface_points()
             mask = np.zeros(mesh.npoints, dtype=bool)
-            mask[selected_point_ids] = True
+            mask[mesh.select_surface_points()] = True
 
         if mask is None:
             self.skip = np.array(self.skip).astype(int)[: self.dim]

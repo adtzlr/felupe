@@ -98,6 +98,86 @@ def _surface_patches(surface, angle):
     return vtk_to_numpy(regions), borders
 
 
+def _colors(color, selected_color):
+    "Return the colors of unselected and selected patches as hex strings."
+    import pyvista as pv
+
+    if selected_color is None:
+        selected_color = pv.global_theme.color
+
+    # the colormap is created by matplotlib, which doesn't know all PyVista color
+    # names (e.g. "light_blue" of the default theme) -> use hex strings instead
+    return pv.Color(color).hex_rgb, pv.Color(selected_color).hex_rgb
+
+
+def _show(plotter, name, toggle, clear, set_angle, angle, slider):
+    """Add the controls of an interactive selection of patches to the plotter, show it
+    and wait until the selection is finished.
+
+    * **Left click**: ``toggle(x, y)`` with the display coordinates of the click.
+    * **Right click**: finish, same as ``q`` or closing the window.
+    * **Button** or ``c``: ``clear()``.
+    * **Slider**: ``set_angle(value)``, also called once with the initial ``angle``.
+    """
+
+    plotter.add_text(
+        f"Left click: toggle {name} patch",
+        position="lower_left",
+        font_size=10,
+    )
+    plotter.add_text(
+        "Right click: done",
+        position="lower_right",
+        font_size=10,
+    )
+
+    def finish(*_):
+        plotter.add_text(
+            "selection finished - closing window ...",
+            position="upper_left",
+            font_size=10,
+            name="info",
+        )
+        plotter.render()
+        interactor = plotter.iren.interactor
+        interactor.ExitCallback()  # same as the window's close button or "q"
+        interactor.SetDone(True)  # PyVista >= 0.48 polls this flag on Windows
+
+    def on_clear_button(_):
+        clear_button.GetRepresentation().SetState(0)  # behave like a push button
+        clear()
+
+    _on_click(plotter.iren.interactor, "Left", toggle)
+    _on_click(plotter.iren.interactor, "Right", finish)
+    plotter.add_key_event("c", clear)
+
+    clear_button = plotter.add_checkbox_button_widget(
+        on_clear_button,
+        value=False,
+        position=(10, 40),
+        size=24,
+        border_size=2,
+        color_on="grey",
+        color_off="lightgrey",
+    )
+    plotter.add_text("Clear selection", position=(42, 44), font_size=10)
+
+    if slider:
+        plotter.add_slider_widget(
+            set_angle,
+            rng=[0.0, 180.0],
+            value=float(angle),
+            pointa=(0.7, 0.9),
+            pointb=(0.9, 0.9),
+            title="Angle in deg",
+            fmt="%.0f",
+            interaction_event="end",
+        )
+
+    set_angle(angle)
+    plotter.show()
+
+
 def select_surface_points(
     mesh,
     angle=30.0,
@@ -152,13 +232,7 @@ def select_surface_points(
     def selected_faces():
         return np.isin(state["labels"], state["labels"][state["seeds"]])
 
-    if selected_color is None:
-        selected_color = pv.global_theme.color
-
-    # the colormap is created by matplotlib, which doesn't know all PyVista color
-    # names (e.g. "light_blue" of the default theme) -> use hex strings instead
-    color = pv.Color(color).hex_rgb
-    selected_color = pv.Color(selected_color).hex_rgb
+    color, selected_color = _colors(color, selected_color)
 
     # always use a native, blocking window
     plotter = pv.Plotter(notebook=False, **kwargs)
@@ -171,16 +245,6 @@ def select_surface_points(
         show_scalar_bar=False,
         show_edges=show_edges,
         edge_color="grey",
-    )
-    plotter.add_text(
-        "Left click: toggle surface patch",
-        position="lower_left",
-        font_size=10,
-    )
-    plotter.add_text(
-        "Right click: done",
-        position="lower_right",
-        font_size=10,
     )
 
     def update():
@@ -224,25 +288,9 @@ def select_surface_points(
         state["seeds"] = seeds
         update()
 
-    def finish(*_):
-        plotter.add_text(
-            "selection finished - closing window ...",
-            position="upper_left",
-            font_size=10,
-            name="info",
-        )
-        plotter.render()
-        interactor = plotter.iren.interactor
-        interactor.ExitCallback()  # same as the window's close button or "q"
-        interactor.SetDone(True)  # PyVista >= 0.48 polls this flag on Windows
-
     def clear():
         state["seeds"] = []
         update()
-
-    def on_clear_button(_):
-        clear_button.GetRepresentation().SetState(0)  # behave like a push button
-        clear()
 
     def set_angle(value):
         state["angle"] = float(value)
@@ -258,35 +306,7 @@ def select_surface_points(
             )
         update()
 
-    _on_click(plotter.iren.interactor, "Left", toggle_patch)
-    _on_click(plotter.iren.interactor, "Right", finish)
-    plotter.add_key_event("c", clear)
-
-    clear_button = plotter.add_checkbox_button_widget(
-        on_clear_button,
-        value=False,
-        position=(10, 40),
-        size=24,
-        border_size=2,
-        color_on="grey",
-        color_off="lightgrey",
-    )
-    plotter.add_text("Clear selection", position=(42, 44), font_size=10)
-
-    if slider:
-        plotter.add_slider_widget(
-            set_angle,
-            rng=[0.0, 180.0],
-            value=float(angle),
-            pointa=(0.7, 0.9),
-            pointb=(0.9, 0.9),
-            title="Angle in deg",
-            fmt="%.0f",
-            interaction_event="end",
-        )
-
-    set_angle(angle)
-    plotter.show()
+    _show(plotter, "surface", toggle_patch, clear, set_angle, angle, slider)
 
     selected = surface.extract_cells(np.flatnonzero(selected_faces()))
 

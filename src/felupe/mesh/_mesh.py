@@ -34,6 +34,7 @@ from ._convert import (
 )
 from ._discrete_geometry import DiscreteGeometry
 from ._dual import dual
+from ._select_surface_points import select_surface_points
 from ._tools import (
     expand,
     extrude,
@@ -1750,3 +1751,47 @@ class Mesh(DiscreteGeometry):
             raise ValueError("More cells found, try to use higher values for decimals.")
 
         return cell_mask
+
+    def select_surface_points(
+        self,
+        angle=30.0,
+        slider=True,
+        color="lightgrey",
+        selected_color=None,
+        show_edges=True,
+    ):
+        """Interactively select smooth surface patches and return their point ids.
+
+        Parameters
+        ----------
+        angle : float, optional
+            Max. angle in degrees between the normals of two neighbouring faces
+            to be treated as one connected patch (default is 30).
+        slider : bool, optional
+            Show a slider to change the angle interactively (default is True).
+        color : str, optional
+            Color of unselected surface patches (default is "lightgrey").
+        selected_color : str, optional
+            Color of selected surface patches (default is "tomato").
+        show_edges : bool, optional
+            Whether to show mesh edges (default is True).
+
+        Returns
+        -------
+        numpy.ndarray
+            Sorted point ids (of ``mesh``) of all faces on the selected patches.
+
+        Controls
+        --------
+        Left click    toggle the patch under the cursor (a drag rotates as usual)
+        Right click   finish (a drag zooms as usual), same as q or closing the window
+        Button / c    clear the selection
+        """
+        return select_surface_points(
+            self,
+            angle=angle,
+            slider=slider,
+            color=color,
+            selected_color=selected_color,
+            show_edges=show_edges,
+        )

@@ -603,7 +603,7 @@ class ContactRigidPlane(ContactPlane):
                 K_n, (len(contact), self.mesh.dim, self.mesh.dim)
             ).reshape(npoints, dim)
 
-            K_n_cc = K_n_pc.sum(axis=0)
+            K_n_cc = K_n_pc.reshape(-1, dim, dim).sum(axis=0)
 
             K[idx.reshape(-1, 1), idx.ravel()] += K_n_pp
             K[idx.reshape(-1, 1), ctr.ravel()] -= K_n_pc
@@ -631,7 +631,7 @@ class ContactRigidPlane(ContactPlane):
                     K_t,
                     (len(contact_stick), self.mesh.dim, self.mesh.dim),
                 ).reshape(npoints, dim)
-                K_t_cc = K_t_pc.sum(axis=0)
+                K_t_cc = K_t_pc.reshape(-1, dim, dim).sum(axis=0)
 
                 K[idx.reshape(-1, 1), idx.ravel()] += K_t_pp
                 K[idx.reshape(-1, 1), ctr.ravel()] -= K_t_pc

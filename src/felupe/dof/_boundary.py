@@ -52,6 +52,8 @@ class Boundary:
     mode : string, optional
         A string which defines the logical operation for the selected points per
         axis (default is ``"or"``).
+    select : bool, optional
+        Whether to interactively select surface points on the mesh (default is False).
 
     Attributes
     ----------
@@ -187,6 +189,7 @@ class Boundary:
         skip=None,
         mask=None,
         mode="or",
+        select=False,
     ):
         mesh = field.region.mesh
 
@@ -205,6 +208,10 @@ class Boundary:
 
         if self.skip is None:
             self.skip = (False, False, False)
+
+        if select:
+            mask = np.zeros(mesh.npoints, dtype=bool)
+            mask[mesh.select_surface_points()] = True
 
         if mask is None:
             self.skip = np.array(self.skip).astype(int)[: self.dim]

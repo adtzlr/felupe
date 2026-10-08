@@ -13,6 +13,7 @@ Visualization methods for meshes, mesh and field containers as well as solid bod
    ViewField
    ViewSolid
    ViewXdmf
+   view.select_surface_points
 
 **Detailed API Reference**
 
@@ -25,3 +26,5 @@ Visualization methods for meshes, mesh and field containers as well as solid bod
 .. autofunction:: felupe.ViewSolid
 
 .. autofunction:: felupe.ViewXdmf
+
+.. autofunction:: felupe.view.select_surface_points

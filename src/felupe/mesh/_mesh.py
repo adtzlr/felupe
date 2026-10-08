@@ -20,7 +20,7 @@ from functools import wraps
 
 import numpy as np
 
-from ..view import ViewMesh
+from ..view import ViewMesh, select_surface_points
 from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,
@@ -1750,3 +1750,7 @@ class Mesh(DiscreteGeometry):
             raise ValueError("More cells found, try to use higher values for decimals.")
 
         return cell_mask
+
+    @wraps(select_surface_points)
+    def select_surface_points(self, **kwargs):
+        return select_surface_points(self, **kwargs)

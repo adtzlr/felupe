@@ -172,12 +172,12 @@ def select_edge_points(
 
     Examples
     --------
-    The edge patch at :math:`x=y=1` of a cube is selected and the edge patch at
-    :math:`y=z=1` is excluded. Here, the patches are given by points next to them, which
-    is the same as a left click on the edge at :math:`x=y=1` and two left clicks on the
-    edge at :math:`y=z=1`. The selection is finished by a right click. The selected
-    points are plotted on the mesh, the common corner point of both patches is not
-    selected.
+    The edge patch at :math:`x=z=1` of a cube is selected and the edge patch at
+    :math:`x=1, y=0` is excluded. Here, the patches are given by points next to them,
+    which is the same as a left click on the edge at :math:`x=z=1` and two left clicks
+    on the edge at :math:`x=1, y=0`. The selection is finished by a right click (not
+    required for the static images of the documentation). The selected points are
+    plotted on the mesh, the common corner point of both patches is not selected.
 
     ..  pyvista-plot::
         :force_static:
@@ -187,14 +187,13 @@ def select_edge_points(
         >>>
         >>> mesh = fem.Cube(n=6)
         >>> point_ids = mesh.select_edge_points(
-        ...     selected=[(1.0, 1.0, 0.5)], excluded=[(0.5, 1.0, 1.0)]
+        ...     selected=[(1.0, 0.5, 1.0)], excluded=[(1.0, 0.0, 0.5)]
         ... )
         >>>
         >>> plotter = pv.Plotter()
         >>> points = mesh.points[point_ids]
-        >>> actor = plotter.add_mesh(mesh.as_unstructured_grid(), show_edges=True)
         >>> actor = plotter.add_points(points, color="red", point_size=10)
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     See Also
     --------

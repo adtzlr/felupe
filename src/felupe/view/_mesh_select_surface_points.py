@@ -303,11 +303,11 @@ def select_surface_points(
     Examples
     --------
     The surface patch at :math:`x=1` of a cube is selected and the surface patch at
-    :math:`y=1` is excluded. Here, the patches are given by points next to them, which
+    :math:`z=1` is excluded. Here, the patches are given by points next to them, which
     is the same as a left click on the patch at :math:`x=1` and two left clicks on the
-    patch at :math:`y=1`. The selection is finished by a right click. The selected
-    points are plotted on the mesh, the points on the common edge of both patches are
-    not selected.
+    patch at :math:`z=1`. The selection is finished by a right click (not required for
+    the static images of the documentation). The selected points are plotted on the
+    mesh, the points on the common edge of both patches are not selected.
 
     ..  pyvista-plot::
         :force_static:
@@ -317,14 +317,13 @@ def select_surface_points(
         >>>
         >>> mesh = fem.Cube(n=6)
         >>> point_ids = mesh.select_surface_points(
-        ...     selected=[(1.0, 0.5, 0.5)], excluded=[(0.5, 1.0, 0.5)]
+        ...     selected=[(1.0, 0.5, 0.5)], excluded=[(0.5, 0.5, 1.0)]
         ... )
         >>>
         >>> plotter = pv.Plotter()
         >>> points = mesh.points[point_ids]
-        >>> actor = plotter.add_mesh(mesh.as_unstructured_grid(), show_edges=True)
         >>> actor = plotter.add_points(points, color="red", point_size=10)
-        >>> plotter.show()
+        >>> mesh.plot(plotter=plotter).show()
 
     See Also
     --------

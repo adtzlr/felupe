@@ -146,6 +146,30 @@ class Boundary:
         >>>
         >>> surface.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
+    The mesh-points of a boundary condition may also be selected interactively, either
+    by surface patches or by edge patches of the mesh, see
+    :func:`~felupe.view.select_surface_points` and
+    :func:`~felupe.view.select_edge_points`. A window opens, in which a left click on
+    a patch selects (or excludes) it and a right click finishes the selection. The
+    points are selected directly on the creation of the boundary condition by
+    ``select_points="surfaces"`` or ``select_points="edges"``.
+
+    ..  code-block:: python
+
+        boundary = fem.Boundary(displacement, select_points="surfaces")
+
+    Alternatively, the points of an existing boundary condition are selected
+    afterwards. This replaces the previously selected points, the skipped axes and the
+    value of the boundary condition are kept. Optional keyword arguments, e.g. the
+    coordinates of points for an initial selection of patches, are passed to the
+    interactive selection.
+
+    ..  code-block:: python
+
+        boundary = fem.Boundary(displacement, skip=(False, True, True))
+        boundary.select_surface_points()  # or boundary.select_edge_points()
+        boundary.select_surface_points(selected=[(1.0, 0.0, 0.5)], angle=45)
+
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
     be skipped.

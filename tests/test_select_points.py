@@ -148,7 +148,8 @@ def test_select_surface_points():
         with interact(
             click((1.0, 0.5, 0.5)),  # select the patch x=1
             click((0.5, 1.0, 0.5)),  # select the patch y=1
-            click((0.5, 1.0, 0.5)),  # deselect the patch y=1
+            click((0.5, 1.0, 0.5)),  # exclude the patch y=1
+            click((0.5, 1.0, 0.5)),  # unselect the patch y=1
             click((0.5, 0.5, 1.0), drag=50),  # a drag rotates, no selection
             click((2, 2)),  # click on the background, no selection
             finish,
@@ -188,6 +189,88 @@ def test_select_surface_points_clear():
         selected = mesh.select_surface_points()
 
     assert len(selected) == 0
+
+
+def test_select_surface_points_exclude():
+    meshes = [
+        fem.Cube(n=3),
+        fem.Cube(n=3).triangulate(),
+        fem.Cube(n=3).add_midpoints_edges(),
+    ]
+
+    for mesh in meshes:
+        x, y, z = mesh.points.T
+
+        # excluded patches have priority at shared points
+        with interact(
+            click((1.0, 0.5, 0.5)),  # select the patch x=1
+            click((0.5, 1.0, 0.5)),  # select the patch y=1
+            click((0.5, 1.0, 0.5)),  # exclude the patch y=1
+            finish,
+        ):
+            selected = mesh.select_surface_points(excluded_color="black")
+
+        assert np.array_equal(selected, point_ids(np.isclose(x, 1) & ~np.isclose(y, 1)))
+
+        # an excluded patch alone has no points
+        with interact(click((0.5, 1.0, 0.5)), click((0.5, 1.0, 0.5)), finish):
+            selected = mesh.select_surface_points()
+
+        assert len(selected) == 0
+
+    mesh = fem.Cube(n=3)
+    x, y, z = mesh.points.T
+
+    # three clicks: select, exclude and unselect the patch x=1
+    with interact(
+        click((1.0, 0.5, 0.5)),
+        click((1.0, 0.5, 0.5)),
+        click((1.0, 0.5, 0.5)),
+        click((0.5, 0.5, 1.0)),
+        finish,
+    ):
+        selected = mesh.select_surface_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(z, 1)))
+
+    # clear the excluded patches
+    with interact(
+        click((1.0, 0.5, 0.5)),
+        click((1.0, 0.5, 0.5)),  # exclude the patch x=1
+        press_key("c"),
+        click((0.5, 1.0, 0.5)),
+        finish,
+    ):
+        selected = mesh.select_surface_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(y, 1)))
+
+    # a merged patch of a selected and an excluded patch is excluded
+    with interact(
+        click((1.0, 0.5, 0.5)),  # select the patch x=1
+        click((0.5, 1.0, 0.5)),
+        click((0.5, 1.0, 0.5)),  # exclude the patch y=1
+        move_slider(120),
+        finish,
+    ):
+        selected = mesh.select_surface_points()
+
+    assert len(selected) == 0
+
+    # the next click on the merged patch unselects it
+    with interact(
+        click((1.0, 0.5, 0.5)),
+        click((0.5, 1.0, 0.5)),
+        click((0.5, 1.0, 0.5)),
+        move_slider(120),
+        click((0.5, 0.5, 1.0)),  # unselect the merged patch
+        move_slider(30),
+        click((0.5, 0.5, 1.0)),  # select the patch z=1
+        finish,
+    ):
+        selected = mesh.select_surface_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(z, 1)))
 
 
 def test_select_surface_points_angle():
@@ -423,6 +506,7 @@ def test_boundary_select_points_planar():
 if __name__ == "__main__":
     test_select_surface_points()
     test_select_surface_points_clear()
+    test_select_surface_points_exclude()
     test_select_surface_points_angle()
     test_select_surface_points_curved()
     test_select_surface_points_without_polygons()

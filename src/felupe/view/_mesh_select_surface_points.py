@@ -98,30 +98,32 @@ def _surface_patches(surface, angle):
     return vtk_to_numpy(regions), borders
 
 
-def _colors(color, selected_color):
-    "Return the colors of unselected and selected patches as hex strings."
+def _colors(*colors):
+    """Return the colors of the patches as hex strings. A color of None is the default
+    color of the global theme."""
     import pyvista as pv
-
-    if selected_color is None:
-        selected_color = pv.global_theme.color
 
     # the colormap is created by matplotlib, which doesn't know all PyVista color
     # names (e.g. "light_blue" of the default theme) -> use hex strings instead
-    return pv.Color(color).hex_rgb, pv.Color(selected_color).hex_rgb
+    return [
+        pv.Color(pv.global_theme.color if color is None else color).hex_rgb
+        for color in colors
+    ]
 
 
-def _show(plotter, name, toggle, clear, set_angle, angle, slider):
+def _show(plotter, name, toggle, clear, set_angle, angle, slider, action="toggle"):
     """Add the controls of an interactive selection of patches to the plotter, show it
     and wait until the selection is finished.
 
-    * **Left click**: ``toggle(x, y)`` with the display coordinates of the click.
+    * **Left click**: ``toggle(x, y)`` with the display coordinates of the click, the
+      ``action`` is shown in the help text.
     * **Right click**: finish, same as ``q`` or closing the window.
     * **Button** or ``c``: ``clear()``.
     * **Slider**: ``set_angle(value)``, also called once with the initial ``angle``.
     """
 
     plotter.add_text(
-        f"Left click: toggle {name} patch",
+        f"Left click: {action} {name} patch",
         position="lower_left",
         font_size=10,
     )
@@ -190,10 +192,12 @@ def select_surface_points(
     slider=True,
     color="lightgrey",
     selected_color=None,
+    excluded_color="darkred",
     show_edges=True,
     **kwargs,
 ):
-    """Interactively select smooth surface patches and return their point ids.
+    """Interactively select (and exclude) smooth surface patches and return their point
+    ids.
 
     Parameters
     ----------
@@ -209,6 +213,8 @@ def select_surface_points(
     selected_color : str or None, optional
         Color of selected surface patches. Default is None, which lets PyVista choose
         the default color based on the global theme.
+    excluded_color : str, optional
+        Color of excluded surface patches (default is "darkred").
     show_edges : bool, optional
         Whether to show mesh edges (default is True).
     **kwargs : optional
@@ -217,16 +223,24 @@ def select_surface_points(
     Returns
     -------
     numpy.ndarray
-        Sorted point ids (of ``mesh``) of all faces on the selected patches.
+        Sorted point ids (of ``mesh``) of all faces on the selected patches, without
+        the points of all faces on the excluded patches.
 
     Notes
     -----
     The selection is controlled by the mouse and the keyboard.
 
-    * **Left click**: toggle the patch under the cursor (a drag rotates as usual).
+    * **Left click**: cycle the patch under the cursor from unselected to selected,
+      from selected to excluded and from excluded back to unselected (a drag rotates
+      as usual).
     * **Right click**: finish (a drag zooms as usual), same as ``q`` or closing the
       window.
-    * **Button** or ``c``: clear the selection.
+    * **Button** or ``c``: clear the selection, i.e. all patches are unselected.
+
+    Excluded patches have priority over selected patches: the points shared by a
+    selected and an excluded patch, e.g. the points on their common border, are not
+    selected. If both a selected and an excluded patch are merged into one patch by an
+    increased angle, the merged patch is excluded.
 
     See Also
     --------
@@ -236,35 +250,59 @@ def select_surface_points(
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker
 
+    UNSELECTED, SELECTED, EXCLUDED = 0, 1, 2
+
     surface = _extract_surface(mesh)
-    state = dict(seeds=[])  # clicked faces, re-evaluated if the angle changes
-    surface.cell_data["selected"] = np.zeros(surface.n_cells, dtype=np.uint8)
+    points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
-    def selected_faces():
-        return np.isin(state["labels"], state["labels"][state["seeds"]])
+    # clicked faces with the status of their patches, re-evaluated if the angle changes
+    state = dict(seeds={})
+    surface.cell_data["status"] = np.full(surface.n_cells, UNSELECTED, dtype=np.uint8)
 
-    color, selected_color = _colors(color, selected_color)
+    def patch_status():
+        "Return the status of the patches per face, excluded patches have priority."
+        labels = state["labels"]
+        status = np.full(surface.n_cells, UNSELECTED, dtype=np.uint8)
+        for value in [SELECTED, EXCLUDED]:
+            seeds = [face for face, seed in state["seeds"].items() if seed == value]
+            status[np.isin(labels, labels[seeds])] = value
+        return status
+
+    def point_ids(faces):
+        "Return the sorted point ids (of ``mesh``) of the faces."
+        cells = surface.extract_cells(np.flatnonzero(faces))
+        return np.unique(cells.point_data.get("point_ids", np.array([], dtype=int)))
+
+    def selected_points(status):
+        "Return the point ids of selected faces without the points of excluded faces."
+        return np.setdiff1d(
+            point_ids(status == SELECTED), point_ids(status == EXCLUDED)
+        )
+
+    color, selected_color, excluded_color = _colors(
+        color, selected_color, excluded_color
+    )
 
     # always use a native, blocking window
     plotter = pv.Plotter(notebook=False, **kwargs)
     actor = plotter.add_mesh(
         surface,
-        scalars="selected",
-        cmap=[color, selected_color],
-        clim=[0, 1],
-        n_colors=2,
+        scalars="status",
+        cmap=[color, selected_color, excluded_color],
+        clim=[UNSELECTED, EXCLUDED],
+        n_colors=3,
         show_scalar_bar=False,
         show_edges=show_edges,
         edge_color="grey",
     )
 
     def update():
-        faces = selected_faces()
-        surface.cell_data["selected"] = faces.astype(np.uint8)
-        selected = surface.extract_cells(np.flatnonzero(faces))
-        if selected.n_points > 0:
+        status = patch_status()
+        surface.cell_data["status"] = status
+        selected = selected_points(status)
+        if len(selected) > 0:
             plotter.add_points(
-                selected.points,
+                points[selected],
                 color=selected_color,
                 point_size=8,
                 name="selected_points",
@@ -272,10 +310,13 @@ def select_surface_points(
             )
         else:
             plotter.remove_actor("selected_points")
-        n_patches = len(np.unique(state["labels"][state["seeds"]]))
+        labels = state["labels"]
+        n_selected = len(np.unique(labels[status == SELECTED]))
+        n_excluded = len(np.unique(labels[status == EXCLUDED]))
         plotter.add_text(
             f"Angle: {state['angle']:.0f} deg   "
-            f"Surface patches: {n_patches}   Points: {selected.n_points}",
+            f"Surface patches: {n_selected} selected, {n_excluded} excluded   "
+            f"Points: {len(selected)}",
             position="upper_left",
             font_size=10,
             name="info",
@@ -292,15 +333,18 @@ def select_surface_points(
         face = picker.GetCellId()
         if face < 0:
             return
-        label = state["labels"][face]
-        seeds = [s for s in state["seeds"] if state["labels"][s] != label]
-        if len(seeds) == len(state["seeds"]):
-            seeds.append(face)  # not selected yet -> select
-        state["seeds"] = seeds
+        labels = state["labels"]
+        status = int(patch_status()[face])
+        seeds = {
+            s: seed for s, seed in state["seeds"].items() if labels[s] != labels[face]
+        }
+        if status != EXCLUDED:
+            seeds[face] = status + 1  # unselected -> selected -> excluded
+        state["seeds"] = seeds  # excluded -> unselected
         update()
 
     def clear():
-        state["seeds"] = []
+        state["seeds"] = {}
         update()
 
     def set_angle(value):
@@ -317,9 +361,15 @@ def select_surface_points(
             )
         update()
 
-    _show(plotter, "surface", toggle_patch, clear, set_angle, angle, slider)
+    _show(
+        plotter,
+        "surface",
+        toggle_patch,
+        clear,
+        set_angle,
+        angle,
+        slider,
+        action="select / exclude / unselect",
+    )
 
-    selected = surface.extract_cells(np.flatnonzero(selected_faces()))
-
-    point_ids = selected.point_data.get("point_ids", np.array([], dtype=int))
-    return np.unique(point_ids)
+    return selected_points(patch_status())

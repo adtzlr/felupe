@@ -46,24 +46,75 @@ def _on_click(interactor, button, callback, tolerance=6):
         interactor.GetCommand(tag).SetPassiveObserver(True)
 
 
-def _extract_surface(mesh):
-    "Return the boundary surface of a mesh with the original point ids."
+def _polygons(dataset, nonlinear_subdivision=1):
+    """Return the surface (polygons) of a dataset. Nonlinear faces are triangulated
+    and subdivided ``nonlinear_subdivision - 1`` times."""
+    kwargs = dict(
+        pass_pointid=False,
+        pass_cellid=False,
+        nonlinear_subdivision=nonlinear_subdivision,
+    )
+    try:
+        return dataset.extract_surface(**kwargs, algorithm=None)
+    except TypeError:  # pragma: no cover (older PyVista without ``algorithm``)
+        return dataset.extract_surface(**kwargs)
+
+
+def _extract_surface(mesh, nonlinear_subdivision=1):
+    """Return the boundary surface (polygons) and the boundary faces of a mesh.
+
+    The faces are the cells of an unstructured grid with the original point ids as point
+    data ``"point_ids"``, i.e. the nonlinear faces of quadratic (or Lagrange) cells are
+    kept. The surface contains the polygons of the triangulated (and subdivided) faces
+    with the ids of their faces as cell data ``"face_ids"``.
+
+    The subdivision of nonlinear faces creates new points, which are not points of the
+    mesh. PyVista interpolates the point data on these new points, i.e. their point ids
+    are wrong (but look valid). Hence, the point ids of the surface are only included
+    for ``nonlinear_subdivision=1``. The point ids of the polygons are given by the
+    points of their faces.
+    """
+    from pyvista import wrap
+    from vtkmodules.vtkFiltersGeometry import vtkUnstructuredGridGeometryFilter
 
     # pass the point ids as point data, ``vtkOriginalPointIds`` of the extracted
     # surface are wrong for quadratic cells (e.g. hexahedron20 or tetra10)
     grid = mesh.as_unstructured_grid()
     grid.point_data["point_ids"] = np.arange(grid.n_points)
-    try:
-        surface = grid.extract_surface(
-            pass_pointid=False, pass_cellid=False, algorithm=None
-        )
-    except TypeError:  # pragma: no cover (older PyVista without ``algorithm``)
-        surface = grid.extract_surface(pass_pointid=False, pass_cellid=False)
+
+    geometry = vtkUnstructuredGridGeometryFilter()
+    geometry.SetInputData(grid)
+    geometry.Update()
+
+    faces = wrap(geometry.GetOutput())
+    faces.cell_data["face_ids"] = np.arange(faces.n_cells)
+
+    surface = _polygons(faces, nonlinear_subdivision)
 
     if surface.GetNumberOfPolys() != surface.n_cells:
         raise ValueError("The extracted surface must only contain polygons.")
 
-    return surface
+    if nonlinear_subdivision > 1:
+        surface.point_data.remove("point_ids")
+
+    return surface, faces
+
+
+def _face_point_ids(faces, mask):
+    "Return the sorted point ids (of the mesh) of the masked faces."
+    cells = faces.extract_cells(np.flatnonzero(mask))
+    return np.unique(cells.point_data.get("point_ids", np.array([], dtype=int)))
+
+
+def _face_edges(faces, nonlinear_subdivision):
+    "Return the (subdivided) edges of the faces, i.e. the boundary edges per face."
+    polygons = _polygons(faces.separate_cells(), nonlinear_subdivision)
+    return polygons.extract_feature_edges(
+        boundary_edges=True,
+        feature_edges=False,
+        manifold_edges=False,
+        non_manifold_edges=False,
+    )
 
 
 def _surface_patches(surface, angle):
@@ -248,7 +299,8 @@ def select_surface_points(
     color="lightgrey",
     selected_color=None,
     excluded_color="darkred",
-    show_edges=True,
+    show_edges=False,
+    nonlinear_subdivision=1,
     **kwargs,
 ):
     """Interactively select (and exclude) smooth surface patches and return their point
@@ -278,7 +330,15 @@ def select_surface_points(
     excluded_color : str, optional
         Color of excluded surface patches (default is "darkred").
     show_edges : bool, optional
-        Whether to show mesh edges (default is True).
+        Whether to show the edges of the mesh (default is False). The patches are
+        separated by their borders anyway.
+    nonlinear_subdivision : int, optional
+        Number of subdivisions to generate a smooth surface based on the mid-edge
+        points of quadratic (or Lagrange) cells, same as in
+        :meth:`~felupe.Mesh.plot` (default is 1, no subdivision). If greater than 1,
+        the surface is plotted with smooth shading and the shown edges are the
+        (curved) edges of the faces. The patches are evaluated on the subdivided
+        surface.
     **kwargs : optional
         Additional keyword arguments to pass to the PyVista plotter.
 
@@ -286,7 +346,8 @@ def select_surface_points(
     -------
     numpy.ndarray
         Sorted point ids (of ``mesh``) of all faces on the selected patches, without
-        the points of all faces on the excluded patches.
+        the points of all faces on the excluded patches. A face is on a patch if one of
+        its triangles (on the subdivided surface) is on the patch.
 
     Notes
     -----
@@ -303,6 +364,11 @@ def select_surface_points(
     selected and an excluded patch, e.g. the points on their common border, are not
     selected. If both a selected and an excluded patch are merged into one patch by an
     increased angle, the merged patch is excluded.
+
+    The subdivision of nonlinear faces creates new points, which are only used for the
+    visualization. The returned point ids are always the point ids of the faces of the
+    mesh, e.g. all eight points of a face of a quadratic hexahedron (including the
+    mid-edge points), independent of ``nonlinear_subdivision``.
 
     Examples
     --------
@@ -337,20 +403,24 @@ def select_surface_points(
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker
 
-    surface = _extract_surface(mesh)
+    subdivided = nonlinear_subdivision > 1
+    surface, faces = _extract_surface(mesh, nonlinear_subdivision)
     points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
-    # clicked faces with the status of their patches, re-evaluated if the angle changes
+    # clicked polygons with the status of their patches, re-evaluated if the angle
+    # changes (the polygons of the subdivided faces, if nonlinear_subdivision > 1)
     state = dict(seeds=_initial_seeds(surface, mesh.dim, selected, excluded))
     surface.cell_data["status"] = np.full(surface.n_cells, UNSELECTED, dtype=np.uint8)
 
     def patch_status():
         return _patch_status(state["labels"], state["seeds"])
 
-    def point_ids(faces):
-        "Return the sorted point ids (of ``mesh``) of the faces."
-        cells = surface.extract_cells(np.flatnonzero(faces))
-        return np.unique(cells.point_data.get("point_ids", np.array([], dtype=int)))
+    def point_ids(polygons):
+        """Return the sorted point ids (of ``mesh``) of the faces of the polygons. The
+        point ids of the (subdivided) polygons themselves are not used."""
+        mask = np.zeros(faces.n_cells, dtype=bool)
+        mask[surface.cell_data["face_ids"][polygons]] = True
+        return _face_point_ids(faces, mask)
 
     def selected_points(status):
         "Return the point ids of selected faces without the points of excluded faces."
@@ -362,22 +432,46 @@ def select_surface_points(
         color, selected_color, excluded_color
     )
 
+    # the plotted surface, smooth shading for a subdivided surface: the points are split
+    # at sharp edges, the order of the polygons is not changed (same as the picked ids)
+    plotted = surface
+    if subdivided:
+        plotted = surface.compute_normals(
+            cell_normals=False,
+            point_normals=True,
+            split_vertices=True,
+            feature_angle=pv.global_theme.sharp_edges_feature_angle,
+            auto_orient_normals=False,
+        )
+
     # always use a native, blocking window
     plotter = pv.Plotter(notebook=False, **kwargs)
     actor = plotter.add_mesh(
-        surface,
+        plotted,
         scalars="status",
         cmap=[color, selected_color, excluded_color],
         clim=[UNSELECTED, EXCLUDED],
         n_colors=3,
         show_scalar_bar=False,
-        show_edges=show_edges,
+        show_edges=show_edges and not subdivided,
         edge_color="grey",
     )
 
+    if subdivided:
+        actor.GetProperty().SetInterpolationToPhong()
+
+        # hide the edges of the subdivided polygons, show the edges of the faces
+        if show_edges:
+            edges = plotter.add_mesh(
+                _face_edges(faces, nonlinear_subdivision),
+                color="grey",
+                pickable=False,
+            )
+            edges.mapper.SetResolveCoincidentTopologyToPolygonOffset()
+
     def update():
         status = patch_status()
-        surface.cell_data["status"] = status
+        plotted.cell_data["status"] = status
         selected = selected_points(status)
         if len(selected) > 0:
             plotter.add_points(

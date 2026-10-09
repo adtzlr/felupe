@@ -146,6 +146,30 @@ class Boundary:
         >>>
         >>> surface.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
 
+    The mesh-points of a boundary condition may also be selected interactively, either
+    by surface patches or by edge patches of the mesh, see
+    :func:`~felupe.view.select_surface_points` and
+    :func:`~felupe.view.select_edge_points`. A window opens, in which a left click on
+    a patch selects (or excludes) it and a right click finishes the selection. The
+    points are selected directly on the creation of the boundary condition by
+    ``select_points="surfaces"`` or ``select_points="edges"``.
+
+    ..  code-block:: python
+
+        boundary = fem.Boundary(displacement, select_points="surfaces")
+
+    Alternatively, the points of an existing boundary condition are selected
+    afterwards. This replaces the previously selected points, the skipped axes and the
+    value of the boundary condition are kept. Optional keyword arguments, e.g. the
+    coordinates of points for an initial selection of patches, are passed to the
+    interactive selection.
+
+    ..  code-block:: python
+
+        boundary = fem.Boundary(displacement, skip=(False, True, True))
+        boundary.select_surface_points()  # or boundary.select_edge_points()
+        boundary.select_surface_points(selected=[(1.0, 0.0, 0.5)], angle=45)
+
     A boundary condition may be skipped on given axes, i.e. if only the x-components
     of a field should be prescribed on the selected points, then the y-axis must
     be skipped.
@@ -245,8 +269,8 @@ class Boundary:
         if self.mask.shape[1] == 1:
             self.mask = np.tile(self.mask, self.dim)
 
-            # check if some axes should be skipped
-            if True in self.skip:
+            # check if some axes should be skipped (no skip after a dof-based mask)
+            if self.skip is not None and True in self.skip:
                 # exclude mask from axes which should be skipped
                 self.mask[:, np.where(self.skip)[0]] = False
 
@@ -272,7 +296,63 @@ class Boundary:
     def update(self, value):
         "Update the value of the boundary in-place."
 
-        self.value = value  #
+        self.value = value
+
+    def select_surface_points(self, **kwargs):
+        """Interactively select the points of the boundary condition by surface patches
+        of the mesh.
+
+        This replaces the previously selected points. The skipped axes and the value of
+        the boundary condition are kept. If the boundary condition has a dof-based mask,
+        all axes of the selected points are prescribed.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Optional keyword arguments for :func:`~felupe.view.select_surface_points`,
+            e.g. ``selected`` and ``excluded`` for an initial selection of patches.
+
+        See Also
+        --------
+        felupe.view.select_surface_points : Interactively select (and exclude) smooth
+            surface patches and return their point ids.
+        felupe.Boundary.select_edge_points : Interactively select the points of the
+            boundary condition by edge patches of the mesh.
+        """
+        mesh = self.field.region.mesh
+
+        new_mask = np.zeros(mesh.npoints, dtype=bool)
+        new_mask[mesh.select_surface_points(**kwargs)] = True
+
+        self.apply_mask(new_mask)
+
+    def select_edge_points(self, **kwargs):
+        """Interactively select the points of the boundary condition by edge patches of
+        the mesh.
+
+        This replaces the previously selected points. The skipped axes and the value of
+        the boundary condition are kept. If the boundary condition has a dof-based mask,
+        all axes of the selected points are prescribed.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Optional keyword arguments for :func:`~felupe.view.select_edge_points`,
+            e.g. ``selected`` and ``excluded`` for an initial selection of patches.
+
+        See Also
+        --------
+        felupe.view.select_edge_points : Interactively select (and exclude) smooth edge
+            patches and return their point ids.
+        felupe.Boundary.select_surface_points : Interactively select the points of the
+            boundary condition by surface patches of the mesh.
+        """
+        mesh = self.field.region.mesh
+
+        new_mask = np.zeros(mesh.npoints, dtype=bool)
+        new_mask[mesh.select_edge_points(**kwargs)] = True
+
+        self.apply_mask(new_mask)
 
     def plot(
         self,
@@ -321,11 +401,13 @@ class Boundary:
                     min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
                 )
 
-                for skip, direction in zip(self.skip, np.eye(3)):
-                    if not skip:
-                        end = points[self.points] + direction * magnitude
+                # the prescribed directions are taken from the (dof-based) mask
+                for axis, direction in enumerate(np.eye(3)[: self.mask.shape[1]]):
+                    prescribed = self.mask[:, axis]
+                    if prescribed.any():
+                        end = points[prescribed] + direction * magnitude
                         _ = plotter.add_lines(
-                            np.hstack([points[self.points], end]).reshape(-1, 3),
+                            np.hstack([points[prescribed], end]).reshape(-1, 3),
                             color=color,
                             width=width,
                         )

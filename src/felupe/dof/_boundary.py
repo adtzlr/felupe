@@ -274,19 +274,19 @@ class Boundary:
 
         self.value = value
 
-    def select_surface_points(self, title=None):
+    def select_surface_points(self, **kwargs):
         mesh = self.field.region.mesh
 
         new_mask = np.zeros(mesh.npoints, dtype=bool)
-        new_mask[mesh.select_surface_points(title=title)] = True
+        new_mask[mesh.select_surface_points(**kwargs)] = True
 
         self.apply_mask(new_mask)
 
-    def select_edge_points(self, title=None):
+    def select_edge_points(self, **kwargs):
         mesh = self.field.region.mesh
 
         new_mask = np.zeros(mesh.npoints, dtype=bool)
-        new_mask[mesh.select_edge_points(title=title)] = True
+        new_mask[mesh.select_edge_points(**kwargs)] = True
 
         self.apply_mask(new_mask)
 

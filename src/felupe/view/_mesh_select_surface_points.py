@@ -98,6 +98,40 @@ def _surface_patches(surface, angle):
     return vtk_to_numpy(regions), borders
 
 
+# the status of a patch
+UNSELECTED, SELECTED, EXCLUDED = 0, 1, 2
+
+
+def _patch_status(labels, seeds):
+    """Return the status of the patches per item (face or edge) with the patch labels
+    per item. The seeds are the clicked items with the status of their patches
+    ``{item: status}``. A patch with selected and excluded seeds, e.g. merged by an
+    increased angle, is excluded (excluded patches have priority)."""
+    status = np.full(len(labels), UNSELECTED, dtype=np.uint8)
+    for value in [SELECTED, EXCLUDED]:
+        items = [item for item, seed in seeds.items() if seed == value]
+        status[np.isin(labels, labels[items])] = value
+    return status
+
+
+def _cycle(seeds, labels, item):
+    """Cycle the status of the patch of the clicked item, from unselected to selected,
+    from selected to excluded and from excluded to unselected. Return the new seeds,
+    i.e. the other seeds on this patch are replaced by the clicked item."""
+    status = int(_patch_status(labels, seeds)[item])
+    seeds = {s: seed for s, seed in seeds.items() if labels[s] != labels[item]}
+    if status != EXCLUDED:
+        seeds[item] = status + 1
+    return seeds
+
+
+def _patch_info(labels, status):
+    "Return the number of selected and excluded patches as text."
+    n_selected = len(np.unique(labels[status == SELECTED]))
+    n_excluded = len(np.unique(labels[status == EXCLUDED]))
+    return f"{n_selected} selected, {n_excluded} excluded"
+
+
 def _colors(*colors):
     """Return the colors of the patches as hex strings. A color of None is the default
     color of the global theme."""
@@ -250,8 +284,6 @@ def select_surface_points(
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker
 
-    UNSELECTED, SELECTED, EXCLUDED = 0, 1, 2
-
     surface = _extract_surface(mesh)
     points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
@@ -260,13 +292,7 @@ def select_surface_points(
     surface.cell_data["status"] = np.full(surface.n_cells, UNSELECTED, dtype=np.uint8)
 
     def patch_status():
-        "Return the status of the patches per face, excluded patches have priority."
-        labels = state["labels"]
-        status = np.full(surface.n_cells, UNSELECTED, dtype=np.uint8)
-        for value in [SELECTED, EXCLUDED]:
-            seeds = [face for face, seed in state["seeds"].items() if seed == value]
-            status[np.isin(labels, labels[seeds])] = value
-        return status
+        return _patch_status(state["labels"], state["seeds"])
 
     def point_ids(faces):
         "Return the sorted point ids (of ``mesh``) of the faces."
@@ -310,12 +336,9 @@ def select_surface_points(
             )
         else:
             plotter.remove_actor("selected_points")
-        labels = state["labels"]
-        n_selected = len(np.unique(labels[status == SELECTED]))
-        n_excluded = len(np.unique(labels[status == EXCLUDED]))
         plotter.add_text(
             f"Angle: {state['angle']:.0f} deg   "
-            f"Surface patches: {n_selected} selected, {n_excluded} excluded   "
+            f"Surface patches: {_patch_info(state['labels'], status)}   "
             f"Points: {len(selected)}",
             position="upper_left",
             font_size=10,
@@ -333,14 +356,7 @@ def select_surface_points(
         face = picker.GetCellId()
         if face < 0:
             return
-        labels = state["labels"]
-        status = int(patch_status()[face])
-        seeds = {
-            s: seed for s, seed in state["seeds"].items() if labels[s] != labels[face]
-        }
-        if status != EXCLUDED:
-            seeds[face] = status + 1  # unselected -> selected -> excluded
-        state["seeds"] = seeds  # excluded -> unselected
+        state["seeds"] = _cycle(state["seeds"], state["labels"], face)
         update()
 
     def clear():

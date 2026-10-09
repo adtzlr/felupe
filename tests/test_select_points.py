@@ -339,7 +339,8 @@ def test_select_edge_points():
             parallel_projection(False),
             click((1.0, 1.0, 0.25)),  # select the edge x=1, y=1
             click((0.5, 1.0, 1.0)),  # select the edge y=1, z=1
-            click((0.5, 1.0, 1.0)),  # deselect the edge y=1, z=1
+            click((0.5, 1.0, 1.0)),  # exclude the edge y=1, z=1
+            click((0.5, 1.0, 1.0)),  # unselect the edge y=1, z=1
             click((1.0, 0.5, 0.5)),  # the edge behind the face x=1 is hidden
             click((0.5, 0.5, 1.0)),  # the edge behind the face z=1 is hidden
             click((0.5, 1.0, 1.0), drag=50),  # a drag rotates, no selection
@@ -388,6 +389,145 @@ def test_select_edge_points_clear():
         selected = mesh.select_edge_points()
 
     assert len(selected) == 0
+
+
+def test_select_edge_points_exclude():
+    meshes = [
+        fem.Cube(n=3),
+        fem.Cube(n=3).triangulate(),
+        fem.Cube(n=3).add_midpoints_edges(),
+    ]
+
+    for mesh in meshes:
+        x, y, z = mesh.points.T
+
+        # excluded patches have priority at shared points (the corner x=y=z=1)
+        with interact(
+            click((1.0, 1.0, 0.25)),  # select the edge x=1, y=1
+            click((0.5, 1.0, 1.0)),  # select the edge y=1, z=1
+            click((0.5, 1.0, 1.0)),  # exclude the edge y=1, z=1
+            finish,
+        ):
+            selected = mesh.select_edge_points(excluded_color="orange")
+
+        assert np.array_equal(
+            selected,
+            point_ids(np.isclose(x, 1) & np.isclose(y, 1) & ~np.isclose(z, 1)),
+        )
+
+        # an excluded patch alone has no points
+        with interact(click((0.5, 1.0, 1.0)), click((0.5, 1.0, 1.0)), finish):
+            selected = mesh.select_edge_points()
+
+        assert len(selected) == 0
+
+    mesh = fem.Cube(n=3)
+    x, y, z = mesh.points.T
+
+    # three clicks: select, exclude and unselect the edge x=1, y=1
+    with interact(
+        click((1.0, 1.0, 0.25)),
+        click((1.0, 1.0, 0.25)),
+        click((1.0, 1.0, 0.25)),
+        click((1.0, 0.5, 1.0)),
+        finish,
+    ):
+        selected = mesh.select_edge_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & np.isclose(z, 1)))
+
+    # clear the excluded patches
+    with interact(
+        click((1.0, 1.0, 0.25)),
+        click((1.0, 1.0, 0.25)),  # exclude the edge x=1, y=1
+        press_key("c"),
+        click((0.5, 1.0, 1.0)),
+        finish,
+    ):
+        selected = mesh.select_edge_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(y, 1) & np.isclose(z, 1)))
+
+
+def test_select_edge_points_exclude_planar():
+    mesh = fem.Rectangle(n=4)
+    x, y = mesh.points.T
+
+    # a merged patch of a selected and an excluded patch is excluded
+    with interact(
+        click((1.0, 0.5, 0.0)),  # select the edge x=1
+        click((0.5, 1.0, 0.0)),
+        click((0.5, 1.0, 0.0)),  # exclude the edge y=1
+        finish,
+    ):
+        selected = mesh.select_edge_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & ~np.isclose(y, 1)))
+
+    with interact(
+        click((1.0, 0.5, 0.0)),
+        click((0.5, 1.0, 0.0)),
+        click((0.5, 1.0, 0.0)),
+        move_slider(120),
+        finish,
+    ):
+        selected = mesh.select_edge_points()
+
+    assert len(selected) == 0
+
+    # the next click on the merged patch unselects it
+    with interact(
+        click((1.0, 0.5, 0.0)),
+        click((0.5, 1.0, 0.0)),
+        click((0.5, 1.0, 0.0)),
+        move_slider(120),
+        click((0.0, 0.5, 0.0)),  # unselect the merged patch
+        move_slider(30),
+        click((0.0, 0.5, 0.0)),  # select the edge x=0
+        finish,
+    ):
+        selected = mesh.select_edge_points()
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 0)))
+
+
+def test_select_edge_points_exclude_curved():
+    # a ring with inner radius 1 and outer radius 2, revolved around the x-axis
+    mesh = fem.Rectangle(a=(0, 1), b=(1, 2), n=3).revolve(n=37, phi=360)
+    x, y, z = mesh.points.T
+    radius = np.hypot(y, z)
+    circle = np.isclose(x, 1) & np.isclose(radius, 2)
+
+    # the excluded axial edge on the outer mantle doesn't exist for an angle of 30
+    # degrees, but it is kept (and excluded again for an angle of 5 degrees)
+    with interact(
+        click((0.25, 2.0, 0.0)),
+        click((0.25, 2.0, 0.0)),  # exclude the axial edge at y=2, z=0
+        move_slider(30),
+        click((1.0, np.sqrt(2), np.sqrt(2))),  # select the outer circle
+        finish,
+    ):
+        selected = mesh.select_edge_points(angle=5)
+
+    assert np.array_equal(selected, point_ids(circle))
+
+    # only the clicked edge of the outer circle (from 0 to 10 degrees) is selected
+    # for an angle of 5 degrees, without the point of the excluded axial edge
+    phi = np.radians(5)
+    with interact(
+        click((0.25, 2.0, 0.0)),
+        click((0.25, 2.0, 0.0)),
+        move_slider(30),
+        click((1.0, 2 * np.cos(phi), 2 * np.sin(phi))),
+        move_slider(5),
+        finish,
+    ):
+        selected = mesh.select_edge_points(angle=5)
+
+    assert len(selected) == 1
+    assert np.allclose(
+        mesh.points[selected], [1, 2 * np.cos(2 * phi), 2 * np.sin(2 * phi)]
+    )
 
 
 def test_select_edge_points_angle():
@@ -512,6 +652,9 @@ if __name__ == "__main__":
     test_select_surface_points_without_polygons()
     test_select_edge_points()
     test_select_edge_points_clear()
+    test_select_edge_points_exclude()
+    test_select_edge_points_exclude_planar()
+    test_select_edge_points_exclude_curved()
     test_select_edge_points_angle()
     test_select_edge_points_planar()
     test_select_edge_points_curved()

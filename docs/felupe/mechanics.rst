@@ -43,13 +43,14 @@ Mechanics
    SubstepState
    IterationState
 
-**Point Load and Multi-Point Constraints**
+**Point Load and Constraints**
 
 .. autosummary::
 
    PointLoad
    MultiPointConstraint
    MultiPointContact
+   CylindricalConstraint
 
 **Contact**
 
@@ -193,6 +194,11 @@ Mechanics
    :inherited-members:
 
 .. autoclass:: felupe.MultiPointContact
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.CylindricalConstraint
    :members:
    :undoc-members:
    :inherited-members:

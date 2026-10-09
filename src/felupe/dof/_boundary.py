@@ -299,6 +299,26 @@ class Boundary:
         self.value = value
 
     def select_surface_points(self, **kwargs):
+        """Interactively select the points of the boundary condition by surface patches
+        of the mesh.
+
+        This replaces the previously selected points. The skipped axes and the value of
+        the boundary condition are kept. If the boundary condition has a dof-based mask,
+        all axes of the selected points are prescribed.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Optional keyword arguments for :func:`~felupe.view.select_surface_points`,
+            e.g. ``selected`` and ``excluded`` for an initial selection of patches.
+
+        See Also
+        --------
+        felupe.view.select_surface_points : Interactively select (and exclude) smooth
+            surface patches and return their point ids.
+        felupe.Boundary.select_edge_points : Interactively select the points of the
+            boundary condition by edge patches of the mesh.
+        """
         mesh = self.field.region.mesh
 
         new_mask = np.zeros(mesh.npoints, dtype=bool)
@@ -307,6 +327,26 @@ class Boundary:
         self.apply_mask(new_mask)
 
     def select_edge_points(self, **kwargs):
+        """Interactively select the points of the boundary condition by edge patches of
+        the mesh.
+
+        This replaces the previously selected points. The skipped axes and the value of
+        the boundary condition are kept. If the boundary condition has a dof-based mask,
+        all axes of the selected points are prescribed.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Optional keyword arguments for :func:`~felupe.view.select_edge_points`,
+            e.g. ``selected`` and ``excluded`` for an initial selection of patches.
+
+        See Also
+        --------
+        felupe.view.select_edge_points : Interactively select (and exclude) smooth edge
+            patches and return their point ids.
+        felupe.Boundary.select_surface_points : Interactively select the points of the
+            boundary condition by surface patches of the mesh.
+        """
         mesh = self.field.region.mesh
 
         new_mask = np.zeros(mesh.npoints, dtype=bool)

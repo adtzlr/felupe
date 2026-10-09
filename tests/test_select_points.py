@@ -353,6 +353,72 @@ def test_select_surface_points_curved():
     assert np.allclose(radius[selected], 2)
 
 
+def test_select_surface_points_nonlinear_subdivision():
+    hex20 = fem.Cube(n=3).add_midpoints_edges()
+    meshes = [
+        fem.Cube(n=3),  # linear faces are not subdivided
+        hex20,
+        hex20.add_midpoints_faces().add_midpoints_volumes(),
+        fem.Cube(n=3).triangulate().add_midpoints_edges(),
+        fem.mesh.CubeArbitraryOrderHexahedron(order=3),
+    ]
+
+    for mesh in meshes:
+        x, y, z = mesh.points.T
+
+        # the subdivision creates new points: the returned point ids are those of the
+        # faces of the mesh, including the mid-edge (and mid-face) points
+        for show_edges in [True, False]:
+            with interact(
+                click((1.0, 0.5, 0.5)),  # select the patch x=1
+                click((0.5, 1.0, 0.5)),
+                click((0.5, 1.0, 0.5)),  # exclude the patch y=1
+                click((0.5, 0.5, 1.0)),  # select the patch z=1
+                finish,
+            ):
+                selected = mesh.select_surface_points(
+                    nonlinear_subdivision=4, show_edges=show_edges
+                )
+
+            expected = (np.isclose(x, 1) | np.isclose(z, 1)) & ~np.isclose(y, 1)
+            assert np.array_equal(selected, point_ids(expected))
+
+        # initial selection by the closest (subdivided) polygons
+        with interact(finish):
+            selected = mesh.select_surface_points(
+                selected=[(1.0, 0.5, 0.5)], nonlinear_subdivision=4
+            )
+
+        assert np.array_equal(selected, point_ids(np.isclose(x, 1)))
+
+
+def test_select_surface_points_nonlinear_subdivision_curved():
+    # a ring with inner radius 1 and outer radius 2, revolved around the x-axis with
+    # 30 degrees per quadratic hexahedron. The mid-edge points are moved to the arcs.
+    ring = fem.Rectangle(a=(0, 1), b=(1, 2), n=3).revolve(n=13, phi=360)
+    ring = ring.add_midpoints_edges()
+    points = ring.points.copy()
+    radius = np.hypot(*points[:, 1:].T)
+    points[:, 1:] *= (np.round(4 * radius) / 4 / radius).reshape(-1, 1)
+    mesh = fem.Mesh(points, ring.cells, ring.cell_type)
+
+    radius = np.hypot(*mesh.points[:, 1:].T)
+    outer = point_ids(np.isclose(radius, 2))
+
+    # the subdivided outer mantle is one smooth patch, even for a small angle
+    with interact(click((0.25, np.sqrt(2), np.sqrt(2))), finish):
+        selected = mesh.select_surface_points(angle=10, nonlinear_subdivision=4)
+
+    assert np.array_equal(selected, outer)
+
+    # without subdivision, the kinks between the triangles of the faces are too big
+    with interact(click((0.25, np.sqrt(2), np.sqrt(2))), finish):
+        selected = mesh.select_surface_points(angle=10)
+
+    assert 0 < len(selected) < len(outer)
+    assert np.allclose(radius[selected], 2)
+
+
 def test_select_surface_points_without_polygons():
     pytest.importorskip("pyvista")
 

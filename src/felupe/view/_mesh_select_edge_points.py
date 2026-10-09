@@ -203,7 +203,7 @@ def select_edge_points(
     import pyvista as pv
     from vtkmodules.vtkRenderingCore import vtkCellPicker
 
-    surface = _extract_surface(mesh)
+    surface, _ = _extract_surface(mesh)
     points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
     # clicked edges as pairs of point ids with the status of their patches,

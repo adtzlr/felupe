@@ -261,7 +261,58 @@ def test_mpc_plot_2d():
         pass
 
 
+def test_mpc_reference():
+    "Compare the assembled vectors and matrices with dense reference arrays."
+
+    rng = np.random.default_rng(seed=7)
+
+    for dim in [2, 3]:
+        mesh = fem.Cube(n=3) if dim == 3 else fem.Rectangle(n=4)
+        mesh.add_points([np.full(dim, 0.5)])
+        region = fem.RegionHexahedron(mesh) if dim == 3 else fem.RegionQuad(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=dim)])
+        field[0].values[:] = 0.6 * rng.uniform(-1, 1, size=field[0].values.shape)
+
+        u = field[0].values
+        x = mesh.points + u
+        points = np.arange(mesh.npoints - 1)
+        c = mesh.npoints - 1
+        dof = np.arange(mesh.ndof).reshape(mesh.points.shape)
+
+        for skip in [(0, 0, 0), (1, 0, 0), (0, 1, 1), (1, 1, 0)]:
+            mask = ~np.array(skip, dtype=bool)[:dim]
+
+            for Item in [fem.MultiPointConstraint, fem.MultiPointContact]:
+                item = Item(field, points, centerpoint=-1, skip=skip, multiplier=7.0)
+                r = item.assemble.vector(field).toarray().ravel()
+                K = item.assemble.matrix(field).toarray()
+
+                # springs between the center-point and the points, i.e. the residual
+                # vector k (y_t - y_c) (e_t - e_c) and the stiffness k (e_t - e_c)^2,
+                # with the displacements (constraint) or the positions (contact) y
+                y = x if Item is fem.MultiPointContact else u
+                r_ref = np.zeros(mesh.ndof)
+                K_ref = np.zeros((mesh.ndof, mesh.ndof))
+
+                for t in points:
+                    for ax in np.arange(dim)[mask]:
+                        if Item is fem.MultiPointContact:
+                            sign = np.sign(mesh.points[c, ax] - mesh.points[t, ax])
+                            if sign == np.sign(x[c, ax] - x[t, ax]):
+                                continue  # not in contact
+
+                        e = np.zeros(mesh.ndof)
+                        e[dof[t, ax]], e[dof[c, ax]] = 1.0, -1.0
+
+                        r_ref += 7.0 * (y[t, ax] - y[c, ax]) * e
+                        K_ref += 7.0 * np.outer(e, e)
+
+                assert np.allclose(r, r_ref)
+                assert np.allclose(K, K_ref)
+
+
 if __name__ == "__main__":
+    test_mpc_reference()
     test_mpc()
     test_mpc_mixed()
     test_mpc_isolated()

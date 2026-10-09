@@ -25,9 +25,6 @@ from ._helpers import Assemble, Results
 class CylindricalConstraint:
     r"""A constraint for the displacements of points in cylindrical coordinates.
 
-    The radial, the circumferential and the axial components of the displacements of
-    the points are constrained w.r.t. a given axis, with optionally skipped directions.
-
     Parameters
     ----------
     field : FieldContainer
@@ -35,56 +32,36 @@ class CylindricalConstraint:
     points : (n,) ndarray of int or bool
         An array with indices (or a mask) of the points to be constrained.
     center : array_like, optional
-        A point on the axis of the cylindrical coordinate system. Default is
-        (0, 0, 0).
+        A point on the axis. Default is (0, 0, 0).
     axis : array_like, optional
-        The direction of the axis of the cylindrical coordinate system (normalized
-        internally). Default is (0, 0, 1). For 2d-meshes, the axis must be
-        perpendicular to the plane of the mesh.
+        The direction of the axis, perpendicular to the plane for 2d-meshes. Default is
+        (0, 0, 1).
     displacement : array_like, optional
-        The prescribed displacements :math:`(u_r, u_\theta, u_z)` in radial,
-        circumferential and axial direction, either one vector for all points or one
-        vector per point with shape (n, 3). The circumferential component is the arc
-        length on the undeformed radius, i.e. a rotation by the angle
-        :math:`\varphi = u_\theta / R` about the axis. For 2d-meshes, only the
-        components :math:`(u_r, u_\theta)` are used. The displacements may be ramped in
-        a :class:`~felupe.Step`, see :meth:`update`. Default is (0, 0, 0).
+        The prescribed displacements :math:`(u_r, u_\theta, u_z)` for all points or per
+        point with shape (n, 3), where :math:`u_\theta` is the arc length on the
+        undeformed radius. May be ramped in a :class:`~felupe.Step`, see
+        :meth:`update`. Default is (0, 0, 0).
     skip : tuple of bool, optional
-        A tuple with boolean values for the radial, the circumferential and the axial
-        direction. If True, the respective direction is not constrained. Default is
-        (False, False, False).
+        Flags to skip the radial, the circumferential and the axial direction. Default
+        is (False, False, False).
     multiplier : float, optional
-        The penalty stiffness :math:`k` per point and direction, i.e. a force per unit
-        length. Default is 1e3.
+        The penalty stiffness :math:`k` per point and direction. Default is 1e3.
 
     Attributes
     ----------
     radius : (n,) ndarray
         The undeformed radii :math:`R` of the points.
-    height : (n,) ndarray
-        The undeformed axial coordinates :math:`Z` of the points.
-    basis : (n, 3, 3) ndarray
-        The undeformed cylindrical base vectors :math:`\boldsymbol{e}_r,
-        \boldsymbol{e}_\theta, \boldsymbol{e}_z` of the points (stacked along the
-        second axis).
-    mask : (3,) ndarray of bool
-        The constrained directions (radial, circumferential, axial).
     results : Results
-        The results of the last evaluation, i.e. the residual vector
-        ``results.force``, the stiffness matrix ``results.stiffness`` and the gaps
-        ``results.gap`` of the points with shape (n, 3).
+        The results of the last evaluation, including the gaps ``results.gap`` with
+        shape (n, 3).
 
     Notes
     -----
     A :class:`~felupe.CylindricalConstraint` is supported as an item in a
-    :class:`~felupe.Step`. It provides the assemble-methods
-    :meth:`CylindricalConstraint.assemble.vector() <felupe.CylindricalConstraint.assemble.vector>`
-    and :meth:`CylindricalConstraint.assemble.matrix() <felupe.CylindricalConstraint.assemble.matrix>`.
-
-    For each point, the undeformed radius :math:`R`, the axial coordinate :math:`Z` and
-    the cylindrical base vectors are evaluated, see Eq. :eq:`cylindrical-basis`, where
-    :math:`\boldsymbol{X}_0` denotes the center-point and :math:`\boldsymbol{a}` the
-    (normalized) axis.
+    :class:`~felupe.Step`. For each point, the undeformed radius, the axial coordinate
+    and the cylindrical base vectors are evaluated w.r.t. the center-point
+    :math:`\boldsymbol{X}_0` and the normalized axis :math:`\boldsymbol{a}`, see
+    Eq. :eq:`cylindrical-basis`.
 
     ..  math::
         :label: cylindrical-basis
@@ -99,9 +76,9 @@ class CylindricalConstraint:
         \boldsymbol{e}_\theta = \boldsymbol{a} \times \boldsymbol{e}_r, \qquad
         \boldsymbol{e}_z = \boldsymbol{a}
 
-    The constraint is enforced by a penalty method. The total potential of the
-    constraint is given by the sum of the squared gaps :math:`g_i` of all points and of
-    all directions which are not skipped, see Eq. :eq:`cylindrical-potential`.
+    The constraint is enforced by a penalty method with the potential in
+    Eq. :eq:`cylindrical-potential`, summed up for all points and all directions which
+    are not skipped.
 
     ..  math::
         :label: cylindrical-potential
@@ -109,16 +86,10 @@ class CylindricalConstraint:
         \Pi = \sum_{\text{points}} \sum_{i \in \{r, \theta, z\}} \frac{k}{2}\, g_i^2
 
     The gaps are evaluated in the deformed configuration
-    :math:`\boldsymbol{x} = \boldsymbol{X} + \boldsymbol{u}` (geometrically exact), see
-    Eq. :eq:`cylindrical-gaps`. The radial and the circumferential base vectors are
-    rotated by the angle :math:`\varphi = u_\theta / R` about the axis. If the
-    circumferential direction is constrained, a point is moved to the rotated position,
-    i.e. its radius is not changed by a rotation. If the circumferential direction is
-    skipped, the radial gap is the exact distance to the axis and the point slides
-    freely (without friction) on the cylinder with the radius :math:`R + u_r`, e.g. like
-    in a rigid sleeve. If no direction is skipped, the deformed position is
-    :math:`\boldsymbol{x} = \boldsymbol{X}_0 + (R + u_r)\, \boldsymbol{e}_r(\varphi)
-    + (Z + u_z)\, \boldsymbol{a}`.
+    :math:`\boldsymbol{x} = \boldsymbol{X} + \boldsymbol{u}` with the base vectors
+    rotated by the angle :math:`\varphi = u_\theta / R`, see Eq. :eq:`cylindrical-gaps`.
+    If the circumferential direction is skipped, the radial gap is the exact distance to
+    the axis, i.e. the points slide on the cylinder like in a rigid sleeve.
 
     ..  math::
         :label: cylindrical-gaps
@@ -140,16 +111,10 @@ class CylindricalConstraint:
 
         g_z &= \boldsymbol{a} \cdot (\boldsymbol{x} - \boldsymbol{X}_0) - (Z + u_z)
 
-    For small displacements, the gaps are identical to the components of the
-    displacements in the undeformed cylindrical directions,
-    :math:`g_i = \boldsymbol{e}_i \cdot \boldsymbol{u} - u_i`, up to terms of second
-    order. Hence, in linear-elastic analyses, a radial constraint with a skipped
-    circumferential direction may require an additional Newton iteration. The
-    prescribed displacements of skipped directions are ignored. The residual
-    vector and the stiffness matrix of a point are given in
-    Eq. :eq:`cylindrical-vector-matrix`, where the only non-zero second derivative of
-    the gaps is the one of the exact radial gap with the deformed radius :math:`\rho`
-    and the deformed radial direction :math:`\boldsymbol{n}`.
+    The residual vector and the stiffness matrix of a point are given in
+    Eq. :eq:`cylindrical-vector-matrix`. The only non-zero second derivative is the one
+    of the exact radial gap with the deformed radius :math:`\rho` and the deformed
+    radial direction :math:`\boldsymbol{n}`.
 
     ..  math::
         :label: cylindrical-vector-matrix
@@ -168,29 +133,13 @@ class CylindricalConstraint:
         \frac{1}{\rho} \left( \boldsymbol{P} - \boldsymbol{n} \otimes \boldsymbol{n}
         \right)
 
-    All gaps except the exact radial gap are linear in the displacements, i.e. their
-    stiffness matrix is constant. The exact radial gap leads to a negative stiffness in
-    circumferential direction for points inside the cylinder with the radius
-    :math:`R + u_r` (:math:`g_r < 0`). Large prescribed radial displacements should be
-    applied in several substeps.
-
-    For 2d-meshes, e.g. in plane strain, the constraint is formulated in polar
-    coordinates, i.e. the axial direction is ignored.
-
-    ..  note::
-
-        The constraint is formulated point-wise with the exact cylindrical directions of
-        the points. This is in contrast to a weak form of the constraint on the
-        surface, integrated with the normal vectors of the faces, which constrains the
-        tangential motion of curved (faceted) surfaces. The multiplier should be chosen
-        sufficiently large compared to the stiffness of the elements connected to the
-        points, but not too large to cause numerical issues. Points on the axis must
-        not be constrained in radial or circumferential direction.
+    For 2d-meshes, the constraint is formulated in polar coordinates. Points on the axis
+    can't be constrained in radial or circumferential direction.
 
     Examples
     --------
-    This example shows how to use a :class:`~felupe.CylindricalConstraint`. A tube with
-    its axis in direction :math:`x` is created by a revolution of a rectangle.
+    A tube with its axis in direction :math:`x` is created by a revolution of a
+    rectangle.
 
     ..  pyvista-plot::
         :context:
@@ -203,38 +152,22 @@ class CylindricalConstraint:
         >>> region = fem.RegionHexahedron(mesh)
         >>> displacement = fem.Field(region, dim=3)
         >>> field = fem.FieldContainer([displacement])
-        >>>
-        >>> umat = fem.NeoHooke(mu=1.0, bulk=5.0)
-        >>> solid = fem.SolidBody(umat=umat, field=field)
+        >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
 
-    The tube is placed in a rigid (frictionless) sleeve, i.e. the points on the outer
-    surface are constrained in radial direction only. They are free to rotate about the
-    axis and to slide in axial direction.
+    The outer surface is placed in a rigid sleeve, i.e. it is constrained in radial
+    direction only. The end face at :math:`x=0` is fixed and the end face at
+    :math:`x=3` is twisted by 90°, where the circumferential displacement is the arc
+    length on the undeformed radius of each point.
 
     ..  pyvista-plot::
         :context:
 
         >>> radius = np.linalg.norm(mesh.points[:, 1:], axis=1)
         >>> sleeve = fem.CylindricalConstraint(
-        ...     field=field,
-        ...     points=np.isclose(radius, 2),
-        ...     axis=(1, 0, 0),
-        ...     skip=(False, True, True),
+        ...     field, points=np.isclose(radius, 2), axis=(1, 0, 0), skip=(0, 1, 1)
         ... )
-
-    The end face at :math:`x=0` is fixed and the end face at :math:`x=3` is twisted by
-    a rotation of 90° about the axis, without a change of its radius and its axial
-    position. The circumferential displacement is the arc length on the undeformed
-    radius of each point. All items are added to a :class:`~felupe.Step` and a
-    :class:`~felupe.Job` is evaluated.
-
-    ..  pyvista-plot::
-        :context:
-
         >>> twist = fem.CylindricalConstraint(
-        ...     field=field,
-        ...     points=np.isclose(mesh.x, 3),
-        ...     axis=(1, 0, 0),
+        ...     field, points=np.isclose(mesh.x, 3), axis=(1, 0, 0)
         ... )
         >>> angles = np.linspace(0, np.pi / 2, 10)
         >>> table = [twist.radius.reshape(-1, 1) * [0, angle, 0] for angle in angles]
@@ -244,18 +177,6 @@ class CylindricalConstraint:
         ...     [solid, sleeve, twist], ramp={twist: table}, boundaries=boundaries
         ... )
         >>> job = fem.Job([step]).evaluate()
-
-    The points on the outer surface remain on the cylinder with the undeformed radius.
-
-    ..  pyvista-plot::
-        :context:
-
-        >>> x = mesh.points + displacement.values
-        >>> radius_deformed = np.linalg.norm(x[sleeve.points][:, 1:], axis=1)
-        >>> np.allclose(radius_deformed, 2, atol=1e-3)
-        True
-
-    A view on the deformed tube including the twisted points and the axis is plotted.
 
     ..  pyvista-plot::
         :context:

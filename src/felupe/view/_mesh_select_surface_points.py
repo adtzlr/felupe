@@ -299,7 +299,7 @@ def select_surface_points(
     color="lightgrey",
     selected_color=None,
     excluded_color="darkred",
-    show_edges=True,
+    show_edges=False,
     nonlinear_subdivision=1,
     **kwargs,
 ):
@@ -330,7 +330,8 @@ def select_surface_points(
     excluded_color : str, optional
         Color of excluded surface patches (default is "darkred").
     show_edges : bool, optional
-        Whether to show mesh edges (default is True).
+        Whether to show the edges of the mesh (default is False). The patches are
+        separated by their borders anyway.
     nonlinear_subdivision : int, optional
         Number of subdivisions to generate a smooth surface based on the mid-edge
         points of quadratic (or Lagrange) cells, same as in

@@ -107,7 +107,7 @@ def select_edge_points(
     color="black",
     selected_color=None,
     excluded_color="red",
-    show_edges=True,
+    show_edges=False,
     **kwargs,
 ):
     """Interactively select (and exclude) smooth edge patches and return their point
@@ -144,7 +144,8 @@ def select_edge_points(
     excluded_color : str, optional
         Color of excluded edge patches (default is "red").
     show_edges : bool, optional
-        Whether to show the edges of the mesh on the surface (default is True).
+        Whether to show the edges of the mesh on the surface (default is False). The
+        edges which may be selected are shown anyway.
     **kwargs : optional
         Additional keyword arguments to pass to the PyVista plotter.
 

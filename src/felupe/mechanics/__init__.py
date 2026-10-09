@@ -1,5 +1,6 @@
 from ._contact import ContactRigidPlane
 from ._curve import CharacteristicCurve
+from ._cylindrical import CylindricalConstraint
 from ._free_vibration import FreeVibration
 from ._helpers import Assemble, Evaluate, Results, StateNearlyIncompressible
 from ._item import FormItem
@@ -18,6 +19,7 @@ from ._update import UpdateItem
 __all__ = [
     "Assemble",
     "CharacteristicCurve",
+    "CylindricalConstraint",
     "Evaluate",
     "FreeVibration",
     "FormItem",

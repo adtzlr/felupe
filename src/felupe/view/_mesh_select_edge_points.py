@@ -19,8 +19,14 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 from ._mesh_select_surface_points import (
+    EXCLUDED,
+    SELECTED,
+    UNSELECTED,
     _colors,
+    _cycle,
     _extract_surface,
+    _patch_info,
+    _patch_status,
     _show,
     _surface_patches,
 )
@@ -90,10 +96,12 @@ def select_edge_points(
     slider=True,
     color="black",
     selected_color=None,
+    excluded_color="red",
     show_edges=True,
     **kwargs,
 ):
-    """Interactively select smooth edge patches and return their point ids.
+    """Interactively select (and exclude) smooth edge patches and return their point
+    ids.
 
     The edges are the borders of the surface patches (see
     :func:`~felupe.view.select_surface_points`), i.e. the edges between neighbouring
@@ -116,6 +124,8 @@ def select_edge_points(
     selected_color : str or None, optional
         Color of selected edge patches. Default is None, which lets PyVista choose
         the default color based on the global theme.
+    excluded_color : str, optional
+        Color of excluded edge patches (default is "red").
     show_edges : bool, optional
         Whether to show the edges of the mesh on the surface (default is True).
     **kwargs : optional
@@ -124,17 +134,24 @@ def select_edge_points(
     Returns
     -------
     numpy.ndarray
-        Sorted point ids (of ``mesh``) of all edges on the selected patches.
+        Sorted point ids (of ``mesh``) of all edges on the selected patches, without
+        the points of all edges on the excluded patches.
 
     Notes
     -----
     The selection is controlled by the mouse and the keyboard.
 
-    * **Left click**: toggle the patch next to the cursor (a drag rotates as usual).
-      Edges which are hidden behind the surface are ignored.
+    * **Left click**: cycle the patch next to the cursor from unselected to selected,
+      from selected to excluded and from excluded back to unselected (a drag rotates
+      as usual). Edges which are hidden behind the surface are ignored.
     * **Right click**: finish (a drag zooms as usual), same as ``q`` or closing the
       window.
-    * **Button** or ``c``: clear the selection.
+    * **Button** or ``c``: clear the selection, i.e. all patches are unselected.
+
+    Excluded patches have priority over selected patches: the points shared by a
+    selected and an excluded patch, e.g. a corner point between two edge patches, are
+    not selected. If both a selected and an excluded patch are merged into one patch by
+    an increased angle, the merged patch is excluded.
 
     See Also
     --------
@@ -147,18 +164,26 @@ def select_edge_points(
     surface = _extract_surface(mesh)
     points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
-    # clicked edges as pairs of point ids, re-evaluated if the angle changes (the
-    # edges themselves depend on the angle)
-    state = dict(seeds=[])
+    # clicked edges as pairs of point ids with the status of their patches,
+    # re-evaluated if the angle changes (the edges themselves depend on the angle)
+    state = dict(seeds={})
 
-    def selected_labels():
+    def current_seeds():
+        "Return the seeds of the current edges by their index."
         index = state["index"]
-        return [state["labels"][index[s]] for s in state["seeds"] if s in index]
+        return {index[s]: seed for s, seed in state["seeds"].items() if s in index}
 
-    def selected_edges():
-        return np.isin(state["labels"], selected_labels())
+    def edge_status():
+        return _patch_status(state["labels"], current_seeds())
 
-    color, selected_color = _colors(color, selected_color)
+    def selected_points(status):
+        "Return the point ids of selected edges without the points of excluded edges."
+        edges = state["edges"]
+        return np.setdiff1d(edges[status == SELECTED], edges[status == EXCLUDED])
+
+    color, selected_color, excluded_color = _colors(
+        color, selected_color, excluded_color
+    )
 
     # always use a native, blocking window
     plotter = pv.Plotter(notebook=False, **kwargs)
@@ -170,10 +195,10 @@ def select_edge_points(
     )
 
     def update():
-        edges = selected_edges()
+        status = edge_status()
         if "edge_patches" in plotter.actors:
-            state["lines"].cell_data["selected"] = edges.astype(np.uint8)
-        point_ids = np.unique(state["edges"][edges])
+            state["lines"].cell_data["status"] = status
+        point_ids = selected_points(status)
         if len(point_ids) > 0:
             plotter.add_points(
                 points[point_ids],
@@ -184,10 +209,10 @@ def select_edge_points(
             )
         else:
             plotter.remove_actor("selected_points")
-        n_patches = len(np.unique(state["labels"][edges]))
         plotter.add_text(
             f"Angle: {state['angle']:.0f} deg   "
-            f"Edge patches: {n_patches}   Points: {len(point_ids)}",
+            f"Edge patches: {_patch_info(state['labels'], status)}   "
+            f"Points: {len(point_ids)}",
             position="upper_left",
             font_size=10,
             name="info",
@@ -233,20 +258,16 @@ def select_edge_points(
         edge = edge_picker.GetCellId()
         if edge < 0 or not visible(np.array(edge_picker.GetPickPosition())):
             return
-        label = state["labels"][edge]
+        # keep the seeds of edges which don't exist for the current angle
         index = state["index"]
-        seeds = [
-            s
-            for s in state["seeds"]
-            if s not in index or state["labels"][index[s]] != label
-        ]
-        if len(seeds) == len(state["seeds"]):
-            seeds.append(tuple(state["edges"][edge].tolist()))  # not selected yet
+        seeds = {s: seed for s, seed in state["seeds"].items() if s not in index}
+        for i, seed in _cycle(current_seeds(), state["labels"], edge).items():
+            seeds[tuple(state["edges"][i].tolist())] = seed
         state["seeds"] = seeds
         update()
 
     def clear():
-        state["seeds"] = []
+        state["seeds"] = {}
         update()
 
     def set_angle(value):
@@ -265,13 +286,15 @@ def select_edge_points(
             state["lines"] = pv.PolyData(
                 points, lines=np.pad(edges, ((0, 0), (1, 0)), constant_values=2)
             )
-            state["lines"].cell_data["selected"] = np.zeros(len(edges), dtype=np.uint8)
+            state["lines"].cell_data["status"] = np.full(
+                len(edges), UNSELECTED, dtype=np.uint8
+            )
             actor = plotter.add_mesh(
                 state["lines"],
-                scalars="selected",
-                cmap=[color, selected_color],
-                clim=[0, 1],
-                n_colors=2,
+                scalars="status",
+                cmap=[color, selected_color, excluded_color],
+                clim=[UNSELECTED, EXCLUDED],
+                n_colors=3,
                 show_scalar_bar=False,
                 line_width=4,
                 name="edge_patches",
@@ -281,6 +304,15 @@ def select_edge_points(
 
         update()
 
-    _show(plotter, "edge", toggle_patch, clear, set_angle, angle, slider)
+    _show(
+        plotter,
+        "edge",
+        toggle_patch,
+        clear,
+        set_angle,
+        angle,
+        slider,
+        action="select / exclude / unselect",
+    )
 
-    return np.unique(state["edges"][selected_edges()])
+    return selected_points(edge_status())

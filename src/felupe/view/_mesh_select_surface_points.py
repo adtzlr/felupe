@@ -18,6 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._scene import _default_view
+
 
 def _on_click(interactor, button, callback, tolerance=6):
     """Call ``callback(x, y)`` on a click of ``button`` ("Left" or "Right"), i.e.
@@ -125,6 +127,21 @@ def _cycle(seeds, labels, item):
     return seeds
 
 
+def _initial_seeds(dataset, dim, selected, excluded):
+    """Return the initial seeds ``{cell: status}``, i.e. the closest cells (faces or
+    edges) of the dataset to the selected and excluded points (with ``dim``
+    coordinates). Excluded points have priority."""
+    seeds = {}
+    for points, status in [(selected, SELECTED), (excluded, EXCLUDED)]:
+        if points is None or dataset.n_cells == 0:
+            continue
+        points = np.asarray(points, dtype=float).reshape(-1, dim)
+        points = np.pad(points, ((0, 0), (0, 3 - dim)))
+        for cell in np.atleast_1d(dataset.find_closest_cell(points)):
+            seeds[int(cell)] = status
+    return seeds
+
+
 def _patch_info(labels, status):
     "Return the number of selected and excluded patches as text."
     n_selected = len(np.unique(labels[status == SELECTED]))
@@ -145,9 +162,12 @@ def _colors(*colors):
     ]
 
 
-def _show(plotter, name, toggle, clear, set_angle, angle, slider, action="toggle"):
+def _show(
+    plotter, points, name, toggle, clear, set_angle, angle, slider, action="toggle"
+):
     """Add the controls of an interactive selection of patches to the plotter, show it
-    and wait until the selection is finished.
+    and wait until the selection is finished. The camera looks at the (3d-) points with
+    the default view of :meth:`~felupe.view.Scene.plot`.
 
     * **Left click**: ``toggle(x, y)`` with the display coordinates of the click, the
       ``action`` is shown in the help text.
@@ -212,10 +232,9 @@ def _show(plotter, name, toggle, clear, set_angle, angle, slider, action="toggle
 
     set_angle(angle)
 
-    # look at planar meshes from the top, same as ``Scene.plot()``
-    if np.allclose(plotter.bounds[4:], 0):
-        plotter.view_xy()
-        plotter.enable_parallel_projection()
+    # same default view and axes as ``Scene.plot()``
+    plotter.camera_position = _default_view(plotter, points)
+    plotter.add_axes()
 
     plotter.show()
 
@@ -224,6 +243,8 @@ def select_surface_points(
     mesh,
     angle=30.0,
     slider=True,
+    selected=None,
+    excluded=None,
     color="lightgrey",
     selected_color=None,
     excluded_color="darkred",
@@ -242,6 +263,13 @@ def select_surface_points(
         to be treated as one connected patch (default is 30).
     slider : bool, optional
         Show a slider to change the angle interactively (default is True).
+    selected : array_like or None, optional
+        Coordinates of points to initially select the surface patches of their closest
+        faces, e.g. ``[(1.0, 0.5, 0.5)]``, same as a left click on these patches.
+        Default is None.
+    excluded : array_like or None, optional
+        Coordinates of points to initially exclude the surface patches of their
+        closest faces, same as two left clicks on these patches. Default is None.
     color : str, optional
         Color of unselected surface patches (default is "lightgrey").
     selected_color : str or None, optional
@@ -276,6 +304,31 @@ def select_surface_points(
     selected. If both a selected and an excluded patch are merged into one patch by an
     increased angle, the merged patch is excluded.
 
+    Examples
+    --------
+    The surface patch at :math:`x=1` of a cube is selected and the surface patch at
+    :math:`z=1` is excluded. Here, the patches are given by points next to them, which
+    is the same as a left click on the patch at :math:`x=1` and two left clicks on the
+    patch at :math:`z=1`. The selection is finished by a right click (not required for
+    the static images of the documentation). The selected points are plotted on the
+    mesh, the points on the common edge of both patches are not selected.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>> import pyvista as pv
+        >>>
+        >>> mesh = fem.Cube(n=6)
+        >>> point_ids = mesh.select_surface_points(
+        ...     selected=[(1.0, 0.5, 0.5)], excluded=[(0.5, 0.5, 1.0)]
+        ... )
+        >>>
+        >>> plotter = pv.Plotter()
+        >>> points = mesh.points[point_ids]
+        >>> actor = plotter.add_points(points, color="red", point_size=10)
+        >>> mesh.plot(plotter=plotter).show()
+
     See Also
     --------
     felupe.view.select_edge_points : Interactively select smooth edge patches and
@@ -288,7 +341,7 @@ def select_surface_points(
     points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
     # clicked faces with the status of their patches, re-evaluated if the angle changes
-    state = dict(seeds={})
+    state = dict(seeds=_initial_seeds(surface, mesh.dim, selected, excluded))
     surface.cell_data["status"] = np.full(surface.n_cells, UNSELECTED, dtype=np.uint8)
 
     def patch_status():
@@ -379,6 +432,7 @@ def select_surface_points(
 
     _show(
         plotter,
+        points,
         "surface",
         toggle_patch,
         clear,

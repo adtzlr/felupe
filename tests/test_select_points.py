@@ -273,6 +273,41 @@ def test_select_surface_points_exclude():
     assert np.array_equal(selected, point_ids(np.isclose(z, 1)))
 
 
+def test_select_surface_points_initial():
+    mesh = fem.Cube(n=3)
+    x, y, z = mesh.points.T
+
+    # same as one click on the patch x=1 and two clicks on the patch y=1
+    with interact(finish):
+        selected = mesh.select_surface_points(
+            selected=[(1.0, 0.5, 0.5)], excluded=[(0.5, 1.0, 0.5)]
+        )
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & ~np.isclose(y, 1)))
+
+    # a click on an initially selected patch excludes it, a single point is allowed
+    with interact(click((1.0, 0.5, 0.5)), click((0.5, 0.5, 1.0)), finish):
+        selected = mesh.select_surface_points(selected=(1.0, 0.5, 0.5), excluded=[])
+
+    assert np.array_equal(selected, point_ids(np.isclose(z, 1) & ~np.isclose(x, 1)))
+
+    # excluded points have priority
+    with interact(finish):
+        selected = mesh.select_surface_points(
+            selected=[(1.0, 0.5, 0.5)], excluded=[(1.0, 0.5, 0.5)]
+        )
+
+    assert len(selected) == 0
+
+    # 2d-coordinates for a planar mesh
+    mesh = fem.Rectangle(n=3)
+
+    with interact(finish):
+        selected = mesh.select_surface_points(selected=[(0.5, 0.5)])
+
+    assert np.array_equal(selected, np.arange(mesh.npoints))
+
+
 def test_select_surface_points_angle():
     mesh = fem.Cube(n=3)
     x = mesh.points[:, 0]
@@ -530,6 +565,44 @@ def test_select_edge_points_exclude_curved():
     )
 
 
+def test_select_edge_points_initial():
+    mesh = fem.Cube(n=3)
+    x, y, z = mesh.points.T
+
+    # same as one click on the edge x=y=1 and two clicks on the edge y=z=1
+    with interact(finish):
+        selected = mesh.select_edge_points(
+            selected=[(1.0, 1.0, 0.5)], excluded=[(0.5, 1.0, 1.0)]
+        )
+
+    assert np.array_equal(
+        selected, point_ids(np.isclose(x, 1) & np.isclose(y, 1) & ~np.isclose(z, 1))
+    )
+
+    # a click on an initially selected patch excludes it
+    with interact(click((1.0, 1.0, 0.25)), click((1.0, 0.5, 1.0)), finish):
+        selected = mesh.select_edge_points(selected=[(1.0, 1.0, 0.5)])
+
+    assert np.array_equal(
+        selected, point_ids(np.isclose(x, 1) & np.isclose(z, 1) & ~np.isclose(y, 1))
+    )
+
+    # there are no edges for angles above 90 degrees
+    with interact(finish):
+        selected = mesh.select_edge_points(angle=120, selected=[(1.0, 1.0, 0.5)])
+
+    assert len(selected) == 0
+
+    # 2d-coordinates for a planar mesh
+    mesh = fem.Rectangle(n=4)
+    x, y = mesh.points.T
+
+    with interact(finish):
+        selected = mesh.select_edge_points(selected=[(1.0, 0.5)], excluded=[(0.5, 1.0)])
+
+    assert np.array_equal(selected, point_ids(np.isclose(x, 1) & ~np.isclose(y, 1)))
+
+
 def test_select_edge_points_angle():
     mesh = fem.Cube(n=3)
     x, y, z = mesh.points.T
@@ -647,6 +720,7 @@ if __name__ == "__main__":
     test_select_surface_points()
     test_select_surface_points_clear()
     test_select_surface_points_exclude()
+    test_select_surface_points_initial()
     test_select_surface_points_angle()
     test_select_surface_points_curved()
     test_select_surface_points_without_polygons()
@@ -655,6 +729,7 @@ if __name__ == "__main__":
     test_select_edge_points_exclude()
     test_select_edge_points_exclude_planar()
     test_select_edge_points_exclude_curved()
+    test_select_edge_points_initial()
     test_select_edge_points_angle()
     test_select_edge_points_planar()
     test_select_edge_points_curved()

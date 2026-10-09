@@ -19,6 +19,21 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 
 
+def _default_view(plotter, points):
+    """Prepare the default view of the camera and return the camera position. Planar
+    meshes are viewed from the top ("xy") with a parallel projection. For all other
+    meshes, the camera is rotated (the camera position is None)."""
+
+    if np.allclose(points[:, 2], 0):
+        plotter.enable_parallel_projection()
+        return "xy"
+
+    plotter.camera.elevation = -15
+    plotter.camera.azimuth = -100
+
+    return None
+
+
 class Scene:
     r"""Base class for plotting a static scene.
 
@@ -313,14 +328,7 @@ class Scene:
             actor.mapper.SetResolveCoincidentTopologyToPolygonOffset()
 
         if view == "default":
-            if np.allclose(self.mesh.points[:, 2], 0):
-                view = "xy"
-                plotter.enable_parallel_projection()
-
-            else:
-                view = None
-                plotter.camera.elevation = -15
-                plotter.camera.azimuth = -100
+            view = _default_view(plotter, self.mesh.points)
 
         plotter.camera_position = view
         # pv.set_plot_theme(theme)

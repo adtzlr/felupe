@@ -25,11 +25,19 @@ from ._mesh_select_surface_points import (
     _colors,
     _cycle,
     _extract_surface,
+    _initial_seeds,
     _patch_info,
     _patch_status,
     _show,
     _surface_patches,
 )
+
+
+def _lines(points, edges):
+    "Return the edges (pairs of point ids) as lines."
+    import pyvista as pv
+
+    return pv.PolyData(points, lines=np.pad(edges, ((0, 0), (1, 0)), constant_values=2))
 
 
 def _edges(borders):
@@ -94,6 +102,8 @@ def select_edge_points(
     mesh,
     angle=30.0,
     slider=True,
+    selected=None,
+    excluded=None,
     color="black",
     selected_color=None,
     excluded_color="red",
@@ -119,6 +129,13 @@ def select_edge_points(
         two neighbouring edges to be treated as one connected patch (default is 30).
     slider : bool, optional
         Show a slider to change the angle interactively (default is True).
+    selected : array_like or None, optional
+        Coordinates of points to initially select the edge patches of their closest
+        edges, e.g. ``[(1.0, 1.0, 0.5)]``, same as a left click on these patches.
+        Default is None.
+    excluded : array_like or None, optional
+        Coordinates of points to initially exclude the edge patches of their closest
+        edges, same as two left clicks on these patches. Default is None.
     color : str, optional
         Color of unselected edge patches (default is "black").
     selected_color : str or None, optional
@@ -153,6 +170,31 @@ def select_edge_points(
     not selected. If both a selected and an excluded patch are merged into one patch by
     an increased angle, the merged patch is excluded.
 
+    Examples
+    --------
+    The edge patch at :math:`x=z=1` of a cube is selected and the edge patch at
+    :math:`x=1, y=0` is excluded. Here, the patches are given by points next to them,
+    which is the same as a left click on the edge at :math:`x=z=1` and two left clicks
+    on the edge at :math:`x=1, y=0`. The selection is finished by a right click (not
+    required for the static images of the documentation). The selected points are
+    plotted on the mesh, the common corner point of both patches is not selected.
+
+    ..  pyvista-plot::
+        :force_static:
+
+        >>> import felupe as fem
+        >>> import pyvista as pv
+        >>>
+        >>> mesh = fem.Cube(n=6)
+        >>> point_ids = mesh.select_edge_points(
+        ...     selected=[(1.0, 0.5, 1.0)], excluded=[(1.0, 0.0, 0.5)]
+        ... )
+        >>>
+        >>> plotter = pv.Plotter()
+        >>> points = mesh.points[point_ids]
+        >>> actor = plotter.add_points(points, color="red", point_size=10)
+        >>> mesh.plot(plotter=plotter).show()
+
     See Also
     --------
     felupe.view.select_surface_points : Interactively select smooth surface patches
@@ -166,7 +208,9 @@ def select_edge_points(
 
     # clicked edges as pairs of point ids with the status of their patches,
     # re-evaluated if the angle changes (the edges themselves depend on the angle)
-    state = dict(seeds={})
+    edges = _edges(_surface_patches(surface, angle)[1])
+    seeds = _initial_seeds(_lines(points, edges), mesh.dim, selected, excluded)
+    state = dict(seeds={tuple(edges[i].tolist()): seed for i, seed in seeds.items()})
 
     def current_seeds():
         "Return the seeds of the current edges by their index."
@@ -283,9 +327,7 @@ def select_edge_points(
         edge_picker.InitializePickList()
 
         if len(edges) > 0:
-            state["lines"] = pv.PolyData(
-                points, lines=np.pad(edges, ((0, 0), (1, 0)), constant_values=2)
-            )
+            state["lines"] = _lines(points, edges)
             state["lines"].cell_data["status"] = np.full(
                 len(edges), UNSELECTED, dtype=np.uint8
             )
@@ -306,6 +348,7 @@ def select_edge_points(
 
     _show(
         plotter,
+        points,
         "edge",
         toggle_patch,
         clear,

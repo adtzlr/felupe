@@ -348,6 +348,7 @@ def select_edge_points(
 
     _show(
         plotter,
+        points,
         "edge",
         toggle_patch,
         clear,

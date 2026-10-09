@@ -18,6 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
+from ._scene import _default_view
+
 
 def _on_click(interactor, button, callback, tolerance=6):
     """Call ``callback(x, y)`` on a click of ``button`` ("Left" or "Right"), i.e.
@@ -160,9 +162,12 @@ def _colors(*colors):
     ]
 
 
-def _show(plotter, name, toggle, clear, set_angle, angle, slider, action="toggle"):
+def _show(
+    plotter, points, name, toggle, clear, set_angle, angle, slider, action="toggle"
+):
     """Add the controls of an interactive selection of patches to the plotter, show it
-    and wait until the selection is finished.
+    and wait until the selection is finished. The camera looks at the (3d-) points with
+    the default view of :meth:`~felupe.view.Scene.plot`.
 
     * **Left click**: ``toggle(x, y)`` with the display coordinates of the click, the
       ``action`` is shown in the help text.
@@ -227,10 +232,9 @@ def _show(plotter, name, toggle, clear, set_angle, angle, slider, action="toggle
 
     set_angle(angle)
 
-    # look at planar meshes from the top, same as ``Scene.plot()``
-    if np.allclose(plotter.bounds[4:], 0):
-        plotter.view_xy()
-        plotter.enable_parallel_projection()
+    # same default view and axes as ``Scene.plot()``
+    plotter.camera_position = _default_view(plotter, points)
+    plotter.add_axes()
 
     plotter.show()
 
@@ -428,6 +432,7 @@ def select_surface_points(
 
     _show(
         plotter,
+        points,
         "surface",
         toggle_patch,
         clear,

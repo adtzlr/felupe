@@ -232,6 +232,43 @@ def test_boundary_plot():
         _ = boundaries["left"].plot()
 
 
+def test_boundary_dof_mask():
+    pv = pytest.importorskip("pyvista")
+
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    field = fem.Field(region, dim=3).as_container()
+    x, y, z = region.mesh.points.T
+
+    def number_of_lines(boundary):
+        "Return the number of plotted lines (prescribed directions) of a boundary."
+        plotter = boundary.plot(plotter=pv.Plotter(off_screen=True))
+        actors = plotter.renderer.actors.values()
+        return sum(actor.mapper.dataset.n_lines for actor in actors)
+
+    # a dof-based mask takes over the skipped axes
+    mask = np.zeros((region.mesh.npoints, 3), dtype=bool)
+    mask[np.isclose(x, 0), 0] = True
+    mask[np.isclose(x, 1), 1:] = True
+    boundary = fem.Boundary(field[0], mask=mask, skip=(1, 1, 1))
+
+    assert boundary.skip is None
+    assert np.array_equal(boundary.mask, mask)
+    assert len(boundary.points) == 18
+    assert number_of_lines(boundary) == mask.sum()
+
+    # a point-based mask afterwards prescribes all axes
+    boundary.apply_mask(np.isclose(x, 1))
+    expected = fem.Boundary(field[0], fx=1)
+
+    assert np.array_equal(boundary.mask, expected.mask)
+    assert np.array_equal(boundary.dof, expected.dof)
+    assert number_of_lines(boundary) == 3 * 9
+
+    # the skipped axes of a point-based mask are not plotted
+    boundary = fem.Boundary(field[0], fx=1, skip=(0, 1, 1))
+    assert number_of_lines(boundary) == 9
+
+
 def test_boundary_dict():
     field = fem.FieldPlaneStrain(
         fem.RegionQuad(fem.Rectangle(b=(3, 1), n=5)), dim=2
@@ -290,6 +327,7 @@ if __name__ == "__main__":
     test_boundary_dict()
     test_boundary_multiaxial()
     test_boundary_plot()
+    test_boundary_dof_mask()
     test_loadcase()
     test_symmetry()
     test_boundarydict_iter()

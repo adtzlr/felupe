@@ -838,6 +838,16 @@ def test_boundary_select_surface_points():
     mask = np.isclose(x, 1) & ~np.isclose(y, 1)
     assert_boundary_equal(boundary, fem.Boundary(field[0], mask=mask, skip=(1, 0, 1)))
 
+    # a boundary with a dof-based mask, all axes of the selected points are prescribed
+    dof_mask = np.zeros((mesh.npoints, 3), dtype=bool)
+    dof_mask[np.isclose(x, 0), 0] = True
+    boundary = fem.Boundary(field[0], mask=dof_mask)
+
+    with interact(click((1.0, 0.5, 0.5)), finish):
+        boundary.select_surface_points()
+
+    assert_boundary_equal(boundary, fem.Boundary(field[0], fx=1))
+
     # no selection
     with interact(finish):
         boundary.select_surface_points()

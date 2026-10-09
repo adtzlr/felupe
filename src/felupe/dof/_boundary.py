@@ -269,8 +269,8 @@ class Boundary:
         if self.mask.shape[1] == 1:
             self.mask = np.tile(self.mask, self.dim)
 
-            # check if some axes should be skipped
-            if True in self.skip:
+            # check if some axes should be skipped (no skip after a dof-based mask)
+            if self.skip is not None and True in self.skip:
                 # exclude mask from axes which should be skipped
                 self.mask[:, np.where(self.skip)[0]] = False
 
@@ -361,11 +361,13 @@ class Boundary:
                     min(mesh.points.max(axis=0) - mesh.points.min(axis=0)) * scale
                 )
 
-                for skip, direction in zip(self.skip, np.eye(3)):
-                    if not skip:
-                        end = points[self.points] + direction * magnitude
+                # the prescribed directions are taken from the (dof-based) mask
+                for axis, direction in enumerate(np.eye(3)[: self.mask.shape[1]]):
+                    prescribed = self.mask[:, axis]
+                    if prescribed.any():
+                        end = points[prescribed] + direction * magnitude
                         _ = plotter.add_lines(
-                            np.hstack([points[self.points], end]).reshape(-1, 3),
+                            np.hstack([points[prescribed], end]).reshape(-1, 3),
                             color=color,
                             width=width,
                         )

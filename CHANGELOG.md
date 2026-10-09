@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file. The format 
 - Fix a wrong contraction in `saint_venant_kirchhoff_orthotropic()` (tensortrax backend).
 - Fix `CharacteristicCurve`, when additional plugins are passed.
 - Fix the matrix in `ContactRigidPlane` for center points, which are only partly constrained.
+- Fix `Boundary.apply_mask()` and `Boundary.plot()` for boundary conditions with a dof-based mask (with `Boundary.skip=None`). Before, a point-based mask applied afterwards, e.g. by `Boundary.select_surface_points()`, and the plot raised a `TypeError`. Now, all axes of the points of a point-based mask applied after a dof-based mask are prescribed and the prescribed directions are plotted by the (dof-based) mask.
 
 ## [11.1.3] - 2026-09-28
 

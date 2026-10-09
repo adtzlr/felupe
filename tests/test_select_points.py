@@ -128,6 +128,15 @@ def parallel_projection(expected):
     return action
 
 
+def has_title(expected):
+    "Check the title of the window (passed to the plotter)."
+
+    def action(plotter):
+        assert plotter.title == expected
+
+    return action
+
+
 finish = click((1, 1), button="Right")
 
 
@@ -782,6 +791,119 @@ def test_boundary_select_points_planar():
     assert np.array_equal(boundary.dof, expected.dof)
 
 
+def assert_boundary_equal(boundary, expected):
+    assert np.array_equal(boundary.mask, expected.mask)
+    assert np.array_equal(boundary.points, expected.points)
+    assert np.array_equal(boundary.dof, expected.dof)
+
+
+def test_boundary_select_surface_points():
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    # the new selection replaces the points, the skipped axes and the value are kept
+    boundary = fem.Boundary(field[0], fx=0, skip=(0, 1, 1), value=0.2)
+
+    with interact(has_title("Right end"), click((1.0, 0.5, 0.5)), finish):
+        boundary.select_surface_points(title="Right end")
+
+    assert_boundary_equal(boundary, fem.Boundary(field[0], fx=1, skip=(0, 1, 1)))
+    assert boundary.value == 0.2
+
+    # select the points of an empty boundary afterwards
+    boundary = fem.Boundary(field[0], skip=(1, 0, 1))
+    assert len(boundary.points) == 0
+
+    with interact(click((1.0, 0.5, 0.5)), click((0.5, 0.5, 1.0)), finish):
+        boundary.select_surface_points()
+
+    expected = fem.Boundary(field[0], fx=1, fz=1, skip=(1, 0, 1))
+    assert_boundary_equal(boundary, expected)
+
+    # same as the selection on the creation of the boundary
+    with interact(click((1.0, 0.5, 0.5)), click((0.5, 0.5, 1.0)), finish):
+        created = fem.Boundary(field[0], select_points="surfaces", skip=(1, 0, 1))
+
+    assert_boundary_equal(boundary, created)
+
+    # keyword arguments are passed to the selection, e.g. an initial selection
+    x, y, z = mesh.points.T
+
+    with interact(finish):
+        boundary.select_surface_points(
+            selected=[(1.0, 0.5, 0.5)], excluded=[(0.5, 1.0, 0.5)], slider=False
+        )
+
+    mask = np.isclose(x, 1) & ~np.isclose(y, 1)
+    assert_boundary_equal(boundary, fem.Boundary(field[0], mask=mask, skip=(1, 0, 1)))
+
+    # no selection
+    with interact(finish):
+        boundary.select_surface_points()
+
+    assert not boundary.mask.any()
+    assert len(boundary.points) == 0
+    assert len(boundary.dof) == 0
+
+
+def test_boundary_select_edge_points():
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+
+    # the new selection replaces the points, the skipped axes and the value are kept
+    boundary = fem.Boundary(field[0], fx=0, skip=(0, 1, 1), value=0.2)
+
+    with interact(has_title("Edge"), click((1.0, 1.0, 0.25)), finish):
+        boundary.select_edge_points(title="Edge")
+
+    expected = fem.Boundary(field[0], fx=1, fy=1, mode="and", skip=(0, 1, 1))
+    assert_boundary_equal(boundary, expected)
+    assert boundary.value == 0.2
+
+    # a boundary with interactively selected surface points, changed to edge points
+    with interact(click((1.0, 0.5, 0.5)), finish):
+        boundary = fem.Boundary(field[0], select_points="surfaces")
+
+    with interact(click((1.0, 0.5, 1.0)), finish):
+        boundary.select_edge_points()
+
+    assert_boundary_equal(boundary, fem.Boundary(field[0], fx=1, fz=1, mode="and"))
+
+    # keyword arguments are passed to the selection, e.g. an initial selection
+    x, y, z = mesh.points.T
+
+    with interact(finish):
+        boundary.select_edge_points(
+            selected=[(1.0, 1.0, 0.5)], excluded=[(0.5, 1.0, 1.0)], slider=False
+        )
+
+    mask = np.isclose(x, 1) & np.isclose(y, 1) & ~np.isclose(z, 1)
+    assert_boundary_equal(boundary, fem.Boundary(field[0], mask=mask))
+
+    # no selection
+    with interact(finish):
+        boundary.select_edge_points()
+
+    assert not boundary.mask.any()
+    assert len(boundary.points) == 0
+    assert len(boundary.dof) == 0
+
+
+def test_boundary_select_edge_points_planar():
+    mesh = fem.Rectangle(n=3)
+    region = fem.RegionQuad(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=2)])
+
+    boundary = fem.Boundary(field[0], fx=1, skip=(0, 1))
+
+    with interact(click((0.0, 0.5, 0.0)), finish):
+        boundary.select_edge_points()
+
+    assert_boundary_equal(boundary, fem.Boundary(field[0], fx=0, skip=(0, 1)))
+
+
 if __name__ == "__main__":
     test_select_surface_points()
     test_select_surface_points_clear()
@@ -802,3 +924,6 @@ if __name__ == "__main__":
     test_select_edge_points_without_polygons()
     test_boundary_select_points()
     test_boundary_select_points_planar()
+    test_boundary_select_surface_points()
+    test_boundary_select_edge_points()
+    test_boundary_select_edge_points_planar()

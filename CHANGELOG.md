@@ -43,6 +43,7 @@ All notable changes to this project will be documented in this file. The format 
 - Use the `dtype` from the `field` values for the `statevars` in `SolidBody` and `SolidBodyNearlyIncompressible` and `ContactRigidPlane`.
 - Use the `dtype` from the `field` values for `SparsityPattern.assemble()`.
 - Keep the `dtype` in `solve()` and `newtonraphson()` when `items` are used.
+- Assemble the vectors and matrices of `MultiPointConstraint` and `MultiPointContact` from vectorized COO-arrays, instead of setting items of LIL-matrices. Before, the sparse identity matrix of the connected points was converted to a dense array of shape (n, n) in the assembly of the matrix, i.e. the time and the memory scaled quadratically with the number of points n (e.g. 5.5 s for 10k points, 80 GiB for 100k points). Now, the assembly scales linearly, e.g. 3 ms for 10k points and 26 ms for 100k points. The results are unchanged.
 
 ### Fixed
 - Fix the `XDMFWriterPlugin` and the `AnimationWriterPlugin`, which closed their file (or plotter) in the hook `after_iteration` if the Newton-Raphson method reached the maximum number of iterations or had NaN-valued norms. A substep which was recovered afterwards (e.g. by a cutback) could not be written. Both plugins now close their file only in `after_job`, which is also triggered if the evaluation fails. Before, the file was not closed for other errors (e.g. NaN values in the solution).

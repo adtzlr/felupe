@@ -40,13 +40,13 @@ def test_cartesian_constraint_derivatives():
         if dim == 2:
             mesh = fem.Rectangle(n=(3, 4))
             region = fem.RegionQuad(mesh)
-            basis = fem.math.rotation_matrix(25, dim=2)
+            rotation = fem.math.rotation_matrix(25, dim=2)
             displacement = (0.05, 0.3)
             skips = [(0, 0), (0, 1), (1, 0)]
         else:
             mesh = fem.Cube(a=(1, 0.5, -1), b=(2, 1, 0), n=3)
             region = fem.RegionHexahedron(mesh)
-            basis = np.column_stack([[1, 1, 0], [-1, 1, 1], [1, -1, 2]])
+            rotation = np.column_stack([[1, 1, 0], [-1, 1, 1], [1, -1, 2]])
             displacement = (0.05, 0.3, -0.1)
             skips = [(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0), (0, 0, 1)]
 
@@ -57,7 +57,7 @@ def test_cartesian_constraint_derivatives():
             constraint = fem.CartesianConstraint(
                 field,
                 points=np.arange(mesh.npoints),
-                basis=basis,
+                rotation=rotation,
                 displacement=displacement,
                 skip=skip,
                 multiplier=3.0,
@@ -107,23 +107,23 @@ def test_cartesian_constraint_target():
         if dim == 2:
             mesh = fem.Rectangle(n=3)
             region = fem.RegionQuad(mesh)
-            basis = fem.math.rotation_matrix(-40, dim=2)
+            rotation = fem.math.rotation_matrix(-40, dim=2)
             displacement = np.array([0.4, -0.3])
         else:
             mesh = fem.Cube(n=3)
             region = fem.RegionHexahedron(mesh)
-            basis = fem.math.rotation_matrix(30, dim=3, axis=2)
+            rotation = fem.math.rotation_matrix(30, dim=3, axis=2)
             displacement = np.array([0.4, 0.9, -0.3])
 
         field = fem.FieldContainer([fem.Field(region, dim=dim)])
         constraint = fem.CartesianConstraint(
-            field, points=np.ones(mesh.npoints, dtype=bool), basis=basis
+            field, points=np.ones(mesh.npoints, dtype=bool), rotation=rotation
         )
         table = [factor * displacement for factor in [0, 0.5, 1]]
         step = fem.Step([constraint], ramp={constraint: table})
         fem.Job([step]).evaluate()
 
-        assert np.allclose(field[0].values, displacement @ basis.T)
+        assert np.allclose(field[0].values, displacement @ rotation.T)
         assert np.allclose(constraint.results.gap, 0)
 
 
@@ -165,7 +165,7 @@ def test_cartesian_constraint_rotated():
 
             if rotated:
                 support = fem.CartesianConstraint(
-                    field, points=bottom, basis=rotation, skip=skip, multiplier=1e7
+                    field, points=bottom, rotation=rotation, skip=skip, multiplier=1e7
                 )
                 items.append(support)
                 boundaries = {
@@ -199,7 +199,7 @@ def test_cartesian_constraint_update():
     constraint = fem.CartesianConstraint(field, points=[0, 1, 2])
     assert constraint.displacement.shape == (3, 3)
     assert np.allclose(constraint.displacement, 0)
-    assert np.allclose(constraint.basis, np.eye(3))
+    assert np.allclose(constraint.rotation, np.eye(3))
 
     constraint.update([1, 2, 3])
     assert np.allclose(constraint.displacement, [[1, 2, 3]] * 3)
@@ -217,11 +217,13 @@ def test_cartesian_constraint_update():
     mesh = fem.Rectangle(n=3)
     field = fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2).as_container()
     constraint = fem.CartesianConstraint(
-        field, points=[0, 1], basis=[[1, -2], [1, 2]], displacement=(1, 2)
+        field, points=[0, 1], rotation=[[1, -2], [1, 2]], displacement=(1, 2)
     )
     assert np.allclose(constraint.displacement, [[1, 2, 0]] * 2)
-    assert np.allclose(constraint.basis[:2, :2], np.array([[1, -1], [1, 1]]) / 2**0.5)
-    assert np.allclose(constraint.basis[:, 2], [0, 0, 1])
+    assert np.allclose(
+        constraint.rotation[:2, :2], np.array([[1, -1], [1, 1]]) / 2**0.5
+    )
+    assert np.allclose(constraint.rotation[:, 2], [0, 0, 1])
     assert not constraint.mask[2]
 
 
@@ -230,21 +232,25 @@ def test_cartesian_constraint_errors():
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-    # wrong shape of the basis
+    # wrong shape of the rotation
     with pytest.raises(ValueError):
-        fem.CartesianConstraint(field, points=[0], basis=np.eye(2))
+        fem.CartesianConstraint(field, points=[0], rotation=np.eye(2))
 
     # zero base vector
     with pytest.raises(ValueError):
         fem.CartesianConstraint(
-            field, points=[0], basis=[[1, 0, 0], [0, 0, 0], [0, 0, 1]]
+            field, points=[0], rotation=[[1, 0, 0], [0, 0, 0], [0, 0, 1]]
         )
 
     # not orthogonal
     with pytest.raises(ValueError):
         fem.CartesianConstraint(
-            field, points=[0], basis=[[1, 0, 0], [1, 1, 0], [0, 0, 1]]
+            field, points=[0], rotation=[[1, 0, 0], [1, 1, 0], [0, 0, 1]]
         )
+
+    # not right-handed
+    with pytest.raises(ValueError):
+        fem.CartesianConstraint(field, points=[0], rotation=np.diag([1, 1, -1]))
 
     # 1d-meshes are not supported
     mesh = fem.mesh.Line(n=3)

@@ -31,15 +31,16 @@ class CartesianConstraint(PointConstraint):
         A field container with the displacement field as first field.
     points : (n,) ndarray of int or bool
         An array with indices (or a mask) of the points to be constrained.
-    basis : array_like or None, optional
-        The matrix with the base vectors :math:`\boldsymbol{e}_i` of the coordinate
-        system as columns, with shape (3, 3) or with shape (2, 2) for 2d-meshes, i.e.
-        the rotation :math:`\boldsymbol{Q} = \boldsymbol{e}_i \otimes
-        \boldsymbol{E}_i` of the global base vectors :math:`\boldsymbol{E}_i`, see
-        :func:`~felupe.math.rotation_matrix`. Given base vectors are stacked as
-        columns by ``np.column_stack([e1, e2, e3])``. The base vectors are normalized
-        and they must be orthogonal. If None, the global base vectors are used.
-        Default is None.
+    rotation : array_like or None, optional
+        The rotation matrix :math:`\boldsymbol{Q} = \boldsymbol{e}_i \otimes
+        \boldsymbol{E}_i`, which maps the global base vectors :math:`\boldsymbol{E}_i`
+        to the base vectors :math:`\boldsymbol{e}_i = \boldsymbol{Q}
+        \boldsymbol{E}_i` of the coordinate system, with shape (3, 3) or with shape
+        (2, 2) for 2d-meshes, see :func:`~felupe.math.rotation_matrix`. The base vectors
+        are the columns of the matrix, i.e. given base vectors are stacked by
+        ``np.column_stack([e1, e2, e3])``. The columns are normalized, they must be
+        orthogonal and right-handed (:math:`\det(\boldsymbol{Q}) = 1`). If None, the
+        global base vectors are used. Default is None.
     displacement : array_like, optional
         The prescribed displacements :math:`(u_1, u_2, u_3)` in the directions of the
         base vectors for all points or per point with shape (n, 3). May be ramped in a
@@ -52,9 +53,9 @@ class CartesianConstraint(PointConstraint):
 
     Attributes
     ----------
-    basis : (3, 3) ndarray
-        The normalized base vectors of the coordinate system as columns (padded to
-        three dimensions for 2d-meshes).
+    rotation : (3, 3) ndarray
+        The rotation matrix with the normalized base vectors of the coordinate system
+        as columns (padded to three dimensions for 2d-meshes).
     results : Results
         The results of the last evaluation, including the gaps ``results.gap`` with
         shape (n, 3).
@@ -110,8 +111,8 @@ class CartesianConstraint(PointConstraint):
         >>> field = fem.FieldContainer([displacement])
         >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
         >>>
-        >>> basis = fem.math.rotation_matrix(30, dim=3, axis=1)
-        >>> local = mesh.points @ basis
+        >>> rotation = fem.math.rotation_matrix(30, dim=3, axis=1)
+        >>> local = mesh.points @ rotation
 
     The bottom face rests on an inclined plane, i.e. it is constrained in the normal
     direction of the plane only and the points slide on the plane. The top face is
@@ -122,7 +123,10 @@ class CartesianConstraint(PointConstraint):
         :context:
 
         >>> support = fem.CartesianConstraint(
-        ...     field, points=np.isclose(local[:, 2], 0), basis=basis, skip=(1, 1, 0)
+        ...     field,
+        ...     points=np.isclose(local[:, 2], 0),
+        ...     rotation=rotation,
+        ...     skip=(1, 1, 0),
         ... )
         >>> top = np.isclose(local[:, 2], 1)
         >>> boundaries = {
@@ -154,42 +158,47 @@ class CartesianConstraint(PointConstraint):
         self,
         field,
         points,
-        basis=None,
+        rotation=None,
         displacement=(0.0, 0.0, 0.0),
         skip=(False, False, False),
         multiplier=1e3,
     ):
         super().__init__(field, points, displacement, skip, multiplier)
 
-        if basis is None:
-            basis = np.eye(self.dim)
+        if rotation is None:
+            rotation = np.eye(self.dim)
 
-        basis = np.asarray(basis, dtype=float)
+        rotation = np.asarray(rotation, dtype=float)
 
-        if basis.shape != (self.dim, self.dim):
+        if rotation.shape != (self.dim, self.dim):
             raise ValueError(
-                f"The basis must be given with shape ({self.dim}, {self.dim}), "
-                f"got {basis.shape}."
+                f"The rotation must be given with shape ({self.dim}, {self.dim}), "
+                f"got {rotation.shape}."
             )
 
-        norm = np.linalg.norm(basis, axis=0)
+        norm = np.linalg.norm(rotation, axis=0)
 
         if np.any(np.isclose(norm, 0)):
             raise ValueError("The base vectors must not be zero-vectors.")
 
-        basis = basis / norm
+        rotation = rotation / norm
 
-        if not np.allclose(basis.T @ basis, np.eye(self.dim)):
+        if not np.allclose(rotation.T @ rotation, np.eye(self.dim)):
             raise ValueError("The base vectors must be orthogonal.")
 
-        self.basis = np.eye(3)
-        self.basis[: self.dim, : self.dim] = basis
+        if np.linalg.det(rotation) < 0:
+            raise ValueError(
+                "The base vectors must be right-handed, i.e. det(rotation) = 1."
+            )
+
+        self.rotation = np.eye(3)
+        self.rotation[: self.dim, : self.dim] = rotation
 
     def _gaps(self, u, stiffness=True):
         "Evaluate the (linear) gaps and their gradients."
 
-        gap = u @ self.basis - self.displacement
-        dgdx = np.broadcast_to(self.basis.T, (len(self.points), 3, 3))
+        gap = u @ self.rotation - self.displacement
+        dgdx = np.broadcast_to(self.rotation.T, (len(self.points), 3, 3))
 
         return gap, dgdx, None
 
@@ -202,7 +211,7 @@ class CartesianConstraint(PointConstraint):
         center = x.mean(axis=0)
         length = max(0.25 * np.ptp(self._pad(self.mesh.points), axis=0).max(), 1e-12)
 
-        for direction in self.basis.T[self.mask]:
+        for direction in self.rotation.T[self.mask]:
             start = center - length * direction
             tip = center - 0.2 * length * direction
             plotter.add_mesh(pv.Line(start, tip), color=color, line_width=line_width)

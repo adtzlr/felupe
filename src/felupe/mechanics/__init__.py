@@ -1,3 +1,4 @@
+from ._cartesian import CartesianConstraint
 from ._contact import ContactRigidPlane
 from ._curve import CharacteristicCurve
 from ._cylindrical import CylindricalConstraint
@@ -18,6 +19,7 @@ from ._update import UpdateItem
 
 __all__ = [
     "Assemble",
+    "CartesianConstraint",
     "CharacteristicCurve",
     "CylindricalConstraint",
     "Evaluate",

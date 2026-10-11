@@ -19,9 +19,81 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import warnings
 
 import numpy as np
-from scipy.sparse import eye, lil_matrix
+from scipy.sparse import coo_matrix, csr_matrix
 
 from ._helpers import Assemble, Results
+
+
+def _dof(mesh):
+    "Return the global degrees of freedom of all points, shape (npoints, dim)."
+    return np.arange(mesh.ndof).reshape(mesh.points.shape)
+
+
+def _assemble_vector(dof, points, centerpoint, force, active):
+    """Assemble the sparse vector of a center-point which is connected to points.
+
+    Parameters
+    ----------
+    dof : (npoints, dim) ndarray of int
+        The global degrees of freedom of all points.
+    points : (n,) ndarray of int
+        The indices of the connected points.
+    centerpoint : int
+        The index of the center-point.
+    force : (n, dim) ndarray
+        The forces of the connections, acting on the center-point.
+    active : (n, dim) ndarray of bool
+        A mask of the active components of the connections.
+
+    Returns
+    -------
+    scipy.sparse.csr_matrix
+        The assembled sparse vector of shape (ndof, 1).
+    """
+
+    axes = np.nonzero(active)[1]
+    force = force[active]
+
+    rows = np.concatenate([dof[points][active], dof[centerpoint][axes]])
+    values = np.concatenate([-force, force])
+
+    return csr_matrix((values, (rows, np.zeros_like(rows))), shape=(dof.size, 1))
+
+
+def _assemble_matrix(dof, points, centerpoint, multiplier, active):
+    """Assemble the sparse matrix of a center-point which is connected to points by
+    springs with a given stiffness (multiplier) for all active components.
+
+    Parameters
+    ----------
+    dof : (npoints, dim) ndarray of int
+        The global degrees of freedom of all points.
+    points : (n,) ndarray of int
+        The indices of the connected points.
+    centerpoint : int
+        The index of the center-point.
+    multiplier : float
+        The stiffness of the connections.
+    active : (n, dim) ndarray of bool
+        A mask of the active components of the connections.
+
+    Returns
+    -------
+    scipy.sparse.csr_matrix
+        The assembled sparse matrix of shape (ndof, ndof).
+    """
+
+    axes = np.nonzero(active)[1]
+
+    t = dof[points][active]
+    c = dof[centerpoint][axes]
+    k = np.full(len(t), float(multiplier))
+
+    rows = np.concatenate([t, t, c, c])
+    cols = np.concatenate([t, c, t, c])
+    values = np.concatenate([k, -k, -k, k])
+
+    return coo_matrix((values, (rows, cols)), shape=(dof.size, dof.size)).tocsr()
 
 
 class MultiPointConstraint:
@@ -202,14 +274,12 @@ class MultiPointConstraint:
             self.field = field
 
         u = self.field.fields[0].values
-        N = self.multiplier * (-u[self.points] + u[self.centerpoint])
-        N[:, ~self.mask] = 0
+        force = self.multiplier * (-u[self.points] + u[self.centerpoint])
+        active = np.broadcast_to(self.mask, force.shape)
 
-        r = lil_matrix(u.shape)
-        r[self.points] = -N
-        r[self.centerpoint] = N.sum(axis=0)
-
-        self.results.force = r.reshape(-1, 1).tocsr()
+        self.results.force = _assemble_vector(
+            _dof(self.mesh), self.points, self.centerpoint, force, active
+        )
         return self.results.force
 
     def _matrix(self, field=None, parallel=False):
@@ -218,19 +288,11 @@ class MultiPointConstraint:
         if field is not None:
             self.field = field
 
-        indices = np.arange(self.mesh.ndof).reshape(self.mesh.points.shape)
-        td = [indices[self.points.reshape(-1, 1), ax].ravel() for ax in self.axes]
-        cd = [indices[self.centerpoint, ax].ravel() for ax in self.axes]
+        active = np.broadcast_to(self.mask, (len(self.points), self.mesh.dim))
 
-        L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
-
-        for t, c in zip(td, cd):
-            L[t.reshape(-1, 1), t] = eye(len(t)) * self.multiplier
-            L[t.reshape(-1, 1), c] = -self.multiplier
-            L[c.reshape(-1, 1), t] = -self.multiplier
-            L[c.reshape(-1, 1), c] = eye(len(c)) * self.multiplier * len(self.points)
-
-        self.results.stiffness = L.tocsr()
+        self.results.stiffness = _assemble_matrix(
+            _dof(self.mesh), self.points, self.centerpoint, self.multiplier, active
+        )
         return self.results.stiffness
 
 
@@ -437,11 +499,9 @@ class MultiPointContact:
 
         return plotter
 
-    def _vector(self, field=None, parallel=False):
-        "Calculate vector of residuals with RBE2 contributions."
-
-        if field is not None:
-            self.field = field
+    def _contact(self):
+        """Return the gaps between the center-point and the points and a mask of the
+        components in contact, i.e. with changed signs of the gaps."""
 
         u = self.field.fields[0].values
 
@@ -451,16 +511,26 @@ class MultiPointContact:
         xc = u[self.centerpoint] + Xc
         xt = u[self.points] + Xt
 
-        mask = np.sign(-Xt + Xc) == np.sign(-xt + xc)
-        mask[:, ~self.mask] = True
-        n = -xt + xc
-        n[mask] = 0
+        gap = -xt + xc
+        active = (np.sign(-Xt + Xc) != np.sign(gap)) & self.mask
 
-        r = lil_matrix(u.shape)
-        r[self.points] = -self.multiplier * n
-        r[self.centerpoint] = self.multiplier * n.sum(axis=0)
+        return gap, active
 
-        self.results.force = r.reshape(-1, 1).tocsr()
+    def _vector(self, field=None, parallel=False):
+        "Calculate vector of residuals with RBE2 contributions."
+
+        if field is not None:
+            self.field = field
+
+        gap, active = self._contact()
+
+        self.results.force = _assemble_vector(
+            _dof(self.mesh),
+            self.points,
+            self.centerpoint,
+            self.multiplier * gap,
+            active,
+        )
         return self.results.force
 
     def _matrix(self, field=None, parallel=False):
@@ -469,28 +539,9 @@ class MultiPointContact:
         if field is not None:
             self.field = field
 
-        u = self.field.fields[0].values
+        _, active = self._contact()
 
-        Xc = self.mesh.points[self.centerpoint]
-        Xt = self.mesh.points[self.points]
-
-        xc = u[self.centerpoint] + Xc
-        xt = u[self.points] + Xt
-
-        mask = np.sign(-Xt + Xc) != np.sign(-xt + xc)
-        masks = [mask[:, ax] for ax in self.axes]
-
-        indices = np.arange(self.mesh.ndof).reshape(self.mesh.points.shape)
-        td = [indices[self.points.reshape(-1, 1), ax].ravel() for ax in self.axes]
-        cd = [indices[self.centerpoint, ax].ravel() for ax in self.axes]
-
-        L = lil_matrix((self.mesh.ndof, self.mesh.ndof))
-
-        for t, c, m in zip(td, cd, masks):
-            L[t[m].reshape(-1, 1), t[m]] = eye(len(t[m])) * self.multiplier
-            L[t[m].reshape(-1, 1), c] = -self.multiplier
-            L[c.reshape(-1, 1), t[m]] = -self.multiplier
-            L[c.reshape(-1, 1), c] = eye(len(c)) * self.multiplier * len(self.points[m])
-
-        self.results.stiffness = L.tocsr()
+        self.results.stiffness = _assemble_matrix(
+            _dof(self.mesh), self.points, self.centerpoint, self.multiplier, active
+        )
         return self.results.stiffness

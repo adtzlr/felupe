@@ -32,9 +32,14 @@ class CartesianConstraint(PointConstraint):
     points : (n,) ndarray of int or bool
         An array with indices (or a mask) of the points to be constrained.
     basis : array_like or None, optional
-        The base vectors of the coordinate system as rows, with shape (3, 3) or with
-        shape (2, 2) for 2d-meshes. The base vectors are normalized and they must be
-        orthogonal. If None, the global base vectors are used. Default is None.
+        The matrix with the base vectors :math:`\boldsymbol{e}_i` of the coordinate
+        system as columns, with shape (3, 3) or with shape (2, 2) for 2d-meshes, i.e.
+        the rotation :math:`\boldsymbol{Q} = \boldsymbol{e}_i \otimes
+        \boldsymbol{E}_i` of the global base vectors :math:`\boldsymbol{E}_i`, see
+        :func:`~felupe.math.rotation_matrix`. Given base vectors are stacked as
+        columns by ``np.column_stack([e1, e2, e3])``. The base vectors are normalized
+        and they must be orthogonal. If None, the global base vectors are used.
+        Default is None.
     displacement : array_like, optional
         The prescribed displacements :math:`(u_1, u_2, u_3)` in the directions of the
         base vectors for all points or per point with shape (n, 3). May be ramped in a
@@ -48,8 +53,8 @@ class CartesianConstraint(PointConstraint):
     Attributes
     ----------
     basis : (3, 3) ndarray
-        The normalized base vectors of the coordinate system as rows (padded to three
-        dimensions for 2d-meshes).
+        The normalized base vectors of the coordinate system as columns (padded to
+        three dimensions for 2d-meshes).
     results : Results
         The results of the last evaluation, including the gaps ``results.gap`` with
         shape (n, 3).
@@ -90,8 +95,8 @@ class CartesianConstraint(PointConstraint):
     Examples
     --------
     A cube is rotated by 30° around the :math:`y`-axis. The base vectors of the
-    coordinate system are the global base vectors rotated like the mesh, i.e. the rows
-    of the transposed rotation matrix.
+    coordinate system are the global base vectors rotated like the mesh, i.e. the
+    columns of the rotation matrix.
 
     ..  pyvista-plot::
         :context:
@@ -105,8 +110,8 @@ class CartesianConstraint(PointConstraint):
         >>> field = fem.FieldContainer([displacement])
         >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
         >>>
-        >>> basis = fem.math.rotation_matrix(30, dim=3, axis=1).T
-        >>> local = mesh.points @ basis.T
+        >>> basis = fem.math.rotation_matrix(30, dim=3, axis=1)
+        >>> local = mesh.points @ basis
 
     The bottom face rests on an inclined plane, i.e. it is constrained in the normal
     direction of the plane only and the points slide on the plane. The top face is
@@ -167,14 +172,14 @@ class CartesianConstraint(PointConstraint):
                 f"got {basis.shape}."
             )
 
-        norm = np.linalg.norm(basis, axis=1).reshape(-1, 1)
+        norm = np.linalg.norm(basis, axis=0)
 
         if np.any(np.isclose(norm, 0)):
             raise ValueError("The base vectors must not be zero-vectors.")
 
         basis = basis / norm
 
-        if not np.allclose(basis @ basis.T, np.eye(self.dim)):
+        if not np.allclose(basis.T @ basis, np.eye(self.dim)):
             raise ValueError("The base vectors must be orthogonal.")
 
         self.basis = np.eye(3)
@@ -183,8 +188,8 @@ class CartesianConstraint(PointConstraint):
     def _gaps(self, u, stiffness=True):
         "Evaluate the (linear) gaps and their gradients."
 
-        gap = u @ self.basis.T - self.displacement
-        dgdx = np.broadcast_to(self.basis, (len(self.points), 3, 3))
+        gap = u @ self.basis - self.displacement
+        dgdx = np.broadcast_to(self.basis.T, (len(self.points), 3, 3))
 
         return gap, dgdx, None
 
@@ -197,7 +202,7 @@ class CartesianConstraint(PointConstraint):
         center = x.mean(axis=0)
         length = max(0.25 * np.ptp(self._pad(self.mesh.points), axis=0).max(), 1e-12)
 
-        for direction in self.basis[self.mask]:
+        for direction in self.basis.T[self.mask]:
             start = center - length * direction
             tip = center - 0.2 * length * direction
             plotter.add_mesh(pv.Line(start, tip), color=color, line_width=line_width)

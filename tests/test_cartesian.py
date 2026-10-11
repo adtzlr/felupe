@@ -40,13 +40,13 @@ def test_cartesian_constraint_derivatives():
         if dim == 2:
             mesh = fem.Rectangle(n=(3, 4))
             region = fem.RegionQuad(mesh)
-            basis = fem.math.rotation_matrix(25, dim=2).T
+            basis = fem.math.rotation_matrix(25, dim=2)
             displacement = (0.05, 0.3)
             skips = [(0, 0), (0, 1), (1, 0)]
         else:
             mesh = fem.Cube(a=(1, 0.5, -1), b=(2, 1, 0), n=3)
             region = fem.RegionHexahedron(mesh)
-            basis = [[1, 1, 0], [-1, 1, 1], [1, -1, 2]]
+            basis = np.column_stack([[1, 1, 0], [-1, 1, 1], [1, -1, 2]])
             displacement = (0.05, 0.3, -0.1)
             skips = [(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0), (0, 0, 1)]
 
@@ -107,12 +107,12 @@ def test_cartesian_constraint_target():
         if dim == 2:
             mesh = fem.Rectangle(n=3)
             region = fem.RegionQuad(mesh)
-            basis = fem.math.rotation_matrix(-40, dim=2).T
+            basis = fem.math.rotation_matrix(-40, dim=2)
             displacement = np.array([0.4, -0.3])
         else:
             mesh = fem.Cube(n=3)
             region = fem.RegionHexahedron(mesh)
-            basis = fem.math.rotation_matrix(30, dim=3, axis=2).T
+            basis = fem.math.rotation_matrix(30, dim=3, axis=2)
             displacement = np.array([0.4, 0.9, -0.3])
 
         field = fem.FieldContainer([fem.Field(region, dim=dim)])
@@ -123,7 +123,7 @@ def test_cartesian_constraint_target():
         step = fem.Step([constraint], ramp={constraint: table})
         fem.Job([step]).evaluate()
 
-        assert np.allclose(field[0].values, displacement @ basis)
+        assert np.allclose(field[0].values, displacement @ basis.T)
         assert np.allclose(constraint.results.gap, 0)
 
 
@@ -165,7 +165,7 @@ def test_cartesian_constraint_rotated():
 
             if rotated:
                 support = fem.CartesianConstraint(
-                    field, points=bottom, basis=rotation.T, skip=skip, multiplier=1e7
+                    field, points=bottom, basis=rotation, skip=skip, multiplier=1e7
                 )
                 items.append(support)
                 boundaries = {
@@ -217,11 +217,11 @@ def test_cartesian_constraint_update():
     mesh = fem.Rectangle(n=3)
     field = fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2).as_container()
     constraint = fem.CartesianConstraint(
-        field, points=[0, 1], basis=[[1, 1], [-2, 2]], displacement=(1, 2)
+        field, points=[0, 1], basis=[[1, -2], [1, 2]], displacement=(1, 2)
     )
     assert np.allclose(constraint.displacement, [[1, 2, 0]] * 2)
-    assert np.allclose(constraint.basis[:2, :2], np.array([[1, 1], [-1, 1]]) / 2**0.5)
-    assert np.allclose(constraint.basis[2], [0, 0, 1])
+    assert np.allclose(constraint.basis[:2, :2], np.array([[1, -1], [1, 1]]) / 2**0.5)
+    assert np.allclose(constraint.basis[:, 2], [0, 0, 1])
     assert not constraint.mask[2]
 
 

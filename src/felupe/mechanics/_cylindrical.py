@@ -50,6 +50,9 @@ class CylindricalConstraint(PointConstraint):
     ----------
     radius : (n,) ndarray
         The undeformed radii :math:`R` of the points.
+    basis : (n, 3, 3) ndarray
+        The cylindrical base vectors :math:`(\boldsymbol{e}_r, \boldsymbol{e}_\theta,
+        \boldsymbol{e}_z)` of the points as columns.
     results : Results
         The results of the last evaluation, including the gaps ``results.gap`` with
         shape (n, 3).
@@ -245,13 +248,13 @@ class CylindricalConstraint(PointConstraint):
         e_t = np.cross(self.axis, e_r)
         e_z = np.broadcast_to(self.axis, e_r.shape)
 
-        # cylindrical base vectors, shape (n, 3, 3): (point, direction, component)
-        self.basis = np.stack([e_r, e_t, e_z], axis=1)
+        # cylindrical base vectors as columns, shape (n, 3, 3)
+        self.basis = np.stack([e_r, e_t, e_z], axis=2)
 
     def _gaps(self, u, stiffness=True):
         "Evaluate the gaps, their gradients and the Hessian of the radial gap."
 
-        e_r, e_t, e_z = self.basis.transpose([1, 0, 2])
+        e_r, e_t, e_z = self.basis.transpose([2, 0, 1])
         R = self.radius
         u_r, u_t, u_z = self.displacement.T
 
@@ -279,7 +282,7 @@ class CylindricalConstraint(PointConstraint):
 
         if self.mask[0]:  # radial direction
             if not self.mask[1]:  # slide on the cylinder
-                dXr = R.reshape(-1, 1) * self.basis[:, 0]
+                dXr = R.reshape(-1, 1) * self.basis[:, :, 0]
                 du = u @ self.projection
                 dxr = dXr + du
                 rho = np.linalg.norm(dxr, axis=1)

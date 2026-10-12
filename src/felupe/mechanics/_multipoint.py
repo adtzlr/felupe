@@ -120,8 +120,16 @@ def _rotation_coefficients(s):
     :math:`\beta(s) = (1 - \cos(t)) / t^2` of the rotation matrix with :math:`s = t^2`,
     along with their first and second derivatives w.r.t. :math:`s`.
 
-    Power series are used for :math:`s < 1`, because the derivatives of the closed-form
-    expressions suffer from cancellation for small angles."""
+    Notes
+    -----
+    The closed-form expressions are undefined for :math:`s = 0`, which is the state at
+    the beginning of each increment of the rotation. Further, their derivatives are
+    differences of nearly equal numbers, divided by :math:`s` (or :math:`s^2`), i.e.
+    they suffer from cancellation for small angles, e.g. a relative error of about
+    1e-2 for :math:`\beta''` at :math:`s = 10^{-4}`. Hence, the Taylor series of the
+    sine and the cosine (divided by :math:`t` and :math:`t^2`, with 12 terms) are used
+    for :math:`s < 1`, which are accurate to machine precision there. Both branches
+    agree within 1e-13 at :math:`s = 1`."""
 
     if s < 1.0:
         alpha, beta = [[term(s) for term in series] for series in _SERIES]
@@ -267,9 +275,10 @@ class MultiPointConstraint:
         \boldsymbol{d}_i &= \left( \boldsymbol{x}_i - \boldsymbol{x}_c \right)
             - \boldsymbol{R}\ \boldsymbol{A}_i
 
-    With a rotation-point, the rotation matrix is parametrized incrementally, see
-    Eq. :eq:`mpc-rotation`, where the rotation-vector :math:`\boldsymbol{\psi}` are
-    the values of the displacement field at the rotation-point. The rotation-vector
+    With a rotation-point, the rotation matrix is parametrized incrementally by the
+    exponential map [1]_, see Eq. :eq:`mpc-rotation`, where the rotation-vector
+    :math:`\boldsymbol{\psi}` are the values of the displacement field at the
+    rotation-point. The rotation-vector
     :math:`\boldsymbol{\psi}_n` and the rotation matrix :math:`\boldsymbol{R}_n` of the
     last converged substep are state variables, which are updated after each converged
     substep.
@@ -292,7 +301,8 @@ class MultiPointConstraint:
     angles beyond :math:`2\pi`. For rotations about varying axes, the values depend on
     the path of the rotation and the rotation matrix is available as
     ``results.rotation``. The parametrization is singular only for increments
-    :math:`\| \Delta \boldsymbol{\psi} \| = 2\pi`. However, the increments of the
+    :math:`\| \Delta \boldsymbol{\psi} \| = 2\pi`, see [2]_ for a discussion of
+    vector-like parametrizations of finite rotations. However, the increments of the
     rotation must be smaller than :math:`\pi` (and should be much smaller), otherwise a
     revolution of the rotation-point may be skipped by the connected points.
 
@@ -476,6 +486,17 @@ class MultiPointConstraint:
 
         >>> plotter = mpc.plot()
         >>> solid.plot("Principal Values of Cauchy Stress", plotter=plotter).show()
+
+    References
+    ----------
+    .. [1] J. C. Simo and L. Vu-Quoc, "A three-dimensional finite-strain rod model.
+       Part II: Computational aspects", Computer Methods in Applied Mechanics and
+       Engineering, vol. 58, no. 1, pp. 79–116, 1986.
+
+    .. [2] A. Ibrahimbegović, F. Frey and I. Kožar, "Computational aspects of
+       vector-like parametrization of three-dimensional finite rotations",
+       International Journal for Numerical Methods in Engineering, vol. 38, no. 21,
+       pp. 3653–3673, 1995.
 
     See Also
     --------

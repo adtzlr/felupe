@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from abc import ABC, abstractmethod
 from collections import namedtuple
 
 import numpy as np
@@ -157,7 +158,456 @@ def _assemble_matrix(dof, dof_center, blocks, size, dtype):
     return coo_matrix((data, (rows, cols)), shape=(size, size), dtype=dtype).tocsr()
 
 
-class ContactRigidPlane(ContactPlane):
+class ContactRigidBase(ABC):
+    r"""A base class for a node-to-surface contact, where the surface is given by a
+    rigid body which is connected to a center-point.
+
+    Notes
+    -----
+    The geometry of the rigid surface is defined by the method ``_kinematics(dx)`` of a
+    subclass. For given gap vectors :math:`\Delta \boldsymbol{x}` between the points and
+    the center-point, it returns the gaps :math:`g`, the outward normal vectors
+    :math:`\boldsymbol{n} = \partial g / \partial \Delta \boldsymbol{x}` and the
+    derivatives of the normal vectors w.r.t. the gap vectors (the curvatures)
+    :math:`\boldsymbol{H} = \partial \boldsymbol{n} / \partial \Delta \boldsymbol{x}`,
+    or None for a flat surface. The rigid surface does not rotate, i.e. only the
+    translational degrees of freedom of the center-point are coupled.
+
+    The base class provides the penalty-based normal contact, the Coulomb friction with
+    the return mapping from the converged state, the stiffness-based multipliers, the
+    checkpoints and the assembly of the sparse vector and matrix. With curvatures, the
+    stiffness matrix includes the derivatives of the normal vectors, see
+    :class:`~felupe.ContactRigidCylinder`.
+
+    See Also
+    --------
+    felupe.ContactRigidPlane : A node-to-surface contact with a rigid plane.
+    felupe.ContactRigidCylinder : A node-to-surface contact with a rigid cylinder.
+    """
+
+    def __init__(
+        self,
+        field,
+        points,
+        centerpoint,
+        friction=0.0,
+        multiplier=1.0,
+        multiplier_tangential=0.1,
+        items=None,
+        multiplier_update="increment",
+        symmetric=False,
+        elastic_slip=None,
+        curvature="converged",
+    ):
+        self.field = field
+        self.mesh = field.region.mesh
+        self.points = np.array(points)
+        self.centerpoint = centerpoint
+
+        if len(self.points) == 0:
+            self.points = self.points.astype(int)
+
+        if self.points.dtype == bool:
+            self.points = np.where(self.points)[0]
+
+        if self.centerpoint < 0:
+            self.centerpoint = self.mesh.npoints + self.centerpoint
+
+        if self.centerpoint in self.mesh.points_without_cells:
+            self.mesh.points_without_cells = self.mesh.points_without_cells[
+                self.mesh.points_without_cells != self.centerpoint
+            ]
+
+        self.friction = friction
+        self.items = items
+
+        updates = ["increment", "iteration", "once"]
+        if multiplier_update not in updates:
+            raise ValueError(f"The multiplier update must be one of {updates}.")
+
+        self.multiplier = multiplier
+        self.multiplier_tangential = multiplier_tangential
+        self.multiplier_update = multiplier_update
+        self.multipliers = None
+        self.symmetric = symmetric
+
+        if elastic_slip is not None and not elastic_slip > 0:
+            raise ValueError("The elastic slip must be positive.")
+
+        self.elastic_slip = elastic_slip
+
+        curvatures = ["converged", "trial", None]
+        if curvature not in curvatures:
+            raise ValueError(f"The curvature must be one of {curvatures}.")
+
+        self.curvature = curvature
+
+        # the converged state variables, for which the multipliers were evaluated
+        self._multipliers_statevars = None
+
+        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
+        self.results = Results(stress=False, elasticity=False)
+
+        # differences of undeformed coordinates between points in potential contact
+        # and center-point (initial gap vectors)
+        self.dX = self.mesh.points[self.points] - self.mesh.points[self.centerpoint]
+
+        # initial state variables: gap vectors, reference (stick) gap vectors and
+        # contact flags of the last converged increment
+        dx = self._gap_vectors()
+        active = self._kinematics(dx)[0] < 0.0
+
+        self.results.statevars = {"dx": dx, "dx_ref": dx.copy(), "active": active}
+        self.results._statevars = None
+
+        # trial results of the last evaluation
+        self.results.dx_ref = dx.copy()
+        self.results.active = active.copy()
+        self.results.slip = np.zeros(len(self.points), dtype=bool)
+
+    @abstractmethod
+    def _kinematics(self, dx):
+        """Return the gaps, the outward normal vectors and their derivatives w.r.t.
+        the gap vectors (or None for constant normal vectors)."""
+
+    def _gap_vectors(self):
+        "Return the gap vectors between the points and the center-point."
+
+        u = self.field[0].values
+
+        return self.dX + (u[self.points] - u[self.centerpoint])
+
+    def checkpoint(self):
+        """Return a checkpoint of the state of the contact.
+
+        Returns
+        -------
+        dict
+            A dict with copies of the state variables of the last converged increment
+            (the gap vectors, the reference gap vectors of the tangential (frictional)
+            contact and the mask of active contact points) and the multipliers.
+
+        Notes
+        -----
+        The state variables are only updated after a converged increment. The field is
+        not included in the checkpoint, see e.g.
+        :meth:`SolidBody.checkpoint() <felupe.SolidBody.checkpoint>`.
+
+        See Also
+        --------
+        felupe.CutbackPlugin : A cutback of the increment of failed substeps.
+        """
+
+        statevars = {k: v.copy() for k, v in self.results.statevars.items()}
+
+        return {"results.statevars": statevars, "multipliers": self.multipliers}
+
+    def restore(self, checkpoint):
+        """Restore a checkpoint of the state of the contact inplace.
+
+        Parameters
+        ----------
+        checkpoint : dict
+            A dict with checkpoint arrays.
+        """
+
+        statevars = {k: v.copy() for k, v in checkpoint["results.statevars"].items()}
+
+        self.results.statevars = statevars
+        self.results._statevars = None
+
+        self.results.dx_ref = statevars["dx_ref"].copy()
+        self.results.active = statevars["active"].copy()
+        self.results.slip = np.zeros(len(self.points), dtype=bool)
+
+        # multipliers which are updated per increment are re-evaluated
+        self.multipliers = checkpoint["multipliers"]
+        self._multipliers_statevars = None
+
+        # reset force and stiffness
+        self.results.force = None
+        self.results.stiffness = None
+
+    def contact_multipliers(self):
+        """Return the normal and tangential multipliers.
+
+        Returns
+        -------
+        ContactMultipliers
+            The normal and the tangential multipliers. If items are given, the scale
+            factors are multiplied by the mean normal and the mean tangential stiffness
+            of the diagonal blocks of the stiffness matrices of the items, evaluated at
+            all points in potential contact.
+        """
+
+        base_multiplier = 1.0
+        base_multiplier_tangential = 1.0
+
+        npoints = len(self.points)
+
+        if self.items is not None and npoints > 0:
+            dim = self.mesh.dim
+            dof = self.field[0].indices.dof[self.points]
+
+            shape = (npoints, dim, dim)
+            rows = np.broadcast_to(dof[:, :, None], shape).ravel()
+            cols = np.broadcast_to(dof[:, None, :], shape).ravel()
+
+            blocks = np.zeros(shape)
+
+            for item in self.items:
+                if item.results.stiffness is None:
+                    _ = item.assemble.matrix(self.field)
+
+                values = item.results.stiffness[rows, cols]
+                blocks += np.asarray(values).reshape(shape)
+
+            # normal and tangential parts of the diagonal blocks
+            normal = self._kinematics(self._gap_vectors())[1]
+            stiffness_normal = np.einsum("aij,ai,aj->", blocks, normal, normal)
+            stiffness_tangential = np.einsum("aii->", blocks) - stiffness_normal
+
+            base_multiplier = stiffness_normal / npoints
+            base_multiplier_tangential = stiffness_tangential / (
+                npoints * max(dim - 1, 1)
+            )
+
+        return ContactMultipliers(
+            self.multiplier * base_multiplier,
+            self.multiplier_tangential * base_multiplier_tangential,
+        )
+
+    def _update_multipliers(self):
+        "Evaluate the multipliers, depending on the multiplier update."
+
+        statevars = self.results.statevars
+
+        update = self.multipliers is None or self.multiplier_update == "iteration"
+
+        if self.multiplier_update == "increment":
+            update = update or (self._multipliers_statevars is not statevars)
+
+        if update:
+            self.multipliers = self.contact_multipliers()
+            self._multipliers_statevars = statevars
+
+        return self.multipliers
+
+    @staticmethod
+    def _tangential(w, n, projection, curvature):
+        """Return the projections of vectors to the tangent planes and their
+        derivatives w.r.t. the gap vectors (the vectors depend on the gap vectors
+        with an identity derivative)."""
+
+        e = np.einsum("aij,aj->ai", projection, w)
+        E = projection.copy()
+
+        if curvature is not None:
+            nw = np.einsum("ai,ai->a", n, w)
+            Hw = np.einsum("aij,aj->ai", curvature, w)
+            E -= nw.reshape(-1, 1, 1) * curvature + np.einsum("ai,aj->aij", n, Hw)
+
+        return e, E
+
+    def _evaluate(self, field=None):
+        """Evaluate the contact forces and the stiffness blocks of the points in
+        contact for the trial state, based on the converged state variables."""
+
+        if field is not None:
+            self.field = field
+
+        dim = self.mesh.dim
+        statevars = self.results.statevars
+
+        dx = self._gap_vectors()
+        dtype = dx.dtype
+
+        gap, normal, curvature = self._kinematics(dx)
+        active = gap < 0.0
+        contact = np.where(active)[0]
+        m = len(contact)
+
+        # trial reference gap vectors and sliding flags
+        dx_ref = dx.copy()
+        slip = np.zeros(len(self.points), dtype=bool)
+
+        force = np.zeros((m, dim), dtype=dtype)
+        stiffness = np.zeros((m, dim, dim), dtype=dtype)
+
+        # multipliers (evaluated on the first evaluation within an increment)
+        multipliers = self._update_multipliers()
+        lambda_n = multipliers.normal
+        lambda_t = multipliers.tangential
+
+        if m > 0:
+            g = gap[contact]
+            n = normal[contact]
+            H = None if curvature is None else curvature[contact]
+            nn = np.einsum("ai,aj->aij", n, n)
+
+            # normal contribution
+            force += lambda_n * g.reshape(-1, 1) * n
+            stiffness += lambda_n * nn
+
+            if H is not None and self.curvature is not None:
+                # curvature term of the normal stiffness, evaluated with the gaps of
+                # the trial state (consistent) or with the gaps of the last converged
+                # increment (zero for points which come into contact)
+                g_curvature = g
+
+                if self.curvature == "converged":
+                    g_n = self._kinematics(statevars["dx"][contact])[0]
+                    g_curvature = np.where(
+                        statevars["active"][contact], np.minimum(g_n, 0.0), 0.0
+                    )
+
+                stiffness += lambda_n * g_curvature.reshape(-1, 1, 1) * H
+
+            if self.friction > 0.0:
+                dx_c = dx[contact]
+                P_t = np.eye(dim) - nn
+
+                # trial elastic slip and its derivative w.r.t. the gap vector
+                e, E = self._tangential(dx_c - statevars["dx_ref"][contact], n, P_t, H)
+
+                # points which come into contact within the increment: the reference
+                # is the interpolated point of first contact (zero gap)
+                new = ~statevars["active"][contact]
+
+                if np.any(new):
+                    dx_n = statevars["dx"][contact][new]
+                    g_n = self._kinematics(dx_n)[0]
+                    g_new = g[new]
+
+                    delta, D = self._tangential(
+                        dx_c[new] - dx_n,
+                        n[new],
+                        P_t[new],
+                        None if H is None else H[new],
+                    )
+
+                    s = np.ones_like(g_new)
+                    ds = np.zeros_like(g_new)
+
+                    first = g_n > 0.0
+                    s[first] = -g_new[first] / (g_n[first] - g_new[first])
+                    ds[first] = -g_n[first] / (g_n[first] - g_new[first]) ** 2
+
+                    e[new] = s.reshape(-1, 1) * delta
+                    E[new] = s.reshape(-1, 1, 1) * D + ds.reshape(-1, 1, 1) * np.einsum(
+                        "ai,aj->aij", delta, n[new]
+                    )
+
+                force_n_abs = -lambda_n * g
+                force_t_limit = self.friction * force_n_abs
+
+                # tangential multipliers: constant or proportional to the normal force
+                if self.elastic_slip is None:
+                    lambda_t_points = np.full(m, lambda_t, dtype=dtype)
+                else:
+                    mu = self.friction if np.isfinite(self.friction) else 1.0
+                    lambda_t_points = mu * force_n_abs / self.elastic_slip
+
+                force_t_trial = lambda_t_points.reshape(-1, 1) * e
+                force_t_norm = np.linalg.norm(force_t_trial, axis=1)
+
+                # points with friction: sticking or sliding
+                stick = np.ones(m, dtype=bool)
+                if np.isfinite(self.friction):
+                    tol = np.sqrt(np.finfo(float).eps) * np.maximum(force_t_limit, 1.0)
+                    stick = force_t_norm <= (force_t_limit + tol)
+
+                slide = (~stick) & (force_t_norm > 0.0)
+
+                force_t = force_t_trial
+                stiffness_t = lambda_t_points.reshape(-1, 1, 1) * E
+
+                # elastic slip of the (trial) reference gap vectors
+                e_ref = e
+
+                if self.elastic_slip is not None:
+                    # derivative of the tangential multipliers w.r.t. the gap vector
+                    stiffness_t -= (mu * lambda_n / self.elastic_slip) * np.einsum(
+                        "ai,aj->aij", e, n
+                    )
+
+                if np.any(slide):
+                    t_hat = force_t_trial[slide] / force_t_norm[slide].reshape(-1, 1)
+                    e_norm = np.linalg.norm(e[slide], axis=1)
+
+                    force_t = force_t_trial.copy()
+                    force_t[slide] = force_t_limit[slide].reshape(-1, 1) * t_hat
+
+                    # return mapping of the elastic slip
+                    e_ref = e.copy()
+                    e_ref[slide] *= (
+                        force_t_limit[slide] / force_t_norm[slide]
+                    ).reshape(-1, 1)
+
+                    # consistent stiffness of the return mapping
+                    projection_slip = (
+                        np.eye(dim) - np.einsum("ai,aj->aij", t_hat, t_hat)
+                    ) / e_norm.reshape(-1, 1, 1)
+
+                    stiffness_t[slide] = self.friction * (
+                        force_n_abs[slide].reshape(-1, 1, 1)
+                        * projection_slip
+                        @ E[slide]
+                        - lambda_n * np.einsum("ai,aj->aij", t_hat, n[slide])
+                    )
+
+                force += force_t
+                stiffness += stiffness_t
+
+                slip[contact] = slide
+
+                # updated (trial) reference gap vectors
+                dx_ref[contact] = dx_c - e_ref
+
+        if self.symmetric:
+            stiffness = (stiffness + stiffness.transpose(0, 2, 1)) / 2
+
+        # trial state variables, these are taken after a converged increment
+        self.results._statevars = {"dx": dx, "dx_ref": dx_ref, "active": active}
+
+        self.results.dx_ref = dx_ref
+        self.results.active = active
+        self.results.slip = slip
+
+        return ContactTrial(contact, force, stiffness, dx, dx_ref, active, slip)
+
+    def _vector(self, field=None, parallel=False):
+
+        trial = self._evaluate(field)
+        dof = self.field[0].indices.dof
+
+        self.results.force = _assemble_vector(
+            dof=dof[self.points[trial.contact]],
+            dof_center=dof[self.centerpoint],
+            forces=trial.force,
+            size=self.mesh.npoints * self.mesh.dim,
+            dtype=trial.dx.dtype,
+        )
+
+        return self.results.force
+
+    def _matrix(self, field=None, parallel=False):
+
+        trial = self._evaluate(field)
+        dof = self.field[0].indices.dof
+
+        self.results.stiffness = _assemble_matrix(
+            dof=dof[self.points[trial.contact]],
+            dof_center=dof[self.centerpoint],
+            blocks=trial.stiffness,
+            size=self.mesh.npoints * self.mesh.dim,
+            dtype=trial.dx.dtype,
+        )
+
+        return self.results.stiffness
+
+
+class ContactRigidPlane(ContactPlane, ContactRigidBase):
     r"""A node-to-surface contact, where the surface is given by a rigid plane.
 
     Parameters
@@ -195,6 +645,15 @@ class ContactRigidPlane(ContactPlane):
     symmetric : bool, optional
         A flag to return the symmetric part of the stiffness matrix. The consistent
         stiffness matrix of frictional contact is not symmetric. Default is False.
+    elastic_slip : float or None, optional
+        The allowable elastic slip :math:`\gamma` (a length) of sticking points. If
+        given, the tangential multiplier is proportional to the normal force,
+        :math:`\lambda_t = \mu\ f_n / \gamma`, i.e. a sticking point starts to slide
+        at an elastic slip of :math:`\gamma`, independent of the contact pressure.
+        The scale factor ``multiplier_tangential`` is not used. Typical values are 0.5 %
+        to 1 % of a characteristic element length of the contact surface. For an
+        infinite friction coefficient, :math:`\mu=1` is used for the tangential
+        multiplier. If None, the tangential multiplier is constant. Default is None.
 
     Notes
     -----
@@ -286,8 +745,23 @@ class ContactRigidPlane(ContactPlane):
             \text{else} & \text{slip}
         \end{cases}
 
+    With an allowable elastic slip :math:`\gamma` (``elastic_slip``), the tangential
+    multiplier is not constant but proportional to the normal force, see Eq.
+    :eq:`contact-friction-elastic-slip`. Hence, a point sticks for an elastic slip
+    :math:`|\boldsymbol{e}| \leq \gamma`, independent of the contact pressure, similar
+    to the penalty friction of commercial codes.
+
+    ..  math::
+        :label: contact-friction-elastic-slip
+
+        \lambda_t = \frac{\mu\ f_n}{\gamma}, \quad
+            \frac{\partial \lambda_t}{\partial \Delta \boldsymbol{x}}
+            = -\frac{\mu\ \lambda_n}{\gamma}\ \boldsymbol{n}
+
     In case of sticking contact, the tangential forces are equal to the trial forces,
-    see Eq. :eq:`contact-friction-stick`.
+    see Eq. :eq:`contact-friction-stick`. With an allowable elastic slip, the
+    derivative of the tangential multiplier is added to the stiffness matrix,
+    :math:`-\mu\ \lambda_n / \gamma\ \boldsymbol{e} \otimes \boldsymbol{n}`.
 
     ..  math::
         :label: contact-friction-stick
@@ -456,344 +930,448 @@ class ContactRigidPlane(ContactPlane):
         items=None,
         multiplier_update="increment",
         symmetric=False,
+        elastic_slip=None,
     ):
-        self.field = field
-        self.mesh = field.region.mesh
-        self.points = np.array(points)
-        self.centerpoint = centerpoint
+        dim = field.region.mesh.dim
 
-        if len(self.points) == 0:
-            self.points = self.points.astype(int)
-
-        if self.points.dtype == bool:
-            self.points = np.where(self.points)[0]
-
-        if self.centerpoint < 0:
-            self.centerpoint = self.mesh.npoints + self.centerpoint
-
-        if self.centerpoint in self.mesh.points_without_cells:
-            self.mesh.points_without_cells = self.mesh.points_without_cells[
-                self.mesh.points_without_cells != self.centerpoint
-            ]
-
-        self.normal = np.array(normal, dtype=float)[: self.mesh.dim]
+        self.normal = np.array(normal, dtype=float)[:dim]
         self.normal /= np.linalg.norm(self.normal)
 
         # normal and tangential projections
         self.projection_normal = np.outer(self.normal, self.normal)
-        self.projection_tangential = np.eye(self.mesh.dim) - self.projection_normal
+        self.projection_tangential = np.eye(dim) - self.projection_normal
 
-        self.friction = friction
-        self.items = items
+        super().__init__(
+            field=field,
+            points=points,
+            centerpoint=centerpoint,
+            friction=friction,
+            multiplier=multiplier,
+            multiplier_tangential=multiplier_tangential,
+            items=items,
+            multiplier_update=multiplier_update,
+            symmetric=symmetric,
+            elastic_slip=elastic_slip,
+        )
 
-        updates = ["increment", "iteration", "once"]
-        if multiplier_update not in updates:
-            raise ValueError(f"The multiplier update must be one of {updates}.")
+    def _kinematics(self, dx):
+        "Return the gaps, the (constant) outward normal vectors and no curvatures."
 
-        self.multiplier = multiplier
-        self.multiplier_tangential = multiplier_tangential
-        self.multiplier_update = multiplier_update
-        self.multipliers = None
-        self.symmetric = symmetric
+        gap = dx @ self.normal
+        normal = np.broadcast_to(self.normal, dx.shape)
 
-        # the converged state variables, for which the multipliers were evaluated
-        self._multipliers_statevars = None
+        return gap, normal, None
 
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-        self.results = Results(stress=False, elasticity=False)
 
-        # differences of undeformed coordinates between points in potential contact
-        # and center-point (initial gap vectors)
-        self.dX = self.mesh.points[self.points] - self.mesh.points[self.centerpoint]
+class ContactRigidCylinder(ContactRigidBase):
+    r"""A node-to-surface contact, where the surface is given by a rigid cylinder (a
+    rigid circle for 2d-meshes).
 
-        # initial state variables: gap vectors, reference (stick) gap vectors and
-        # contact flags of the last converged increment
-        dx = self._gap_vectors()
-        active = dx @ self.normal < 0.0
+    Parameters
+    ----------
+    field : FieldContainer
+        A field container with the displacement field as first field.
+    points : (n,) ndarray
+        An array with indices of points to be connected to the center-point.
+    centerpoint : int
+        The index of the centerpoint, located on the axis of the cylinder.
+    radius : float
+        The radius of the cylinder.
+    axis : ndarray or None, optional
+        The direction of the axis of the cylinder. Required for 3d-meshes. For
+        2d-meshes, the axis is the out-of-plane direction, i.e. the cylinder is a
+        circle. Default is None.
+    inside : bool, optional
+        If False, the points are located outside of the cylinder, e.g. for a
+        cylindrical indenter or a roller. If True, the points are located inside of the
+        cylinder, e.g. for a rigid tube. Default is False.
+    friction : float, optional
+        Coulomb friction coefficient :math:`\mu`. Default is 0.0.
+    multiplier : float, optional
+        A scale factor for the multiplier to penalize the relative displacements between
+        the center-point and the points in contact. Default is 1.0. The final multiplier
+        is scaled times a base multiplier, based on the mean normal stiffness, if items
+        are given.
+    multiplier_tangential : float or None, optional
+        A scale factor for the multiplier to penalize the relative tangential
+        displacements between the center-point and the points in contact. Default is
+        0.1. The final multiplier is scaled times a base multiplier, based on the mean
+        tangential stiffness, if items are given.
+    items : list or None, optional
+        A list of items to be considered for the evaluation of the mean stiffness-based
+        multipliers. If None, the multipliers are not based on the mean stiffness.
+        Default is None.
+    multiplier_update : str, optional
+        The update of the mean stiffness-based multipliers, either ``"increment"``
+        (once per increment, based on the stiffness of the last converged increment),
+        ``"iteration"`` (in each evaluation, i.e. in each Newton-iteration, without
+        linearization) or ``"once"`` (only on the first evaluation). Default is
+        ``"increment"``. Without ``items``, the multipliers are constant.
+    symmetric : bool, optional
+        A flag to return the symmetric part of the stiffness matrix. The consistent
+        stiffness matrix of frictional contact is not symmetric. Default is False.
+    elastic_slip : float or None, optional
+        The allowable elastic slip :math:`\gamma` (a length) of sticking points. If
+        given, the tangential multiplier is proportional to the normal force,
+        :math:`\lambda_t = \mu\ f_n / \gamma`. If None, the tangential multiplier is
+        constant. Default is None. See :class:`~felupe.ContactRigidPlane` for details.
+    curvature : str or None, optional
+        The gaps for the curvature term of the normal stiffness, either
+        ``"converged"`` (the gaps of the last converged increment, zero for points
+        which come into contact within the increment), ``"trial"`` (the gaps of the
+        trial state, i.e. a consistent linearization) or None (no curvature term).
+        Default is ``"converged"``.
 
-        self.results.statevars = {"dx": dx, "dx_ref": dx.copy(), "active": active}
-        self.results._statevars = None
+    Notes
+    -----
+    A :class:`~felupe.ContactRigidCylinder` is supported as an item in a
+    :class:`~felupe.Step`. The contact formulation is the same as for a
+    :class:`~felupe.ContactRigidPlane` (penalty-based normal contact, Coulomb friction
+    with a return mapping from the converged state, stiffness-based multipliers), but
+    the gaps and the outward normal vectors depend on the positions of the points.
+    With the projection onto the cross-section of the cylinder, the gaps, the normal
+    vectors and their derivatives w.r.t. the gap vectors (the curvatures) are given in
+    Eq. :eq:`cylinder-gap`, where :math:`s=1` for points outside and :math:`s=-1` for
+    points inside of the cylinder.
 
-        # trial results of the last evaluation
-        self.results.dx_ref = dx.copy()
-        self.results.active = active.copy()
-        self.results.slip = np.zeros(len(self.points), dtype=bool)
+    ..  math::
+        :label: cylinder-gap
 
-    def _gap_vectors(self):
-        "Return the gap vectors between the points and the center-point."
+        \boldsymbol{P}_a &= \boldsymbol{1} - \boldsymbol{a} \otimes \boldsymbol{a},
+            \quad \boldsymbol{r} = \boldsymbol{P}_a\ \Delta \boldsymbol{x},
+            \quad d = |\boldsymbol{r}|
 
-        u = self.field[0].values
+        g &= s\ (d - R), \quad \boldsymbol{n} = s\ \frac{\boldsymbol{r}}{d}
 
-        return self.dX + (u[self.points] - u[self.centerpoint])
+        \boldsymbol{H} &= \frac{\partial \boldsymbol{n}}{\partial \Delta \boldsymbol{x}}
+            = \frac{s}{d} \left( \boldsymbol{P}_a - \boldsymbol{n} \otimes
+            \boldsymbol{n} \right)
 
-    def checkpoint(self):
-        """Return a checkpoint of the state of the contact.
+    The consistent normal stiffness includes the curvature term, see Eq.
+    :eq:`cylinder-normal-stiffness`. For points outside of the cylinder, this term is
+    negative in circumferential direction (the normal force divided by the radius).
 
-        Returns
-        -------
-        dict
-            A dict with copies of the state variables of the last converged increment
-            (the gap vectors, the reference gap vectors of the tangential (frictional)
-            contact and the mask of active contact points) and the multipliers.
+    ..  math::
+        :label: cylinder-normal-stiffness
 
-        Notes
-        -----
-        The state variables are only updated after a converged increment. The field is
-        not included in the checkpoint, see e.g.
-        :meth:`SolidBody.checkpoint() <felupe.SolidBody.checkpoint>`.
+        \boldsymbol{f}_n &= \lambda_n\ g\ \boldsymbol{n}
 
-        See Also
-        --------
-        felupe.ContactRigidPlane.restore : Restore a checkpoint of the contact.
-        felupe.CutbackPlugin : A cutback of the increment of failed substeps.
-        """
+        \boldsymbol{K}_n &= \lambda_n \left( \boldsymbol{n} \otimes \boldsymbol{n}
+            + g\ \boldsymbol{H} \right)
 
-        statevars = {k: v.copy() for k, v in self.results.statevars.items()}
+    For large increments, the gaps of the trial state in the first Newton-iterations
+    may be much larger than the converged gaps. Then, the negative curvature term may
+    lead to an indefinite stiffness matrix and the Newton-Raphson method diverges, e.g.
+    for soft bodies with free side faces. Hence, the curvature term is evaluated with
+    the gaps of the last converged increment by default (``curvature="converged"``),
+    i.e. with the normal forces of the last converged increment. This is not a
+    consistent linearization, but the curvature term is bounded by the converged
+    normal forces. The consistent linearization is used with ``curvature="trial"``.
 
-        return {"results.statevars": statevars, "multipliers": self.multipliers}
+    The elastic slip is measured in the current tangent plane. Its derivative includes
+    the derivative of the tangential projection, see Eq. :eq:`cylinder-friction`. The
+    reference gap vectors are updated by the return mapping after each converged
+    increment, i.e. the elastic slip is bounded and a large sliding path along the
+    circumference is captured by the updates of the reference gap vectors.
 
-    def restore(self, checkpoint):
-        """Restore a checkpoint of the state of the contact inplace.
+    ..  math::
+        :label: cylinder-friction
+
+        \boldsymbol{w} &= \Delta \boldsymbol{x} - \Delta \boldsymbol{x}^{ref}_n,
+            \quad \boldsymbol{e} = \boldsymbol{P}_t\ \boldsymbol{w}
+
+        \boldsymbol{E} &= \frac{\partial \boldsymbol{e}}{\partial \Delta \boldsymbol{x}}
+            = \boldsymbol{P}_t - \left( \boldsymbol{n} \cdot \boldsymbol{w} \right)
+            \boldsymbol{H} - \boldsymbol{n} \otimes \boldsymbol{H}\ \boldsymbol{w}
+
+    The cylinder does not rotate, i.e. only the translational degrees of freedom of the
+    center-point are coupled.
+
+    Examples
+    --------
+    This example shows how to use a :class:`~felupe.ContactRigidCylinder`. A rubber
+    block is indented by a rigid cylinder, which is dragged along the top face
+    afterwards. An additional center-point on the axis of the cylinder is added to the
+    mesh.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> import numpy as np
+        >>> import felupe as fem
+        >>>
+        >>> mesh = fem.Cube(b=(3, 1, 1), n=(21, 3, 7))
+        >>> mesh.add_points([0.8, 0.5, 1.5])
+        >>>
+        >>> region = fem.RegionHexahedron(mesh)
+        >>> displacement = fem.Field(region, dim=3)
+        >>> field = fem.FieldContainer([displacement])
+        >>>
+        >>> umat = fem.NeoHooke(mu=1.0, bulk=5.0)
+        >>> solid = fem.SolidBody(umat=umat, field=field)
+
+    The :class:`~felupe.ContactRigidCylinder` connects the center-point with the points
+    of the top face, if they are in contact. The axis of the cylinder is parallel to
+    the :math:`y`-axis. The allowable elastic slip is about 3 % of the element length.
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
+        >>> contact = fem.ContactRigidCylinder(
+        ...     field=field,
+        ...     points=np.arange(mesh.npoints)[mesh.z == 1],
+        ...     centerpoint=-1,
+        ...     radius=0.5,
+        ...     axis=[0, 1, 0],
+        ...     friction=0.3,
+        ...     multiplier=10.0,
+        ...     elastic_slip=5e-3,
+        ... )
+        >>>
+        >>> mesh.plot(plotter=contact.plot(size=1.2)).show()
+
+    The mesh is fixed on the bottom face. The center-point is moved downwards first and
+    horizontally afterwards. For large increments, the contact status of the points
+    and the stick-slip states may alternate between the Newton-iterations. Then, a
+    :class:`~felupe.CutbackPlugin` reduces the increment of failed substeps.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> boundaries = {
+        ...     "fixed": fem.Boundary(displacement, fz=0),
+        ...     "center": fem.Boundary(displacement, fz=1.5, skip=(1, 0, 1)),
+        ...     "move-z": fem.Boundary(displacement, fz=1.5, skip=(1, 1, 0)),
+        ...     "move-x": fem.Boundary(displacement, fz=1.5, skip=(0, 1, 1)),
+        ... }
+        >>> step = fem.Step(
+        ...     [solid, contact],
+        ...     boundaries=boundaries,
+        ...     ramp={
+        ...         boundaries["move-z"]: fem.math.linsteps([0, -0.15, -0.15], num=[5, 20]),
+        ...         boundaries["move-x"]: fem.math.linsteps([0, 0, 0.5], num=[5, 20]),
+        ...     },
+        ... )
+        >>> job = fem.Job([step]).evaluate()
+
+    A view on the deformed mesh including the :class:`~felupe.ContactRigidCylinder` is
+    plotted.
+
+    ..  pyvista-plot::
+        :context:
+        :force_static:
+
+        >>> field.plot(
+        ...     "Displacement",
+        ...     component=0,
+        ...     show_undeformed=False,
+        ...     plotter=contact.plot(size=1.2),
+        ...     clim=[0, 0.08],
+        ... ).show()
+
+    See Also
+    --------
+    felupe.ContactRigidPlane : A node-to-surface contact, where the surface is given by
+        a rigid plane.
+    """
+
+    def __init__(
+        self,
+        field,
+        points,
+        centerpoint,
+        radius,
+        axis=None,
+        inside=False,
+        friction=0.0,
+        multiplier=1.0,
+        multiplier_tangential=0.1,
+        items=None,
+        multiplier_update="increment",
+        symmetric=False,
+        elastic_slip=None,
+        curvature="converged",
+    ):
+        dim = field.region.mesh.dim
+
+        if not radius > 0:
+            raise ValueError("The radius must be positive.")
+
+        self.radius = float(radius)
+        self.inside = bool(inside)
+        self.sign = -1.0 if self.inside else 1.0
+
+        if axis is None:
+            if dim == 3:
+                raise ValueError("The axis of the cylinder is required for 3d-meshes.")
+            axis = [0.0, 0.0, 1.0]
+
+        self.axis = np.pad(np.array(axis, dtype=float).ravel(), (0, 3))[:3]
+        norm = np.linalg.norm(self.axis)
+
+        if not norm > 0:
+            raise ValueError("The axis of the cylinder must not be a zero vector.")
+
+        self.axis /= norm
+
+        if dim == 2 and not np.isclose(abs(self.axis[2]), 1.0):
+            raise ValueError("The axis must be the out-of-plane direction in 2d.")
+
+        # projection onto the cross-section of the cylinder
+        a = self.axis[:dim]
+        self.projection_axial = np.eye(dim) - np.outer(a, a)
+
+        super().__init__(
+            field=field,
+            points=points,
+            centerpoint=centerpoint,
+            friction=friction,
+            multiplier=multiplier,
+            multiplier_tangential=multiplier_tangential,
+            items=items,
+            multiplier_update=multiplier_update,
+            symmetric=symmetric,
+            elastic_slip=elastic_slip,
+            curvature=curvature,
+        )
+
+    def _kinematics(self, dx):
+        "Return the gaps, the outward normal vectors and the curvatures."
+
+        r = dx @ self.projection_axial
+        d = np.linalg.norm(r, axis=1)
+        d = np.maximum(d, np.sqrt(np.finfo(float).eps) * self.radius)
+
+        n0 = r / d.reshape(-1, 1)
+
+        gap = self.sign * (d - self.radius)
+        normal = self.sign * n0
+        curvature = (
+            self.sign
+            * (self.projection_axial - np.einsum("ai,aj->aij", n0, n0))
+            / d.reshape(-1, 1, 1)
+        )
+
+        return gap, normal, curvature
+
+    def plot(
+        self,
+        plotter=None,
+        deformed=True,
+        size=None,
+        resolution=120,
+        show_edges=False,
+        color="black",
+        opacity=0.5,
+        line_width=None,
+        show_point=True,
+        show_line=True,
+        sym=(False, False, False),
+        **kwargs,
+    ):
+        """Plot the rigid cylinder (a circle for 2d-meshes) with its center-point.
 
         Parameters
         ----------
-        checkpoint : dict
-            A dict with checkpoint arrays.
-
-        See Also
-        --------
-        felupe.ContactRigidPlane.checkpoint : Return a checkpoint of the contact.
-        """
-
-        statevars = {k: v.copy() for k, v in checkpoint["results.statevars"].items()}
-
-        self.results.statevars = statevars
-        self.results._statevars = None
-
-        self.results.dx_ref = statevars["dx_ref"].copy()
-        self.results.active = statevars["active"].copy()
-        self.results.slip = np.zeros(len(self.points), dtype=bool)
-
-        # multipliers which are updated per increment are re-evaluated
-        self.multipliers = checkpoint["multipliers"]
-        self._multipliers_statevars = None
-
-        # reset force and stiffness
-        self.results.force = None
-        self.results.stiffness = None
-
-    def contact_multipliers(self):
-        """Return the normal and tangential multipliers.
+        plotter : pyvista.Plotter or None, optional
+            An existing plotter. Default is None.
+        deformed : bool, optional
+            A flag to plot the cylinder at the deformed center-point. Default is True.
+        size : float or None, optional
+            The length of the cylinder (3d only). If None, the length is 1.05 times the
+            largest dimension of the mesh. Default is None.
+        resolution : int, optional
+            The number of points in circumferential direction. Default is 120.
+        show_edges : bool, optional
+            A flag to show the edges of the cylinder surface (3d only). Default is
+            False.
+        color : str, optional
+            The color of the cylinder. Default is "black".
+        opacity : float, optional
+            The opacity of the cylinder. Default is 0.5.
+        line_width : float or None, optional
+            The line width of the circle (2d only) and the axis. Default is None.
+        show_point : bool, optional
+            A flag to show the center-point. Default is True.
+        show_line : bool, optional
+            A flag to show the axis of the cylinder (3d only). Default is True.
+        sym : tuple of bool, optional
+            Clip the cylinder at the symmetry planes of the given axes. Default is
+            (False, False, False).
+        **kwargs : dict, optional
+            Additional keyword arguments for the meshes of the plotter.
 
         Returns
         -------
-        ContactMultipliers
-            The normal and the tangential multipliers. If items are given, the scale
-            factors are multiplied by the mean normal and the mean tangential stiffness
-            of the diagonal blocks of the stiffness matrices of the items, evaluated at
-            all points in potential contact.
+        pyvista.Plotter
+            The plotter with the cylinder.
         """
 
-        base_multiplier = 1.0
-        base_multiplier_tangential = 1.0
+        import pyvista as pv
 
-        npoints = len(self.points)
-
-        if self.items is not None and npoints > 0:
-            dim = self.mesh.dim
-            dof = self.field[0].indices.dof[self.points]
-
-            shape = (npoints, dim, dim)
-            rows = np.broadcast_to(dof[:, :, None], shape).ravel()
-            cols = np.broadcast_to(dof[:, None, :], shape).ravel()
-
-            blocks = np.zeros(shape)
-
-            for item in self.items:
-                if item.results.stiffness is None:
-                    _ = item.assemble.matrix(self.field)
-
-                values = item.results.stiffness[rows, cols]
-                blocks += np.asarray(values).reshape(shape)
-
-            stiffness = blocks.sum(axis=0)
-            base_multiplier = np.sum(stiffness * self.projection_normal) / npoints
-            base_multiplier_tangential = np.sum(
-                stiffness * self.projection_tangential
-            ) / (npoints * max(dim - 1, 1))
-
-        return ContactMultipliers(
-            self.multiplier * base_multiplier,
-            self.multiplier_tangential * base_multiplier_tangential,
-        )
-
-    def _update_multipliers(self):
-        "Evaluate the multipliers, depending on the multiplier update."
-
-        statevars = self.results.statevars
-
-        update = self.multipliers is None or self.multiplier_update == "iteration"
-
-        if self.multiplier_update == "increment":
-            update = update or (self._multipliers_statevars is not statevars)
-
-        if update:
-            self.multipliers = self.contact_multipliers()
-            self._multipliers_statevars = statevars
-
-        return self.multipliers
-
-    def _evaluate(self, field=None):
-        """Evaluate the contact forces and the stiffness blocks of the points in
-        contact for the trial state, based on the converged state variables."""
-
-        if field is not None:
-            self.field = field
+        if plotter is None:
+            plotter = pv.Plotter()
 
         dim = self.mesh.dim
-        n = self.normal
-        P_t = self.projection_tangential
-        statevars = self.results.statevars
+        x = self.mesh.points
 
-        dx = self._gap_vectors()
-        dtype = dx.dtype
+        if deformed:
+            x = self.mesh.points + self.field[0].values
 
-        gap = dx @ n
-        active = gap < 0.0
-        contact = np.where(active)[0]
-        m = len(contact)
+        center = np.pad(x[self.centerpoint], (0, 3 - dim))
 
-        # trial reference gap vectors and sliding flags
-        dx_ref = dx.copy()
-        slip = np.zeros(len(self.points), dtype=bool)
+        if size is None:
+            size = 1.05 * (x.max(axis=0) - x.min(axis=0)).max()
 
-        force = np.zeros((m, dim), dtype=dtype)
-        stiffness = np.zeros((m, dim, dim), dtype=dtype)
+        if dim == 2:
+            phi = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
+            circle = np.zeros((resolution, 3))
+            circle[:, 0] = self.radius * np.cos(phi)
+            circle[:, 1] = self.radius * np.sin(phi)
+            surface = pv.lines_from_points(center + circle, close=True)
+        else:
+            surface = pv.Cylinder(
+                center=center,
+                direction=self.axis,
+                radius=self.radius,
+                height=size,
+                resolution=resolution,
+                capping=False,
+            )
 
-        # multipliers (evaluated on the first evaluation within an increment)
-        multipliers = self._update_multipliers()
-        lambda_n = multipliers.normal
-        lambda_t = multipliers.tangential
+        axes = ["x", "y", "z"]
+        for ax in np.where(np.array(sym, dtype=bool))[0]:
+            invert = bool(np.any(self.mesh.points[:, ax] < 0))
+            surface = surface.clip(axes[ax], invert=invert, origin=(0.0, 0.0, 0.0))
 
-        if m > 0:
-            g = gap[contact]
-
-            # normal contribution
-            force += lambda_n * g.reshape(-1, 1) * n
-            stiffness += lambda_n * self.projection_normal
-
-            if self.friction > 0.0:
-                dx_c = dx[contact]
-
-                # trial elastic slip and its derivative w.r.t. the gap vector
-                e = (dx_c - statevars["dx_ref"][contact]) @ P_t
-                E = np.tile(P_t, (m, 1, 1)).astype(dtype)
-
-                # points which come into contact within the increment: the reference
-                # is the interpolated point of first contact (zero gap)
-                new = ~statevars["active"][contact]
-
-                if np.any(new):
-                    dx_n = statevars["dx"][contact][new]
-                    g_n = dx_n @ n
-                    g_new = g[new]
-                    delta = (dx_c[new] - dx_n) @ P_t
-
-                    s = np.ones_like(g_new)
-                    ds = np.zeros_like(g_new)
-
-                    first = g_n > 0.0
-                    s[first] = -g_new[first] / (g_n[first] - g_new[first])
-                    ds[first] = -g_n[first] / (g_n[first] - g_new[first]) ** 2
-
-                    e[new] = s.reshape(-1, 1) * delta
-                    E[new] = s.reshape(-1, 1, 1) * P_t + ds.reshape(
-                        -1, 1, 1
-                    ) * np.einsum("ai,j->aij", delta, n)
-
-                force_t_trial = lambda_t * e
-                force_t_norm = np.linalg.norm(force_t_trial, axis=1)
-
-                force_n_abs = -lambda_n * g
-                force_t_limit = self.friction * force_n_abs
-
-                # points with friction: sticking or sliding
-                stick = np.ones(m, dtype=bool)
-                if np.isfinite(self.friction):
-                    tol = np.sqrt(np.finfo(float).eps) * np.maximum(force_t_limit, 1.0)
-                    stick = force_t_norm <= (force_t_limit + tol)
-
-                slide = (~stick) & (force_t_norm > 0.0)
-
-                force_t = force_t_trial
-                stiffness_t = lambda_t * E
-
-                if np.any(slide):
-                    t_hat = force_t_trial[slide] / force_t_norm[slide].reshape(-1, 1)
-                    e_norm = force_t_norm[slide] / lambda_t
-
-                    force_t = force_t_trial.copy()
-                    force_t[slide] = force_t_limit[slide].reshape(-1, 1) * t_hat
-
-                    # consistent stiffness of the return mapping
-                    projection_slip = (
-                        np.eye(dim) - np.einsum("ai,aj->aij", t_hat, t_hat)
-                    ) / e_norm.reshape(-1, 1, 1)
-
-                    stiffness_t[slide] = self.friction * (
-                        force_n_abs[slide].reshape(-1, 1, 1)
-                        * projection_slip
-                        @ E[slide]
-                        - lambda_n * np.einsum("ai,j->aij", t_hat, n)
-                    )
-
-                force += force_t
-                stiffness += stiffness_t
-
-                slip[contact] = slide
-
-                # updated (trial) reference gap vectors
-                if lambda_t > 0.0:
-                    dx_ref[contact] = dx_c - force_t / lambda_t
-
-        if self.symmetric:
-            stiffness = (stiffness + stiffness.transpose(0, 2, 1)) / 2
-
-        # trial state variables, these are taken after a converged increment
-        self.results._statevars = {"dx": dx, "dx_ref": dx_ref, "active": active}
-
-        self.results.dx_ref = dx_ref
-        self.results.active = active
-        self.results.slip = slip
-
-        return ContactTrial(contact, force, stiffness, dx, dx_ref, active, slip)
-
-    def _vector(self, field=None, parallel=False):
-
-        trial = self._evaluate(field)
-        dof = self.field[0].indices.dof
-
-        self.results.force = _assemble_vector(
-            dof=dof[self.points[trial.contact]],
-            dof_center=dof[self.centerpoint],
-            forces=trial.force,
-            size=self.mesh.npoints * self.mesh.dim,
-            dtype=trial.dx.dtype,
+        plotter.add_mesh(
+            surface,
+            show_edges=show_edges,
+            opacity=opacity,
+            color=color,
+            line_width=line_width,
+            **kwargs,
         )
 
-        return self.results.force
+        if show_point:
+            plotter.add_points(
+                center.reshape(1, -1),
+                opacity=opacity,
+                color=color,
+                point_size=12,
+                **kwargs,
+            )
 
-    def _matrix(self, field=None, parallel=False):
+        if show_line and dim == 3:
+            plotter.add_mesh(
+                pv.Line(
+                    center - 0.55 * size * self.axis, center + 0.55 * size * self.axis
+                ),
+                opacity=opacity,
+                color=color,
+                line_width=line_width,
+                **kwargs,
+            )
 
-        trial = self._evaluate(field)
-        dof = self.field[0].indices.dof
-
-        self.results.stiffness = _assemble_matrix(
-            dof=dof[self.points[trial.contact]],
-            dof_center=dof[self.centerpoint],
-            blocks=trial.stiffness,
-            size=self.mesh.npoints * self.mesh.dim,
-            dtype=trial.dx.dtype,
-        )
-
-        return self.results.stiffness
+        return plotter

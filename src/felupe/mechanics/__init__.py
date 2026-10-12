@@ -1,5 +1,5 @@
 from ._cartesian import CartesianConstraint
-from ._contact import ContactRigidPlane
+from ._contact import ContactRigidBase, ContactRigidCylinder, ContactRigidPlane
 from ._curve import CharacteristicCurve
 from ._cylindrical import CylindricalConstraint
 from ._free_vibration import FreeVibration
@@ -30,6 +30,8 @@ __all__ = [
     "JobState",
     "PointLoad",
     "Results",
+    "ContactRigidBase",
+    "ContactRigidCylinder",
     "ContactRigidPlane",
     "SolidBody",
     "SolidBodyCauchyStress",

@@ -465,6 +465,235 @@ def test_contact_multipliers():
         contact_model(dim=3, friction=0.1, multiplier_update="never")
 
 
+def cylinder_model(dim, friction, inside=False, **kwargs):
+    "A cylinder contact with a converged state in contact and a trial state."
+
+    rng = np.random.default_rng(1)
+
+    if dim == 3:
+        mesh = fem.Cube(n=4)
+        region_class = fem.RegionHexahedron
+        if inside:
+            center, radius, axis = [0.5, 0.5, 0.5], 0.62, [0.1, 0.0, 1.0]
+        else:
+            center, radius, axis = [0.5, 0.5, 1.75], 0.8, [1.0, 0.3, 0.0]
+    else:
+        mesh = fem.Rectangle(n=6)
+        region_class = fem.RegionQuad
+        axis = None
+        center, radius = ([0.5, 0.5], 0.62) if inside else ([0.5, 1.75], 0.8)
+
+    mesh.add_points(center)
+    displacement = fem.Field(region_class(mesh), dim=dim)
+    field = fem.FieldContainer([displacement])
+    solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+    npoints = mesh.npoints - 1
+
+    contact = fem.ContactRigidCylinder(
+        field,
+        points=np.arange(npoints),
+        centerpoint=-1,
+        radius=radius,
+        axis=axis,
+        inside=inside,
+        friction=friction,
+        multiplier=50.0,
+        multiplier_tangential=20.0,
+        **kwargs,
+    )
+
+    # converged state
+    if not inside:
+        displacement.values[-1, -1] = -0.05
+    displacement.values[:-1] += 0.01 * rng.standard_normal((npoints, dim))
+    contact.assemble.vector(field)
+    contact.results.update_statevars()
+
+    # trial state
+    move = 0.02 * rng.standard_normal(dim)
+    if inside:
+        move[0] = 0.12
+    else:
+        move[-1] = -0.1 if dim == 2 else -0.04
+    displacement.values[-1] += move
+    displacement.values[:-1] += 0.01 * rng.standard_normal((npoints, dim))
+
+    return field, solid, contact
+
+
+@pytest.mark.parametrize("dim", [2, 3])
+@pytest.mark.parametrize("inside", [False, True])
+@pytest.mark.parametrize("friction", [0.0, 0.05, np.inf])
+@pytest.mark.parametrize("elastic_slip", [None, 2e-2])
+def test_contact_cylinder_consistent_stiffness(dim, inside, friction, elastic_slip):
+    "The stiffness matrix of the cylinder is consistent with curvature='trial'."
+
+    field, solid, contact = cylinder_model(
+        dim, friction, inside, elastic_slip=elastic_slip, curvature="trial"
+    )
+
+    K = contact.assemble.matrix(field).toarray()
+
+    active = contact.results.active
+    active_old = contact.results.statevars["active"]
+
+    # points in contact at the beginning of the increment and new points
+    assert np.any(active & active_old)
+    assert np.any(active & ~active_old)
+
+    K_fd = stiffness_fd(contact, field)
+    assert np.allclose(K, K_fd, rtol=0, atol=1e-6 * np.abs(K_fd).max())
+
+
+def test_contact_cylinder_curvature():
+    "The curvature term is evaluated with the converged gaps by default."
+
+    field, solid, contact = cylinder_model(dim=3, friction=0.0)
+    K = contact.assemble.matrix(field).toarray()
+
+    contact.curvature = "trial"
+    K_trial = contact.assemble.matrix(field).toarray()
+
+    contact.curvature = None
+    K_none = contact.assemble.matrix(field).toarray()
+
+    # the curvature term of the trial state is negative (outside contact)
+    assert not np.allclose(K_trial, K_none)
+    assert np.trace(K_trial) < np.trace(K_none)
+
+    # the converged gaps are smaller, the new points have no curvature term
+    assert np.trace(K_trial) < np.trace(K) < np.trace(K_none)
+
+    # the vector does not depend on the curvature term
+    r = contact.assemble.vector(field).toarray()
+    contact.curvature = "converged"
+    assert np.allclose(contact.assemble.vector(field).toarray(), r)
+
+    with pytest.raises(ValueError):
+        cylinder_model(dim=3, friction=0.0, curvature="consistent")
+
+
+def test_contact_cylinder_plane():
+    "A cylinder with a large radius is equal to a plane."
+
+    def evaluate(kind, radius=1e3):
+        mesh = fem.Cube(n=3)
+        mesh.add_points([0.5, 0.5, 1.0 + (radius if kind == "cylinder" else 0)])
+        displacement = fem.Field(fem.RegionHexahedron(mesh), dim=3)
+        field = fem.FieldContainer([displacement])
+        points = np.arange(mesh.npoints - 1)[mesh.z[:-1] == 1]
+        kwargs = dict(friction=0.3, multiplier=1e2, multiplier_tangential=10.0)
+
+        if kind == "cylinder":
+            contact = fem.ContactRigidCylinder(
+                field, points, -1, radius=radius, axis=[0, 1, 0], **kwargs
+            )
+        else:
+            contact = fem.ContactRigidPlane(
+                field, points, -1, normal=[0, 0, -1], **kwargs
+            )
+
+        displacement.values[-1] = [0.0, 0.0, -0.05]
+        contact.assemble.vector(field)
+        contact.results.update_statevars()
+        displacement.values[-1] = [0.02, 0.01, -0.06]
+
+        r = contact.assemble.vector(field).toarray()
+        K = contact.assemble.matrix(field).toarray()
+
+        return r, K
+
+    r_plane, K_plane = evaluate("plane")
+    r_cylinder, K_cylinder = evaluate("cylinder")
+
+    assert np.allclose(r_cylinder, r_plane, rtol=0, atol=1e-2 * np.abs(r_plane).max())
+    assert np.allclose(K_cylinder, K_plane, rtol=0, atol=1e-2 * np.abs(K_plane).max())
+
+
+def test_contact_cylinder_errors():
+    "Invalid parameters of a cylinder raise errors."
+
+    mesh = fem.Rectangle(n=3)
+    mesh.add_points([0.5, 1.5])
+    field = fem.FieldContainer([fem.Field(fem.RegionQuad(mesh), dim=2)])
+
+    with pytest.raises(ValueError):
+        fem.ContactRigidCylinder(field, [0, 1], -1, radius=0.0)
+
+    with pytest.raises(ValueError):
+        fem.ContactRigidCylinder(field, [0, 1], -1, radius=0.5, axis=[1, 0, 0])
+
+    with pytest.raises(ValueError):
+        fem.ContactRigidCylinder(field, [0, 1], -1, radius=0.5, axis=[0, 0, 0])
+
+    mesh = fem.Cube(n=3)
+    mesh.add_points([0.5, 0.5, 1.5])
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+
+    with pytest.raises(ValueError):
+        fem.ContactRigidCylinder(field, [0, 1], -1, radius=0.5)
+
+
+def test_contact_cylinder_plot():
+    "Plot cylinders in 2d and 3d."
+
+    for dim, inside in [(2, False), (3, False), (3, True)]:
+        field, solid, contact = cylinder_model(dim, 0.1, inside=inside)
+
+        try:
+            plotter = field.region.mesh.plot(off_screen=True)
+            contact.plot(plotter=plotter)
+            contact.plot(plotter=plotter, sym=(True, False, False)[:dim])
+            contact.plot(plotter=plotter, deformed=False, show_line=False)
+        except ModuleNotFoundError:
+            pass
+
+
+def test_contact_cylinder_job():
+    "A rubber strip is indented and dragged by a cylinder (with cutbacks)."
+
+    mesh = fem.Rectangle(b=(3, 1), n=(31, 9))
+    mesh.add_points([0.8, 1.5])
+    displacement = fem.FieldPlaneStrain(fem.RegionQuad(mesh), dim=2)
+    field = fem.FieldContainer([displacement])
+    solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=5.0), field)
+
+    contact = fem.ContactRigidCylinder(
+        field,
+        points=np.arange(mesh.npoints - 1)[mesh.y[:-1] == 1],
+        centerpoint=-1,
+        radius=0.5,
+        friction=0.3,
+        multiplier=10.0,
+        elastic_slip=5e-3,
+        items=[solid],
+    )
+
+    center = np.zeros(mesh.npoints, dtype=bool)
+    center[-1] = True
+
+    boundaries = {
+        "bottom": fem.Boundary(displacement, fy=0),
+        "move-y": fem.Boundary(displacement, mask=center, skip=(1, 0)),
+        "move-x": fem.Boundary(displacement, mask=center, skip=(0, 1)),
+    }
+    ramp = {
+        boundaries["move-y"]: fem.math.linsteps([0, -0.15, -0.15], num=[2, 6]),
+        boundaries["move-x"]: fem.math.linsteps([0, 0, 0.6], num=[2, 6]),
+    }
+    step = fem.Step([solid, contact], ramp=ramp, boundaries=boundaries)
+
+    cutback = fem.CutbackPlugin()
+    fem.Job([step], plugins=[cutback]).evaluate(verbose=0)
+
+    assert np.any(contact.results.active)
+
+    # the reaction force of the center-point (pressed downwards, dragged forwards)
+    r = contact.assemble.vector(field).toarray().reshape(-1, 2)
+    assert r[-1, 1] < 0
+    assert r[-1, 0] > 0
+
+
 if __name__ == "__main__":
     test_contact_mixed()
     test_contact_isolated()
@@ -477,3 +706,8 @@ if __name__ == "__main__":
     test_contact_elastic_slip()
     test_contact_statevars()
     test_contact_multipliers()
+    test_contact_cylinder_curvature()
+    test_contact_cylinder_plane()
+    test_contact_cylinder_errors()
+    test_contact_cylinder_plot()
+    test_contact_cylinder_job()

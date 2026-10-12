@@ -158,8 +158,9 @@ class CutbackPlugin(Plugin):
     fields (pressure and volume ratio) of a
     :class:`~felupe.SolidBodyNearlyIncompressible`, which are updated in each
     evaluation of the Newton-Raphson method, as well as the time of a
-    :class:`~felupe.thermal.TimeStep` and the state of the frictional contact of a
-    :class:`~felupe.ContactRigidPlane`. The state variables of material models are
+    :class:`~felupe.thermal.TimeStep`, the state of the frictional contact of a
+    :class:`~felupe.ContactRigidPlane` and the state variables of the rotation of a
+    :class:`~felupe.MultiPointConstraint`. The state variables of material models are
     only updated after a converged increment. Hence, the increments of a subdivided
     substep are also increments of the loading path of history-dependent materials,
     e.g. for viscoelasticity or plasticity. A custom item with a state which is

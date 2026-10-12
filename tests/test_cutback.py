@@ -978,7 +978,7 @@ def test_cutback_thermal():
 def test_cutback_contact_friction():
     "The state of a frictional contact is restored."
 
-    def model(stiffness_based):
+    def model(stiffness_based, multiplier_update="increment"):
         mesh = fem.Cube(n=3)
         mesh.add_points([2.0, 0.5, 0.5])
         region = fem.RegionHexahedron(mesh)
@@ -993,6 +993,7 @@ def test_cutback_contact_friction():
             friction=0.3,
             multiplier=1e2,
             items=[solid] if stiffness_based else None,
+            multiplier_update=multiplier_update,
         )
         boundaries = {
             "fixed": fem.Boundary(displacement, fx=0),
@@ -1002,8 +1003,14 @@ def test_cutback_contact_friction():
         }
         return field, solid, contact, boundaries
 
-    def evaluate(normal, tangential, plugins=None, stiffness_based=False):
-        field, solid, contact, boundaries = model(stiffness_based)
+    def evaluate(
+        normal,
+        tangential,
+        plugins=None,
+        stiffness_based=False,
+        multiplier_update="increment",
+    ):
+        field, solid, contact, boundaries = model(stiffness_based, multiplier_update)
         ramp = {boundaries["normal"]: normal, boundaries["tangential"]: tangential}
         step = fem.Step([solid, contact], ramp=ramp, boundaries=boundaries)
         history = NewtonHistory()
@@ -1044,18 +1051,30 @@ def test_cutback_contact_friction():
     assert_same_history(contact.history, contact_ref.history)
     assert_equal(field, contact, field_ref, contact_ref)
 
-    # the Newton-Raphson method does not converge for a large tangential movement
-    # with stiffness-based multipliers
+    # a large tangential movement with stiffness-based multipliers converges without
+    # a cutback, if the multipliers are constant within an increment (default)
     tangential = np.array([0, 0, 0.5, 1.0])
 
+    cutback = fem.CutbackPlugin()
+    evaluate(normal, tangential, plugins=[cutback], stiffness_based=True)
+    assert max(cutback.cutbacks) == 0
+
+    # the Newton-Raphson method does not converge for a large tangential movement
+    # with stiffness-based multipliers, which are updated in each iteration
     with pytest.raises(
         fem.NewtonConvergenceError, match="Maximum number of iterations"
     ):
-        evaluate(normal, tangential, stiffness_based=True)
+        evaluate(
+            normal, tangential, stiffness_based=True, multiplier_update="iteration"
+        )
 
     cutback = fem.CutbackPlugin()
     field, contact = evaluate(
-        normal, tangential, plugins=[cutback], stiffness_based=True
+        normal,
+        tangential,
+        plugins=[cutback],
+        stiffness_based=True,
+        multiplier_update="iteration",
     )
     assert max(cutback.cutbacks) > 0
 
@@ -1066,6 +1085,7 @@ def test_cutback_contact_friction():
         refine(normal, cutback.load_factors),
         refine(tangential, cutback.load_factors),
         stiffness_based=True,
+        multiplier_update="iteration",
     )
     assert_equal(field, contact, field_ref, contact_ref, rtol=1e-5, atol=1e-7)
 

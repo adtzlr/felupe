@@ -227,9 +227,11 @@ def test_contact_coulomb_sliding_limit():
         friction=0.1,
     )
 
-    # initialize contact reference in compression
+    # initialize contact reference in compression (the state variables are only
+    # updated after a converged increment)
     field[0].values[-1] = [-1.1, 0.0, 0.0]
     contact.assemble.vector()
+    contact.results.update_statevars()
 
     # apply tangential relative motion: both points are in sliding regime
     field[0].values[-1] = [-1.1, 0.5, 0.0]
@@ -240,8 +242,199 @@ def test_contact_coulomb_sliding_limit():
     assert np.allclose(r[[1, 4, 7]].ravel(), [-10, -50, 60])
 
 
+def contact_model(dim, friction, items=False, **kwargs):
+    "A contact with a converged state in contact and a trial state of the center."
+
+    rng = np.random.default_rng(0)
+
+    if dim == 3:
+        mesh = fem.Cube(n=4)
+        mesh.add_points([0.5, 0.5, 1.0])
+        region = fem.RegionHexahedron(mesh)
+        normal = [0.1, -0.2, -1.0]
+    else:
+        mesh = fem.Rectangle(n=6)
+        mesh.add_points([0.5, 1.0])
+        region = fem.RegionQuad(mesh)
+        normal = [0.2, -1.0]
+
+    displacement = fem.Field(region, dim=dim)
+    field = fem.FieldContainer([displacement])
+    solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+    points = np.arange(mesh.npoints - 1)[np.isclose(mesh.points[:-1, -1], 1.0)]
+
+    contact = fem.ContactRigidPlane(
+        field,
+        points,
+        centerpoint=-1,
+        normal=normal,
+        friction=friction,
+        multiplier=50.0,
+        multiplier_tangential=20.0,
+        items=[solid] if items else None,
+        **kwargs,
+    )
+
+    # converged state with a pressed center-point
+    displacement.values[-1, -1] = -0.05
+    displacement.values[:-1] += 0.01 * rng.standard_normal((mesh.npoints - 1, dim))
+    contact.assemble.vector(field)
+    contact.results.update_statevars()
+
+    # trial state with an additional normal and tangential movement
+    displacement.values[-1] += np.append(0.03 * rng.standard_normal(dim - 1), -0.04)
+    displacement.values[:-1] += 0.01 * rng.standard_normal((mesh.npoints - 1, dim))
+
+    return field, solid, contact
+
+
+def stiffness_fd(contact, field, h=1e-7):
+    "Return the stiffness matrix by central finite differences of the vector."
+
+    values = field[0].values
+    values0 = values.copy()
+    K = np.zeros((values.size, values.size))
+
+    for i in range(values.size):
+        values[:] = values0
+        values.ravel()[i] += h
+        rp = contact.assemble.vector(field).toarray().ravel()
+        values[:] = values0
+        values.ravel()[i] -= h
+        rm = contact.assemble.vector(field).toarray().ravel()
+        K[:, i] = (rp - rm) / (2 * h)
+
+    values[:] = values0
+
+    return K
+
+
+@pytest.mark.parametrize("dim", [2, 3])
+@pytest.mark.parametrize("friction", [0.0, 0.05, 0.3, np.inf])
+def test_contact_consistent_stiffness(dim, friction):
+    "The stiffness matrix is the derivative of the vector (stick and slip)."
+
+    field, solid, contact = contact_model(dim, friction)
+
+    K = contact.assemble.matrix(field).toarray()
+    r = contact.assemble.vector(field).toarray().ravel()
+
+    active = contact.results.active
+    active_old = contact.results.statevars["active"]
+
+    # points in contact at the beginning of the increment and new points
+    assert np.any(active & active_old)
+    assert np.any(active & ~active_old)
+
+    if 0 < friction < 0.1:
+        assert np.any(contact.results.slip)
+
+    # the vector does not change the state variables
+    assert np.allclose(contact.assemble.vector(field).toarray().ravel(), r)
+
+    K_fd = stiffness_fd(contact, field)
+    assert np.allclose(K, K_fd, rtol=0, atol=1e-6 * np.abs(K_fd).max())
+
+    # the stiffness matrix of frictional contact is not symmetric
+    if friction > 0:
+        assert not np.allclose(K, K.T)
+
+    contact.symmetric = True
+    K_sym = contact.assemble.matrix(field).toarray()
+    assert np.allclose(K_sym, K_sym.T)
+    assert np.allclose(K_sym, (K + K.T) / 2)
+
+
+def test_contact_statevars():
+    "The state variables are only updated after a converged increment."
+
+    field, solid, contact = contact_model(dim=3, friction=0.1)
+
+    statevars = {k: v.copy() for k, v in contact.results.statevars.items()}
+    r = contact.assemble.vector(field).toarray()
+
+    # a trial evaluation does not change the state variables
+    field[0].values[-1] += [0.1, 0.0, -0.01]
+    contact.assemble.vector(field)
+    field[0].values[-1] -= [0.1, 0.0, -0.01]
+
+    for key, value in statevars.items():
+        assert np.allclose(contact.results.statevars[key], value)
+
+    assert np.allclose(contact.assemble.vector(field).toarray(), r)
+
+    # checkpoint, update and restore
+    checkpoint = contact.checkpoint()
+    contact.results.update_statevars()
+    assert not np.allclose(contact.results.statevars["dx"], statevars["dx"])
+
+    contact.restore(checkpoint)
+    for key, value in statevars.items():
+        assert np.allclose(contact.results.statevars[key], value)
+
+    assert np.allclose(contact.assemble.vector(field).toarray(), r)
+
+
+def test_contact_multipliers():
+    "The stiffness-based multipliers are evaluated at the points in contact."
+
+    field, solid, contact = contact_model(dim=3, friction=0.1, items=True)
+    dim = 3
+
+    K = solid.assemble.matrix(field)
+    multipliers = contact.contact_multipliers()
+
+    dof = field[0].indices.dof[contact.points]
+    blocks = np.array([K[d.reshape(-1, 1), d].toarray() for d in dof])
+    stiffness = blocks.sum(axis=0)
+
+    normal = np.sum(stiffness * contact.projection_normal) / len(contact.points)
+    tangential = np.sum(stiffness * contact.projection_tangential) / (
+        len(contact.points) * (dim - 1)
+    )
+
+    assert np.isclose(multipliers.normal, 50.0 * normal)
+    assert np.isclose(multipliers.tangential, 20.0 * tangential)
+
+    # the multipliers are constant within an increment
+    contact.assemble.vector(field)
+    multipliers = contact.multipliers
+
+    field[0].values[:-1] *= 1.5
+    solid.assemble.matrix(field)
+    contact.assemble.vector(field)
+    assert contact.multipliers is multipliers
+
+    # and they are updated after a converged increment
+    contact.results.update_statevars()
+    contact.assemble.vector(field)
+    assert contact.multipliers is not multipliers
+    assert not np.isclose(contact.multipliers.normal, multipliers.normal)
+
+    # multipliers which are updated in each evaluation
+    contact.multiplier_update = "iteration"
+    multipliers = contact.multipliers
+    contact.assemble.vector(field)
+    assert contact.multipliers is not multipliers
+
+    # multipliers which are evaluated only once
+    contact.multiplier_update = "once"
+    multipliers = contact.multipliers
+    contact.results.update_statevars()
+    contact.assemble.vector(field)
+    assert contact.multipliers is multipliers
+
+    with pytest.raises(ValueError):
+        contact_model(dim=3, friction=0.1, multiplier_update="never")
+
+
 if __name__ == "__main__":
     test_contact_mixed()
     test_contact_isolated()
     test_contact_plot_2d()
     test_contact_coulomb_sliding_limit()
+    for dim in [2, 3]:
+        for friction in [0.0, 0.05, 0.3, np.inf]:
+            test_contact_consistent_stiffness(dim, friction)
+    test_contact_statevars()
+    test_contact_multipliers()

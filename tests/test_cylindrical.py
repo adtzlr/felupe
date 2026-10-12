@@ -153,7 +153,7 @@ def test_cylindrical_constraint_target():
     u_r, u_t, u_z = displacement
     R = constraint.radius.reshape(-1, 1)
     Z = constraint.height.reshape(-1, 1)
-    e_r, e_t, e_z = constraint.basis.transpose([1, 0, 2])
+    e_r, e_t, e_z = constraint.basis.transpose([2, 0, 1])
 
     phi = u_t / R
     e_r_rotated = np.cos(phi) * e_r + np.sin(phi) * e_t

@@ -17,12 +17,11 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from scipy.sparse import coo_matrix, csr_matrix
 
-from ._helpers import Assemble, Results
+from ._pointconstraint import PointConstraint
 
 
-class CylindricalConstraint:
+class CylindricalConstraint(PointConstraint):
     r"""A constraint for the displacements of points in cylindrical coordinates.
 
     Parameters
@@ -51,6 +50,9 @@ class CylindricalConstraint:
     ----------
     radius : (n,) ndarray
         The undeformed radii :math:`R` of the points.
+    basis : (n, 3, 3) ndarray
+        The cylindrical base vectors :math:`(\boldsymbol{e}_r, \boldsymbol{e}_\theta,
+        \boldsymbol{e}_z)` of the points as columns.
     results : Results
         The results of the last evaluation, including the gaps ``results.gap`` with
         shape (n, 3).
@@ -187,6 +189,8 @@ class CylindricalConstraint:
 
     See Also
     --------
+    felupe.CartesianConstraint : A constraint for the displacements of points in a
+        Cartesian coordinate system.
     felupe.MultiPointConstraint : A multi-point constraint which connects a
         center-point to a list of points.
     felupe.Boundary : A collection of prescribed degrees of freedom.
@@ -203,20 +207,7 @@ class CylindricalConstraint:
         skip=(False, False, False),
         multiplier=1e3,
     ):
-        self.field = field
-        self.mesh = field.region.mesh
-        self.dim = self.mesh.dim
-        self.points = np.array(points)
-        self.multiplier = multiplier
-
-        if self.dim not in [2, 3]:
-            raise ValueError("A cylindrical constraint requires a 2d- or a 3d-mesh.")
-
-        if len(self.points) == 0:
-            self.points = self.points.astype(int)
-
-        if self.points.dtype == bool:
-            self.points = np.where(self.points)[0]
+        super().__init__(field, points, displacement, skip, multiplier)
 
         self.center = self._pad(np.asarray(center, dtype=float).ravel())
 
@@ -232,14 +223,6 @@ class CylindricalConstraint:
             raise ValueError(
                 "The axis must be perpendicular to the plane of a 2d-mesh."
             )
-
-        # mask of the constrained directions (radial, circumferential, axial)
-        skip = np.asarray(skip, dtype=bool).ravel()
-        skip = np.pad(skip, (0, 3 - len(skip)), constant_values=True)
-        self.mask = ~skip
-
-        if self.dim == 2:
-            self.mask[2] = False
 
         # undeformed radii, axial coordinates and cylindrical base vectors
         dX = self._pad(self.mesh.points[self.points]) - self.center
@@ -265,76 +248,23 @@ class CylindricalConstraint:
         e_t = np.cross(self.axis, e_r)
         e_z = np.broadcast_to(self.axis, e_r.shape)
 
-        # cylindrical base vectors, shape (n, 3, 3): (point, direction, component)
-        self.basis = np.stack([e_r, e_t, e_z], axis=1)
+        # cylindrical base vectors as columns, shape (n, 3, 3)
+        self.basis = np.stack([e_r, e_t, e_z], axis=2)
 
-        self.displacement = None
-        self.update(displacement)
+    def _gaps(self, u, stiffness=True):
+        "Evaluate the gaps, their gradients and the Hessian of the radial gap."
 
-        self.results = Results(stress=False, elasticity=False)
-        self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
-
-    def _pad(self, values):
-        "Pad the last axis of an array with zeros to three components."
-        width = [(0, 0)] * (values.ndim - 1) + [(0, 3 - values.shape[-1])]
-        return np.pad(values, width)
-
-    def update(self, displacement):
-        r"""Update the prescribed displacements :math:`(u_r, u_\theta, u_z)`.
-
-        Parameters
-        ----------
-        displacement : array_like
-            The prescribed displacements in radial, circumferential and axial
-            direction, either one vector for all points or one vector per point with
-            shape (n, 3). For 2d-meshes, also vectors with two components
-            :math:`(u_r, u_\theta)` are supported.
-
-        Notes
-        -----
-        This method is called by a :class:`~felupe.Step` for each substep if the
-        constraint is ramped, e.g. by ``ramp={constraint: table}``.
-        """
-
-        displacement = np.asarray(displacement, dtype=float)
-
-        if displacement.ndim not in [1, 2] or displacement.shape[-1] not in [
-            self.dim,
-            3,
-        ]:
-            raise ValueError(
-                "The displacements must be given with shape (3,) or (n, 3), "
-                f"got {displacement.shape}."
-            )
-
-        displacement = self._pad(displacement)
-        self.displacement = np.broadcast_to(displacement, (len(self.points), 3)).copy()
-
-    def _evaluate(self, field=None, stiffness=True):
-        "Evaluate the gaps, the forces and (optionally) the stiffness of all points."
-
-        if field is not None:
-            self.field = field
-
-        u = self._pad(self.field[0].values[self.points])
-        e_r, e_t, e_z = self.basis.transpose([1, 0, 2])
+        e_r, e_t, e_z = self.basis.transpose([2, 0, 1])
         R = self.radius
         u_r, u_t, u_z = self.displacement.T
 
         npoints = len(self.points)
         gap = np.zeros((npoints, 3))
-        force = np.zeros((npoints, 3))
-        matrix = np.zeros((npoints, 3, 3)) if stiffness else None
+        dgdx = np.zeros((npoints, 3, 3))
+        hessian = None
 
         dot = lambda a, b: np.einsum("ai,ai->a", a, b)
         dya = lambda a, b: np.einsum("ai,aj->aij", a, b)
-
-        def add(i, g, dgdx):
-            gap[:, i] = g
-            force[:] += g.reshape(-1, 1) * dgdx
-
-            if stiffness:
-                matrix[:] += dya(dgdx, dgdx)
 
         # base vectors rotated by the prescribed angle (ignored if skipped)
         phi = np.zeros((npoints, 1))
@@ -352,122 +282,44 @@ class CylindricalConstraint:
 
         if self.mask[0]:  # radial direction
             if not self.mask[1]:  # slide on the cylinder
-                dXr = R.reshape(-1, 1) * self.basis[:, 0]
+                dXr = R.reshape(-1, 1) * self.basis[:, :, 0]
                 du = u @ self.projection
                 dxr = dXr + du
                 rho = np.linalg.norm(dxr, axis=1)
                 n = dxr / rho.reshape(-1, 1)
 
                 # g = rho - (R + u_r), evaluated without cancellation (|dXr| = R)
-                g = (2 * dot(dXr, du) + dot(du, du) - (2 * R + u_r) * u_r) / (
+                gap[:, 0] = (2 * dot(dXr, du) + dot(du, du) - (2 * R + u_r) * u_r) / (
                     rho + R + u_r
                 )
-                add(0, g, n)
+                dgdx[:, 0] = n
 
                 if stiffness:
-                    nn = dya(n, n)
-                    matrix[:] += (g / rho).reshape(-1, 1, 1) * (self.projection - nn)
+                    hessian = (gap[:, 0] / rho).reshape(-1, 1, 1) * (
+                        self.projection - dya(n, n)
+                    )
 
             else:
-                add(0, dot(e_r, u) + dX_r - u_r, e_r)
+                gap[:, 0] = dot(e_r, u) + dX_r - u_r
+                dgdx[:, 0] = e_r
 
         if self.mask[1]:  # circumferential direction
-            add(1, dot(e_t, u) + dX_t, e_t)
+            gap[:, 1] = dot(e_t, u) + dX_t
+            dgdx[:, 1] = e_t
 
         if self.mask[2]:  # axial direction
-            add(2, dot(e_z, u) - u_z, e_z)
+            gap[:, 2] = dot(e_z, u) - u_z
+            dgdx[:, 2] = e_z
 
-        self.results.gap = gap
+        return gap, dgdx, hessian
 
-        force = self.multiplier * force[:, : self.dim]
-
-        if stiffness:
-            matrix = self.multiplier * matrix[:, : self.dim, : self.dim]
-
-        return force, matrix
-
-    def _vector(self, field=None, parallel=False):
-        "Calculate the vector of residuals of the cylindrical constraint."
-
-        force, _ = self._evaluate(field, stiffness=False)
-
-        dof = self.field[0].indices.dof[self.points].ravel()
-        ndof = self.field[0].values.size
-
-        self.results.force = csr_matrix(
-            (force.ravel(), (dof, np.zeros_like(dof))), shape=(ndof, 1)
-        )
-        return self.results.force
-
-    def _matrix(self, field=None, parallel=False):
-        "Calculate the stiffness matrix of the cylindrical constraint."
-
-        _, matrix = self._evaluate(field, stiffness=True)
-
-        dof = self.field[0].indices.dof[self.points]
-        ndof = self.field[0].values.size
-
-        rows = np.repeat(dof, self.dim, axis=1).ravel()
-        cols = np.tile(dof, (1, self.dim)).ravel()
-
-        self.results.stiffness = coo_matrix(
-            (matrix.ravel(), (rows, cols)), shape=(ndof, ndof)
-        ).tocsr()
-        return self.results.stiffness
-
-    def plot(
-        self,
-        plotter=None,
-        color="black",
-        deformed=True,
-        point_size=10,
-        line_width=2,
-        **kwargs,
-    ):
-        """Plot the constrained points and the axis of the cylindrical constraint.
-
-        Parameters
-        ----------
-        plotter : pyvista.Plotter or None, optional
-            An existing plotter. If None, a new plotter is created. Default is None.
-        color : str, optional
-            The color of the points and the axis. Default is "black".
-        deformed : bool, optional
-            A flag to plot the points in the deformed configuration. Default is True.
-        point_size : float, optional
-            The size of the points. Default is 10.
-        line_width : float, optional
-            The line width of the axis. Default is 2.
-        **kwargs : dict, optional
-            Additional keyword arguments for the points, passed to
-            :meth:`pyvista.Plotter.add_points`.
-
-        Returns
-        -------
-        pyvista.Plotter
-            The plotter with the points and the axis.
-        """
+    def _plot_reference(self, plotter, x, color, line_width):
+        "Add the axis along the axial extent of the points (or their mean radius)."
 
         import pyvista as pv
 
-        if plotter is None:
-            plotter = pv.Plotter()
-
-        x = self.mesh.points[self.points]
-
-        if deformed:
-            x = x + self.field[0].values[self.points]
-
-        x = self._pad(x)
-
-        if len(x) > 0:
-            plotter.add_points(x, color=color, point_size=point_size, **kwargs)
-
-            # axis line along the axial extent of the points (or their mean radius)
-            z = (x - self.center) @ self.axis
-            length = max(np.ptp(z), self.radius.mean(), 1e-12)
-            start = self.center + (z.min() - 0.1 * length) * self.axis
-            end = self.center + (z.min() + 1.1 * length) * self.axis
-            plotter.add_mesh(pv.Line(start, end), color=color, line_width=line_width)
-
-        return plotter
+        z = (x - self.center) @ self.axis
+        length = max(np.ptp(z), self.radius.mean(), 1e-12)
+        start = self.center + (z.min() - 0.1 * length) * self.axis
+        end = self.center + (z.min() + 1.1 * length) * self.axis
+        plotter.add_mesh(pv.Line(start, end), color=color, line_width=line_width)

@@ -75,6 +75,7 @@ from .field import (
     FieldsMixed,
 )
 from .mechanics import (
+    CartesianConstraint,
     CharacteristicCurve,
     ContactRigidPlane,
     CylindricalConstraint,
@@ -243,6 +244,7 @@ __all__ = [
     "JobState",
     "PointLoad",
     "ContactRigidPlane",
+    "CartesianConstraint",
     "CylindricalConstraint",
     "SolidBody",
     "SolidBodyCauchyStress",

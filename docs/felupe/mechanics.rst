@@ -50,6 +50,7 @@ Mechanics
    PointLoad
    MultiPointConstraint
    MultiPointContact
+   CartesianConstraint
    CylindricalConstraint
 
 **Contact**
@@ -194,6 +195,11 @@ Mechanics
    :inherited-members:
 
 .. autoclass:: felupe.MultiPointContact
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.CartesianConstraint
    :members:
    :undoc-members:
    :inherited-members:

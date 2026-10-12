@@ -43,12 +43,17 @@ class PointConstraint:
 
     Notes
     -----
-    A subclass provides the gaps :math:`g_i`, their gradients
-    :math:`\partial g_i / \partial \boldsymbol{x}` and the sum of the gap-weighted
+    A subclass must implement the method ``_gaps(u, stiffness=True)``, which returns
+    the gaps :math:`g_i` with shape (n, 3), their gradients
+    :math:`\partial g_i / \partial \boldsymbol{x}` w.r.t. the deformed coordinates with
+    shape (n, 3, 3) as (point, direction, component) and the sum of the gap-weighted
     Hessians :math:`\sum_i g_i\, \partial^2 g_i / (\partial \boldsymbol{x}\, \partial
-    \boldsymbol{x})` of all points by :meth:`_gaps`. The vector and the matrix of the
-    penalty potential :math:`\Pi = \sum_{\text{points}} \sum_i \frac{k}{2}\, g_i^2`
-    are assembled by this class, where the skipped directions do not contribute.
+    \boldsymbol{x})` of the constrained directions with shape (n, 3, 3) or None (if all
+    gaps are linear or ``stiffness=False``) for the padded displacements
+    :math:`\boldsymbol{u}` of the points with shape (n, 3). The vector and the matrix
+    of the penalty potential :math:`\Pi = \sum_{\text{points}} \sum_i \frac{k}{2}\,
+    g_i^2` are assembled by this class, where the skipped directions do not
+    contribute.
     """
 
     def __init__(self, field, points, displacement, skip, multiplier):
@@ -117,13 +122,6 @@ class PointConstraint:
         displacement = self._pad(displacement)
         self.displacement = np.broadcast_to(displacement, (len(self.points), 3)).copy()
 
-    def _gaps(self, u, stiffness=True):
-        r"""Return the gaps with shape (n, 3), their gradients w.r.t. the deformed
-        coordinates with shape (n, 3, 3) as (point, direction, component) and the sum
-        of the gap-weighted Hessians of the constrained directions with shape
-        (n, 3, 3) or None (if all gaps are linear or ``stiffness=False``)."""
-        raise NotImplementedError
-
     def _evaluate(self, field=None, stiffness=True):
         "Evaluate the gaps, the forces and (optionally) the stiffness of all points."
 
@@ -183,8 +181,8 @@ class PointConstraint:
         return self.results.stiffness
 
     def _plot_reference(self, plotter, x, color, line_width):
-        "Add the reference geometry of the coordinate system to the plotter."
-        pass
+        """Add the reference geometry of the coordinate system to the plotter. By
+        default, nothing is added."""
 
     def plot(
         self,

@@ -195,6 +195,15 @@ class ContactRigidPlane(ContactPlane):
     symmetric : bool, optional
         A flag to return the symmetric part of the stiffness matrix. The consistent
         stiffness matrix of frictional contact is not symmetric. Default is False.
+    elastic_slip : float or None, optional
+        The allowable elastic slip :math:`\gamma` (a length) of sticking points. If
+        given, the tangential multiplier is proportional to the normal force,
+        :math:`\lambda_t = \mu\ f_n / \gamma`, i.e. a sticking point starts to slide
+        at an elastic slip of :math:`\gamma`, independent of the contact pressure.
+        The scale factor ``multiplier_tangential`` is not used. Typical values are 0.5 %
+        to 1 % of a characteristic element length of the contact surface. For an
+        infinite friction coefficient, :math:`\mu=1` is used for the tangential
+        multiplier. If None, the tangential multiplier is constant. Default is None.
 
     Notes
     -----
@@ -286,8 +295,23 @@ class ContactRigidPlane(ContactPlane):
             \text{else} & \text{slip}
         \end{cases}
 
+    With an allowable elastic slip :math:`\gamma` (``elastic_slip``), the tangential
+    multiplier is not constant but proportional to the normal force, see Eq.
+    :eq:`contact-friction-elastic-slip`. Hence, a point sticks for an elastic slip
+    :math:`|\boldsymbol{e}| \leq \gamma`, independent of the contact pressure, similar
+    to the penalty friction of commercial codes.
+
+    ..  math::
+        :label: contact-friction-elastic-slip
+
+        \lambda_t = \frac{\mu\ f_n}{\gamma}, \quad
+            \frac{\partial \lambda_t}{\partial \Delta \boldsymbol{x}}
+            = -\frac{\mu\ \lambda_n}{\gamma}\ \boldsymbol{n}
+
     In case of sticking contact, the tangential forces are equal to the trial forces,
-    see Eq. :eq:`contact-friction-stick`.
+    see Eq. :eq:`contact-friction-stick`. With an allowable elastic slip, the
+    derivative of the tangential multiplier is added to the stiffness matrix,
+    :math:`-\mu\ \lambda_n / \gamma\ \boldsymbol{e} \otimes \boldsymbol{n}`.
 
     ..  math::
         :label: contact-friction-stick
@@ -456,6 +480,7 @@ class ContactRigidPlane(ContactPlane):
         items=None,
         multiplier_update="increment",
         symmetric=False,
+        elastic_slip=None,
     ):
         self.field = field
         self.mesh = field.region.mesh
@@ -495,6 +520,11 @@ class ContactRigidPlane(ContactPlane):
         self.multiplier_update = multiplier_update
         self.multipliers = None
         self.symmetric = symmetric
+
+        if elastic_slip is not None and not elastic_slip > 0:
+            raise ValueError("The elastic slip must be positive.")
+
+        self.elastic_slip = elastic_slip
 
         # the converged state variables, for which the multipliers were evaluated
         self._multipliers_statevars = None
@@ -711,11 +741,18 @@ class ContactRigidPlane(ContactPlane):
                         -1, 1, 1
                     ) * np.einsum("ai,j->aij", delta, n)
 
-                force_t_trial = lambda_t * e
-                force_t_norm = np.linalg.norm(force_t_trial, axis=1)
-
                 force_n_abs = -lambda_n * g
                 force_t_limit = self.friction * force_n_abs
+
+                # tangential multipliers: constant or proportional to the normal force
+                if self.elastic_slip is None:
+                    lambda_t_points = np.full(m, lambda_t, dtype=dtype)
+                else:
+                    mu = self.friction if np.isfinite(self.friction) else 1.0
+                    lambda_t_points = mu * force_n_abs / self.elastic_slip
+
+                force_t_trial = lambda_t_points.reshape(-1, 1) * e
+                force_t_norm = np.linalg.norm(force_t_trial, axis=1)
 
                 # points with friction: sticking or sliding
                 stick = np.ones(m, dtype=bool)
@@ -726,14 +763,29 @@ class ContactRigidPlane(ContactPlane):
                 slide = (~stick) & (force_t_norm > 0.0)
 
                 force_t = force_t_trial
-                stiffness_t = lambda_t * E
+                stiffness_t = lambda_t_points.reshape(-1, 1, 1) * E
+
+                # elastic slip of the (trial) reference gap vectors
+                e_ref = e
+
+                if self.elastic_slip is not None:
+                    # derivative of the tangential multipliers w.r.t. the gap vector
+                    stiffness_t -= (mu * lambda_n / self.elastic_slip) * np.einsum(
+                        "ai,j->aij", e, n
+                    )
 
                 if np.any(slide):
                     t_hat = force_t_trial[slide] / force_t_norm[slide].reshape(-1, 1)
-                    e_norm = force_t_norm[slide] / lambda_t
+                    e_norm = np.linalg.norm(e[slide], axis=1)
 
                     force_t = force_t_trial.copy()
                     force_t[slide] = force_t_limit[slide].reshape(-1, 1) * t_hat
+
+                    # return mapping of the elastic slip
+                    e_ref = e.copy()
+                    e_ref[slide] *= (
+                        force_t_limit[slide] / force_t_norm[slide]
+                    ).reshape(-1, 1)
 
                     # consistent stiffness of the return mapping
                     projection_slip = (
@@ -753,8 +805,7 @@ class ContactRigidPlane(ContactPlane):
                 slip[contact] = slide
 
                 # updated (trial) reference gap vectors
-                if lambda_t > 0.0:
-                    dx_ref[contact] = dx_c - force_t / lambda_t
+                dx_ref[contact] = dx_c - e_ref
 
         if self.symmetric:
             stiffness = (stiffness + stiffness.transpose(0, 2, 1)) / 2

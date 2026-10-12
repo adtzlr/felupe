@@ -311,10 +311,11 @@ def stiffness_fd(contact, field, h=1e-7):
 
 @pytest.mark.parametrize("dim", [2, 3])
 @pytest.mark.parametrize("friction", [0.0, 0.05, 0.3, np.inf])
-def test_contact_consistent_stiffness(dim, friction):
+@pytest.mark.parametrize("elastic_slip", [None, 1e-3, 2e-2])
+def test_contact_consistent_stiffness(dim, friction, elastic_slip):
     "The stiffness matrix is the derivative of the vector (stick and slip)."
 
-    field, solid, contact = contact_model(dim, friction)
+    field, solid, contact = contact_model(dim, friction, elastic_slip=elastic_slip)
 
     K = contact.assemble.matrix(field).toarray()
     r = contact.assemble.vector(field).toarray().ravel()
@@ -326,7 +327,7 @@ def test_contact_consistent_stiffness(dim, friction):
     assert np.any(active & active_old)
     assert np.any(active & ~active_old)
 
-    if 0 < friction < 0.1:
+    if 0 < friction < 0.1 and elastic_slip != 2e-2:
         assert np.any(contact.results.slip)
 
     # the vector does not change the state variables
@@ -343,6 +344,42 @@ def test_contact_consistent_stiffness(dim, friction):
     K_sym = contact.assemble.matrix(field).toarray()
     assert np.allclose(K_sym, K_sym.T)
     assert np.allclose(K_sym, (K + K.T) / 2)
+
+
+def test_contact_elastic_slip():
+    "Points stick for an elastic slip below the allowable elastic slip."
+
+    for elastic_slip in [1e-3, 2e-2]:
+        field, solid, contact = contact_model(
+            dim=3, friction=0.3, elastic_slip=elastic_slip
+        )
+        contact.assemble.vector(field)
+
+        active = contact.results.active
+        slip = contact.results.slip
+        P = contact.projection_tangential
+
+        # elastic slip of the trial reference gap vectors
+        dx = contact.results._statevars["dx"]
+        e = np.linalg.norm((dx - contact.results.dx_ref) @ P, axis=1)
+
+        assert np.all(e[active & ~slip] <= elastic_slip * (1 + 1e-8))
+        assert np.allclose(e[active & slip], elastic_slip)
+
+    # the stick-slip state does not depend on the friction coefficient
+    states = []
+    for friction in [0.1, 1.0]:
+        field, solid, contact = contact_model(
+            dim=3, friction=friction, elastic_slip=0.02
+        )
+        contact.assemble.vector(field)
+        states.append(contact.results.slip.copy())
+
+    assert np.any(states[0])
+    assert np.all(states[0] == states[1])
+
+    with pytest.raises(ValueError):
+        contact_model(dim=3, friction=0.3, elastic_slip=0.0)
 
 
 def test_contact_statevars():
@@ -435,6 +472,8 @@ if __name__ == "__main__":
     test_contact_coulomb_sliding_limit()
     for dim in [2, 3]:
         for friction in [0.0, 0.05, 0.3, np.inf]:
-            test_contact_consistent_stiffness(dim, friction)
+            for elastic_slip in [None, 1e-3, 2e-2]:
+                test_contact_consistent_stiffness(dim, friction, elastic_slip)
+    test_contact_elastic_slip()
     test_contact_statevars()
     test_contact_multipliers()

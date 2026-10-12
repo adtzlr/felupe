@@ -641,12 +641,24 @@ def test_contact_cylinder_plot():
         field, solid, contact = cylinder_model(dim, 0.1, inside=inside)
 
         try:
+            contact.plot()
             plotter = field.region.mesh.plot(off_screen=True)
             contact.plot(plotter=plotter)
             contact.plot(plotter=plotter, sym=(True, False, False)[:dim])
             contact.plot(plotter=plotter, deformed=False, show_line=False)
         except ModuleNotFoundError:
             pass
+
+
+def test_contact_base():
+    "The geometry of a rigid surface must be defined by a subclass."
+
+    mesh = fem.Rectangle(n=3)
+    mesh.add_points([0.5, 1.5])
+    field = fem.FieldContainer([fem.Field(fem.RegionQuad(mesh), dim=2)])
+
+    with pytest.raises(TypeError):
+        fem.mechanics.ContactRigidBase(field, points=[0, 1], centerpoint=-1)
 
 
 def test_contact_cylinder_job():
@@ -710,4 +722,5 @@ if __name__ == "__main__":
     test_contact_cylinder_plane()
     test_contact_cylinder_errors()
     test_contact_cylinder_plot()
+    test_contact_base()
     test_contact_cylinder_job()

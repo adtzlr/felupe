@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from abc import ABC, abstractmethod
 from collections import namedtuple
 
 import numpy as np
@@ -157,7 +158,7 @@ def _assemble_matrix(dof, dof_center, blocks, size, dtype):
     return coo_matrix((data, (rows, cols)), shape=(size, size), dtype=dtype).tocsr()
 
 
-class ContactRigidBase:
+class ContactRigidBase(ABC):
     r"""A base class for a node-to-surface contact, where the surface is given by a
     rigid body which is connected to a center-point.
 
@@ -264,10 +265,10 @@ class ContactRigidBase:
         self.results.active = active.copy()
         self.results.slip = np.zeros(len(self.points), dtype=bool)
 
+    @abstractmethod
     def _kinematics(self, dx):
         """Return the gaps, the outward normal vectors and their derivatives w.r.t.
         the gap vectors (or None for constant normal vectors)."""
-        raise NotImplementedError
 
     def _gap_vectors(self):
         "Return the gap vectors between the points and the center-point."

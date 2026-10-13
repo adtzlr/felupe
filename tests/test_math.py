@@ -258,18 +258,18 @@ def test_einsum_chunks_layout():
     from felupe.math._einsum import einsum_chunks
 
     rng = np.random.default_rng(0)
-    subscripts = "aqc,...qc,bqc,qc->a...bc"
-    shapes = [(8, 4, 50), (4, 50), (8, 4, 50), (4, 50)]
-    operands = [rng.random(shape) for shape in shapes]
+    A = rng.random((3, 4, 50))
 
-    expected = np.einsum(subscripts, *operands, optimize=True)
+    # NumPy returns a (transposed) view of a single operand, which is not in C-order
+    subscripts = "ijc->jic"
+    expected = np.einsum(subscripts, A)
     assert not expected.flags.c_contiguous
 
-    res = einsum_chunks(subscripts, *operands, optimize=True)
+    res = einsum_chunks(subscripts, A)
     assert res.strides == expected.strides
     assert np.allclose(res, expected)
 
-    res = einsum_chunks(subscripts, *operands, optimize=True, chunksize=10)
+    res = einsum_chunks(subscripts, A, chunksize=10)
     assert res.flags.c_contiguous
     assert np.allclose(res, expected)
 

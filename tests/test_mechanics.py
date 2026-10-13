@@ -965,6 +965,23 @@ def test_thirdmediumcontactmixed():
         fem.Job(steps=[step]).evaluate()
 
 
+def test_solidbody_stress_2d():
+    "The Cauchy stress of a 2d-field falls back to the Kirchhoff stress."
+
+    region = fem.RegionQuad(fem.Rectangle(n=3))
+    field = fem.FieldContainer([fem.Field(region, dim=2)])
+    field[0].values[:] = 0.05 * np.random.default_rng(1).random(field[0].values.shape)
+
+    for solid in [
+        fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field),
+        fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=50),
+    ]:
+        with pytest.warns(UserWarning, match="2d-Field"):
+            cauchy = solid.evaluate.cauchy_stress(field)
+
+        assert np.allclose(cauchy, solid.evaluate.kirchhoff_stress(field))
+
+
 def test_item_protocol():
     "All built-in items provide the interface of an item."
 
@@ -1082,5 +1099,6 @@ if __name__ == "__main__":
     test_axi_to_3d_quadratic()
     test_job_plugins()
     test_thirdmediumcontactmixed()
+    test_solidbody_stress_2d()
     test_item_protocol()
     test_newton_custom_check()

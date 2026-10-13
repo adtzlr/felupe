@@ -81,8 +81,7 @@ class AnimationWriterPlugin(Plugin):
         ...     filename="animation.gif",
         ...     name="Principal Values of Logarithmic Strain",
         ... )
-        >>> job = fem.Job(steps=[step], plugins=[animation])
-        >>> job.evaluate()
+        >>> job = fem.Job(steps=[step], plugins=[animation]).evaluate()
 
     See Also
     --------

@@ -696,15 +696,18 @@ def eig(a, eig=np.linalg.eig, **kwargs):
     >>>
     >>> C = fem.math.dot(fem.math.transpose(F), F)
     >>> w, v = fem.math.eig(C)
-    >>>
-    >>> w[0]
+
+    The eigenvalues of the symmetric tensors are real. Depending on the version of
+    NumPy, they are returned as an array of complex type with zero imaginary parts.
+
+    >>> w[0].real
     array([1.15619667, 2.57066372])
 
     The associated eigenvectors are extracted. The first column is the eigenvector
     for the first right Cauchy-Green deformation tensor and the second column for the
     second right Cauchy-Green deformation tensor.
 
-    >>> v[:, 0]
+    >>> v[:, 0].real
     array([[0.88697868, 0.        ],
            [0.        , 0.01659066],
            [0.46181038, 0.99986237]])

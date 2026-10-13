@@ -1013,6 +1013,32 @@ def test_plot_negative_stretches(close_figs=True):
                 plt.close(ax.get_figure())
 
 
+def test_plot_title_kwargs(close_figs=True):
+    "The parameters in the title of the plot may be None, 0-d arrays or strings."
+
+    umats = [
+        # the (optional) argument `tangent` is None
+        fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0),
+        # the elastic modulus is a 0-d array
+        fem.LinearElastic1D(E=1),
+    ]
+
+    for umat in umats:
+        ax = umat.plot()
+
+        if close_figs:
+            plt.close(ax.get_figure())
+
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    umat.kwargs["name"] = "a string"
+    ax = umat.plot()
+
+    assert '"a string"' in ax.get_title()
+
+    if close_figs:
+        plt.close(ax.get_figure())
+
+
 if __name__ == "__main__":
 
     close_figs = True
@@ -1040,3 +1066,4 @@ if __name__ == "__main__":
     test_lagrange_statevars()
     test_laplace()
     test_plot_negative_stretches(close_figs=True)
+    test_plot_title_kwargs(close_figs=True)

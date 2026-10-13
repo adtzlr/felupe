@@ -888,8 +888,8 @@ def merge_duplicate_cells(points, cells, cell_type):
 
         >>> rect2
         <felupe Mesh object>
-            Number of points: 121
-            Number of cells:
+          Number of points: 121
+          Number of cells:
             quad: 100
 
     These two meshes are now stored in a :class:`~felupe.MeshContainer`.
@@ -1045,7 +1045,7 @@ def flip(points, cells, cell_type, mask=None):
     The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is evaluated
     to -1.0.
 
-    >>> region.dV.sum()
+    >>> print(region.dV.sum())
     -1.0
 
     Let's try to fix the mesh.
@@ -1068,7 +1068,7 @@ def flip(points, cells, cell_type, mask=None):
     A region now correctly evaluates the total volume of the mesh to 1.0.
 
     >>> region_fixed = fem.RegionQuad(mesh_fixed)
-    >>> region_fixed.dV.sum()
+    >>> print(region_fixed.dV.sum())
     1.0
 
     See Also

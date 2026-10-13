@@ -89,13 +89,13 @@ def updated_lagrange(material):
     >>> import felupe.constitution.jax as mat
     >>> import jax.numpy as jnp
     >>>
-    >>> @fem.updated_lagrange
-    >>> def neo_hooke_updated_lagrange(F, mu=1):
-    >>>     J = jnp.linalg.det(F)
-    >>>     b = F @ F.T
-    >>>     dev = lambda b: b - jnp.trace(b) / 3 * jnp.eye(3)
-    >>>     τ = mu * dev(J**(-2/3) * b)
-    >>>     return τ / J
+    >>> @mat.updated_lagrange
+    ... def neo_hooke_updated_lagrange(F, mu=1):
+    ...     J = jnp.linalg.det(F)
+    ...     b = F @ F.T
+    ...     dev = lambda b: b - jnp.trace(b) / 3 * jnp.eye(3)
+    ...     τ = mu * dev(J**(-2/3) * b)
+    ...     return τ / J
     >>>
     >>> umat = mat.Material(neo_hooke_updated_lagrange, mu=1)
 

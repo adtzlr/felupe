@@ -8,6 +8,11 @@ build-backend = "setuptools.build_meta"
 [tool.isort]
 profile = "black"
 
+[tool.pytest.ini_options]
+testpaths = ["tests", "src/felupe"]
+addopts = ["--doctest-modules", "--import-mode=importlib"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "ELLIPSIS"]
+
 [project]
 name = "felupe"
 description = "Open finite element infrastructure for nonlinear computational mechanics. "

@@ -1197,7 +1197,7 @@ class Mesh(DiscreteGeometry):
         The sum of the differential volumes :math:`V = \sum_c \sum_q dV_{qc}` is
         evaluated to -1.0.
 
-        >>> region.dV.sum()
+        >>> print(region.dV.sum())
         -1.0
 
         Let's try to fix the mesh.
@@ -1220,7 +1220,7 @@ class Mesh(DiscreteGeometry):
         A region now correctly evaluates the total volume of the mesh to 1.0.
 
         >>> region_fixed = fem.RegionQuad(mesh_fixed)
-        >>> region_fixed.dV.sum()
+        >>> print(region_fixed.dV.sum())
         1.0
 
         See Also

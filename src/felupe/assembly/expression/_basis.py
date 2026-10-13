@@ -16,12 +16,11 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from functools import partial
+
 import numpy as np
 
-try:
-    from einsumt import einsumt
-except ModuleNotFoundError:
-    from numpy import einsum as einsumt
+from ...math._einsum import einsum_chunks
 
 
 class BasisArray(np.ndarray):
@@ -157,7 +156,7 @@ class BasisField:
     def __init__(self, field, parallel=False):
         self.field = field
 
-        einsum = einsumt if parallel else np.einsum
+        einsum = partial(einsum_chunks, parallel=parallel)
 
         basis = einsum(
             "ij,aqc->aijqc",

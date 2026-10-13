@@ -16,15 +16,9 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from functools import cached_property
+from functools import cached_property, partial
 
 import numpy as np
-
-try:
-    from einsumt import einsumt
-except ModuleNotFoundError:
-    from numpy import einsum as einsumt
-
 from scipy.sparse import csr_matrix as sparsematrix
 
 from ..math._einsum import einsum_chunks
@@ -223,10 +217,8 @@ class IntegralFormCartesian:
                     trim[nv : nv + nu] = [slice(2)] * nu
                 fun = fun[tuple(trim)]
 
-        if parallel:
-            einsum = einsumt
-        else:
-            einsum = np.einsum
+        # chunks of cells, one per thread (parallel) or a single chunk (serial)
+        einsum = partial(einsum_chunks, parallel=parallel)
 
         if not grad_v:
             vb = v.region.h
@@ -291,17 +283,23 @@ class IntegralFormCartesian:
                 )
             else:  # grad_v and grad_u
                 operands = (vb, fun, ub, dV)
+                ncells = max(x.shape[-1] for x in operands)
 
                 a, J, q = vb.shape[:3]
                 b, L = ub.shape[:2]
                 i, k = fun.shape[0], fun.shape[2]
 
+                # the sparse assembly of the stiffness matrix is faster for values in
+                # C-order than for the (faster to evaluate) memory layout of NumPy
+                if out is None:
+                    shape = (a, i, b, k, ncells)
+                    out = np.empty(shape, dtype=np.result_type(*operands))
+
                 # number of array items per cell: intermediate (iJkbq), result (aibk),
                 # function (iJkLq), test and trial gradients (aJq, bLq), volumes (q)
                 size = i * J * k * b * q + a * i * b * k + fun[..., 0].size
                 size += a * J * q + b * L * q + q
-                itemsize = np.result_type(*operands).itemsize
-                chunksize = max(1, CHUNKSIZE_BYTES // (itemsize * size))
+                chunksize = max(1, CHUNKSIZE_BYTES // (out.itemsize * size))
 
                 return einsum_chunks(
                     "aJqc,iJkLqc,bLqc,qc->aibkc",

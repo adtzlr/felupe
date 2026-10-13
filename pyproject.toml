@@ -5,8 +5,35 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.package-data]
 'felupe.view' = ['logo.png']
 
-[tool.isort]
-profile = "black"
+[tool.ruff]
+src = ["src"]
+# the published paper is not formatted
+extend-exclude = ["paper"]
+
+[tool.ruff.lint]
+# an explicit selection of rules, independent of the default rules of ruff
+select = [
+  "E4",  # imports (pycodestyle)
+  "E7",  # statements (pycodestyle)
+  "E9",  # runtime and syntax errors (pycodestyle)
+  "F",  # pyflakes
+  "B006",  # mutable default arguments
+  "I",  # sorted imports (isort)
+  "W",  # whitespace
+]
+ignore = [
+  "E731",  # lambda assignments, e.g. for short functions in tests and examples
+  "E741",  # ambiguous variable names, e.g. `l` (notation of continuum mechanics)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# the public API is re-exported
+"__init__.py" = ["F401"]
+# results of calls are bound to variables without being checked
+"tests/**" = ["F841"]
+# the scripts of sphinx-gallery import modules in later cells
+"examples/**" = ["E402"]
+"docs/tutorial/examples/**" = ["E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "src/felupe"]

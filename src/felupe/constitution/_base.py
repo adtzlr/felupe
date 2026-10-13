@@ -21,6 +21,7 @@ from copy import deepcopy as copy
 import numpy as np
 
 from ..math import dot, eigh, transpose
+from ..math._chunks import CHUNKSIZE_POINTS
 from ._chunks import evaluate_chunks
 from ._view import ViewMaterial, ViewMaterialIncompressible
 
@@ -138,7 +139,7 @@ class ConstitutiveMaterial:
     felupe.constitutive_material : A decorator for a constitutive material definition.
     """
 
-    chunksize = 8192
+    chunksize = CHUNKSIZE_POINTS
     parallel = False
 
     def gradient(self, x, *args, out=None, **kwargs):

@@ -543,6 +543,54 @@ def test_cpu_count(monkeypatch):
     assert cpu_count() >= 1
 
 
+def test_chunk_slices():
+    "The slices of the chunks cover the axis without gaps and overlaps."
+
+    from felupe.math._chunks import chunk_slices
+
+    for length in [0, 1, 5, 10]:
+        for chunksize in [0, 1, 3, 10, 100]:
+            chunks = chunk_slices(length, chunksize)
+            items = np.concatenate([np.arange(length)[c] for c in chunks] + [[]])
+
+            assert np.array_equal(items, np.arange(length))
+            assert all(c.stop - c.start <= max(1, chunksize) for c in chunks)
+
+    assert chunk_slices(0, 4) == []
+    assert chunk_slices(5, 10) == [slice(0, 5)]
+
+
+def test_map_chunks(monkeypatch):
+    "The chunks are evaluated in serial or by the pool of threads, in order."
+
+    import threading
+
+    import felupe.math._threads as threads
+    from felupe.math._chunks import chunk_slices, map_chunks
+
+    chunks = chunk_slices(10, 3)
+
+    def fun(chunk):
+        return chunk.start, threading.current_thread() is threading.main_thread()
+
+    starts = [chunk.start for chunk in chunks]
+
+    for parallel, cpus, main in [
+        (False, 4, True),  # serial
+        (True, 1, True),  # a single usable CPU
+        (True, 4, False),  # threads
+    ]:
+        monkeypatch.setattr(threads, "cpu_count", lambda: cpus)
+        res = map_chunks(fun, chunks, parallel=parallel)
+
+        assert [r[0] for r in res] == starts
+        assert all(r[1] == main for r in res)
+
+    # a single chunk is evaluated in serial
+    res = map_chunks(fun, chunks[:1], parallel=True)
+    assert res[0][1]
+
+
 if __name__ == "__main__":
     test_math()
     test_math_field()

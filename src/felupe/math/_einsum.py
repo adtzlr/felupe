@@ -21,6 +21,7 @@ from string import ascii_letters
 import numpy as np
 
 from . import _threads
+from ._chunks import chunk_slices, map_chunks
 
 
 def _parse_subscripts(subscripts, operands):
@@ -170,17 +171,15 @@ def einsum_chunks(
     axis = output.find(idx)
 
     length = lengths[idx]
-    workers = _threads.cpu_count() if parallel else 1
 
     if chunksize is None:
+        workers = _threads.cpu_count() if parallel else 1
         chunksize = -(-length // workers)  # one chunk per thread
 
-    chunksize = max(1, chunksize)
-    starts = range(0, length, chunksize)
-    workers = min(workers, len(starts))
+    chunks = chunk_slices(length, chunksize)
 
     if out is None:
-        if len(starts) <= 1:
+        if len(chunks) <= 1:
             return einsum(*operands)
 
         shape = tuple(lengths[letter] for letter in output)
@@ -191,18 +190,13 @@ def einsum_chunks(
 
         out = np.empty(shape, dtype=dtype)
 
-    def evaluate(start):
-        chunk = slice(start, start + chunksize)
+    def evaluate(chunk):
         sliced = [
             x[(slice(None),) * a + (chunk,)] if a >= 0 else x
             for x, a in zip(operands, axes)
         ]
         einsum(*sliced, out=out[(slice(None),) * axis + (chunk,)])
 
-    if workers > 1:
-        _threads.map_threaded(evaluate, starts)
-    else:
-        for start in starts:
-            evaluate(start)
+    map_chunks(evaluate, chunks, parallel=parallel)
 
     return out

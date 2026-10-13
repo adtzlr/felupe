@@ -21,6 +21,7 @@ from functools import cached_property, partial
 import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
 
+from ..math._chunks import CHUNKSIZE_BYTES
 from ..math._einsum import einsum_chunks
 from ._sparsity import sparsity_pattern
 
@@ -33,11 +34,6 @@ from ._sparsity import sparsity_pattern
 # number of operations. As the intermediate arrays are evaluated in chunks of cells,
 # their size is limited anyway.
 PATH_GRAD_GRAD = ["einsum_path", (0, 3), (0, 1), (0, 1)]
-
-# Approximate number of bytes of all arrays which are processed per chunk of cells.
-# The arrays of a chunk should fit into the CPU caches, about the size of the L2 cache
-# of one core. Smaller chunks increase the overhead of the einsum-calls per chunk.
-CHUNKSIZE_BYTES = 2**21
 
 
 class IntegralFormCartesian:

@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from numpy import array
 from tensortrax.math import base, einsum, log
 from tensortrax.math import sum as tsum

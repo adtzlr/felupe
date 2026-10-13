@@ -297,7 +297,6 @@ class Job:
         time = 0
 
         for j, step in enumerate(self.steps):
-
             context = Context(job=self, step=step)
             state = JobState(stepnumber=j, time=time)
             dispatcher.trigger("before_step", context, state)

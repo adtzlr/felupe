@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -711,7 +712,6 @@ def test_umat_strain():
     statevars = np.zeros((18 + 0, *F.shape[-2:]))
 
     for framework in ["small-strain", "total-lagrange", "co-rotational"]:
-
         umat = fem.MaterialStrain(
             material=fem.constitution.linear_elastic,
             λ=1,
@@ -723,7 +723,6 @@ def test_umat_strain():
         dsde = umat.hessian([F, statevars])
 
     with pytest.raises(NotImplementedError):
-
         umat = fem.MaterialStrain(
             material=fem.constitution.linear_elastic,
             λ=1,
@@ -1040,7 +1039,6 @@ def test_plot_title_kwargs(close_figs=True):
 
 
 if __name__ == "__main__":
-
     close_figs = True
 
     test_nh()

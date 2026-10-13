@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from tensortrax.math import abs as tensor_abs
 from tensortrax.math import array, exp, maximum, sqrt
 from tensortrax.math.special import try_stack

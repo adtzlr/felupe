@@ -129,7 +129,6 @@ class ProgressPlugin(Plugin):
         "Create one (Newton) or two (Job, Newton) progress bars, based on the context."
 
         if self.verbose == 1:
-
             if self.in_job:
                 total = sum([step.nsubsteps for step in context.job.steps])
                 self.progress_bar = self._tqdm(
@@ -200,7 +199,6 @@ class ProgressPlugin(Plugin):
             if state.fnorm > 0.0:
                 # initial log. ratio of first residual norm vs. tolerance norm
                 if self.decades is None:
-
                     # estimate convergence speed in log-scale
                     # (decades of residual reduction)
                     self.decades = max(1.0, np.log10(state.fnorm) - np.log10(state.tol))
@@ -281,7 +279,6 @@ class ProgressPlugin(Plugin):
         self.in_job = False
 
         if self.verbose == 1:
-
             if self.progress_bar is not None:
                 self.progress_bar.close()
 

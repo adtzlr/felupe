@@ -714,7 +714,6 @@ def newtonraphson(
 
     # iteration loop
     for iteration in range(maxiter):
-
         state.iteration = iteration
         state.alpha = None
         state.updated = False

@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 import pytest
 
 import felupe as fem

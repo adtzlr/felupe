@@ -84,7 +84,6 @@ class ViewField(ViewMesh):
         field_is_vector = field[0].dim == field.region.mesh.dim
 
         if hasattr(field.region, "dhdX") and field_is_vector:
-
             if project is None:
                 cell_data_from_field = {
                     "Deformation Gradient": field.evaluate.deformation_gradient()

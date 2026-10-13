@@ -139,7 +139,6 @@ class PointLoad:
             plotter = mesh.plot()
 
         if len(self.points) > 0:
-
             x = mesh.points
 
             if deformed:

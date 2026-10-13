@@ -28,7 +28,6 @@ ContactMultipliers = namedtuple("ContactMultipliers", ["normal", "tangential"])
 
 
 class ContactPlane:
-
     def plot(
         self,
         plotter=None,
@@ -75,7 +74,6 @@ class ContactPlane:
 
         axes = ["x", "y", "z"]
         for ax in np.where(np.array(sym, dtype=bool))[0]:
-
             invert = False
             if np.any(self.mesh.points[:, ax] < 0):
                 invert = True

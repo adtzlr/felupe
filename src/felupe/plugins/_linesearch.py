@@ -515,6 +515,6 @@ class LinesearchPlugin(Plugin):
             "Line search failed: no acceptable step length found after "
             f"{self.max_halvings} halvings in Newton iteration {1 + state.iteration} "
             f"(smallest step length "
-            f"{2.0 ** -self.max_halvings:1.3e}, last trial rejected by "
+            f"{2.0**-self.max_halvings:1.3e}, last trial rejected by "
             f"`{rejected_by}`)."
         )

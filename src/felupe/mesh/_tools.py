@@ -116,10 +116,8 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
         if np.isscalar(thickness):
             points_thickness = np.linspace(0, thickness, n)
         else:
-
             points_thickness = np.array(thickness)
             if cell_type_new == "hexahedron27":
-
                 points_thickness = np.vstack(
                     [
                         points_thickness,

@@ -295,6 +295,72 @@ def test_parallel_from_material():
     assert fem.ThreeFieldVariation(fem.NeoHooke(mu=1.0), parallel=True).parallel
 
 
+def test_chunks_tensortrax(monkeypatch):
+    "The tensortrax-materials are evaluated in chunks of cells by FElupe."
+
+    import tensortrax.math as tm
+
+    import felupe.math._threads as threads
+
+    monkeypatch.setattr(threads, "cpu_count", lambda: 2)
+
+    @fem.total_lagrange
+    def neo_hooke_total_lagrange(F, mu=1.0):
+        C = F.T @ F
+        return mu * tm.special.dev(tm.linalg.det(C) ** (-1 / 3) * C) @ tm.linalg.inv(C)
+
+    mesh = fem.Cube(n=4)  # 27 cells
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+    field[0].values[:] = np.random.default_rng(7).random(mesh.points.shape) / 20
+    F = field.extract()[0]
+    q, c = F.shape[-2:]
+
+    # the old inverse of the viscous right Cauchy-Green deformation tensor (identity)
+    Ci = np.broadcast_to(np.array([1.0, 0, 0, 1, 0, 1]).reshape(6, 1, 1), (6, q, c))
+
+    materials = [
+        (
+            lambda parallel: fem.Hyperelastic(fem.neo_hooke, mu=1.0, parallel=parallel),
+            [F, np.zeros((0, q, c))],
+        ),
+        (
+            lambda parallel: fem.Hyperelastic(
+                fem.constitution.finite_strain_viscoelastic,
+                nstatevars=6,
+                mu=1.0,
+                eta=1.0,
+                dtime=1.0,
+                parallel=parallel,
+            ),
+            [F, Ci.copy()],
+        ),
+        (
+            lambda parallel: fem.MaterialAD(
+                neo_hooke_total_lagrange, mu=1.0, parallel=parallel
+            ),
+            [F, np.zeros((0, q, c))],
+        ),
+    ]
+
+    for Material, x in materials:
+        whole = Material(parallel=False)
+        whole.chunksize = None
+
+        for parallel in [False, True]:
+            umat = Material(parallel=parallel)
+            umat.chunksize = 2 * q  # chunks of two cells
+
+            for method in ["gradient", "hessian"]:
+                expected = getattr(whole, method)(x)
+                res = getattr(umat, method)(x)
+
+                for r, e in zip(res, expected):
+                    if e is None:
+                        assert r is None
+                    else:
+                        assert np.allclose(r, e)
+
+
 def test_chunks_not_implemented():
     "A material must implement either the public or the chunked methods."
 

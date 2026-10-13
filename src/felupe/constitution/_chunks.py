@@ -90,13 +90,16 @@ def evaluate_chunks(fun, x, *args, chunksize=8192, parallel=False, out=None, **k
 
     starts = range(0, ncells, cells)
 
-    # evaluate the first chunk and create the output arrays of the results per cell
-    first = slice(0, cells)
+    # evaluate the first chunk (serial) or a probe of two cells (parallel) to create the
+    # output arrays of the results per cell. A first chunk in serial would limit the
+    # speedup of the threads, e.g. by about 12 % for eight chunks and two threads.
+    first = slice(0, 2 if parallel else cells)
+    length = first.stop
     res = list(fun(chunk_of(x, first), *args, **kwargs))
 
     sliced = []
     for i, r in enumerate(res):
-        if per_cell(r, cells):
+        if per_cell(r, length):
             if i == 0 and out is not None:
                 result = out
             else:
@@ -114,7 +117,7 @@ def evaluate_chunks(fun, x, *args, chunksize=8192, parallel=False, out=None, **k
             res[i][..., chunk] = results[i]
 
     if parallel:
-        map_threaded(evaluate, starts[1:])
+        map_threaded(evaluate, starts)
     else:
         for start in starts[1:]:
             evaluate(start)

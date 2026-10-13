@@ -20,6 +20,7 @@ import numpy as np
 import tensortrax as tr
 
 from ...math import cdya_ik, dot, transpose
+from .._base import ConstitutiveMaterial
 from .._material import Material
 
 
@@ -41,8 +42,9 @@ class Hyperelastic(Material):
     nstatevars : int, optional
         Number of state variables (default is 0).
     parallel : bool, optional
-        A flag to invoke threaded strain energy density function evaluations (default
-        is False). May introduce additional overhead for small-sized problems.
+        A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
+        threads (default is False). May introduce additional overhead for small-sized
+        problems.
     **kwargs : dict, optional
         Optional keyword-arguments for the strain energy density function.
 
@@ -171,6 +173,18 @@ class Hyperelastic(Material):
             **keyword_args,
         )
 
+    # evaluate the gradient and the hessian in chunks of cells by FElupe (instead of
+    # the generic material): also the conversions of the stresses and the elasticity
+    # tensors are evaluated in chunks and the chunks are evaluated by FElupe's threads
+    gradient = ConstitutiveMaterial.gradient
+    hessian = ConstitutiveMaterial.hessian
+
+    def _gradient(self, x):
+        return self._stress(x, **self.kwargs)
+
+    def _hessian(self, x):
+        return self._elasticity(x, **self.kwargs)
+
     def _stress(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])
 
@@ -180,13 +194,11 @@ class Hyperelastic(Material):
             statevars = ()
 
         C = dot(transpose(F), F)
-        dWdC = tr.gradient(self.fun, wrt=0, ntrax=2, parallel=self.parallel, sym=True)(
-            C, *statevars, **kwargs
-        )
+        dWdC = tr.gradient(self.fun, wrt=0, ntrax=2, sym=True)(C, *statevars, **kwargs)
         if self.nstatevars > 0:
-            statevars_new = tr.function(
-                self.fun_statevars, wrt=0, ntrax=2, parallel=self.parallel
-            )(C, *statevars, **kwargs)
+            statevars_new = tr.function(self.fun_statevars, wrt=0, ntrax=2)(
+                C, *statevars, **kwargs
+            )
         else:
             statevars_new = None
         return [dot(F, 2 * dWdC), statevars_new]
@@ -201,7 +213,7 @@ class Hyperelastic(Material):
 
         C = dot(transpose(F), F)
         d2WdCdC, dWdC, W = tr.hessian(
-            self.fun, wrt=0, ntrax=2, full_output=True, parallel=self.parallel, sym=True
+            self.fun, wrt=0, ntrax=2, full_output=True, sym=True
         )(C, *statevars, **kwargs)
         A = 4 * np.einsum(
             "iI...,kK...,IJKL...->iJkL...", F, F, np.ascontiguousarray(d2WdCdC)

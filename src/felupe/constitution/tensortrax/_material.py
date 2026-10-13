@@ -19,6 +19,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 import tensortrax as tr
 
+from .._base import ConstitutiveMaterial
 from .._material import Material as MaterialDefault
 
 
@@ -40,8 +41,9 @@ class Material(MaterialDefault):
     nstatevars : int, optional
         Number of state variables (default is 0).
     parallel : bool, optional
-        A flag to invoke threaded gradient of strain energy density function evaluations
-        (default is False). May introduce additional overhead for small-sized problems.
+        A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
+        threads (default is False). May introduce additional overhead for small-sized
+        problems.
     **kwargs : dict, optional
         Optional keyword-arguments for the gradient of the strain energy density
         function.
@@ -145,6 +147,18 @@ class Material(MaterialDefault):
             **kwargs,
         )
 
+    # evaluate the gradient and the hessian in chunks of cells by FElupe (instead of
+    # the generic material): also the conversions of the stresses and the elasticity
+    # tensors are evaluated in chunks and the chunks are evaluated by FElupe's threads
+    gradient = ConstitutiveMaterial.gradient
+    hessian = ConstitutiveMaterial.hessian
+
+    def _gradient(self, x):
+        return self._stress(x, **self.kwargs)
+
+    def _hessian(self, x):
+        return self._elasticity(x, **self.kwargs)
+
     def _stress(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])
 
@@ -153,13 +167,11 @@ class Material(MaterialDefault):
         else:
             statevars = ()
 
-        dWdF = tr.function(self.fun, wrt=0, ntrax=2, parallel=self.parallel)(
-            F, *statevars, **kwargs
-        )
+        dWdF = tr.function(self.fun, wrt=0, ntrax=2)(F, *statevars, **kwargs)
         if self.nstatevars > 0:
-            statevars_new = tr.function(
-                self.fun_statevars, wrt=0, ntrax=2, parallel=self.parallel
-            )(F, *statevars, **kwargs)
+            statevars_new = tr.function(self.fun_statevars, wrt=0, ntrax=2)(
+                F, *statevars, **kwargs
+            )
         else:
             statevars_new = None
         return [dWdF, statevars_new]
@@ -172,7 +184,5 @@ class Material(MaterialDefault):
         else:
             statevars = ()
 
-        d2WdFdF = tr.jacobian(self.fun, wrt=0, ntrax=2, parallel=self.parallel)(
-            F, *statevars, **kwargs
-        )
+        d2WdFdF = tr.jacobian(self.fun, wrt=0, ntrax=2)(F, *statevars, **kwargs)
         return [d2WdFdF]

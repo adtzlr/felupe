@@ -64,6 +64,7 @@ Mechanics
 
 .. autosummary::
 
+   mechanics.Item
    mechanics.StateNearlyIncompressible
    mechanics.ContactRigidBase
    mechanics.Assemble
@@ -220,6 +221,10 @@ Mechanics
    :members:
    :undoc-members:
    :inherited-members:
+
+.. autoclass:: felupe.mechanics.Item
+   :members:
+   :undoc-members:
 
 .. autoclass:: felupe.mechanics.StateNearlyIncompressible
    :members:

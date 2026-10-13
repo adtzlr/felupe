@@ -2,7 +2,9 @@ Create Custom Items
 ~~~~~~~~~~~~~~~~~~~
 Items are supported to be used in a :class:`~felupe.Step` and in
 :func:`~felupe.newtonraphson`. They provide methods to assemble a vector and a sparse
-matrix. An item has to be created as a class which takes a
+matrix. The interface of an item, i.e. the required attributes ``field``, ``assemble``
+and ``results`` and the optional methods for further features, is described by
+:class:`~felupe.mechanics.Item`. An item has to be created as a class which takes a
 :class:`~felupe.FieldContainer` as input argument. In its ``__init__(self, field)``
 method, the helpers :class:`~felupe.mechanics.Assemble` and
 :class:`~felupe.mechanics.Results` have to be evaluated and added as attributes.
@@ -119,6 +121,9 @@ This item is now added to a basic script.
 
     solid = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=2), field=field)
     my_item = MyItem(field=field, my_parameter=1.0, my_other_parameter=2.0)
+
+    # the item provides the interface of an item
+    assert isinstance(my_item, fem.mechanics.Item)
 
     table = fem.math.linsteps([0.0, 1.0], num=10)
 

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Add `mechanics.Item`, a runtime-checkable protocol which describes the interface of an item for a `Step`, a `Job` and `newtonraphson()`: the field container `field`, the methods `assemble.vector(field, parallel)` and `assemble.matrix(parallel)` with the scale factor `assemble.multiplier` and the results `results` with `results.update_statevars()`. The optional methods of an item, e.g. `update(value)` for a ramp in a `Step` and `checkpoint()` / `restore(checkpoint)` for the `CutbackPlugin`, are documented. Every object with these attributes is an item, i.e. `isinstance(item, mechanics.Item)` is True for all built-in items and for custom items, which are not derived from `mechanics.Item`.
+
 ### Fixed
 - Fix `ConstitutiveMaterial.optimize()` for a `MaterialStrain`. The flag `tangent` is not stored in the keyword-arguments `MaterialStrain.kwargs` anymore, it is passed to the material function on each evaluation (`tangent=False` for the gradient and `tangent=True` for the hessian, unchanged). Before, `tangent` was optimized like a material parameter, which failed for its initial value `None`. A given keyword-argument `tangent` is ignored (unchanged).
 

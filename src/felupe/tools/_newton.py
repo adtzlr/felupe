@@ -497,7 +497,8 @@ def newtonraphson(
         Tolerance value to check if the function has converged (default is 1.490e-8).
     items : list or None, optional
         List with items which provide methods for assembly, e.g. like
-        :class:`felupe.SolidBody` (default is None).
+        :class:`felupe.SolidBody` (default is None). See
+        :class:`~felupe.mechanics.Item` for the interface of an item.
     dof1 : ndarray or None, optional
         1d-array of int with all active degrees of freedom (default is None).
     dof0 : ndarray or None, optional

@@ -251,15 +251,17 @@ class MaterialStrain(ConstitutiveMaterial):
 
         return strain_old, dstrain, stress_old, statevars_old, rotation
 
-    def gradient(self, x):
+    def _gradient(self, x):
         strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
-        self.kwargs["tangent"] = False
+
+        # the chunks of cells may be evaluated by threads: don't change the kwargs
+        kwargs = {**self.kwargs, "tangent": False}
 
         # unpack deformation gradient F = dx/dX
         dxdX, statevars = x
 
         dsde, stress_new, statevars_new_list = self.material(
-            dstrain, strain_old, stress_old, statevars_old, **self.kwargs
+            dstrain, strain_old, stress_old, statevars_old, **kwargs
         )
 
         strain_new_1d = (strain_old + dstrain).reshape(-1, *strain_old.shape[2:])
@@ -286,15 +288,17 @@ class MaterialStrain(ConstitutiveMaterial):
 
         return [stress_new, statevars_new]
 
-    def hessian(self, x):
+    def _hessian(self, x):
         strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
-        self.kwargs["tangent"] = True
+
+        # the chunks of cells may be evaluated by threads: don't change the kwargs
+        kwargs = {**self.kwargs, "tangent": True}
 
         # unpack deformation gradient F = dx/dX
         dxdX, statevars = x
 
         dsde, stress_new, statevars_new_list = self.material(
-            dstrain, strain_old, stress_old, statevars_old, **self.kwargs
+            dstrain, strain_old, stress_old, statevars_old, **kwargs
         )
         dsde = np.ascontiguousarray(dsde)
 

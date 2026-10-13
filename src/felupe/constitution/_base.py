@@ -722,6 +722,9 @@ class CompositeMaterial(ConstitutiveMaterial):
 
     Notes
     -----
+    The gradients and the hessians are evaluated in chunks of cells, by a pool of
+    threads if any of the materials is parallel.
+
     ..  warning::
         Do not merge two constitutive materials with the same keys of material
         parameters. In this case, the values of these material parameters are taken from
@@ -745,14 +748,17 @@ class CompositeMaterial(ConstitutiveMaterial):
         self.kwargs = {**other_material.kwargs, **material.kwargs}
         self.x = material.x
 
-    def gradient(self, x, **kwargs):
+        # evaluate the chunks of cells in parallel, if any of the materials is parallel
+        self.parallel = any(getattr(m, "parallel", False) for m in self.materials)
+
+    def _gradient(self, x, **kwargs):
         gradients = [material.gradient(x, **kwargs) for material in self.materials]
         nfields = max(1, len(x) - 1)
         P = [np.sum([grad[i] for grad in gradients], axis=0) for i in range(nfields)]
         statevars_new = gradients[0][-1]
         return [*P, statevars_new]
 
-    def hessian(self, x, **kwargs):
+    def _hessian(self, x, **kwargs):
         hessians = [material.hessian(x, **kwargs) for material in self.materials]
         nfields = max(1, len(x) - 1)
         return [np.sum([hess[i] for hess in hessians], axis=0) for i in range(nfields)]

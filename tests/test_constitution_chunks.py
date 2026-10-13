@@ -185,6 +185,116 @@ def test_chunks_solidbody():
     assert solid.results.hessian is elasticity
 
 
+def composed_materials(parallel):
+    "Return a list of composed materials (with inputs) for the evaluation in chunks."
+
+    mesh = fem.Cube(n=4)  # 27 cells
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldsMixed(region, n=3)
+
+    rng = np.random.default_rng(6)
+    field[0].values[:] = rng.random(mesh.points.shape) / 20
+    F, p, J = field.extract()
+    p = rng.random(p.shape) / 10
+    J = 1 + rng.random(J.shape) / 10
+    q, c = F.shape[-2:]
+
+    nh = dict(mu=1.0, bulk=2.0)
+    composite = fem.NeoHooke(mu=1.0) & fem.Volumetric(bulk=2.0)
+    composite.parallel = parallel
+    strain = fem.MaterialStrain(
+        material=fem.constitution.linear_elastic_plastic_isotropic_hardening,
+        λ=1.0,
+        μ=1.0,
+        σy=0.01,
+        K=0.1,
+        statevars=(1, (3, 3)),
+    )
+    strain.parallel = parallel
+
+    return [
+        (
+            fem.ThreeFieldVariation(fem.NeoHooke(**nh), parallel=parallel),
+            [F, p, J, np.zeros((0, q, c))],
+        ),
+        (
+            fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=2.0, parallel=parallel),
+            [F, p, J, np.zeros((0, q, c))],
+        ),
+        (
+            fem.ThirdMediumContactMixed(
+                fem.NeoHooke(**nh), gamma=0.1, alpha_r=0.2, p_r=0.3, parallel=parallel
+            ),
+            [F, rng.random((9, q, c)), rng.random((9, 3, q, c)), np.zeros((0, q, c))],
+        ),
+        (
+            fem.OgdenRoxburgh(
+                fem.NeoHooke(**nh), r=3, m=1, beta=0.1, parallel=parallel
+            ),
+            [F, rng.random((1, q, c)) / 100],
+        ),
+        (composite, [F, np.zeros((0, q, c))]),
+        (strain, [F, rng.random((28, q, c)) / 100]),
+    ]
+
+
+def test_chunks_composed_materials(monkeypatch):
+    "Composed materials in chunks are equal to the evaluation of all cells at once."
+
+    import felupe.math._threads as threads
+
+    monkeypatch.setattr(threads, "cpu_count", lambda: 2)
+
+    for parallel in [False, True]:
+        wholes = composed_materials(parallel=False)
+        chunked = composed_materials(parallel=parallel)
+
+        for (whole, x), (umat, _) in zip(wholes, chunked):
+            whole.chunksize = None
+            umat.chunksize = 2 * x[0].shape[-2]  # chunks of two cells
+
+            for method in ["gradient", "hessian"]:
+                expected = getattr(whole, method)(x)
+                res = getattr(umat, method)(x)
+
+                assert len(res) == len(expected)
+
+                for r, e in zip(res, expected):
+                    if e is None:
+                        assert r is None
+                    else:
+                        assert r.shape == e.shape
+                        assert np.allclose(r, e)
+
+    # the keyword-arguments of a strain-based material are not changed
+    strain, x = composed_materials(parallel=False)[-1]
+    strain.gradient(x)
+    strain.hessian(x)
+    assert strain.kwargs["tangent"] is None
+
+
+def test_parallel_from_material():
+    "Composed materials take the flag for threads from the material by default."
+
+    for parallel in [False, True]:
+        nh = fem.NeoHooke(mu=1.0, parallel=parallel)
+
+        for umat in [
+            fem.ThreeFieldVariation(nh),
+            fem.NearlyIncompressible(nh, bulk=2.0),
+            fem.ThirdMediumContactMixed(nh, gamma=0.1, alpha_r=0.2, p_r=0.3),
+            fem.OgdenRoxburgh(nh, r=3, m=1, beta=0.1),
+            nh & fem.Volumetric(bulk=2.0),
+            fem.Volumetric(bulk=2.0) & nh,
+        ]:
+            assert umat.parallel is parallel
+
+    # the flag is given explicitly
+    nh = fem.NeoHooke(mu=1.0, parallel=True)
+    assert fem.ThreeFieldVariation(nh, parallel=False).parallel is False
+    assert fem.ThreeFieldVariation(fem.NeoHooke(mu=1.0), parallel=True).parallel
+
+
 def test_chunks_not_implemented():
     "A material must implement either the public or the chunked methods."
 

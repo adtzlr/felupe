@@ -464,7 +464,7 @@ class ConstitutiveMaterial:
             >>>
             >>> ux = np.linspace(λ.min(), λ.max(), num=50)
             >>> ax = umat_new.plot(incompressible=True, ux=ux, bx=None, ps=None)
-            >>> ax.plot(λ, P, "C0x")
+            >>> lines = ax.plot(λ, P, "C0x")
 
         See Also
         --------

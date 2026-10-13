@@ -66,11 +66,11 @@ def total_lagrange(material):
     >>> import jax.numpy as jnp
     >>>
     >>> @mat.total_lagrange
-    >>> def neo_hooke_total_lagrange(F, mu=1):
-    >>>     C = F.T @ F
-    >>>     dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
-    >>>     S = mu * dev(jnp.linalg.det(C)**(-1/3) * C) @ jnp.linalg.inv(C)
-    >>>     return S
+    ... def neo_hooke_total_lagrange(F, mu=1):
+    ...     C = F.T @ F
+    ...     dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+    ...     S = mu * dev(jnp.linalg.det(C)**(-1/3) * C) @ jnp.linalg.inv(C)
+    ...     return S
     >>>
     >>> umat = mat.Material(neo_hooke_total_lagrange, mu=1)
 

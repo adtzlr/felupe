@@ -108,16 +108,20 @@ class PlotMaterial:
             if hasattr(self.umat, "kwargs"):
                 p = []
                 for key, value in self.umat.kwargs.items():
-                    if hasattr(value, "__len__"):
-                        val = " ".join([f"{v:.3g}" for v in value])
-                        if len(value) > 1:
+                    if value is None:
+                        # optional arguments which are not set are not shown
+                        continue
+                    elif isinstance(value, str):
+                        val = f'"{value}"'
+                    elif callable(value):
+                        name = [v.title() for v in value.__name__.split("_")]
+                        val = f'"{" ".join(name)}"'
+                    elif np.ndim(value) > 0:
+                        val = " ".join([f"{v:.3g}" for v in np.ravel(value)])
+                        if np.size(value) > 1:
                             val = f"[{val}]"
                     else:
-                        if callable(value):
-                            name = [v.title() for v in value.__name__.split("_")]
-                            val = f'"{" ".join(name)}"'
-                        else:
-                            val = f"{value:.3g}"
+                        val = f"{value:.3g}"
                     p.append(f"{key}={val}")
                 parameters = ", ".join(p)
 

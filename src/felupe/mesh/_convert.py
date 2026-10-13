@@ -53,7 +53,7 @@ def cell_types():
         >>>
         >>> cell_types_pyvista_to_felupe = dict(cell_types_array[:, [1, 0]])
         >>> cell_types_pyvista_to_felupe[pv.CellType.LINE]
-        "line"
+        'line'
     """
 
     import pyvista as pv

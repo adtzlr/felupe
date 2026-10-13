@@ -70,7 +70,7 @@ class MeshContainer:
 
     The cells array of the second mesh starts with an offset
 
-    >>> mesh.meshes[1].cells.min()
+    >>> print(mesh.meshes[1].cells.min())
     27
 
     identical to the number of points from the first mesh.

@@ -43,8 +43,8 @@ class BasisArray(np.ndarray):
         >>> import felupe as fem
         >>>
         >>> x = fem.assembly.expression.BasisArray(
-        >>>     np.ones(3), grad=np.zeros((3, 3)), hess=np.zeros((3, 3, 3))
-        >>> )
+        ...     np.ones(3), grad=np.zeros((3, 3)), hess=np.zeros((3, 3, 3))
+        ... )
         >>> x
         BasisArray([1., 1., 1.])
 
@@ -133,7 +133,7 @@ class BasisField:
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Rectangle()
-        >>> region = fem.RegionQuad(mesh)
+        >>> region = fem.RegionQuad(mesh, hess=True)
         >>> displacement = fem.Field(region, dim=2)
         >>>
         >>> bf = fem.assembly.expression.BasisField(displacement)
@@ -204,13 +204,13 @@ class Basis:
         >>> import felupe as fem
         >>>
         >>> mesh = fem.Rectangle()
-        >>> region = fem.RegionQuad(mesh)
+        >>> region = fem.RegionQuad(mesh, hess=True)
         >>> displacement = fem.Field(region, dim=2)
         >>> field = fem.FieldContainer([displacement])
         >>>
         >>> bases = fem.assembly.expression.Basis(field)
         >>> len(bases[:])
-        >>> 1
+        1
 
         >>> bases[0].basis.shape
         (4, 2, 2, 4, 1)

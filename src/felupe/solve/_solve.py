@@ -76,9 +76,8 @@ def partition(v, K, dof1, dof0, r=None):
         >>> K = solid.assemble.matrix()
         >>> r = solid.assemble.vector()
         >>>
-        >>> dof0 = loadcase["dof0"]
-        >>> dof1 = loadcase["dof1"]
-        >>> ext0 = loadcase["ext0"]
+        >>> dof0, dof1 = fem.dof.partition(field, boundaries)
+        >>> ext0 = fem.dof.apply(field, boundaries, dof0=dof0)
         >>>
         >>> system = fem.solve.partition(field, K, dof1, dof0, r)
 
@@ -138,9 +137,8 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=spsolve):
         >>> K = solid.assemble.matrix()
         >>> r = solid.assemble.vector()
         >>>
-        >>> dof0 = loadcase["dof0"]
-        >>> dof1 = loadcase["dof1"]
-        >>> ext0 = loadcase["ext0"]
+        >>> dof0, dof1 = fem.dof.partition(field, boundaries)
+        >>> ext0 = fem.dof.apply(field, boundaries, dof0=dof0)
         >>>
         >>> system = fem.solve.partition(field, K, dof1, dof0, r)
         >>> field += fem.solve.solve(*system, ext0=ext0)

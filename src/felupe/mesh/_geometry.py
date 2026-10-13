@@ -307,9 +307,9 @@ class RectangleArbitraryOrderQuad(Rectangle):
         >>>
         >>> mesh = fem.mesh.RectangleArbitraryOrderQuad(order=5).add_runouts()
         >>> mesh.plot(
-        >>>     nonlinear_subdivision=4,
-        >>>     plotter=mesh.plot(style="points", color="black"),
-        >>> ).show()
+        ...     nonlinear_subdivision=4,
+        ...     plotter=mesh.plot(style="points", color="black"),
+        ... ).show()
     """
 
     def __init__(self, a=(0.0, 0.0), b=(1.0, 1.0), order=2):
@@ -333,9 +333,9 @@ class CubeArbitraryOrderHexahedron(Cube):
         >>>
         >>> mesh = fem.mesh.CubeArbitraryOrderHexahedron(order=5).add_runouts()
         >>> mesh.plot(
-        >>>     nonlinear_subdivision=4,
-        >>>     plotter=mesh.plot(style="points", color="black"),
-        >>> ).show()
+        ...     nonlinear_subdivision=4,
+        ...     plotter=mesh.plot(style="points", color="black"),
+        ... ).show()
     """
 
     def __init__(self, a=(0.0, 0.0, 0.0), b=(1.0, 1.0, 1.0), order=2):
@@ -499,44 +499,23 @@ class Triangle(Mesh):
 
     >>> mesh
     <felupe Mesh object>
-      Number of points: 19
+      Number of points: 7
       Number of cells:
-        quad: 12
+        quad: 3
 
     >>> mesh.points
-    array([[0.1       , 0.9       ],
-           [0.15      , 0.725     ],
-           [0.2       , 0.55      ],
-           [0.25      , 0.375     ],
-           [0.3       , 0.2       ],
-           [0.36666667, 0.475     ],
-           [0.37083333, 0.5875    ],
-           [0.375     , 0.7       ],
-           [0.44583333, 0.325     ],
-           [0.525     , 0.175     ],
-           [0.53333333, 0.4       ],
-           [0.59166667, 0.45      ],
-           [0.64166667, 0.275     ],
-           [0.65      , 0.5       ],
-           [0.75      , 0.15      ],
-           [0.78333333, 0.2875    ],
-           [0.925     , 0.3       ],
-           [0.975     , 0.125     ],
-           [1.2       , 0.1       ]])
+    array([[-0.1 ,  0.2 ],
+           [ 0.  ,  0.55],
+           [ 0.1 ,  0.9 ],
+           [ 0.4 ,  0.4 ],
+           [ 0.55,  0.15],
+           [ 0.65,  0.5 ],
+           [ 1.2 ,  0.1 ]])
 
     >>> mesh.cells
-    array([[14, 12,  8,  9],
-           [12, 10,  5,  8],
-           [ 9,  8,  3,  4],
-           [ 8,  5,  2,  3],
-           [18, 16, 15, 17],
-           [16, 13, 11, 15],
-           [17, 15, 12, 14],
-           [15, 11, 10, 12],
-           [10, 11,  6,  5],
-           [11, 13,  7,  6],
-           [ 5,  6,  1,  2],
-           [ 6,  7,  0,  1]])
+    array([[4, 3, 1, 0],
+           [6, 5, 3, 4],
+           [3, 5, 2, 1]])
     """
 
     def __init__(

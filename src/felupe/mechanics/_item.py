@@ -158,7 +158,8 @@ class FormItem:
     ...         return ddot(grad(du), bilinearform.d2W[2]) * DJ[0]
     ...
     ...     def a22(dp, Dp, **kwargs):
-    ...         return dp[0] * bilinearform.d2W[3] * Dp[0]
+    ...         # the second partial derivative w.r.t. the pressure is zero (None)
+    ...         return 0 * dp[0] * Dp[0]
     ...
     ...     def a23(dp, DJ, **kwargs):
     ...         return dp[0] * bilinearform.d2W[4] * DJ[0]

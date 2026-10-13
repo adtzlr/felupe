@@ -400,7 +400,7 @@ class RegionBoundary(Region):
         >>> normal = np.insert(edges.normals, len(edges.normals), 0, axis=0)
         >>>
         >>> plotter = pv.Plotter()
-        ... actor = plotter.add_arrows(
+        >>> actor = plotter.add_arrows(
         ...     start.reshape(3, -1).T,
         ...     direction.reshape(3, -1).T,
         ...     show_scalar_bar=False,
@@ -462,7 +462,7 @@ class RegionBoundary(Region):
         ...     color="blue",
         ...     label="normals",
         ... )
-        >>> plotter.add_legend()
+        >>> actor = plotter.add_legend()
         >>> mesh.plot(plotter=plotter, style="wireframe").show()
 
     This examples shows how to evaluate the strain on the faces of the boundary region.

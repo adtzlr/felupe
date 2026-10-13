@@ -104,7 +104,9 @@ class ConstitutiveMaterial:
     arrays. The number of evaluation points (quadrature points times cells) per chunk
     is given by the attribute ``chunksize`` (default is 8192, None evaluates all cells
     at once). The chunks are evaluated by a pool of threads if the attribute
-    ``parallel`` is True (default is False). Optional output arrays (``out``) are
+    ``parallel`` is True (default is False). In this case, ``_gradient(x)`` and
+    ``_hessian(x)`` must be thread-safe, i.e. intermediate results must be local
+    variables (not attributes of the material). Optional output arrays (``out``) are
     handled by :meth:`gradient` and :meth:`hessian`.
 
     ..  code-block::

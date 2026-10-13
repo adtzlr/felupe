@@ -11,6 +11,7 @@ How-To Guides
    howto/mixed
    howto/axi
    howto/solvers
+   howto/parallel
    howto/composite
    howto/solid
    howto/umat

@@ -1006,7 +1006,20 @@ def test_item_protocol():
         specific_heat_capacity=1.0,
         thermal_conductivity=1.0,
     )
-    items.extend([thermal, fem.thermal.TimeStep(items=[thermal])])
+    temperature_boundary = fem.FieldContainer([fem.Field(boundary, dim=1)])
+    items.extend(
+        [
+            thermal,
+            fem.thermal.TimeStep(items=[thermal]),
+            fem.thermal.SolidBodyHeatFlux(temperature_boundary, heat_flux=1.0),
+            fem.thermal.SolidBodySurfaceHeatTransfer(
+                temperature_boundary, coefficient=1.0, temperature=1.0
+            ),
+            fem.thermal.SolidBodySurfaceRadiation(
+                temperature_boundary, emissivity=0.5, temperature=1.0
+            ),
+        ]
+    )
 
     line = fem.mesh.Line(n=2)
     line.update(points=np.pad(line.points, ((0, 0), (0, 2))))

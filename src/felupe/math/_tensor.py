@@ -17,13 +17,11 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from collections import namedtuple
+from functools import partial
 
 import numpy as np
 
-try:
-    from einsumt import einsumt
-except ModuleNotFoundError:
-    from numpy import einsum as einsumt
+from ._einsum import einsum_chunks
 
 
 def identity(A=None, dim=None, shape=None, dtype=None):
@@ -1020,10 +1018,7 @@ def cdya_ik(A, B, parallel=False, **kwargs):
     felupe.math.cdya_il : il-crossed dyadic product of two second-order tensors.
 
     """
-    if parallel:
-        einsum = einsumt
-    else:
-        einsum = np.einsum
+    einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
     return einsum("ij...,kl...->ikjl...", A, B, **kwargs)
 
 
@@ -1088,10 +1083,7 @@ def cdya_il(A, B, parallel=False, **kwargs):
     felupe.math.cdya : Crossed dyadic product of two second-order tensors.
 
     """
-    if parallel:
-        einsum = einsumt
-    else:
-        einsum = np.einsum
+    einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
     return einsum("ij...,kl...->ilkj...", A, B, **kwargs)
 
 
@@ -1218,10 +1210,7 @@ def cross(a, b):
 def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
     "Dot-product of A and B with inputs of n trailing axes.."
 
-    if parallel:
-        einsum = einsumt
-    else:
-        einsum = np.einsum
+    einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
 
     if mode == (2, 2):
         return einsum("ik...,kj...->ij...", A, B, **kwargs)
@@ -1352,10 +1341,7 @@ def ddot(A, B, mode=(2, 2), parallel=False, **kwargs):
 
     """
 
-    if parallel:
-        einsum = einsumt
-    else:
-        einsum = np.einsum
+    einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
 
     if mode == (2, 2):
         return einsum("ij...,ij...->...", A, B, **kwargs)
@@ -1411,10 +1397,7 @@ def dddot(A, B, mode=(3, 3), parallel=False, **kwargs):
         c &= A_{ijk} : B_{ijk}
     """
 
-    if parallel:
-        einsum = einsumt
-    else:
-        einsum = np.einsum
+    einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
 
     if mode == (3, 3):
         return einsum("ijk...,ijk...->...", A, B, **kwargs)

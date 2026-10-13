@@ -19,8 +19,12 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from concurrent.futures import ThreadPoolExecutor
 from string import ascii_letters
+from threading import Lock
 
 import numpy as np
+
+_pool = None
+_pool_lock = Lock()
 
 
 def cpu_count():
@@ -36,6 +40,33 @@ def cpu_count():
         return len(os.sched_getaffinity(0))
 
     return os.cpu_count() or 1
+
+
+def thread_pool():
+    """Return the pool of threads, one per usable CPU. The pool is created on its
+    first use and re-used afterwards, because the start of new threads takes longer
+    than the contractions of small arrays."""
+
+    global _pool
+
+    with _pool_lock:
+        if _pool is None:
+            _pool = ThreadPoolExecutor(max_workers=cpu_count())
+
+    return _pool
+
+
+def _reset_thread_pool():
+    "A forked child process has no threads, i.e. the pool of the parent is unusable."
+
+    global _pool, _pool_lock
+
+    _pool = None
+    _pool_lock = Lock()
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_reset_thread_pool)
 
 
 def _parse_subscripts(subscripts, operands):
@@ -82,6 +113,7 @@ def einsum_chunks(
     chunksize=None,
     optimize=False,
     parallel=False,
+    **kwargs,
 ):
     """Evaluate :func:`numpy.einsum` in chunks along a free index of the output and
     write the results into the output array.
@@ -101,7 +133,8 @@ def einsum_chunks(
         The subscript (a single letter) of the output along which the operands are
         divided into chunks. If None, the last axis of the output is used, i.e. the
         cells by FElupe's convention (default is None). Axes of the ellipsis are not
-        available by a letter.
+        available by a letter. If None and the output has no axes or its last index
+        repeats within an operand, the operands are evaluated as a single chunk.
     chunksize : int or None, optional
         The number of items along ``idx`` per chunk. If None, the items are divided
         into one chunk per thread. If None and ``parallel`` is False, the operands are
@@ -110,8 +143,11 @@ def einsum_chunks(
         The contraction path, passed to :func:`numpy.einsum` for each chunk (default
         is False).
     parallel : bool, optional
-        Flag to evaluate the chunks by a pool of threads, one per usable CPU and at
-        most one per chunk (default is False).
+        Flag to evaluate the chunks by a (re-used) pool of threads, one per usable CPU
+        (default is False).
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`, passed for each chunk,
+        e.g. ``dtype``. The output array of more chunks is created with ``dtype``.
 
     Returns
     -------
@@ -139,14 +175,19 @@ def einsum_chunks(
     """
 
     if not parallel and chunksize is None:  # a single chunk
-        return np.einsum(subscripts, *operands, out=out, optimize=optimize)
+        return np.einsum(subscripts, *operands, out=out, optimize=optimize, **kwargs)
+
+    def einsum(*operands, out=None):
+        return np.einsum(subscripts, *operands, out=out, optimize=optimize, **kwargs)
 
     operands = [np.asarray(x) for x in operands]
     inputs, output = _parse_subscripts(subscripts, operands)
 
     if idx is None:
-        if len(output) == 0:
-            raise ValueError("The output of a full contraction can't be divided.")
+        # the last index of the output, if it may be divided into chunks
+        if len(output) == 0 or any(s.count(output[-1]) > 1 for s in inputs):
+            return einsum(*operands, out=out)
+
         idx = output[-1]
 
     if len(idx) != 1 or idx not in output:
@@ -186,10 +227,15 @@ def einsum_chunks(
 
     if out is None:
         if len(starts) <= 1:
-            return np.einsum(subscripts, *operands, optimize=optimize)
+            return einsum(*operands)
 
         shape = tuple(lengths[letter] for letter in output)
-        out = np.empty(shape, dtype=np.result_type(*operands))
+        dtype = kwargs.get("dtype")
+
+        if dtype is None:
+            dtype = np.result_type(*operands)
+
+        out = np.empty(shape, dtype=dtype)
 
     def evaluate(start):
         chunk = slice(start, start + chunksize)
@@ -197,12 +243,10 @@ def einsum_chunks(
             x[(slice(None),) * a + (chunk,)] if a >= 0 else x
             for x, a in zip(operands, axes)
         ]
-        res = out[(slice(None),) * axis + (chunk,)]
-        np.einsum(subscripts, *sliced, optimize=optimize, out=res)
+        einsum(*sliced, out=out[(slice(None),) * axis + (chunk,)])
 
     if workers > 1:
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            list(pool.map(evaluate, starts))
+        list(thread_pool().map(evaluate, starts))
     else:
         for start in starts:
             evaluate(start)

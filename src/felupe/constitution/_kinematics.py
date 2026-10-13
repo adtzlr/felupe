@@ -16,14 +16,12 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from functools import partial
+
 import numpy as np
 
-try:
-    from einsumt import einsumt
-except ModuleNotFoundError:
-    from numpy import einsum as einsumt
-
 from ..math import cdya_ik, cdya_il, det, dot, dya, identity, inv, transpose
+from ..math._einsum import einsum_chunks
 
 
 class LineChange:
@@ -162,10 +160,7 @@ class AreaChange:
             dya(dJdF, dJdF, parallel=parallel) - cdya_il(dJdF, dJdF, parallel=parallel)
         ) / J
 
-        if parallel:
-            einsum = einsumt
-        else:
-            einsum = np.einsum
+        einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
 
         if N is None:
             return [dFsdF]

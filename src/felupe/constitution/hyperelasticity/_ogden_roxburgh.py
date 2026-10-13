@@ -40,6 +40,9 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         The initial Mullins softening modulus.
     beta : float
         Maximum deformation-dependent part of the Mullins softening modulus.
+    parallel : bool or None, optional
+        A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
+        threads. If None, the flag is taken from the material (default is None).
 
     Notes
     -----
@@ -73,9 +76,14 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
     """
 
-    def __init__(self, material, r, m, beta):
+    def __init__(self, material, r, m, beta, parallel=None):
         # isotropic hyperelastic material formulation
         self.material = self.fun = material
+
+        if parallel is None:
+            parallel = getattr(material, "parallel", False)
+
+        self.parallel = parallel
 
         # ogden-roxburgh material parameters
         self.r = r
@@ -93,7 +101,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(1)]
 
-    def gradient(self, x):
+    def _gradient(self, x):
         # unpack variables into deformation gradient and state variables
         F, statevars = x[0], x[-1]
 
@@ -119,7 +127,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
 
         return [eta * P, statevars_new]
 
-    def hessian(self, x):
+    def _hessian(self, x):
         # unpack variables into deformation gradient and state variables
         F, statevars = x[0], x[-1]
 

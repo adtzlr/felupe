@@ -252,31 +252,55 @@ def test_einsum_chunks(monkeypatch):
                 assert np.allclose(out, expected)
 
 
+def test_einsum_chunks_layout():
+    "A single chunk has the memory layout of NumPy, more chunks are in C-order."
+
+    from felupe.math._einsum import einsum_chunks
+
+    rng = np.random.default_rng(0)
+    subscripts = "aqc,...qc,bqc,qc->a...bc"
+    shapes = [(8, 4, 50), (4, 50), (8, 4, 50), (4, 50)]
+    operands = [rng.random(shape) for shape in shapes]
+
+    expected = np.einsum(subscripts, *operands, optimize=True)
+    assert not expected.flags.c_contiguous
+
+    res = einsum_chunks(subscripts, *operands, optimize=True)
+    assert res.strides == expected.strides
+    assert np.allclose(res, expected)
+
+    res = einsum_chunks(subscripts, *operands, optimize=True, chunksize=10)
+    assert res.flags.c_contiguous
+    assert np.allclose(res, expected)
+
+
 def test_einsum_chunks_errors():
     from felupe.math._einsum import einsum_chunks
 
     A = np.ones((3, 3, 5))
 
-    with pytest.raises(ValueError):  # implicit output
-        einsum_chunks("ij...,jk...", A, A)
+    # the checks are skipped for a single chunk in serial (passed to numpy.einsum)
+    for kwargs in [dict(chunksize=2), dict(parallel=True)]:
+        with pytest.raises(ValueError):  # implicit output
+            einsum_chunks("ij...,jk...", A, A, **kwargs)
 
-    with pytest.raises(ValueError):  # wrong number of operands
-        einsum_chunks("ij...,jk...->ik...", A)
+        with pytest.raises(ValueError):  # wrong number of operands
+            einsum_chunks("ij...,jk...->ik...", A, **kwargs)
 
-    with pytest.raises(ValueError):  # summed index
-        einsum_chunks("ij...,jk...->ik...", A, A, idx="j")
+        with pytest.raises(ValueError):  # summed index
+            einsum_chunks("ij...,jk...->ik...", A, A, idx="j", **kwargs)
 
-    with pytest.raises(ValueError):  # more than one index
-        einsum_chunks("ij...,jk...->ik...", A, A, idx="ik")
+        with pytest.raises(ValueError):  # more than one index
+            einsum_chunks("ij...,jk...->ik...", A, A, idx="ik", **kwargs)
 
-    with pytest.raises(ValueError):  # repeated index within an operand
-        einsum_chunks("iic->ic", A, idx="i")
+        with pytest.raises(ValueError):  # repeated index within an operand
+            einsum_chunks("iic->ic", A, idx="i", **kwargs)
 
-    with pytest.raises(ValueError):  # full contraction
-        einsum_chunks("ijc,ijc->", A, A)
+        with pytest.raises(ValueError):  # full contraction
+            einsum_chunks("ijc,ijc->", A, A, **kwargs)
 
-    with pytest.raises(ValueError):  # index of the output not given in the inputs
-        einsum_chunks("ijc->ijkc", A)
+        with pytest.raises(ValueError):  # index of the output not given in the inputs
+            einsum_chunks("ijc->ijkc", A, **kwargs)
 
 
 def test_cpu_count(monkeypatch):

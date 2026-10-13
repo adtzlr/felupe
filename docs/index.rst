@@ -68,7 +68,7 @@ where ``[all]`` is a combination of ``[autodiff,io,parallel,plot,progress,view]`
 
 In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
 
-* `einsumt <https://github.com/mrkwjc/einsumt>`_ for parallel (threaded) assembly
+* `einsumt <https://github.com/mrkwjc/einsumt>`_ for parallel (threaded) math operations
 * `jax <https://github.com/jax-ml/jax>`_ for automatic differentiation in material formulations (JAX-based)
 * `h5py <https://github.com/h5py/h5py>`_ for writing XDMF result files
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs

@@ -94,7 +94,9 @@ def einsum_chunks(
     *operands : list of ndarray
         The arrays for the operation.
     out : ndarray or None, optional
-        The output array. If None, a new array is created (default is None).
+        The output array. If None, a new array in C-order is created. A single chunk
+        is evaluated by :func:`numpy.einsum` as a whole, i.e. its result has the memory
+        layout chosen by NumPy (default is None).
     idx : str or None, optional
         The subscript (a single letter) of the output along which the operands are
         divided into chunks. If None, the last axis of the output is used, i.e. the
@@ -102,8 +104,8 @@ def einsum_chunks(
         available by a letter.
     chunksize : int or None, optional
         The number of items along ``idx`` per chunk. If None, the items are divided
-        into one chunk per thread or into a single chunk, if ``parallel`` is False
-        (default is None).
+        into one chunk per thread. If None and ``parallel`` is False, the operands are
+        passed to :func:`numpy.einsum` without further checks (default is None).
     optimize : bool or str or list, optional
         The contraction path, passed to :func:`numpy.einsum` for each chunk (default
         is False).
@@ -136,6 +138,9 @@ def einsum_chunks(
     (3, 3, 4, 5)
     """
 
+    if not parallel and chunksize is None:  # a single chunk
+        return np.einsum(subscripts, *operands, out=out, optimize=optimize)
+
     operands = [np.asarray(x) for x in operands]
     inputs, output = _parse_subscripts(subscripts, operands)
 
@@ -161,10 +166,6 @@ def einsum_chunks(
     if missing:
         raise ValueError(f"The output indices {missing} are not given in the inputs.")
 
-    if out is None:
-        shape = tuple(lengths[letter] for letter in output)
-        out = np.empty(shape, dtype=np.result_type(*operands))
-
     # axes of the chunked index in the operands (-1 if not sliced) and in the output
     axes = []
     for s, x in zip(inputs, operands):
@@ -182,6 +183,13 @@ def einsum_chunks(
     chunksize = max(1, chunksize)
     starts = range(0, length, chunksize)
     workers = min(workers, len(starts))
+
+    if out is None:
+        if len(starts) <= 1:
+            return np.einsum(subscripts, *operands, optimize=optimize)
+
+        shape = tuple(lengths[letter] for letter in output)
+        out = np.empty(shape, dtype=np.result_type(*operands))
 
     def evaluate(start):
         chunk = slice(start, start + chunksize)

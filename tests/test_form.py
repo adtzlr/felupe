@@ -350,6 +350,79 @@ def test_bilinearform_grad_grad_threads(monkeypatch):
         assert np.allclose(form.integrate(parallel=True)[0], expected)
 
 
+def test_integrate_parallel(monkeypatch):
+    "All branches of the integration are equal in serial and in parallel."
+
+    import felupe.math._einsum as einsum
+
+    mesh = fem.Cube(n=4)
+    region = fem.RegionHexahedron(mesh)
+    u = fem.Field(region, dim=3)
+    p = fem.Field(region)
+    dV = region.dV
+
+    rng = np.random.default_rng(0)
+    q, c = dV.shape
+
+    # function shapes (without the quadrature points and cells), the test and trial
+    # fields and the gradient flags, for all branches of the linear and bilinear forms
+    cases = [
+        ((3,), u, None, False, False),
+        ((), p, None, False, False),
+        ((3, 3), u, None, True, False),
+        ((), p, p, False, False),
+        ((3,), u, p, False, False),
+        ((3, 3), u, u, False, False),
+        ((3, 3, 3, 3), u, u, False, False),
+        ((3, 3), u, p, True, False),
+        ((3, 3, 3), u, u, True, False),
+        ((3, 3), p, u, False, True),
+        ((3, 3, 3), u, u, False, True),
+        ((3, 3, 3, 3), u, u, True, True),
+    ]
+
+    for shape, v, w, grad_v, grad_u in cases:
+        # one function per quadrature point and cell or broadcasted
+        for size in [(q, c), (1, 1)]:
+            fun = rng.random((*shape, *size))
+            form = fem.assembly.IntegralFormCartesian(
+                fun=fun, v=v, dV=dV, u=w, grad_v=grad_v, grad_u=grad_u
+            )
+            expected = form.integrate(parallel=False)
+
+            # less threads than cells and more threads than cells
+            for cpus in [2, 64]:
+                monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+                assert np.allclose(form.integrate(parallel=True), expected)
+
+                out = np.zeros_like(expected)
+                values = form.integrate(parallel=True, out=out)
+                assert values is out
+                assert np.allclose(out, expected)
+
+
+def test_basis_parallel(monkeypatch):
+    "The bases are equal in serial and in parallel, also for three cells in 3d."
+
+    import felupe.math._einsum as einsum
+
+    # the identity matrix of the basis has the same length as the cells
+    mesh = fem.Cube(n=(4, 2, 2))
+    region = fem.RegionHexahedron(mesh, hess=True)
+    field = fem.Field(region, dim=3)
+    assert mesh.ncells == field.dim
+
+    expected = fem.assembly.expression.BasisField(field, parallel=False).basis
+
+    for cpus in [2, 3, 64]:
+        monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+        basis = fem.assembly.expression.BasisField(field, parallel=True).basis
+
+        assert np.allclose(basis, expected)
+        assert np.allclose(basis.grad, expected.grad)
+        assert np.allclose(basis.hess, expected.hess)
+
+
 def test_sparsity_pattern():
     "The assembly with a cached sparsity pattern is equal to the COO-assembly."
 

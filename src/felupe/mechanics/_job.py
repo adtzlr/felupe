@@ -204,9 +204,9 @@ class Job:
             environmental variable FELUPE_VERBOSE is set and its value is not ``true``,
             then logging is turned off.
         parallel : bool, optional
-            Flag to use a threaded version of :func:`numpy.einsum` during assembly.
-            Requires ``einsumt``. This may add additional overhead to small-sized
-            problems. Default is False.
+            Flag to evaluate the contractions of :func:`numpy.einsum` during assembly
+            in chunks of cells by a pool of threads. This may add additional overhead
+            to small-sized problems. Default is False.
         tqdm : str, optional
             If verbose is True, choose a backend for ``tqdm`` ("tqdm", ``"auto"`` or
             ``"notebook"``. Default is ``"tqdm"``.

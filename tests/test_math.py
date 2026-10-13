@@ -204,8 +204,98 @@ def test_inplane():
     assert np.allclose(A_inplane.ravel(), [0, 3, 3, 1])
 
 
+def test_einsum_chunks(monkeypatch):
+    "Contractions evaluated in chunks are equal to numpy.einsum()."
+
+    import felupe.math._einsum as einsum
+
+    rng = np.random.default_rng(0)
+
+    # subscripts, shapes of the operands, chunked index and contraction path
+    cases = [
+        # the bilinear form of the gradients of the test and the trial field
+        (
+            "aJqc,iJkLqc,bLqc,qc->aibkc",
+            [(8, 3, 4, 5), (3, 3, 3, 3, 4, 5), (8, 3, 4, 5), (4, 5)],
+            None,
+            ["einsum_path", (0, 3), (0, 1), (0, 1)],
+        ),
+        # an operand without the axis of the cells, with the same length as the cells
+        ("ik...,kj...->ij...", [(3, 3), (3, 3, 3)], None, False),
+        # an operand which is broadcasted (length one) along the cells
+        ("ik...,kj...->ij...", [(3, 3, 1, 1), (3, 3, 4, 5)], None, False),
+        # right-aligned axes of the ellipsis with different numbers of axes
+        ("ij...,j...->i...", [(3, 3, 4, 5), (3, 5)], None, False),
+        # chunks of the basis functions of a single cell
+        ("aJqc,bJqc->abc", [(10, 3, 4, 1), (10, 3, 4, 1)], "a", False),
+    ]
+
+    for subscripts, shapes, idx, optimize in cases:
+        operands = [rng.random(shape) for shape in shapes]
+        expected = np.einsum(subscripts, *operands)
+
+        for chunksize in [None, 1, 2, 1000]:
+            # serial, a single thread, less threads than chunks and more CPUs
+            for parallel, cpus in [(False, 1), (True, 1), (True, 2), (True, 64)]:
+                monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+                kwargs = dict(
+                    idx=idx, chunksize=chunksize, optimize=optimize, parallel=parallel
+                )
+
+                res = einsum.einsum_chunks(subscripts, *operands, **kwargs)
+                assert res.shape == expected.shape
+                assert np.allclose(res, expected)
+
+                out = np.zeros_like(expected)
+                res = einsum.einsum_chunks(subscripts, *operands, out=out, **kwargs)
+                assert res is out
+                assert np.allclose(out, expected)
+
+
+def test_einsum_chunks_errors():
+    from felupe.math._einsum import einsum_chunks
+
+    A = np.ones((3, 3, 5))
+
+    with pytest.raises(ValueError):  # implicit output
+        einsum_chunks("ij...,jk...", A, A)
+
+    with pytest.raises(ValueError):  # wrong number of operands
+        einsum_chunks("ij...,jk...->ik...", A)
+
+    with pytest.raises(ValueError):  # summed index
+        einsum_chunks("ij...,jk...->ik...", A, A, idx="j")
+
+    with pytest.raises(ValueError):  # more than one index
+        einsum_chunks("ij...,jk...->ik...", A, A, idx="ik")
+
+    with pytest.raises(ValueError):  # repeated index within an operand
+        einsum_chunks("iic->ic", A, idx="i")
+
+    with pytest.raises(ValueError):  # full contraction
+        einsum_chunks("ijc,ijc->", A, A)
+
+    with pytest.raises(ValueError):  # index of the output not given in the inputs
+        einsum_chunks("ijc->ijkc", A)
+
+
+def test_cpu_count(monkeypatch):
+    "The number of usable CPUs, also without the newer functions of os."
+
+    import os
+
+    from felupe.math._einsum import cpu_count
+
+    assert cpu_count() >= 1
+    monkeypatch.delattr(os, "process_cpu_count", raising=False)
+    assert cpu_count() >= 1
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
+    assert cpu_count() >= 1
+
+
 if __name__ == "__main__":
     test_math()
     test_math_field()
     test_math_linsteps()
     test_inplane()
+    test_einsum_chunks_errors()

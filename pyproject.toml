@@ -80,11 +80,10 @@ io = [
     "h5py",
     "meshio",
 ]
-parallel = ["einsumt"]
 progress = ["tqdm"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
-all = ["felupe[autodiff,io,parallel,plot,progress,view]"]
+all = ["felupe[autodiff,io,plot,progress,view]"]
 
 [dependency-groups]
 read-the-docs = ["felupe[all,docs,examples]"]

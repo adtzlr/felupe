@@ -77,6 +77,9 @@ All notable changes to this project will be documented in this file. The format 
 - Fix the matrix in `ContactRigidPlane` for center points, which are only partly constrained.
 - Fix `Boundary.apply_mask()` and `Boundary.plot()` for boundary conditions with a dof-based mask (with `Boundary.skip=None`). Before, a point-based mask applied afterwards, e.g. by `Boundary.select_surface_points()`, and the plot raised a `TypeError`. Now, all axes of the points of a point-based mask applied after a dof-based mask are prescribed and the prescribed directions are plotted by the (dof-based) mask.
 
+### Removed
+- Remove the optional dependency `einsumt` and the extra `felupe[parallel]`. The threaded evaluations with `parallel=True` use `math._einsum.einsum_chunks()` and require no additional packages. An installation with the extra `felupe[parallel]` still works, but the installer warns that the extra is not provided.
+
 ## [11.1.3] - 2026-09-28
 
 ### Fixed

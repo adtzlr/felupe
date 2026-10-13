@@ -3,10 +3,13 @@ import warnings
 from ._event_dispatcher import Context, EventDispatcher
 from ._hello_world import hello_world
 from ._misc import logo, runs_on
-from ._newton import IterationState, NewtonConvergenceError, NewtonResult
+from ._newton import IterationState, NewtonConvergenceError, NewtonResult, newtonraphson
 from ._newton import fun_items as fun
 from ._newton import jac_items as jac
-from ._newton import newtonraphson
+from ._post import curve, force, moment
+from ._project import extrapolate, project, topoints
+from ._save import save
+from ._solve import solve
 
 
 def newtonrhapson(*args, **kwargs):
@@ -19,11 +22,6 @@ def newtonrhapson(*args, **kwargs):
     )
     return newtonraphson(*args, **kwargs)
 
-
-from ._post import curve, force, moment
-from ._project import extrapolate, project, topoints
-from ._save import save
-from ._solve import solve
 
 __all__ = [
     "fun",

@@ -58,9 +58,13 @@ __all__ = [
     "ThirdMediumContactMixed",
 ]
 try:
-    from .tensortrax import Hyperelastic
+    from .tensortrax import (
+        Hyperelastic,
+        isochoric_volumetric_split,
+        total_lagrange,
+        updated_lagrange,
+    )
     from .tensortrax import Material as MaterialAD
-    from .tensortrax import isochoric_volumetric_split, total_lagrange, updated_lagrange
     from .tensortrax.models.hyperelastic import (
         alexander,
         anssari_benam_bucchi,

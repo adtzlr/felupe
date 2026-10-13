@@ -17,6 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+from importlib.util import find_spec
 from time import perf_counter
 
 import numpy as np
@@ -103,11 +104,8 @@ class ProgressPlugin(Plugin):
             else:
                 self.verbose = FELUPE_VERBOSE == "true"
 
-        if self.verbose:
-            try:
-                import tqdm
-            except ModuleNotFoundError:  # pragma: no cover
-                self.verbose = 2  # pragma: no cover
+        if self.verbose and find_spec("tqdm") is None:
+            self.verbose = 2  # pragma: no cover
 
     def _import_tqdm(self):
 

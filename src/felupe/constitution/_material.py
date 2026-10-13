@@ -31,7 +31,7 @@ class Material(ConstitutiveMaterial):
     optional vector of state variables :math:`\boldsymbol{\zeta}_n` as the first input
     argument. The stress-function must return the updated state variables
     :math:`\boldsymbol{\zeta}`.
-    
+
     Parameters
     ----------
     stress : callable
@@ -51,7 +51,7 @@ class Material(ConstitutiveMaterial):
 
     Notes
     -----
-    
+
     ..  note::
         The first item in the list of the input arguments always contains the
         gradient of the (displacement) field :math:`\boldsymbol{u}` w.r.t. the
@@ -60,28 +60,28 @@ class Material(ConstitutiveMaterial):
         list ``x`` contains the deformation gradient :math:`\boldsymbol{F} =
         \boldsymbol{1} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}`. All
         other fields are provided as interpolated values (no gradients evaluated).
-    
+
     For :math:`(\boldsymbol{u})` single-field formulations, the callables for
     ``stress`` and ``elasticity`` must return the gradient and hessian of the strain
     energy density function :math:`\psi(\boldsymbol{F})` w.r.t. the deformation
     gradient tensor :math:`\boldsymbol{F}`.
-    
+
     ..  math::
 
         \text{stress}(\boldsymbol{F}, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial \psi}{\partial \boldsymbol{F}} \\
             \boldsymbol{\zeta}
         \end{bmatrix}
-    
+
     The callable for ``elasticity`` (hessian) must not return the updated state
     variables.
-    
+
     ..  math::
-        
+
         \text{elasticity}(\boldsymbol{F}, \boldsymbol{\zeta}_n) = \begin{bmatrix}
             \frac{\partial^2 \psi}{\partial \boldsymbol{F}\ \partial \boldsymbol{F}}
         \end{bmatrix}
-    
+
     Take this code-block as template:
 
     ..  code-block::
@@ -113,12 +113,12 @@ class Material(ConstitutiveMaterial):
             return [dPdF]
 
         umat = Material(stress, elasticity, **kwargs)
-        
+
     For :math:`(\boldsymbol{u}, p, J)` mixed-field formulations, the callables for
     ``stress`` and ``elasticity`` must return the gradients and hessians of the
     (augmented) strain energy density function w.r.t. the deformation gradient and the
     other fields.
-    
+
     ..  math::
 
         \text{stress}(\boldsymbol{F}, p, J, \boldsymbol{\zeta}_n) = \begin{bmatrix}
@@ -180,12 +180,12 @@ class Material(ConstitutiveMaterial):
             return [d2WdFdF, d2WdFdp, d2WdFdJ, d2Wdpdp, d2WdpdJ, d2WdJdJ]
 
         umat = Material(gradient, hessian, **kwargs)
-    
+
     Examples
     --------
     The compressible isotropic hyperelastic Neo-Hookean material formulation is given
     by the strain energy density function
-    
+
     .. math::
 
         \psi(\boldsymbol{C}) = \frac{\mu}{2} \text{tr}(\boldsymbol{C})
@@ -197,9 +197,9 @@ class Material(ConstitutiveMaterial):
     .. math::
 
        J &= \text{det}(\boldsymbol{F})
-       
+
        C &= \boldsymbol{F}^T\ \boldsymbol{F}
-      
+
     The first Piola-Kirchhoff stress tensor is evaluated as the gradient
     of the strain energy density function.
 
@@ -225,7 +225,7 @@ class Material(ConstitutiveMaterial):
 
     ..  plot::
         :context: close-figs
-    
+
         >>> import numpy as np
         >>> import felupe as fem
         >>>
@@ -257,10 +257,10 @@ class Material(ConstitutiveMaterial):
         ...         (mu - lmbda * np.log(J)) * cdya_il(iFT, iFT)
         ...     ]
         >>>
-    
+
     The material formulation is tested in a minimal example of non-homogeneous uniaxial
     tension.
-    
+
     ..  plot::
         :context: close-figs
 
@@ -277,7 +277,7 @@ class Material(ConstitutiveMaterial):
         >>>
         >>> step = fem.Step(items=[solid], boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()
-    
+
     See Also
     --------
     felupe.NeoHookeCompressible : Nearly-incompressible isotropic hyperelastic

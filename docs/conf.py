@@ -12,7 +12,6 @@
 #
 import datetime
 import os
-import sys
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper

@@ -372,13 +372,13 @@ class ConstitutiveMaterial:
         ..  warning::
             At least one load case, i.e. one of the arguments ``ux``, ``ps`` or ``bx``
             must not be ``None``.
-        
+
         ..  note::
             For JAX-based materials, double-precision is required to optimize material
             parameters.
 
             ..  code-block:: python
-                
+
                 import jax
 
                 jax.config.update("jax_enable_x64", True)

@@ -18,7 +18,6 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import inspect
 from copy import deepcopy
-from time import perf_counter
 
 import numpy as np
 from scipy.sparse import csr_matrix

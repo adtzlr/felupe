@@ -26,8 +26,8 @@ from ._einsum import einsum_chunks
 
 def identity(A=None, dim=None, shape=None, dtype=None):
     r"""Return identity matrices with ones on the diagonal of the first two axes and
-    zeros elsewhere. 
-    
+    zeros elsewhere.
+
     Parameters
     ----------
     A : ndarray of shape (N, M, ...) or None, optional
@@ -49,52 +49,52 @@ def identity(A=None, dim=None, shape=None, dtype=None):
     -------
     ndarray of shape (N, M, *np.ones_like(...)) or (dim, dim, *np.ones_like(...))
         The identity matrix.
-    
+
     Notes
     -----
     The first two axes are the matrix dimensions and all remaining trailing axes are
     treated as batch dimensions. As the identity matrix is independent of the input
     matrices ``A``, the size of the trailing axes is reduced to one.
-    
+
     The identity matrix is defined by Eq. :eq:`math-identity`
-    
+
     ..  math::
         :label: math-identity
-        
-        \boldsymbol{1} = \boldsymbol{A} \boldsymbol{A}^{-1} 
+
+        \boldsymbol{1} = \boldsymbol{A} \boldsymbol{A}^{-1}
             = \boldsymbol{A}^{-1} \boldsymbol{A}
-    
+
     and it is shown in Eq. :eq:`math-identity-items`.
-    
+
     ..  math::
         :label: math-identity-items
-        
+
         \boldsymbol{1} = \begin{bmatrix}
                 1 & 0 & 0 \\
                 0 & 1 & 0 \\
                 0 & 0 & 1
             \end{bmatrix}
-    
+
     Examples
     --------
     >>> import felupe as fem
     >>> import numpy as np
-    >>> 
+    >>>
     >>> A = np.random.rand(3, 2, 8, 20)
     >>> I = fem.math.identity(A)
     >>> I.shape
     (3, 2, 1, 1)
-    
+
     With given dimension of the matrix axes the shape of the output is different.
-    
+
     >>> fem.math.identity(A, dim=2).shape
     (2, 2, 1, 1)
-    
+
     Note how the number of batch axes change if a ``shape`` is given.
-    
+
     >>> fem.math.identity(A, shape=(4, 7, 3)).shape
     (3, 2, 1, 1, 1)
-    
+
     See Also
     --------
     numpy.eye : Return a 2-D array with ones on the diagonal and zeros elsewhere.
@@ -287,7 +287,7 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
 
         \boldsymbol{A}^{-1} &= \frac{1}{\det(\boldsymbol{A})}
             \text{cof}(\boldsymbol{A})^T
-    
+
     ..  math::
         :label: math-inv-matrix
 
@@ -316,13 +316,13 @@ def inv(A, determinant=None, full_output=False, sym=False, out=None):
     array([[1. , 1.3, 1.5],
            [1.3, 1.1, 1.4],
            [1.5, 1.4, 1.2]])
-    
+
     >>> invA = fem.math.inv(A)
     >>> invA[..., 0]
     array([[-2.01892744,  1.70347003,  0.5362776 ],
            [ 1.70347003, -3.31230284,  1.73501577],
            [ 0.5362776 ,  1.73501577, -1.86119874]])
-    
+
     >>> fem.math.dot(A, invA)[..., 0].round(3)
     array([[ 1., -0.,  0.],
            [-0.,  1.,  0.],
@@ -1430,7 +1430,7 @@ def tovoigt(A, strain=False):
     -----
     The first two axes are the tensor dimensions and all remaining trailing axes are
     treated as batch dimensions.
-    
+
     For a symmetric three-dimensional second-order tensor :math:`C_{ij} = C_{ji}`, the
     upper triangle entries are inserted into a 6x1 vector, starting from the main
     diagonal, followed by the consecutive next upper diagonals.
@@ -1455,7 +1455,7 @@ def tovoigt(A, strain=False):
     array([[1. , 1.3, 1.5],
            [1.3, 1.1, 1.4],
            [1.5, 1.4, 1.2]])
-    
+
     >>> fem.math.tovoigt(C)[..., 0]
     array([1. , 1.1, 1.2, 1.3, 1.4, 1.5])
 

@@ -94,7 +94,7 @@ def lame_converter_orthotropic(E, nu, G):
             -\frac{\nu_{13}}{E_1} & -\frac{\nu_{23}}{E_2} & \frac{1}{E_3}
                 & 0 & 0 & 0 \\
             0 & 0 & 0 & \frac{1}{G_{12}} & 0 & 0 \\
-            0 & 0 & 0 & 0 & \frac{1}{G_{23}} & 0 \\  
+            0 & 0 & 0 & 0 & \frac{1}{G_{23}} & 0 \\
             0 & 0 & 0 & 0 & 0 & \frac{1}{G_{31}}
         \end{bmatrix}
 
@@ -109,7 +109,7 @@ def lame_converter_orthotropic(E, nu, G):
             \lambda_{11} & \lambda_{12} + 2 \mu_2 & \lambda_{13} & 0 & 0 & 0 \\
             \lambda_{11} & \lambda_{12} & \lambda_{13} + 2 \mu_3 & 0 & 0 & 0 \\
             0 & 0 & 0 & \frac{\mu_1 + \mu_2}{2} & 0 & 0 \\
-            0 & 0 & 0 & 0 & \frac{\mu_2 + \mu_3}{2} & 0 \\  
+            0 & 0 & 0 & 0 & \frac{\mu_2 + \mu_3}{2} & 0 \\
             0 & 0 & 0 & 0 & 0 & \frac{\mu_3 + \mu_1}{2}
         \end{bmatrix}
 

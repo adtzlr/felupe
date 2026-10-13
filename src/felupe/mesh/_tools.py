@@ -1099,7 +1099,7 @@ def flip(points, cells, cell_type, mask=None):
 
 @mesh_or_data
 def mirror(
-    points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None
+    points, cells, cell_type, normal=(1, 0, 0), centerpoint=(0, 0, 0), axis=None
 ):
     """Mirror points by plane normal and ensure positive cell volumes for
     `tria`, `tetra`, `quad` and `hexahedron` cell types.
@@ -1415,8 +1415,8 @@ def runouts(
     points,
     cells,
     cell_type,
-    values=[0.1, 0.1],
-    centerpoint=[0, 0, 0],
+    values=(0.1, 0.1),
+    centerpoint=(0, 0, 0),
     axis=0,
     exponent=5,
     mask=slice(None),

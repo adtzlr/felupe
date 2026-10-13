@@ -16,10 +16,7 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import warnings
-
 from ..plugins import ProgressPlugin, XDMFWriterPlugin
-from ..region import RegionVertex
 from ..tools import Context, EventDispatcher
 
 

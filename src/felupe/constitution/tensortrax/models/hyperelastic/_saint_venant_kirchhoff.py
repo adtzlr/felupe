@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from tensortrax.math import base, log
+from tensortrax.math import base, log, trace
 from tensortrax.math import sum as tsum
-from tensortrax.math import trace
 from tensortrax.math.linalg import eigvalsh
 
 

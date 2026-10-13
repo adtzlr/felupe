@@ -424,9 +424,9 @@ class Circle(Mesh):
     def __init__(
         self,
         radius=1.0,
-        centerpoint=[0.0, 0.0],
+        centerpoint=(0.0, 0.0),
         n=2,
-        sections=[0, 90, 180, 270],
+        sections=(0, 90, 180, 270),
         value=0.15,
         exponent=2,
         decimals=10,

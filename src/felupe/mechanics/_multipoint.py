@@ -16,7 +16,6 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import warnings
 from math import factorial
 
 import numpy as np

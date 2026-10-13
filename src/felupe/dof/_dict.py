@@ -1,6 +1,3 @@
-import warnings
-
-
 class BoundaryDict(dict):
     "A dict of boundary conditions."
 

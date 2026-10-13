@@ -112,7 +112,7 @@ class FormExpression:
 
             # check if new form type matches initial form type (update-stage)
             if form_type is not None:
-                if form_type == type(form):
+                if form_type is type(form):
                     self.form = form
                 else:
                     raise TypeError("Wrong type of fields.")

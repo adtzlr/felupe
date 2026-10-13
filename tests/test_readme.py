@@ -28,8 +28,6 @@ def test_readme():
     P = umat.gradient
     A = umat.hessian
 
-    import numpy as np
-
     f0 = lambda x: np.isclose(x, 0)
     f1 = lambda x: np.isclose(x, 1)
 

@@ -35,10 +35,7 @@ from ._tools import (
     fill_between,
     flip,
     merge_duplicate_cells,
-)
-from ._tools import merge_duplicate_points
-from ._tools import merge_duplicate_points as sweep
-from ._tools import (
+    merge_duplicate_points,
     mirror,
     revolve,
     rotate,
@@ -47,6 +44,7 @@ from ._tools import (
     translate,
     triangulate,
 )
+from ._tools import merge_duplicate_points as sweep
 
 __all__ = [
     "_cube_hexa",

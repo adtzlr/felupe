@@ -24,7 +24,7 @@ from ._cartesian import IntegralFormCartesian
 
 class IntegralFormAxisymmetric(IntegralFormCartesian):
     r"""An Integral Form for axisymmetric fields.
-    
+
     Parameters
     ----------
     fun : array

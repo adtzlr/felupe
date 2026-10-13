@@ -17,7 +17,7 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import numpy as np
-from tensortrax import Tensor, Δ, Δδ, f, δ
+from tensortrax import Δ, Tensor, Δδ, f, δ
 from tensortrax.math import exp, log, trace
 from tensortrax.math.linalg import det
 

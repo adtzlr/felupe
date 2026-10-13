@@ -316,7 +316,7 @@ def test_mpc_rotation_matrix():
 
     from scipy.spatial.transform import Rotation
 
-    from felupe.mechanics._multipoint import _SKEW_BASE, _rotation
+    from felupe.mechanics._multipoint._rodrigues import _SKEW_BASE, _rotation
 
     rng = np.random.default_rng(seed=5)
     direction = rng.normal(size=3)
@@ -361,7 +361,7 @@ def test_mpc_rotation_matrix_jax():
     jax = pytest.importorskip("jax")
     import jax.numpy as jnp
 
-    from felupe.mechanics._multipoint import _rotation
+    from felupe.mechanics._multipoint._rodrigues import _rotation
 
     x64 = jax.config.jax_enable_x64
     jax.config.update("jax_enable_x64", True)
@@ -408,7 +408,7 @@ def mpc_rotation_model(dim, seed=None, increment=0.3):
     )
 
     if seed is not None:
-        from felupe.mechanics._multipoint import _rotation
+        from felupe.mechanics._multipoint._rodrigues import _rotation
 
         rng = np.random.default_rng(seed=seed)
         axes = mpc._rotation_axes

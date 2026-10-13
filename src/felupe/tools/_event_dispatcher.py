@@ -72,9 +72,9 @@ class Context:
     check : callable or None, optional
         A callable ``xnorm, fnorm, success = check(dx, x, f)`` which checks the
         convergence of the Newton-Raphson method for given unknowns ``x`` with the
-        values of the objective function ``f`` (default is None). In contrast to the
-        ``check``-argument of :func:`~felupe.newtonraphson`, the state variables of
-        the items are not updated. Only available in the hooks of
+        values of the objective function ``f`` (default is None). The state variables
+        of the items are not updated, this is done by :func:`~felupe.newtonraphson`
+        after a converged iteration. Only available in the hooks of
         :func:`~felupe.newtonraphson`.
     x0 : felupe.FieldContainer or None, optional
         The field container with the unknowns of a step, which is the starting point

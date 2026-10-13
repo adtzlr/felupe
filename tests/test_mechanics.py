@@ -1024,6 +1024,28 @@ def test_item_protocol():
     assert not isinstance(fem.Boundary(field[0]), fem.mechanics.Item)
 
 
+def test_newton_custom_check():
+    "The state variables are updated after convergence, also with a custom check."
+
+    region = fem.RegionHexahedron(fem.Cube(n=2))
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    umat = fem.LinearElasticPlasticIsotropicHardening(E=1.0, nu=0.3, sy=0.01, K=0.1)
+    solid = fem.SolidBody(umat, field)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.05, clamped=True, return_loadcase=True
+    )
+
+    def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None):
+        "A custom check which ignores the items."
+        return fem.tools._newton.check(dx, x, f, xtol, ftol, dof1, dof0)
+
+    res = fem.newtonraphson(items=[solid], check=check, verbose=0, **loadcase)
+
+    assert res.success
+    assert solid.results.statevars is solid.results._statevars
+    assert not np.allclose(solid.results.statevars, 0)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -1048,3 +1070,4 @@ if __name__ == "__main__":
     test_job_plugins()
     test_thirdmediumcontactmixed()
     test_item_protocol()
+    test_newton_custom_check()

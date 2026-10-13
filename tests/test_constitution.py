@@ -137,6 +137,39 @@ def test_nh_out():
                 assert np.allclose(Ax, A)
 
 
+def test_nh_chunks(monkeypatch):
+    "The Neo-Hookean materials are evaluated in chunks of cells."
+
+    import felupe.math._threads as threads
+
+    monkeypatch.setattr(threads, "cpu_count", lambda: 2)
+
+    mesh = fem.Cube(n=4)  # 27 cells
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+    field[0].values[:] = np.random.default_rng(55601).random(mesh.points.shape) / 20
+    F = field.extract()[0]
+    x = [F, np.zeros((0, *F.shape[-2:]))]
+
+    for Material, kwargs in [
+        (fem.NeoHooke, dict(mu=None, bulk=1.0)),
+        (fem.NeoHooke, dict(mu=1.0, bulk=None)),
+        (fem.NeoHooke, dict(mu=1.0, bulk=2.0)),
+        (fem.NeoHookeCompressible, dict(mu=1.0, lmbda=None)),
+        (fem.NeoHookeCompressible, dict(mu=1.0, lmbda=2.0)),
+    ]:
+        whole = Material(**kwargs)
+        whole.chunksize = None
+        P = whole.gradient(x)[0]
+        A = whole.hessian(x)[0]
+
+        for parallel in [False, True]:
+            umat = Material(**kwargs, parallel=parallel)
+            umat.chunksize = 2 * F.shape[-2]  # chunks of two cells
+
+            assert np.allclose(umat.gradient(x)[0], P)
+            assert np.allclose(umat.hessian(x)[0], A)
+
+
 def test_linear():
     r, F = pre(sym=False, add_identity=True)
 

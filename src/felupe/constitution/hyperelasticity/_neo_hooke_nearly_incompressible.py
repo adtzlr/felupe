@@ -34,6 +34,9 @@ class NeoHooke(ConstitutiveMaterial):
         Shear modulus (default is None)
     bulk : float or None, optional
         Bulk modulus (default is None)
+    parallel : bool, optional
+        A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
+        threads (default is False).
 
     Notes
     -----
@@ -212,7 +215,7 @@ class NeoHooke(ConstitutiveMaterial):
         bulk = self.bulk
 
         J = det(F)
-        C = dot(transpose(F), F, parallel=self.parallel)
+        C = dot(transpose(F), F)
         W = np.zeros_like(J)
 
         if mu is not None:
@@ -223,16 +226,15 @@ class NeoHooke(ConstitutiveMaterial):
 
         return [W]
 
-    def gradient(self, x, out=None):
+    def _gradient(self, x):
         """Gradient of the strain energy density function per unit undeformed volume of
-        the Neo-Hookean material formulation.
+        the Neo-Hookean material formulation, evaluated for a chunk of cells by
+        :meth:`~felupe.ConstitutiveMaterial.gradient`.
 
         Parameters
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        out : ndarray or None, optional
-            A location into which the result is stored (default is None).
         """
 
         F, statevars = x[0], x[-1]
@@ -243,16 +245,11 @@ class NeoHooke(ConstitutiveMaterial):
         J = det(F)
         iFT = transpose(inv(F, J))
 
-        P = out
-        if P is None:
-            P = np.zeros_like(F)
-        else:
-            # reset the (re-used) output array, NaN or inf entries must be removed
-            P.fill(0.0)
+        P = np.zeros_like(F)
 
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of P
-            trC = ddot(F, F, parallel=self.parallel)
+            trC = ddot(F, F)
             trC_3 = np.divide(trC, 3, out=trC)
             np.multiply(trC_3, iFT, out=P)
             np.add(F, -P, out=P)
@@ -271,16 +268,15 @@ class NeoHooke(ConstitutiveMaterial):
 
         return [P, statevars]
 
-    def hessian(self, x, out=None):
+    def _hessian(self, x):
         """Hessian of the strain energy density function per unit undeformed volume of
-        the Neo-Hookean material formulation.
+        the Neo-Hookean material formulation, evaluated for a chunk of cells by
+        :meth:`~felupe.ConstitutiveMaterial.hessian`.
 
         Parameters
         ----------
         x : list of ndarray
             List with the Deformation gradient ``F`` (3x3) as first item
-        out : ndarray or None, optional
-            A location into which the result is stored (default is None).
         """
 
         F = x[0]
@@ -291,12 +287,7 @@ class NeoHooke(ConstitutiveMaterial):
         J = det(F)
         iFT = transpose(inv(F, J))
 
-        A4 = out
-        if A4 is None:
-            A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]), dtype=F.dtype)
-        else:
-            # reset the (re-used) output array, NaN or inf entries must be removed
-            A4.fill(0.0)
+        A4 = np.zeros((*F.shape[:2], *F.shape[:2], *F.shape[-2:]), dtype=F.dtype)
 
         trC = None
         A4b = None
@@ -305,9 +296,9 @@ class NeoHooke(ConstitutiveMaterial):
         if mu is not None:
             # "physical"-deviatoric (not math-deviatoric!) part of A4
             eye = identity(F)
-            trC = ddot(F, F, parallel=self.parallel, out=trC)
+            trC = ddot(F, F)
             np.add(A4, cdya_ik(eye, eye), out=A4)
-            A4b = dya(F, iFT, parallel=self.parallel, out=A4b)
+            A4b = dya(F, iFT)
             np.multiply(-2 / 3, A4b, out=A4b)
             np.add(A4, A4b, out=A4)
             np.add(A4, np.transpose(A4b, [2, 3, 0, 1, 4, 5]), out=A4)

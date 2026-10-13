@@ -965,6 +965,100 @@ def test_thirdmediumcontactmixed():
         fem.Job(steps=[step]).evaluate()
 
 
+def test_item_protocol():
+    "All built-in items provide the interface of an item."
+
+    mesh = fem.Cube(n=3)
+    mesh.update(points=np.vstack([mesh.points, [2.0, 0.5, 0.5]]))
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    umat = fem.NeoHooke(mu=1, bulk=2)
+    right = np.arange(mesh.npoints - 1)[mesh.points[:-1, 0] == 1]
+    center = mesh.npoints - 1
+
+    boundary = fem.RegionHexahedronBoundary(mesh, mask=mesh.points[:, 0] == 1)
+    field_boundary = fem.FieldContainer([fem.Field(boundary, dim=3)])
+
+    @fem.Form(v=field, u=field)
+    def bilinearform():
+        return [lambda v, u: fem.math.ddot(v, u)]
+
+    items = [
+        fem.SolidBody(umat, field),
+        fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000),
+        fem.SolidBodyForce(field, values=[1.0, 0.0, 0.0]),
+        fem.SolidBodyPressure(field_boundary, pressure=1.0),
+        fem.SolidBodyCauchyStress(field_boundary),
+        fem.PointLoad(field, points=right, values=[1.0, 0.0, 0.0]),
+        fem.MultiPointConstraint(field, points=right, centerpoint=center),
+        fem.MultiPointContact(field, points=right, centerpoint=center),
+        fem.CartesianConstraint(field, points=right),
+        fem.CylindricalConstraint(field, points=right),
+        fem.ContactRigidPlane(field, right, center, normal=[-1, 0, 0]),
+        fem.ContactRigidCylinder(field, right, center, radius=0.5, axis=[0, 0, 1]),
+        fem.FormItem(bilinearform=bilinearform),
+    ]
+
+    temperature = fem.FieldContainer([fem.Field(region, dim=1)])
+    thermal = fem.thermal.SolidBodyThermal(
+        temperature,
+        mass_density=1.0,
+        specific_heat_capacity=1.0,
+        thermal_conductivity=1.0,
+    )
+    temperature_boundary = fem.FieldContainer([fem.Field(boundary, dim=1)])
+    items.extend(
+        [
+            thermal,
+            fem.thermal.TimeStep(items=[thermal]),
+            fem.thermal.SolidBodyHeatFlux(temperature_boundary, heat_flux=1.0),
+            fem.thermal.SolidBodySurfaceHeatTransfer(
+                temperature_boundary, coefficient=1.0, temperature=1.0
+            ),
+            fem.thermal.SolidBodySurfaceRadiation(
+                temperature_boundary, emissivity=0.5, temperature=1.0
+            ),
+        ]
+    )
+
+    line = fem.mesh.Line(n=2)
+    line.update(points=np.pad(line.points, ((0, 0), (0, 2))))
+    truss = fem.FieldContainer([fem.Field(fem.RegionTruss(line), dim=3)])
+    items.append(fem.TrussBody(fem.LinearElastic1D(E=1), truss, area=1.0))
+
+    for item in items:
+        assert isinstance(item, fem.mechanics.Item), type(item).__name__
+        assert callable(item.assemble.vector)
+        assert callable(item.assemble.matrix)
+        assert hasattr(item.assemble, "multiplier")
+        assert callable(item.results.update_statevars)
+
+    # boundary conditions are no items
+    assert not isinstance(fem.Boundary(field[0]), fem.mechanics.Item)
+
+
+def test_newton_custom_check():
+    "The state variables are updated after convergence, also with a custom check."
+
+    region = fem.RegionHexahedron(fem.Cube(n=2))
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    umat = fem.LinearElasticPlasticIsotropicHardening(E=1.0, nu=0.3, sy=0.01, K=0.1)
+    solid = fem.SolidBody(umat, field)
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.05, clamped=True, return_loadcase=True
+    )
+
+    def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None):
+        "A custom check which ignores the items."
+        return fem.tools._newton.check(dx, x, f, xtol, ftol, dof1, dof0)
+
+    res = fem.newtonraphson(items=[solid], check=check, verbose=0, **loadcase)
+
+    assert res.success
+    assert solid.results.statevars is solid.results._statevars
+    assert not np.allclose(solid.results.statevars, 0)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -987,3 +1081,6 @@ if __name__ == "__main__":
     test_axi_to_3d_mixed()
     test_axi_to_3d_quadratic()
     test_job_plugins()
+    test_thirdmediumcontactmixed()
+    test_item_protocol()
+    test_newton_custom_check()

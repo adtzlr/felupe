@@ -405,7 +405,14 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=spsolve):
 
 
 def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
-    "Check result."
+    """Check the convergence of the Newton-Raphson method (without side effects).
+
+    The norm of the residuals of the active degrees of freedom is divided by the norm of
+    the residuals (the reaction forces) of the prescribed degrees of freedom. The
+    argument ``items`` is not used, the state variables of the items are updated by
+    :func:`~felupe.newtonraphson` after a converged iteration, see
+    :func:`update_statevars`.
+    """
 
     def sumnorm(x):
         return np.sum(norm(x))
@@ -421,11 +428,19 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
     fnorm = sumnorm(f[dof1]) / (eps + sumnorm(f[dof0]))
     success = fnorm < ftol and xnorm < xtol
 
-    if success and items is not None:
-        for item in items:
-            item.results.update_statevars()
-
     return xnorm, fnorm, success
+
+
+def update_statevars(items):
+    """Accept the trial state variables of the items for a converged solution.
+
+    The trial state variables of the last evaluation of the items become the state
+    variables of the converged solution, by ``item.results.update_statevars()``, see
+    :class:`~felupe.mechanics.Item`.
+    """
+
+    for item in items:
+        item.results.update_statevars()
 
 
 def update(x, dx):
@@ -491,13 +506,16 @@ def newtonraphson(
         Callable to update the unknowns. Function signature must be
         ``update = lambda x0, dx: x``.
     check : callable, optional
-        Callable to check the result with signature
-        ``check = lambda xnorm, fnorm, success: dx, x, **kwargs``.
+        Callable to check the convergence with the signature
+        ``xnorm, fnorm, success = check(dx, x, f, xtol, ftol, dof1, dof0, items)``.
+        The state variables of the items are updated by the Newton-Raphson method after
+        a converged iteration, i.e. a custom ``check`` doesn't update them.
     tol : float, optional
         Tolerance value to check if the function has converged (default is 1.490e-8).
     items : list or None, optional
         List with items which provide methods for assembly, e.g. like
-        :class:`felupe.SolidBody` (default is None).
+        :class:`felupe.SolidBody` (default is None). See
+        :class:`~felupe.mechanics.Item` for the interface of an item.
     dof1 : ndarray or None, optional
         1d-array of int with all active degrees of freedom (default is None).
     dof0 : ndarray or None, optional
@@ -687,7 +705,7 @@ def newtonraphson(
         return fun(x, *args, **kwargs)
 
     def converged(dx, x, f):
-        "Check the convergence without side effects (no update of state variables)."
+        "Check the convergence for given unknowns, e.g. of a trial of a plugin."
         return check(
             dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=None
         )
@@ -763,6 +781,11 @@ def newtonraphson(
         xnorm, fnorm, success = check(
             dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
         )
+
+        if success and items is not None:
+            # accept the trial state variables of the items for the converged solution
+            update_statevars(items)
+
         xnorms.append(xnorm)
         fnorms.append(fnorm)
 

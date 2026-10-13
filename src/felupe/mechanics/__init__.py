@@ -8,6 +8,7 @@ from ._item import FormItem
 from ._job import Job, JobState
 from ._multipoint import MultiPointConstraint, MultiPointContact
 from ._pointload import PointLoad
+from ._protocol import Item
 from ._solidbody import SolidBody
 from ._solidbody_cauchy_stress import SolidBodyCauchyStress
 from ._solidbody_force import SolidBodyForce
@@ -25,6 +26,7 @@ __all__ = [
     "Evaluate",
     "FreeVibration",
     "FormItem",
+    "Item",
     "StateNearlyIncompressible",
     "Job",
     "JobState",

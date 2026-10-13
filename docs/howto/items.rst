@@ -2,10 +2,13 @@ Create Custom Items
 ~~~~~~~~~~~~~~~~~~~
 Items are supported to be used in a :class:`~felupe.Step` and in
 :func:`~felupe.newtonraphson`. They provide methods to assemble a vector and a sparse
-matrix. An item has to be created as a class which takes a
+matrix. The interface of an item, i.e. the required attributes ``field``, ``assemble``
+and ``results`` and the optional methods for further features, is described by
+:class:`~felupe.mechanics.Item`. An item has to be created as a class which takes a
 :class:`~felupe.FieldContainer` as input argument. In its ``__init__(self, field)``
-method, the helpers :class:`~felupe.mechanics.Assemble` and
-:class:`~felupe.mechanics.Results` have to be evaluated and added as attributes.
+method, the field container and the helpers :class:`~felupe.mechanics.Assemble` and
+:class:`~felupe.mechanics.Results` have to be added as the attributes ``field``,
+``assemble`` and ``results``.
 Internal methods which assemble the sparse vector and matrix, optionally with an updated
 :class:`~felupe.FieldContainer` provided by the `field` argument, have to be linked to
 :class:`~felupe.mechanics.Assemble`. 
@@ -20,8 +23,14 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
     its ``update()`` method, which is called by the step at the beginning of each
     substep. If more parameters have to be updated, it is recommended to add a separate
     method for each parameter with  the naming convention ``_update_my_parameter()``.
-    Then, :class:`~felupe.mechanics.UpdateItem` can be used to update the item with the
-    syntax ``my_item["my_parameter"] = my_parameter_value`` in a step.
+    Then, the method ``__getitem__()`` of the item returns an
+    :class:`~felupe.mechanics.UpdateItem` for ``my_item["my_parameter"]``, which is
+    used as a key of the ``ramp``-dict of a step,
+    i.e. ``ramp = {my_item["my_parameter"]: my_parameter_values}``. At the beginning of
+    each substep, the step calls the method ``update(value)`` of this key, which calls
+    ``my_item._update_my_parameter(value)``. Outside of a step, the parameter is
+    updated by ``my_item["my_parameter"].update(value)`` (an item assignment
+    ``my_item["my_parameter"] = value`` is not supported).
 
 
 ..  pyvista-plot::
@@ -50,7 +59,7 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
             ..  code-block:: python
 
                 my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
-                ramp = dict(my_item['my_parameter']=my_parameter_value)
+                ramp = {my_item["my_parameter"]: my_parameter_values}
                 step = fem.Step(items=[my_item], ramp=ramp)
 
             """
@@ -63,7 +72,7 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
             ..  code-block:: python
 
                 my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
-                ramp = dict(my_item=my_parameter_value)
+                ramp = {my_item: my_parameter_values}
                 step = fem.Step(items=[my_item], ramp=ramp)
 
             """
@@ -76,7 +85,7 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
             ..  code-block:: python
 
                 my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
-                ramp = dict(my_item["my_parameter"]=my_parameter_value)
+                ramp = {my_item["my_parameter"]: my_parameter_values}
                 step = fem.Step(items=[my_item], ramp=ramp)
 
             """
@@ -90,7 +99,7 @@ Internal methods which assemble the sparse vector and matrix, optionally with an
             ..  code-block:: python
 
                 my_item = MyItem(field, my_parameter=1.0, my_other_parameter=2.0)
-                ramp = dict(my_item["my_other_parameter"]=my_other_parameter_value)
+                ramp = {my_item["my_other_parameter"]: my_other_parameter_values}
                 step = fem.Step(items=[my_item], ramp=ramp)
 
             """
@@ -110,6 +119,19 @@ This item is now added to a basic script.
     other items if necessary. Hence, a sparse matrix with shape ``(1, 1)`` is a valid
     choice for a vector or a matrix filled with zeros.
 
+..  note::
+
+    An item with state variables, e.g. of a history-dependent material model, stores the
+    trial state variables of the last evaluation in ``results._statevars``. After a
+    converged iteration, :func:`~felupe.newtonraphson` calls
+    ``results.update_statevars()``, which accepts them as the state variables
+    ``results.statevars`` of the converged solution. An item with a state which is
+    modified during the iterations, e.g. the internal fields of a
+    :class:`~felupe.SolidBodyNearlyIncompressible`, has to provide the methods
+    ``checkpoint()`` and ``restore(checkpoint)`` for the
+    :class:`~felupe.CutbackPlugin`. All optional methods of an item are listed in
+    :class:`~felupe.mechanics.Item`.
+
 ..  pyvista-plot::
     :context:
 
@@ -119,6 +141,9 @@ This item is now added to a basic script.
 
     solid = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=2), field=field)
     my_item = MyItem(field=field, my_parameter=1.0, my_other_parameter=2.0)
+
+    # the item provides the interface of an item
+    assert isinstance(my_item, fem.mechanics.Item)
 
     table = fem.math.linsteps([0.0, 1.0], num=10)
 

@@ -116,10 +116,8 @@ def expand(points, cells, cell_type, n=11, z=1, axis=-1, expand_dim=True):
         if np.isscalar(thickness):
             points_thickness = np.linspace(0, thickness, n)
         else:
-
             points_thickness = np.array(thickness)
             if cell_type_new == "hexahedron27":
-
                 points_thickness = np.vstack(
                     [
                         points_thickness,
@@ -1101,7 +1099,7 @@ def flip(points, cells, cell_type, mask=None):
 
 @mesh_or_data
 def mirror(
-    points, cells, cell_type, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None
+    points, cells, cell_type, normal=(1, 0, 0), centerpoint=(0, 0, 0), axis=None
 ):
     """Mirror points by plane normal and ensure positive cell volumes for
     `tria`, `tetra`, `quad` and `hexahedron` cell types.
@@ -1417,8 +1415,8 @@ def runouts(
     points,
     cells,
     cell_type,
-    values=[0.1, 0.1],
-    centerpoint=[0, 0, 0],
+    values=(0.1, 0.1),
+    centerpoint=(0, 0, 0),
     axis=0,
     exponent=5,
     mask=slice(None),

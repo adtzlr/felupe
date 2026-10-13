@@ -384,7 +384,6 @@ class Boundary:
             )
 
         if len(self.points) > 0:
-
             if show_points or show_lines:
                 points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 

@@ -152,7 +152,6 @@ class EventDispatcher:
         # check if methods are available for the hooks in the plugins
         # add them to the dispatcher if they are available
         for plugin in self.plugins:
-
             # simple callable plugin
             if callable(plugin):
                 dispatcher["after_substep"].append(plugin)

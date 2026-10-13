@@ -139,7 +139,7 @@ class EvaluateFieldContainer:
 
     def log_strain(self, tensor=True, asvoigt=False, n=0):
         r"""Return the logarithmic Lagrangian strain tensor or its principal values.
-        
+
         .. math::
            :label: log-strain-tensor
 

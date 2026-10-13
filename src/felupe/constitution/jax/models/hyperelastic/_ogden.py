@@ -15,9 +15,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from functools import wraps
 
-from jax.numpy import sum as tsum
 from jax.numpy.linalg import det
 
 from ....tensortrax.models.hyperelastic import ogden as ogden_docstring

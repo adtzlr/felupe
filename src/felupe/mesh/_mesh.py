@@ -1231,7 +1231,7 @@ class Mesh(DiscreteGeometry):
         """
         return as_mesh(flip(self, mask=mask))
 
-    def mirror(self, normal=[1, 0, 0], centerpoint=[0, 0, 0], axis=None):
+    def mirror(self, normal=(1, 0, 0), centerpoint=(0, 0, 0), axis=None):
         """Mirror points by plane normal and ensure positive cell volumes for
         `tria`, `tetra`, `quad` and `hexahedron` cell types.
 
@@ -1357,8 +1357,8 @@ class Mesh(DiscreteGeometry):
 
     def add_runouts(
         self,
-        values=[0.1, 0.1],
-        centerpoint=[0, 0, 0],
+        values=(0.1, 0.1),
+        centerpoint=(0, 0, 0),
         axis=0,
         exponent=5,
         mask=slice(None),

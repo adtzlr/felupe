@@ -18,9 +18,8 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ._tensor import dot, eigh, eigvalsh
+from ._tensor import dot, eigh, eigvalsh, transpose
 from ._tensor import tovoigt as tensor_to_vector
-from ._tensor import transpose
 
 
 def displacement(field, dim=3, n=0):
@@ -139,7 +138,7 @@ def strain(
 
        \boldsymbol{E} = \sum_\alpha E_\alpha \
            \boldsymbol{N}_\alpha \otimes \boldsymbol{N}_\alpha
-    
+
     See Also
     -------
     math.strain_stretch_1d : Compute the Seth-Hill strains.

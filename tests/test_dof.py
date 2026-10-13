@@ -24,6 +24,7 @@ You should have received a copy of the GNU General Public License
 along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
+
 from copy import deepcopy
 
 import numpy as np
@@ -314,7 +315,6 @@ def test_loadcase_deprecated():
     ).as_container()
 
     for loadcase in [fem.dof.uniaxial, fem.dof.shear, fem.dof.biaxial]:
-
         with pytest.warns(DeprecationWarning):
             my_loadcase = loadcase(field)
 

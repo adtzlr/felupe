@@ -310,7 +310,6 @@ class Region:
         region = self
 
         if mesh is not None:
-
             if "container" in type(mesh).__name__.lower():
                 raise TypeError(
                     "A mesh container is not supported by a region, use a mesh instead."

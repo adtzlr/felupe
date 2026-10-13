@@ -17,6 +17,7 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 - [Code of Conduct](#code-of-conduct)
 - [I Have a Question](#i-have-a-question)
 - [I Want To Contribute](#i-want-to-contribute)
+- [Code Style](#code-style)
 - [Reporting Bugs](#reporting-bugs)
 - [Suggesting Enhancements](#suggesting-enhancements)
 
@@ -45,6 +46,17 @@ We will then take care of the issue as soon as possible.
 
 > ### Legal Notice
 > When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project [license](https://github.com/adtzlr/felupe/blob/main/LICENSE).
+
+### Code Style
+
+The code is linted and formatted by [ruff](https://docs.astral.sh/ruff/), configured in `pyproject.toml`. A workflow checks every pull request. The same checks are run locally before each commit by [pre-commit](https://pre-commit.com/):
+
+```
+pip install pre-commit
+pre-commit install
+```
+
+All files are checked (and fixed, if possible) by `pre-commit run --all-files`.
 
 ### Reporting Bugs
 

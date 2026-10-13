@@ -26,7 +26,7 @@ class FieldAxisymmetric(Field):
     r"""An axisymmetric :class:`~felupe.Field` on points of a two-dimensional
     :class:`~felupe.Region` with dimension ``dim`` (default is 2) and initial point
     ``values`` (default is 0).
-    
+
     Parameters
     ----------
     region : Region
@@ -58,18 +58,18 @@ class FieldAxisymmetric(Field):
     the numeric integration points ``q`` for each cell ``c``. The :meth:`grad`-method is
     modified in such a way that it does not only contain the in-plane 2d-gradient but
     also the circumferential stretch, see Eq. :eq:`gradient_axi`.
-    
+
     ..  math::
         :label: gradient_axi
-        
-        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} = 
+
+        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} =
             \begin{bmatrix}
-                \left( 
-                    \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} 
+                \left(
+                    \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}
                 \right)_{2d} & \boldsymbol{0} \\
                 \boldsymbol{0}^T & \frac{u_r}{R}
             \end{bmatrix}
-    
+
     See Also
     --------
     felupe.Field : Field on points of a :class:`~felupe.Region` with dimension ``dim``
@@ -174,11 +174,11 @@ class FieldAxisymmetric(Field):
         returned.
 
         ..  math::
-            
-            \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} = 
+
+            \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} =
                 \begin{bmatrix}
-                    \left( 
-                        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}} 
+                    \left(
+                        \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}
                     \right)_{2d} & \boldsymbol{0} \\
                     \boldsymbol{0}^T & \frac{u_r}{R}
                 \end{bmatrix}

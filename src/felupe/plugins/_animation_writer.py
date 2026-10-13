@@ -129,14 +129,15 @@ class AnimationWriterPlugin(Plugin):
                 color["color"] = self.colors[idx]  # pragma: no cover
 
             self.plotter = item.plot(  # pragma: no cover
-                plotter=self.plotter, **color, **self.kwargs  # pragma: no cover
+                plotter=self.plotter,
+                **color,
+                **self.kwargs,  # pragma: no cover
             )  # pragma: no cover
 
         if self.zoom_camera != 1.0:
             self.plotter.camera.zoom(self.zoom_camera)
 
         if self.filename is not None:
-
             _, extension = os.path.splitext(self.filename)
             if extension == ".gif":
                 self.write_frame = True
@@ -172,11 +173,10 @@ class AnimationWriterPlugin(Plugin):
                 self.plotter.camera.zoom(self.zoom_camera)  # pragma: no cover
 
         if self.show_text:  # pragma: no cover
-
             text = [  # pragma: no cover
                 f"FElupe {version}",  # pragma: no cover
                 f"Step {1 + state.stepnumber}, "  # pragma: no cover
-                f"Substep { 1 + state.substepnumber}",  # pragma: no cover
+                f"Substep {1 + state.substepnumber}",  # pragma: no cover
             ]  # pragma: no cover
 
             for mesh in self.plotter.meshes:  # pragma: no cover

@@ -32,12 +32,12 @@ class LinearElastic(ConstitutiveMaterial):
         Young's modulus.
     nu : float
         Poisson ratio.
-    
+
     Notes
     -----
     The stress-strain relation of the linear-elastic material formulation is given in
     Eq. :eq:`linear-elastic`
-    
+
     ..  math::
         :label: linear-elastic
 
@@ -72,25 +72,25 @@ class LinearElastic(ConstitutiveMaterial):
         \boldsymbol{\varepsilon} = \frac{1}{2} \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} + \left( \frac{\partial \boldsymbol{u}}
         {\partial \boldsymbol{X}} \right)^T \right)
-    
+
     ..  warning::
-        
+
         This material formulation must not be used in analyses where large rotations,
         large displacements or large strains occur. In this case, consider using a
         :class:`~felupe.Hyperelastic` material formulation instead.
         :class:`~felupe.LinearElasticLargeStrain` is based on a compressible version
         of the Neo-Hookean material formulation and is safe to use for large rotations,
         large displacements and large strains.
-    
+
     Examples
     --------
     ..  plot::
 
         >>> import felupe as fem
-        >>> 
+        >>>
         >>> umat = fem.LinearElastic(E=1, nu=0.3)
         >>> ax = umat.plot()
-    
+
     See Also
     --------
     felupe.LinearElasticLargeStrain : Linear-elastic material formulation suitable for
@@ -236,7 +236,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
     ..  plot::
 
         >>> import felupe as fem
-        >>> 
+        >>>
         >>> umat = fem.constitution.LinearElasticTensorNotation(E=1, nu=0.3)
         >>> ax = umat.plot()
 

@@ -839,7 +839,8 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         return [dWdF, dWdθ, dWdgradθ, statevars_new]
 
     def _hessian(self, x):
-        [F, θ, grad_θ], statevars = x[:3], x[-1]
+        # the hessian doesn't depend on the values of θ
+        F, grad_θ, statevars = x[0], x[2], x[-1]
 
         # for plane-strain or axisymmetric first-fields, grad_θ.shape is (9, 2)
         # for cartesian 3d fields, grad_θ.shape is (9, 3)

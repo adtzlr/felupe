@@ -306,7 +306,6 @@ class IntegralForm:
                 idx_u = range(nu)
 
             for a, (i, j) in enumerate(zip(self.i, self.j)):
-
                 K[idx_v[i], idx_u[j]] += res[a]
                 if self.mode == 2 and i != j:
                     K[idx_v[j], idx_u[i]] += res[a].T

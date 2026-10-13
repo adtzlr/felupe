@@ -1,6 +1,3 @@
-import warnings
-
-
 class BoundaryDict(dict):
     "A dict of boundary conditions."
 
@@ -35,7 +32,6 @@ class BoundaryDict(dict):
             colors_list = [*colors_list, *colors]
 
         for (label, boundary), color in zip(self.items(), colors_list):
-
             plotter = boundary.plot(
                 label=label,
                 color=color,

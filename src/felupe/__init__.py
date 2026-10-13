@@ -156,10 +156,8 @@ from .tools import (
     save,
     topoints,
 )
-from .view import ViewField, ViewMesh
-from .view import ViewSolid
+from .view import ViewField, ViewMesh, ViewSolid, ViewXdmf
 from .view import ViewSolid as View
-from .view import ViewXdmf
 
 __all__ = [
     "__version__",

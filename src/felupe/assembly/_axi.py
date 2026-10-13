@@ -24,7 +24,7 @@ from ._cartesian import IntegralFormCartesian
 
 class IntegralFormAxisymmetric(IntegralFormCartesian):
     r"""An Integral Form for axisymmetric fields.
-    
+
     Parameters
     ----------
     fun : array
@@ -191,7 +191,6 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
 
         else:
             if isinstance(v, FieldAxisymmetric) and isinstance(u, FieldAxisymmetric):
-
                 if grad_v and grad_u:
                     self.mode = 2
 
@@ -335,7 +334,6 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             val = values[0]
 
         elif self.mode == 2 or self.mode == 21:
-
             a, b, e = values[1].shape
             values[1] = values[1].reshape(a, 1, b, 1, e)
             values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
@@ -354,7 +352,6 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             val = values[0]
 
         elif self.mode == 22 or self.mode == 23:
-
             a, b, e = values[1].shape
             values[1] = values[1].reshape(a, 1, b, 1, e)
             values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))

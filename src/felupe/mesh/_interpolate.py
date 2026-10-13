@@ -75,7 +75,6 @@ def interpolate_line(mesh, xi, axis=None, Interpolator=None, **kwargs):
         from scipy.interpolate import PchipInterpolator as Interpolator
 
     if axis is None:  # progress-based interpolation
-
         distances = np.linalg.norm(np.diff(mesh.points, axis=0), axis=1)
         progress = np.insert(np.cumsum(distances), 0, 0)
         progress /= progress.max()
@@ -89,7 +88,6 @@ def interpolate_line(mesh, xi, axis=None, Interpolator=None, **kwargs):
         mesh_new.points_derivative = spline.derivative()(xi)
 
     else:  # independent- and dependent-variables
-
         # line connectivity
         # concatenate the first point of each cell and the last point of the last cell
         line = np.concatenate([mesh.cells[:, :-1].ravel(), mesh.cells[-1, -1:]])

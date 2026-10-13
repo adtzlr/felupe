@@ -18,7 +18,6 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 from tensortrax.math import base, einsum, log, sqrt, trace
 from tensortrax.math.linalg import eigh, inv
-from tensortrax.math.special import dev
 
 from ..._total_lagrange import total_lagrange
 

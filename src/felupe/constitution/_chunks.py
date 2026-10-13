@@ -18,10 +18,12 @@ along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 
-from ..math._threads import map_threaded
+from ..math._chunks import CHUNKSIZE_POINTS, chunk_slices, map_chunks
 
 
-def evaluate_chunks(fun, x, *args, chunksize=8192, parallel=False, out=None, **kwargs):
+def evaluate_chunks(
+    fun, x, *args, chunksize=CHUNKSIZE_POINTS, parallel=False, out=None, **kwargs
+):
     r"""Evaluate a function of a constitutive material, e.g. the gradient or the hessian
     of the strain energy density function, in chunks of cells and return the list of
     results.
@@ -88,7 +90,7 @@ def evaluate_chunks(fun, x, *args, chunksize=8192, parallel=False, out=None, **k
     def chunk_of(x, chunk):
         return [a[..., chunk] if per_cell(a, ncells) else a for a in x]
 
-    starts = range(0, ncells, cells)
+    chunks = chunk_slices(ncells, cells)
 
     # evaluate the first chunk (serial) or a probe of two cells (parallel) to create the
     # output arrays of the results per cell. A first chunk in serial would limit the
@@ -109,17 +111,15 @@ def evaluate_chunks(fun, x, *args, chunksize=8192, parallel=False, out=None, **k
             res[i] = result
             sliced.append(i)
 
-    def evaluate(start):
-        chunk = slice(start, start + cells)
+    def evaluate(chunk):
         results = fun(chunk_of(x, chunk), *args, **kwargs)
 
         for i in sliced:
             res[i][..., chunk] = results[i]
 
     if parallel:
-        map_threaded(evaluate, starts)
+        map_chunks(evaluate, chunks, parallel=True)
     else:
-        for start in starts[1:]:
-            evaluate(start)
+        map_chunks(evaluate, chunks[1:])  # the first chunk is already evaluated
 
     return res

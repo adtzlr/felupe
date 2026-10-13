@@ -784,6 +784,35 @@ def test_elpliso():
     dsde = umat.hessian([F, statevars])
 
 
+def test_umat_strain_optimize():
+    "The parameters of a strain-based material are optimized, but not `tangent`."
+
+    # uniaxial and biaxial tension are required to identify both lamé parameters
+    stretches = np.linspace(1, 1.01, 6)
+    umat = fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0)
+    view = umat.view(incompressible=False, ux=stretches, bx=stretches, ps=None)
+    uniaxial, biaxial = view.evaluate()
+
+    # a given flag `tangent` is not a parameter of the material
+    initial = fem.MaterialStrain(
+        material=fem.linear_elastic, λ=1.0, μ=0.5, tangent=True
+    )
+    assert list(initial.kwargs.keys()) == ["λ", "μ"]
+
+    # also after an evaluation of the material
+    initial.gradient([np.eye(3).reshape(3, 3, 1, 1), np.zeros((18, 1, 1))])
+    umat_new, res = initial.optimize(
+        ux=[stretches, uniaxial[1]],
+        bx=[stretches, biaxial[1]],
+        incompressible=False,
+    )
+
+    assert res.success
+    assert list(umat_new.kwargs.keys()) == ["λ", "μ"]
+    assert np.isclose(umat_new.kwargs["λ"], 2.0)
+    assert np.isclose(umat_new.kwargs["μ"], 1.0)
+
+
 def test_composite(close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
@@ -1016,7 +1045,7 @@ def test_plot_title_kwargs(close_figs=True):
     "The parameters in the title of the plot may be None, 0-d arrays or strings."
 
     umats = [
-        # the (optional) argument `tangent` is None
+        # a strain-based material
         fem.MaterialStrain(material=fem.linear_elastic, λ=2.0, μ=1.0),
         # the elastic modulus is a 0-d array
         fem.LinearElastic1D(E=1),
@@ -1030,9 +1059,11 @@ def test_plot_title_kwargs(close_figs=True):
 
     umat = fem.NeoHooke(mu=1.0, bulk=2.0)
     umat.kwargs["name"] = "a string"
+    umat.kwargs["unset"] = None
     ax = umat.plot()
 
     assert '"a string"' in ax.get_title()
+    assert "unset" not in ax.get_title()
 
     if close_figs:
         plt.close(ax.get_figure())
@@ -1058,6 +1089,7 @@ if __name__ == "__main__":
     test_umat_strain()
     test_umat_strain_plasticity()
     test_elpliso()
+    test_umat_strain_optimize()
     test_composite(close_figs=close_figs)
     test_optimize(close_figs=close_figs)
     test_lagrange()

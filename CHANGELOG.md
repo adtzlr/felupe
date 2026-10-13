@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Fix `ConstitutiveMaterial.optimize()` for a `MaterialStrain`. The flag `tangent` is not stored in the keyword-arguments `MaterialStrain.kwargs` anymore, it is passed to the material function on each evaluation (`tangent=False` for the gradient and `tangent=True` for the hessian, unchanged). Before, `tangent` was optimized like a material parameter, which failed for its initial value `None`. A given keyword-argument `tangent` is ignored (unchanged).
+
 ## [11.2.0] - 2026-10-13
 
 ### Added

@@ -268,9 +268,11 @@ def test_chunks_composed_materials(monkeypatch):
 
     # the keyword-arguments of a strain-based material are not changed
     strain, x = composed_materials(parallel=False)[-1]
+    kwargs = dict(strain.kwargs)
     strain.gradient(x)
     strain.hessian(x)
-    assert strain.kwargs["tangent"] is None
+    assert strain.kwargs == kwargs
+    assert "tangent" not in strain.kwargs
 
 
 def test_parallel_from_material():

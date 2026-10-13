@@ -198,7 +198,10 @@ class MaterialStrain(ConstitutiveMaterial):
         self.framework = framework
         self.symmetry = symmetry
 
-        self.kwargs = {**kwargs, "tangent": None}
+        # the flag `tangent` is passed to the material for each evaluation, i.e. the
+        # keyword-arguments contain only the parameters of the material
+        kwargs.pop("tangent", None)
+        self.kwargs = kwargs
 
         self.dim = dim
         self.x = [np.eye(dim), np.zeros(2 * dim**2 + self.nstatevars)]

@@ -21,6 +21,7 @@ from copy import deepcopy as copy
 import numpy as np
 
 from ..math import dot, eigh, transpose
+from ._chunks import evaluate_chunks
 from ._view import ViewMaterial, ViewMaterialIncompressible
 
 
@@ -95,10 +96,129 @@ class ConstitutiveMaterial:
 
         umat = MyMaterialFormulation()
 
+    Instead of the methods ``gradient(x)`` and ``hessian(x)``, a constitutive material
+    may implement the methods ``_gradient(x)`` and ``_hessian(x)``. These are
+    evaluated in chunks of cells by :meth:`gradient` and :meth:`hessian`, i.e. the
+    arrays of the input list ``x`` are sliced along their last axis. The intermediate
+    arrays of a chunk fit into the CPU caches, which speeds up the evaluation of large
+    arrays. The number of evaluation points (quadrature points times cells) per chunk
+    is given by the attribute ``chunksize`` (default is 8192, None evaluates all cells
+    at once). The chunks are evaluated by a pool of threads if the attribute
+    ``parallel`` is True (default is False). Optional output arrays (``out``) are
+    handled by :meth:`gradient` and :meth:`hessian`.
+
+    ..  code-block::
+
+        class MyMaterialFormulation(fem.ConstitutiveMaterial):
+
+            def __init__(self, parallel=False):
+                self.x = [np.zeros((3, 3))]
+                self.parallel = parallel
+
+            def _gradient(self, x):
+                "Gradients of the strain energy density function of a chunk of cells."
+
+                F, p, statevars = x[0], x[1], x[-1]
+                ...
+
+                return [dWdF, dWdp, statevars_new]
+
+            def _hessian(self, x):
+                "Hessians of the strain energy density function of a chunk of cells."
+
+                F, p, statevars = x[0], x[1], x[-1]
+                ...
+
+                return [d2WdFdF, d2WdFdp, d2Wdpdp]
+
     See Also
     --------
     felupe.constitutive_material : A decorator for a constitutive material definition.
     """
+
+    chunksize = 8192
+    parallel = False
+
+    def gradient(self, x, *args, out=None, **kwargs):
+        """Return the evaluated gradient(s) of the strain energy density function,
+        evaluated by ``_gradient(x, *args, **kwargs)`` in chunks of cells.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            The list with input arguments. These contain the extracted fields of a
+            :class:`~felupe.FieldContainer` along with the old vector of state
+            variables, ``[*field.extract(), statevars_old]``.
+        *args : tuple, optional
+            Optional arguments for ``_gradient()``.
+        out : ndarray or None, optional
+            A location into which the first gradient is stored (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments for ``_gradient()``.
+
+        Returns
+        -------
+        list of ndarray
+            A list with the evaluated gradient(s) of the strain energy density function
+            and the updated vector of state variables.
+        """
+
+        return evaluate_chunks(
+            self._gradient,
+            x,
+            *args,
+            chunksize=self.chunksize,
+            parallel=self.parallel,
+            out=out,
+            **kwargs,
+        )
+
+    def hessian(self, x, *args, out=None, **kwargs):
+        """Return the evaluated upper-triangle components of the hessian(s) of the
+        strain energy density function, evaluated by ``_hessian(x, *args, **kwargs)``
+        in chunks of cells.
+
+        Parameters
+        ----------
+        x : list of ndarray
+            The list with input arguments. These contain the extracted fields of a
+            :class:`~felupe.FieldContainer` along with the old vector of state
+            variables, ``[*field.extract(), statevars_old]``.
+        *args : tuple, optional
+            Optional arguments for ``_hessian()``.
+        out : ndarray or None, optional
+            A location into which the first hessian is stored (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments for ``_hessian()``.
+
+        Returns
+        -------
+        list of ndarray
+            A list with the evaluated upper-triangle components of the hessian(s) of the
+            strain energy density function.
+        """
+
+        return evaluate_chunks(
+            self._hessian,
+            x,
+            *args,
+            chunksize=self.chunksize,
+            parallel=self.parallel,
+            out=out,
+            **kwargs,
+        )
+
+    def _gradient(self, x, *args, **kwargs):
+        raise NotImplementedError(
+            "A constitutive material must implement either `gradient(x)` or "
+            "`_gradient(x)`, which is evaluated in chunks of cells."
+        )
+
+    def _hessian(self, x, *args, **kwargs):
+        raise NotImplementedError(
+            "A constitutive material must implement either `hessian(x)` or "
+            "`_hessian(x)`, which is evaluated in chunks of cells."
+        )
 
     def copy(self):
         "Return a deep-copy of the constitutive material."
@@ -579,7 +699,9 @@ def constitutive_material(Material, name=None):
     if name is None:
         name = Material.__name__
 
-    class ConstitutiveMaterialDerived(ConstitutiveMaterial, Material):
+    # the methods of the material, e.g. ``gradient()`` and ``hessian()``, take
+    # precedence over the methods of the base class
+    class ConstitutiveMaterialDerived(Material, ConstitutiveMaterial):
         pass
 
     ConstitutiveMaterialDerived.__name__ = name

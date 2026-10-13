@@ -426,6 +426,32 @@ def test_thread_pool(monkeypatch):
     pool.shutdown()
 
 
+def test_thread_pool_reset(monkeypatch):
+    "After a reset (in a forked child process), a new pool of threads is created."
+
+    import felupe.math._einsum as einsum
+
+    # the pool and its lock of the module are restored after the test
+    monkeypatch.setattr(einsum, "cpu_count", lambda: 2)
+    monkeypatch.setattr(einsum, "_pool", None)
+    monkeypatch.setattr(einsum, "_pool_lock", einsum._pool_lock)
+
+    pool = einsum.thread_pool()
+    lock = einsum._pool_lock
+
+    einsum._reset_thread_pool()
+    assert einsum._pool is None
+    assert einsum._pool_lock is not lock
+
+    A = np.ones((3, 3, 10))
+    res = einsum.einsum_chunks("ij...,jk...->ik...", A, A, parallel=True)
+    assert np.allclose(res, 3)
+    assert einsum.thread_pool() is not pool
+
+    pool.shutdown()
+    einsum.thread_pool().shutdown()
+
+
 @pytest.mark.filterwarnings("ignore:This process .* is multi-threaded")
 @pytest.mark.filterwarnings("ignore:os.fork\\(\\) was called")  # by JAX
 def test_thread_pool_fork(monkeypatch):

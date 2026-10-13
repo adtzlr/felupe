@@ -69,6 +69,37 @@ class ContactRigidBase(ABC):
     r"""A base class for a node-to-surface contact, where the surface is given by a
     rigid body which is connected to a center-point.
 
+    Parameters
+    ----------
+    field : FieldContainer
+        A field container with the displacement field as first field.
+    points : (n,) ndarray
+        An array with indices of points to be connected to the center-point.
+    centerpoint : int
+        The index of the centerpoint.
+    friction : float, optional
+        Coulomb friction coefficient :math:`\mu`. Default is 0.0.
+    multiplier : float, optional
+        A scale factor for the multiplier to penalize the relative displacements between
+        the center-point and the points in contact. Default is 1.0.
+    multiplier_tangential : float or None, optional
+        A scale factor for the multiplier to penalize the relative tangential
+        displacements between the center-point and the points in contact. Default is
+        0.1.
+    items : list or None, optional
+        A list of items to be considered for the evaluation of the mean stiffness-based
+        multipliers. Default is None.
+    multiplier_update : str, optional
+        The update of the mean stiffness-based multipliers, either ``"increment"``,
+        ``"iteration"`` or ``"once"``. Default is ``"increment"``.
+    symmetric : bool, optional
+        A flag to return the symmetric part of the stiffness matrix. Default is False.
+    elastic_slip : float or None, optional
+        The allowable elastic slip of sticking points. Default is None.
+    curvature : str or None, optional
+        The gaps for the curvature term of the normal stiffness, either
+        ``"converged"``, ``"trial"`` or None. Default is ``"converged"``.
+
     Notes
     -----
     The geometry of the rigid surface is defined by the method ``_kinematics(dx)`` of a
@@ -84,7 +115,69 @@ class ContactRigidBase(ABC):
     the return mapping from the converged state, the stiffness-based multipliers, the
     checkpoints and the assembly of the sparse vector and matrix. With curvatures, the
     stiffness matrix includes the derivatives of the normal vectors, see
-    :class:`~felupe.ContactRigidCylinder`.
+    :class:`~felupe.ContactRigidCylinder`. The parameters are explained in more detail
+    in :class:`~felupe.ContactRigidPlane` and :class:`~felupe.ContactRigidCylinder`.
+
+    A subclass, e.g. for a new shape of the rigid surface, only has to implement
+    ``_kinematics(dx)``. The attributes, which are used by ``_kinematics(dx)``, have to
+    be set before ``super().__init__()`` is called, because the initial contact state
+    is evaluated there.
+
+    Examples
+    --------
+    A custom contact with a rigid sphere (a rigid circle for 2d-meshes) is created by
+    the gaps, the normal vectors and the curvatures of the sphere.
+
+    >>> import numpy as np
+    >>> import felupe as fem
+    >>>
+    >>> class ContactRigidSphere(fem.mechanics.ContactRigidBase):
+    ...     "A node-to-surface contact with a rigid sphere."
+    ...
+    ...     def __init__(self, field, points, centerpoint, radius, **kwargs):
+    ...         self.radius = radius  # required by _kinematics(), set it first
+    ...         super().__init__(field, points, centerpoint, **kwargs)
+    ...
+    ...     def _kinematics(self, dx):
+    ...         distance = np.linalg.norm(dx, axis=1)
+    ...         normal = dx / distance.reshape(-1, 1)
+    ...         nn = np.einsum("ai,aj->aij", normal, normal)
+    ...         curvature = (np.eye(dx.shape[1]) - nn) / distance.reshape(-1, 1, 1)
+    ...         return distance - self.radius, normal, curvature
+
+    A block is indented by the rigid sphere. An additional center-point is added to the
+    mesh, which is moved downwards.
+
+    >>> mesh = fem.Cube(n=6)
+    >>> mesh.add_points([0.5, 0.5, 1.5])
+    >>> region = fem.RegionHexahedron(mesh)
+    >>> displacement = fem.Field(region, dim=3)
+    >>> field = fem.FieldContainer([displacement])
+    >>> solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=5.0), field)
+    >>>
+    >>> contact = ContactRigidSphere(
+    ...     field,
+    ...     points=np.arange(mesh.npoints)[mesh.z == 1],
+    ...     centerpoint=-1,
+    ...     radius=0.5,
+    ...     multiplier=10.0,
+    ... )
+    >>> boundaries = {
+    ...     "fixed": fem.Boundary(displacement, fz=0),
+    ...     "move": fem.Boundary(displacement, fz=1.5),
+    ... }
+    >>> move = fem.math.linsteps([0, -0.1], num=2, axis=2, axes=3)
+    >>> step = fem.Step(
+    ...     items=[solid, contact],
+    ...     ramp={boundaries["move"]: move},
+    ...     boundaries=boundaries,
+    ... )
+    >>> job = fem.Job(steps=[step]).evaluate(verbose=0)
+
+    Some points of the top face are in contact with the sphere.
+
+    >>> print(np.any(contact.results.statevars["active"]))
+    True
 
     See Also
     --------
@@ -174,8 +267,32 @@ class ContactRigidBase(ABC):
 
     @abstractmethod
     def _kinematics(self, dx):
-        """Return the gaps, the outward normal vectors and their derivatives w.r.t.
-        the gap vectors (or None for constant normal vectors)."""
+        r"""Return the gaps, the outward normal vectors and their derivatives w.r.t.
+        the gap vectors (or None for constant normal vectors).
+
+        This method has to be implemented by a subclass, it defines the geometry of the
+        rigid surface.
+
+        Parameters
+        ----------
+        dx : (n, dim) ndarray
+            The gap vectors :math:`\Delta \boldsymbol{x}` between the points and the
+            center-point in the current configuration.
+
+        Returns
+        -------
+        gap : (n,) ndarray
+            The signed distances :math:`g` of the points to the rigid surface. A
+            negative gap is a penetration, i.e. the point is in contact.
+        normal : (n, dim) ndarray
+            The outward unit normal vectors of the rigid surface,
+            :math:`\boldsymbol{n} = \partial g / \partial \Delta \boldsymbol{x}`.
+        curvature : (n, dim, dim) ndarray or None
+            The (symmetric) derivatives of the normal vectors w.r.t. the gap vectors,
+            :math:`\boldsymbol{H} = \partial \boldsymbol{n} / \partial \Delta
+            \boldsymbol{x}`, or None if the normal vectors are constant (a flat
+            surface).
+        """
 
     def _gap_vectors(self):
         "Return the gap vectors between the points and the center-point."

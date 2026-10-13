@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 - The state variables of the items are updated by `newtonraphson()` after a converged iteration (by `item.results.update_statevars()`), instead of by the default function of the argument `check`. Hence, `check()` has no side effects and the state variables are also updated with a custom `check`-function (before, they were not updated, unless the custom function did it). The documented signature of `check` is corrected, `xnorm, fnorm, success = check(dx, x, f, xtol, ftol, dof1, dof0, items)`.
+- Split the module of the contacts with rigid surfaces into the package `mechanics._contact` with a module for `ContactRigidBase`, for `ContactRigidPlane` and for `ContactRigidCylinder`. The classes and their import paths are unchanged. The docstring of `ContactRigidBase` documents its parameters and the method `_kinematics(dx)`, which defines the geometry of a custom rigid surface in a subclass, with an example of a rigid sphere.
 
 ### Fixed
 - Fix `ConstitutiveMaterial.optimize()` for a `MaterialStrain`. The flag `tangent` is not stored in the keyword-arguments `MaterialStrain.kwargs` anymore, it is passed to the material function on each evaluation (`tangent=False` for the gradient and `tangent=True` for the hessian, unchanged). Before, `tangent` was optimized like a material parameter, which failed for its initial value `None`. A given keyword-argument `tangent` is ignored (unchanged).

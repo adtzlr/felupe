@@ -204,6 +204,77 @@ def test_inplane():
     assert np.allclose(A_inplane.ravel(), [0, 3, 3, 1])
 
 
+def test_math_parallel(monkeypatch):
+    "The math helpers are equal in serial and in parallel."
+
+    import felupe.math._einsum as einsum
+
+    rng = np.random.default_rng(0)
+    batch = (4, 5)  # quadrature points and cells
+
+    a = rng.random((3, *batch))
+    A = rng.random((3, 3, *batch))
+    B = rng.random((3, 3, *batch))
+    A3 = rng.random((3, 3, 3, *batch))
+    A4 = rng.random((3, 3, 3, 3, *batch))
+    A4b = rng.random((3, 3, 3, 3, 1, 1))  # broadcasted along the batch axes
+    P = rng.random((3, 3))  # without batch axes
+
+    m = fem.math
+    cases = [
+        (m.dot, (A, B), dict(mode=(2, 2))),
+        (m.dot, (a, a), dict(mode=(1, 1))),
+        (m.dot, (A4, A4), dict(mode=(4, 4))),
+        (m.dot, (A, a), dict(mode=(2, 1))),
+        (m.dot, (a, A), dict(mode=(1, 2))),
+        (m.dot, (A, A3), dict(mode=(2, 3))),
+        (m.dot, (A3, A), dict(mode=(3, 2))),
+        (m.dot, (A4, a), dict(mode=(4, 1))),
+        (m.dot, (a, A4), dict(mode=(1, 4))),
+        (m.dot, (A, A4), dict(mode=(2, 4))),
+        (m.dot, (A4, A), dict(mode=(4, 2))),
+        (m.dot, (P, A), dict(mode=(2, 2))),
+        (m.dot, (P, P), dict(mode=(2, 2))),
+        (m.ddot, (A, B), dict(mode=(2, 2))),
+        (m.ddot, (A, A4), dict(mode=(2, 4))),
+        (m.ddot, (A4, A), dict(mode=(4, 2))),
+        (m.ddot, (A, A3), dict(mode=(2, 3))),
+        (m.ddot, (A3, A), dict(mode=(3, 2))),
+        (m.ddot, (A4, A4), dict(mode=(4, 4))),
+        (m.ddot, (A4b, A), dict(mode=(4, 2))),
+        (m.ddot, (P, P), dict(mode=(2, 2))),
+        (m.dddot, (A3, A3), dict(mode=(3, 3))),
+        (m.cdya_ik, (A, B), dict()),
+        (m.cdya_il, (A, B), dict()),
+        (m.cdya, (A, B), dict()),
+    ]
+
+    for fun, args, kwargs in cases:
+        expected = fun(*args, parallel=False, **kwargs)
+
+        # a single thread, less threads than cells and more threads than cells
+        for cpus in [1, 2, 64]:
+            monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+            res = fun(*args, parallel=True, **kwargs)
+            assert np.allclose(res, expected)
+
+            out = np.zeros_like(expected)
+            res = fun(*args, parallel=True, out=out, **kwargs)
+            assert res is out
+            assert np.allclose(out, expected)
+
+    # the area change with and without normal vectors
+    F = np.eye(3).reshape(3, 3, 1, 1) + 0.1 * A
+    for N in [None, a]:
+        area = fem.constitution.AreaChange()
+        for method in [area.function, area.gradient]:
+            expected = method([F], N=N, parallel=False)[0]
+
+            for cpus in [1, 2, 64]:
+                monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+                assert np.allclose(method([F], N=N, parallel=True)[0], expected)
+
+
 def test_einsum_chunks(monkeypatch):
     "Contractions evaluated in chunks are equal to numpy.einsum()."
 
@@ -296,11 +367,131 @@ def test_einsum_chunks_errors():
         with pytest.raises(ValueError):  # repeated index within an operand
             einsum_chunks("iic->ic", A, idx="i", **kwargs)
 
-        with pytest.raises(ValueError):  # full contraction
-            einsum_chunks("ijc,ijc->", A, A, **kwargs)
-
         with pytest.raises(ValueError):  # index of the output not given in the inputs
             einsum_chunks("ijc->ijkc", A, **kwargs)
+
+
+def test_einsum_chunks_single_chunk():
+    "Contractions without a free last index of the output are a single chunk."
+
+    from felupe.math._einsum import einsum_chunks
+
+    rng = np.random.default_rng(0)
+    A = rng.random((3, 3, 5))
+
+    for kwargs in [dict(chunksize=2), dict(parallel=True)]:
+        # a full contraction (scalar output) and a repeated last index of the output
+        for subscripts, operands in [("ijc,ijc->", (A, A)), ("iic->ci", (A[..., :3],))]:
+            expected = np.einsum(subscripts, *operands)
+            assert np.allclose(einsum_chunks(subscripts, *operands, **kwargs), expected)
+
+            out = np.zeros_like(expected)
+            res = einsum_chunks(subscripts, *operands, out=out, **kwargs)
+            assert res is out
+            assert np.allclose(out, expected)
+
+
+def test_einsum_chunks_kwargs():
+    "Optional keyword-arguments are passed to numpy.einsum()."
+
+    from felupe.math._einsum import einsum_chunks
+
+    A = np.ones((3, 3, 5), dtype=np.float32)
+
+    for kwargs in [dict(), dict(chunksize=2), dict(parallel=True)]:
+        res = einsum_chunks("ij...,jk...->ik...", A, A, dtype=np.float64, **kwargs)
+        assert res.dtype == np.float64
+        assert np.allclose(res, 3)
+
+        with pytest.raises(TypeError):  # the casting is passed to numpy.einsum
+            out = np.zeros((3, 3, 5), dtype=np.int64)
+            einsum_chunks("ij...,jk...->ik...", A, A, out=out, casting="safe", **kwargs)
+
+
+def test_thread_pool(monkeypatch):
+    "The pool of threads is re-used."
+
+    import felupe.math._einsum as einsum
+
+    monkeypatch.setattr(einsum, "cpu_count", lambda: 2)
+    monkeypatch.setattr(einsum, "_pool", None)
+    A = np.ones((3, 3, 10))
+
+    einsum.einsum_chunks("ij...,jk...->ik...", A, A, parallel=True)
+    pool = einsum.thread_pool()
+
+    einsum.einsum_chunks("ij...,jk...->ik...", A, A, parallel=True)
+    assert einsum.thread_pool() is pool
+
+    pool.shutdown()
+
+
+def test_thread_pool_reset(monkeypatch):
+    "After a reset (in a forked child process), a new pool of threads is created."
+
+    import felupe.math._einsum as einsum
+
+    # the pool and its lock of the module are restored after the test
+    monkeypatch.setattr(einsum, "cpu_count", lambda: 2)
+    monkeypatch.setattr(einsum, "_pool", None)
+    monkeypatch.setattr(einsum, "_pool_lock", einsum._pool_lock)
+
+    pool = einsum.thread_pool()
+    lock = einsum._pool_lock
+
+    einsum._reset_thread_pool()
+    assert einsum._pool is None
+    assert einsum._pool_lock is not lock
+
+    A = np.ones((3, 3, 10))
+    res = einsum.einsum_chunks("ij...,jk...->ik...", A, A, parallel=True)
+    assert np.allclose(res, 3)
+    assert einsum.thread_pool() is not pool
+
+    pool.shutdown()
+    einsum.thread_pool().shutdown()
+
+
+@pytest.mark.filterwarnings("ignore:This process .* is multi-threaded")
+@pytest.mark.filterwarnings("ignore:os.fork\\(\\) was called")  # by JAX
+def test_thread_pool_fork(monkeypatch):
+    "A forked child process creates its own pool of threads."
+
+    import multiprocessing
+    import os
+    from threading import Barrier
+
+    import felupe.math._einsum as einsum
+
+    if "fork" not in multiprocessing.get_all_start_methods():
+        pytest.skip("The fork start method is not available.")
+
+    monkeypatch.setattr(einsum, "cpu_count", lambda: 2)
+    monkeypatch.setattr(einsum, "_pool", None)
+
+    # start all threads of the pool in the parent process (idle afterwards)
+    pool = einsum.thread_pool()
+    barrier = Barrier(2)
+    list(pool.map(lambda i: barrier.wait(), range(2)))
+
+    A = np.ones((3, 3, 10))
+    expected = np.einsum("ij...,jk...->ik...", A, A)
+
+    def child():
+        res = einsum.einsum_chunks("ij...,jk...->ik...", A, A, parallel=True)
+        os._exit(0 if np.allclose(res, expected) else 1)
+
+    process = multiprocessing.get_context("fork").Process(target=child)
+    process.start()
+    process.join(timeout=60)
+
+    if process.is_alive():
+        process.kill()
+        pytest.fail("The evaluation in the child process did not finish.")
+
+    assert process.exitcode == 0
+
+    pool.shutdown()
 
 
 def test_cpu_count(monkeypatch):

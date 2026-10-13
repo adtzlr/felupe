@@ -170,6 +170,40 @@ def test_nh_chunks(monkeypatch):
             assert np.allclose(umat.hessian(x)[0], A)
 
 
+def test_linear_tensor_notation_chunks(monkeypatch):
+    "The stress of the linear-elastic material is evaluated in chunks of cells."
+
+    import felupe.math._threads as threads
+
+    monkeypatch.setattr(threads, "cpu_count", lambda: 2)
+
+    mesh = fem.Cube(n=4)  # 27 cells
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+    field[0].values[:] = np.random.default_rng(8).random(mesh.points.shape) / 20
+    F = field.extract()[0]
+    x = [F, np.zeros((0, *F.shape[-2:]))]
+
+    whole = fem.constitution.LinearElasticTensorNotation(E=1.0, nu=0.3)
+    whole.chunksize = None
+    P = whole.gradient(x)[0]
+
+    for parallel in [False, True]:
+        umat = fem.constitution.LinearElasticTensorNotation(
+            E=1.0, nu=0.3, parallel=parallel
+        )
+        umat.chunksize = 2 * F.shape[-2]  # chunks of two cells
+
+        assert np.allclose(umat.gradient(x)[0], P)
+        assert np.allclose(umat.stress(x)[0], P)
+
+        # the elasticity tensor is constant
+        A = umat.hessian(x)[0]
+        assert A.shape == (3, 3, 3, 3, 1, 1)
+        assert np.allclose(
+            fem.math.ddot(A, F - np.eye(3).reshape(3, 3, 1, 1), mode=(4, 2)), P
+        )
+
+
 def test_linear():
     r, F = pre(sym=False, add_identity=True)
 

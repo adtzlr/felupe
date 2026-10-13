@@ -208,6 +208,9 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         Young's modulus.
     nu : float
         Poisson ratio.
+    parallel : bool, optional
+        A flag to evaluate the stress tensor in chunks of cells by a pool of threads
+        (default is False). The elasticity tensor is constant.
 
     Notes
     -----
@@ -255,9 +258,9 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
-    def gradient(self, x):
+    def _gradient(self, x):
         r"""Evaluate the stress tensor (as a function of the deformation
-        gradient).
+        gradient) for a chunk of cells by :meth:`~felupe.ConstitutiveMaterial.gradient`.
 
         Parameters
         ----------
@@ -317,9 +320,7 @@ class LinearElasticTensorNotation(ConstitutiveMaterial):
         # convert to lame constants
         gamma, mu = lame_converter(E, nu)
 
-        elast = 2 * mu * cdya(eye, eye, parallel=self.parallel) + gamma * dya(
-            eye, eye, parallel=self.parallel
-        )
+        elast = 2 * mu * cdya(eye, eye) + gamma * dya(eye, eye)
 
         return [elast]
 

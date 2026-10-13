@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [11.2.0] - 2026-10-13
+
 ### Added
 - Add `mesh.extrude(mesh, path, other_mesh=None)` and `Mesh.extrude(path, other_mesh=None)` to extrude a line- or quad-mesh along a given path. The section is transported by rotation-minimizing frames and its initial orientation w.r.t. the tangent of the path is preserved. Optionally, the section is interpolated between two meshes.
 - Add `constitution.ThirdMediumContactMixed`, a mixed-formulation for a stabilized third medium contact.

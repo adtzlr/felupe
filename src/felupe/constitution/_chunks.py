@@ -1,0 +1,122 @@
+# -*- coding: utf-8 -*-
+"""
+This file is part of FElupe.
+
+FElupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+FElupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import numpy as np
+
+from ..math._threads import map_threaded
+
+
+def evaluate_chunks(fun, x, *args, chunksize=8192, parallel=False, out=None, **kwargs):
+    r"""Evaluate a function of a constitutive material, e.g. the gradient or the hessian
+    of the strain energy density function, in chunks of cells and return the list of
+    results.
+
+    Parameters
+    ----------
+    fun : callable
+        The function ``fun(x, *args, **kwargs)`` which returns a list of arrays.
+    x : list of ndarray
+        The list of input arrays (e.g. the extracted fields and the state variables)
+        with the cells as last axis.
+    *args : tuple, optional
+        Optional arguments for the function.
+    chunksize : int or None, optional
+        The approximate number of evaluation points (quadrature points times cells)
+        per chunk. If None, all cells are evaluated at once (default is 8192).
+    parallel : bool, optional
+        A flag to evaluate the chunks by a pool of threads (default is False).
+    out : ndarray or None, optional
+        The output array of the first result (default is None).
+    **kwargs : dict, optional
+        Optional keyword-arguments for the function.
+
+    Returns
+    -------
+    list of ndarray
+        The list of results with the cells as last axis.
+
+    Notes
+    -----
+    The arrays of the input list are sliced along their last axis, if it has the length
+    of the cells. Other inputs, e.g. ``None``, arrays which are broadcasted along the
+    cells (length one) or scalars, are passed unchanged. Results which are broadcasted
+    along the cells, e.g. a constant elasticity tensor of shape ``(3, 3, 3, 3, 1, 1)``,
+    are taken from the first chunk. Each chunk has at least two cells.
+
+    Constitutive materials are evaluated point-wise, i.e. the result of a cell must not
+    depend on other cells. With ``parallel=True``, the function must be thread-safe.
+    """
+
+    def per_cell(a, length):
+        "Check if an array has a last axis (of the cells) with the given length."
+        return isinstance(a, np.ndarray) and a.ndim > 0 and a.shape[-1] == length
+
+    arrays = [a for a in x if isinstance(a, np.ndarray) and a.ndim > 0]
+    ncells = max([a.shape[-1] for a in arrays], default=1)
+
+    # number of quadrature points per cell (the trailing axes are points and cells)
+    npoints = max(
+        [a.shape[-2] for a in arrays if per_cell(a, ncells) and a.ndim > 1], default=1
+    )
+
+    cells = ncells if chunksize is None else max(2, chunksize // npoints)
+
+    if ncells <= cells:  # a single chunk
+        res = list(fun(x, *args, **kwargs))
+
+        if out is not None and isinstance(res[0], np.ndarray):
+            np.copyto(out, res[0])
+            res[0] = out
+
+        return res
+
+    def chunk_of(x, chunk):
+        return [a[..., chunk] if per_cell(a, ncells) else a for a in x]
+
+    starts = range(0, ncells, cells)
+
+    # evaluate the first chunk and create the output arrays of the results per cell
+    first = slice(0, cells)
+    res = list(fun(chunk_of(x, first), *args, **kwargs))
+
+    sliced = []
+    for i, r in enumerate(res):
+        if per_cell(r, cells):
+            if i == 0 and out is not None:
+                result = out
+            else:
+                result = np.empty((*r.shape[:-1], ncells), dtype=r.dtype)
+
+            result[..., first] = r
+            res[i] = result
+            sliced.append(i)
+
+    def evaluate(start):
+        chunk = slice(start, start + cells)
+        results = fun(chunk_of(x, chunk), *args, **kwargs)
+
+        for i in sliced:
+            res[i][..., chunk] = results[i]
+
+    if parallel:
+        map_threaded(evaluate, starts[1:])
+    else:
+        for start in starts[1:]:
+            evaluate(start)
+
+    return res

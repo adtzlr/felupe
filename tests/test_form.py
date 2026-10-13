@@ -332,7 +332,7 @@ def test_bilinearform_grad_grad_threads(monkeypatch):
     "The chunks are evaluated by threads (one per usable CPU, at most one per chunk)."
 
     import felupe.assembly._cartesian as cartesian
-    import felupe.math._einsum as einsum
+    import felupe.math._threads as threads
 
     monkeypatch.setattr(cartesian, "CHUNKSIZE_BYTES", 200_000)  # 4 chunks of 27 cells
 
@@ -346,14 +346,14 @@ def test_bilinearform_grad_grad_threads(monkeypatch):
 
     # one thread (serial), less threads than chunks and more CPUs than chunks
     for cpus in [1, 2, 64]:
-        monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+        monkeypatch.setattr(threads, "cpu_count", lambda: cpus)
         assert np.allclose(form.integrate(parallel=True)[0], expected)
 
 
 def test_integrate_parallel(monkeypatch):
     "All branches of the integration are equal in serial and in parallel."
 
-    import felupe.math._einsum as einsum
+    import felupe.math._threads as threads
 
     mesh = fem.Cube(n=4)
     region = fem.RegionHexahedron(mesh)
@@ -392,7 +392,7 @@ def test_integrate_parallel(monkeypatch):
 
             # less threads than cells and more threads than cells
             for cpus in [2, 64]:
-                monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+                monkeypatch.setattr(threads, "cpu_count", lambda: cpus)
                 assert np.allclose(form.integrate(parallel=True), expected)
 
                 out = np.zeros_like(expected)
@@ -404,7 +404,7 @@ def test_integrate_parallel(monkeypatch):
 def test_basis_parallel(monkeypatch):
     "The bases are equal in serial and in parallel, also for three cells in 3d."
 
-    import felupe.math._einsum as einsum
+    import felupe.math._threads as threads
 
     # the identity matrix of the basis has the same length as the cells
     mesh = fem.Cube(n=(4, 2, 2))
@@ -415,7 +415,7 @@ def test_basis_parallel(monkeypatch):
     expected = fem.assembly.expression.BasisField(field, parallel=False).basis
 
     for cpus in [2, 3, 64]:
-        monkeypatch.setattr(einsum, "cpu_count", lambda: cpus)
+        monkeypatch.setattr(threads, "cpu_count", lambda: cpus)
         basis = fem.assembly.expression.BasisField(field, parallel=True).basis
 
         assert np.allclose(basis, expected)

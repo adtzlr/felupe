@@ -1,0 +1,233 @@
+# -*- coding: utf-8 -*-
+"""
+ _______  _______  ___      __   __  _______  _______
+|       ||       ||   |    |  | |  ||       ||       |
+|    ___||    ___||   |    |  | |  ||    _  ||    ___|
+|   |___ |   |___ |   |    |  |_|  ||   |_| ||   |___
+|    ___||    ___||   |___ |       ||    ___||    ___|
+|   |    |   |___ |       ||       ||   |    |   |___
+|___|    |_______||_______||_______||___|    |_______|
+
+This file is part of felupe.
+
+Felupe is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Felupe is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+
+from threading import Thread
+
+import numpy as np
+import pytest
+
+import felupe as fem
+
+
+class ChunkedMaterial(fem.ConstitutiveMaterial):
+    "A material which is evaluated in chunks of cells."
+
+    def __init__(self, chunksize=8192, parallel=False):
+        self.x = [np.eye(3), np.zeros(2)]
+        self.kwargs = {}
+        self.chunksize = chunksize
+        self.parallel = parallel
+
+    def _gradient(self, x, factor=1.0):
+        F, statevars = x[0], x[-1]
+
+        # math-functions with parallel=True are evaluated in serial within a chunk
+        P = factor * fem.math.dot(F, F, parallel=self.parallel)
+        statevars_new = statevars + fem.math.det(F) if statevars is not None else None
+
+        return [P, statevars_new]
+
+    def _hessian(self, x, factor=1.0):
+        F = x[0]
+
+        # a hessian per cell and a constant (broadcasted) hessian
+        A = factor * fem.math.cdya(F, F, parallel=self.parallel)
+        B = np.ones((3, 3, 3, 3, 1, 1))
+
+        return [A, B]
+
+
+def deformation_gradient(ncells, npoints=4):
+    rng = np.random.default_rng(ncells)
+    eye = np.eye(3).reshape(3, 3, 1, 1)
+    return eye + 0.1 * rng.random((3, 3, npoints, ncells))
+
+
+def test_chunks(monkeypatch):
+    "Chunks of cells are equal to the evaluation of all cells at once."
+
+    import felupe.math._threads as threads
+
+    monkeypatch.setattr(threads, "cpu_count", lambda: 2)
+
+    for ncells in [1, 2, 7, 100]:
+        F = deformation_gradient(ncells)
+        statevars = np.ones((2, *F.shape[-2:]))
+
+        whole = ChunkedMaterial(chunksize=None)
+        P, statevars_new = whole.gradient([F, statevars], factor=2.0)
+        A, B = whole.hessian([F, statevars], factor=2.0)
+
+        assert np.allclose(P, 2 * fem.math.dot(F, F))
+        assert np.allclose(statevars_new, 1 + fem.math.det(F))
+        assert np.allclose(A, 2 * fem.math.cdya(F, F))
+
+        # chunks of two cells, three cells (with a remainder) and a single chunk
+        for chunksize in [8, 12, 10000]:
+            for parallel in [False, True]:
+                umat = ChunkedMaterial(chunksize=chunksize, parallel=parallel)
+
+                res = umat.gradient([F, statevars], factor=2.0)
+                assert np.allclose(res[0], P)
+                assert np.allclose(res[1], statevars_new)
+
+                res = umat.hessian([F, statevars], factor=2.0)
+                assert np.allclose(res[0], A)
+                assert res[1].shape == (3, 3, 3, 3, 1, 1)  # taken from the first chunk
+                assert np.allclose(res[1], B)
+
+                # the first results are stored in the given output arrays
+                out = np.zeros_like(P)
+                res = umat.gradient([F, statevars], out=out, factor=2.0)
+                assert res[0] is out
+                assert np.allclose(out, P)
+
+                out = np.zeros_like(A)
+                res = umat.hessian([F, statevars], out=out, factor=2.0)
+                assert res[0] is out
+                assert np.allclose(out, A)
+
+
+def test_chunks_inputs():
+    "Inputs without the axis of the cells are passed unchanged to all chunks."
+
+    F = deformation_gradient(ncells=10)
+    umat = ChunkedMaterial(chunksize=8)
+
+    # state variables of None, e.g. by the views on a material
+    P, statevars_new = umat.gradient([F, None])
+    assert np.allclose(P, fem.math.dot(F, F))
+    assert statevars_new is None
+
+    # broadcasted state variables
+    P, statevars_new = umat.gradient([F, np.ones((2, 1, 1))])
+    assert np.allclose(statevars_new, 1 + fem.math.det(F))
+
+    # inputs which are all broadcasted along the cells are evaluated at once
+    P, statevars_new = umat.gradient([F[..., :1], np.ones((2, 1, 1))])
+    assert P.shape == (3, 3, 4, 1)
+
+
+def test_chunks_nested(monkeypatch):
+    "Math-functions with parallel=True within the threads of the chunks don't block."
+
+    import felupe.math._threads as threads
+
+    monkeypatch.setattr(threads, "cpu_count", lambda: 2)
+    monkeypatch.setattr(threads, "_pool", None)
+
+    F = deformation_gradient(ncells=400)
+    umat = ChunkedMaterial(chunksize=200, parallel=True)
+
+    results = []
+    thread = Thread(target=lambda: results.append(umat.hessian([F, None])), daemon=True)
+    thread.start()
+    thread.join(timeout=60)
+
+    assert not thread.is_alive(), "The evaluation in chunks did not finish."
+    assert np.allclose(results[0][0], fem.math.cdya(F, F))
+
+    threads.thread_pool().shutdown()
+
+
+def test_chunks_solidbody():
+    "A solid body with a material evaluated in chunks re-uses the output arrays."
+
+    mesh = fem.Cube(n=6)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    field[0].values[:] = 0.1 * mesh.points**2
+
+    solid = fem.SolidBody(ChunkedMaterial(chunksize=64), field)
+    expected = fem.SolidBody(ChunkedMaterial(chunksize=None), field)
+
+    P = solid.evaluate.gradient(field)
+    assert np.allclose(P[0], expected.evaluate.gradient(field)[0])
+    assert solid.results.statevars.shape == (2, 8, mesh.ncells)
+
+    # the stress of the first evaluation is the output array of the second evaluation
+    stress = solid.results.gradient
+    solid.evaluate.gradient(field)
+    assert solid.results.gradient is stress
+
+    r = solid.assemble.vector(field)
+    assert np.allclose(r.toarray(), expected.assemble.vector(field).toarray())
+
+    A = solid.evaluate.hessian(field)
+    assert np.allclose(A[0], expected.evaluate.hessian(field)[0])
+
+    elasticity = solid.results.hessian
+    solid.evaluate.hessian(field)
+    assert solid.results.hessian is elasticity
+
+
+def test_chunks_not_implemented():
+    "A material must implement either the public or the chunked methods."
+
+    F = deformation_gradient(ncells=3)
+    umat = fem.ConstitutiveMaterial()
+
+    with pytest.raises(NotImplementedError):
+        umat.gradient([F, None])
+
+    with pytest.raises(NotImplementedError):
+        umat.hessian([F, None])
+
+
+def test_constitutive_material_decorator():
+    "The methods of a decorated material take precedence over the base class."
+
+    class MyMaterial:
+        def __init__(self, a=2.0):
+            self.x = [np.eye(3), np.zeros(0)]
+            self.kwargs = {"a": a}
+
+        def gradient(self, x):
+            return [self.kwargs["a"] * x[0], x[-1]]
+
+        def hessian(self, x):
+            return [self.kwargs["a"] * np.ones((3, 3, 3, 3, 1, 1))]
+
+    F = deformation_gradient(ncells=3)
+    umat = fem.constitutive_material(MyMaterial)(a=3.0)
+
+    assert isinstance(umat, fem.ConstitutiveMaterial)
+    assert np.allclose(umat.gradient([F, None])[0], 3 * F)
+    assert np.allclose(umat.hessian([F, None])[0], 3)
+
+    # a class which is already derived from the base class
+    umat = fem.constitutive_material(fem.NeoHooke)(mu=1.0)
+    assert np.allclose(
+        umat.gradient([F, None])[0], fem.NeoHooke(mu=1.0).gradient([F])[0]
+    )
+
+
+if __name__ == "__main__":
+    test_chunks_inputs()
+    test_chunks_solidbody()
+    test_chunks_not_implemented()
+    test_constitutive_material_decorator()

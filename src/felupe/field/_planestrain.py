@@ -16,10 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import numpy as np
-
-from ..math import sym as symmetric
 from ._base import Field
+from ._embed import embed, in_plane
 
 
 class FieldPlaneStrain(Field):
@@ -67,124 +65,9 @@ class FieldPlaneStrain(Field):
         # init base Field
         super().__init__(region, dim=dim, values=values, dtype=dtype)
 
-    def _interpolate_2d(self, dtype=None, out=None, order="C"):
-        """Interpolate 2D field values at points and evaluate them at the
-        integration points of all cells in the region."""
-
-        # interpolated field values "aI"
-        # evaluated at quadrature point "q"
-        # for cell "c"
-        return np.einsum(
-            "ca...,aqc->...qc",
-            self.values[self.region.mesh.cells],
-            self.region.h,
-            dtype=dtype,
-            out=out,
-            order=order,
-        )
-
     def interpolate(self, dtype=None, out=None, order="C"):
-        # out-argument is not supported
-        # if out is not None:
-        #     out = out[:2]
-
-        # extend dimension of in-plane 2d-gradient (out-keyword can't be used here)
-        return np.pad(
-            self._interpolate_2d(dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 0), (0, 0)),
-        )
-
-    def _grad_2d(self, sym=False, dtype=None, out=None, order="C"):
-        """In-plane 2D gradient as partial derivative of field values at points
-        w.r.t. the undeformed coordinates, evaluated at the integration points
-        of all cells in the region. Optionally, the symmetric part of the
-        gradient is returned.
-
-        Arguments
-        ---------
-        sym : bool, optional
-            Calculate the symmetric part of the gradient (default is False).
-        dtype : data-type or None, optional
-            If provided, forces the calculation to use the data type specified. Default
-            is None.
-        out : None or ndarray, optional
-            A location into which the result is stored. If provided, it must have a
-            shape that the inputs broadcast to. If not provided or None, a freshly-
-            allocated array is returned (default is None).
-        order : {'C', 'F', 'A', 'K'}, optional
-            Controls the memory layout of the output. 'C' means it should be C
-            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
-            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
-            close to the layout as the inputs as is possible, including arbitrarily
-            permuted axes. Default is 'C'.
-
-        Returns
-        -------
-        ndarray
-            In-plane 2D-gradient as partial derivative of field values at points
-            w.r.t. undeformed coordinates, evaluated at the integration points
-            of all cells in the region.
-        """
-
-        # gradient as partial derivative of field component "I" at point "a"
-        # w.r.t. undeformed coordinate "J" evaluated at quadrature point "q"
-        # for each cell "c"
-        g = np.einsum(
-            "ca...,aJqc->...Jqc",
-            self.values[self.region.mesh.cells],
-            self.region.dhdX,
-            dtype=dtype,
-            out=out,
-            order=order,
-        )
-
-        if sym:
-            return symmetric(g, out=g)
-        else:
-            return g
-
-    def _hess_2d(self, dtype=None, out=None, order="C"):
-        r"""In-plane 2D Hessian as second partial derivative of field values w.r.t.
-        undeformed coordinates, evaluated at the integration points of all cells in the
-        region.
-
-        Parameters
-        ----------
-        dtype : data-type or None, optional
-            If provided, forces the calculation to use the data type specified. Default
-            is None.
-        out : None or ndarray, optional
-            A location into which the result is stored. If provided, it must have a
-            shape that the inputs broadcast to. If not provided or None, a freshly-
-            allocated array is returned (default is None).
-        order : {'C', 'F', 'A', 'K'}, optional
-            Controls the memory layout of the output. 'C' means it should be C
-            contiguous. 'F' means it should be Fortran contiguous, 'A' means it should
-            be 'F' if the inputs are all 'F', 'C' otherwise. 'K' means it should be as
-            close to the layout as the inputs as is possible, including arbitrarily
-            permuted axes. Default is 'C'.
-
-        Returns
-        -------
-        ndarray of shape (i, j, k, q, c)
-            Hessian as partial derivative of field value components ``i`` at points
-            w.r.t. the undeformed coordinates ``j`` and ``k``, evaluated at the
-            quadrature points ``q`` of cells ``c`` in the region.
-        """
-
-        # hessian d2udXdX_IJKqc as second partial derivative of field values at points
-        # "aI" w.r.t. undeformed coordinates "J" and "K" evaluated at quadrature point
-        # "q" for each cell "c"
-        h = np.einsum(
-            "ca...,aJKqc->...JKqc",
-            self.values[self.region.mesh.cells],
-            self.region.d2hdXdX,
-            dtype=dtype,
-            out=out,
-            order=order,
-        )
-
-        return h
+        values = super().interpolate(dtype=dtype, out=in_plane(out, 1), order=order)
+        return embed(values, out, 1)
 
     def grad(self, sym=False, dtype=None, out=None, order="C"):
         """3D-gradient as partial derivative of field values at points w.r.t.
@@ -224,17 +107,8 @@ class FieldPlaneStrain(Field):
             of all cells in the region.
         """
 
-        # out-argument is not supported
-        # if out is not None:
-        #     out = out[:2, :2]
-
-        # extend dimension of in-plane 2d-gradient (out-keyword can't be used here)
-        g = np.pad(
-            self._grad_2d(sym=sym, dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 1), (0, 0), (0, 0)),
-        )
-
-        return g
+        g = super().grad(sym=sym, dtype=dtype, out=in_plane(out, 2), order=order)
+        return embed(g, out, 2)
 
     def hess(self, dtype=None, out=None, order="C"):
         """3D-Hessian as second partial derivative of field values at points w.r.t.
@@ -265,10 +139,5 @@ class FieldPlaneStrain(Field):
             of all cells in the region.
         """
 
-        # extend dimension of in-plane 2d-hessian (out-keyword can't be used here)
-        h = np.pad(
-            self._hess_2d(dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 1), (0, 1), (0, 0), (0, 0)),
-        )
-
-        return h
+        h = super().hess(dtype=dtype, out=in_plane(out, 3), order=order)
+        return embed(h, out, 3)

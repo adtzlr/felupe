@@ -533,6 +533,54 @@ def test_container_checkpoint_shared_mesh():
     assert np.allclose(field[0].values, 0.0)
 
 
+def test_planestrain_axi_out():
+    "The results are written to the given output arrays of the fields in 3d-space."
+
+    mesh = fem.Rectangle(a=(0, 1), b=(2, 3), n=4).add_midpoints_edges()
+    mesh = mesh.add_midpoints_faces()
+    region = fem.RegionBiQuadraticQuad(mesh, hess=True)
+    rng = np.random.default_rng(1)
+
+    for Field, dim in [
+        (fem.FieldPlaneStrain, 2),
+        (fem.FieldAxisymmetric, 1),
+        (fem.FieldAxisymmetric, 2),
+    ]:
+        values = rng.standard_normal((mesh.npoints, dim))
+        field = Field(region, dim=dim, values=values)
+
+        methods = [
+            (field.interpolate, {}),
+            (field.grad, {}),
+            (field.extract, {}),
+            (field.extract, {"grad": False}),
+        ]
+
+        if dim > 1:
+            methods.append((field.grad, {"sym": True}))
+
+        if Field is fem.FieldPlaneStrain:
+            methods.append((field.hess, {}))
+
+        for method, kwargs in methods:
+            res = method(**kwargs)
+
+            # the out-of-plane components of the output array are overwritten too
+            out = np.full_like(res, np.nan)
+
+            assert method(out=out, **kwargs) is out
+            assert np.array_equal(out, res)
+
+    # the kinematics of a solid body are re-used
+    for Field in [fem.FieldPlaneStrain, fem.FieldAxisymmetric]:
+        field = Field(fem.RegionQuad(fem.Rectangle(n=3)), dim=2).as_container()
+        solid = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field)
+        F = solid.results.kinematics[0]
+        solid.assemble.vector(field)
+
+        assert solid.results.kinematics[0] is F
+
+
 if __name__ == "__main__":
     test_axi()
     test_3d()
@@ -550,3 +598,4 @@ if __name__ == "__main__":
     test_container_checkpoint_mixed()
     test_container_checkpoint_x0()
     test_container_checkpoint_shared_mesh()
+    test_planestrain_axi_out()

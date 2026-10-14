@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file. The format 
 - Remove the unused arguments `progress_bar` and `callback_kwargs` of `newtonraphson()` (deprecated since v11.3.0).
 - Remove `newtonrhapson()` and `tools.newtonrhapson()` (deprecated since v10.2.0). Use `newtonraphson()` and `tools.newtonraphson()`.
 - Remove the argument `bounds` of `dof.symmetry()` (deprecated since v10.0.0). Use `boundaries`.
+- Remove the support of Python 3.10, which reaches its end of life in October 2026. The minimum version of Python is 3.11. The tests run on Python 3.11 and 3.14.
 
 ## [11.3.0] - 2026-10-14
 

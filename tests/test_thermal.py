@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import contextlib
+import pathlib
+import tempfile
+
 import pytest
 
 import felupe as fem
 
 
-def test_thermal():
+def test_thermal(tmp_path):
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
     temperature = fem.Field(region, dim=1, values=20.0)
@@ -92,15 +96,19 @@ def test_thermal():
         ramp=ramp,
         boundaries=boundaries,
     )
-    job = fem.Job(steps=[step]).evaluate(
-        filename="result.xdmf",  # result file for Paraview
-        point_data={"Temperature": lambda field, substep: temperature.values},
-        point_data_default=False,
-        cell_data_default=False,
-    )
+    # meshio writes the h5-file relative to the working directory
+    with contextlib.chdir(tmp_path):
+        job = fem.Job(steps=[step]).evaluate(
+            filename="result.xdmf",  # result file for Paraview
+            point_data={"Temperature": lambda field, substep: temperature.values},
+            point_data_default=False,
+            cell_data_default=False,
+        )
+
+    assert (tmp_path / "result.xdmf").exists()
 
 
-def test_thermal_axi():
+def test_thermal_axi(tmp_path):
     mesh = fem.Rectangle(n=3)
     region = fem.RegionQuad(mesh)
     temperature = fem.FieldAxisymmetric(region, dim=1)
@@ -197,12 +205,16 @@ def test_thermal_axi():
     step = fem.Step(
         items=[time, solid, heat_transfer, heat_flux], ramp=ramp, boundaries=boundaries
     )
-    job = fem.Job(steps=[step]).evaluate(
-        filename="result.xdmf",  # result file for Paraview
-        point_data={"Temperature": lambda field, substep: temperature.values},
-        point_data_default=False,
-        cell_data_default=False,
-    )
+    # meshio writes the h5-file relative to the working directory
+    with contextlib.chdir(tmp_path):
+        job = fem.Job(steps=[step]).evaluate(
+            filename="result.xdmf",  # result file for Paraview
+            point_data={"Temperature": lambda field, substep: temperature.values},
+            point_data_default=False,
+            cell_data_default=False,
+        )
+
+    assert (tmp_path / "result.xdmf").exists()
 
 
 def test_timestep():
@@ -235,6 +247,8 @@ def test_timestep():
 
 
 if __name__ == "__main__":
-    test_thermal()
-    test_thermal_axi()
+    for test in [test_thermal, test_thermal_axi]:
+        with tempfile.TemporaryDirectory() as tmp:
+            test(tmp_path=pathlib.Path(tmp))
+
     test_timestep()

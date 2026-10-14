@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import pathlib
+import tempfile
+
 import numpy as np
 
 import felupe as fem
 
 
-def test_readme():
+def test_readme(tmp_path):
     mesh = fem.Cube(n=9)
     element = fem.Hexahedron()
     quadrature = fem.GaussLegendre(order=1, dim=3)
@@ -83,7 +86,7 @@ def test_readme():
 
     F[0][:, :, 0, 0]
 
-    fem.save(region, field, filename="result.vtk")
+    fem.save(region, field, filename=tmp_path / "result.vtk")
 
     from felupe.math import det, dot, transpose
 
@@ -101,7 +104,7 @@ def test_readme():
     fem.save(
         region,
         field,
-        filename="result_with_cauchy.vtk",
+        filename=tmp_path / "result_with_cauchy.vtk",
         point_data={
             "CauchyStressProjected": cauchy_projected,
             "CauchyStressShifted": cauchy_shifted,
@@ -157,5 +160,7 @@ def test_readme_form():
 
 
 if __name__ == "__main__":
-    test_readme()
+    with tempfile.TemporaryDirectory() as tmp:
+        test_readme(tmp_path=pathlib.Path(tmp))
+
     test_readme_form()

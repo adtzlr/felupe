@@ -58,7 +58,7 @@ def test_job():
     assert [state.substepnumber for state in substeps] == list(range(11))
 
 
-def test_job_xdmf():
+def test_job_xdmf(tmp_path):
     field, step = pre()
 
     job = fem.Job(steps=[step])
@@ -66,20 +66,29 @@ def test_job_xdmf():
 
     field, step = pre()
     job = fem.Job(steps=[step])
-    job.evaluate(filename="result.xdmf", parallel=True, verbose=2)
+
+    with contextlib.chdir(tmp_path):
+        job.evaluate(filename="result.xdmf", parallel=True, verbose=2)
+
+    assert (tmp_path / "result.xdmf").exists()
+    assert (tmp_path / "result.h5").exists()
 
 
-def test_job_xdmf_global_field():
+def test_job_xdmf_global_field(tmp_path):
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
 
     field, step = pre()
     job = fem.Job(steps=[step])
-    job.evaluate(filename="result.xdmf", x0=field, tqdm="auto")
+
+    with contextlib.chdir(tmp_path):
+        job.evaluate(filename="result.xdmf", x0=field, tqdm="auto")
+
+    assert (tmp_path / "result.xdmf").exists()
 
 
-def test_job_xdmf_vertex():
+def test_job_xdmf_vertex(tmp_path):
 
     import felupe as fem
 
@@ -112,8 +121,10 @@ def test_job_xdmf_vertex():
 
     job = fem.Job(steps=[step])
 
-    with pytest.warns(UserWarning):
+    with contextlib.chdir(tmp_path), pytest.warns(UserWarning):
         job.evaluate(x0=field, filename="result.xdmf", mesh=container.meshes[0])
+
+    assert (tmp_path / "result.xdmf").exists()
 
 
 def test_curve():
@@ -219,17 +230,6 @@ def test_noramp():
     job.evaluate()
 
 
-@contextlib.contextmanager
-def working_directory(path):
-    "Change the working directory (meshio writes the h5-file relative to it)."
-    cwd = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(cwd)
-
-
 @pytest.mark.filterwarnings("ignore:Matrix is exactly singular")
 def test_job_after_job_on_error(tmp_path):
     """The hook ``after_job`` is also triggered if the evaluation of a job fails, e.g.
@@ -259,7 +259,8 @@ def test_job_after_job_on_error(tmp_path):
     recorder = Recorder()
     job = fem.Job(steps=[step], plugins=[recorder])
 
-    with working_directory(tmp_path):
+    # meshio writes the h5-file relative to the working directory
+    with contextlib.chdir(tmp_path):
         with pytest.raises(ValueError, match="NaN") as excinfo:
             with np.errstate(all="ignore"):
                 job.evaluate(filename="result.xdmf", verbose=0)
@@ -341,7 +342,7 @@ def test_job_repeated_evaluate(tmp_path):
         # one header is printed by one progress plugin in each evaluation
         assert stdout.getvalue().count("Run Job") == 1
 
-    with working_directory(tmp_path):
+    with contextlib.chdir(tmp_path):
         job.evaluate(filename="first.xdmf", verbose=0)
         assert (tmp_path / "first.xdmf").exists()
 
@@ -444,9 +445,11 @@ def test_callback_plugins():
 
 if __name__ == "__main__":
     test_job()
-    test_job_xdmf()
-    test_job_xdmf_global_field()
-    test_job_xdmf_vertex()
+
+    for test in [test_job_xdmf, test_job_xdmf_global_field, test_job_xdmf_vertex]:
+        with tempfile.TemporaryDirectory() as tmp:
+            test(tmp_path=pathlib.Path(tmp))
+
     test_curve()
     test_curve2()
     test_curve_custom_items()

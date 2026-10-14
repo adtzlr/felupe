@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import pathlib
+import tempfile
+
 import numpy as np
 import pytest
 
 import felupe as fem
 
 
-def test_meshes():
+def test_meshes(tmp_path):
     m = fem.Mesh(
         points=np.array(
             [
@@ -157,11 +160,11 @@ def test_meshes():
     m.merge_duplicate_cells()
 
     m.as_meshio(point_data={"data": m.points}, cell_data={"cell_data": [m.cells[:, 0]]})
-    m.save()
+    m.save(tmp_path / "mesh.vtk")
 
     m.cell_type = None
     with pytest.raises(Exception):
-        m.save()
+        m.save(tmp_path / "mesh.vtk")
 
     other_mesh = m.copy()
     other_mesh.update(cells=m.cells[:3])
@@ -755,7 +758,9 @@ def test_get_set_xyz():
 
 
 if __name__ == "__main__":
-    test_meshes()
+    with tempfile.TemporaryDirectory() as tmp:
+        test_meshes(tmp_path=pathlib.Path(tmp))
+
     test_mirror()
     test_triangulate()
     test_runouts()

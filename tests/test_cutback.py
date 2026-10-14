@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import contextlib
-import os
 import pathlib
 import tempfile
 
@@ -1156,17 +1155,6 @@ def test_cutback_merged_fields():
     assert np.allclose(field[0].values, field_ref[0].values, rtol=1e-12, atol=1e-14)
 
 
-@contextlib.contextmanager
-def working_directory(path):
-    "Change the working directory (meshio writes the h5-file relative to it)."
-    cwd = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(cwd)
-
-
 def test_cutback_xdmf(tmp_path):
     """A result file is written for all substeps, if the Newton-Raphson method of a
     substep reaches the maximum number of iterations and the substep is recovered."""
@@ -1182,7 +1170,8 @@ def test_cutback_xdmf(tmp_path):
     cutback = fem.CutbackPlugin()
     job = fem.Job(steps=[step], plugins=[cutback])
 
-    with working_directory(tmp_path):
+    # meshio writes the h5-file relative to the working directory
+    with contextlib.chdir(tmp_path):
         job.evaluate(verbose=0, filename="result.xdmf", maxiter=4)
 
         with meshio.xdmf.TimeSeriesReader("result.xdmf") as reader:

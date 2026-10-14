@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._gauss_legendre import GaussLegendre, GaussLegendreBoundary
 from ._gauss_lobatto import GaussLobatto, GaussLobattoBoundary
 from ._scheme import Scheme

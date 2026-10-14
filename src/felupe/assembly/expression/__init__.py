@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._basis import Basis, BasisArray, BasisField
 from ._decorator import FormExpressionDecorator as Form
 

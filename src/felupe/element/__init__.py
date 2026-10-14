@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._base import Element
 from ._hexahedron import (
     ConstantHexahedron,

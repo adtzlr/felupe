@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._chain import langevin, linear
 from ._framework_affine import (
     affine_stretch,

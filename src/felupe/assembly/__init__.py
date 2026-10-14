@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from . import expression
 from ._axi import IntegralFormAxisymmetric
 from ._cartesian import IntegralFormCartesian

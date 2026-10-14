@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._boundary import RegionBoundary
 from ._region import Region
 from ._templates import (

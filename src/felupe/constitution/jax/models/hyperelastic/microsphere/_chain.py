@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from jax.numpy import log, sinh, sqrt
 
 

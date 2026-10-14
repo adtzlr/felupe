@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._field import ViewField
 from ._mesh import ViewMesh
 from ._mesh_select_edge_points import select_edge_points

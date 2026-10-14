@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._lame_converter import lame_converter, lame_converter_orthotropic
 from ._linear_elastic import (
     LinearElastic,

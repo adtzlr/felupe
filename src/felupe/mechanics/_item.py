@@ -177,7 +177,7 @@ class FormItem:
     ...     field, clamped=True, move=-0.3, return_loadcase=False
     ... )
     >>> step = fem.Step(items=[item], boundaries=boundaries)
-    >>> job = fem.Job(steps=[step], boundary=boundaries["move"]).evaluate()
+    >>> job = fem.Job(steps=[step]).evaluate()
 
     See Also
     --------

@@ -116,13 +116,16 @@ for mfield, rho, cp, k in zip(fields, density, specific_heat, thermal_conductivi
 
 
 # %%
-# A callback-function records the mean surface heat flux at the internal and external
+# A callable plugin records the mean surface heat flux at the internal and external
 # boundaries after each completed time step. The mean surface heat flux is calculated
 # by the :meth:`~felupe.thermal.SolidBodyThermal.heat_flux_boundary` method of the
 # thermal solid body, which returns the integrated surface heat flux for a given
 # boundary region and time step. The mean surface heat flux is stored in the
-# ``flux_data`` dictionary, which is passed to the callback function as an argument.
-def callback(stepnumber, substepnumber, substep, flux_data):
+# ``flux_data`` dictionary.
+flux_data = {"external": [], "internal": []}
+
+
+def save_heat_flux(context, state):
     """Save mean surface heat flux at internal and external boundaries."""
 
     heat_flux = materials[0].heat_flux_boundary
@@ -141,7 +144,7 @@ t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)
 # first item in the step to properly update the time step in the materials. The internal
 # and external heat transfer item values are defined in the ramp, which specifies how
 # their values change over time. Finally, a job is created with the step and the
-# callback function, and evaluated with the top-level temperature field. A result file
+# plugin, and evaluated with the top-level temperature field. A result file
 # is created for visualization in Paraview, and the temperature field is saved as point-
 # data in the result file.
 time = fem.thermal.TimeStep(
@@ -157,9 +160,7 @@ step = fem.Step(
     ramp=ramp,
 )
 
-flux_data = {"external": [], "internal": []}
-
-job = fem.Job(steps=[step], callback=callback, flux_data=flux_data).evaluate(
+job = fem.Job(steps=[step], plugins=[save_heat_flux]).evaluate(
     x0=field,
     filename="result.xdmf",  # create a result file for Paraview
     point_data={"Temperature": lambda field, substep: temperature.values},

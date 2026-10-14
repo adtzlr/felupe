@@ -524,10 +524,7 @@ def test_load():
         bounds = {"fix": fem.Boundary(field[0], fx=lambda x: x == 0)}
         dof0, dof1 = fem.dof.partition(field, bounds)
 
-        def cb(dx, x, iteration, xnorm, fnorm, success):
-            print("fnorm", fnorm)
-
-        res = fem.newtonraphson(items=[body, load], dof0=dof0, dof1=dof1, callback=cb)
+        res = fem.newtonraphson(items=[body, load], dof0=dof0, dof1=dof1)
 
         assert res.success
 

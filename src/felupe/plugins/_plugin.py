@@ -59,6 +59,11 @@ class Plugin:
 
         All methods are optional.
 
+    A plugin may also be a callable ``plugin(context, state)``, e.g. a function, which
+    is only called after each completed substep (in the hook ``after_substep``). It
+    replaces the deprecated ``callback`` of a :class:`~felupe.Job`, see the notes of
+    :class:`~felupe.Job`.
+
     See Also
     --------
     felupe.Job : A job with a list of steps and a method to evaluate them.

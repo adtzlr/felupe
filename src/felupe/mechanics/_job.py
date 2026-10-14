@@ -16,8 +16,29 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from .._deprecation import warn_deprecated
 from ..plugins import ProgressPlugin, XDMFWriterPlugin
 from ..tools import Context, EventDispatcher
+
+
+def _warn_callback(name, kwargs):
+    "Warn about the deprecated callback and its keyword-arguments of a job."
+
+    message = (
+        f"The `callback` of a `{name}` and its keyword-arguments are deprecated since "
+        "v11.3.0 and will be removed in v12.0.0. Use a callable plugin instead, which "
+        "is called after each completed substep, e.g. "
+        f"`{name}(..., plugins=[lambda context, state: callback(state.stepnumber, "
+        "state.substepnumber, context.substep, **kwargs)])`."
+    )
+
+    if kwargs:
+        message += (
+            f" The keyword-arguments {sorted(kwargs)} are passed to the callback, "
+            "check them for typos."
+        )
+
+    warn_deprecated(message)
 
 
 class JobState:
@@ -63,12 +84,17 @@ class Job:
     steps : list of Step
         A list with steps, where each step subsequently depends on the solution of the
         previous step.
-    callback : callable, optional
+    callback : callable or None, optional
         A callable which is called after each completed substep. Function signature must
         be ``lambda stepnumber, substepnumber, substep, **kwargs: None``, where
         ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
         container of the completed substep is available as ``substep.x``. Default
-        is ``callback=lambda stepnumber, substepnumber, substep, **kwargs: None``.
+        is None.
+
+        ..  deprecated:: 11.3.0
+            ``callback`` and its keyword-arguments will be removed in 12.0.0. Use a
+            callable plugin instead, see the notes below.
+
     plugins : list or None, optional
         A list of plugins with hooks to be used during evaluation. Available hooks are
         ``before_job``, ``after_job``, ``before_step``, ``after_step`` and
@@ -85,6 +111,9 @@ class Job:
     **kwargs : dict, optional
         Optional keyword-arguments for the ``callback`` function.
 
+        ..  deprecated:: 11.3.0
+            Will be removed in 12.0.0, together with ``callback``.
+
     Attributes
     ----------
     nsteps : int
@@ -100,6 +129,39 @@ class Job:
         :class:`~felupe.XDMFWriterPlugin`, are not added to this dispatcher. Instead,
         :meth:`~felupe.Job.evaluate` creates a new dispatcher for each evaluation with
         the plugins of the job and the built-in plugins.
+
+    Notes
+    -----
+    A callable plugin is called after each completed substep (in the hook
+    ``after_substep``) with the context and the state of the substep. It replaces the
+    deprecated ``callback``: the step number and the substep number are available as
+    ``state.stepnumber`` and ``state.substepnumber`` and the result of the substep as
+    ``context.substep`` (or ``state.result``). Keyword-arguments are passed to the
+    callback by a closure, e.g. a lambda function.
+
+    ..  code-block:: python
+
+        def callback(stepnumber, substepnumber, substep, **kwargs):
+            ...
+
+        # deprecated
+        job = fem.Job(steps, callback=callback, a=1)
+
+        # use a callable plugin instead
+        job = fem.Job(
+            steps,
+            plugins=[
+                lambda context, state: callback(
+                    state.stepnumber, state.substepnumber, context.substep, a=1
+                )
+            ],
+        )
+
+    Both are called with the same arguments. The old callback is called before the
+    hook ``after_substep`` of all plugins. A callable plugin is called in the order of
+    the list of plugins, but always before the built-in plugins of
+    :meth:`~felupe.Job.evaluate`. Hence, it is called in the same order if it is the
+    first plugin in the list.
 
     Examples
     --------
@@ -125,6 +187,17 @@ class Job:
         >>> job = fem.Job(steps=[step]).evaluate()
         >>> solid.plot("Principal Values of Cauchy Stress").show()
 
+    A callable plugin is called after each completed substep, e.g. to save the maximum
+    displacement of each substep.
+
+    >>> umax = []
+    >>> def save(context, state):
+    ...     umax.append(context.substep.x[0].values.max())
+    >>>
+    >>> job = fem.Job(steps=[step], plugins=[save]).evaluate()
+    >>> len(umax)
+    6
+
     See Also
     --------
     Step : A Step with multiple substeps, subsequently depending on the solution
@@ -142,10 +215,13 @@ class Job:
     def __init__(
         self,
         steps,
-        callback=lambda stepnumber, substepnumber, substep, **kwargs: None,
+        callback=None,
         plugins=None,
         **kwargs,
     ):
+        if callback is not None or kwargs:
+            _warn_callback(type(self).__name__, kwargs)
+
         self.steps = steps
         self.nsteps = len(steps)
         self.callback = callback
@@ -307,7 +383,8 @@ class Job:
                 substep = state.result
                 self.fnorms.append(substep.fnorms)
 
-                self.callback(j, state.substepnumber, substep, **self.kwargs)
+                if self.callback is not None:
+                    self.callback(j, state.substepnumber, substep, **self.kwargs)
 
                 context = Context(job=self, step=step, substep=substep)
                 dispatcher.trigger("after_substep", context, state)

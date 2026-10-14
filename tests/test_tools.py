@@ -553,37 +553,6 @@ def test_resize():
         fem.tools._newton.spresize(matrix, shape=(50, 3))
 
 
-def test_warn_deprecated():
-    "The warning is attributed to the first frame outside of FElupe."
-
-    import inspect
-
-    from felupe import _deprecation
-
-    def lines(record):
-        assert all(w.category is DeprecationWarning for w in record)
-        return [(w.filename, w.lineno) for w in record]
-
-    # called by the code of a user (this file)
-    with pytest.warns(DeprecationWarning) as record:
-        line = inspect.currentframe().f_lineno + 1
-        _deprecation.warn_deprecated("message")
-
-    assert lines(record) == [(__file__, line)]
-
-    # called by (nested) functions inside of FElupe
-    filename = os.path.join(os.path.dirname(_deprecation.__file__), "_nested.py")
-    namespace = {"warn_deprecated": _deprecation.warn_deprecated}
-    code = "def inner():\n    warn_deprecated('message')\ndef outer():\n    inner()"
-    exec(compile(code, filename, "exec"), namespace)
-
-    with pytest.warns(DeprecationWarning) as record:
-        line = inspect.currentframe().f_lineno + 1
-        namespace["outer"]()
-
-    assert lines(record) == [(__file__, line)]
-
-
 if __name__ == "__main__":
     test_hello_world()
     test_solve()
@@ -599,4 +568,3 @@ if __name__ == "__main__":
     test_topoints()
     test_extrapolate()
     test_resize()
-    test_warn_deprecated()

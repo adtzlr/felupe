@@ -56,7 +56,7 @@ class AnimationWriterPlugin(Plugin):
         >>> umat = fem.NeoHooke(mu=1, bulk=2)
         >>> solid = fem.SolidBody(umat=umat, field=field)
         >>>
-        >>> move = fem.math.linsteps([0, 1, 0], num=5)
+        >>> move = fem.math.linsteps([0, 1, 0], num=2)
         >>> ramp = {boundaries["move"]: move}
         >>> step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
         >>>

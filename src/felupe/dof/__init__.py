@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._boundary import Boundary
 from ._dict import BoundaryDict
 from ._loadcase import biaxial, shear, symmetry, uniaxial

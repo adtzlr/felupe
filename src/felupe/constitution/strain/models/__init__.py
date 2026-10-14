@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._linear_elastic import linear_elastic
 from ._linear_elastic_plastic_isotropic import (
     LinearElasticPlasticIsotropicHardening,

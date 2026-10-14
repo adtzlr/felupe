@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._blatz_ko import blatz_ko
 from ._extended_tube import extended_tube
 from ._miehe_goektepe_lulei import miehe_goektepe_lulei

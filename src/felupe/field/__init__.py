@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._axi import FieldAxisymmetric
 from ._base import Field
 from ._container import FieldContainer

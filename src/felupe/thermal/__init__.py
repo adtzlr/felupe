@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._solidbody_heat_flux import SolidBodyHeatFlux
 from ._solidbody_surface_heat_transfer import SolidBodySurfaceHeatTransfer
 from ._solidbody_surface_radiation import SolidBodySurfaceRadiation

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 try:
     from . import models
     from ._helpers import isochoric_volumetric_split, vmap

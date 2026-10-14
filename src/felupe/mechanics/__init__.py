@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._cartesian import CartesianConstraint
 from ._contact import ContactRigidBase, ContactRigidCylinder, ContactRigidPlane
 from ._curve import CharacteristicCurve

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._animation_writer import AnimationWriterPlugin
 from ._characteristic_curve import CharacteristicCurvePlugin
 from ._cutback import CutbackPlugin

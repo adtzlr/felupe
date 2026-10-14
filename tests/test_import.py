@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+
 def test_import():
     import felupe as fem
 

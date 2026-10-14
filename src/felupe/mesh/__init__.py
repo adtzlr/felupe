@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from ._container import MeshContainer
 from ._convert import (
     add_midpoints_edges,

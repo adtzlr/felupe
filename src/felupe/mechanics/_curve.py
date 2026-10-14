@@ -36,25 +36,14 @@ class CharacteristicCurve(Job):
         A list of items with methods for the assembly of sparse vectors/matrices which
         are used to evaluate the sum of reaction forces. If None, the total reaction
         forces from the :class:`~felupe.tools.NewtonResult` of the substep are used.
-    callback : callable or None, optional
-        A callable which is called after each completed substep. Function signature must
-        be ``lambda stepnumber, substepnumber, substep, **kwargs: None``, where
-        ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
-        container of the completed substep is available as ``substep.x``. Default
-        is None.
-
-        ..  deprecated:: 11.3.0
-            ``callback`` and its keyword-arguments will be removed in 12.0.0. Use a
-            callable plugin instead, see the notes of :class:`~felupe.Job`.
-
-    **kwargs : dict, optional
-        Optional keyword-arguments for the ``callback`` function and the keyword-
-        argument ``plugins``, a list of plugins, see :class:`~felupe.Job`. The
+    plugins : list or None, optional
+        A list of plugins, see :class:`~felupe.Job` (default is None). The
         :class:`~felupe.CharacteristicCurvePlugin` is added to the end of the list.
 
-        ..  deprecated:: 11.3.0
-            The keyword-arguments for the ``callback`` will be removed in 12.0.0,
-            together with ``callback``.
+        ..  versionchanged:: 12.0.0
+            ``plugins`` is a keyword-only argument. The arguments ``callback`` and
+            ``**kwargs`` (for the callback) are removed, a callable plugin replaces the
+            callback, see the notes of :class:`~felupe.Job`.
 
     Examples
     --------
@@ -108,19 +97,11 @@ class CharacteristicCurve(Job):
 
     """
 
-    def __init__(
-        self,
-        steps,
-        boundary,
-        items=None,
-        callback=None,
-        **kwargs,
-    ):
+    def __init__(self, steps, boundary, items=None, *, plugins=None):
         self._curve = CharacteristicCurvePlugin(boundary=boundary, items=items)
 
-        kwargs_internal = kwargs.copy()
-        plugins = kwargs_internal.pop("plugins", []) + [self._curve]
-        super().__init__(steps, plugins=plugins, callback=callback, **kwargs_internal)
+        plugins = [*(plugins or []), self._curve]
+        super().__init__(steps, plugins=plugins)
 
         self.items = self._curve.items
         self.boundary = self._curve.boundary

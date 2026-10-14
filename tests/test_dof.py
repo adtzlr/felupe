@@ -292,10 +292,10 @@ def test_symmetry():
     with pytest.raises(TypeError):
         fem.dof.symmetry(field)
 
-    with pytest.raises(ValueError):
-        fem.dof.symmetry(field[0], bounds=boundaries, boundaries=boundaries)
+    fem.dof.symmetry(field[0], boundaries=boundaries)
+    assert list(boundaries.keys()) == ["symx", "symy"]
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.raises(TypeError):  # removed in v12.0.0
         fem.dof.symmetry(field[0], bounds=boundaries)
 
 
@@ -309,17 +309,21 @@ def test_boundarydict_iter():
     items = fem.dof.uniaxial(field, return_loadcase=False).items()
 
 
-def test_loadcase_deprecated():
+def test_loadcase_default():
     field = fem.FieldPlaneStrain(
         fem.RegionQuad(fem.Rectangle(n=3)), dim=2
     ).as_container()
 
     for loadcase in [fem.dof.uniaxial, fem.dof.shear, fem.dof.biaxial]:
-        with pytest.warns(DeprecationWarning):
-            my_loadcase = loadcase(field)
+        # only the dict of boundaries is returned by default (since v12.0.0)
+        boundaries = loadcase(field)
+        assert isinstance(boundaries, fem.BoundaryDict)
 
-        with pytest.warns(DeprecationWarning):
-            my_loadcase = loadcase(field, return_loadcase=None)
+        with pytest.raises(TypeError):
+            boundaries, my_loadcase = loadcase(field)
+
+        boundaries, my_loadcase = loadcase(field, return_loadcase=True)
+        assert sorted(my_loadcase.keys()) == ["dof0", "dof1", "ext0"]
 
 
 if __name__ == "__main__":
@@ -331,4 +335,4 @@ if __name__ == "__main__":
     test_loadcase()
     test_symmetry()
     test_boundarydict_iter()
-    test_loadcase_deprecated()
+    test_loadcase_default()

@@ -24,7 +24,6 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spsolve
 
 from .. import solve as fesolve
-from .._deprecation import warn_deprecated
 from ..assembly import IntegralForm
 from ..field import FieldContainer
 from ..field._container import shared_geometry_memo
@@ -475,9 +474,6 @@ def newtonraphson(
     ext0=None,
     solver=spsolve,
     verbose=None,
-    callback=None,
-    callback_kwargs=None,
-    progress_bar=None,
     tqdm="tqdm",
     dispatcher=None,
     plugins=None,
@@ -534,27 +530,6 @@ def newtonraphson(
         Default is None. If None, verbosity is set to True. If None and the
         environmental variable FELUPE_VERBOSE is set and its value is not ``true``,
         then logging is turned off.
-    callback : callable or None, optional
-        An optional callback function with function signature
-        ``callback = lambda dx, x, iteration, xnorm, fnorm, success: None``, which is
-        called after each completed iteration. Default is None.
-
-        ..  deprecated:: 11.3.0
-            ``callback`` will be removed in 12.0.0. Use a plugin with the hook
-            ``after_iteration`` instead, see the notes below.
-
-    callback_kwargs : None, optional
-        Not used.
-
-        ..  deprecated:: 11.3.0
-            ``callback_kwargs`` has no effect and will be removed in 12.0.0.
-
-    progress_bar : None, optional
-        Not used. The progress is shown by a :class:`~felupe.ProgressPlugin`.
-
-        ..  deprecated:: 11.3.0
-            ``progress_bar`` has no effect and will be removed in 12.0.0.
-
     tqdm : str, optional
         If verbose is True, choose a backend for ``tqdm`` (``"tqdm"``, ``"auto"`` or
         ``"notebook"``). Default is ``"tqdm"``.
@@ -565,6 +540,11 @@ def newtonraphson(
         A list of plugins with hooks to be used during evaluation, e.g. a
         :class:`~felupe.LinesearchPlugin`. If a ``dispatcher`` is given, the plugins
         are added to a copy of the dispatcher for this evaluation. Default is None.
+
+        ..  versionchanged:: 12.0.0
+            The arguments ``callback``, ``callback_kwargs`` and ``progress_bar`` are
+            removed. A plugin with the hook ``after_iteration`` replaces the
+            ``callback``, see the notes below.
 
     Returns
     -------
@@ -648,10 +628,11 @@ def newtonraphson(
 
         x = x_n + \alpha\ dx
 
-    The deprecated ``callback`` is replaced by a plugin with the hook
-    ``after_iteration``. The arguments of the callback are attributes of the state of
-    the iteration, see :class:`~felupe.tools.IterationState`. The same plugin is used
-    for the iterations of all substeps of a :class:`~felupe.Job`, e.g.
+    A plugin with the hook ``after_iteration`` replaces the ``callback`` (removed in
+    12.0.0), which was called after each completed iteration. The arguments of the
+    callback are attributes of the state of the iteration, see
+    :class:`~felupe.tools.IterationState`. The same plugin is used for the iterations
+    of all substeps of a :class:`~felupe.Job`, e.g.
     ``Job(steps, plugins=[NewtonCallback()])`` replaces
     ``Job.evaluate(callback=callback)``. A callable plugin can't be used here, because
     it is only called after each completed substep of a job (and never by
@@ -662,8 +643,8 @@ def newtonraphson(
         def callback(dx, x, iteration, xnorm, fnorm, success):
             ...
 
-        # deprecated
-        res = fem.newtonraphson(items, **loadcase, callback=callback)
+        # removed in 12.0.0
+        # res = fem.newtonraphson(items, **loadcase, callback=callback)
 
         # use a plugin instead
         class NewtonCallback(fem.Plugin):
@@ -679,8 +660,7 @@ def newtonraphson(
 
         res = fem.newtonraphson(items, **loadcase, plugins=[NewtonCallback()])
 
-    The plugin gets the same values as the callback. The hook ``after_iteration`` is
-    triggered right after the call of the deprecated callback.
+    The plugin gets the same values as the callback, after each completed iteration.
 
     Examples
     --------
@@ -725,27 +705,6 @@ def newtonraphson(
     True
 
     """
-    if callback is not None:
-        warn_deprecated(
-            "The `callback` of `newtonraphson()` (also passed by "
-            "`Job.evaluate(callback=callback)`) is deprecated since v11.3.0 and will "
-            "be removed in v12.0.0. Use a plugin with the hook `after_iteration` "
-            "instead, which is called after each completed iteration, e.g. "
-            "`plugins=[NewtonCallback()]` with `class NewtonCallback(fem.Plugin): def "
-            "after_iteration(self, context, state): callback(state.dx, state.x, "
-            "state.iteration, state.xnorm, state.fnorm, state.success)`."
-        )
-
-    for name, value in [
-        ("callback_kwargs", callback_kwargs),
-        ("progress_bar", progress_bar),
-    ]:
-        if value is not None:
-            warn_deprecated(
-                f"`{name}` of `newtonraphson()` has no effect and is deprecated since "
-                "v11.3.0. It will be removed in v12.0.0."
-            )
-
     if dispatcher is None:
         from ..plugins import ProgressPlugin
 
@@ -858,9 +817,6 @@ def newtonraphson(
 
         xnorms.append(xnorm)
         fnorms.append(fnorm)
-
-        if callback is not None:
-            callback(dx, x, iteration, xnorm, fnorm, success)
 
         isnan = np.any(np.isnan([xnorm, fnorm]))
         abort = 1 + iteration == maxiter and not success

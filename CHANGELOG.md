@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Changed
+- The default value of the argument `return_loadcase` of the loadcases `dof.uniaxial()`, `dof.biaxial()` and `dof.shear()` is `False` (before: `None`, deprecated since v10.0.0, which returned the loadcase dict), i.e. only the dict of boundaries is returned by default. Use `boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)` to get the loadcase dict. Unpacking the dict of boundaries raises a `TypeError` with a hint, e.g. `boundaries, loadcase = fem.dof.uniaxial(field)`.
+- The argument `plugins` of `Job` and `CharacteristicCurve` is keyword-only, e.g. `Job(steps, plugins=[...])`. Before, it was the third positional argument of `Job`, after the removed `callback`.
+
+### Removed
+- Remove the argument `callback` of `Job` and `CharacteristicCurve` and its keyword-arguments `**kwargs` (deprecated since v11.3.0). Use a callable plugin instead, which is called after each completed substep with the same arguments, e.g. `Job(steps, callback=callback, a=1)` is replaced by `Job(steps, plugins=[lambda context, state: callback(state.stepnumber, state.substepnumber, context.substep, a=1)])`, see the notes of `Job`. Unknown keyword-arguments of a job, e.g. a typo of `plugins`, raise a `TypeError` (before, they were passed to the callback).
+- Remove the argument `callback` of `newtonraphson()` (deprecated since v11.3.0), which was also passed by `Job.evaluate(callback=callback)`. Use a plugin with the hook `after_iteration` instead, e.g. `newtonraphson(..., plugins=[NewtonCallback()])` or `Job(steps, plugins=[NewtonCallback()])` with `class NewtonCallback(Plugin): def after_iteration(self, context, state): callback(state.dx, state.x, state.iteration, state.xnorm, state.fnorm, state.success)`, see the notes of `newtonraphson()`.
+- Remove the unused arguments `progress_bar` and `callback_kwargs` of `newtonraphson()` (deprecated since v11.3.0).
+- Remove `newtonrhapson()` and `tools.newtonrhapson()` (deprecated since v10.2.0). Use `newtonraphson()` and `tools.newtonraphson()`.
+- Remove the argument `bounds` of `dof.symmetry()` (deprecated since v10.0.0). Use `boundaries`.
+
 ## [11.3.0] - 2026-10-14
 
 ### Added

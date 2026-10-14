@@ -16,29 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .._deprecation import warn_deprecated
 from ..plugins import ProgressPlugin, XDMFWriterPlugin
 from ..tools import Context, EventDispatcher
-
-
-def _warn_callback(name, kwargs):
-    "Warn about the deprecated callback and its keyword-arguments of a job."
-
-    message = (
-        f"The `callback` of a `{name}` and its keyword-arguments are deprecated since "
-        "v11.3.0 and will be removed in v12.0.0. Use a callable plugin instead, which "
-        "is called after each completed substep, e.g. "
-        f"`{name}(..., plugins=[lambda context, state: callback(state.stepnumber, "
-        "state.substepnumber, context.substep, **kwargs)])`."
-    )
-
-    if kwargs:
-        message += (
-            f" The keyword-arguments {sorted(kwargs)} are passed to the callback, "
-            "check them for typos."
-        )
-
-    warn_deprecated(message)
 
 
 class JobState:
@@ -84,17 +63,6 @@ class Job:
     steps : list of Step
         A list with steps, where each step subsequently depends on the solution of the
         previous step.
-    callback : callable or None, optional
-        A callable which is called after each completed substep. Function signature must
-        be ``lambda stepnumber, substepnumber, substep, **kwargs: None``, where
-        ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
-        container of the completed substep is available as ``substep.x``. Default
-        is None.
-
-        ..  deprecated:: 11.3.0
-            ``callback`` and its keyword-arguments will be removed in 12.0.0. Use a
-            callable plugin instead, see the notes below.
-
     plugins : list or None, optional
         A list of plugins with hooks to be used during evaluation. Available hooks are
         ``before_job``, ``after_job``, ``before_step``, ``after_step`` and
@@ -108,11 +76,11 @@ class Job:
         hook. E.g., a backtracking line search is enabled by
         ``Job(steps, plugins=[LinesearchPlugin()])`` and failed substeps are subdivided
         by ``Job(steps, plugins=[CutbackPlugin()])``.
-    **kwargs : dict, optional
-        Optional keyword-arguments for the ``callback`` function.
 
-        ..  deprecated:: 11.3.0
-            Will be removed in 12.0.0, together with ``callback``.
+        ..  versionchanged:: 12.0.0
+            ``plugins`` is a keyword-only argument. The arguments ``callback`` and
+            ``**kwargs`` (for the callback) are removed, a callable plugin replaces the
+            callback, see the notes below.
 
     Attributes
     ----------
@@ -134,18 +102,18 @@ class Job:
     -----
     A callable plugin is called after each completed substep (in the hook
     ``after_substep``) with the context and the state of the substep. It replaces the
-    deprecated ``callback``: the step number and the substep number are available as
-    ``state.stepnumber`` and ``state.substepnumber`` and the result of the substep as
-    ``context.substep`` (or ``state.result``). Keyword-arguments are passed to the
-    callback by a closure, e.g. a lambda function.
+    ``callback`` (removed in 12.0.0): the step number and the substep number are
+    available as ``state.stepnumber`` and ``state.substepnumber`` and the result of
+    the substep as ``context.substep`` (or ``state.result``). Keyword-arguments are
+    passed to the callback by a closure, e.g. a lambda function.
 
     ..  code-block:: python
 
         def callback(stepnumber, substepnumber, substep, **kwargs):
             ...
 
-        # deprecated
-        job = fem.Job(steps, callback=callback, a=1)
+        # removed in 12.0.0
+        # job = fem.Job(steps, callback=callback, a=1)
 
         # use a callable plugin instead
         job = fem.Job(
@@ -157,9 +125,9 @@ class Job:
             ],
         )
 
-    Both are called with the same arguments. The old callback is called before the
-    hook ``after_substep`` of all plugins. A callable plugin is called in the order of
-    the list of plugins, but always before the built-in plugins of
+    Both are called with the same arguments. The removed callback was called before
+    the hook ``after_substep`` of all plugins. A callable plugin is called in the order
+    of the list of plugins, but always before the built-in plugins of
     :meth:`~felupe.Job.evaluate`. Hence, it is called in the same order if it is the
     first plugin in the list.
 
@@ -212,23 +180,12 @@ class Job:
 
     """
 
-    def __init__(
-        self,
-        steps,
-        callback=None,
-        plugins=None,
-        **kwargs,
-    ):
-        if callback is not None or kwargs:
-            _warn_callback(type(self).__name__, kwargs)
-
+    def __init__(self, steps, *, plugins=None):
         self.steps = steps
         self.nsteps = len(steps)
-        self.callback = callback
 
         self.timetrack = []
         self.fnorms = []
-        self.kwargs = kwargs
 
         self.dispatcher = EventDispatcher(plugins=plugins)
 
@@ -382,9 +339,6 @@ class Job:
             for state in states:
                 substep = state.result
                 self.fnorms.append(substep.fnorms)
-
-                if self.callback is not None:
-                    self.callback(j, state.substepnumber, substep, **self.kwargs)
 
                 context = Context(job=self, step=step, substep=substep)
                 dispatcher.trigger("after_substep", context, state)

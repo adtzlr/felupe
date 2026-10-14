@@ -197,7 +197,8 @@ def test_axi_reference():
         dim = 3 if axisymmetric else field.dim
 
         if grad:
-            b = np.zeros((a, field.dim, dim, dim, q, c))
+            # the gradients of a field on a 2d-mesh (and the out-of-plane gradient)
+            b = np.zeros((a, field.dim, dim, 3 if axisymmetric else 2, q, c))
             for i in range(field.dim):
                 b[:, i, i, :2] = dhdX
             if axisymmetric:
@@ -229,6 +230,8 @@ def test_axi_reference():
         ((3, 3), False, u, False),
         ((3, 3), True, p, False),
         ((3, 3, 3), True, w, False),
+        ((3,), False, p, False),
+        ((3, 3, 3, 2), True, w, True),
     ]:
         fun = rng.standard_normal((*shape, q, c))
         form = fem.assembly.IntegralFormAxisymmetric(

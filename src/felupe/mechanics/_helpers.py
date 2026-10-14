@@ -147,18 +147,19 @@ def mass_matrix(field, density, form=IntegralForm):
 
         \int_V \rho\ \delta \boldsymbol{u} \cdot \Delta \boldsymbol{u}\ dV
 
-    The integral form of an axisymmetric field takes a function with an additional
-    out-of-plane component, which is multiplied by :math:`u_r / R` (like the
+    The integral form of a vector-valued axisymmetric field takes a function with an
+    additional out-of-plane component, which is multiplied by :math:`u_r / R` (like the
     circumferential stretch). The displacements of an axisymmetric field have no
     circumferential component, i.e. the out-of-plane component of the function is zero
     and the mass matrix is the in-plane mass matrix of the volumes of the rings
-    :math:`dV = 2 \pi R\ dA`.
+    :math:`dV = 2 \pi R\ dA`. A scalar axisymmetric field, e.g. the temperature of a
+    :class:`~felupe.thermal.SolidBodyThermal`, has no out-of-plane component.
     """
 
     field = field[0].as_container()
     identity = np.eye(field[0].dim)
 
-    if isinstance(field[0], FieldAxisymmetric):
+    if isinstance(field[0], FieldAxisymmetric) and field[0].dim > 1:
         identity = np.pad(identity, (0, 1))  # zero out-of-plane component
 
     integral = form(

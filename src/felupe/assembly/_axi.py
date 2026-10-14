@@ -356,9 +356,12 @@ class IntegralFormAxisymmetric(IntegralFormCartesian):
             values[1] = values[1].reshape(a, 1, b, 1, e)
             values[1] = np.pad(values[1], ((0, 0), (1, 0), (0, 0), (1, 0), (0, 0)))
 
-            a, i, b, e = values[2].shape
-            values[2] = values[2].reshape(a, i, b, 1, e)
-            values[2] = np.pad(values[2], ((0, 0), (0, 0), (0, 0), (1, 0), (0, 0)))
+            # the out-of-plane test basis (v_r / R) and the values of the trial field:
+            # the components of the trial field are on the second axis (a, k, b, e) of
+            # the cartesian form, they belong to the fourth axis (a, i, b, k, e)
+            a, k, b, e = values[2].shape
+            values[2] = np.einsum("akbe->abke", values[2]).reshape(a, 1, b, k, e)
+            values[2] = np.pad(values[2], ((0, 0), (1, 0), (0, 0), (0, 0), (0, 0)))
 
             a, i, b, e = values[3].shape
             values[3] = values[3].reshape(a, i, b, 1, e)

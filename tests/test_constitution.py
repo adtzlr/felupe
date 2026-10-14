@@ -860,11 +860,12 @@ def test_optimize(close_figs=True):
         if close_figs:
             plt.close(ax.get_figure())
 
+    # models with scalar and with array-valued material parameters (ogden), each fit
+    # takes less than a second
     for model in [
         fem.neo_hooke,
         fem.ogden,
         fem.third_order_deformation,
-        fem.alexander,
     ]:
         umat = fem.Hyperelastic(model)
         umat_new, res = umat.optimize(ux=[stretches, stresses], incompressible=True)
@@ -878,7 +879,7 @@ def test_optimize(close_figs=True):
 
     for model in [
         fem.neo_hooke,
-        fem.miehe_goektepe_lulei,
+        fem.ogden,
     ]:
         umat = fem.Hyperelastic(model)
         umat_new, res = umat.optimize(

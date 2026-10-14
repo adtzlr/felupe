@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import numpy as np
-
 from ._base import Field
+from ._embed import embed, in_plane
 
 
 class FieldPlaneStrain(Field):
@@ -67,15 +66,8 @@ class FieldPlaneStrain(Field):
         super().__init__(region, dim=dim, values=values, dtype=dtype)
 
     def interpolate(self, dtype=None, out=None, order="C"):
-        # out-argument is not supported
-        # if out is not None:
-        #     out = out[:2]
-
-        # extend dimension of in-plane 2d-values (out-keyword can't be used here)
-        return np.pad(
-            super().interpolate(dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 0), (0, 0)),
-        )
+        values = super().interpolate(dtype=dtype, out=in_plane(out, 1), order=order)
+        return embed(values, out, 1)
 
     def grad(self, sym=False, dtype=None, out=None, order="C"):
         """3D-gradient as partial derivative of field values at points w.r.t.
@@ -115,17 +107,8 @@ class FieldPlaneStrain(Field):
             of all cells in the region.
         """
 
-        # out-argument is not supported
-        # if out is not None:
-        #     out = out[:2, :2]
-
-        # extend dimension of in-plane 2d-gradient (out-keyword can't be used here)
-        g = np.pad(
-            super().grad(sym=sym, dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 1), (0, 0), (0, 0)),
-        )
-
-        return g
+        g = super().grad(sym=sym, dtype=dtype, out=in_plane(out, 2), order=order)
+        return embed(g, out, 2)
 
     def hess(self, dtype=None, out=None, order="C"):
         """3D-Hessian as second partial derivative of field values at points w.r.t.
@@ -156,10 +139,5 @@ class FieldPlaneStrain(Field):
             of all cells in the region.
         """
 
-        # extend dimension of in-plane 2d-hessian (out-keyword can't be used here)
-        h = np.pad(
-            super().hess(dtype=dtype, out=None, order=order),
-            ((0, 1), (0, 1), (0, 1), (0, 0), (0, 0)),
-        )
-
-        return h
+        h = super().hess(dtype=dtype, out=in_plane(out, 3), order=order)
+        return embed(h, out, 3)

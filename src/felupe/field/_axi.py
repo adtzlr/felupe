@@ -16,9 +16,8 @@ You should have received a copy of the GNU General Public License
 along with FElupe.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import numpy as np
-
 from ._base import Field
+from ._embed import embed, in_plane
 
 
 class FieldAxisymmetric(Field):
@@ -89,17 +88,11 @@ class FieldAxisymmetric(Field):
         self.radius = self.scalar.interpolate()
 
     def interpolate(self, dtype=None, out=None, order="C"):
-        # out-argument is not supported
-        # if out is not None:
-        #     out = out[:2]
+        # a scalar field has no out-of-plane component
+        axes = int(self.dim > 1)
 
-        add_row = int(self.dim > 1)
-
-        # extend dimension of in-plane 2d-gradient (out-keyword can't be used here)
-        return np.pad(
-            super().interpolate(dtype=dtype, out=None, order=order),
-            ((0, add_row), (0, 0), (0, 0)),
-        )
+        values = super().interpolate(dtype=dtype, out=in_plane(out, axes), order=order)
+        return embed(values, out, axes)
 
     def grad(self, sym=False, dtype=None, out=None, order="C"):
         r"""3D-gradient as partial derivative of field values at points w.r.t.
@@ -143,21 +136,11 @@ class FieldAxisymmetric(Field):
             of all cells in the region.
         """
 
-        # out-argument is not supported
-        # if out is not None:
-        #     out = out[:2, :2]
+        # a scalar field has no out-of-plane component
+        axes = 2 * int(self.dim > 1)
 
-        # extend dimension of in-plane 2d-gradient
-
-        # only add additional field vector component if dim > 1, otherwise the field is
-        # scalar
-        add_row = int(self.dim > 1)
-        add_col = int(self.dim > 1)
-
-        g = np.pad(
-            super().grad(sym=sym, dtype=dtype, out=None, order=order),
-            ((0, add_row), (0, add_col), (0, 0), (0, 0)),
-        )
+        g = super().grad(sym=sym, dtype=dtype, out=in_plane(out, axes), order=order)
+        g = embed(g, out, axes)
 
         if self.dim > 1:
             # set dudX_33 = u_r / R

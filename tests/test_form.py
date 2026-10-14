@@ -172,6 +172,84 @@ def test_axi():
         assert K.shape == (r.mesh.ndof, r.mesh.ndof)
 
 
+def test_axi_reference():
+    """The axisymmetric integral forms of all combinations of gradients are equal to a
+    reference with the three-dimensional values and gradients of the basis functions."""
+
+    rng = np.random.default_rng(1234)
+    region = fem.RegionQuad(fem.Rectangle(a=(0, 1), b=(2, 3), n=(3, 4)))
+    u = fem.FieldAxisymmetric(region, dim=2)
+    p = fem.Field(region, dim=1)
+    w = fem.Field(region, dim=3)
+
+    dhdX = region.dhdX  # (a, J, q, c)
+    h = np.broadcast_to(region.h, dhdX[:, 0].shape)  # (a, q, c)
+    R = u.radius
+    dV = 2 * np.pi * R * region.dV
+    a, q, c = h.shape
+
+    def basis(field, grad):
+        "Basis (a, i, k, [L], q, c): the values (v_x, v_r, v_r / R) or the gradients."
+        if field.dim == 1:
+            return (dhdX if grad else h)[:, None]
+
+        axisymmetric = isinstance(field, fem.FieldAxisymmetric)
+        dim = 3 if axisymmetric else field.dim
+
+        if grad:
+            b = np.zeros((a, field.dim, dim, dim, q, c))
+            for i in range(field.dim):
+                b[:, i, i, :2] = dhdX
+            if axisymmetric:
+                b[:, 1, 2, 2] = h / R
+        else:
+            b = np.zeros((a, field.dim, dim, q, c))
+            for i in range(field.dim):
+                b[:, i, i] = h
+            if axisymmetric:
+                b[:, 1, 2] = h / R
+
+        return b
+
+    def reference(fun, v, grad_v, u=None, grad_u=None):
+        bv = basis(v, grad_v)
+        sv = "klmn"[: bv.ndim - 4]
+        if u is None:
+            return np.einsum(f"ai{sv}qc,{sv}qc,qc->aic", bv, fun, dV)
+        bu = basis(u, grad_u)
+        su = "rstu"[: bu.ndim - 4]
+        return np.einsum(f"ai{sv}qc,{sv}{su}qc,bj{su}qc,qc->aibjc", bv, fun, bu, dV)
+
+    for shape, grad_v, field, grad_u in [
+        ((3, 3), True, None, None),
+        ((3,), False, None, None),
+        ((3, 3, 3, 3), True, u, True),
+        ((3, 3, 3), False, u, True),
+        ((3, 3, 3), True, u, False),
+        ((3, 3), False, u, False),
+        ((3, 3), True, p, False),
+        ((3, 3, 3), True, w, False),
+    ]:
+        fun = rng.standard_normal((*shape, q, c))
+        form = fem.assembly.IntegralFormAxisymmetric(
+            fun, u, region.dV, field, grad_v=grad_v, grad_u=grad_u
+        )
+        values = form.integrate()
+        expected = reference(fun, u, grad_v, field, grad_u)
+
+        assert np.allclose(values, expected.reshape(values.shape))
+
+    # a symmetric function gives a symmetric matrix
+    fun = rng.standard_normal((3, 3, q, c))
+    fun = fun + np.einsum("ij...->ji...", fun)
+    form = fem.IntegralForm(
+        [fun], u.as_container(), region.dV, u.as_container(), [False], [False]
+    )
+    matrix = form.assemble().toarray()
+
+    assert np.allclose(matrix, matrix.T)
+
+
 def test_linearform():
     r, u, p, P, A = pre()
 
@@ -596,4 +674,5 @@ if __name__ == "__main__":
     test_single_block()
     test_bilinearform_lazy_indices()
     test_axi()
+    test_axi_reference()
     test_mixed()

@@ -25,6 +25,8 @@ along with Felupe.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import numpy as np
+
 import felupe as fem
 
 
@@ -72,6 +74,58 @@ def test_free_vibration_mixed():
     new_field, frequency = job.extract(x0=field, n=-1, inplace=False)
 
 
+def test_free_vibration_axisymmetric():
+    "The mass matrix and the free vibration of axisymmetric solid bodies."
+
+    mesh = fem.Rectangle(a=(0, 1), b=(2, 3), n=(5, 5))  # axial x, radius 1 <= R <= 3
+    region = fem.RegionQuad(mesh)
+    density = 2.5
+
+    # the mass of the revolved body (a tube), density * 2 pi * int R dA
+    mass = density * 2 * np.pi * 8.0
+
+    for solid in [
+        fem.SolidBody(
+            umat=fem.NeoHookeCompressible(mu=1.0, lmbda=2.0),
+            field=fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)]),
+            density=density,
+        ),
+        fem.SolidBodyNearlyIncompressible(
+            umat=fem.NeoHooke(mu=1.0),
+            field=fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)]),
+            bulk=5.0,
+            density=density,
+        ),
+    ]:
+        M = solid.assemble.mass().toarray()
+
+        assert np.allclose(M, M.T)
+        assert np.isclose(M[0::2, 0::2].sum(), mass)  # axial direction
+        assert np.isclose(M[1::2, 1::2].sum(), mass)  # radial direction
+        assert np.allclose(M[0::2, 1::2], 0)
+
+    # the lowest eigenfrequency of the axisymmetric model, clamped at x = 0
+    umat = fem.NeoHookeCompressible(mu=1.0, lmbda=2.0)
+    field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
+    solid = fem.SolidBody(umat=umat, field=field, density=density)
+    boundaries = {"fixed": fem.Boundary(field[0], fx=0)}
+
+    job = fem.FreeVibration([solid], boundaries).evaluate(k=1)
+    new_field, frequency = job.extract(n=0, inplace=False)
+
+    # the axisymmetric mode is also an eigenmode of the revolved 3d-model
+    mesh3d = mesh.revolve(n=37, phi=360).sweep()
+    field3d = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh3d), dim=3)])
+    solid3d = fem.SolidBody(umat=umat, field=field3d, density=density)
+    boundaries3d = {"fixed": fem.Boundary(field3d[0], fx=0)}
+
+    job3d = fem.FreeVibration([solid3d], boundaries3d).evaluate(k=12)
+    frequencies3d = np.sqrt(job3d.eigenvalues) / (2 * np.pi)
+
+    assert np.min(np.abs(frequencies3d / frequency - 1)) < 5e-3
+
+
 if __name__ == "__main__":
     test_free_vibration()
     test_free_vibration_mixed()
+    test_free_vibration_axisymmetric()

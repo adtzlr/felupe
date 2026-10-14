@@ -21,7 +21,7 @@ import warnings
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from ..assembly import IntegralForm
+from ..assembly import IntegralForm, IntegralFormCartesian
 from ..constitution import AreaChange
 from ..field import FieldAxisymmetric
 from ..math import det, dot, transpose
@@ -146,19 +146,32 @@ def mass_matrix(field, density, form=IntegralForm):
     ..  math::
 
         \int_V \rho\ \delta \boldsymbol{u} \cdot \Delta \boldsymbol{u}\ dV
+
+    The displacements of an axisymmetric field have no circumferential component.
+    Hence, the mass matrix of an axisymmetric field is the in-plane mass matrix of the
+    volumes of the rings :math:`dV = 2 \pi R\ dA`, which are revolved around the
+    X-axis.
     """
 
     field = field[0].as_container()
     dim = field[0].dim
+    fun = density * np.eye(dim).reshape(dim, dim, 1, 1)
 
-    integral = form(
-        fun=[density * np.eye(dim).reshape(dim, dim, 1, 1)],
-        v=field,
-        u=field,
-        dV=field.region.dV,
-        grad_v=[False],
-        grad_u=[False],
-    )
+    if isinstance(field[0], FieldAxisymmetric):
+        # an integral form of axisymmetric fields takes a function with an additional
+        # out-of-plane component, see IntegralFormAxisymmetric
+        dV = 2 * np.pi * field[0].radius * field.region.dV
+        integral = IntegralFormCartesian(fun, field[0], dV, field[0], False, False)
+
+    else:
+        integral = form(
+            fun=[fun],
+            v=field,
+            u=field,
+            dV=field.region.dV,
+            grad_v=[False],
+            grad_u=[False],
+        )
 
     return integral.assemble()
 

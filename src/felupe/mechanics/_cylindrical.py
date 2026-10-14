@@ -133,8 +133,8 @@ class CylindricalConstraint(PointConstraint):
         >>> import numpy as np
         >>> import felupe as fem
         >>>
-        >>> rectangle = fem.Rectangle(a=(0, 1), b=(3, 2), n=(10, 4))
-        >>> mesh = rectangle.revolve(n=25, phi=360, axis=0)
+        >>> rectangle = fem.Rectangle(a=(0, 1), b=(3, 2), n=(6, 3))
+        >>> mesh = rectangle.revolve(n=17, phi=360, axis=0)
         >>> region = fem.RegionHexahedron(mesh)
         >>> displacement = fem.Field(region, dim=3)
         >>> field = fem.FieldContainer([displacement])
@@ -155,7 +155,7 @@ class CylindricalConstraint(PointConstraint):
         >>> twist = fem.CylindricalConstraint(
         ...     field, points=np.isclose(mesh.x, 3), axis=(1, 0, 0)
         ... )
-        >>> angles = np.linspace(0, np.pi / 2, 10)
+        >>> angles = np.linspace(0, np.pi / 2, 4)
         >>> table = [twist.radius.reshape(-1, 1) * [0, angle, 0] for angle in angles]
         >>>
         >>> boundaries = {"fixed": fem.Boundary(displacement, fx=0)}

@@ -21,7 +21,7 @@ import warnings
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from ..assembly import IntegralForm, IntegralFormCartesian
+from ..assembly import IntegralForm
 from ..constitution import AreaChange
 from ..field import FieldAxisymmetric
 from ..math import det, dot, transpose
@@ -147,31 +147,28 @@ def mass_matrix(field, density, form=IntegralForm):
 
         \int_V \rho\ \delta \boldsymbol{u} \cdot \Delta \boldsymbol{u}\ dV
 
-    The displacements of an axisymmetric field have no circumferential component.
-    Hence, the mass matrix of an axisymmetric field is the in-plane mass matrix of the
-    volumes of the rings :math:`dV = 2 \pi R\ dA`, which are revolved around the
-    X-axis.
+    The integral form of an axisymmetric field takes a function with an additional
+    out-of-plane component, which is multiplied by :math:`u_r / R` (like the
+    circumferential stretch). The displacements of an axisymmetric field have no
+    circumferential component, i.e. the out-of-plane component of the function is zero
+    and the mass matrix is the in-plane mass matrix of the volumes of the rings
+    :math:`dV = 2 \pi R\ dA`.
     """
 
     field = field[0].as_container()
-    dim = field[0].dim
-    fun = density * np.eye(dim).reshape(dim, dim, 1, 1)
+    identity = np.eye(field[0].dim)
 
     if isinstance(field[0], FieldAxisymmetric):
-        # an integral form of axisymmetric fields takes a function with an additional
-        # out-of-plane component, see IntegralFormAxisymmetric
-        dV = 2 * np.pi * field[0].radius * field.region.dV
-        integral = IntegralFormCartesian(fun, field[0], dV, field[0], False, False)
+        identity = np.pad(identity, (0, 1))  # zero out-of-plane component
 
-    else:
-        integral = form(
-            fun=[fun],
-            v=field,
-            u=field,
-            dV=field.region.dV,
-            grad_v=[False],
-            grad_u=[False],
-        )
+    integral = form(
+        fun=[density * identity.reshape(*identity.shape, 1, 1)],
+        v=field,
+        u=field,
+        dV=field.region.dV,
+        grad_v=[False],
+        grad_u=[False],
+    )
 
     return integral.assemble()
 

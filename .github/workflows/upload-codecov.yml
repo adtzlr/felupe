@@ -31,12 +31,25 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: "pip"
-  
+
+    # the compiled functions of JAX are cached across the runs, the key of an entry of
+    # the cache includes the versions of jax and jaxlib
+    - uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/jax-cache
+        key: jax-${{ matrix.python-version }}-${{ github.sha }}
+        restore-keys: jax-${{ matrix.python-version }}-
+
     - name: Test with tox
+      env:
+        JAX_COMPILATION_CACHE_DIR: ${{ runner.temp }}/jax-cache
+        JAX_PERSISTENT_CACHE_MIN_COMPILE_TIME_SECS: 0
+        # only the coverage report of Python 3.14 is uploaded
+        COVERAGE_ARGS: ${{ matrix.python-version == '3.14' && '--cov felupe --cov-report xml --cov-report term' || '' }}
       run: |
-        pip install tox
-        tox -- --cov felupe --cov-report xml --cov-report term
-  
+        pip install tox tox-uv
+        tox -- $COVERAGE_ARGS
+
     - name: Upload coverage to Codecov
       if: ${{ matrix.python-version == '3.14' }}
       uses: codecov/codecov-action@v4

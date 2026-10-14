@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import pathlib
+import tempfile
+
 import numpy as np
 
 import felupe as fem
 
 
-def test_composite():
+def test_composite(tmp_path):
     n = 5
     mesh = fem.Cube(n=n)
     region = fem.RegionHexahedron(mesh)
@@ -60,10 +63,10 @@ def test_composite():
 
     res = fem.newtonraphson(field, items=[rubber, reinforced], **loadcase)
 
-    fem.save(region, res.x)
+    fem.save(region, res.x, filename=tmp_path / "result.vtu")
 
 
-def test_composite_planestrain():
+def test_composite_planestrain(tmp_path):
     n = 5
     mesh = fem.Rectangle(n=n)
     region = fem.RegionQuad(mesh)
@@ -123,9 +126,10 @@ def test_composite_planestrain():
 
     res = fem.newtonraphson(field, items=[rubber, reinforced], **loadcase)
 
-    fem.save(region, res.x)
+    fem.save(region, res.x, filename=tmp_path / "result.vtu")
 
 
 if __name__ == "__main__":
-    test_composite()
-    test_composite_planestrain()
+    for test in [test_composite, test_composite_planestrain]:
+        with tempfile.TemporaryDirectory() as tmp:
+            test(tmp_path=pathlib.Path(tmp))

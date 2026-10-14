@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import pathlib
+import tempfile
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -411,7 +414,7 @@ def test_umat_hyperelastic_statevars(close_figs=True):
             plt.close(ax.get_figure())
 
 
-def test_umat_hyperelastic(close_figs=True):
+def test_umat_hyperelastic(tmp_path, close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
@@ -518,7 +521,9 @@ def test_umat_hyperelastic(close_figs=True):
         if close_figs:
             plt.close(ax.get_figure())
 
-        ax = umat.screenshot(incompressible=incompressible)
+        ax = umat.screenshot(
+            filename=tmp_path / "umat.png", incompressible=incompressible
+        )
 
         if close_figs:
             plt.close(ax.get_figure())
@@ -544,7 +549,7 @@ def test_umat_hyperelastic(close_figs=True):
             plt.close(ax.get_figure())
 
 
-def test_umat_lagrange(close_figs=True):
+def test_umat_lagrange(tmp_path, close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
 
@@ -566,7 +571,9 @@ def test_umat_lagrange(close_figs=True):
         if close_figs:
             plt.close(ax.get_figure())
 
-        ax = umat.screenshot(incompressible=incompressible)
+        ax = umat.screenshot(
+            filename=tmp_path / "umat.png", incompressible=incompressible
+        )
 
         if close_figs:
             plt.close(ax.get_figure())
@@ -1055,10 +1062,12 @@ if __name__ == "__main__":
     test_linear_planestrain()
     test_kinematics()
     test_umat()
-    test_umat_hyperelastic(close_figs=close_figs)
+    with tempfile.TemporaryDirectory() as tmp:
+        test_umat_hyperelastic(tmp_path=pathlib.Path(tmp), close_figs=close_figs)
     test_umat_hyperelastic2()
     test_umat_hyperelastic_statevars(close_figs=close_figs)
-    test_umat_lagrange(close_figs=close_figs)
+    with tempfile.TemporaryDirectory() as tmp:
+        test_umat_lagrange(tmp_path=pathlib.Path(tmp), close_figs=close_figs)
     test_umat_viscoelastic(close_figs=close_figs)
     test_umat_viscoelastic2()
     test_umat_strain()

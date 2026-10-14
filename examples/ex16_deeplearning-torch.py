@@ -38,11 +38,11 @@ step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=bound
 displacements = np.zeros((len(move), *field[0].values.shape))
 
 
-def save(i, j, res):
-    displacements[j] = res.x[0].values
+def save(context, state):
+    displacements[state.substepnumber] = context.substep.x[0].values
 
 
-job = fem.Job(steps=[step], callback=save).evaluate(tol=1e-1)
+job = fem.Job(steps=[step], plugins=[save]).evaluate(tol=1e-1)
 
 # %%
 # A PyTorch model is trained on the simulation results. For simplicity, testing is

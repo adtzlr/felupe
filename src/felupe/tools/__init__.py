@@ -13,10 +13,15 @@ from ._solve import solve
 
 
 def newtonrhapson(*args, **kwargs):
-    """Deprecated alias for :func:`felupe.newtonraphson`."""
+    """Deprecated alias for :func:`felupe.newtonraphson`.
+
+    ..  deprecated:: 10.2.0
+        ``newtonrhapson`` will be removed in 12.0.0. Use :func:`~felupe.newtonraphson`
+        instead.
+    """
     warnings.warn(
-        "`newtonrhapson` is deprecated since v10.2.0 and will be removed in a future "
-        "release. Use `newtonraphson` in new code.",
+        "`newtonrhapson` is deprecated since v10.2.0 and will be removed in v12.0.0. "
+        "Use `newtonraphson` in new code.",
         DeprecationWarning,
         stacklevel=2,
     )

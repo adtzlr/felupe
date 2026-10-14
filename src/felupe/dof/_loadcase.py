@@ -49,6 +49,12 @@ def symmetry(
         Center of the y-symmetry (default is 0.0).
     z : float, optional
         Center of the z-symmetry (default is 0.0).
+    bounds : dict or felupe.BoundaryDict, optional
+        Extend a given dict of boundaries by the symmetry boundaries (default is None).
+
+        ..  deprecated:: 10.0.0
+            ``bounds`` will be removed in 12.0.0. Use ``boundaries`` instead.
+
     boundaries : dict or felupe.BoundaryDict, optional
         Extend a given dict of boundaries by the symmetry boundaries (default is None).
 
@@ -109,8 +115,8 @@ def symmetry(
             raise ValueError("Provide either `bounds` or `boundaries`, but not both.")
 
         warn(
-            "`bounds` is deprecated since v10.0.0 and will be removed in a future release. "
-            "Use `boundaries` in new code.",
+            "`bounds` is deprecated since v10.0.0 and will be removed in v12.0.0. Use "
+            "`boundaries` in new code.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -183,7 +189,7 @@ def uniaxial(
     clamped : bool, optional
         A flag to assume the right end face to be rigid, i.e. zero
         displacements in the direction of the transversal axes are enforced (default is
-        True).
+        False).
     sym : bool or tuple of bool, optional
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the direction of the longitudinal axis as well as in the
@@ -193,8 +199,9 @@ def uniaxial(
         returns the loadcase dict.)
 
         .. deprecated:: 10.0.0
-           ``None`` will be removed in 11.0.0 and ``False`` will be the future default
-           value. Use explicitly ``True`` or ``False`` in new code.
+           ``None`` will be removed in 12.0.0 and ``False`` will be the new default
+           value, i.e. only the dict of boundaries is returned by default. Use
+           explicitly ``True`` or ``False`` in new code.
 
     Returns
     -------
@@ -204,7 +211,7 @@ def uniaxial(
     LoadcaseResult
         Returned only if ``return_loadcase=True``.
 
-        bounds: felupe.BoundaryDict
+        boundaries : felupe.BoundaryDict
             Dict of boundaries for this loadcase.
         loadcase : dict
             Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
@@ -288,8 +295,9 @@ def uniaxial(
         import warnings
 
         warnings.warn(
-            "return_loadcase=None is deprecated and will be removed in a future release. "
-            "Use return_loadcase=True or False.",
+            "return_loadcase=None is deprecated since v10.0.0 and will be removed in "
+            "v12.0.0, where the new default value is False, i.e. only the dict of "
+            "boundaries is returned. Use return_loadcase=True or False.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -345,7 +353,7 @@ def biaxial(
     clampes : tuple of bool, optional
         Flags to assume the applied end faces to be rigid, i.e. zero
         displacements in the direction of the transversal axes are enforced (default is
-        True).
+        (False, False)).
     sym : bool or tuple of bool, optional
         A flag to invoke all (bool) or individual (tuple) symmetry boundaries at the
         left end face in the directions of the longitudinal axes as well as in the
@@ -355,8 +363,9 @@ def biaxial(
         returns the loadcase dict.)
 
         .. deprecated:: 10.0.0
-           ``None`` will be removed in 11.0.0 and ``False`` will be the future default
-           value. Use explicitly ``True`` or ``False`` in new code.
+           ``None`` will be removed in 12.0.0 and ``False`` will be the new default
+           value, i.e. only the dict of boundaries is returned by default. Use
+           explicitly ``True`` or ``False`` in new code.
 
     Returns
     -------
@@ -366,7 +375,7 @@ def biaxial(
     LoadcaseResult
         Returned only if ``return_loadcase=True``.
 
-        bounds: felupe.BoundaryDict
+        boundaries : felupe.BoundaryDict
             Dict of boundaries for this loadcase.
         loadcase : dict
             Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
@@ -541,8 +550,9 @@ def biaxial(
         import warnings
 
         warnings.warn(
-            "return_loadcase=None is deprecated and will be removed in a future release. "
-            "Use return_loadcase=True or False.",
+            "return_loadcase=None is deprecated since v10.0.0 and will be removed in "
+            "v12.0.0, where the new default value is False, i.e. only the dict of "
+            "boundaries is returned. Use return_loadcase=True or False.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -583,11 +593,11 @@ def shear(
     bottom : float or None, optional
         The position of the bottom end face (default is None). If None, the outermost
         bottom position of the mesh-points is taken, i.e.
-        ``bottom=[field.region.mesh.points[:, axis].min() for axis in axes]``.
+        ``bottom=field.region.mesh.points[:, axes[1]].min()``.
     top : float or None, optional
         The position of the top end face (default is None). If None, the outermost
         top position of the mesh-points is taken, i.e.
-        ``top=[field.region.mesh.points[:, axis].min() for axis in axes]``.
+        ``top=field.region.mesh.points[:, axes[1]].max()``.
     moves : tuple of float, optional
         The values of the displacements applied on the end faces (default is
         (0.2, 0.0, 0.0)). The first item is the shear displacement applied on the top
@@ -604,8 +614,9 @@ def shear(
         returns the loadcase dict.)
 
         .. deprecated:: 10.0.0
-           ``None`` will be removed in 11.0.0 and ``False`` will be the future default
-           value. Use explicitly ``True`` or ``False`` in new code.
+           ``None`` will be removed in 12.0.0 and ``False`` will be the new default
+           value, i.e. only the dict of boundaries is returned by default. Use
+           explicitly ``True`` or ``False`` in new code.
 
     Returns
     -------
@@ -615,7 +626,7 @@ def shear(
     LoadcaseResult
         Returned only if ``return_loadcase=True``.
 
-        bounds: felupe.BoundaryDict
+        boundaries : felupe.BoundaryDict
             Dict of boundaries for this loadcase.
         loadcase : dict
             Loadcase-related partitioned prescribed ``dof0`` and active ``dof1`` degrees of
@@ -713,8 +724,9 @@ def shear(
         import warnings
 
         warnings.warn(
-            "return_loadcase=None is deprecated and will be removed in a future release. "
-            "Use return_loadcase=True or False.",
+            "return_loadcase=None is deprecated since v10.0.0 and will be removed in "
+            "v12.0.0, where the new default value is False, i.e. only the dict of "
+            "boundaries is returned. Use return_loadcase=True or False.",
             DeprecationWarning,
             stacklevel=2,
         )

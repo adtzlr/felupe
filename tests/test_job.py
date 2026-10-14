@@ -68,21 +68,19 @@ def pre():
     return field, step
 
 
-def weather(i, j, res, outside):
-    assert outside == "rainy"
-
-
 def test_job():
     field, step = pre()
     job = fem.Job(steps=[step])
     job.evaluate()
     field, step = pre()
-    job = fem.Job(steps=[step], callback=weather, outside="rainy")
+    substeps = []
+    job = fem.Job(steps=[step], plugins=[lambda context, state: substeps.append(state)])
     job.evaluate(
         parallel=True,
         kwargs={"parallel": False},
         verbose=0,
     )
+    assert [state.substepnumber for state in substeps] == list(range(11))
 
 
 def test_job_xdmf():
@@ -146,11 +144,11 @@ def test_job_xdmf_vertex():
 def test_curve():
     field, step = pre()
 
+    substeps = []
     curve = fem.CharacteristicCurve(
         steps=[step],
         boundary=step.boundaries["move"],
-        callback=weather,
-        outside="rainy",
+        plugins=[lambda context, state: substeps.append(state)],
     )
 
     with pytest.raises(ValueError):
@@ -173,6 +171,7 @@ def test_curve():
     os.environ.pop("FELUPE_VERBOSE")
 
     assert np.allclose(np.array(curve.y)[:, 0], force, rtol=0.01)
+    assert len(substeps) == len(curve.x)
 
 
 def test_curve2():
@@ -383,6 +382,139 @@ def test_job_repeated_evaluate(tmp_path):
     assert job.dispatcher.plugins == plugins
 
 
+def deprecations(record):
+    "Return the deprecation warnings of a record, attributed to this file."
+    warnings = [w for w in record if issubclass(w.category, DeprecationWarning)]
+    assert all(w.filename == __file__ for w in warnings), [w.filename for w in warnings]
+    return [str(w.message) for w in warnings]
+
+
+def test_callback_deprecated():
+    "The deprecated callbacks are called and warn in the line of the user code."
+
+    calls = []
+
+    def callback(stepnumber, substepnumber, substep, **kwargs):
+        calls.append(("substep", stepnumber, substepnumber, kwargs))
+
+    def newton_callback(dx, x, iteration, xnorm, fnorm, success):
+        calls.append(("iteration", iteration, success))
+
+    field, step = pre()
+
+    with pytest.warns(DeprecationWarning) as record:
+        job = fem.Job(steps=[step], callback=callback, outside="rainy")
+
+    (message,) = deprecations(record)
+    assert "`callback` of a `Job`" in message
+    assert "['outside']" in message
+
+    # the callback of newtonraphson() is passed by Job.evaluate()
+    with pytest.warns(DeprecationWarning) as record:
+        job.evaluate(callback=newton_callback, verbose=0)
+
+    assert all("`callback` of `newtonraphson()`" in m for m in deprecations(record))
+
+    substeps = [c for c in calls if c[0] == "substep"]
+    assert substeps == [("substep", 0, j, {"outside": "rainy"}) for j in range(11)]
+    assert ("iteration", 0, False) in calls
+
+    # keyword-arguments without a callback, e.g. a typo of "plugins"
+    with pytest.warns(DeprecationWarning) as record:
+        fem.Job(steps=[step], plugin=[])
+
+    assert "['plugin']" in deprecations(record)[0]
+
+    # the warning of a subclass is also attributed to the user code
+    with pytest.warns(DeprecationWarning) as record:
+        fem.CharacteristicCurve(
+            steps=[step], boundary=step.boundaries["move"], callback=callback
+        )
+
+    assert "`callback` of a `CharacteristicCurve`" in deprecations(record)[0]
+
+    # arguments of newtonraphson() without an effect
+    field, step = pre()
+    _, loadcase = fem.dof.uniaxial(field, return_loadcase=True)
+
+    with pytest.warns(DeprecationWarning) as record:
+        fem.newtonraphson(
+            items=step.items, **loadcase, verbose=0, progress_bar=1, callback_kwargs={}
+        )
+
+    messages = deprecations(record)
+    assert any("`progress_bar`" in m for m in messages)
+    assert any("`callback_kwargs`" in m for m in messages)
+
+
+def test_callback_migration():
+    "The plugins of the migration guide are called with the same arguments."
+
+    def model():
+        mesh = fem.Cube(n=3)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        solid = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field)
+        move = fem.math.linsteps([0, 0.2], num=2)
+        return fem.Step(
+            items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+        )
+
+    def summary(x):
+        if isinstance(x, fem.FieldContainer):
+            return np.linalg.norm(x[0].values)
+        if isinstance(x, np.ndarray):
+            return np.linalg.norm(x)
+        if isinstance(x, fem.tools.NewtonResult):
+            return x.iterations, x.fnorms[-1]
+        return x
+
+    def callbacks(calls):
+        def callback(stepnumber, substepnumber, substep, **kwargs):
+            calls.append((stepnumber, substepnumber, summary(substep), kwargs))
+
+        def newton_callback(dx, x, iteration, xnorm, fnorm, success):
+            values = (dx, x, iteration, xnorm, fnorm, success)
+            calls.append(tuple(summary(value) for value in values))
+
+        return callback, newton_callback
+
+    old, new = [], []
+
+    # deprecated
+    callback, newton_callback = callbacks(old)
+    with pytest.warns(DeprecationWarning):
+        job = fem.Job(steps=[model()], callback=callback, a=1)
+        job.evaluate(callback=newton_callback, verbose=0)
+
+    # plugins (as documented in the notes of Job and newtonraphson())
+    callback, newton_callback = callbacks(new)
+
+    class NewtonCallback(fem.Plugin):
+        def after_iteration(self, context, state):
+            newton_callback(
+                state.dx,
+                state.x,
+                state.iteration,
+                state.xnorm,
+                state.fnorm,
+                state.success,
+            )
+
+    plugins = [
+        lambda context, state: callback(
+            state.stepnumber, state.substepnumber, context.substep, a=1
+        ),
+        NewtonCallback(),
+    ]
+    job = fem.Job(steps=[model()], plugins=plugins)
+    job.evaluate(verbose=0)
+
+    assert len(old) == len(new) > 3
+    assert old == new
+
+
 if __name__ == "__main__":
     test_job()
     test_job_xdmf()
@@ -393,6 +525,8 @@ if __name__ == "__main__":
     test_curve_custom_items()
     test_empty()
     test_noramp()
+    test_callback_deprecated()
+    test_callback_migration()
 
     with tempfile.TemporaryDirectory() as tmp:
         test_job_after_job_on_error(tmp_path=pathlib.Path(tmp))

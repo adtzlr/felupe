@@ -23,25 +23,38 @@ from ._job import Job
 class CharacteristicCurve(Job):
     r"""A job with a list of steps and a method to evaluate them. Force-displacement
     curve data is tracked during evaluation for a given :class:`~felupe.Boundary` by
-    a built-in ``callback``.
+    a built-in :class:`~felupe.CharacteristicCurvePlugin`.
 
     Parameters
     ----------
     steps : list of Step
         A list with steps, where each step subsequently depends on the solution of the
         previous step.
+    boundary : Boundary
+        The boundary condition, whose displacements and reaction forces are tracked.
     items : list of SolidBody, SolidBodyNearlyIncompressible, SolidBodyPressure, SolidBodyGravity, PointLoad, MultiPointConstraint, MultiPointContact or None, optional
         A list of items with methods for the assembly of sparse vectors/matrices which
         are used to evaluate the sum of reaction forces. If None, the total reaction
         forces from the :class:`~felupe.tools.NewtonResult` of the substep are used.
-    callback : callable, optional
+    callback : callable or None, optional
         A callable which is called after each completed substep. Function signature must
         be ``lambda stepnumber, substepnumber, substep, **kwargs: None``, where
         ``substep`` is an instance of :class:`~felupe.tools.NewtonResult`. The field
         container of the completed substep is available as ``substep.x``. Default
-        is ``callback=lambda stepnumber, substepnumber, substep, **kwargs: None``.
+        is None.
+
+        ..  deprecated:: 11.3.0
+            ``callback`` and its keyword-arguments will be removed in 12.0.0. Use a
+            callable plugin instead, see the notes of :class:`~felupe.Job`.
+
     **kwargs : dict, optional
-        Optional keyword-arguments for the ``callback`` function.
+        Optional keyword-arguments for the ``callback`` function and the keyword-
+        argument ``plugins``, a list of plugins, see :class:`~felupe.Job`. The
+        :class:`~felupe.CharacteristicCurvePlugin` is added to the end of the list.
+
+        ..  deprecated:: 11.3.0
+            The keyword-arguments for the ``callback`` will be removed in 12.0.0,
+            together with ``callback``.
 
     Examples
     --------
@@ -100,7 +113,7 @@ class CharacteristicCurve(Job):
         steps,
         boundary,
         items=None,
-        callback=lambda stepnumber, substepnumber, substep, **kwargs: None,
+        callback=None,
         **kwargs,
     ):
         self._curve = CharacteristicCurvePlugin(boundary=boundary, items=items)

@@ -133,7 +133,9 @@ class EventDispatcher:
     Parameters
     ----------
     plugins : list or None, optional
-        The list of plugins.
+        The list of plugins. A callable plugin, e.g. a function, is called in the hook
+        ``after_substep``. Otherwise, the methods of a plugin with the names of the
+        hooks are called.
 
     """
 

@@ -127,6 +127,9 @@ default = true
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
+# only for the packages pinned to this index in `tool.uv.sources`, i.e. the other
+# packages (e.g. numpy) are not taken from it
+explicit = true
 
 [tool.uv.sources]
 setuptools = {index = "pypi"}

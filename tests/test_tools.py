@@ -572,7 +572,7 @@ def test_warn_deprecated():
     assert lines(record) == [(__file__, line)]
 
     # called by (nested) functions inside of FElupe
-    filename = os.path.join(os.path.dirname(fem.__file__), "_nested.py")
+    filename = os.path.join(os.path.dirname(_deprecation.__file__), "_nested.py")
     namespace = {"warn_deprecated": _deprecation.warn_deprecated}
     code = "def inner():\n    warn_deprecated('message')\ndef outer():\n    inner()"
     exec(compile(code, filename, "exec"), namespace)

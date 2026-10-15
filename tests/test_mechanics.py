@@ -319,10 +319,15 @@ def volumetric_functions(bulk):
     "The volumetric parts of the strain energy density function and its derivatives."
 
     return {
-        "linear": (
+        "volume-ratio": (
             lambda J: bulk * (J - 1) ** 2 / 2,
             lambda J: bulk * (J - 1),
             lambda J: bulk,
+        ),
+        "stretch": (
+            lambda J: 9 * bulk * (J ** (1 / 3) - 1) ** 2 / 2,
+            lambda J: 3 * bulk * (J ** (1 / 3) - 1) / J ** (2 / 3),
+            lambda J: bulk * (2 - J ** (1 / 3)) / J ** (5 / 3),
         ),
         "log": (
             lambda J: bulk * np.log(J) ** 2 / 2,
@@ -337,14 +342,21 @@ def test_solidbody_incompressible_volumetric_homogeneous():
 
     tm = pytest.importorskip("tensortrax.math")
 
-    def neo_hooke_log(C, mu, bulk):
+    def neo_hooke(C, mu, bulk, U):
         J = tm.sqrt(tm.linalg.det(C))
-        return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + bulk / 2 * tm.log(J) ** 2
+        return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + U(J, bulk)
+
+    def stretch(J, bulk):
+        return 9 * bulk / 2 * (J ** (1 / 3) - 1) ** 2
+
+    def log(J, bulk):
+        return bulk / 2 * tm.log(J) ** 2
 
     mu, bulk = 1.0, 5.0
     umats = {
-        "linear": fem.NeoHooke(mu=mu, bulk=bulk),
-        "log": fem.Hyperelastic(neo_hooke_log, mu=mu, bulk=bulk),
+        "volume-ratio": fem.NeoHooke(mu=mu, bulk=bulk),
+        "stretch": fem.Hyperelastic(neo_hooke, mu=mu, bulk=bulk, U=stretch),
+        "log": fem.Hyperelastic(neo_hooke, mu=mu, bulk=bulk, U=log),
     }
     region = fem.RegionHexahedron(fem.Cube(n=2))
 
@@ -474,7 +486,7 @@ def test_solidbody_incompressible_volumetric_errors():
     field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(fem.Cube(n=2)), dim=3)])
     umat = fem.NeoHooke(mu=1)
 
-    for kind in ["linear", "log"]:
+    for kind in ["volume-ratio", "stretch", "log"]:
         with pytest.raises(ValueError, match="bulk"):
             fem.SolidBodyNearlyIncompressible(umat, field, volumetric_kind=kind)
 
@@ -490,7 +502,7 @@ def test_solidbody_incompressible_volumetric_errors():
 
     with pytest.raises(ValueError, match="Unknown"):
         fem.SolidBodyNearlyIncompressible(
-            umat, field, bulk=5000, volumetric_kind="quadratic"
+            umat, field, bulk=5000, volumetric_kind="linear"
         )
 
     # the callables are ignored for the built-in kinds
@@ -516,6 +528,35 @@ def test_solidbody_incompressible_volumetric_errors():
     )
     assert np.isclose(solid.dUdJ(2.0), dUdJ(2.0))
     assert np.isclose(solid.d2UdJdJ(2.0), d2UdJdJ(2.0))
+
+
+def test_solidbody_incompressible_volumetric_kinds():
+    "The derivatives of the built-in kinds at characteristic volume ratios."
+
+    bulk = 5.0
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(fem.Cube(n=2)), dim=3)])
+    solids = {
+        kind: fem.SolidBodyNearlyIncompressible(
+            fem.NeoHooke(mu=1), field, bulk=bulk, volumetric_kind=kind
+        )
+        for kind in ["volume-ratio", "stretch", "log"]
+    }
+
+    # stress-free undeformed configuration with the bulk modulus as stiffness
+    for solid in solids.values():
+        assert np.isclose(solid.dUdJ(1.0), 0)
+        assert np.isclose(solid.d2UdJdJ(1.0), bulk)
+
+    # maximum pressure in tension
+    assert np.isclose(solids["stretch"].dUdJ(8.0), 3 * bulk / 4)
+    assert np.isclose(solids["stretch"].d2UdJdJ(8.0), 0)
+    assert np.isclose(solids["log"].dUdJ(np.e), bulk / np.e)
+    assert np.isclose(solids["log"].d2UdJdJ(np.e), 0)
+
+    # the cubic root of the stretch is real for (linearized) negative volume ratios
+    J = np.array([-0.5, 0.5, 2.0])
+    assert np.all(np.isfinite(solids["stretch"].dUdJ(J)))
+    assert np.all(np.isfinite(solids["stretch"].d2UdJdJ(J)))
 
 
 def test_solidbody_incompressible_volumetric_restore_revolve():
@@ -1306,6 +1347,7 @@ if __name__ == "__main__":
     test_solidbody_incompressible_volumetric_potential()
     test_solidbody_incompressible_volumetric_custom()
     test_solidbody_incompressible_volumetric_errors()
+    test_solidbody_incompressible_volumetric_kinds()
     test_solidbody_incompressible_volumetric_restore_revolve()
     test_solidbody_axi()
     test_solidbody_axi_incompressible()

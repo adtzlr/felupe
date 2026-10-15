@@ -1232,6 +1232,60 @@ def test_nh_volumetric():
         fem.Volumetric(bulk, volumetric="linear")
 
 
+def test_nearly_incompressible_volumetric():
+    "The volumetric part of NearlyIncompressible is given by a kind or an instance."
+
+    rng = np.random.default_rng(1199)
+    F = np.eye(3).reshape(3, 3, 1, 1) + 0.2 * (rng.random((3, 3, 8, 20)) - 0.5)
+    p = rng.random((1, 8, 20))
+    J = 1 + 0.2 * (rng.random((1, 8, 20)) - 0.5)
+    x = [F, p, J, np.zeros((0, 8, 20))]
+
+    bulk = 5.0
+    umat_ref = fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=bulk)
+    gradient_ref = umat_ref.gradient(x)
+    hessian_ref = umat_ref.hessian(x)
+
+    for kind in ["volume-ratio", "stretch", "log"]:
+        U = fem.VolumetricStrainEnergy(bulk=bulk, kind=kind)
+
+        for umat in [
+            fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=bulk, volumetric=kind),
+            fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), volumetric=U),
+        ]:
+            gradient = umat.gradient(x)
+            hessian = umat.hessian(x)
+
+            # the volumetric part
+            assert np.allclose(gradient[2], U.dUdJ(J) - p)
+            assert np.allclose(hessian[-1], U.d2UdJdJ(J))
+
+            # the other parts are independent of the volumetric part
+            for i in [0, 1]:
+                assert np.allclose(gradient[i], gradient_ref[i])
+            for i in [0, 1, 4]:
+                assert np.allclose(hessian[i], hessian_ref[i])
+
+    # the volumetric part of a kind uses the current bulk modulus
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=bulk, volumetric="log")
+    umat.bulk = 2 * bulk
+    assert umat.volumetric.kind == "log"
+    assert np.allclose(
+        umat.gradient(x)[2],
+        fem.VolumetricStrainEnergy(bulk=2 * bulk, kind="log").dUdJ(J) - p,
+    )
+
+    # missing, unknown or ambiguous arguments
+    with pytest.raises(ValueError, match="bulk"):
+        fem.NearlyIncompressible(fem.NeoHooke(mu=1.0))
+
+    with pytest.raises(ValueError, match="Unknown"):
+        fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=bulk, volumetric="linear")
+
+    with pytest.raises(ValueError, match="bulk modulus must be None"):
+        fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=bulk, volumetric=U)
+
+
 if __name__ == "__main__":
     close_figs = True
 
@@ -1264,3 +1318,4 @@ if __name__ == "__main__":
     test_plot_title_kwargs(close_figs=True)
     test_volumetric_strain_energy()
     test_nh_volumetric()
+    test_nearly_incompressible_volumetric()

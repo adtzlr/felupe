@@ -90,7 +90,8 @@ class VolumetricStrainEnergy:
     second derivative :math:`U''(J)>0` is required for a stable volumetric response.
 
     The volumetric part of the strain energy density function is passed by the argument
-    ``volumetric`` to :class:`~felupe.NeoHooke`, :class:`~felupe.Volumetric` and
+    ``volumetric`` to :class:`~felupe.NeoHooke`, :class:`~felupe.Volumetric`,
+    :class:`~felupe.NearlyIncompressible` and
     :class:`~felupe.SolidBodyNearlyIncompressible`, either as a kind together with the
     bulk modulus or as an instance (then, without the bulk modulus).
 
@@ -147,6 +148,9 @@ class VolumetricStrainEnergy:
     felupe.NeoHooke : Nearly-incompressible isotropic hyperelastic Neo-Hookean material
         formulation.
     felupe.Volumetric : Neo-Hookean material formulation with deactivated shear modulus.
+    felupe.NearlyIncompressible : A nearly-incompressible material formulation to
+        augment the distortional part of the strain energy function by a volumetric part
+        and a constraint equation.
     felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
         methods for the assembly of sparse vectors/matrices.
     """

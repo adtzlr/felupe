@@ -41,10 +41,10 @@ class SolidBodyNearlyIncompressible(Solid):
     field : FieldContainer
         A field container with one or more fields.
     bulk : float or None, optional
-        The bulk modulus of the volumetric part of the strain energy function
-        :math:`U(\bar{J})=K(\bar{J}-1)^2/2` (default is None). None is only allowed if
-        the volumetric strain energy density functions are passed as ``dUdJ(J)`` and
-        ``d2UdJdJ(J)``.
+        The bulk modulus :math:`K` of the volumetric part of the strain energy density
+        function :math:`U(\bar{J})`, see ``volumetric_kind``. It is required for the
+        kinds ``"linear"`` and ``"log"`` and it is ignored for ``"custom"``. Default is
+        None.
     state : StateNearlyIncompressible or None, optional
         A valid initial state for a (nearly) incompressible solid (default is None).
     statevars : ndarray or None, optional
@@ -52,18 +52,24 @@ class SolidBodyNearlyIncompressible(Solid):
     density : float or None, optional
         The density of the solid body.
     volumetric_kind : str, optional
-        The kind of the volumetric strain energy density function: ``"linear"`` for
-        :math:`K(\bar{J}-1)`, ``"log"`` for :math:`K\log(\bar{J})^2/2` or "custom" with
-        callables for ``volumetric_gradient`` and ``volumetric_hessian``. Default is
-        ``"linear"``.
+        The kind of the volumetric part of the strain energy density function
+        :math:`U(\bar{J})`: ``"linear"`` for :math:`U(\bar{J})=K(\bar{J}-1)^2/2` with
+        a linear relation of the pressure and the volume ratio, ``"log"`` for
+        :math:`U(\bar{J})=K\ln(\bar{J})^2/2` or ``"custom"`` with the callables
+        ``volumetric_gradient`` and ``volumetric_hessian``, see Eq.
+        :eq:`nearlyincompressible-volumetric`. Default is ``"linear"``.
     volumetric_gradient : callable or None, optional
-        The gradient of the volumetric part of the strain energy density function
-        :math:`U'(\bar{J})` for ``volumetric_type="custom"`` (otherwise, it is ignored).
-        Default is None.
+        The first derivative of the volumetric part of the strain energy density
+        function w.r.t. the volume ratio :math:`U'(\bar{J})`, which is required for
+        ``volumetric_kind="custom"`` (otherwise, it is ignored). It is called with the
+        array of the cell-wise volume ratios and must return the array of the cell-wise
+        values. Default is None.
     volumetric_hessian : callable or None, optional
-        The hessian of the volumetric part of the strain energy density function
-        :math:`U''(\bar{J})` for ``volumetric_type="custom"`` (otherwise, it is
-        ignored). Default is None.
+        The second derivative of the volumetric part of the strain energy density
+        function w.r.t. the volume ratio :math:`U''(\bar{J})`, which is required for
+        ``volumetric_kind="custom"`` (otherwise, it is ignored). It is called with the
+        array of the cell-wise volume ratios and must return the array of the cell-wise
+        values or a scalar. Default is None.
 
     Notes
     -----
@@ -86,7 +92,11 @@ class SolidBodyNearlyIncompressible(Solid):
             \int_V U(\bar{J})\ dV +
             \int_V p (J - \bar{J})\ dV
 
-    with its variations, see Eq. :eq:`nearlyinc-variations`
+    with the volumetric part of the strain energy density function :math:`U(\bar{J})`,
+    see Eq. :eq:`nearlyincompressible-volumetric`. Its first and second derivatives
+    w.r.t. the volume ratio are abbreviated by :math:`\bar{U}'=U'(\bar{J})` and
+    :math:`\bar{U}''=U''(\bar{J})`. The variations of the total potential energy are
+    given in Eq. :eq:`nearlyinc-variations`
 
     ..  math::
         :label: nearlyinc-variations
@@ -102,7 +112,7 @@ class SolidBodyNearlyIncompressible(Solid):
         \longrightarrow r_p
 
         \delta_\bar{J}(\Pi_{int}) &=
-            \int_V \left( K \left( \bar{J} - 1 \right) - p \right)\ \delta \bar{J}\ dV
+            \int_V \left( \bar{U}' - p \right)\ \delta \bar{J}\ dV
         \longrightarrow r_{\bar{J}}
 
     and linearizations, see Eq. :eq:`nearlyinc-linearizations` [1]_ [2]_ [3]_. The
@@ -132,8 +142,8 @@ class SolidBodyNearlyIncompressible(Solid):
         \longrightarrow -V
 
         \delta_{\bar{J}}\Delta_{\bar{J}}(\Pi_{int}) &=
-            \int_V \delta \bar{J}\ K\ \Delta \bar{J}\ dV
-        \longrightarrow K\ V
+            \int_V \delta \bar{J}\ \bar{U}''\ \Delta \bar{J}\ dV
+        \longrightarrow \bar{U}''\ V
 
     The assembled constraint equations for the variations w.r.t. the dual fields
     :math:`p` and :math:`\bar{J}` are given in Eq. :eq:`nearlyinc-constraints`.
@@ -143,20 +153,41 @@ class SolidBodyNearlyIncompressible(Solid):
 
         r_p &= \left( \frac{v}{V} - \bar{J} \right) V
 
-        r_{\bar{J}} &= \left( K (\bar{J} - 1) - p \right) V
+        r_{\bar{J}} &= \left( \bar{U}' - p \right) V
 
 
-    The volumetric part of the strain energy density function is denoted in Eq.
-    :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.
+    The volumetric part of the strain energy density function is selected by
+    ``volumetric_kind``. It is denoted in Eq. :eq:`nearlyincompressible-volumetric`
+    along with its first and second derivatives for ``volumetric_kind="linear"``
+    (default)
 
     ..  math::
         :label: nearlyincompressible-volumetric
 
-        \bar{U} &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
+        U(\bar{J}) &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
 
-        \bar{U}' &= K \left( \bar{J} - 1 \right)
+        U'(\bar{J}) &= K \left( \bar{J} - 1 \right)
 
-        \bar{U}'' &= K
+        U''(\bar{J}) &= K
+
+    and in Eq. :eq:`nearlyincompressible-volumetric-log` for
+    ``volumetric_kind="log"``.
+
+    ..  math::
+        :label: nearlyincompressible-volumetric-log
+
+        U(\bar{J}) &= \frac{K}{2} \ln \left( \bar{J} \right)^2
+
+        U'(\bar{J}) &= K\ \frac{\ln \left( \bar{J} \right)}{\bar{J}}
+
+        U''(\bar{J}) &= K\ \frac{1 - \ln \left( \bar{J} \right)}{\bar{J}^2}
+
+    For ``volumetric_kind="custom"``, the first and second derivatives are given by the
+    callables ``volumetric_gradient`` and ``volumetric_hessian``. The undeformed
+    configuration is free of stress only if :math:`U'(1)=0`, and a positive second
+    derivative :math:`U''(\bar{J})>0` is required for a stable volumetric response.
+    Note that the second derivative of the logarithmic kind is negative for
+    :math:`\bar{J}>e`.
 
 
     **Hu-Washizu Three-Field-Variational Principle**
@@ -176,7 +207,7 @@ class SolidBodyNearlyIncompressible(Solid):
             \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}}
                 & \boldsymbol{K}_{\boldsymbol{u}p} & \boldsymbol{0} \\
             \boldsymbol{K}_{\boldsymbol{u}p}^T & 0 & -V \\
-            \boldsymbol{0}^T & -V  & K\ V
+            \boldsymbol{0}^T & -V  & \bar{U}''\ V
         \end{bmatrix} \cdot \begin{bmatrix}
             \delta \boldsymbol{u} \\
             \delta p \\
@@ -194,7 +225,8 @@ class SolidBodyNearlyIncompressible(Solid):
 
     A condensed representation of the equation system, only dependent on the primary
     unknowns :math:`\boldsymbol{u}` is carried out. To do so, the second line is
-    multiplied by the bulk modulus :math:`K`, see Eq. :eq:`nearlyinc-condensed`.
+    multiplied by the second derivative :math:`\bar{U}''`, see Eq.
+    :eq:`nearlyinc-condensed`.
 
     ..  math::
         :label: nearlyinc-condensed
@@ -202,15 +234,15 @@ class SolidBodyNearlyIncompressible(Solid):
         \begin{bmatrix}
             \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}}
                 & \boldsymbol{K}_{\boldsymbol{u}p} & \boldsymbol{0} \\
-            K \boldsymbol{K}_{\boldsymbol{u}p}^T & 0 & -K\ V \\
-            \boldsymbol{0}^T & -V  & K\ V
+            \bar{U}'' \boldsymbol{K}_{\boldsymbol{u}p}^T & 0 & -\bar{U}''\ V \\
+            \boldsymbol{0}^T & -V  & \bar{U}''\ V
         \end{bmatrix} \cdot \begin{bmatrix}
             \delta \boldsymbol{u} \\
             \delta p \\
             \delta \bar{J}
         \end{bmatrix} + \begin{bmatrix}
             \boldsymbol{r}_\boldsymbol{u} \\
-            K\ r_p \\
+            \bar{U}''\ r_p \\
             r_\bar{J}
         \end{bmatrix} =
         \begin{bmatrix}
@@ -228,13 +260,13 @@ class SolidBodyNearlyIncompressible(Solid):
         \begin{bmatrix}
             \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}}
                 & \boldsymbol{K}_{\boldsymbol{u}p} \\
-            K \boldsymbol{K}_{\boldsymbol{u}p}^T & -V
+            \bar{U}'' \boldsymbol{K}_{\boldsymbol{u}p}^T & -V
         \end{bmatrix} \cdot \begin{bmatrix}
             \delta \boldsymbol{u} \\
             \delta p
         \end{bmatrix} + \begin{bmatrix}
             \boldsymbol{r}_\boldsymbol{u} \\
-            K\ r_p + r_\bar{J}
+            \bar{U}''\ r_p + r_\bar{J}
         \end{bmatrix} =
         \begin{bmatrix}
             \boldsymbol{0}\\
@@ -250,10 +282,10 @@ class SolidBodyNearlyIncompressible(Solid):
 
         \left(
             \boldsymbol{K}_{\boldsymbol{u}\boldsymbol{u}}
-                + \frac{K}{V}~\boldsymbol{K}_{\boldsymbol{u}p} \otimes
+                + \frac{\bar{U}''}{V}~\boldsymbol{K}_{\boldsymbol{u}p} \otimes
                     \boldsymbol{K}_{\boldsymbol{u}p}
         \right) \cdot \delta \boldsymbol{u} +
-        \boldsymbol{r}_\boldsymbol{u} + \frac{K~r_p + r_\bar{J}}{V}
+        \boldsymbol{r}_\boldsymbol{u} + \frac{\bar{U}''~r_p + r_\bar{J}}{V}
             \boldsymbol{K}_{\boldsymbol{u}p} = \boldsymbol{0}
 
     The secondary unknowns are evaluated after solving the primary unknowns, see
@@ -265,7 +297,7 @@ class SolidBodyNearlyIncompressible(Solid):
         \delta \bar{J} &= \frac{1}{V} \delta \boldsymbol{u} \cdot
             \boldsymbol{K}_{\boldsymbol{u}p} + \frac{v}{V} - \bar{J}
 
-        \delta p &= K \left(\bar{J} + \delta \bar{J} - 1 \right) - p
+        \delta p &= \bar{U}' + \bar{U}''\ \delta \bar{J} - p
 
     The condensed constraint equation in Eq. :eq:`nearlyinc-contracted-sum-final` is
     given in Eq. :eq:`nearlyinc-constraint`
@@ -273,7 +305,8 @@ class SolidBodyNearlyIncompressible(Solid):
     ..  math::
         :label: nearlyinc-constraint
 
-        \frac{K~r_p + r_{\bar{J}}}{V} = K \left( \frac{v}{V} - 1 \right) - p
+        \frac{\bar{U}''~r_p + r_{\bar{J}}}{V} =
+            \bar{U}' + \bar{U}'' \left( \frac{v}{V} - \bar{J} \right) - p
 
     and the deformed volume is evaluated by Eq. :eq:`nearlyinc-deformed-volume`.
 
@@ -281,6 +314,21 @@ class SolidBodyNearlyIncompressible(Solid):
         :label: nearlyinc-deformed-volume
 
         v = \int_V J\ dV
+
+    The terms :math:`\bar{U}' + \bar{U}''\ (\dots)` in Eq. :eq:`nearlyinc-final` and
+    Eq. :eq:`nearlyinc-constraint` are the linearizations of
+    :math:`U'(\bar{J} + \delta \bar{J})` and :math:`U'(v/V)`. Instead, their exact
+    values are used, i.e. the pressure is updated by :math:`p = U'(\bar{J})` and the
+    condensed constraint is evaluated by :math:`U'(v/V) - p`. Both are identical for
+    the linear kind. Hence, the assembled vector is the gradient of the total
+    potential energy of internal forces of the mean dilatation technique, see Eq.
+    :eq:`nearlyinc-mean-dilatation`, where the sum is taken over the cells.
+
+    ..  math::
+        :label: nearlyinc-mean-dilatation
+
+        \Pi_{int}(\boldsymbol{u}) = \int_V \hat{\psi}(\boldsymbol{F})\ dV +
+            \sum V\ U\left( \frac{v}{V} \right)
 
 
     Examples
@@ -353,6 +401,28 @@ class SolidBodyNearlyIncompressible(Solid):
         self.volumetric_kind = volumetric_kind
         self.volumetric_gradient = volumetric_gradient
         self.volumetric_hessian = volumetric_hessian
+
+        kinds = ["linear", "log", "custom"]
+
+        if volumetric_kind not in kinds:
+            raise ValueError(
+                f'Unknown volumetric_kind="{volumetric_kind}". Available kinds are '
+                + ", ".join(f'"{kind}"' for kind in kinds)
+                + "."
+            )
+
+        if volumetric_kind == "custom":
+            if not (callable(volumetric_gradient) and callable(volumetric_hessian)):
+                raise ValueError(
+                    'volumetric_kind="custom" requires the callables '
+                    "volumetric_gradient and volumetric_hessian."
+                )
+
+        elif bulk is None:
+            raise ValueError(
+                f'volumetric_kind="{volumetric_kind}" requires the bulk modulus, '
+                "e.g. bulk=5000."
+            )
 
         _dUdJ_dict = {
             "custom": volumetric_gradient,
@@ -495,7 +565,7 @@ class SolidBodyNearlyIncompressible(Solid):
             Flag to restore the internal fields, i.e. the pressure :math:`p` and the
             volume ratio :math:`\bar{J}`, of the checkpoint. If False, the internal
             fields are re-initialized by the deformation of the restored field,
-            :math:`\bar{J} = v / V` and :math:`p = K (\bar{J} - 1)`. Default is True.
+            :math:`\bar{J} = v / V` and :math:`p = U'(\bar{J})`. Default is True.
 
         Notes
         -----

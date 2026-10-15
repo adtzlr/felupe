@@ -43,8 +43,8 @@ class SolidBodyNearlyIncompressible(Solid):
     bulk : float or None, optional
         The bulk modulus :math:`K` of the volumetric part of the strain energy density
         function :math:`U(\bar{J})`, see ``volumetric_kind``. It is required for the
-        kinds ``"linear"`` and ``"log"`` and it is ignored for ``"custom"``. Default is
-        None.
+        kinds ``"volume-ratio"``, ``"stretch"`` and ``"log"`` and it is ignored for
+        ``"custom"``. Default is None.
     state : StateNearlyIncompressible or None, optional
         A valid initial state for a (nearly) incompressible solid (default is None).
     statevars : ndarray or None, optional
@@ -53,11 +53,12 @@ class SolidBodyNearlyIncompressible(Solid):
         The density of the solid body.
     volumetric_kind : str, optional
         The kind of the volumetric part of the strain energy density function
-        :math:`U(\bar{J})`: ``"linear"`` for :math:`U(\bar{J})=K(\bar{J}-1)^2/2` with
-        a linear relation of the pressure and the volume ratio, ``"log"`` for
+        :math:`U(\bar{J})`, which is quadratic in a strain of the volume ratio:
+        ``"volume-ratio"`` for :math:`U(\bar{J})=K(\bar{J}-1)^2/2`, ``"stretch"`` for
+        :math:`U(\bar{J})=9K(\bar{J}^{1/3}-1)^2/2`, ``"log"`` for
         :math:`U(\bar{J})=K\ln(\bar{J})^2/2` or ``"custom"`` with the callables
         ``volumetric_gradient`` and ``volumetric_hessian``, see Eq.
-        :eq:`nearlyincompressible-volumetric`. Default is ``"linear"``.
+        :eq:`nearlyincompressible-volumetric`. Default is ``"volume-ratio"``.
     volumetric_gradient : callable or None, optional
         The first derivative of the volumetric part of the strain energy density
         function w.r.t. the volume ratio :math:`U'(\bar{J})`, which is required for
@@ -157,18 +158,44 @@ class SolidBodyNearlyIncompressible(Solid):
 
 
     The volumetric part of the strain energy density function is selected by
-    ``volumetric_kind``. It is denoted in Eq. :eq:`nearlyincompressible-volumetric`
-    along with its first and second derivatives for ``volumetric_kind="linear"``
-    (default)
+    ``volumetric_kind``. The built-in kinds are quadratic in the Seth-Hill strain
+    :math:`E_m = (\bar{\lambda}^m - 1) / m` of order :math:`m` of the volumetric
+    stretch :math:`\bar{\lambda} = \bar{J}^{1/3}`, see Eq.
+    :eq:`nearlyincompressible-volumetric`, with :math:`m=3` for ``"volume-ratio"``,
+    :math:`m=1` for ``"stretch"`` and the limit :math:`m \rightarrow 0` for
+    ``"log"``.
 
     ..  math::
         :label: nearlyincompressible-volumetric
+
+        U(\bar{J}) = \frac{9K}{2} E_m^2
+            = \frac{9K}{2 m^2} \left( \bar{J}^{m/3} - 1 \right)^2
+
+    For all kinds, the second derivative at the undeformed configuration is the bulk
+    modulus, :math:`U''(1)=K`. The volumetric part and its first and second derivatives
+    are given in Eq. :eq:`nearlyincompressible-volumetric-volume-ratio` for
+    ``volumetric_kind="volume-ratio"`` (default),
+
+    ..  math::
+        :label: nearlyincompressible-volumetric-volume-ratio
 
         U(\bar{J}) &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
 
         U'(\bar{J}) &= K \left( \bar{J} - 1 \right)
 
         U''(\bar{J}) &= K
+
+    in Eq. :eq:`nearlyincompressible-volumetric-stretch` for
+    ``volumetric_kind="stretch"``
+
+    ..  math::
+        :label: nearlyincompressible-volumetric-stretch
+
+        U(\bar{J}) &= \frac{9K}{2} \left( \bar{J}^{1/3} - 1 \right)^2
+
+        U'(\bar{J}) &= 3K\ \frac{\bar{J}^{1/3} - 1}{\bar{J}^{2/3}}
+
+        U''(\bar{J}) &= K\ \frac{2 - \bar{J}^{1/3}}{\bar{J}^{5/3}}
 
     and in Eq. :eq:`nearlyincompressible-volumetric-log` for
     ``volumetric_kind="log"``.
@@ -182,12 +209,18 @@ class SolidBodyNearlyIncompressible(Solid):
 
         U''(\bar{J}) &= K\ \frac{1 - \ln \left( \bar{J} \right)}{\bar{J}^2}
 
+    The kinds are evaluated by these expressions of the volume ratio, i.e. not by the
+    general form, which is singular for :math:`m=0`. The smaller the order :math:`m`,
+    the stiffer is the volumetric response in compression and the softer in tension.
+    The pressure :math:`p=U'(\bar{J})` is unbounded for :math:`\bar{J} \rightarrow 0`
+    for the kinds ``"stretch"`` and ``"log"``. In tension, the pressure of these kinds
+    is bounded by :math:`3K/4` at :math:`\bar{J}=8` and by :math:`K/e` at
+    :math:`\bar{J}=e`, where their second derivatives change their sign.
+
     For ``volumetric_kind="custom"``, the first and second derivatives are given by the
     callables ``volumetric_gradient`` and ``volumetric_hessian``. The undeformed
     configuration is free of stress only if :math:`U'(1)=0`, and a positive second
     derivative :math:`U''(\bar{J})>0` is required for a stable volumetric response.
-    Note that the second derivative of the logarithmic kind is negative for
-    :math:`\bar{J}>e`.
 
 
     **Hu-Washizu Three-Field-Variational Principle**
@@ -320,9 +353,9 @@ class SolidBodyNearlyIncompressible(Solid):
     :math:`U'(\bar{J} + \delta \bar{J})` and :math:`U'(v/V)`. Instead, their exact
     values are used, i.e. the pressure is updated by :math:`p = U'(\bar{J})` and the
     condensed constraint is evaluated by :math:`U'(v/V) - p`. Both are identical for
-    the linear kind. Hence, the assembled vector is the gradient of the total
-    potential energy of internal forces of the mean dilatation technique, see Eq.
-    :eq:`nearlyinc-mean-dilatation`, where the sum is taken over the cells.
+    ``volumetric_kind="volume-ratio"``. Hence, the assembled vector is the gradient of
+    the total potential energy of internal forces of the mean dilatation technique,
+    see Eq. :eq:`nearlyinc-mean-dilatation`, where the sum is taken over the cells.
 
     ..  math::
         :label: nearlyinc-mean-dilatation
@@ -387,7 +420,7 @@ class SolidBodyNearlyIncompressible(Solid):
         state=None,
         statevars=None,
         density=None,
-        volumetric_kind="linear",
+        volumetric_kind="volume-ratio",
         volumetric_gradient=None,
         volumetric_hessian=None,
     ):
@@ -402,7 +435,7 @@ class SolidBodyNearlyIncompressible(Solid):
         self.volumetric_gradient = volumetric_gradient
         self.volumetric_hessian = volumetric_hessian
 
-        kinds = ["linear", "log", "custom"]
+        kinds = ["volume-ratio", "stretch", "log", "custom"]
 
         if volumetric_kind not in kinds:
             raise ValueError(
@@ -426,12 +459,14 @@ class SolidBodyNearlyIncompressible(Solid):
 
         _dUdJ_dict = {
             "custom": volumetric_gradient,
-            "linear": lambda J: self.bulk * (J - 1),
+            "volume-ratio": lambda J: self.bulk * (J - 1),
+            "stretch": lambda J: 3 * self.bulk * (np.cbrt(J) - 1) / np.cbrt(J) ** 2,
             "log": lambda J: self.bulk * np.log(J) / J,
         }
         _d2UdJdJ_dict = {
             "custom": volumetric_hessian,
-            "linear": lambda J: self.bulk,
+            "volume-ratio": lambda J: self.bulk,
+            "stretch": lambda J: self.bulk * (2 - np.cbrt(J)) / np.cbrt(J) ** 5,
             "log": lambda J: self.bulk * (1 - np.log(J)) / (J**2),
         }
 

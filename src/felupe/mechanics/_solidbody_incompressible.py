@@ -40,15 +40,30 @@ class SolidBodyNearlyIncompressible(Solid):
         holds the array of internal state variables.
     field : FieldContainer
         A field container with one or more fields.
-    bulk : float
+    bulk : float or None, optional
         The bulk modulus of the volumetric part of the strain energy function
-        :math:`U(\bar{J})=K(\bar{J}-1)^2/2`.
+        :math:`U(\bar{J})=K(\bar{J}-1)^2/2` (default is None). None is only allowed if
+        the volumetric strain energy density functions are passed as ``dUdJ(J)`` and
+        ``d2UdJdJ(J)``.
     state : StateNearlyIncompressible or None, optional
         A valid initial state for a (nearly) incompressible solid (default is None).
     statevars : ndarray or None, optional
         Array of initial internal state variables (default is None).
     density : float or None, optional
         The density of the solid body.
+    volumetric_kind : str, optional
+        The kind of the volumetric strain energy density function: ``"linear"`` for
+        :math:`K(\bar{J}-1)`, ``"log"`` for :math:`K\log(\bar{J})^2/2` or "custom" with
+        callables for ``volumetric_gradient`` and ``volumetric_hessian``. Default is
+        ``"linear"``.
+    volumetric_gradient : callable or None, optional
+        The gradient of the volumetric part of the strain energy density function
+        :math:`U'(\bar{J})` for ``volumetric_type="custom"`` (otherwise, it is ignored).
+        Default is None.
+    volumetric_hessian : callable or None, optional
+        The hessian of the volumetric part of the strain energy density function
+        :math:`U''(\bar{J})` for ``volumetric_type="custom"`` (otherwise, it is
+        ignored). Default is None.
 
     Notes
     -----
@@ -316,11 +331,42 @@ class SolidBodyNearlyIncompressible(Solid):
         for (nearly) incompressible solid bodies.
     """
 
-    def __init__(self, umat, field, bulk, state=None, statevars=None, density=None):
+    def __init__(
+        self,
+        umat,
+        field,
+        bulk=None,
+        state=None,
+        statevars=None,
+        density=None,
+        volumetric_kind="linear",
+        volumetric_gradient=None,
+        volumetric_hessian=None,
+    ):
         self.umat = umat
         self.field = field
         self.bulk = bulk
         self.density = density
+
+        # gradient U'(J) and hessian U''(J) of
+        # volumetric strain energy density function U(J)
+        self.volumetric_kind = volumetric_kind
+        self.volumetric_gradient = volumetric_gradient
+        self.volumetric_hessian = volumetric_hessian
+
+        _dUdJ_dict = {
+            "custom": volumetric_gradient,
+            "linear": lambda J: self.bulk * (J - 1),
+            "log": lambda J: self.bulk * np.log(J) / J,
+        }
+        _d2UdJdJ_dict = {
+            "custom": volumetric_hessian,
+            "linear": lambda J: self.bulk,
+            "log": lambda J: self.bulk * (1 - np.log(J)) / (J**2),
+        }
+
+        self.dUdJ = _dUdJ_dict[self.volumetric_kind]
+        self.d2UdJdJ = _d2UdJdJ_dict[self.volumetric_kind]
 
         self._area_change = AreaChange()
         self._form = IntegralForm
@@ -480,7 +526,7 @@ class SolidBodyNearlyIncompressible(Solid):
         else:
             state.u[:] = self.field[0].values
             state.J[:] = state.volume() / self.V
-            state.p[:] = self.bulk * (state.J - 1)
+            state.p[:] = self.dUdJ(state.J)
 
         if restore_statevars:
             self.results.statevars[:] = checkpoint["results.statevars"]
@@ -531,6 +577,9 @@ class SolidBodyNearlyIncompressible(Solid):
             field=new_field,
             density=self.density,
             bulk=self.bulk,
+            volumetric_kind=self.volumetric_kind,
+            volumetric_gradient=self.volumetric_gradient,
+            volumetric_hessian=self.volumetric_hessian,
         )
 
         # expand state variables (no rotation is applied here)
@@ -579,7 +628,7 @@ class SolidBodyNearlyIncompressible(Solid):
         v = self.results.state.volume()
         p = self.results.state.p
 
-        constraint = np.multiply(h, self.bulk * (v / self.V - 1) - p, out=h)
+        constraint = np.multiply(h, self.dUdJ(v / self.V) - p, out=h)
 
         self.results.force_values = form.integrate(
             parallel=parallel, out=self.results.force_values
@@ -615,7 +664,7 @@ class SolidBodyNearlyIncompressible(Solid):
             parallel=parallel, out=self.results._force_values
         )
         H = dya(h, h, out=self.results._stiffness_values)
-        bulk_H = np.multiply(H, self.bulk, out=H)
+        bulk_H = np.multiply(H, self.d2UdJdJ(self.results.state.J), out=H)
         constraint = np.divide(bulk_H, self.V, out=bulk_H)
 
         self.results.stiffness_values = form.integrate(
@@ -650,7 +699,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
         # update state variables
         self.results.state.J[:] = (ddot(du, h, mode=(2, 2)) + v) / self.V
-        self.results.state.p[:] = self.bulk * (self.results.state.J - 1)
+        self.results.state.p[:] = self.dUdJ(self.results.state.J)
         self.results.state.u[:] = u
 
         return self.results.kinematics

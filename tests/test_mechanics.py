@@ -337,40 +337,43 @@ def volumetric_functions(bulk):
     }
 
 
+def custom_volumetric(bulk, kind):
+    "A custom volumetric part with the functions of a built-in kind."
+
+    U, dUdJ, d2UdJdJ = volumetric_functions(bulk)[kind]
+
+    class CustomVolumetricStrainEnergy(fem.VolumetricStrainEnergy):
+        def __init__(self):
+            pass
+
+        def __call__(self, J):
+            return U(J)
+
+        def dUdJ(self, J):
+            return dUdJ(J)
+
+        def d2UdJdJ(self, J):
+            return d2UdJdJ(J)
+
+    return CustomVolumetricStrainEnergy()
+
+
 def test_solidbody_incompressible_volumetric_homogeneous():
     "A homogeneous deformation is equal to the one of the displacement formulation."
 
-    tm = pytest.importorskip("tensortrax.math")
-
-    def neo_hooke(C, mu, bulk, U):
-        J = tm.sqrt(tm.linalg.det(C))
-        return mu / 2 * (J ** (-2 / 3) * tm.trace(C) - 3) + U(J, bulk)
-
-    def stretch(J, bulk):
-        return 9 * bulk / 2 * (J ** (1 / 3) - 1) ** 2
-
-    def log(J, bulk):
-        return bulk / 2 * tm.log(J) ** 2
-
     mu, bulk = 1.0, 5.0
-    umats = {
-        "volume-ratio": fem.NeoHooke(mu=mu, bulk=bulk),
-        "stretch": fem.Hyperelastic(neo_hooke, mu=mu, bulk=bulk, U=stretch),
-        "log": fem.Hyperelastic(neo_hooke, mu=mu, bulk=bulk, U=log),
-    }
     region = fem.RegionHexahedron(fem.Cube(n=2))
 
-    for kind, umat in umats.items():
-        dUdJ = volumetric_functions(bulk)[kind][1]
-
+    for kind, (U, dUdJ, d2UdJdJ) in volumetric_functions(bulk).items():
         for move in [0.4, -0.3]:
             field = fem.FieldContainer([fem.Field(region, dim=3)])
             solid = fem.SolidBodyNearlyIncompressible(
-                fem.NeoHooke(mu=mu), field, bulk=bulk, volumetric_kind=kind
+                fem.NeoHooke(mu=mu), field, bulk=bulk, volumetric=kind
             )
 
             field_ref = fem.FieldContainer([fem.Field(region, dim=3)])
-            solid_ref = fem.SolidBody(umat, field_ref)
+            umat_ref = fem.NeoHooke(mu=mu, bulk=bulk, volumetric=kind)
+            solid_ref = fem.SolidBody(umat_ref, field_ref)
 
             for item in [solid, solid_ref]:
                 boundaries = fem.dof.uniaxial(item.field, move=move)
@@ -409,12 +412,9 @@ def test_solidbody_incompressible_volumetric_potential():
         x = field[0].values.copy()
 
         for kwargs in [
-            dict(bulk=bulk, volumetric_kind=kind),
-            dict(
-                volumetric_kind="custom",
-                volumetric_gradient=dUdJ,
-                volumetric_hessian=d2UdJdJ,
-            ),
+            dict(bulk=bulk, volumetric=kind),
+            dict(volumetric=fem.VolumetricStrainEnergy(bulk=bulk, kind=kind)),
+            dict(volumetric=custom_volumetric(bulk, kind)),
         ]:
             field[0].values[:] = x
             solid = fem.SolidBodyNearlyIncompressible(umat, field, **kwargs)
@@ -452,16 +452,12 @@ def test_solidbody_incompressible_volumetric_custom():
     bulk = 5000.0
     region = fem.RegionHexahedron(fem.Cube(n=3))
 
-    for kind, (U, dUdJ, d2UdJdJ) in volumetric_functions(bulk).items():
+    for kind in volumetric_functions(bulk).keys():
         results = []
 
         for kwargs in [
-            dict(bulk=bulk, volumetric_kind=kind),
-            dict(
-                volumetric_kind="custom",
-                volumetric_gradient=dUdJ,
-                volumetric_hessian=d2UdJdJ,
-            ),
+            dict(bulk=bulk, volumetric=kind),
+            dict(volumetric=custom_volumetric(bulk, kind)),
         ]:
             field = fem.FieldContainer([fem.Field(region, dim=3)])
             solid = fem.SolidBodyNearlyIncompressible(
@@ -481,64 +477,43 @@ def test_solidbody_incompressible_volumetric_custom():
 
 
 def test_solidbody_incompressible_volumetric_errors():
-    "Missing or unknown arguments of the volumetric part raise errors."
+    "Missing, unknown or ambiguous arguments of the volumetric part raise errors."
 
     field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(fem.Cube(n=2)), dim=3)])
     umat = fem.NeoHooke(mu=1)
 
     for kind in ["volume-ratio", "stretch", "log"]:
         with pytest.raises(ValueError, match="bulk"):
-            fem.SolidBodyNearlyIncompressible(umat, field, volumetric_kind=kind)
-
-    for gradient, hessian in [(None, None), (lambda J: J - 1, None), (None, 1.0)]:
-        with pytest.raises(ValueError, match="callables"):
-            fem.SolidBodyNearlyIncompressible(
-                umat,
-                field,
-                volumetric_kind="custom",
-                volumetric_gradient=gradient,
-                volumetric_hessian=hessian,
-            )
+            fem.SolidBodyNearlyIncompressible(umat, field, volumetric=kind)
 
     with pytest.raises(ValueError, match="Unknown"):
+        fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000, volumetric="linear")
+
+    # an instance holds its own bulk modulus
+    with pytest.raises(ValueError, match="bulk modulus must be None"):
         fem.SolidBodyNearlyIncompressible(
-            umat, field, bulk=5000, volumetric_kind="linear"
+            umat,
+            field,
+            bulk=5000,
+            volumetric=fem.VolumetricStrainEnergy(bulk=5000, kind="stretch"),
         )
 
-    # the callables are ignored for the built-in kinds
-    solid = fem.SolidBodyNearlyIncompressible(
-        umat,
-        field,
-        bulk=5000,
-        volumetric_gradient=lambda J: 0 * J,
-        volumetric_hessian=lambda J: 0 * J,
-    )
+    # the volumetric part of a kind uses the current bulk modulus
+    solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
     assert isinstance(solid.volumetric, fem.VolumetricStrainEnergy)
     assert solid.volumetric.kind == "volume-ratio"
     assert np.isclose(solid.volumetric.dUdJ(2.0), 5000)
     assert np.isclose(solid.volumetric.d2UdJdJ(2.0), 5000)
 
-    # the bulk modulus is the one of the volumetric part
     solid.bulk = 100
     assert solid.volumetric.bulk == 100
     assert np.isclose(solid.volumetric.dUdJ(2.0), 100)
 
-    # the bulk modulus is ignored for the custom kind
-    U, dUdJ, d2UdJdJ = volumetric_functions(5000)["log"]
-    solid = fem.SolidBodyNearlyIncompressible(
-        umat,
-        field,
-        bulk=1,
-        volumetric_kind="custom",
-        volumetric_gradient=dUdJ,
-        volumetric_hessian=d2UdJdJ,
-    )
-    assert np.isclose(solid.volumetric.dUdJ(2.0), dUdJ(2.0))
-    assert np.isclose(solid.volumetric.d2UdJdJ(2.0), d2UdJdJ(2.0))
-
-    # only the derivatives of the custom kind are given
-    with pytest.raises(NotImplementedError):
-        solid.volumetric(2.0)
+    # an instance is used as given
+    volumetric = custom_volumetric(5000, "log")
+    solid = fem.SolidBodyNearlyIncompressible(umat, field, volumetric=volumetric)
+    assert solid.bulk is None
+    assert solid.volumetric is volumetric
 
 
 def test_solidbody_incompressible_volumetric_restore_revolve():
@@ -549,12 +524,8 @@ def test_solidbody_incompressible_volumetric_restore_revolve():
     region = fem.RegionQuad(fem.Rectangle(n=4))
 
     for kwargs in [
-        dict(bulk=bulk, volumetric_kind="log"),
-        dict(
-            volumetric_kind="custom",
-            volumetric_gradient=dUdJ,
-            volumetric_hessian=d2UdJdJ,
-        ),
+        dict(bulk=bulk, volumetric="log"),
+        dict(volumetric=custom_volumetric(bulk, "log")),
     ]:
         field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
         solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, **kwargs)
@@ -574,13 +545,8 @@ def test_solidbody_incompressible_volumetric_restore_revolve():
 
         # the volumetric part is passed to the revolved solid body
         new_solid = solid.revolve(n=5, phi=90)
-        for key in [
-            "bulk",
-            "volumetric_kind",
-            "volumetric_gradient",
-            "volumetric_hessian",
-        ]:
-            assert getattr(new_solid, key) is getattr(solid, key)
+        assert new_solid.bulk is solid.bulk
+        assert new_solid._volumetric is solid._volumetric
 
         J = new_solid.results.state.J
         assert np.allclose(new_solid.volumetric.dUdJ(J), dUdJ(J))

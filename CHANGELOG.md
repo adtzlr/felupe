@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+- Enhance `SolidBodyNearlyIncompressible` with the new arguments `SolidBodyNearlyIncompressible(..., volumetric_kind="linear", volumetric_gradient=None, volumetric_hessian=None)`. Available kinds of the volumetric part of the strain energy density function are `"linear"` for `U(J) = K (J - 1)^2 / 2` (default, as before), `"log"` for `U(J) = K ln(J)^2 / 2` and `"custom"`. With `volumetric_kind="custom"`, callables for the first and second derivatives of the volumetric part of the strain energy density function w.r.t. the volume ratio are passed as `volumetric_gradient` and `volumetric_hessian`. The argument `bulk=None` is optional now and it is only required for the kinds `"linear"` and `"log"`. A missing bulk modulus, missing callables or an unknown kind raise a `ValueError`.
+
 ### Changed
 - The default value of the argument `return_loadcase` of the loadcases `dof.uniaxial()`, `dof.biaxial()` and `dof.shear()` is `False` (before: `None`, deprecated since v10.0.0, which returned the loadcase dict), i.e. only the dict of boundaries is returned by default. Use `boundaries, loadcase = fem.dof.uniaxial(field, return_loadcase=True)` to get the loadcase dict. Unpacking the dict of boundaries raises a `TypeError` with a hint, e.g. `boundaries, loadcase = fem.dof.uniaxial(field)`.
 - The argument `plugins` of `Job` and `CharacteristicCurve` is keyword-only, e.g. `Job(steps, plugins=[...])`. Before, it was the third positional argument of `Job`, after the removed `callback`.

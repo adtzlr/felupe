@@ -538,7 +538,7 @@ def test_solidbody_incompressible_volumetric_errors():
 
     # only the derivatives of the custom kind are given
     with pytest.raises(NotImplementedError):
-        solid.volumetric.function(2.0)
+        solid.volumetric(2.0)
 
 
 def test_solidbody_incompressible_volumetric_restore_revolve():

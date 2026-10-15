@@ -31,7 +31,7 @@ class _VolumetricStrainEnergyDerivatives(VolumetricStrainEnergy):
         self._dUdJ = dUdJ
         self._d2UdJdJ = d2UdJdJ
 
-    def function(self, J):
+    def __call__(self, J):
         raise NotImplementedError(
             "The volumetric part of the strain energy density function is not given, "
             "only its first and second derivatives."

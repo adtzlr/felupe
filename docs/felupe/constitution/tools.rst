@@ -58,6 +58,7 @@ This page contains tools and helpers for constitutive material formulations.
    :members:
    :undoc-members:
    :inherited-members:
+   :special-members: __call__
 
 .. autoclass:: felupe.LineChange
    :members:

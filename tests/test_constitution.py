@@ -1064,12 +1064,12 @@ def test_volumetric_strain_energy():
         assert U.kind == kind
 
         # stress-free undeformed configuration with the bulk modulus as stiffness
-        assert np.isclose(U.function(1.0), 0)
+        assert np.isclose(U(1.0), 0)
         assert np.isclose(U.dUdJ(1.0), 0)
         assert np.isclose(U.d2UdJdJ(1.0), bulk)
 
         # derivatives by central differences
-        dUdJ = (U.function(J + eps) - U.function(J - eps)) / (2 * eps)
+        dUdJ = (U(J + eps) - U(J - eps)) / (2 * eps)
         d2UdJdJ = (U.dUdJ(J + eps) - U.dUdJ(J - eps)) / (2 * eps)
 
         assert np.allclose(U.dUdJ(J), dUdJ)
@@ -1085,7 +1085,7 @@ def test_volumetric_strain_energy():
 
     for kind, strain in strains.items():
         U = fem.VolumetricStrainEnergy(bulk=bulk, kind=kind)
-        assert np.allclose(U.function(J), 9 * bulk / 2 * strain**2)
+        assert np.allclose(U(J), 9 * bulk / 2 * strain**2)
 
     # maximum of the first derivative in tension
     U = fem.VolumetricStrainEnergy(bulk=bulk, kind="stretch")
@@ -1098,7 +1098,7 @@ def test_volumetric_strain_energy():
 
     # the cubic root is real-valued for (linearized) negative volume ratios
     U = fem.VolumetricStrainEnergy(bulk=bulk, kind="stretch")
-    for fun in [U.function, U.dUdJ, U.d2UdJdJ]:
+    for fun in [U, U.dUdJ, U.d2UdJdJ]:
         assert np.all(np.isfinite(fun(np.array([-0.5, -0.1]))))
 
     # the default kind and missing or unknown arguments

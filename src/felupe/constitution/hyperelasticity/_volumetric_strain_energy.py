@@ -21,9 +21,10 @@ class VolumetricStrainEnergy:
     Notes
     -----
     Unlike a :class:`~felupe.ConstitutiveMaterial`, which is evaluated by the
-    deformation gradient, all methods are evaluated by the volume ratio
-    :math:`J=\det(\boldsymbol{F})`, i.e. ``function(J)`` returns :math:`U(J)`,
-    ``dUdJ(J)`` returns :math:`U'(J)` and ``d2UdJdJ(J)`` returns :math:`U''(J)`. The
+    deformation gradient, it is evaluated by the volume ratio
+    :math:`J=\det(\boldsymbol{F})`. An instance ``U`` is callable, i.e. ``U(J)``
+    returns :math:`U(J)`, ``U.dUdJ(J)`` returns :math:`U'(J)` and ``U.d2UdJdJ(J)``
+    returns :math:`U''(J)`. The
     derivatives w.r.t. the deformation gradient are obtained by the chain rule with the
     derivatives of the volume ratio, see :class:`~felupe.VolumeChange`.
 
@@ -84,7 +85,7 @@ class VolumetricStrainEnergy:
     :math:`J=e` for these kinds, where their second derivatives change their sign.
 
     A custom volumetric part of the strain energy density function is a subclass which
-    implements the methods ``function(J)``, ``dUdJ(J)`` and ``d2UdJdJ(J)``. The
+    implements the methods ``__call__(J)``, ``dUdJ(J)`` and ``d2UdJdJ(J)``. The
     undeformed configuration is free of stress only if :math:`U'(1)=0`, and a positive
     second derivative :math:`U''(J)>0` is required for a stable volumetric response.
 
@@ -96,7 +97,7 @@ class VolumetricStrainEnergy:
     >>> U = fem.VolumetricStrainEnergy(bulk=5000, kind="stretch")
     >>> J = np.array([0.9, 1.0, 1.1])
     >>>
-    >>> U.function(J)
+    >>> U(J)
     array([26.79710794,  0.        , 23.44513171])
 
     >>> U.dUdJ(J)
@@ -112,7 +113,7 @@ class VolumetricStrainEnergy:
     ...     def __init__(self, bulk):
     ...         self.bulk = bulk
     ...
-    ...     def function(self, J):
+    ...     def __call__(self, J):
     ...         return self.bulk / 4 * (J**2 - 1 - 2 * np.log(J))
     ...
     ...     def dUdJ(self, J):
@@ -150,7 +151,7 @@ class VolumetricStrainEnergy:
         self.bulk = bulk
         self.kind = kind
 
-    def function(self, J):
+    def __call__(self, J):
         r"""Return the volumetric part of the strain energy density function
         :math:`U(J)`.
 

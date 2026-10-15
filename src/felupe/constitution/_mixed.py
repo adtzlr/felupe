@@ -16,6 +16,7 @@ from ..math import (
     transpose,
 )
 from ._base import ConstitutiveMaterial
+from .hyperelasticity._volumetric_strain_energy import _volumetric_strain_energy
 
 
 class NearlyIncompressible(ConstitutiveMaterial):
@@ -35,13 +36,15 @@ class NearlyIncompressible(ConstitutiveMaterial):
             \int_V U(\bar{J})\ dV +
             \int_V p (J - \bar{J})\ dV
 
-    The volumetric part of the strain energy density function is denoted in Eq.
-    :eq:`nearlyincompressible-volumetric` along with its first and second derivatives.
+    The volumetric part of the strain energy density function :math:`U(\bar{J})` is
+    given by ``volumetric``, see :class:`~felupe.VolumetricStrainEnergy`. Its first and
+    second derivatives w.r.t. the volume ratio are abbreviated by
+    :math:`\bar{U}'=U'(\bar{J})` and :math:`\bar{U}''=U''(\bar{J})`, e.g. for
+    ``volumetric="volume-ratio"`` (default)
 
     ..  math::
-        :label: nearlyincompressible-volumetric
 
-        \bar{U} &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
+        U(\bar{J}) &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
 
         \bar{U}' &= K \left( \bar{J} - 1 \right)
 
@@ -55,22 +58,21 @@ class NearlyIncompressible(ConstitutiveMaterial):
         ``gradient`` :math:`\partial_\boldsymbol{F}(\hat{\psi})` and the ``hessian``
         :math:`\partial_\boldsymbol{F}[\partial_\boldsymbol{F}(\hat{\psi})]` w.r.t the
         deformation gradient tensor :math:`\boldsymbol{F}`.
-    bulk : float
-        The bulk modulus :math:`K` for the volumetric part of the strain energy
-        function.
+    bulk : float or None, optional
+        The bulk modulus :math:`K` of the volumetric part of the strain energy density
+        function, which is required if ``volumetric`` is a kind. It must be None if
+        ``volumetric`` is an instance, which holds its own parameters (default is None).
     parallel : bool or None, optional
         A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
         threads. If None, the flag is taken from the material (default is None).
-    dUdJ : callable, optional
-        A function which evaluates the derivative of the volumetric part of the strain
-        energy function :math:`\bar{U}'` w.r.t. the volume ratio :math:`\bar{J}`.
-        Function signature must be ``lambda J, bulk: dUdJ``. Default is
-        :math:`\bar{U}' = K (\bar{J} - 1)` or ``lambda J, bulk: bulk * (J - 1)``.
-    d2UdJdJ : callable, optional
-        A function which evaluates the second derivative of the volumetric part of the
-        strain energy function :math:`\bar{U}''` w.r.t. the volume ratio
-        :math:`\bar{J}`. Function signature must be ``lambda J, bulk: d2UdJdJ``.
-        Default is :math:`\bar{U}'' = K` or ``lambda J, bulk: bulk``.
+    volumetric : str or VolumetricStrainEnergy, optional
+        The volumetric part of the strain energy density function :math:`U(\bar{J})`,
+        given by a kind with the bulk modulus, ``"volume-ratio"`` for
+        :math:`U(\bar{J})=K(\bar{J}-1)^2/2`, ``"stretch"`` for
+        :math:`U(\bar{J})=9K(\bar{J}^{1/3}-1)^2/2` or ``"log"`` for
+        :math:`U(\bar{J})=K\ln(\bar{J})^2/2`, or by an instance of
+        :class:`~felupe.VolumetricStrainEnergy`, e.g. of a custom subclass. Default is
+        ``"volume-ratio"``.
 
     Examples
     --------
@@ -84,6 +86,13 @@ class NearlyIncompressible(ConstitutiveMaterial):
         >>> umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
         >>> solid = fem.SolidBody(umat, field)
 
+    The volumetric part of the strain energy density function is given by a kind or by
+    an instance of :class:`~felupe.VolumetricStrainEnergy`.
+
+    >>> umat = fem.NearlyIncompressible(
+    ...     fem.NeoHooke(mu=1), bulk=5000, volumetric="stretch"
+    ... )
+
     See Also
     --------
     ThreeFieldVariation : Hu-Washizu hydrostatic-volumetric selective three-field
@@ -91,14 +100,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
 
     """
 
-    def __init__(
-        self,
-        material,
-        bulk,
-        parallel=None,
-        dUdJ=lambda J, bulk: bulk * (J - 1),
-        d2UdJdJ=lambda J, bulk: bulk,
-    ):
+    def __init__(self, material, bulk=None, parallel=None, volumetric="volume-ratio"):
         self.material = self.fun = material
 
         if parallel is None:
@@ -106,9 +108,25 @@ class NearlyIncompressible(ConstitutiveMaterial):
 
         self.parallel = parallel
         self.bulk = bulk
-        self.dUdJ = dUdJ
-        self.d2UdJdJ = d2UdJdJ
+
+        # volumetric part of the strain energy density function U(J), given by a kind
+        # (with the bulk modulus) or by an instance
+        self._volumetric = volumetric
+
+        if _volumetric_strain_energy(volumetric, bulk) is None:
+            raise ValueError(
+                f'volumetric="{volumetric}" requires the bulk modulus, e.g. bulk=5000.'
+            )
+
         self.x = [material.x[0], np.ones(1), np.ones(1), material.x[-1]]
+
+    @property
+    def volumetric(self):
+        """The volumetric part of the strain energy density function, see
+        :class:`~felupe.VolumetricStrainEnergy`. For a kind, it is created with the
+        current bulk modulus.
+        """
+        return _volumetric_strain_energy(self._volumetric, self.bulk)
 
     def _gradient(self, x):
         r"""Return a list with the gradient of the strain energy density function
@@ -148,7 +166,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
         dWdF, statevars_new = self.material.gradient([F, statevars])
         dWdF += p * transpose(inv(F, determinant=1.0))
         dWdp = det(F) - J
-        dWdJ = self.dUdJ(J, self.bulk) - p
+        dWdJ = self.volumetric.dUdJ(J) - p
         return [dWdF, dWdp, dWdJ, statevars_new]
 
     def _hessian(self, x):
@@ -206,7 +224,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
         d2WdFdJ = None  # np.zeros_like(F)
         d2Wdpdp = None  # np.zeros_like(p)
         d2WdpdJ = -np.ones_like(J)
-        d2WdJdJ = self.d2UdJdJ(J, self.bulk) * np.ones_like(J)
+        d2WdJdJ = self.volumetric.d2UdJdJ(J) * np.ones_like(J)
         return [d2WdFdF, d2WdFdp, d2WdFdJ, d2Wdpdp, d2WdpdJ, d2WdJdJ]
 
 

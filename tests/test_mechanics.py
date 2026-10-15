@@ -787,6 +787,37 @@ def test_threefield():
     assert np.isclose(job.fnorms[0][-1], 0)
 
 
+def test_threefield_volumetric():
+    "A homogeneous deformation is equal to the one of the displacement formulation."
+
+    mu, bulk = 1.0, 5.0
+    region = fem.RegionHexahedron(fem.Cube(n=2))
+
+    for kind in ["volume-ratio", "stretch", "log"]:
+        for move in [0.4, -0.3]:
+            field = fem.FieldsMixed(region, n=3)
+            umat = fem.NearlyIncompressible(
+                fem.NeoHooke(mu=mu), bulk=bulk, volumetric=kind
+            )
+            solid = fem.SolidBody(umat, field)
+
+            field_ref = fem.FieldContainer([fem.Field(region, dim=3)])
+            umat_ref = fem.NeoHooke(mu=mu, bulk=bulk, volumetric=kind)
+            solid_ref = fem.SolidBody(umat_ref, field_ref)
+
+            for item in [solid, solid_ref]:
+                boundaries = fem.dof.uniaxial(item.field, move=move)
+                step = fem.Step(items=[item], boundaries=boundaries)
+                job = fem.Job(steps=[step]).evaluate()
+                assert np.isclose(job.fnorms[0][-1], 0)
+
+            J = fem.math.det(field_ref.extract()[0])
+            assert not np.allclose(J, 1)
+            assert np.allclose(field[0].values, field_ref[0].values)
+            assert np.allclose(field[1].values, umat_ref.volumetric.dUdJ(J.mean()))
+            assert np.allclose(field[2].values, J.mean())
+
+
 def test_solidbody_cauchy_stress():
     field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=3)), n=3)
     region_stress = fem.RegionHexahedronBoundary(
@@ -1304,6 +1335,7 @@ if __name__ == "__main__":
     test_load()
     test_view()
     test_threefield()
+    test_threefield_volumetric()
     test_truss
     test_checkpoint()
     test_checkpoint_x0()

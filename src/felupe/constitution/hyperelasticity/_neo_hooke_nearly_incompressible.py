@@ -4,6 +4,7 @@ import numpy as np
 
 from ...math import cdya_ik, ddot, det, dot, dya, identity, inv, trace, transpose
 from .._base import ConstitutiveMaterial
+from ._volumetric_strain_energy import _volumetric_strain_energy
 
 
 class NeoHooke(ConstitutiveMaterial):
@@ -17,10 +18,20 @@ class NeoHooke(ConstitutiveMaterial):
     mu : float or None, optional
         Shear modulus (default is None)
     bulk : float or None, optional
-        Bulk modulus (default is None)
+        Bulk modulus of the volumetric part of the strain energy density function, if
+        ``volumetric`` is a kind. If None, there is no volumetric part. It must be None
+        if ``volumetric`` is an instance, which holds its own parameters (default is
+        None).
     parallel : bool, optional
         A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
         threads (default is False).
+    volumetric : str or VolumetricStrainEnergy, optional
+        The volumetric part of the strain energy density function :math:`U(J)`, given by
+        a kind with the bulk modulus, ``"volume-ratio"`` for :math:`U(J)=K(J-1)^2/2`,
+        ``"stretch"`` for :math:`U(J)=9K(J^{1/3}-1)^2/2` or ``"log"`` for
+        :math:`U(J)=K\ln(J)^2/2`, or by an instance of
+        :class:`~felupe.VolumetricStrainEnergy`, e.g. of a custom subclass. Default is
+        ``"volume-ratio"``.
 
     Notes
     -----
@@ -52,8 +63,9 @@ class NeoHooke(ConstitutiveMaterial):
 
        \hat{\boldsymbol{C}} &= \hat{\boldsymbol{F}}^T \hat{\boldsymbol{F}}
 
-    The volumetric part of the strain energy density function is a function
-    the volume ratio.
+    The volumetric part of the strain energy density function is a function of the
+    volume ratio, given by ``volumetric``, see :class:`~felupe.VolumetricStrainEnergy`,
+    e.g. for ``volumetric="volume-ratio"`` (default)
 
     .. math::
 
@@ -105,7 +117,7 @@ class NeoHooke(ConstitutiveMaterial):
     .. math::
 
        \boldsymbol{P} = \mu J^{-2/3} \left( \boldsymbol{F} - \frac{1}{3} (
-       \boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \right) + K (J - 1) J
+       \boldsymbol{F} : \boldsymbol{F}) \boldsymbol{F}^{-T} \right) + U'(J) J
        \boldsymbol{F}^{-T}
 
     Again, a chain rule application leads to an expression for the elasticity tensor.
@@ -134,7 +146,8 @@ class NeoHooke(ConstitutiveMaterial):
     With the above partial derivatives the (physical-deviatoric and
     -hydrostatic) parts of the elasticity tensor associated
     to the first Piola-Kirchhoff stress tensor of the Neo-Hookean
-    material model takes the following form.
+    material model takes the following form, here for ``volumetric="volume-ratio"``
+    with :math:`U'(J)=K(J-1)` and :math:`U''(J)=K`.
 
     .. math::
 
@@ -158,13 +171,28 @@ class NeoHooke(ConstitutiveMaterial):
         >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
         >>> ax = umat.plot()
 
+    The volumetric part of the strain energy density function is given by a kind or by
+    an instance of :class:`~felupe.VolumetricStrainEnergy`.
+
+    ..  plot::
+
+        >>> import felupe as fem
+        >>>
+        >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0, volumetric="stretch")
+        >>> ax = umat.plot()
+
     """
 
-    def __init__(self, mu=None, bulk=None, parallel=False):
+    def __init__(self, mu=None, bulk=None, parallel=False, volumetric="volume-ratio"):
         self.parallel = parallel
 
         self.mu = mu
         self.bulk = bulk
+
+        # volumetric part of the strain energy density function U(J), given by a kind
+        # (with the bulk modulus) or by an instance
+        self._volumetric = volumetric
+        _volumetric_strain_energy(volumetric, bulk)
 
         self.kwargs = {}
 
@@ -183,6 +211,14 @@ class NeoHooke(ConstitutiveMaterial):
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(0)]
 
+    @property
+    def volumetric(self):
+        """The volumetric part of the strain energy density function, see
+        :class:`~felupe.VolumetricStrainEnergy`. For a kind, it is created with the
+        current bulk modulus and it is None without a bulk modulus.
+        """
+        return _volumetric_strain_energy(self._volumetric, self.bulk)
+
     def function(self, x):
         """Strain energy density function per unit undeformed volume of the Neo-Hookean
         material formulation.
@@ -196,7 +232,7 @@ class NeoHooke(ConstitutiveMaterial):
         F = x[0]
 
         mu = self.mu
-        bulk = self.bulk
+        volumetric = self.volumetric
 
         J = det(F)
         C = dot(transpose(F), F)
@@ -205,8 +241,8 @@ class NeoHooke(ConstitutiveMaterial):
         if mu is not None:
             W += mu / 2 * (J ** (-2 / 3) * trace(C) - 3)
 
-        if bulk is not None:
-            W += bulk * (J - 1) ** 2 / 2
+        if volumetric is not None:
+            W += volumetric(J)
 
         return [W]
 
@@ -224,7 +260,7 @@ class NeoHooke(ConstitutiveMaterial):
         F, statevars = x[0], x[-1]
 
         mu = self.mu
-        bulk = self.bulk
+        volumetric = self.volumetric
 
         J = det(F)
         iFT = transpose(inv(F, J))
@@ -242,11 +278,10 @@ class NeoHooke(ConstitutiveMaterial):
             np.multiply(P, Jm23, out=P)
             np.multiply(P, mu, out=P)
 
-        if bulk is not None:
+        if volumetric is not None:
             # "physical"-volumetric (not math-volumetric!) part of P
+            dUdJ = volumetric.dUdJ(J)
             JiFT = np.multiply(J, iFT, out=iFT)
-            J_1 = np.add(J, -1, out=J)
-            dUdJ = np.multiply(bulk, J_1, out=J_1)
             dUdF = np.multiply(dUdJ, JiFT, out=JiFT)
             np.add(P, dUdF, out=P)
 
@@ -266,7 +301,7 @@ class NeoHooke(ConstitutiveMaterial):
         F = x[0]
 
         mu = self.mu
-        bulk = self.bulk
+        volumetric = self.volumetric
 
         J = det(F)
         iFT = transpose(inv(F, J))
@@ -296,17 +331,19 @@ class NeoHooke(ConstitutiveMaterial):
             Jm23 = np.power(J, -2 / 3, out=trC)
             np.multiply(Jm23, A4, out=A4)
 
-        if bulk is not None:
+        if volumetric is not None:
             # "physical"-volumetric (not math-volumetric!) part of A4
             if A4b is None:
                 A4b = dya(iFT, iFT, out=A4b)
 
-            J_1 = np.add(J, -1, out=trC)
-            p = np.multiply(bulk, J_1, out=J_1)
-            pJ = np.multiply(p, J, out=p)
+            # first and second derivatives of U(J), evaluated before J is overwritten
+            dUdJ = volumetric.dUdJ(J)
+            d2UdJdJ = volumetric.d2UdJdJ(J)
+
+            pJ = np.multiply(dUdJ, J)
             J2 = np.power(J, 2, out=J)
-            bulk_J2 = np.multiply(J2, bulk, out=J2)
-            qJ = np.add(pJ, bulk_J2, out=bulk_J2)
+            d2UdJdJ_J2 = np.multiply(J2, d2UdJdJ, out=J2)
+            qJ = np.add(pJ, d2UdJdJ_J2, out=d2UdJdJ_J2)
             A4c = np.multiply(qJ, A4b, out=A4c)
             np.add(A4, A4c, out=A4)
             np.multiply(-pJ, np.transpose(A4b, [0, 3, 2, 1, 4, 5]), out=A4c)

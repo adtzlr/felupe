@@ -5,7 +5,10 @@ import inspect
 import numpy as np
 
 from ..assembly import IntegralForm
-from ..constitution import AreaChange, VolumetricStrainEnergy
+from ..constitution import AreaChange
+from ..constitution.hyperelasticity._volumetric_strain_energy import (
+    _volumetric_strain_energy,
+)
 from ..field import FieldAxisymmetric
 from ..math import ddot, dya
 from ._helpers import (
@@ -18,30 +21,6 @@ from ._helpers import (
     mass_matrix,
 )
 from ._solidbody import Solid
-
-
-class _VolumetricStrainEnergyDerivatives(VolumetricStrainEnergy):
-    """The volumetric part of the strain energy density function, given by the
-    callables of its first and second derivatives w.r.t. the volume ratio only.
-    """
-
-    def __init__(self, dUdJ, d2UdJdJ, bulk=None):
-        self.bulk = bulk
-        self.kind = "custom"
-        self._dUdJ = dUdJ
-        self._d2UdJdJ = d2UdJdJ
-
-    def __call__(self, J):
-        raise NotImplementedError(
-            "The volumetric part of the strain energy density function is not given, "
-            "only its first and second derivatives."
-        )
-
-    def dUdJ(self, J):
-        return self._dUdJ(J)
-
-    def d2UdJdJ(self, J):
-        return self._d2UdJdJ(J)
 
 
 class SolidBodyNearlyIncompressible(Solid):
@@ -66,35 +45,23 @@ class SolidBodyNearlyIncompressible(Solid):
         A field container with one or more fields.
     bulk : float or None, optional
         The bulk modulus :math:`K` of the volumetric part of the strain energy density
-        function :math:`U(\bar{J})`, see ``volumetric_kind``. It is required for the
-        kinds ``"volume-ratio"``, ``"stretch"`` and ``"log"`` and it is ignored for
-        ``"custom"``. Default is None.
+        function :math:`U(\bar{J})`, which is required if ``volumetric`` is a kind. It
+        must be None if ``volumetric`` is an instance, which holds its own parameters.
+        Default is None.
     state : StateNearlyIncompressible or None, optional
         A valid initial state for a (nearly) incompressible solid (default is None).
     statevars : ndarray or None, optional
         Array of initial internal state variables (default is None).
     density : float or None, optional
         The density of the solid body.
-    volumetric_kind : str, optional
-        The kind of the volumetric part of the strain energy density function
-        :math:`U(\bar{J})`, which is quadratic in a strain of the volume ratio:
-        ``"volume-ratio"`` for :math:`U(\bar{J})=K(\bar{J}-1)^2/2`, ``"stretch"`` for
-        :math:`U(\bar{J})=9K(\bar{J}^{1/3}-1)^2/2`, ``"log"`` for
-        :math:`U(\bar{J})=K\ln(\bar{J})^2/2` or ``"custom"`` with the callables
-        ``volumetric_gradient`` and ``volumetric_hessian``, see
-        :class:`~felupe.VolumetricStrainEnergy`. Default is ``"volume-ratio"``.
-    volumetric_gradient : callable or None, optional
-        The first derivative of the volumetric part of the strain energy density
-        function w.r.t. the volume ratio :math:`U'(\bar{J})`, which is required for
-        ``volumetric_kind="custom"`` (otherwise, it is ignored). It is called with the
-        array of the cell-wise volume ratios and must return the array of the cell-wise
-        values. Default is None.
-    volumetric_hessian : callable or None, optional
-        The second derivative of the volumetric part of the strain energy density
-        function w.r.t. the volume ratio :math:`U''(\bar{J})`, which is required for
-        ``volumetric_kind="custom"`` (otherwise, it is ignored). It is called with the
-        array of the cell-wise volume ratios and must return the array of the cell-wise
-        values or a scalar. Default is None.
+    volumetric : str or VolumetricStrainEnergy, optional
+        The volumetric part of the strain energy density function :math:`U(\bar{J})`,
+        given by a kind with the bulk modulus, ``"volume-ratio"`` for
+        :math:`U(\bar{J})=K(\bar{J}-1)^2/2`, ``"stretch"`` for
+        :math:`U(\bar{J})=9K(\bar{J}^{1/3}-1)^2/2` or ``"log"`` for
+        :math:`U(\bar{J})=K\ln(\bar{J})^2/2`, or by an instance of
+        :class:`~felupe.VolumetricStrainEnergy`, e.g. of a custom subclass. Default is
+        ``"volume-ratio"``.
 
     Notes
     -----
@@ -181,13 +148,12 @@ class SolidBodyNearlyIncompressible(Solid):
         r_{\bar{J}} &= \left( \bar{U}' - p \right) V
 
 
-    The volumetric part of the strain energy density function is selected by
-    ``volumetric_kind``, see :class:`~felupe.VolumetricStrainEnergy` for the kinds
-    ``"volume-ratio"`` (default), ``"stretch"`` and ``"log"``. For
-    ``volumetric_kind="custom"``, its first and second derivatives are given by the
-    callables ``volumetric_gradient`` and ``volumetric_hessian``. The undeformed
-    configuration is free of stress only if :math:`U'(1)=0`, and a positive second
-    derivative :math:`U''(\bar{J})>0` is required for a stable volumetric response.
+    The volumetric part of the strain energy density function is given by
+    ``volumetric``, see :class:`~felupe.VolumetricStrainEnergy` for the kinds
+    ``"volume-ratio"`` (default), ``"stretch"`` and ``"log"`` and for a custom
+    volumetric part. The undeformed configuration is free of stress only if
+    :math:`U'(1)=0`, and a positive second derivative :math:`U''(\bar{J})>0` is
+    required for a stable volumetric response.
 
 
     **Hu-Washizu Three-Field-Variational Principle**
@@ -320,7 +286,7 @@ class SolidBodyNearlyIncompressible(Solid):
     :math:`U'(\bar{J} + \delta \bar{J})` and :math:`U'(v/V)`. Instead, their exact
     values are used, i.e. the pressure is updated by :math:`p = U'(\bar{J})` and the
     condensed constraint is evaluated by :math:`U'(v/V) - p`. Both are identical for
-    ``volumetric_kind="volume-ratio"``. Hence, the assembled vector is the gradient of
+    ``volumetric="volume-ratio"``. Hence, the assembled vector is the gradient of
     the total potential energy of internal forces of the mean dilatation technique,
     see Eq. :eq:`nearlyinc-mean-dilatation`, where the sum is taken over the cells.
 
@@ -387,47 +353,21 @@ class SolidBodyNearlyIncompressible(Solid):
         state=None,
         statevars=None,
         density=None,
-        volumetric_kind="volume-ratio",
-        volumetric_gradient=None,
-        volumetric_hessian=None,
+        volumetric="volume-ratio",
     ):
         self.umat = umat
         self.field = field
+        self.bulk = bulk
         self.density = density
 
-        # volumetric part of the strain energy density function U(J)
-        self.volumetric_kind = volumetric_kind
-        self.volumetric_gradient = volumetric_gradient
-        self.volumetric_hessian = volumetric_hessian
+        # volumetric part of the strain energy density function U(J), given by a kind
+        # (with the bulk modulus) or by an instance
+        self._volumetric = volumetric
 
-        kinds = ["volume-ratio", "stretch", "log", "custom"]
-
-        if volumetric_kind not in kinds:
+        if _volumetric_strain_energy(volumetric, bulk) is None:
             raise ValueError(
-                f'Unknown volumetric_kind="{volumetric_kind}". Available kinds are '
-                + ", ".join(f'"{kind}"' for kind in kinds)
-                + "."
+                f'volumetric="{volumetric}" requires the bulk modulus, e.g. bulk=5000.'
             )
-
-        if volumetric_kind == "custom":
-            if not (callable(volumetric_gradient) and callable(volumetric_hessian)):
-                raise ValueError(
-                    'volumetric_kind="custom" requires the callables '
-                    "volumetric_gradient and volumetric_hessian."
-                )
-
-        elif bulk is None:
-            raise ValueError(
-                f'volumetric_kind="{volumetric_kind}" requires the bulk modulus, '
-                "e.g. bulk=5000."
-            )
-
-        if volumetric_kind == "custom":
-            self.volumetric = _VolumetricStrainEnergyDerivatives(
-                dUdJ=volumetric_gradient, d2UdJdJ=volumetric_hessian, bulk=bulk
-            )
-        else:
-            self.volumetric = VolumetricStrainEnergy(bulk=bulk, kind=volumetric_kind)
 
         self._area_change = AreaChange()
         self._form = IntegralForm
@@ -477,13 +417,12 @@ class SolidBodyNearlyIncompressible(Solid):
         )
 
     @property
-    def bulk(self):
-        "The bulk modulus of the volumetric part of the strain energy density function."
-        return self.volumetric.bulk
-
-    @bulk.setter
-    def bulk(self, value):
-        self.volumetric.bulk = value
+    def volumetric(self):
+        """The volumetric part of the strain energy density function, see
+        :class:`~felupe.VolumetricStrainEnergy`. For a kind, it is created with the
+        current bulk modulus.
+        """
+        return _volumetric_strain_energy(self._volumetric, self.bulk)
 
     def checkpoint(self):
         """Return a checkpoint of the nearly-incompressible solid body.
@@ -647,9 +586,7 @@ class SolidBodyNearlyIncompressible(Solid):
             field=new_field,
             density=self.density,
             bulk=self.bulk,
-            volumetric_kind=self.volumetric_kind,
-            volumetric_gradient=self.volumetric_gradient,
-            volumetric_hessian=self.volumetric_hessian,
+            volumetric=self._volumetric,
         )
 
         # expand state variables (no rotation is applied here)

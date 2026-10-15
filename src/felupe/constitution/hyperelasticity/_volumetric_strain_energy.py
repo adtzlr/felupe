@@ -89,6 +89,11 @@ class VolumetricStrainEnergy:
     undeformed configuration is free of stress only if :math:`U'(1)=0`, and a positive
     second derivative :math:`U''(J)>0` is required for a stable volumetric response.
 
+    The volumetric part of the strain energy density function is passed by the argument
+    ``volumetric`` to :class:`~felupe.NeoHooke`, :class:`~felupe.Volumetric` and
+    :class:`~felupe.SolidBodyNearlyIncompressible`, either as a kind together with the
+    bulk modulus or as an instance (then, without the bulk modulus).
+
     Examples
     --------
     >>> import numpy as np
@@ -126,9 +131,22 @@ class VolumetricStrainEnergy:
     >>> U.d2UdJdJ(1.0)
     5000.0
 
+    The kinds or an instance are passed to the materials and the solid bodies.
+
+    >>> umat = fem.NeoHooke(mu=1, bulk=5000, volumetric="stretch")
+    >>> umat = fem.NeoHooke(mu=1, volumetric=U)
+    >>>
+    >>> mesh = fem.Cube(n=3)
+    >>> field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+    >>> umat = fem.NeoHooke(mu=1)
+    >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, volumetric=U)
+
     See Also
     --------
     felupe.VolumeChange : Volume Change.
+    felupe.NeoHooke : Nearly-incompressible isotropic hyperelastic Neo-Hookean material
+        formulation.
+    felupe.Volumetric : Neo-Hookean material formulation with deactivated shear modulus.
     felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
         methods for the assembly of sparse vectors/matrices.
     """
@@ -136,12 +154,7 @@ class VolumetricStrainEnergy:
     kinds = ("volume-ratio", "stretch", "log")
 
     def __init__(self, bulk, kind="volume-ratio"):
-        if kind not in self.kinds:
-            raise ValueError(
-                f'Unknown kind="{kind}". Available kinds are '
-                + ", ".join(f'"{available}"' for available in self.kinds)
-                + "."
-            )
+        self._check_kind(kind)
 
         if bulk is None:
             raise ValueError(
@@ -150,6 +163,17 @@ class VolumetricStrainEnergy:
 
         self.bulk = bulk
         self.kind = kind
+
+    @classmethod
+    def _check_kind(cls, kind):
+        "Raise an error for an unknown kind."
+
+        if kind not in cls.kinds:
+            raise ValueError(
+                f'Unknown kind="{kind}". Available kinds are '
+                + ", ".join(f'"{available}"' for available in cls.kinds)
+                + "."
+            )
 
     def __call__(self, J):
         r"""Return the volumetric part of the strain energy density function
@@ -226,3 +250,41 @@ class VolumetricStrainEnergy:
             return K * (1 - np.log(J)) / (J**2)
 
         return K
+
+
+def _volumetric_strain_energy(volumetric, bulk):
+    """Return the volumetric part of the strain energy density function, given by a
+    kind with the bulk modulus or by an instance of
+    :class:`~felupe.VolumetricStrainEnergy`. None is returned for a kind without the
+    bulk modulus.
+
+    Parameters
+    ----------
+    volumetric : str or VolumetricStrainEnergy
+        The kind or the volumetric part of the strain energy density function.
+    bulk : float or None
+        The bulk modulus. It must be None if ``volumetric`` is an instance, because the
+        instance holds its own parameters.
+
+    Returns
+    -------
+    VolumetricStrainEnergy or None
+        The volumetric part of the strain energy density function.
+    """
+
+    if isinstance(volumetric, str):
+        VolumetricStrainEnergy._check_kind(volumetric)
+
+        if bulk is None:
+            return None
+
+        return VolumetricStrainEnergy(bulk=bulk, kind=volumetric)
+
+    if bulk is not None:
+        raise ValueError(
+            "The bulk modulus must be None if the volumetric part of the strain energy "
+            "density function is given by an instance, which holds its own parameters, "
+            'e.g. volumetric=VolumetricStrainEnergy(bulk=5000, kind="stretch").'
+        )
+
+    return volumetric

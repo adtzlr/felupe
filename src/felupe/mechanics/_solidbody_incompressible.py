@@ -5,7 +5,7 @@ import inspect
 import numpy as np
 
 from ..assembly import IntegralForm
-from ..constitution import AreaChange
+from ..constitution import AreaChange, VolumetricStrainEnergy
 from ..field import FieldAxisymmetric
 from ..math import ddot, dya
 from ._helpers import (
@@ -18,6 +18,30 @@ from ._helpers import (
     mass_matrix,
 )
 from ._solidbody import Solid
+
+
+class _VolumetricStrainEnergyDerivatives(VolumetricStrainEnergy):
+    """The volumetric part of the strain energy density function, given by the
+    callables of its first and second derivatives w.r.t. the volume ratio only.
+    """
+
+    def __init__(self, dUdJ, d2UdJdJ, bulk=None):
+        self.bulk = bulk
+        self.kind = "custom"
+        self._dUdJ = dUdJ
+        self._d2UdJdJ = d2UdJdJ
+
+    def __call__(self, J):
+        raise NotImplementedError(
+            "The volumetric part of the strain energy density function is not given, "
+            "only its first and second derivatives."
+        )
+
+    def dUdJ(self, J):
+        return self._dUdJ(J)
+
+    def d2UdJdJ(self, J):
+        return self._d2UdJdJ(J)
 
 
 class SolidBodyNearlyIncompressible(Solid):
@@ -57,8 +81,8 @@ class SolidBodyNearlyIncompressible(Solid):
         ``"volume-ratio"`` for :math:`U(\bar{J})=K(\bar{J}-1)^2/2`, ``"stretch"`` for
         :math:`U(\bar{J})=9K(\bar{J}^{1/3}-1)^2/2`, ``"log"`` for
         :math:`U(\bar{J})=K\ln(\bar{J})^2/2` or ``"custom"`` with the callables
-        ``volumetric_gradient`` and ``volumetric_hessian``, see Eq.
-        :eq:`nearlyincompressible-volumetric`. Default is ``"volume-ratio"``.
+        ``volumetric_gradient`` and ``volumetric_hessian``, see
+        :class:`~felupe.VolumetricStrainEnergy`. Default is ``"volume-ratio"``.
     volumetric_gradient : callable or None, optional
         The first derivative of the volumetric part of the strain energy density
         function w.r.t. the volume ratio :math:`U'(\bar{J})`, which is required for
@@ -94,7 +118,7 @@ class SolidBodyNearlyIncompressible(Solid):
             \int_V p (J - \bar{J})\ dV
 
     with the volumetric part of the strain energy density function :math:`U(\bar{J})`,
-    see Eq. :eq:`nearlyincompressible-volumetric`. Its first and second derivatives
+    see :class:`~felupe.VolumetricStrainEnergy`. Its first and second derivatives
     w.r.t. the volume ratio are abbreviated by :math:`\bar{U}'=U'(\bar{J})` and
     :math:`\bar{U}''=U''(\bar{J})`. The variations of the total potential energy are
     given in Eq. :eq:`nearlyinc-variations`
@@ -158,66 +182,9 @@ class SolidBodyNearlyIncompressible(Solid):
 
 
     The volumetric part of the strain energy density function is selected by
-    ``volumetric_kind``. The built-in kinds are quadratic in the Seth-Hill strain
-    :math:`E_m = (\bar{\lambda}^m - 1) / m` of order :math:`m` of the volumetric
-    stretch :math:`\bar{\lambda} = \bar{J}^{1/3}`, see Eq.
-    :eq:`nearlyincompressible-volumetric`, with :math:`m=3` for ``"volume-ratio"``,
-    :math:`m=1` for ``"stretch"`` and the limit :math:`m \rightarrow 0` for
-    ``"log"``.
-
-    ..  math::
-        :label: nearlyincompressible-volumetric
-
-        U(\bar{J}) = \frac{9K}{2} E_m^2
-            = \frac{9K}{2 m^2} \left( \bar{J}^{m/3} - 1 \right)^2
-
-    For all kinds, the second derivative at the undeformed configuration is the bulk
-    modulus, :math:`U''(1)=K`. The volumetric part and its first and second derivatives
-    are given in Eq. :eq:`nearlyincompressible-volumetric-volume-ratio` for
-    ``volumetric_kind="volume-ratio"`` (default),
-
-    ..  math::
-        :label: nearlyincompressible-volumetric-volume-ratio
-
-        U(\bar{J}) &= \frac{K}{2} \left( \bar{J} - 1 \right)^2
-
-        U'(\bar{J}) &= K \left( \bar{J} - 1 \right)
-
-        U''(\bar{J}) &= K
-
-    in Eq. :eq:`nearlyincompressible-volumetric-stretch` for
-    ``volumetric_kind="stretch"``
-
-    ..  math::
-        :label: nearlyincompressible-volumetric-stretch
-
-        U(\bar{J}) &= \frac{9K}{2} \left( \bar{J}^{1/3} - 1 \right)^2
-
-        U'(\bar{J}) &= 3K\ \frac{\bar{J}^{1/3} - 1}{\bar{J}^{2/3}}
-
-        U''(\bar{J}) &= K\ \frac{2 - \bar{J}^{1/3}}{\bar{J}^{5/3}}
-
-    and in Eq. :eq:`nearlyincompressible-volumetric-log` for
-    ``volumetric_kind="log"``.
-
-    ..  math::
-        :label: nearlyincompressible-volumetric-log
-
-        U(\bar{J}) &= \frac{K}{2} \ln \left( \bar{J} \right)^2
-
-        U'(\bar{J}) &= K\ \frac{\ln \left( \bar{J} \right)}{\bar{J}}
-
-        U''(\bar{J}) &= K\ \frac{1 - \ln \left( \bar{J} \right)}{\bar{J}^2}
-
-    The kinds are evaluated by these expressions of the volume ratio, i.e. not by the
-    general form, which is singular for :math:`m=0`. The smaller the order :math:`m`,
-    the stiffer is the volumetric response in compression and the softer in tension.
-    The pressure :math:`p=U'(\bar{J})` is unbounded for :math:`\bar{J} \rightarrow 0`
-    for the kinds ``"stretch"`` and ``"log"``. In tension, the pressure of these kinds
-    is bounded by :math:`3K/4` at :math:`\bar{J}=8` and by :math:`K/e` at
-    :math:`\bar{J}=e`, where their second derivatives change their sign.
-
-    For ``volumetric_kind="custom"``, the first and second derivatives are given by the
+    ``volumetric_kind``, see :class:`~felupe.VolumetricStrainEnergy` for the kinds
+    ``"volume-ratio"`` (default), ``"stretch"`` and ``"log"``. For
+    ``volumetric_kind="custom"``, its first and second derivatives are given by the
     callables ``volumetric_gradient`` and ``volumetric_hessian``. The undeformed
     configuration is free of stress only if :math:`U'(1)=0`, and a positive second
     derivative :math:`U''(\bar{J})>0` is required for a stable volumetric response.
@@ -426,11 +393,9 @@ class SolidBodyNearlyIncompressible(Solid):
     ):
         self.umat = umat
         self.field = field
-        self.bulk = bulk
         self.density = density
 
-        # gradient U'(J) and hessian U''(J) of
-        # volumetric strain energy density function U(J)
+        # volumetric part of the strain energy density function U(J)
         self.volumetric_kind = volumetric_kind
         self.volumetric_gradient = volumetric_gradient
         self.volumetric_hessian = volumetric_hessian
@@ -457,21 +422,12 @@ class SolidBodyNearlyIncompressible(Solid):
                 "e.g. bulk=5000."
             )
 
-        _dUdJ_dict = {
-            "custom": volumetric_gradient,
-            "volume-ratio": lambda J: self.bulk * (J - 1),
-            "stretch": lambda J: 3 * self.bulk * (np.cbrt(J) - 1) / np.cbrt(J) ** 2,
-            "log": lambda J: self.bulk * np.log(J) / J,
-        }
-        _d2UdJdJ_dict = {
-            "custom": volumetric_hessian,
-            "volume-ratio": lambda J: self.bulk,
-            "stretch": lambda J: self.bulk * (2 - np.cbrt(J)) / np.cbrt(J) ** 5,
-            "log": lambda J: self.bulk * (1 - np.log(J)) / (J**2),
-        }
-
-        self.dUdJ = _dUdJ_dict[self.volumetric_kind]
-        self.d2UdJdJ = _d2UdJdJ_dict[self.volumetric_kind]
+        if volumetric_kind == "custom":
+            self.volumetric = _VolumetricStrainEnergyDerivatives(
+                dUdJ=volumetric_gradient, d2UdJdJ=volumetric_hessian, bulk=bulk
+            )
+        else:
+            self.volumetric = VolumetricStrainEnergy(bulk=bulk, kind=volumetric_kind)
 
         self._area_change = AreaChange()
         self._form = IntegralForm
@@ -519,6 +475,15 @@ class SolidBodyNearlyIncompressible(Solid):
             cauchy_stress=self._cauchy_stress,
             kirchhoff_stress=self._kirchhoff_stress,
         )
+
+    @property
+    def bulk(self):
+        "The bulk modulus of the volumetric part of the strain energy density function."
+        return self.volumetric.bulk
+
+    @bulk.setter
+    def bulk(self, value):
+        self.volumetric.bulk = value
 
     def checkpoint(self):
         """Return a checkpoint of the nearly-incompressible solid body.
@@ -631,7 +596,7 @@ class SolidBodyNearlyIncompressible(Solid):
         else:
             state.u[:] = self.field[0].values
             state.J[:] = state.volume() / self.V
-            state.p[:] = self.dUdJ(state.J)
+            state.p[:] = self.volumetric.dUdJ(state.J)
 
         if restore_statevars:
             self.results.statevars[:] = checkpoint["results.statevars"]
@@ -733,7 +698,7 @@ class SolidBodyNearlyIncompressible(Solid):
         v = self.results.state.volume()
         p = self.results.state.p
 
-        constraint = np.multiply(h, self.dUdJ(v / self.V) - p, out=h)
+        constraint = np.multiply(h, self.volumetric.dUdJ(v / self.V) - p, out=h)
 
         self.results.force_values = form.integrate(
             parallel=parallel, out=self.results.force_values
@@ -769,7 +734,7 @@ class SolidBodyNearlyIncompressible(Solid):
             parallel=parallel, out=self.results._force_values
         )
         H = dya(h, h, out=self.results._stiffness_values)
-        bulk_H = np.multiply(H, self.d2UdJdJ(self.results.state.J), out=H)
+        bulk_H = np.multiply(H, self.volumetric.d2UdJdJ(self.results.state.J), out=H)
         constraint = np.divide(bulk_H, self.V, out=bulk_H)
 
         self.results.stiffness_values = form.integrate(
@@ -804,7 +769,7 @@ class SolidBodyNearlyIncompressible(Solid):
 
         # update state variables
         self.results.state.J[:] = (ddot(du, h, mode=(2, 2)) + v) / self.V
-        self.results.state.p[:] = self.dUdJ(self.results.state.J)
+        self.results.state.p[:] = self.volumetric.dUdJ(self.results.state.J)
         self.results.state.u[:] = u
 
         return self.results.kinematics

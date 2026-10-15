@@ -1052,6 +1052,65 @@ def test_plot_title_kwargs(close_figs=True):
         plt.close(ax.get_figure())
 
 
+def test_volumetric_strain_energy():
+    "The volumetric strain energies and their derivatives w.r.t. the volume ratio."
+
+    bulk = 5.0
+    J = np.linspace(0.5, 3.0, 11)
+    eps = 1e-6
+
+    for kind in ["volume-ratio", "stretch", "log"]:
+        U = fem.VolumetricStrainEnergy(bulk=bulk, kind=kind)
+        assert U.kind == kind
+
+        # stress-free undeformed configuration with the bulk modulus as stiffness
+        assert np.isclose(U(1.0), 0)
+        assert np.isclose(U.dUdJ(1.0), 0)
+        assert np.isclose(U.d2UdJdJ(1.0), bulk)
+
+        # derivatives by central differences
+        dUdJ = (U(J + eps) - U(J - eps)) / (2 * eps)
+        d2UdJdJ = (U.dUdJ(J + eps) - U.dUdJ(J - eps)) / (2 * eps)
+
+        assert np.allclose(U.dUdJ(J), dUdJ)
+        assert np.allclose(U.d2UdJdJ(J), d2UdJdJ)
+
+    # the kinds are quadratic in the Seth-Hill strains of the volumetric stretch
+    stretch = np.cbrt(J)
+    strains = {
+        "volume-ratio": (stretch**3 - 1) / 3,
+        "stretch": stretch - 1,
+        "log": np.log(stretch),
+    }
+
+    for kind, strain in strains.items():
+        U = fem.VolumetricStrainEnergy(bulk=bulk, kind=kind)
+        assert np.allclose(U(J), 9 * bulk / 2 * strain**2)
+
+    # maximum of the first derivative in tension
+    U = fem.VolumetricStrainEnergy(bulk=bulk, kind="stretch")
+    assert np.isclose(U.dUdJ(8.0), 3 * bulk / 4)
+    assert np.isclose(U.d2UdJdJ(8.0), 0)
+
+    U = fem.VolumetricStrainEnergy(bulk=bulk, kind="log")
+    assert np.isclose(U.dUdJ(np.e), bulk / np.e)
+    assert np.isclose(U.d2UdJdJ(np.e), 0)
+
+    # the cubic root is real-valued for (linearized) negative volume ratios
+    U = fem.VolumetricStrainEnergy(bulk=bulk, kind="stretch")
+    for fun in [U, U.dUdJ, U.d2UdJdJ]:
+        assert np.all(np.isfinite(fun(np.array([-0.5, -0.1]))))
+
+    # the default kind and missing or unknown arguments
+    assert fem.VolumetricStrainEnergy(bulk=bulk).kind == "volume-ratio"
+
+    with pytest.raises(ValueError, match="bulk"):
+        fem.VolumetricStrainEnergy(bulk=None, kind="stretch")
+
+    with pytest.raises(ValueError, match="Unknown"):
+        fem.VolumetricStrainEnergy(bulk=bulk, kind="linear")
+
+
 if __name__ == "__main__":
     close_figs = True
 
@@ -1082,3 +1141,4 @@ if __name__ == "__main__":
     test_laplace()
     test_plot_negative_stretches(close_figs=True)
     test_plot_title_kwargs(close_figs=True)
+    test_volumetric_strain_energy()

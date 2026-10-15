@@ -20,6 +20,7 @@ This page contains tools and helpers for constitutive material formulations.
 
    CompositeMaterial
    Volumetric
+   VolumetricStrainEnergy
    LineChange
    AreaChange
    VolumeChange
@@ -49,6 +50,11 @@ This page contains tools and helpers for constitutive material formulations.
    :inherited-members:
 
 .. autoclass:: felupe.Volumetric
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.VolumetricStrainEnergy
    :members:
    :undoc-members:
    :inherited-members:

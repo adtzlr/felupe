@@ -5,7 +5,13 @@ from ._kinematics import AreaChange, LineChange, VolumeChange
 from ._material import Material
 from ._mixed import NearlyIncompressible, ThirdMediumContactMixed, ThreeFieldVariation
 from ._view import ViewMaterial, ViewMaterialIncompressible
-from .hyperelasticity import NeoHooke, NeoHookeCompressible, OgdenRoxburgh, Volumetric
+from .hyperelasticity import (
+    NeoHooke,
+    NeoHookeCompressible,
+    OgdenRoxburgh,
+    Volumetric,
+    VolumetricStrainEnergy,
+)
 from .linear_elasticity import (
     LinearElastic,
     LinearElastic1D,
@@ -57,6 +63,7 @@ __all__ = [
     "constitutive_material",
     "CompositeMaterial",
     "Volumetric",
+    "VolumetricStrainEnergy",
     "ThirdMediumContactMixed",
 ]
 try:

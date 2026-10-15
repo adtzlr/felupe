@@ -513,8 +513,15 @@ def test_solidbody_incompressible_volumetric_errors():
         volumetric_gradient=lambda J: 0 * J,
         volumetric_hessian=lambda J: 0 * J,
     )
-    assert np.isclose(solid.dUdJ(2.0), 5000)
-    assert np.isclose(solid.d2UdJdJ(2.0), 5000)
+    assert isinstance(solid.volumetric, fem.VolumetricStrainEnergy)
+    assert solid.volumetric.kind == "volume-ratio"
+    assert np.isclose(solid.volumetric.dUdJ(2.0), 5000)
+    assert np.isclose(solid.volumetric.d2UdJdJ(2.0), 5000)
+
+    # the bulk modulus is the one of the volumetric part
+    solid.bulk = 100
+    assert solid.volumetric.bulk == 100
+    assert np.isclose(solid.volumetric.dUdJ(2.0), 100)
 
     # the bulk modulus is ignored for the custom kind
     U, dUdJ, d2UdJdJ = volumetric_functions(5000)["log"]
@@ -526,37 +533,12 @@ def test_solidbody_incompressible_volumetric_errors():
         volumetric_gradient=dUdJ,
         volumetric_hessian=d2UdJdJ,
     )
-    assert np.isclose(solid.dUdJ(2.0), dUdJ(2.0))
-    assert np.isclose(solid.d2UdJdJ(2.0), d2UdJdJ(2.0))
+    assert np.isclose(solid.volumetric.dUdJ(2.0), dUdJ(2.0))
+    assert np.isclose(solid.volumetric.d2UdJdJ(2.0), d2UdJdJ(2.0))
 
-
-def test_solidbody_incompressible_volumetric_kinds():
-    "The derivatives of the built-in kinds at characteristic volume ratios."
-
-    bulk = 5.0
-    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(fem.Cube(n=2)), dim=3)])
-    solids = {
-        kind: fem.SolidBodyNearlyIncompressible(
-            fem.NeoHooke(mu=1), field, bulk=bulk, volumetric_kind=kind
-        )
-        for kind in ["volume-ratio", "stretch", "log"]
-    }
-
-    # stress-free undeformed configuration with the bulk modulus as stiffness
-    for solid in solids.values():
-        assert np.isclose(solid.dUdJ(1.0), 0)
-        assert np.isclose(solid.d2UdJdJ(1.0), bulk)
-
-    # maximum pressure in tension
-    assert np.isclose(solids["stretch"].dUdJ(8.0), 3 * bulk / 4)
-    assert np.isclose(solids["stretch"].d2UdJdJ(8.0), 0)
-    assert np.isclose(solids["log"].dUdJ(np.e), bulk / np.e)
-    assert np.isclose(solids["log"].d2UdJdJ(np.e), 0)
-
-    # the cubic root of the stretch is real for (linearized) negative volume ratios
-    J = np.array([-0.5, 0.5, 2.0])
-    assert np.all(np.isfinite(solids["stretch"].dUdJ(J)))
-    assert np.all(np.isfinite(solids["stretch"].d2UdJdJ(J)))
+    # only the derivatives of the custom kind are given
+    with pytest.raises(NotImplementedError):
+        solid.volumetric.function(2.0)
 
 
 def test_solidbody_incompressible_volumetric_restore_revolve():
@@ -601,8 +583,8 @@ def test_solidbody_incompressible_volumetric_restore_revolve():
             assert getattr(new_solid, key) is getattr(solid, key)
 
         J = new_solid.results.state.J
-        assert np.allclose(new_solid.dUdJ(J), dUdJ(J))
-        assert np.allclose(new_solid.d2UdJdJ(J), d2UdJdJ(J))
+        assert np.allclose(new_solid.volumetric.dUdJ(J), dUdJ(J))
+        assert np.allclose(new_solid.volumetric.d2UdJdJ(J), d2UdJdJ(J))
 
 
 def test_solidbody_axi():
@@ -1347,7 +1329,6 @@ if __name__ == "__main__":
     test_solidbody_incompressible_volumetric_potential()
     test_solidbody_incompressible_volumetric_custom()
     test_solidbody_incompressible_volumetric_errors()
-    test_solidbody_incompressible_volumetric_kinds()
     test_solidbody_incompressible_volumetric_restore_revolve()
     test_solidbody_axi()
     test_solidbody_axi_incompressible()

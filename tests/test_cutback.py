@@ -577,6 +577,7 @@ def test_cutback_defaults():
         fem.NewtonConvergenceError,
         ArithmeticError,
         np.linalg.LinAlgError,
+        RuntimeError,
     )
 
 
@@ -706,12 +707,38 @@ def test_cutback_exceptions():
         np.linalg.LinAlgError,
         FloatingPointError,
         ZeroDivisionError,
+        RuntimeError,
     ]:
         cutback = fem.CutbackPlugin()
         failing = FailingNewton(calls=[1], error=error)
         run(ramp, plugins=[failing, cutback])
 
         assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+
+    # programming errors (subclasses of RuntimeError) are raised without a cutback
+    for error in [NotImplementedError, RecursionError]:
+        cutback = fem.CutbackPlugin()
+        failing = FailingNewton(calls=[1], error=error)
+
+        with pytest.raises(error, match="Injected failure"):
+            run(ramp, plugins=[failing, cutback])
+
+        assert cutback.load_factors == [[1.0], []]
+
+        # unless they are given explicitly
+        cutback = fem.CutbackPlugin(exceptions=error)
+        failing = FailingNewton(calls=[1], error=error)
+        run(ramp, plugins=[failing, cutback])
+
+        assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+
+    # a programming error of a later attempt of the cutback is raised
+    cutback = fem.CutbackPlugin()
+    failing = FailingNewton(calls=[1, 2], error=RuntimeError)
+    failing_later = FailingNewton(calls=[3], error=NotImplementedError)
+
+    with pytest.raises(NotImplementedError, match="Injected failure"):
+        run(ramp, plugins=[failing, failing_later, cutback])
 
 
 def test_cutback_recovered_by_other_plugin():

@@ -577,6 +577,7 @@ def test_cutback_defaults():
         fem.NewtonConvergenceError,
         ArithmeticError,
         np.linalg.LinAlgError,
+        RuntimeError,
     )
 
 
@@ -706,12 +707,72 @@ def test_cutback_exceptions():
         np.linalg.LinAlgError,
         FloatingPointError,
         ZeroDivisionError,
+        RuntimeError,
     ]:
         cutback = fem.CutbackPlugin()
         failing = FailingNewton(calls=[1], error=error)
         run(ramp, plugins=[failing, cutback])
 
         assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+
+    # programming errors (subclasses of RuntimeError) are raised without a cutback
+    for error in [NotImplementedError, RecursionError]:
+        cutback = fem.CutbackPlugin()
+        failing = FailingNewton(calls=[1], error=error)
+
+        with pytest.raises(error, match="Injected failure"):
+            run(ramp, plugins=[failing, cutback])
+
+        assert cutback.load_factors == [[1.0], []]
+
+        # unless they are given explicitly
+        cutback = fem.CutbackPlugin(exceptions=error)
+        failing = FailingNewton(calls=[1], error=error)
+        run(ramp, plugins=[failing, cutback])
+
+        assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+
+    # a programming error of a later attempt of the cutback is raised
+    cutback = fem.CutbackPlugin()
+    failing = FailingNewton(calls=[1, 2], error=RuntimeError)
+    failing_later = FailingNewton(calls=[3], error=NotImplementedError)
+
+    with pytest.raises(NotImplementedError, match="Injected failure"):
+        run(ramp, plugins=[failing, failing_later, cutback])
+
+
+def test_cutback_solver_runtime_error():
+    """A runtime error of the sparse solver, e.g. a failed factorization of a nearly
+    singular matrix by SuperLU, leads to a cutback with the default exceptions."""
+
+    class FailingSolver:
+        "A sparse solver which fails in the given (zero-based) calls."
+
+        def __init__(self, calls):
+            self.calls = set(calls)
+            self.count = -1
+            self.solver = fem.solve.SuperLUSolver()
+
+        def __call__(self, A, b):
+            self.count += 1
+            if self.count in self.calls:
+                raise RuntimeError("failed to factorize matrix at line 413")
+            return self.solver(A, b)
+
+    field, boundaries, solid = cube()
+    step = fem.Step(
+        items=[solid],
+        ramp={boundaries["move"]: fem.math.linsteps([0, 0.4], num=1)},
+        boundaries=boundaries,
+    )
+
+    # the first linear solve of the second substep fails
+    solver = FailingSolver(calls=[1])
+    cutback = fem.CutbackPlugin()
+    fem.Job(steps=[step], plugins=[cutback]).evaluate(verbose=0, solver=solver)
+
+    assert cutback.load_factors == [[1.0], [0.5, 1.0]]
+    assert cutback.cutbacks == [0, 1]
 
 
 def test_cutback_recovered_by_other_plugin():

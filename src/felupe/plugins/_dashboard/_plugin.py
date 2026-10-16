@@ -81,11 +81,6 @@ class DashboardPlugin(Plugin):
         all converged substeps without a server (default is None).
     title : str or None, optional
         The title of the dashboard (default is None).
-    history : bool, optional
-        Keep the field values of all converged substeps for the timeline of the
-        viewport (default is False). Otherwise, only the field values of the latest
-        converged substep are kept, i.e. the memory of the dashboard (and the size of
-        a saved file) does not grow with the number of substeps.
 
     Attributes
     ----------
@@ -112,8 +107,8 @@ class DashboardPlugin(Plugin):
         * - Viewport
           - The deformed model (by the first field with ``mesh.dim`` components)
             with banded contours of the norm of a field with values at the points
-            of the mesh, an optional non-converged iteration and a timeline over the
-            converged substeps.
+            of the mesh for the latest converged substep and an optional
+            non-converged iteration.
         * - Load path
           - One cell for each substep, converged, converged with cutbacks (with
             marks at the load factors of its increments) or failed.
@@ -182,7 +177,6 @@ class DashboardPlugin(Plugin):
         open_browser=True,
         filename=None,
         title=None,
-        history=False,
     ):
         self.iterations = bool(iterations)
         self.interval = float(interval)
@@ -191,7 +185,6 @@ class DashboardPlugin(Plugin):
         self.open_browser = open_browser
         self.filename = filename
         self.title = title
-        self.history = bool(history)
 
         self.broadcaster = Broadcaster()
         self.server = None
@@ -250,12 +243,10 @@ class DashboardPlugin(Plugin):
         self._send("frame", slot=slot, kind=kind, values=values, **meta)
 
     def _converged_frame(self, container, kind, **meta):
-        "Publish the values of the initial state or of a converged substep."
-        if self.history:
-            self._frame(container, kind=kind, **meta)
-        else:
-            # replace the values of the previous substep
-            self._frame(container, kind=kind, slot="substep", replace=True, **meta)
+        """Publish the values of the initial state or of a converged substep. Only the
+        values of the latest converged substep are kept, i.e. the memory of the
+        dashboard does not grow with the number of substeps."""
+        self._frame(container, kind=kind, slot="substep", **meta)
 
     def _model(self, job):
         "Publish the geometry and the properties of the model."
@@ -326,7 +317,6 @@ class DashboardPlugin(Plugin):
             quadrature_points_per_cell=None
             if npoints_quadrature is None
             else int(npoints_quadrature),
-            history=self.history,
             fields=info,
             deform=deform,
             steps=steps,

@@ -78,7 +78,7 @@ header.top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
 .main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 12px; }
 .side { display: grid; gap: 12px; align-content: start; }
 
-.viewer { display: grid; grid-template-rows: auto 1fr auto; gap: 8px; padding: 10px; border-radius: 8px; }
+.viewer { display: grid; grid-template-rows: auto 1fr; gap: 8px; padding: 10px; border-radius: 8px; }
 .tools { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13px; }
 .tools label { display: inline-flex; gap: 6px; align-items: center; color: var(--ink-2); }
 .tools select, .tools input[type="number"] {
@@ -102,10 +102,6 @@ header.top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
 #view.dragging { cursor: grabbing; }
 .empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-3); text-align: center; padding: 20px; }
 
-.timeline { display: flex; gap: 12px; align-items: center; font-size: 13px; color: var(--ink-2); }
-.timeline input[type="range"] { flex: 1; accent-color: var(--line); }
-.timeline label { white-space: nowrap; }
-.timeline .frame { min-width: 16ch; text-align: right; margin-left: auto; }
 
 dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: 13px; }
 dl.kv dt { color: var(--ink-2); }
@@ -201,11 +197,6 @@ dl.kv .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: 
       <div class="stage">
         <canvas id="view" aria-label="Viewport. Drag to rotate, shift-drag or right-drag to pan, scroll to zoom, double-click to fit."></canvas>
         <div class="empty" id="empty">The model appears here once the job starts.</div>
-      </div>
-      <div class="timeline">
-        <label id="followLabel"><input id="follow" type="checkbox" checked> Follow the job</label>
-        <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Converged substep shown in the viewport">
-        <span class="frame" id="frameLabel">Initial state</span>
       </div>
     </section>
 
@@ -325,7 +316,7 @@ let S;
 function resetState() {
   S = {
     model: null, status: "waiting", t: 0, tEnd: null, offset: null,
-    frames: [], live: null, lastSubstepSeq: -1,
+    frame: null, live: null, lastSubstepSeq: -1,
     iters: [], substeps: [], current: null, steps: [],
     dofs: null, matrix: null, tol: null, memory: null, overhead: 0,
     timing: { assembly: 0, solve: 0, residual: 0, wall: 0 },
@@ -340,7 +331,7 @@ const dirty = {
 
 const ui = {
   field: null, scale: 1, range: "frame", bands: 12, cmap: "turbo", edges: true, ghost: false,
-  iters: false, follow: true, frame: 0, res: "recent", sub: "iterations",
+  iters: false, res: "recent", sub: "iterations",
 };
 
 // ------------------------------------------------------------------- events
@@ -467,9 +458,6 @@ function onModel(m) {
   sel.value = ui.field;
   $("iters").disabled = !m.iterations;
   $("scale").disabled = m.deform < 0;
-  $("followLabel").hidden = !m.history;
-  $("scrub").hidden = !m.history;
-  if (!m.history) { ui.follow = true; $("follow").checked = true; }
   $("ghost").disabled = m.deform < 0;
   $("iterLabel").title = m.iterations ? "Show the latest non-converged iteration while a substep runs"
     : "Start the plugin with DashboardPlugin(iterations=True) to stream the iterations";
@@ -493,19 +481,15 @@ function onFrame(m) {
     if (m.seq > S.lastSubstepSeq) { S.live = fr; dirty.view = true; }
     return;
   }
-  // ranges over the whole job (converged frames only)
+  // ranges over the whole job (converged substeps only)
   for (const fd of M.fields) {
     if (!fd.display || !values[fd.index]) continue;
     const r = S.ranges[fd.index] || (S.ranges[fd.index] = [Infinity, -Infinity]);
     const [a, b] = scalarRange(values[fd.index], fd.dim, M.npoints);
     r[0] = Math.min(r[0], a); r[1] = Math.max(r[1], b);
   }
-  // only the latest converged substep is kept without a history
-  if (m.replace) S.frames = [fr];
-  else S.frames.push(fr);
-  const scrub = $("scrub");
-  scrub.max = S.frames.length - 1;
-  if (ui.follow) { ui.frame = S.frames.length - 1; scrub.value = ui.frame; }
+  // only the latest converged substep is kept
+  S.frame = fr;
   dirty.view = true;
 }
 
@@ -544,8 +528,8 @@ function setView(name) {
 }
 
 function currentFrame() {
-  if (ui.iters && S.live && (ui.follow || S.status === "running")) return S.live;
-  return S.frames[Math.min(ui.frame, S.frames.length - 1)] || null;
+  if (ui.iters && S.live) return S.live;
+  return S.frame;
 }
 
 const shadeCache = new Map();
@@ -1146,16 +1130,6 @@ function updateLog() {
 }
 const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-function updateTimeline() {
-  const fr = currentFrame();
-  let text = "Initial state";
-  if (fr && fr.kind === "substep") text = S.model && S.model.history
-    ? `Substep ${fr.step + 1}.${fr.substep + 1}, frame ${ui.frame + 1} of ${S.frames.length}`
-    : `Latest converged substep ${fr.step + 1}.${fr.substep + 1}`;
-  if (fr && fr.kind === "iteration") text = `Live iteration ${fr.iteration + 1}`;
-  $("frameLabel").textContent = text;
-}
-
 // ------------------------------------------------------------------- loop
 
 let lastPanels = 0;
@@ -1166,7 +1140,7 @@ function loop(now) {
     S.clock = S.tEnd !== null ? S.tEnd : S.t;
   }
   $("clock").textContent = clock(S.clock || 0);
-  if (dirty.view) { dirty.view = false; drawViewport(); updateTimeline(); }
+  if (dirty.view) { dirty.view = false; drawViewport(); }
   if (now - lastPanels > 120) {
     lastPanels = now;
     if (dirty.panels) { dirty.panels = false; updatePanels(); }
@@ -1188,17 +1162,6 @@ function bind() {
   $("edges").addEventListener("change", (e) => { ui.edges = e.target.checked; dirty.view = true; });
   $("ghost").addEventListener("change", (e) => { ui.ghost = e.target.checked; dirty.view = true; });
   $("iters").addEventListener("change", (e) => { ui.iters = e.target.checked; dirty.view = true; });
-  $("follow").addEventListener("change", (e) => {
-    ui.follow = e.target.checked;
-    if (ui.follow) { ui.frame = S.frames.length - 1; $("scrub").value = ui.frame; }
-    dirty.view = true;
-  });
-  $("scrub").addEventListener("input", (e) => {
-    ui.frame = Number(e.target.value);
-    ui.follow = ui.frame === S.frames.length - 1;
-    $("follow").checked = ui.follow;
-    dirty.view = true;
-  });
   document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
     if (b.dataset.view === "fit") { V.zoom = 1; V.panx = 0; V.pany = 0; dirty.view = true; }
     else setView(b.dataset.view);

@@ -37,9 +37,7 @@ def test_dashboard_job(tmp_path):
     ]
 
     filename = tmp_path / "job.html"
-    dashboard = fem.DashboardPlugin(
-        open_browser=False, filename=filename, title="T", history=True
-    )
+    dashboard = fem.DashboardPlugin(open_browser=False, filename=filename, title="T")
     assert not callable(dashboard)
 
     fem.Job(steps=steps, plugins=[dashboard]).evaluate(verbose=0)
@@ -56,14 +54,16 @@ def test_dashboard_job(tmp_path):
         assert model["element"] == "Hexahedron"
         assert model["quadrature"] == "GaussLegendre"
         assert model["quadrature_points_per_cell"] == 8
-        assert model["history"]
 
         substeps = events(dashboard, "substep_end")
         assert len(substeps) == 6
         assert all(e["failures"] == 0 for e in substeps)
 
-        frames = events(dashboard, "frame")
-        assert [f["kind"] for f in frames] == ["initial"] + 6 * ["substep"]
+        # only the values of the latest converged substep are kept
+        assert not events(dashboard, "frame")
+        assert list(dashboard.broadcaster.slots) == ["substep"]
+        frame = json.loads(dashboard.broadcaster.slots["substep"][1])
+        assert (frame["kind"], frame["step"], frame["substep"]) == ("substep", 1, 2)
 
         dofs = events(dashboard, "dofs")[0]
         assert dofs["active"] + dofs["prescribed"] == model["ndof"]
@@ -78,16 +78,15 @@ def test_dashboard_job(tmp_path):
         end = events(dashboard, "job_end")[0]
         assert end["status"] == "finished"
 
-        # the values of the last frame are the values of the field
-        values = np.frombuffer(
-            base64.b64decode(frames[-1]["values"]["0"]), dtype=np.float32
-        )
+        # the values of the frame are the values of the field
+        values = np.frombuffer(base64.b64decode(frame["values"]["0"]), dtype=np.float32)
         assert np.allclose(values, field[0].values.ravel(), atol=1e-6)
 
         # the self-contained file replays all events
         page = filename.read_text(encoding="utf-8")
         assert "window.FELUPE_EVENTS" in page
         assert page.count('"type":"substep_end"') == 6
+        assert page.count('"type":"frame"') == 1
 
         # the page and the events are served
         with urllib.request.urlopen(dashboard.url, timeout=5) as response:
@@ -146,25 +145,21 @@ def test_dashboard_cutback(first):
     assert "iteration" in dashboard.broadcaster.slots
 
 
-def test_dashboard_latest_substep_only(tmp_path):
-    "Without a history, only the values of the latest converged substep are kept."
+def test_dashboard_events_of_a_client():
+    "A client receives the event log and the latest message of each slot."
 
     field, boundaries, solid = block()
     move = fem.math.linsteps([0, -0.2], num=4)
     step = fem.Step(
         items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
     )
-    filename = tmp_path / "job.html"
-    dashboard = fem.DashboardPlugin(open_browser=False, filename=filename)
+    dashboard = fem.DashboardPlugin(open_browser=False)
 
     try:
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
-        # the events of a client: the history and the latest message of each slot
         with urllib.request.urlopen(dashboard.url + "events", timeout=5) as response:
             lines = []
-            while not lines or lines[-1] != b"\n":
-                lines.append(response.readline())
             while True:
                 line = response.readline()
                 lines.append(line)
@@ -173,23 +168,11 @@ def test_dashboard_latest_substep_only(tmp_path):
     finally:
         dashboard.close()
 
-    assert not events(dashboard, "frame")
-    assert not events(dashboard, "model")[0]["history"]
-    assert list(dashboard.broadcaster.slots) == ["substep"]
-
-    frame = json.loads(dashboard.broadcaster.slots["substep"][1])
-    assert frame["replace"]
-    assert frame["substep"] == 4
-
-    values = np.frombuffer(base64.b64decode(frame["values"]["0"]), dtype=np.float32)
-    assert np.allclose(values, field[0].values.ravel(), atol=1e-6)
-
     received = [json.loads(line[6:]) for line in lines if line.startswith(b"data: ")]
-    assert sum(m["type"] == "frame" for m in received) == 1
-
-    # the saved file contains the latest converged substep
-    page = filename.read_text(encoding="utf-8")
-    assert page.count('"type":"frame"') == 1
+    frames = [m for m in received if m["type"] == "frame"]
+    assert len(frames) == 1
+    assert frames[0]["substep"] == 4
+    assert received[0]["type"] == "model"
 
 
 def test_dashboard_failed_job():

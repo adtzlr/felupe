@@ -4,7 +4,7 @@
 
 import numpy as np
 
-# local faces (VTK ordering) of the corner nodes of three-dimensional cells
+# local faces (VTK ordering) of the corner points of three-dimensional cells
 FACES = {
     "hexahedron": [
         [0, 3, 2, 1],
@@ -19,7 +19,7 @@ FACES = {
     "pyramid": [[0, 3, 2, 1], [0, 1, 4], [1, 2, 4], [2, 3, 4], [3, 0, 4]],
 }
 
-# number of corner nodes of the cells, higher-order cells are drawn by their corners
+# number of corner points of the cells, higher-order cells are drawn by their corners
 CORNERS = {
     "hexahedron": ("hexahedron", 8),
     "hexahedron20": ("hexahedron", 8),

@@ -9,64 +9,66 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 class Broadcaster:
     """A thread-safe log of events for all connected clients.
 
-    Persistent events are kept in a history and every client receives all of them
-    (also clients which connect late). A transient event, e.g. the field values of a
-    non-converged iteration, is kept in a single slot and replaced by the next one.
-    Slow clients only receive the latest transient event.
+    Events are kept in a history and every client receives all of them (also clients
+    which connect late). An event of a slot, e.g. the field values of the latest
+    substep or of a non-converged iteration, replaces the previous event of the same
+    slot. Hence, the memory of the slots does not grow during a job and slow clients
+    only receive the latest event of a slot.
     """
 
     def __init__(self):
         self._cond = threading.Condition()
         self.history = []
-        self._transient = (0, None)
+        self.slots = {}
         self._version = 0
         self._generation = 0
 
-    def publish(self, message, transient=False):
+    def publish(self, message, slot=None):
+        "Publish a message, optionally in a slot which replaces its previous message."
         with self._cond:
-            if transient:
-                self._version += 1
-                self._transient = (self._version, message)
-            else:
+            if slot is None:
                 self.history.append(message)
+            else:
+                self._version += 1
+                self.slots[slot] = (self._version, message)
             self._cond.notify_all()
 
     def reset(self):
-        "Clear the history, e.g. on a repeated evaluation of a job."
+        "Clear the history and the slots, e.g. on a repeated evaluation of a job."
         with self._cond:
             self.history = []
-            self._transient = (0, None)
+            self.slots = {}
             self._generation += 1
             self._cond.notify_all()
 
     def stream(self, write, heartbeat=15.0):
         "Write all events to a client until the connection is closed."
         cursor = 0
-        version = 0
+        versions = {}
         generation = self._generation
+
+        def changed():
+            return (
+                len(self.history) > cursor
+                or self._generation != generation
+                or any(v > versions.get(k, 0) for k, (v, _) in self.slots.items())
+            )
 
         while True:
             with self._cond:
-                self._cond.wait_for(
-                    lambda: (
-                        len(self.history) > cursor
-                        or self._transient[0] > version
-                        or self._generation != generation
-                    ),
-                    timeout=heartbeat,
-                )
+                self._cond.wait_for(changed, timeout=heartbeat)
+                pending = []
                 if self._generation != generation:
                     generation = self._generation
                     cursor = 0
-                    version = 0
-                    pending = ['{"type":"reset"}']
-                else:
-                    pending = []
+                    versions = {}
+                    pending.append('{"type":"reset"}')
                 pending += self.history[cursor:]
                 cursor = len(self.history)
-                if self._transient[0] > version:
-                    version, message = self._transient
-                    pending.append(message)
+                for key, (version, message) in self.slots.items():
+                    if version > versions.get(key, 0):
+                        versions[key] = version
+                        pending.append(message)
 
             if pending:
                 write("".join(f"data: {m}\n\n" for m in pending))

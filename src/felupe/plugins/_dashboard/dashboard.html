@@ -105,7 +105,7 @@ header.top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
 .timeline { display: flex; gap: 12px; align-items: center; font-size: 13px; color: var(--ink-2); }
 .timeline input[type="range"] { flex: 1; accent-color: var(--line); }
 .timeline label { white-space: nowrap; }
-.timeline .frame { min-width: 16ch; text-align: right; }
+.timeline .frame { min-width: 16ch; text-align: right; margin-left: auto; }
 
 dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: 13px; }
 dl.kv dt { color: var(--ink-2); }
@@ -172,7 +172,7 @@ dl.kv .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: 
       <span class="where" id="where">No substep started yet</span>
       <div class="path-key">
         <span><i style="background:var(--ok)"></i>Converged</span>
-        <span><i style="background:var(--amber)"></i>Converged after cutback, marks show the increments</span>
+        <span><i style="background:var(--amber)"></i>Converged with cutbacks</span>
         <span><i style="background:var(--fail)"></i>Failed</span>
       </div>
     </div>
@@ -203,7 +203,7 @@ dl.kv .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: 
         <div class="empty" id="empty">The model appears here once the job starts.</div>
       </div>
       <div class="timeline">
-        <label><input id="follow" type="checkbox" checked> Follow the job</label>
+        <label id="followLabel"><input id="follow" type="checkbox" checked> Follow the job</label>
         <input id="scrub" type="range" min="0" max="0" value="0" aria-label="Converged substep shown in the viewport">
         <span class="frame" id="frameLabel">Initial state</span>
       </div>
@@ -467,6 +467,9 @@ function onModel(m) {
   sel.value = ui.field;
   $("iters").disabled = !m.iterations;
   $("scale").disabled = m.deform < 0;
+  $("followLabel").hidden = !m.history;
+  $("scrub").hidden = !m.history;
+  if (!m.history) { ui.follow = true; $("follow").checked = true; }
   $("ghost").disabled = m.deform < 0;
   $("iterLabel").title = m.iterations ? "Show the latest non-converged iteration while a substep runs"
     : "Start the plugin with DashboardPlugin(iterations=True) to stream the iterations";
@@ -497,7 +500,8 @@ function onFrame(m) {
     const [a, b] = scalarRange(values[fd.index], fd.dim, M.npoints);
     r[0] = Math.min(r[0], a); r[1] = Math.max(r[1], b);
   }
-  if (m.replace && S.frames.length > 1) S.frames[S.frames.length - 1] = fr;
+  // only the latest converged substep is kept without a history
+  if (m.replace) S.frames = [fr];
   else S.frames.push(fr);
   const scrub = $("scrub");
   scrub.max = S.frames.length - 1;
@@ -1059,15 +1063,17 @@ function updatePanels() {
   // model
   const dofs = S.dofs || {};
   kv($("model"), [
-    ["Nodes", int(M.npoints), true],
-    ["Elements", int(M.ncells), true],
+    ["Points", int(M.npoints), true],
+    ["Cells", int(M.ncells), true],
     ["Degrees of freedom", int(M.ndof), true],
     "-",
-    ["Element type", `${M.cell_type}, ${M.nodes_per_cell} nodes`],
+    ["Cell type", `${M.cell_type}, ${M.points_per_cell} points`],
     ["Dimension", M.dim],
+    ["Finite element", M.element || "n/a"],
+    ["Quadrature", M.quadrature ? `${M.quadrature}, ${M.quadrature_points_per_cell} points` : "n/a"],
+    ["Quadrature points", M.quadrature_points_per_cell ? int(M.quadrature_points_per_cell * M.ncells) : "n/a"],
     ["Active dofs", int(dofs.active)],
     ["Prescribed dofs", int(dofs.prescribed)],
-    ["Integration points", int(M.quadrature_points)],
     ["Steps", `${M.steps.length} with ${int(M.totalSubsteps)} substeps`],
   ]);
   $("fields").innerHTML = M.fields.map((f) =>
@@ -1143,7 +1149,9 @@ const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "
 function updateTimeline() {
   const fr = currentFrame();
   let text = "Initial state";
-  if (fr && fr.kind === "substep") text = `Substep ${fr.step + 1}.${fr.substep + 1}, frame ${ui.frame + 1} of ${S.frames.length}`;
+  if (fr && fr.kind === "substep") text = S.model && S.model.history
+    ? `Substep ${fr.step + 1}.${fr.substep + 1}, frame ${ui.frame + 1} of ${S.frames.length}`
+    : `Latest converged substep ${fr.step + 1}.${fr.substep + 1}`;
   if (fr && fr.kind === "iteration") text = `Live iteration ${fr.iteration + 1}`;
   $("frameLabel").textContent = text;
 }

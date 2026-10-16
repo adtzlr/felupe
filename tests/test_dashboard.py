@@ -37,7 +37,9 @@ def test_dashboard_job(tmp_path):
     ]
 
     filename = tmp_path / "job.html"
-    dashboard = fem.DashboardPlugin(open_browser=False, filename=filename, title="T")
+    dashboard = fem.DashboardPlugin(
+        open_browser=False, filename=filename, title="T", history=True
+    )
     assert not callable(dashboard)
 
     fem.Job(steps=steps, plugins=[dashboard]).evaluate(verbose=0)
@@ -51,6 +53,10 @@ def test_dashboard_job(tmp_path):
         assert model["fields"][0]["name"] == "Displacement"
         assert model["steps"][0]["items"][0] == dict(kind="SolidBody", umat="NeoHooke")
         assert model["title"] == "T"
+        assert model["element"] == "Hexahedron"
+        assert model["quadrature"] == "GaussLegendre"
+        assert model["quadrature_points_per_cell"] == 8
+        assert model["history"]
 
         substeps = events(dashboard, "substep_end")
         assert len(substeps) == 6
@@ -136,8 +142,54 @@ def test_dashboard_cutback(first):
     ) * [True]
     assert attempts[0]["message"]
 
-    # the transient frame of the last non-converged iteration
-    assert dashboard.broadcaster._transient[0] > 0
+    # the frame of the last non-converged iteration
+    assert "iteration" in dashboard.broadcaster.slots
+
+
+def test_dashboard_latest_substep_only(tmp_path):
+    "Without a history, only the values of the latest converged substep are kept."
+
+    field, boundaries, solid = block()
+    move = fem.math.linsteps([0, -0.2], num=4)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    filename = tmp_path / "job.html"
+    dashboard = fem.DashboardPlugin(open_browser=False, filename=filename)
+
+    try:
+        fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+        # the events of a client: the history and the latest message of each slot
+        with urllib.request.urlopen(dashboard.url + "events", timeout=5) as response:
+            lines = []
+            while not lines or lines[-1] != b"\n":
+                lines.append(response.readline())
+            while True:
+                line = response.readline()
+                lines.append(line)
+                if b'"kind":"substep"' in line:
+                    break
+    finally:
+        dashboard.close()
+
+    assert not events(dashboard, "frame")
+    assert not events(dashboard, "model")[0]["history"]
+    assert list(dashboard.broadcaster.slots) == ["substep"]
+
+    frame = json.loads(dashboard.broadcaster.slots["substep"][1])
+    assert frame["replace"]
+    assert frame["substep"] == 4
+
+    values = np.frombuffer(base64.b64decode(frame["values"]["0"]), dtype=np.float32)
+    assert np.allclose(values, field[0].values.ravel(), atol=1e-6)
+
+    received = [json.loads(line[6:]) for line in lines if line.startswith(b"data: ")]
+    assert sum(m["type"] == "frame" for m in received) == 1
+
+    # the saved file contains the latest converged substep
+    page = filename.read_text(encoding="utf-8")
+    assert page.count('"type":"frame"') == 1
 
 
 def test_dashboard_failed_job():
@@ -146,7 +198,7 @@ def test_dashboard_failed_job():
     step = fem.Step(
         items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
     )
-    dashboard = fem.DashboardPlugin(open_browser=False, frames=False)
+    dashboard = fem.DashboardPlugin(open_browser=False)
 
     try:
         with pytest.raises(fem.NewtonConvergenceError):

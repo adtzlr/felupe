@@ -121,7 +121,7 @@ def test_dashboard_cutback(first):
         items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
     )
 
-    dashboard = fem.DashboardPlugin(open_browser=False, iterations=True, interval=0)
+    dashboard = fem.DashboardPlugin(open_browser=False)
     cutback = fem.CutbackPlugin()
     plugins = [dashboard, cutback] if first else [cutback, dashboard]
 
@@ -141,8 +141,8 @@ def test_dashboard_cutback(first):
     ) * [True]
     assert attempts[0]["message"]
 
-    # the frame of the last non-converged iteration
-    assert "iteration" in dashboard.broadcaster.slots
+    # no field values of the non-converged iterations
+    assert list(dashboard.broadcaster.slots) == ["substep"]
 
 
 def test_dashboard_events_of_a_client():

@@ -11,8 +11,7 @@ class Broadcaster:
 
     Events are kept in a history and every client receives all of them (also clients
     which connect late). An event of a slot, e.g. the field values of the latest
-    substep or of a non-converged iteration, replaces the previous event of the same
-    slot. Hence, the memory of the slots does not grow during a job and slow clients
+    converged substep, replaces the previous event of the same slot. Hence, the memory of the slots does not grow during a job and slow clients
     only receive the latest event of a slot.
     """
 

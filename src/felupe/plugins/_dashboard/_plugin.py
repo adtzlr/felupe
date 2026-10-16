@@ -63,12 +63,6 @@ class DashboardPlugin(Plugin):
 
     Parameters
     ----------
-    iterations : bool, optional
-        Stream the non-converged solutions of the Newton-Raphson iterations to the
-        viewport (default is False). Only the converged substeps are kept.
-    interval : float, optional
-        The minimum time in seconds between two streamed iterations (default is
-        0.1).
     port : int, optional
         The port of the server. With 0, a free port is chosen (default is 0).
     host : str, optional
@@ -107,8 +101,7 @@ class DashboardPlugin(Plugin):
         * - Viewport
           - The deformed model (by the first field with ``mesh.dim`` components)
             with banded contours of the norm of a field with values at the points
-            of the mesh for the latest converged substep and an optional
-            non-converged iteration.
+            of the mesh for the latest converged substep.
         * - Load path
           - One cell for each substep, converged, converged with cutbacks (with
             marks at the load factors of its increments) or failed.
@@ -155,7 +148,7 @@ class DashboardPlugin(Plugin):
             items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
         )
 
-        dashboard = fem.DashboardPlugin(iterations=True, filename="job.html")
+        dashboard = fem.DashboardPlugin(filename="job.html")
         job = fem.Job(steps=[step], plugins=[dashboard, fem.CutbackPlugin()])
         job.evaluate()
 
@@ -170,16 +163,12 @@ class DashboardPlugin(Plugin):
 
     def __init__(
         self,
-        iterations=False,
-        interval=0.1,
         port=0,
         host="127.0.0.1",
         open_browser=True,
         filename=None,
         title=None,
     ):
-        self.iterations = bool(iterations)
-        self.interval = float(interval)
         self.port = int(port)
         self.host = host
         self.open_browser = open_browser
@@ -233,20 +222,16 @@ class DashboardPlugin(Plugin):
             self.server.server_close()
             self.server = None
 
-    def _frame(self, container, kind, slot=None, **meta):
-        "Publish the values of the displayable fields of a field container."
+    def _frame(self, container, kind, **meta):
+        """Publish the values of the displayable fields of the initial state or of a
+        converged substep. Only the values of the latest converged substep are kept,
+        i.e. the memory of the dashboard does not grow with the number of substeps."""
         fields = _fields(container)
         values = {}
         for index in self._display:
             if index < len(fields):
                 values[str(index)] = _b64(fields[index].values, np.float32)
-        self._send("frame", slot=slot, kind=kind, values=values, **meta)
-
-    def _converged_frame(self, container, kind, **meta):
-        """Publish the values of the initial state or of a converged substep. Only the
-        values of the latest converged substep are kept, i.e. the memory of the
-        dashboard does not grow with the number of substeps."""
-        self._frame(container, kind=kind, slot="substep", **meta)
+        self._send("frame", slot="substep", kind=kind, values=values, **meta)
 
     def _model(self, job):
         "Publish the geometry and the properties of the model."
@@ -320,7 +305,6 @@ class DashboardPlugin(Plugin):
             fields=info,
             deform=deform,
             steps=steps,
-            iterations=self.iterations,
             points=_b64(points, np.float32),
             surface=dict(
                 kind=surf["kind"],
@@ -329,7 +313,7 @@ class DashboardPlugin(Plugin):
                 line=_b64(surf["line"], np.uint32),
             ),
         )
-        self._converged_frame(container, kind="initial", step=-1, substep=-1)
+        self._frame(container, kind="initial", step=-1, substep=-1)
 
     def _close_attempt(self, success, message=None):
         "Finish the current attempt of the Newton-Raphson method."
@@ -364,7 +348,6 @@ class DashboardPlugin(Plugin):
         self._attempt_open = False
         self._dofs = None
         self._jac = None
-        self._last_frame = 0.0
         self._last_reason = None
         self.overhead = 0.0
         self._start()
@@ -495,22 +478,6 @@ class DashboardPlugin(Plugin):
             residual=t_residual,
         )
 
-        if self.iterations and not state.success:
-            now = perf_counter()
-            x = getattr(state, "x", None)
-            if hasattr(x, "fields") and now - self._last_frame >= self.interval:
-                self._last_frame = now
-                self._frame(
-                    x,
-                    kind="iteration",
-                    slot="iteration",
-                    step=self._step,
-                    substep=self._substep,
-                    attempt=self._attempt,
-                    iteration=int(state.iteration),
-                    fnorm=_num(state.fnorm),
-                )
-
         self.overhead += perf_counter() - toc
         self._tic = perf_counter()
 
@@ -537,9 +504,7 @@ class DashboardPlugin(Plugin):
         load_factors = getattr(state, "load_factors", None)
         result = context.substep
 
-        self._converged_frame(
-            result.x, kind="substep", step=self._step, substep=self._substep
-        )
+        self._frame(result.x, kind="substep", step=self._step, substep=self._substep)
 
         self._send(
             "substep_end",
@@ -589,7 +554,7 @@ class DashboardPlugin(Plugin):
 
     def save(self, filename):
         """Save a self-contained HTML file of the dashboard, which replays all events
-        without a server (without the values of a non-converged iteration)."""
+        without a server."""
         messages = list(self.broadcaster.history)
         if "substep" in self.broadcaster.slots:
             messages.append(self.broadcaster.slots["substep"][1])

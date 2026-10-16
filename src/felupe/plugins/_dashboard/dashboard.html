@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>FElupe job monitor</title>
+<title>FElupe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet">
@@ -53,7 +53,6 @@ body {
 
 header.top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
 .brand { font-stretch: 112%; font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
-.brand span { font-weight: 400; color: var(--ink-2); font-stretch: 100%; margin-left: 6px; }
 .jobtitle { color: var(--ink-2); font-size: 15px; }
 .statusline { margin-left: auto; display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
 .status { font-weight: 600; font-stretch: 112%; }
@@ -152,7 +151,7 @@ dl.kv .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: 
 <body>
 <div class="page">
   <header class="top">
-    <div class="brand">FElupe<span>job monitor</span></div>
+    <div class="brand">FElupe</div>
     <div class="jobtitle" id="jobTitle"></div>
     <div class="statusline">
       <span class="status" id="status" data-s="waiting">Waiting for the job</span>
@@ -185,7 +184,6 @@ dl.kv .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: 
         <label>Colours <select id="cmap"><option value="turbo">Turbo</option><option value="viridis">Viridis</option><option value="grey">Greys</option></select></label>
         <label><input id="edges" type="checkbox" checked> Mesh lines</label>
         <label><input id="ghost" type="checkbox"> Undeformed</label>
-        <label id="iterLabel"><input id="iters" type="checkbox"> Iterations</label>
         <div class="views" role="group" aria-label="View">
           <button type="button" data-view="fit">Fit</button>
           <button type="button" data-view="xy">xy</button>
@@ -316,7 +314,7 @@ let S;
 function resetState() {
   S = {
     model: null, status: "waiting", t: 0, tEnd: null, offset: null,
-    frame: null, live: null, lastSubstepSeq: -1,
+    frame: null,
     iters: [], substeps: [], current: null, steps: [],
     dofs: null, matrix: null, tol: null, memory: null, overhead: 0,
     timing: { assembly: 0, solve: 0, residual: 0, wall: 0 },
@@ -331,7 +329,7 @@ const dirty = {
 
 const ui = {
   field: null, scale: 1, range: "frame", bands: 12, cmap: "turbo", edges: true, ghost: false,
-  iters: false, res: "recent", sub: "iterations",
+  res: "recent", sub: "iterations",
 };
 
 // ------------------------------------------------------------------- events
@@ -396,7 +394,6 @@ function handle(m) {
       }
       S.timing.wall += m.wall;
       S.memory = m.memory; S.overhead = m.overhead;
-      S.live = null; S.lastSubstepSeq = m.seq;
       dirty.all(); break;
     }
     case "job_end": {
@@ -406,7 +403,7 @@ function handle(m) {
       if (S.current && S.current.status === "running") S.current.status = "failed";
       addLog(m.t, "Job", m.status === "failed" ? `Stopped with an error. ${m.message || ""}` : "All steps converged.",
         m.status === "failed" ? "fail" : "");
-      S.live = null; dirty.all(); break;
+      dirty.all(); break;
     }
   }
 }
@@ -456,13 +453,10 @@ function onModel(m) {
     ui.field = first ? first.index : null;
   }
   sel.value = ui.field;
-  $("iters").disabled = !m.iterations;
   $("scale").disabled = m.deform < 0;
   $("ghost").disabled = m.deform < 0;
-  $("iterLabel").title = m.iterations ? "Show the latest non-converged iteration while a substep runs"
-    : "Start the plugin with DashboardPlugin(iterations=True) to stream the iterations";
   $("jobTitle").textContent = m.title || "";
-  if (m.title) document.title = m.title + " | FElupe job monitor";
+  if (m.title) document.title = m.title + " | FElupe";
   $("empty").style.display = "none";
   setView(m.dim === 3 ? "iso" : "xy");
   S.status = "running";
@@ -474,13 +468,8 @@ function onFrame(m) {
   if (!M) return;
   const values = {};
   for (const [k, s] of Object.entries(m.values)) values[k] = decode(s, Float32Array);
-  const fr = { kind: m.kind, step: m.step, substep: m.substep, attempt: m.attempt, iteration: m.iteration,
-    fnorm: m.fnorm, seq: m.seq, values };
+  const fr = { kind: m.kind, step: m.step, substep: m.substep, values };
 
-  if (m.kind === "iteration") {
-    if (m.seq > S.lastSubstepSeq) { S.live = fr; dirty.view = true; }
-    return;
-  }
   // ranges over the whole job (converged substeps only)
   for (const fd of M.fields) {
     if (!fd.display || !values[fd.index]) continue;
@@ -528,7 +517,6 @@ function setView(name) {
 }
 
 function currentFrame() {
-  if (ui.iters && S.live) return S.live;
   return S.frame;
 }
 
@@ -612,7 +600,7 @@ function drawViewport() {
     B.val[i] = s;
     if (s < smin) smin = s; if (s > smax) smax = s;
   }
-  // fit the deformed model (limited for diverging iterations)
+  // fit the deformed model
   const fit = Math.min(3 * M.radius, Math.max(M.radius, Math.sqrt(ext) || 0));
   const k = V.zoom * 0.44 * Math.min(W - legendW, H) / fit;
   for (let i = 0; i < n; i++) { B.SX[i] = cx + k * B.VX[i]; B.SY[i] = cy - k * B.VY[i]; }
@@ -791,9 +779,6 @@ function drawCaption(ctx, fr) {
     const st = S.model.steps[fr.step];
     a = `Step ${fr.step + 1}, substep ${fr.substep + 1} of ${st ? st.nsubsteps : "?"}`;
     b = "Converged";
-  } else if (fr && fr.kind === "iteration") {
-    a = `Step ${fr.step + 1}, substep ${fr.substep + 1}, attempt ${fr.attempt}, iteration ${fr.iteration + 1}`;
-    b = `Not converged, residual norm ${fmt(fr.fnorm)}`;
   }
   ctx.fillText(a, 14, 22);
   ctx.fillStyle = css("--ink-2");
@@ -1161,7 +1146,6 @@ function bind() {
   $("cmap").addEventListener("change", (e) => { ui.cmap = e.target.value; dirty.view = true; });
   $("edges").addEventListener("change", (e) => { ui.edges = e.target.checked; dirty.view = true; });
   $("ghost").addEventListener("change", (e) => { ui.ghost = e.target.checked; dirty.view = true; });
-  $("iters").addEventListener("change", (e) => { ui.iters = e.target.checked; dirty.view = true; });
   document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
     if (b.dataset.view === "fit") { V.zoom = 1; V.panx = 0; V.pany = 0; dirty.view = true; }
     else setView(b.dataset.view);

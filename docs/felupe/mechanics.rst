@@ -33,6 +33,7 @@ Mechanics
    AnimationWriterPlugin
    CharacteristicCurvePlugin
    CutbackPlugin
+   DashboardPlugin
    LinesearchPlugin
    ProgressPlugin
    XDMFWriterPlugin
@@ -140,6 +141,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.CutbackPlugin
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.DashboardPlugin
    :members:
    :undoc-members:
    :show-inheritance:

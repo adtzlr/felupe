@@ -27,11 +27,26 @@ Solvers from SciPy Sparse:
       # the default solver
       from scipy.sparse.linalg import spsolve
 
+.. tab:: SciPy Sparse (direct, symmetric)
+
+   ..  code-block:: python
+
+       from scipy.sparse.linalg import splu
+
+       def solver(A, b):
+       lu = splu(
+           A.tocsc(),
+           permc_spec="MMD_AT_PLUS_A",
+           diag_pivot_thresh=0.0,
+           options=dict(SymmetricMode=True),
+       )
+       return lu.solve(b)
+
 .. tab:: SciPy Sparse (iterative)
 
    ..  note::
 
-       ``minres`` may be replaced by another iterative method.
+       ``minres`` may be replaced by another iterative method, e.g. ``cg``.
 
    ..  code-block:: python
         
@@ -40,7 +55,7 @@ Solvers from SciPy Sparse:
        def solver(A, b):
            "Wrapper function for iterative solvers from scipy.sparse.linalg."
            
-           return spla.minres(A, b)[0]
+           return spla.minres(A, b, rtol=1e-4)[0]
 
 Solvers from external packages:
 
@@ -56,7 +71,7 @@ Solvers from external packages:
       
        from pypardiso import spsolve
 
-.. tab:: PyPardiso (direct, symmetric)
+.. tab:: PyPardiso (direct, optionally symmetric)
 
    Ensure to have `PyPardiso <https://github.com/haasad/PyPardisoProject>`_  installed.
 
@@ -75,4 +90,5 @@ Solvers from external packages:
            # mtype =-2: real and symmetric indefinite, 
            #             diagonal or Bunch-Kaufman pivoting
            # mtype = 6: complex and symmetric
-           return PyPardisoSolver(mtype=-2).solve(triu(A).tocsr(), b).squeeze()
+           # mtype = 11: default
+           return PyPardisoSolver(mtype=-2).solve(triu(A, format="csr"), b).squeeze()

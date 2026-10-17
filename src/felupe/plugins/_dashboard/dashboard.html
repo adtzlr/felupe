@@ -1,0 +1,1225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FElupe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #e4e7ea;
+  --panel: #f6f7f8;
+  --well: #eef0f2;
+  --ink: #18242f;
+  --ink-2: #4b5966;
+  --ink-3: #7d8a96;
+  --rule: #c9d0d6;
+  --line: #2f5d8a;
+  --amber: #b77a00;
+  --amber-soft: #f1d48a;
+  --fail: #b3261e;
+  --ok: #2f5d8a;
+  --viewport: #fbfcfc;
+  --focus: #2f5d8a;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171c; --panel: #1a2128; --well: #212a32; --ink: #dfe5ea; --ink-2: #a9b4be;
+    --ink-3: #74818c; --rule: #2e3943; --line: #7fb0dd; --amber: #e0a526; --amber-soft: #5e4a14;
+    --fail: #ef6b62; --ok: #7fb0dd; --viewport: #161c22; --focus: #7fb0dd; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171c; --panel: #1a2128; --well: #212a32; --ink: #dfe5ea; --ink-2: #a9b4be;
+  --ink-3: #74818c; --rule: #2e3943; --line: #7fb0dd; --amber: #e0a526; --amber-soft: #5e4a14;
+  --fail: #ef6b62; --ok: #7fb0dd; --viewport: #161c22; --focus: #7fb0dd; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Archivo", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.page { max-width: 1680px; margin: 0 auto; padding-block: 14px 28px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 12px; }
+
+header.top { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+.brand { font-stretch: 112%; font-weight: 700; font-size: 22px; letter-spacing: -0.01em; }
+.jobtitle { color: var(--ink-2); font-size: 15px; }
+.statusline { margin-left: auto; display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+.status { font-weight: 600; font-stretch: 112%; }
+.status[data-s="running"] { color: var(--line); }
+.status[data-s="finished"] { color: var(--ok); }
+.status[data-s="failed"] { color: var(--fail); }
+.status[data-s="waiting"], .status[data-s="disconnected"] { color: var(--ink-3); }
+.clock { font-size: 22px; font-stretch: 75%; font-weight: 500; min-width: 6ch; text-align: right; }
+.pct { font-size: 22px; font-stretch: 75%; font-weight: 500; }
+
+.panel { background: var(--panel); border-radius: 4px; padding: 12px 14px; min-width: 0; }
+.panel h2 { font-size: 15px; font-weight: 600; margin: 0 0 8px; font-stretch: 100%; }
+.panel h2 small { font-weight: 400; color: var(--ink-3); margin-left: 8px; font-size: 13px; }
+
+.path { padding-bottom: 8px; }
+.path-head { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+.path-head .where { color: var(--ink-2); }
+.path-key { margin-left: auto; display: flex; gap: 14px; color: var(--ink-2); font-size: 12px; flex-wrap: wrap; }
+.path-key i { display: inline-block; width: 12px; height: 8px; margin-right: 5px; vertical-align: 0; border-radius: 1px; }
+#pathCanvas { width: 100%; height: 66px; display: block; }
+
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 12px; }
+.side { display: grid; gap: 12px; align-content: start; }
+
+.viewer { display: grid; grid-template-rows: auto 1fr; gap: 8px; padding: 10px; border-radius: 8px; }
+.tools { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13px; }
+.tools label { display: inline-flex; gap: 6px; align-items: center; color: var(--ink-2); }
+.tools select, .tools input[type="number"] {
+  font: inherit; color: var(--ink); background: var(--well); border: 1px solid var(--rule);
+  border-radius: 3px; padding: 3px 6px; min-height: 28px;
+}
+.tools input[type="number"] { width: 72px; }
+.tools input[type="checkbox"] { accent-color: var(--line); }
+.views { display: inline-flex; margin-left: auto; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.views button, .seg button {
+  font: inherit; font-size: 12px; background: var(--well); color: var(--ink); border: 0;
+  border-right: 1px solid var(--rule); padding: 4px 9px; cursor: pointer; min-height: 28px;
+}
+.views button:last-child, .seg button:last-child { border-right: 0; }
+.views button:hover, .seg button:hover { background: var(--panel); }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; margin-left: auto; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+
+.stage { position: relative; background: var(--viewport); border-radius: 4px; min-height: max(420px, 56vh); overflow: hidden; }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+#view.dragging { cursor: grabbing; }
+.empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-3); text-align: center; padding: 20px; }
+
+
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: 13px; }
+dl.kv dt { color: var(--ink-2); }
+dl.kv dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
+dl.kv dd.big { font-size: 18px; font-stretch: 80%; font-weight: 500; line-height: 1.2; }
+dl.kv .sep { grid-column: 1 / -1; height: 1px; background: var(--rule); margin: 4px 0; }
+.list { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; }
+.list li { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+.list li span:last-child { color: var(--ink-2); text-align: right; }
+
+.split { display: flex; height: 12px; border-radius: 2px; overflow: hidden; background: var(--well); margin: 4px 0 8px; }
+.split div { height: 100%; }
+.split-key { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 3px 8px; font-size: 13px; align-items: center; margin-bottom: 8px; }
+.split-key i { width: 10px; height: 10px; border-radius: 1px; display: block; }
+.split-key span:nth-child(4n) { color: var(--ink-3); min-width: 5ch; text-align: right; }
+
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.chart-head { display: flex; align-items: baseline; gap: 10px; }
+.chart-head .seg { margin-left: auto; }
+.charts canvas { width: 100%; height: 220px; display: block; }
+
+.log { max-height: 220px; overflow: auto; font-size: 13px; }
+.log table { border-collapse: collapse; width: 100%; }
+.log td { padding: 3px 10px 3px 0; vertical-align: top; border-top: 1px solid var(--rule); }
+.log td:first-child { color: var(--ink-3); white-space: nowrap; width: 1%; text-align: right; }
+.log td:nth-child(2) { white-space: nowrap; width: 1%; color: var(--ink-2); }
+.log tr.fail td:last-child { color: var(--fail); }
+.log tr.cut td:last-child { color: var(--amber); }
+.log .none { color: var(--ink-3); }
+
+.theme { font: inherit; font-size: 12px; background: transparent; color: var(--ink-2); border: 1px solid var(--rule); border-radius: 3px; padding: 3px 8px; cursor: pointer; }
+
+@media (max-width: 1100px) {
+  .main { grid-template-columns: 1fr; }
+  .side { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .charts { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .page { padding-block: 10px 20px; }
+  .stage { min-height: 360px; }
+  .views { margin-left: 0; }
+  .statusline { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+<!--EVENTS-->
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div class="brand">FElupe</div>
+    <div class="jobtitle" id="jobTitle"></div>
+    <div class="statusline">
+      <span class="status" id="status" data-s="waiting">Waiting for the job</span>
+      <span class="pct" id="pct" title="Converged substeps of all substeps">0 %</span>
+      <span class="clock" id="clock" title="Elapsed wall time">0:00.0</span>
+      <button class="theme" id="theme" type="button">Dark</button>
+    </div>
+  </header>
+
+  <section class="panel path" aria-label="Load path">
+    <div class="path-head">
+      <h2>Load path</h2>
+      <span class="where" id="where">No substep started yet</span>
+      <div class="path-key">
+        <span><i style="background:var(--ok)"></i>Converged</span>
+        <span><i style="background:var(--amber)"></i>Converged with cutbacks</span>
+        <span><i style="background:var(--fail)"></i>Failed</span>
+      </div>
+    </div>
+    <canvas id="pathCanvas"></canvas>
+  </section>
+
+  <div class="main">
+    <section class="panel viewer" aria-label="Deformed model">
+      <div class="tools">
+        <label>Field <select id="field"></select></label>
+        <label>Scale <input id="scale" type="number" value="1" step="0.5" min="0"></label>
+        <label>Range <select id="range"><option value="frame">This frame</option><option value="job">Whole job</option></select></label>
+        <label>Bands <select id="bands"><option>6</option><option>8</option><option selected>12</option><option>16</option><option>24</option></select></label>
+        <label>Colours <select id="cmap"><option value="turbo">Turbo</option><option value="viridis">Viridis</option><option value="grey">Greys</option></select></label>
+        <label><input id="edges" type="checkbox" checked> Mesh lines</label>
+        <label><input id="ghost" type="checkbox"> Undeformed</label>
+        <div class="views" role="group" aria-label="View">
+          <button type="button" data-view="fit">Fit</button>
+          <button type="button" data-view="xy">xy</button>
+          <button type="button" data-view="xz">xz</button>
+          <button type="button" data-view="yz">yz</button>
+          <button type="button" data-view="iso">Iso</button>
+        </div>
+      </div>
+      <div class="stage">
+        <canvas id="view" aria-label="Viewport. Drag to rotate, shift-drag or right-drag to pan, scroll to zoom, double-click to fit."></canvas>
+        <div class="empty" id="empty">The model appears here once the job starts.</div>
+      </div>
+    </section>
+
+    <div class="side">
+      <section class="panel">
+        <h2>Model</h2>
+        <dl class="kv" id="model"><dt>Waiting for the job</dt><dd></dd></dl>
+        <ul class="list" id="fields"></ul>
+        <ul class="list" id="items"></ul>
+      </section>
+      <section class="panel">
+        <h2>Solver</h2>
+        <dl class="kv" id="solver"></dl>
+      </section>
+      <section class="panel">
+        <h2>Performance</h2>
+        <div class="split" id="split"></div>
+        <div class="split-key" id="splitKey"></div>
+        <dl class="kv" id="perf"></dl>
+      </section>
+    </div>
+  </div>
+
+  <div class="charts">
+    <section class="panel">
+      <div class="chart-head">
+        <h2>Residual norm<small id="resNote"></small></h2>
+        <div class="seg" role="group" aria-label="Residual window">
+          <button type="button" data-res="recent" aria-pressed="true">Recent</button>
+          <button type="button" data-res="all" aria-pressed="false">All</button>
+        </div>
+      </div>
+      <canvas id="resCanvas"></canvas>
+    </section>
+    <section class="panel">
+      <div class="chart-head">
+        <h2>Per substep</h2>
+        <div class="seg" role="group" aria-label="Quantity per substep">
+          <button type="button" data-sub="iterations" aria-pressed="true">Iterations</button>
+          <button type="button" data-sub="time" aria-pressed="false">Wall time</button>
+        </div>
+      </div>
+      <canvas id="subCanvas"></canvas>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Events<small>failed attempts, cutbacks and the end of the job</small></h2>
+    <div class="log" id="log"><p class="none">Nothing has happened yet.</p></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+// ---------------------------------------------------------------- utilities
+
+const $ = (id) => document.getElementById(id);
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function decode(s, T) {
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new T(bytes.buffer);
+}
+
+function fmt(v, digits = 3) {
+  if (v === null || v === undefined || Number.isNaN(v)) return "n/a";
+  if (v === 0) return "0";
+  const a = Math.abs(v);
+  if (a >= 1e5 || a < 1e-3) {
+    const [m, e] = v.toExponential(digits - 1).split("e");
+    return m + "e" + (e[0] === "-" ? "-" : "+") + e.slice(1).padStart(2, "0");
+  }
+  return Number(v.toPrecision(digits + 1)).toString();
+}
+const int = (v) => (v === null || v === undefined) ? "n/a" : Number(v).toLocaleString("en-US");
+function secs(t) {
+  if (t === null || t === undefined) return "n/a";
+  if (t < 1e-3) return (t * 1e6).toFixed(0) + " µs";
+  if (t < 1) return (t * 1e3).toFixed(1) + " ms";
+  if (t < 120) return t.toFixed(2) + " s";
+  return clock(t);
+}
+function clock(t) {
+  const m = Math.floor(t / 60), s = t - 60 * m;
+  return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1);
+}
+function bytes(b) {
+  if (!b) return "n/a";
+  const u = ["B", "kB", "MB", "GB", "TB"];
+  let i = 0;
+  while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+  return b.toFixed(i ? 1 : 0) + " " + u[i];
+}
+
+// ------------------------------------------------------------------ colours
+
+const VIRIDIS = [[68,1,84],[72,40,120],[62,73,137],[49,104,142],[38,130,142],[31,158,137],[53,183,121],[110,206,88],[181,222,43],[253,231,37]];
+function cmap(name, x) {
+  x = Math.min(1, Math.max(0, x));
+  if (name === "turbo") {
+    const r = 0.13572138 + x * (4.61539260 + x * (-42.66032258 + x * (132.13108234 + x * (-152.94239396 + x * 59.28637943))));
+    const g = 0.09140261 + x * (2.19418839 + x * (4.84296658 + x * (-14.18503333 + x * (4.27729857 + x * 2.82956604))));
+    const b = 0.10667330 + x * (12.64194608 + x * (-60.58204836 + x * (110.36276771 + x * (-89.90310912 + x * 27.34824973))));
+    return [255 * Math.min(1, Math.max(0, r)), 255 * Math.min(1, Math.max(0, g)), 255 * Math.min(1, Math.max(0, b))];
+  }
+  if (name === "grey") { const v = 235 - 190 * x; return [v, v, v + 6]; }
+  const t = x * (VIRIDIS.length - 1), i = Math.min(VIRIDIS.length - 2, Math.floor(t)), f = t - i;
+  return VIRIDIS[i].map((c, k) => c + f * (VIRIDIS[i + 1][k] - c));
+}
+
+// --------------------------------------------------------------------- state
+
+let S;
+function resetState() {
+  S = {
+    model: null, status: "waiting", t: 0, tEnd: null, offset: null,
+    frame: null,
+    iters: [], substeps: [], current: null, steps: [],
+    dofs: null, matrix: null, tol: null, memory: null, overhead: 0,
+    timing: { assembly: 0, solve: 0, residual: 0, wall: 0 },
+    log: [], ranges: {}, message: null,
+  };
+  dirty.all();
+}
+const dirty = {
+  view: true, panels: true, charts: true, path: true, log: true,
+  all() { this.view = this.panels = this.charts = this.path = this.log = true; },
+};
+
+const ui = {
+  field: null, scale: 1, range: "frame", bands: 12, cmap: "turbo", edges: true, ghost: false,
+  res: "recent", sub: "iterations",
+};
+
+// ------------------------------------------------------------------- events
+
+function handle(m) {
+  if (m.type === "reset") { resetState(); return; }
+  if (typeof m.t === "number") {
+    S.t = Math.max(S.t, m.t);
+    if (S.status === "running") S.offset = performance.now() / 1000 - m.t;
+  }
+
+  switch (m.type) {
+    case "model": onModel(m); break;
+    case "frame": onFrame(m); break;
+    case "dofs": S.dofs = m; dirty.panels = true; break;
+    case "matrix": S.matrix = m; dirty.panels = true; break;
+    case "step_begin": S.status = "running"; S.offset = performance.now() / 1000 - m.t; break;
+    case "substep_begin": {
+      const rec = { step: m.step, substep: m.substep, status: "running", attempts: [], iterations: 0,
+        load_factors: null, start: S.iters.length, t0: m.t };
+      S.substeps.push(rec); S.current = rec; dirty.path = dirty.charts = dirty.panels = true; break;
+    }
+    case "attempt_begin": {
+      if (S.current) S.current.attempts.push({ n: m.attempt, status: "running", its: [] });
+      if (m.tol !== null) S.tol = m.tol;
+      break;
+    }
+    case "iteration": {
+      const it = Object.assign({ gi: S.iters.length }, m);
+      S.iters.push(it);
+      const rec = S.current;
+      if (rec) {
+        rec.iterations++;
+        const a = rec.attempts[rec.attempts.length - 1];
+        if (a) a.its.push(it);
+      }
+      S.timing.assembly += m.assembly || 0; S.timing.solve += m.solve || 0; S.timing.residual += m.residual || 0;
+      dirty.charts = dirty.panels = true; break;
+    }
+    case "attempt_end": {
+      const rec = S.current;
+      const a = rec && rec.attempts.find((x) => x.n === m.attempt);
+      if (a) { a.status = m.success ? "ok" : "failed"; a.message = m.message; }
+      if (!m.success) {
+        addLog(m.t, `Step ${m.step + 1}, substep ${m.substep + 1}`,
+          `Attempt ${m.attempt} failed after ${m.iterations} iteration${m.iterations === 1 ? "" : "s"}: ${(m.message || "not converged").replace(/\.+$/, "")}.`, "fail");
+      }
+      dirty.charts = dirty.path = true; break;
+    }
+    case "substep_end": {
+      const rec = S.current;
+      if (rec) {
+        rec.status = m.failures > 0 ? "cutback" : "ok";
+        rec.load_factors = m.load_factors;
+        rec.wall = m.wall; rec.assembly = m.assembly; rec.solve = m.solve; rec.residual = m.residual;
+        rec.iterations = m.iterations; rec.failures = m.failures; rec.attempts_n = m.attempts;
+        if (m.failures > 0) {
+          const lf = (m.load_factors || []).map((v) => fmt(v, 3)).join(", ");
+          addLog(m.t, `Step ${m.step + 1}, substep ${m.substep + 1}`,
+            `Converged after ${m.failures} cutback${m.failures === 1 ? "" : "s"} in ${(m.load_factors || []).length} increments (load factors ${lf}).`, "cut");
+        }
+      }
+      S.timing.wall += m.wall;
+      S.memory = m.memory; S.overhead = m.overhead;
+      dirty.all(); break;
+    }
+    case "job_end": {
+      S.status = m.status; S.tEnd = m.t; S.message = m.message;
+      if (m.memory) S.memory = m.memory;
+      S.overhead = m.overhead;
+      if (S.current && S.current.status === "running") S.current.status = "failed";
+      addLog(m.t, "Job", m.status === "failed" ? `Stopped with an error. ${m.message || ""}` : "All steps converged.",
+        m.status === "failed" ? "fail" : "");
+      dirty.all(); break;
+    }
+  }
+}
+
+function addLog(t, where, text, cls) {
+  S.log.push({ t, where, text, cls });
+  dirty.log = true;
+}
+
+function onModel(m) {
+  const P = decode(m.points, Float32Array);
+  const n = m.npoints;
+  let lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) {
+    const v = P[3 * i + k]; if (v < lo[k]) lo[k] = v; if (v > hi[k]) hi[k] = v;
+  }
+  const center = lo.map((v, k) => 0.5 * (v + hi[k]));
+  const radius = Math.max(1e-12, 0.5 * Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]));
+
+  // faces as flat arrays: tri and quad
+  const tri = decode(m.surface.tri, Uint32Array), quad = decode(m.surface.quad, Uint32Array);
+  const nf = tri.length / 3 + quad.length / 4;
+  const fstart = new Uint32Array(nf + 1), fidx = new Uint32Array(tri.length + quad.length);
+  let f = 0, p = 0;
+  for (let i = 0; i < tri.length; i += 3) { fstart[f++] = p; fidx[p++] = tri[i]; fidx[p++] = tri[i + 1]; fidx[p++] = tri[i + 2]; }
+  for (let i = 0; i < quad.length; i += 4) { fstart[f++] = p; for (let k = 0; k < 4; k++) fidx[p++] = quad[i + k]; }
+  fstart[nf] = p;
+
+  S.model = Object.assign({}, m, {
+    P, center, radius, nf, fstart, fidx, lines: decode(m.surface.line, Uint32Array),
+    totalSubsteps: m.steps.reduce((a, s) => a + s.nsubsteps, 0),
+    buf: { VX: new Float32Array(n), VY: new Float32Array(n), VZ: new Float32Array(n), SX: new Float32Array(n),
+      SY: new Float32Array(n), val: new Float32Array(n), depth: new Float32Array(nf), order: new Uint32Array(nf) },
+  });
+
+  // controls
+  const sel = $("field");
+  sel.innerHTML = "";
+  for (const fd of m.fields.filter((x) => x.display)) {
+    const o = document.createElement("option");
+    o.value = fd.index;
+    o.textContent = fd.name + (fd.dim > 1 ? " (norm)" : "");
+    sel.appendChild(o);
+  }
+  if (ui.field === null || !m.fields.some((x) => x.display && x.index === ui.field)) {
+    const first = m.fields.find((x) => x.display);
+    ui.field = first ? first.index : null;
+  }
+  sel.value = ui.field;
+  $("scale").disabled = m.deform < 0;
+  $("ghost").disabled = m.deform < 0;
+  $("jobTitle").textContent = m.title || "";
+  if (m.title) document.title = m.title + " | FElupe";
+  $("empty").style.display = "none";
+  setView(m.dim === 3 ? "iso" : "xy");
+  S.status = "running";
+  dirty.all();
+}
+
+function onFrame(m) {
+  const M = S.model;
+  if (!M) return;
+  const values = {};
+  for (const [k, s] of Object.entries(m.values)) values[k] = decode(s, Float32Array);
+  const fr = { kind: m.kind, step: m.step, substep: m.substep, values };
+
+  // ranges over the whole job (converged substeps only)
+  for (const fd of M.fields) {
+    if (!fd.display || !values[fd.index]) continue;
+    const r = S.ranges[fd.index] || (S.ranges[fd.index] = [Infinity, -Infinity]);
+    const [a, b] = scalarRange(values[fd.index], fd.dim, M.npoints);
+    r[0] = Math.min(r[0], a); r[1] = Math.max(r[1], b);
+  }
+  // only the latest converged substep is kept
+  S.frame = fr;
+  dirty.view = true;
+}
+
+function scalarRange(v, dim, n) {
+  let a = Infinity, b = -Infinity;
+  for (let i = 0; i < n; i++) {
+    let s;
+    if (dim === 1) s = v[i];
+    else { s = 0; for (let k = 0; k < dim; k++) s += v[dim * i + k] * v[dim * i + k]; s = Math.sqrt(s); }
+    if (s < a) a = s; if (s > b) b = s;
+  }
+  return [a, b];
+}
+
+// ------------------------------------------------------------------ viewport
+
+const V = { R: [1, 0, 0, 0, 1, 0, 0, 0, 1], zoom: 1, panx: 0, pany: 0 };
+const mul = (A, B) => {
+  const C = new Array(9);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
+    C[3 * i + j] = A[3 * i] * B[j] + A[3 * i + 1] * B[3 + j] + A[3 * i + 2] * B[6 + j];
+  return C;
+};
+const rotX = (a) => [1, 0, 0, 0, Math.cos(a), -Math.sin(a), 0, Math.sin(a), Math.cos(a)];
+const rotY = (a) => [Math.cos(a), 0, Math.sin(a), 0, 1, 0, -Math.sin(a), 0, Math.cos(a)];
+
+function setView(name) {
+  const d = Math.PI / 180;
+  // rows of R: screen right, screen up and towards the viewer
+  if (name === "xy") V.R = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+  else if (name === "xz") V.R = [1, 0, 0, 0, 0, 1, 0, -1, 0];
+  else if (name === "yz") V.R = [0, 1, 0, 0, 0, 1, 1, 0, 0];
+  else if (name === "iso") V.R = mul(rotX(35.264 * d), rotY(-45 * d));
+  V.zoom = 1; V.panx = 0; V.pany = 0;
+  dirty.view = true;
+}
+
+function currentFrame() {
+  return S.frame;
+}
+
+const shadeCache = new Map();
+let bandColors = [], bandKey = "";
+function bandStyle(k, shade) {
+  const q = Math.round(shade * 40);
+  const key = k * 64 + q;
+  let s = shadeCache.get(key);
+  if (!s) {
+    const c = bandColors[k], f = q / 40;
+    s = `rgb(${(c[0] * f) | 0},${(c[1] * f) | 0},${(c[2] * f) | 0})`;
+    shadeCache.set(key, s);
+  }
+  return s;
+}
+
+function fitCanvas(c) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = c.clientHeight;
+  if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+  }
+  const ctx = c.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return [ctx, w, h];
+}
+
+// clip a polygon (x, y, s) to s >= a, returns the number of vertices in out
+const CX = new Float64Array(8), CY = new Float64Array(8);
+function clipGE(xs, ys, ss, n, a) {
+  let m = 0;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const si = ss[i], sj = ss[j];
+    const ini = si >= a, inj = sj >= a;
+    if (ini) { CX[m] = xs[i]; CY[m] = ys[i]; m++; }
+    if (ini !== inj) {
+      const t = (a - si) / (sj - si);
+      CX[m] = xs[i] + t * (xs[j] - xs[i]); CY[m] = ys[i] + t * (ys[j] - ys[i]); m++;
+    }
+  }
+  return m;
+}
+
+function drawViewport() {
+  const c = $("view");
+  const [ctx, W, H] = fitCanvas(c);
+  ctx.clearRect(0, 0, W, H);
+  const M = S.model;
+  if (!M) return;
+  const fr = currentFrame();
+  const n = M.npoints, B = M.buf, R = V.R;
+  const legendW = W < 520 ? 76 : 112;
+  const cx = (W - legendW) / 2 + V.panx, cy = H / 2 + V.pany;
+  let ext = 0;
+
+  // deformation and scalar values
+  const U = fr && M.deform >= 0 ? fr.values[M.deform] : null;
+  const fd = M.fields.find((x) => x.index === ui.field);
+  const F = fr && fd ? fr.values[fd.index] : null;
+  const dimU = M.dim, scale = ui.scale;
+  const P = M.P, c0 = M.center;
+  let smin = Infinity, smax = -Infinity;
+  for (let i = 0; i < n; i++) {
+    let x = P[3 * i] - c0[0], y = P[3 * i + 1] - c0[1], z = P[3 * i + 2] - c0[2];
+    if (U) {
+      x += scale * U[dimU * i];
+      if (dimU > 1) y += scale * U[dimU * i + 1];
+      if (dimU > 2) z += scale * U[dimU * i + 2];
+    }
+    const vx = R[0] * x + R[1] * y + R[2] * z, vy = R[3] * x + R[4] * y + R[5] * z, vz = R[6] * x + R[7] * y + R[8] * z;
+    B.VX[i] = vx; B.VY[i] = vy; B.VZ[i] = vz;
+    const r = vx * vx + vy * vy;
+    if (r > ext) ext = r;
+    let s = 0;
+    if (F) {
+      if (fd.dim === 1) s = F[i];
+      else { for (let q = 0; q < fd.dim; q++) s += F[fd.dim * i + q] * F[fd.dim * i + q]; s = Math.sqrt(s); }
+    }
+    B.val[i] = s;
+    if (s < smin) smin = s; if (s > smax) smax = s;
+  }
+  // fit the deformed model
+  const fit = Math.min(3 * M.radius, Math.max(M.radius, Math.sqrt(ext) || 0));
+  const k = V.zoom * 0.44 * Math.min(W - legendW, H) / fit;
+  for (let i = 0; i < n; i++) { B.SX[i] = cx + k * B.VX[i]; B.SY[i] = cy - k * B.VY[i]; }
+
+  let lo = smin, hi = smax;
+  if (ui.range === "job" && fd && S.ranges[fd.index]) [lo, hi] = S.ranges[fd.index];
+  // a uniform field is drawn in one colour
+  const flat = !(hi - lo > 1e-9 * Math.max(Math.abs(hi), Math.abs(lo), 1e-200));
+  if (flat) hi = lo + 1;
+  const nb = ui.bands, dl = (hi - lo) / nb;
+
+  const key = ui.cmap + nb;
+  if (key !== bandKey) {
+    bandKey = key; shadeCache.clear();
+    bandColors = Array.from({ length: nb }, (_, i) => cmap(ui.cmap, (i + 0.5) / nb));
+  }
+  const band = (s) => Math.min(nb - 1, Math.max(0, Math.floor((s - lo) / dl)));
+
+  // undeformed outline
+  if (ui.ghost && U) {
+    ctx.beginPath();
+    for (let f = 0; f < M.nf; f++) {
+      const a = M.fstart[f], b = M.fstart[f + 1];
+      for (let q = a; q < b; q++) {
+        const i = M.fidx[q];
+        const x = P[3 * i] - c0[0], y = P[3 * i + 1] - c0[1], z = P[3 * i + 2] - c0[2];
+        const sx = cx + k * (R[0] * x + R[1] * y + R[2] * z), sy = cy - k * (R[3] * x + R[4] * y + R[5] * z);
+        if (q === a) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+      }
+      ctx.closePath();
+    }
+    ctx.strokeStyle = css("--ink-3"); ctx.lineWidth = 0.6; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // depth sorting (painter's algorithm)
+  for (let f = 0; f < M.nf; f++) {
+    const a = M.fstart[f], b = M.fstart[f + 1];
+    let z = 0;
+    for (let q = a; q < b; q++) z += B.VZ[M.fidx[q]];
+    B.depth[f] = z / (b - a);
+    B.order[f] = f;
+  }
+  const order = B.order.sort((p, q) => B.depth[p] - B.depth[q]);
+
+  const xs = new Float64Array(4), ys = new Float64Array(4), ss = new Float64Array(4);
+  const tx = new Float64Array(3), ty = new Float64Array(3), ts = new Float64Array(3);
+  const edge = css("--ink");
+  ctx.lineJoin = "round";
+  for (let o = 0; o < M.nf; o++) {
+    const f = order[o];
+    const a = M.fstart[f], nv = M.fstart[f + 1] - a;
+    for (let q = 0; q < nv; q++) {
+      const i = M.fidx[a + q];
+      xs[q] = B.SX[i]; ys[q] = B.SY[i]; ss[q] = B.val[i];
+    }
+    // flat shading from the normal in view space
+    const i0 = M.fidx[a], i1 = M.fidx[a + 1], i2 = M.fidx[a + 2];
+    const ax = B.VX[i1] - B.VX[i0], ay = B.VY[i1] - B.VY[i0], az = B.VZ[i1] - B.VZ[i0];
+    const bx = B.VX[i2] - B.VX[i0], by = B.VY[i2] - B.VY[i0], bz = B.VZ[i2] - B.VZ[i0];
+    const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+    const nn = Math.hypot(nx, ny, nz) || 1;
+    const shade = 0.6 + 0.4 * Math.abs(nz / nn);
+
+    let kmin = nb, kmax = -1;
+    for (let q = 0; q < nv; q++) { const b = band(ss[q]); if (b < kmin) kmin = b; if (b > kmax) kmax = b; }
+
+    // base layer: the whole face in the colour of its lowest band
+    ctx.beginPath();
+    ctx.moveTo(xs[0], ys[0]);
+    for (let q = 1; q < nv; q++) ctx.lineTo(xs[q], ys[q]);
+    ctx.closePath();
+    const base = bandStyle(kmin, shade);
+    ctx.fillStyle = base; ctx.fill();
+    if (!ui.edges) { ctx.strokeStyle = base; ctx.lineWidth = 0.6; ctx.stroke(); }
+
+    // upper layers: nested polygons s >= level of each band
+    if (kmax > kmin) {
+      const ntri = nv - 2;
+      for (let t = 0; t < ntri; t++) {
+        tx[0] = xs[0]; ty[0] = ys[0]; ts[0] = ss[0];
+        tx[1] = xs[t + 1]; ty[1] = ys[t + 1]; ts[1] = ss[t + 1];
+        tx[2] = xs[t + 2]; ty[2] = ys[t + 2]; ts[2] = ss[t + 2];
+        const tmax = band(Math.max(ts[0], ts[1], ts[2]));
+        for (let b = kmin + 1; b <= tmax; b++) {
+          const m = clipGE(tx, ty, ts, 3, lo + b * dl);
+          if (m < 3) continue;
+          ctx.beginPath(); ctx.moveTo(CX[0], CY[0]);
+          for (let q = 1; q < m; q++) ctx.lineTo(CX[q], CY[q]);
+          ctx.closePath();
+          const st = bandStyle(b, shade);
+          ctx.fillStyle = st; ctx.fill();
+          ctx.strokeStyle = st; ctx.lineWidth = 0.5; ctx.stroke();
+        }
+      }
+    }
+    if (ui.edges) {
+      ctx.beginPath(); ctx.moveTo(xs[0], ys[0]);
+      for (let q = 1; q < nv; q++) ctx.lineTo(xs[q], ys[q]);
+      ctx.closePath();
+      ctx.globalAlpha = 0.45; ctx.strokeStyle = edge; ctx.lineWidth = 0.6; ctx.stroke(); ctx.globalAlpha = 1;
+    }
+  }
+
+  // line cells (trusses) and point clouds
+  const L = M.lines;
+  ctx.lineCap = "round";
+  for (let q = 0; q < L.length; q += 2) {
+    const i = L[q], j = L[q + 1];
+    ctx.beginPath(); ctx.moveTo(B.SX[i], B.SY[i]); ctx.lineTo(B.SX[j], B.SY[j]);
+    ctx.strokeStyle = bandStyle(band(0.5 * (B.val[i] + B.val[j])), 1); ctx.lineWidth = 3; ctx.stroke();
+  }
+  if (M.surface.kind === "points") {
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = bandStyle(band(B.val[i]), 1);
+      ctx.fillRect(B.SX[i] - 2, B.SY[i] - 2, 4, 4);
+    }
+  }
+
+  drawLegend(ctx, W, H, legendW, lo, hi, nb, fd, flat);
+  drawTriad(ctx, H);
+  drawCaption(ctx, fr);
+}
+
+function drawLegend(ctx, W, H, lw, lo, hi, nb, fd, flat) {
+  const x = W - lw + 8, top = 34, bw = 14;
+  const h = Math.min(H - top - 40, Math.max(nb * 12, 200)), bh = h / nb;
+  ctx.font = "600 12px Archivo, sans-serif"; ctx.fillStyle = css("--ink"); ctx.textBaseline = "alphabetic";
+  const name = fd ? fd.name : "";
+  ctx.fillText(name, x, 18, lw - 14);
+  ctx.font = "11px Archivo, sans-serif"; ctx.fillStyle = css("--ink-2");
+  if (fd && fd.dim > 1) ctx.fillText("norm", x, 30);
+  if (flat) {
+    const c = bandColors[0];
+    ctx.fillStyle = `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
+    ctx.fillRect(x, top + 6, bw, 14);
+    ctx.fillStyle = css("--ink"); ctx.textBaseline = "middle";
+    ctx.fillText(fmt(lo, 3), x + bw + 6, top + 13);
+    ctx.fillStyle = css("--ink-2");
+    ctx.fillText("uniform", x, top + 36);
+    ctx.textBaseline = "alphabetic";
+    return;
+  }
+  for (let b = 0; b < nb; b++) {
+    const y = top + 6 + (nb - 1 - b) * bh;
+    const c = bandColors[b];
+    ctx.fillStyle = `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
+    ctx.fillRect(x, y, bw, bh + 0.5);
+  }
+  ctx.strokeStyle = css("--ink-3"); ctx.lineWidth = 0.5; ctx.strokeRect(x, top + 6, bw, h);
+  ctx.fillStyle = css("--ink"); ctx.textBaseline = "middle";
+  const every = Math.max(1, Math.ceil(nb / Math.floor(h / 16)));
+  for (let b = 0; b <= nb; b += every) {
+    const y = top + 6 + (nb - b) * bh;
+    ctx.fillText(fmt(lo + (hi - lo) * b / nb, 3), x + bw + 6, y);
+  }
+  if (nb % every) ctx.fillText(fmt(hi, 3), x + bw + 6, top + 6);
+  ctx.textBaseline = "alphabetic";
+}
+
+function drawTriad(ctx, H) {
+  const R = V.R, ox = 34, oy = H - 34, L = 22;
+  const axes = S.model.dim === 3 ? ["x", "y", "z"] : ["x", "y"];
+  ctx.font = "12px Archivo, sans-serif"; ctx.lineWidth = 1.2;
+  axes.forEach((name, j) => {
+    const dx = R[j], dy = R[3 + j];
+    ctx.strokeStyle = ctx.fillStyle = css("--ink-2");
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + L * dx, oy - L * dy); ctx.stroke();
+    ctx.fillText(name, ox + (L + 8) * dx - 3, oy - (L + 8) * dy + 4);
+  });
+}
+
+function drawCaption(ctx, fr) {
+  ctx.font = "13px Archivo, sans-serif"; ctx.fillStyle = css("--ink"); ctx.textBaseline = "alphabetic";
+  let a = "Initial state", b = "";
+  if (fr && fr.kind === "substep") {
+    const st = S.model.steps[fr.step];
+    a = `Step ${fr.step + 1}, substep ${fr.substep + 1} of ${st ? st.nsubsteps : "?"}`;
+    b = "Converged";
+  }
+  ctx.fillText(a, 14, 22);
+  ctx.fillStyle = css("--ink-2");
+  if (b) ctx.fillText(b, 14, 40);
+  if (S.model.deform >= 0 && ui.scale !== 1) ctx.fillText(`Deformation scaled by ${ui.scale}`, 14, b ? 58 : 40);
+}
+
+// ---------------------------------------------------------------- load path
+
+function drawPath() {
+  const c = $("pathCanvas");
+  const [ctx, W, H] = fitCanvas(c);
+  ctx.clearRect(0, 0, W, H);
+  const M = S.model;
+  if (!M) return;
+  const steps = M.steps, total = M.totalSubsteps, gap = 10;
+  const avail = W - gap * (steps.length - 1);
+  const top = 16, bh = 16;
+  const recs = {};
+  for (const r of S.substeps) recs[r.step + ":" + r.substep] = r;
+
+  let x = 0;
+  ctx.font = "12px Archivo, sans-serif";
+  steps.forEach((st, j) => {
+    const w = avail * st.nsubsteps / total, cw = w / st.nsubsteps;
+    // ruler
+    ctx.fillStyle = css("--well");
+    ctx.fillRect(x, top, w, bh);
+    for (let i = 0; i < st.nsubsteps; i++) {
+      const r = recs[j + ":" + i], x0 = x + i * cw;
+      if (r) {
+        if (r.status === "ok") ctx.fillStyle = css("--ok");
+        else if (r.status === "cutback") ctx.fillStyle = css("--amber");
+        else if (r.status === "failed") ctx.fillStyle = css("--fail");
+        else ctx.fillStyle = css("--amber-soft");
+        if (r.status === "running") {
+          ctx.fillRect(x0, top, cw, bh);
+          ctx.strokeStyle = css("--line"); ctx.lineWidth = 1.5;
+          ctx.strokeRect(x0 + 0.75, top + 0.75, Math.max(1, cw - 1.5), bh - 1.5);
+        } else {
+          ctx.fillRect(x0, top, Math.max(1, cw - (cw > 4 ? 1 : 0)), bh);
+        }
+        // the increments of a cutback as marks above the ruler
+        if (r.load_factors && r.load_factors.length > 1) {
+          ctx.strokeStyle = css("--amber"); ctx.lineWidth = 1;
+          for (const lf of r.load_factors) {
+            const xm = x0 + lf * cw;
+            ctx.beginPath(); ctx.moveTo(xm, top - 7); ctx.lineTo(xm, top); ctx.stroke();
+          }
+          ctx.beginPath(); ctx.moveTo(x0, top - 3.5); ctx.lineTo(x0 + cw, top - 3.5); ctx.stroke();
+        }
+        if (r.status === "running" && r.attempts.length > 1) {
+          ctx.fillStyle = css("--amber");
+          ctx.fillText(`attempt ${r.attempts.length}`, Math.min(x0, W - 70), top - 4);
+        }
+      }
+      // substep ticks
+      if (cw > 3) {
+        ctx.fillStyle = css("--rule");
+        ctx.fillRect(x0 + cw - 0.5, top + bh, 1, 4);
+      }
+    }
+    ctx.fillStyle = css("--ink-2");
+    const done = S.substeps.filter((r) => r.step === j && (r.status === "ok" || r.status === "cutback")).length;
+    const label = `Step ${j + 1}`, count = `${done} of ${st.nsubsteps}`;
+    ctx.fillStyle = css("--ink");
+    ctx.fillText(label, x, top + bh + 18);
+    const lw = ctx.measureText(label).width;
+    ctx.fillStyle = css("--ink-2");
+    if (w > lw + ctx.measureText(count).width + 16) {
+      ctx.textAlign = "right"; ctx.fillText(count, x + w, top + bh + 18); ctx.textAlign = "left";
+    }
+    x += w + gap;
+  });
+}
+
+// -------------------------------------------------------------------- charts
+
+function axisFrame(ctx, W, H, pad) {
+  ctx.strokeStyle = css("--rule"); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, H - pad.b); ctx.lineTo(W - pad.r, H - pad.b); ctx.stroke();
+}
+
+function drawResiduals() {
+  const c = $("resCanvas");
+  const [ctx, W, H] = fitCanvas(c);
+  ctx.clearRect(0, 0, W, H);
+  const pad = { l: 46, r: 10, t: 10, b: 24 };
+  let its = S.iters;
+  const windowN = 240;
+  if (ui.res === "recent" && its.length > windowN) its = its.slice(its.length - windowN);
+  $("resNote").textContent = its.length ? `${int(S.iters.length)} iterations in total` : "";
+  axisFrame(ctx, W, H, pad);
+  ctx.font = "11px Archivo, sans-serif"; ctx.fillStyle = css("--ink-3");
+  if (!its.length) { ctx.fillText("No iterations yet", pad.l + 10, pad.t + 16); return; }
+
+  const vals = its.map((i) => i.fnorm).filter((v) => v !== null && v > 0);
+  if (S.tol) vals.push(S.tol);
+  let ymin = Math.floor(Math.log10(Math.min(...vals))), ymax = Math.ceil(Math.log10(Math.max(...vals)));
+  if (ymax <= ymin) ymax = ymin + 1;
+  const g0 = its[0].gi, g1 = Math.max(its[its.length - 1].gi, g0 + 1);
+  const X = (g) => pad.l + (W - pad.l - pad.r) * (g - g0) / (g1 - g0);
+  const Y = (v) => pad.t + (H - pad.t - pad.b) * (ymax - Math.log10(v)) / (ymax - ymin);
+
+  // decades
+  const stepY = Math.max(1, Math.ceil((ymax - ymin) / 6));
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let e = ymin; e <= ymax; e += stepY) {
+    const y = Y(Math.pow(10, e));
+    ctx.fillStyle = css("--well"); ctx.fillRect(pad.l + 1, y, W - pad.l - pad.r, 1);
+    ctx.fillStyle = css("--ink-3"); ctx.fillText("1e" + e, pad.l - 6, y);
+  }
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+
+  // substep boundaries
+  ctx.fillStyle = css("--rule");
+  for (const r of S.substeps) {
+    if (r.start >= g0 && r.start <= g1 && r.start > 0) ctx.fillRect(X(r.start - 0.5), pad.t, 1, H - pad.t - pad.b);
+  }
+  // tolerance
+  if (S.tol) {
+    const y = Y(S.tol);
+    ctx.strokeStyle = css("--ink-2"); ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = css("--ink-2"); ctx.fillText("tolerance", W - pad.r - 52, y - 4);
+  }
+  // one line per attempt
+  const groups = new Map();
+  for (const it of its) {
+    const key = it.step + ":" + it.substep + ":" + it.attempt;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(it);
+  }
+  const recs = {};
+  for (const r of S.substeps) recs[r.step + ":" + r.substep] = r;
+  for (const [key, list] of groups) {
+    const [s, ss, a] = key.split(":").map(Number);
+    const r = recs[s + ":" + ss];
+    const att = r && r.attempts.find((x) => x.n === a);
+    const failed = att && att.status === "failed";
+    const color = failed ? css("--fail") : (a > 1 ? css("--amber") : css("--line"));
+    ctx.strokeStyle = ctx.fillStyle = color; ctx.lineWidth = 1.4;
+    ctx.setLineDash(failed ? [3, 2] : []);
+    ctx.beginPath();
+    let started = false;
+    for (const it of list) {
+      if (!(it.fnorm > 0)) continue;
+      const x = X(it.gi), y = Y(it.fnorm);
+      if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    if (list.length < 120) for (const it of list) {
+      if (!(it.fnorm > 0)) continue;
+      ctx.fillRect(X(it.gi) - 1.5, Y(it.fnorm) - 1.5, 3, 3);
+    }
+  }
+  // x axis
+  ctx.fillStyle = css("--ink-3");
+  ctx.textAlign = "left"; ctx.fillText(int(g0 + 1), pad.l, H - 8);
+  ctx.textAlign = "right"; ctx.fillText(int(g1 + 1), W - pad.r, H - 8);
+  ctx.textAlign = "center"; ctx.fillText("iteration", (pad.l + W - pad.r) / 2, H - 8);
+  ctx.textAlign = "left";
+}
+
+function drawSubsteps() {
+  const c = $("subCanvas");
+  const [ctx, W, H] = fitCanvas(c);
+  ctx.clearRect(0, 0, W, H);
+  const pad = { l: 46, r: 10, t: 10, b: 24 };
+  axisFrame(ctx, W, H, pad);
+  ctx.font = "11px Archivo, sans-serif"; ctx.fillStyle = css("--ink-3");
+  const recs = S.substeps;
+  if (!recs.length) { ctx.fillText("No substeps yet", pad.l + 10, pad.t + 16); return; }
+  const n = Math.max(recs.length, 1);
+  const bw = (W - pad.l - pad.r) / n;
+  const time = ui.sub === "time";
+
+  // stacked segments per substep
+  const stacks = recs.map((r) => {
+    if (time) {
+      const wall = r.wall !== undefined ? r.wall : Math.max(0, S.t - r.t0);
+      const as = r.assembly || 0, so = r.solve || 0, re = r.residual || 0;
+      return [[as, css("--line")], [so, css("--amber")], [re, css("--ink-3")], [Math.max(0, wall - as - so - re), css("--rule")]];
+    }
+    let failed = 0, ok = 0;
+    for (const a of r.attempts) (a.status === "failed" ? (failed += a.its.length) : (ok += a.its.length));
+    return [[ok, r.status === "cutback" ? css("--amber") : css("--line")], [failed, css("--fail")]];
+  });
+  const ymax = Math.max(1e-12, ...stacks.map((s) => s.reduce((a, b) => a + b[0], 0)));
+  const nice = time ? niceMax(ymax) : Math.max(4, Math.ceil(ymax / 4) * 4);
+  const Y = (v) => (H - pad.b) - (H - pad.t - pad.b) * v / nice;
+
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let i = 0; i <= 4; i++) {
+    const v = nice * i / 4, y = Y(v);
+    ctx.fillStyle = css("--well"); if (i) ctx.fillRect(pad.l + 1, y, W - pad.l - pad.r, 1);
+    ctx.fillStyle = css("--ink-3"); ctx.fillText(time ? secs(v) : fmt(v, 2), pad.l - 6, y);
+  }
+  ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+
+  stacks.forEach((st, i) => {
+    let y0 = H - pad.b;
+    for (const [v, col] of st) {
+      if (!(v > 0)) continue;
+      const h = (H - pad.t - pad.b) * v / nice;
+      ctx.fillStyle = col;
+      ctx.fillRect(pad.l + i * bw + (bw > 4 ? 0.5 : 0), y0 - h, Math.max(1, bw - (bw > 4 ? 1 : 0)), h);
+      y0 -= h;
+    }
+  });
+  // step boundaries
+  ctx.fillStyle = css("--ink-2");
+  recs.forEach((r, i) => {
+    if (i > 0 && r.substep === 0) ctx.fillRect(pad.l + i * bw, pad.t, 1, H - pad.t - pad.b);
+  });
+  ctx.fillStyle = css("--ink-3");
+  ctx.fillText(time ? "assembly, solve, residual, other" : "iterations; red: failed attempts, amber: substeps with cutback",
+    pad.l + 4, H - 8);
+}
+
+function niceMax(v) {
+  const e = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 2, 2.5, 4, 5, 10]) if (m * e >= v) return m * e;
+  return 10 * e;
+}
+
+// -------------------------------------------------------------------- panels
+
+function kv(el, rows) {
+  el.innerHTML = rows.map((r) => r === "-" ? '<div class="sep"></div>'
+    : `<dt>${r[0]}</dt><dd${r[2] ? ' class="big"' : ""}>${r[1]}</dd>`).join("");
+}
+
+function updatePanels() {
+  const M = S.model;
+  const st = $("status");
+  const label = { waiting: "Waiting for the job", running: "Running", finished: "Finished", failed: "Failed",
+    disconnected: "Connection lost" }[S.status] || S.status;
+  st.textContent = label; st.dataset.s = S.status;
+
+  const done = S.substeps.filter((r) => r.status === "ok" || r.status === "cutback").length;
+  const total = M ? M.totalSubsteps : 0;
+  $("pct").textContent = total ? `${Math.floor(100 * done / total)} %` : "0 %";
+  const cur = S.current;
+  if (cur && M) {
+    const word = cur.status === "running" ? "Running" : (cur.status === "failed" ? "Failed at" : "Last converged");
+    $("where").textContent = `${word} step ${cur.step + 1} of ${M.steps.length}, substep ${cur.substep + 1} of ${M.steps[cur.step].nsubsteps}. ${done} of ${total} substeps converged.`;
+  }
+  if (!M) return;
+
+  // model
+  const dofs = S.dofs || {};
+  kv($("model"), [
+    ["Points", int(M.npoints), true],
+    ["Cells", int(M.ncells), true],
+    ["Degrees of freedom", int(M.ndof), true],
+    "-",
+    ["Cell type", `${M.cell_type}, ${M.points_per_cell} points`],
+    ["Dimension", M.dim],
+    ["Finite element", M.element || "n/a"],
+    ["Quadrature", M.quadrature ? `${M.quadrature}, ${M.quadrature_points_per_cell} points` : "n/a"],
+    ["Quadrature points", M.quadrature_points_per_cell ? int(M.quadrature_points_per_cell * M.ncells) : "n/a"],
+    ["Active dofs", int(dofs.active)],
+    ["Prescribed dofs", int(dofs.prescribed)],
+    ["Steps", `${M.steps.length} with ${int(M.totalSubsteps)} substeps`],
+  ]);
+  $("fields").innerHTML = M.fields.map((f) =>
+    `<li><span>${f.name}</span><span>${f.kind}, ${f.dim} ${f.dim === 1 ? "component" : "components"}</span></li>`).join("");
+  const items = new Map();
+  for (const s of M.steps) for (const it of s.items) {
+    const k = it.kind + (it.umat ? ` (${it.umat})` : "");
+    items.set(k, (items.get(k) || 0) + 1);
+  }
+  $("items").innerHTML = [...items.keys()].map((k) => `<li><span>${k}</span><span></span></li>`).join("");
+
+  // solver
+  const last = S.iters[S.iters.length - 1];
+  const conv = S.substeps.filter((r) => r.status === "ok" || r.status === "cutback");
+  const itsConv = conv.reduce((a, r) => a + r.iterations, 0);
+  const maxIt = conv.reduce((a, r) => Math.max(a, r.iterations), 0);
+  const cutbacks = S.substeps.filter((r) => r.status === "cutback").length;
+  const failedAttempts = S.substeps.reduce((a, r) => a + r.attempts.filter((x) => x.status === "failed").length, 0);
+  const alphas = S.iters.filter((i) => i.alpha !== null && i.alpha !== undefined && i.alpha < 1);
+  const att = cur && cur.attempts[cur.attempts.length - 1];
+  kv($("solver"), [
+    ["Residual norm", last ? fmt(last.fnorm) : "n/a", true],
+    ["Tolerance", S.tol ? fmt(S.tol) : "n/a"],
+    ["Increment norm", last ? fmt(last.xnorm) : "n/a"],
+    ["Step length", last ? (last.alpha === null || last.alpha === undefined ? "full" : fmt(last.alpha)) : "n/a"],
+    ["Attempt, iteration", cur && att ? `${att.n}, ${att.its.length}` : "n/a"],
+    "-",
+    ["Converged substeps", `${int(conv.length)} of ${int(M.totalSubsteps)}`],
+    ["Total iterations", int(S.iters.length)],
+    ["Iterations per substep", conv.length ? `${(itsConv / conv.length).toFixed(2)} mean, ${maxIt} max` : "n/a"],
+    ["Substeps with cutback", int(cutbacks)],
+    ["Failed attempts", int(failedAttempts)],
+    ["Reduced step lengths", int(alphas.length)],
+  ]);
+
+  // performance
+  const T = S.timing;
+  const elapsed = S.tEnd !== null ? S.tEnd : S.t;
+  const accounted = T.assembly + T.solve + T.residual;
+  const other = Math.max(0, elapsed - accounted);
+  const parts = [["Assembly", T.assembly, css("--line")], ["Linear solve", T.solve, css("--amber")],
+    ["Residual and update", T.residual, css("--ink-3")], ["Other", other, css("--rule")]];
+  const sum = parts.reduce((a, p) => a + p[1], 0) || 1;
+  $("split").innerHTML = parts.map((p) => `<div style="width:${(100 * p[1] / sum).toFixed(2)}%;background:${p[2]}" title="${p[0]}"></div>`).join("");
+  $("splitKey").innerHTML = parts.map((p) =>
+    `<i style="background:${p[2]}"></i><span>${p[0]}</span><span>${secs(p[1])}</span><span>${(100 * p[1] / sum).toFixed(0)} %</span>`).join("");
+  const nIt = S.iters.length;
+  const slow = conv.reduce((a, r) => (!a || r.wall > a.wall ? r : a), null);
+  const mx = S.matrix || {};
+  const density = mx.nnz && mx.shape ? mx.nnz / (mx.shape[0] * mx.shape[1]) : null;
+  kv($("perf"), [
+    ["Time per iteration", nIt ? secs((T.assembly + T.solve + T.residual) / nIt) : "n/a", true],
+    ["Iterations per second", nIt && elapsed > 0 ? (nIt / elapsed).toFixed(2) : "n/a"],
+    ["Slowest substep", slow ? `${secs(slow.wall)} at ${slow.step + 1}.${slow.substep + 1}` : "n/a"],
+    "-",
+    ["Matrix", mx.shape ? `${int(mx.shape[0])} by ${int(mx.shape[1])}` : "n/a"],
+    ["Nonzeros", mx.nnz ? `${int(mx.nnz)} (${(100 * density).toPrecision(2)} %)` : "n/a"],
+    ["Matrix memory", bytes(mx.nbytes)],
+    ["Peak memory", bytes(S.memory)],
+    ["Dashboard overhead", `${secs(S.overhead)}`],
+  ]);
+}
+
+function updateLog() {
+  const el = $("log");
+  if (!S.log.length) { el.innerHTML = '<p class="none">Nothing has happened yet.</p>'; return; }
+  const rows = S.log.slice(-300).reverse().map((e) =>
+    `<tr class="${e.cls || ""}"><td>${clock(e.t)}</td><td>${e.where}</td><td>${escapeHtml(e.text)}</td></tr>`).join("");
+  el.innerHTML = `<table>${rows}</table>`;
+}
+const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ------------------------------------------------------------------- loop
+
+let lastPanels = 0;
+function loop(now) {
+  if (S.status === "running" && S.offset !== null) {
+    S.clock = Math.max(S.t, performance.now() / 1000 - S.offset);
+  } else {
+    S.clock = S.tEnd !== null ? S.tEnd : S.t;
+  }
+  $("clock").textContent = clock(S.clock || 0);
+  if (dirty.view) { dirty.view = false; drawViewport(); }
+  if (now - lastPanels > 120) {
+    lastPanels = now;
+    if (dirty.panels) { dirty.panels = false; updatePanels(); }
+    if (dirty.path) { dirty.path = false; drawPath(); }
+    if (dirty.charts) { dirty.charts = false; drawResiduals(); drawSubsteps(); }
+    if (dirty.log) { dirty.log = false; updateLog(); }
+  }
+  requestAnimationFrame(loop);
+}
+
+// ---------------------------------------------------------------- controls
+
+function bind() {
+  $("field").addEventListener("change", (e) => { ui.field = Number(e.target.value); dirty.view = true; });
+  $("scale").addEventListener("input", (e) => { const v = parseFloat(e.target.value); ui.scale = Number.isFinite(v) ? v : 0; dirty.view = true; });
+  $("range").addEventListener("change", (e) => { ui.range = e.target.value; dirty.view = true; });
+  $("bands").addEventListener("change", (e) => { ui.bands = Number(e.target.value); dirty.view = true; });
+  $("cmap").addEventListener("change", (e) => { ui.cmap = e.target.value; dirty.view = true; });
+  $("edges").addEventListener("change", (e) => { ui.edges = e.target.checked; dirty.view = true; });
+  $("ghost").addEventListener("change", (e) => { ui.ghost = e.target.checked; dirty.view = true; });
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
+    if (b.dataset.view === "fit") { V.zoom = 1; V.panx = 0; V.pany = 0; dirty.view = true; }
+    else setView(b.dataset.view);
+  }));
+  const seg = (attr, key, cb) => document.querySelectorAll(`[data-${attr}]`).forEach((b) => b.addEventListener("click", () => {
+    ui[key] = b.dataset[attr];
+    document.querySelectorAll(`[data-${attr}]`).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    cb();
+  }));
+  seg("res", "res", () => { dirty.charts = true; });
+  seg("sub", "sub", () => { dirty.charts = true; });
+
+  const themeBtn = $("theme");
+  const isDark = () => document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+  const syncTheme = () => { themeBtn.textContent = isDark() ? "Light" : "Dark"; };
+  themeBtn.addEventListener("click", () => {
+    document.documentElement.dataset.theme = isDark() ? "light" : "dark";
+    syncTheme(); bandKey = ""; dirty.all();
+  });
+  syncTheme();
+
+  // orbit, pan and zoom
+  const view = $("view");
+  let drag = null;
+  view.addEventListener("contextmenu", (e) => e.preventDefault());
+  view.addEventListener("pointerdown", (e) => {
+    drag = { x: e.clientX, y: e.clientY, pan: e.shiftKey || e.button === 2 || e.button === 1 };
+    view.setPointerCapture(e.pointerId); view.classList.add("dragging");
+  });
+  view.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    drag.x = e.clientX; drag.y = e.clientY;
+    if (drag.pan) { V.panx += dx; V.pany += dy; }
+    else V.R = mul(mul(rotY(dx * 0.008), rotX(dy * 0.008)), V.R);
+    dirty.view = true;
+  });
+  const end = () => { drag = null; view.classList.remove("dragging"); };
+  view.addEventListener("pointerup", end);
+  view.addEventListener("pointercancel", end);
+  view.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    V.zoom *= Math.exp(-e.deltaY * 0.0015);
+    dirty.view = true;
+  }, { passive: false });
+  view.addEventListener("dblclick", () => { V.zoom = 1; V.panx = 0; V.pany = 0; dirty.view = true; });
+  window.addEventListener("resize", () => dirty.all());
+}
+
+// ------------------------------------------------------------------- start
+
+resetState();
+bind();
+requestAnimationFrame(loop);
+
+if (Array.isArray(window.FELUPE_EVENTS)) {
+  for (const m of window.FELUPE_EVENTS) handle(m);
+  if (S.status === "running") S.status = "disconnected";
+} else {
+  const es = new EventSource("events");
+  let opened = 0;
+  // the server replays all events on every connection
+  es.addEventListener("open", () => { if (opened++ > 0) resetState(); });
+  es.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    handle(m);
+    if (m.type === "job_end") es.close();
+  };
+  es.onerror = () => {
+    if (S.status === "running" || S.status === "waiting") { S.status = "disconnected"; dirty.panels = true; }
+  };
+  es.onopen = () => { if (S.status === "disconnected") { S.status = "waiting"; dirty.panels = true; } };
+}
+</script>
+</body>
+</html>

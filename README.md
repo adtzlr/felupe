@@ -38,6 +38,9 @@ The [documentation](https://felupe.readthedocs.io/en/stable/) covers more detail
 ## 🚀 Getting Started
 This minimal code-block demonstrates a nonlinear simulation of a hyperelastic cube under compression.
 
+> [!TIP]
+> Run this example or any other script without installation in your [browser](https://adtzlr.github.io/felupe-web/).
+
 ```python
 import felupe as fem
 

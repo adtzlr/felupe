@@ -97,7 +97,7 @@ class Step:
 
     Parameters
     ----------
-    items : list of SolidBody, SolidBodyNearlyIncompressible, SolidBodyPressure, SolidBodyGravity, PointLoad, MultiPointConstraint or MultiPointContact
+    items : list of SolidBody, SolidBodyNearlyIncompressible, SolidBodyPressure, SolidBodyForce, PointLoad, MultiPointConstraint or MultiPointContact
         A list of items with methods for the assembly of sparse vectors/matrices.
     ramp : dict, optional
         A dict with :class:`~felupe.Boundary` or ``item``-keys which holds the array of

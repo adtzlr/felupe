@@ -428,7 +428,7 @@ def test_project_solver():
     def solver(A, b):
         "A custom solver which records its calls."
         calls.append(b.shape)
-        return fem.solve.SuperLU()(A, b)
+        return fem.solve.SuperLUSolver()(A, b)
 
     projected = fem.project(values, region, solver=solver)
     assert len(calls) == 1

@@ -16,7 +16,7 @@ from ..field import Field
 from ..quadrature import Tetrahedron as TetrahedronQuadrature
 from ..quadrature import Triangle as TriangleQuadrature
 from ..region import Region
-from ..solve import SuperLU
+from ..solve import SuperLUSolver
 
 
 def topoints(values, region, average=True, mean=False):
@@ -186,7 +186,7 @@ def extrapolate(values, region, average=True, mean=False):
     return w.reshape(-1, *dim)
 
 
-def project(values, region, average=True, mean=False, dV=None, solver=SuperLU()):
+def project(values, region, average=True, mean=False, dV=None, solver=SuperLUSolver()):
     r"""Project given values at quadrature-points to mesh-points.
 
     Parameters
@@ -208,7 +208,7 @@ def project(values, region, average=True, mean=False, dV=None, solver=SuperLU())
         the differential volumes are taken from the region (default is None).
     solver : callable, optional
         A function for a sparse solver with signature ``x=solver(A, b)``. Default is
-        :class:`~felupe.solve.SuperLU`.
+        :class:`~felupe.solve.SuperLUSolver`.
 
     Returns
     -------

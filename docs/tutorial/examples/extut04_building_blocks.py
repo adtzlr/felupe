@@ -250,14 +250,14 @@ K = bilinearform.assemble()
 #
 #    \boldsymbol{u}_1 &+= d\boldsymbol{u}_1
 #
-# The default solver of FElupe is :class:`~felupe.solve.SuperLU`, based on
+# The default solver of FElupe is :class:`~felupe.solve.SuperLUSolver`, based on
 # `SuperLU <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.splu.html>`_
 # provided by the sparse package of `SciPy <https://docs.scipy.org>`_. A significantly
 # faster alternative is `pypardiso <https://pypi.org/project/pypardiso/>`_ which may be
 # installed from PyPI with ``pip install pypardiso`` (not included with FElupe). The
 # optional argument ``solver`` of :func:`~felupe.solve.solve` accepts any user-defined
 # solver.
-solver = fem.solve.SuperLU()  # default
+solver = fem.solve.SuperLUSolver()  # default
 
 # from pypardiso import spsolve as solver
 

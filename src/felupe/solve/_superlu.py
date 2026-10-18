@@ -7,7 +7,7 @@ from scipy.sparse import issparse
 from scipy.sparse.linalg import MatrixRankWarning, splu
 
 
-class SuperLU:
+class SuperLUSolver:
     r"""A sparse direct solver by :func:`scipy.sparse.linalg.splu` (SuperLU), tuned for
     the linear equation systems of the finite element method. An instance is a solver
     function ``x = solver(A, b)``, e.g. for :meth:`Job.evaluate(solver=solver)
@@ -77,11 +77,11 @@ class SuperLU:
         ...     items=[solid], ramp={boundaries["move"]: [0.1]}, boundaries=boundaries
         ... )
         >>>
-        >>> solver = fem.solve.SuperLU()  # the default solver
+        >>> solver = fem.solve.SuperLUSolver()  # the default solver
         >>> job = fem.Job(steps=[step]).evaluate(solver=solver)
         >>> solver
-        SuperLU(permc_spec='MMD_AT_PLUS_A', diag_pivot_thresh=0.1, symmetric_mode=True,
-        relax=20, panel_size=20)
+        SuperLUSolver(permc_spec='MMD_AT_PLUS_A', diag_pivot_thresh=0.1,
+        symmetric_mode=True, relax=20, panel_size=20)
 
     The previous default solver of FElupe is :func:`scipy.sparse.linalg.spsolve`.
 
@@ -123,7 +123,7 @@ class SuperLU:
         if self.options is not None:
             args.append(f"options={self.options!r}")
 
-        return f"SuperLU({', '.join(args)})"
+        return f"SuperLUSolver({', '.join(args)})"
 
     def factorize(self, A):
         """Return the LU decomposition of a sparse matrix, see

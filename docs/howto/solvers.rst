@@ -3,7 +3,7 @@ Use external solvers
 
 FElupe uses SuperLU as direct sparse solver by default because it is shipped with SciPy
 (and SciPy is already a dependency of FElupe). The default solver
-:class:`~felupe.solve.SuperLU` uses options of :func:`~scipy.sparse.linalg.splu`
+:class:`~felupe.solve.SuperLUSolver` uses options of :func:`~scipy.sparse.linalg.splu`
 which are tuned for the (structurally) symmetric matrices of the finite element method,
 also with non-symmetric values, e.g. of frictional contacts. While it is definitely a
 good choice for small to mid-sized problems, faster alternatives are easy to install and
@@ -16,7 +16,7 @@ solvers may be passed to the evaluation of a :class:`~felupe.Job`.
 
     import felupe as fem
 
-    solver = fem.solve.SuperLU()  # (default)
+    solver = fem.solve.SuperLUSolver()  # (default)
 
     job = fem.Job(steps)
     job.evaluate(solver=solver) # function `x = solver(A, b)`
@@ -30,7 +30,7 @@ Solvers from SciPy Sparse:
       import felupe as fem
 
       # the default solver, based on scipy.sparse.linalg.splu
-      solver = fem.solve.SuperLU()
+      solver = fem.solve.SuperLUSolver()
 
 .. tab:: SciPy Sparse (direct, without tuned options)
 

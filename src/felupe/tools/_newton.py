@@ -382,7 +382,7 @@ def jac(x, umat, parallel=False, grad=True, add_identity=True, sym=False):
     ).assemble(parallel=parallel)
 
 
-def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=fesolve.SuperLU()):
+def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=fesolve.SuperLUSolver()):
     "Solve partitioned system."
 
     system = fesolve.partition(x, A, dof1, dof0, -b)
@@ -497,7 +497,7 @@ def newtonraphson(
     dof1=None,
     dof0=None,
     ext0=None,
-    solver=fesolve.SuperLU(),
+    solver=fesolve.SuperLUSolver(),
     verbose=None,
     tqdm="tqdm",
     dispatcher=None,
@@ -557,7 +557,7 @@ def newtonraphson(
         on ``dof0`` (default is None).
     solver : callable, optional
         A sparse or dense solver with the signature ``x = solver(A, b)`` (default is
-        :class:`~felupe.solve.SuperLU`). For a more performant alternative install
+        :class:`~felupe.solve.SuperLUSolver`). For a more performant alternative install
         PyPardiso and use :func:`pypardiso.spsolve`.
     verbose : bool or int or None, optional
         Verbosity level to control how messages are printed during evaluation. If

@@ -3,7 +3,7 @@
 import numpy as np
 
 from ..math import values
-from ._superlu import SuperLU
+from ._superlu import SuperLUSolver
 
 
 def partition(v, K, dof1, dof0, r=None):
@@ -90,7 +90,7 @@ def partition(v, K, dof1, dof0, r=None):
     return u, u0, K11, K10, dof1, dof0, r1
 
 
-def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=SuperLU()):
+def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=SuperLUSolver()):
     r"""Linear solution of equation system with optional given values of
     unknowns at prescribed deegrees of freedom.
 

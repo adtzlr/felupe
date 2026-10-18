@@ -16,7 +16,7 @@ Tools
 
 .. autosummary::
 
-   solve.SuperLU
+   solve.SuperLUSolver
 
 **Event Dispatcher**
 
@@ -58,7 +58,7 @@ Tools
 
 .. autoclass:: felupe.NewtonConvergenceError
 
-.. autoclass:: felupe.solve.SuperLU
+.. autoclass:: felupe.solve.SuperLUSolver
    :members: factorize, __call__
 
 .. autoclass:: felupe.tools.EventDispatcher

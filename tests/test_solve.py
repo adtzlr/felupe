@@ -71,7 +71,7 @@ def stiffness():
 @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")  # np.matrix
 def test_superlu():
     K, b = stiffness()
-    solver = fem.solve.SuperLU()
+    solver = fem.solve.SuperLUSolver()
 
     x = solver(K, b)
     assert x.shape == b.shape
@@ -105,17 +105,17 @@ def test_superlu_options():
     x = spsolve(K.tocsc(), b)
 
     solvers = [
-        fem.solve.SuperLU(),
-        fem.solve.SuperLU(diag_pivot_thresh=1.0),
-        fem.solve.SuperLU(diag_pivot_thresh=0.0),
-        fem.solve.SuperLU(permc_spec="COLAMD", symmetric_mode=False),
-        fem.solve.SuperLU(relax=None, panel_size=None),
-        fem.solve.SuperLU(options=dict(Equil=False)),
+        fem.solve.SuperLUSolver(),
+        fem.solve.SuperLUSolver(diag_pivot_thresh=1.0),
+        fem.solve.SuperLUSolver(diag_pivot_thresh=0.0),
+        fem.solve.SuperLUSolver(permc_spec="COLAMD", symmetric_mode=False),
+        fem.solve.SuperLUSolver(relax=None, panel_size=None),
+        fem.solve.SuperLUSolver(options=dict(Equil=False)),
     ]
 
     for solver in solvers:
         assert np.allclose(solver(K, b), x)
-        assert repr(solver).startswith("SuperLU(permc_spec=")
+        assert repr(solver).startswith("SuperLUSolver(permc_spec=")
 
     assert "options={'Equil': False}" in repr(solvers[-1])
     assert isinstance(solvers[0].factorize(K), sp.linalg.SuperLU)
@@ -128,7 +128,7 @@ def test_superlu_nonsymmetric():
     A = (K + 0.2 * sp.triu(K, k=1) - 0.1 * sp.tril(K, k=-1)).tocsr()
     assert abs(A - A.T).max() > 0.1 * abs(A).max()
 
-    x = fem.solve.SuperLU()(A, b)
+    x = fem.solve.SuperLUSolver()(A, b)
     assert np.allclose(A @ x, b)
     assert np.allclose(x, spsolve(A.tocsc(), b))
 
@@ -139,7 +139,7 @@ def test_superlu_singular():
     b = np.ones(3)
 
     with pytest.warns(MatrixRankWarning):
-        x = fem.solve.SuperLU()(A, b)
+        x = fem.solve.SuperLUSolver()(A, b)
 
     assert x.shape == b.shape
     assert np.all(np.isnan(x))

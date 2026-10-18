@@ -27,6 +27,7 @@ def test_dtype(dtype=np.float32, tol=1e-3):
 
 def test_dtype_newton_tol():
     # the default tolerance depends on the data types of the linear equation system
+    # and of the unknowns
     class Tolerance(fem.Plugin):
         def before_newton(self, context, state):
             self.tol_before_newton = state.tol
@@ -34,8 +35,15 @@ def test_dtype_newton_tol():
         def before_linear_solve(self, context, state):
             self.tol = state.tol
 
-    for dtype in [np.float32, np.float64]:
-        region = fem.RegionHexahedron(fem.Cube(n=3)).astype(dtype, copy=False)
+    # data types of the region and of the field
+    dtypes = [
+        (np.float32, np.float32),
+        (np.float64, np.float32),
+        (np.float64, np.float64),
+    ]
+
+    for region_dtype, dtype in dtypes:
+        region = fem.RegionHexahedron(fem.Cube(n=3)).astype(region_dtype, copy=False)
         field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
         boundaries, loadcase = fem.dof.uniaxial(
             field, move=0.2, clamped=True, return_loadcase=True
@@ -50,7 +58,8 @@ def test_dtype_newton_tol():
         tol = np.sqrt(np.finfo(dtype).eps)
 
         assert res.success
-        assert res.fun.dtype == dtype
+        assert res.fun.dtype == np.result_type(region_dtype, dtype)
+        assert res.x[0].values.dtype == dtype
         assert res.fnorms[-1] < tol
         assert tolerance.tol_before_newton is None
         assert tolerance.tol == tol
@@ -67,21 +76,23 @@ def test_dtype_newton_tol():
 
 
 def test_dtype_newton_tol_job():
-    # a job without a given tolerance converges in single-precision
-    region = fem.RegionHexahedron(fem.Cube(n=3)).astype(np.float32, copy=False)
-    field = fem.FieldContainer([fem.Field(region, dim=3, dtype=np.float32)])
-    boundaries = fem.dof.uniaxial(field, clamped=True)
+    # a job without a given tolerance converges with fields in single-precision on a
+    # region in single- or double-precision
+    for region_dtype in [np.float32, np.float64]:
+        region = fem.RegionHexahedron(fem.Cube(n=3)).astype(region_dtype, copy=False)
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=np.float32)])
+        boundaries = fem.dof.uniaxial(field, clamped=True)
 
-    solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
-    step = fem.Step(
-        [solid], ramp={boundaries["move"]: [0.1, 0.2]}, boundaries=boundaries
-    )
-    job = fem.Job([step]).evaluate(verbose=0)
+        solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+        step = fem.Step(
+            [solid], ramp={boundaries["move"]: [0.1, 0.2]}, boundaries=boundaries
+        )
+        job = fem.Job([step]).evaluate(verbose=0)
 
-    tol = np.sqrt(np.finfo(np.float32).eps)
+        tol = np.sqrt(np.finfo(np.float32).eps)
 
-    assert np.all([fnorms[-1] < tol for fnorms in job.fnorms])
-    assert field[0].values.dtype == np.float32
+        assert np.all([fnorms[-1] < tol for fnorms in job.fnorms])
+        assert field[0].values.dtype == np.float32
 
 
 def test_dtype_default_tol():
@@ -117,6 +128,30 @@ def test_dtype_default_tol():
     assert default_tol(A.astype(bool), b.astype(np.int8)) == tol(np.float64)
     assert default_tol(1.0, [1.0]) == tol(np.float64)
     assert isinstance(default_tol(A, b), float)
+
+    # the lowest precision of the linear equation system and of the unknowns (arrays)
+    assert default_tol(A, b, x=b) == tol(np.float64)
+    assert default_tol(A, b, x=b.astype(np.float32)) == tol(np.float32)
+    assert default_tol(A, b, x=b.astype(np.float16)) == tol(np.float16)
+    assert default_tol(A.astype(np.float32), b.astype(np.float32), x=b) == tol(
+        np.float32
+    )
+    assert default_tol(A, b, x=b.astype(np.complex64)) == tol(np.float32)
+
+    # data types of the unknowns without a machine epsilon are ignored
+    assert default_tol(A, b, x=b.astype(int)) == tol(np.float64)
+    assert default_tol(A.astype(np.float32), b, x=b.astype(int)) == tol(np.float64)
+    assert default_tol(A, b, x=None) == tol(np.float64)
+
+    # the lowest precision of all fields of a field container
+    region = fem.RegionHexahedron(fem.Cube(n=2))
+    u = fem.Field(region, dim=3, dtype=np.float32)
+    p = fem.Field(region, dtype=np.float64)
+
+    assert default_tol(A, b, x=fem.FieldContainer([p])) == tol(np.float64)
+    assert default_tol(A, b, x=fem.FieldContainer([u])) == tol(np.float32)
+    assert default_tol(A, b, x=fem.FieldContainer([u, p])) == tol(np.float32)
+    assert default_tol(A, b, x=fem.FieldContainer([p, u])) == tol(np.float32)
 
 
 def test_dtype_axi():

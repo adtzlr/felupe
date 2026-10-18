@@ -144,6 +144,14 @@ def test_superlu_singular():
     assert x.shape == b.shape
     assert np.all(np.isnan(x))
 
+    # other errors of SuperLU are raised
+    class FailingSolver(fem.solve.SuperLUSolver):
+        def factorize(self, A):
+            raise RuntimeError("Not enough memory to perform factorization.")
+
+    with pytest.raises(RuntimeError, match="memory"):
+        FailingSolver()(A, b)
+
 
 def test_superlu_job():
     "The default solver and spsolve give the same results."

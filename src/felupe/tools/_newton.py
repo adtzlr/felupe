@@ -57,7 +57,11 @@ class IterationState:
     success : bool or None, optional
         A flag if the current iteration has converged (default is None).
     tol : float or None, optional
-        The tolerance of the Newton-Raphson method (default is None).
+        The tolerance of the Newton-Raphson method (default is None). If no tolerance
+        is given to :func:`~felupe.newtonraphson`, the default tolerance depends on the
+        data types of the linear equation system. It is set after the assembly of the
+        Jacobian in the first iteration, i.e. it is None in the hooks
+        ``before_newton`` and ``before_iteration`` of the first iteration.
     error : bool or None, optional
         A flag if an error occured in the current iteration (default is None).
     x : felupe.FieldContainer or ndarray or None, optional
@@ -415,6 +419,26 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
     return xnorm, fnorm, success
 
 
+def default_tol(A, b):
+    r"""Return the default tolerance of the Newton-Raphson method for a linear equation
+    system with the Jacobian ``A`` and the objective function ``b``.
+
+    The tolerance is the square root of the machine epsilon of the common data type of
+    ``A`` and ``b``, e.g. ``1.490e-8`` for ``float64`` and ``3.453e-4`` for ``float32``.
+    Data types without a machine epsilon, e.g. integers, use the tolerance of
+    ``float64``.
+    """
+
+    dtypes = [getattr(a, "dtype", None) for a in (A, b)]
+    dtypes = [np.asarray(a).dtype if t is None else t for a, t in zip((A, b), dtypes)]
+    dtype = np.result_type(*dtypes)
+
+    if not np.issubdtype(dtype, np.inexact):
+        dtype = np.dtype(float)
+
+    return float(np.sqrt(np.finfo(dtype).eps))
+
+
 def update_statevars(items):
     """Accept the trial state variables of the items for a converged solution.
 
@@ -451,7 +475,7 @@ def newtonraphson(
     check=check,
     args=(),
     kwargs=None,
-    tol=np.sqrt(np.finfo(float).eps),
+    tol=None,
     items=None,
     dof1=None,
     dof0=None,
@@ -491,8 +515,16 @@ def newtonraphson(
         ``xnorm, fnorm, success = check(dx, x, f, xtol, ftol, dof1, dof0, items)``.
         The state variables of the items are updated by the Newton-Raphson method after
         a converged iteration, i.e. a custom ``check`` doesn't update them.
-    tol : float, optional
-        Tolerance value to check if the function has converged (default is 1.490e-8).
+    tol : float or None, optional
+        Tolerance value to check if the function has converged. If None, the tolerance
+        is the square root of the machine epsilon of the common data type of the
+        Jacobian and the objective function, e.g. ``1.490e-8`` for ``float64`` and
+        ``3.453e-4`` for ``float32``, see the notes below. Default is None.
+
+        ..  versionchanged:: 12.0.0
+            The default tolerance depends on the data types of the linear equation
+            system. Before, it was ``1.490e-8`` for all data types.
+
     items : list or None, optional
         List with items which provide methods for assembly, e.g. like
         :class:`felupe.SolidBody` (default is None). See
@@ -600,7 +632,26 @@ def newtonraphson(
          x &= x_n + dx
 
     Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
-    :math:`f(x)`. The procedure is repeated until convergence is reached.
+    :math:`f(x)`. The procedure is repeated until convergence is reached, i.e. until the
+    norm of the objective function is lower than the tolerance.
+
+    The attainable norm of the objective function is limited by the precision of its
+    data type. Hence, the default tolerance is the square root of the machine epsilon
+    :math:`\varepsilon` of the common data type of the linear equation system, i.e. of
+    the Jacobian :math:`K(x_n)` and of the objective function :math:`f(x_n)`, see Eq.
+    :eq:`newton-tol`. It is evaluated after the assembly of the Jacobian in the first
+    iteration.
+
+    ..  math::
+        :label: newton-tol
+
+        \text{tol} = \sqrt{\varepsilon}
+
+    This is approximately ``1.490e-8`` for double-precision (``float64``) and
+    ``3.453e-4`` for single-precision (``float32``), e.g. of a region and fields cast to
+    ``float32``. The data type of the solution of the linear equation system is not
+    considered, i.e. a linear solver in single-precision for an equation system in
+    double-precision uses the tolerance of double-precision.
 
     Plugins may modify the update of the unknowns in the ``after_linear_solve`` hook,
     see :class:`~felupe.tools.IterationState`. E.g., a backtracking line search
@@ -756,6 +807,11 @@ def newtonraphson(
             K = jac(x, *args, **kwargs)
 
         state.jac = K
+
+        if tol is None:
+            # the default tolerance depends on the data types of the linear equation
+            # system, which are known after the assembly of the Jacobian
+            tol = state.tol = default_tol(K, f)
 
         # create keyword-arguments for solving the linear system
         keys = ["x", "dof1", "dof0", "ext0", "solver"]

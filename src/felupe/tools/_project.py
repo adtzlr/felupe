@@ -2,7 +2,6 @@
 
 import numpy as np
 from scipy.sparse import csr_matrix as sparsematrix
-from scipy.sparse.linalg import spsolve
 
 from ..assembly import IntegralFormCartesian
 from ..element import (
@@ -17,6 +16,7 @@ from ..field import Field
 from ..quadrature import Tetrahedron as TetrahedronQuadrature
 from ..quadrature import Triangle as TriangleQuadrature
 from ..region import Region
+from ..solve import SuperLU
 
 
 def topoints(values, region, average=True, mean=False):
@@ -186,7 +186,7 @@ def extrapolate(values, region, average=True, mean=False):
     return w.reshape(-1, *dim)
 
 
-def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
+def project(values, region, average=True, mean=False, dV=None, solver=SuperLU()):
     r"""Project given values at quadrature-points to mesh-points.
 
     Parameters
@@ -208,7 +208,7 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
         the differential volumes are taken from the region (default is None).
     solver : callable, optional
         A function for a sparse solver with signature ``x=solver(A, b)``. Default is
-        :func:`scipy.sparse.linalg.spsolve`.
+        :class:`~felupe.solve.SuperLU`.
 
     Returns
     -------
@@ -357,6 +357,6 @@ def project(values, region, average=True, mean=False, dV=None, solver=spsolve):
 
     # solve with individual right-hand-sides (per tensor-component of values)
     b = IntegralFormCartesian(values.reshape(size, *axes), v=x, dV=dV).assemble()
-    x.values[:] = spsolve(A, b.toarray().reshape(-1, size)).reshape(x.values.shape)
+    x.values[:] = solver(A, b.toarray().reshape(-1, size)).reshape(x.values.shape)
 
     return x.values.reshape(-1, *shape)

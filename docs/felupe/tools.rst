@@ -12,6 +12,12 @@ Tools
    tools.NewtonResult
    NewtonConvergenceError
 
+**Linear Solver**
+
+.. autosummary::
+
+   solve.SuperLU
+
 **Event Dispatcher**
 
 .. autosummary::
@@ -51,6 +57,9 @@ Tools
    :members:
 
 .. autoclass:: felupe.NewtonConvergenceError
+
+.. autoclass:: felupe.solve.SuperLU
+   :members: factorize, __call__
 
 .. autoclass:: felupe.tools.EventDispatcher
    :members:

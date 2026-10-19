@@ -68,10 +68,12 @@ class CutbackPlugin(Plugin):
         values and of a failed :class:`~felupe.LinesearchPlugin`, floating-point errors
         (e.g. of ``numpy.errstate(invalid="raise")``) as well as errors of
         :mod:`numpy.linalg`, e.g. of a singular matrix. The sparse solvers
+        :class:`~felupe.solve.SuperLUSolver` (default),
         :func:`scipy.sparse.linalg.spsolve` and :func:`pypardiso.spsolve` do not raise
-        an error for a singular matrix. Instead, :func:`scipy.sparse.linalg.spsolve`
-        returns NaN values (which leads to a :class:`~felupe.NewtonConvergenceError`)
-        and :func:`pypardiso.spsolve` returns a perturbed solution.
+        an error for a singular matrix. Instead, :class:`~felupe.solve.SuperLUSolver`
+        and :func:`scipy.sparse.linalg.spsolve` return NaN values (which leads to a
+        :class:`~felupe.NewtonConvergenceError`) and :func:`pypardiso.spsolve` returns
+        a perturbed solution.
 
     Attributes
     ----------

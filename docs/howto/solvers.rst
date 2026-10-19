@@ -2,9 +2,12 @@ Use external solvers
 --------------------
 
 FElupe uses SuperLU as direct sparse solver by default because it is shipped with SciPy
-(and SciPy is already a dependency of FElupe). While it is definitely a good choice for
-small to mid-sized problems, faster alternatives are easy to install and use. This
-section demonstrates several possibilities, e.g. a fast direct solver from
+(and SciPy is already a dependency of FElupe). The default solver
+:class:`~felupe.solve.SuperLUSolver` uses options of :func:`~scipy.sparse.linalg.splu`
+which are tuned for the (structurally) symmetric matrices of the finite element method,
+also with non-symmetric values, e.g. of frictional contacts. While it is definitely a
+good choice for small to mid-sized problems, faster alternatives are easy to install and
+use. This section demonstrates several possibilities, e.g. a fast direct solver from
 `PyPardiso <https://github.com/haasad/PyPardisoProject>`_ (``pip install pypardiso``)
 and the :func:`~scipy.sparse.linalg.minres` iterative solver from ``SciPy``. Custom
 solvers may be passed to the evaluation of a :class:`~felupe.Job`.
@@ -12,35 +15,29 @@ solvers may be passed to the evaluation of a :class:`~felupe.Job`.
 ..  code-block:: python
 
     import felupe as fem
-    
-    from scipy.sparse.linalg import spsolve  # (default)
+
+    solver = fem.solve.SuperLUSolver()  # (default)
 
     job = fem.Job(steps)
-    job.evaluate(solver=spsolve) # function `x = spsolve(A, b)`
+    job.evaluate(solver=solver) # function `x = solver(A, b)`
 
 Solvers from SciPy Sparse:
 
 .. tab:: SciPy Sparse (direct)
 
    .. code-block:: python
-      
-      # the default solver
-      from scipy.sparse.linalg import spsolve
 
-.. tab:: SciPy Sparse (direct, symmetric)
+      import felupe as fem
+
+      # the default solver, based on scipy.sparse.linalg.splu
+      solver = fem.solve.SuperLUSolver()
+
+.. tab:: SciPy Sparse (direct, without tuned options)
 
    ..  code-block:: python
 
-       from scipy.sparse.linalg import splu
-
-       def solver(A, b):
-       lu = splu(
-           A.tocsc(),
-           permc_spec="MMD_AT_PLUS_A",
-           diag_pivot_thresh=0.0,
-           options=dict(SymmetricMode=True),
-       )
-       return lu.solve(b)
+       # the default solver of FElupe before v12.0.0
+       from scipy.sparse.linalg import spsolve
 
 .. tab:: SciPy Sparse (iterative)
 

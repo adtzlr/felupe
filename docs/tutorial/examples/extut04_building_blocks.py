@@ -250,19 +250,19 @@ K = bilinearform.assemble()
 #
 #    \boldsymbol{u}_1 &+= d\boldsymbol{u}_1
 #
-# The default solver of FElupe is
-# `SuperLU <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html#scipy.sparse.linalg.spsolve>`_
+# The default solver of FElupe is :class:`~felupe.solve.SuperLUSolver`, based on
+# `SuperLU <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.splu.html>`_
 # provided by the sparse package of `SciPy <https://docs.scipy.org>`_. A significantly
 # faster alternative is `pypardiso <https://pypi.org/project/pypardiso/>`_ which may be
 # installed from PyPI with ``pip install pypardiso`` (not included with FElupe). The
 # optional argument ``solver`` of :func:`~felupe.solve.solve` accepts any user-defined
 # solver.
-from scipy.sparse.linalg import spsolve  # default
+solver = fem.solve.SuperLUSolver()  # default
 
-# from pypardiso import spsolve
+# from pypardiso import spsolve as solver
 
 system = fem.solve.partition(field, K, dof1, dof0, r)
-dfield = fem.solve.solve(*system, ext0, solver=spsolve)  # .reshape(*u.shape)
+dfield = fem.solve.solve(*system, ext0, solver=solver)  # .reshape(*u.shape)
 # field += dfield
 
 # %%
@@ -277,7 +277,7 @@ for iteration in range(8):
     K = bilinearform.assemble()
 
     system = fem.solve.partition(field, K, dof1, dof0, r)
-    dfield = fem.solve.solve(*system, ext0, solver=spsolve)
+    dfield = fem.solve.solve(*system, ext0, solver=solver)
 
     norm = np.linalg.norm(dfield)
     print(iteration, norm)

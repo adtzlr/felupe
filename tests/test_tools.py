@@ -418,6 +418,28 @@ def test_project():
         projected = fem.project(values, region, average=True)
 
 
+def test_project_solver():
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    values = fem.Field(region, dim=3).extract()
+
+    calls = []
+
+    def solver(A, b):
+        "A custom solver which records its calls."
+        calls.append(b.shape)
+        return fem.solve.SuperLUSolver()(A, b)
+
+    projected = fem.project(values, region, solver=solver)
+    assert len(calls) == 1
+    assert calls[0] == (mesh.npoints, 9)
+    assert np.allclose(projected, fem.project(values, region))
+
+    from scipy.sparse.linalg import spsolve
+
+    assert np.allclose(projected, fem.project(values, region, solver=spsolve))
+
+
 def test_topoints():
     mesh = fem.Rectangle(n=2).triangulate()
     region = fem.RegionTriangle(mesh)
@@ -547,6 +569,7 @@ if __name__ == "__main__":
     test_newton_linearelastic()
     test_newton_body()
     test_project()
+    test_project_solver()
     test_topoints()
     test_extrapolate()
     test_resize()

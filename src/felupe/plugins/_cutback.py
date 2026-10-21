@@ -60,20 +60,23 @@ class CutbackPlugin(Plugin):
         substep. With ``growth=1.0``, the increment is kept constant.
     exceptions : type or tuple of type, optional
         The errors of the Newton-Raphson method which lead to a cutback (default is
-        ``(NewtonConvergenceError, ArithmeticError, numpy.linalg.LinAlgError)``).
-        Errors of other types are raised without a cutback, e.g. a
+        ``(NewtonConvergenceError, ArithmeticError, numpy.linalg.LinAlgError,
+        RuntimeError)``). Errors of other types are raised without a cutback, e.g. a
         :class:`ValueError` of mismatching shapes of arrays. The default types include
         the :class:`~felupe.NewtonConvergenceError` of :func:`~felupe.newtonraphson`
         if the maximum number of iterations is reached or if the solution contains NaN
         values and of a failed :class:`~felupe.LinesearchPlugin`, floating-point errors
-        (e.g. of ``numpy.errstate(invalid="raise")``) as well as errors of
-        :mod:`numpy.linalg`, e.g. of a singular matrix. The sparse solvers
-        :class:`~felupe.solve.SuperLUSolver` (default),
-        :func:`scipy.sparse.linalg.spsolve` and :func:`pypardiso.spsolve` do not raise
-        an error for a singular matrix. Instead, :class:`~felupe.solve.SuperLUSolver`
-        and :func:`scipy.sparse.linalg.spsolve` return NaN values (which leads to a
-        :class:`~felupe.NewtonConvergenceError`) and :func:`pypardiso.spsolve` returns
-        a perturbed solution.
+        (e.g. of ``numpy.errstate(invalid="raise")``), errors of :mod:`numpy.linalg`,
+        e.g. of a singular matrix, as well as runtime errors of the sparse solvers,
+        e.g. the :class:`RuntimeError` of :class:`~felupe.solve.SuperLUSolver`
+        (default) and :func:`scipy.sparse.linalg.spsolve` if the factorization of a
+        nearly singular matrix fails. The subclasses :class:`NotImplementedError` and
+        :class:`RecursionError` of :class:`RuntimeError` are programming errors, which
+        are raised without a cutback (unless they are given explicitly). An exactly
+        singular matrix does not raise an error. Instead,
+        :class:`~felupe.solve.SuperLUSolver` and :func:`scipy.sparse.linalg.spsolve`
+        return NaN values (which leads to a :class:`~felupe.NewtonConvergenceError`)
+        and :func:`pypardiso.spsolve` returns a perturbed solution.
 
     Attributes
     ----------
@@ -224,7 +227,12 @@ class CutbackPlugin(Plugin):
         factor=0.5,
         max_cutbacks=10,
         growth=2.0,
-        exceptions=(NewtonConvergenceError, ArithmeticError, np.linalg.LinAlgError),
+        exceptions=(
+            NewtonConvergenceError,
+            ArithmeticError,
+            np.linalg.LinAlgError,
+            RuntimeError,
+        ),
     ):
         self.factor = float(factor)
         self.max_cutbacks = int(max_cutbacks)
@@ -243,6 +251,14 @@ class CutbackPlugin(Plugin):
             exceptions = (exceptions,)
 
         self.exceptions = tuple(exceptions)
+
+        # programming errors (subclasses of RuntimeError) are raised without a cutback,
+        # unless they are given explicitly
+        self._excluded = tuple(
+            error
+            for error in (NotImplementedError, RecursionError)
+            if error not in self.exceptions
+        )
 
         self.load_factors = []
         self.cutbacks = []
@@ -273,6 +289,12 @@ class CutbackPlugin(Plugin):
                 objects.append(obj)
 
         return objects
+
+    def _recoverable(self, error):
+        "Return True if an error of the Newton-Raphson method leads to a cutback."
+        return isinstance(error, self.exceptions) and not isinstance(
+            error, self._excluded
+        )
 
     def checkpoint(self, context):
         """Return a checkpoint of the unknowns and of the items of a substep.
@@ -368,7 +390,7 @@ class CutbackPlugin(Plugin):
         self.load_factors[-1] = []
 
         # errors of other types are raised without a cutback
-        if not isinstance(state.error, self.exceptions):
+        if not self._recoverable(state.error):
             return
 
         checkpoint = self._checkpoint
@@ -423,6 +445,8 @@ class CutbackPlugin(Plugin):
                     res = context.solve(values)
 
                 except self.exceptions as attempt_error:
+                    if not self._recoverable(attempt_error):
+                        raise
                     error = attempt_error
                     self.restore(context, checkpoint)
                     break

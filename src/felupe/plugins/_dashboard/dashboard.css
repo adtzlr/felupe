@@ -1,0 +1,228 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+
+/* The compact dashboard of the DashboardWidgetPlugin of FElupe. The colours follow
+   the theme of VS Code (--vscode-*) or of JupyterLab (--jp-*), the data colours are
+   switched by the class fd-dark (set by the module for a dark theme). */
+
+.fd {
+  --fd-ink: var(--vscode-editor-foreground, var(--jp-ui-font-color1, #1b2631));
+  --fd-ink-2: var(--vscode-descriptionForeground, var(--jp-ui-font-color2, #5a6772));
+  --fd-rule: var(--vscode-editorWidget-border, var(--jp-border-color2, #d3d9de));
+  --fd-input: var(--vscode-input-background, var(--jp-input-background, #ffffff));
+  --fd-font: var(--vscode-font-family, var(--jp-ui-font-family, system-ui, sans-serif));
+  --fd-line: #2f5d8a;
+  --fd-amber: #b07400;
+  --fd-fail: #b3261e;
+
+  container-type: inline-size;
+  box-sizing: border-box;
+  max-width: 980px;
+  display: grid;
+  gap: 6px;
+  padding: 6px 0;
+  color: var(--fd-ink);
+  font-family: var(--fd-font);
+  font-size: 12px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.fd.fd-dark {
+  --fd-line: #7fb0dd;
+  --fd-amber: #e0a526;
+  --fd-fail: #ef6b62;
+}
+.fd *,
+.fd *::before,
+.fd *::after {
+  box-sizing: border-box;
+}
+
+.fd-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fd-brand {
+  font-weight: 700;
+  font-size: 15px;
+}
+.fd-title {
+  color: var(--fd-ink-2);
+  font-size: 13px;
+  min-width: 0;
+}
+.fd-status {
+  margin-left: auto;
+  font-weight: 600;
+}
+.fd-status[data-s="running"],
+.fd-status[data-s="finished"] {
+  color: var(--fd-line);
+}
+.fd-status[data-s="failed"] {
+  color: var(--fd-fail);
+}
+.fd-status[data-s="waiting"] {
+  color: var(--fd-ink-2);
+}
+.fd-pct,
+.fd-clock {
+  font-size: 15px;
+  min-width: 5ch;
+  text-align: right;
+}
+.fd-where {
+  color: var(--fd-ink-2);
+}
+.fd-path {
+  width: 100%;
+  height: 22px;
+  display: block;
+}
+
+.fd-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 236px;
+  gap: 10px;
+}
+.fd-left {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+.fd-view {
+  position: relative;
+  min-width: 0;
+  height: 300px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fd-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+.fd-canvas:active {
+  cursor: grabbing;
+}
+.fd-side {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+}
+.fd-kv {
+  display: grid;
+  gap: 1px;
+}
+.fd-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+.fd-row > span:first-child {
+  color: var(--fd-ink-2);
+  white-space: nowrap;
+}
+.fd-row > span:last-child {
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fd-row.fd-big > span:last-child {
+  font-size: 15px;
+  font-weight: 600;
+}
+.fd-model {
+  border-top: 1px solid var(--fd-rule);
+  padding-top: 6px;
+}
+.fd-spark {
+  width: 100%;
+  height: 56px;
+  display: block;
+}
+
+.fd-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: var(--fd-ink-2);
+}
+.fd-tools label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.fd-tools select,
+.fd-tools input[type="number"],
+.fd-views button {
+  font: inherit;
+  color: var(--fd-ink);
+  background: var(--fd-input);
+  border: 1px solid var(--fd-rule);
+  border-radius: 3px;
+  padding: 2px 6px;
+  min-height: 24px;
+}
+.fd-tools input[type="number"] {
+  width: 64px;
+}
+.fd-tools input[type="checkbox"] {
+  accent-color: var(--fd-line);
+  margin: 0;
+}
+.fd-views {
+  display: inline-flex;
+  gap: 2px;
+}
+.fd-views button {
+  cursor: pointer;
+}
+.fd :focus-visible {
+  outline: 2px solid var(--fd-line);
+  outline-offset: 1px;
+}
+
+.fd-foot {
+  display: grid;
+  gap: 3px;
+}
+.fd-split {
+  display: flex;
+  height: 5px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.fd-split div {
+  height: 100%;
+}
+.fd-perf {
+  color: var(--fd-ink-2);
+}
+.fd-event[data-kind="fail"] {
+  color: var(--fd-fail);
+}
+.fd-event[data-kind="cut"] {
+  color: var(--fd-amber);
+}
+.fd-event[data-kind="done"] {
+  color: var(--fd-ink-2);
+}
+
+@container (max-width: 560px) {
+  .fd-main {
+    grid-template-columns: 1fr;
+  }
+  .fd-view {
+    height: 260px;
+  }
+}

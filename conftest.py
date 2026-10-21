@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import importlib.util
+
 import pytest
+
+# the module of the widget of the dashboard requires the optional dependency anywidget
+collect_ignore = []
+if importlib.util.find_spec("anywidget") is None:  # pragma: no cover
+    collect_ignore.append("src/felupe/plugins/_dashboard/_widget.py")
 
 
 def pytest_configure(config):

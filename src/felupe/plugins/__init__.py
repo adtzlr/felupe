@@ -3,6 +3,7 @@
 from ._animation_writer import AnimationWriterPlugin
 from ._characteristic_curve import CharacteristicCurvePlugin
 from ._cutback import CutbackPlugin
+from ._dashboard import DashboardWidgetPlugin
 from ._linesearch import LinesearchPlugin, LinesearchTrial
 from ._plugin import Plugin
 from ._progress import ProgressPlugin
@@ -12,6 +13,7 @@ __all__ = [
     "AnimationWriterPlugin",
     "CharacteristicCurvePlugin",
     "CutbackPlugin",
+    "DashboardWidgetPlugin",
     "LinesearchPlugin",
     "LinesearchTrial",
     "Plugin",

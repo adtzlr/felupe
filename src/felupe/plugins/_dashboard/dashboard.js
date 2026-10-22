@@ -179,6 +179,7 @@ function render({ model, el }) {
   const ui = { scale: 1, edges: true };
   const cam = { R: VIEWS.iso.slice(), zoom: 1, panx: 0, pany: 0 };
   let geo = null; // the geometry of the model
+  let points = null; // the buffer of the points of the last geometry (a new job)
   let frame = null; // the decoded field values of the latest converged substep
   let received = performance.now();
   let pal = PALETTE.light;
@@ -267,7 +268,14 @@ function render({ model, el }) {
     };
 
     $(".fd-scale").disabled = !info.deform;
-    cam.R = (info.dim === 3 ? VIEWS.iso : VIEWS.xy).slice();
+
+    // the camera is reset for the geometry of a new job (not for an update of info)
+    if (model.get("points") !== points) {
+      points = model.get("points");
+      cam.R = (info.dim === 3 ? VIEWS.iso : VIEWS.xy).slice();
+      cam.zoom = 1;
+      cam.panx = cam.pany = 0;
+    }
     $(".fd-title").textContent = info.title || "";
     $(".fd-version").textContent = info.version || "";
   }

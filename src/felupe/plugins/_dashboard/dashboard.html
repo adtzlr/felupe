@@ -1,0 +1,162 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- The live HTML file of the DashboardWidgetPlugin of FElupe. The page polls the
+     scripts next to it, which are written by the job (a page of a local file can not
+     fetch other files, but it can load scripts). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FElupe</title>
+<style>
+/*STYLES*/
+
+/* the colours of the page (the dashboard uses the variables of JupyterLab) */
+:root {
+  --jp-layout-color0: #ffffff;
+  --jp-ui-font-color1: #1b2631;
+  --jp-ui-font-color2: #5a6772;
+  --jp-border-color2: #d3d9de;
+  --jp-input-background: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --jp-layout-color0: #161b20;
+    --jp-ui-font-color1: #e3e7ea;
+    --jp-ui-font-color2: #a3aeb8;
+    --jp-border-color2: #34404b;
+    --jp-input-background: #20272e;
+  }
+}
+html, body {
+  margin: 0;
+  background: var(--jp-layout-color0);
+}
+body {
+  padding: 12px 16px;
+}
+.fd {
+  margin: 0 auto;
+}
+</style>
+</head>
+<body>
+<div id="dashboard"></div>
+<script type="module">
+/*MODULE*/
+
+// ------------------------------------------------------------- the live file
+
+const FILES = /*CONFIG*/;
+
+// a model with the interface of a widget, filled by the scripts of the job
+const state = {};
+const listeners = {};
+const model = {
+  get: (key) => state[key],
+  on: (event, handler) => (listeners[event] ||= []).push(handler),
+  off: (event, handler) => {
+    listeners[event] = (listeners[event] || []).filter((f) => f !== handler);
+  },
+};
+
+// update the state and notify the changes (the info of the model, the load path and
+// the residuals are only notified if they have changed, the info e.g. resets the view
+// of a new model, the frame and the buffers are always notified)
+const COMPARED = new Set(["info", "path", "newton"]);
+const texts = {};
+function update(values) {
+  for (const [key, value] of Object.entries(values)) {
+    if (COMPARED.has(key)) {
+      const text = JSON.stringify(value);
+      if (text === texts[key]) continue;
+      texts[key] = text;
+    }
+    state[key] = value;
+    for (const handler of listeners["change:" + key] || []) handler();
+  }
+}
+
+function decode(text) {
+  const binary = atob(text || "");
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+// load a script of the job (again), which assigns a global variable
+function load(name) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `${name}?t=${Date.now()}`;
+    script.onload = () => {
+      script.remove();
+      resolve();
+    };
+    script.onerror = () => {
+      script.remove();
+      reject(new Error(`The file ${name} is not available.`));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+let geometry = -1;
+let version = -1;
+
+async function poll() {
+  try {
+    await load(FILES.version);
+    const latest = window.FELUPE_DASHBOARD_VERSION;
+
+    // a new job: the geometry of the model
+    if (latest.geometry !== geometry) {
+      await load(FILES.geometry);
+      const data = window.FELUPE_DASHBOARD_GEOMETRY;
+      if (data.id === latest.geometry) {
+        geometry = data.id;
+        version = -1;
+        update({
+          points: decode(data.points),
+          triangles: decode(data.triangles),
+          quads: decode(data.quads),
+          lines: decode(data.lines),
+        });
+      }
+    }
+
+    // the state of the job, the elapsed time is extrapolated to now
+    if (latest.state !== version) {
+      await load(FILES.state);
+      const data = window.FELUPE_DASHBOARD_STATE;
+      if (data.geometry === geometry && data.version >= latest.state) {
+        version = data.version;
+        const progress = { ...data.progress };
+        if (progress.status === "running") {
+          progress.elapsed += Math.max(0, Date.now() / 1000 - data.written);
+        }
+        update({
+          info: data.info,
+          frame: { ...data.frame, values: decode(data.frame.values) },
+          path: data.path,
+          newton: data.newton,
+          progress,
+        });
+        const title = (data.info || {}).title;
+        document.title = title ? `${title} | FElupe` : "FElupe";
+      }
+    }
+  } catch (error) {
+    // the files are not (yet) written, e.g. before the job starts
+  }
+
+  // after the job, the files are polled less often (for the next job)
+  const status = (state.progress || {}).status;
+  setTimeout(poll, status === "running" ? 1000 : 3000);
+}
+
+render({ model, el: document.getElementById("dashboard") });
+poll();
+</script>
+</body>
+</html>

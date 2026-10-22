@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import base64
+import json
+import os
 import sys
 import warnings
 from types import SimpleNamespace
@@ -675,7 +678,7 @@ def test_dashboard_without_mesh(kernel):
     "A job without a mesh has no geometry, the solver figures are still shown."
 
     dashboard = fem.DashboardWidgetPlugin()
-    dashboard.widget = _plugin._widget_class()()
+    dashboard.widget = dashboard._state = _plugin._widget_class()()
     dashboard._model(SimpleNamespace(steps=[SimpleNamespace(items=[], nsubsteps=1)]))
 
     info = dashboard.widget.info
@@ -700,7 +703,7 @@ def test_dashboard_limits(kernel):
     field, boundaries, solid = block()
     step = fem.Step(items=[solid], boundaries=boundaries)
     dashboard = fem.DashboardWidgetPlugin()
-    dashboard.widget = _plugin._widget_class()()
+    dashboard.widget = dashboard._state = _plugin._widget_class()()
     dashboard._model(fem.Job(steps=[step]))
 
     # the cube has one inner point (13) with the largest value
@@ -745,6 +748,161 @@ def test_unique_faces():
             if local:
                 faces = mesh.cells[:, local].reshape(-1, size)
                 assert np.array_equal(_unique_faces(faces), reference(faces))
+
+
+def read_script(path):
+    "Return the data of a script of the live HTML file."
+    text = path.read_text(encoding="utf-8")
+    return json.loads(text[text.index("=") + 1 :].strip().rstrip(";"))
+
+
+def test_dashboard_file(tmp_path, monkeypatch):
+    """A live HTML file without a Jupyter kernel: no warning, the files are written and
+    the page is opened once in the web browser."""
+
+    opened = []
+    monkeypatch.setattr(_plugin.webbrowser, "open", opened.append)
+
+    field, boundaries, solid = block()
+    move = fem.math.linsteps([0, -0.7], num=1)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    filename = tmp_path / "results" / "job.html"
+    dashboard = fem.DashboardWidgetPlugin(title="T", filename=filename)
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", message=".*DashboardWidgetPlugin")
+        plugins = [dashboard, fem.CutbackPlugin()]
+        fem.Job(steps=[step], plugins=plugins).evaluate(verbose=0)
+
+    assert dashboard.widget is None
+    assert opened == [filename.resolve().as_uri()]
+
+    # the page with the inline module, the styles and the names of the scripts
+    page = filename.read_text(encoding="utf-8")
+    assert "/*" + "MODULE" + "*/" not in page and "function render(" in page
+    assert '"version": "job.version.js"' in page
+
+    version = read_script(tmp_path / "results" / "job.version.js")
+    geometry = read_script(tmp_path / "results" / "job.geometry.js")
+    state = read_script(tmp_path / "results" / "job.state.js")
+
+    assert version == {"geometry": 1, "state": state["version"]}
+    assert geometry["id"] == state["geometry"] == 1
+    assert state["info"]["title"] == "T"
+    assert state["progress"]["status"] == "finished"
+    assert state["path"]["status"] == "cb"
+    assert state["written"] > 0
+
+    # the binary buffers are encoded by base64
+    points = np.frombuffer(base64.b64decode(geometry["points"]), dtype=np.float32)
+    surface_points = dashboard._surface_points
+    assert np.allclose(points.reshape(-1, 3), field.region.mesh.points[surface_points])
+    frame = np.frombuffer(base64.b64decode(state["frame"]["values"]), dtype=np.float32)
+    assert np.allclose(frame, field[0].values[surface_points].ravel(), atol=1e-6)
+
+    # a second job: a new geometry, the page is not opened again
+    field, boundaries, solid = block()
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+    assert len(opened) == 1
+    assert read_script(tmp_path / "results" / "job.version.js")["geometry"] == 2
+
+
+@pytest.mark.parametrize("file_interval", [0, 1e6])
+def test_dashboard_file_interval(tmp_path, monkeypatch, file_interval):
+    "The state is written at most every file interval (and at the end of the job)."
+
+    monkeypatch.setattr(_plugin.webbrowser, "open", lambda uri: None)
+
+    field, boundaries, solid = block()
+    move = fem.math.linsteps([0, -0.2], num=3)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    filename = tmp_path / "job.html"
+    dashboard = fem.DashboardWidgetPlugin(
+        filename=filename, file_interval=file_interval, interval=0
+    )
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    written = read_script(tmp_path / "job.version.js")["state"]
+    if file_interval:
+        # the initial state and the final state
+        assert written == 2
+    else:
+        assert written > 10
+    assert read_script(tmp_path / "job.state.js")["progress"]["status"] == "finished"
+
+
+def test_dashboard_file_in_kernel(kernel, tmp_path, monkeypatch):
+    "In a Jupyter kernel, the live HTML file is written next to the widget."
+
+    def fail(uri):
+        raise AssertionError("The page must not be opened in a kernel.")
+
+    monkeypatch.setattr(_plugin.webbrowser, "open", fail)
+
+    field, boundaries, solid = block()
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    dashboard = fem.DashboardWidgetPlugin(filename=tmp_path / "job.html")
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    assert kernel == [dashboard.widget]
+    state = read_script(tmp_path / "job.state.js")
+    assert state["progress"] == dashboard.widget.progress
+
+
+def test_dashboard_file_writer(tmp_path, monkeypatch):
+    """The atomic writes of the live HTML file, e.g. with a file which is locked by
+    the web browser on Windows."""
+
+    from felupe.plugins._dashboard import _file
+
+    replace = os.replace
+    failures = []
+
+    def locked(source, destination):
+        if failures and failures.pop():
+            raise PermissionError("The file is locked.")
+        replace(source, destination)
+
+    monkeypatch.setattr(_file.os, "replace", locked)
+    path = tmp_path / "data.js"
+
+    # a locked file is written by a repeated replacement
+    failures[:] = [True, True]
+    assert _file._write(path, "a", delay=0)
+    assert path.read_text() == "a"
+
+    # a file which stays locked is not written
+    failures[:] = [True] * 5
+    assert not _file._write(path, "b", delay=0)
+    assert path.read_text() == "a"
+
+    with pytest.raises(TypeError, match="not JSON serializable"):
+        _file._script("X", {"a": object()})
+
+    # the state is kept as changed if it can not be written
+    writer = _file.DashboardFile(tmp_path / "job.html", interval=0)
+    source = _file.DashboardState()
+    with source.hold_sync():
+        writer.start(source)
+    assert writer.state == 1 and not writer.changed
+    assert not writer.flush(source)
+
+    writer.changed = True
+    failures[:] = [True] * 5
+    assert not writer.flush(source)
+    assert writer.changed and writer.state == 1
+
+    # the version can not be written: written by the next update
+    writer.changed = True
+    failures[:] = [True] * 5 + [False]
+    assert writer.flush(source)
+    assert writer.changed and writer.state == 2
+    assert read_script(tmp_path / "job.version.js")["state"] == 1
 
 
 def test_surface():

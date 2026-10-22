@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
 'felupe.view' = ['logo.png']
-'felupe.plugins._dashboard' = ['dashboard.js', 'dashboard.css']
+'felupe.plugins._dashboard' = ['dashboard.js', 'dashboard.css', 'dashboard.html']
 
 [tool.ruff]
 src = ["src"]

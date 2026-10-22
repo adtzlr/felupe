@@ -6,12 +6,14 @@ import math
 import os
 import sys
 import warnings
+import webbrowser
 from time import perf_counter
 
 import numpy as np
 
 from ...__about__ import __version__
 from .._plugin import Plugin
+from ._file import DashboardFile, DashboardState
 from ._surface import CORNERS, compact, surface
 
 # the codes of the status of a substep in the load path
@@ -162,6 +164,14 @@ class DashboardWidgetPlugin(Plugin):
     interval : float, optional
         The minimum time in seconds between two updates of the solver figures during
         a substep (default is 0.1). The end of each substep is always shown.
+    filename : str or None, optional
+        The filename of a live HTML file of the dashboard, e.g. ``"job.html"`` (default
+        is None). The file is updated during the job and the page in the web browser
+        updates itself, see the notes. Without a Jupyter frontend, the page is opened
+        in the web browser.
+    file_interval : float, optional
+        The minimum time in seconds between two updates of the live HTML file
+        (default is 2.0). The file is only updated if the state of the job has changed.
 
     Attributes
     ----------
@@ -202,10 +212,23 @@ class DashboardWidgetPlugin(Plugin):
 
     Without a Jupyter frontend, e.g. in a script which is run in the terminal or in the
     IPython terminal (which has no kernel and can not display widgets), a warning is
-    raised once and the dashboard is disabled without any overhead. Hence,
-    the same script with ``# %%``-cells may be run in the interactive window of VS
-    Code (with the dashboard) and in the terminal (without the dashboard). A frontend
-    without support for widgets, e.g. a QtConsole, shows a short text instead.
+    raised once and the dashboard is disabled without any overhead (unless a
+    ``filename`` is given). Hence, the same script with ``# %%``-cells may be run in
+    the interactive window of VS Code (with the dashboard) and in the terminal
+    (without the dashboard). A frontend without support for widgets, e.g. a QtConsole,
+    shows a short text instead.
+
+    With a ``filename``, e.g. ``"job.html"``, a live HTML file of the dashboard is
+    written, also without a Jupyter frontend (and without anywidget). Next to the page,
+    three scripts are written: ``job.geometry.js`` (once for each job),
+    ``job.state.js`` (at most every ``file_interval`` seconds, if the state of the job
+    has changed) and ``job.version.js``. Each file is replaced atomically. The page in
+    the web browser polls the version and updates itself without a reload, i.e. the
+    view (rotation, zoom, scale) is kept. A page of a local file can not fetch other
+    files, but it can load scripts, i.e. no server is required. Without a Jupyter
+    frontend, the page is opened in the web browser by the first job of the plugin.
+    The page follows the next jobs of the plugin and it shows the final state of the
+    last job.
 
     ..  list-table:: What the dashboard shows.
         :header-rows: 1
@@ -265,6 +288,14 @@ class DashboardWidgetPlugin(Plugin):
         job = fem.Job(steps=[step], plugins=[dashboard, fem.CutbackPlugin()])
         job.evaluate()
 
+    A live HTML file in the web browser, e.g. for a script in a terminal.
+
+    ..  code-block:: python
+
+        dashboard = fem.DashboardWidgetPlugin(filename="job.html")
+        job = fem.Job(steps=[step], plugins=[dashboard])
+        job.evaluate()
+
     See Also
     --------
     felupe.Job : A job with a list of steps and a method to evaluate them.
@@ -274,15 +305,22 @@ class DashboardWidgetPlugin(Plugin):
         the terminal.
     """
 
-    def __init__(self, title=None, interval=0.1):
+    def __init__(self, title=None, interval=0.1, filename=None, file_interval=2.0):
         self.title = title
         self.interval = float(interval)
+        self.filename = filename
 
         self.widget = None
         self.overhead = 0.0
 
         self._active = False
         self._warned = False
+        self._opened = False
+
+        # the live HTML file (the same for all jobs, i.e. an open page follows them)
+        self._file = None
+        if filename is not None:
+            self._file = DashboardFile(filename, interval=file_interval)
 
     # ------------------------------------------------------------------ utilities
 
@@ -296,7 +334,7 @@ class DashboardWidgetPlugin(Plugin):
             return
 
         self._last_sync = now
-        widget = self.widget
+        widget = self._state
 
         with widget.hold_sync():
             widget.progress = self._progress()
@@ -315,6 +353,15 @@ class DashboardWidgetPlugin(Plugin):
                         str(k): list(v) for k, v in self._load_factors.items()
                     },
                 )
+
+        self._flush()
+
+    def _flush(self, force=False):
+        """Update the live HTML file (at most every ``file_interval`` seconds), after
+        it is started for the geometry of the job."""
+        if self._file is not None and self._file_started:
+            self._file.changed = True
+            self._file.flush(self._state, force=force)
 
     def _progress(self):
         "Return the solver figures and performance statistics."
@@ -368,7 +415,7 @@ class DashboardWidgetPlugin(Plugin):
             if None in limits:
                 limits = None
 
-        self.widget.frame = dict(
+        self._state.frame = dict(
             kind=kind, step=step, substep=substep, values=values, limits=limits
         )
 
@@ -469,7 +516,7 @@ class DashboardWidgetPlugin(Plugin):
         self._path = [PENDING] * sum(nsubsteps)
         self._path_changed = True
 
-        widget = self.widget
+        widget = self._state
         widget.info = dict(
             title=self.title,
             version=__version__,
@@ -509,7 +556,7 @@ class DashboardWidgetPlugin(Plugin):
         self._displayable = values.ndim == 2 and len(values) == self._npoints
         dim = values.shape[1] if self._displayable else 0
 
-        widget = self.widget
+        widget = self._state
         with widget.hold_sync():
             widget.info = dict(
                 widget.info,
@@ -546,7 +593,9 @@ class DashboardWidgetPlugin(Plugin):
     # ---------------------------------------------------------------------- hooks
 
     def before_job(self, context, state):
-        if not _kernel():
+        kernel = _kernel()
+
+        if not kernel and self._file is None:
             if not self._warned:
                 self._warned = True
                 where = (
@@ -559,13 +608,14 @@ class DashboardWidgetPlugin(Plugin):
                     "The DashboardWidgetPlugin requires a Jupyter frontend which "
                     "displays widgets, e.g. JupyterLab, Jupyter Notebook or the "
                     "interactive window of VS Code. The dashboard is disabled in "
-                    f"{where}.",
+                    f'{where}. Use DashboardWidgetPlugin(filename="job.html") for a '
+                    "live HTML file in the web browser.",
                     stacklevel=_stacklevel(),
                 )
             self._active = False
             return
 
-        widget_class = _widget_class()
+        widget_class = _widget_class() if kernel else None
 
         tic = perf_counter()
         self._t0 = tic
@@ -593,13 +643,27 @@ class DashboardWidgetPlugin(Plugin):
         self._event = None
         self.overhead = 0.0
 
-        # a new widget for each job, i.e. the outputs of previous cells are kept
-        self.widget = widget_class()
-        with self.widget.hold_sync():
+        # a new widget for each job, i.e. the outputs of previous cells are kept, or
+        # the state of the live HTML file (without a Jupyter frontend)
+        self.widget = widget_class() if kernel else None
+        self._state = self.widget if kernel else DashboardState()
+        self._file_started = False
+
+        with self._state.hold_sync():
             self._model(context.job)
             self._sync(force=True)
 
-        _display(self.widget)
+        if self._file is not None:
+            self._file.start(self._state)
+            self._file_started = True
+
+        if kernel:
+            _display(self.widget)
+        elif not self._opened:
+            # the page of the live HTML file is opened once (it follows the next jobs)
+            self._opened = True
+            webbrowser.open(self._file.html.resolve().as_uri())
+
         self.overhead += perf_counter() - tic
 
     def before_step(self, context, state):
@@ -736,7 +800,7 @@ class DashboardWidgetPlugin(Plugin):
         else:
             self._set_path(CONVERGED)
 
-        with self.widget.hold_sync():
+        with self._state.hold_sync():
             self._frame(
                 context.substep.x,
                 kind="substep",
@@ -765,4 +829,5 @@ class DashboardWidgetPlugin(Plugin):
             )
 
         self._sync(force=True)
+        self._flush(force=True)
         self._active = False

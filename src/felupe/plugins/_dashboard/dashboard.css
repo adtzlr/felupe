@@ -165,10 +165,6 @@
   align-items: center;
   gap: 5px;
 }
-.fd-tools select {
-  max-width: 14em;
-}
-.fd-tools select,
 .fd-tools input[type="number"],
 .fd-views button {
   font: inherit;

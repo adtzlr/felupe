@@ -30,9 +30,9 @@ def block(n=3):
     return field, boundaries, solid
 
 
-def values(frame, index=0):
+def values(frame):
     "Return the decoded field values of a frame."
-    return np.frombuffer(frame["values"][str(index)], dtype=np.float32)
+    return np.frombuffer(frame["values"], dtype=np.float32)
 
 
 def test_dashboard_without_kernel():
@@ -108,8 +108,8 @@ def test_dashboard_job(kernel):
     assert info["element"] == "Hexahedron"
     assert info["quadrature"] == "GaussLegendre"
     assert info["quadrature_points_per_cell"] == 8
-    assert info["deform"] == 0
-    assert info["fields"][0]["name"] == "Field"
+    assert info["deform"]
+    assert info["field_dim"] == 3
     assert info["nsubsteps"] == [3, 3]
     assert info["items"] == ["SolidBody (NeoHooke)"]
 
@@ -255,9 +255,8 @@ def test_dashboard_scalar_field(kernel):
     fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
     info = dashboard.widget.info
-    assert info["deform"] == -1
-    assert info["fields"][0]["name"] == "Field"
-    assert info["fields"][0]["display"]
+    assert not info["deform"]
+    assert info["field_dim"] == 1
     assert info["surface"] == "quad"
     assert np.allclose(values(dashboard.widget.frame), temperature.values.ravel())
 
@@ -331,7 +330,7 @@ def test_dashboard_multiple_bodies(kernel):
     assert info["ncells"] == 16
     assert info["cell_type"] == "hexahedron"
     assert info["ndof"] == field[0].values.size
-    assert info["deform"] == 0
+    assert info["deform"]
     assert info["items"] == [
         "SolidBody (LinearElasticLargeStrain)",
         "SolidBodyNearlyIncompressible (NeoHooke)",
@@ -429,8 +428,8 @@ def test_dashboard_thermal(kernel):
     widget = dashboard.widget
     info = widget.info
     assert info["ncells"] == mesh.ncells
-    assert info["deform"] == -1
-    assert [f["name"] for f in info["fields"]] == ["Field"]
+    assert not info["deform"]
+    assert info["field_dim"] == 1
     assert info["items"] == [
         "SolidBodyThermal (Laplace)",
         "SolidBodySurfaceHeatTransfer",
@@ -443,7 +442,7 @@ def test_dashboard_thermal(kernel):
 
 
 def test_dashboard_mixed_fields(kernel):
-    "Only the fields with values at the points of the mesh are displayable."
+    "Only the first field of mixed fields is drawn."
 
     region = fem.RegionHexahedron(fem.Cube(n=3))
     field = fem.FieldsMixed(region, n=3)
@@ -458,11 +457,10 @@ def test_dashboard_mixed_fields(kernel):
     fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
     info = dashboard.widget.info
-    assert [f["display"] for f in info["fields"]] == [True, False, False]
-    assert [f["name"] for f in info["fields"]] == ["Field", "Field 1", "Field 2"]
-    assert info["deform"] == 0
+    assert info["field_dim"] == 3
+    assert info["deform"]
     assert info["ndof"] == sum(f.values.size for f in field.fields)
-    assert list(dashboard.widget.frame["values"]) == ["0"]
+    assert np.allclose(values(dashboard.widget.frame), field[0].values.ravel())
 
 
 def test_dashboard_recovered_substep(kernel):
@@ -603,6 +601,14 @@ def test_dashboard_without_mesh(kernel):
     assert info["ncells"] == 0
     assert info["surface"] == "points"
     assert dashboard.widget.points == b""
+
+    # a first field without values at the points of the mesh is not drawn
+    field, boundaries, solid = block()
+    dashboard._unknowns(field)
+    assert dashboard.widget.info["field_dim"] == 0
+    assert not dashboard.widget.info["deform"]
+    assert dashboard.widget.info["ndof"] == field[0].values.size
+    assert dashboard.widget.frame["values"] == b""
 
 
 def test_surface():

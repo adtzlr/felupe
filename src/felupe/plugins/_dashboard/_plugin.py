@@ -89,7 +89,7 @@ class DashboardWidgetPlugin(Plugin):
     The dashboard is shown in the output of the cell which evaluates the job, e.g. in
     JupyterLab, Jupyter Notebook or the interactive window of VS Code. It shows the
     deformed model of the latest converged substep, coloured by the norm of the
-    values of a field (displacements, temperature, ...), the progress of the job
+    values of the first field (displacements, temperature, ...), the progress of the job
     including cutbacks, the properties of the model, the convergence of the
     Newton-Raphson method and performance statistics.
 
@@ -117,8 +117,8 @@ class DashboardWidgetPlugin(Plugin):
     a job creates a new widget, i.e. the outputs of previous cells keep the state of
     their job. The state of the widget is updated while the cell is running, because
     the messages from the kernel to the frontend are sent immediately. All controls
-    of the dashboard (the field, the scale of the deformation, the view) are evaluated
-    in the frontend, i.e. they also work while the job is running.
+    of the dashboard (the scale of the deformation, the mesh lines, the view) are
+    evaluated in the frontend, i.e. they also work while the job is running.
 
     The model is drawn from the regions of the items, e.g. of several solid bodies on
     the meshes of a :class:`~felupe.MeshContainer`. There is no list of item types:
@@ -134,8 +134,8 @@ class DashboardWidgetPlugin(Plugin):
     * meshes with other points than the first mesh.
 
     Items without a field, e.g. a :class:`~felupe.thermal.TimeStep`, are skipped.
-    Faces at the interface of two bodies with merged points are not drawn. The field
-    values are taken from the unknowns ``x0`` of the job, i.e.
+    Faces at the interface of two bodies with merged points are not drawn. The values
+    are taken from the first field of the unknowns ``x0`` of the job, i.e.
     ``job.evaluate(x0=field)`` shows the field of all bodies.
 
     Outside of an IPython kernel, e.g. in a script which is run in the terminal, a
@@ -150,9 +150,10 @@ class DashboardWidgetPlugin(Plugin):
         * - Section
           - Content
         * - Viewport
-          - The deformed model (by the first field with ``mesh.dim`` components)
-            with banded contours of the norm of a field with values at the points
-            of the mesh for the latest converged substep. Cells of a higher order
+          - The model with banded contours of the norm of the first field of the
+            unknowns for the latest converged substep, deformed by this field if
+            it has ``mesh.dim`` components. Only the first field is drawn, the
+            other fields may be defined on other meshes. Cells of a higher order
             are drawn by their corner points.
         * - Load path
           - One cell for each substep, converged, converged with cutbacks (with
@@ -287,9 +288,11 @@ class DashboardWidgetPlugin(Plugin):
             self._path_changed = True
 
     def _frame(self, container, kind, step=None, substep=None):
-        "Update the field values of the initial state or of a converged substep."
-        fields = _fields(container)
-        values = {str(i): _float32(fields[i].values) for i in self._display}
+        """Update the values of the first field of the initial state or of a converged
+        substep (empty, if the first field has no values at the points of the mesh)."""
+        values = b""
+        if self._displayable:
+            values = _float32(_fields(container)[0].values)
         self.widget.frame = dict(kind=kind, step=step, substep=substep, values=values)
 
     @staticmethod
@@ -403,8 +406,8 @@ class DashboardWidgetPlugin(Plugin):
             if len(npoints_quadrature) == 1
             else None,
             surface=surf["kind"],
-            fields=[],
-            deform=-1,
+            field_dim=0,
+            deform=False,
             ndof=None,
             nsubsteps=nsubsteps,
             items=items,
@@ -415,46 +418,23 @@ class DashboardWidgetPlugin(Plugin):
         widget.lines = np.ascontiguousarray(surf["line"], dtype=np.uint32).tobytes()
 
     def _unknowns(self, container):
-        """Update the displayable fields of the unknowns of the job (which are also the
-        unknowns of all items) and the initial field values."""
+        """Update the first field of the unknowns of the job (which are also the
+        unknowns of all items) and its initial values. Only the first field is drawn,
+        the other fields may be defined on other meshes (e.g. without coordinates)."""
         fields = _fields(container)
+        values = np.asarray(fields[0].values)
 
-        # fields with values at the points of the mesh are displayable
-        self._display = []
-        info = []
-        deform = -1
-        for index, field in enumerate(fields):
-            values = np.asarray(field.values)
-            dim = values.shape[1] if values.ndim == 2 else 1
-            mesh = getattr(getattr(field, "region", None), "mesh", None)
-            mesh_points = getattr(mesh, "points", None)
-            same_points = mesh_points is self._points or (
-                np.shape(mesh_points) == np.shape(self._points)
-                and np.array_equal(mesh_points, self._points)
-            )
-            at_points = values.ndim == 2 and len(values) == self._npoints
-            if at_points and (same_points or index == 0):
-                self._display.append(index)
-                if deform < 0 and dim == self._dim and dim > 1:
-                    deform = index
-            # like the point-data of a ViewField, without a guess of the quantity
-            name = "Field" if index == 0 else f"Field {index}"
-            info.append(
-                dict(
-                    index=index,
-                    name=str(name),
-                    kind=type(field).__name__,
-                    dim=int(dim),
-                    display=index in self._display,
-                )
-            )
+        # the first field is drawn if it has values at the points of the mesh, it
+        # deforms the model if it has as many components as the points
+        self._displayable = values.ndim == 2 and len(values) == self._npoints
+        dim = values.shape[1] if self._displayable else 0
 
         widget = self.widget
         with widget.hold_sync():
             widget.info = dict(
                 widget.info,
-                fields=info,
-                deform=deform,
+                field_dim=int(dim),
+                deform=bool(dim == self._dim and dim > 1),
                 ndof=int(sum(np.asarray(f.values).size for f in fields)),
             )
             self._frame(container, kind="initial")

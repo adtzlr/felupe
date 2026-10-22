@@ -141,7 +141,6 @@ const MARKUP = `
       <canvas class="fd-canvas" tabindex="0" aria-label="Deformed model. Drag to rotate, shift-drag to pan, click and use the wheel to zoom, double-click to fit."></canvas>
     </div>
     <div class="fd-tools">
-      <select class="fd-field" aria-label="Field (the norm of a vector field is shown)"></select>
       <label>Scale <input class="fd-scale" type="number" value="1" step="0.5" min="0"></label>
       <label><input class="fd-edges" type="checkbox" checked> Mesh lines</label>
       <span class="fd-views" role="group" aria-label="View">
@@ -175,7 +174,7 @@ function render({ model, el }) {
   el.appendChild(root);
   const $ = (selector) => root.querySelector(selector);
 
-  const ui = { field: null, scale: 1, edges: true };
+  const ui = { scale: 1, edges: true };
   const cam = { R: VIEWS.iso.slice(), zoom: 1, panx: 0, pany: 0 };
   let geo = null; // the geometry of the model
   let frame = null; // the decoded field values of the latest converged substep
@@ -264,19 +263,7 @@ function render({ model, el }) {
       },
     };
 
-    // the field selector
-    const select = $(".fd-field");
-    const fields = (info.fields || []).filter((x) => x.display);
-    select.innerHTML = "";
-    for (const fd of fields) {
-      const option = document.createElement("option");
-      option.value = fd.index;
-      option.textContent = fd.name;
-      select.appendChild(option);
-    }
-    if (!fields.some((x) => x.index === ui.field)) ui.field = fields.length ? fields[0].index : null;
-    select.value = ui.field;
-    $(".fd-scale").disabled = !(info.deform >= 0);
+    $(".fd-scale").disabled = !info.deform;
     cam.R = (info.dim === 3 ? VIEWS.iso : VIEWS.xy).slice();
     $(".fd-title").textContent = info.title || "";
     $(".fd-version").textContent = info.version || "";
@@ -284,9 +271,7 @@ function render({ model, el }) {
 
   function readFrame() {
     const fr = model.get("frame") || {};
-    const values = {};
-    for (const [k, v] of Object.entries(fr.values || {})) values[k] = f32(v);
-    frame = { kind: fr.kind, step: fr.step, substep: fr.substep, values };
+    frame = { kind: fr.kind, step: fr.step, substep: fr.substep, values: f32(fr.values) };
   }
 
   // --------------------------------------------------------------- viewport
@@ -304,9 +289,10 @@ function render({ model, el }) {
     const cx = (W - legendW) / 2 + cam.panx;
     const cy = H / 2 + 8 + cam.pany;
     const c0 = geo.center;
-    const U = info.deform >= 0 ? frame.values[info.deform] : null;
-    const fd = (info.fields || []).find((x) => x.index === ui.field);
-    const F = fd ? frame.values[fd.index] : null;
+    // the values of the first field of the unknowns, which also deform the model
+    const fdim = info.field_dim || 0;
+    const F = fdim ? frame.values : null;
+    const U = info.deform ? F : null;
     const dim = info.dim;
     let ext = 0;
     let smin = Infinity;
@@ -327,10 +313,10 @@ function render({ model, el }) {
       B.VZ[i] = R[6] * x + R[7] * y + R[8] * z;
       ext = Math.max(ext, vx * vx + vy * vy);
       let s = 0;
-      if (F && F.length >= fd.dim * n) {
-        if (fd.dim === 1) s = F[i];
+      if (F && F.length >= fdim * n) {
+        if (fdim === 1) s = F[i];
         else {
-          for (let q = 0; q < fd.dim; q++) s += F[fd.dim * i + q] * F[fd.dim * i + q];
+          for (let q = 0; q < fdim; q++) s += F[fdim * i + q] * F[fdim * i + q];
           s = Math.sqrt(s);
         }
       }
@@ -476,12 +462,12 @@ function render({ model, el }) {
       }
     }
 
-    drawLegend(ctx, W, H, legendW, lo, hi, fd, flat, edge);
+    drawLegend(ctx, W, H, legendW, lo, hi, fdim, flat, edge);
     drawTriad(ctx, H, dim, edge);
     drawCaption(ctx, info, edge);
   }
 
-  function drawLegend(ctx, W, H, lw, lo, hi, fd, flat, ink) {
+  function drawLegend(ctx, W, H, lw, lo, hi, fdim, flat, ink) {
     const x = W - lw + 4;
     const top = 26;
     const bw = 10;
@@ -491,7 +477,7 @@ function render({ model, el }) {
     ctx.fillStyle = ink;
     ctx.textBaseline = "alphabetic";
     ctx.globalAlpha = 0.75;
-    ctx.fillText(fd ? (fd.dim > 1 ? "norm" : fd.name) : "", x, 16, lw - 8);
+    ctx.fillText(fdim > 1 ? "Field norm" : fdim ? "Field" : "", x, 16, lw - 8);
     ctx.globalAlpha = 1;
     if (flat) {
       const c = BAND_COLORS[0];
@@ -543,7 +529,7 @@ function render({ model, el }) {
       const nsub = (info.nsubsteps || [])[frame.step];
       text = `Step ${frame.step + 1}, substep ${frame.substep + 1} of ${nsub}`;
     }
-    if (info.deform >= 0 && ui.scale !== 1) text += `, deformation scaled by ${ui.scale}`;
+    if (info.deform && ui.scale !== 1) text += `, deformation scaled by ${ui.scale}`;
     ctx.font = font(12);
     ctx.fillStyle = ink;
     ctx.textBaseline = "alphabetic";
@@ -770,10 +756,6 @@ function render({ model, el }) {
 
   // --------------------------------------------------------------- controls
 
-  $(".fd-field").addEventListener("change", (e) => {
-    ui.field = Number(e.target.value);
-    schedule("view");
-  });
   $(".fd-scale").addEventListener("input", (e) => {
     const v = parseFloat(e.target.value);
     ui.scale = Number.isFinite(v) ? v : 0;

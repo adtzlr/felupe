@@ -42,12 +42,38 @@ CORNERS = {
 
 
 def _unique_faces(faces):
-    "Return the faces which belong to only one cell (with their original ordering)."
+    """Return the faces which belong to only one cell (with their original ordering).
+
+    The sorted point indices of a face are combined into two integer keys (each of at
+    most two indices, i.e. for less than about three billion points). A lexical sort of
+    the two keys is much faster than a sort of the rows of the faces, which is used by
+    ``numpy.unique(faces, axis=0)``.
+    """
     if len(faces) == 0:
         return faces
-    keys = np.sort(faces, axis=1)
-    _, index, counts = np.unique(keys, axis=0, return_index=True, return_counts=True)
-    return faces[np.sort(index[counts == 1])]
+
+    keys = np.sort(faces, axis=1).astype(np.int64)
+    npoints = int(keys.max()) + 1
+    half = (keys.shape[1] + 1) // 2
+
+    key1 = keys[:, 0]
+    for j in range(1, half):
+        key1 = key1 * npoints + keys[:, j]
+
+    key2 = keys[:, half]
+    for j in range(half + 1, keys.shape[1]):
+        key2 = key2 * npoints + keys[:, j]
+
+    order = np.lexsort((key2, key1))
+    key1, key2 = key1[order], key2[order]
+
+    # the first face of each group of equal faces and the size of the groups
+    new = np.ones(len(order), dtype=bool)
+    new[1:] = (key1[1:] != key1[:-1]) | (key2[1:] != key2[:-1])
+    group = np.cumsum(new) - 1
+    single = np.bincount(group)[group] == 1
+
+    return faces[np.sort(order[single])]
 
 
 def surface(meshes):

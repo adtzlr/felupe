@@ -631,6 +631,60 @@ def test_dashboard_without_mesh(kernel):
     assert dashboard.widget.frame["values"] == b""
 
 
+def test_dashboard_limits(kernel):
+    """The limits of the legend are evaluated by the values of the first field at all
+    points, also at the points inside (which are not transferred)."""
+
+    field, boundaries, solid = block()
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    dashboard = fem.DashboardWidgetPlugin()
+    dashboard.widget = _plugin._widget_class()()
+    dashboard._model(fem.Job(steps=[step]))
+
+    # the cube has one inner point (13) with the largest value
+    field[0].values[:] = 0.0
+    field[0].values[13] = [0.0, 3.0, 4.0]
+    field[0].values[0] = [1.0, 0.0, 0.0]
+    dashboard._unknowns(field)
+
+    frame = dashboard.widget.frame
+    assert 13 not in dashboard._surface_points
+    assert np.abs(values(frame)).max() == 1.0
+    assert frame["limits"] == [0.0, 5.0]
+
+    # no limits for non-finite values (the frontend uses the values of the surface)
+    field[0].values[13] = np.nan
+    dashboard._unknowns(field)
+    assert dashboard.widget.frame["limits"] is None
+
+
+def test_unique_faces():
+    "The outer faces by two integer keys are equal to the faces by numpy.unique."
+
+    from felupe.plugins._dashboard._surface import FACES, _unique_faces
+
+    def reference(faces):
+        keys = np.sort(faces, axis=1)
+        _, index, counts = np.unique(
+            keys, axis=0, return_index=True, return_counts=True
+        )
+        return faces[np.sort(index[counts == 1])]
+
+    # wedges by two layers of triangles
+    tri = fem.Rectangle(n=4).triangulate()
+    layers = [np.hstack([tri.points, np.full((tri.npoints, 1), z)]) for z in [0, 1]]
+    cells = np.hstack([tri.cells, tri.cells + tri.npoints])
+    wedge = fem.Mesh(np.vstack(layers), cells, "wedge")
+
+    meshes = [fem.Cube(n=5), fem.Cube(n=5).triangulate(), wedge]
+    for mesh in meshes:
+        for size in [3, 4]:
+            local = [f for f in FACES[mesh.cell_type] if len(f) == size]
+            if local:
+                faces = mesh.cells[:, local].reshape(-1, size)
+                assert np.array_equal(_unique_faces(faces), reference(faces))
+
+
 def test_surface():
     meshes = {
         "hexahedron": fem.Cube(n=3),

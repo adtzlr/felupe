@@ -289,12 +289,25 @@ class DashboardWidgetPlugin(Plugin):
 
     def _frame(self, container, kind, step=None, substep=None):
         """Update the values of the first field of the initial state or of a converged
-        substep (empty, if the first field has no values at the points of the mesh)."""
+        substep at the points of the surface (empty, if the first field has no values at
+        the points of the mesh) and the limits of the legend (of all points)."""
         values = b""
+        limits = None
         if self._displayable:
             field_values = np.asarray(_fields(container)[0].values)
             values = _float32(field_values[self._surface_points])
-        self.widget.frame = dict(kind=kind, step=step, substep=substep, values=values)
+
+            # the range of the legend is evaluated by the values at all points
+            norm = field_values[:, 0]
+            if field_values.shape[1] > 1:
+                norm = np.sqrt(np.einsum("ij,ij->i", field_values, field_values))
+            limits = [_num(norm.min()), _num(norm.max())]
+            if None in limits:
+                limits = None
+
+        self.widget.frame = dict(
+            kind=kind, step=step, substep=substep, values=values, limits=limits
+        )
 
     @staticmethod
     def _regions(job):

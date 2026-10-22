@@ -13,16 +13,18 @@ const PALETTE = {
 
 // ------------------------------------------------------------------- utilities
 
-function bytesOf(value) {
-  if (!value) return new ArrayBuffer(0);
-  if (value instanceof ArrayBuffer) return value.slice(0);
-  if (ArrayBuffer.isView(value)) {
-    return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
-  }
-  return new ArrayBuffer(0);
+// typed arrays of the binary buffers of the widget, without a copy if the buffer is
+// aligned to 4 bytes (otherwise, e.g. for a buffer at an odd offset of a message, the
+// bytes are copied)
+function view(value, Type) {
+  if (value instanceof ArrayBuffer) return new Type(value);
+  if (!ArrayBuffer.isView(value)) return new Type(0);
+  const { buffer, byteOffset, byteLength } = value;
+  if (byteOffset % 4 === 0) return new Type(buffer, byteOffset, byteLength / 4);
+  return new Type(buffer.slice(byteOffset, byteOffset + byteLength));
 }
-const f32 = (value) => new Float32Array(bytesOf(value));
-const u32 = (value) => new Uint32Array(bytesOf(value));
+const f32 = (value) => view(value, Float32Array);
+const u32 = (value) => view(value, Uint32Array);
 
 function fmt(v, digits = 3) {
   if (v === null || v === undefined || Number.isNaN(v)) return "n/a";
@@ -272,7 +274,13 @@ function render({ model, el }) {
 
   function readFrame() {
     const fr = model.get("frame") || {};
-    frame = { kind: fr.kind, step: fr.step, substep: fr.substep, values: f32(fr.values) };
+    frame = {
+      kind: fr.kind,
+      step: fr.step,
+      substep: fr.substep,
+      values: f32(fr.values),
+      limits: fr.limits || null,
+    };
   }
 
   // --------------------------------------------------------------- viewport
@@ -332,9 +340,11 @@ function render({ model, el }) {
       B.SY[i] = cy - k * B.VY[i];
     }
 
+    // the limits of the legend are evaluated by the values at all points (also inside)
+    let lo = frame.limits ? frame.limits[0] : smin;
+    let hi = frame.limits ? frame.limits[1] : smax;
+
     // a uniform field is drawn in one colour
-    let lo = smin;
-    let hi = smax;
     const flat = !(hi - lo > 1e-9 * Math.max(Math.abs(hi), Math.abs(lo), 1e-200));
     if (flat) hi = lo + 1;
     const dl = (hi - lo) / BANDS;

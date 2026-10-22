@@ -10,7 +10,7 @@ from time import perf_counter
 import numpy as np
 
 from .._plugin import Plugin
-from ._surface import surface
+from ._surface import CORNERS, surface
 
 # the codes of the status of a substep in the load path
 PENDING, RUNNING, CONVERGED, CUTBACK, FAILED = ".", "r", "c", "b", "f"
@@ -119,11 +119,23 @@ class DashboardWidgetPlugin(Plugin):
     of the dashboard (the field, the scale of the deformation, the view) are evaluated
     in the frontend, i.e. they also work while the job is running.
 
-    The model is drawn from the cells of the regions of all items (without boundary
-    regions) with the points of the first item, e.g. several solid bodies on the
-    meshes of a :class:`~felupe.MeshContainer`. Faces at the interface of two bodies
-    with merged points are not drawn. The field values are taken from the unknowns
-    ``x0`` of the job, i.e. ``job.evaluate(x0=field)`` shows the field of all bodies.
+    The model is drawn from the regions of the items, e.g. of several solid bodies on
+    the meshes of a :class:`~felupe.MeshContainer`. There is no list of item types:
+    every item with a field container ``item.field`` contributes the mesh of the
+    region of its first field, except
+
+    * boundary regions (e.g. of a :class:`~felupe.SolidBodyPressure` or of a heat
+      transfer), whose meshes hold the cells of the faces,
+    * meshes without a supported cell type (e.g. the vertex mesh of the field of a
+      :class:`~felupe.MeshContainer` in a :class:`~felupe.PointLoad`),
+    * meshes (or identical cells) which are already drawn (e.g. of a
+      :class:`~felupe.SolidBodyForce` on the region of a solid body) and
+    * meshes with other points than the first mesh.
+
+    Items without a field, e.g. a :class:`~felupe.thermal.TimeStep`, are skipped.
+    Faces at the interface of two bodies with merged points are not drawn. The field
+    values are taken from the unknowns ``x0`` of the job, i.e.
+    ``job.evaluate(x0=field)`` shows the field of all bodies.
 
     Outside of an IPython kernel, e.g. in a script which is run in the terminal, a
     warning is raised once and the dashboard is disabled without any overhead. Hence,
@@ -287,8 +299,9 @@ class DashboardWidgetPlugin(Plugin):
 
     @staticmethod
     def _regions(job):
-        """Return the regions of the items of a job with distinct meshes and a common
-        points-array (without boundary regions)."""
+        """Return the regions of the items of a job with distinct meshes, supported
+        cell types and a common points-array (without boundary regions). If there is
+        no such region, the region of the first item with a mesh is returned."""
         from ...region import RegionBoundary
 
         regions = []
@@ -306,8 +319,10 @@ class DashboardWidgetPlugin(Plugin):
                 if fallback is None:
                     fallback = region
 
-                # the mesh of a boundary region holds the cells of the faces
-                if isinstance(region, RegionBoundary):
+                # the mesh of a boundary region holds the cells of the faces and
+                # meshes without supported cells (e.g. of the vertex field of a mesh
+                # container in a point load) are not drawn
+                if isinstance(region, RegionBoundary) or mesh.cell_type not in CORNERS:
                     continue
 
                 # a mesh (or identical cells) of several items, e.g. a solid body and

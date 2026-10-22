@@ -357,6 +357,78 @@ def test_dashboard_boundary_items(kernel):
     assert len(np.frombuffer(dashboard.widget.quads, dtype=np.uint32)) == 4 * 24
 
 
+def test_dashboard_point_load_on_container_field(kernel):
+    """A point load on the vertex field of a mesh container (the unknowns of the job)
+    does not add cells to the model."""
+
+    meshes = [fem.Cube(n=3), fem.Cube(n=3).translate(1, axis=0)]
+    container = fem.MeshContainer(meshes, merge=True)
+    field = fem.Field.from_mesh_container(container).as_container()
+    regions = [fem.RegionHexahedron(mesh) for mesh in container.meshes]
+    umat = fem.NeoHooke(mu=1, bulk=5)
+    solids = [
+        fem.SolidBody(umat, fem.FieldContainer([fem.Field(r, dim=3)])) for r in regions
+    ]
+    boundaries = fem.dof.uniaxial(field, clamped=True)
+    load = fem.PointLoad(field, points=[44], values=[0, 0, -0.01])
+    step = fem.Step(items=[*solids, load], boundaries=boundaries)
+
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(x0=field, verbose=0)
+
+    info = dashboard.widget.info
+    assert info["ncells"] == 16
+    assert info["cell_type"] == "hexahedron"
+    assert info["items"] == ["SolidBody (NeoHooke)", "PointLoad"]
+
+
+def test_dashboard_thermal(kernel):
+    """A transient thermal job with a heat transfer on a boundary region and a time
+    step (an item without a field)."""
+
+    mesh = fem.Cube(n=4)
+    region = fem.RegionHexahedron(mesh)
+    temperature = fem.Field(region, dim=1, name="Temperature")
+    field = fem.FieldContainer([temperature])
+    boundaries = fem.BoundaryDict(left=fem.Boundary(temperature, fx=0))
+
+    solid = fem.thermal.SolidBodyThermal(
+        field,
+        mass_density=1.0,
+        specific_heat_capacity=1.0,
+        thermal_conductivity=1.0,
+        time_step=0.1,
+    )
+    right = fem.RegionHexahedronBoundary(mesh, mask=mesh.x == 1)
+    transfer = fem.thermal.SolidBodySurfaceHeatTransfer(
+        fem.FieldContainer([fem.Field(right, dim=1)]), coefficient=1.0, temperature=0.0
+    )
+    time = fem.thermal.TimeStep([solid])
+    table = fem.math.linsteps([0, 1], num=4)
+    step = fem.Step(
+        items=[solid, transfer, time],
+        ramp={boundaries["left"]: 10 * table, time: 0.1 * table},
+        boundaries=boundaries,
+    )
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    widget = dashboard.widget
+    info = widget.info
+    assert info["ncells"] == mesh.ncells
+    assert info["deform"] == -1
+    assert [f["name"] for f in info["fields"]] == ["Temperature"]
+    assert info["items"] == [
+        "SolidBodyThermal (Laplace)",
+        "SolidBodySurfaceHeatTransfer",
+        "TimeStep",
+    ]
+    assert len(np.frombuffer(widget.quads, dtype=np.uint32)) == 4 * 54
+    assert widget.path["status"] == "ccccc"
+    assert np.allclose(values(widget.frame), temperature.values.ravel())
+    assert values(widget.frame).max() > 0
+
+
 def test_surface():
     meshes = {
         "hexahedron": fem.Cube(n=3),

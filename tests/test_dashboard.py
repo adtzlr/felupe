@@ -12,6 +12,8 @@ import pytest
 
 import felupe as fem
 from felupe.plugins._dashboard import _plugin, surface
+from felupe.plugins._dashboard._file import DashboardState
+from felupe.plugins._dashboard._snapshot import DashboardSnapshot
 
 
 @pytest.fixture
@@ -38,8 +40,14 @@ def values(frame):
     return np.frombuffer(frame["values"], dtype=np.float32)
 
 
-def test_dashboard_without_kernel():
-    "Outside of a kernel, a warning is raised once and the dashboard is disabled."
+def test_dashboard_without_kernel(monkeypatch):
+    """Outside of a kernel, a warning is raised once and the dashboard is not
+    displayed, but the state of the job is collected (e.g. for a snapshot)."""
+
+    def fail(uri):
+        raise AssertionError("A page is only opened for a live HTML file.")
+
+    monkeypatch.setattr(_plugin.webbrowser, "open", fail)
 
     field, boundaries, solid = block()
     move = fem.math.linsteps([0, -0.2], num=2)
@@ -50,22 +58,26 @@ def test_dashboard_without_kernel():
     assert not callable(dashboard)
 
     with pytest.warns(
-        UserWarning, match="Python process without a Jupyter kernel"
+        UserWarning, match="not displayed in a Python process without a Jupyter kernel"
     ) as w:
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
     # the warning points to the evaluation of the job (outside of FElupe)
     assert w[0].filename == __file__
+    assert "snapshot().save" in str(w[0].message)
 
     assert dashboard.widget is None
     assert not dashboard._active
+    assert isinstance(dashboard._state, DashboardState)
+    assert dashboard._state.progress["status"] == "finished"
+    assert dashboard._state.path["status"] == "ccc"
 
     # the warning is raised only once
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
-    # the hooks of a failed substep are ignored, the error is raised
+    # a failed substep is shown, the error is raised
     field, boundaries, solid = block()
     move = fem.math.linsteps([0, -0.8], num=1)
     step = fem.Step(
@@ -75,10 +87,12 @@ def test_dashboard_without_kernel():
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
     assert dashboard.widget is None
+    assert dashboard._state.progress["status"] == "failed"
+    assert dashboard._state.path["status"] == "cf"
 
 
 def test_dashboard_ipython_terminal(monkeypatch):
-    "The IPython terminal has a shell without a kernel, the dashboard is disabled."
+    "The IPython terminal has a shell without a kernel, the widget is not displayed."
 
     monkeypatch.setattr(_plugin, "_shell", lambda: SimpleNamespace())
     assert not _plugin._kernel()
@@ -87,7 +101,7 @@ def test_dashboard_ipython_terminal(monkeypatch):
     step = fem.Step(items=[solid], boundaries=boundaries)
     dashboard = fem.DashboardWidgetPlugin()
 
-    with pytest.warns(UserWarning, match="disabled in the IPython terminal"):
+    with pytest.warns(UserWarning, match="not displayed in the IPython terminal"):
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
     assert dashboard.widget is None
@@ -307,6 +321,20 @@ def test_dashboard_newton_without_job(kernel):
 
     assert dashboard.widget is None
     assert kernel == []
+
+    # the hooks of a job are ignored before the job (and after the job)
+    context = SimpleNamespace(job=None, x0=field)
+    state = SimpleNamespace(stepnumber=0, substepnumber=0, error=None)
+    for hook in [
+        "before_step",
+        "before_substep",
+        "after_failed_substep",
+        "after_substep",
+        "after_job",
+    ]:
+        getattr(dashboard, hook)(context, state)
+
+    assert dashboard._state is None
 
 
 def test_dashboard_interval(kernel):
@@ -756,6 +784,84 @@ def read_script(path):
     return json.loads(text[text.index("=") + 1 :].strip().rstrip(";"))
 
 
+def read_config(page):
+    "Return the inline config of a HTML page of the dashboard."
+    start = page.index("const CONFIG = ") + len("const CONFIG = ")
+    return json.loads(page[start : page.index(";\n", start)])
+
+
+def test_dashboard_snapshot(tmp_path):
+    "A static snapshot of the dashboard without a Jupyter kernel."
+
+    field, boundaries, solid = block()
+    move = fem.math.linsteps([0, -0.2], num=2)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    dashboard = fem.DashboardWidgetPlugin(title="A </script> title")
+
+    with pytest.raises(ValueError, match="requires an evaluated job"):
+        dashboard.snapshot()
+
+    with pytest.warns(UserWarning, match="DashboardWidgetPlugin"):
+        fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    snapshot = dashboard.snapshot()
+    assert isinstance(snapshot, DashboardSnapshot)
+
+    # the inline data, the title can not close the script of the page
+    page = snapshot.html
+    assert page.count("</script>") == 1
+    config = read_config(page)
+    assert set(config) == {"snapshot"}
+    data = config["snapshot"]
+    assert data["state"]["info"]["title"] == "A </script> title"
+    assert data["state"]["progress"]["status"] == "finished"
+    assert data["state"]["path"]["status"] == "ccc"
+
+    points = np.frombuffer(base64.b64decode(data["geometry"]["points"]), np.float32)
+    surface_points = dashboard._surface_points
+    assert np.allclose(points.reshape(-1, 3), field.region.mesh.points[surface_points])
+    frame = np.frombuffer(
+        base64.b64decode(data["state"]["frame"]["values"]), np.float32
+    )
+    assert np.allclose(frame, field[0].values[surface_points].ravel(), atol=1e-6)
+
+    # the rich representation: the page in an iframe, in a single line
+    html = snapshot._repr_html_()
+    assert html.startswith("<iframe ") and html.endswith("</iframe>")
+    assert "\n" not in html and "&#10;" in html
+    assert 'srcdoc="&lt;!doctype html&gt;' in html
+
+    # the snapshot is saved as a self-contained HTML file
+    path = snapshot.save(tmp_path / "results" / "snapshot.html")
+    assert path.read_text(encoding="utf-8") == page
+    assert not list((tmp_path / "results").glob("*.js"))
+
+    # the snapshot is not changed by the next job
+    field, boundaries, solid = block(n=4)
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+    assert snapshot.html == page
+    assert dashboard.snapshot().html != page
+
+
+def test_dashboard_snapshot_in_kernel(kernel):
+    "A snapshot of the widget in a Jupyter kernel."
+
+    field, boundaries, solid = block()
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    data = read_config(dashboard.snapshot().html)["snapshot"]
+    widget = dashboard.widget
+    assert data["state"]["progress"] == json.loads(json.dumps(widget.progress))
+    assert data["state"]["info"] == widget.info
+    points = base64.b64decode(data["geometry"]["points"])
+    assert points == widget.points
+
+
 def test_dashboard_file(tmp_path, monkeypatch):
     """A live HTML file without a Jupyter kernel: no warning, the files are written and
     the page is opened once in the web browser."""
@@ -782,7 +888,13 @@ def test_dashboard_file(tmp_path, monkeypatch):
     # the page with the inline module, the styles and the names of the scripts
     page = filename.read_text(encoding="utf-8")
     assert "/*" + "MODULE" + "*/" not in page and "function render(" in page
-    assert '"version": "job.version.js"' in page
+    assert read_config(page) == {
+        "files": {
+            "geometry": "job.geometry.js",
+            "state": "job.state.js",
+            "version": "job.version.js",
+        }
+    }
 
     version = read_script(tmp_path / "results" / "job.version.js")
     geometry = read_script(tmp_path / "results" / "job.geometry.js")

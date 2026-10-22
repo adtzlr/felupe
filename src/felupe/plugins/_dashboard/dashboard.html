@@ -1,8 +1,9 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-<!-- The live HTML file of the DashboardWidgetPlugin of FElupe. The page polls the
-     scripts next to it, which are written by the job (a page of a local file can not
-     fetch other files, but it can load scripts). -->
+<!-- The HTML page of the DashboardWidgetPlugin of FElupe, either a live HTML file or a
+     static snapshot. The live page polls the scripts next to it, which are written by
+     the job (a page of a local file can not fetch other files, but it can load
+     scripts). A snapshot holds the data of the job inline. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -11,7 +12,8 @@
 <style>
 /*STYLES*/
 
-/* the colours of the page (the dashboard uses the variables of JupyterLab) */
+/* the colours of the page (the dashboard uses the variables of JupyterLab), set by
+   the colour scheme of the web browser or by the parent page of an embedded page */
 :root {
   --jp-layout-color0: #ffffff;
   --jp-ui-font-color1: #1b2631;
@@ -19,24 +21,29 @@
   --jp-border-color2: #d3d9de;
   --jp-input-background: #ffffff;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --jp-layout-color0: #161b20;
-    --jp-ui-font-color1: #e3e7ea;
-    --jp-ui-font-color2: #a3aeb8;
-    --jp-border-color2: #34404b;
-    --jp-input-background: #20272e;
-  }
+:root[data-theme="dark"] {
+  --jp-layout-color0: #161b20;
+  --jp-ui-font-color1: #e3e7ea;
+  --jp-ui-font-color2: #a3aeb8;
+  --jp-border-color2: #34404b;
+  --jp-input-background: #20272e;
 }
 html, body {
   margin: 0;
-  background: var(--jp-layout-color0);
+  background: var(--page-background, var(--jp-layout-color0));
 }
 body {
   padding: 12px 16px;
 }
 .fd {
   margin: 0 auto;
+}
+/* an embedded page (e.g. a snapshot in a notebook or in the documentation) */
+:root[data-embedded] body {
+  padding: 0;
+}
+:root[data-embedded] .fd {
+  margin: 0;
 }
 </style>
 </head>
@@ -45,11 +52,11 @@ body {
 <script type="module">
 /*MODULE*/
 
-// ------------------------------------------------------------- the live file
+// ------------------------------------------------------------------- the page
 
-const FILES = /*CONFIG*/;
+const CONFIG = /*CONFIG*/;
 
-// a model with the interface of a widget, filled by the scripts of the job
+// a model with the interface of a widget, filled by the data of the job
 const state = {};
 const listeners = {};
 const model = {
@@ -59,6 +66,10 @@ const model = {
     listeners[event] = (listeners[event] || []).filter((f) => f !== handler);
   },
 };
+
+function notify(key) {
+  for (const handler of listeners["change:" + key] || []) handler();
+}
 
 // update the state and notify the changes (the info of the model, the load path and
 // the residuals are only notified if they have changed, the frame and the buffers are
@@ -77,9 +88,7 @@ function update(values) {
     state[key] = value;
     changed.push(key);
   }
-  for (const key of changed) {
-    for (const handler of listeners["change:" + key] || []) handler();
-  }
+  for (const key of changed) notify(key);
 }
 
 function decode(text) {
@@ -88,6 +97,112 @@ function decode(text) {
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes.buffer;
 }
+
+function buffers(geometry) {
+  return {
+    points: decode(geometry.points),
+    triangles: decode(geometry.triangles),
+    quads: decode(geometry.quads),
+    lines: decode(geometry.lines),
+  };
+}
+
+// show a state of the job, together with the geometry of a new job (or null)
+function show(data, geometry) {
+  const progress = { ...data.progress };
+  // the elapsed time of a running job (of the live page) is extrapolated to now
+  if (data.written && progress.status === "running") {
+    progress.elapsed += Math.max(0, Date.now() / 1000 - data.written);
+  }
+  update({
+    info: data.info,
+    ...(geometry || {}),
+    frame: { ...data.frame, values: decode((data.frame || {}).values) },
+    path: data.path,
+    newton: data.newton,
+    progress,
+  });
+  if (!embedded) {
+    const title = (data.info || {}).title;
+    document.title = title ? `${title} | FElupe` : "FElupe";
+  }
+}
+
+// ------------------------------------------------------------------ the theme
+
+// the iframe of an embedded page (of the same origin) or null
+let frame = null;
+try {
+  frame = window.frameElement;
+} catch (error) {
+  // a parent page of another origin
+}
+const embedded = window.parent !== window;
+if (embedded) document.documentElement.dataset.embedded = "";
+
+const scheme = window.matchMedia("(prefers-color-scheme: dark)");
+
+function rgba(color) {
+  const m = (color || "").match(/[\d.]+/g);
+  return m ? m.map(Number).concat([1]).slice(0, 4) : null;
+}
+
+function theme() {
+  // the colour scheme of the web browser or the colours at the iframe of the parent
+  // page (e.g. the light or dark theme of the documentation or of a notebook)
+  let dark = scheme.matches;
+  let ink = "";
+  let background = "";
+  if (frame) {
+    const view = frame.ownerDocument.defaultView;
+    const color = rgba(view.getComputedStyle(frame).color);
+    if (color) {
+      dark = 0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2] > 140;
+      ink = view.getComputedStyle(frame).color;
+    }
+    for (let element = frame; element; element = element.parentElement) {
+      const fill = view.getComputedStyle(element).backgroundColor;
+      if ((rgba(fill) || [0, 0, 0, 0])[3] > 0.99) {
+        background = fill;
+        break;
+      }
+    }
+  }
+  const root = document.documentElement;
+  const before = [root.dataset.theme, ink, background].join();
+  root.dataset.theme = dark ? "dark" : "light";
+  root.style.setProperty("--page-background", background || null);
+  root.style.setProperty("--jp-ui-font-color1", ink || null);
+  // the dashboard is drawn again with the colours of the new theme
+  if (before !== [root.dataset.theme, ink, background].join()) notify("info");
+}
+
+theme();
+scheme.addEventListener("change", theme);
+if (frame) {
+  const observer = new MutationObserver(theme);
+  for (const element of [frame.ownerDocument.documentElement, frame.ownerDocument.body]) {
+    observer.observe(element, { attributes: true });
+  }
+
+  // the height of the iframe follows the dashboard
+  const content = document.body;
+  new ResizeObserver(() => {
+    frame.style.height = `${Math.ceil(content.getBoundingClientRect().height)}px`;
+  }).observe(content);
+}
+
+render({ model, el: document.getElementById("dashboard") });
+
+// ------------------------------------------------------- a static snapshot
+
+if (CONFIG.snapshot) {
+  show(CONFIG.snapshot.state, buffers(CONFIG.snapshot.geometry));
+}
+
+// ------------------------------------------------------------ the live page
+
+const FILES = CONFIG.files;
 
 // load a script of the job (again), which assigns a global variable
 function load(name) {
@@ -120,43 +235,22 @@ async function poll() {
       await load(FILES.geometry);
       const data = window.FELUPE_DASHBOARD_GEOMETRY;
       if (data.id === latest.geometry) {
-        pending = {
-          id: data.id,
-          buffers: {
-            points: decode(data.points),
-            triangles: decode(data.triangles),
-            quads: decode(data.quads),
-            lines: decode(data.lines),
-          },
-        };
+        pending = { id: data.id, buffers: buffers(data) };
         version = -1;
       }
     }
 
-    // the state of the job, the elapsed time is extrapolated to now
+    // the state of the job
     if (latest.state !== version) {
       await load(FILES.state);
       const data = window.FELUPE_DASHBOARD_STATE;
       const id = pending ? pending.id : geometry;
       if (data.geometry === id && data.version >= latest.state) {
-        const progress = { ...data.progress };
-        if (progress.status === "running") {
-          progress.elapsed += Math.max(0, Date.now() / 1000 - data.written);
-        }
         // the geometry of a new job is shown together with the info of its model
-        update({
-          info: data.info,
-          ...(pending ? pending.buffers : {}),
-          frame: { ...data.frame, values: decode(data.frame.values) },
-          path: data.path,
-          newton: data.newton,
-          progress,
-        });
+        show(data, pending ? pending.buffers : null);
         geometry = id;
         version = data.version;
         pending = null;
-        const title = (data.info || {}).title;
-        document.title = title ? `${title} | FElupe` : "FElupe";
       }
     }
   } catch (error) {
@@ -168,8 +262,7 @@ async function poll() {
   setTimeout(poll, status === "running" ? 1000 : 3000);
 }
 
-render({ model, el: document.getElementById("dashboard") });
-poll();
+if (FILES) poll();
 </script>
 </body>
 </html>

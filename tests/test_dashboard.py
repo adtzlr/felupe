@@ -46,8 +46,13 @@ def test_dashboard_without_kernel():
     dashboard = fem.DashboardWidgetPlugin()
     assert not callable(dashboard)
 
-    with pytest.warns(UserWarning, match="requires an IPython kernel"):
+    with pytest.warns(
+        UserWarning, match="Python process without a Jupyter kernel"
+    ) as w:
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    # the warning points to the evaluation of the job (outside of FElupe)
+    assert w[0].filename == __file__
 
     assert dashboard.widget is None
     assert not dashboard._active
@@ -64,6 +69,22 @@ def test_dashboard_without_kernel():
         items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
     )
     with pytest.raises(fem.NewtonConvergenceError):
+        fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    assert dashboard.widget is None
+
+
+def test_dashboard_ipython_terminal(monkeypatch):
+    "The IPython terminal has a shell without a kernel, the dashboard is disabled."
+
+    monkeypatch.setattr(_plugin, "_shell", lambda: SimpleNamespace())
+    assert not _plugin._kernel()
+
+    field, boundaries, solid = block()
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    dashboard = fem.DashboardWidgetPlugin()
+
+    with pytest.warns(UserWarning, match="disabled in the IPython terminal"):
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
     assert dashboard.widget is None

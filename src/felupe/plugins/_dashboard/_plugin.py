@@ -3,6 +3,7 @@
 """A compact live dashboard of a job in a Jupyter widget."""
 
 import math
+import os
 import sys
 import warnings
 from time import perf_counter
@@ -99,13 +100,30 @@ def _first_line(error):
     return lines[0][:200] if lines else type(error).__name__
 
 
-def _kernel():
-    "Return True if the code runs in an IPython kernel, e.g. of Jupyter or VS Code."
+def _stacklevel():
+    """Return the stack level of the first caller outside of FElupe, e.g. of the
+    evaluation of a job, for a warning in a hook of the dashboard."""
+    package = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    frame = sys._getframe(1)
+    level = 1
+    while frame is not None and frame.f_code.co_filename.startswith(package):
+        frame = frame.f_back
+        level += 1
+    return level
+
+
+def _shell():
+    "Return the IPython shell, e.g. of a Jupyter kernel or of the IPython terminal."
     try:
         from IPython import get_ipython
     except ImportError:
-        return False
-    return getattr(get_ipython(), "kernel", None) is not None
+        return None
+    return get_ipython()
+
+
+def _kernel():
+    "Return True if the code runs in an IPython kernel, e.g. of Jupyter or VS Code."
+    return getattr(_shell(), "kernel", None) is not None
 
 
 def _widget_class():
@@ -182,8 +200,9 @@ class DashboardWidgetPlugin(Plugin):
     are taken from the first field of the unknowns ``x0`` of the job, i.e.
     ``job.evaluate(x0=field)`` shows the field of all bodies.
 
-    Outside of an IPython kernel, e.g. in a script which is run in the terminal, a
-    warning is raised once and the dashboard is disabled without any overhead. Hence,
+    Without a Jupyter frontend, e.g. in a script which is run in the terminal or in the
+    IPython terminal (which has no kernel and can not display widgets), a warning is
+    raised once and the dashboard is disabled without any overhead. Hence,
     the same script with ``# %%``-cells may be run in the interactive window of VS
     Code (with the dashboard) and in the terminal (without the dashboard). A frontend
     without support for widgets, e.g. a QtConsole, shows a short text instead.
@@ -530,11 +549,18 @@ class DashboardWidgetPlugin(Plugin):
         if not _kernel():
             if not self._warned:
                 self._warned = True
+                where = (
+                    "the IPython terminal, which can not display widgets"
+                    if _shell() is not None
+                    else "a Python process without a Jupyter kernel, e.g. a script "
+                    "in a terminal"
+                )
                 warnings.warn(
-                    "The DashboardWidgetPlugin requires an IPython kernel, e.g. of "
-                    "Jupyter or of the interactive window of VS Code. The dashboard "
-                    "is disabled.",
-                    stacklevel=2,
+                    "The DashboardWidgetPlugin requires a Jupyter frontend which "
+                    "displays widgets, e.g. JupyterLab, Jupyter Notebook or the "
+                    "interactive window of VS Code. The dashboard is disabled in "
+                    f"{where}.",
+                    stacklevel=_stacklevel(),
                 )
             self._active = False
             return

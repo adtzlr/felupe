@@ -437,9 +437,8 @@ class DashboardWidgetPlugin(Plugin):
                 self._display.append(index)
                 if deform < 0 and dim == self._dim and dim > 1:
                     deform = index
-            name = getattr(field, "name", None)
-            if name is None:
-                name = "Displacement" if index == deform else f"Field {index}"
+            # like the point-data of a ViewField, without a guess of the quantity
+            name = "Field" if index == 0 else f"Field {index}"
             info.append(
                 dict(
                     index=index,

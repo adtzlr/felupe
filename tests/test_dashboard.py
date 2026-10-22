@@ -109,7 +109,7 @@ def test_dashboard_job(kernel):
     assert info["quadrature"] == "GaussLegendre"
     assert info["quadrature_points_per_cell"] == 8
     assert info["deform"] == 0
-    assert info["fields"][0]["name"] == "Displacement"
+    assert info["fields"][0]["name"] == "Field"
     assert info["nsubsteps"] == [3, 3]
     assert info["items"] == ["SolidBody (NeoHooke)"]
 
@@ -234,7 +234,7 @@ def test_dashboard_failed_job(kernel):
 def test_dashboard_scalar_field(kernel):
     mesh = fem.Rectangle(n=5)
     region = fem.RegionQuad(mesh)
-    temperature = fem.Field(region, dim=1, name="Temperature")
+    temperature = fem.Field(region, dim=1)
     field = fem.FieldContainer([temperature])
     boundaries = fem.BoundaryDict(
         left=fem.Boundary(temperature, fx=0),
@@ -256,7 +256,7 @@ def test_dashboard_scalar_field(kernel):
 
     info = dashboard.widget.info
     assert info["deform"] == -1
-    assert info["fields"][0]["name"] == "Temperature"
+    assert info["fields"][0]["name"] == "Field"
     assert info["fields"][0]["display"]
     assert info["surface"] == "quad"
     assert np.allclose(values(dashboard.widget.frame), temperature.values.ravel())
@@ -401,7 +401,7 @@ def test_dashboard_thermal(kernel):
 
     mesh = fem.Cube(n=4)
     region = fem.RegionHexahedron(mesh)
-    temperature = fem.Field(region, dim=1, name="Temperature")
+    temperature = fem.Field(region, dim=1)
     field = fem.FieldContainer([temperature])
     boundaries = fem.BoundaryDict(left=fem.Boundary(temperature, fx=0))
 
@@ -430,7 +430,7 @@ def test_dashboard_thermal(kernel):
     info = widget.info
     assert info["ncells"] == mesh.ncells
     assert info["deform"] == -1
-    assert [f["name"] for f in info["fields"]] == ["Temperature"]
+    assert [f["name"] for f in info["fields"]] == ["Field"]
     assert info["items"] == [
         "SolidBodyThermal (Laplace)",
         "SolidBodySurfaceHeatTransfer",
@@ -459,7 +459,7 @@ def test_dashboard_mixed_fields(kernel):
 
     info = dashboard.widget.info
     assert [f["display"] for f in info["fields"]] == [True, False, False]
-    assert [f["name"] for f in info["fields"]] == ["Displacement", "Field 1", "Field 2"]
+    assert [f["name"] for f in info["fields"]] == ["Field", "Field 1", "Field 2"]
     assert info["deform"] == 0
     assert info["ndof"] == sum(f.values.size for f in field.fields)
     assert list(dashboard.widget.frame["values"]) == ["0"]

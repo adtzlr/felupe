@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import importlib.util
-
 import pytest
 
-# the module of the widget of the dashboard requires the optional dependency anywidget
-collect_ignore = []
-if importlib.util.find_spec("anywidget") is None:  # pragma: no cover
-    collect_ignore.append("src/felupe/plugins/_dashboard/_widget.py")
+# The module of the widget of the dashboard (without docstring examples) is not
+# collected: it requires the optional dependency anywidget and it is imported on
+# demand by the dashboard. If it was collected, it would be imported from the source
+# tree, i.e. the dashboard would use this module instead of the one of the installed
+# package (and the coverage of the installed package would miss it).
+collect_ignore = ["src/felupe/plugins/_dashboard/_widget.py"]
 
 
 def pytest_configure(config):

@@ -529,9 +529,9 @@ class DashboardWidgetPlugin(Plugin):
                 unique(type(getattr(r, "element", None)).__name__ for r in regions)
             ),
             quadrature=", ".join(names) if names else None,
-            quadrature_points_per_cell=npoints_quadrature[0]
-            if len(npoints_quadrature) == 1
-            else None,
+            quadrature_points_per_cell=(
+                npoints_quadrature[0] if len(npoints_quadrature) == 1 else None
+            ),
             surface=surf["kind"],
             field_dim=0,
             deform=False,

@@ -788,8 +788,9 @@ def test_dashboard_file(tmp_path, monkeypatch):
     geometry = read_script(tmp_path / "results" / "job.geometry.js")
     state = read_script(tmp_path / "results" / "job.state.js")
 
-    assert version == {"geometry": 1, "state": state["version"]}
-    assert geometry["id"] == state["geometry"] == 1
+    assert version == {"geometry": dashboard._file.geometry, "state": state["version"]}
+    assert geometry["id"] == state["geometry"] == dashboard._file.geometry
+    assert geometry["id"].endswith("-1")
     assert state["info"]["title"] == "T"
     assert state["progress"]["status"] == "finished"
     assert state["path"]["status"] == "cb"
@@ -807,7 +808,14 @@ def test_dashboard_file(tmp_path, monkeypatch):
     step = fem.Step(items=[solid], boundaries=boundaries)
     fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
     assert len(opened) == 1
-    assert read_script(tmp_path / "results" / "job.version.js")["geometry"] == 2
+    second = read_script(tmp_path / "results" / "job.version.js")["geometry"]
+    assert second.endswith("-2") and second != geometry["id"]
+
+    # a job of another process: another geometry (the counter starts again)
+    other = fem.DashboardWidgetPlugin(filename=filename)
+    fem.Job(steps=[step], plugins=[other]).evaluate(verbose=0)
+    third = read_script(tmp_path / "results" / "job.version.js")["geometry"]
+    assert third.endswith("-1") and third != geometry["id"]
 
 
 @pytest.mark.parametrize("file_interval", [0, 1e6])

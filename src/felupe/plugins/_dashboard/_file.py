@@ -6,6 +6,7 @@ page in the web browser (without a server)."""
 import base64
 import json
 import os
+import secrets
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -98,7 +99,12 @@ class DashboardFile:
             for key in ["geometry", "state", "version"]
         }
 
-        self.geometry = 0
+        # the id of the geometry is unique for each job, also for the jobs of other
+        # processes which write to the same files (e.g. a script which is started
+        # again while the page is open)
+        self._token = secrets.token_hex(4)
+        self.jobs = 0
+        self.geometry = None
         self.state = 0
         self.changed = False
         self._written = -float("inf")
@@ -118,7 +124,8 @@ class DashboardFile:
         self.html.parent.mkdir(parents=True, exist_ok=True)
         _write(self.html, self.page())
 
-        self.geometry += 1
+        self.jobs += 1
+        self.geometry = f"{self._token}-{self.jobs}"
         data = {key: getattr(source, key) for key in GEOMETRY}
         _write(
             self.files["geometry"],

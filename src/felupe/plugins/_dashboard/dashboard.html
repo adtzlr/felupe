@@ -61,11 +61,13 @@ const model = {
 };
 
 // update the state and notify the changes (the info of the model, the load path and
-// the residuals are only notified if they have changed, the info e.g. resets the view
-// of a new model, the frame and the buffers are always notified)
+// the residuals are only notified if they have changed, the frame and the buffers are
+// always notified). Like the model of a widget, all values are set before the changes
+// are notified, e.g. the view of a new model is reset with the info of the new model.
 const COMPARED = new Set(["info", "path", "newton"]);
 const texts = {};
 function update(values) {
+  const changed = [];
   for (const [key, value] of Object.entries(values)) {
     if (COMPARED.has(key)) {
       const text = JSON.stringify(value);
@@ -73,6 +75,9 @@ function update(values) {
       texts[key] = text;
     }
     state[key] = value;
+    changed.push(key);
+  }
+  for (const key of changed) {
     for (const handler of listeners["change:" + key] || []) handler();
   }
 }
@@ -101,8 +106,9 @@ function load(name) {
   });
 }
 
-let geometry = -1;
-let version = -1;
+let geometry = -1; // the id of the shown geometry
+let version = -1; // the version of the shown state
+let pending = null; // the loaded geometry of a new job, shown together with its state
 
 async function poll() {
   try {
@@ -110,18 +116,20 @@ async function poll() {
     const latest = window.FELUPE_DASHBOARD_VERSION;
 
     // a new job: the geometry of the model
-    if (latest.geometry !== geometry) {
+    if (latest.geometry !== (pending ? pending.id : geometry)) {
       await load(FILES.geometry);
       const data = window.FELUPE_DASHBOARD_GEOMETRY;
       if (data.id === latest.geometry) {
-        geometry = data.id;
+        pending = {
+          id: data.id,
+          buffers: {
+            points: decode(data.points),
+            triangles: decode(data.triangles),
+            quads: decode(data.quads),
+            lines: decode(data.lines),
+          },
+        };
         version = -1;
-        update({
-          points: decode(data.points),
-          triangles: decode(data.triangles),
-          quads: decode(data.quads),
-          lines: decode(data.lines),
-        });
       }
     }
 
@@ -129,19 +137,24 @@ async function poll() {
     if (latest.state !== version) {
       await load(FILES.state);
       const data = window.FELUPE_DASHBOARD_STATE;
-      if (data.geometry === geometry && data.version >= latest.state) {
-        version = data.version;
+      const id = pending ? pending.id : geometry;
+      if (data.geometry === id && data.version >= latest.state) {
         const progress = { ...data.progress };
         if (progress.status === "running") {
           progress.elapsed += Math.max(0, Date.now() / 1000 - data.written);
         }
+        // the geometry of a new job is shown together with the info of its model
         update({
           info: data.info,
+          ...(pending ? pending.buffers : {}),
           frame: { ...data.frame, values: decode(data.frame.values) },
           path: data.path,
           newton: data.newton,
           progress,
         });
+        geometry = id;
+        version = data.version;
+        pending = null;
         const title = (data.info || {}).title;
         document.title = title ? `${title} | FElupe` : "FElupe";
       }

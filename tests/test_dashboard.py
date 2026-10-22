@@ -2,6 +2,7 @@
 
 import sys
 import warnings
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -56,6 +57,17 @@ def test_dashboard_without_kernel():
         warnings.simplefilter("error")
         fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
 
+    # the hooks of a failed substep are ignored, the error is raised
+    field, boundaries, solid = block()
+    move = fem.math.linsteps([0, -0.8], num=1)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    with pytest.raises(fem.NewtonConvergenceError):
+        fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    assert dashboard.widget is None
+
 
 def test_dashboard_without_anywidget(monkeypatch):
     "In a kernel without anywidget, an ImportError with a hint is raised."
@@ -88,6 +100,7 @@ def test_dashboard_job(kernel):
     info = widget.info
     mesh = field.region.mesh
     assert info["title"] == "T"
+    assert info["version"] == fem.__version__
     assert info["npoints"] == mesh.npoints
     assert info["ncells"] == mesh.ncells
     assert info["cell_type"] == "hexahedron"
@@ -429,6 +442,169 @@ def test_dashboard_thermal(kernel):
     assert values(widget.frame).max() > 0
 
 
+def test_dashboard_mixed_fields(kernel):
+    "Only the fields with values at the points of the mesh are displayable."
+
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    field = fem.FieldsMixed(region, n=3)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
+    umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=50))
+    solid = fem.SolidBody(umat, field)
+    move = fem.math.linsteps([0, -0.1], num=1)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    info = dashboard.widget.info
+    assert [f["display"] for f in info["fields"]] == [True, False, False]
+    assert [f["name"] for f in info["fields"]] == ["Displacement", "Field 1", "Field 2"]
+    assert info["deform"] == 0
+    assert info["ndof"] == sum(f.values.size for f in field.fields)
+    assert list(dashboard.widget.frame["values"]) == ["0"]
+
+
+def test_dashboard_recovered_substep(kernel):
+    """A substep which is recovered by another plugin than a cutback (without load
+    factors) is shown as converged after failed attempts."""
+
+    class Failing(fem.Plugin):
+        "Fail the first attempt of the second substep."
+
+        def __init__(self):
+            self.count = 0
+
+        def before_newton(self, context, state):
+            self.count += 1
+
+        def after_linear_solve(self, context, state):
+            if self.count == 2:
+                raise fem.NewtonConvergenceError("Injected failure.")
+
+    class Recovery(fem.Plugin):
+        "Solve the failed substep again with the same values."
+
+        def after_failed_substep(self, context, state):
+            state.result = context.solve(state.values)
+
+    field, boundaries, solid = block()
+    move = fem.math.linsteps([0, -0.1], num=1)
+    step = fem.Step(
+        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    dashboard = fem.DashboardWidgetPlugin()
+    events = []
+
+    class Recorder(fem.Plugin):
+        def after_substep(self, context, state):
+            events.append(dashboard.widget.progress["event"])
+
+    plugins = [dashboard, Failing(), Recovery(), Recorder()]
+    fem.Job(steps=[step], plugins=plugins).evaluate(verbose=0)
+
+    widget = dashboard.widget
+    assert widget.path == dict(status="cb", load_factors={})
+    assert widget.progress["failed_attempts"] == 1
+    assert events[1]["text"] == ("Step 1, substep 2: converged after 1 failed attempt.")
+    assert [a["failed"] for a in widget.newton["attempts"]] == [True, False]
+
+
+def test_dashboard_error_before_substep(kernel):
+    "An error of another plugin before the first substep."
+
+    class Error(fem.Plugin):
+        def before_step(self, context, state):
+            raise RuntimeError("Injected error.")
+
+    field, boundaries, solid = block()
+    step = fem.Step(items=[solid], boundaries=boundaries)
+    dashboard = fem.DashboardWidgetPlugin()
+
+    with pytest.raises(RuntimeError, match="Injected error"):
+        fem.Job(steps=[step], plugins=[dashboard, Error()]).evaluate(verbose=0)
+
+    progress = dashboard.widget.progress
+    assert progress["status"] == "failed"
+    assert progress["event"]["text"] == "RuntimeError: Injected error."
+    assert dashboard.widget.path["status"] == "."
+
+
+def test_dashboard_helpers(monkeypatch):
+    "The helpers of the plugin, also without IPython and without the module resource."
+
+    assert _plugin._num(None) is None
+    assert _plugin._num("text") is None
+    assert _plugin._num(np.nan) is None
+    assert _plugin._num(np.float32(2.5)) == 2.5
+
+    assert _plugin._first_line(ValueError("first\nsecond")) == "first"
+    assert _plugin._first_line(ValueError()) == "ValueError"
+
+    assert _plugin._peak_memory() > 0
+    assert not _plugin._kernel()
+
+    monkeypatch.setitem(sys.modules, "resource", None)
+    monkeypatch.setitem(sys.modules, "IPython", None)
+    assert _plugin._peak_memory() is None
+    assert not _plugin._kernel()
+
+
+def test_dashboard_display(monkeypatch):
+    "The widget is displayed by IPython.display.display."
+
+    display = pytest.importorskip("IPython.display")
+    displayed = []
+    monkeypatch.setattr(display, "display", displayed.append)
+
+    widget = object()
+    _plugin._display(widget)
+    assert displayed == [widget]
+
+
+def test_dashboard_regions():
+    """The regions of the items of a job: items without a field or without a region
+    are skipped, a boundary region is only used if there is no other region and the
+    meshes with other points than the first mesh are not drawn."""
+
+    def job(*items):
+        return SimpleNamespace(steps=[SimpleNamespace(items=list(items))])
+
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    boundary = fem.RegionHexahedronBoundary(mesh)
+    solid = SimpleNamespace(field=fem.FieldContainer([fem.Field(region, dim=3)]))
+    pressure = SimpleNamespace(field=fem.FieldContainer([fem.Field(boundary, dim=3)]))
+    without_field = SimpleNamespace()
+    without_region = SimpleNamespace(field=SimpleNamespace(region=None))
+
+    regions = _plugin.DashboardWidgetPlugin._regions
+    assert regions(job()) == []
+    assert regions(job(without_field, without_region)) == []
+    assert regions(job(without_field, without_region, solid)) == [region]
+    assert regions(job(pressure)) == [boundary]
+    assert regions(job(pressure, solid)) == [region]
+
+    # a body with other points is not drawn
+    other = fem.RegionHexahedron(fem.Cube(n=3).translate(5, axis=0))
+    body = SimpleNamespace(field=fem.FieldContainer([fem.Field(other, dim=3)]))
+    assert regions(job(solid, body)) == [region]
+
+
+def test_dashboard_without_mesh(kernel):
+    "A job without a mesh has no geometry, the solver figures are still shown."
+
+    dashboard = fem.DashboardWidgetPlugin()
+    dashboard.widget = _plugin._widget_class()()
+    dashboard._model(SimpleNamespace(steps=[SimpleNamespace(items=[], nsubsteps=1)]))
+
+    info = dashboard.widget.info
+    assert info["npoints"] == 0
+    assert info["ncells"] == 0
+    assert info["surface"] == "points"
+    assert dashboard.widget.points == b""
+
+
 def test_surface():
     meshes = {
         "hexahedron": fem.Cube(n=3),
@@ -454,6 +630,11 @@ def test_surface():
 
     unknown = fem.Mesh(np.zeros((1, 3)), np.zeros((1, 1), dtype=int), "vertex")
     assert surface(unknown)["kind"] == "points"
+    assert surface([])["kind"] == "points"
+
+    from felupe.plugins._dashboard._surface import _unique_faces
+
+    assert _unique_faces(np.zeros((0, 4), dtype=int)).shape == (0, 4)
 
     # several meshes with a common points-array: the inner faces at the interface
     # are removed

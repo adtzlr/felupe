@@ -127,7 +127,7 @@ function clipGE(xs, ys, ss, n, a) {
 
 const MARKUP = `
 <div class="fd-head">
-  <span class="fd-brand">FElupe</span>
+  <span class="fd-brand">FElupe <span class="fd-version"></span></span>
   <span class="fd-title"></span>
   <span class="fd-status" data-s="waiting">Waiting for the job</span>
   <span class="fd-pct">0 %</span>
@@ -141,7 +141,7 @@ const MARKUP = `
       <canvas class="fd-canvas" tabindex="0" aria-label="Deformed model. Drag to rotate, shift-drag to pan, click and use the wheel to zoom, double-click to fit."></canvas>
     </div>
     <div class="fd-tools">
-      <label>Field <select class="fd-field"></select></label>
+      <select class="fd-field" aria-label="Field (the norm of a vector field is shown)"></select>
       <label>Scale <input class="fd-scale" type="number" value="1" step="0.5" min="0"></label>
       <label><input class="fd-edges" type="checkbox" checked> Mesh lines</label>
       <span class="fd-views" role="group" aria-label="View">
@@ -271,7 +271,7 @@ function render({ model, el }) {
     for (const fd of fields) {
       const option = document.createElement("option");
       option.value = fd.index;
-      option.textContent = fd.name + (fd.dim > 1 ? " (norm)" : "");
+      option.textContent = fd.name;
       select.appendChild(option);
     }
     if (!fields.some((x) => x.index === ui.field)) ui.field = fields.length ? fields[0].index : null;
@@ -279,6 +279,7 @@ function render({ model, el }) {
     $(".fd-scale").disabled = !(info.deform >= 0);
     cam.R = (info.dim === 3 ? VIEWS.iso : VIEWS.xy).slice();
     $(".fd-title").textContent = info.title || "";
+    $(".fd-version").textContent = info.version || "";
   }
 
   function readFrame() {
@@ -664,7 +665,8 @@ function render({ model, el }) {
       ["Cells", `${int(info.ncells)} ${info.cell_type || ""}`],
       ["Element", info.element || "n/a"],
       ["Quadrature", quadrature],
-      ["Dofs", p.active_dofs ? `${int(info.ndof)}, ${int(p.active_dofs)} active` : int(info.ndof)],
+      ["Dofs", int(info.ndof)],
+      ["Active dofs", int(p.active_dofs)],
     ]);
     drawSpark();
 

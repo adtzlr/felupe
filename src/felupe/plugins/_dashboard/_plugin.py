@@ -9,6 +9,7 @@ from time import perf_counter
 
 import numpy as np
 
+from ...__about__ import __version__
 from .._plugin import Plugin
 from ._surface import CORNERS, surface
 
@@ -34,7 +35,7 @@ def _peak_memory():
 
         peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         return peak if sys.platform == "darwin" else 1024 * peak
-    except Exception:  # pragma: no cover
+    except Exception:
         return None
 
 
@@ -58,7 +59,7 @@ def _kernel():
     "Return True if the code runs in an IPython kernel, e.g. of Jupyter or VS Code."
     try:
         from IPython import get_ipython
-    except ImportError:  # pragma: no cover
+    except ImportError:
         return False
     return getattr(get_ipython(), "kernel", None) is not None
 
@@ -75,7 +76,7 @@ def _widget_class():
     return DashboardWidget
 
 
-def _display(widget):  # pragma: no cover
+def _display(widget):
     "Display a widget in the output of the current cell."
     from IPython.display import display
 
@@ -280,21 +281,15 @@ class DashboardWidgetPlugin(Plugin):
         return self._offsets[self._step] + self._substep
 
     def _set_path(self, code):
-        if self._step is not None and self._substep is not None:
-            index = self._index()
-            if index < len(self._path):
-                self._path[index] = code
-                self._path_changed = True
+        "Set the status of the current substep in the load path (if there is one)."
+        if self._substep is not None:
+            self._path[self._index()] = code
+            self._path_changed = True
 
     def _frame(self, container, kind, step=None, substep=None):
         "Update the field values of the initial state or of a converged substep."
         fields = _fields(container)
-        values = {}
-        for index in self._display:
-            if index < len(fields):
-                field_values = np.asarray(fields[index].values)
-                if len(field_values) == self._npoints:
-                    values[str(index)] = _float32(field_values)
+        values = {str(i): _float32(fields[i].values) for i in self._display}
         self.widget.frame = dict(kind=kind, step=step, substep=substep, values=values)
 
     @staticmethod
@@ -359,7 +354,8 @@ class DashboardWidgetPlugin(Plugin):
         regions = self._regions(job)
         meshes = [region.mesh for region in regions]
 
-        self._points = meshes[0].points
+        # a job without a mesh has no geometry (only the solver figures are shown)
+        self._points = meshes[0].points if meshes else np.zeros((0, 3))
         self._npoints, self._dim = np.shape(self._points)
         points = np.zeros((self._npoints, 3))
         points[:, : self._dim] = self._points[:, :3]
@@ -393,6 +389,7 @@ class DashboardWidgetPlugin(Plugin):
         widget = self.widget
         widget.info = dict(
             title=self.title,
+            version=__version__,
             cell_type=", ".join(unique(str(mesh.cell_type) for mesh in meshes)),
             dim=int(self._dim),
             npoints=int(self._npoints),
@@ -543,6 +540,7 @@ class DashboardWidgetPlugin(Plugin):
         if not self._active:
             return
         self._step = state.stepnumber
+        self._substep = None
 
     def before_substep(self, context, state):
         if not self._active:
@@ -559,10 +557,7 @@ class DashboardWidgetPlugin(Plugin):
         # the unknowns of the job (and of all items) are known in the hooks of a substep
         if not self._has_unknowns:
             self._has_unknowns = True
-            container = getattr(context, "x0", None)
-            if container is None:  # pragma: no cover
-                container = context.items[0].field
-            self._unknowns(container)
+            self._unknowns(context.x0)
 
         self._sync(force=True)
         self.overhead += perf_counter() - tic
@@ -582,9 +577,7 @@ class DashboardWidgetPlugin(Plugin):
         self._last_reason = None
         self._tol = _num(getattr(state, "tol", None))
 
-        dof1 = getattr(context, "dof1", None)
-        if dof1 is not None:
-            self._active_dofs = int(len(dof1))
+        self._active_dofs = int(len(context.dof1))
 
         self.overhead += perf_counter() - tic
         self._tic = perf_counter()
@@ -662,17 +655,18 @@ class DashboardWidgetPlugin(Plugin):
         if self._failures > 0:
             self._cutbacks += 1
             self._set_path(CUTBACK)
-            if load_factors is not None:
+            failures = f"{self._failures} failed attempt{'s' * (self._failures > 1)}"
+            text = f"Step {self._step + 1}, substep {self._substep + 1}: converged "
+
+            # the load factors of the increments of a subdivided substep (cutback)
+            if load_factors is None:
+                text += f"after {failures}."
+            else:
                 self._load_factors[self._index()] = [_num(f) for f in load_factors]
-            increments = len(load_factors or [])
-            self._event = dict(
-                kind="cut",
-                text=(
-                    f"Step {self._step + 1}, substep {self._substep + 1}: converged "
-                    f"with {self._failures} cutback{'' if self._failures == 1 else 's'}"
-                    f" in {increments} increments."
-                ),
-            )
+                cutbacks = f"{self._failures} cutback{'s' * (self._failures > 1)}"
+                text += f"with {cutbacks} in {len(load_factors)} increments."
+
+            self._event = dict(kind="cut", text=text)
         else:
             self._set_path(CONVERGED)
 

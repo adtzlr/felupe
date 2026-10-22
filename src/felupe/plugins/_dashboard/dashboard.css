@@ -47,6 +47,9 @@
   font-weight: 700;
   font-size: 15px;
 }
+.fd-version {
+  font-weight: 400;
+}
 .fd-title {
   color: var(--fd-ink-2);
   font-size: 13px;
@@ -161,6 +164,9 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
+}
+.fd-tools select {
+  max-width: 14em;
 }
 .fd-tools select,
 .fd-tools input[type="number"],

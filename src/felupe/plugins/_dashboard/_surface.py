@@ -103,7 +103,7 @@ def surface(meshes):
             cells2d[4].append(corners)
         elif kind == "triangle":
             cells2d[3].append(corners)
-        elif kind == "line":
+        else:
             lines.append(corners)
 
     def stack(arrays, size, unique=False):

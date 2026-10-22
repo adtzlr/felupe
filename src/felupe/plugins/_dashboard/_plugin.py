@@ -250,7 +250,10 @@ class DashboardWidgetPlugin(Plugin):
             unknowns for the latest converged substep, deformed by this field if
             it has ``mesh.dim`` components. Only the first field is drawn, the
             other fields may be defined on other meshes. Cells of a higher order
-            are drawn by their corner points.
+            are drawn by their corner points. The default view of a 3d-model is
+            the default view of the plots of FElupe, e.g. of
+            :meth:`SolidBody.plot() <felupe.SolidBody.plot>`, with the z-axis
+            upwards (the button ``iso``), a 2d-model is viewed in the xy-plane.
         * - Load path
           - One cell for each substep, converged, converged with cutbacks (with
             marks at the load factors of its increments) or failed.

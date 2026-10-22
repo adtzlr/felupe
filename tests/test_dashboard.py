@@ -568,6 +568,47 @@ def test_dashboard_helpers(monkeypatch):
     assert not _plugin._kernel()
 
 
+def test_dashboard_peak_memory_windows(monkeypatch):
+    """The peak memory on Windows by the function GetProcessMemoryInfo of the Windows
+    API (by a fake of ctypes.windll on other platforms)."""
+
+    import ctypes
+
+    calls = []
+
+    def GetCurrentProcess():
+        return -1
+
+    def GetProcessMemoryInfo(process, counters, size):
+        calls.append((process, size))
+        counters._obj.PeakWorkingSetSize = 123456789
+        return success
+
+    windll = SimpleNamespace(
+        kernel32=SimpleNamespace(GetCurrentProcess=GetCurrentProcess),
+        psapi=SimpleNamespace(GetProcessMemoryInfo=GetProcessMemoryInfo),
+    )
+    monkeypatch.setattr(ctypes, "windll", windll, raising=False)
+    monkeypatch.setattr(sys, "platform", "win32")
+
+    success = True
+    assert _plugin._peak_memory() == 123456789
+    assert calls[-1] == (-1, 80 if ctypes.sizeof(ctypes.c_size_t) == 8 else 40)
+
+    # a failed call of the Windows API
+    success = False
+    assert _plugin._peak_memory() is None
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="requires Windows")
+def test_dashboard_peak_memory_windows_api():
+    "The peak memory by the Windows API (only on Windows)."
+
+    peak = _plugin._peak_memory_windows()
+    assert peak > 10 * 1024**2
+    assert _plugin._peak_memory() >= peak
+
+
 def test_dashboard_display(monkeypatch):
     "The widget is displayed by IPython.display.display."
 

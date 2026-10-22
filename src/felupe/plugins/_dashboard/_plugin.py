@@ -28,9 +28,53 @@ def _num(value):
     return value if math.isfinite(value) else None
 
 
+def _peak_memory_windows():
+    """Return the peak working set of the process in bytes by the Windows API (the
+    module resource is not available on Windows)."""
+    import ctypes
+    from ctypes import wintypes
+
+    class ProcessMemoryCounters(ctypes.Structure):
+        _fields_ = [
+            ("cb", wintypes.DWORD),
+            ("PageFaultCount", wintypes.DWORD),
+            ("PeakWorkingSetSize", ctypes.c_size_t),
+            ("WorkingSetSize", ctypes.c_size_t),
+            ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+            ("QuotaPagedPoolUsage", ctypes.c_size_t),
+            ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+            ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+            ("PagefileUsage", ctypes.c_size_t),
+            ("PeakPagefileUsage", ctypes.c_size_t),
+        ]
+
+    kernel32 = ctypes.windll.kernel32
+    psapi = ctypes.windll.psapi
+    kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+    psapi.GetProcessMemoryInfo.argtypes = [
+        wintypes.HANDLE,
+        ctypes.POINTER(ProcessMemoryCounters),
+        wintypes.DWORD,
+    ]
+    psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+
+    counters = ProcessMemoryCounters()
+    counters.cb = ctypes.sizeof(counters)
+    process = kernel32.GetCurrentProcess()
+
+    if not psapi.GetProcessMemoryInfo(process, ctypes.byref(counters), counters.cb):
+        return None
+
+    return int(counters.PeakWorkingSetSize)
+
+
 def _peak_memory():
-    "Return the peak resident memory of the process in bytes (or None)."
+    """Return the peak resident memory of the process in bytes (or None), i.e. the
+    maximum resident set size on Linux and macOS or the peak working set on Windows."""
     try:
+        if sys.platform == "win32":
+            return _peak_memory_windows()
+
         import resource
 
         peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

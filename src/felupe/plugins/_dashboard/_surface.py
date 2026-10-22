@@ -119,3 +119,38 @@ def surface(meshes):
     kind = ", ".join(dict.fromkeys(kinds)) if kinds else "points"
 
     return dict(kind=kind, tri=tri, quad=quad, line=line)
+
+
+def compact(surf, npoints):
+    """Return the indices of the points of a surface and the surface with the cells
+    renumbered to these points.
+
+    Parameters
+    ----------
+    surf : dict
+        A dict with the arrays ``"tri"``, ``"quad"`` and ``"line"`` of point indices,
+        see :func:`surface`.
+    npoints : int
+        The number of points of the mesh.
+
+    Returns
+    -------
+    ndarray
+        The sorted indices of the points of the surface. Without cells, e.g. for the
+        kind ``"points"``, all points of the mesh are used.
+    dict
+        The surface with the cells renumbered to the points of the surface.
+    """
+
+    cells = [np.asarray(surf[key]).ravel() for key in ["tri", "quad", "line"]]
+
+    if any(c.size for c in cells):
+        points = np.unique(np.concatenate(cells))
+    else:
+        points = np.arange(npoints)
+
+    index = np.zeros(npoints, dtype=np.int64)
+    index[points] = np.arange(len(points))
+    renumbered = {key: index[np.asarray(surf[key])] for key in ["tri", "quad", "line"]}
+
+    return points, {**surf, **renumbered}

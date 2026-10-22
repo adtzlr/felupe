@@ -222,8 +222,9 @@ function render({ model, el }) {
   function buildGeometry() {
     const info = model.get("info") || {};
     const P = f32(model.get("points"));
-    const n = info.npoints || 0;
-    if (!n || P.length < 3 * n) {
+    // the points of the surface (info.npoints is the number of points of the mesh)
+    const n = Math.floor(P.length / 3);
+    if (!n) {
       geo = null;
       return;
     }

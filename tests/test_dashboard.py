@@ -114,15 +114,23 @@ def test_dashboard_job(kernel):
     assert info["items"] == ["SolidBody (NeoHooke)"]
 
     # the geometry and the surface of the mesh
+    # only the points of the surface are transferred (the cube has one inner point)
     points = np.frombuffer(widget.points, dtype=np.float32).reshape(-1, 3)
-    assert np.allclose(points, mesh.points)
+    surface_points = dashboard._surface_points
+    assert len(points) == len(surface_points) == 26
+    assert np.allclose(points, mesh.points[surface_points])
+    quads = np.frombuffer(widget.quads, dtype=np.uint32).reshape(-1, 4)
+    assert np.allclose(points[quads], mesh.points[surface(mesh)["quad"]])
     assert len(widget.quads) == 4 * 4 * 24
     assert widget.triangles == b""
 
     # only the values of the latest converged substep are kept
     frame = widget.frame
     assert (frame["kind"], frame["step"], frame["substep"]) == ("substep", 1, 2)
-    assert np.allclose(values(frame), field[0].values.ravel(), atol=1e-6)
+    assert len(values(frame)) == 3 * 26
+    assert np.allclose(
+        values(frame), field[0].values[surface_points].ravel(), atol=1e-6
+    )
 
     assert widget.path == dict(status="cccccc", load_factors={})
 
@@ -182,7 +190,10 @@ def test_dashboard_cutback(kernel, first):
 
     # the last event (the end of the job) and the values of the last substep
     assert progress["event"]["kind"] == "done"
-    assert np.allclose(values(widget.frame), field[0].values.ravel(), atol=1e-6)
+    surface_points = dashboard._surface_points
+    assert np.allclose(
+        values(widget.frame), field[0].values[surface_points].ravel(), atol=1e-6
+    )
 
 
 def test_dashboard_cutback_event(kernel):
@@ -258,6 +269,7 @@ def test_dashboard_scalar_field(kernel):
     assert not info["deform"]
     assert info["field_dim"] == 1
     assert info["surface"] == "quad"
+    # all points of a two-dimensional mesh are points of the surface
     assert np.allclose(values(dashboard.widget.frame), temperature.values.ravel())
 
 
@@ -341,7 +353,10 @@ def test_dashboard_multiple_bodies(kernel):
     assert len(quads) == 40
     assert quads.max() < 45
 
-    assert np.allclose(values(widget.frame), field[0].values.ravel(), atol=1e-6)
+    surface_points = dashboard._surface_points
+    assert np.allclose(
+        values(widget.frame), field[0].values[surface_points].ravel(), atol=1e-6
+    )
     assert np.abs(values(widget.frame)).max() > 0
 
 
@@ -437,7 +452,9 @@ def test_dashboard_thermal(kernel):
     ]
     assert len(np.frombuffer(widget.quads, dtype=np.uint32)) == 4 * 54
     assert widget.path["status"] == "ccccc"
-    assert np.allclose(values(widget.frame), temperature.values.ravel())
+    surface_points = dashboard._surface_points
+    assert len(surface_points) < mesh.npoints
+    assert np.allclose(values(widget.frame), temperature.values[surface_points].ravel())
     assert values(widget.frame).max() > 0
 
 
@@ -460,7 +477,10 @@ def test_dashboard_mixed_fields(kernel):
     assert info["field_dim"] == 3
     assert info["deform"]
     assert info["ndof"] == sum(f.values.size for f in field.fields)
-    assert np.allclose(values(dashboard.widget.frame), field[0].values.ravel())
+    surface_points = dashboard._surface_points
+    assert np.allclose(
+        values(dashboard.widget.frame), field[0].values[surface_points].ravel()
+    )
 
 
 def test_dashboard_recovered_substep(kernel):
@@ -638,7 +658,23 @@ def test_surface():
     assert surface(unknown)["kind"] == "points"
     assert surface([])["kind"] == "points"
 
-    from felupe.plugins._dashboard._surface import _unique_faces
+    from felupe.plugins._dashboard._surface import _unique_faces, compact
+
+    # the points of the surface and the renumbered cells
+    cube = fem.Cube(n=4)
+    points, surf = compact(surface(cube), cube.npoints)
+    assert len(points) == 64 - 8
+    assert surf["quad"].max() == len(points) - 1
+    assert np.allclose(points[surf["quad"]], surface(cube)["quad"])
+
+    # all points without cells and the points of the lines (a point without a cell)
+    points, surf = compact(surface(unknown), 1)
+    assert np.allclose(points, [0])
+    line = fem.mesh.Line(n=4)
+    line = fem.Mesh(np.vstack([line.points, [[9.0]]]), line.cells, "line")
+    points, surf = compact(surface(line), line.npoints)
+    assert np.allclose(points, [0, 1, 2, 3])
+    assert np.allclose(surf["line"], line.cells)
 
     assert _unique_faces(np.zeros((0, 4), dtype=int)).shape == (0, 4)
 

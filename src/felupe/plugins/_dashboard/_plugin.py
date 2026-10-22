@@ -11,7 +11,7 @@ import numpy as np
 
 from ...__about__ import __version__
 from .._plugin import Plugin
-from ._surface import CORNERS, surface
+from ._surface import CORNERS, compact, surface
 
 # the codes of the status of a substep in the load path
 PENDING, RUNNING, CONVERGED, CUTBACK, FAILED = ".", "r", "c", "b", "f"
@@ -292,7 +292,8 @@ class DashboardWidgetPlugin(Plugin):
         substep (empty, if the first field has no values at the points of the mesh)."""
         values = b""
         if self._displayable:
-            values = _float32(_fields(container)[0].values)
+            field_values = np.asarray(_fields(container)[0].values)
+            values = _float32(field_values[self._surface_points])
         self.widget.frame = dict(kind=kind, step=step, substep=substep, values=values)
 
     @staticmethod
@@ -360,9 +361,12 @@ class DashboardWidgetPlugin(Plugin):
         # a job without a mesh has no geometry (only the solver figures are shown)
         self._points = meshes[0].points if meshes else np.zeros((0, 3))
         self._npoints, self._dim = np.shape(self._points)
-        points = np.zeros((self._npoints, 3))
-        points[:, : self._dim] = self._points[:, :3]
+
+        # only the points of the surface are transferred (and their field values)
         surf = surface(meshes)
+        self._surface_points, surf = compact(surf, self._npoints)
+        points = np.zeros((len(self._surface_points), 3))
+        points[:, : self._dim] = self._points[self._surface_points, :3]
 
         def unique(values):
             return list(dict.fromkeys(values))

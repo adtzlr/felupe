@@ -655,9 +655,10 @@ function render({ model, el }) {
       ["Substeps with cutbacks", int(p.cutbacks)],
       ["Failed attempts", int(p.failed_attempts)],
     ]);
-    const quadrature = info.quadrature
-      ? `${info.quadrature}, ${info.quadrature_points_per_cell} points`
-      : "n/a";
+    let quadrature = info.quadrature || "n/a";
+    if (info.quadrature && info.quadrature_points_per_cell) {
+      quadrature += `, ${info.quadrature_points_per_cell} points`;
+    }
     kv($(".fd-model"), [
       ["Points", int(info.npoints)],
       ["Cells", `${int(info.ncells)} ${info.cell_type || ""}`],

@@ -119,6 +119,12 @@ class DashboardWidgetPlugin(Plugin):
     of the dashboard (the field, the scale of the deformation, the view) are evaluated
     in the frontend, i.e. they also work while the job is running.
 
+    The model is drawn from the cells of the regions of all items (without boundary
+    regions) with the points of the first item, e.g. several solid bodies on the
+    meshes of a :class:`~felupe.MeshContainer`. Faces at the interface of two bodies
+    with merged points are not drawn. The field values are taken from the unknowns
+    ``x0`` of the job, i.e. ``job.evaluate(x0=field)`` shows the field of all bodies.
+
     Outside of an IPython kernel, e.g. in a script which is run in the terminal, a
     warning is raised once and the dashboard is disabled without any overhead. Hence,
     the same script with ``# %%``-cells may be run in the interactive window of VS
@@ -274,20 +280,132 @@ class DashboardWidgetPlugin(Plugin):
         values = {}
         for index in self._display:
             if index < len(fields):
-                values[str(index)] = _float32(fields[index].values)
+                field_values = np.asarray(fields[index].values)
+                if len(field_values) == self._npoints:
+                    values[str(index)] = _float32(field_values)
         self.widget.frame = dict(kind=kind, step=step, substep=substep, values=values)
+
+    @staticmethod
+    def _regions(job):
+        """Return the regions of the items of a job with distinct meshes and a common
+        points-array (without boundary regions)."""
+        from ...region import RegionBoundary
+
+        regions = []
+        fallback = None
+
+        for step in job.steps:
+            for item in step.items:
+                container = getattr(item, "field", None)
+                if container is None:
+                    continue
+                region = getattr(_fields(container)[0], "region", None)
+                mesh = getattr(region, "mesh", None)
+                if mesh is None:
+                    continue
+                if fallback is None:
+                    fallback = region
+
+                # the mesh of a boundary region holds the cells of the faces
+                if isinstance(region, RegionBoundary):
+                    continue
+
+                # a mesh (or identical cells) of several items, e.g. a solid body and
+                # its body force, is used only once
+                duplicate = any(
+                    mesh is other.mesh
+                    or (
+                        mesh.cell_type == other.mesh.cell_type
+                        and np.shape(mesh.cells) == np.shape(other.mesh.cells)
+                        and np.array_equal(mesh.cells, other.mesh.cells)
+                    )
+                    for other in regions
+                )
+                if not duplicate:
+                    regions.append(region)
+
+        if not regions:
+            return [] if fallback is None else [fallback]
+
+        # only the meshes with the points of the first mesh are drawn
+        points = regions[0].mesh.points
+        return [
+            region
+            for region in regions
+            if region.mesh.points is points
+            or (
+                np.shape(region.mesh.points) == np.shape(points)
+                and np.array_equal(region.mesh.points, points)
+            )
+        ]
 
     def _model(self, job):
         "Update the geometry and the properties of the model."
-        container = job.steps[0].items[0].field
-        container = getattr(container, "x0", container)
-        fields = _fields(container)
-        region = fields[0].region
-        mesh = region.mesh
+        regions = self._regions(job)
+        meshes = [region.mesh for region in regions]
 
-        points = np.zeros((mesh.npoints, 3))
-        points[:, : mesh.dim] = mesh.points[:, :3]
-        surf = surface(mesh)
+        self._points = meshes[0].points
+        self._npoints, self._dim = np.shape(self._points)
+        points = np.zeros((self._npoints, 3))
+        points[:, : self._dim] = self._points[:, :3]
+        surf = surface(meshes)
+
+        def unique(values):
+            return list(dict.fromkeys(values))
+
+        quadratures = [getattr(region, "quadrature", None) for region in regions]
+        quadratures = [q for q in quadratures if q is not None]
+        names = unique(type(q).__name__ for q in quadratures)
+        npoints_quadrature = unique(int(q.npoints) for q in quadratures)
+        points_per_cell = unique(int(np.shape(mesh.cells)[1]) for mesh in meshes)
+
+        items = []
+        for step in job.steps:
+            for item in step.items:
+                umat = getattr(item, "umat", None)
+                text = type(item).__name__
+                if umat is not None:
+                    text += f" ({type(umat).__name__})"
+                if text not in items:
+                    items.append(text)
+
+        nsubsteps = [int(step.nsubsteps) for step in job.steps]
+
+        self._offsets = np.concatenate([[0], np.cumsum(nsubsteps)]).astype(int).tolist()
+        self._path = [PENDING] * sum(nsubsteps)
+        self._path_changed = True
+
+        widget = self.widget
+        widget.info = dict(
+            title=self.title,
+            cell_type=", ".join(unique(str(mesh.cell_type) for mesh in meshes)),
+            dim=int(self._dim),
+            npoints=int(self._npoints),
+            ncells=int(sum(len(mesh.cells) for mesh in meshes)),
+            points_per_cell=points_per_cell[0] if len(points_per_cell) == 1 else None,
+            element=", ".join(
+                unique(type(getattr(r, "element", None)).__name__ for r in regions)
+            ),
+            quadrature=", ".join(names) if names else None,
+            quadrature_points_per_cell=npoints_quadrature[0]
+            if len(npoints_quadrature) == 1
+            else None,
+            surface=surf["kind"],
+            fields=[],
+            deform=-1,
+            ndof=None,
+            nsubsteps=nsubsteps,
+            items=items,
+        )
+        widget.points = _float32(points)
+        widget.triangles = np.ascontiguousarray(surf["tri"], dtype=np.uint32).tobytes()
+        widget.quads = np.ascontiguousarray(surf["quad"], dtype=np.uint32).tobytes()
+        widget.lines = np.ascontiguousarray(surf["line"], dtype=np.uint32).tobytes()
+
+    def _unknowns(self, container):
+        """Update the displayable fields of the unknowns of the job (which are also the
+        unknowns of all items) and the initial field values."""
+        fields = _fields(container)
 
         # fields with values at the points of the mesh are displayable
         self._display = []
@@ -295,12 +413,17 @@ class DashboardWidgetPlugin(Plugin):
         deform = -1
         for index, field in enumerate(fields):
             values = np.asarray(field.values)
-            same_mesh = getattr(field.region, "mesh", None) is mesh
-            at_points = values.ndim == 2 and values.shape[0] == mesh.npoints
             dim = values.shape[1] if values.ndim == 2 else 1
-            if at_points and (same_mesh or index == 0):
+            mesh = getattr(getattr(field, "region", None), "mesh", None)
+            mesh_points = getattr(mesh, "points", None)
+            same_points = mesh_points is self._points or (
+                np.shape(mesh_points) == np.shape(self._points)
+                and np.array_equal(mesh_points, self._points)
+            )
+            at_points = values.ndim == 2 and len(values) == self._npoints
+            if at_points and (same_points or index == 0):
                 self._display.append(index)
-                if deform < 0 and dim == mesh.dim and dim > 1:
+                if deform < 0 and dim == self._dim and dim > 1:
                     deform = index
             name = getattr(field, "name", None)
             if name is None:
@@ -315,49 +438,15 @@ class DashboardWidgetPlugin(Plugin):
                 )
             )
 
-        items = []
-        for step in job.steps:
-            for item in step.items:
-                umat = getattr(item, "umat", None)
-                text = type(item).__name__
-                if umat is not None:
-                    text += f" ({type(umat).__name__})"
-                if text not in items:
-                    items.append(text)
-
-        quadrature = getattr(region, "quadrature", None)
-        npoints_quadrature = getattr(quadrature, "npoints", None)
-        nsubsteps = [int(step.nsubsteps) for step in job.steps]
-
-        self._offsets = np.concatenate([[0], np.cumsum(nsubsteps)]).astype(int).tolist()
-        self._path = [PENDING] * sum(nsubsteps)
-        self._path_changed = True
-
         widget = self.widget
-        widget.info = dict(
-            title=self.title,
-            cell_type=str(mesh.cell_type),
-            dim=int(mesh.dim),
-            npoints=int(mesh.npoints),
-            ncells=int(mesh.ncells),
-            points_per_cell=int(np.shape(mesh.cells)[1]),
-            ndof=int(sum(np.asarray(f.values).size for f in fields)),
-            element=type(getattr(region, "element", None)).__name__,
-            quadrature=None if quadrature is None else type(quadrature).__name__,
-            quadrature_points_per_cell=None
-            if npoints_quadrature is None
-            else int(npoints_quadrature),
-            surface=surf["kind"],
-            fields=info,
-            deform=deform,
-            nsubsteps=nsubsteps,
-            items=items,
-        )
-        widget.points = _float32(points)
-        widget.triangles = np.ascontiguousarray(surf["tri"], dtype=np.uint32).tobytes()
-        widget.quads = np.ascontiguousarray(surf["quad"], dtype=np.uint32).tobytes()
-        widget.lines = np.ascontiguousarray(surf["line"], dtype=np.uint32).tobytes()
-        self._frame(container, kind="initial")
+        with widget.hold_sync():
+            widget.info = dict(
+                widget.info,
+                fields=info,
+                deform=deform,
+                ndof=int(sum(np.asarray(f.values).size for f in fields)),
+            )
+            self._frame(container, kind="initial")
 
     def _close_attempt(self, success, message=None):
         "Finish the current attempt of the Newton-Raphson method."
@@ -421,6 +510,7 @@ class DashboardWidgetPlugin(Plugin):
         self._active_dofs = None
         self._timing = dict(assembly=0.0, solve=0.0, residual=0.0)
         self._load_factors = {}
+        self._has_unknowns = False
         self._last_reason = None
         self._event = None
         self.overhead = 0.0
@@ -450,6 +540,15 @@ class DashboardWidgetPlugin(Plugin):
         self._failures = 0
         self._attempt_open = False
         self._set_path(RUNNING)
+
+        # the unknowns of the job (and of all items) are known in the hooks of a substep
+        if not self._has_unknowns:
+            self._has_unknowns = True
+            container = getattr(context, "x0", None)
+            if container is None:  # pragma: no cover
+                container = context.items[0].field
+            self._unknowns(container)
+
         self._sync(force=True)
         self.overhead += perf_counter() - tic
 

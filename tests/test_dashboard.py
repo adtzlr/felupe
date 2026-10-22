@@ -287,6 +287,76 @@ def test_dashboard_interval(kernel):
     assert counts[1e6] > 0
 
 
+def test_dashboard_multiple_bodies(kernel):
+    """Two solid bodies on the meshes of a container with merged points. The model is
+    drawn from the cells of both bodies and the field values are taken from the
+    unknowns of the job."""
+
+    meshes = [fem.Cube(n=3), fem.Cube(n=3).translate(1, axis=0)]
+    container = fem.MeshContainer(meshes, merge=True)
+    field = fem.Field.from_mesh_container(container).as_container()
+    regions = [fem.RegionHexahedron(mesh) for mesh in container.meshes]
+    fields = [fem.FieldContainer([fem.Field(r, dim=3)]) for r in regions]
+    boundaries = fem.dof.uniaxial(field, clamped=True)
+    solids = [
+        fem.SolidBody(umat=fem.LinearElasticLargeStrain(E=10, nu=0.3), field=fields[0]),
+        fem.SolidBodyNearlyIncompressible(
+            umat=fem.NeoHooke(mu=1), field=fields[1], bulk=5000
+        ),
+    ]
+    move = fem.math.linsteps([0, 0.5], num=2)
+    step = fem.Step(
+        items=solids, ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(x0=field, verbose=0)
+
+    widget = dashboard.widget
+    info = widget.info
+    assert info["npoints"] == len(container.points) == 45
+    assert info["ncells"] == 16
+    assert info["cell_type"] == "hexahedron"
+    assert info["ndof"] == field[0].values.size
+    assert info["deform"] == 0
+    assert info["items"] == [
+        "SolidBody (LinearElasticLargeStrain)",
+        "SolidBodyNearlyIncompressible (NeoHooke)",
+    ]
+
+    # the outer surface of both cubes, without the faces at the interface
+    quads = np.frombuffer(widget.quads, dtype=np.uint32).reshape(-1, 4)
+    assert len(quads) == 40
+    assert quads.max() < 45
+
+    assert np.allclose(values(widget.frame), field[0].values.ravel(), atol=1e-6)
+    assert np.abs(values(widget.frame)).max() > 0
+
+
+def test_dashboard_boundary_items(kernel):
+    "The cells of the boundary regions of items (e.g. of a pressure) are not drawn."
+
+    field, boundaries, solid = block()
+    region = fem.RegionHexahedronBoundary(
+        field.region.mesh, mask=field.region.mesh.x == 1
+    )
+    pressure = fem.SolidBodyPressure(
+        fem.FieldContainer([fem.Field(region, dim=3)]), pressure=0.1
+    )
+    step = fem.Step(
+        items=[solid, pressure],
+        ramp={pressure: fem.math.linsteps([0, 1], num=2)},
+        boundaries=boundaries,
+    )
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(x0=field, verbose=0)
+
+    info = dashboard.widget.info
+    assert info["ncells"] == 8
+    assert info["items"] == ["SolidBody (NeoHooke)", "SolidBodyPressure"]
+    assert len(np.frombuffer(dashboard.widget.quads, dtype=np.uint32)) == 4 * 24
+
+
 def test_surface():
     meshes = {
         "hexahedron": fem.Cube(n=3),
@@ -312,6 +382,21 @@ def test_surface():
 
     unknown = fem.Mesh(np.zeros((1, 3)), np.zeros((1, 1), dtype=int), "vertex")
     assert surface(unknown)["kind"] == "points"
+
+    # several meshes with a common points-array: the inner faces at the interface
+    # are removed
+    cubes = [fem.Cube(n=3), fem.Cube(n=3).translate(1, axis=0)]
+    container = fem.MeshContainer(cubes, merge=True)
+    assert len(surface(container.meshes)["quad"]) == 40
+
+    hexahedron, tetra = fem.Cube(n=2), fem.Cube(n=2).translate(1, axis=0).triangulate()
+    container = fem.MeshContainer([hexahedron, tetra], merge=True)
+    surf = surface(container.meshes)
+    assert surf["kind"] == "hexahedron, tetra"
+
+    # a quad and two triangles at the interface are not identical, both are kept
+    assert len(surf["quad"]) == 6
+    assert len(surf["tri"]) == 12
 
 
 if __name__ == "__main__":

@@ -50,46 +50,72 @@ def _unique_faces(faces):
     return faces[np.sort(index[counts == 1])]
 
 
-def surface(mesh):
-    """Return the triangles, quads and lines of the outer surface of a mesh.
+def surface(meshes):
+    """Return the triangles, quads and lines of the outer surface of one or more
+    meshes with a common points-array.
 
     Parameters
     ----------
-    mesh : felupe.Mesh
-        The mesh with points, cells and a cell type.
+    meshes : felupe.Mesh or list of felupe.Mesh
+        The mesh or a list of meshes with a common points-array, e.g. the meshes of a
+        :class:`~felupe.MeshContainer`. Each mesh has its own cells and cell type.
 
     Returns
     -------
     dict
         A dict with the arrays ``"tri"`` (n, 3), ``"quad"`` (n, 4) and ``"line"``
-        (n, 2) of point indices and the name of the base cell type ``"kind"``.
+        (n, 2) of point indices and the names of the base cell types ``"kind"``
+        (``"points"`` if no cell type is supported).
+
+    Notes
+    -----
+    The faces of the three-dimensional cells of all meshes are collected first. A face
+    which belongs to two cells is an inner face, also if the cells belong to different
+    meshes, e.g. at the interface of two bodies with merged points. Only identical
+    faces are inner faces, i.e. the quad of a hexahedron and the two triangles of
+    tetrahedra at a common interface are kept (they are hidden by the outer faces).
+    Two-dimensional cells are faces and line cells are lines.
     """
 
-    cells = np.asarray(mesh.cells)
-    kind, ncorners = CORNERS.get(mesh.cell_type, (None, None))
+    if not isinstance(meshes, (list, tuple)):
+        meshes = [meshes]
 
-    tri = np.zeros((0, 3), dtype=np.int64)
-    quad = np.zeros((0, 4), dtype=np.int64)
-    line = np.zeros((0, 2), dtype=np.int64)
+    faces = {3: [], 4: []}
+    cells2d = {3: [], 4: []}
+    lines = []
+    kinds = []
 
-    if kind is None:
-        # unknown cell type: draw the points only
-        return dict(kind="points", tri=tri, quad=quad, line=line)
+    for mesh in meshes:
+        kind, ncorners = CORNERS.get(mesh.cell_type, (None, None))
 
-    corners = cells[:, :ncorners]
+        if kind is None:
+            continue
 
-    if kind in FACES:
-        faces3 = [f for f in FACES[kind] if len(f) == 3]
-        faces4 = [f for f in FACES[kind] if len(f) == 4]
-        if faces3:
-            tri = _unique_faces(corners[:, faces3].reshape(-1, 3))
-        if faces4:
-            quad = _unique_faces(corners[:, faces4].reshape(-1, 4))
-    elif kind == "quad":
-        quad = corners
-    elif kind == "triangle":
-        tri = corners
-    elif kind == "line":
-        line = corners
+        kinds.append(kind)
+        corners = np.asarray(mesh.cells)[:, :ncorners]
+
+        if kind in FACES:
+            for size in [3, 4]:
+                local = [f for f in FACES[kind] if len(f) == size]
+                if local:
+                    faces[size].append(corners[:, local].reshape(-1, size))
+        elif kind == "quad":
+            cells2d[4].append(corners)
+        elif kind == "triangle":
+            cells2d[3].append(corners)
+        elif kind == "line":
+            lines.append(corners)
+
+    def stack(arrays, size, unique=False):
+        if not arrays:
+            return np.zeros((0, size), dtype=np.int64)
+        stacked = np.concatenate(arrays)
+        return _unique_faces(stacked) if unique else stacked
+
+    tri = np.concatenate([stack(faces[3], 3, unique=True), stack(cells2d[3], 3)])
+    quad = np.concatenate([stack(faces[4], 4, unique=True), stack(cells2d[4], 4)])
+    line = stack(lines, 2)
+
+    kind = ", ".join(dict.fromkeys(kinds)) if kinds else "points"
 
     return dict(kind=kind, tri=tri, quad=quad, line=line)

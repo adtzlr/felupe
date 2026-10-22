@@ -80,12 +80,27 @@ const mul = (A, B) => {
 const rotX = (a) => [1, 0, 0, 0, Math.cos(a), -Math.sin(a), 0, Math.sin(a), Math.cos(a)];
 const rotY = (a) => [Math.cos(a), 0, Math.sin(a), 0, 1, 0, -Math.sin(a), 0, Math.cos(a)];
 
-// rows of the rotation: screen right, screen up and towards the viewer
+// the rotation of a view from a direction (the azimuth in the xy-plane and the
+// elevation above it, in degrees) with the z-axis upwards
+function camera(azimuth, elevation) {
+  const a = (azimuth * Math.PI) / 180;
+  const e = (elevation * Math.PI) / 180;
+  return [
+    -Math.sin(a), Math.cos(a), 0,
+    -Math.sin(e) * Math.cos(a), -Math.sin(e) * Math.sin(a), Math.cos(e),
+    Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e),
+  ];
+}
+
+// rows of the rotation: screen right, screen up and towards the viewer. The view of a
+// 3d-model is the default view of the plots of FElupe (the isometric view of PyVista
+// from the direction (1, 1, 1), rotated by an azimuth of -100 and an elevation of -15
+// degrees), i.e. the z-axis points upwards.
 const VIEWS = {
   xy: [1, 0, 0, 0, 1, 0, 0, 0, 1],
   xz: [1, 0, 0, 0, 0, 1, 0, -1, 0],
   yz: [0, 1, 0, 0, 0, 1, 1, 0, 0],
-  iso: mul(rotX((35.264 * Math.PI) / 180), rotY((-45 * Math.PI) / 180)),
+  iso: camera(45 - 100, (Math.atan(1 / Math.SQRT2) * 180) / Math.PI - 15),
 };
 
 function fitCanvas(canvas) {
@@ -530,6 +545,8 @@ function render({ model, el }) {
     ctx.strokeStyle = ctx.fillStyle = ink;
     ctx.globalAlpha = 0.7;
     ctx.lineWidth = 1;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     (dim === 3 ? ["x", "y", "z"] : ["x", "y"]).forEach((name, j) => {
       const dx = R[j];
       const dy = R[3 + j];
@@ -537,8 +554,17 @@ function render({ model, el }) {
       ctx.moveTo(ox, oy);
       ctx.lineTo(ox + L * dx, oy - L * dy);
       ctx.stroke();
-      ctx.fillText(name, ox + (L + 6) * dx - 3, oy - (L + 6) * dy + 4);
+      // the label is placed at a distance beyond the tip, also for a short axis
+      // (which points away from the viewer or towards the viewer). The label of an
+      // axis along the view direction is placed at the lower left of the origin.
+      const length = Math.hypot(dx, dy);
+      if (length > 0.05) {
+        const gap = 7 / length;
+        ctx.fillText(name, ox + (L + gap) * dx, oy - (L + gap) * dy);
+      } else ctx.fillText(name, ox - 7, oy + 7);
     });
+    ctx.textAlign = "start";
+    ctx.textBaseline = "alphabetic";
     ctx.globalAlpha = 1;
   }
 

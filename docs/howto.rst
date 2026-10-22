@@ -12,6 +12,7 @@ How-To Guides
    howto/axi
    howto/solvers
    howto/parallel
+   howto/plugins
    howto/composite
    howto/solid
    howto/umat

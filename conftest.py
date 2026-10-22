@@ -2,6 +2,13 @@
 
 import pytest
 
+# The module of the widget of the dashboard (without docstring examples) is not
+# collected: it requires the optional dependency anywidget and it is imported on
+# demand by the dashboard. If it was collected, it would be imported from the source
+# tree, i.e. the dashboard would use this module instead of the one of the installed
+# package (and the coverage of the installed package would miss it).
+collect_ignore = ["src/felupe/plugins/_dashboard/_widget.py"]
+
 
 def pytest_configure(config):
     "Render the plots of the tests and of the docstring examples off-screen."

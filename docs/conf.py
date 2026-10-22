@@ -12,6 +12,7 @@
 #
 import datetime
 import os
+import warnings
 
 import pyvista
 from pyvista.plotting.utilities.sphinx_gallery import DynamicScraper
@@ -34,6 +35,12 @@ os.environ["PYVISTA_BUILDING_GALLERY"] = "true"
 
 # FElupe: turn off logging
 os.environ["FELUPE_VERBOSE"] = "false"
+
+# FElupe: the examples are executed without a Jupyter kernel, i.e. the widget of the
+# DashboardWidgetPlugin is not displayed (the examples show a snapshot of it instead)
+warnings.filterwarnings(
+    "ignore", message="The DashboardWidgetPlugin requires a Jupyter frontend"
+)
 
 # -- Project information -----------------------------------------------------
 

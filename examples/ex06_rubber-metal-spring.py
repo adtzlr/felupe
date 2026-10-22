@@ -12,6 +12,8 @@ Hyperelastic Spring
 
    * export and plot the log. strain
 
+   * show the progress of the job in a dashboard
+
 .. admonition:: This example requires external packages.
    :class: hint
 
@@ -103,7 +105,11 @@ def log_strain(field, substep=None):
 
 # %%
 # The simulation model is now ready to be solved. The results are saved within a XDMF-
-# file, where additional point-data is passed to the ``point_data`` argument.
+# file, where additional point-data is passed to the ``point_data`` argument. A
+# :class:`~felupe.DashboardWidgetPlugin` shows the deformed model, the progress of the
+# job and the solver figures live in the output of the cell, e.g. in JupyterLab or in
+# the interactive window of VS Code. The documentation shows a static snapshot of the
+# dashboard after the job.
 table = fem.math.linsteps([0, 1], num=4)
 axial = fem.Step(
     items=[solid, top, bottom],  # , top, bottom
@@ -115,13 +121,23 @@ lateral = fem.Step(
     ramp={boundaries["move-x"]: 40 * table},
     boundaries=boundaries,
 )
-job = fem.CharacteristicCurve(steps=[axial, lateral], boundary=boundaries["move-z"])
+dashboard = fem.DashboardWidgetPlugin(title="Hyperelastic spring")
+job = fem.CharacteristicCurve(
+    steps=[axial, lateral], boundary=boundaries["move-z"], plugins=[dashboard]
+)
 job.evaluate(
     filename="result.xdmf",
     solver=pypardiso.spsolve,
     point_data={"Logarithmic Strain (Max. Principal)": log_strain},
     tol=1e-1,
 )
+# sphinx_gallery_start_ignore
+dashboard.snapshot()
+# sphinx_gallery_end_ignore
+
+# %%
+# The max. principal value of the logarithmic strain is plotted on the deformed solid
+# body, together with the rigid planes of the contacts.
 view = field.view(
     point_data={"Logarithmic Strain (Max. Principal)": log_strain(field)},
 )

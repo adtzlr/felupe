@@ -53,6 +53,25 @@ def _script(name, data):
     return f"window.{name} = {text};\n"
 
 
+def page(config):
+    """Return the HTML page of the dashboard with the inline module and styles, e.g.
+    for the live HTML file (``config={"files": {...}}``, the names of the scripts
+    which are polled) or for a snapshot (``config={"snapshot": {...}}``, the inline
+    geometry and state)."""
+    module = (HERE / "dashboard.js").read_text(encoding="utf-8")
+    styles = (HERE / "dashboard.css").read_text(encoding="utf-8")
+
+    # the config is inline JSON in a script: "<" is escaped (e.g. "</script>" in a
+    # title), the binary buffers are encoded by base64
+    config = json.dumps(config, default=_encode, separators=(",", ":"), allow_nan=False)
+    config = config.replace("<", "\\u003c")
+
+    text = (HERE / "dashboard.html").read_text(encoding="utf-8")
+    text = text.replace("/*STYLES*/", styles)
+    text = text.replace("/*CONFIG*/", config)
+    return text.replace("/*MODULE*/", module.replace("</script", "<\\/script"))
+
+
 def _write(path, text, attempts=5, delay=0.05):
     """Write a file atomically (by a temporary file, which replaces the file). A file
     which is read by the web browser may be locked on Windows, then the replacement is
@@ -110,14 +129,8 @@ class DashboardFile:
         self._written = -float("inf")
 
     def page(self):
-        "Return the HTML page with the inline module and styles of the dashboard."
-        module = (HERE / "dashboard.js").read_text(encoding="utf-8")
-        styles = (HERE / "dashboard.css").read_text(encoding="utf-8")
-        config = json.dumps({key: path.name for key, path in self.files.items()})
-        page = (HERE / "dashboard.html").read_text(encoding="utf-8")
-        page = page.replace("/*STYLES*/", styles)
-        page = page.replace("/*CONFIG*/", config)
-        return page.replace("/*MODULE*/", module.replace("</script", "<\\/script"))
+        "Return the HTML page which polls the scripts of the job."
+        return page({"files": {key: path.name for key, path in self.files.items()}})
 
     def start(self, source):
         "Write the page and the geometry of a new job (and its initial state)."

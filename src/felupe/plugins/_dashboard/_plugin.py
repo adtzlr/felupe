@@ -14,6 +14,7 @@ import numpy as np
 from ...__about__ import __version__
 from .._plugin import Plugin
 from ._file import DashboardFile, DashboardState
+from ._snapshot import DashboardSnapshot
 from ._surface import CORNERS, compact, surface
 
 # the codes of the status of a substep in the load path
@@ -212,11 +213,13 @@ class DashboardWidgetPlugin(Plugin):
 
     Without a Jupyter frontend, e.g. in a script which is run in the terminal or in the
     IPython terminal (which has no kernel and can not display widgets), a warning is
-    raised once and the dashboard is disabled without any overhead (unless a
-    ``filename`` is given). Hence, the same script with ``# %%``-cells may be run in
-    the interactive window of VS Code (with the dashboard) and in the terminal
-    (without the dashboard). A frontend without support for widgets, e.g. a QtConsole,
-    shows a short text instead.
+    raised once (unless a ``filename`` is given) and the dashboard is not displayed.
+    Hence, the same script with ``# %%``-cells may be run in the interactive window of
+    VS Code (with the dashboard) and in the terminal (without the dashboard). The
+    state of the job is collected anyway (with a small overhead, mainly for the surface
+    of the mesh at the start of the job), i.e. a static :meth:`snapshot` of the
+    dashboard is available after the job. A frontend without support for widgets, e.g.
+    a QtConsole, shows a short text instead.
 
     With a ``filename``, e.g. ``"job.html"``, a live HTML file of the dashboard is
     written, also without a Jupyter frontend (and without anywidget). Next to the page,
@@ -229,6 +232,13 @@ class DashboardWidgetPlugin(Plugin):
     frontend, the page is opened in the web browser by the first job of the plugin.
     The page follows the next jobs of the plugin and it shows the final state of the
     last job.
+
+    A static :meth:`snapshot` of the dashboard after the job is a self-contained HTML
+    page (without the scripts of the live HTML file). It is shown in the output of a
+    cell of a notebook and in the examples of the documentation, which are executed by
+    sphinx-gallery without a Jupyter kernel (the snapshot is the last expression of a
+    code block and ``"capture_repr"`` includes ``"_repr_html_"``), or it is saved as a
+    HTML file.
 
     ..  list-table:: What the dashboard shows.
         :header-rows: 1
@@ -296,6 +306,12 @@ class DashboardWidgetPlugin(Plugin):
         job = fem.Job(steps=[step], plugins=[dashboard])
         job.evaluate()
 
+    A static snapshot of the dashboard after the job, saved as a HTML file.
+
+    ..  code-block:: python
+
+        dashboard.snapshot().save("snapshot.html")
+
     See Also
     --------
     felupe.Job : A job with a list of steps and a method to evaluate them.
@@ -313,6 +329,7 @@ class DashboardWidgetPlugin(Plugin):
         self.widget = None
         self.overhead = 0.0
 
+        self._state = None
         self._active = False
         self._warned = False
         self._opened = False
@@ -321,6 +338,36 @@ class DashboardWidgetPlugin(Plugin):
         self._file = None
         if filename is not None:
             self._file = DashboardFile(filename, interval=file_interval)
+
+    def snapshot(self):
+        """Return a static snapshot of the dashboard of the last job.
+
+        The snapshot is a self-contained HTML page with the state of the dashboard at
+        the time of the snapshot, e.g. the final state after the job. It is shown in
+        the output of a cell of a notebook and in an example of the documentation
+        (built by sphinx-gallery), if it is the last expression of the cell. The model
+        may be rotated, zoomed and scaled, but the snapshot is not updated.
+
+        Returns
+        -------
+        DashboardSnapshot
+            The snapshot with the HTML page ``snapshot.html``, a method to save the
+            page as a HTML file ``snapshot.save("job.html")`` and a rich representation
+            for notebooks.
+
+        Examples
+        --------
+        ..  code-block:: python
+
+            dashboard = fem.DashboardWidgetPlugin()
+            job = fem.Job(steps=[step], plugins=[dashboard])
+            job.evaluate()
+
+            dashboard.snapshot().save("job.html")
+        """
+        if self._state is None:
+            raise ValueError("A snapshot of the dashboard requires an evaluated job.")
+        return DashboardSnapshot(self._state)
 
     # ------------------------------------------------------------------ utilities
 
@@ -595,25 +642,23 @@ class DashboardWidgetPlugin(Plugin):
     def before_job(self, context, state):
         kernel = _kernel()
 
-        if not kernel and self._file is None:
-            if not self._warned:
-                self._warned = True
-                where = (
-                    "the IPython terminal, which can not display widgets"
-                    if _shell() is not None
-                    else "a Python process without a Jupyter kernel, e.g. a script "
-                    "in a terminal"
-                )
-                warnings.warn(
-                    "The DashboardWidgetPlugin requires a Jupyter frontend which "
-                    "displays widgets, e.g. JupyterLab, Jupyter Notebook or the "
-                    "interactive window of VS Code. The dashboard is disabled in "
-                    f'{where}. Use DashboardWidgetPlugin(filename="job.html") for a '
-                    "live HTML file in the web browser.",
-                    stacklevel=_stacklevel(),
-                )
-            self._active = False
-            return
+        if not kernel and self._file is None and not self._warned:
+            self._warned = True
+            where = (
+                "the IPython terminal, which can not display widgets"
+                if _shell() is not None
+                else "a Python process without a Jupyter kernel, e.g. a script in a "
+                "terminal"
+            )
+            warnings.warn(
+                "The DashboardWidgetPlugin requires a Jupyter frontend which displays "
+                "widgets, e.g. JupyterLab, Jupyter Notebook or the interactive window "
+                f"of VS Code. The dashboard is not displayed in {where}. Use "
+                'DashboardWidgetPlugin(filename="job.html") for a live HTML file in '
+                'the web browser or plugin.snapshot().save("job.html") for a static '
+                "HTML file after the job.",
+                stacklevel=_stacklevel(),
+            )
 
         widget_class = _widget_class() if kernel else None
 
@@ -644,7 +689,8 @@ class DashboardWidgetPlugin(Plugin):
         self.overhead = 0.0
 
         # a new widget for each job, i.e. the outputs of previous cells are kept, or
-        # the state of the live HTML file (without a Jupyter frontend)
+        # the state of the dashboard without a Jupyter frontend (e.g. for the live HTML
+        # file or for a snapshot)
         self.widget = widget_class() if kernel else None
         self._state = self.widget if kernel else DashboardState()
         self._file_started = False
@@ -659,7 +705,7 @@ class DashboardWidgetPlugin(Plugin):
 
         if kernel:
             _display(self.widget)
-        elif not self._opened:
+        elif self._file is not None and not self._opened:
             # the page of the live HTML file is opened once (it follows the next jobs)
             self._opened = True
             webbrowser.open(self._file.html.resolve().as_uri())

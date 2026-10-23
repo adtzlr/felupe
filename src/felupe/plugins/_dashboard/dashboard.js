@@ -2,13 +2,18 @@
 //
 // The frontend of the DashboardWidgetPlugin of FElupe (an anywidget ES module). It
 // renders the deformed model, the load path, the solver figures and the performance
-// statistics from the synchronized traits of the widget. All controls are evaluated
-// in the frontend, i.e. they work while the kernel is busy with the job.
+// statistics from the synchronized traits of the widget. The model is drawn by the
+// WebGL viewer of the plotting backend "webgl" (createViewer of viewer.js, which is
+// placed before this module). All controls are evaluated in the frontend, i.e. they
+// work while the kernel is busy with the job.
 
+// the number of the bands of the colors of the field and the colors of the model
 const BANDS = 10;
+const MODEL_COLOR = "#add8e6";
+const EDGE_COLOR = "#1b2631";
 const PALETTE = {
-  light: { line: "#2f5d8a", amber: "#b07400", fail: "#b3261e", well: "#e8ecef", soft: "#f1d48a", view: "#fbfcfc" },
-  dark: { line: "#7fb0dd", amber: "#e0a526", fail: "#ef6b62", well: "#2a333b", soft: "#5e4a14", view: "#1b2127" },
+  light: { line: "#2f5d8a", amber: "#b07400", fail: "#b3261e", well: "#e8ecef", soft: "#f1d48a" },
+  dark: { line: "#7fb0dd", amber: "#e0a526", fail: "#ef6b62", well: "#2a333b", soft: "#5e4a14" },
 };
 
 // ------------------------------------------------------------------- utilities
@@ -16,15 +21,18 @@ const PALETTE = {
 // typed arrays of the binary buffers of the widget, without a copy if the buffer is
 // aligned to 4 bytes (otherwise, e.g. for a buffer at an odd offset of a message, the
 // bytes are copied)
-function view(value, Type) {
+function typed(value, Type) {
   if (value instanceof ArrayBuffer) return new Type(value);
   if (!ArrayBuffer.isView(value)) return new Type(0);
   const { buffer, byteOffset, byteLength } = value;
   if (byteOffset % 4 === 0) return new Type(buffer, byteOffset, byteLength / 4);
   return new Type(buffer.slice(byteOffset, byteOffset + byteLength));
 }
-const f32 = (value) => view(value, Float32Array);
-const u32 = (value) => view(value, Uint32Array);
+const f32 = (value) => typed(value, Float32Array);
+const u32 = (value) => typed(value, Uint32Array);
+
+// an array of the scene of the viewer
+const item = (data, dtype) => ({ dtype, size: data.length, data });
 
 function fmt(v, digits = 3) {
   if (v === null || v === undefined || Number.isNaN(v)) return "n/a";
@@ -60,49 +68,6 @@ function bytes(b) {
   return b.toFixed(i ? 1 : 0) + " " + u[i];
 }
 
-function turbo(x) {
-  x = Math.min(1, Math.max(0, x));
-  const r = 0.13572138 + x * (4.6153926 + x * (-42.66032258 + x * (132.13108234 + x * (-152.94239396 + x * 59.28637943))));
-  const g = 0.09140261 + x * (2.19418839 + x * (4.84296658 + x * (-14.18503333 + x * (4.27729857 + x * 2.82956604))));
-  const b = 0.1066733 + x * (12.64194608 + x * (-60.58204836 + x * (110.36276771 + x * (-89.90310912 + x * 27.34824973))));
-  const c = (v) => 255 * Math.min(1, Math.max(0, v));
-  return [c(r), c(g), c(b)];
-}
-const BAND_COLORS = Array.from({ length: BANDS }, (_, i) => turbo((i + 0.5) / BANDS));
-
-const mul = (A, B) => {
-  const C = new Array(9);
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++)
-      C[3 * i + j] = A[3 * i] * B[j] + A[3 * i + 1] * B[3 + j] + A[3 * i + 2] * B[6 + j];
-  return C;
-};
-const rotX = (a) => [1, 0, 0, 0, Math.cos(a), -Math.sin(a), 0, Math.sin(a), Math.cos(a)];
-const rotY = (a) => [Math.cos(a), 0, Math.sin(a), 0, 1, 0, -Math.sin(a), 0, Math.cos(a)];
-
-// the rotation of a view from a direction (the azimuth in the xy-plane and the
-// elevation above it, in degrees) with the z-axis upwards
-function camera(azimuth, elevation) {
-  const a = (azimuth * Math.PI) / 180;
-  const e = (elevation * Math.PI) / 180;
-  return [
-    -Math.sin(a), Math.cos(a), 0,
-    -Math.sin(e) * Math.cos(a), -Math.sin(e) * Math.sin(a), Math.cos(e),
-    Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e),
-  ];
-}
-
-// rows of the rotation: screen right, screen up and towards the viewer. The view of a
-// 3d-model is the default view of the plots of FElupe (the isometric view of PyVista
-// from the direction (1, 1, 1), rotated by an azimuth of -100 and an elevation of -15
-// degrees), i.e. the z-axis points upwards.
-const VIEWS = {
-  xy: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-  xz: [1, 0, 0, 0, 0, 1, 0, -1, 0],
-  yz: [0, 1, 0, 0, 0, 1, 1, 0, 0],
-  iso: camera(45 - 100, (Math.atan(1 / Math.SQRT2) * 180) / Math.PI - 15),
-};
-
 function fitCanvas(canvas) {
   const dpr = window.devicePixelRatio || 1;
   const w = canvas.clientWidth;
@@ -116,28 +81,13 @@ function fitCanvas(canvas) {
   return [ctx, w, h];
 }
 
-// clip a polygon (x, y, s) to s >= a, the result is written to CX, CY
-const CX = new Float64Array(8);
-const CY = new Float64Array(8);
-function clipGE(xs, ys, ss, n, a) {
-  let m = 0;
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    const ini = ss[i] >= a;
-    const inj = ss[j] >= a;
-    if (ini) {
-      CX[m] = xs[i];
-      CY[m] = ys[i];
-      m++;
-    }
-    if (ini !== inj) {
-      const t = (a - ss[i]) / (ss[j] - ss[i]);
-      CX[m] = xs[i] + t * (xs[j] - xs[i]);
-      CY[m] = ys[i] + t * (ys[j] - ys[i]);
-      m++;
-    }
+// the values of a line segment (start and end) of each line cell
+function atLines(array, lines, size) {
+  const result = new Float32Array(size * lines.length);
+  for (let s = 0; s < lines.length; s++) {
+    for (let k = 0; k < size; k++) result[size * s + k] = array[size * lines[s] + k];
   }
-  return m;
+  return result;
 }
 
 // ---------------------------------------------------------------------- markup
@@ -155,7 +105,7 @@ const MARKUP = `
 <div class="fd-main">
   <div class="fd-left">
     <div class="fd-view">
-      <canvas class="fd-canvas" tabindex="0" aria-label="Deformed model. Drag to rotate, shift-drag to pan, click and use the wheel to zoom, double-click to fit."></canvas>
+      <div class="fd-caption"></div>
     </div>
     <div class="fd-tools">
       <label>Scale <input class="fd-scale" type="number" value="1" step="0.5" min="0"></label>
@@ -192,14 +142,18 @@ function render({ model, el }) {
   const $ = (selector) => root.querySelector(selector);
 
   const ui = { scale: 1, edges: true };
-  const cam = { R: VIEWS.iso.slice(), zoom: 1, panx: 0, pany: 0 };
   let geo = null; // the geometry of the model
   let points = null; // the buffer of the points of the last geometry (a new job)
   let frame = null; // the decoded field values of the latest converged substep
+  let resetView = true; // the view is reset for the geometry of a new job
   let received = performance.now();
   let pal = PALETTE.light;
   let pending = { view: true, path: true, side: true };
   let raf = 0;
+
+  // the model is drawn by the WebGL viewer (the wheel zooms only after a click into
+  // the view, otherwise it scrolls the notebook)
+  const viewer = createViewer($(".fd-view"), { objects: [] }, { wheelOnFocus: true });
 
   const css = (name) => getComputedStyle(root).getPropertyValue(name).trim();
   // canvas fonts do not resolve CSS variables
@@ -231,7 +185,7 @@ function render({ model, el }) {
     }
     if (pending.view) {
       pending.view = false;
-      drawView();
+      drawModel();
     }
   }
 
@@ -242,54 +196,22 @@ function render({ model, el }) {
     const P = f32(model.get("points"));
     // the points of the surface (info.npoints is the number of points of the mesh)
     const n = Math.floor(P.length / 3);
-    if (!n) {
-      geo = null;
-      return;
-    }
-    const lo = [Infinity, Infinity, Infinity];
-    const hi = [-Infinity, -Infinity, -Infinity];
-    for (let i = 0; i < n; i++)
-      for (let k = 0; k < 3; k++) {
-        const v = P[3 * i + k];
-        if (v < lo[k]) lo[k] = v;
-        if (v > hi[k]) hi[k] = v;
-      }
-    const tri = u32(model.get("triangles"));
-    const quad = u32(model.get("quads"));
-    const nf = tri.length / 3 + quad.length / 4;
-    const fstart = new Uint32Array(nf + 1);
-    const fidx = new Uint32Array(tri.length + quad.length);
-    let f = 0;
-    let p = 0;
-    for (let i = 0; i < tri.length; i += 3) {
-      fstart[f++] = p;
-      for (let k = 0; k < 3; k++) fidx[p++] = tri[i + k];
-    }
-    for (let i = 0; i < quad.length; i += 4) {
-      fstart[f++] = p;
-      for (let k = 0; k < 4; k++) fidx[p++] = quad[i + k];
-    }
-    fstart[nf] = p;
-    geo = {
-      info, n, P, nf, fstart, fidx,
-      lines: u32(model.get("lines")),
-      center: lo.map((v, k) => 0.5 * (v + hi[k])),
-      radius: Math.max(1e-12, 0.5 * Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2])),
-      buf: {
-        VX: new Float32Array(n), VY: new Float32Array(n), VZ: new Float32Array(n),
-        SX: new Float32Array(n), SY: new Float32Array(n), S: new Float32Array(n),
-        depth: new Float32Array(nf), order: new Uint32Array(nf),
-      },
-    };
+    geo = n
+      ? {
+          info, n, P,
+          triangles: u32(model.get("triangles")),
+          faces: u32(model.get("faces")),
+          edges: u32(model.get("edges")),
+          lines: u32(model.get("lines")),
+        }
+      : null;
 
     $(".fd-scale").disabled = !info.deform;
 
-    // the camera is reset for the geometry of a new job (not for an update of info)
+    // the view is reset for the geometry of a new job (not for an update of info)
     if (model.get("points") !== points) {
       points = model.get("points");
-      cam.R = (info.dim === 3 ? VIEWS.iso : VIEWS.xy).slice();
-      cam.zoom = 1;
-      cam.panx = cam.pany = 0;
+      resetView = true;
     }
     $(".fd-title").textContent = info.title || "";
     $(".fd-version").textContent = info.version || "";
@@ -308,277 +230,92 @@ function render({ model, el }) {
 
   // --------------------------------------------------------------- viewport
 
-  function drawView() {
-    const canvas = $(".fd-canvas");
-    const [ctx, W, H] = fitCanvas(canvas);
-    ctx.fillStyle = pal.view;
-    ctx.fillRect(0, 0, W, H);
-    if (!geo || !frame) return;
+  function scene() {
+    "The scene of the viewer: the model, deformed and colored by the field.";
+    if (!geo) return { objects: [], axes: false };
 
-    const { info, n, P, buf: B } = geo;
-    const R = cam.R;
-    const legendW = 64;
-    const cx = (W - legendW) / 2 + cam.panx;
-    const cy = H / 2 + 8 + cam.pany;
-    const c0 = geo.center;
-    // the values of the first field of the unknowns, which also deform the model
+    const { info, n, P, triangles, faces, edges, lines } = geo;
+
+    // the norm of the values of the first field of the unknowns, which also deform
+    // the model (if the field has as many components as the points)
     const fdim = info.field_dim || 0;
-    const F = fdim ? frame.values : null;
-    const U = info.deform ? F : null;
-    const dim = info.dim;
-    let ext = 0;
-    let smin = Infinity;
-    let smax = -Infinity;
-    for (let i = 0; i < n; i++) {
-      let x = P[3 * i] - c0[0];
-      let y = P[3 * i + 1] - c0[1];
-      let z = P[3 * i + 2] - c0[2];
-      if (U && U.length >= dim * n) {
-        x += ui.scale * U[dim * i];
-        if (dim > 1) y += ui.scale * U[dim * i + 1];
-        if (dim > 2) z += ui.scale * U[dim * i + 2];
+    const F = fdim && frame.values.length >= fdim * n ? frame.values : null;
+    let values = null;
+    let displacement = null;
+    if (F) {
+      values = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let s = 0;
+        for (let q = 0; q < fdim; q++) s += F[fdim * i + q] * F[fdim * i + q];
+        values[i] = fdim === 1 ? F[i] : Math.sqrt(s);
       }
-      const vx = R[0] * x + R[1] * y + R[2] * z;
-      const vy = R[3] * x + R[4] * y + R[5] * z;
-      B.VX[i] = vx;
-      B.VY[i] = vy;
-      B.VZ[i] = R[6] * x + R[7] * y + R[8] * z;
-      ext = Math.max(ext, vx * vx + vy * vy);
-      let s = 0;
-      if (F && F.length >= fdim * n) {
-        if (fdim === 1) s = F[i];
-        else {
-          for (let q = 0; q < fdim; q++) s += F[fdim * i + q] * F[fdim * i + q];
-          s = Math.sqrt(s);
+      if (info.deform) {
+        displacement = new Float32Array(3 * n);
+        for (let i = 0; i < n; i++) {
+          for (let k = 0; k < info.dim; k++) displacement[3 * i + k] = F[fdim * i + k];
         }
       }
-      B.S[i] = s;
-      if (s < smin) smin = s;
-      if (s > smax) smax = s;
-    }
-    const fit = Math.min(3 * geo.radius, Math.max(geo.radius, Math.sqrt(ext) || 0));
-    const k = (cam.zoom * 0.42 * Math.min(W - legendW, H - 20)) / fit;
-    for (let i = 0; i < n; i++) {
-      B.SX[i] = cx + k * B.VX[i];
-      B.SY[i] = cy - k * B.VY[i];
     }
 
     // the limits of the legend are evaluated by the values at all points (also inside)
-    let lo = frame.limits ? frame.limits[0] : smin;
-    let hi = frame.limits ? frame.limits[1] : smax;
-
-    // a uniform field is drawn in one colour
-    const flat = !(hi - lo > 1e-9 * Math.max(Math.abs(hi), Math.abs(lo), 1e-200));
-    if (flat) hi = lo + 1;
-    const dl = (hi - lo) / BANDS;
-    const band = (s) => Math.min(BANDS - 1, Math.max(0, Math.floor((s - lo) / dl)));
-    const styles = new Map();
-    const style = (b, shade) => {
-      const q = Math.round(shade * 32);
-      const key = b * 64 + q;
-      let st = styles.get(key);
-      if (!st) {
-        const c = BAND_COLORS[b];
-        const f = q / 32;
-        st = `rgb(${(c[0] * f) | 0},${(c[1] * f) | 0},${(c[2] * f) | 0})`;
-        styles.set(key, st);
-      }
-      return st;
-    };
-
-    // depth sorting (painter's algorithm)
-    for (let f = 0; f < geo.nf; f++) {
-      const a = geo.fstart[f];
-      const b = geo.fstart[f + 1];
-      let z = 0;
-      for (let q = a; q < b; q++) z += B.VZ[geo.fidx[q]];
-      B.depth[f] = z / (b - a);
-      B.order[f] = f;
-    }
-    const order = B.order.sort((p, q) => B.depth[p] - B.depth[q]);
-
-    const xs = new Float64Array(4), ys = new Float64Array(4), ss = new Float64Array(4);
-    const tx = new Float64Array(3), ty = new Float64Array(3), ts = new Float64Array(3);
-    const edge = css("--fd-ink") || "#000";
-    ctx.lineJoin = "round";
-    for (let o = 0; o < geo.nf; o++) {
-      const f = order[o];
-      const a = geo.fstart[f];
-      const nv = geo.fstart[f + 1] - a;
-      for (let q = 0; q < nv; q++) {
-        const i = geo.fidx[a + q];
-        xs[q] = B.SX[i];
-        ys[q] = B.SY[i];
-        ss[q] = B.S[i];
-      }
-      // flat shading by the normal in view space
-      const i0 = geo.fidx[a], i1 = geo.fidx[a + 1], i2 = geo.fidx[a + 2];
-      const ax = B.VX[i1] - B.VX[i0], ay = B.VY[i1] - B.VY[i0], az = B.VZ[i1] - B.VZ[i0];
-      const bx = B.VX[i2] - B.VX[i0], by = B.VY[i2] - B.VY[i0], bz = B.VZ[i2] - B.VZ[i0];
-      const nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
-      const shade = 0.6 + (0.4 * Math.abs(nz)) / (Math.hypot(nx, ny, nz) || 1);
-
-      let kmin = BANDS;
-      let kmax = -1;
-      for (let q = 0; q < nv; q++) {
-        const b = band(ss[q]);
-        kmin = Math.min(kmin, b);
-        kmax = Math.max(kmax, b);
-      }
-
-      // base layer: the whole face in the colour of its lowest band
-      ctx.beginPath();
-      ctx.moveTo(xs[0], ys[0]);
-      for (let q = 1; q < nv; q++) ctx.lineTo(xs[q], ys[q]);
-      ctx.closePath();
-      const base = style(kmin, shade);
-      ctx.fillStyle = base;
-      ctx.fill();
-      if (!ui.edges) {
-        ctx.strokeStyle = base;
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
-      }
-
-      // upper layers: the nested polygons s >= level of each band
-      if (kmax > kmin) {
-        for (let t = 0; t < nv - 2; t++) {
-          tx[0] = xs[0]; ty[0] = ys[0]; ts[0] = ss[0];
-          tx[1] = xs[t + 1]; ty[1] = ys[t + 1]; ts[1] = ss[t + 1];
-          tx[2] = xs[t + 2]; ty[2] = ys[t + 2]; ts[2] = ss[t + 2];
-          const tmax = band(Math.max(ts[0], ts[1], ts[2]));
-          for (let b = kmin + 1; b <= tmax; b++) {
-            const m = clipGE(tx, ty, ts, 3, lo + b * dl);
-            if (m < 3) continue;
-            ctx.beginPath();
-            ctx.moveTo(CX[0], CY[0]);
-            for (let q = 1; q < m; q++) ctx.lineTo(CX[q], CY[q]);
-            ctx.closePath();
-            const st = style(b, shade);
-            ctx.fillStyle = st;
-            ctx.fill();
-            ctx.strokeStyle = st;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+    let range = frame.limits;
+    if (values && !range) {
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (const v of values) {
+        if (Number.isFinite(v)) {
+          lo = Math.min(lo, v);
+          hi = Math.max(hi, v);
         }
       }
-      if (ui.edges) {
-        ctx.beginPath();
-        ctx.moveTo(xs[0], ys[0]);
-        for (let q = 1; q < nv; q++) ctx.lineTo(xs[q], ys[q]);
-        ctx.closePath();
-        ctx.globalAlpha = 0.4;
-        ctx.strokeStyle = "#1b2631";
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-      }
+      range = lo <= hi ? [lo, hi] : null;
     }
 
-    // line cells (trusses) and points
-    const L = geo.lines;
-    ctx.lineCap = "round";
-    for (let q = 0; q < L.length; q += 2) {
-      const i = L[q];
-      const j = L[q + 1];
-      ctx.beginPath();
-      ctx.moveTo(B.SX[i], B.SY[i]);
-      ctx.lineTo(B.SX[j], B.SY[j]);
-      ctx.strokeStyle = style(band(0.5 * (B.S[i] + B.S[j])), 1);
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    }
-    if (info.surface === "points") {
-      for (let i = 0; i < n; i++) {
-        ctx.fillStyle = style(band(B.S[i]), 1);
-        ctx.fillRect(B.SX[i] - 2, B.SY[i] - 2, 4, 4);
-      }
-    }
+    const deform = displacement ? { displacement: item(displacement, "f4"), factor: ui.scale } : {};
+    const base = { positions: item(P, "f4"), ...deform };
+    const colors = values
+      ? { values: item(values, "f4"), range, bands: BANDS, label: fdim > 1 ? "Field norm" : "Field", verticalBar: true }
+      : {};
 
-    drawLegend(ctx, W, H, legendW, lo, hi, fdim, flat, edge);
-    drawTriad(ctx, H, dim, edge);
-    drawCaption(ctx, info, edge);
+    const objects = [];
+    if (triangles.length) {
+      // the faces of linear cells are shaded by a common normal (like polygons)
+      const shading = faces.length ? { faceIds: item(faces, "u4") } : { smooth: true, sharp: true };
+      objects.push({ type: "surface", ...base, triangles: item(triangles, "u4"), color: MODEL_COLOR, ...shading, ...colors });
+    }
+    if (ui.edges && edges.length) {
+      objects.push({ type: "surface", ...base, faces: false, edges: item(edges, "u4"), edgeColor: EDGE_COLOR, opacity: 0.45 });
+    }
+    if (lines.length) {
+      // the line cells (e.g. of a truss), colored by the values at their points
+      objects.push({
+        type: "lines",
+        positions: item(atLines(P, lines, 3), "f4"),
+        ...(displacement ? { displacement: item(atLines(displacement, lines, 3), "f4"), factor: ui.scale } : {}),
+        color: MODEL_COLOR,
+        width: 3,
+        ...colors,
+        ...(values ? { values: item(atLines(values, lines, 1), "f4") } : {}),
+      });
+    }
+    if (!triangles.length && !edges.length && !lines.length) {
+      // the points of a mesh without supported cells
+      objects.push({ type: "points", ...base, color: MODEL_COLOR, size: 5, ...colors });
+    }
+    return { objects, view: "default", axes: true, legend: null };
   }
 
-  function drawLegend(ctx, W, H, lw, lo, hi, fdim, flat, ink) {
-    const x = W - lw + 4;
-    const top = 26;
-    const bw = 10;
-    const h = Math.max(60, Math.min(H - top - 16, 170));
-    const bh = h / BANDS;
-    ctx.font = font(11);
-    ctx.fillStyle = ink;
-    ctx.textBaseline = "alphabetic";
-    ctx.globalAlpha = 0.75;
-    ctx.fillText(fdim > 1 ? "Field norm" : fdim ? "Field" : "", x, 16, lw - 8);
-    ctx.globalAlpha = 1;
-    if (flat) {
-      const c = BAND_COLORS[0];
-      ctx.fillStyle = `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
-      ctx.fillRect(x, top, bw, 12);
-      ctx.fillStyle = ink;
-      ctx.textBaseline = "middle";
-      ctx.fillText(fmt(lo, 3), x + bw + 4, top + 6, lw - bw - 8);
-      return;
-    }
-    for (let b = 0; b < BANDS; b++) {
-      const c = BAND_COLORS[b];
-      ctx.fillStyle = `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
-      ctx.fillRect(x, top + (BANDS - 1 - b) * bh, bw, bh + 0.5);
-    }
-    ctx.fillStyle = ink;
-    ctx.textBaseline = "middle";
-    const every = h / BANDS < 14 ? 2 : 1;
-    for (let b = 0; b <= BANDS; b += every) {
-      ctx.fillText(fmt(lo + ((hi - lo) * b) / BANDS, 3), x + bw + 4, top + (BANDS - b) * bh, lw - bw - 8);
-    }
-    ctx.textBaseline = "alphabetic";
-  }
+  function drawModel() {
+    viewer.update(scene(), { keepView: !resetView });
+    resetView = false;
 
-  function drawTriad(ctx, H, dim, ink) {
-    const R = cam.R;
-    const ox = 22;
-    const oy = H - 22;
-    const L = 14;
-    ctx.font = font(11);
-    ctx.strokeStyle = ctx.fillStyle = ink;
-    ctx.globalAlpha = 0.7;
-    ctx.lineWidth = 1;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    (dim === 3 ? ["x", "y", "z"] : ["x", "y"]).forEach((name, j) => {
-      const dx = R[j];
-      const dy = R[3 + j];
-      ctx.beginPath();
-      ctx.moveTo(ox, oy);
-      ctx.lineTo(ox + L * dx, oy - L * dy);
-      ctx.stroke();
-      // the label is placed at a distance beyond the tip, also for a short axis
-      // (which points away from the viewer or towards the viewer). The label of an
-      // axis along the view direction is placed at the lower left of the origin.
-      const length = Math.hypot(dx, dy);
-      if (length > 0.05) {
-        const gap = 7 / length;
-        ctx.fillText(name, ox + (L + gap) * dx, oy - (L + gap) * dy);
-      } else ctx.fillText(name, ox - 7, oy + 7);
-    });
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
-    ctx.globalAlpha = 1;
-  }
-
-  function drawCaption(ctx, info, ink) {
     let text = "Initial state";
     if (frame.kind === "substep") {
-      const nsub = (info.nsubsteps || [])[frame.step];
+      const nsub = ((geo && geo.info.nsubsteps) || [])[frame.step];
       text = `Step ${frame.step + 1}, substep ${frame.substep + 1} of ${nsub}`;
     }
-    if (info.deform && ui.scale !== 1) text += `, deformation scaled by ${ui.scale}`;
-    ctx.font = font(12);
-    ctx.fillStyle = ink;
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText(text, 10, 18);
+    if (geo && geo.info.deform && ui.scale !== 1) text += `, deformation scaled by ${ui.scale}`;
+    $(".fd-caption").textContent = geo ? text : "";
   }
 
   // -------------------------------------------------------------- load path
@@ -810,54 +547,12 @@ function render({ model, el }) {
     ui.edges = e.target.checked;
     schedule("view");
   });
+  // the views of the camera ("fit" keeps the rotation, "iso" is the default view of
+  // the plots of FElupe with the z-axis upwards)
+  const VIEW_NAMES = { fit: null, xy: "xy", xz: "xz", yz: "yz", iso: "default3d" };
   root.querySelectorAll("[data-view]").forEach((button) =>
-    button.addEventListener("click", () => {
-      if (button.dataset.view !== "fit") cam.R = VIEWS[button.dataset.view].slice();
-      cam.zoom = 1;
-      cam.panx = cam.pany = 0;
-      schedule("view");
-    }),
+    button.addEventListener("click", () => viewer.setView(VIEW_NAMES[button.dataset.view])),
   );
-
-  const view = $(".fd-canvas");
-  let drag = null;
-  view.addEventListener("contextmenu", (e) => e.preventDefault());
-  view.addEventListener("pointerdown", (e) => {
-    view.focus({ preventScroll: true });
-    drag = { x: e.clientX, y: e.clientY, pan: e.shiftKey || e.button !== 0 };
-    view.setPointerCapture(e.pointerId);
-  });
-  view.addEventListener("pointermove", (e) => {
-    if (!drag) return;
-    const dx = e.clientX - drag.x;
-    const dy = e.clientY - drag.y;
-    drag.x = e.clientX;
-    drag.y = e.clientY;
-    if (drag.pan) {
-      cam.panx += dx;
-      cam.pany += dy;
-    } else cam.R = mul(mul(rotY(dx * 0.008), rotX(dy * 0.008)), cam.R);
-    schedule("view");
-  });
-  const end = () => (drag = null);
-  view.addEventListener("pointerup", end);
-  view.addEventListener("pointercancel", end);
-  // the wheel zooms only after a click into the viewport, otherwise it scrolls
-  view.addEventListener(
-    "wheel",
-    (e) => {
-      if (document.activeElement !== view) return;
-      e.preventDefault();
-      cam.zoom *= Math.exp(-e.deltaY * 0.0015);
-      schedule("view");
-    },
-    { passive: false },
-  );
-  view.addEventListener("dblclick", () => {
-    cam.zoom = 1;
-    cam.panx = cam.pany = 0;
-    schedule("view");
-  });
 
   // ----------------------------------------------------------- model events
 
@@ -889,8 +584,8 @@ function render({ model, el }) {
   ];
   for (const [event, handler] of handlers) model.on(event, handler);
 
+  // the viewer is resized by itself
   const resize = new ResizeObserver(() => {
-    schedule("view");
     schedule("path");
     schedule("side");
   });
@@ -905,6 +600,7 @@ function render({ model, el }) {
     resize.disconnect();
     clearInterval(timer);
     if (raf) cancelAnimationFrame(raf);
+    viewer.dispose();
   };
 }
 

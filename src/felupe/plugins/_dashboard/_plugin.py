@@ -12,7 +12,7 @@ from time import perf_counter
 import numpy as np
 
 from ...__about__ import __version__
-from ...view._surface import CORNERS, boundary_faces, compact
+from ...view._surface import CORNERS, polynomial_order, triangulate_surface
 from .._plugin import Plugin
 from ._file import DashboardFile, DashboardState
 from ._snapshot import DashboardSnapshot
@@ -95,6 +95,11 @@ def _fields(container):
 def _float32(array):
     "Return the bytes of an array as contiguous 32-bit floats."
     return np.ascontiguousarray(np.asarray(array), dtype=np.float32).tobytes()
+
+
+def _uint32(array):
+    "Return the bytes of an array as contiguous 32-bit unsigned integers."
+    return np.ascontiguousarray(np.asarray(array), dtype=np.uint32).tobytes()
 
 
 def _first_line(error):
@@ -194,7 +199,8 @@ class DashboardWidgetPlugin(Plugin):
     evaluated in the frontend, i.e. they also work while the job is running.
 
     The model is drawn from the regions of the items, e.g. of several solid bodies on
-    the meshes of a :class:`~felupe.MeshContainer`. There is no list of item types:
+    the meshes of a :class:`~felupe.MeshContainer`, by the triangulated outer surface
+    of :func:`~felupe.view._surface.triangulate_surface`. There is no list of item types:
     every item with a field container ``item.field`` contributes the mesh of the
     region of its first field, except
 
@@ -249,11 +255,14 @@ class DashboardWidgetPlugin(Plugin):
           - The model with banded contours of the norm of the first field of the
             unknowns for the latest converged substep, deformed by this field if
             it has ``mesh.dim`` components. Only the first field is drawn, the
-            other fields may be defined on other meshes. Cells of a higher order
-            are drawn by their corner points. The default view of a 3d-model is
-            the default view of the plots of FElupe, e.g. of
-            :meth:`SolidBody.plot() <felupe.SolidBody.plot>`, with the z-axis
-            upwards (the button ``iso``), a 2d-model is viewed in the xy-plane.
+            other fields may be defined on other meshes. The model is drawn by
+            the WebGL viewer of the plotting backend ``"webgl"``. The faces of
+            quadratic and Lagrange cells are triangulated by all their points
+            (e.g. by the mid-edge points), line cells are drawn as lines. The
+            default view of a 3d-model is the default view of the plots of
+            FElupe, e.g. of :meth:`SolidBody.plot() <felupe.SolidBody.plot>`, with
+            the z-axis upwards (the button ``iso``), a 2d-model is viewed in the
+            xy-plane. The view is kept for the next substeps.
         * - Load path
           - One cell for each substep, converged, converged with cutbacks (with
             marks at the load factors of its increments) or failed.
@@ -447,6 +456,13 @@ class DashboardWidgetPlugin(Plugin):
             self._path[self._index()] = code
             self._path_changed = True
 
+    def _surface_values(self, values):
+        """Return the values at the points of the surface, interpolated from the values
+        at the points of the mesh (or all values without a surface)."""
+        if self._surface is None:
+            return values
+        return self._surface.interpolate(values)
+
     def _frame(self, container, kind, step=None, substep=None):
         """Update the values of the first field of the initial state or of a converged
         substep at the points of the surface (empty, if the first field has no values at
@@ -455,7 +471,7 @@ class DashboardWidgetPlugin(Plugin):
         limits = None
         if self._displayable:
             field_values = np.asarray(_fields(container)[0].values)
-            values = _float32(field_values[self._surface_points])
+            values = _float32(self._surface_values(field_values))
 
             # the range of the legend is evaluated by the values at all points
             norm = field_values[:, 0]
@@ -535,14 +551,32 @@ class DashboardWidgetPlugin(Plugin):
         self._points = meshes[0].points if meshes else np.zeros((0, 3))
         self._npoints, self._dim = np.shape(self._points)
 
-        # only the points of the surface are transferred (and their field values)
-        surf = boundary_faces(meshes)
-        self._surface_points, surf = compact(surf, self._npoints)
-        points = np.zeros((len(self._surface_points), 3))
-        points[:, : self._dim] = self._points[self._surface_points, :3]
-
         def unique(values):
             return list(dict.fromkeys(values))
+
+        # only the points of the triangulated outer surface are transferred (and their
+        # field values), the faces of quadratic and Lagrange cells are triangulated by
+        # all their points. Without supported cells, all points of the mesh are drawn.
+        self._surface = triangulate_surface(meshes) if meshes else None
+        if self._surface is not None and self._surface.interpolation.shape[0] == 0:
+            self._surface = None
+
+        cell_types = [str(mesh.cell_type) for mesh in meshes]
+        kinds = unique(CORNERS[c][0] for c in cell_types if c in CORNERS)
+        surface = self._surface
+        surface_points = self._surface_values(self._points)
+        points = np.zeros((len(surface_points), 3))
+        points[:, : self._dim] = surface_points[:, :3]
+        triangles = faces = edges = lines = np.zeros((0,), dtype=np.uint32)
+
+        if surface is not None:
+            triangles, edges = surface.triangles, surface.edges
+            lines = edges[surface.line_edges]
+            edges = edges[~surface.line_edges]
+
+            # the faces of linear cells are shaded by a common normal (like polygons)
+            if polynomial_order(meshes) == 1:
+                faces = surface.faces
 
         quadratures = [getattr(region, "quadrature", None) for region in regions]
         quadratures = [q for q in quadratures if q is not None]
@@ -582,7 +616,7 @@ class DashboardWidgetPlugin(Plugin):
             quadrature_points_per_cell=(
                 npoints_quadrature[0] if len(npoints_quadrature) == 1 else None
             ),
-            surface=surf["kind"],
+            surface=", ".join(kinds) if surface is not None else "points",
             field_dim=0,
             deform=False,
             ndof=None,
@@ -590,9 +624,10 @@ class DashboardWidgetPlugin(Plugin):
             items=items,
         )
         widget.points = _float32(points)
-        widget.triangles = np.ascontiguousarray(surf["tri"], dtype=np.uint32).tobytes()
-        widget.quads = np.ascontiguousarray(surf["quad"], dtype=np.uint32).tobytes()
-        widget.lines = np.ascontiguousarray(surf["line"], dtype=np.uint32).tobytes()
+        widget.triangles = _uint32(triangles)
+        widget.faces = _uint32(faces)
+        widget.edges = _uint32(edges)
+        widget.lines = _uint32(lines)
 
     def _unknowns(self, container):
         """Update the first field of the unknowns of the job (which are also the

@@ -3,12 +3,10 @@
 """The outer surface of meshes for the plotting backends and the dashboard,
 independent of PyVista.
 
-:func:`boundary_faces` returns the corner points of the outer faces, e.g. for the
-viewport of the dashboard. :func:`triangulate_surface` returns a triangulated surface
-with its edges, optionally subdivided, and a sparse matrix which interpolates point
-values of the meshes (e.g. the coordinates or the displacements) to the points of the
-surface by the shape functions of the finite elements. Hence, the faces of quadratic
-or Lagrange cells are curved.
+:func:`triangulate_surface` returns a triangulated surface with its edges, optionally
+subdivided, and a sparse matrix which interpolates point values of the meshes (e.g. the
+coordinates or the displacements) to the points of the surface by the shape functions
+of the finite elements. Hence, the faces of quadratic or Lagrange cells are curved.
 """
 
 from dataclasses import dataclass
@@ -54,13 +52,6 @@ CORNERS = {
 }
 
 
-def _unique_faces(faces):
-    """Return the faces which belong to only one cell (with their original ordering).
-    See :func:`_single_faces`."""
-
-    return faces[_single_faces(faces)]
-
-
 def _single_faces(faces):
     """Return a mask of the faces which belong to only one cell.
 
@@ -97,112 +88,6 @@ def _single_faces(faces):
     mask[order[single]] = True
 
     return mask
-
-
-def boundary_faces(meshes):
-    """Return the triangles, quads and lines of the outer surface of one or more
-    meshes with a common points-array, given by the corner points of the cells.
-
-    Parameters
-    ----------
-    meshes : felupe.Mesh or list of felupe.Mesh
-        The mesh or a list of meshes with a common points-array, e.g. the meshes of a
-        :class:`~felupe.MeshContainer`. Each mesh has its own cells and cell type.
-
-    Returns
-    -------
-    dict
-        A dict with the arrays ``"tri"`` (n, 3), ``"quad"`` (n, 4) and ``"line"``
-        (n, 2) of point indices and the names of the base cell types ``"kind"``
-        (``"points"`` if no cell type is supported).
-
-    Notes
-    -----
-    The faces of the three-dimensional cells of all meshes are collected first. A face
-    which belongs to two cells is an inner face, also if the cells belong to different
-    meshes, e.g. at the interface of two bodies with merged points. Only identical
-    faces are inner faces, i.e. the quad of a hexahedron and the two triangles of
-    tetrahedra at a common interface are kept (they are hidden by the outer faces).
-    Two-dimensional cells are faces and line cells are lines.
-    """
-
-    if not isinstance(meshes, (list, tuple)):
-        meshes = [meshes]
-
-    faces = {3: [], 4: []}
-    cells2d = {3: [], 4: []}
-    lines = []
-    kinds = []
-
-    for mesh in meshes:
-        kind, ncorners = CORNERS.get(mesh.cell_type, (None, None))
-
-        if kind is None:
-            continue
-
-        kinds.append(kind)
-        corners = np.asarray(mesh.cells)[:, :ncorners]
-
-        if kind in FACES:
-            for size in [3, 4]:
-                local = [f for f in FACES[kind] if len(f) == size]
-                if local:
-                    faces[size].append(corners[:, local].reshape(-1, size))
-        elif kind == "quad":
-            cells2d[4].append(corners)
-        elif kind == "triangle":
-            cells2d[3].append(corners)
-        else:
-            lines.append(corners)
-
-    def stack(arrays, size, unique=False):
-        if not arrays:
-            return np.zeros((0, size), dtype=np.int64)
-        stacked = np.concatenate(arrays)
-        return _unique_faces(stacked) if unique else stacked
-
-    tri = np.concatenate([stack(faces[3], 3, unique=True), stack(cells2d[3], 3)])
-    quad = np.concatenate([stack(faces[4], 4, unique=True), stack(cells2d[4], 4)])
-    line = stack(lines, 2)
-
-    kind = ", ".join(dict.fromkeys(kinds)) if kinds else "points"
-
-    return dict(kind=kind, tri=tri, quad=quad, line=line)
-
-
-def compact(surf, npoints):
-    """Return the indices of the points of a surface and the surface with the cells
-    renumbered to these points.
-
-    Parameters
-    ----------
-    surf : dict
-        A dict with the arrays ``"tri"``, ``"quad"`` and ``"line"`` of point indices,
-        see :func:`boundary_faces`.
-    npoints : int
-        The number of points of the mesh.
-
-    Returns
-    -------
-    ndarray
-        The sorted indices of the points of the surface. Without cells, e.g. for the
-        kind ``"points"``, all points of the mesh are used.
-    dict
-        The surface with the cells renumbered to the points of the surface.
-    """
-
-    cells = [np.asarray(surf[key]).ravel() for key in ["tri", "quad", "line"]]
-
-    if any(c.size for c in cells):
-        points = np.unique(np.concatenate(cells))
-    else:
-        points = np.arange(npoints)
-
-    index = np.zeros(npoints, dtype=np.int64)
-    index[points] = np.arange(len(points))
-    renumbered = {key: index[np.asarray(surf[key])] for key in ["tri", "quad", "line"]}
-
-    return points, {**surf, **renumbered}
 
 
 # the ring of the corner points of a cell, which is the face of a two-dimensional cell
@@ -450,6 +335,10 @@ class Surface:
     edges : ndarray
         The point-connectivity of the line segments of the edges of the faces, the
         two-dimensional cells and the line cells of shape ``(nedges, 2)``.
+    line_edges : ndarray
+        A mask of the line segments of the edges of shape ``(nedges,)``, which belong
+        to line cells (also if they are edges of faces), e.g. to draw the line cells
+        by thicker lines than the edges of the faces.
     """
 
     interpolation: csr_matrix
@@ -457,6 +346,7 @@ class Surface:
     owners: np.ndarray
     faces: np.ndarray
     edges: np.ndarray
+    line_edges: np.ndarray
 
     def interpolate(self, values):
         """Return the values at the points of the surface, interpolated from given
@@ -477,8 +367,9 @@ def triangulate_surface(meshes, subdivisions=None):
     ----------
     meshes : felupe.Mesh or list of felupe.Mesh
         The mesh or a list of meshes, e.g. the meshes of a
-        :class:`~felupe.MeshContainer`. If all meshes share the same points-array,
-        their points are shared, otherwise the points of the meshes are stacked.
+        :class:`~felupe.MeshContainer`. If all meshes share the same (or equal)
+        points-array, their points are shared, otherwise the points of the meshes are
+        stacked.
     subdivisions : int or None, optional
         The number of segments of each edge of a face (default is None). If None, the
         polynomial order of the cells is used (the largest of all meshes), i.e. the
@@ -495,9 +386,13 @@ def triangulate_surface(meshes, subdivisions=None):
     Notes
     -----
     The faces of the three-dimensional cells which belong to only one cell are outer
-    faces (like for :func:`boundary_faces`). Two-dimensional cells are faces and line
-    cells are edges. The points on the edges and the corner points are shared by the
-    faces, i.e. each point of the surface exists only once. The values at the points
+    faces. A face which belongs to two cells is an inner face, also if the cells belong
+    to different meshes, e.g. at the interface of two bodies with merged points. Only
+    identical faces are inner faces, i.e. the quad of a hexahedron and the two triangles
+    of tetrahedra at a common interface are kept (they are hidden by the outer faces).
+    Two-dimensional cells are faces and line cells are edges (marked by
+    :attr:`Surface.line_edges`). The points on the edges and the corner points are
+    shared by the faces, i.e. each point of the surface exists only once. The values at the points
     of a face are interpolated by the shape functions of the finite element of the
     cell type. Cell types without a finite element of FElupe, e.g. wedges, are
     interpolated linearly by their corner points.
@@ -518,7 +413,14 @@ def triangulate_surface(meshes, subdivisions=None):
         meshes = [meshes]
 
     meshes = list(meshes)
-    shared = all(mesh.points is meshes[0].points for mesh in meshes)
+    shared = all(
+        mesh.points is meshes[0].points
+        or (
+            np.shape(mesh.points) == np.shape(meshes[0].points)
+            and np.array_equal(mesh.points, meshes[0].points)
+        )
+        for mesh in meshes
+    )
 
     # the offsets of the points and the cells of the meshes
     npoints = [len(mesh.points) for mesh in meshes]
@@ -591,12 +493,15 @@ def triangulate_surface(meshes, subdivisions=None):
     corner_index = np.split(corner_index, np.cumsum([c.size for c in corners])[:-1])
     corner_index = [ci.reshape(c.shape) for ci, c in zip(corner_index, corners)]
 
-    # the edges of the surface, numbered by their sorted corner points
+    # the edges of the surface, numbered by their sorted corner points (and the edges
+    # of the line cells)
     occurrences = []
+    of_lines = []
     for (group, ring, index), c in zip(faces, corner_index):
         template = templates[len(ring)]
         for e, (a, b) in enumerate(template.edges):
             occurrences.append((c[:, a], c[:, b]))
+            of_lines.append(np.full(len(c), group["kind"] == "line"))
 
     starts = np.concatenate([a for a, b in occurrences] or [np.zeros(0, np.int64)])
     ends = np.concatenate([b for a, b in occurrences] or [np.zeros(0, np.int64)])
@@ -607,6 +512,9 @@ def triangulate_surface(meshes, subdivisions=None):
     )
     nedges = len(unique_keys)
     forward = starts < ends
+
+    line_edges = np.zeros(nedges, dtype=bool)
+    line_edges[edge_index[np.concatenate(of_lines or [np.zeros(0, bool)])]] = True
 
     # the numbering of the points: corners, points of the edges, interior points
     nedge_points = n - 1
@@ -701,6 +609,7 @@ def triangulate_surface(meshes, subdivisions=None):
         owners=np.concatenate(owners or [np.zeros(0, np.int64)]),
         faces=np.concatenate(face_numbers or [np.zeros(0, np.int64)]),
         edges=edges,
+        line_edges=np.repeat(line_edges, n),
     )
 
 

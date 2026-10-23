@@ -11,12 +11,20 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from ...view._backends._webgl._page import viewer
+
 HERE = Path(__file__).parent
 
 # the traits of the widget, which are written to the file of the geometry (once per
 # job) and to the file of the state (updated during the job)
-GEOMETRY = ["points", "triangles", "quads", "lines"]
+GEOMETRY = ["points", "triangles", "faces", "edges", "lines"]
 STATE = ["info", "frame", "path", "progress", "newton"]
+
+
+def module():
+    """Return the source code of the module of the dashboard, i.e. the WebGL viewer of
+    the plotting backend "webgl" (which draws the model) and the dashboard."""
+    return viewer() + (HERE / "dashboard.js").read_text(encoding="utf-8")
 
 
 class DashboardState:
@@ -27,7 +35,8 @@ class DashboardState:
         self.info = {}
         self.points = b""
         self.triangles = b""
-        self.quads = b""
+        self.faces = b""
+        self.edges = b""
         self.lines = b""
         self.frame = {}
         self.path = {}
@@ -58,7 +67,6 @@ def page(config):
     for the live HTML file (``config={"files": {...}}``, the names of the scripts
     which are polled) or for a snapshot (``config={"snapshot": {...}}``, the inline
     geometry and state)."""
-    module = (HERE / "dashboard.js").read_text(encoding="utf-8")
     styles = (HERE / "dashboard.css").read_text(encoding="utf-8")
 
     # the config is inline JSON in a script: "<" is escaped (e.g. "</script>" in a
@@ -69,7 +77,7 @@ def page(config):
     text = (HERE / "dashboard.html").read_text(encoding="utf-8")
     text = text.replace("/*STYLES*/", styles)
     text = text.replace("/*CONFIG*/", config)
-    return text.replace("/*MODULE*/", module.replace("</script", "<\\/script"))
+    return text.replace("/*MODULE*/", module().replace("</script", "<\\/script"))
 
 
 def _write(path, text, attempts=5, delay=0.05):

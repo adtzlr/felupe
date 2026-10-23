@@ -95,24 +95,29 @@
   align-content: start;
   min-width: 0;
 }
+/* the view of the model (drawn by the WebGL viewer of FElupe, the class fv) */
 .fd-view {
   position: relative;
   min-width: 0;
   height: 300px;
   border-radius: 3px;
   overflow: hidden;
+  background: #fbfcfc;
 }
-.fd-canvas {
+.fd.fd-dark .fd-view {
+  background: #1b2127;
+}
+.fd-view .fv {
+  color: var(--fd-ink);
+  font-family: var(--fd-font);
+  font-size: 11px;
+}
+.fd-caption {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  cursor: grab;
-  touch-action: none;
-}
-.fd-canvas:active {
-  cursor: grabbing;
+  z-index: 1;
+  top: 8px;
+  left: 10px;
+  pointer-events: none;
 }
 .fd-side {
   display: grid;

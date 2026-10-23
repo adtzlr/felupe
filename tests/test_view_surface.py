@@ -4,16 +4,10 @@ import numpy as np
 import pytest
 
 import felupe as fem
-from felupe.view._surface import (
-    FACES,
-    _unique_faces,
-    boundary_faces,
-    compact,
-    triangulate_surface,
-)
+from felupe.view._surface import FACES, _single_faces, triangulate_surface
 
 
-def test_unique_faces():
+def test_single_faces():
     "The outer faces by two integer keys are equal to the faces by numpy.unique."
 
     def reference(faces):
@@ -35,68 +29,9 @@ def test_unique_faces():
             local = [f for f in FACES[mesh.cell_type] if len(f) == size]
             if local:
                 faces = mesh.cells[:, local].reshape(-1, size)
-                assert np.array_equal(_unique_faces(faces), reference(faces))
+                assert np.array_equal(faces[_single_faces(faces)], reference(faces))
 
-
-def test_boundary_faces():
-    meshes = {
-        "hexahedron": fem.Cube(n=3),
-        "tetra": fem.Cube(n=3).triangulate(),
-        "hexahedron20": fem.Cube(n=3).add_midpoints_edges(),
-        "quad": fem.Rectangle(n=3),
-        "triangle": fem.Rectangle(n=3).triangulate(),
-    }
-    counts = {
-        "hexahedron": (0, 24),
-        "tetra": (48, 0),
-        "hexahedron20": (0, 24),
-        "quad": (0, 4),
-        "triangle": (8, 0),
-    }
-
-    for name, mesh in meshes.items():
-        surf = boundary_faces(mesh)
-        assert (len(surf["tri"]), len(surf["quad"])) == counts[name]
-
-    line = fem.mesh.Line(n=4)
-    assert len(boundary_faces(line)["line"]) == 3
-
-    unknown = fem.Mesh(np.zeros((1, 3)), np.zeros((1, 1), dtype=int), "vertex")
-    assert boundary_faces(unknown)["kind"] == "points"
-    assert boundary_faces([])["kind"] == "points"
-
-    # the points of the surface and the renumbered cells
-    cube = fem.Cube(n=4)
-    points, surf = compact(boundary_faces(cube), cube.npoints)
-    assert len(points) == 64 - 8
-    assert surf["quad"].max() == len(points) - 1
-    assert np.allclose(points[surf["quad"]], boundary_faces(cube)["quad"])
-
-    # all points without cells and the points of the lines (a point without a cell)
-    points, surf = compact(boundary_faces(unknown), 1)
-    assert np.allclose(points, [0])
-    line = fem.mesh.Line(n=4)
-    line = fem.Mesh(np.vstack([line.points, [[9.0]]]), line.cells, "line")
-    points, surf = compact(boundary_faces(line), line.npoints)
-    assert np.allclose(points, [0, 1, 2, 3])
-    assert np.allclose(surf["line"], line.cells)
-
-    assert _unique_faces(np.zeros((0, 4), dtype=int)).shape == (0, 4)
-
-    # several meshes with a common points-array: the inner faces at the interface
-    # are removed
-    cubes = [fem.Cube(n=3), fem.Cube(n=3).translate(1, axis=0)]
-    container = fem.MeshContainer(cubes, merge=True)
-    assert len(boundary_faces(container.meshes)["quad"]) == 40
-
-    hexahedron, tetra = fem.Cube(n=2), fem.Cube(n=2).translate(1, axis=0).triangulate()
-    container = fem.MeshContainer([hexahedron, tetra], merge=True)
-    surf = boundary_faces(container.meshes)
-    assert surf["kind"] == "hexahedron, tetra"
-
-    # a quad and two triangles at the interface are not identical, both are kept
-    assert len(surf["quad"]) == 6
-    assert len(surf["tri"]) == 12
+    assert _single_faces(np.zeros((0, 4), dtype=int)).shape == (0,)
 
 
 def area(points, triangles):
@@ -299,12 +234,42 @@ def test_triangulate_surface_of_meshes():
     # the owners are numbered over all meshes
     assert surface.owners.max() == 2 * 8 - 1
 
-    # different cell types with shared points
+    # meshes with equal (but not the same) points: the points are shared
+    copies = [container.meshes[0], container.meshes[1].copy()]
+    assert copies[1].points is not copies[0].points
+    surface = triangulate_surface(copies)
+    assert surface.interpolation.shape[1] == container.points.shape[0]
+
+    # different cell types with shared points, a quad and two triangles at the
+    # interface are not identical (both are kept and hidden by the outer faces)
     hexahedron = fem.Cube(n=2)
     tetra = fem.Cube(n=2).translate(1, axis=0).triangulate()
     container = fem.MeshContainer([hexahedron, tetra], merge=True)
     surface = triangulate_surface(container.meshes)
     assert np.isclose(area(container.points, surface.triangles), 10.0 + 2.0)
+
+
+def test_triangulate_surface_line_edges():
+    "The edges of the line cells are marked (also if they are edges of faces)."
+
+    rectangle = fem.Rectangle(n=3)
+    lines = fem.Mesh(rectangle.points, np.array([[0, 4], [4, 8], [0, 1]]), "line")
+
+    surface = triangulate_surface([rectangle, lines])
+    assert surface.line_edges.shape == (len(surface.edges),)
+    assert np.array_equal(
+        np.sort(np.sort(surface.edges[surface.line_edges], axis=1), axis=0),
+        [[0, 1], [0, 4], [4, 8]],
+    )
+
+    # subdivided edges of quadratic line cells (the corner points first)
+    points = np.array([[0.0], [0.5], [1.0], [1.5], [2.0]])
+    line = fem.Mesh(points, np.array([[0, 2, 1], [2, 4, 3]]), "line3")
+    surface = triangulate_surface(line, subdivisions=4)
+    assert surface.edges.shape == (2 * 4, 2) and surface.line_edges.all()
+
+    # faces without line cells
+    assert not triangulate_surface(fem.Cube(n=3)).line_edges.any()
 
 
 def test_triangulate_surface_curved():

@@ -3,6 +3,7 @@
 """The registry of the plotting backends with the current plotting backend."""
 
 from ._base import PlottingBackend
+from ._matplotlib import MatplotlibBackend
 from ._pyvista import PyVistaBackend
 from ._webgl import WebGLBackend
 
@@ -53,7 +54,7 @@ def set_plotting_backend(name):
     ----------
     name : str
         The name of a registered plotting backend. Available are ``"pyvista"``
-        (default) and ``"webgl"``.
+        (default), ``"webgl"`` and ``"matplotlib"``.
 
     Raises
     ------
@@ -79,6 +80,24 @@ def set_plotting_backend(name):
     (which raise a warning once) are not supported. Drag to rotate, shift-drag to pan,
     scroll to zoom and double-click to reset the view.
 
+    The plotting backend ``"matplotlib"`` draws the plots on the axes of a figure of
+    matplotlib, without PyVista. Its plotter, a :class:`~felupe.view.MatplotlibPlotter`,
+    has the methods ``show()``, ``screenshot(filename=None,
+    transparent_background=None, scale=None)`` and ``savefig()`` and the attributes
+    ``figure`` and ``ax``. The screenshots, e.g. of
+    :meth:`Mesh.screenshot() <felupe.Mesh.screenshot>`, are taken off-screen, i.e.
+    without a display. The format of the file of a screenshot is given by the suffix of
+    its filename, e.g. a raster format (PNG) or a vector format (PDF, SVG or EPS). Given
+    (two-dimensional) axes of matplotlib are accepted as plotter, e.g.
+    ``mesh.plot(plotter=ax)``, e.g. for figures with several subplots. The faces of the
+    outer surface of the meshes are drawn as polygons with a flat color each, in the
+    order of their depths (painter's algorithm). The faces on the back of the closed
+    surfaces of opaque solid bodies are not drawn. With ``nonlinear_subdivision=k``,
+    the edges of the faces are subdivided into ``order * 2 ** (k - 1)`` segments, also
+    of linear cells (e.g. for smoother colors of point-data). The plots of finite
+    elements and regions and the options which are specific to PyVista (which raise a
+    warning once) are not supported.
+
     Examples
     --------
     >>> import felupe as fem
@@ -87,6 +106,9 @@ def set_plotting_backend(name):
     >>> mesh = fem.Cube(n=3)
     >>> plotter = mesh.plot()
     >>> path = plotter.export_html("cube.html")
+    >>>
+    >>> fem.set_plotting_backend("matplotlib")
+    >>> image = mesh.screenshot(filename="cube.pdf")
     >>>
     >>> fem.set_plotting_backend("pyvista")
     >>> fem.get_plotting_backend()
@@ -165,3 +187,4 @@ def take_screenshot(plot, *args, **kwargs):
 
 register_plotting_backend("pyvista", PyVistaBackend())
 register_plotting_backend("webgl", WebGLBackend())
+register_plotting_backend("matplotlib", MatplotlibBackend())

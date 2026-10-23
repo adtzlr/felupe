@@ -63,3 +63,73 @@ def scalars_label(name, component=0, dim=1):
         title = name[len(PRINCIPAL) :]
 
     return f"{title} {component_labels(name, dim)[component]}"
+
+
+def surface_scalars(scene, surface, name, component=0, label=None):
+    """Return the scalars of a scene, selected by name and component, on a
+    triangulated surface of the scene.
+
+    Parameters
+    ----------
+    scene : felupe.view.Scene
+        A scene with the attributes ``point_data`` and ``cell_data``.
+    surface : felupe.view._surface.Surface
+        The triangulated surface of the mesh of the scene.
+    name : str
+        The name of the point- or cell-data.
+    component : int or None, optional
+        The component of the data (default is 0). If None, the magnitude is taken.
+    label : str or None, optional
+        The label of the scalars (default is None). If None, it is created by
+        :func:`scalars_label`.
+
+    Returns
+    -------
+    values : ndarray
+        The values at the points of the surface (point-data) or at the triangles of
+        the surface (cell-data).
+    where : str
+        Where the values are given, ``"point"`` or ``"cell"``.
+    values_range : list of float or None
+        The range ``[min, max]`` of the finite values of all points or cells of the
+        scene (not only of the surface), or None if there are no finite values.
+    label : str
+        The label of the scalars.
+
+    Raises
+    ------
+    KeyError
+        If no point- or cell-data with the given name is available.
+    """
+
+    if name in scene.point_data:
+        where, data = "point", scene.point_data[name]
+    elif name in scene.cell_data:
+        where, data = "cell", scene.cell_data[name]
+    else:
+        available = ", ".join([*scene.point_data, *scene.cell_data])
+        raise KeyError(f'"{name}" is not available, choose one of {available}.')
+
+    data = np.asarray(data, dtype=float)
+    dim = data.shape[1] if data.ndim == 2 else 1
+    data = data.reshape(len(data), -1)
+
+    if component is None:
+        values = np.linalg.norm(data, axis=1)
+    else:
+        if is_principal(name):
+            data = sort_principal_values(data)
+        values = data[:, component]
+
+    finite = values[np.isfinite(values)]
+    values_range = [float(finite.min()), float(finite.max())] if finite.size else None
+
+    if where == "point":
+        values = surface.interpolate(values)
+    else:
+        values = values[surface.owners]
+
+    if label is None:
+        label = scalars_label(name, component=component, dim=dim)
+
+    return values, where, values_range, label

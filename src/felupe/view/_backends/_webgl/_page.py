@@ -101,14 +101,3 @@ def iframe(text, height="480px", title="FElupe"):
         f'style="display: block; width: 100%; height: {height}; border: 0;" '
         f'srcdoc="{srcdoc}"></iframe>'
     )
-
-
-def in_kernel():
-    "Return True if the code runs in an IPython kernel, e.g. of Jupyter or VS Code."
-
-    try:
-        from IPython import get_ipython
-    except ImportError:  # pragma: no cover
-        return False
-
-    return getattr(get_ipython(), "kernel", None) is not None

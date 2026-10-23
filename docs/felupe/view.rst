@@ -4,7 +4,9 @@ View
 Visualization methods for meshes, mesh and field containers as well as solid bodies. The
 scenes are drawn by a plotting backend, by default by `PyVista <https://pyvista.org/>`_
 (``"pyvista"``). The plotting backend ``"webgl"`` draws the scenes by a WebGL viewer in
-the web browser (in a self-contained HTML page), without PyVista.
+the web browser (in a self-contained HTML page), without PyVista. The plotting backend
+``"matplotlib"`` draws the scenes on the axes of a figure of matplotlib, without PyVista,
+e.g. for off-screen screenshots in vector formats (PDF or SVG).
 
 .. currentmodule:: felupe
 
@@ -26,6 +28,7 @@ the web browser (in a self-contained HTML page), without PyVista.
    get_plotting_backend
    view.register_plotting_backend
    view.PlottingBackend
+   view.MatplotlibPlotter
 
 **Detailed API Reference**
 
@@ -51,3 +54,6 @@ the web browser (in a self-contained HTML page), without PyVista.
 
 .. autoclass:: felupe.view.PlottingBackend
    :members:
+
+.. autoclass:: felupe.view.MatplotlibPlotter
+   :members: show, screenshot, savefig, render, enable_parallel_projection, close

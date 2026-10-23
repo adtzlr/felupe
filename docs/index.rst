@@ -71,7 +71,7 @@ In order to make use of all features of FElupe, it is suggested to install all o
 * `anywidget <https://github.com/manzt/anywidget>`_ for the Jupyter widgets of the dashboard and of the plotting backend ``"webgl"``
 * `jax <https://github.com/jax-ml/jax>`_ for automatic differentiation in material formulations (JAX-based)
 * `h5py <https://github.com/h5py/h5py>`_ for writing XDMF result files
-* `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs
+* `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs and for the plotting backend ``"matplotlib"``
 * `meshio <https://github.com/nschloe/meshio>`_ for mesh-related I/O
 * `pyvista <https://github.com/pyvista/pyvista>`_ for interactive visualizations
 * `tensortrax <https://github.com/adtzlr/tensortrax>`_ for automatic differentiation in material formulations (NumPy-based)

@@ -10,11 +10,12 @@ from pathlib import Path
 
 import numpy as np
 
-from ..._scalars import is_principal, scalars_label, sort_principal_values
-from ..._shapes import Cone, Cylinder, plane_axes
+from ..._scalars import surface_scalars
+from ..._shapes import arrows, outline
 from ..._surface import polynomial_order, triangulate_surface
 from .._base import PlottingBackend
-from ._page import array, iframe, in_kernel, page
+from .._notebook import in_kernel
+from ._page import array, iframe, page
 
 DEFAULT_COLOR = "#add8e6"
 
@@ -77,17 +78,6 @@ def _lut(cmap):
     return np.round(255 * colors).astype(np.uint8)
 
 
-def _outline(triangles):
-    "Return the boundary edges of a triangulated surface (with one triangle each)."
-
-    edges = np.concatenate(
-        [triangles[:, [0, 1]], triangles[:, [1, 2]], triangles[:, [2, 0]]]
-    )
-    keys, counts = np.unique(np.sort(edges, axis=1), axis=0, return_counts=True)
-
-    return keys[counts == 1]
-
-
 def _temporary_page():
     """Return the path of a new temporary page in the folder ``felupe`` of the
     temporary directory and remove the pages there which are older than a day.
@@ -112,26 +102,6 @@ def _temporary_page():
         dir=folder, prefix="plot-", suffix=".html", delete=False
     ) as file:
         return Path(file.name)
-
-
-def _arrow():
-    "Return the points and triangles of an arrow of length 1 in the x-direction."
-
-    shaft = Cylinder(
-        center=(0.325, 0, 0),
-        direction=(1, 0, 0),
-        radius=0.03,
-        height=0.65,
-        resolution=6,
-    )
-    tip = Cone(center=(0.825, 0, 0), direction=(1, 0, 0), height=0.35, radius=0.1)
-
-    points, triangles = shaft.triangulate()
-    tip_points, tip_triangles = tip.triangulate()
-
-    return np.vstack([points, tip_points]), np.vstack(
-        [triangles, tip_triangles + len(points)]
-    )
 
 
 class WebGLPlotter:
@@ -416,7 +386,7 @@ class WebGLBackend(PlottingBackend):
             )
 
         if name is not None:
-            values, where, values_range, title = self._scalars(
+            values, where, values_range, title = surface_scalars(
                 scene, surface, name, component, label
             )
             obj.update(
@@ -442,45 +412,6 @@ class WebGLBackend(PlottingBackend):
         plotter._views += 1
 
         return plotter
-
-    def _scalars(self, scene, surface, name, component, label):
-        """Return the values at the points or the triangles of the surface, where they
-        are given (``"point"`` or ``"cell"``), the range of all values and the label of
-        the scalars."""
-
-        if name in scene.point_data:
-            where, data = "point", scene.point_data[name]
-        elif name in scene.cell_data:
-            where, data = "cell", scene.cell_data[name]
-        else:
-            available = ", ".join([*scene.point_data, *scene.cell_data])
-            raise KeyError(f'"{name}" is not available, choose one of {available}.')
-
-        data = np.asarray(data, dtype=float)
-        dim = data.shape[1] if data.ndim == 2 else 1
-        data = data.reshape(len(data), -1)
-
-        if component is None:
-            values = np.linalg.norm(data, axis=1)
-        else:
-            if is_principal(name):
-                data = sort_principal_values(data)
-            values = data[:, component]
-
-        finite = values[np.isfinite(values)]
-        values_range = (
-            [float(finite.min()), float(finite.max())] if finite.size else None
-        )
-
-        if where == "point":
-            values = surface.interpolate(values)
-        else:
-            values = values[surface.owners]
-
-        if label is None:
-            label = scalars_label(name, component=component, dim=dim)
-
-        return values, where, values_range, label
 
     def add_points(self, plotter, points, color=None, point_size=None, **kwargs):
         """Add points to a plotter. Supported keyword-arguments are ``label`` (for the
@@ -537,26 +468,12 @@ class WebGLBackend(PlottingBackend):
         for option in kwargs:
             _warn(option, self.name)
 
-        starts, vectors = _pad(points), scale * _pad(directions)
-        lengths = np.linalg.norm(vectors, axis=1)
-        keep = lengths > 0
-        starts, vectors, lengths = starts[keep], vectors[keep], lengths[keep]
-
-        glyph, glyph_triangles = _arrow()
-        frames = []
-        for vector, length in zip(vectors, lengths):
-            u, v = plane_axes(vector)
-            frames.append(np.stack([vector, length * u, length * v]))
-
-        frames = np.array(frames).reshape(-1, 3, 3)
-        positions = starts[:, None] + np.einsum("pj,ajk->apk", glyph, frames)
-        offsets = len(glyph) * np.arange(len(starts))
-        triangles = (glyph_triangles[None] + offsets[:, None, None]).reshape(-1, 3)
+        positions, triangles = arrows(_pad(points), _pad(directions), scale)
 
         return plotter.add(
             dict(
                 type="surface",
-                positions=array(positions.reshape(-1, 3)),
+                positions=array(positions),
                 triangles=array(triangles, "u4"),
                 color=_color(color, DEFAULT_COLOR),
                 opacity=float(opacity),
@@ -592,7 +509,7 @@ class WebGLBackend(PlottingBackend):
 
         if show_edges:
             obj.update(
-                edges=array(_outline(triangles), "u4"),
+                edges=array(outline(triangles), "u4"),
                 edgeColor=_color(color, "#000000"),
                 lineWidth=float(1.0 if line_width is None else line_width),
             )

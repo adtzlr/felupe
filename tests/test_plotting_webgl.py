@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import html
 import json
+import os
 import sys
+import tempfile
+import time
 from unittest import mock
 
 import numpy as np
@@ -9,7 +13,8 @@ import pytest
 
 import felupe as fem
 from felupe.view._backends._webgl import WebGLPlotter, _backend
-from felupe.view._backends._webgl._page import decode, in_kernel
+from felupe.view._backends._webgl._page import decode, encode, in_kernel
+from felupe.view._backends._webgl._widget import widget_class
 from felupe.view._surface import triangulate_surface
 
 
@@ -261,7 +266,8 @@ def test_colors():
         assert _backend._lut("viridis") is None
 
 
-def test_page(webgl, tmp_path):
+def test_page(webgl, tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
     plotter = fem.Rectangle(n=3).plot()
     page = plotter.html
 
@@ -273,10 +279,10 @@ def test_page(webgl, tmp_path):
     assert module.count("</script") == 1
     assert "export function createViewer" in module
 
-    # the file and the rich representation
+    # the file (the plotter is not shown by a rich representation, like with PyVista)
     path = plotter.export_html(tmp_path / "plots" / "rectangle.html")
     assert path.read_text(encoding="utf-8") == page
-    assert plotter._repr_html_().startswith('<iframe class="felupe-webgl"')
+    assert not hasattr(plotter, "_repr_html_")
 
     # show the page in the web browser (in a temporary file or in a given file)
     with mock.patch("webbrowser.open") as open_browser:
@@ -288,16 +294,93 @@ def test_page(webgl, tmp_path):
         path = plotter.show(filename=tmp_path / "show.html")
         assert path == tmp_path / "show.html"
 
-    # in a notebook, the viewer is shown in the output of the cell
+    # in a notebook, the page is shown in the output of the cell in an iframe (also if
+    # anywidget is installed, the widget works not in all frontends)
     display = pytest.importorskip("IPython.display")
+
     with (
         mock.patch.object(_backend, "in_kernel", return_value=True),
         mock.patch.object(display, "display") as show,
+        mock.patch.object(_backend.WebGLPlotter, "widget") as widget,
     ):
         assert plotter.show() is None
-        show.assert_called_once()
+        (bundle,), options = show.call_args
+        assert options == {"raw": True}
+        assert bundle["text/html"].startswith('<iframe class="felupe-webgl"')
+        assert "export function createViewer" in html.unescape(bundle["text/html"])
+        widget.assert_not_called()
 
+    # without anywidget, there is no widget
+    widget_class.cache_clear()
+    with mock.patch.dict(sys.modules, {"anywidget": None}):
+        with pytest.raises(ImportError):
+            plotter.widget()
+
+    widget_class.cache_clear()
     assert not in_kernel()
+
+
+def test_temporary_pages(webgl, tmp_path, monkeypatch):
+    # the temporary pages are written to the folder "felupe" of the temporary directory
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    folder = tmp_path / "felupe"
+    plotter = fem.Rectangle(n=3).plot()
+
+    with mock.patch("webbrowser.open"):
+        first = plotter.show()
+
+    assert first.parent == folder and first.name.startswith("plot-")
+
+    # an old page, an old folder (not removable) and an other file in the folder
+    old = folder / "plot-old.html"
+    old.write_text("old", encoding="utf-8")
+    locked = folder / "plot-locked.html"
+    locked.mkdir()
+    other = folder / "other.html"
+    other.write_text("other", encoding="utf-8")
+
+    day = 24 * 60 * 60
+    for path in [old, locked, other]:
+        os.utime(path, (time.time() - 2 * day, time.time() - 2 * day))
+
+    # the pages older than a day are removed by the next temporary page
+    with mock.patch("webbrowser.open"):
+        second = plotter.show()
+
+    assert first.exists() and second.exists() and first != second
+    assert not old.exists()
+    assert locked.exists() and other.exists()
+
+
+def test_widget(webgl):
+    pytest.importorskip("anywidget")
+
+    mesh, field, boundaries, solid = solved()
+    plotter = solid.plot("Displacement")
+
+    # the arrays of the scene are binary buffers
+    widget = plotter.widget(height="300px")
+    assert widget.height == "300px"
+    assert "export function createViewer" in widget._esm
+    assert "export default" in widget._esm
+    assert repr(widget).startswith("FElupe WebGL viewer")
+
+    for obj, synced in zip(plotter.objects, widget.scene["objects"]):
+        for key in ["positions", "triangles", "values"]:
+            if key in obj:
+                assert isinstance(synced[key]["data"], bytes)
+                assert np.array_equal(decode(synced[key]), decode(obj[key]))
+
+    assert widget.scene["view"] == plotter.view
+    assert widget.scene["legend"] is None
+
+    # the same scene in a page with base64-encoded arrays
+    scene = encode(plotter.scene())
+    assert isinstance(scene["objects"][0]["positions"]["data"], str)
+    assert np.array_equal(
+        decode(scene["objects"][0]["positions"]),
+        decode(plotter.objects[0]["positions"]),
+    )
 
 
 def test_lines_and_points_only(webgl):

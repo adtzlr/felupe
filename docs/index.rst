@@ -61,13 +61,14 @@ Install Python, open a terminal and run
 
    pip install felupe[all]
 
-where ``[all]`` is a combination of ``[autodiff,io,plot,progress,view]`` and installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
+where ``[all]`` is a combination of ``[autodiff,dashboard,io,plot,progress,view,web]`` and installs all optional dependencies. FElupe has minimal requirements, all available at PyPI supporting all platforms.
 
 * `numpy <https://github.com/numpy/numpy>`_ for array operations
 * `scipy <https://github.com/scipy/scipy>`_ for sparse matrices
 
 In order to make use of all features of FElupe, it is suggested to install all optional dependencies.
 
+* `anywidget <https://github.com/manzt/anywidget>`_ for the Jupyter widgets of the dashboard and of the plotting backend ``"webgl"``
 * `jax <https://github.com/jax-ml/jax>`_ for automatic differentiation in material formulations (JAX-based)
 * `h5py <https://github.com/h5py/h5py>`_ for writing XDMF result files
 * `matplotlib <https://github.com/matplotlib/matplotlib>`_ for plotting graphs

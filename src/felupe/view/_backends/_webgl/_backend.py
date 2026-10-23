@@ -3,6 +3,7 @@
 """The plotting backend of the scenes by WebGL in the web browser."""
 
 import tempfile
+import time
 import warnings
 import webbrowser
 from pathlib import Path
@@ -16,6 +17,9 @@ from .._base import PlottingBackend
 from ._page import array, iframe, in_kernel, page
 
 DEFAULT_COLOR = "#add8e6"
+
+# temporary pages older than this (in seconds) are removed by the next show()
+TEMPORARY_MAX_AGE = 24 * 60 * 60
 
 # the options which were already warned about (each option is warned once)
 _WARNED = set()
@@ -84,6 +88,32 @@ def _outline(triangles):
     return keys[counts == 1]
 
 
+def _temporary_page():
+    """Return the path of a new temporary page in the folder ``felupe`` of the
+    temporary directory and remove the pages there which are older than a day.
+
+    The page is not removed after it is shown, because the web browser loads it later
+    (e.g. after a script has ended) and the page should stay reloadable."""
+
+    folder = Path(tempfile.gettempdir()) / "felupe"
+    folder.mkdir(exist_ok=True)
+
+    now = time.time()
+    for old in folder.glob("plot-*.html"):
+        try:
+            if now - old.stat().st_mtime > TEMPORARY_MAX_AGE:
+                old.unlink()
+
+        # e.g. removed by another process in the meantime or not removable
+        except OSError:
+            pass
+
+    with tempfile.NamedTemporaryFile(
+        dir=folder, prefix="plot-", suffix=".html", delete=False
+    ) as file:
+        return Path(file.name)
+
+
 def _arrow():
     "Return the points and triangles of an arrow of length 1 in the x-direction."
 
@@ -123,10 +153,11 @@ class WebGLPlotter:
     Notes
     -----
     The page of the viewer is a self-contained HTML page (without a server and without
-    other files). In a notebook, :meth:`show` displays the viewer in the output of the
-    cell. Otherwise, the page is written to a file, which is opened in the web
-    browser. The rich representation (``_repr_html_``) embeds the page in an
-    ``iframe``.
+    other files). Like a plotter of PyVista, the plotter is shown by :meth:`show`. In a
+    notebook, the page is shown in the output of the cell (in an ``iframe``, without a
+    Jupyter widget, e.g. also in the interactive window of VS Code). Otherwise, the page
+    is written to a file, which is opened in the web browser. A Jupyter widget of the
+    viewer, e.g. for a layout of widgets, is returned by :meth:`widget`.
     """
 
     def __init__(self):
@@ -178,16 +209,37 @@ class WebGLPlotter:
 
         return path
 
+    def widget(self, height="480px"):
+        """Return a Jupyter widget of the viewer, e.g. to show it in a layout of
+        widgets. The arrays of the scene are transferred as binary buffers. This
+        requires the optional dependency anywidget (``pip install felupe[web]``).
+
+        Parameters
+        ----------
+        height : str, optional
+            The height of the widget as CSS length (default is ``"480px"``).
+
+        Returns
+        -------
+        anywidget.AnyWidget
+            The widget of the viewer.
+        """
+
+        from ._widget import widget_class
+
+        return widget_class()(self.scene(), height=height)
+
     def show(self, filename=None):
-        """Show the viewer. In a notebook (without a given filename), the viewer is
-        shown in the output of the cell. Otherwise, the page is written to a file,
-        which is opened in the web browser.
+        """Show the viewer. In a notebook (without a given filename), the page of the
+        viewer is shown in the output of the cell (in an ``iframe``). Otherwise, the
+        page is written to a file, which is opened in the web browser.
 
         Parameters
         ----------
         filename : str, pathlib.Path or None, optional
             The filename of the HTML file (default is None). If None, a temporary file
-            is written (outside of a notebook).
+            is written (outside of a notebook) in the folder ``felupe`` of the
+            temporary directory, where the pages older than a day are removed.
 
         Returns
         -------
@@ -198,23 +250,20 @@ class WebGLPlotter:
         if filename is None and in_kernel():
             from IPython.display import display
 
-            # a raw mime-bundle (an HTML object of an iframe raises a warning)
-            display({"text/html": self._repr_html_()}, raw=True)
+            # the page in an iframe works in all frontends (also without a manager of
+            # widgets), as a raw mime-bundle (an HTML object of an iframe warns)
+            page_in_iframe = iframe(page(self.scene(), height="100vh"))
+            display({"text/html": page_in_iframe}, raw=True)
+
             return None
 
         if filename is None:
-            with tempfile.NamedTemporaryFile(
-                prefix="felupe-", suffix=".html", delete=False
-            ) as file:
-                filename = file.name
+            filename = _temporary_page()
 
         path = self.export_html(filename)
         webbrowser.open(path.resolve().as_uri())
 
         return path
-
-    def _repr_html_(self):
-        return iframe(page(self.scene(), height="100vh"))
 
 
 class WebGLBackend(PlottingBackend):

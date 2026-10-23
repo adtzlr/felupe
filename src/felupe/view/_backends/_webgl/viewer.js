@@ -6,13 +6,20 @@
 // Drag to rotate, shift-drag (or right-drag) to pan, scroll to zoom, double-click to
 // reset the view.
 
+// the colors of the overlays follow the theme of VS Code (--vscode-*) or of JupyterLab
+// (--jp-*), otherwise the light or dark color scheme of the page
 const STYLES = `
 .fv { position: relative; width: 100%; height: 100%; overflow: hidden;
-  font: 12px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #1b2631; --fv-panel: rgba(255, 255, 255, 0.82); --fv-rule: #d3d9de;
+  font-size: 12px; line-height: 1.35;
+  font-family: var(--vscode-font-family, var(--jp-ui-font-family, system-ui, sans-serif));
+  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1, #1b2631));
+  --fv-panel: var(--vscode-editorWidget-background, var(--jp-layout-color1, rgba(255, 255, 255, 0.82)));
+  --fv-rule: var(--vscode-editorWidget-border, var(--jp-border-color2, #d3d9de));
   user-select: none; -webkit-user-select: none; touch-action: none; }
 @media (prefers-color-scheme: dark) {
-  .fv { color: #e6e8ea; --fv-panel: rgba(30, 31, 34, 0.82); --fv-rule: #3a3d42; } }
+  .fv { color: var(--vscode-editor-foreground, var(--jp-ui-font-color1, #e6e8ea));
+    --fv-panel: var(--vscode-editorWidget-background, var(--jp-layout-color1, rgba(30, 31, 34, 0.82)));
+    --fv-rule: var(--vscode-editorWidget-border, var(--jp-border-color2, #3a3d42)); } }
 .fv canvas.fv-gl { position: absolute; inset: 0; width: 100%; height: 100%;
   display: block; cursor: grab; outline: none; }
 .fv canvas.fv-gl:active { cursor: grabbing; }
@@ -45,14 +52,26 @@ const STYLES = `
 
 // -------------------------------------------------------------------- utilities
 
+const TYPES = { f4: Float32Array, u4: Uint32Array, u1: Uint8Array };
+
 function decode(item) {
-  "Decode a flat array of the scene, encoded by base64 (little-endian).";
+  "Decode a flat array of the scene (little-endian), by base64 or a binary buffer.";
   if (!item) return null;
-  const binary = atob(item.data);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  const types = { f4: Float32Array, u4: Uint32Array, u1: Uint8Array };
-  return new types[item.dtype](bytes.buffer, 0, item.size);
+  const Type = TYPES[item.dtype];
+  const data = item.data;
+
+  if (typeof data === "string") {
+    const binary = atob(data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Type(bytes.buffer, 0, item.size);
+  }
+
+  // a DataView (binary buffer of a widget), an ArrayBuffer or a typed array
+  const buffer = data.buffer || data;
+  const offset = data.byteOffset || 0;
+  if (offset % Type.BYTES_PER_ELEMENT === 0) return new Type(buffer, offset, item.size);
+  return new Type(buffer.slice(offset, offset + item.size * Type.BYTES_PER_ELEMENT));
 }
 
 let colorContext = null;

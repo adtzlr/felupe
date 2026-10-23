@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.package-data]
 'felupe.view' = ['logo.png']
 'felupe.plugins._dashboard' = ['dashboard.js', 'dashboard.css', 'dashboard.html']
-'felupe.view._backends._webgl' = ['viewer.js', 'viewer.html']
+'felupe.view._backends._webgl' = ['viewer.js', 'viewer.html', 'widget.js']
 
 [tool.ruff]
 src = ["src"]
@@ -114,10 +114,11 @@ io = [
     "meshio",
 ]
 progress = ["tqdm"]
-dashboard = ["anywidget"]
+dashboard = ["felupe[web]"]
 plot = ["matplotlib"]
 view = ["pyvista[jupyter]"]
-all = ["felupe[autodiff,dashboard,io,plot,progress,view]"]
+web = ["anywidget"]
+all = ["felupe[autodiff,dashboard,io,plot,progress,view,web]"]
 
 [dependency-groups]
 read-the-docs = ["felupe[all,docs,examples]"]

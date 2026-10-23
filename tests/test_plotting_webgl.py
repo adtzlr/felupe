@@ -9,7 +9,8 @@ import pytest
 
 import felupe as fem
 from felupe.view._backends._webgl import WebGLPlotter, _backend
-from felupe.view._backends._webgl._page import decode, in_kernel
+from felupe.view._backends._webgl._page import decode, encode, in_kernel
+from felupe.view._backends._webgl._widget import widget_class
 from felupe.view._surface import triangulate_surface
 
 
@@ -288,16 +289,65 @@ def test_page(webgl, tmp_path):
         path = plotter.show(filename=tmp_path / "show.html")
         assert path == tmp_path / "show.html"
 
-    # in a notebook, the viewer is shown in the output of the cell
+    # in a notebook, the viewer is shown in the output of the cell as a widget
     display = pytest.importorskip("IPython.display")
+    pytest.importorskip("anywidget")
+
     with (
         mock.patch.object(_backend, "in_kernel", return_value=True),
         mock.patch.object(display, "display") as show,
     ):
         assert plotter.show() is None
-        show.assert_called_once()
+        (widget,), options = show.call_args
+        assert widget.height == "480px" and options == {}
 
+    # without anywidget, the page is shown in an iframe
+    widget_class.cache_clear()
+    with (
+        mock.patch.dict(sys.modules, {"anywidget": None}),
+        mock.patch.object(_backend, "in_kernel", return_value=True),
+        mock.patch.object(display, "display") as show,
+    ):
+        assert plotter.show() is None
+        (bundle,), options = show.call_args
+        assert bundle["text/html"].startswith("<iframe") and options == {"raw": True}
+
+        with pytest.raises(ImportError):
+            plotter.widget()
+
+    widget_class.cache_clear()
     assert not in_kernel()
+
+
+def test_widget(webgl):
+    pytest.importorskip("anywidget")
+
+    mesh, field, boundaries, solid = solved()
+    plotter = solid.plot("Displacement")
+
+    # the arrays of the scene are binary buffers
+    widget = plotter.widget(height="300px")
+    assert widget.height == "300px"
+    assert "export function createViewer" in widget._esm
+    assert "export default" in widget._esm
+    assert repr(widget).startswith("FElupe WebGL viewer")
+
+    for obj, synced in zip(plotter.objects, widget.scene["objects"]):
+        for key in ["positions", "triangles", "values"]:
+            if key in obj:
+                assert isinstance(synced[key]["data"], bytes)
+                assert np.array_equal(decode(synced[key]), decode(obj[key]))
+
+    assert widget.scene["view"] == plotter.view
+    assert widget.scene["legend"] is None
+
+    # the same scene in a page with base64-encoded arrays
+    scene = encode(plotter.scene())
+    assert isinstance(scene["objects"][0]["positions"]["data"], str)
+    assert np.array_equal(
+        decode(scene["objects"][0]["positions"]),
+        decode(plotter.objects[0]["positions"]),
+    )
 
 
 def test_lines_and_points_only(webgl):

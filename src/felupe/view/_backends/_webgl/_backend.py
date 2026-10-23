@@ -124,9 +124,10 @@ class WebGLPlotter:
     -----
     The page of the viewer is a self-contained HTML page (without a server and without
     other files). In a notebook, :meth:`show` displays the viewer in the output of the
-    cell. Otherwise, the page is written to a file, which is opened in the web
+    cell, as a Jupyter widget (if anywidget is installed, see :meth:`widget`) or as an
+    ``iframe``. Otherwise, the page is written to a file, which is opened in the web
     browser. The rich representation (``_repr_html_``) embeds the page in an
-    ``iframe``.
+    ``iframe``, e.g. for the examples of a documentation.
     """
 
     def __init__(self):
@@ -178,10 +179,31 @@ class WebGLPlotter:
 
         return path
 
+    def widget(self, height="480px"):
+        """Return a Jupyter widget of the viewer, e.g. to show it in a layout of
+        widgets. The arrays of the scene are transferred as binary buffers. This
+        requires the optional dependency anywidget (``pip install felupe[web]``).
+
+        Parameters
+        ----------
+        height : str, optional
+            The height of the widget as CSS length (default is ``"480px"``).
+
+        Returns
+        -------
+        anywidget.AnyWidget
+            The widget of the viewer.
+        """
+
+        from ._widget import widget_class
+
+        return widget_class()(self.scene(), height=height)
+
     def show(self, filename=None):
         """Show the viewer. In a notebook (without a given filename), the viewer is
-        shown in the output of the cell. Otherwise, the page is written to a file,
-        which is opened in the web browser.
+        shown in the output of the cell as a Jupyter widget (if anywidget is installed)
+        or as an ``iframe``. Otherwise, the page is written to a file, which is opened
+        in the web browser.
 
         Parameters
         ----------
@@ -198,8 +220,17 @@ class WebGLPlotter:
         if filename is None and in_kernel():
             from IPython.display import display
 
-            # a raw mime-bundle (an HTML object of an iframe raises a warning)
-            display({"text/html": self._repr_html_()}, raw=True)
+            try:
+                widget = self.widget()
+
+            # without anywidget, the page is shown in an iframe (a raw mime-bundle,
+            # an HTML object of an iframe raises a warning)
+            except ImportError:
+                display({"text/html": self._repr_html_()}, raw=True)
+
+            else:
+                display(widget)
+
             return None
 
         if filename is None:

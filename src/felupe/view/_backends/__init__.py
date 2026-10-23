@@ -3,6 +3,7 @@
 """Plotting backends of the scenes."""
 
 from ._base import PlottingBackend
+from ._matplotlib import MatplotlibBackend, MatplotlibPlotter
 from ._pyvista import PyVistaBackend
 from ._registry import (
     backend_of,
@@ -15,6 +16,8 @@ from ._registry import (
 from ._webgl import WebGLBackend, WebGLPlotter
 
 __all__ = [
+    "MatplotlibBackend",
+    "MatplotlibPlotter",
     "PlottingBackend",
     "PyVistaBackend",
     "WebGLBackend",

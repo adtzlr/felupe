@@ -755,7 +755,7 @@ class MatplotlibPlotter:
 
         ax.set_xlim(lower[0], upper[0])
         ax.set_ylim(lower[1], upper[1])
-        ax.set_aspect("equal", adjustable="datalim")
+        ax.set_aspect("equal", adjustable="box")
         ax.set_axis_off()
 
         points = box.width / ax.figure.dpi * 72

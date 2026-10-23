@@ -3,6 +3,7 @@
 import sys
 from unittest import mock
 
+import numpy as np
 import pytest
 
 import felupe as fem
@@ -10,7 +11,26 @@ from felupe.view._backends import backend_of
 
 
 class RecordingPlotter(list):
-    "A plotter which records the added scenes with their options."
+    "A plotter which records the added scenes and primitives as (kind, data, options)."
+
+    def kinds(self):
+        return [kind for kind, data, options in self]
+
+
+class SceneBackend(fem.view.PlottingBackend):
+    "A plotting backend with scenes only (without primitives and screenshots)."
+
+    def is_plotter(self, plotter):
+        return isinstance(plotter, RecordingPlotter)
+
+    def prepare_plotter(self, plotter=None, **kwargs):
+        if plotter is None:
+            plotter = RecordingPlotter()
+        return plotter
+
+    def add_view(self, plotter, scene, **kwargs):
+        plotter.append(("view", scene, kwargs))
+        return plotter
 
 
 class RecordingBackend(fem.view.PlottingBackend):
@@ -29,7 +49,22 @@ class RecordingBackend(fem.view.PlottingBackend):
         return plotter
 
     def add_view(self, plotter, scene, **kwargs):
-        plotter.append((scene, kwargs))
+        plotter.append(("view", scene, kwargs))
+        return plotter
+
+    def add_points(self, plotter, points, color=None, point_size=None, **kwargs):
+        options = dict(color=color, point_size=point_size, **kwargs)
+        plotter.append(("points", np.asarray(points), options))
+        return plotter
+
+    def add_lines(self, plotter, lines, color=None, line_width=None, **kwargs):
+        options = dict(color=color, line_width=line_width, **kwargs)
+        plotter.append(("lines", np.asarray(lines), options))
+        return plotter
+
+    def add_arrows(self, plotter, points, directions, scale=1.0, color=None, **kwargs):
+        data = (np.asarray(points), np.asarray(directions))
+        plotter.append(("arrows", data, dict(scale=scale, color=color, **kwargs)))
         return plotter
 
 
@@ -88,15 +123,16 @@ def test_plot_by_current_backend(recording):
     assert len(plotter) == 3
 
     # the scenes are views with the data of the model
-    scene, options = plotter[0]
+    assert plotter.kinds() == ["view", "view", "view"]
+    kind, scene, options = plotter[0]
     assert isinstance(scene, fem.ViewSolid)
     assert "Principal Values of Cauchy Stress" in scene.cell_data
     assert options["name"] == "Principal Values of Cauchy Stress"
     assert options["factor"] == 2.0
 
-    assert isinstance(plotter[1][0], fem.ViewField)
-    assert plotter[1][1]["component"] is None
-    assert plotter[2][1]["show_undeformed"] is False
+    assert isinstance(plotter[1][1], fem.ViewField)
+    assert plotter[1][2]["component"] is None
+    assert plotter[2][2]["show_undeformed"] is False
 
     # the options of the plotter
     assert recording.prepared[0] == dict(
@@ -125,6 +161,104 @@ def test_plot_by_backend_of_given_plotter(recording):
 
     # an unknown plotter is drawn by the current backend
     assert backend_of(object()).name == "pyvista"
+
+
+def test_decorations(recording):
+    mesh = fem.Cube(n=3)
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+    right = np.arange(mesh.npoints)[mesh.x == 1]
+
+    # a point load with arrows for the non-zero components (scaled by the extent)
+    load = fem.PointLoad(field, points=right, values=[1, 0, -2])
+    plotter = load.plot(color="blue")
+    assert plotter.kinds() == ["view", "arrows", "arrows"]
+
+    (points, directions), options = plotter[1][1:]
+    assert np.allclose(points, mesh.points[right])
+    assert np.allclose(directions, [1, 0, 0])
+    assert options == dict(scale=0.125, color="blue")
+    assert np.allclose(plotter[2][1][1], [0, 0, -1])
+
+    # a boundary with points and lines of its prescribed directions
+    boundary = fem.Boundary(field[0], fx=1, skip=(0, 1, 0))
+    plotter = boundary.plot(width=4)
+    assert plotter.kinds() == ["view", "points", "lines", "lines"]
+
+    kind, points, options = plotter[1]
+    assert np.allclose(points, mesh.points[right])
+    assert options == dict(color="black", point_size=10, label="Boundary Condition")
+
+    kind, lines, options = plotter[3]
+    assert lines.shape == (len(right), 2, 3)
+    assert np.allclose(lines[:, 0], mesh.points[right])
+    assert np.allclose(lines[:, 1] - lines[:, 0], [0, 0, 0.125])
+    assert options == dict(color="black", line_width=4)
+
+    # the quadrature points
+    plotter = fem.GaussLegendre(order=1, dim=2).plot(weighted=True)
+    assert plotter.kinds() == ["view"] + ["points"] * 4
+    assert all(points.shape == (1, 2) for kind, points, options in plotter[1:])
+    assert plotter[1][2] == dict(color="grey", point_size=20)
+
+    # a constraint with its points and the reference axis on a new plotter
+    yz = mesh.points[:, 1:] - 0.5
+    left = (mesh.x == 0) & (np.linalg.norm(yz, axis=1) > 0.1)
+    sleeve = fem.CylindricalConstraint(
+        field, points=left, axis=(1, 0, 0), center=(0, 0.5, 0.5)
+    )
+    plotter = sleeve.plot(point_size=5)
+    assert recording.prepared[-1] == dict(theme=None)
+    assert plotter.kinds() == ["points", "lines"]
+    assert plotter[0][1].shape == (np.sum(left), 3)
+    assert plotter[0][2] == dict(color="black", point_size=5)
+
+    kind, lines, options = plotter[1]
+    assert lines.shape == (1, 2, 3)
+    assert np.allclose(np.cross(lines[0, 1] - lines[0, 0], [1, 0, 0]), 0)
+    assert options == dict(color="black", line_width=2)
+
+    # a multi-point constraint with lines from the center-point on a new plotter
+    mesh = fem.Cube(n=3)
+    mesh.update(points=np.vstack([mesh.points, [2.0, 0.5, 0.5]]))
+    field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+    right = np.arange(mesh.npoints)[mesh.x == 1]
+    mpc = fem.MultiPointConstraint(field, points=right, centerpoint=-1)
+
+    plotter = mpc.plot(color="red", opacity=0.5)
+    assert recording.prepared[-1] == dict(theme=None)
+    assert plotter.kinds() == ["lines"]
+
+    kind, lines, options = plotter[0]
+    assert np.allclose(lines[:, 0], [2.0, 0.5, 0.5])
+    assert np.allclose(lines[:, 1], mesh.points[right])
+    assert options == dict(color="red", line_width=None, opacity=0.5)
+
+    # a multi-point constraint without points adds no lines
+    mpc = fem.MultiPointConstraint(field, points=[], centerpoint=-1)
+    assert mpc.plot(plotter=RecordingPlotter()) == []
+
+
+def test_decorations_not_supported():
+    fem.view.register_plotting_backend("scenes", SceneBackend())
+    fem.set_plotting_backend("scenes")
+
+    try:
+        mesh = fem.Cube(n=3)
+        field = fem.FieldContainer([fem.Field(fem.RegionHexahedron(mesh), dim=3)])
+
+        with pytest.raises(
+            NotImplementedError, match='"scenes" does not support arrows'
+        ):
+            fem.PointLoad(field, points=[0]).plot()
+
+        with pytest.raises(NotImplementedError, match="does not support points"):
+            fem.Boundary(field[0], fx=0).plot()
+
+        with pytest.raises(NotImplementedError, match="does not support lines"):
+            fem.Boundary(field[0], fx=0).plot(show_points=False)
+
+    finally:
+        fem.set_plotting_backend("pyvista")
 
 
 def test_pyvista_plotter_without_pyvista():

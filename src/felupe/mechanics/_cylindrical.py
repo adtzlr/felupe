@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from ..view._backends import backend_of
 from ._pointconstraint import PointConstraint
 
 
@@ -300,10 +301,10 @@ class CylindricalConstraint(PointConstraint):
     def _plot_reference(self, plotter, x, color, line_width):
         "Add the axis along the axial extent of the points (or their mean radius)."
 
-        import pyvista as pv
-
         z = (x - self.center) @ self.axis
         length = max(np.ptp(z), self.radius.mean(), 1e-12)
         start = self.center + (z.min() - 0.1 * length) * self.axis
         end = self.center + (z.min() + 1.1 * length) * self.axis
-        plotter.add_mesh(pv.Line(start, end), color=color, line_width=line_width)
+        backend_of(plotter).add_lines(
+            plotter, [[start, end]], color=color, line_width=line_width
+        )

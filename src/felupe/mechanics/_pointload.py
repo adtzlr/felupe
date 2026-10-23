@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.sparse import csr_matrix
 
+from ..view._backends import backend_of
 from ._helpers import Assemble, Results
 from ._update import UpdateItem
 
@@ -122,6 +123,8 @@ class PointLoad:
         if plotter is None:
             plotter = mesh.plot()
 
+        backend = backend_of(plotter)
+
         if len(self.points) > 0:
             x = mesh.points
 
@@ -140,12 +143,15 @@ class PointLoad:
                 skip[: values.shape[1]][np.isclose(values, 0).all(axis=0)] = True
 
             for a, (skip_axis, direction) in enumerate(zip(skip, np.eye(3))):
-                d = np.broadcast_to(direction.reshape(1, 3), points[self.points].shape)
                 if not skip_axis:
-                    _ = plotter.add_arrows(
+                    directions = np.broadcast_to(
+                        direction * np.sign(values[0, a]), points[self.points].shape
+                    )
+                    plotter = backend.add_arrows(
+                        plotter,
                         points[self.points],
-                        direction=d * np.sign(values[0, a]),
-                        mag=magnitude,
+                        directions,
+                        scale=magnitude,
                         color=color,
                         **kwargs,
                     )

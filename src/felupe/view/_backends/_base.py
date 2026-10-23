@@ -10,8 +10,11 @@ class PlottingBackend(ABC):
     :meth:`SolidBody.plot() <felupe.SolidBody.plot>`.
 
     A plotting backend draws on its own type of plotter. A subclass implements
-    :meth:`is_plotter`, :meth:`prepare_plotter` and :meth:`add_view`. Screenshots are
-    optional: :meth:`screenshot` raises a :class:`NotImplementedError` by default.
+    :meth:`is_plotter`, :meth:`prepare_plotter` and :meth:`add_view`. The other methods
+    are optional and raise a :class:`NotImplementedError` by default: the primitives
+    :meth:`add_points`, :meth:`add_lines` and :meth:`add_arrows`, which draw the
+    decorations of a model, e.g. of boundary conditions, point loads and constraints,
+    and :meth:`screenshot`.
 
     Attributes
     ----------
@@ -162,8 +165,89 @@ class PlottingBackend(ABC):
             If the plotting backend does not support screenshots.
         """
 
-        raise NotImplementedError(
-            f'The plotting backend "{self.name}" does not support screenshots. Use '
-            'the plotting backend "pyvista", e.g. by '
-            'felupe.set_plotting_backend("pyvista").'
+        raise self._not_supported("screenshots")
+
+    def add_points(self, plotter, points, color=None, point_size=None, **kwargs):
+        """Add points to a plotter and return the plotter. Not supported by default.
+
+        Parameters
+        ----------
+        plotter : object
+            A plotter of this plotting backend.
+        points : ndarray
+            The point coordinates of shape ``(npoints, dim)`` with ``dim <= 3``.
+        color : str or None, optional
+            The color of the points (default is None).
+        point_size : float or None, optional
+            The size of the points (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments of the points, e.g. a ``label`` for the legend.
+
+        Returns
+        -------
+        object
+            The plotter.
+        """
+
+        raise self._not_supported("points")
+
+    def add_lines(self, plotter, lines, color=None, line_width=None, **kwargs):
+        """Add straight line segments to a plotter and return the plotter. Not
+        supported by default.
+
+        Parameters
+        ----------
+        plotter : object
+            A plotter of this plotting backend.
+        lines : ndarray
+            The start and end points of the line segments of shape
+            ``(nlines, 2, dim)`` with ``dim <= 3``.
+        color : str or None, optional
+            The color of the lines (default is None).
+        line_width : float or None, optional
+            The width of the lines (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments of the lines.
+
+        Returns
+        -------
+        object
+            The plotter.
+        """
+
+        raise self._not_supported("lines")
+
+    def add_arrows(self, plotter, points, directions, scale=1.0, color=None, **kwargs):
+        """Add arrows to a plotter and return the plotter. Not supported by default.
+
+        Parameters
+        ----------
+        plotter : object
+            A plotter of this plotting backend.
+        points : ndarray
+            The start points of the arrows of shape ``(narrows, dim)`` with
+            ``dim <= 3``.
+        directions : ndarray
+            The vectors of the arrows of shape ``(narrows, dim)``.
+        scale : float, optional
+            A factor of the vectors of the arrows (default is 1.0).
+        color : str or None, optional
+            The color of the arrows (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments of the arrows.
+
+        Returns
+        -------
+        object
+            The plotter.
+        """
+
+        raise self._not_supported("arrows")
+
+    def _not_supported(self, what):
+        "Return the error of an unsupported feature of this plotting backend."
+
+        return NotImplementedError(
+            f'The plotting backend "{self.name}" does not support {what}. Use the '
+            'plotting backend "pyvista", e.g. by felupe.set_plotting_backend("pyvista").'
         )

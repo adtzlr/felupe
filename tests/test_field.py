@@ -300,24 +300,105 @@ def test_merge():
     with pytest.raises(ValueError):
         fem.field.merge([])
 
-    mesh = fem.Rectangle(n=3)
-    field = fem.FieldsMixed(fem.RegionQuad(mesh), n=3, axisymmetric=True)
-
-    # field containers with dual fields can't be merged
+    # only field containers can be merged
     with pytest.raises(TypeError):
-        fem.field.merge([field])
+        fem.field.merge([fem.Field(fem.RegionQuad(fem.Rectangle(n=3)))])
 
-    mesh = fem.Rectangle(n=3)
-    field = fem.FieldContainer(
-        [
-            fem.Field(fem.RegionQuad(mesh), dim=3),
-            fem.Field(fem.RegionQuad(mesh), dim=3),
-        ]
+    # the second fields are continuous in the first and dual in the second container
+    region = fem.RegionQuad(fem.Rectangle(n=3))
+    field_1 = fem.FieldContainer([fem.Field(region, dim=2), fem.Field(region)])
+    field_2 = fem.FieldsMixed(
+        fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=3)), n=2
     )
 
-    # field containers with multiple fields can't be merged
     with pytest.raises(TypeError):
-        fem.field.merge([field])
+        fem.field.merge([field_1, field_2])
+
+    # the second fields have different dimensions
+    field_1 = fem.FieldsMixed(fem.RegionQuad(fem.Rectangle(n=3)), n=2)
+    field_2 = fem.FieldsMixed(
+        fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=3)), n=2, dim=2
+    )
+
+    with pytest.raises(ValueError):
+        fem.field.merge([field_1, field_2])
+
+
+def test_merge_mixed():
+
+    # one mesh, split into two meshes
+    mesh = fem.Cube(n=4)
+    mask = mesh.points[mesh.cells].mean(axis=1)[:, 0] < 0.5
+    meshes = [mesh.copy(), mesh.copy()]
+    meshes[0].update(cells=mesh.cells[mask])
+    meshes[1].update(cells=mesh.cells[~mask])
+    meshes = [m.sweep() for m in meshes]
+
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=50)
+
+    def evaluate(fields, x0):
+        boundaries = fem.dof.uniaxial(x0, move=0.3, return_loadcase=False)
+        solids = [fem.SolidBody(umat, f) for f in fields]
+        step = fem.Step(items=solids, boundaries=boundaries)
+        fem.Job(steps=[step]).evaluate(x0=x0)
+
+    field = fem.FieldsMixed(fem.RegionHexahedron(mesh), n=3)
+    evaluate([field], field)
+
+    fields = [fem.FieldsMixed(fem.RegionHexahedron(m), n=3) for m in meshes]
+    x0 = fem.field.merge(fields)
+
+    # the dual fields are stacked and the values are linked to the top-level field
+    assert len(x0) == 3
+    assert len(x0[1].values) == mesh.ncells
+    assert np.allclose(x0[2].values, 1.0)
+    assert np.all(fields[1].offsets == x0.offsets)
+    assert all(f.values is g.values for f, g in zip(fields[1].fields, x0.fields))
+    assert fields[0].x0 is fields[1].x0 is x0
+
+    evaluate(fields, x0)
+
+    def sort(points, values):
+        return values[np.lexsort(np.round(points, 8).T[::-1])]
+
+    u = sort(mesh.points, field[0].values)
+    u_merged = sort(x0[0].region.mesh.points, x0[0].values)
+    assert np.allclose(u, u_merged)
+    assert np.allclose(np.sort(field[1].values.ravel()), np.sort(x0[1].values.ravel()))
+
+
+def test_merge_mixed_formulations():
+
+    # a displacement field, a Q2/P0 and a Taylor-Hood P2/P1 mixed field container
+    quad8 = fem.Rectangle(a=(0, 0), b=(1, 1), n=3).add_midpoints_edges()
+    tri6 = fem.Rectangle(a=(1, 0), b=(2, 1), n=3).triangulate().add_midpoints_edges()
+    tri6b = fem.Rectangle(a=(2, 0), b=(3, 1), n=3).triangulate().add_midpoints_edges()
+
+    fields = [
+        fem.FieldContainer(
+            [fem.FieldPlaneStrain(fem.RegionQuadraticTriangle(tri6b), dim=2)]
+        ),
+        fem.FieldsMixed(fem.RegionQuadraticQuad(quad8), n=3, planestrain=True),
+        fem.FieldsMixed(fem.RegionQuadraticTriangle(tri6), n=3, planestrain=True),
+    ]
+    npoints = fields[1][1].region.mesh.npoints + fields[2][1].region.mesh.npoints
+    x0 = fem.field.merge(fields)
+    assert len(x0[1].values) == npoints
+
+    umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=50)
+    solids = [
+        fem.SolidBody(fem.NeoHooke(mu=1, bulk=50), fields[0]),
+        fem.SolidBody(umat, fields[1]),
+        fem.SolidBody(umat, fields[2]),
+    ]
+    boundaries = fem.dof.uniaxial(x0, move=0.3, clamped=False, return_loadcase=False)
+    step = fem.Step(items=solids, boundaries=boundaries)
+    fem.Job(steps=[step]).evaluate()
+
+    # homogeneous deformation (patch test)
+    assert np.allclose(x0[1].values, x0[1].values[0])
+    for field in fields:
+        assert np.allclose(field.extract()[0][0, 0], 1.1)
 
 
 def test_merge_fewer_points():
@@ -566,6 +647,8 @@ if __name__ == "__main__":
     test_toplevel()
     test_toplevel_merge()
     test_merge()
+    test_merge_mixed()
+    test_merge_mixed_formulations()
     test_merge_fewer_points()
     test_field_dual()
     test_field_take()

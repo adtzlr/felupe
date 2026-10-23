@@ -490,7 +490,8 @@ class FieldContainer:
 
         Notes
         -----
-        Field containers with dual fields are not supported.
+        Mixed field containers, e.g. :class:`~felupe.FieldsMixed`, are supported, see
+        :func:`~felupe.field.merge` for details.
 
         Examples
         --------

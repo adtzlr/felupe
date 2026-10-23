@@ -106,3 +106,67 @@ linked automatically, i.e. they share their ``values`` array.
             "Principal Values of Logarithmic Strain", show_undeformed=False
         ),
     ).show()
+
+Mixed-Field Formulations
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The solid bodies may also use different mixed-field formulations. Each field container
+is created on the (unmerged) mesh of its body, e.g. a displacement field for a
+linear-elastic body and mixed fields (displacement, pressure and volume ratio) for two
+nearly-incompressible bodies. :func:`~felupe.field.merge` merges the points of the
+displacement fields and stacks the points of the dual fields, i.e. the pressure and the
+volume ratio are local to their body. No offsets or dual meshes have to be created
+manually.
+
+..  pyvista-plot::
+    :context:
+    :force_static:
+
+    meshes = [
+        fem.Rectangle(n=(4, 10)),
+        fem.Rectangle(n=(6, 10)).translate(1, axis=0),
+        fem.Rectangle(n=(10, 10)).translate(2, axis=0),
+    ]
+    fields = [
+        fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(meshes[0]), dim=2)]),
+        fem.FieldsMixed(fem.RegionQuad(meshes[1]), n=3, axisymmetric=True),
+        fem.FieldsMixed(fem.RegionQuad(meshes[2]), n=3, axisymmetric=True),
+    ]
+    field = fem.field.merge(fields)
+
+The boundary conditions are created on the top-level field container. The fields of
+the bodies are linked to the top-level field container, which is also used as the
+``x0``-argument of the job by default.
+
+..  pyvista-plot::
+    :context:
+    :force_static:
+
+    boundaries = fem.dof.uniaxial(field, move=-0.8, clamped=True, return_loadcase=False)
+
+    umats = [
+        fem.LinearElasticLargeStrain(E=10, nu=0.3),
+        fem.ThreeFieldVariation(fem.LinearElasticLargeStrain(E=3, nu=0.3)),
+        fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000),
+    ]
+    solids = [fem.SolidBody(umat, f) for umat, f in zip(umats, fields)]
+
+    step = fem.Step(items=solids, boundaries=boundaries)
+    job = fem.Job(steps=[step]).evaluate()
+
+    plotter = None
+    for solid in solids:
+        plotter = solid.plot(
+            "Principal Values of Logarithmic Strain",
+            show_undeformed=False,
+            plotter=plotter,
+        )
+    plotter.show()
+
+..  note::
+    The fields are grouped by their position in the field containers, i.e. they must be
+    ordered consistently (displacement, pressure, volume ratio). Field containers with
+    fewer fields, like the displacement field of the linear-elastic body, are
+    supported. The mixed formulations of the bodies may differ, e.g. Q1/P0, Q2/P0 or
+    Taylor-Hood elements, as long as the meshes of the displacement fields are
+    compatible.

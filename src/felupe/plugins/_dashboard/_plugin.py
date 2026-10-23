@@ -12,10 +12,10 @@ from time import perf_counter
 import numpy as np
 
 from ...__about__ import __version__
+from ...view._surface import CORNERS, boundary_faces, compact
 from .._plugin import Plugin
 from ._file import DashboardFile, DashboardState
 from ._snapshot import DashboardSnapshot
-from ._surface import CORNERS, compact, surface
 
 # the codes of the status of a substep in the load path
 PENDING, RUNNING, CONVERGED, CUTBACK, FAILED = ".", "r", "c", "b", "f"
@@ -536,7 +536,7 @@ class DashboardWidgetPlugin(Plugin):
         self._npoints, self._dim = np.shape(self._points)
 
         # only the points of the surface are transferred (and their field values)
-        surf = surface(meshes)
+        surf = boundary_faces(meshes)
         self._surface_points, surf = compact(surf, self._npoints)
         points = np.zeros((len(self._surface_points), 3))
         points[:, : self._dim] = self._points[self._surface_points, :3]

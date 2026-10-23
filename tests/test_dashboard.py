@@ -11,9 +11,10 @@ import numpy as np
 import pytest
 
 import felupe as fem
-from felupe.plugins._dashboard import _plugin, surface
+from felupe.plugins._dashboard import _plugin
 from felupe.plugins._dashboard._file import DashboardState
 from felupe.plugins._dashboard._snapshot import DashboardSnapshot
+from felupe.view._surface import boundary_faces
 
 
 @pytest.fixture
@@ -158,7 +159,7 @@ def test_dashboard_job(kernel):
     assert len(points) == len(surface_points) == 26
     assert np.allclose(points, mesh.points[surface_points])
     quads = np.frombuffer(widget.quads, dtype=np.uint32).reshape(-1, 4)
-    assert np.allclose(points[quads], mesh.points[surface(mesh)["quad"]])
+    assert np.allclose(points[quads], mesh.points[boundary_faces(mesh)["quad"]])
     assert len(widget.quads) == 4 * 4 * 24
     assert widget.triangles == b""
 
@@ -751,33 +752,6 @@ def test_dashboard_limits(kernel):
     assert dashboard.widget.frame["limits"] is None
 
 
-def test_unique_faces():
-    "The outer faces by two integer keys are equal to the faces by numpy.unique."
-
-    from felupe.plugins._dashboard._surface import FACES, _unique_faces
-
-    def reference(faces):
-        keys = np.sort(faces, axis=1)
-        _, index, counts = np.unique(
-            keys, axis=0, return_index=True, return_counts=True
-        )
-        return faces[np.sort(index[counts == 1])]
-
-    # wedges by two layers of triangles
-    tri = fem.Rectangle(n=4).triangulate()
-    layers = [np.hstack([tri.points, np.full((tri.npoints, 1), z)]) for z in [0, 1]]
-    cells = np.hstack([tri.cells, tri.cells + tri.npoints])
-    wedge = fem.Mesh(np.vstack(layers), cells, "wedge")
-
-    meshes = [fem.Cube(n=5), fem.Cube(n=5).triangulate(), wedge]
-    for mesh in meshes:
-        for size in [3, 4]:
-            local = [f for f in FACES[mesh.cell_type] if len(f) == size]
-            if local:
-                faces = mesh.cells[:, local].reshape(-1, size)
-                assert np.array_equal(_unique_faces(faces), reference(faces))
-
-
 def read_script(path):
     "Return the data of a script of the live HTML file."
     text = path.read_text(encoding="utf-8")
@@ -1023,70 +997,3 @@ def test_dashboard_file_writer(tmp_path, monkeypatch):
     assert writer.flush(source)
     assert writer.changed and writer.state == 2
     assert read_script(tmp_path / "job.version.js")["state"] == 1
-
-
-def test_surface():
-    meshes = {
-        "hexahedron": fem.Cube(n=3),
-        "tetra": fem.Cube(n=3).triangulate(),
-        "hexahedron20": fem.Cube(n=3).add_midpoints_edges(),
-        "quad": fem.Rectangle(n=3),
-        "triangle": fem.Rectangle(n=3).triangulate(),
-    }
-    counts = {
-        "hexahedron": (0, 24),
-        "tetra": (48, 0),
-        "hexahedron20": (0, 24),
-        "quad": (0, 4),
-        "triangle": (8, 0),
-    }
-
-    for name, mesh in meshes.items():
-        surf = surface(mesh)
-        assert (len(surf["tri"]), len(surf["quad"])) == counts[name]
-
-    line = fem.mesh.Line(n=4)
-    assert len(surface(line)["line"]) == 3
-
-    unknown = fem.Mesh(np.zeros((1, 3)), np.zeros((1, 1), dtype=int), "vertex")
-    assert surface(unknown)["kind"] == "points"
-    assert surface([])["kind"] == "points"
-
-    from felupe.plugins._dashboard._surface import _unique_faces, compact
-
-    # the points of the surface and the renumbered cells
-    cube = fem.Cube(n=4)
-    points, surf = compact(surface(cube), cube.npoints)
-    assert len(points) == 64 - 8
-    assert surf["quad"].max() == len(points) - 1
-    assert np.allclose(points[surf["quad"]], surface(cube)["quad"])
-
-    # all points without cells and the points of the lines (a point without a cell)
-    points, surf = compact(surface(unknown), 1)
-    assert np.allclose(points, [0])
-    line = fem.mesh.Line(n=4)
-    line = fem.Mesh(np.vstack([line.points, [[9.0]]]), line.cells, "line")
-    points, surf = compact(surface(line), line.npoints)
-    assert np.allclose(points, [0, 1, 2, 3])
-    assert np.allclose(surf["line"], line.cells)
-
-    assert _unique_faces(np.zeros((0, 4), dtype=int)).shape == (0, 4)
-
-    # several meshes with a common points-array: the inner faces at the interface
-    # are removed
-    cubes = [fem.Cube(n=3), fem.Cube(n=3).translate(1, axis=0)]
-    container = fem.MeshContainer(cubes, merge=True)
-    assert len(surface(container.meshes)["quad"]) == 40
-
-    hexahedron, tetra = fem.Cube(n=2), fem.Cube(n=2).translate(1, axis=0).triangulate()
-    container = fem.MeshContainer([hexahedron, tetra], merge=True)
-    surf = surface(container.meshes)
-    assert surf["kind"] == "hexahedron, tetra"
-
-    # a quad and two triangles at the interface are not identical, both are kept
-    assert len(surf["quad"]) == 6
-    assert len(surf["tri"]) == 12
-
-
-if __name__ == "__main__":
-    test_surface()

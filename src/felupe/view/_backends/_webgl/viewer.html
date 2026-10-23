@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FElupe</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      html,
+      body {
+        margin: 0;
+        background: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #1e1f22;
+        }
+      }
+      #felupe-viewer {
+        width: 100%;
+        height: /*HEIGHT*/;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="felupe-viewer"></div>
+    <script id="felupe-scene" type="application/json">/*SCENE*/</script>
+    <script type="module">
+/*MODULE*/
+
+const scene = JSON.parse(document.getElementById("felupe-scene").textContent);
+createViewer(document.getElementById("felupe-viewer"), scene);
+    </script>
+  </body>
+</html>

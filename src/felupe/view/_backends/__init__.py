@@ -12,10 +12,13 @@ from ._registry import (
     set_plotting_backend,
     take_screenshot,
 )
+from ._webgl import WebGLBackend, WebGLPlotter
 
 __all__ = [
     "PlottingBackend",
     "PyVistaBackend",
+    "WebGLBackend",
+    "WebGLPlotter",
     "backend_of",
     "get_plotting_backend",
     "register_plotting_backend",

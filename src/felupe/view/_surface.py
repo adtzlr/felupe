@@ -268,6 +268,23 @@ def _element(cell_type, points_per_cell):
     return None, 1
 
 
+def polynomial_order(meshes):
+    """Return the largest polynomial order of the supported cells of one or more meshes
+    (and 1 if there are no supported cells), i.e. the number of segments per edge of
+    the faces of :func:`triangulate_surface` without given subdivisions."""
+
+    if not isinstance(meshes, (list, tuple)):
+        meshes = [meshes]
+
+    orders = [
+        _element(str(mesh.cell_type), np.shape(mesh.cells)[1])[1]
+        for mesh in meshes
+        if str(mesh.cell_type) in CORNERS and len(mesh.cells) > 0
+    ]
+
+    return max(orders, default=1)
+
+
 @dataclass
 class _Template:
     """A face, a cell or a line, subdivided into ``n`` segments per edge. The points of
@@ -426,6 +443,10 @@ class Surface:
     owners : ndarray
         The cells of the triangles of shape ``(ntriangles,)``, numbered over all
         meshes, e.g. to take the values of cell-data.
+    faces : ndarray
+        The faces of the triangles of shape ``(ntriangles,)``, i.e. the triangles of a
+        (subdivided) face of a cell share the same number, e.g. to take a common
+        normal vector of a face.
     edges : ndarray
         The point-connectivity of the line segments of the edges of the faces, the
         two-dimensional cells and the line cells of shape ``(nedges, 2)``.
@@ -434,6 +455,7 @@ class Surface:
     interpolation: csr_matrix
     triangles: np.ndarray
     owners: np.ndarray
+    faces: np.ndarray
     edges: np.ndarray
 
     def interpolate(self, values):
@@ -509,7 +531,7 @@ def triangulate_surface(meshes, subdivisions=None):
     # the supported meshes with their cells (by the numbering of all points)
     groups = []
     for mesh, point_offset, cell_offset in zip(meshes, point_offsets, cell_offsets):
-        cells = np.asarray(mesh.cells, dtype=np.int64).reshape(len(mesh.cells), -1)
+        cells = np.asarray(mesh.cells, dtype=np.int64)
         kind, ncorners = CORNERS.get(str(mesh.cell_type), (None, None))
 
         if kind is not None and len(cells) > 0:
@@ -598,7 +620,8 @@ def triangulate_surface(meshes, subdivisions=None):
     cols.append(corner_points)
     values.append(np.ones(len(corner_points)))
 
-    triangles, owners = [], []
+    triangles, owners, face_numbers = [], [], []
+    face_offset = 0
     is_first = np.zeros(len(edge_keys), dtype=bool)
     is_first[first] = True
     occurrence = 0
@@ -652,6 +675,10 @@ def triangulate_surface(meshes, subdivisions=None):
             owners.append(
                 np.repeat(group["cell_offset"] + index, len(template.triangles))
             )
+            face_numbers.append(
+                np.repeat(face_offset + np.arange(ninstances), len(template.triangles))
+            )
+            face_offset += ninstances
 
     # the line segments of the edges, from the lower to the upper corner point
     segments = np.zeros((nedges, n + 1), dtype=np.int64)
@@ -672,6 +699,7 @@ def triangulate_surface(meshes, subdivisions=None):
         interpolation=interpolation,
         triangles=np.concatenate(triangles or [np.zeros((0, 3), np.int64)]),
         owners=np.concatenate(owners or [np.zeros(0, np.int64)]),
+        faces=np.concatenate(face_numbers or [np.zeros(0, np.int64)]),
         edges=edges,
     )
 

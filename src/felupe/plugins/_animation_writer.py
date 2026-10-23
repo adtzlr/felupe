@@ -3,6 +3,7 @@
 import os
 
 from ..__about__ import __version__ as version
+from ..view._backends import PyVistaBackend
 from ._plugin import Plugin
 
 
@@ -37,7 +38,8 @@ class AnimationWriterPlugin(Plugin):
     Notes
     -----
     This plugin should be used with ``off_screen=True``. While it is possible to show
-    the plotter during the job evaluation, it may flicker.
+    the plotter during the job evaluation, it may flicker. The frames are always drawn
+    by the plotting backend of PyVista, independent of the current plotting backend.
 
     Examples
     --------
@@ -106,6 +108,14 @@ class AnimationWriterPlugin(Plugin):
 
     def before_job(self, context, state):
         self.plotter = self.kwargs.pop("plotter", None)  # pragma: no cover
+
+        # the frames are written by a plotter of PyVista (for all plotting backends)
+        if self.plotter is None:
+            self.plotter = PyVistaBackend().prepare_plotter(
+                theme=self.kwargs.get("theme", "default"),
+                off_screen=self.kwargs.get("off_screen", False),
+                notebook=self.kwargs.get("notebook", False),
+            )
 
         for idx, item in enumerate(self.items):  # pragma: no cover
             color = {}  # pragma: no cover

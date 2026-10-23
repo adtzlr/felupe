@@ -12,9 +12,10 @@ class PlottingBackend(ABC):
     A plotting backend draws on its own type of plotter. A subclass implements
     :meth:`is_plotter`, :meth:`prepare_plotter` and :meth:`add_view`. The other methods
     are optional and raise a :class:`NotImplementedError` by default: the primitives
-    :meth:`add_points`, :meth:`add_lines` and :meth:`add_arrows`, which draw the
-    decorations of a model, e.g. of boundary conditions, point loads and constraints,
-    and :meth:`screenshot`.
+    :meth:`add_points`, :meth:`add_lines`, :meth:`add_arrows`, :meth:`add_shape` and
+    :meth:`add_legend`, which draw the decorations of a model, e.g. of boundary
+    conditions, point loads, constraints and rigid contact surfaces, and
+    :meth:`screenshot`.
 
     Attributes
     ----------
@@ -243,6 +244,71 @@ class PlottingBackend(ABC):
         """
 
         raise self._not_supported("arrows")
+
+    def add_shape(
+        self, plotter, shape, color=None, opacity=None, show_edges=None, **kwargs
+    ):
+        """Add a shape, e.g. a plane, a cylinder or a cone, to a plotter and return the
+        plotter. Not supported by default.
+
+        Parameters
+        ----------
+        plotter : object
+            A plotter of this plotting backend.
+        shape : object
+            A shape with a method ``shape.triangulate()``, which returns the points of
+            shape ``(npoints, 3)`` and the triangles of shape ``(ntriangles, 3)`` of
+            its (clipped) surface.
+        color : str or None, optional
+            The color of the shape (default is None).
+        opacity : float or None, optional
+            The opacity of the shape (default is None).
+        show_edges : bool or None, optional
+            A flag to show the edges of the surface of the shape (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments of the shape.
+
+        Returns
+        -------
+        object
+            The plotter.
+        """
+
+        raise self._not_supported("shapes")
+
+    def add_legend(
+        self, plotter, entries=None, size=None, background_color=None, **kwargs
+    ):
+        """Add a legend to a plotter and return the plotter. Not supported by default.
+
+        Parameters
+        ----------
+        plotter : object
+            A plotter of this plotting backend.
+        entries : list of tuple or None, optional
+            The entries ``(label, color)`` of the legend (default is None). If None,
+            the entries are taken from the labels of the primitives, e.g. given by
+            ``add_points(..., label=label)``.
+        size : tuple of float or None, optional
+            The relative size of the legend (default is None).
+        background_color : str or None, optional
+            The background color of the legend (default is None).
+        **kwargs : dict, optional
+            Optional keyword-arguments of the legend.
+
+        Returns
+        -------
+        object
+            The plotter.
+        """
+
+        raise self._not_supported("legends")
+
+    def default_color(self):
+        """Return the default color of the meshes, e.g. of the current theme, or None
+        if there is no default color (default is None)."""
+
+        return None
 
     def _not_supported(self, what):
         "Return the error of an unsupported feature of this plotting backend."

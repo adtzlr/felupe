@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ..view._backends import take_screenshot
+from ..view._backends import require_pyvista, take_screenshot
 
 
 class Element:
@@ -138,12 +138,14 @@ class Element:
         font_size=26,
         **kwargs,
     ):
-        """Plot the element.
+        """Plot the element. This requires the plotting backend of PyVista.
 
         See Also
         --------
         felupe.Scene.plot: Plot method of a scene.
         """
+
+        require_pyvista(kwargs.get("plotter"), "plots of finite elements")
 
         view = self.view()
         if self.points.shape[1] > 1:

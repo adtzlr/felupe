@@ -8,6 +8,7 @@ import pytest
 
 import felupe as fem
 from felupe.view._backends import backend_of
+from felupe.view._shapes import Plane
 
 
 class RecordingPlotter(list):
@@ -65,6 +66,20 @@ class RecordingBackend(fem.view.PlottingBackend):
     def add_arrows(self, plotter, points, directions, scale=1.0, color=None, **kwargs):
         data = (np.asarray(points), np.asarray(directions))
         plotter.append(("arrows", data, dict(scale=scale, color=color, **kwargs)))
+        return plotter
+
+    def add_shape(
+        self, plotter, shape, color=None, opacity=None, show_edges=None, **kwargs
+    ):
+        options = dict(color=color, opacity=opacity, show_edges=show_edges, **kwargs)
+        plotter.append(("shape", shape, options))
+        return plotter
+
+    def add_legend(
+        self, plotter, entries=None, size=None, background_color=None, **kwargs
+    ):
+        options = dict(size=size, background_color=background_color, **kwargs)
+        plotter.append(("legend", entries, options))
         return plotter
 
 
@@ -238,6 +253,131 @@ def test_decorations(recording):
     assert mpc.plot(plotter=RecordingPlotter()) == []
 
 
+def model(mesh, Region=fem.RegionHexahedron, Field=fem.Field, center=None):
+    "A field container on a mesh with an optional additional center-point."
+
+    if center is not None:
+        mesh = mesh.copy()
+        mesh.update(points=np.vstack([mesh.points, center]))
+
+    return mesh, fem.FieldContainer([Field(Region(mesh), dim=mesh.dim)])
+
+
+def test_shapes_of_decorations(recording):
+    from felupe.view._shapes import Cone, Cylinder, Rectangle
+
+    # a rigid plane, clipped at the symmetry plane y=0 (3d)
+    mesh, field = model(fem.Cube(n=3), center=[0.5, 0.0, 1.5])
+    top = np.arange(mesh.npoints)[mesh.z == 1]
+    plane = fem.ContactRigidPlane(field, points=top, centerpoint=-1, normal=[0, 0, -1])
+    plotter = plane.plot(sym=(False, True, False), line_width=2)
+    assert recording.prepared[-1] == dict(theme=None)
+    assert plotter.kinds() == ["shape", "points", "lines"]
+
+    kind, shape, options = plotter[0]
+    assert isinstance(shape, Plane)
+    assert np.allclose(shape.center, [0.5, 0, 1.5])
+    assert np.allclose(shape.normal, [0, 0, -1])
+    assert np.isclose(shape.size, 1.05 * 1.5)
+    assert shape.clip == ((1, False),)
+    assert options == dict(color="black", opacity=0.5, show_edges=True, line_width=2)
+    assert np.allclose(plotter[2][1], [[[0.5, 0, 1.5], [0.5, 0, 1.65]]])
+
+    # a rigid cylinder (3d)
+    cylinder = fem.ContactRigidCylinder(
+        field, points=top, centerpoint=-1, radius=0.5, axis=[0, 1, 0]
+    )
+    plotter = cylinder.plot(sym=(True, False, False), resolution=30)
+    assert plotter.kinds() == ["shape", "points", "lines"]
+
+    kind, shape, options = plotter[0]
+    assert isinstance(shape, Cylinder)
+    assert shape.resolution == 30 and not shape.capping
+    assert shape.clip == ((0, False),)
+
+    # the planes of a multi-point contact are rectangles (3d)
+    contact = fem.MultiPointContact(field, points=top, centerpoint=-1)
+    plotter = contact.plot()
+    assert plotter.kinds() == ["shape"] * 3
+    assert all(isinstance(shape, Rectangle) for kind, shape, options in plotter)
+
+    # the supports of a cartesian constraint with lines and cones
+    support = fem.CartesianConstraint(field, points=mesh.z == 0, skip=(1, 1, 0))
+    plotter = support.plot()
+    assert plotter.kinds() == ["points", "lines", "shape"]
+    assert isinstance(plotter[2][1], Cone)
+    assert np.allclose(plotter[2][1].direction, [0, 0, 1])
+
+    # a rigid plane, a rigid cylinder and a multi-point contact (2d) with lines
+    mesh, field = model(
+        fem.Rectangle(n=3), fem.RegionQuad, fem.FieldPlaneStrain, center=[0.5, 1.5]
+    )
+    top = np.arange(mesh.npoints)[mesh.y == 1]
+
+    plane = fem.ContactRigidPlane(field, points=top, centerpoint=-1, normal=[0, -1])
+    plotter = plane.plot(sym=(True, False, False))
+    assert plotter.kinds() == ["lines", "points", "lines"]
+    assert np.allclose(plotter[0][1], [[[0, 1.5, 0], [1.2875, 1.5, 0]]])
+
+    # a plane on the clipped side of the symmetry plane y=0 is not shown
+    plotter = plane.plot(offset=-2.0, sym=(False, True, False))
+    assert plotter.kinds() == ["points", "lines"]
+
+    # a circle at (0.5, 1.5), clipped at x=0 (8 of 12 segments are kept)
+    cylinder = fem.ContactRigidCylinder(field, points=top, centerpoint=-1, radius=1)
+    plotter = cylinder.plot(resolution=12, sym=(True, False, False))
+    assert plotter.kinds() == ["lines", "points"]
+    assert len(plotter[0][1]) == 8
+    assert np.all(plotter[0][1][..., 0] >= 0)
+
+    contact = fem.MultiPointContact(field, points=top, centerpoint=-1)
+    plotter = contact.plot()
+    assert plotter.kinds() == ["lines", "lines"]
+
+
+def test_legends(recording):
+    mesh, field = model(fem.Cube(n=3))
+
+    # the legend of boundaries is taken from the labels of the points
+    plotter = fem.dof.uniaxial(field, clamped=True).plot(size=(0.2, 0.3))
+    assert plotter.kinds()[-1] == "legend"
+    assert plotter[-1][1:] == (None, dict(size=(0.2, 0.3), background_color="white"))
+    labels = [o["label"] for kind, data, o in plotter if kind == "points"]
+    assert labels == ["symx", "symy", "symz", "right", "move"]
+
+    # the legend of meshes is given by the labels and the colors of the meshes
+    container = fem.MeshContainer([mesh, mesh.translate(1.0, axis=0)])
+    plotter = container.plot(labels=["a", "b"])
+    assert plotter.kinds() == ["view", "view", "legend"]
+
+    colors = [options["color"] for kind, view, options in plotter[:2]]
+    assert colors == ["#1f77b4", "#ff7f0e"]  # the tableau colors (no default color)
+    assert plotter[-1][1] == [("  a", colors[0]), ("  b", colors[1])]
+
+
+def test_plots_which_require_pyvista(recording, tmp_path):
+    pytest.importorskip("pyvista")
+
+    with pytest.raises(NotImplementedError, match="plots of finite elements"):
+        fem.Hexahedron().plot()
+
+    with pytest.raises(NotImplementedError, match="plots of finite elements"):
+        fem.RegionQuad(fem.Rectangle(n=2)).plot()
+
+    # the animation is written by PyVista, also with another plotting backend
+    mesh, field = model(fem.Cube(n=2))
+    boundaries = fem.dof.uniaxial(field, clamped=True)
+    solid = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field)
+    move = fem.math.linsteps([0, 0.1], num=1)
+    step = fem.Step([solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+    filename = tmp_path / "animation.gif"
+    animation = fem.AnimationWriterPlugin(
+        items=[field], filename=str(filename), off_screen=True
+    )
+    fem.Job(steps=[step], plugins=[animation]).evaluate()
+    assert filename.stat().st_size > 0
+
+
 def test_decorations_not_supported():
     fem.view.register_plotting_backend("scenes", SceneBackend())
     fem.set_plotting_backend("scenes")
@@ -256,6 +396,19 @@ def test_decorations_not_supported():
 
         with pytest.raises(NotImplementedError, match="does not support lines"):
             fem.Boundary(field[0], fx=0).plot(show_points=False)
+
+        # shapes and legends are drawn on the plotter of a model
+        plotter = mesh.plot()
+        backend = backend_of(plotter)
+        assert backend.default_color() is None
+
+        with pytest.raises(NotImplementedError, match="does not support shapes"):
+            backend.add_shape(
+                plotter, Plane(center=(0, 0, 0), normal=(0, 0, 1), size=1)
+            )
+
+        with pytest.raises(NotImplementedError, match="does not support legends"):
+            backend.add_legend(plotter, [("mesh", "red")])
 
     finally:
         fem.set_plotting_backend("pyvista")

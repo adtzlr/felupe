@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ...view._backends import backend_of
+from ...view._shapes import Cylinder, clip_lines, symmetry_clip
 from ._base import ContactRigidBase
 
 
@@ -350,10 +352,10 @@ class ContactRigidCylinder(ContactRigidBase):
             The plotter with the cylinder.
         """
 
-        import pyvista as pv
+        backend = backend_of(plotter)
 
         if plotter is None:
-            plotter = pv.Plotter()
+            plotter = backend.prepare_plotter(theme=None)
 
         dim = self.mesh.dim
         x = self.mesh.points
@@ -366,53 +368,57 @@ class ContactRigidCylinder(ContactRigidBase):
         if size is None:
             size = 1.05 * (x.max(axis=0) - x.min(axis=0)).max()
 
+        clip = symmetry_clip(sym, self.mesh.points)
+        options = dict(color=color, opacity=opacity, show_edges=show_edges, **kwargs)
+
         if dim == 2:
+            # the circle as closed polyline of line segments
             phi = np.linspace(0, 2 * np.pi, resolution, endpoint=False)
             circle = np.zeros((resolution, 3))
             circle[:, 0] = self.radius * np.cos(phi)
             circle[:, 1] = self.radius * np.sin(phi)
-            surface = pv.lines_from_points(center + circle, close=True)
+            points = center + circle
+            lines = clip_lines(np.stack([points, np.roll(points, -1, axis=0)], 1), clip)
+
+            if len(lines) > 0:
+                plotter = backend.add_lines(
+                    plotter, lines, line_width=line_width, **options
+                )
+
         else:
-            surface = pv.Cylinder(
+            cylinder = Cylinder(
                 center=center,
                 direction=self.axis,
                 radius=self.radius,
                 height=size,
                 resolution=resolution,
                 capping=False,
+                clip=clip,
+            )
+            plotter = backend.add_shape(
+                plotter, cylinder, line_width=line_width, **options
             )
 
-        axes = ["x", "y", "z"]
-        for ax in np.where(np.array(sym, dtype=bool))[0]:
-            invert = bool(np.any(self.mesh.points[:, ax] < 0))
-            surface = surface.clip(axes[ax], invert=invert, origin=(0.0, 0.0, 0.0))
-
-        plotter.add_mesh(
-            surface,
-            show_edges=show_edges,
-            opacity=opacity,
-            color=color,
-            line_width=line_width,
-            **kwargs,
-        )
-
         if show_point:
-            plotter.add_points(
+            plotter = backend.add_points(
+                plotter,
                 center.reshape(1, -1),
-                opacity=opacity,
                 color=color,
                 point_size=12,
+                opacity=opacity,
                 **kwargs,
             )
 
         if show_line and dim == 3:
-            plotter.add_mesh(
-                pv.Line(
-                    center - 0.55 * size * self.axis, center + 0.55 * size * self.axis
-                ),
-                opacity=opacity,
+            axis = [
+                [center - 0.55 * size * self.axis, center + 0.55 * size * self.axis]
+            ]
+            plotter = backend.add_lines(
+                plotter,
+                axis,
                 color=color,
                 line_width=line_width,
+                opacity=opacity,
                 **kwargs,
             )
 

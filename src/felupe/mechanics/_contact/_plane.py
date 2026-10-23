@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ...view._backends import backend_of
+from ...view._shapes import Plane, clip_lines, plane_axes, symmetry_clip
 from ._base import ContactRigidBase
 
 
@@ -22,10 +24,10 @@ class ContactPlane:
         sym=(False, False, False),
         **kwargs,
     ):
-        import pyvista as pv
+        backend = backend_of(plotter)
 
         if plotter is None:
-            plotter = pv.Plotter()
+            plotter = backend.prepare_plotter(theme=None)
 
         dim = self.mesh.dim
         x = self.mesh.points
@@ -41,53 +43,43 @@ class ContactPlane:
         if size is None:
             size = 1.05 * dx
 
-        plane = pv.Plane(
-            center=center,
-            direction=normal,
-            i_resolution=1,
-            j_resolution=1,
-            i_size=size,
-            j_size=size,
-        )
-
-        axes = ["x", "y", "z"]
-        for ax in np.where(np.array(sym, dtype=bool))[0]:
-            invert = False
-            if np.any(self.mesh.points[:, ax] < 0):
-                invert = True
-
-            plane = plane.clip(axes[ax], invert=invert, origin=(0.0, 0.0, 0.0))
+        clip = symmetry_clip(sym, self.mesh.points)
+        options = dict(color=color, opacity=opacity, show_edges=show_edges, **kwargs)
 
         if dim == 2:
-            z = plane.points[:, 2]
-            points = plane.points[z == z.min()]
-            points[:, 2] = 0
-            plane = pv.Line(*points)
+            # the line of the plane in the xy-plane
+            tangent, _ = plane_axes(normal)
+            line = [[center - size / 2 * tangent, center + size / 2 * tangent]]
+            lines = clip_lines(line, clip)
 
-        plotter.add_mesh(
-            plane,
-            show_edges=show_edges,
-            opacity=opacity,
-            color=color,
-            line_width=line_width,
-            **kwargs,
-        )
+            if len(lines) > 0:
+                plotter = backend.add_lines(
+                    plotter, lines, line_width=line_width, **options
+                )
+
+        else:
+            plane = Plane(center=center, normal=normal, size=size, clip=clip)
+            plotter = backend.add_shape(
+                plotter, plane, line_width=line_width, **options
+            )
 
         if show_point:
-            plotter.add_points(
+            plotter = backend.add_points(
+                plotter,
                 center.reshape(1, -1),
-                opacity=opacity,
                 color=color,
                 point_size=12,
+                opacity=opacity,
                 **kwargs,
             )
 
         if show_line:
-            plotter.add_mesh(
-                pv.Line(center, center - 0.1 * dx * normal),
-                opacity=opacity,
+            plotter = backend.add_lines(
+                plotter,
+                [[center, center - 0.1 * dx * normal]],
                 color=color,
                 line_width=line_width_normal,
+                opacity=opacity,
                 **kwargs,
             )
 

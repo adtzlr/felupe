@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ...view._backends import backend_of
+from ...view._shapes import Rectangle
 from .._helpers import Assemble, Results
 from ._assembly import _assemble_matrix, _assemble_vector, _dof
 
@@ -173,10 +175,10 @@ class MultiPointContact:
         deformed=True,
         **kwargs,
     ):
-        import pyvista as pv
+        backend = backend_of(plotter)
 
         if plotter is None:
-            plotter = pv.Plotter()
+            plotter = backend.prepare_plotter(theme=None)
 
         # get edge lengths of undeformed enclosing box
         x = self.mesh.points
@@ -198,13 +200,16 @@ class MultiPointContact:
 
             # plot a line or a rectangle
             if len(points) == 3:
-                plotter.add_mesh(
-                    pv.Rectangle(points), color=color, opacity=opacity, **kwargs
+                plotter = backend.add_shape(
+                    plotter,
+                    Rectangle(points=points),
+                    color=color,
+                    opacity=opacity,
+                    **kwargs,
                 )
             else:
-                points = np.pad(points, ((0, 0), (0, 3 - points.shape[1])))
-                plotter.add_mesh(
-                    pv.Line(*points), color=color, opacity=opacity, **kwargs
+                plotter = backend.add_lines(
+                    plotter, [points], color=color, opacity=opacity, **kwargs
                 )
 
         return plotter

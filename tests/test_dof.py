@@ -254,8 +254,17 @@ def test_boundary_dict():
         right=fem.Boundary(field[0], fx=3, skip=(0, 1)),
     )
     plotter = boundaries.plot()
-    # img = boundaries.screenshot()
-    # ax = boundaries.imshow()
+
+    # a screenshot of the boundaries on the plot of the mesh or on a given plotter
+    img = boundaries.screenshot(filename=None)
+    img_plotter = boundaries.screenshot(
+        filename=None, plotter=field.region.mesh.plot(off_screen=True, color="red")
+    )
+    assert not np.array_equal(img, img_plotter)
+
+    plt = pytest.importorskip("matplotlib.pyplot")
+    ax = boundaries.imshow()
+    plt.close(ax.figure)
 
 
 def test_symmetry():

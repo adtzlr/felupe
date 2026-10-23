@@ -215,6 +215,20 @@ def test_decorations(recording):
     assert all(points.shape == (1, 2) for kind, points, options in plotter[1:])
     assert plotter[1][2] == dict(color="grey", point_size=20)
 
+    # a negative weight is drawn in red, scaled by the magnitude of the weight
+    quadrature = fem.TriangleQuadrature(order=3)
+    assert quadrature.weights[0] < 0
+    plotter = quadrature.plot(weighted=True)
+    options = [options for kind, points, options in plotter[1:]]
+    assert options[0] == dict(color="red", point_size=20)
+    assert [o["color"] for o in options[1:]] == ["grey"] * 3
+    assert np.allclose([o["point_size"] for o in options[1:]], 20 * 25 / 27)
+
+    # without weights, all points are drawn in the same size and color
+    plotter = quadrature.plot()
+    options = [options for kind, points, options in plotter[1:]]
+    assert all(o == dict(color="grey", point_size=20) for o in options)
+
     # a constraint with its points and the reference axis on a new plotter
     yz = mesh.points[:, 1:] - 0.5
     left = (mesh.x == 0) & (np.linalg.norm(yz, axis=1) > 0.1)

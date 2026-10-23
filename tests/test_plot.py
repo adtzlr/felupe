@@ -2,8 +2,11 @@
 
 import contextlib
 import pathlib
+import sys
 import tempfile
+from unittest import mock
 
+import numpy as np
 import pytest
 
 import felupe as fem
@@ -172,6 +175,78 @@ def test_logo_path():
         assert logo_path.is_file()
 
 
+def test_view_without_pyvista():
+    mesh, field, solid = pre(n=3)
+
+    # the views keep the arrays, PyVista is only required for the grid and plotting
+    with mock.patch.dict(sys.modules, {"pyvista": None}):
+        view = fem.ViewSolid(field, solid=solid, point_data={"Values": mesh.points})
+
+        assert view.points is mesh.points
+        assert view.cells is mesh.cells
+        assert view.cell_type == "hexahedron"
+        assert view.point_data["Values"] is mesh.points
+        assert "Displacement" in view.point_data
+        assert "Principal Values of Cauchy Stress" in view.cell_data
+
+        with pytest.raises(ImportError):
+            view.mesh
+
+        with pytest.raises(ImportError):
+            view.plot()
+
+
+def test_view_mesh_unstructured_grid():
+    pv = pytest.importorskip("pyvista")
+
+    mesh, field, solid = pre(n=3)
+    view = fem.ViewSolid(field, solid=solid)
+
+    # the grid is created on first access and kept
+    grid = view.mesh
+    assert isinstance(grid, pv.UnstructuredGrid)
+    assert view.mesh is grid
+    assert grid.n_cells == mesh.ncells
+    assert set(grid.point_data.keys()) == set(view.point_data.keys())
+    assert set(grid.cell_data.keys()) == set(view.cell_data.keys())
+    assert grid.active_scalars_name is None
+
+    # the principal values are sorted in descending order for plotting
+    plotter = view.plot("Principal Values of Cauchy Stress", off_screen=True)
+    assert "Cauchy Stress (Max. Principal)" in plotter.scalar_bars.keys()
+    values = grid.cell_data["Principal Values of Cauchy Stress"]
+    assert np.all(np.diff(values, axis=1) <= 0)
+
+    # the grid may be replaced
+    view.mesh = grid.extract_surface(algorithm=None)
+    assert isinstance(view.mesh, pv.PolyData)
+    plotter = view.plot("Displacement", off_screen=True, plotter=plotter)
+
+    # a pyvista cell type is used for the grid
+    view = fem.ViewMesh(mesh, cell_type=pv.CellType.HEXAHEDRON)
+    assert view.mesh.celltypes[0] == pv.CellType.HEXAHEDRON
+
+
+def test_scalars_label():
+    from felupe.view._scalars import component_labels, scalars_label
+
+    assert scalars_label("Displacement", component=0, dim=3) == "Displacement X"
+    assert scalars_label("Displacement", component=None) == "Displacement Magnitude"
+    assert scalars_label("Cauchy Stress", component=3, dim=6) == "Cauchy Stress XY"
+    assert scalars_label("Cauchy Stress", component=7, dim=9) == "Cauchy Stress ZY"
+    assert scalars_label("Cell Volume", component=0, dim=1) == "Cell Volume "
+    assert scalars_label("Values", component=2, dim=4) == "Values 2"
+
+    name = "Principal Values of Logarithmic Strain"
+    assert scalars_label(name, 0, 3) == "Logarithmic Strain (Max. Principal)"
+    assert scalars_label(name, 1, 3) == "Logarithmic Strain (Int. Principal)"
+    assert scalars_label(name, 1, 2) == "Logarithmic Strain (Min. Principal)"
+    assert scalars_label(name, None, 3) == f"{name} Magnitude"
+
+    assert component_labels("Displacement", dim=2) == ["X", "Y"]
+    assert np.all(component_labels("Values", dim=4) == np.arange(4))
+
+
 if __name__ == "__main__":
     for test in [test_xdmf_cell_data, test_xdmf_point_data]:
         with tempfile.TemporaryDirectory() as tmp:
@@ -182,3 +257,6 @@ if __name__ == "__main__":
     test_mesh()
     test_model()
     test_logo_path()
+    test_view_without_pyvista()
+    test_view_mesh_unstructured_grid()
+    test_scalars_label()

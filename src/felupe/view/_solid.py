@@ -35,9 +35,20 @@ class ViewSolid(ViewField):
 
     Attributes
     ----------
+    points : ndarray
+        Point coordinates of the mesh.
+    cells : ndarray
+        Point-connectivity of the cells of the mesh.
+    cell_type : str or None
+        A string in VTK-convention that specifies the cell type of the mesh.
+    point_data : dict
+        The point-data dict.
+    cell_data : dict
+        The cell-data dict.
     mesh : pyvista.UnstructuredGrid
         A generalized Dataset with the mesh as well as point- and cell-data. This is
-        not an instance of :class:`felupe.Mesh`.
+        not an instance of :class:`felupe.Mesh`. It is created on first access, i.e.
+        PyVista is only required for this attribute and for plotting.
 
     Examples
     --------

@@ -63,6 +63,41 @@ def cell_types():
     return np.array(cell_types, dtype=object)
 
 
+def as_unstructured_grid(points, cells, cell_type=None, pyvista_cell_type=None):
+    """Return the points and cells of one cell type as
+    :class:`pyvista.UnstructuredGrid`.
+
+    Parameters
+    ----------
+    points : ndarray
+        Point coordinates of shape ``(npoints, dim)`` with ``dim <= 3``.
+    cells : ndarray
+        Point-connectivity of cells of shape ``(ncells, points_per_cell)``.
+    cell_type : str or None, optional
+        A string in VTK-convention that specifies the cell type (default is None). Only
+        used if no cell type of PyVista is given.
+    pyvista_cell_type : pyvista.CellType or None, optional
+        Cell-type of PyVista (default is None). If None, it is taken from the cell type
+        string.
+
+    Returns
+    -------
+    pyvista.UnstructuredGrid
+        The points and cells as :class:`pyvista.UnstructuredGrid`.
+    """
+
+    import pyvista as pv
+
+    if pyvista_cell_type is None:
+        pyvista_cell_type = dict(cell_types())[cell_type]
+
+    points = np.pad(points, ((0, 0), (0, 3 - points.shape[1])))
+    cells_with_size = np.pad(cells, ((0, 0), (1, 0)), constant_values=cells.shape[1])
+    cell_types_int = pyvista_cell_type * np.ones(len(cells), dtype=int)
+
+    return pv.UnstructuredGrid(cells_with_size, cell_types_int, points)
+
+
 @mesh_or_data
 def convert(
     points,

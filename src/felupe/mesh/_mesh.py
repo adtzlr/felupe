@@ -9,7 +9,7 @@ from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,
     add_midpoints_volumes,
-    cell_types,
+    as_unstructured_grid,
     collect_edges,
     collect_faces,
     collect_volumes,
@@ -232,18 +232,9 @@ class Mesh(DiscreteGeometry):
             The mesh as :class:`pyvista.UnstructuredGrid`.
         """
 
-        import pyvista as pv
-
-        if cell_type is None:
-            cell_type = dict(cell_types())[self.cell_type]
-
-        points = np.pad(self.points, ((0, 0), (0, 3 - self.points.shape[1])))
-        cells = np.pad(
-            self.cells, ((0, 0), (1, 0)), constant_values=self.cells.shape[1]
+        return as_unstructured_grid(
+            self.points, self.cells, self.cell_type, pyvista_cell_type=cell_type
         )
-        cell_types_int = cell_type * np.ones(self.ncells, dtype=int)
-
-        return pv.UnstructuredGrid(cells, cell_types_int, points)
 
     def write(self, filename="mesh.vtk", **kwargs):
         """Write the mesh to a file.

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ..view._backends import take_screenshot
+from ..view._backends import backend_of, take_screenshot
 
 
 class Scheme:
@@ -43,17 +43,17 @@ class Scheme:
             mesh = Mesh(self.points, np.zeros((0, 2), dtype=int), "line")
             plotter = mesh.plot(**kwargs)
 
-        for weight, point in zip(self.weights, self.points):
-            # plotter requires 3d-point coordinates
-            points = np.pad([point], ((0, 0), (0, 3 - self.dim)))
+        backend = backend_of(plotter)
 
+        for weight, point in zip(self.weights, self.points):
             if weighted:
                 point_weight = weight / self.weights.max()
             else:
                 point_weight = 1.0
 
-            plotter.add_points(
-                points=points,
+            plotter = backend.add_points(
+                plotter,
+                [point],
                 point_size=point_size * point_weight,
                 color="grey",
             )

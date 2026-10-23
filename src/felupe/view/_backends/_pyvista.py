@@ -10,6 +10,19 @@ from .._scalars import is_principal, scalars_label, sort_principal_values
 from ._base import PlottingBackend
 
 
+def _pad(x):
+    "Pad the last axis of the coordinates of points to three components."
+
+    x = np.asarray(x)
+    return np.pad(x, ((0, 0),) * (x.ndim - 1) + ((0, 3 - x.shape[-1]),))
+
+
+def _given(**kwargs):
+    "Return the given keyword-arguments, which are not None."
+
+    return {key: value for key, value in kwargs.items() if value is not None}
+
+
 def _default_view(plotter, points):
     """Prepare the default view of the camera and return the camera position. Planar
     meshes are viewed from the top ("xy") with a parallel projection. For all other
@@ -66,6 +79,49 @@ class PyVistaBackend(PlottingBackend):
             transparent_background=transparent_background,
             scale=scale,
         )
+
+    def add_points(self, plotter, points, color=None, point_size=None, **kwargs):
+        """Add points to a plotter by :meth:`pyvista.Plotter.add_points`, e.g. with a
+        ``label`` for the legend.
+        """
+
+        plotter.add_points(
+            _pad(points), **_given(color=color, point_size=point_size), **kwargs
+        )
+
+        return plotter
+
+    def add_lines(self, plotter, lines, color=None, line_width=None, **kwargs):
+        """Add line segments to a plotter by :meth:`pyvista.Plotter.add_mesh`, with
+        the properties of :meth:`pyvista.Plotter.add_lines` by default, i.e. the lines
+        are not lit and they are drawn in the given color.
+        """
+
+        import pyvista as pv
+
+        segments = pv.line_segments_from_points(_pad(lines).reshape(-1, 3))
+        options = {
+            "lighting": False,
+            "show_edges": True,
+            **_given(color=color, edge_color=color, line_width=line_width),
+            **kwargs,
+        }
+        plotter.add_mesh(segments, **options)
+
+        return plotter
+
+    def add_arrows(self, plotter, points, directions, scale=1.0, color=None, **kwargs):
+        "Add arrows to a plotter by :meth:`pyvista.Plotter.add_arrows`."
+
+        plotter.add_arrows(
+            _pad(points),
+            _pad(directions),
+            mag=scale,
+            **_given(color=color),
+            **kwargs,
+        )
+
+        return plotter
 
     def as_unstructured_grid(self, scene, cell_type=None):
         """Return the mesh with the point- and cell-data of a scene as

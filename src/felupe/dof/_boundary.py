@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ..view._backends import backend_of
+
 
 class Boundary:
     """A Boundary as a collection of prescribed degrees of freedom (numbered
@@ -357,6 +359,8 @@ class Boundary:
         if plotter is None:
             plotter = mesh.plot()
 
+        backend = backend_of(plotter)
+
         if self.dim > 1 and self.dim != mesh.dim:
             raise ValueError(
                 " ".join(
@@ -372,7 +376,8 @@ class Boundary:
                 points = np.pad(mesh.points, ((0, 0), (0, 3 - mesh.dim)))
 
             if show_points:
-                _ = plotter.add_points(
+                plotter = backend.add_points(
+                    plotter,
                     points[self.points],
                     color=color,
                     point_size=point_size,
@@ -388,11 +393,13 @@ class Boundary:
                 for axis, direction in enumerate(np.eye(3)[: self.mask.shape[1]]):
                     prescribed = self.mask[:, axis]
                     if prescribed.any():
-                        end = points[prescribed] + direction * magnitude
-                        _ = plotter.add_lines(
-                            np.hstack([points[prescribed], end]).reshape(-1, 3),
+                        start = points[prescribed]
+                        end = start + direction * magnitude
+                        plotter = backend.add_lines(
+                            plotter,
+                            np.stack([start, end], axis=1),
                             color=color,
-                            width=width,
+                            line_width=width,
                         )
 
         return plotter

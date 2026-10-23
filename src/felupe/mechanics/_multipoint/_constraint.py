@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
+from ...view._backends import backend_of
 from .._helpers import Assemble, Results
 from ._assembly import _assemble_matrix, _assemble_vector, _dof
 from ._rodrigues import _rotation
@@ -426,10 +427,12 @@ class MultiPointConstraint:
         self.results.stiffness = None
 
     def plot(self, plotter=None, color="black", deformed=True, **kwargs):
-        import pyvista as pv
+        "Plot the lines between the center-point and the points."
+
+        backend = backend_of(plotter)
 
         if plotter is None:
-            plotter = pv.Plotter()
+            plotter = backend.prepare_plotter(theme=None)
 
         # get undeformed points
         x = self.mesh.points
@@ -437,11 +440,10 @@ class MultiPointConstraint:
         if deformed:  # get deformed points
             x = x + self.field[0].values
 
-        x = np.pad(x, ((0, 0), (0, 3 - x.shape[1])))
-        pointa = x[self.centerpoint]
-
-        for pointb in x[self.points]:
-            plotter.add_mesh(pv.Line(pointa, pointb), color=color, **kwargs)
+        if len(self.points) > 0:
+            start = np.broadcast_to(x[self.centerpoint], x[self.points].shape)
+            lines = np.stack([start, x[self.points]], axis=1)
+            plotter = backend.add_lines(plotter, lines, color=color, **kwargs)
 
         return plotter
 

@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.sparse import coo_matrix, csr_matrix
 
+from ..view._backends import backend_of
 from ._helpers import Assemble, Results
 
 
@@ -193,7 +194,7 @@ class PointConstraint:
             The line width of the coordinate system. Default is 2.
         **kwargs : dict, optional
             Additional keyword arguments for the points, passed to
-            :meth:`pyvista.Plotter.add_points`.
+            :meth:`pyvista.Plotter.add_points` (by the plotting backend of PyVista).
 
         Returns
         -------
@@ -201,10 +202,10 @@ class PointConstraint:
             The plotter with the points and the coordinate system.
         """
 
-        import pyvista as pv
+        backend = backend_of(plotter)
 
         if plotter is None:
-            plotter = pv.Plotter()
+            plotter = backend.prepare_plotter(theme=None)
 
         x = self.mesh.points[self.points]
 
@@ -214,7 +215,9 @@ class PointConstraint:
         x = self._pad(x)
 
         if len(x) > 0:
-            plotter.add_points(x, color=color, point_size=point_size, **kwargs)
+            plotter = backend.add_points(
+                plotter, x, color=color, point_size=point_size, **kwargs
+            )
             self._plot_reference(plotter, x, color=color, line_width=line_width)
 
         return plotter

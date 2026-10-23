@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ..view._backends import take_screenshot
+
 
 class Element:
     """
@@ -213,8 +215,11 @@ class Element:
         if filename is None:
             filename = f"{self.cell_type}.png"
 
-        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+        return take_screenshot(
+            self.plot,
+            *args,
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,
+            **kwargs,
         )

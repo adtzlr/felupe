@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ._backends import PyVistaBackend
+from ._backends import backend_of
 
 
 class Scene:
@@ -64,6 +64,11 @@ class Scene:
     ):
         """Plot scalars, selected by name and component.
 
+        The scene is drawn by the plotting backend of a given plotter or, without a
+        given plotter, by the current plotting backend (default is ``"pyvista"``), see
+        :func:`~felupe.set_plotting_backend`. The arguments are those of the plotting
+        backend of PyVista.
+
         Parameters
         ----------
         name: str or None, optional
@@ -101,6 +106,8 @@ class Scene:
             screenshots, it is necessary to set ``off_screen=True`` (default is False).
         plotter : pyvista.Plotter or None, optional
             Use a given Plotter instead of creating a new instance (default is None).
+            A given plotter of another plotting backend is drawn by its plotting
+            backend.
         notebook : bool, optional
             When True, the resulting plot is placed inline a jupyter notebook. Assumes a
             jupyter console is active. Automatically enables off_screen (default is
@@ -133,14 +140,16 @@ class Scene:
         Returns
         -------
         plotter : pyvista.Plotter
-            A Plotter object with methods ``plot()``, ``screenshot()``, etc.
+            A Plotter object with methods ``plot()``, ``screenshot()``, etc. Another
+            plotting backend returns its own plotter.
 
         See Also
         --------
         pyvista.Plotter : Plotting object to display vtk meshes or numpy arrays.
+        felupe.set_plotting_backend : Set the current plotting backend by its name.
         """
 
-        backend = PyVistaBackend()
+        backend = backend_of(plotter)
 
         plotter = backend.prepare_plotter(
             plotter=plotter, theme=theme, off_screen=off_screen, notebook=notebook

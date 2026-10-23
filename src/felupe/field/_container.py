@@ -16,6 +16,7 @@ from ..region import (
     RegionVertex,
 )
 from ..view import ViewField
+from ..view._backends import take_screenshot
 from ._evaluate import EvaluateFieldContainer
 from ._indices import Indices
 from ._merge import merge
@@ -586,10 +587,13 @@ class FieldContainer:
         pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
         """
 
-        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+        return take_screenshot(
+            self.plot,
+            *args,
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,
+            **kwargs,
         )
 
     def imshow(self, *args, ax=None, dpi=None, **kwargs):

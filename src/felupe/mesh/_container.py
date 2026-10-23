@@ -4,6 +4,7 @@ from copy import deepcopy
 
 import numpy as np
 
+from ..view._backends import take_screenshot
 from ._convert import cell_types
 from ._mesh import Mesh
 from ._tools import merge_duplicate_points as sweep
@@ -343,30 +344,36 @@ class MeshContainer:
         pyvista.Plotter.screenshot: Take a screenshot of a PyVista plotter.
         """
 
-        if colors is None:
-            import matplotlib.colors as mcolors
-            import pyvista
+        def plot(*args, plotter=None, **kwargs):
+            mesh_colors = colors
 
-            colors = [
-                pyvista.global_theme.color,
-                *list(mcolors.TABLEAU_COLORS.values())[1:],
-            ]
+            if mesh_colors is None:
+                import matplotlib.colors as mcolors
+                import pyvista
 
-        plotter = None
-        for mesh, color in zip(self.meshes, colors):
-            plotter = mesh.plot(
-                *args,
-                off_screen=True,
-                color=color,
-                plotter=plotter,
-                opacity=opacity,
-                **kwargs,
-            )
+                mesh_colors = [
+                    pyvista.global_theme.color,
+                    *list(mcolors.TABLEAU_COLORS.values())[1:],
+                ]
 
-        return plotter.screenshot(
+            for mesh, color in zip(self.meshes, mesh_colors):
+                plotter = mesh.plot(
+                    *args,
+                    color=color,
+                    plotter=plotter,
+                    opacity=opacity,
+                    **kwargs,
+                )
+
+            return plotter
+
+        return take_screenshot(
+            plot,
+            *args,
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,
+            **kwargs,
         )
 
     def imshow(self, *args, ax=None, dpi=None, **kwargs):

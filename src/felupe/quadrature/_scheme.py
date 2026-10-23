@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ..view._backends import take_screenshot
+
 
 class Scheme:
     r"""A quadrature scheme with integration points :math:`x_q` and weights :math:`w_q`.
@@ -76,8 +78,11 @@ class Scheme:
         if filename is None:
             filename = "quadrature.png"
 
-        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+        return take_screenshot(
+            self.plot,
+            *args,
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,
+            **kwargs,
         )

@@ -6,6 +6,7 @@ from copy import deepcopy
 import numpy as np
 
 from ..math import det, inv
+from ..view._backends import take_screenshot
 
 
 class Region:
@@ -436,8 +437,10 @@ class Region:
         if filename is None:
             filename = f"region-{self.element.cell_type}.png"
 
-        return self.plot(off_screen=True, **kwargs).screenshot(
+        return take_screenshot(
+            self.plot,
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,
+            **kwargs,
         )

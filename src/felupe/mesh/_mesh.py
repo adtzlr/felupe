@@ -5,6 +5,7 @@ from functools import wraps
 import numpy as np
 
 from ..view import ViewMesh, select_edge_points, select_surface_points
+from ..view._backends import take_screenshot
 from ._convert import (
     add_midpoints_edges,
     add_midpoints_faces,
@@ -321,10 +322,13 @@ class Mesh(DiscreteGeometry):
         pyvista.Plotter.screenshot : Take a screenshot of a PyVista plotter.
         """
 
-        return self.plot(*args, off_screen=True, **kwargs).screenshot(
+        return take_screenshot(
+            self.plot,
+            *args,
             filename=filename,
             transparent_background=transparent_background,
             scale=scale,
+            **kwargs,
         )
 
     def imshow(self, *args, ax=None, **kwargs):

@@ -7,6 +7,8 @@ from pathlib import Path
 import anywidget
 import traitlets
 
+from ._file import module
+
 HERE = Path(__file__).parent
 
 
@@ -16,19 +18,23 @@ class DashboardWidget(anywidget.AnyWidget):
     The state of the dashboard is kept in synchronized traits. Hence, a view of the
     widget which is rendered again (e.g. after scrolling or collapsing the output of a
     cell) shows the latest state. The field values and the geometry are transferred as
-    binary buffers.
+    binary buffers. The model is drawn by the WebGL viewer of the plotting backend
+    ``"webgl"``, which is a part of the module of the widget.
     """
 
-    _esm = HERE / "dashboard.js"
+    _esm = module()
     _css = HERE / "dashboard.css"
 
     # the properties of the model, the fields and the steps of the job
     info = traitlets.Dict().tag(sync=True)
 
-    # the points of the mesh (float32, 3 components) and the cells of its surface
+    # the points of the triangulated outer surface (float32, 3 components), its
+    # triangles, the faces of the triangles (for the shading of linear cells), the
+    # edges of the faces and the line cells (uint32)
     points = traitlets.Bytes(b"").tag(sync=True)
     triangles = traitlets.Bytes(b"").tag(sync=True)
-    quads = traitlets.Bytes(b"").tag(sync=True)
+    faces = traitlets.Bytes(b"").tag(sync=True)
+    edges = traitlets.Bytes(b"").tag(sync=True)
     lines = traitlets.Bytes(b"").tag(sync=True)
 
     # the field values (float32) of the initial state or of the latest converged substep

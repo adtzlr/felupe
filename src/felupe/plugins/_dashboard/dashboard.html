@@ -91,7 +91,7 @@ function update(values) {
   for (const key of changed) notify(key);
 }
 
-function decode(text) {
+function decodeBase64(text) {
   const binary = atob(text || "");
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
@@ -100,10 +100,11 @@ function decode(text) {
 
 function buffers(geometry) {
   return {
-    points: decode(geometry.points),
-    triangles: decode(geometry.triangles),
-    quads: decode(geometry.quads),
-    lines: decode(geometry.lines),
+    points: decodeBase64(geometry.points),
+    triangles: decodeBase64(geometry.triangles),
+    faces: decodeBase64(geometry.faces),
+    edges: decodeBase64(geometry.edges),
+    lines: decodeBase64(geometry.lines),
   };
 }
 
@@ -117,7 +118,7 @@ function show(data, geometry) {
   update({
     info: data.info,
     ...(geometry || {}),
-    frame: { ...data.frame, values: decode((data.frame || {}).values) },
+    frame: { ...data.frame, values: decodeBase64((data.frame || {}).values) },
     path: data.path,
     newton: data.newton,
     progress,

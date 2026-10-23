@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+import re
 import sys
 import warnings
 from types import SimpleNamespace
@@ -12,9 +13,9 @@ import pytest
 
 import felupe as fem
 from felupe.plugins._dashboard import _plugin
-from felupe.plugins._dashboard._file import DashboardState
+from felupe.plugins._dashboard._file import HERE, DashboardState, module
 from felupe.plugins._dashboard._snapshot import DashboardSnapshot
-from felupe.view._surface import boundary_faces
+from felupe.view._surface import triangulate_surface
 
 
 @pytest.fixture
@@ -39,6 +40,16 @@ def block(n=3):
 def values(frame):
     "Return the decoded field values of a frame."
     return np.frombuffer(frame["values"], dtype=np.float32)
+
+
+def surface_values(dashboard, values):
+    "Return the values at the points of the surface of the dashboard, e.g. of a field."
+    return dashboard._surface.interpolate(values).ravel()
+
+
+def buffer(widget, name, shape, dtype=np.uint32):
+    "Return a decoded binary buffer of the geometry of a widget."
+    return np.frombuffer(getattr(widget, name), dtype=dtype).reshape(-1, *shape)
 
 
 def test_dashboard_without_kernel(monkeypatch):
@@ -152,23 +163,29 @@ def test_dashboard_job(kernel):
     assert info["nsubsteps"] == [3, 3]
     assert info["items"] == ["SolidBody (NeoHooke)"]
 
-    # the geometry and the surface of the mesh
-    # only the points of the surface are transferred (the cube has one inner point)
-    points = np.frombuffer(widget.points, dtype=np.float32).reshape(-1, 3)
-    surface_points = dashboard._surface_points
-    assert len(points) == len(surface_points) == 26
-    assert np.allclose(points, mesh.points[surface_points])
-    quads = np.frombuffer(widget.quads, dtype=np.uint32).reshape(-1, 4)
-    assert np.allclose(points[quads], mesh.points[boundary_faces(mesh)["quad"]])
-    assert len(widget.quads) == 4 * 4 * 24
-    assert widget.triangles == b""
+    # the triangulated outer surface of the mesh, only the points of the surface are
+    # transferred (the cube has one inner point)
+    surface = triangulate_surface(mesh)
+    points = buffer(widget, "points", (3,), np.float32)
+    assert len(points) == 26
+    assert np.allclose(points, surface.interpolate(mesh.points))
+    triangles = buffer(widget, "triangles", (3,))
+    assert len(triangles) == 2 * 24
+    assert np.array_equal(triangles, surface.triangles)
+
+    # the faces of the triangles (of linear cells), the edges and no line cells
+    assert np.array_equal(buffer(widget, "faces", ()), surface.faces)
+    assert np.array_equal(buffer(widget, "edges", (2,)), surface.edges)
+    assert len(surface.edges) == 48
+    assert widget.lines == b""
+    assert info["surface"] == "hexahedron"
 
     # only the values of the latest converged substep are kept
     frame = widget.frame
     assert (frame["kind"], frame["step"], frame["substep"]) == ("substep", 1, 2)
     assert len(values(frame)) == 3 * 26
     assert np.allclose(
-        values(frame), field[0].values[surface_points].ravel(), atol=1e-6
+        values(frame), surface.interpolate(field[0].values).ravel(), atol=1e-6
     )
 
     assert widget.path == dict(status="cccccc", load_factors={})
@@ -229,9 +246,8 @@ def test_dashboard_cutback(kernel, first):
 
     # the last event (the end of the job) and the values of the last substep
     assert progress["event"]["kind"] == "done"
-    surface_points = dashboard._surface_points
     assert np.allclose(
-        values(widget.frame), field[0].values[surface_points].ravel(), atol=1e-6
+        values(widget.frame), surface_values(dashboard, field[0].values), atol=1e-6
     )
 
 
@@ -401,14 +417,15 @@ def test_dashboard_multiple_bodies(kernel):
         "SolidBodyNearlyIncompressible (NeoHooke)",
     ]
 
-    # the outer surface of both cubes, without the faces at the interface
-    quads = np.frombuffer(widget.quads, dtype=np.uint32).reshape(-1, 4)
-    assert len(quads) == 40
-    assert quads.max() < 45
+    # the outer surface of both cubes, without the faces at the interface (and without
+    # the three points inside)
+    triangles = buffer(widget, "triangles", (3,))
+    assert len(triangles) == 2 * 40
+    assert len(buffer(widget, "points", (3,), np.float32)) == 42
+    assert triangles.max() == 41
 
-    surface_points = dashboard._surface_points
     assert np.allclose(
-        values(widget.frame), field[0].values[surface_points].ravel(), atol=1e-6
+        values(widget.frame), surface_values(dashboard, field[0].values), atol=1e-6
     )
     assert np.abs(values(widget.frame)).max() > 0
 
@@ -434,7 +451,7 @@ def test_dashboard_boundary_items(kernel):
     info = dashboard.widget.info
     assert info["ncells"] == 8
     assert info["items"] == ["SolidBody (NeoHooke)", "SolidBodyPressure"]
-    assert len(np.frombuffer(dashboard.widget.quads, dtype=np.uint32)) == 4 * 24
+    assert len(buffer(dashboard.widget, "triangles", (3,))) == 2 * 24
 
 
 def test_dashboard_point_load_on_container_field(kernel):
@@ -503,11 +520,12 @@ def test_dashboard_thermal(kernel):
         "SolidBodySurfaceHeatTransfer",
         "TimeStep",
     ]
-    assert len(np.frombuffer(widget.quads, dtype=np.uint32)) == 4 * 54
+    assert len(buffer(widget, "triangles", (3,))) == 2 * 54
     assert widget.path["status"] == "ccccc"
-    surface_points = dashboard._surface_points
-    assert len(surface_points) < mesh.npoints
-    assert np.allclose(values(widget.frame), temperature.values[surface_points].ravel())
+    assert len(buffer(widget, "points", (3,), np.float32)) < mesh.npoints
+    assert np.allclose(
+        values(widget.frame), surface_values(dashboard, temperature.values)
+    )
     assert values(widget.frame).max() > 0
 
 
@@ -530,9 +548,8 @@ def test_dashboard_mixed_fields(kernel):
     assert info["field_dim"] == 3
     assert info["deform"]
     assert info["ndof"] == sum(f.values.size for f in field.fields)
-    surface_points = dashboard._surface_points
     assert np.allclose(
-        values(dashboard.widget.frame), field[0].values[surface_points].ravel()
+        values(dashboard.widget.frame), surface_values(dashboard, field[0].values)
     )
 
 
@@ -742,7 +759,7 @@ def test_dashboard_limits(kernel):
     dashboard._unknowns(field)
 
     frame = dashboard.widget.frame
-    assert 13 not in dashboard._surface_points
+    assert 13 not in dashboard._surface.interpolation.indices
     assert np.abs(values(frame)).max() == 1.0
     assert frame["limits"] == [0.0, 5.0]
 
@@ -794,12 +811,13 @@ def test_dashboard_snapshot(tmp_path):
     assert data["state"]["path"]["status"] == "ccc"
 
     points = np.frombuffer(base64.b64decode(data["geometry"]["points"]), np.float32)
-    surface_points = dashboard._surface_points
-    assert np.allclose(points.reshape(-1, 3), field.region.mesh.points[surface_points])
+    mesh_points = field.region.mesh.points
+    assert np.allclose(points, surface_values(dashboard, mesh_points))
     frame = np.frombuffer(
         base64.b64decode(data["state"]["frame"]["values"]), np.float32
     )
-    assert np.allclose(frame, field[0].values[surface_points].ravel(), atol=1e-6)
+    assert np.allclose(frame, surface_values(dashboard, field[0].values), atol=1e-6)
+    assert set(data["geometry"]) == {"points", "triangles", "faces", "edges", "lines"}
 
     # the rich representation: the page in an iframe, in a single line
     html = snapshot._repr_html_()
@@ -862,6 +880,7 @@ def test_dashboard_file(tmp_path, monkeypatch):
     # the page with the inline module, the styles and the names of the scripts
     page = filename.read_text(encoding="utf-8")
     assert "/*" + "MODULE" + "*/" not in page and "function render(" in page
+    assert "export function createViewer(" in page
     assert read_config(page) == {
         "files": {
             "geometry": "job.geometry.js",
@@ -884,10 +903,10 @@ def test_dashboard_file(tmp_path, monkeypatch):
 
     # the binary buffers are encoded by base64
     points = np.frombuffer(base64.b64decode(geometry["points"]), dtype=np.float32)
-    surface_points = dashboard._surface_points
-    assert np.allclose(points.reshape(-1, 3), field.region.mesh.points[surface_points])
+    mesh_points = field.region.mesh.points
+    assert np.allclose(points, surface_values(dashboard, mesh_points))
     frame = np.frombuffer(base64.b64decode(state["frame"]["values"]), dtype=np.float32)
-    assert np.allclose(frame, field[0].values[surface_points].ravel(), atol=1e-6)
+    assert np.allclose(frame, surface_values(dashboard, field[0].values), atol=1e-6)
 
     # a second job: a new geometry, the page is not opened again
     field, boundaries, solid = block()
@@ -997,3 +1016,122 @@ def test_dashboard_file_writer(tmp_path, monkeypatch):
     assert writer.flush(source)
     assert writer.changed and writer.state == 2
     assert read_script(tmp_path / "job.version.js")["state"] == 1
+
+
+def test_dashboard_quadratic_cells(kernel):
+    """The faces of quadratic cells are triangulated by all their points (e.g. the
+    mid-edge points), they are shaded smoothly (without the faces of the triangles)."""
+
+    mesh = fem.mesh.convert(fem.Cube(n=3), order=2)
+    region = fem.RegionQuadraticHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    boundaries = fem.dof.uniaxial(field, clamped=True)
+    solid = fem.SolidBody(fem.NeoHooke(mu=1, bulk=5), field)
+    move = fem.math.linsteps([0, 0.1], num=1)
+    step = fem.Step([solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    widget = dashboard.widget
+    surface = triangulate_surface(mesh)
+    points = buffer(widget, "points", (3,), np.float32)
+    assert len(points) == surface.interpolation.shape[0] > 26
+    assert np.allclose(points, surface.interpolate(mesh.points))
+    assert len(buffer(widget, "triangles", (3,))) == 4 * 2 * 24
+    assert widget.faces == b""
+    assert len(buffer(widget, "edges", (2,))) == 2 * 48
+    assert widget.info["surface"] == "hexahedron"
+    assert np.allclose(
+        values(widget.frame), surface.interpolate(field[0].values).ravel(), atol=1e-6
+    )
+
+
+def test_dashboard_line_cells(kernel):
+    """The line cells (e.g. of a truss) are transferred as lines, also together with
+    the faces of other cells (the edges of the faces are the mesh lines)."""
+
+    mesh = fem.Mesh(
+        points=[[0, 0], [1, 1], [2.0, 0]], cells=[[0, 1], [1, 2]], cell_type="line"
+    )
+    field = fem.Field(fem.RegionTruss(mesh), dim=2).as_container()
+    boundaries = fem.BoundaryDict(fixed=fem.Boundary(field[0], fy=0))
+    truss = fem.TrussBody(fem.LinearElastic1D(E=np.ones(2)), field, area=np.ones(2))
+    load = fem.PointLoad(field, [1])
+    move = fem.math.linsteps([0, -0.1], num=2, axis=1, axes=2)
+    step = fem.Step(items=[truss, load], ramp={load: move}, boundaries=boundaries)
+
+    dashboard = fem.DashboardWidgetPlugin()
+    fem.Job(steps=[step], plugins=[dashboard]).evaluate(verbose=0)
+
+    widget = dashboard.widget
+    lines = buffer(widget, "lines", (2,))
+    points = buffer(widget, "points", (3,), np.float32)
+    assert len(lines) == 2
+    assert np.allclose(
+        np.sort(points[lines, :2], axis=1), np.sort(mesh.points[mesh.cells], axis=1)
+    )
+    assert widget.triangles == widget.edges == widget.faces == b""
+    assert widget.info["surface"] == "line"
+    assert widget.info["deform"]
+
+    # the faces of quads and line cells on the same points
+    rectangle = fem.Rectangle(n=3)
+    diagonal = fem.Mesh(rectangle.points, np.array([[0, 4], [4, 8]]), "line")
+    dashboard = fem.DashboardWidgetPlugin()
+    dashboard.widget = dashboard._state = _plugin._widget_class()()
+    regions = [fem.RegionQuad(rectangle), fem.RegionTruss(diagonal)]
+    items = [SimpleNamespace(field=fem.Field(r, dim=2).as_container()) for r in regions]
+    dashboard._model(SimpleNamespace(steps=[SimpleNamespace(items=items, nsubsteps=1)]))
+
+    widget = dashboard.widget
+    assert widget.info["surface"] == "quad, line"
+    assert len(buffer(widget, "triangles", (3,))) == 2 * 4
+    assert len(buffer(widget, "edges", (2,))) == 12
+    assert len(buffer(widget, "lines", (2,))) == 2
+
+
+def test_dashboard_points_without_cells(kernel):
+    "A mesh without supported cells is drawn by all its points."
+
+    mesh = fem.Mesh(np.eye(3), np.arange(3).reshape(-1, 1), "vertex")
+    item = SimpleNamespace(field=SimpleNamespace(region=SimpleNamespace(mesh=mesh)))
+    dashboard = fem.DashboardWidgetPlugin()
+    dashboard.widget = dashboard._state = _plugin._widget_class()()
+    dashboard._model(
+        SimpleNamespace(steps=[SimpleNamespace(items=[item], nsubsteps=1)])
+    )
+
+    widget = dashboard.widget
+    assert dashboard._surface is None
+    assert widget.info["surface"] == "points"
+    assert np.allclose(buffer(widget, "points", (3,), np.float32), mesh.points)
+    assert widget.triangles == widget.edges == widget.lines == b""
+
+    # the field values of all points
+    values_at_points = np.arange(9.0).reshape(3, 3)
+    container = SimpleNamespace(values=values_at_points)
+    dashboard._unknowns(container)
+    assert np.allclose(values(widget.frame), values_at_points.ravel())
+
+
+def test_dashboard_module():
+    """The module of the dashboard is the WebGL viewer and the dashboard. The top-level
+    names of the module and of the script of the page are unique (a module can not
+    declare a name twice)."""
+
+    pytest.importorskip("anywidget")
+    from felupe.plugins._dashboard._widget import DashboardWidget
+
+    source = module()
+    assert source.index("export function createViewer(") < source.index(
+        "function render("
+    )
+    assert DashboardWidget._esm == source
+
+    page = (HERE / "dashboard.html").read_text(encoding="utf-8")
+    script = page[page.index("/*" + "MODULE" + "*/") : page.index("</script>")]
+    pattern = r"^(?:export )?(?:async )?(?:function|const|let|var|class) (\w+)"
+    names = re.findall(pattern, source + script, flags=re.MULTILINE)
+    assert len(names) > 20
+    assert sorted(names) == sorted(set(names))

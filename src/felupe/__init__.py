@@ -159,7 +159,14 @@ from .tools import (
     save,
     topoints,
 )
-from .view import ViewField, ViewMesh, ViewSolid, ViewXdmf
+from .view import (
+    ViewField,
+    ViewMesh,
+    ViewSolid,
+    ViewXdmf,
+    get_plotting_backend,
+    set_plotting_backend,
+)
 from .view import ViewSolid as View
 
 __all__ = [
@@ -306,6 +313,8 @@ __all__ = [
     "ViewMesh",
     "ViewXdmf",
     "ViewSolid",
+    "get_plotting_backend",
+    "set_plotting_backend",
     "runs_on",
     "AnimationWriterPlugin",
     "CharacteristicCurvePlugin",

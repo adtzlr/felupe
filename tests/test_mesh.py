@@ -619,11 +619,14 @@ def test_triangle():
 
 
 def test_view():
+    plt = pytest.importorskip("matplotlib.pyplot")
+
     mesh = fem.Rectangle(n=6)
     view = mesh.view()
     plotter = mesh.plot(off_screen=True)
-    # img = mesh.screenshot(transparent_background=True)
-    # ax = mesh.imshow()
+    img = mesh.screenshot(filename=None, transparent_background=True)
+    ax = mesh.imshow()
+    plt.close(ax.figure)
 
     mesh2 = mesh.translate(move=0.8, axis=0)
     container = fem.MeshContainer([mesh, mesh2])
@@ -634,8 +637,12 @@ def test_view():
     mesh_stacked = container.stack()
     plotter = container.plot(off_screen=True)
     plotter = container.plot(off_screen=True, labels=["a", "b"])
-    # img = container.screenshot(transparent_background=True)
-    # ax = container.imshow()
+    img = container.screenshot(filename=None, transparent_background=True)
+    img_colors = container.screenshot(filename=None, colors=["red", "blue"])
+    assert img.shape[:2] == img_colors.shape[:2]
+    assert not np.array_equal(img[..., :3], img_colors)
+    ax = container.imshow()
+    plt.close(ax.figure)
 
 
 def test_mesh_update():

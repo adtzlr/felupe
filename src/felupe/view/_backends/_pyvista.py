@@ -2,9 +2,12 @@
 
 """The plotting backend of the scenes by PyVista."""
 
+import sys
+
 import numpy as np
 
 from .._scalars import is_principal, scalars_label, sort_principal_values
+from ._base import PlottingBackend
 
 
 def _default_view(plotter, points):
@@ -22,14 +25,47 @@ def _default_view(plotter, points):
     return None
 
 
-class PyVistaBackend:
-    """The plotting backend of the scenes by PyVista. The plotter is a
-    :class:`pyvista.Plotter`.
+class PyVistaBackend(PlottingBackend):
+    """The plotting backend of the scenes by PyVista (default). The plotter is a
+    :class:`pyvista.Plotter`. It supports screenshots.
 
     See Also
     --------
     felupe.view.Scene : Base class for plotting a static scene.
+    felupe.view.PlottingBackend : Base class of a plotting backend.
     """
+
+    def is_plotter(self, plotter):
+        """Return True if the given object is a plotter of PyVista. PyVista is not
+        imported, i.e. without an imported PyVista, there are no plotters of PyVista.
+        """
+
+        pyvista = sys.modules.get("pyvista")
+
+        return pyvista is not None and isinstance(plotter, pyvista.BasePlotter)
+
+    def screenshot(
+        self,
+        plot,
+        *args,
+        filename=None,
+        transparent_background=None,
+        scale=None,
+        **kwargs,
+    ):
+        """Take a screenshot of the off-screen plotter, which is returned by
+        ``plot(*args, off_screen=True, **kwargs)``.
+
+        See Also
+        --------
+        pyvista.Plotter.screenshot : Take a screenshot of a PyVista plotter.
+        """
+
+        return plot(*args, off_screen=True, **kwargs).screenshot(
+            filename=filename,
+            transparent_background=transparent_background,
+            scale=scale,
+        )
 
     def as_unstructured_grid(self, scene, cell_type=None):
         """Return the mesh with the point- and cell-data of a scene as

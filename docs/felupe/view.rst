@@ -1,8 +1,8 @@
 View
 ~~~~
 
-Visualization methods for meshes, mesh and field containers as well as solid bodies by
-`PyVista <https://pyvista.org/>`_.
+Visualization methods for meshes, mesh and field containers as well as solid bodies. The
+scenes are drawn by a plotting backend, by default by `PyVista <https://pyvista.org/>`_.
 
 .. currentmodule:: felupe
 
@@ -15,6 +15,15 @@ Visualization methods for meshes, mesh and field containers as well as solid bod
    ViewXdmf
    view.select_surface_points
    view.select_edge_points
+
+**Plotting Backends**
+
+.. autosummary::
+
+   set_plotting_backend
+   get_plotting_backend
+   view.register_plotting_backend
+   view.PlottingBackend
 
 **Detailed API Reference**
 
@@ -31,3 +40,12 @@ Visualization methods for meshes, mesh and field containers as well as solid bod
 .. autofunction:: felupe.view.select_surface_points
 
 .. autofunction:: felupe.view.select_edge_points
+
+.. autofunction:: felupe.set_plotting_backend
+
+.. autofunction:: felupe.get_plotting_backend
+
+.. autofunction:: felupe.view.register_plotting_backend
+
+.. autoclass:: felupe.view.PlottingBackend
+   :members:

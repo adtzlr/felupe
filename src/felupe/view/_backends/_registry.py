@@ -67,11 +67,13 @@ def set_plotting_backend(name):
 
     The plotting backend ``"webgl"`` draws the plots by a WebGL viewer in the web
     browser, without PyVista. Its plotter has the methods ``show(filename=None)``,
-    ``export_html(filename)`` and ``widget(height="480px")``. In a notebook, the viewer
-    is shown in the output of the cell, as a Jupyter widget with binary buffers (this
-    requires anywidget, ``pip install felupe[web]``) or as an ``iframe``. Otherwise,
-    the self-contained HTML page of the viewer is written to a file, which is opened in
-    the web browser. The outer surface of the meshes is curved for
+    ``export_html(filename)`` and ``widget(height="480px")``. Like with PyVista, the
+    plotter is shown by ``show()``: in a notebook, the self-contained HTML page of the
+    viewer is shown in the output of the cell (in an ``iframe``), otherwise it is
+    written to a file, which is opened in the web browser. ``widget()`` returns a
+    Jupyter widget of the viewer with binary buffers, e.g. for a layout of widgets
+    (this requires anywidget, ``pip install felupe[web]``). The outer surface of the
+    meshes is curved for
     quadratic and Lagrange cells with ``nonlinear_subdivision > 1``. Screenshots, the
     plots of finite elements and regions and the options which are specific to PyVista
     (which raise a warning once) are not supported. Drag to rotate, shift-drag to pan,

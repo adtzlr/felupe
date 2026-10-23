@@ -123,11 +123,11 @@ class WebGLPlotter:
     Notes
     -----
     The page of the viewer is a self-contained HTML page (without a server and without
-    other files). In a notebook, :meth:`show` displays the viewer in the output of the
-    cell, as a Jupyter widget (if anywidget is installed, see :meth:`widget`) or as an
-    ``iframe``. Otherwise, the page is written to a file, which is opened in the web
-    browser. The rich representation (``_repr_html_``) embeds the page in an
-    ``iframe``, e.g. for the examples of a documentation.
+    other files). Like a plotter of PyVista, the plotter is shown by :meth:`show`. In a
+    notebook, the page is shown in the output of the cell (in an ``iframe``, without a
+    Jupyter widget, e.g. also in the interactive window of VS Code). Otherwise, the page
+    is written to a file, which is opened in the web browser. A Jupyter widget of the
+    viewer, e.g. for a layout of widgets, is returned by :meth:`widget`.
     """
 
     def __init__(self):
@@ -200,10 +200,9 @@ class WebGLPlotter:
         return widget_class()(self.scene(), height=height)
 
     def show(self, filename=None):
-        """Show the viewer. In a notebook (without a given filename), the viewer is
-        shown in the output of the cell as a Jupyter widget (if anywidget is installed)
-        or as an ``iframe``. Otherwise, the page is written to a file, which is opened
-        in the web browser.
+        """Show the viewer. In a notebook (without a given filename), the page of the
+        viewer is shown in the output of the cell (in an ``iframe``). Otherwise, the
+        page is written to a file, which is opened in the web browser.
 
         Parameters
         ----------
@@ -220,16 +219,10 @@ class WebGLPlotter:
         if filename is None and in_kernel():
             from IPython.display import display
 
-            try:
-                widget = self.widget()
-
-            # without anywidget, the page is shown in an iframe (a raw mime-bundle,
-            # an HTML object of an iframe raises a warning)
-            except ImportError:
-                display({"text/html": self._repr_html_()}, raw=True)
-
-            else:
-                display(widget)
+            # the page in an iframe works in all frontends (also without a manager of
+            # widgets), as a raw mime-bundle (an HTML object of an iframe warns)
+            page_in_iframe = iframe(page(self.scene(), height="100vh"))
+            display({"text/html": page_in_iframe}, raw=True)
 
             return None
 
@@ -243,9 +236,6 @@ class WebGLPlotter:
         webbrowser.open(path.resolve().as_uri())
 
         return path
-
-    def _repr_html_(self):
-        return iframe(page(self.scene(), height="100vh"))
 
 
 class WebGLBackend(PlottingBackend):

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import html
 import json
 import sys
 from unittest import mock
@@ -274,10 +275,10 @@ def test_page(webgl, tmp_path):
     assert module.count("</script") == 1
     assert "export function createViewer" in module
 
-    # the file and the rich representation
+    # the file (the plotter is not shown by a rich representation, like with PyVista)
     path = plotter.export_html(tmp_path / "plots" / "rectangle.html")
     assert path.read_text(encoding="utf-8") == page
-    assert plotter._repr_html_().startswith('<iframe class="felupe-webgl"')
+    assert not hasattr(plotter, "_repr_html_")
 
     # show the page in the web browser (in a temporary file or in a given file)
     with mock.patch("webbrowser.open") as open_browser:
@@ -289,29 +290,25 @@ def test_page(webgl, tmp_path):
         path = plotter.show(filename=tmp_path / "show.html")
         assert path == tmp_path / "show.html"
 
-    # in a notebook, the viewer is shown in the output of the cell as a widget
+    # in a notebook, the page is shown in the output of the cell in an iframe (also if
+    # anywidget is installed, the widget works not in all frontends)
     display = pytest.importorskip("IPython.display")
-    pytest.importorskip("anywidget")
 
     with (
         mock.patch.object(_backend, "in_kernel", return_value=True),
         mock.patch.object(display, "display") as show,
-    ):
-        assert plotter.show() is None
-        (widget,), options = show.call_args
-        assert widget.height == "480px" and options == {}
-
-    # without anywidget, the page is shown in an iframe
-    widget_class.cache_clear()
-    with (
-        mock.patch.dict(sys.modules, {"anywidget": None}),
-        mock.patch.object(_backend, "in_kernel", return_value=True),
-        mock.patch.object(display, "display") as show,
+        mock.patch.object(_backend.WebGLPlotter, "widget") as widget,
     ):
         assert plotter.show() is None
         (bundle,), options = show.call_args
-        assert bundle["text/html"].startswith("<iframe") and options == {"raw": True}
+        assert options == {"raw": True}
+        assert bundle["text/html"].startswith('<iframe class="felupe-webgl"')
+        assert "export function createViewer" in html.unescape(bundle["text/html"])
+        widget.assert_not_called()
 
+    # without anywidget, there is no widget
+    widget_class.cache_clear()
+    with mock.patch.dict(sys.modules, {"anywidget": None}):
         with pytest.raises(ImportError):
             plotter.widget()
 

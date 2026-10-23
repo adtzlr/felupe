@@ -37,6 +37,7 @@ All notable changes to this project will be documented in this file. The format 
 - Remove the support of Python 3.10, which reaches its end of life in October 2026. The minimum version of Python is 3.11. The tests run on Python 3.11 and 3.14.
 
 ### Fixed
+- Fix the plot of a quadrature scheme with negative weights, e.g. of `TriangleQuadrature(order=3)` or `TetrahedronQuadrature(order=3)`, by `Scheme.plot(weighted=True)`, which failed with a negative point size. The size of a point is scaled by the magnitude of its weight (relative to the largest magnitude of the weights) and the points with negative weights are drawn in red.
 - Fix the argument `solver` of `project()`, which was ignored. The linear equation system of the projection was always solved by `scipy.sparse.linalg.spsolve()`.
 
 ## [11.3.0] - 2026-10-14

@@ -29,8 +29,24 @@ class Scheme:
         self.npoints, self.dim = self.points.shape
 
     def plot(self, plotter=None, point_size=20, weighted=False, **kwargs):
-        """Plot the quadrature points, scaled by their weights, into a (optionally
-        provided) PyVista plotter.
+        """Plot the quadrature points, optionally scaled by their weights, into a
+        (optionally provided) plotter of the plotting backend.
+
+        Parameters
+        ----------
+        plotter : plotter or None, optional
+            A plotter of the plotting backend (default is None). If None, a new plotter
+            is created.
+        point_size : float, optional
+            The size of the points (default is 20).
+        weighted : bool, optional
+            A flag to scale the size of the points by the magnitude of their weights,
+            relative to the largest magnitude of the weights (default is False). The
+            points with negative weights, e.g. of a :class:`~felupe.TriangleQuadrature`
+            of order 3, are drawn in red.
+        **kwargs : dict, optional
+            Additional keyword-arguments for the plot of the points of the quadrature
+            as a mesh, if no plotter is given.
 
         See Also
         --------
@@ -44,18 +60,23 @@ class Scheme:
             plotter = mesh.plot(**kwargs)
 
         backend = backend_of(plotter)
+        largest = np.abs(self.weights).max()
 
         for weight, point in zip(self.weights, self.points):
+            point_weight = 1.0
+            color = "grey"
+
+            # the size of a point is scaled by the magnitude of its weight (a point
+            # size must be positive), negative weights are drawn in red
             if weighted:
-                point_weight = weight / self.weights.max()
-            else:
-                point_weight = 1.0
+                point_weight = abs(weight) / largest
+                color = "red" if weight < 0 else "grey"
 
             plotter = backend.add_points(
                 plotter,
                 [point],
                 point_size=point_size * point_weight,
-                color="grey",
+                color=color,
             )
 
         return plotter

@@ -99,6 +99,9 @@ def test_triangle():
     assert q.points.shape == (4, 2)
     assert q.weights.sum() == 1 / 2
 
+    # a negative weight (the size of its point is positive)
+    q.plot(off_screen=True, weighted=True)
+
     with pytest.raises(NotImplementedError):
         fem.TriangleQuadrature(order=4)
 
@@ -115,6 +118,9 @@ def test_tetra():
     q = fem.TetrahedronQuadrature(order=3)
     assert q.points.shape == (5, 3)
     assert q.weights.sum() == 1 / 6
+
+    # a negative weight (the size of its point is positive)
+    q.plot(off_screen=True, weighted=True)
 
     with pytest.raises(NotImplementedError):
         fem.TetrahedronQuadrature(order=4)

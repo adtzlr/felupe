@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ._scene import _default_view
+from ._backends._pyvista import _default_view
 
 
 def _on_click(interactor, button, callback, tolerance=6):

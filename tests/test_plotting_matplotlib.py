@@ -268,7 +268,7 @@ def test_screenshot(mpl, tmp_path):
         fem.Hexahedron().plot()
 
 
-def test_given_axes(mpl, tmp_path):
+def test_given_axes(mpl, tmp_path, caplog):
     fig, ax = plt.subplots(1, 2)
     ax[0].set_title("cube")
 
@@ -281,6 +281,13 @@ def test_given_axes(mpl, tmp_path):
     assert fem.Cube(n=3).translate(1, axis=0).plot(plotter=ax[0]) is plotter
     assert len(plotter.objects) == 2 and len(ax[0].collections) == 1
     assert ax[0].get_title() == "cube"
+
+    # a layout keeps the limits of the drawn scene (the box of the axes is adjusted)
+    limits = ax[0].get_xlim(), ax[0].get_ylim()
+    fig.tight_layout()
+    fig.canvas.draw()
+    assert (ax[0].get_xlim(), ax[0].get_ylim()) == limits
+    assert "Ignoring fixed" not in caplog.text
 
     # decorations on the axes, e.g. of boundary conditions
     mesh, field, boundaries, solid = solved()

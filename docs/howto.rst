@@ -13,6 +13,7 @@ How-To Guides
    howto/solvers
    howto/parallel
    howto/plugins
+   howto/plotting
    howto/composite
    howto/solid
    howto/umat

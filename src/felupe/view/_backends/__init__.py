@@ -8,6 +8,7 @@ from ._registry import (
     backend_of,
     get_plotting_backend,
     register_plotting_backend,
+    require_pyvista,
     set_plotting_backend,
     take_screenshot,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "backend_of",
     "get_plotting_backend",
     "register_plotting_backend",
+    "require_pyvista",
     "take_screenshot",
     "set_plotting_backend",
 ]

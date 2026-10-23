@@ -115,6 +115,19 @@ def backend_of(plotter=None):
     return current
 
 
+def require_pyvista(plotter, what):
+    """Return the plotting backend of a given plotter or the current plotting backend,
+    if it is the plotting backend of PyVista. Raise a :class:`NotImplementedError`
+    for another plotting backend, e.g. for plots which require PyVista."""
+
+    backend = backend_of(plotter)
+
+    if not isinstance(backend, PyVistaBackend):
+        raise backend._not_supported(what)
+
+    return backend
+
+
 def take_screenshot(plot, *args, **kwargs):
     """Take a screenshot of the plotter which is returned by ``plot(*args, **kwargs)``
     by the plotting backend of a given plotter (keyword-argument ``plotter``) or by

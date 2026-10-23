@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ..view._backends import take_screenshot
+from ..view._backends import backend_of, take_screenshot
 
 
 class BoundaryDict(dict):
@@ -48,7 +48,8 @@ class BoundaryDict(dict):
                 **kwargs,
             )
 
-        plotter.add_legend(size=size, bcolor="white")
+        backend = backend_of(plotter)
+        plotter = backend.add_legend(plotter, size=size, background_color="white")
 
         return plotter
 

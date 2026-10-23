@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from ..view._backends import backend_of
+from ..view._shapes import Cone
 from ._pointconstraint import PointConstraint
 
 
@@ -190,21 +192,20 @@ class CartesianConstraint(PointConstraint):
         """Add arrows of the base vectors of the constrained directions, which point to
         the center of the points (like the symbols of supports)."""
 
-        import pyvista as pv
-
+        backend = backend_of(plotter)
         center = x.mean(axis=0)
         length = max(0.25 * np.ptp(self._pad(self.mesh.points), axis=0).max(), 1e-12)
 
         for direction in self.rotation.T[self.mask]:
             start = center - length * direction
             tip = center - 0.2 * length * direction
-            plotter.add_mesh(pv.Line(start, tip), color=color, line_width=line_width)
-            plotter.add_mesh(
-                pv.Cone(
-                    center=center - 0.1 * length * direction,
-                    direction=direction,
-                    height=0.2 * length,
-                    radius=0.07 * length,
-                ),
-                color=color,
+            cone = Cone(
+                center=center - 0.1 * length * direction,
+                direction=direction,
+                height=0.2 * length,
+                radius=0.07 * length,
             )
+            backend.add_lines(
+                plotter, [[start, tip]], color=color, line_width=line_width
+            )
+            backend.add_shape(plotter, cone, color=color)

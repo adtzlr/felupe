@@ -7,6 +7,7 @@ import sys
 import numpy as np
 
 from .._scalars import is_principal, scalars_label, sort_principal_values
+from .._shapes import Cone, Cylinder, Plane, Rectangle
 from ._base import PlottingBackend
 
 
@@ -21,6 +22,51 @@ def _given(**kwargs):
     "Return the given keyword-arguments, which are not None."
 
     return {key: value for key, value in kwargs.items() if value is not None}
+
+
+def _as_polydata(shape):
+    "Return the (unclipped) surface of a shape as :class:`pyvista.PolyData`."
+
+    import pyvista as pv
+
+    if isinstance(shape, Plane):
+        return pv.Plane(
+            center=shape.center,
+            direction=shape.normal,
+            i_resolution=1,
+            j_resolution=1,
+            i_size=shape.size,
+            j_size=shape.size,
+        )
+
+    if isinstance(shape, Rectangle):
+        return pv.Rectangle(shape.points)
+
+    if isinstance(shape, Cylinder):
+        return pv.Cylinder(
+            center=shape.center,
+            direction=shape.direction,
+            radius=shape.radius,
+            height=shape.height,
+            resolution=shape.resolution,
+            capping=shape.capping,
+        )
+
+    if isinstance(shape, Cone):
+        return pv.Cone(
+            center=shape.center,
+            direction=shape.direction,
+            height=shape.height,
+            radius=shape.radius,
+            resolution=shape.resolution,
+            capping=shape.capping,
+        )
+
+    # other shapes by their triangles, without clipping (clipped by PyVista)
+    points, triangles = shape._triangles()
+    faces = np.pad(triangles, ((0, 0), (1, 0)), constant_values=3)
+
+    return pv.PolyData(points, faces.ravel())
 
 
 def _default_view(plotter, points):
@@ -122,6 +168,52 @@ class PyVistaBackend(PlottingBackend):
         )
 
         return plotter
+
+    def add_shape(
+        self, plotter, shape, color=None, opacity=None, show_edges=None, **kwargs
+    ):
+        """Add a shape to a plotter by :meth:`pyvista.Plotter.add_mesh`. The planes,
+        rectangles, cylinders and cones are created by the corresponding sources of
+        PyVista, other shapes by the triangles of ``shape.triangulate()``.
+        """
+
+        surface = _as_polydata(shape)
+        axes = ["x", "y", "z"]
+
+        for axis, invert in shape.clip:
+            surface = surface.clip(axes[axis], invert=invert, origin=(0.0, 0.0, 0.0))
+
+        # a fully clipped shape is not shown
+        if surface.n_points > 0:
+            options = _given(color=color, opacity=opacity, show_edges=show_edges)
+            plotter.add_mesh(surface, **options, **kwargs)
+
+        return plotter
+
+    def add_legend(
+        self, plotter, entries=None, size=None, background_color=None, **kwargs
+    ):
+        """Add a legend to a plotter by :meth:`pyvista.Plotter.add_legend`. The given
+        entries are shown with rectangles.
+        """
+
+        labels = None
+
+        if entries is not None:
+            labels = [(label, color, "rectangle") for label, color in entries]
+
+        plotter.add_legend(
+            labels, **_given(size=size, bcolor=background_color), **kwargs
+        )
+
+        return plotter
+
+    def default_color(self):
+        "Return the color of the meshes of the current theme of PyVista."
+
+        import pyvista as pv
+
+        return pv.global_theme.color
 
     def as_unstructured_grid(self, scene, cell_type=None):
         """Return the mesh with the point- and cell-data of a scene as

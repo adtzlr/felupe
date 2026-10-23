@@ -272,6 +272,10 @@ def test_triangulate_surface_counts():
     assert surface.triangles.shape == (0, 3) and surface.edges.shape == (0, 2)
     assert triangulate_surface([]).interpolation.shape == (0, 0)
 
+    # a mesh without cells
+    empty = fem.Mesh(np.zeros((3, 2)), np.zeros((0, 2), dtype=int), "line")
+    assert triangulate_surface(empty).interpolation.shape == (0, 3)
+
     with pytest.raises(ValueError):
         triangulate_surface(cube, subdivisions=0)
 

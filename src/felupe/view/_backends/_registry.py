@@ -4,6 +4,7 @@
 
 from ._base import PlottingBackend
 from ._pyvista import PyVistaBackend
+from ._webgl import WebGLBackend
 
 _BACKENDS = {}
 _CURRENT = "pyvista"
@@ -51,17 +52,37 @@ def set_plotting_backend(name):
     Parameters
     ----------
     name : str
-        The name of a registered plotting backend. Available is ``"pyvista"``
-        (default).
+        The name of a registered plotting backend. Available are ``"pyvista"``
+        (default) and ``"webgl"``.
 
     Raises
     ------
     ValueError
         If no plotting backend is registered with the given name.
 
+    Notes
+    -----
+    The plotting backend ``"pyvista"`` draws the plots by :class:`pyvista.Plotter`
+    (with screenshots, e.g. for :meth:`Mesh.screenshot() <felupe.Mesh.screenshot>`).
+
+    The plotting backend ``"webgl"`` draws the plots by a WebGL viewer in the web
+    browser, without PyVista. Its plotter has the methods ``show(filename=None)`` and
+    ``export_html(filename)``. In a notebook, the viewer is shown in the output of the
+    cell, otherwise the self-contained HTML page of the viewer is written to a file,
+    which is opened in the web browser. The outer surface of the meshes is curved for
+    quadratic and Lagrange cells with ``nonlinear_subdivision > 1``. Screenshots, the
+    plots of finite elements and regions and the options which are specific to PyVista
+    (which raise a warning once) are not supported. Drag to rotate, shift-drag to pan,
+    scroll to zoom and double-click to reset the view.
+
     Examples
     --------
     >>> import felupe as fem
+    >>>
+    >>> fem.set_plotting_backend("webgl")
+    >>> mesh = fem.Cube(n=3)
+    >>> plotter = mesh.plot()
+    >>> path = plotter.export_html("cube.html")
     >>>
     >>> fem.set_plotting_backend("pyvista")
     >>> fem.get_plotting_backend()
@@ -139,3 +160,4 @@ def take_screenshot(plot, *args, **kwargs):
 
 
 register_plotting_backend("pyvista", PyVistaBackend())
+register_plotting_backend("webgl", WebGLBackend())

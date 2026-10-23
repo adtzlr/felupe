@@ -2,7 +2,9 @@ View
 ~~~~
 
 Visualization methods for meshes, mesh and field containers as well as solid bodies. The
-scenes are drawn by a plotting backend, by default by `PyVista <https://pyvista.org/>`_.
+scenes are drawn by a plotting backend, by default by `PyVista <https://pyvista.org/>`_
+(``"pyvista"``). The plotting backend ``"webgl"`` draws the scenes by a WebGL viewer in
+the web browser (in a self-contained HTML page), without PyVista.
 
 .. currentmodule:: felupe
 

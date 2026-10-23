@@ -143,6 +143,19 @@ def clip_lines(lines, clip):
     return np.array(clipped).reshape(-1, 2, 3)
 
 
+def outline(triangles):
+    """Return the boundary edges of a triangulated surface, i.e. the edges which belong
+    to only one triangle, of shape ``(nedges, 2)``."""
+
+    triangles = np.asarray(triangles).reshape(-1, 3)
+    edges = np.concatenate(
+        [triangles[:, [0, 1]], triangles[:, [1, 2]], triangles[:, [2, 0]]]
+    )
+    keys, counts = np.unique(np.sort(edges, axis=1), axis=0, return_counts=True)
+
+    return keys[counts == 1]
+
+
 @dataclass
 class Shape:
     """Base class of a shape, optionally clipped at the planes ``x[axis] = 0`` of a
@@ -275,3 +288,50 @@ class Cone(Shape):
             triangles = np.vstack([triangles, np.stack([j, i, np.full(n, n + 1)], 1)])
 
         return points, triangles
+
+
+def arrow():
+    """Return the points and the triangles of an arrow of length 1 in the
+    x-direction, i.e. a cylinder (the shaft) with a cone at the tip."""
+
+    shaft = Cylinder(
+        center=(0.325, 0, 0),
+        direction=(1, 0, 0),
+        radius=0.03,
+        height=0.65,
+        resolution=6,
+    )
+    tip = Cone(center=(0.825, 0, 0), direction=(1, 0, 0), height=0.35, radius=0.1)
+
+    points, triangles = shaft.triangulate()
+    tip_points, tip_triangles = tip.triangulate()
+
+    return np.vstack([points, tip_points]), np.vstack(
+        [triangles, tip_triangles + len(points)]
+    )
+
+
+def arrows(points, directions, scale=1.0):
+    """Return the points of shape ``(npoints, 3)`` and the triangles of shape
+    ``(ntriangles, 3)`` of arrows by the glyph of :func:`arrow`, given by their start
+    points and their vectors (multiplied by a scale), both of shape ``(narrows, 3)``.
+    Arrows of zero length are not included."""
+
+    starts = np.asarray(points, dtype=float).reshape(-1, 3)
+    vectors = scale * np.asarray(directions, dtype=float).reshape(-1, 3)
+    lengths = np.linalg.norm(vectors, axis=1)
+    keep = lengths > 0
+    starts, vectors, lengths = starts[keep], vectors[keep], lengths[keep]
+
+    glyph, glyph_triangles = arrow()
+    frames = []
+    for vector, length in zip(vectors, lengths):
+        u, v = plane_axes(vector)
+        frames.append(np.stack([vector, length * u, length * v]))
+
+    frames = np.array(frames).reshape(-1, 3, 3)
+    positions = starts[:, None] + np.einsum("pj,ajk->apk", glyph, frames)
+    offsets = len(glyph) * np.arange(len(starts))
+    triangles = (glyph_triangles[None] + offsets[:, None, None]).reshape(-1, 3)
+
+    return positions.reshape(-1, 3), triangles

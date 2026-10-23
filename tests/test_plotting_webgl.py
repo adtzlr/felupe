@@ -12,9 +12,11 @@ import numpy as np
 import pytest
 
 import felupe as fem
+from felupe.view._backends._notebook import in_kernel
 from felupe.view._backends._webgl import WebGLPlotter, _backend
-from felupe.view._backends._webgl._page import decode, encode, in_kernel
+from felupe.view._backends._webgl._page import decode, encode
 from felupe.view._backends._webgl._widget import widget_class
+from felupe.view._shapes import arrow
 from felupe.view._surface import triangulate_surface
 
 
@@ -187,7 +189,7 @@ def test_decorations(webgl):
     load = fem.PointLoad(field, points=right, values=[1, 0, 0])
     plotter = load.plot(plotter=fem.Cube(n=3).plot(), color="green")
     arrows = plotter.objects[-1]
-    glyph, glyph_triangles = _backend._arrow()
+    glyph, glyph_triangles = arrow()
     assert arrows["triangles"]["size"] == len(right) * glyph_triangles.size
     assert arrows["color"] == "#008000"
 

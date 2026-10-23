@@ -2,7 +2,10 @@
 
 import html
 import json
+import os
 import sys
+import tempfile
+import time
 from unittest import mock
 
 import numpy as np
@@ -263,7 +266,8 @@ def test_colors():
         assert _backend._lut("viridis") is None
 
 
-def test_page(webgl, tmp_path):
+def test_page(webgl, tmp_path, monkeypatch):
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
     plotter = fem.Rectangle(n=3).plot()
     page = plotter.html
 
@@ -314,6 +318,38 @@ def test_page(webgl, tmp_path):
 
     widget_class.cache_clear()
     assert not in_kernel()
+
+
+def test_temporary_pages(webgl, tmp_path, monkeypatch):
+    # the temporary pages are written to the folder "felupe" of the temporary directory
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    folder = tmp_path / "felupe"
+    plotter = fem.Rectangle(n=3).plot()
+
+    with mock.patch("webbrowser.open"):
+        first = plotter.show()
+
+    assert first.parent == folder and first.name.startswith("plot-")
+
+    # an old page, an old folder (not removable) and an other file in the folder
+    old = folder / "plot-old.html"
+    old.write_text("old", encoding="utf-8")
+    locked = folder / "plot-locked.html"
+    locked.mkdir()
+    other = folder / "other.html"
+    other.write_text("other", encoding="utf-8")
+
+    day = 24 * 60 * 60
+    for path in [old, locked, other]:
+        os.utime(path, (time.time() - 2 * day, time.time() - 2 * day))
+
+    # the pages older than a day are removed by the next temporary page
+    with mock.patch("webbrowser.open"):
+        second = plotter.show()
+
+    assert first.exists() and second.exists() and first != second
+    assert not old.exists()
+    assert locked.exists() and other.exists()
 
 
 def test_widget(webgl):

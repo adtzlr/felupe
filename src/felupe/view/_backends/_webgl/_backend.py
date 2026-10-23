@@ -3,6 +3,7 @@
 """The plotting backend of the scenes by WebGL in the web browser."""
 
 import tempfile
+import time
 import warnings
 import webbrowser
 from pathlib import Path
@@ -16,6 +17,9 @@ from .._base import PlottingBackend
 from ._page import array, iframe, in_kernel, page
 
 DEFAULT_COLOR = "#add8e6"
+
+# temporary pages older than this (in seconds) are removed by the next show()
+TEMPORARY_MAX_AGE = 24 * 60 * 60
 
 # the options which were already warned about (each option is warned once)
 _WARNED = set()
@@ -82,6 +86,32 @@ def _outline(triangles):
     keys, counts = np.unique(np.sort(edges, axis=1), axis=0, return_counts=True)
 
     return keys[counts == 1]
+
+
+def _temporary_page():
+    """Return the path of a new temporary page in the folder ``felupe`` of the
+    temporary directory and remove the pages there which are older than a day.
+
+    The page is not removed after it is shown, because the web browser loads it later
+    (e.g. after a script has ended) and the page should stay reloadable."""
+
+    folder = Path(tempfile.gettempdir()) / "felupe"
+    folder.mkdir(exist_ok=True)
+
+    now = time.time()
+    for old in folder.glob("plot-*.html"):
+        try:
+            if now - old.stat().st_mtime > TEMPORARY_MAX_AGE:
+                old.unlink()
+
+        # e.g. removed by another process in the meantime or not removable
+        except OSError:
+            pass
+
+    with tempfile.NamedTemporaryFile(
+        dir=folder, prefix="plot-", suffix=".html", delete=False
+    ) as file:
+        return Path(file.name)
 
 
 def _arrow():
@@ -208,7 +238,8 @@ class WebGLPlotter:
         ----------
         filename : str, pathlib.Path or None, optional
             The filename of the HTML file (default is None). If None, a temporary file
-            is written (outside of a notebook).
+            is written (outside of a notebook) in the folder ``felupe`` of the
+            temporary directory, where the pages older than a day are removed.
 
         Returns
         -------
@@ -227,10 +258,7 @@ class WebGLPlotter:
             return None
 
         if filename is None:
-            with tempfile.NamedTemporaryFile(
-                prefix="felupe-", suffix=".html", delete=False
-            ) as file:
-                filename = file.name
+            filename = _temporary_page()
 
         path = self.export_html(filename)
         webbrowser.open(path.resolve().as_uri())

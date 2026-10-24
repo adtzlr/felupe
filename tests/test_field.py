@@ -313,7 +313,8 @@ def test_merge():
     with pytest.raises(ValueError):
         fem.field.merge([field_1, field_2])
 
-    # the second fields are continuous in the first and dual in the second container
+    # the second fields are scalar fields on the mesh of the first field and dual
+    # fields: they belong to their field container, their points are stacked
     region = fem.RegionQuad(fem.Rectangle(n=3))
     field_1 = fem.FieldContainer([fem.Field(region, dim=2), fem.Field(region)])
     field_2 = fem.FieldsMixed(
@@ -321,19 +322,39 @@ def test_merge():
     )
     x0 = fem.field.merge([field_1, field_2])
 
-    assert x0.fieldsizes == [30, 9, 4]  # compact: points of the first container
+    assert x0.fieldsizes == [30, 9 + 4]
+    assert field_1.slots is None and field_2.slots is None
+    assert field_1[1].values is field_2[1].values is x0[1].values
+    assert field_1[0].region is not field_1[1].region
+    assert field_1[1].region.mesh.cells.max() == 8
+    assert field_2[1].region.mesh.cells.min() == 9
+
+    # fields of different dimensions are stored in different fields of x0 (slots)
+    field_1 = fem.FieldsMixed(fem.RegionQuad(fem.Rectangle(n=3)), n=3)
+    region = fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=3))
+    field_2 = fem.FieldContainer([fem.Field(region, dim=2), fem.Field(region, dim=9)])
+    x0 = fem.field.merge([field_1, field_2])
+
+    assert x0.fieldsizes == [30, 4, 4, 81]
     assert field_1.slots is None
-    assert field_2.slots == [0, 2]
-    assert field_2[1].values is x0[2].values
+    assert field_2.slots == [0, 3]
+    assert field_2[1].values is x0[3].values
 
     # a field container of an item with wrong sizes of the fields can't be embedded
+    vector = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field_2[0].as_container())
+    vector = vector.assemble.vector()
     with pytest.raises(ValueError):
         fem.tools.embed(
-            fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field_2).assemble.vector(),
-            shape=(43, 1),
+            vector,
+            shape=(sum(x0.fieldsizes), 1),
             field=field_2,
-            x=fem.FieldContainer([x0[0], x0[1], x0[1]]),
+            x=fem.FieldContainer([x0[0], x0[1], x0[2], x0[1]]),
         )
+
+    # the vector is embedded into the degrees of freedom of the first field
+    embedded = fem.tools.embed(vector, (sum(x0.fieldsizes), 1), field_2, x0)
+    assert np.allclose(embedded.toarray()[:30], vector.toarray())
+    assert np.allclose(embedded.toarray()[30:], 0)
 
 
 def test_merge_mixed():
@@ -581,6 +602,83 @@ def test_merge_three_field_variation_third_medium():
     # Q1/P0 three-field variation = nearly-incompressible solid body (condensed)
     fields, x0, u_3 = evaluate(["body", "medium"], three_field_variation=False)
     assert np.allclose(u_1, u_3)
+
+
+def test_merge_two_bodies_two_media():
+
+    # two mixed-field bodies (u, p, J) and two third media (u, theta), the media share
+    # the points of their interface
+    t, L, H, xm = 0.1, 1.0, 0.5, 0.55
+
+    def stack(meshes):
+        return fem.MeshContainer(meshes, merge=True, decimals=10).stack()
+
+    a = fem.Rectangle(a=(0, 0), b=(t, t), n=2)
+    b = a.translate(move=H - t, axis=1)
+    c = fem.Rectangle(a=(t, 0), b=(L, t), n=(7, 2))
+    d = c.translate(move=H - t, axis=1)
+    e = fem.Rectangle(a=(0, t), b=(t, H - t), n=(2, 4))
+    bodies = [stack([b, d, e]), stack([a, c])]
+    media = [
+        fem.Rectangle(a=(t, t), b=(xm, H - t), n=(4, 4)),
+        fem.Rectangle(a=(xm, t), b=(L, H - t), n=(4, 4)),
+    ]
+
+    fields = [fem.FieldsMixed(fem.RegionQuad(m), n=3, planestrain=True) for m in bodies]
+    for m in media:
+        region = fem.RegionQuad(m)
+        fields.append(
+            fem.FieldContainer(
+                [fem.FieldPlaneStrain(region, dim=2), fem.Field(region, dim=9)],
+                take=[0, 1, 1],
+            )
+        )
+
+    x0 = fem.field.merge(fields, decimals=6)
+
+    # the fields of the bodies and of the media are stacked (no coupling of theta)
+    ncells = sum(m.ncells for m in bodies)
+    assert x0.fieldsizes[1:] == [ncells, ncells, 9 * sum(m.npoints for m in media)]
+    assert [f.slots for f in fields] == [None, None, [0, 3], [0, 3]]
+    assert fields[2][1].values is fields[3][1].values is x0[3].values
+
+    G, K = 5 / 14, 5 / 3
+    items = [
+        fem.SolidBody(fem.ThreeFieldVariation(fem.NeoHooke(mu=G, bulk=50 * G)), f)
+        for f in fields[:2]
+    ] + [
+        fem.SolidBody(
+            fem.ThirdMediumContactMixed(
+                fem.NeoHookeCompressible(mu=G, lmbda=K),
+                gamma=5e-6,
+                alpha_r=5e-6 * K * L**2,
+                p_r=1e-2,
+            ),
+            f,
+            grad=[True, False, True],
+        )
+        for f in fields[2:]
+    ]
+
+    # no orphan degrees of freedom
+    from felupe.tools._newton import jac_items
+
+    matrix = jac_items(items, x0).tocsr()
+    assert np.all(np.diff(matrix.indptr) > 0)
+
+    bounds = fem.BoundaryDict(
+        fixed=fem.Boundary(x0[0], fx=0),
+        move=fem.Boundary(x0[0], fx=L, fy=H, mode="and", skip=(1, 0)),
+    )
+    step = fem.Step(
+        items=items,
+        ramp={bounds["move"]: fem.math.linsteps([0, -0.2], num=2)},
+        boundaries=bounds,
+    )
+    fem.Job(steps=[step], plugins=[fem.LinesearchPlugin()]).evaluate()
+
+    for item in items[2:]:
+        assert np.all(fem.math.det(item.results.kinematics[0]) > 0)
 
 
 def test_merge_fewer_points():
@@ -833,6 +931,7 @@ if __name__ == "__main__":
     test_merge_mixed_formulations()
     test_merge_third_medium_contact()
     test_merge_three_field_variation_third_medium()
+    test_merge_two_bodies_two_media()
     test_merge_fewer_points()
     test_field_dual()
     test_field_take()

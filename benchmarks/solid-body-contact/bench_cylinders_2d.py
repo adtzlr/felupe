@@ -1,5 +1,5 @@
 """
-Benchmark B: contact between two elastic cylinders (r1 = 0.5, r2 = 1.0),
+Benchmark B: contact between two equal elastic cylinders (r1 = r2 = 0.5),
 plane strain, frictionless, using the issue-#919 SolidBodyContact prototype
 (benchmark A's verified form).
 
@@ -24,13 +24,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 from bench_blocks_2d import SolidBodyContact  # verified in benchmark A
 
 
-def make_cylinders(n1=6, n2=12, r1=0.5, r2=1.0):
+def make_cylinders(n1=6, n2=12, r1=0.5, r2=0.5):
     disk1 = fem.Circle(radius=r1, centerpoint=[0, r1 + r2], n=n1)
     disk2 = fem.Circle(radius=r2, centerpoint=[0, 0], n=n2)
     return disk1, disk2
 
 
-def contact_edges(disk1, disk2, mesh, band=0.12, r1=0.5, r2=1.0):
+def contact_edges(disk1, disk2, mesh, band=0.12, r1=0.5, r2=0.5):
     "Boundary regions on the cells adjacent to the respective contact pole."
     edge1 = fem.RegionQuadBoundary(disk1, mask=disk1.y < r2 + band)
     edge2 = fem.RegionQuadBoundary(disk2, mask=disk2.y > r2 - band)
@@ -42,7 +42,7 @@ def contact_edges(disk1, disk2, mesh, band=0.12, r1=0.5, r2=1.0):
 
 
 def run(
-    K=100.0, approach=0.01, n1=6, n2=12, r1=0.5, r2=1.0, E=100.0, nu=0.3, verbose=False
+    K=100.0, approach=0.01, n1=6, n2=12, r1=0.5, r2=0.5, E=100.0, nu=0.3, verbose=False
 ):
     disk1, disk2 = make_cylinders(n1=n1, n2=n2, r1=r1, r2=r2)
     container = fem.MeshContainer([disk1, disk2], merge=False)
@@ -57,7 +57,7 @@ def run(
     contact = SolidBodyContact(edge1, edge2, stiffness=K, flip=1.0)
     contact2 = SolidBodyContact(edge2, edge1, stiffness=K, flip=1.0)
 
-    y_top = r1 + r2 + r1  # 2.0
+    y_top = r1 + r2 + r1  # 1.5
     y_bot = -r2
     bounds = dict(
         fix_bot=fem.Boundary(field[0], mask=mesh.points[:, 1] < y_bot + 0.05 * r2),

@@ -43,7 +43,7 @@ Conclusions:
 
 ## Benchmark B: two cylinders, Hertz line contact (`bench_cylinders_2d.py`)
 
-Disks with r1 = 0.5, r2 = 1.0, E = 100, nu = 0.3, plane strain, prescribed
+Disks with r1 = r2 = 0.5 (equal diameters, as in the reference problem), E = 100, nu = 0.3, plane strain, prescribed
 approach on the top arc. Compares the contact patch against the Hertz
 line-contact solution `b = sqrt(4 F R* / (pi E*))`, `p0 = 2 F / (pi b)`
 with the numerically measured resultant force F.
@@ -52,8 +52,8 @@ Results:
 
 | K | F | b_Hertz | b_num | p0_Hertz | p0_num |
 |---:|---:|---:|---:|---:|---:|
-| 100 | 4.88 | 0.194 | 0.375 | 16.0 | 0.16 |
-| 1000 | 5.70 | 0.210 | 0.375 | 17.3 | 0.51 |
+| 100 | 5.46 | 0.178 | 0.280 | 19.5 | 0.14 |
+| 1000 | 5.82 | 0.184 | 0.280 | 20.2 | 0.46 |
 
 The prototype reproduces the total contact force (converging with K), but
 the patch metrics are non-physical for curved surfaces:
@@ -62,7 +62,7 @@ the patch metrics are non-physical for curved surfaces:
    (pairwise tiling, as in the issue prototype). This multiplies the
    effective contact stiffness by the number of partners, so the local
    penetration and per-point pressure are far below the physical values
-   (p0_num is ~30x below the Hertz value), while the total force is right.
+   (p0_num is ~40x below the Hertz value), while the total force is right.
 2. The active set extends over the whole candidate band (b_num = band
    width) instead of the Hertz patch, because geometric overlap of the
    undeformed arcs activates pairs far outside the true contact zone.

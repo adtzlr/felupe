@@ -75,6 +75,22 @@ all-pairs pairing, and (b) normalization of the traction by the partner
 count. For flat interfaces with matching discretizations (benchmark A) the
 formulation is correct.
 
+## Quarter-model analysis with displacement control
+(`bench_quarter_model_2d.py`)
+
+The reference problem itself (see `setup-b.png`): the quarter model with two
+quarter-disk lobes joined at the single shared node O. Because both arcs
+curve away from the tangent plane, geometric interpenetration is impossible
+and no contact algorithm is required — the trick of the original Code_Aster
+model. Displacement control replaces the force `P/2` at B: the plate edge
+`AB` gets a uniform prescribed `u_y` ramp; the wall `OB`/`OD` has
+`u_x = 0`; the supported edge `CD` has `u_y = 0`.
+
+Result (approach 0.05, E = 100, plane strain): the plate reaction is
+P = -0.573 per unit thickness; the upper arc presses down nearly uniformly
+while the lower arc separates from the tangent plane, as sketched in the
+reference figure.
+
 ## Sign and orientation findings (important for a 2D port)
 
 1. The weak form must be repulsive: with outward normal `n1` of body 1 and
@@ -98,6 +114,22 @@ formulation is correct.
 5. `fem.NeoHooke` in this version returns a non-zero first Piola stress at
    the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
    `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.
+
+## Quarter-model analysis with displacement control
+(`bench_quarter_model_2d.py`)
+
+The reference problem itself (see `setup-b.png`): the quarter model with two
+quarter-disk lobes joined at the single shared node O. Because both arcs
+curve away from the tangent plane, geometric interpenetration is impossible
+and no contact algorithm is required — the trick of the original Code_Aster
+model. Displacement control replaces the force `P/2` at B: the plate edge
+`AB` gets a uniform prescribed `u_y` ramp; the wall `OB`/`OD` has
+`u_x = 0`; the supported edge `CD` has `u_y = 0`.
+
+Result (approach 0.05, E = 100, plane strain): the plate reaction is
+P = -0.573 per unit thickness; the upper arc presses down nearly uniformly
+while the lower arc separates from the tangent plane, as sketched in the
+reference figure.
 
 ## Sign and orientation findings (important for a 2D port)
 

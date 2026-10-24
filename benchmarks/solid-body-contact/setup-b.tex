@@ -44,23 +44,21 @@
   \draw[{Stealth}-{Stealth}, red!70] (-0.13, 0.30) -- (0.13, 0.30);
   \node[below, red, inner sep=2pt] at (0.0, 0.24) {\footnotesize $2b$: Hertz patch};
 
-  % ---- prescribed u_y on top ----
-  \draw[red, very thick, ->] (0, 1.75) -- (0, 1.52);
-  \node[above, red, inner sep=2pt] at (0, 1.75)
-    {\footnotesize prescribed $u_y$ ramp (approach)};
+  % ---- top arc patch: prescribed u_y (approach) + u_x = 0 guide ----
+  \draw[red, very thick, ->] (0, 1.78) -- (0, 1.54);
+  \node[above, red, inner sep=2pt] at (0, 1.78)
+    {\footnotesize prescribed $u_y$ ramp (approach), $u_x = 0$};
+  \draw[thick, fill=black!12] (-0.18, 1.42) rectangle (0.18, 1.50);
+  \rollersym{-0.20}{1.46}{90}
+  \rollersym{0.20}{1.46}{-90}
 
-  % ---- fixed ground below ----
+  % ---- fixed arc patch under the bottom pole ----
   \fill[pattern={Lines[angle=45, distance=3pt]}, pattern color=black!60]
-    (-0.55, -0.62) rectangle (0.55, -0.53);
-  \draw[thick] (-0.55, -0.53) -- (0.55, -0.53);
+    (-0.28, -0.62) rectangle (0.28, -0.53);
+  \draw[thick] (-0.28, -0.53) -- (0.28, -0.53);
   \node[below, blue, inner sep=3pt] at (0.0, -0.64)
-    {\footnotesize fixed: $u_x = u_y = 0$};
+    {\footnotesize fixed patch: $u_x = u_y = 0$};
 
-  % ---- side rollers ----
-  \rollersym{-0.5}{0.75}{-90}
-  \rollersym{0.5}{0.75}{-90}
-  \rollersym{-0.5}{0.25}{-90}
-  \rollersym{0.5}{0.25}{-90}
 
   % ---- comparison quantities ----
   \node[right, inner sep=3pt, align=left] at (0.62, -0.25)

@@ -95,11 +95,6 @@ class FieldDual(Field):
         **kwargs,
     ):
 
-        # store original function args and kwargs for re-creating the dual field in
-        # FieldContainer.merge()
-        self.__args__ = (region, dim, values, offset, npoints, mesh, disconnect)
-        self.__kwargs__ = kwargs
-
         # create dual regions
         region_dual_dict = {
             RegionHexahedron: RegionConstantHexahedron,

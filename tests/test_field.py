@@ -850,12 +850,6 @@ def test_container_checkpoint_mixed():
         for f, v in zip(field.fields, values):
             assert np.allclose(f.values, v)
 
-    # the parent region of a dual field is shared
-    dual = [f for f in fields["dual"].fields if isinstance(f, fem.FieldDual)][0]
-    copy = fields["dual"].checkpoint()["field"]
-    dual_copy = [f for f in copy.fields if isinstance(f, fem.FieldDual)][0]
-    assert dual_copy.__args__[0] is dual.__args__[0]
-
 
 def test_container_checkpoint_x0():
     mesh_1 = fem.Cube(a=(0, 0, 0), b=(1, 1, 1), n=3)

@@ -75,21 +75,25 @@ all-pairs pairing, and (b) normalization of the traction by the partner
 count. For flat interfaces with matching discretizations (benchmark A) the
 formulation is correct.
 
-## Quarter-model analysis with displacement control
-(`bench_quarter_model_2d.py`)
+## Half-model analysis with displacement control
+(`bench_half_model_2d.py`)
 
-The reference problem itself (see `setup-b.png`): the quarter model with two
-quarter-disk lobes joined at the single shared node O. Because both arcs
-curve away from the tangent plane, geometric interpenetration is impossible
-and no contact algorithm is required — the trick of the original Code_Aster
-model. Displacement control replaces the force `P/2` at B: the plate edge
-`AB` gets a uniform prescribed `u_y` ramp; the wall `OB`/`OD` has
-`u_x = 0`; the supported edge `CD` has `u_y = 0`.
+The reference problem itself (see `setup-b.png`). The slide labels the
+two-lobe shape a "1/4 model", but the load P/2 (half of the total P)
+shows that it is a 1/2 model: the right half of the two-cylinder stack,
+cut by the symmetry plane x = 0. The flat edge AB in the figure is the
+DEFORMED arc pressed onto the rigid plate (uniform-u_y tie).
 
-Result (approach 0.05, E = 100, plane strain): the plate reaction is
-P = -0.573 per unit thickness; the upper arc presses down nearly uniformly
-while the lower arc separates from the tangent plane, as sketched in the
-reference figure.
+Constraints (no contact algorithm required — the trick of the original
+Code_Aster model): the cylinder-cylinder contact plane stays flat by
+symmetry, so the arcs adjacent to O get prescribed `u_y = 0`; likewise
+the lower arc pressed onto the floor gets `u_y = 0`; the wall has
+`u_x = 0`; the plate zone of the upper arc gets the uniform prescribed
+`u_y` ramp (displacement control instead of the force `P/2`).
+
+Result (approach 0.05, E = 100, plane strain): plate reaction
+P = -0.200 per unit thickness; the lobes squeeze and bulge sideways as
+sketched in the reference figure.
 
 ## Sign and orientation findings (important for a 2D port)
 
@@ -115,21 +119,25 @@ reference figure.
    the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
    `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.
 
-## Quarter-model analysis with displacement control
-(`bench_quarter_model_2d.py`)
+## Half-model analysis with displacement control
+(`bench_half_model_2d.py`)
 
-The reference problem itself (see `setup-b.png`): the quarter model with two
-quarter-disk lobes joined at the single shared node O. Because both arcs
-curve away from the tangent plane, geometric interpenetration is impossible
-and no contact algorithm is required — the trick of the original Code_Aster
-model. Displacement control replaces the force `P/2` at B: the plate edge
-`AB` gets a uniform prescribed `u_y` ramp; the wall `OB`/`OD` has
-`u_x = 0`; the supported edge `CD` has `u_y = 0`.
+The reference problem itself (see `setup-b.png`). The slide labels the
+two-lobe shape a "1/4 model", but the load P/2 (half of the total P)
+shows that it is a 1/2 model: the right half of the two-cylinder stack,
+cut by the symmetry plane x = 0. The flat edge AB in the figure is the
+DEFORMED arc pressed onto the rigid plate (uniform-u_y tie).
 
-Result (approach 0.05, E = 100, plane strain): the plate reaction is
-P = -0.573 per unit thickness; the upper arc presses down nearly uniformly
-while the lower arc separates from the tangent plane, as sketched in the
-reference figure.
+Constraints (no contact algorithm required — the trick of the original
+Code_Aster model): the cylinder-cylinder contact plane stays flat by
+symmetry, so the arcs adjacent to O get prescribed `u_y = 0`; likewise
+the lower arc pressed onto the floor gets `u_y = 0`; the wall has
+`u_x = 0`; the plate zone of the upper arc gets the uniform prescribed
+`u_y` ramp (displacement control instead of the force `P/2`).
+
+Result (approach 0.05, E = 100, plane strain): plate reaction
+P = -0.200 per unit thickness; the lobes squeeze and bulge sideways as
+sketched in the reference figure.
 
 ## Sign and orientation findings (important for a 2D port)
 

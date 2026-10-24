@@ -1,0 +1,73 @@
+% Analysis conditions of the two-cylinder quarter model
+% (Watanabe, "Example-Based Nonlinear FEM", 2020 — two long cylinders
+%  between rigid plates, quarter model with symmetry BCs)
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.markings,patterns.meta}
+
+\begin{document}
+\begin{tikzpicture}[scale=2.0,>={Stealth}]
+
+  % ================= quarter model geometry =================
+  % upper lobe: quarter disk centered B(0,1): wall B->O, top edge B->A, arc A->O
+  % lower lobe: quarter disk centered D(0,-1): wall D->O, arc O->C, bottom edge C->D
+  \coordinate (O) at (0,0);
+  \coordinate (B) at (0,1);
+  \coordinate (A) at (1,1);
+  \coordinate (C) at (1,-1);
+  \coordinate (D) at (0,-1);
+
+  \draw[thick, fill=blue!4]
+    (B) -- (A) arc[start angle=0, end angle=-90, radius=1] % A -> O
+    arc[start angle=90, end angle=0, radius=1]             % O -> C
+    -- (D) -- cycle;
+
+  % ================= rigid wall at x = 0 (u_x = 0 on OB and OD) ==============
+  \fill[pattern={Lines[angle=45, distance=2.6pt]}, pattern color=black!60]
+    (-0.16, -1.08) rectangle (-0.07, 1.08);
+  \foreach \y in {-0.9,-0.6,-0.3,0.3,0.6,0.9} {
+    \draw[gray] (-0.07, \y) -- (-0.03, \y + 0.03);
+  }
+
+  % ================= rollers under CD (u_y = 0) =================
+  \foreach \x in {0.12, 0.34, 0.56, 0.78} {
+    \draw[gray] (\x, -1.12) circle (0.02);
+    \draw[gray] (\x, -1.18) circle (0.02);
+  }
+  \fill[pattern={Lines[angle=45, distance=2.6pt]}, pattern color=black!60]
+    (-0.07, -1.26) rectangle (1.0, -1.2);
+
+  % ================= force P/2 at B =================
+  \draw[->, very thick] (0, 1.42) -- (B);
+  \node[above right, inner sep=1pt] at (0.02, 1.4) {$P/2$};
+
+  % ================= uniform u_y on AB (rigid plate tie) =================
+  \draw[decorate, decoration={brace, amplitude=3pt, mirror}]
+    (0.04, 0.97) -- (0.96, 0.97);
+  \node[below, inner sep=2pt] at (0.5, 0.9)
+    {\footnotesize $u_y$ uniform (rigid plate)};
+
+  % ================= constraint labels =================
+  \node[left, inner sep=3pt] at (0, 0.5) {\footnotesize $u_x = 0$};
+  \node[left, inner sep=3pt] at (0, -0.5) {\footnotesize $u_x = 0$};
+  \node[below, inner sep=3pt] at (0.5, -1.2)
+    {\footnotesize $u_y = 0$ (rollers)};
+
+  % ================= contact plane annotation =================
+  \draw[dashed, gray] (O) -- (0.92, 0);
+  \node[right, inner sep=2pt, gray] at (0.06, -0.12)
+    {\footnotesize cylinder--cylinder contact plane ($u_y = 0$, symmetry)};
+
+  % ================= node labels =================
+  \node[above left, inner sep=1pt] at (B) {$B$};
+  \node[above right, inner sep=1pt] at (A) {$A$};
+  \node[below right, inner sep=1pt] at (C) {$C$};
+  \node[below left, inner sep=1pt] at (D) {$D$};
+  \node[left, inner sep=3pt] at (O) {$O$};
+
+  % ================= axes =================
+  \draw[->] (0.6, 0.06) -- (0.85, 0.06) node[right] {\footnotesize $x$};
+  \draw[->] (0.08, 0.62) -- (0.08, 0.86) node[above] {\footnotesize $y$};
+
+\end{tikzpicture}
+\end{document}

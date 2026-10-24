@@ -65,10 +65,9 @@
   \draw[thick] (1.22, 1.0) -- (1.22, 1.22);
   \fill[pattern={Lines[angle=45, distance=2.6pt]}, pattern color=black!60]
     (1.22, 0.96) rectangle (1.3, 1.26);
-  \foreach \y in {1.08, 1.16} {
-    \draw[fill=white] (1.09, \y) circle (0.024);
-    \draw[fill=white] (1.145, \y) circle (0.024);
-  }
+  % one roller symbol between plate end and guide wall (same notation as
+  % the symmetry-wall rollers)
+  \rollersym{1.05}{1.11}{-90}
   \foreach \x in {0.15, 0.35, 0.55, 0.75} {
     \draw[red, thick, ->] (\x, 1.38) -- (\x, 1.20);
   }

@@ -25,6 +25,9 @@ class FreeVibration:
 
         Boundary conditions with non-zero values are not supported.
 
+    The multiplier of an item, e.g. ``SolidBody(..., multiplier=2.0)``, scales both its
+    stiffness and its mass matrix, i.e. the contribution of the item.
+
     Examples
     --------
     ..  pyvista-plot::
@@ -54,12 +57,43 @@ class FreeVibration:
         self.boundaries = boundaries
         self.eigenvalues = None
         self.eigenvectors = None
+        self._x0 = None
 
     def evaluate(self, x0=None, solver=eigsh, parallel=False, **kwargs):
+        """Evaluate the eigenvalues and the eigenvectors of the free vibration.
+
+        Parameters
+        ----------
+        x0 : FieldContainer or None, optional
+            The field container with all unknowns (default is None). If None, the
+            top-level field container ``x0`` of the field container of the first item
+            is used (e.g. created by :func:`~felupe.field.merge`), otherwise the field
+            container of the first item.
+        solver : callable, optional
+            A solver for the generalized eigenvalue problem with the signature
+            ``eigenvalues, eigenvectors = solver(A, M, **kwargs)`` (default is
+            :func:`scipy.sparse.linalg.eigsh`).
+        parallel : bool, optional
+            Flag to assemble the stiffness matrices in parallel (default is False).
+        **kwargs : dict, optional
+            Optional keyword-arguments for the solver. The default shift is
+            ``sigma=0``.
+
+        Returns
+        -------
+        FreeVibration
+            The free-vibration object with the ``eigenvalues`` and the
+            ``eigenvectors``.
+        """
+
         if x0 is not None:
             x = x0
         else:
-            x = self.items[0].field
+            field = self.items[0].field
+            x = getattr(field, "x0", field)
+
+        # the field container is used by default to extract the eigenvectors
+        self._x0 = x
 
         # link field of items with global field
         [item.field.link(x) for item in self.items]
@@ -74,8 +108,10 @@ class FreeVibration:
             K = item.assemble.matrix(parallel=parallel)
             M = item.assemble.mass()
 
+            # the multiplier scales the contribution of the item (stiffness and mass)
             if item.assemble.multiplier is not None:
                 K *= item.assemble.multiplier
+                M *= item.assemble.multiplier
 
             # embed the matrices into the global degrees of freedom
             K = embed(K, shape, item.field, x)
@@ -90,16 +126,37 @@ class FreeVibration:
         K = stiffness[self.dof1][:, self.dof1]
         M = mass[self.dof1][:, self.dof1]
 
-        sigma = kwargs.get("sigma", 0)
-        self.eigenvalues, self.eigenvectors = solver(A=K, M=M, sigma=sigma, **kwargs)
+        kwargs.setdefault("sigma", 0)
+        self.eigenvalues, self.eigenvectors = solver(A=K, M=M, **kwargs)
 
         return self
 
     def extract(self, n=0, x0=None, inplace=True):
+        """Extract an eigenvector and its frequency.
+
+        Parameters
+        ----------
+        n : int, optional
+            The index of the eigenvalue and the eigenvector (default is 0).
+        x0 : FieldContainer or None, optional
+            The field container in which the eigenvector is stored (default is None).
+            If None, the field container of :meth:`evaluate` is used.
+        inplace : bool, optional
+            Flag to store the eigenvector in the given field container (default is
+            True). If False, a copy of the field container is used.
+
+        Returns
+        -------
+        FieldContainer
+            The field container with the eigenvector.
+        float
+            The frequency of the eigenvector.
+        """
+
         if x0 is not None:
             field = x0
         else:
-            field = self.items[0].field
+            field = self._x0
 
         if not inplace:
             field = field.copy()

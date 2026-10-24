@@ -100,7 +100,94 @@ def test_free_vibration_axisymmetric():
     assert np.min(np.abs(frequencies3d / frequency - 1)) < 5e-3
 
 
+def plate(a=(0, 0), b=(5, 1), n=(11, 3)):
+    region = fem.RegionQuad(fem.Rectangle(a=a, b=b, n=n))
+    return fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
+
+
+def test_free_vibration_sigma():
+    field = plate()
+    solid = fem.SolidBody(fem.LinearElastic(E=2.5, nu=0.25), field, density=1.0)
+    boundaries = {"left": fem.Boundary(field[0], fx=0)}
+
+    job = fem.FreeVibration([solid], boundaries).evaluate(k=3)
+    eigenvalues = job.eigenvalues
+
+    # the default shift is sigma=0
+    job = fem.FreeVibration([solid], boundaries).evaluate(k=3, sigma=0.0)
+    assert np.allclose(job.eigenvalues, eigenvalues)
+
+    # a given shift returns the eigenvalue next to it
+    job = fem.FreeVibration([solid], boundaries).evaluate(k=1, sigma=eigenvalues[2])
+    assert np.allclose(job.eigenvalues, eigenvalues[2])
+
+
+def test_free_vibration_merged():
+    "The top-level field container of merged field containers is used by default."
+
+    fields = [
+        fem.FieldsMixed(fem.RegionQuad(fem.Rectangle(n=4)), n=3, planestrain=True),
+        fem.FieldsMixed(
+            fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=4)),
+            n=3,
+            planestrain=True,
+        ),
+    ]
+    x0 = fem.field.merge(fields)
+
+    umat = fem.ThreeFieldVariation(fem.NeoHooke(mu=1, bulk=2))
+    solids = [fem.SolidBody(umat, field, density=1.0) for field in fields]
+    boundaries = {"left": fem.Boundary(x0[0], fx=0)}
+
+    job = fem.FreeVibration(solids, boundaries).evaluate(x0=x0, k=3)
+    eigenvalues = job.eigenvalues
+
+    # without x0, the top-level field container of the first item is used
+    job = fem.FreeVibration(solids, boundaries).evaluate(k=3)
+    assert np.allclose(job.eigenvalues, eigenvalues)
+
+    # the eigenvector is stored in the field container of evaluate()
+    field, frequency = job.extract(n=0)
+    assert field is x0
+    assert np.isclose(frequency, np.sqrt(eigenvalues[0]) / (2 * np.pi))
+
+    new_field, frequency = job.extract(n=0, inplace=False)
+    assert new_field is not x0
+    assert new_field.fieldsizes == x0.fieldsizes
+    assert np.allclose(new_field[0].values, x0[0].values)
+
+
+def test_free_vibration_multiplier():
+    "The multiplier of an item scales its stiffness and its mass matrix."
+
+    fields = [plate(b=(2.5, 1), n=(6, 3)), plate(a=(2.5, 0), b=(5, 1), n=(6, 3))]
+    x0 = fem.field.merge(fields)
+    boundaries = {"left": fem.Boundary(x0[0], fx=0)}
+
+    def solid(field, E=1.0, density=1.0, multiplier=None):
+        umat = fem.LinearElastic(E=E, nu=0.3)
+        return fem.SolidBody(umat, field, density=density, multiplier=multiplier)
+
+    # the right half with a multiplier of 2
+    items = [solid(fields[0]), solid(fields[1], multiplier=2.0)]
+    job = fem.FreeVibration(items, boundaries).evaluate(k=4)
+
+    # the right half with twice the stiffness and twice the density
+    items = [solid(fields[0]), solid(fields[1], E=2.0, density=2.0)]
+    job_ref = fem.FreeVibration(items, boundaries).evaluate(k=4)
+
+    # the right half without a multiplier (different eigenvalues)
+    items = [solid(fields[0]), solid(fields[1])]
+    job_none = fem.FreeVibration(items, boundaries).evaluate(k=4)
+
+    assert np.allclose(job.eigenvalues, job_ref.eigenvalues)
+    assert not np.allclose(job.eigenvalues, job_none.eigenvalues)
+
+
 if __name__ == "__main__":
     test_free_vibration()
     test_free_vibration_mixed()
     test_free_vibration_axisymmetric()
+    test_free_vibration_sigma()
+    test_free_vibration_merged()
+    test_free_vibration_multiplier()

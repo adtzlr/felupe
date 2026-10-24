@@ -14,7 +14,7 @@ Run with the repository venv:
 
 ```sh
 python benchmarks/solid-body-contact/bench_blocks_2d.py
-python benchmarks/solid-body-contact/bench_cylinders_2d.py
+python benchmarks/solid-body-contact/bench_half_model_2d.py
 ```
 
 ## Benchmark A: two blocks in compression (`bench_blocks_2d.py`)
@@ -84,85 +84,3 @@ sketched in the reference figure.
 5. `fem.NeoHooke` in this version returns a non-zero first Piola stress at
    the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
    `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.
-
-## Benchmark B: half-model analysis with displacement control
-(`bench_half_model_2d.py`)
-
-The reference problem itself (see `setup-b.png`). The slide labels the
-two-lobe shape a "1/4 model", but the load P/2 (half of the total P)
-shows that it is a 1/2 model: the right half of the two-cylinder stack,
-cut by the symmetry plane x = 0. The flat edge AB in the figure is the
-DEFORMED arc pressed onto the rigid plate (uniform-u_y tie).
-
-Constraints (no contact algorithm required — the trick of the original
-Code_Aster model): the cylinder-cylinder contact plane stays flat by
-symmetry, so the arcs adjacent to O get prescribed `u_y = 0`; likewise
-the lower arc pressed onto the floor gets `u_y = 0`; the wall has
-`u_x = 0`; the plate zone of the upper arc gets the uniform prescribed
-`u_y` ramp (displacement control instead of the force `P/2`).
-
-Result (approach 0.05, E = 100, plane strain): plate reaction
-P = -0.200 per unit thickness; the lobes squeeze and bulge sideways as
-sketched in the reference figure.
-
-## Sign and orientation findings (important for a 2D port)
-
-1. The weak form must be repulsive: with outward normal `n1` of body 1 and
-   gap `gn = (u1 - u2) . n1`, the residual contribution is
-   `+K * <gn>_+ * n1 * da`. The sign convention `-K * gn * t` in the issue
-   prototype is only correct if the region normals point inward; it must be
-   audited for each element/face orientation.
-2. `RegionQuadBoundary.normals` (and the 3D equivalent) are NOT reliably
-   outward: they follow the face parametrization and flip orientation
-   between faces, including on curved surfaces where a constant sign flip
-   cannot repair them. Outward normals must be recomputed geometrically:
-   rotate the face tangent by 90 degrees and fix the sign against the cell
-   interior (see `outward_normals()` in `bench_blocks_2d.py`).
-3. `RegionQuadBoundary` keeps whole quads as cells (faces only for
-   quadrature). Pairing Gauss points of two boundary regions therefore
-   needs the tiled-cells trick from the issue; face normals must be tiled
-   consistently with the cell tiling.
-4. `MeshContainer` meshes share one points array: point masks such as
-   `mesh.y == 1` select points of both bodies. Build boundary regions on
-   the separate body meshes and remap to global ids afterwards.
-5. `fem.NeoHooke` in this version returns a non-zero first Piola stress at
-   the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
-   `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.
-
-## Benchmark C: closest-point (Gauss-point-to-segment) contact
-(`bench_cylinders_2d_closest.py`)
-
-Replacement for the all-pairs pairing: each slave Gauss point is projected
-onto the closest master boundary segment (deformed configuration), the gap
-is measured along the master outward normal, and the force is transferred
-to the master segment nodes by linear shape functions. The tangent is a
-numeric Jacobian over the interface dofs.
-
-Results (equal radii, same load as benchmark B):
-
-| K | F | b_Hertz | p0_Hertz | p0_num | min gap |
-|---:|---:|---:|---:|---:|---:|
-| 100 | 0.045 | 0.016 | 1.77 | 0.57 | -5.7e-3 |
-| 1000 | 0.124 | 0.027 | 2.95 | 1.58 | -1.6e-3 |
-| 10000 | 0.150 | 0.030 | 3.24 | 1.92 | -1.9e-4 |
-
-Findings:
-
-1. The resultant force converges to the bonded-reference value
-   (F = 0.150 vs 0.152 at K = 10000, 1 % error) and the penetration
-   scales as ~ 1/K — the penalty contact is consistent.
-2. p0_num approaches the Hertz value but the comparison is mesh-limited:
-   the Hertz patch (b ~ 0.03) is smaller than the element size (~0.035).
-3. Newton fails at K = 100000 (active-set chatter), as in benchmark A.
-
-Implementation notes / pitfalls hit during development:
-
-- `RegionBoundary.mesh.cells_faces` keeps the LOCAL point ids of the body
-  mesh; after remapping `mesh.cells` to global ids, the segments must be
-  remapped (and the node list recomputed) separately.
-- `region.dV` on a boundary region is not the physical face area per Gauss
-  point; use face length / number of quadrature points for area-consistent
-  penalty forces, otherwise the contact stiffness depends on the mesh.
-- After `Job.evaluate`, item-level cached assemblies may lag the reported
-  solution; rebuild a fresh `SolidBody` on a copy of the converged values
-  for post-processing (reactions etc.).

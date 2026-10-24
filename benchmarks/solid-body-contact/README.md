@@ -98,3 +98,41 @@ formulation is correct.
 5. `fem.NeoHooke` in this version returns a non-zero first Piola stress at
    the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
    `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.
+
+## Benchmark C: closest-point (Gauss-point-to-segment) contact
+(`bench_cylinders_2d_closest.py`)
+
+Replacement for the all-pairs pairing: each slave Gauss point is projected
+onto the closest master boundary segment (deformed configuration), the gap
+is measured along the master outward normal, and the force is transferred
+to the master segment nodes by linear shape functions. The tangent is a
+numeric Jacobian over the interface dofs.
+
+Results (equal radii, same load as benchmark B):
+
+| K | F | b_Hertz | p0_Hertz | p0_num | min gap |
+|---:|---:|---:|---:|---:|---:|
+| 100 | 0.045 | 0.016 | 1.77 | 0.57 | -5.7e-3 |
+| 1000 | 0.124 | 0.027 | 2.95 | 1.58 | -1.6e-3 |
+| 10000 | 0.150 | 0.030 | 3.24 | 1.92 | -1.9e-4 |
+
+Findings:
+
+1. The resultant force converges to the bonded-reference value
+   (F = 0.150 vs 0.152 at K = 10000, 1 % error) and the penetration
+   scales as ~ 1/K — the penalty contact is consistent.
+2. p0_num approaches the Hertz value but the comparison is mesh-limited:
+   the Hertz patch (b ~ 0.03) is smaller than the element size (~0.035).
+3. Newton fails at K = 100000 (active-set chatter), as in benchmark A.
+
+Implementation notes / pitfalls hit during development:
+
+- `RegionBoundary.mesh.cells_faces` keeps the LOCAL point ids of the body
+  mesh; after remapping `mesh.cells` to global ids, the segments must be
+  remapped (and the node list recomputed) separately.
+- `region.dV` on a boundary region is not the physical face area per Gauss
+  point; use face length / number of quadrature points for area-consistent
+  penalty forces, otherwise the contact stiffness depends on the mesh.
+- After `Job.evaluate`, item-level cached assemblies may lag the reported
+  solution; rebuild a fresh `SolidBody` on a copy of the converged values
+  for post-processing (reactions etc.).

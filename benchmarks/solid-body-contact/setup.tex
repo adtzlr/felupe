@@ -58,22 +58,14 @@
     {\footnotesize support: $u_y=0$};
 
   % ================= rigid plate above AB (uniform u_y, moves down) ====
-  % no ground hatching: the plate MOVES down (prescribed u_y ramp),
-  % guided horizontally by rollers sliding on vertical walls at both ends
+  % the plate MOVES down (prescribed u_y ramp): no ground hatching
   \draw[thick, fill=black!12] (-0.04, 1.06) rectangle (1.03, 1.16);
-  % vertical guide at the right end of the plate (vertical slide, no hatch)
-  \draw[thick] (1.22, 1.0) -- (1.22, 1.22);
-  \fill[pattern={Lines[angle=45, distance=2.6pt]}, pattern color=black!60]
-    (1.22, 0.96) rectangle (1.3, 1.26);
-  % one roller symbol between plate end and guide wall (same notation as
-  % the symmetry-wall rollers)
-  \rollersym{1.05}{1.11}{-90}
-  \foreach \x in {0.15, 0.35, 0.55, 0.75} {
-    \draw[red, thick, ->] (\x, 1.38) -- (\x, 1.20);
+  \foreach \x in {0.15, 0.35, 0.55} {
+    \draw[red, thick, ->] (\x, 1.36) -- (\x, 1.20);
   }
-  \node[above right, red, inner sep=2pt] at (0.62, 1.36) {$P/2$};
-  \node[above, blue, inner sep=4pt] at (0.28, 1.27)
-    {\footnotesize rigid plate: $u_y$ uniform, moves down};
+  \node[above, red, inner sep=2pt] at (0.55, 1.36) {$P/2$};
+  \node[above, blue, inner sep=4pt] at (0.28, 1.44)
+    {\footnotesize rigid plate: $u_y$ uniform (prescribed)};
 
   % ================= contact plane annotation =================
   \draw[dashed, gray] (O) -- (0.9, 0);

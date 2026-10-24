@@ -41,26 +41,21 @@ Conclusions:
 - Newton fails to converge at K = 10000 (active-set chatter, no
   stabilization / line search in the prototype).
 
-## Benchmark B: half-model analysis with force control
-(`bench_half_model_2d.py`)
+## Benchmark B: 1/4-model analysis with force control
+(`bench_quarter_model_2d.py`)
 
-The reference problem itself (see `setup-b.png`): the 1/2 model — the
-right half of the two-cylinder stack, cut by the symmetry plane x = 0
-(the applied load is P/2, half of the total P). The flat edge AB in the
-figure is the DEFORMED arc pressed onto the rigid plate (uniform-u_y
-tie).
+The reference problem itself (see `setup-b.png`): the 1/4 model — two
+quarter-disk lobes (radius 1, centers (0, +/-1)) joined at the single
+shared node O = (0, 0). The lobes interact only through O; both arcs
+curve AWAY from the tangent plane, so geometric interpenetration is
+impossible and no contact algorithm is required (the trick of the
+original Code_Aster model).
 
-Constraints (no contact algorithm required — the trick of the original
-Code_Aster model): the cylinder-cylinder contact plane stays flat by
-symmetry, so the arcs adjacent to O get prescribed `u_y = 0`; likewise
-the lower arc pressed onto the floor gets `u_y = 0`; the wall has
-`u_x = 0`; the plate zone of the upper arc gets the uniform prescribed
-`u_y` ramp (displacement control instead of the force `P/2`).
+Force control: the nodal force P/2 is applied at node B on the rigid
+plate tie (a multi-point constraint linking the AB edge to B); the
+wall OB/OD has u_x = 0; the supported edge CD has u_y = 0.
 
-Force control: the total force P/2 is applied as nodal forces on the
-plate zone (the wall has u_x = 0; the contact-plane and support arcs
-have u_y = 0). The support reaction equals -P/2 exactly (equilibrium).
-
-Result (P/2 = 0.2, E = 100, plane strain): plate sink u_y = -0.00203
-per unit thickness; the lobes squeeze and bulge sideways as sketched
-in the reference figure (see `half-model-deformed.png`).
+Result (P/2 = 0.2, E = 100, plane strain): plate sink u_y(B) = -0.0171;
+support reaction = +0.2 = -P/2 (exact equilibrium). The deformed arcs
+separate from the tangent plane -- no interpenetration (see
+`quarter-model-deformed.png`).

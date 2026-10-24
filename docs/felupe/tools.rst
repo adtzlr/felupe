@@ -11,6 +11,7 @@ Tools
    tools.IterationState
    tools.NewtonResult
    NewtonConvergenceError
+   tools.embed
 
 **Linear Solver**
 
@@ -57,6 +58,8 @@ Tools
    :members:
 
 .. autoclass:: felupe.NewtonConvergenceError
+
+.. autofunction:: felupe.tools.embed
 
 .. autoclass:: felupe.solve.SuperLUSolver
    :members: factorize, __call__

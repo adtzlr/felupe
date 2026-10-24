@@ -31,6 +31,23 @@ def _is_continuous(container, k):
     return container[k].region.mesh is container[0].region.mesh
 
 
+def _keys(container):
+    """Return a key for each field of a field container, which identifies the field of
+    the top-level field container. The first fields are merged. The other fields are
+    grouped by their kind (continuous or body-local), their dimension and their
+    occurrence within the field container."""
+
+    keys = [("first",)]
+    occurrences = {}
+
+    for k in range(1, len(container.fields)):
+        group = (_is_continuous(container, k), container[k].dim)
+        occurrences[group] = occurrences.get(group, -1) + 1
+        keys.append((*group, occurrences[group]))
+
+    return keys
+
+
 def merge(fields, decimals=None, **kwargs):
     r"""Merge a list of field containers into a single top-level field container and
     modify the field containers and the underlying fields in-place.
@@ -54,12 +71,13 @@ def merge(fields, decimals=None, **kwargs):
 
     Notes
     -----
-    The field containers may hold different numbers of fields, e.g. a displacement
-    field only or mixed fields like :class:`~felupe.FieldsMixed`. The fields are
-    grouped by their position in the field containers, i.e. the ``k``-th field of the
-    top-level field container holds the ``k``-th fields of all field containers which
-    have at least ``k + 1`` fields. Hence, the fields must be ordered consistently,
-    e.g. displacement, pressure and volume ratio.
+    The field containers may hold different numbers and kinds of fields, e.g. a
+    displacement field only, mixed fields like :class:`~felupe.FieldsMixed` or the
+    displacement and the tensor-valued field of :class:`~felupe.ThirdMediumContactMixed`.
+    The first fields (e.g. the displacements) of all field containers are merged. The
+    other fields are grouped by their kind (continuous or body-local, see below), their
+    dimension and their order of appearance in a field container. Each group is a field
+    of the top-level field container, ordered by the first appearance of the groups.
 
     *   The first field and all fields which are defined on the mesh of the first
         field are **continuous**: the points of their meshes are merged. A continuous
@@ -72,11 +90,20 @@ def merge(fields, decimals=None, **kwargs):
         between materials are allowed).
 
     Each field of a field container is reloaded with the global numbering of the
-    points of the top-level field container, i.e. a field container and the top-level
-    field container share the offsets of their fields. The values of the fields are
-    linked to (shared with) the top-level field container. The initial values of the
-    top-level field container are taken from the given fields (e.g. a volume ratio of
-    one for the dual fields of :class:`~felupe.FieldsMixed`).
+    points of its field of the top-level field container, i.e. they have the same
+    degrees of freedom. If the fields of a field container are not the first fields of
+    the top-level field container in the same order, the indices of their fields of the
+    top-level field container are stored in the attribute ``slots`` of the field
+    container. These are used to link the fields (see
+    :meth:`~felupe.FieldContainer.link`) and to assemble the items (see
+    :func:`~felupe.tools.embed`). The values of the fields are linked to (shared with)
+    the top-level field container. The initial values of the top-level field
+    container are taken from the given fields (e.g. a volume ratio of one for the dual
+    fields of :class:`~felupe.FieldsMixed`).
+
+    ..  note::
+        Items with an internal state of the given fields, e.g.
+        :class:`~felupe.SolidBodyNearlyIncompressible`, must be created after the merge.
 
     Examples
     --------
@@ -140,84 +167,81 @@ def merge(fields, decimals=None, **kwargs):
 
     from ._container import FieldContainer
 
-    nfields = max(len(field.fields) for field in fields)
+    dims = {field[0].dim for field in fields}
+    if len(dims) > 1:
+        raise ValueError(
+            f"The first fields of the field containers have different dimensions "
+            f"{sorted(dims)}."
+        )
 
-    # classify the fields by their position in the field containers
-    continuous = [True]
-    for k in range(1, nfields):
-        flags = {_is_continuous(f, k) for f in fields if len(f.fields) > k}
+    # assign the fields of the field containers to the fields of the top-level field
+    # container (slots), ordered by their first appearance
+    keys = [_keys(field) for field in fields]
+    top_level_keys = list(dict.fromkeys(key for k in keys for key in k))
+    slots = [[top_level_keys.index(key) for key in k] for k in keys]
+    nslots = len(top_level_keys)
 
-        if len(flags) > 1:
-            raise TypeError(
-                f"The fields at position {k} of the field containers are defined on "
-                "the mesh of the first field in some, but not in all field containers. "
-                "Please use consistently ordered fields."
-            )
-
-        continuous.append(flags.pop())
-
-    for k in range(nfields):
-        dims = {f[k].dim for f in fields if len(f.fields) > k}
-        if len(dims) > 1:
-            raise ValueError(
-                f"The fields at position {k} of the field containers have different "
-                f"dimensions {sorted(dims)}."
-            )
+    # the (field container, field) indices of each field of the top-level container
+    members = [
+        [(i, k) for i, s in enumerate(slots) for k, slot in enumerate(s) if slot == j]
+        for j in range(nslots)
+    ]
+    continuous = [True] + [key[0] for key in top_level_keys[1:]]
 
     # the meshes of the body-local fields, before the meshes of the first fields are
     # reloaded (a body-local field may share its region with another field)
-    local_meshes = [[f[k].region.mesh for k in range(len(f.fields))] for f in fields]
-    original_cells = [f.region.mesh.cells for f in fields]
+    local_meshes = [[f.region.mesh for f in field.fields] for field in fields]
+    original_cells = [field.region.mesh.cells for field in fields]
 
     # merge the points of the meshes of the first fields
     container = MeshContainer(
-        [f.region.mesh for f in fields], merge=True, decimals=decimals, **kwargs
+        [field.region.mesh for field in fields], merge=True, decimals=decimals, **kwargs
     )
 
     # a continuous field, which is not defined in all field containers (e.g. the
     # tensor-valued field of a third medium), only has the merged points of the cells of
     # its field containers (compact numbering). The first field uses all merged points.
-    compact = [None] * nfields
+    compact = [None] * nslots
 
-    for k in range(1, nfields):
-        members = [i for i, f in enumerate(fields) if len(f.fields) > k]
-
-        if continuous[k]:
+    for j in range(1, nslots):
+        if continuous[j]:
             used = np.unique(
-                np.concatenate([container.meshes[i].cells.ravel() for i in members])
+                np.concatenate(
+                    [container.meshes[i].cells.ravel() for i, k in members[j]]
+                )
             )
 
             if len(used) < len(container.points):
                 index = np.full(len(container.points), -1)
                 index[used] = np.arange(len(used))
-                compact[k] = (used, index)
+                compact[j] = (used, index)
 
     # the values of the top-level fields
     top_level_values = []
 
-    for k in range(nfields):
-        members = [i for i, f in enumerate(fields) if len(f.fields) > k]
-        dim = fields[members[0]][k].dim
-        dtype = np.result_type(*[fields[i][k].values.dtype for i in members])
+    for j in range(nslots):
+        i0, k0 = members[j][0]
+        dim = fields[i0][k0].dim
+        dtype = np.result_type(*[fields[i][k].values.dtype for i, k in members[j]])
 
-        if continuous[k]:
+        if continuous[j]:
             # scatter the point values of the fields to the merged points
             values = np.zeros((len(container.points), dim), dtype=dtype)
 
-            for i in members:
+            for i, k in members[j]:
                 new_cells = container.meshes[i].cells.ravel()
                 old_cells = original_cells[i].ravel()
                 values[new_cells] = fields[i][k].values[old_cells]
 
-            if compact[k] is not None:
-                used, index = compact[k]
+            if compact[j] is not None:
+                used, index = compact[j]
                 values = values[used]
 
         else:
             # stack the point values of the body-local fields
-            values = np.concatenate([fields[i][k].values for i in members]).astype(
-                dtype
-            )
+            values = np.concatenate(
+                [fields[i][k].values for i, k in members[j]]
+            ).astype(dtype)
 
         top_level_values.append(values)
 
@@ -228,15 +252,14 @@ def merge(fields, decimals=None, **kwargs):
     # reload the body-local fields on regions with stacked meshes
     reloaded = {}
 
-    for k in range(nfields):
-        if continuous[k]:
+    for j in range(nslots):
+        if continuous[j]:
             continue
 
-        members = [i for i, f in enumerate(fields) if len(f.fields) > k]
-        npoints = sum(local_meshes[i][k].npoints for i in members)
+        npoints = sum(local_meshes[i][k].npoints for i, k in members[j])
         offset = 0
 
-        for i in members:
+        for i, k in members[j]:
             mesh = local_meshes[i][k]
             region = fields[i][k].region
             key = (id(region), offset, npoints)
@@ -259,13 +282,16 @@ def merge(fields, decimals=None, **kwargs):
             offset += mesh.npoints
 
     # reload the continuous fields (and their own regions) with the merged meshes
-    for field, new_mesh in zip(fields, container.meshes):
-        for k, f in enumerate(field.fields):
-            if not continuous[k]:
-                continue
+    for j in range(nslots):
+        if not continuous[j]:
+            continue
 
-            if compact[k] is not None:
-                used, index = compact[k]
+        for i, k in members[j]:
+            f = fields[i][k]
+            new_mesh = container.meshes[i]
+
+            if compact[j] is not None:
+                used, index = compact[j]
                 compact_mesh = Mesh(
                     points=container.points[used],
                     cells=index[new_mesh.cells],
@@ -285,11 +311,11 @@ def merge(fields, decimals=None, **kwargs):
     # create a new top-level (global) vertex field container
     top_level_fields = []
 
-    for k, values in enumerate(top_level_values):
-        if continuous[k] and compact[k] is None:
-            # take the type of the k-th field of the first field container with k-th
-            # field
-            Field = next(f[k] for f in fields if len(f.fields) > k).__field__
+    for j, values in enumerate(top_level_values):
+        if continuous[j] and compact[j] is None:
+            # take the type of the first field of this group
+            i0, k0 = members[j][0]
+            Field = fields[i0][k0].__field__
             fk = Field.from_mesh_container(
                 container, dim=values.shape[1], values=values
             )
@@ -300,9 +326,13 @@ def merge(fields, decimals=None, **kwargs):
 
     x0 = FieldContainer(top_level_fields, mesh_container=container)
 
-    for field in fields:
+    for field, s in zip(fields, slots):
         # reload the field container (indices and offsets)
         field.reload()
+
+        # the indices of the fields of the top-level field container, only if they
+        # differ from the first fields of the top-level field container
+        field.slots = None if s == list(range(len(s))) else s
 
         # share the values of the fields with the top-level field container
         field.link(x0)

@@ -164,12 +164,12 @@ the bodies are linked to the top-level field container, which is also used as th
     plotter.show()
 
 ..  note::
-    The fields are grouped by their position in the field containers, i.e. they must be
-    ordered consistently (displacement, pressure, volume ratio). Field containers with
-    fewer fields, like the displacement field of the linear-elastic body, are
-    supported. The mixed formulations of the bodies may differ, e.g. Q1/P0, Q2/P0 or
-    Taylor-Hood elements, as long as the meshes of the displacement fields are
-    compatible.
-    A continuous field which is only defined in some of the bodies, e.g. the
-    tensor-valued field of :class:`~felupe.ThirdMediumContactMixed` for the third
-    medium, only has the points of these bodies.
+    The first fields (displacements) of all bodies are merged. The other fields are
+    grouped by their kind (continuous or local to a body), their dimension and their
+    order in a field container. Hence, the bodies may use different mixed
+    formulations, e.g. Q1/P0, Q2/P0 or Taylor-Hood elements, a displacement field only,
+    or the displacement and the tensor-valued field of
+    :class:`~felupe.ThirdMediumContactMixed` for a third medium next to a
+    :class:`~felupe.ThreeFieldVariation` body. A continuous field which is only
+    defined in some of the bodies, like the tensor-valued field of the third medium,
+    only has the points of these bodies.

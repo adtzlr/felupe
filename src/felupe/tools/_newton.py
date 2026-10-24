@@ -275,6 +275,70 @@ def spresize(a, shape):
     return a
 
 
+def embed(a, shape, field=None, x=None):
+    """Embed an assembled sparse vector or matrix of an item into the shape of the
+    global (top-level) field container.
+
+    Parameters
+    ----------
+    a : sparse matrix
+        Assembled sparse vector or matrix of an item, w.r.t. the degrees of freedom of
+        the field container of the item.
+    shape : tuple of int
+        Target shape for the sparse vector or matrix.
+    field : FieldContainer or None, optional
+        The field container of the item (default is None).
+    x : FieldContainer or None, optional
+        The global (top-level) field container (default is None).
+
+    Returns
+    -------
+    csr_matrix
+        The sparse vector or matrix w.r.t. the global degrees of freedom.
+
+    Notes
+    -----
+    If the field container of the item has ``slots`` (the indices of its fields in the
+    global field container, e.g. set by :func:`~felupe.field.merge`), the degrees of
+    freedom of the item are mapped to the global degrees of freedom. The sizes of the
+    fields must be equal to the sizes of their fields in the global field container.
+    Otherwise, the sparse vector or matrix is resized (padded with zeros) by
+    :func:`spresize`, i.e. the fields of the item are the first fields of the global
+    field container.
+    """
+
+    slots = getattr(field, "slots", None)
+
+    if slots is None or x is None:
+        return spresize(a, shape)
+
+    sizes = [x.fieldsizes[slot] for slot in slots]
+
+    if sizes != list(field.fieldsizes):
+        raise ValueError(
+            f"The fields of the item have the sizes {list(field.fieldsizes)}, which "
+            f"don't match the sizes {sizes} of their fields {slots} in the global field "
+            "container."
+        )
+
+    offsets = np.concatenate([[0], np.cumsum(x.fieldsizes)])
+    dofs = np.concatenate(
+        [offsets[slot] + np.arange(size) for slot, size in zip(slots, sizes)]
+    )
+
+    if any(ai > len(dofs) for ai in a.shape[: 1 if shape[1] == 1 else 2]):
+        raise ValueError(
+            f"The assembled item has shape {a.shape}, which exceeds the number of "
+            f"degrees of freedom {len(dofs)} of the field container of the item."
+        )
+
+    a = a.tocoo()
+    rows = dofs[a.row]
+    cols = a.col if shape[1] == 1 else dofs[a.col]
+
+    return csr_matrix((a.data, (rows, cols)), shape=shape)
+
+
 def _snapshot(x):
     """Return the value arrays of the fields of a field container (or None). The fields
     of the items are linked to the evaluated unknowns. If the unknowns are the field
@@ -317,8 +381,8 @@ def fun_items(items, x, parallel=False):
         if body.assemble.multiplier is not None:
             r *= body.assemble.multiplier
 
-        # reshape vector
-        r = spresize(r, shape)
+        # embed the vector into the global degrees of freedom
+        r = embed(r, shape, body.field, x)
 
         # add vector
         vector += r
@@ -346,8 +410,8 @@ def jac_items(items, x, parallel=False):
         if body.assemble.multiplier is not None:
             K *= body.assemble.multiplier
 
-        # reshape matrix
-        K = spresize(K, shape)
+        # embed the matrix into the global degrees of freedom
+        K = embed(K, shape, body.field, x)
 
         # add matrix
         matrix += K

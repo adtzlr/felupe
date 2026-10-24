@@ -5,6 +5,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import eigsh
 
 from ..dof import partition
+from ..tools._newton import embed
 
 
 class FreeVibration:
@@ -76,12 +77,9 @@ class FreeVibration:
             if item.assemble.multiplier is not None:
                 K *= item.assemble.multiplier
 
-            # check and reshape matrices
-            if K.shape != stiffness.shape:
-                K.resize(*shape)
-
-            if M.shape != mass.shape:
-                M.resize(*shape)
+            # embed the matrices into the global degrees of freedom
+            K = embed(K, shape, item.field, x)
+            M = embed(M, shape, item.field, x)
 
             # add matrices
             stiffness += K

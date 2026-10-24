@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from scipy.sparse import csr_matrix
 
 import felupe as fem
 
@@ -362,12 +363,23 @@ def test_merge():
     # a field container of an item with wrong sizes of the fields can't be embedded
     vector = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field_2[0].as_container())
     vector = vector.assemble.vector()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="don't match the sizes"):
         fem.tools.embed(
             vector,
             shape=(sum(x0.fieldsizes), 1),
             field=field_2,
             x=fem.FieldContainer([x0[0], x0[1], x0[2], x0[1]]),
+        )
+
+    # an assembled vector with more rows than the degrees of freedom of the field
+    # container of the item can't be embedded
+    too_large = csr_matrix((sum(field_2.fieldsizes) + 1, 1))
+    with pytest.raises(ValueError, match="exceeds the number of degrees of freedom"):
+        fem.tools.embed(
+            too_large,
+            shape=(sum(x0.fieldsizes), 1),
+            field=field_2,
+            x=x0,
         )
 
     # the vector is embedded into the degrees of freedom of the first field

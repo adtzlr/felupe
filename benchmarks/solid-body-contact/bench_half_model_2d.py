@@ -1,6 +1,6 @@
 """
 Half-model analysis of the two-cylinder problem (reference figure),
-with displacement control.
+with force control.
 
 The slide labels the two-lobe shape a "1/4 model", but the load P/2
 (half of the total P) shows that it is a 1/2 model: the right half of
@@ -18,9 +18,9 @@ Geometry (undeformed):
 
 Boundary conditions (figure):
   OB, OD (x = 0): u_x = 0                     (symmetry wall)
-  arc B-A (upper): u_y uniform, prescribed    (rigid plate tie, displacement
-                                               control; reaction at B = P/2)
-  arc C-D (lower): u_y = 0                    (rollers)
+  arc B-A (upper): total force P/2 applied    (rigid plate, force control;
+                                               the plate sink u_y is measured)
+  arc C-D (lower): u_y = 0                    (rollers; reaction = -P/2)
 """
 
 import numpy as np
@@ -43,7 +43,10 @@ def half_model(n=6, E=100.0, nu=0.3):
     return mesh, field, solid
 
 
-def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
+def run(force=0.2, n=6, E=100.0, nu=0.3, verbose=False):
+    """Force control: total P/2 = `force` (per unit thickness) applied on
+    the plate zone; the result is the plate sink u_y (the support
+    reaction equals -force by equilibrium)."""
     mesh, field, solid = half_model(n=n, E=E, nu=nu)
 
     # arcs of the two half-disks (x >= 0)
@@ -56,7 +59,6 @@ def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
         < 1e-6
     ) & (mesh.points[:, 0] >= 0)
 
-    # plate zone: upper arc of the upper disk (B .. A): uniform u_y = ramp
     # contact plane (A .. O and O .. C): u_y = 0 (symmetry: the plane stays
     # flat -- this replaces the cylinder-cylinder contact algorithm)
     # support (C .. D): u_y = 0 (rollers / floor)
@@ -65,19 +67,23 @@ def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
 
     boundaries = dict(
         wall=fem.Boundary(field[0], mask=mesh.points[:, 0] == 0, skip=(False, True)),
-        plate=fem.Boundary(field[0], mask=plate_zone, skip=(True, False)),
         contact=fem.Boundary(field[0], mask=contact_zone, skip=(True, False)),
     )
-    move = fem.math.linsteps([0, -approach], num=5)
 
-    step = fem.Step(
-        items=[solid], ramp={boundaries["plate"]: move}, boundaries=boundaries
-    )
+    # force control: P/2 applied as nodal forces on the plate zone
+    plate_ids = np.where(plate_zone)[0]
+    values_load = np.zeros((mesh.npoints, 2))
+    values_load[plate_ids, 1] = -force / len(plate_ids)
+    load = fem.PointLoad(field, plate_ids, values_load[plate_ids])
+
+    # ramp the force linearly: (nsub, nnodes, 2)
+    forces = np.array([values_load[plate_ids] * f for f in np.linspace(0.0, 1.0, 6)])
+    step = fem.Step(items=[solid, load], ramp={load: forces}, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(verbose=verbose)
 
     u = field[0].values.copy()
 
-    # reaction at the plate edge (the P/2 of the force-controlled original)
+    # support reaction (must equal -force by equilibrium)
     solid_fresh = fem.SolidBody(
         # fem.NeoHooke returns a non-zero first Piola stress at the undeformed
         # state in 2D (P(F=I) = 0.333 I): use the linear-elastic plane-strain
@@ -87,8 +93,11 @@ def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
     )
     solid_fresh.field[0].values[:] = u
     fs = solid_fresh.assemble.vector(field=solid_fresh.field).toarray().ravel()
-    plate_dofs = 2 * np.where(mesh.points[:, 1] == 1)[0] + 1
-    P = float(fs[plate_dofs].sum())  # vertical reaction (per unit thickness)
+    support_dofs = 2 * np.where(contact_zone)[0] + 1
+    R = float(fs[support_dofs].sum())
+
+    # plate sink u_y
+    sink = float(np.mean(u[plate_ids, 1]))
 
     # save the deformed (solid) vs undeformed (dashed) configuration
     import matplotlib
@@ -105,14 +114,20 @@ def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
     for c in cells:
         ax.plot(np.append(xd[c], xd[c][0]), np.append(yd[c], yd[c][0]), "b-", lw=0.6)
     ax.set_aspect("equal")
-    ax.set_title("half model: undeformed (dashed) vs deformed (solid)")
+    ax.set_title(f"half model, P/2 = {force}: sink = {sink:.4f}")
     fig.savefig("benchmarks/solid-body-contact/half-model-deformed.png", dpi=150)
     plt.close(fig)
 
-    return {"mesh_points": mesh.npoints, "u_max": np.abs(u).max(), "P": P}
+    return {
+        "mesh_points": mesh.npoints,
+        "force": force,
+        "sink": sink,
+        "support_reaction": R,
+    }
 
 
 if __name__ == "__main__":
     res = run()
-    print(f"points: {res['mesh_points']}, max|u|: {res['u_max']:.5f}")
-    print(f"plate reaction P (per unit thickness): {res['P']:.5f}")
+    print(f"points: {res['mesh_points']}, P/2 = {res['force']}")
+    print(f"plate sink u_y: {res['sink']:.5f}")
+    print(f"support reaction (=-P/2): {res['support_reaction']:.5f}")

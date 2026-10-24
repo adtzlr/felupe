@@ -41,7 +41,7 @@ Conclusions:
 - Newton fails to converge at K = 10000 (active-set chatter, no
   stabilization / line search in the prototype).
 
-## Benchmark B: half-model analysis with displacement control
+## Benchmark B: half-model analysis with force control
 (`bench_half_model_2d.py`)
 
 The reference problem itself (see `setup-b.png`): the 1/2 model — the
@@ -57,6 +57,10 @@ the lower arc pressed onto the floor gets `u_y = 0`; the wall has
 `u_x = 0`; the plate zone of the upper arc gets the uniform prescribed
 `u_y` ramp (displacement control instead of the force `P/2`).
 
-Result (approach 0.05, E = 100, plane strain): plate reaction
-P = -0.200 per unit thickness; the lobes squeeze and bulge sideways as
-sketched in the reference figure.
+Force control: the total force P/2 is applied as nodal forces on the
+plate zone (the wall has u_x = 0; the contact-plane and support arcs
+have u_y = 0). The support reaction equals -P/2 exactly (equilibrium).
+
+Result (P/2 = 0.2, E = 100, plane strain): plate sink u_y = -0.00203
+per unit thickness; the lobes squeeze and bulge sideways as sketched
+in the reference figure (see `half-model-deformed.png`).

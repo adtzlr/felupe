@@ -216,7 +216,28 @@ class AssembleLike:
         self.multiplier = None
 
 
-def run(K=100.0, approach=0.01, n1=16, n2=32, r=0.5, E=100.0, nu=0.3, verbose=False):
+def run(
+    K=1000.0,
+    approach=0.01,
+    n1=16,
+    n2=32,
+    r=0.5,
+    E=100.0,
+    nu=0.3,
+    control="displacement",
+    substeps=10,
+    verbose=False,
+):
+    """Same model, mesh and contact algorithm for both control modes.
+
+    control="displacement": prescribe the approach on the top arc patch
+    (default; benchmark C).
+    control="force": apply the total nodal force P/2 = `approach` on the
+    top arc patch and measure the plate sink (benchmark B). The top
+    patch keeps u_x = 0 (the plate guide) and body 1 additionally has
+    u_x pins at the equator nodes and the bottom pole node (all zero in
+    the symmetric solution) to remove the free-spin rigid-body mode."""
+
     disk1, disk2 = make_cylinders(n1=n1, n2=n2, r1=r, r2=r)
     container = fem.MeshContainer([disk1, disk2], merge=False)
     mesh = container.stack()
@@ -230,6 +251,10 @@ def run(K=100.0, approach=0.01, n1=16, n2=32, r=0.5, E=100.0, nu=0.3, verbose=Fa
         mesh=edge2.mesh.copy(points=mesh.points, cells=edge2.mesh.cells + disk1.npoints)
     )
 
+    if control == "force":
+        # pre-compress body 1: tiny initial overlap -> the contact is active
+        # from the first Newton iteration (no singular u_y rigid mode)
+        disk1 = disk1.translate(-1e-4, axis=1)
     solid = fem.SolidBody(
         umat=fem.constitution.LinearElasticPlaneStrain(E=E, nu=nu), field=field
     )
@@ -249,17 +274,48 @@ def run(K=100.0, approach=0.01, n1=16, n2=32, r=0.5, E=100.0, nu=0.3, verbose=Fa
         fix_bot_x=fem.Boundary(
             field[0], mask=mesh.points[:, 1] < y_bot + 0.05 * r, skip=(False, True)
         ),
-        move=fem.Boundary(
-            field[0], mask=mesh.points[:, 1] > y_top - 0.05 * r, skip=(True, False)
-        ),
         move_x=fem.Boundary(
             field[0], mask=mesh.points[:, 1] > y_top - 0.05 * r, skip=(False, True)
         ),
+        # force control: pin u_x of body 1 (equator nodes + bottom pole
+        # node, all zero in the symmetric solution) to remove the
+        # free-spin rigid-body mode
+        fix_spin=fem.Boundary(
+            field[0],
+            mask=(np.abs(mesh.points[:, 1] - 2 * r) < 1e-3)
+            & (np.abs(np.abs(mesh.points[:, 0]) - r) < 1e-3)
+            | (
+                (np.abs(mesh.points[:, 0]) < 1e-3)
+                & (np.abs(mesh.points[:, 1] - r) < 1e-3)
+                & (mesh.points[:, 1] > 0)  # body-1 bottom pole only
+            ),
+            skip=(False, True),
+        ),
     )
-    move = fem.math.linsteps([0, -approach], num=10)
-    step = fem.Step(
-        items=[solid, contact], ramp={bounds["move"]: move}, boundaries=bounds
-    )
+    move = fem.math.linsteps([0, -approach], num=substeps)
+    if control == "displacement":
+        # prescribe the approach on the top patch (u_y = ramp)
+        bounds["move"] = fem.Boundary(
+            field[0], mask=mesh.points[:, 1] > y_top - 0.05 * r, skip=(True, False)
+        )
+        ramp = {bounds["move"]: move}
+        items = [solid, contact]
+    else:  # force control: P/2 = `approach` as nodal forces on the top patch
+        # NOTE: do NOT pin u_y on the contact plane here -- with the lower
+        # disk fixed at its bottom, the plane y = r is NOT a symmetry plane
+        # (it sinks). Instead, pre-compress body 1 slightly so the contact
+        # is active from the first Newton iteration (otherwise body 1 has a
+        # singular u_y rigid-translation mode before the contact engages).
+        top_ids = np.where(mesh.points[:, 1] > y_top - 0.05 * r)[0]
+        values_load = np.zeros((mesh.npoints, 2))
+        values_load[top_ids, 1] = -approach / len(top_ids)
+        load = fem.PointLoad(field, top_ids, values_load[top_ids])
+        forces = np.array(
+            [values_load[top_ids] * f for f in np.linspace(0.0, 1.0, substeps + 1)]
+        )
+        ramp = {load: forces}
+        items = [solid, contact, load]
+    step = fem.Step(items=items, ramp=ramp, boundaries=bounds)
     fem.Job(steps=[step]).evaluate(verbose=verbose)
 
     # snapshot of the converged state (do not reuse item caches: they may
@@ -273,7 +329,7 @@ def run(K=100.0, approach=0.01, n1=16, n2=32, r=0.5, E=100.0, nu=0.3, verbose=Fa
     )
     solid_fresh.field[0].values[:] = u_snap
     fs = solid_fresh.assemble.vector(field=solid_fresh.field).toarray().ravel()
-    top_dofs = 2 * bounds["move"].points + 1  # .points are already ids
+    top_dofs = 2 * bounds["move_x"].points + 1  # .points are already ids
     F = float(-fs[top_dofs].sum())
 
     Estar = E / (2 * (1 - nu**2))
@@ -281,13 +337,18 @@ def run(K=100.0, approach=0.01, n1=16, n2=32, r=0.5, E=100.0, nu=0.3, verbose=Fa
     b_hertz = np.sqrt(4 * F * Rstar / (np.pi * Estar))
     p0_hertz = 2 * F / (np.pi * b_hertz)
 
+    # plate sink: mean u_y of the top patch
+    sink = float(np.mean(field[0].values[bounds["move_x"].points, 1]))
+
     return {
         "K": K,
+        "control": control,
         "F": F,
         "b_hertz": b_hertz,
         "p0_hertz": p0_hertz,
         "p0_num": contact.diag["max_pressure"],
         "gap_min": contact.diag["gap_min"],
+        "sink": sink,
     }
 
 

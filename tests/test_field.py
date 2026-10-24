@@ -328,8 +328,8 @@ def test_merge():
     with pytest.raises(TypeError):
         fem.field.merge([field_1, field_2])
 
-    # the second fields are scalar fields on the mesh of the first field and dual
-    # fields: they belong to their field container, their points are stacked
+    # the second fields are a scalar field on the mesh of the first field and a dual
+    # field: they belong to their field container and are appended to x0
     region = fem.RegionQuad(fem.Rectangle(n=3))
     field_1 = fem.FieldContainer([fem.Field(region, dim=2), fem.Field(region)])
     field_2 = fem.FieldsMixed(
@@ -337,12 +337,16 @@ def test_merge():
     )
     x0 = fem.field.merge([field_1, field_2])
 
-    assert x0.fieldsizes == [30, 9 + 4]
-    assert field_1.slots is None and field_2.slots is None
-    assert field_1[1].values is field_2[1].values is x0[1].values
+    assert x0.fieldsizes == [30, 9, 4]
+    assert field_1.slots is None
+    assert field_2.slots == [0, 2]
+    assert field_1[1].values is x0[1].values
+    assert field_2[1].values is x0[2].values
+
+    # the second field keeps the mesh of its body, the first field is merged
     assert field_1[0].region is not field_1[1].region
-    assert field_1[1].region.mesh.cells.max() == 8
-    assert field_2[1].region.mesh.cells.min() == 9
+    assert field_1[0].region.mesh.npoints == 15
+    assert field_1[1].region.mesh.npoints == 9
 
     # fields of different dimensions are stored in different fields of x0 (slots)
     field_1 = fem.FieldsMixed(fem.RegionQuad(fem.Rectangle(n=3)), n=3)
@@ -397,11 +401,12 @@ def test_merge_mixed():
     x0 = fem.field.merge(fields)
 
     # the dual fields are stacked and the values are linked to the top-level field
-    assert len(x0) == 3
-    assert len(x0[1].values) == mesh.ncells
-    assert np.allclose(x0[2].values, 1.0)
-    assert np.all(fields[1].offsets == x0.offsets)
-    assert all(f.values is g.values for f, g in zip(fields[1].fields, x0.fields))
+    assert len(x0) == 5
+    assert x0.fieldsizes[1] + x0.fieldsizes[3] == mesh.ncells
+    assert np.allclose(x0[2].values, 1.0) and np.allclose(x0[4].values, 1.0)
+    assert fields[0].slots is None
+    assert fields[1].slots == [0, 3, 4]
+    assert all(f.values is x0[s].values for f, s in zip(fields[1], fields[1].slots))
     assert fields[0].x0 is fields[1].x0 is x0
 
     evaluate(fields, x0)
@@ -412,7 +417,8 @@ def test_merge_mixed():
     u = sort(mesh.points, field[0].values)
     u_merged = sort(x0[0].region.mesh.points, x0[0].values)
     assert np.allclose(u, u_merged)
-    assert np.allclose(np.sort(field[1].values.ravel()), np.sort(x0[1].values.ravel()))
+    p = np.concatenate([x0[1].values.ravel(), x0[3].values.ravel()])
+    assert np.allclose(np.sort(field[1].values.ravel()), np.sort(p))
 
 
 def test_merge_mixed_formulations():
@@ -429,9 +435,10 @@ def test_merge_mixed_formulations():
         fem.FieldsMixed(fem.RegionQuadraticQuad(quad8), n=3, planestrain=True),
         fem.FieldsMixed(fem.RegionQuadraticTriangle(tri6), n=3, planestrain=True),
     ]
-    npoints = fields[1][1].region.mesh.npoints + fields[2][1].region.mesh.npoints
+    npoints = [f[1].region.mesh.npoints for f in fields[1:]]
     x0 = fem.field.merge(fields)
-    assert len(x0[1].values) == npoints
+    assert x0.fieldsizes[1:] == [npoints[0], npoints[0], npoints[1], npoints[1]]
+    assert [f.slots for f in fields] == [None, None, [0, 3, 4]]
 
     umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=50)
     solids = [
@@ -444,7 +451,8 @@ def test_merge_mixed_formulations():
     fem.Job(steps=[step]).evaluate()
 
     # homogeneous deformation (patch test)
-    assert np.allclose(x0[1].values, x0[1].values[0])
+    p = np.concatenate([x0[1].values, x0[3].values])
+    assert np.allclose(p, p[0])
     for field in fields:
         assert np.allclose(field.extract()[0][0, 0], 1.1)
 
@@ -651,11 +659,13 @@ def test_merge_two_bodies_two_media():
 
     x0 = fem.field.merge(fields, decimals=6)
 
-    # the fields of the bodies and of the media are stacked (no coupling of theta)
-    ncells = sum(m.ncells for m in bodies)
-    assert x0.fieldsizes[1:] == [ncells, ncells, 9 * sum(m.npoints for m in media)]
-    assert [f.slots for f in fields] == [None, None, [0, 3], [0, 3]]
-    assert fields[2][1].values is fields[3][1].values is x0[3].values
+    # the fields of the bodies and of the media are appended (no coupling of theta)
+    nA, nB = [m.ncells for m in bodies]
+    n1, n2 = [9 * m.npoints for m in media]
+    assert x0.fieldsizes[1:] == [nA, nA, nB, nB, n1, n2]
+    assert [f.slots for f in fields] == [None, [0, 3, 4], [0, 5], [0, 6]]
+    assert fields[2][1].values is x0[5].values
+    assert fields[3][1].values is x0[6].values
 
     G, K = 5 / 14, 5 / 3
     items = [

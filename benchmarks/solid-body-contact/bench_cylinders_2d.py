@@ -13,11 +13,12 @@ E = 100, nu = 0.3 (both bodies) -> E* = E / (2 (1 - nu^2)),
 1/R* = 1/r1 + 1/r2, b = sqrt(4 F' R* / (pi E*)), p0 = 2 F' / (pi b).
 """
 
-import numpy as np
-import felupe as fem
-
 import sys
 from pathlib import Path
+
+import numpy as np
+
+import felupe as fem
 
 sys.path.insert(0, str(Path(__file__).parent))
 from bench_blocks_2d import SolidBodyContact  # verified in benchmark A
@@ -40,7 +41,9 @@ def contact_edges(disk1, disk2, mesh, band=0.12, r1=0.5, r2=1.0):
     return edge1, edge2
 
 
-def run(K=100.0, approach=0.01, n1=6, n2=12, r1=0.5, r2=1.0, E=100.0, nu=0.3, verbose=False):
+def run(
+    K=100.0, approach=0.01, n1=6, n2=12, r1=0.5, r2=1.0, E=100.0, nu=0.3, verbose=False
+):
     disk1, disk2 = make_cylinders(n1=n1, n2=n2, r1=r1, r2=r2)
     container = fem.MeshContainer([disk1, disk2], merge=False)
     mesh = container.stack()
@@ -48,7 +51,9 @@ def run(K=100.0, approach=0.01, n1=6, n2=12, r1=0.5, r2=1.0, E=100.0, nu=0.3, ve
     field = fem.Field(region, dim=2).as_container()
     edge1, edge2 = contact_edges(disk1, disk2, mesh, r1=r1, r2=r2)
 
-    solid = fem.SolidBody(umat=fem.constitution.LinearElasticPlaneStrain(E=E, nu=nu), field=field)
+    solid = fem.SolidBody(
+        umat=fem.constitution.LinearElasticPlaneStrain(E=E, nu=nu), field=field
+    )
     contact = SolidBodyContact(edge1, edge2, stiffness=K, flip=1.0)
     contact2 = SolidBodyContact(edge2, edge1, stiffness=K, flip=1.0)
 
@@ -113,7 +118,9 @@ def run(K=100.0, approach=0.01, n1=6, n2=12, r1=0.5, r2=1.0, E=100.0, nu=0.3, ve
 
 
 if __name__ == "__main__":
-    print(f"{'K':>6} {'F':>10} {'b_hertz':>9} {'b_num':>9} {'p0_hertz':>9} {'p0_num':>9} {'penetr':>9}")
+    print(
+        f"{'K':>6} {'F':>10} {'b_hertz':>9} {'b_num':>9} {'p0_hertz':>9} {'p0_num':>9} {'penetr':>9}"
+    )
     for K in [100.0, 1000.0]:
         r = run(K=K)
         print(

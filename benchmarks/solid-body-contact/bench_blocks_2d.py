@@ -17,11 +17,11 @@ Checks
 """
 
 import numpy as np
+import tensortrax as tr
+import tensortrax.math as tm
 from scipy.spatial import cKDTree
 
 import felupe as fem
-import tensortrax as tr
-import tensortrax.math as tm
 from felupe.mechanics._helpers import Assemble, Results
 
 
@@ -40,7 +40,7 @@ class SolidBodyContact:
         self.flip = flip
 
         def outward_normals(reg):
-            "Outward normals per GP: face tangent rotated 90 deg, sign fixed "
+            "Outward normals per GP: face tangent rotated 90 deg, sign fixed"
             "to point away from the cell interior."
             X = reg.mesh.points
             fc = reg.mesh.cells_faces  # (ncells, 2) line cells of the faces
@@ -55,9 +55,9 @@ class SolidBodyContact:
         nrm1, nrm2 = outward_normals(region), outward_normals(other_region)
 
         cells = np.tile(region.mesh.cells, (other_region.mesh.ncells, 1))
-        other_cells = np.tile(
-            other_region.mesh.cells, (1, region.mesh.ncells)
-        ).reshape(cells.shape)
+        other_cells = np.tile(other_region.mesh.cells, (1, region.mesh.ncells)).reshape(
+            cells.shape
+        )
 
         self.region = region.copy(mesh=region.mesh.copy(cells=cells))
         self.other_region = region.copy(mesh=region.mesh.copy(cells=other_cells))
@@ -80,7 +80,11 @@ class SolidBodyContact:
         self.results = Results()
 
     def fun(self, F, u, u_ext, K, N):
-        x = F if isinstance(F, tr.Tensor) else (u if isinstance(u, tr.Tensor) else u_ext)
+        x = (
+            F
+            if isinstance(F, tr.Tensor)
+            else (u if isinstance(u, tr.Tensor) else u_ext)
+        )
         N = tm.array(self.flip * N, shape=(2,), like=x)  # outward normal of body 1
         t = tm.linalg.det(F) * tm.transpose(tm.linalg.inv(F)) @ N  # n da
         n = t / tm.sqrt(tm.sum(t**2, axis=0))
@@ -145,7 +149,9 @@ class SolidBodyContact:
         Fm = np.moveaxis(F, [0, 1], [-2, -1])  # (2, npairs, 2, 2)
         detF = np.linalg.det(Fm)  # (2, npairs)
         invF = np.linalg.inv(Fm)  # (2, npairs, 2, 2)
-        t = np.einsum("qpab,bqp->aqp", detF[..., None, None] * invF, N)  # (2, nq, npairs)
+        t = np.einsum(
+            "qpab,bqp->aqp", detF[..., None, None] * invF, N
+        )  # (2, nq, npairs)
         n = t / np.linalg.norm(t, axis=0, keepdims=True)
         un = np.einsum("i...,i...->...", u - u_ext, n)
         return un[un > 0].max() if np.any(un > 0) else 0.0
@@ -191,8 +197,9 @@ def run_contact(K):
         move_x=fem.Boundary(field[0], fx=2, skip=(False, True)),
     )
     move = fem.math.linsteps([0, -0.1], num=5)
-    step = fem.Step(items=[solid, contact, contact2], ramp={bounds["move"]: move},
-                   boundaries=bounds)
+    step = fem.Step(
+        items=[solid, contact, contact2], ramp={bounds["move"]: move}, boundaries=bounds
+    )
     job = fem.Job(steps=[step])
     job.evaluate()
 
@@ -215,7 +222,9 @@ def run_reference():
     region = fem.RegionQuad(mesh)
     field = fem.Field(region, dim=2).as_container()
 
-    solid = fem.SolidBody(umat=fem.constitution.LinearElasticPlaneStrain(E=100.0, nu=0.3), field=field)
+    solid = fem.SolidBody(
+        umat=fem.constitution.LinearElasticPlaneStrain(E=100.0, nu=0.3), field=field
+    )
     bounds = dict(
         fixed=fem.Boundary(field[0], fy=0, skip=(True, False)),
         fixed_x=fem.Boundary(field[0], fx=0, skip=(False, True)),

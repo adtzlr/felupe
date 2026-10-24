@@ -46,6 +46,9 @@ All notable changes to this project will be documented in this file. The format 
 - Fix the plot of a quadrature scheme with negative weights, e.g. of `TriangleQuadrature(order=3)` or `TetrahedronQuadrature(order=3)`, by `Scheme.plot(weighted=True)`, which failed with a negative point size. The size of a point is scaled by the magnitude of its weight (relative to the largest magnitude of the weights) and the points with negative weights are drawn in red.
 - Fix the argument `solver` of `project()`, which was ignored. The linear equation system of the projection was always solved by `scipy.sparse.linalg.spsolve()`.
 - Don't trim the assembled matrices of the items in `FreeVibration`, which have more degrees of freedom than the global field container. A `ValueError` is raised instead, like in `newtonraphson()`.
+- Fix `FreeVibration.evaluate(sigma=...)`, which raised a `TypeError` because the shift `sigma` was passed twice to the solver. The default shift is still `sigma=0`.
+- Fix the default field container of `FreeVibration.evaluate(x0=None)`: like in `Job`, the top-level field container `x0` of the field container of the first item is used, e.g. of merged field containers (before, the field container of the first item, which raised an `IndexError` for merged mixed field containers). `FreeVibration.extract(x0=None)` uses the field container of `FreeVibration.evaluate()` by default.
+- Scale the mass matrix of an item by its multiplier in `FreeVibration`, e.g. of `SolidBody(..., multiplier=2.0)` (before, only the stiffness matrix was scaled), i.e. the multiplier scales the contribution of the item.
 
 ## [11.3.0] - 2026-10-14
 

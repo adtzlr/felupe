@@ -90,6 +90,25 @@ def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
     plate_dofs = 2 * np.where(mesh.points[:, 1] == 1)[0] + 1
     P = float(fs[plate_dofs].sum())  # vertical reaction (per unit thickness)
 
+    # save the deformed (solid) vs undeformed (dashed) configuration
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(5, 6))
+    cells = mesh.cells
+    for c in cells:
+        x, y = mesh.points[c, 0], mesh.points[c, 1]
+        ax.plot(np.append(x, x[0]), np.append(y, y[0]), "k--", lw=0.3, alpha=0.4)
+    xd, yd = mesh.points[:, 0] + u[:, 0], mesh.points[:, 1] + u[:, 1]
+    for c in cells:
+        ax.plot(np.append(xd[c], xd[c][0]), np.append(yd[c], yd[c][0]), "b-", lw=0.6)
+    ax.set_aspect("equal")
+    ax.set_title("half model: undeformed (dashed) vs deformed (solid)")
+    fig.savefig("benchmarks/solid-body-contact/half-model-deformed.png", dpi=150)
+    plt.close(fig)
+
     return {"mesh_points": mesh.npoints, "u_max": np.abs(u).max(), "P": P}
 
 

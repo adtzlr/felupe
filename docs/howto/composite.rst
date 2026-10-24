@@ -170,3 +170,6 @@ the bodies are linked to the top-level field container, which is also used as th
     supported. The mixed formulations of the bodies may differ, e.g. Q1/P0, Q2/P0 or
     Taylor-Hood elements, as long as the meshes of the displacement fields are
     compatible.
+    A continuous field which is only defined in some of the bodies, e.g. the
+    tensor-valued field of :class:`~felupe.ThirdMediumContactMixed` for the third
+    medium, only has the points of these bodies.

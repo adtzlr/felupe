@@ -401,6 +401,78 @@ def test_merge_mixed_formulations():
         assert np.allclose(field.extract()[0][0, 0], 1.1)
 
 
+def test_merge_third_medium_contact():
+
+    # a C-shaped body and a third medium in between (see examples/ex20)
+    t, L, H = 0.1, 1.0, 0.5
+    a = fem.Rectangle(a=(0, 0), b=(t, t), n=2)
+    b = a.translate(move=H - t, axis=1)
+    c = fem.Rectangle(a=(t, 0), b=(L, t), n=(7, 2))
+    d = c.translate(move=H - t, axis=1)
+    e = fem.Rectangle(a=(0, t), b=(t, H - t), n=(2, 4))
+    body = fem.MeshContainer([a, b, c, d, e], merge=True).stack()
+    medium = fem.Rectangle(a=(t, t), b=(L, H - t), n=(7, 4))
+
+    region_body = fem.RegionQuad(body)
+    region_medium = fem.RegionQuad(medium)
+    fields = [
+        fem.FieldContainer([fem.FieldPlaneStrain(region_body, dim=2)]),
+        fem.FieldContainer(
+            [
+                fem.FieldPlaneStrain(region_medium, dim=2),
+                fem.Field(region_medium, dim=9),
+            ],
+            take=[0, 1, 1],
+        ),
+    ]
+    x0 = fem.field.merge(fields, decimals=6)
+
+    # the tensor-valued field of the medium has only the points of the medium
+    points = np.unique(np.vstack([body.points, medium.points]).round(6), axis=0)
+    assert x0.fieldsizes == [2 * len(points), 9 * medium.npoints]
+    assert fields[1][0].region is not fields[1][1].region
+    assert np.allclose(
+        np.sort(fields[1][1].region.mesh.points, axis=0),
+        np.sort(medium.points, axis=0),
+    )
+    assert np.all(fields[1].offsets == x0.offsets)
+
+    G, K = 5 / 14, 5 / 3
+    solid = fem.SolidBodyNearlyIncompressible(
+        fem.NeoHooke(mu=G), fields[0], bulk=50 * G
+    )
+    third_medium = fem.SolidBody(
+        fem.ThirdMediumContactMixed(
+            fem.NeoHookeCompressible(mu=G, lmbda=K),
+            gamma=5e-6,
+            alpha_r=5e-6 * K * L**2,
+            p_r=1e-2,
+        ),
+        fields[1],
+        grad=[True, False, True],
+    )
+
+    # no orphan degrees of freedom
+    from felupe.tools._newton import jac_items
+
+    matrix = jac_items([solid, third_medium], x0).tocsr()
+    assert np.all(np.diff(matrix.indptr) > 0)
+
+    bounds = fem.BoundaryDict(
+        fixed=fem.Boundary(x0[0], fx=0),
+        move=fem.Boundary(x0[0], fx=L, fy=H, mode="and", skip=(1, 0)),
+    )
+    step = fem.Step(
+        items=[solid, third_medium],
+        ramp={bounds["move"]: fem.math.linsteps([0, -0.2], num=2)},
+        boundaries=bounds,
+    )
+    fem.Job(steps=[step], plugins=[fem.LinesearchPlugin()]).evaluate()
+
+    assert fields[1][1].values is x0[1].values
+    assert np.all(fem.math.det(third_medium.results.kinematics[0]) > 0)
+
+
 def test_merge_fewer_points():
 
     mesh = fem.Rectangle(n=2)
@@ -649,6 +721,7 @@ if __name__ == "__main__":
     test_merge()
     test_merge_mixed()
     test_merge_mixed_formulations()
+    test_merge_third_medium_contact()
     test_merge_fewer_points()
     test_field_dual()
     test_field_take()

@@ -62,7 +62,10 @@ def merge(fields, decimals=None, **kwargs):
     e.g. displacement, pressure and volume ratio.
 
     *   The first field and all fields which are defined on the mesh of the first
-        field are **continuous**: the points of their meshes are merged.
+        field are **continuous**: the points of their meshes are merged. A continuous
+        field, which is not defined in all field containers (e.g. the tensor-valued
+        field of :class:`~felupe.ThirdMediumContactMixed`), only has the merged points
+        of the cells of its field containers.
     *   All other fields, e.g. the dual fields of :class:`~felupe.FieldsMixed`, are
         **local** to their field container (body): their points are stacked, i.e.
         there is no coupling of these fields across the bodies (e.g. pressure jumps
@@ -171,6 +174,24 @@ def merge(fields, decimals=None, **kwargs):
         [f.region.mesh for f in fields], merge=True, decimals=decimals, **kwargs
     )
 
+    # a continuous field, which is not defined in all field containers (e.g. the
+    # tensor-valued field of a third medium), only has the merged points of the cells of
+    # its field containers (compact numbering). The first field uses all merged points.
+    compact = [None] * nfields
+
+    for k in range(1, nfields):
+        members = [i for i, f in enumerate(fields) if len(f.fields) > k]
+
+        if continuous[k]:
+            used = np.unique(
+                np.concatenate([container.meshes[i].cells.ravel() for i in members])
+            )
+
+            if len(used) < len(container.points):
+                index = np.full(len(container.points), -1)
+                index[used] = np.arange(len(used))
+                compact[k] = (used, index)
+
     # the values of the top-level fields
     top_level_values = []
 
@@ -187,6 +208,10 @@ def merge(fields, decimals=None, **kwargs):
                 new_cells = container.meshes[i].cells.ravel()
                 old_cells = original_cells[i].ravel()
                 values[new_cells] = fields[i][k].values[old_cells]
+
+            if compact[k] is not None:
+                used, index = compact[k]
+                values = values[used]
 
         else:
             # stack the point values of the body-local fields
@@ -236,17 +261,32 @@ def merge(fields, decimals=None, **kwargs):
     # reload the continuous fields (and their own regions) with the merged meshes
     for field, new_mesh in zip(fields, container.meshes):
         for k, f in enumerate(field.fields):
-            if continuous[k]:
-                if f.region.mesh is not new_mesh:
-                    f.region.reload(mesh=new_mesh)
+            if not continuous[k]:
+                continue
 
-                f.reload(region=f.region)
+            if compact[k] is not None:
+                used, index = compact[k]
+                compact_mesh = Mesh(
+                    points=container.points[used],
+                    cells=index[new_mesh.cells],
+                    cell_type=new_mesh.cell_type,
+                )
+                # don't modify a region which may be shared with other fields
+                region = copy(f.region)
+                region.reload(mesh=compact_mesh)
+                f.reload(region=region)
+                continue
+
+            if f.region.mesh is not new_mesh:
+                f.region.reload(mesh=new_mesh)
+
+            f.reload(region=f.region)
 
     # create a new top-level (global) vertex field container
     top_level_fields = []
 
     for k, values in enumerate(top_level_values):
-        if continuous[k]:
+        if continuous[k] and compact[k] is None:
             # take the type of the k-th field of the first field container with k-th
             # field
             Field = next(f[k] for f in fields if len(f.fields) > k).__field__

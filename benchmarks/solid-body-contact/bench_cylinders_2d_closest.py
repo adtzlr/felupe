@@ -19,10 +19,9 @@ R* = r/2 for equal radii, E* = E / (2 (1 - nu^2)) in plane strain.
 
 import numpy as np
 import scipy.sparse as sp
+from bench_cylinders_2d import make_cylinders
 
 import felupe as fem
-
-from bench_cylinders_2d import contact_edges, make_cylinders
 
 
 class ContactClosest:
@@ -178,8 +177,6 @@ class ContactClosest:
                 rows.append(int(i))
                 cols.append(int(dof))
                 vals.append(col[i])
-        n = values.shape[0]
-        r = np.zeros((n, 2))
         return sp.csr_matrix((vals, (rows, cols)), shape=(ntot, ntot))
 
     def _vector_from(self, values):
@@ -267,11 +264,6 @@ def run(K=100.0, approach=0.01, n1=6, n2=12, r=0.5, E=100.0, nu=0.3, verbose=Fal
     Rstar = 1 / (1 / r + 1 / r)
     b_hertz = np.sqrt(4 * F * Rstar / (np.pi * Estar))
     p0_hertz = 2 * F / (np.pi * b_hertz)
-
-    # numeric patch width: x of slave gps with gap < 0
-    u_gp = np.einsum("aqc,cak->qkc", contact.h, field[0].values[contact.cells])
-    x_gp = contact.X_gp + u_gp
-    gap = contact._gap_cache if hasattr(contact, "_gap_cache") else None
 
     return {
         "K": K,

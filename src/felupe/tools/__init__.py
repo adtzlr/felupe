@@ -3,7 +3,13 @@
 from ._event_dispatcher import Context, EventDispatcher
 from ._hello_world import hello_world
 from ._misc import logo, runs_on
-from ._newton import IterationState, NewtonConvergenceError, NewtonResult, newtonraphson
+from ._newton import (
+    IterationState,
+    NewtonConvergenceError,
+    NewtonResult,
+    embed,
+    newtonraphson,
+)
 from ._newton import fun_items as fun
 from ._newton import jac_items as jac
 from ._post import curve, force, moment
@@ -15,6 +21,7 @@ __all__ = [
     "fun",
     "jac",
     "newtonraphson",
+    "embed",
     "curve",
     "force",
     "hello_world",

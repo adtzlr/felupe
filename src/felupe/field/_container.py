@@ -102,6 +102,11 @@ class FieldContainer:
         Methods to evaluate the deformation gradient and strain measures, see
         :class:`~felupe.field.EvaluateFieldContainer` for details on the provided
         methods.
+    slots : list of int or None
+        The indices of the fields of a top-level field container, which belong to the
+        fields of this field container, e.g. set by :func:`~felupe.field.merge`. If
+        None, the fields belong to the first fields of the top-level field container
+        (in the same order). Default is None.
 
     Examples
     --------
@@ -164,6 +169,7 @@ class FieldContainer:
         self.evaluate = EvaluateFieldContainer(self)
         self.is_container = True
         self.take = take
+        self.slots = None
 
         # set optional user-defined attributes
         for key, value in kwargs.items():
@@ -316,10 +322,24 @@ class FieldContainer:
         return deepcopy(self)
 
     def link(self, other_field=None):
-        "Link value array of other field."
+        """Link value array of other field.
+
+        Parameters
+        ----------
+        other_field : FieldContainer or None, optional
+            The other field container (default is None). If None, all fields are
+            linked to the first field. If the field container has ``slots`` and the
+            other field container has no ``slots`` (e.g. a top-level field container),
+            the fields are linked to the fields of the other field container, given by
+            the ``slots``. Otherwise, the fields are linked 1-to-1 by their position.
+        """
         if other_field is None:
             for u in self.fields[1:]:  # link n-to-1 (all-to-first)
                 u.values = self.fields[0].values
+        elif self.slots is not None and getattr(other_field, "slots", None) is None:
+            # link to the fields of a top-level field container
+            for field, slot in zip(self.fields, self.slots):
+                field.values = other_field.fields[slot].values
         else:
             for field, newfield in zip(self.fields, other_field.fields):  # link 1-to-1
                 field.values = newfield.values
@@ -490,7 +510,8 @@ class FieldContainer:
 
         Notes
         -----
-        Field containers with dual fields are not supported.
+        Mixed field containers, e.g. :class:`~felupe.FieldsMixed`, are supported, see
+        :func:`~felupe.field.merge` for details.
 
         Examples
         --------

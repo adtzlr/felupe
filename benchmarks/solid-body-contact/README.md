@@ -41,41 +41,7 @@ Conclusions:
 - Newton fails to converge at K = 10000 (active-set chatter, no
   stabilization / line search in the prototype).
 
-## Benchmark B: two cylinders, Hertz line contact (`bench_cylinders_2d.py`)
-
-Disks with r1 = r2 = 0.5 (equal diameters, as in the reference problem), E = 100, nu = 0.3, plane strain, prescribed
-approach on the top arc. Compares the contact patch against the Hertz
-line-contact solution `b = sqrt(4 F R* / (pi E*))`, `p0 = 2 F / (pi b)`
-with the numerically measured resultant force F.
-
-Results:
-
-| K | F | b_Hertz | b_num | p0_Hertz | p0_num |
-|---:|---:|---:|---:|---:|---:|
-| 100 | 5.46 | 0.178 | 0.280 | 19.5 | 0.14 |
-| 1000 | 5.82 | 0.184 | 0.280 | 20.2 | 0.46 |
-
-The prototype reproduces the total contact force (converging with K), but
-the patch metrics are non-physical for curved surfaces:
-
-1. Every Gauss point of edge 1 is paired with every Gauss point of edge 2
-   (pairwise tiling, as in the issue prototype). This multiplies the
-   effective contact stiffness by the number of partners, so the local
-   penetration and per-point pressure are far below the physical values
-   (p0_num is ~40x below the Hertz value), while the total force is right.
-2. The active set extends over the whole candidate band (b_num = band
-   width) instead of the Hertz patch, because geometric overlap of the
-   undeformed arcs activates pairs far outside the true contact zone.
-3. Cost is O(n1 * n2) per assembly. The issue author noted this overhead
-   himself in the thread.
-
-Conclusion: for the two-cylinder problem the prototype as sketched is not
-usable without (a) a proper closest-point / active-set search instead of
-all-pairs pairing, and (b) normalization of the traction by the partner
-count. For flat interfaces with matching discretizations (benchmark A) the
-formulation is correct.
-
-## Half-model analysis with displacement control
+## Benchmark B: half-model analysis with displacement control
 (`bench_half_model_2d.py`)
 
 The reference problem itself (see `setup-b.png`). The slide labels the
@@ -119,7 +85,7 @@ sketched in the reference figure.
    the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
    `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.
 
-## Half-model analysis with displacement control
+## Benchmark B: half-model analysis with displacement control
 (`bench_half_model_2d.py`)
 
 The reference problem itself (see `setup-b.png`). The slide labels the

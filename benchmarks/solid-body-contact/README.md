@@ -60,27 +60,3 @@ the lower arc pressed onto the floor gets `u_y = 0`; the wall has
 Result (approach 0.05, E = 100, plane strain): plate reaction
 P = -0.200 per unit thickness; the lobes squeeze and bulge sideways as
 sketched in the reference figure.
-
-## Sign and orientation findings (important for a 2D port)
-
-1. The weak form must be repulsive: with outward normal `n1` of body 1 and
-   gap `gn = (u1 - u2) . n1`, the residual contribution is
-   `+K * <gn>_+ * n1 * da`. The sign convention `-K * gn * t` in the issue
-   prototype is only correct if the region normals point inward; it must be
-   audited for each element/face orientation.
-2. `RegionQuadBoundary.normals` (and the 3D equivalent) are NOT reliably
-   outward: they follow the face parametrization and flip orientation
-   between faces, including on curved surfaces where a constant sign flip
-   cannot repair them. Outward normals must be recomputed geometrically:
-   rotate the face tangent by 90 degrees and fix the sign against the cell
-   interior (see `outward_normals()` in `bench_blocks_2d.py`).
-3. `RegionQuadBoundary` keeps whole quads as cells (faces only for
-   quadrature). Pairing Gauss points of two boundary regions therefore
-   needs the tiled-cells trick from the issue; face normals must be tiled
-   consistently with the cell tiling.
-4. `MeshContainer` meshes share one points array: point masks such as
-   `mesh.y == 1` select points of both bodies. Build boundary regions on
-   the separate body meshes and remap to global ids afterwards.
-5. `fem.NeoHooke` in this version returns a non-zero first Piola stress at
-   the undeformed state in 2D (`P(F=I) = 0.333 I`) — use
-   `fem.LinearElasticPlaneStrain` for 2D verification benchmarks.

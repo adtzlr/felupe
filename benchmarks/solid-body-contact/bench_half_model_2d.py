@@ -79,6 +79,9 @@ def run(approach=0.05, n=6, E=100.0, nu=0.3, verbose=False):
 
     # reaction at the plate edge (the P/2 of the force-controlled original)
     solid_fresh = fem.SolidBody(
+        # fem.NeoHooke returns a non-zero first Piola stress at the undeformed
+        # state in 2D (P(F=I) = 0.333 I): use the linear-elastic plane-strain
+        # formulation for 2D verification benchmarks
         umat=fem.constitution.LinearElasticPlaneStrain(E=E, nu=nu),
         field=fem.Field(fem.RegionQuad(mesh), dim=2).as_container(),
     )

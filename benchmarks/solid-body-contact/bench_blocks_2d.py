@@ -39,6 +39,11 @@ class SolidBodyContact:
         horizontal faces, independent of face orientation)."""
         self.flip = flip
 
+        # RegionBoundary.normals are NOT reliably outward: they follow the
+        # face parametrization and flip between faces, including on curved
+        # surfaces where a constant sign flip cannot repair them. Recompute
+        # them geometrically: face tangent rotated by 90 degrees, sign fixed
+        # against the cell interior.
         def outward_normals(reg):
             "Outward normals per GP: face tangent rotated 90 deg, sign fixed"
             "to point away from the cell interior."
@@ -54,6 +59,10 @@ class SolidBodyContact:
 
         nrm1, nrm2 = outward_normals(region), outward_normals(other_region)
 
+        # RegionQuadBoundary keeps whole quads as cells (faces only for
+        # quadrature): pair every Gauss point of one edge with every Gauss
+        # point of the other by tiling the cells; tile the face normals
+        # consistently with the cell tiling.
         cells = np.tile(region.mesh.cells, (other_region.mesh.ncells, 1))
         other_cells = np.tile(other_region.mesh.cells, (1, region.mesh.ncells)).reshape(
             cells.shape
@@ -80,6 +89,11 @@ class SolidBodyContact:
         self.results = Results()
 
     def fun(self, F, u, u_ext, K, N):
+        # The weak form must be repulsive: with outward normal n1 of body 1
+        # and gap gn = (u1 - u2) . n1, the residual contribution is
+        # +K * <gn>_+ * n1 * da. The issue #919 convention -K * gn * t is
+        # only correct if the region normals point inward; audit per
+        # element/face orientation.
         x = (
             F
             if isinstance(F, tr.Tensor)
@@ -174,8 +188,10 @@ def run_contact(K):
     region = fem.RegionQuad(mesh)
     field = fem.Field(region, dim=2).as_container()
 
-    # contact faces: bottom edge of block 1, bottom edge of block 2
-    # (both built on the separate meshes, then remapped to global point ids)
+    # contact faces: bottom edge of block 1, bottom edge of block 2.
+    # MeshContainer meshes share one points array: point masks such as
+    # mesh.y == 1 would select points of BOTH bodies -- build the boundary
+    # regions on the separate body meshes and remap to global ids after.
     edge1 = fem.RegionQuadBoundary(block1, mask=block1.y == 1)
     edge2 = fem.RegionQuadBoundary(block2, mask=block2.y == 1)
     n1 = block1.npoints
@@ -223,7 +239,11 @@ def run_reference():
     field = fem.Field(region, dim=2).as_container()
 
     solid = fem.SolidBody(
-        umat=fem.constitution.LinearElasticPlaneStrain(E=100.0, nu=0.3), field=field
+        # fem.NeoHooke returns a non-zero first Piola stress at the undeformed
+        # state in 2D (P(F=I) = 0.333 I): use the linear-elastic plane-strain
+        # formulation for 2D verification benchmarks
+        umat=fem.constitution.LinearElasticPlaneStrain(E=100.0, nu=0.3),
+        field=field,
     )
     bounds = dict(
         fixed=fem.Boundary(field[0], fy=0, skip=(True, False)),

@@ -44,11 +44,11 @@ Conclusions:
 ## Benchmark B: half-model analysis with displacement control
 (`bench_half_model_2d.py`)
 
-The reference problem itself (see `setup-b.png`). The slide labels the
-two-lobe shape a "1/4 model", but the load P/2 (half of the total P)
-shows that it is a 1/2 model: the right half of the two-cylinder stack,
-cut by the symmetry plane x = 0. The flat edge AB in the figure is the
-DEFORMED arc pressed onto the rigid plate (uniform-u_y tie).
+The reference problem itself (see `setup-b.png`): the 1/2 model — the
+right half of the two-cylinder stack, cut by the symmetry plane x = 0
+(the applied load is P/2, half of the total P). The flat edge AB in the
+figure is the DEFORMED arc pressed onto the rigid plate (uniform-u_y
+tie).
 
 Constraints (no contact algorithm required — the trick of the original
 Code_Aster model): the cylinder-cylinder contact plane stays flat by

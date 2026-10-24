@@ -1,5 +1,6 @@
-% Analysis conditions of the two-cylinder quarter model
-% (two long cylinders between rigid plates, quarter model with symmetry BCs)
+% Analysis conditions of the two-cylinder half model
+% (two long cylinders between rigid plates, right half of the stack with
+%  symmetry BCs; the applied load is P/2 = half of the total P)
 % Standard structural-analysis symbols drawn in plain TikZ:
 %   roller supports (triangle + circles + hatched ground) for the symmetry
 %   wall and the supported edge, hatched rigid plate with the nodal force.
@@ -25,7 +26,7 @@
 \begin{document}
 \begin{tikzpicture}[>={Stealth}, scale=2.0]
 
-  % ================= quarter model geometry =================
+  % ================= half-model geometry =================
   % upper lobe: quarter disk centered B(0,1); lower lobe: centered D(0,-1)
   \coordinate (O) at (0,0);
   \coordinate (B) at (0,1);
@@ -84,6 +85,10 @@
   \node[below right, inner sep=1pt] at (C) {$C$};
   \node[below left, inner sep=1pt] at (D) {$D$};
   \node[above left, inner sep=1pt] at (O) {$O$};
+
+  % ================= model label =================
+  \node[right, inner sep=4pt] at (1.08, -0.75)
+    {\footnotesize 1/2 model (right half, load $P/2$)};
 
   % ================= axes =================
   \draw[->] (0.60, -0.22) -- (0.85, -0.22) node[right] {\footnotesize $x$};

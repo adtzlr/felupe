@@ -46,8 +46,11 @@
      \footnotesize reference: bonded (merged nodes)};
 
   % ---- side rollers: u_x = 0 on the outer edges ----
-  \rollersym{0}{0.7}{-90}
-  \rollersym{1}{0.7}{-90}
+  % u_x = 0 on the left edge only (fx = 0); rollers outside the structure
+  \rollersym{0}{0.3}{90}
+  \rollersym{0}{0.7}{90}
+  \rollersym{0}{1.3}{90}
+  \rollersym{0}{1.7}{90}
 
 \end{tikzpicture}
 \end{document}

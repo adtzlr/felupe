@@ -313,6 +313,21 @@ def test_merge():
     with pytest.raises(ValueError):
         fem.field.merge([field_1, field_2])
 
+    # the first fields have different types
+    field_1 = fem.FieldContainer(
+        [fem.FieldAxisymmetric(fem.RegionQuad(fem.Rectangle(n=3)), dim=2)]
+    )
+    field_2 = fem.FieldContainer(
+        [
+            fem.FieldPlaneStrain(
+                fem.RegionQuad(fem.Rectangle(a=(1, 0), b=(2, 1), n=3)), dim=2
+            )
+        ]
+    )
+
+    with pytest.raises(TypeError):
+        fem.field.merge([field_1, field_2])
+
     # the second fields are scalar fields on the mesh of the first field and dual
     # fields: they belong to their field container, their points are stacked
     region = fem.RegionQuad(fem.Rectangle(n=3))

@@ -67,7 +67,8 @@ def merge(fields, decimals=None, **kwargs):
     displacement and the tensor-valued field of :class:`~felupe.ThirdMediumContactMixed`.
 
     *   The first fields (e.g. the displacements) of all field containers are
-        **merged**, i.e. the points of their meshes are merged.
+        **merged**, i.e. the points of their meshes are merged. They must be of the
+        same type (e.g. :class:`~felupe.FieldAxisymmetric`) and of the same dimension.
     *   All other fields belong to their field container (body), e.g. the dual fields of
         :class:`~felupe.FieldsMixed` or the tensor-valued field of
         :class:`~felupe.ThirdMediumContactMixed`. Their points are **stacked**, i.e.
@@ -158,6 +159,14 @@ def merge(fields, decimals=None, **kwargs):
             )
 
     from ._container import FieldContainer
+
+    types = {type(field[0]).__name__ for field in fields}
+    if len(types) > 1:
+        raise TypeError(
+            f"The first fields of the field containers have different types "
+            f"{sorted(types)}, e.g. axisymmetric and plane strain fields can't be "
+            "merged."
+        )
 
     dims = {field[0].dim for field in fields}
     if len(dims) > 1:

@@ -1,4 +1,4 @@
-Use external solvers
+Use External Solvers
 --------------------
 
 FElupe uses SuperLU as direct sparse solver by default because it is shipped with SciPy

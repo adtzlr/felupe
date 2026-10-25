@@ -1,5 +1,5 @@
-Two-dimensional Problems
-------------------------
+Set up Two-Dimensional Problems
+-------------------------------
 
 For plane-strain and axisymmetric problems a vector-valued field has to be created for
 the two-dimensional in-plane displacement components.

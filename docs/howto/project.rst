@@ -1,4 +1,4 @@
-Project cell values to mesh-points
+Project Cell Values to Mesh Points
 ----------------------------------
 
 This section demonstrates how to move cell-values, located at the quadrature points

@@ -1,5 +1,5 @@
-Mixed-Field Problems
-~~~~~~~~~~~~~~~~~~~~
+Set up Mixed-Field Problems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 FElupe supports mixed-field formulations in a similar way it can handle (default)
 single-field formulations. The definition of a mixed-field formulation is shown for the

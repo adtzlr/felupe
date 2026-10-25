@@ -1,5 +1,5 @@
-Multiple Solid Bodies
----------------------
+Combine Multiple Solid Bodies
+-----------------------------
 
 This section demonstrates how to set up a problem with two regions, each associated to a
 separated solid body. Different element formulations are used for the solid bodies.

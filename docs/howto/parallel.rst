@@ -1,4 +1,4 @@
-Evaluate in parallel
+Evaluate in Parallel
 --------------------
 
 FElupe may evaluate two parts of a Newton-Raphson iteration by a pool of threads: the

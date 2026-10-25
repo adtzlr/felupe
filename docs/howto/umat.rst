@@ -1,5 +1,5 @@
-Strain based Materials
-----------------------
+Define Strain-Based Materials
+-----------------------------
 
 A user material (``umat``), based on the incremental strain tensor, e.g. suitable
 for linear elastic-plastic material formulations, is provided by

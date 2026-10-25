@@ -1,8 +1,9 @@
 Combine Multiple Solid Bodies
 -----------------------------
 
-This section demonstrates how to set up a problem with two regions, each associated to a
-separated solid body. Different element formulations are used for the solid bodies.
+This section demonstrates how to set up a problem with two solid bodies, a stiff
+inclusion and a rubber matrix. The bodies are created on meshes with different cell
+types, i.e. different finite element formulations are used for the solid bodies.
 
 ..  pyvista-plot::
     :context:
@@ -10,49 +11,47 @@ separated solid body. Different element formulations are used for the solid bodi
     import felupe as fem
 
     inner = fem.Rectangle(a=(-1, -1), b=(1, 1), n=(5, 5)).triangulate()
-    
+
     lower = fem.Rectangle(a=(-3, -3), b=(3, -1), n=(13, 5))
     upper = fem.Rectangle(a=(-3, 1), b=(3, 3), n=(13, 5))
     left = fem.Rectangle(a=(-3, -1), b=(-1, 1), n=(5, 5))
     right = fem.Rectangle(a=(1, -1), b=(3, 1), n=(5, 5))
-    
+
     outer = fem.MeshContainer([lower, upper, left, right], merge=True).stack()
-    
-    container = fem.MeshContainer([inner, outer], merge=True)
 
+A field container is created on the mesh of each body.
 
-A top-level (vertex) field, which contains all the unknowns, is required for the
-definition of the boundary conditions as well as for the evaluation of the job.
+..  pyvista-plot::
+    :context:
 
-..  note::
-    Ensure to init the mesh container with ``merge=True``, otherwise the points-array of
-    the container will be empty.
-    
+    fields = [
+        fem.FieldContainer([fem.FieldPlaneStrain(fem.RegionTriangle(inner), dim=2)]),
+        fem.FieldContainer([fem.FieldPlaneStrain(fem.RegionQuad(outer), dim=2)]),
+    ]
+
+:func:`~felupe.field.merge` merges the field containers of the bodies into a top-level
+field container, which contains all the unknowns. The points of the meshes are merged,
+i.e. the bodies share the points at their interface. The field containers of the bodies
+are modified in-place: their regions and fields are reloaded on the merged meshes and
+the values of their fields are linked to (shared with) the top-level field container.
+The top-level field container is required for the definition of the boundary conditions
+and it is used as the ``x0``-argument of the job by default.
+
 ..  pyvista-plot::
     :context:
     :force_static:
 
-    container = fem.MeshContainer([inner, outer], merge=True)
-    field = fem.Field.from_mesh_container(container).as_container()
-    
-    field.plot(plotter=container.plot(), point_size=15, color="red").show()
+    field = fem.field.merge(fields)
 
-The sub-meshes are available in the global mesh container, on which the sub-fields are
-created.
+    field.plot(plotter=field.mesh_container.plot(), point_size=15, color="red").show()
 
-..  pyvista-plot::
-    :context:
+..  note::
+    The merged meshes are available in the mesh container ``field.mesh_container`` of the
+    top-level field container. ``fem.FieldContainer(fields).merge()`` is equivalent to
+    ``fem.field.merge(fields)``. Items with an internal state of the given fields, e.g.
+    :class:`~felupe.SolidBodyNearlyIncompressible`, must be created after the merge.
 
-    regions = [
-        fem.RegionTriangle(container.meshes[0]),
-        fem.RegionQuad(container.meshes[1]),
-    ]
-    fields = [
-        fem.FieldContainer([fem.FieldPlaneStrain(regions[0], dim=2)]),
-        fem.FieldContainer([fem.FieldPlaneStrain(regions[1], dim=2)]),
-    ]
-    
-The displacement boundaries are created on the top-level field.
+The displacement boundaries are created on the top-level field container.
 
 ..  pyvista-plot::
     :context:
@@ -63,9 +62,10 @@ The displacement boundaries are created on the top-level field.
     )
 
 
-The rubber is associated to a Neo-Hookean material formulation whereas the steel is
-modeled by a linear elastic material formulation. Due to the large rotation, its
-large-strain formulation is required. For each material a solid body is created.
+The rubber matrix is associated to a Neo-Hookean material formulation whereas the stiff
+inclusion is modeled by a linear elastic material formulation. Due to the large
+rotation, its large-strain formulation is required. For each material a solid body is
+created on the field container of its body.
 
 ..  pyvista-plot::
     :context:
@@ -73,15 +73,15 @@ large-strain formulation is required. For each material a solid body is created.
     # two material model formulations
     linear_elastic = fem.LinearElasticLargeStrain(E=100, nu=0.3)
     neo_hooke = fem.NeoHooke(mu=1, bulk=1)
-    
+
     # the solid bodies
-    fiber = fem.SolidBody(umat=linear_elastic, field=fields[0])
+    inclusion = fem.SolidBody(umat=linear_elastic, field=fields[0])
     matrix = fem.SolidBody(umat=neo_hooke, field=fields[1])
 
 
-A step is created and further added to a job. The global field must be passed as the
-``x0`` argument during the evaluation of the job. Internally, all field values are
-linked automatically, i.e. they share their ``values`` array.
+A step is created and further added to a job. The top-level field container is taken
+from the field containers of the solid bodies, i.e. it doesn't have to be passed to
+:meth:`~felupe.Job.evaluate`.
 
 ..  pyvista-plot::
     :context:
@@ -90,18 +90,16 @@ linked automatically, i.e. they share their ``values`` array.
     # prepare a step with substeps
     move = fem.math.linsteps([0, 3], num=10)
     step = fem.Step(
-        items=[matrix, fiber],
-        ramp={boundaries["move"]: move}, 
+        items=[matrix, inclusion],
+        ramp={boundaries["move"]: move},
         boundaries=boundaries,
     )
-    
-    # take care of the x0-argument
-    job = fem.Job(steps=[step])
-    job.evaluate(x0=field)
+
+    job = fem.Job(steps=[step]).evaluate()
 
     fields[1].plot(
-        "Principal Values of Logarithmic Strain", 
-        show_undeformed=False, 
+        "Principal Values of Logarithmic Strain",
+        show_undeformed=False,
         plotter=fields[0].plot(
             "Principal Values of Logarithmic Strain", show_undeformed=False
         ),
@@ -110,13 +108,12 @@ linked automatically, i.e. they share their ``values`` array.
 Mixed-Field Formulations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The solid bodies may also use different mixed-field formulations. Each field container
-is created on the (unmerged) mesh of its body, e.g. a displacement field for a
-linear-elastic body and mixed fields (displacement, pressure and volume ratio) for two
-nearly-incompressible bodies. :func:`~felupe.field.merge` merges the points of the
-displacement fields and stacks the points of the dual fields, i.e. the pressure and the
-volume ratio are local to their body. No offsets or dual meshes have to be created
-manually.
+The solid bodies may also use different mixed-field formulations, which are merged in
+the same way, e.g. a displacement field for a linear-elastic body and mixed fields
+(displacement, pressure and volume ratio) for two nearly-incompressible bodies.
+:func:`~felupe.field.merge` merges the points of the displacement fields and appends the
+dual fields to the top-level field container, i.e. the pressure and the volume ratio are
+local to their body. No offsets or dual meshes have to be created manually.
 
 ..  pyvista-plot::
     :context:
@@ -134,15 +131,14 @@ manually.
     ]
     field = fem.field.merge(fields)
 
-The boundary conditions are created on the top-level field container. The fields of
-the bodies are linked to the top-level field container, which is also used as the
-``x0``-argument of the job by default.
+Like before, the boundary conditions are created on the top-level field container and
+the solid bodies on the field containers of the bodies.
 
 ..  pyvista-plot::
     :context:
     :force_static:
 
-    boundaries = fem.dof.uniaxial(field, move=-0.8, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, move=-0.8, clamped=True)
 
     umats = [
         fem.LinearElasticLargeStrain(E=10, nu=0.3),

@@ -63,7 +63,10 @@ class SuperLUSolver:
 
     Notes
     -----
-    The default options are chosen for (structurally) symmetric matrices of the finite
+    The matrix is factorized by the supernodal LU decomposition of SuperLU [1]_ with
+    the multiple minimum degree ordering [2]_ of the structure of
+    :math:`\boldsymbol{A}^T + \boldsymbol{A}` (``permc_spec="MMD_AT_PLUS_A"``). The
+    default options are chosen for (structurally) symmetric matrices of the finite
     element method, also for matrices with non-symmetric values, e.g. of follower
     loads or of frictional contacts. The structure of the assembled matrices is
     symmetric by construction, i.e. no check of the symmetry is required. Compared to
@@ -78,7 +81,7 @@ class SuperLUSolver:
     increase the fill-in and the time of the factorization by orders of magnitude.
 
     Without pivoting, the factorization is not guaranteed to be stable. Hence, the
-    normwise backward error of the solution is evaluated, see Eq.
+    normwise backward error of the solution [3]_, [4]_ is evaluated, see Eq.
     :eq:`superlu-backward-error`, which requires one sparse matrix-vector product and
     which does not depend on the condition number of the matrix.
 
@@ -95,7 +98,7 @@ class SuperLUSolver:
     If the backward error exceeds the tolerance, or if the first factorization fails,
     the matrix is factorized again with the pivot threshold ``fallback_pivot_thresh``.
     Before the evaluation of the backward error, the solution is improved by one step
-    of iterative refinement (``refine=True``), see Eq. :eq:`superlu-refinement`. It
+    of iterative refinement [4]_ (``refine=True``), see Eq. :eq:`superlu-refinement`. It
     re-uses the factors of the matrix, i.e. it requires only a forward and a backward
     substitution.
 
@@ -113,10 +116,10 @@ class SuperLUSolver:
     before it is filled by the elimination of one of its neighbours, leads to an
     exchange of rows and the fill-reducing ordering of the columns is lost. Hence, the
     zero diagonal entries :math:`A_{ii} = 0` are perturbed before the factorization,
-    see Eq. :eq:`superlu-perturbation` (static pivoting [1]_, [2]_), by the relative
+    see Eq. :eq:`superlu-perturbation` (static pivoting [5]_, [6]_), by the relative
     perturbation :math:`\epsilon` (``diag_perturbation``) of an estimate of their
     pivots, i.e. of the diagonal entries of the Schur complement, where the inverse of
-    the other block of the matrix is approximated by the inverse of its diagonal.
+    the other block of the matrix is approximated by the inverse of its diagonal [7]_.
 
     ..  math::
         :label: superlu-perturbation
@@ -135,7 +138,8 @@ class SuperLUSolver:
     correction is below the tolerance times the norm of the solution (maximum norms,
     at most ten steps). The iterative refinement is stopped if the norm of the
     correction is not reduced by at least a factor of two (the norm of the first
-    correction is compared to the norm of the solution of the perturbed matrix). If
+    correction is compared to the norm of the solution of the perturbed matrix), like
+    the stopping criteria of the iterative refinement in [8]_. If
     the iterative refinement does not converge or if the backward error of the refined
     solution exceeds the tolerance, the (unperturbed) matrix is factorized again with
     the pivot threshold ``fallback_pivot_thresh``.
@@ -155,13 +159,34 @@ class SuperLUSolver:
 
     References
     ----------
-    .. [1] X. S. Li and J. W. Demmel, "Making sparse Gaussian elimination scalable by
+    .. [1] J. W. Demmel, S. C. Eisenstat, J. R. Gilbert, X. S. Li and J. W. H. Liu, "A
+       supernodal approach to sparse partial pivoting", SIAM Journal on Matrix
+       Analysis and Applications, vol. 20, no. 3, pp. 720–755, 1999, doi:
+       `10.1137/S0895479895291765 <https://doi.org/10.1137/S0895479895291765>`_.
+    .. [2] J. W. H. Liu, "Modification of the minimum-degree algorithm by multiple
+       elimination", ACM Transactions on Mathematical Software, vol. 11, no. 2,
+       pp. 141–153, 1985, doi: `10.1145/214392.214398
+       <https://doi.org/10.1145/214392.214398>`_.
+    .. [3] J. L. Rigal and J. Gaches, "On the compatibility of a given solution with the
+       data of a linear system", Journal of the ACM, vol. 14, no. 3, pp. 543–548,
+       1967, doi: `10.1145/321406.321416 <https://doi.org/10.1145/321406.321416>`_.
+    .. [4] N. J. Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.
+       Philadelphia, PA: SIAM, 2002, chapters 7 and 12, doi:
+       `10.1137/1.9780898718027 <https://doi.org/10.1137/1.9780898718027>`_.
+    .. [5] X. S. Li and J. W. Demmel, "Making sparse Gaussian elimination scalable by
        static pivoting", in Proceedings of the ACM/IEEE Conference on Supercomputing
        (SC'98), 1998, doi: `10.1109/SC.1998.10030
        <https://doi.org/10.1109/SC.1998.10030>`_.
-    .. [2] O. Schenk and K. Gärtner, "On fast factorization pivoting methods for sparse
+    .. [6] O. Schenk and K. Gärtner, "On fast factorization pivoting methods for sparse
        symmetric indefinite systems", Electronic Transactions on Numerical Analysis,
        vol. 23, pp. 158–179, 2006.
+    .. [7] M. Benzi, G. H. Golub and J. Liesen, "Numerical solution of saddle point
+       problems", Acta Numerica, vol. 14, pp. 1–137, 2005, doi:
+       `10.1017/S0962492904000212 <https://doi.org/10.1017/S0962492904000212>`_.
+    .. [8] J. Demmel, Y. Hida, W. Kahan, X. S. Li, S. Mukherjee and E. J. Riedy, "Error
+       bounds from extra-precise iterative refinement", ACM Transactions on
+       Mathematical Software, vol. 32, no. 2, pp. 325–351, 2006, doi:
+       `10.1145/1141885.1141894 <https://doi.org/10.1145/1141885.1141894>`_.
 
     Examples
     --------
@@ -307,7 +332,9 @@ class SuperLUSolver:
         dtype = np.result_type(A.dtype, np.float32)
         absdiag = np.abs(diagonal[columns.indices])
 
-        # the estimated (absolute) pivots of the zero diagonal entries
+        # the estimated (absolute) pivots of the zero diagonal entries, i.e. the diagonal
+        # of the Schur complement with the inverse of the diagonal of the other block,
+        # see Benzi, Golub and Liesen (2005), doi: 10.1017/S0962492904000212
         weights = np.divide(
             np.abs(columns.data) ** 2,
             absdiag,
@@ -414,6 +441,9 @@ class SuperLUSolver:
         r = b - A @ x
         change = 1.0  # the relative change of the solution of the perturbed matrix
 
+        # at most ten steps, stopped if the correction is not reduced by a factor of two,
+        # like the defaults of the iterative refinement of Demmel et al. (2006),
+        # doi: 10.1145/1141885.1141894
         for _ in range(10):
             dx = lu.solve(r)
             x = x + dx

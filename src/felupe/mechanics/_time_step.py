@@ -10,10 +10,13 @@ class TimeStep:
     ----------
     items : list of Item
         List of items with an attribute ``time_step``, which is updated with the time
-        increment, e.g. :class:`~felupe.thermal.SolidBodyThermal`,
+        increment, e.g. solid bodies with time-dependent materials
+        (:class:`~felupe.SolidBody`, :class:`~felupe.SolidBodyNearlyIncompressible` or
+        :class:`~felupe.TrussBody`) or thermal items
+        (:class:`~felupe.thermal.SolidBodyThermal`,
         :class:`~felupe.thermal.SolidBodyHeatFlux`,
         :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer` or
-        :class:`~felupe.thermal.SolidBodySurfaceRadiation`.
+        :class:`~felupe.thermal.SolidBodySurfaceRadiation`).
     time_old : float, optional
         Initial time (default is 0.0).
     time_new : float or None, optional

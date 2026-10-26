@@ -20,6 +20,28 @@ from ._helpers import (
 class Solid:
     "Base class for solid bodies which provides methods for visualisations."
 
+    time_step = None
+
+    def _with_time_increment(self, kwargs):
+        """Return the keyword-arguments for the methods ``gradient`` and ``hessian`` of
+        the material, with the time increment ``dtime=time_step`` of a time-dependent
+        material (an explicitly given time increment is kept)."""
+
+        if not getattr(self.umat, "time_dependent", False) or "dtime" in kwargs:
+            return kwargs
+
+        if self.time_step is None:
+            raise ValueError(
+                f"The material {type(self.umat).__name__} of the "
+                f"{type(self).__name__} is time-dependent and requires the time "
+                "increment `time_step` of the solid body. Add a time step item to the "
+                "ramp of the step, e.g. `time = fem.TimeStep(items=[solid])` and "
+                "`fem.Step(items, ramp={time: fem.math.linsteps([0, 1], num=10)})`, "
+                "or set the time increment `solid.time_step`."
+            )
+
+        return {**kwargs, "dtime": self.time_step}
+
     def view(
         self,
         point_data=None,
@@ -149,7 +171,10 @@ class SolidBody(Solid):
         the gradient and ``d2ψdFdF = umat.hessian([F, ζ])`` for the hessian of
         the strain energy density function :math:`\psi(\boldsymbol{F})`, where
         :math:`\boldsymbol{F}` is the deformation gradient tensor and :math:`\zeta`
-        holds the array of internal state variables.
+        holds the array of internal state variables. A time-dependent material, i.e. a
+        material with an attribute ``time_dependent`` which is True, takes the time
+        increment as additional keyword-argument, ``umat.gradient([F, ζ], dtime=Δt)``
+        and ``umat.hessian([F, ζ], dtime=Δt)``.
     field : FieldContainer
         A field container with one or more fields.
     statevars : ndarray or None, optional
@@ -167,6 +192,9 @@ class SolidBody(Solid):
         A list with gradient flags for the individual fields. If None, the gradient
         will be computed for the first field, whereas the for the remaining fields, the
         field values (no gradient) will be used. Default is None.
+    time_step : float or None, optional
+        The time increment :math:`\Delta t` of a time-dependent material, which is
+        usually updated by a :class:`~felupe.TimeStep` (default is None).
 
     Notes
     -----
@@ -238,10 +266,34 @@ class SolidBody(Solid):
         >>> job = fem.Job(steps=[step]).evaluate()
         >>> solid.plot("Principal Values of Cauchy Stress").show()
 
+    A time-dependent material, e.g. a viscoelastic material, takes the time increment
+    of the solid body as input, like the deformation gradient. The time is ramped by a
+    :class:`~felupe.TimeStep`, which updates the time increment of the solid body
+    before each substep. The state variables of the viscoelastic material, the
+    components of the upper triangle of the inelastic right Cauchy-Green deformation
+    tensor, are initialized by the identity tensor.
+
+    >>> umat = fem.Hyperelastic(
+    ...     fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, nstatevars=6
+    ... ) & fem.Volumetric(bulk=2.0)
+    >>> solid = fem.SolidBody(umat, field)
+    >>> solid.results.statevars[[0, 3, 5]] = 1.0
+    >>>
+    >>> time = fem.TimeStep(items=[solid])
+    >>> step = fem.Step(
+    ...     items=[solid],
+    ...     ramp={boundaries["move"]: table, time: 10 * table},
+    ...     boundaries=boundaries,
+    ... )
+    >>> job = fem.Job(steps=[step]).evaluate()
+    >>> float(solid.time_step)
+    2.0
+
     See Also
     --------
     felupe.SolidBodyNearlyIncompressible : A (nearly) incompressible solid body with
         methods for the assembly of sparse vectors/matrices.
+    felupe.TimeStep : A time step item, which updates the time increment of other items.
     """
 
     def __init__(
@@ -254,6 +306,7 @@ class SolidBody(Solid):
         apply=None,
         multiplier=None,
         grad=None,
+        time_step=None,
     ):
         self.umat = umat
         self.field = field
@@ -261,6 +314,7 @@ class SolidBody(Solid):
         self.block = block
         self.apply = apply
         self.grad = grad
+        self.time_step = time_step
 
         self.results = Results(stress=True, elasticity=True)
         self.results.kinematics = self._extract(self.field)
@@ -479,6 +533,7 @@ class SolidBody(Solid):
             block=self.block,
             apply=self.apply,
             multiplier=self.assemble.multiplier,
+            time_step=self.time_step,
         )
 
         # expand state variables (no rotation is applied here)
@@ -614,6 +669,9 @@ class SolidBody(Solid):
             self.field = field
             self.results.kinematics = self._extract(self.field)
 
+        # the time increment of a time-dependent material
+        kwargs = self._with_time_increment(kwargs)
+
         if "out" in inspect.signature(self.umat.gradient).parameters:
             kwargs["out"] = self.results.gradient
 
@@ -639,6 +697,9 @@ class SolidBody(Solid):
         if field is not None:
             self.field = field
             self.results.kinematics = self._extract(self.field)
+
+        # the time increment of a time-dependent material
+        kwargs = self._with_time_increment(kwargs)
 
         if "out" in inspect.signature(self.umat.hessian).parameters:
             kwargs["out"] = self.results.hessian

@@ -22,13 +22,19 @@ class TrussBody(Solid):
         the gradient and ``d2ψdλdλ = umat.hessian([λ, ζ])`` for the hessian of
         the strain energy density function :math:`\psi(\lambda)`, where
         :math:`\lambda` is the stretch and :math:`\zeta`
-        holds the array of internal state variables.
+        holds the array of internal state variables. A time-dependent material, i.e. a
+        material with an attribute ``time_dependent`` which is True, takes the time
+        increment as additional keyword-argument, ``umat.gradient([λ, ζ], dtime=Δt)``
+        and ``umat.hessian([λ, ζ], dtime=Δt)``.
     field : FieldContainer
         A field container with one or more fields.
     area : float or ndarray
         The cross-sectional areas of the trusses.
     statevars : ndarray or None, optional
         Array of initial internal state variables (default is None).
+    time_step : float or None, optional
+        The time increment :math:`\Delta t` of a time-dependent material, which is
+        usually updated by a :class:`~felupe.TimeStep` (default is None).
 
     Notes
     -----
@@ -161,8 +167,9 @@ class TrussBody(Solid):
 
     """
 
-    def __init__(self, umat, field, area, statevars=None):
+    def __init__(self, umat, field, area, statevars=None, time_step=None):
         self.field = field
+        self.time_step = time_step
         self.assemble = Assemble(vector=self._vector, matrix=self._matrix)
         self.evaluate = Evaluate(gradient=self._gradient, hessian=self._hessian)
         self.results = Results(stress=True, elasticity=True)
@@ -226,6 +233,9 @@ class TrussBody(Solid):
             self.field = field
             self.results.kinematics = self._kinematics(field)
 
+        # the time increment of a time-dependent material
+        kwargs = self._with_time_increment(kwargs)
+
         if "out" in inspect.signature(self.umat.gradient).parameters:
             kwargs["out"] = self.results.gradient
 
@@ -244,6 +254,9 @@ class TrussBody(Solid):
         if field is not None:
             self.field = field
             self.results.kinematics = self._kinematics(field)
+
+        # the time increment of a time-dependent material
+        kwargs = self._with_time_increment(kwargs)
 
         if "out" in inspect.signature(self.umat.hessian).parameters:
             kwargs["out"] = self.results.hessian

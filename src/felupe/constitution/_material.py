@@ -1,8 +1,46 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import inspect
+
 import numpy as np
 
 from ._base import ConstitutiveMaterial
+
+
+def takes_time_increment(fun, kwargs):
+    """Return True if a function of a material definition takes the time increment as
+    input, i.e. if it has an argument ``dtime`` without a default value, which is not
+    given in the keyword-arguments of the material parameters.
+
+    Parameters
+    ----------
+    fun : callable
+        The function of the material definition. The signature of a decorated function
+        is taken from the original function (by ``functools.wraps``).
+    kwargs : dict
+        The keyword-arguments of the material parameters.
+
+    Returns
+    -------
+    bool
+        True if the function takes the time increment as input.
+    """
+
+    if "dtime" in kwargs:
+        return False  # a time increment given as material parameter
+
+    try:
+        parameter = inspect.signature(fun).parameters.get("dtime")
+    except (TypeError, ValueError):  # no signature available
+        return False
+
+    keyword = (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+
+    return (
+        parameter is not None
+        and parameter.kind in keyword
+        and parameter.default is inspect.Parameter.empty
+    )
 
 
 class Material(ConstitutiveMaterial):
@@ -165,6 +203,26 @@ class Material(ConstitutiveMaterial):
 
         umat = Material(gradient, hessian, **kwargs)
 
+    **Time-dependent materials**: If the function ``stress`` has an argument ``dtime``
+    without a default value, which is not given as keyword-argument of the material,
+    the material is time-dependent (the attribute ``time_dependent`` is True). Then, the
+    time increment is an input of the material, like the deformation gradient, i.e. it
+    is given by the keyword-argument ``dtime`` of :meth:`gradient` and :meth:`hessian`,
+    e.g. ``umat.gradient(x, dtime=0.1)``, and it is passed to both functions. A time
+    increment which is given as keyword-argument of the material, e.g.
+    ``Material(stress, elasticity, dtime=1.0)``, is a constant material parameter.
+
+    ..  code-block::
+
+        def stress(x, eta, dtime):
+            ...
+
+        def elasticity(x, eta, dtime):
+            ...
+
+        umat = Material(stress, elasticity, eta=1.0)
+        assert umat.time_dependent
+
     Examples
     --------
     The compressible isotropic hyperelastic Neo-Hookean material formulation is given
@@ -274,8 +332,9 @@ class Material(ConstitutiveMaterial):
         self.kwargs = kwargs
         self.nstatevars = nstatevars
         self.x = [np.eye(3), np.zeros(nstatevars)]
+        self.time_dependent = takes_time_increment(stress, kwargs)
 
-    def gradient(self, x):
+    def gradient(self, x, **kwargs):
         """Return the evaluated gradient of the strain energy density function.
 
         Parameters
@@ -284,6 +343,9 @@ class Material(ConstitutiveMaterial):
             The list with input arguments. These contain the extracted fields of a
             :class:`~felupe.FieldContainer` along with the old vector of state
             variables, ``[*field.extract(), statevars_old]``.
+        **kwargs : dict, optional
+            Optional keyword-arguments for the function, e.g. the time increment
+            ``dtime`` of a time-dependent material.
 
         Returns
         -------
@@ -292,9 +354,11 @@ class Material(ConstitutiveMaterial):
             and the updated vector of state variables.
         """
 
-        return self.umat["gradient"](x, **self.kwargs)
+        self._check_time_increment(kwargs)
 
-    def hessian(self, x):
+        return self.umat["gradient"](x, **self.kwargs, **kwargs)
+
+    def hessian(self, x, **kwargs):
         """Return the evaluated upper-triangle components of the hessian(s) of the
         strain energy density function.
 
@@ -304,6 +368,9 @@ class Material(ConstitutiveMaterial):
             The list with input arguments. These contain the extracted fields of a
             :class:`~felupe.FieldContainer` along with the old vector of state
             variables, ``[*field.extract(), statevars_old]``.
+        **kwargs : dict, optional
+            Optional keyword-arguments for the function, e.g. the time increment
+            ``dtime`` of a time-dependent material.
 
         Returns
         -------
@@ -312,4 +379,6 @@ class Material(ConstitutiveMaterial):
             strain energy density function.
         """
 
-        return self.umat["hessian"](x, **self.kwargs)
+        self._check_time_increment(kwargs)
+
+        return self.umat["hessian"](x, **self.kwargs, **kwargs)

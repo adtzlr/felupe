@@ -87,7 +87,7 @@ class SolidBodyThermal(SolidBody):
         ...     time_step=0.01,  # s
         ...     thermal_conductivity=1.0,  # W / (m K)
         ... )
-        >>> time = fem.thermal.TimeStep([solid])
+        >>> time = fem.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {boundaries["right"]: 10 * table, time: 0.1 * table}
         >>> step = fem.Step(items=[time, solid], ramp=ramp, boundaries=boundaries)
@@ -115,7 +115,7 @@ class SolidBodyThermal(SolidBody):
 
     See Also
     --------
-    felupe.thermal.TimeStep : A time step item.
+    felupe.TimeStep : A time step item.
     felupe.thermal.SolidBodySurfaceHeatTransfer : A surface heat transfer boundary condition.
     felupe.thermal.SolidBodySurfaceRadiation : A thermal radiation boundary condition.
     felupe.thermal.SolidBodyHeatFlux : A thermal heat flux boundary condition.

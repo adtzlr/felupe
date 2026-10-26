@@ -22,7 +22,8 @@ Thermal
 **Helpers**
 
 .. autosummary::
-   thermal.TimeStep
+
+   TimeStep
 
 **Detailed API Reference**
 
@@ -42,11 +43,6 @@ Thermal
    :show-inheritance:
 
 .. autoclass:: felupe.thermal.SolidBodyHeatFlux
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. autoclass:: felupe.thermal.TimeStep
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,16 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from ..mechanics import Assemble, Results
+from ._helpers import Assemble, Results
 
 
 class TimeStep:
-    r"""
-    A time step item.
+    r"""A time step item, which updates the time increment of other items.
 
     Parameters
     ----------
-    items : list of felupe.thermal.SolidBodyThermal, felupe.thermal.SolidBodyHeatFlux, felupe.thermal.SolidBodySurfaceHeatTransfer, felupe.thermal.SolidBodySurfaceRadiation
-        List of items to be updated at each time step.
+    items : list of Item
+        List of items with an attribute ``time_step``, which is updated with the time
+        increment, e.g. :class:`~felupe.thermal.SolidBodyThermal`,
+        :class:`~felupe.thermal.SolidBodyHeatFlux`,
+        :class:`~felupe.thermal.SolidBodySurfaceHeatTransfer` or
+        :class:`~felupe.thermal.SolidBodySurfaceRadiation`.
     time_old : float, optional
         Initial time (default is 0.0).
     time_new : float or None, optional
@@ -18,15 +21,30 @@ class TimeStep:
 
     Notes
     -----
-    This class is used to update the time step for each thermal item in a
-    :class:`~felupe.Step`. The time step is calculated as the difference between the new
-    time and the old time, and is assigned to each item in the list.
+    The time :math:`t` is ramped in a :class:`~felupe.Step`, i.e. the time step item is
+    a key of the ramp with the values of the time for each substep. For a new time
+    :math:`t_{n+1}`, the time increment :math:`\Delta t` is evaluated as the difference
+    between the new time and the old time, see Eq. :eq:`time-step`.
 
-    .. note::
+    ..  math::
+        :label: time-step
 
-       It is important to include this :class:`~felupe.thermal.TimeStep` item in a step
-       as **first item**, so that the time step is updated before the thermal solid body
-       is evaluated.
+        \Delta t = t_{n+1} - t_n
+
+    The time increment is assigned to the attribute ``time_step`` of each item in the
+    list and the new time becomes the old time. A time increment of zero is valid, e.g.
+    for the first value of a ramp which starts at the initial time. A new time which is
+    smaller than the old time raises a :class:`ValueError`.
+
+    All ramped items of a :class:`~felupe.Step` are updated before the Newton-Raphson
+    iterations of a substep. Hence, the time increment is assigned to the items before
+    they are evaluated, independent of the position of the time step item in the list
+    of items of the step.
+
+    The old time is part of the :meth:`checkpoint` of the time step item. If a substep
+    is subdivided into increments by a :class:`~felupe.CutbackPlugin`, the time is
+    interpolated and the time increment of each increment is the difference to the
+    time of the last converged increment.
 
     Examples
     --------
@@ -46,13 +64,16 @@ class TimeStep:
         ...     thermal_conductivity=1.0,
         ... )
         >>>
-        >>> time = fem.thermal.TimeStep(items=[solid])
+        >>> time = fem.TimeStep(items=[solid])
         >>> table = fem.math.linsteps([0, 1], num=100)
         >>>
         >>> step = fem.Step(items=[time, solid], ramp={time: table})
 
     See Also
     --------
+    felupe.Step : A Step with multiple substeps, subsequently depending on the solution
+        of the previous substep.
+    felupe.CutbackPlugin : A cutback of the increment of failed substeps.
     felupe.thermal.SolidBodyThermal : A thermal solid body.
 
     """
@@ -93,7 +114,7 @@ class TimeStep:
 
         See Also
         --------
-        felupe.thermal.TimeStep.restore : Restore a checkpoint of the time step item.
+        felupe.TimeStep.restore : Restore a checkpoint of the time step item.
         felupe.CutbackPlugin : A cutback of the increment of failed substeps.
         """
 
@@ -109,7 +130,7 @@ class TimeStep:
 
         See Also
         --------
-        felupe.thermal.TimeStep.checkpoint : Return a checkpoint of the time step item.
+        felupe.TimeStep.checkpoint : Return a checkpoint of the time step item.
         """
 
         self.time_old = checkpoint["time_old"]

@@ -21,6 +21,7 @@ Mechanics
 .. autosummary::
 
    Step
+   TimeStep
    Job
    CharacteristicCurve
    FreeVibration
@@ -111,6 +112,11 @@ Mechanics
    :show-inheritance:
 
 .. autoclass:: felupe.Step
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. autoclass:: felupe.TimeStep
    :members:
    :undoc-members:
    :show-inheritance:

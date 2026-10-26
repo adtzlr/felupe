@@ -65,7 +65,7 @@ class SolidBodySurfaceRadiation:
         ...     emissivity=0.8,
         ...     temperature=20.0,  # °C
         ... )
-        >>> time = fem.thermal.TimeStep([solid])
+        >>> time = fem.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=15)
         >>> air_temperature = fem.math.linsteps([20, 40], num=15)  # air temperature
         >>> emissivity = fem.math.linsteps([0.6, 0.8], num=15)  # a value between 0 ... 1
@@ -85,7 +85,7 @@ class SolidBodySurfaceRadiation:
 
     See Also
     --------
-    felupe.thermal.TimeStep : A time step item.
+    felupe.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
 
     """

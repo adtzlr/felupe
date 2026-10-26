@@ -140,16 +140,14 @@ t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)
 
 
 # %%
-# The time step item is created with the thermal solid bodies. It must be located as the
-# first item in the step to properly update the time step in the materials. The internal
-# and external heat transfer item values are defined in the ramp, which specifies how
-# their values change over time. Finally, a job is created with the step and the
-# plugin, and evaluated with the top-level temperature field. A result file
-# is created for visualization in Paraview, and the temperature field is saved as point-
-# data in the result file.
-time = fem.thermal.TimeStep(
-    [*materials, external_heat_transfer, internal_heat_transfer]
-)
+# The time step item is created with the thermal solid bodies and the heat transfer
+# items. The time is defined in the ramp, i.e. the time increment of these items is
+# updated before each substep is evaluated. The internal and external heat transfer item
+# values are also defined in the ramp, which specifies how their values change over
+# time. Finally, a job is created with the step and the plugin, and evaluated with the
+# top-level temperature field. A result file is created for visualization in Paraview,
+# and the temperature field is saved as point-data in the result file.
+time = fem.TimeStep([*materials, external_heat_transfer, internal_heat_transfer])
 ramp = {
     time: time_steps,
     internal_heat_transfer: t_int,

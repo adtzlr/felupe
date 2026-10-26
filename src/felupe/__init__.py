@@ -98,6 +98,7 @@ from .mechanics import (
     StateNearlyIncompressible,
     Step,
     SubstepState,
+    TimeStep,
     TrussBody,
 )
 from .mesh import Circle, Cube, Grid, Mesh, MeshContainer, Point, Rectangle
@@ -265,6 +266,7 @@ __all__ = [
     "StateNearlyIncompressible",
     "Step",
     "SubstepState",
+    "TimeStep",
     "TrussBody",
     "MultiPointConstraint",
     "MultiPointContact",

@@ -1317,6 +1317,78 @@ def test_newton_custom_check():
     assert not np.allclose(solid.results.statevars, 0)
 
 
+def test_timestep():
+    "The time step item updates the time increment of all given items."
+
+    # the time step item of the thermal module is the same class
+    assert fem.TimeStep is fem.mechanics.TimeStep
+    assert fem.thermal.TimeStep is fem.TimeStep
+
+    region = fem.RegionQuad(fem.Rectangle(n=3))
+    field = fem.FieldContainer([fem.Field(region, dim=2)])
+    solid = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field)
+    load = fem.SolidBodyForce(field, values=[0.0, 0.0])
+
+    time = fem.TimeStep(items=[solid, load])
+    assert time.field is solid.field
+    assert isinstance(time, fem.mechanics.Item)
+
+    # a time increment of zero is valid
+    for time_new, time_step in [(0.0, 0.0), (0.1, 0.1), (0.5, 0.4), (0.5, 0.0)]:
+        time.update(time_new)
+        assert time.time_old == time_new
+        assert np.isclose(solid.time_step, time_step)
+        assert np.isclose(load.time_step, time_step)
+
+    # the old time is restored by a checkpoint
+    checkpoint = time.checkpoint()
+    time.update(1.0)
+    time.restore(checkpoint)
+    assert time.time_old == 0.5
+
+    with pytest.raises(ValueError):
+        time.update(0.4)
+
+
+def test_timestep_position():
+    "The position of the time step item in the list of items doesn't matter."
+
+    def evaluate(position):
+        mesh = fem.Rectangle(n=4)
+        region = fem.RegionQuad(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=1)])
+        boundaries = fem.BoundaryDict(
+            left=fem.Boundary(field[0], fx=0), right=fem.Boundary(field[0], fx=1)
+        )
+        solid = fem.thermal.SolidBodyThermal(
+            field,
+            mass_density=1.0,
+            specific_heat_capacity=1.0,
+            thermal_conductivity=1.0,
+            time_step=0.0,
+        )
+        time = fem.TimeStep(items=[solid])
+        items = {"first": [time, solid], "last": [solid, time], "ramp": [solid]}
+        table = fem.math.linsteps([0, 1], num=4)
+        step = fem.Step(
+            items=items[position],
+            ramp={boundaries["right"]: 10 * table, time: 0.1 * table},
+            boundaries=boundaries,
+        )
+        fem.Job(steps=[step]).evaluate(x0=field, verbose=0)
+
+        return field[0].values[:, 0], mesh.x
+
+    first, x = evaluate("first")
+    assert not np.allclose(first, 0)
+
+    # the temperature is not stationary (the stationary solution is linear in x)
+    assert not np.allclose(first, 10 * x)
+
+    for position in ["last", "ramp"]:
+        assert np.allclose(evaluate(position)[0], first)
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -1349,3 +1421,5 @@ if __name__ == "__main__":
     test_solidbody_stress_2d()
     test_item_protocol()
     test_newton_custom_check()
+    test_timestep()
+    test_timestep_position()

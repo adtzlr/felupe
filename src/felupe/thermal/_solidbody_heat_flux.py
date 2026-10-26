@@ -58,7 +58,7 @@ class SolidBodyHeatFlux:
         ...     field=field_flux,
         ...     heat_flux=1.0,  # W / m^2
         ... )
-        >>> time = fem.thermal.TimeStep([solid])
+        >>> time = fem.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {
         ...     time: 0.1 * table,
@@ -104,7 +104,7 @@ class SolidBodyHeatFlux:
         ...     field=field,
         ...     heat_flux=1.0,  # W / m^3
         ... )
-        >>> time = fem.thermal.TimeStep([solid])
+        >>> time = fem.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=10)
         >>> ramp = {
         ...     time: 0.1 * table,
@@ -121,7 +121,7 @@ class SolidBodyHeatFlux:
 
     See Also
     --------
-    felupe.thermal.TimeStep : A time step item.
+    felupe.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
 
     """

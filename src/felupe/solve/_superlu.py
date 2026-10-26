@@ -40,9 +40,13 @@ class SuperLUSolver:
         \boldsymbol{A}`. It requires a symmetric structure of the matrix, the values
         may be non-symmetric. Default is True.
     relax : int, optional
-        The relaxation parameter of the supernodes. Default is 20.
+        The relaxation parameter of the supernodes, i.e. a subtree of the elimination
+        tree with less columns than ``relax`` is taken as one (relaxed) supernode,
+        regardless of the structure of its rows. Default is 2 (the default of SuperLU
+        is 10).
     panel_size : int, optional
-        The size of the panels. Default is 20.
+        The size of the panels, i.e. the number of consecutive columns of the matrix
+        which are eliminated together. Default is 20 (the default of SuperLU).
     options : dict or None, optional
         Additional options of SuperLU, see :func:`scipy.sparse.linalg.splu`. Default is
         None.
@@ -73,6 +77,12 @@ class SuperLUSolver:
     :func:`scipy.sparse.linalg.spsolve`, the factorization is faster by a factor of
     about two for meshes with hexahedrons and by a factor of about 1.5 for meshes with
     quads. The fill-in of the factors, i.e. the required memory, is lower.
+
+    Small relaxed supernodes (``relax=2``) are as fast as larger ones for meshes with
+    linear cells and for meshes in 2d, but faster for meshes with quadratic cells and
+    for mixed field formulations in 3d, e.g. by a factor of up to four compared to
+    ``relax=20`` and up to two compared to ``relax=10`` (the default of SuperLU). The
+    size of the panels has no significant influence on the time of the factorization.
 
     By default, the diagonal entries are taken as pivots (``diag_pivot_thresh=0.0``),
     i.e. the fill-reducing ordering of the columns is kept. The large off-diagonal
@@ -208,7 +218,7 @@ class SuperLUSolver:
         >>> job = fem.Job(steps=[step]).evaluate(solver=solver)
         >>> solver
         SuperLUSolver(permc_spec='MMD_AT_PLUS_A', diag_pivot_thresh=0.0,
-        diag_perturbation=None, symmetric_mode=True, relax=20, panel_size=20,
+        diag_perturbation=None, symmetric_mode=True, relax=2, panel_size=20,
         refine=True, tol=None, fallback_pivot_thresh=0.1)
 
     The previous default solver of FElupe is :func:`scipy.sparse.linalg.spsolve`.
@@ -229,7 +239,7 @@ class SuperLUSolver:
         diag_pivot_thresh=0.0,
         diag_perturbation=None,
         symmetric_mode=True,
-        relax=20,
+        relax=2,
         panel_size=20,
         options=None,
         refine=True,

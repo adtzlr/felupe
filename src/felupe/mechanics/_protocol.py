@@ -55,6 +55,8 @@ class Item(Protocol):
       modified by the iterations of the Newton-Raphson method, is restored by the
       :class:`~felupe.CutbackPlugin`, e.g. the internal fields of a
       :class:`~felupe.SolidBodyNearlyIncompressible`.
+    * ``time_step``: the time increment, which is updated by a
+      :class:`~felupe.TimeStep`, e.g. of a solid body with a time-dependent material.
     * ``results.force``: the assembled vector, which is used by the
       :class:`~felupe.CharacteristicCurve` to evaluate the reaction forces.
     * ``assemble.mass()``: the mass matrix for a :class:`~felupe.FreeVibration`.

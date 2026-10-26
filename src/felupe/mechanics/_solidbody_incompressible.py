@@ -40,7 +40,10 @@ class SolidBodyNearlyIncompressible(Solid):
         ``d2ψdFdF = umat.hessian([F, ζ])`` for the hessian of
         the strain energy density function :math:`\hat{\psi}(\boldsymbol{F})`, where
         :math:`\boldsymbol{F}` is the deformation gradient tensor and :math:`\zeta`
-        holds the array of internal state variables.
+        holds the array of internal state variables. A time-dependent material, i.e. a
+        material with an attribute ``time_dependent`` which is True, takes the time
+        increment as additional keyword-argument, ``umat.gradient([F, ζ], dtime=Δt)``
+        and ``umat.hessian([F, ζ], dtime=Δt)``.
     field : FieldContainer
         A field container with one or more fields.
     bulk : float or None, optional
@@ -62,6 +65,9 @@ class SolidBodyNearlyIncompressible(Solid):
         :math:`U(\bar{J})=K\ln(\bar{J})^2/2`, or by an instance of
         :class:`~felupe.VolumetricStrainEnergy`, e.g. of a custom subclass. Default is
         ``"volume-ratio"``.
+    time_step : float or None, optional
+        The time increment :math:`\Delta t` of a time-dependent material, which is
+        usually updated by a :class:`~felupe.TimeStep` (default is None).
 
     Notes
     -----
@@ -354,11 +360,13 @@ class SolidBodyNearlyIncompressible(Solid):
         statevars=None,
         density=None,
         volumetric="volume-ratio",
+        time_step=None,
     ):
         self.umat = umat
         self.field = field
         self.bulk = bulk
         self.density = density
+        self.time_step = time_step
 
         # volumetric part of the strain energy density function U(J), given by a kind
         # (with the bulk modulus) or by an instance
@@ -587,6 +595,7 @@ class SolidBodyNearlyIncompressible(Solid):
             density=self.density,
             bulk=self.bulk,
             volumetric=self._volumetric,
+            time_step=self.time_step,
         )
 
         # expand state variables (no rotation is applied here)
@@ -724,6 +733,9 @@ class SolidBodyNearlyIncompressible(Solid):
 
         p = self.results.state.p
 
+        # the time increment of a time-dependent material
+        kwargs = self._with_time_increment(kwargs)
+
         if "out" in inspect.signature(self.umat.gradient).parameters:
             kwargs["out"] = self.results.gradient
 
@@ -747,6 +759,9 @@ class SolidBodyNearlyIncompressible(Solid):
         F = self.results.kinematics[0]
         statevars = self.results.statevars
         p = self.results.state.p
+
+        # the time increment of a time-dependent material
+        kwargs = self._with_time_increment(kwargs)
 
         if "out" in inspect.signature(self.umat.hessian).parameters:
             kwargs["out"] = self.results.hessian

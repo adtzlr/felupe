@@ -187,8 +187,12 @@ def test_time_increment_detection():
     assert not fem.NeoHooke(mu=1.0).time_dependent
     assert not fem.ConstitutiveMaterial.time_dependent
 
-    # a function without a signature
-    assert not fem.constitution._material.takes_time_increment(np.add, {})
+    # a function without a signature (e.g. some built-in functions)
+    takes_time_increment = fem.constitution._material.takes_time_increment
+    assert not takes_time_increment(max, {})
+
+    # a function with a signature without a time increment
+    assert not takes_time_increment(np.add, {})
 
 
 def test_time_increment_errors():

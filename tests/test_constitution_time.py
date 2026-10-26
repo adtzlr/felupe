@@ -272,6 +272,139 @@ def test_time_increment_custom():
         umat.gradient([F, None])
 
 
+def wrapper_inputs():
+    "Return the input lists of the mixed-field formulations and of a single field."
+
+    rng = np.random.default_rng(3)
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    q, c = region.dV.shape
+
+    # the old inverse of the viscous right Cauchy-Green deformation tensor (identity)
+    Ci = np.array([1.0, 0, 0, 1, 0, 1]).reshape(6, 1, 1)
+    Ci = np.ascontiguousarray(np.broadcast_to(Ci, (6, q, c)))
+
+    mixed = fem.FieldsMixed(region, n=3)
+    mixed[0].values[:] = rng.uniform(-0.05, 0.05, mixed[0].values.shape)
+    mixed[1].values[:] = rng.uniform(-0.1, 0.1, mixed[1].values.shape)
+    mixed[2].values[:] = 1 + rng.uniform(-0.05, 0.05, mixed[2].values.shape)
+
+    third = fem.FieldContainer(
+        [fem.Field(region, dim=3), fem.Field(region, dim=9)], take=[0, 1, 1]
+    )
+    third[0].values[:] = mixed[0].values
+    third[1].values[:] = rng.uniform(-0.05, 0.05, third[1].values.shape)
+
+    return {
+        "mixed": [*mixed.extract(), Ci],
+        "third": [*third.extract(grad=[True, False, True]), Ci],
+        "single": [mixed.extract()[0], Ci],
+    }
+
+
+def test_time_increment_wrappers():
+    "The wrapper materials pass the time increment to the time-dependent materials."
+
+    inputs = wrapper_inputs()
+    visco = fem.constitution.finite_strain_viscoelastic
+
+    wrappers = [
+        (lambda m: fem.NearlyIncompressible(m, bulk=50.0), "mixed"),
+        (fem.ThreeFieldVariation, "mixed"),
+        (lambda m: fem.ThirdMediumContactMixed(m, 0.1, 1e-4, 1e-2), "third"),
+        (lambda m: m & fem.Volumetric(bulk=50.0), "single"),
+        (lambda m: fem.NeoHooke(mu=0.5) & m, "single"),
+    ]
+
+    for Wrapper, kind in wrappers:
+        x = inputs[kind]
+        umat = Wrapper(fem.Hyperelastic(visco, mu=1.0, eta=2.0, nstatevars=6))
+        assert umat.time_dependent
+
+        for dtime in [0.0, 0.3]:
+            old = Wrapper(
+                fem.Hyperelastic(visco, mu=1.0, eta=2.0, dtime=dtime, nstatevars=6)
+            )
+            assert not old.time_dependent
+
+            assert_equal_results(umat.gradient(x, dtime=dtime), old.gradient(x))
+            assert_equal_results(umat.hessian(x, dtime=dtime), old.hessian(x))
+
+        # the time increment is effective
+        assert not np.allclose(
+            umat.gradient(x, dtime=0.1)[0], umat.gradient(x, dtime=2.0)[0]
+        )
+
+        for method in [umat.gradient, umat.hessian]:
+            with pytest.raises(ValueError, match="time-dependent"):
+                method(x)
+
+            with pytest.raises(TypeError, match="not time-dependent"):
+                Wrapper(fem.NeoHooke(mu=1.0)).gradient(x, dtime=0.1)
+
+    # materials which are not time-dependent
+    for umat in [
+        fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=50.0),
+        fem.ThreeFieldVariation(fem.NeoHooke(mu=1.0)),
+        fem.NeoHooke(mu=1.0) & fem.Volumetric(bulk=50.0),
+    ]:
+        assert not umat.time_dependent
+
+
+def test_time_increment_external():
+    "A material of an external package takes the time increment by duck typing."
+
+    class External:
+        "A time-dependent material which is not derived from ConstitutiveMaterial."
+
+        time_dependent = True
+
+        def __init__(self):
+            self.x = [np.eye(3), np.zeros(0)]
+            self.kwargs = {}
+            self.dtimes = []
+
+        def gradient(self, x, dtime):
+            self.dtimes.append(dtime)
+            F, statevars = x[0], x[-1]
+            return [F / (1 + dtime), statevars]
+
+        def hessian(self, x, dtime):
+            self.dtimes.append(dtime)
+            eye = fem.math.identity(x[0])
+            ones = np.ones(x[0].shape[-2:])  # the full shape of the trailing axes
+            return [fem.math.cdya_ik(eye, eye) / (1 + dtime) * ones]
+
+    inputs = wrapper_inputs()
+    x = inputs["mixed"]
+    F = x[0]
+
+    for Wrapper in [
+        lambda m: fem.NearlyIncompressible(m, bulk=50.0),
+        fem.ThreeFieldVariation,
+        lambda m: fem.Volumetric(bulk=50.0) & m,
+    ]:
+        external = External()
+        umat = Wrapper(external)
+        assert umat.time_dependent
+
+        if isinstance(umat, fem.constitution.CompositeMaterial):
+            x = [F, None]
+
+        umat.gradient(x, dtime=0.5)
+        umat.hessian(x, dtime=0.5)
+
+        assert len(external.dtimes) > 0
+        assert set(external.dtimes) == {0.5}
+
+    # without the attribute, the material is not time-dependent
+    del External.time_dependent
+    umat = fem.NearlyIncompressible(External(), bulk=50.0)
+    assert not umat.time_dependent
+
+    with pytest.raises(TypeError, match="not time-dependent"):
+        umat.gradient(inputs["mixed"], dtime=0.5)
+
+
 if __name__ == "__main__":
     for Material, fun in [
         (fem.Hyperelastic, fem.constitution.finite_strain_viscoelastic),
@@ -283,3 +416,5 @@ if __name__ == "__main__":
     test_time_increment_detection()
     test_time_increment_errors()
     test_time_increment_custom()
+    test_time_increment_wrappers()
+    test_time_increment_external()

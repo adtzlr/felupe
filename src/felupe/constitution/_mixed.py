@@ -57,7 +57,9 @@ class NearlyIncompressible(ConstitutiveMaterial):
         energy density function :math:`\hat{\psi}(\boldsymbol{F})` with methods for the
         ``gradient`` :math:`\partial_\boldsymbol{F}(\hat{\psi})` and the ``hessian``
         :math:`\partial_\boldsymbol{F}[\partial_\boldsymbol{F}(\hat{\psi})]` w.r.t the
-        deformation gradient tensor :math:`\boldsymbol{F}`.
+        deformation gradient tensor :math:`\boldsymbol{F}`. If the material is
+        time-dependent (``time_dependent=True``), this material is also time-dependent
+        and the time increment ``dtime`` is passed to the material.
     bulk : float or None, optional
         The bulk modulus :math:`K` of the volumetric part of the strain energy density
         function, which is required if ``volumetric`` is a kind. It must be None if
@@ -128,7 +130,13 @@ class NearlyIncompressible(ConstitutiveMaterial):
         """
         return _volumetric_strain_energy(self._volumetric, self.bulk)
 
-    def _gradient(self, x):
+    @property
+    def time_dependent(self):
+        """A flag which is True if the material is time-dependent. Then, the time
+        increment ``dtime`` is passed to the material."""
+        return getattr(self.material, "time_dependent", False)
+
+    def _gradient(self, x, **kwargs):
         r"""Return a list with the gradient of the strain energy density function
         w.r.t. the fields displacements, pressure and volume ratio.
 
@@ -163,13 +171,13 @@ class NearlyIncompressible(ConstitutiveMaterial):
 
         """
         [F, p, J], statevars = x[:3], x[-1]
-        dWdF, statevars_new = self.material.gradient([F, statevars])
+        dWdF, statevars_new = self.material.gradient([F, statevars], **kwargs)
         dWdF += p * transpose(inv(F, determinant=1.0))
         dWdp = det(F) - J
         dWdJ = self.volumetric.dUdJ(J) - p
         return [dWdF, dWdp, dWdJ, statevars_new]
 
-    def _hessian(self, x):
+    def _hessian(self, x, **kwargs):
         r"""Return a list with the hessian of the strain energy density function
         w.r.t. the fields displacements, pressure and volume ratio.
 
@@ -218,7 +226,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
         [F, p, J], statevars = x[:3], x[-1]
         detF = det(F)
         iFT = transpose(inv(F, determinant=detF))
-        d2WdFdF = self.material.hessian([F, statevars])[0]
+        d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
         d2WdFdF += p * detF * (dya(iFT, iFT) - cdya_il(iFT, iFT))
         d2WdFdp = detF * iFT
         d2WdFdJ = None  # np.zeros_like(F)
@@ -372,7 +380,9 @@ class ThreeFieldVariation(ConstitutiveMaterial):
     material : ConstitutiveMaterial
         A hyperelastic material definition for the strain energy density function with
         methods for the ``gradient`` and the ``hessian`` w.r.t the deformation gradient
-        tensor.
+        tensor. If the material is time-dependent (``time_dependent=True``), this
+        material is also time-dependent and the time increment ``dtime`` is passed to
+        the material.
     parallel : bool or None, optional
         A flag to evaluate the gradient and the hessian in chunks of cells by a pool of
         threads. If None, the flag is taken from the material (default is None).
@@ -390,6 +400,12 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             parallel = getattr(material, "parallel", False)
 
         self.parallel = parallel
+
+    @property
+    def time_dependent(self):
+        """A flag which is True if the material is time-dependent. Then, the time
+        increment ``dtime`` is passed to the material."""
+        return getattr(self.material, "time_dependent", False)
 
     def _gradient_u(self, k, p, J):
         """Variation of total potential w.r.t displacements
@@ -467,7 +483,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
 
         return k.PbbF / (3 * J) - p
 
-    def _gradient(self, x):
+    def _gradient(self, x, **kwargs):
         r"""Return a list of variations of the total potential energy w.r.t. the fields
         displacements, pressure and volume ratio.
 
@@ -491,7 +507,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
         k.detF = det(F)
         k.iFT = transpose(inv(F))
         k.Fb = (J / k.detF) ** (1 / 3) * F
-        k.Pb, statevars_new = self.material.gradient([k.Fb, statevars])
+        k.Pb, statevars_new = self.material.gradient([k.Fb, statevars], **kwargs)
         k.Pbb = (J / k.detF) ** (1 / 3) * k.Pb
         k.PbbF = ddot(k.Pbb, F, mode=(2, 2))
 
@@ -502,7 +518,7 @@ class ThreeFieldVariation(ConstitutiveMaterial):
             statevars_new,
         ]
 
-    def _hessian(self, x):
+    def _hessian(self, x, **kwargs):
         r"""List of linearized variations of total potential energy w.r.t
         displacements, pressure and volume ratio (these expressions are
         symmetric; ``A_up = A_pu`` if derived from a total potential energy
@@ -543,9 +559,10 @@ class ThreeFieldVariation(ConstitutiveMaterial):
         k.detF = det(F)
         k.iFT = transpose(inv(F))
         k.Fb = (J / k.detF) ** (1 / 3) * F
-        k.Pbb = (J / k.detF) ** (1 / 3) * self.material.gradient([k.Fb, statevars])[0]
+        Pb = self.material.gradient([k.Fb, statevars], **kwargs)[0]
+        k.Pbb = (J / k.detF) ** (1 / 3) * Pb
 
-        k.A4b = self.material.hessian([k.Fb, statevars])[0]
+        k.A4b = self.material.hessian([k.Fb, statevars], **kwargs)[0]
         k.A4bb = (J / k.detF) ** (2 / 3) * k.A4b
 
         k.PbbF = ddot(k.Pbb, F, mode=(2, 2))
@@ -740,6 +757,9 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         A hyperelastic material definition for the strain energy density function
         :math:`\psi(\boldsymbol{F})` of the third medium with methods for the
         ``gradient`` and the ``hessian`` w.r.t. the deformation gradient tensor.
+        If the material is time-dependent (``time_dependent=True``), this
+        material is also time-dependent and the time increment ``dtime`` is passed to
+        the material.
     gamma : float
         The scaling factor :math:`\gamma` of the strain energy density function of the
         third medium.
@@ -827,9 +847,15 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         # for cartesian 3d fields, x[2].shape is (9, 3)
         self.x = [material.x[0], np.ones(9), np.ones((9, 3)), material.x[-1]]
 
-    def _gradient(self, x):
+    @property
+    def time_dependent(self):
+        """A flag which is True if the material is time-dependent. Then, the time
+        increment ``dtime`` is passed to the material."""
+        return getattr(self.material, "time_dependent", False)
+
+    def _gradient(self, x, **kwargs):
         [F, θ, grad_θ], statevars = x[:3], x[-1]
-        dWdF, statevars_new = self.material.gradient([F, statevars])
+        dWdF, statevars_new = self.material.gradient([F, statevars], **kwargs)
         dWdF *= self.gamma
 
         # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
@@ -843,7 +869,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
 
         return [dWdF, dWdθ, dWdgradθ, statevars_new]
 
-    def _hessian(self, x):
+    def _hessian(self, x, **kwargs):
         # the hessian doesn't depend on the values of θ
         F, grad_θ, statevars = x[0], x[2], x[-1]
 
@@ -858,7 +884,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         # ψ_p = p_r * (θ - dudX : θ - dudX) / 2
         # ψ_g = α_r * (∇θ : ∇θ) / 2
 
-        d2WdFdF = self.material.hessian([F, statevars])[0]
+        d2WdFdF = self.material.hessian([F, statevars], **kwargs)[0]
         d2WdFdF *= self.gamma
         d2WdFdF += self.p_r * reshape(identity_9_9, (3, 3, 3, 3))
 

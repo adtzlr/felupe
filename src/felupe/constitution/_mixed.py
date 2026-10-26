@@ -789,7 +789,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         ... )
         >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
         >>> umat = fem.ThirdMediumContactMixed(
-        ...     fem.NeoHooke(mu=1, bulk=20), gamma=1e-5, alpha_r=1e-4, p_r=1e-2
+        ...     fem.NeoHooke(mu=1, bulk=20, volumetric="log"), gamma=1e-5, alpha_r=1e-4, p_r=1e-2
         ... )
         >>> solid = fem.SolidBody(umat, field, grad=[True, False, True])
 

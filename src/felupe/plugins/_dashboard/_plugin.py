@@ -212,10 +212,11 @@ class DashboardWidgetPlugin(Plugin):
       :class:`~felupe.SolidBodyForce` on the region of a solid body) and
     * meshes with other points than the first mesh.
 
-    Items without a field, e.g. a :class:`~felupe.thermal.TimeStep`, are skipped.
-    Faces at the interface of two bodies with merged points are not drawn. The values
-    are taken from the first field of the unknowns ``x0`` of the job, i.e.
-    ``job.evaluate(x0=field)`` shows the field of all bodies.
+    Items without a field are skipped. A :class:`~felupe.TimeStep` adds no mesh,
+    because its field is the field of its first item. Faces at the interface of two
+    bodies with merged points are not drawn. The values are taken from the first field
+    of the unknowns ``x0`` of the job, i.e. ``job.evaluate(x0=field)`` shows the field
+    of all bodies.
 
     Without a Jupyter frontend, e.g. in a script which is run in the terminal or in the
     IPython terminal (which has no kernel and can not display widgets), a warning is

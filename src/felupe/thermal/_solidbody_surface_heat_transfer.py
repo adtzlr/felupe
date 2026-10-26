@@ -59,7 +59,7 @@ class SolidBodySurfaceHeatTransfer:
         ...     coefficient=7.69,  # W/(m^2 K)
         ...     temperature=10.0,  # °C
         ... )
-        >>> time = fem.thermal.TimeStep([solid])
+        >>> time = fem.TimeStep([solid])
         >>> table = fem.math.linsteps([0, 1], num=15)
         >>> air_temperature = fem.math.linsteps([0, 40], num=15)  # air temperature
         >>> coefficient = fem.math.linsteps([7.0, 8.0], num=15)  # heat transfer coeff.
@@ -80,7 +80,7 @@ class SolidBodySurfaceHeatTransfer:
 
     See Also
     --------
-    felupe.thermal.TimeStep : A time step item.
+    felupe.TimeStep : A time step item.
     felupe.thermal.SolidBodyThermal : A thermal solid body for heat conduction.
 
     """

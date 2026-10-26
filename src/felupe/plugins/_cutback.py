@@ -147,7 +147,7 @@ class CutbackPlugin(Plugin):
     fields (pressure and volume ratio) of a
     :class:`~felupe.SolidBodyNearlyIncompressible`, which are updated in each
     evaluation of the Newton-Raphson method, as well as the time of a
-    :class:`~felupe.thermal.TimeStep`, the state of the frictional contact of a
+    :class:`~felupe.TimeStep`, the state of the frictional contact of a
     :class:`~felupe.ContactRigidPlane` and the state variables of the rotation of a
     :class:`~felupe.MultiPointConstraint`. The state variables of material models are
     only updated after a converged increment. Hence, the increments of a subdivided
@@ -163,7 +163,7 @@ class CutbackPlugin(Plugin):
         part of the ramp. Hence, it is not scaled by the cutback, i.e. each increment
         of a subdivided substep uses the full time increment of the material. A time
         which is part of the ramp, like the time of a
-        :class:`~felupe.thermal.TimeStep`, is interpolated.
+        :class:`~felupe.TimeStep`, is interpolated.
 
     **Values of the previous substep**: The values of the ramp of the previous
     substep are taken from the substeps which were already evaluated with this

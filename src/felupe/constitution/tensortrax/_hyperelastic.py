@@ -5,7 +5,7 @@ import tensortrax as tr
 
 from ...math import cdya_ik, dot, transpose
 from .._base import ConstitutiveMaterial
-from .._material import Material
+from .._material import Material, takes_time_increment
 
 
 class Hyperelastic(Material):
@@ -90,6 +90,21 @@ class Hyperelastic(Material):
 
         umat = mat.Hyperelastic(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
 
+    **Time-dependent materials**: If the function has an argument ``dtime`` without a
+    default value, which is not given as keyword-argument of the material, the material
+    is time-dependent (the attribute ``time_dependent`` is True). Then, the time
+    increment is an input of the material, like the deformation gradient, i.e. it is
+    given by the keyword-argument ``dtime`` of :meth:`gradient` and :meth:`hessian`.
+    A time increment which is given as keyword-argument of the material, like
+    ``dtime=1`` in the code-block above, is a constant material parameter.
+
+    ..  code-block::
+
+        umat = mat.Hyperelastic(viscoelastic, mu=1, eta=1, nstatevars=6)
+        assert umat.time_dependent
+
+        P, statevars_new = umat.gradient([F, statevars], dtime=0.1)
+
     ..  note::
         See the `documentation of tensortrax <https://tensortrax.readthedocs.io>`_
         for further details.
@@ -157,17 +172,21 @@ class Hyperelastic(Material):
             **keyword_args,
         )
 
+        # the time increment is an input, if it is an argument of the (original)
+        # function which is not given as material parameter
+        self.time_dependent = takes_time_increment(fun, self.kwargs)
+
     # evaluate the gradient and the hessian in chunks of cells by FElupe (instead of
     # the generic material): also the conversions of the stresses and the elasticity
     # tensors are evaluated in chunks and the chunks are evaluated by FElupe's threads
     gradient = ConstitutiveMaterial.gradient
     hessian = ConstitutiveMaterial.hessian
 
-    def _gradient(self, x):
-        return self._stress(x, **self.kwargs)
+    def _gradient(self, x, **kwargs):
+        return self._stress(x, **self.kwargs, **kwargs)
 
-    def _hessian(self, x):
-        return self._elasticity(x, **self.kwargs)
+    def _hessian(self, x, **kwargs):
+        return self._elasticity(x, **self.kwargs, **kwargs)
 
     def _stress(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])

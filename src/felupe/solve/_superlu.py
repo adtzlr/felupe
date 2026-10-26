@@ -27,6 +27,13 @@ class SuperLUSolver:
         classical partial pivoting). Default is 0.0, i.e. no pivoting. A solution with
         a backward error above the tolerance is obtained again by a second
         factorization with the pivot threshold ``fallback_pivot_thresh``.
+    diag_perturbation : float or None, optional
+        The relative perturbation of the zero diagonal entries of the matrix, e.g. of
+        the pressure field of a saddle point problem, before the factorization (static
+        pivoting), see Eq. :eq:`superlu-perturbation`. If None, the square root of the
+        machine epsilon of the precision of the matrix is used, e.g. about 1.5e-8 for
+        double precision. With 0, the zero diagonal entries are not perturbed. The
+        matrix is only perturbed with ``refine=True``. Default is None.
     symmetric_mode : bool, optional
         A flag to use the symmetric mode of SuperLU, i.e. diagonal pivots are preferred
         and the elimination tree is based on the structure of :math:`\boldsymbol{A}^T +
@@ -40,8 +47,8 @@ class SuperLUSolver:
         Additional options of SuperLU, see :func:`scipy.sparse.linalg.splu`. Default is
         None.
     refine : bool, optional
-        A flag to improve the solution by one step of iterative refinement, which
-        re-uses the factors of the matrix. Default is True.
+        A flag to improve the solution by iterative refinement, which re-uses the
+        factors of the matrix. Default is True.
     tol : float or None, optional
         The tolerance of the normwise backward error of the solution. If None, the
         square root of the machine epsilon of the lowest precision of the matrix and
@@ -51,7 +58,8 @@ class SuperLUSolver:
         The pivot threshold of a second factorization of the matrix, which is used if
         the backward error of the solution exceeds the tolerance or if the first
         factorization fails. If None, the matrix is factorized only once and the
-        backward error is not evaluated. Default is 0.1.
+        backward error is not evaluated (except for the iterative refinement of a
+        perturbed matrix). Default is 0.1.
 
     Notes
     -----
@@ -64,12 +72,10 @@ class SuperLUSolver:
     quads. The fill-in of the factors, i.e. the required memory, is lower.
 
     By default, the diagonal entries are taken as pivots (``diag_pivot_thresh=0.0``),
-    i.e. the fill-reducing ordering of the columns is kept. Neither the large
-    off-diagonal entries of penalty-based items, e.g. of a
-    :class:`~felupe.MultiPointConstraint` or of a :class:`~felupe.ContactRigidPlane`,
-    nor the zero diagonal entries of saddle point problems, e.g. of the pressure field
-    of :class:`~felupe.ThreeFieldVariation`, lead to pivoting, which would increase
-    the fill-in and the time of the factorization by orders of magnitude.
+    i.e. the fill-reducing ordering of the columns is kept. The large off-diagonal
+    entries of penalty-based items, e.g. of a :class:`~felupe.MultiPointConstraint` or
+    of a :class:`~felupe.ContactRigidPlane`, do not lead to pivoting, which would
+    increase the fill-in and the time of the factorization by orders of magnitude.
 
     Without pivoting, the factorization is not guaranteed to be stable. Hence, the
     normwise backward error of the solution is evaluated, see Eq.
@@ -99,6 +105,41 @@ class SuperLUSolver:
         \boldsymbol{x} \leftarrow \boldsymbol{x} + (\boldsymbol{L}\boldsymbol{U})^{-1}
             \left( \boldsymbol{b} - \boldsymbol{A}\ \boldsymbol{x} \right)
 
+    However, SuperLU never takes a diagonal entry of zero as pivot, also not with
+    ``diag_pivot_thresh=0.0``. Saddle point problems have zero diagonal entries, e.g.
+    the pressure fields of :class:`~felupe.ThreeFieldVariation` and
+    :class:`~felupe.NearlyIncompressible` (on :class:`~felupe.FieldsMixed`) or of a
+    mixed weak form by :func:`~felupe.Form`. A zero diagonal entry, which is eliminated
+    before it is filled by the elimination of one of its neighbours, leads to an
+    exchange of rows and the fill-reducing ordering of the columns is lost. Hence, the
+    zero diagonal entries :math:`A_{ii} = 0` are perturbed before the factorization,
+    see Eq. :eq:`superlu-perturbation` (static pivoting [1]_, [2]_), by the relative
+    perturbation :math:`\epsilon` (``diag_perturbation``) of an estimate of their
+    pivots, i.e. of the diagonal entries of the Schur complement, where the inverse of
+    the other block of the matrix is approximated by the inverse of its diagonal.
+
+    ..  math::
+        :label: superlu-perturbation
+
+        \tilde{A}_{ii} = -\epsilon \sum_{j,\ A_{jj} \ne 0}
+            \frac{A_{ji}^2}{|A_{jj}|} \qquad \text{if} \qquad A_{ii} = 0
+
+    The perturbation is invariant to the scaling of the unknowns, e.g. by the units of
+    the displacements and the pressure. Its negative sign is the sign of the pivots
+    of a symmetric saddle point problem with a positive definite block, i.e. the
+    perturbed matrix corresponds to a penalty formulation of the constraints. A zero
+    diagonal entry without non-zero entries in the rows with non-zero diagonal entries
+    of its column, e.g. of an empty row and column, is not perturbed. The perturbed
+    matrix is factorized and the solution is improved by iterative refinement with the
+    original matrix, see Eq. :eq:`superlu-refinement`, until the norm of the
+    correction is below the tolerance times the norm of the solution (maximum norms,
+    at most ten steps). The iterative refinement is stopped if the norm of the
+    correction is not reduced by at least a factor of two (the norm of the first
+    correction is compared to the norm of the solution of the perturbed matrix). If
+    the iterative refinement does not converge or if the backward error of the refined
+    solution exceeds the tolerance, the (unperturbed) matrix is factorized again with
+    the pivot threshold ``fallback_pivot_thresh``.
+
     The solution has the same shape as :func:`scipy.sparse.linalg.spsolve`, i.e. a
     one-dimensional array for a right-hand side with the shape ``(n,)`` or ``(n, 1)``.
     The right-hand side may also be a sparse matrix (converted to a dense array) and
@@ -108,6 +149,19 @@ class SuperLUSolver:
     Like :func:`scipy.sparse.linalg.spsolve`, an exactly singular matrix emits a
     :class:`~scipy.sparse.linalg.MatrixRankWarning` and returns NaN values, which
     raises a :class:`~felupe.NewtonConvergenceError` in :func:`~felupe.newtonraphson`.
+    For an exactly singular matrix with perturbed zero diagonal entries, the iterative
+    refinement does not converge (unless the right-hand side is in the range of the
+    matrix), i.e. it is detected by the factorization of the fallback.
+
+    References
+    ----------
+    .. [1] X. S. Li and J. W. Demmel, "Making sparse Gaussian elimination scalable by
+       static pivoting", in Proceedings of the ACM/IEEE Conference on Supercomputing
+       (SC'98), 1998, doi: `10.1109/SC.1998.10030
+       <https://doi.org/10.1109/SC.1998.10030>`_.
+    .. [2] O. Schenk and K. Gärtner, "On fast factorization pivoting methods for sparse
+       symmetric indefinite systems", Electronic Transactions on Numerical Analysis,
+       vol. 23, pp. 158–179, 2006.
 
     Examples
     --------
@@ -129,8 +183,8 @@ class SuperLUSolver:
         >>> job = fem.Job(steps=[step]).evaluate(solver=solver)
         >>> solver
         SuperLUSolver(permc_spec='MMD_AT_PLUS_A', diag_pivot_thresh=0.0,
-        symmetric_mode=True, relax=20, panel_size=20, refine=True, tol=None,
-        fallback_pivot_thresh=0.1)
+        diag_perturbation=None, symmetric_mode=True, relax=20, panel_size=20,
+        refine=True, tol=None, fallback_pivot_thresh=0.1)
 
     The previous default solver of FElupe is :func:`scipy.sparse.linalg.spsolve`.
 
@@ -148,6 +202,7 @@ class SuperLUSolver:
         self,
         permc_spec="MMD_AT_PLUS_A",
         diag_pivot_thresh=0.0,
+        diag_perturbation=None,
         symmetric_mode=True,
         relax=20,
         panel_size=20,
@@ -158,6 +213,7 @@ class SuperLUSolver:
     ):
         self.permc_spec = permc_spec
         self.diag_pivot_thresh = diag_pivot_thresh
+        self.diag_perturbation = diag_perturbation
         self.symmetric_mode = symmetric_mode
         self.relax = relax
         self.panel_size = panel_size
@@ -170,6 +226,7 @@ class SuperLUSolver:
         args = [
             f"permc_spec={self.permc_spec!r}",
             f"diag_pivot_thresh={self.diag_pivot_thresh!r}",
+            f"diag_perturbation={self.diag_perturbation!r}",
             f"symmetric_mode={self.symmetric_mode!r}",
             f"relax={self.relax!r}",
             f"panel_size={self.panel_size!r}",
@@ -220,6 +277,55 @@ class SuperLUSolver:
             panel_size=self.panel_size,
             options=options,
         )
+
+    def perturb(self, A):
+        r"""Return the matrix with perturbed zero diagonal entries, see Eq.
+        :eq:`superlu-perturbation`.
+
+        Parameters
+        ----------
+        A : scipy.sparse.sparray or scipy.sparse.spmatrix
+            The sparse square matrix (converted to CSC format).
+
+        Returns
+        -------
+        scipy.sparse.sparray or scipy.sparse.spmatrix
+            The matrix (in CSC format) with the perturbed zero diagonal entries. If no
+            diagonal entry is perturbed, the matrix in CSC format is returned (without
+            a copy for a matrix in CSC format).
+        """
+
+        A = A.tocsc()
+        diagonal = A.diagonal()
+        zeros = np.flatnonzero(diagonal == 0)
+
+        if len(zeros) == 0:
+            return A
+
+        # the columns of the zero diagonal entries
+        columns = A[:, zeros]
+        dtype = np.result_type(A.dtype, np.float32)
+        absdiag = np.abs(diagonal[columns.indices])
+
+        # the estimated (absolute) pivots of the zero diagonal entries
+        weights = np.divide(
+            np.abs(columns.data) ** 2,
+            absdiag,
+            out=np.zeros(len(absdiag)),
+            where=absdiag > 0,
+        )
+        cols = np.repeat(np.arange(len(zeros)), np.diff(columns.indptr))
+        pivots = np.bincount(cols, weights=weights, minlength=len(zeros))
+
+        mask = pivots > 0
+
+        if not np.any(mask):
+            return A
+
+        rows = zeros[mask]
+        values = (-self._perturbation(A) * pivots[mask]).astype(dtype)
+
+        return A + type(A)((values, (rows, rows)), shape=A.shape)
 
     def backward_error(self, A, x, b, r=None):
         r"""Return the normwise backward error of a solution of the linear equation
@@ -278,21 +384,71 @@ class SuperLUSolver:
 
         return np.sqrt(eps)
 
+    def _perturbation(self, A):
+        "Return the relative perturbation of the zero diagonal entries."
+
+        if self.diag_perturbation is not None:
+            return self.diag_perturbation
+
+        return np.sqrt(np.finfo(np.result_type(A.dtype, np.float32)).eps)
+
+    @staticmethod
+    def _change(dx, x):
+        "Return the largest relative change of the solution(s) (maximum norms)."
+
+        n = len(x)
+        norm_dx = np.abs(dx.reshape(n, -1)).max(axis=0)
+        norm_x = np.abs(x.reshape(n, -1)).max(axis=0)
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            changes = np.where(norm_x > 0, norm_dx / norm_x, norm_dx)
+
+        return changes.max()
+
+    def _refine_perturbed(self, lu, A, x, b):
+        """Improve the solution of a perturbed matrix by iterative refinement with the
+        original matrix. Return the solution and a flag if the iterative refinement has
+        converged with a backward error within the tolerance."""
+
+        tol = self._tolerance(A, b)
+        r = b - A @ x
+        change = 1.0  # the relative change of the solution of the perturbed matrix
+
+        for _ in range(10):
+            dx = lu.solve(r)
+            x = x + dx
+            r = b - A @ x
+
+            previous, change = change, self._change(dx, x)
+
+            # converged, stagnated or diverged (also for NaN-values)
+            if change <= tol or not change <= previous / 2:
+                break
+
+        converged = change <= tol
+
+        return x, converged and self.backward_error(A, x, b, r=r) <= tol
+
     def _solve_sparse(self, A, b):
         "Solve a linear equation system with a sparse matrix."
 
         A = A.tocsc()
 
-        thresholds = [self.diag_pivot_thresh]
+        # the first attempt with the perturbed matrix (without pivoting by default)
+        perturb = self.refine and self.diag_perturbation != 0
+        attempts = [(self.diag_pivot_thresh, perturb)]
 
         if self.fallback_pivot_thresh is not None:
-            thresholds.append(self.fallback_pivot_thresh)
+            attempts.append((self.fallback_pivot_thresh, False))
 
-        for attempt, diag_pivot_thresh in enumerate(thresholds):
-            last_attempt = attempt == len(thresholds) - 1
+        for attempt, (diag_pivot_thresh, perturb) in enumerate(attempts):
+            last_attempt = attempt == len(attempts) - 1
+
+            # the perturbed matrix is a new matrix, or the matrix itself
+            M = self.perturb(A) if perturb else A
 
             try:
-                lu = self.factorize(A, diag_pivot_thresh=diag_pivot_thresh)
+                lu = self.factorize(M, diag_pivot_thresh=diag_pivot_thresh)
 
             except RuntimeError as error:
                 if "singular" not in str(error):
@@ -301,6 +457,14 @@ class SuperLUSolver:
                 continue  # try the next factorization (with pivoting)
 
             x = lu.solve(b)
+
+            if M is not A:
+                x, accepted = self._refine_perturbed(lu, A, x, b)
+
+                if accepted or last_attempt:
+                    return x
+
+                continue  # try the next factorization (with pivoting)
 
             if self.refine:
                 x = x + lu.solve(b - A @ x)

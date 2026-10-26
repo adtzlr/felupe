@@ -111,6 +111,7 @@ def test_superlu_options():
         fem.solve.SuperLUSolver(permc_spec="COLAMD", symmetric_mode=False),
         fem.solve.SuperLUSolver(relax=None, panel_size=None),
         fem.solve.SuperLUSolver(refine=False, tol=1e-12, fallback_pivot_thresh=None),
+        fem.solve.SuperLUSolver(diag_perturbation=0),
         fem.solve.SuperLUSolver(options=dict(Equil=False)),
     ]
 
@@ -122,6 +123,8 @@ def test_superlu_options():
         )
 
     assert "options={'Equil': False}" in repr(solvers[-1])
+    assert "diag_perturbation=None" in repr(solvers[0])
+    assert "diag_perturbation=0" in repr(solvers[-2])
     assert isinstance(solvers[0].factorize(K), sp.linalg.SuperLU)
     assert isinstance(solvers[0].factorize(K, diag_pivot_thresh=1.0), sp.linalg.SuperLU)
 
@@ -148,6 +151,21 @@ def test_superlu_singular():
 
     assert x.shape == b.shape
     assert np.all(np.isnan(x))
+
+    # zero diagonal entries are perturbed, but the refinement does not converge (the
+    # equations of the last two rows are inconsistent)
+    A = sp.csc_array(np.array([[1.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0]]))
+    b = np.array([1.0, 1.0, 0.0])
+    solver = CountingSolver()
+
+    assert (solver.perturb(A) != A).nnz == 2
+
+    with pytest.warns(MatrixRankWarning):
+        x = solver(A, b)
+
+    # the factorization of the fallback (not recorded) fails, i.e. exactly singular
+    assert np.all(np.isnan(x))
+    assert solver.thresholds == [0.0]
 
     # other errors of SuperLU are raised
     class FailingSolver(fem.solve.SuperLUSolver):
@@ -378,6 +396,136 @@ def test_superlu_third_medium():
     assert np.allclose(*results)
 
 
+def saddle_point(n=3):
+    """Return the partitioned matrix and a right-hand side of a saddle point problem,
+    i.e. an incompressible mixed u/p-formulation by a mixed weak form on quadratic
+    hexahedrons with a constant pressure per cell (with a zero block of the pressure)."""
+
+    mesh = fem.Cube(n=n).add_midpoints_edges()
+    region = fem.RegionQuadraticHexahedron(mesh)
+    field = fem.FieldsMixed(region, n=2)
+    boundaries = fem.dof.uniaxial(field, clamped=True, move=0.1)
+    dof0, dof1 = fem.dof.partition(field, boundaries)
+    ext0 = fem.dof.apply(field, boundaries, dof0)
+
+    @fem.Form(v=field, u=field)
+    def bilinearform():
+        return [
+            lambda v, u: 2 * fem.math.ddot(fem.math.sym(v.grad), fem.math.sym(u.grad)),
+            lambda v, q: -fem.math.trace(v.grad) * q,
+            lambda q, p: 0 * q * p,
+        ]
+
+    K = bilinearform.assemble(v=field, u=field).tocsr()
+
+    return K[dof1][:, dof1], -(K[dof1][:, dof0] @ ext0)
+
+
+class RecordingSolver(CountingSolver):
+    "A solver which records the pivot thresholds and the factors of its matrices."
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.factors = []
+
+    def factorize(self, A, diag_pivot_thresh=None):
+        lu = super().factorize(A, diag_pivot_thresh=diag_pivot_thresh)
+        self.factors.append(lu)
+        return lu
+
+
+def test_superlu_perturbation():
+    "The zero diagonal entries of a saddle point problem are perturbed."
+
+    A, b = saddle_point()
+    zeros = A.diagonal() == 0
+    assert np.any(zeros)
+
+    solver = fem.solve.SuperLUSolver()
+    P = solver.perturb(A)
+    perturbation = (P - A).tocsc()
+
+    # only the zero diagonal entries are perturbed (with a negative sign)
+    assert abs(perturbation - sp.diags(perturbation.diagonal())).max() == 0
+    assert np.all(perturbation.diagonal()[zeros] < 0)
+    assert np.all(perturbation.diagonal()[~zeros] == 0)
+
+    # by the square root of the machine epsilon times the estimated pivots
+    assert np.all(-P.diagonal()[zeros] < 1e-7 * abs(A).max())
+
+    # the perturbation is invariant to the scaling of the unknowns, e.g. of the pressure
+    scale = sp.diags(np.where(zeros, 1e3, 1.0))
+    Q = solver.perturb(scale @ A @ scale)
+    assert np.allclose(Q.diagonal()[zeros], 1e6 * P.diagonal()[zeros])
+
+    # the matrix is factorized without row exchanges and without the fallback
+    solver = RecordingSolver()
+    x = solver(A, b)
+    assert solver.thresholds == [0.0]
+    assert np.all(solver.factors[0].perm_r == solver.factors[0].perm_c)
+    assert np.allclose(x, spsolve(A.tocsc(), b))
+    assert solver.backward_error(A, x, b) < 1e-14
+
+    # multiple right-hand sides and single-precision
+    X = solver(A, np.vstack([b, -2 * b]).T)
+    assert np.allclose(X, np.vstack([x, -2 * x]).T)
+
+    x32 = solver(A.astype(np.float32), b.astype(np.float32))
+    assert x32.dtype == np.float32
+    assert np.allclose(x32, x, rtol=1e-3, atol=1e-4 * np.abs(x).max())
+
+    # without the perturbation, the zero diagonal entries lead to row exchanges
+    for kwargs in [dict(diag_perturbation=0), dict(refine=False)]:
+        solver = RecordingSolver(**kwargs)
+        y = solver(A, b)
+        assert solver.thresholds == [0.0]
+        assert np.any(solver.factors[0].perm_r != solver.factors[0].perm_c)
+        assert np.allclose(y, x)
+
+
+def test_superlu_perturbation_unchanged():
+    "Matrices without perturbed zero diagonal entries are not changed."
+
+    K, b = stiffness()
+    K = K.tocsc()
+    assert fem.solve.SuperLUSolver().perturb(K) is K
+
+    # an empty row and column remains (singular)
+    A = sp.diags_array([1.0, 0.0, 2.0], format="csc")
+    assert fem.solve.SuperLUSolver().perturb(A) is A
+
+    # zero diagonal entries without non-zero diagonal entries of their neighbours
+    A = sp.csc_array(np.array([[0.0, 1.0], [1.0, 0.0]]))
+    assert fem.solve.SuperLUSolver().perturb(A) is A
+    assert np.allclose(fem.solve.SuperLUSolver()(A, np.array([1.0, 2.0])), [2.0, 1.0])
+
+    # a custom relative perturbation
+    A, b = saddle_point()
+    zeros = A.diagonal() == 0
+    P = fem.solve.SuperLUSolver().perturb(A)
+    Q = fem.solve.SuperLUSolver(diag_perturbation=1e-4).perturb(A)
+    eps = np.sqrt(np.finfo(float).eps)
+    assert np.allclose(Q.diagonal()[zeros], 1e-4 / eps * P.diagonal()[zeros])
+
+
+def test_superlu_perturbation_fallback():
+    "A (too large) perturbation without convergence of the refinement is rejected."
+
+    A, b = saddle_point()
+    x = spsolve(A.tocsc(), b)
+
+    solver = RecordingSolver(diag_perturbation=1e3)
+    y = solver(A, b)
+    assert solver.thresholds == [0.0, 0.1]
+    assert np.allclose(y, x)
+
+    # without a fallback, the solution of the perturbed matrix is returned
+    solver = RecordingSolver(diag_perturbation=1e3, fallback_pivot_thresh=None)
+    z = solver(A, b)
+    assert solver.thresholds == [0.0]
+    assert solver.backward_error(A, z, b) > 1e-3
+
+
 if __name__ == "__main__":
     test_solve()
     test_superlu()
@@ -392,3 +540,6 @@ if __name__ == "__main__":
     test_superlu_contact(mixed=True)
     test_superlu_contact(mixed=False)
     test_superlu_third_medium()
+    test_superlu_perturbation()
+    test_superlu_perturbation_unchanged()
+    test_superlu_perturbation_fallback()

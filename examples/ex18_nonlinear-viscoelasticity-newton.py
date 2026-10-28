@@ -9,6 +9,7 @@ internal variable are solved using Newton's method [2]_.
 """
 
 # sphinx_gallery_thumbnail_number = -1
+import numpy as np
 import tensortrax as tr
 import tensortrax.math as tm
 
@@ -16,7 +17,7 @@ import felupe as fem
 
 
 @fem.isochoric_volumetric_split
-def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
+def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
     # extract old state variables
     I = tm.base.eye(C)
     Cvn = tm.special.from_triu_1d(ζn, like=C) + I
@@ -42,7 +43,7 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
             1 + (K[1] * J2Neq + ξ) ** β[1]
         )
         G = sum(u) / ηK * tm.special.dev(C @ tm.linalg.inv(Cv)) @ Cv
-        return G - (Cv - Cvn) / dt
+        return dtime * G - (Cv - Cvn)
 
     # update the state variables
     Cv = fem.newtonraphson(
@@ -66,12 +67,9 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
     return sum(ψEq) + sum(ψNEq), tm.special.triu_1d(Cv - I)
 
 
-dt_vals = 4.0
-
 umat = fem.Hyperelastic(
     viscoelastic_two_potential,
     nstatevars=6,
-    dt=dt_vals,
     μ=[13.54, 1.08],
     α=[1.0, -2.474],
     m=[5.42, 20.78],
@@ -89,18 +87,24 @@ field = fem.FieldContainer([fem.Field(region, dim=3)])
 boundaries = fem.dof.uniaxial(field, clamped=False, return_loadcase=False)
 
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+time_step = fem.TimeStep(items=[solid])
 
 ldot = 0.05
 lfinal = 3.0
-tfinal = (lfinal - 1.0) / ldot
-num_steps = tfinal / dt_vals
-move = fem.math.linsteps([0.0, lfinal - 1.00, 0.358], num=int(num_steps) + 1)
 
-step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
-job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
+move = fem.math.linsteps([1.0, lfinal, 1.358], num=[10, 8]) - 1
+time = np.cumsum(np.abs(np.diff(move, prepend=0)) / ldot)
+
+step = fem.Step(
+    items=[solid],
+    ramp={time_step: time, boundaries["move"]: move},
+    boundaries=boundaries,
+)
+curve = fem.CharacteristicCurvePlugin(boundary=boundaries["move"])
+job = fem.Job(steps=[step], plugins=[curve])
 job.evaluate(tol=1e-2)
 
-fig, ax = job.plot(
+fig, ax = curve.plot(
     xlabel=r"Displacement $u$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F$ in N $\longrightarrow$",
     marker="x",

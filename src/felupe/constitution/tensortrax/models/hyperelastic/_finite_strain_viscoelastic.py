@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import numpy as np
-
 from tensortrax.math import base, trace
 from tensortrax.math.linalg import det, inv
 from tensortrax.math.special import from_triu_1d, triu_1d

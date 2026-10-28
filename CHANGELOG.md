@@ -56,6 +56,7 @@ All notable changes to this project will be documented in this file. The format 
 - Don't trim the assembled matrices of the items in `FreeVibration`, which have more degrees of freedom than the global field container. A `ValueError` is raised instead, like in `newtonraphson()`.
 - Fix `FreeVibration.evaluate(sigma=...)`, which raised a `TypeError` because the shift `sigma` was passed twice to the solver. The default shift is still `sigma=0`.
 - Fix the default field container of `FreeVibration.evaluate(x0=None)`: like in `Job`, the top-level field container `x0` of the field container of the first item is used, e.g. of merged field containers (before, the field container of the first item, which raised an `IndexError` for merged mixed field containers). `FreeVibration.extract(x0=None)` uses the field container of `FreeVibration.evaluate()` by default.
+- Fix the stress and the tangent of the finite strain viscoelastic material `finite_strain_viscoelastic()`. The function returns the incremental potential, i.e. the sum of the strain energy and the incremental dissipation potential, instead of the strain energy only. Before, the derivatives of the strain energy also included its dependence on the updated state variables, i.e. the stress was scaled by approximately `1 / (1 + mu * dtime / eta)`.
 - Scale the mass matrix of an item by its multiplier in `FreeVibration`, e.g. of `SolidBody(..., multiplier=2.0)` (before, only the stiffness matrix was scaled), i.e. the multiplier scales the contribution of the item.
 
 ## [11.3.0] - 2026-10-14

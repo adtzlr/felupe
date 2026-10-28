@@ -73,13 +73,10 @@ def viscoelastic():
 
 
 def initial_statevars(umat, region):
-    """Return the initial state variables. The inelastic right Cauchy-Green deformation
-    tensor of the viscoelastic material is initialized by the identity."""
+    """Return the initial (all-zero) state variables. The inelastic right Cauchy-Green
+    deformation tensor of the viscoelastic material is the identity."""
     shape = (*umat.x[-1].shape, region.quadrature.npoints, region.mesh.ncells)
-    statevars = np.zeros(shape)
-    if shape[0] == 6:
-        statevars[[0, 3, 5]] = 1.0
-    return statevars
+    return np.zeros(shape)
 
 
 def cube(umat=None, nearly_incompressible=False, bulk=5.0):

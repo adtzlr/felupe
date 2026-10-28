@@ -269,16 +269,14 @@ class SolidBody(Solid):
     A time-dependent material, e.g. a viscoelastic material, takes the time increment
     of the solid body as input, like the deformation gradient. The time is ramped by a
     :class:`~felupe.TimeStep`, which updates the time increment of the solid body
-    before each substep. The state variables of the viscoelastic material, the
-    components of the upper triangle of the inelastic right Cauchy-Green deformation
-    tensor, are initialized by the identity tensor.
+    before each substep. The all-zero state variables of the viscoelastic material,
+    the components of the upper triangle of the deviation of the inelastic right
+    Cauchy-Green deformation tensor from the identity, are the undeformed state.
 
     >>> umat = fem.Hyperelastic(
     ...     fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, nstatevars=6
     ... ) & fem.Volumetric(bulk=2.0)
     >>> solid = fem.SolidBody(umat, field)
-    >>> solid.results.statevars[[0, 3, 5]] = 1.0
-    >>>
     >>> time = fem.TimeStep(items=[solid])
     >>> step = fem.Step(
     ...     items=[solid],

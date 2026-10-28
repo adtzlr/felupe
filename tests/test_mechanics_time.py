@@ -32,9 +32,6 @@ def model(Body="solid", dtime=None):
     elif Body == "nearly-incompressible":
         solid = fem.SolidBodyNearlyIncompressible(viscoelastic(dtime), field, bulk=20.0)
 
-    # the inelastic right Cauchy-Green deformation tensor is initialized by identity
-    solid.results.statevars[[0, 3, 5]] = 1.0
-
     return field, boundaries, solid
 
 
@@ -77,7 +74,7 @@ def test_time_step_job(Body):
     )
 
     # the deformation is viscoelastic
-    assert not np.allclose(solid.results.statevars[[0, 3, 5]], 1.0)
+    assert not np.allclose(solid.results.statevars, 0.0)
 
 
 def test_time_step_cutback():

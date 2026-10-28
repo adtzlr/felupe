@@ -72,23 +72,32 @@ class Hyperelastic(Material):
         import felupe.constitution.tensortrax as mat
         import tensortrax.math as tm
 
-        def viscoelastic(C, Cin, mu, eta, dtime):
+        def viscoelastic(C, statevars, mu, eta, dtime):
             "Finite strain viscoelastic material formulation."
 
             # unimodular part of the right Cauchy-Green deformation tensor
             Cu = tm.linalg.det(C) ** (-1 / 3) * C
 
             # update of state variables by evolution equation
-            Ci = tm.special.from_triu_1d(Cin, like=C) + mu / eta * dtime * Cu
+            eye = tm.base.eye(C)
+            Cin = eye + tm.special.from_triu_1d(statevars, like=C)
+            Ci = Cin + mu / eta * dtime * Cu
             Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
+            invCi = tm.linalg.inv(Ci)
 
-            # first invariant of elastic part of right Cauchy-Green deformation tensor
-            I1 = tm.trace(Cu @ tm.linalg.inv(Ci))
+            # strain energy function and incremental dissipation potential
+            ψ = mu / 2 * (tm.trace(Cu @ invCi) - 3)
+            φ = eta / (2 * dtime) * (tm.trace(Cin @ invCi) - 3) if dtime > 0 else 0
 
-            # strain energy function and state variable
-            return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
+            # incremental potential and new state variables
+            return ψ + φ, tm.special.triu_1d(Ci - eye)
 
         umat = mat.Hyperelastic(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
+
+    The derivatives of the function also include the dependence of the updated state
+    variables on the right Cauchy-Green deformation tensor. Hence, a dissipative
+    material returns an incremental potential, see
+    :func:`~felupe.constitution.tensortrax.models.hyperelastic.finite_strain_viscoelastic`.
 
     **Time-dependent materials**: If the function has an argument ``dtime`` without a
     default value, which is not given as keyword-argument of the material, the material

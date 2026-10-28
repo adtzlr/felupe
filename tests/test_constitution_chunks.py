@@ -292,8 +292,9 @@ def test_chunks_tensortrax(monkeypatch):
     F = field.extract()[0]
     q, c = F.shape[-2:]
 
-    # the old inverse of the viscous right Cauchy-Green deformation tensor (identity)
-    Ci = np.broadcast_to(np.array([1.0, 0, 0, 1, 0, 1]).reshape(6, 1, 1), (6, q, c))
+    # the old state variables, the inelastic right Cauchy-Green deformation tensor is the
+    # identity (all-zero deviation from the identity)
+    Ci = np.zeros((6, q, c))
 
     materials = [
         (

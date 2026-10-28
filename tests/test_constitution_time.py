@@ -13,21 +13,23 @@ def kinematics(seed=7, npoints=4, ncells=5):
     rng = np.random.default_rng(seed)
     F = np.eye(3).reshape(3, 3, 1, 1) + rng.uniform(-0.1, 0.1, (3, 3, npoints, ncells))
 
-    # the old inverse of the viscous right Cauchy-Green deformation tensor (identity)
-    Ci = np.array([1.0, 0, 0, 1, 0, 1]).reshape(6, 1, 1)
-    Ci = np.ascontiguousarray(np.broadcast_to(Ci, (6, npoints, ncells)))
+    # the old state variables, the inelastic right Cauchy-Green deformation tensor is the
+    # identity (all-zero deviation from the identity)
+    Ci = np.zeros((6, npoints, ncells))
 
     return F, Ci
 
 
-def viscoelastic_lagrange(F, Cin, mu, eta, dtime):
+def viscoelastic_lagrange(F, statevars, mu, eta, dtime):
     "First Piola-Kirchhoff stress of a finite strain viscoelastic material formulation."
     C = tm.dot(tm.transpose(F), F)
     Cu = tm.linalg.det(C) ** (-1 / 3) * C
-    Ci = tm.special.from_triu_1d(Cin, like=C) + mu / eta * dtime * Cu
+    eye = tm.base.eye(C)
+    Cin = eye + tm.special.from_triu_1d(statevars, like=C)
+    Ci = Cin + mu / eta * dtime * Cu
     Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
-    S = mu * tm.special.dev(Cu @ tm.linalg.inv(Ci)) @ tm.linalg.inv(C)
-    return F @ S, tm.special.triu_1d(Ci)
+    S = mu * tm.linalg.inv(C) @ tm.special.dev(Cu @ tm.linalg.inv(Ci))
+    return F @ S, tm.special.triu_1d(Ci - eye)
 
 
 def assert_equal_results(res, expected):
@@ -279,9 +281,9 @@ def wrapper_inputs():
     region = fem.RegionHexahedron(fem.Cube(n=3))
     q, c = region.dV.shape
 
-    # the old inverse of the viscous right Cauchy-Green deformation tensor (identity)
-    Ci = np.array([1.0, 0, 0, 1, 0, 1]).reshape(6, 1, 1)
-    Ci = np.ascontiguousarray(np.broadcast_to(Ci, (6, q, c)))
+    # the old state variables, the inelastic right Cauchy-Green deformation tensor is the
+    # identity (all-zero deviation from the identity)
+    Ci = np.zeros((6, q, c))
 
     mixed = fem.FieldsMixed(region, n=3)
     mixed[0].values[:] = rng.uniform(-0.05, 0.05, mixed[0].values.shape)

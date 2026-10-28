@@ -614,12 +614,12 @@ def test_umat_viscoelastic(close_figs=True):
 
     import tensortrax.math as tm
 
-    def viscoelastic(C, Cin, mu, eta, dtime):
+    def viscoelastic(C, statevars, mu, eta, dtime):
         "Finite strain viscoelastic material formulation."
         eye = tm.base.eye(C)
         Ci = (
             eye
-            + tm.special.from_triu_1d(Cin, like=C)
+            + tm.special.from_triu_1d(statevars[:6], like=C)
             + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
         )
         Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci

@@ -56,7 +56,8 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
     ).x
 
     # Δ-part of the residuals, R = evolution(Cv, Cvn, C)
-    # ∂R/∂Cv : ΔCv = -ΔR with ΔR = ∂R/∂C : ΔC, without a δ-variation (stress at fixed Cv)
+    # ΔR = ∂R/∂C : ΔC, without a δ-variation (stress at fixed Cv)
+    # solve ∂R/∂Cv : ΔCv = -ΔR and create the updated Cv tensor with its ΔCv
     ΔR = tr.Δ(evolution(Cv, Cvn, tm.no_variation(C)))
     ΔCv = ΔR
     if ΔR is not tr.ZERO:

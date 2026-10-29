@@ -30,7 +30,8 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
     -----
     The first two axes of the rhs ``b`` and the first four axes of the lhs ``A`` are the
     tensor dimensions and all remaining trailing axes are treated as batch dimensions.
-    This function finds :math:`x_{kl}` for Eq. :eq:`solve-system-nd`.
+    The batch dimensions of the lhs and the rhs are broadcasted. This function finds
+    :math:`x_{kl}` for Eq. :eq:`solve-system-nd`.
 
     ..  math::
         :label: solve-system-nd
@@ -83,6 +84,10 @@ def solve_nd(A, b, solve=np.linalg.solve, n=1, **kwargs):
     shape = b.shape[:n]
     size = np.prod(shape, dtype=int)
     trax = np.broadcast_shapes(b.shape[n:], A.shape[2 * n :])
+
+    # broadcast the trailing (batch) axes of lhs and rhs
+    A = np.broadcast_to(A, (*A.shape[: 2 * n], *trax))
+    b = np.broadcast_to(b, (*b.shape[:n], *trax))
 
     # flatten and reshape A to a 2d-matrix of shape (..., M * N * ..., M * N * ...) and
     # b to a 1d-vector of shape (..., M * N * ..., 1) with batches at leading axis

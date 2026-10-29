@@ -4,7 +4,8 @@ import jax
 import numpy as np
 
 from .._material import Material as MaterialDefault
-from ._helpers import vmap2
+from .._material import takes_time_increment
+from ._helpers import time_increment_as_array, vmap2
 
 
 class Material(MaterialDefault):
@@ -73,7 +74,7 @@ class Material(MaterialDefault):
         import felupe.constitution.jax as mat
         import jax.numpy as jnp
 
-        def viscoelastic(F, Cin, mu, eta, dtime):
+        def viscoelastic(F, statevars, mu, eta, dtime):
             "Finite strain viscoelastic material formulation."
 
             # unimodular part of the right Cauchy-Green deformation tensor
@@ -82,19 +83,43 @@ class Material(MaterialDefault):
 
             # update of state variables by evolution equation
             from_triu = lambda C: C[jnp.array([[0, 1, 2], [1, 3, 4], [2, 4, 5]])]
-            Ci = from_triu(Cin) + mu / eta * dtime * Cu
+            Cin = jnp.eye(3) + from_triu(statevars)
+            Ci = Cin + mu / eta * dtime * Cu
             Ci = jnp.linalg.det(Ci) ** (-1 / 3) * Ci
 
             # second Piola-Kirchhoff stress tensor
             dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
-            S = mu * dev(Cu @ jnp.linalg.inv(Ci)) @ jnp.linalg.inv(C)
+            S = mu * jnp.linalg.inv(C) @ dev(Cu @ jnp.linalg.inv(Ci))
 
-            # first Piola-Kirchhoff stress tensor and state variable
+            # first Piola-Kirchhoff stress tensor and new state variables
             i, j = jnp.triu_indices(3)
             to_triu = lambda C: C[i, j]
-            return F @ S, to_triu(Ci)
+            return F @ S, to_triu(Ci - jnp.eye(3))
 
         umat = mat.Material(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
+
+    The state variables are the components of the upper triangle of the deviation of the
+    inelastic right Cauchy-Green deformation tensor from the identity, i.e. the initial
+    state variables are zero. The stress is evaluated at the updated state variables and
+    the elasticity tensor, its Jacobian, includes the linearization of the updated state
+    variables, i.e. it is the consistent linearization.
+
+    **Time-dependent materials**: If the function has an argument ``dtime`` without a
+    default value, which is not given as keyword-argument of the material, the material
+    is time-dependent (the attribute ``time_dependent`` is True). Then, the time
+    increment is an input of the material, like the deformation gradient, i.e. it is
+    given by the keyword-argument ``dtime`` of :meth:`gradient` and :meth:`hessian`.
+    It is passed as an array of data type float to the just-in-time compiled functions,
+    i.e. they are compiled only once for all time increments. A time increment which is
+    given as keyword-argument of the material, like ``dtime=1`` in the code-block above,
+    is a constant material parameter.
+
+    ..  code-block::
+
+        umat = mat.Material(viscoelastic, mu=1, eta=1, nstatevars=6)
+        assert umat.time_dependent
+
+        P, statevars_new = umat.gradient([F, statevars], dtime=0.1)
 
     ..  note::
         See the `documentation of JAX <https://jax.readthedocs.io>`_ for further
@@ -147,6 +172,10 @@ class Material(MaterialDefault):
             **keyword_args,
         )
 
+        # the time increment is an input, if it is an argument of the (original)
+        # function which is not given as material parameter
+        self.time_dependent = takes_time_increment(fun, self.kwargs)
+
         in_axes = out_axes_grad = [2, 3]
         if nstatevars > 0:
             in_axes = out_axes_grad = [(2, 1), (3, 2)]
@@ -175,6 +204,9 @@ class Material(MaterialDefault):
             self._hess = jax.jit(self._hess)
 
     def _stress(self, x, **kwargs):
+        if self.time_dependent:
+            kwargs = time_increment_as_array(kwargs)
+
         if self.nstatevars > 0:
             statevars = x[1]
 
@@ -189,6 +221,9 @@ class Material(MaterialDefault):
         return [np.array(dWdF), statevars_new]
 
     def _elasticity(self, x, **kwargs):
+        if self.time_dependent:
+            kwargs = time_increment_as_array(kwargs)
+
         if self.nstatevars > 0:
             statevars = x[1]
 

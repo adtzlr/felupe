@@ -5,10 +5,12 @@ This example shows how to implement a constitutive material model for
 rubber viscoelastic materials using a strain energy density function coupled
 with an ODE for an internal (state) variable [1]_. The ODE is discretized using a
 backward-Euler scheme and the resulting nonlinear algebraic equations for the
-internal variable are solved using Newton's method [2]_.
+internal variable are solved using Newton's method [2]_. The consistent tangent includes
+the linearization of the internal variable.
 """
 
 # sphinx_gallery_thumbnail_number = -1
+import numpy as np
 import tensortrax as tr
 import tensortrax.math as tm
 
@@ -16,7 +18,7 @@ import felupe as fem
 
 
 @fem.isochoric_volumetric_split
-def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
+def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
     # extract old state variables
     I = tm.base.eye(C)
     Cvn = tm.special.from_triu_1d(ζn, like=C) + I
@@ -42,7 +44,7 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
             1 + (K[1] * J2Neq + ξ) ** β[1]
         )
         G = sum(u) / ηK * tm.special.dev(C @ tm.linalg.inv(Cv)) @ Cv
-        return G - (Cv - Cvn) / dt
+        return dtime * G - (Cv - Cvn)
 
     # update the state variables
     Cv = fem.newtonraphson(
@@ -54,9 +56,22 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
         verbose=0,
     ).x
 
+    # linearization of R = evolution(Cv, Cvn, C) = 0 at the converged Cv leads to
+    # ∂R/∂Cv : ΔCv + ∂R/∂C : ΔC = 0 (implicit function theorem)
+    # 1. compute ΔR = ∂R/∂C : ΔC (at fixed Cv)
+    # 2. compute ∂R/∂Cv, as already done in Newton's method above
+    # 3. solve ∂R/∂Cv : ΔCv = -ΔR and create a tensor for Cv, which is constant in
+    #    the variation (stress at fixed Cv) but not in the linearization (tangent)
+    ΔR = tr.Δ(evolution(Cv, Cvn, C))
+    ΔCv = ΔR  # ZERO for the evaluation of the stress only (no linearization)
+    if ΔR is not tr.ZERO:
+        dRdCv = tr.jacobian(evolution, ntrax=C.ntrax)(Cv, Cvn, C.x)
+        ΔCv = fem.math.solve_2d(dRdCv, -ΔR)
+    Cv = tr.Tensor(Cv, δx=tr.ZERO, Δx=ΔCv, Δδx=tr.ZERO, ntrax=C.ntrax, ndual=C.ndual)
+
     # invariants of the (elastic and viscous) right Cauchy-Green deformation tensor
     I1 = tm.trace(C)
-    I1e, I1v, I2e = invariants(Cv, C)
+    I1e = invariants(Cv, C)[0]
 
     # strain energy functions of the equilibrium and non-equilibrium parts
     p = [0, 1]
@@ -66,12 +81,9 @@ def viscoelastic_two_potential(C, ζn, dt, μ, α, m, a, η0, ηinf, β, K):
     return sum(ψEq) + sum(ψNEq), tm.special.triu_1d(Cv - I)
 
 
-dt_vals = 4.0
-
 umat = fem.Hyperelastic(
     viscoelastic_two_potential,
     nstatevars=6,
-    dt=dt_vals,
     μ=[13.54, 1.08],
     α=[1.0, -2.474],
     m=[5.42, 20.78],
@@ -89,18 +101,24 @@ field = fem.FieldContainer([fem.Field(region, dim=3)])
 boundaries = fem.dof.uniaxial(field, clamped=False, return_loadcase=False)
 
 solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+time_step = fem.TimeStep(items=[solid])
 
 ldot = 0.05
 lfinal = 3.0
-tfinal = (lfinal - 1.0) / ldot
-num_steps = tfinal / dt_vals
-move = fem.math.linsteps([0.0, lfinal - 1.00, 0.358], num=int(num_steps) + 1)
 
-step = fem.Step(items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
-job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
-job.evaluate(tol=1e-2)
+move = fem.math.linsteps([1.0, lfinal, 1.358], num=[10, 8]) - 1
+time = np.cumsum(np.abs(np.diff(move, prepend=0)) / ldot)
 
-fig, ax = job.plot(
+step = fem.Step(
+    items=[solid],
+    ramp={time_step: time, boundaries["move"]: move},
+    boundaries=boundaries,
+)
+curve = fem.CharacteristicCurvePlugin(boundary=boundaries["move"])
+job = fem.Job(steps=[step], plugins=[curve])
+job.evaluate()
+
+fig, ax = curve.plot(
     xlabel=r"Displacement $u$ in mm $\longrightarrow$",
     ylabel=r"Normal Force $F$ in N $\longrightarrow$",
     marker="x",

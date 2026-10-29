@@ -566,6 +566,30 @@ def test_map_chunks(monkeypatch):
     assert res[0][1]
 
 
+def test_solve_broadcast():
+    "The trailing (batch) axes of the lhs and the rhs are broadcasted."
+
+    rng = np.random.default_rng(4)
+    eye = np.einsum("ik,jl->ijkl", np.eye(3), np.eye(3))
+    A = 3 * eye.reshape(3, 3, 3, 3, 1, 1, 1) + rng.random((3, 3, 3, 3, 1, 4, 5))
+    b = rng.random((3, 3, 6, 1, 5))
+
+    x = fem.math.solve_2d(A, b)
+    assert x.shape == (3, 3, 6, 4, 5)
+    assert np.allclose(np.einsum("ijkl...,kl...->ij...", A, x), b)
+
+    # the solution equals the solution of the explicitly broadcasted arrays
+    y = fem.math.solve_2d(
+        np.broadcast_to(A, (3, 3, 3, 3, 6, 4, 5)), np.broadcast_to(b, (3, 3, 6, 4, 5))
+    )
+    assert np.allclose(x, y)
+
+    # one-dimensional unknowns
+    x = fem.math.solve_nd(A[:, 0, :, 0], b[:, 0], n=1)
+    assert x.shape == (3, 6, 4, 5)
+    assert np.allclose(np.einsum("ik...,k...->i...", A[:, 0, :, 0], x), b[:, 0])
+
+
 if __name__ == "__main__":
     test_math()
     test_math_field()

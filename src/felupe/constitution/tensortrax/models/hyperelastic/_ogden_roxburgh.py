@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from tensortrax.math import array, maximum, real_to_dual
+from tensortrax.math import array, maximum, no_variation
 from tensortrax.math.special import erf
 
 
@@ -89,7 +89,7 @@ def ogden_roxburgh(C, Wmax_n, material, r, m, beta, **kwargs):
     η = lambda W: 1 - 1 / r * erf((Wmax - W) / (m + beta * Wmax))
 
     # custom first- and second-partial derivatives
-    # set the variation to δη * W (and the linearization to Δη * δW + η * ΔδW)
-    dWdF = real_to_dual(η(W), W)
+    # set the variation to η * δW (and the linearization to Δη * δW + η * ΔδW)
+    dWdF = no_variation(η(W)) * W
 
     return dWdF, Wmax.x[None, ...]

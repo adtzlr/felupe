@@ -614,16 +614,20 @@ def test_umat_viscoelastic(close_figs=True):
 
     import tensortrax.math as tm
 
-    def viscoelastic(C, Cin, mu, eta, dtime):
+    def viscoelastic(C, statevars, mu, eta, dtime):
         "Finite strain viscoelastic material formulation."
-        Ci = (
-            tm.special.from_triu_1d(Cin, like=C)
-            + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
-        )
+        eye = tm.base.eye(C)
+        Cin = eye + tm.special.from_triu_1d(statevars[:6], like=C)
+        Ci = Cin + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
         Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
-        I1 = tm.linalg.det(C) ** (-1 / 3) * tm.trace(C @ tm.linalg.inv(Ci))
+        invCi = tm.linalg.inv(Ci)
+        I1 = tm.linalg.det(C) ** (-1 / 3) * tm.trace(C @ invCi)
 
-        return mu / 2 * (I1 - 3), tm.special.triu_1d(Ci)
+        # strain energy function and incremental dissipation potential
+        ψ = mu / 2 * (I1 - 3)
+        φ = eta / (2 * dtime) * (tm.trace(Cin @ invCi) - 3)
+
+        return ψ + φ, tm.special.triu_1d(Ci - eye)
 
     kwargs = {"mu": 1, "eta": 1, "dtime": 1}
     umat = fem.Hyperelastic(viscoelastic, nstatevars=6, **kwargs)
@@ -653,22 +657,21 @@ def test_umat_viscoelastic(close_figs=True):
 
 
 def test_umat_viscoelastic2():
-    r, x = pre(sym=False, add_identity=True)
+    r, x = pre(sym=False, add_identity=True, add_random=True)
     F = x[0]
 
     import tensortrax.math as tm
 
-    def viscoelastic(F, Cin, mu, eta, dtime):
+    def viscoelastic(F, statevars, mu, eta, dtime):
         "Finite strain viscoelastic material formulation."
         C = tm.dot(tm.transpose(F), F)
         Cu = tm.linalg.det(C) ** (-1 / 3) * C
-        Ci = (
-            tm.special.from_triu_1d(Cin, like=C)
-            + mu / eta * dtime * tm.linalg.det(C) ** (-1 / 3) * C
-        )
+        eye = tm.base.eye(C)
+        Cin = eye + tm.special.from_triu_1d(statevars[:6], like=C)
+        Ci = Cin + mu / eta * dtime * Cu
         Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
-        S = mu * tm.special.dev(Cu @ tm.linalg.inv(Ci)) @ tm.linalg.inv(C)
-        return F @ S, tm.special.triu_1d(Ci)
+        S = mu * tm.linalg.inv(C) @ tm.special.dev(Cu @ tm.linalg.inv(Ci))
+        return F @ S, tm.special.triu_1d(Ci - eye)
 
     kwargs = {"mu": 1, "eta": 1, "dtime": 1}
     umat = fem.MaterialAD(viscoelastic, nstatevars=6, **kwargs)

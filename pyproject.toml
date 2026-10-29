@@ -101,7 +101,7 @@ docs = [
     "sphinx-inline-tabs",
     "pypandoc",
 ]
-autodiff = ["tensortrax", "jax"]
+autodiff = ["tensortrax>=0.30.0", "jax"]
 examples = [
     "contique",
     "imageio",

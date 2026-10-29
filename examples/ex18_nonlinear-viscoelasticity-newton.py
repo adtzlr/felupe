@@ -6,21 +6,6 @@ rubber viscoelastic materials using a strain energy density function coupled
 with an ODE for an internal (state) variable [1]_. The ODE is discretized using a
 backward-Euler scheme and the resulting nonlinear algebraic equations for the
 internal variable are solved using Newton's method [2]_.
-
-The stress is the partial derivative of the strain energy density function at a fixed
-(updated) internal variable. For the consistent tangent, the linearization of the
-internal variable is obtained by the implicit function theorem, see Eq.
-:eq:`implicit-linearization`. Hence, the internal variable is constant in the variation
-but not in the linearization, see :func:`tensortrax.math.no_variation`.
-
-..  math::
-    :label: implicit-linearization
-
-    \boldsymbol{R}(\boldsymbol{C}_v, \boldsymbol{C}) = \boldsymbol{0}
-    \quad \longrightarrow \quad
-    \Delta \boldsymbol{C}_v = - \left( \frac{\partial \boldsymbol{R}}{\partial
-    \boldsymbol{C}_v} \right)^{-1} : \frac{\partial \boldsymbol{R}}{\partial
-    \boldsymbol{C}} : \Delta \boldsymbol{C}
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -70,7 +55,7 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
         verbose=0,
     ).x
 
-    # Δ-part of the residuals R = evolution(Cv, Cvn, C)
+    # Δ-part of the residuals, R = evolution(Cv, Cvn, C)
     # ∂R/∂Cv : ΔCv = -ΔR with ΔR = ∂R/∂C : ΔC, without a δ-variation (stress at fixed Cv)
     ΔR = tr.Δ(evolution(Cv, Cvn, tm.no_variation(C)))
     ΔCv = ΔR
@@ -126,7 +111,7 @@ step = fem.Step(
 )
 curve = fem.CharacteristicCurvePlugin(boundary=boundaries["move"])
 job = fem.Job(steps=[step], plugins=[curve])
-job.evaluate(tol=1e-2)
+job.evaluate()
 
 fig, ax = curve.plot(
     xlabel=r"Displacement $u$ in mm $\longrightarrow$",

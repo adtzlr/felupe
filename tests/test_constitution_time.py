@@ -920,6 +920,38 @@ def test_time_increment_optimize():
         start.optimize(ux=[λ, P], incompressible=True)
 
 
+def test_time_increment_optimize_constant():
+    "A constant time increment is not a material parameter, i.e. it is not fitted."
+
+    kwargs = dict(nstatevars=6, dtime=0.05)
+    umat = fem.Hyperelastic(
+        fem.constitution.finite_strain_viscoelastic, mu=1.5, eta=3.0, **kwargs
+    )
+    assert not umat.time_dependent
+
+    # synthetic experimental data with the constant time increment: loading, unloading
+    λ = fem.math.linsteps([1, 1.5, 1], num=[10, 10])
+    λ_, P, label = umat.view(incompressible=True, ux=λ, ps=None, bx=None).evaluate()[0]
+
+    for start in [
+        fem.Hyperelastic(
+            fem.constitution.finite_strain_viscoelastic, mu=1.0, eta=1.0, **kwargs
+        ),
+        fem.Hyperelastic(
+            fem.constitution.finite_strain_viscoelastic, mu=1.0, eta=1.0, **kwargs
+        )
+        & fem.Volumetric(bulk=5000.0),
+    ]:
+        umat_new, res = start.optimize(ux=[λ, P], incompressible=True)
+
+        # the constant time increment is kept
+        assert umat_new.kwargs["dtime"] == 0.05
+        assert len(res.x) == len(res.dx) == len(start.kwargs) - 1
+
+        assert np.isclose(umat_new.kwargs["mu"], 1.5, rtol=1e-4)
+        assert np.isclose(umat_new.kwargs["eta"], 3.0, rtol=1e-4)
+
+
 if __name__ == "__main__":
     for Material, fun in [
         (fem.Hyperelastic, fem.constitution.finite_strain_viscoelastic),

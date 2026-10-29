@@ -49,7 +49,13 @@ the time increment to their time-dependent materials.
     A time increment which is given as keyword-argument of the material, e.g.
     ``Hyperelastic(finite_strain_viscoelastic, mu=1.0, eta=1.0, dtime=1.0,
     nstatevars=6)``, is a constant material parameter. Then, the material is not
-    time-dependent.
+    time-dependent. This is convenient for a load path with equal time increments,
+    e.g. a quick plot of a force-stretch curve. However, a constant time increment
+
+    * is the same for all substeps, i.e. there are no holding times or varying rates,
+    * is not scaled by a :class:`~felupe.CutbackPlugin`, i.e. each increment of a
+      subdivided substep takes the full time increment (with a warning) and
+    * is not optimized by :meth:`~felupe.ConstitutiveMaterial.optimize`.
 
 Time Steps
 **********

@@ -487,11 +487,11 @@ class ConstitutiveMaterial:
             For JAX-based materials, double-precision is required to optimize material
             parameters.
 
-        The material parameters are the keyword-arguments of the material, i.e. the time
-        increment of a time-dependent material is not a material parameter. They are
+        The material parameters are the keyword-arguments of the material. They are
         set on a copy of the material, i.e. its keyword-arguments and its attributes
         with the same names, as well as the material parameters of its materials, e.g.
-        of a composite material. The
+        of a composite material. The time increment is not a material parameter, i.e. a
+        constant time increment ``dtime`` of the keyword-arguments is not optimized. The
         experimental data of a time-dependent material includes the (absolute) times
         of the data points, e.g. ``ux=[stretches, forces, times]``, which are taken for
         the time increments of the load case, see :class:`~felupe.ViewMaterial`.
@@ -624,9 +624,10 @@ class ConstitutiveMaterial:
         load_cases = {"ux": None, "ps": None, "bx": None}
         load_cases.update({key: lc for key, (lc, forces) in experiments.items()})
 
-        # get sizes of material parameters and offsets as cumulative sum
-        keys = list(self.kwargs.keys())
-        offsets = np.cumsum([np.asarray(y).size for y in self.kwargs.values()])[:-1]
+        # get sizes of material parameters and offsets as cumulative sum (a constant
+        # time increment is not a material parameter)
+        keys = [key for key in self.kwargs.keys() if key != "dtime"]
+        offsets = np.cumsum([np.asarray(self.kwargs[key]).size for key in keys])[:-1]
 
         def parameters(x):
             "Return a dict of material parameters for the vector of parameters x."
@@ -661,7 +662,7 @@ class ConstitutiveMaterial:
             return np.concatenate(residuals)
 
         # optimize the initial material parameters
-        x0 = [np.asarray(value).ravel() for value in umat.kwargs.values()]
+        x0 = [np.asarray(umat.kwargs[key]).ravel() for key in keys]
         res = least_squares(fun=fun, x0=np.concatenate(x0), **kwargs)
 
         def std(hessian, residuals_variance):

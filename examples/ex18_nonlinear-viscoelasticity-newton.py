@@ -5,7 +5,8 @@ This example shows how to implement a constitutive material model for
 rubber viscoelastic materials using a strain energy density function coupled
 with an ODE for an internal (state) variable [1]_. The ODE is discretized using a
 backward-Euler scheme and the resulting nonlinear algebraic equations for the
-internal variable are solved using Newton's method [2]_.
+internal variable are solved using Newton's method [2]_. The consistent tangent includes
+the linearization of the internal variable.
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -59,8 +60,9 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
     # 1. compute ΔR with respect to the right Cauchy-Green deformation tensor C
     # 2. compute ∂R/∂Cv, as already done in Newton's method above
     # 3. solve ∂R/∂Cv : ΔCv = -ΔR and create a tensor for Cv with its linearization ΔCv
+    #    (only used for the linearization / consistent tangent)
     ΔR = tr.Δ(evolution(Cv, Cvn, C))
-    ΔCv = ΔR
+    ΔCv = ΔR  # ZERO for the evaluation of the stress only (no linearization)
     if ΔR is not tr.ZERO:
         dRdCv = tr.jacobian(evolution, ntrax=C.ntrax)(Cv, Cvn, C.x)
         ΔCv = fem.math.solve_2d(dRdCv, -ΔR)

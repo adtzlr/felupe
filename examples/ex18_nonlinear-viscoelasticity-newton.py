@@ -6,6 +6,21 @@ rubber viscoelastic materials using a strain energy density function coupled
 with an ODE for an internal (state) variable [1]_. The ODE is discretized using a
 backward-Euler scheme and the resulting nonlinear algebraic equations for the
 internal variable are solved using Newton's method [2]_.
+
+The stress is the partial derivative of the strain energy density function at a fixed
+(updated) internal variable. For the consistent tangent, the linearization of the
+internal variable is obtained by the implicit function theorem, see Eq.
+:eq:`implicit-linearization`. Hence, the internal variable is constant in the variation
+but not in the linearization, see :func:`tensortrax.math.no_variation`.
+
+..  math::
+    :label: implicit-linearization
+
+    \boldsymbol{R}(\boldsymbol{C}_v, \boldsymbol{C}) = \boldsymbol{0}
+    \quad \longrightarrow \quad
+    \Delta \boldsymbol{C}_v = - \left( \frac{\partial \boldsymbol{R}}{\partial
+    \boldsymbol{C}_v} \right)^{-1} : \frac{\partial \boldsymbol{R}}{\partial
+    \boldsymbol{C}} : \Delta \boldsymbol{C}
 """
 
 # sphinx_gallery_thumbnail_number = -1
@@ -54,6 +69,15 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
         args=(Cvn, C.x),
         verbose=0,
     ).x
+
+    # linearization of the updated state variables by the implicit function theorem
+    # ΔCv = -(∂R/∂Cv)⁻¹ : (∂R/∂C : ΔC), without a variation (stress at fixed Cv)
+    ΔR = tr.Δ(evolution(Cv, Cvn, tm.no_variation(C)))
+    ΔCv = ΔR
+    if ΔR is not tr.ZERO:
+        dRdCv = tr.jacobian(evolution, ntrax=C.ntrax)(Cv, Cvn, C.x)
+        ΔCv = fem.math.solve_2d(dRdCv, -ΔR)
+    Cv = tr.Tensor(Cv, δx=tr.ZERO, Δx=ΔCv, Δδx=tr.ZERO, ntrax=C.ntrax, ndual=C.ndual)
 
     # invariants of the (elastic and viscous) right Cauchy-Green deformation tensor
     I1 = tm.trace(C)

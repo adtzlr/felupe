@@ -94,6 +94,6 @@ def finite_strain_viscoelastic(C, statevars, mu, eta, dtime):
     # strain energy function
     ψ = mu / 2 * (I1 - 3)
 
-    # incremental potential and new state variables
+    # new state variables
     statevars_new = triu_1d(Ci - eye)
     return ψ, statevars_new

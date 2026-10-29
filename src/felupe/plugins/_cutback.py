@@ -1,9 +1,26 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import warnings
+
 import numpy as np
 
 from ..tools._newton import NewtonConvergenceError
 from ._plugin import Plugin
+
+
+def constant_time_increment(material):
+    """Return True if a material takes a constant time increment, i.e. a time increment
+    which is given as material parameter ``dtime``. The material parameters of a
+    composite material include the material parameters of its materials. The material
+    of a mixed-field formulation, e.g. of :class:`~felupe.NearlyIncompressible`, is
+    checked recursively."""
+
+    if "dtime" in (getattr(material, "kwargs", None) or {}):
+        return True
+
+    inner = getattr(material, "material", None)
+
+    return inner is not None and constant_time_increment(inner)
 
 
 def interpolate(values0, values1, t):
@@ -164,7 +181,9 @@ class CutbackPlugin(Plugin):
         updated by the time step item. A time increment which is given as a constant
         material parameter, e.g. ``Hyperelastic(finite_strain_viscoelastic,
         dtime=1.0, ...)``, is not part of the ramp. It is not scaled by the cutback,
-        i.e. each increment of a subdivided substep uses the full time increment.
+        i.e. each increment of a subdivided substep uses the full time increment. If a
+        substep with such a material is subdivided, a warning is emitted (once per
+        plugin).
 
     **Values of the previous substep**: The values of the ramp of the previous
     substep are taken from the substeps which were already evaluated with this
@@ -272,6 +291,27 @@ class CutbackPlugin(Plugin):
 
         # the checkpoint of the current substep
         self._checkpoint = None
+
+        # a flag for the warning of a constant time increment (only warned once)
+        self._warned = False
+
+    def _warn_constant_time_increment(self, context):
+        """Warn once if a subdivided substep contains an item with a material which
+        takes a constant time increment, which is not scaled by the cutback."""
+
+        for item in context.items or []:
+            if constant_time_increment(getattr(item, "umat", None)):
+                self._warned = True
+                warnings.warn(
+                    f"The material of the {type(item).__name__} takes a constant time "
+                    "increment `dtime`, which is not scaled by the cutback, i.e. each "
+                    "increment of a subdivided substep uses the full time increment. "
+                    "Use the time increment as input of a time-dependent material "
+                    "instead, i.e. without the material parameter `dtime` and with a "
+                    "time step item `fem.TimeStep(items=[solid])` in the ramp of the "
+                    "step."
+                )
+                return
 
     @staticmethod
     def _stateful(context):
@@ -415,6 +455,9 @@ class CutbackPlugin(Plugin):
             return
 
         values0 = {key: self._values[key] for key in values1.keys()}
+
+        if not self._warned:
+            self._warn_constant_time_increment(context)
 
         # the smallest increment (with a tolerance for the products of the factors)
         dt_min = self.factor**self.max_cutbacks

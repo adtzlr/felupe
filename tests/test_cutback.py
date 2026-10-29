@@ -3,12 +3,13 @@
 import contextlib
 import pathlib
 import tempfile
+import warnings
 
 import numpy as np
 import pytest
 
 import felupe as fem
-from felupe.plugins._cutback import interpolate
+from felupe.plugins._cutback import constant_time_increment, interpolate
 
 
 class FailingNewton(fem.Plugin):
@@ -388,6 +389,86 @@ def test_cutback_statevars(nearly_incompressible):
             value = getattr(solid.results.state, name)
             value_ref = getattr(solid_ref.results.state, name)
             assert np.allclose(value, value_ref, rtol=1e-12, atol=1e-14)
+
+
+def test_constant_time_increment():
+    "A material with a time increment as material parameter, also of wrapped materials."
+
+    kwargs = dict(nstatevars=6, mu=1.0, eta=1.0)
+    fun = fem.constitution.finite_strain_viscoelastic
+    constant = fem.Hyperelastic(fun, dtime=1.0, **kwargs)
+    time_dependent = fem.Hyperelastic(fun, **kwargs)
+
+    assert constant_time_increment(constant)
+    assert constant_time_increment(fem.Volumetric(bulk=5000.0) & constant)
+    assert constant_time_increment(fem.NearlyIncompressible(constant, bulk=5000.0))
+    assert constant_time_increment(fem.ThreeFieldVariation(constant))
+
+    # the former name of the time increment of linear_elastic_viscoelastic()
+    assert constant_time_increment(
+        fem.MaterialStrain(
+            material=fem.linear_elastic_viscoelastic,
+            λ=2.0,
+            μ=1.0,
+            G=[3.0],
+            τ=[10.0],
+            Δt=1.0,
+            statevars=((1, 3, 3),),
+        )
+    )
+
+    assert not constant_time_increment(time_dependent)
+    assert not constant_time_increment(fem.Volumetric(bulk=5000.0) & time_dependent)
+    assert not constant_time_increment(
+        fem.NearlyIncompressible(time_dependent, bulk=5000.0)
+    )
+    assert not constant_time_increment(fem.NeoHooke(mu=1.0))
+    assert not constant_time_increment(None)
+
+
+@pytest.mark.parametrize("nearly_incompressible", [False, True])
+def test_cutback_constant_time_increment(nearly_incompressible):
+    """A constant time increment is not scaled by the cutback, i.e. a subdivided
+    substep is not identical to explicit substeps. This is warned once."""
+
+    def constant():
+        return fem.Hyperelastic(
+            fem.constitution.finite_strain_viscoelastic,
+            nstatevars=6,
+            mu=1.0,
+            eta=1.0,
+            dtime=1.0,
+        )
+
+    ramp = fem.math.linsteps([0, 0.3, 0.6], num=1)
+    model = dict(nearly_incompressible=nearly_incompressible)
+
+    # fail the full second and the full third substep
+    cutback = fem.CutbackPlugin()
+    failing = FailingNewton(calls=[1, 4], iteration=1)
+
+    with pytest.warns(UserWarning, match="constant time increment") as record:
+        field, solid, job = run(
+            ramp, plugins=[failing, cutback], umat=constant(), **model
+        )
+
+    assert cutback.load_factors == [[1.0], [0.5, 1.0], [0.5, 1.0]]
+    warned = [w for w in record if "constant time increment" in str(w.message)]
+    assert len(warned) == 1
+
+    # each increment takes the full time increment, like explicit substeps
+    reference, _, _ = run(refine(ramp, cutback.load_factors), umat=constant(), **model)
+    assert np.allclose(field[0].values, reference[0].values, rtol=1e-12, atol=1e-14)
+
+    # no warning for the time increment as input of a time-dependent material
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", message=".*constant time increment")
+        run(
+            ramp,
+            plugins=[FailingNewton(calls=[1, 4]), fem.CutbackPlugin()],
+            umat=viscoelastic(),
+            **model,
+        )
 
 
 def test_cutback_plasticity():

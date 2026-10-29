@@ -122,7 +122,8 @@ def test_time_step_cutback():
         boundaries=boundaries_old,
     )
     cutback = fem.CutbackPlugin()
-    fem.Job(steps=[step], plugins=[cutback]).evaluate(verbose=0, maxiter=6)
+    with pytest.warns(UserWarning, match="constant time increment"):
+        fem.Job(steps=[step], plugins=[cutback]).evaluate(verbose=0, maxiter=6)
 
     assert cutback.load_factors[1] == load_factors
     assert not np.allclose(solid_old.results.statevars, solid_ref.results.statevars)

@@ -19,6 +19,7 @@ How-To Guides
 
    howto/umat_hyperelasticity
    howto/umat
+   howto/umat_time
 
 .. toctree::
    :maxdepth: 1

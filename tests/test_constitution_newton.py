@@ -45,14 +45,17 @@ def test_visco_newton():
         return mu / 2 * (I1 - 3), triu_1d(Ci)
 
     umat = mat.Hyperelastic(
-        finite_strain_viscoelastic_newton, mu=1.0, eta=1.0, dtime=0.1, nstatevars=6
+        finite_strain_viscoelastic_newton, mu=1.0, eta=1.0, nstatevars=6
     )
+    assert umat.time_dependent
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
+    # a constant time increment of 0.1 (the evolution equation is divided by the time
+    # increment, i.e. the first time increment must not be zero)
     move = fem.math.linsteps([0, 0.3], num=3)
-    step = fem.Step(
-        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
-    )
+    time = fem.TimeStep(items=[solid])
+    ramp = {boundaries["move"]: move, time: 0.1 * (1 + np.arange(len(move)))}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"]).evaluate()
     assert np.all([norm[-1] < 1e-7 for norm in job.fnorms])
 
@@ -101,16 +104,18 @@ def test_visco_newton_jax():
         finite_strain_viscoelastic_newton,
         mu=1.0,
         eta=1.0,
-        dtime=0.1,
         nstatevars=9,
         jit=True,
     )
+    assert umat.time_dependent
     solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
+    # a constant time increment of 0.1 (the evolution equation is divided by the time
+    # increment, i.e. the first time increment must not be zero)
     move = fem.math.linsteps([0, 0.3], num=3)
-    step = fem.Step(
-        items=[solid], ramp={boundaries["move"]: move}, boundaries=boundaries
-    )
+    time = fem.TimeStep(items=[solid])
+    ramp = {boundaries["move"]: move, time: 0.1 * (1 + np.arange(len(move)))}
+    step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
     job = fem.CharacteristicCurve(steps=[step], boundary=boundaries["move"])
     job.evaluate(tol=1e-3)
 

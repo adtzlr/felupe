@@ -53,3 +53,6 @@ linear viscoelastic materials:
 * :func:`~felupe.linear_elastic`
 * :func:`~felupe.linear_elastic_plastic_isotropic_hardening`
 * :func:`~felupe.linear_elastic_viscoelastic`
+
+The linear viscoelastic material is time-dependent, i.e. it takes the time increment as
+an input, see :doc:`umat_time`.

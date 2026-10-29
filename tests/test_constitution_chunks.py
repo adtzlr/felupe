@@ -300,6 +300,7 @@ def test_chunks_tensortrax(monkeypatch):
         (
             lambda parallel: fem.Hyperelastic(fem.neo_hooke, mu=1.0, parallel=parallel),
             [F, np.zeros((0, q, c))],
+            {},
         ),
         (
             lambda parallel: fem.Hyperelastic(
@@ -307,20 +308,21 @@ def test_chunks_tensortrax(monkeypatch):
                 nstatevars=6,
                 mu=1.0,
                 eta=1.0,
-                dtime=1.0,
                 parallel=parallel,
             ),
             [F, Ci.copy()],
+            {"dtime": 1.0},  # the time increment of the time-dependent material
         ),
         (
             lambda parallel: fem.MaterialAD(
                 neo_hooke_total_lagrange, mu=1.0, parallel=parallel
             ),
             [F, np.zeros((0, q, c))],
+            {},
         ),
     ]
 
-    for Material, x in materials:
+    for Material, x, kwargs in materials:
         whole = Material(parallel=False)
         whole.chunksize = None
 
@@ -329,8 +331,8 @@ def test_chunks_tensortrax(monkeypatch):
             umat.chunksize = 2 * q  # chunks of two cells
 
             for method in ["gradient", "hessian"]:
-                expected = getattr(whole, method)(x)
-                res = getattr(umat, method)(x)
+                expected = getattr(whole, method)(x, **kwargs)
+                res = getattr(umat, method)(x, **kwargs)
 
                 for r, e in zip(res, expected):
                     if e is None:

@@ -112,8 +112,14 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, dtime, **kwar
 
     Examples
     --------
+    The material is time-dependent, i.e. the time increment is an input of the
+    material, like the deformation gradient. The load case of the force-stretch curve
+    includes the (absolute) times, here with a time increment of 5 per stretch
+    increment.
+
     ..  plot::
 
+        >>> import numpy as np
         >>> import felupe as fem
         >>>
         >>> umat = fem.MaterialStrain(
@@ -122,31 +128,25 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, dtime, **kwar
         ...     μ=1.0,
         ...     G=[3.0, 2.0],
         ...     τ=[10.0, 100.0],
-        ...     dtime=5.0,
         ...     statevars=((2, 3, 3),),
         ... )
-        >>> ux = fem.math.linsteps([1, 2, 1, 2, 1, 2, 1], num=20)
-        >>> ax = umat.plot(ux=ux, bx=None, ps=None)
+        >>> stretches = fem.math.linsteps([1, 2, 1, 2, 1, 2, 1], num=20)
+        >>> times = 5.0 * np.arange(len(stretches))
+        >>> ax = umat.plot(ux=[stretches, times], bx=None, ps=None)
 
-    Without the time increment as material parameter, the material is time-dependent,
-    i.e. the time increment is an input of the material, like the deformation gradient.
+    The time increment is given by the keyword-argument ``dtime`` of the methods
+    ``gradient()`` and ``hessian()``, e.g. by the time increment of a solid body which
+    is updated by a :class:`~felupe.TimeStep`.
 
-    >>> umat = fem.MaterialStrain(
-    ...     material=fem.linear_elastic_viscoelastic,
-    ...     λ=2.0,
-    ...     μ=1.0,
-    ...     G=[3.0, 2.0],
-    ...     τ=[10.0, 100.0],
-    ...     statevars=((2, 3, 3),),
-    ... )
     >>> umat.time_dependent
     True
-    >>>
-    >>> import numpy as np
     >>>
     >>> F = np.diag([1.1, 1.0, 1.0]).reshape(3, 3, 1, 1)
     >>> statevars = np.zeros((36, 1, 1))
     >>> P, statevars_new = umat.gradient([F, statevars], dtime=5.0)
+
+    A time increment which is given as material parameter, e.g. ``dtime=5.0``, is a
+    constant material parameter.
 
     See Also
     --------

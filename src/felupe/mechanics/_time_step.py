@@ -49,6 +49,10 @@ class TimeStep:
     interpolated and the time increment of each increment is the difference to the
     time of the last converged increment.
 
+    The solid bodies, e.g. :class:`~felupe.SolidBody`, pass their time increment to
+    time-dependent materials, e.g. to a viscoelastic material, see the examples of
+    :class:`~felupe.SolidBody`.
+
     Examples
     --------
     ..  pyvista-plot::
@@ -77,6 +81,8 @@ class TimeStep:
     felupe.Step : A Step with multiple substeps, subsequently depending on the solution
         of the previous substep.
     felupe.CutbackPlugin : A cutback of the increment of failed substeps.
+    felupe.SolidBody : A SolidBody with methods for the assembly of sparse
+        vectors/matrices.
     felupe.thermal.SolidBodyThermal : A thermal solid body.
 
     """

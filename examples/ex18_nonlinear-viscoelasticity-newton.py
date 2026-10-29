@@ -70,8 +70,8 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
         verbose=0,
     ).x
 
-    # linearization of the updated state variables by the implicit function theorem
-    # ΔCv = -(∂R/∂Cv)⁻¹ : (∂R/∂C : ΔC), without a variation (stress at fixed Cv)
+    # Δ-part of the residuals R = evolution(Cv, Cvn, C)
+    # ∂R/∂Cv : ΔCv = -ΔR with ΔR = ∂R/∂C : ΔC, without a δ-variation (stress at fixed Cv)
     ΔR = tr.Δ(evolution(Cv, Cvn, tm.no_variation(C)))
     ΔCv = ΔR
     if ΔR is not tr.ZERO:
@@ -81,7 +81,7 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
 
     # invariants of the (elastic and viscous) right Cauchy-Green deformation tensor
     I1 = tm.trace(C)
-    I1e, I1v, I2e = invariants(Cv, C)
+    I1e = invariants(Cv, C)[0]
 
     # strain energy functions of the equilibrium and non-equilibrium parts
     p = [0, 1]

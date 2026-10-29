@@ -74,7 +74,7 @@ class Material(MaterialDefault):
         import felupe.constitution.tensortrax as mat
         import tensortrax.math as tm
 
-        def viscoelastic(F, Cin, mu, eta, dtime):
+        def viscoelastic(F, statevars, mu, eta, dtime):
             "Finite strain viscoelastic material formulation."
 
             # unimodular part of the right Cauchy-Green deformation tensor
@@ -82,16 +82,24 @@ class Material(MaterialDefault):
             Cu = tm.linalg.det(C) ** (-1 / 3) * C
 
             # update of state variables by evolution equation
-            Ci = tm.special.from_triu_1d(Cin, like=C) + mu / eta * dtime * Cu
+            eye = tm.base.eye(C)
+            Cin = eye + tm.special.from_triu_1d(statevars, like=C)
+            Ci = Cin + mu / eta * dtime * Cu
             Ci = tm.linalg.det(Ci) ** (-1 / 3) * Ci
 
             # second Piola-Kirchhoff stress tensor
-            S = mu * tm.special.dev(Cu @ tm.linalg.inv(Ci)) @ tm.linalg.inv(C)
+            S = mu * tm.linalg.inv(C) @ tm.special.dev(Cu @ tm.linalg.inv(Ci))
 
-            # first Piola-Kirchhoff stress tensor and state variable
-            return F @ S, tm.special.triu_1d(Ci)
+            # first Piola-Kirchhoff stress tensor and new state variables
+            return F @ S, tm.special.triu_1d(Ci - eye)
 
         umat = mat.Material(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
+
+    The state variables are the components of the upper triangle of the deviation of the
+    inelastic right Cauchy-Green deformation tensor from the identity, i.e. the initial
+    state variables are zero. The stress is evaluated at the updated state variables and
+    the elasticity tensor, its Jacobian, includes the linearization of the updated state
+    variables, i.e. it is the consistent linearization.
 
     **Time-dependent materials**: If the function has an argument ``dtime`` without a
     default value, which is not given as keyword-argument of the material, the material

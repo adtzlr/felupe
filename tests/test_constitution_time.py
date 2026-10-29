@@ -775,6 +775,151 @@ def test_time_increment_strain_job():
     assert not np.allclose(statevars[:18], 0)
 
 
+@pytest.mark.parametrize("incompressible", [False, True])
+def test_time_increment_view(incompressible):
+    """The load cases of a time-dependent material include the times, a constant time
+    increment equals the time increment as material parameter."""
+
+    stretches = {
+        "ux": fem.math.linsteps([1, 1.5, 1, 2], num=[5, 5, 10]),
+        "ps": fem.math.linsteps([1, 1.5], num=5),
+        "bx": fem.math.linsteps([1, 1.25, 1], num=[4, 4]),
+    }
+
+    def with_volumetric(umat):
+        "Add a volumetric part for compressible load cases (a composite material)."
+        return umat if incompressible else umat & fem.Volumetric(bulk=5.0)
+
+    for Material, fun in [
+        (fem.Hyperelastic, fem.constitution.finite_strain_viscoelastic),
+        (fem.MaterialAD, viscoelastic_lagrange),
+    ]:
+        umat = with_volumetric(Material(fun, mu=1.0, eta=2.0, nstatevars=6))
+        old = with_volumetric(Material(fun, mu=1.0, eta=2.0, dtime=0.2, nstatevars=6))
+        assert umat.time_dependent and not old.time_dependent
+
+        # a constant time increment (the first stretch is one, i.e. its time increment
+        # of zero doesn't matter)
+        cases = {key: [λ, 0.2 * np.arange(len(λ))] for key, λ in stretches.items()}
+
+        data = umat.view(incompressible=incompressible, **cases).evaluate()
+        expected = old.view(incompressible=incompressible, **stretches).evaluate()
+
+        assert len(data) == 3
+        for (λ, force, label), (λ_old, force_old, label_old) in zip(data, expected):
+            assert label == label_old
+            assert np.allclose(λ[0], λ_old[0])
+            assert np.allclose(force, force_old, rtol=1e-10, atol=1e-12)
+
+    # a hold time relaxes the stress
+    λ = np.array([1.0, 1.5, 1.5, 1.5])
+    t = np.array([0.0, 0.1, 1.0, 10.0])
+    λ_, force, label = umat.view(
+        incompressible=incompressible, ux=[λ, t], ps=None, bx=None
+    ).evaluate()[0]
+
+    assert force[1] > force[2] > force[3] > 0
+
+    # a shorter holding time relaxes less (the same loading)
+    t_short = np.array([0.0, 0.1, 0.19, 1.09])
+    λ_, force_fast, label = umat.view(
+        incompressible=incompressible, ux=[λ, t_short], ps=None, bx=None
+    ).evaluate()[0]
+
+    assert np.isclose(force_fast[1], force[1])
+    assert force_fast[3] > force[3]
+
+
+def test_time_increment_view_plot_and_errors():
+    "Plots and errors of the load cases of time-dependent materials."
+
+    import matplotlib.pyplot as plt
+
+    umat = strain_viscoelastic()
+    stretches = fem.math.linsteps([1, 1.1, 1.1, 1], num=[5, 5, 5])
+    times = fem.math.linsteps([0, 1, 11, 31], num=[5, 5, 5])
+
+    ax = umat.plot(ux=[stretches, times], ps=None, bx=None)
+    plt.close(ax.get_figure())
+
+    ax = umat.plot(ux=[stretches, times], ps=None, bx=None, incompressible=True)
+    plt.close(ax.get_figure())
+
+    # a time-dependent material without times (also the default load cases)
+    with pytest.raises(ValueError, match="requires the \\(absolute\\) times"):
+        umat.view(ux=stretches, ps=None, bx=None).evaluate()
+
+    with pytest.raises(ValueError, match="requires the \\(absolute\\) times"):
+        umat.plot(incompressible=True)
+
+    # decreasing times and other shapes of the load cases
+    with pytest.raises(ValueError, match="must not decrease"):
+        umat.view(ux=[stretches, times[::-1]], ps=None, bx=None).evaluate()
+
+    with pytest.raises(ValueError, match="stretches and times"):
+        umat.view(ux=[stretches, times, times], ps=None, bx=None).evaluate()
+
+    # a material which is not time-dependent
+    with pytest.raises(TypeError, match="not time-dependent"):
+        fem.NeoHooke(mu=1.0).view(
+            incompressible=True, ux=[stretches, times], ps=None, bx=None
+        ).evaluate()
+
+    # a time-dependent material without state variables
+    class Viscous(fem.ConstitutiveMaterial):
+        time_dependent = True
+
+        def __init__(self, eta):
+            self.eta = eta
+            self.x = [np.eye(3), np.zeros(0)]
+            self.kwargs = {"eta": eta}
+
+        def _gradient(self, x, dtime):
+            F, statevars = x[0], x[-1]
+            return [self.eta / (1 + dtime) * (F - fem.math.identity(F)), statevars]
+
+    λ = np.array([1.0, 1.5, 1.5])
+    λ_, force, label = (
+        Viscous(eta=2.0)
+        .view(incompressible=True, ux=[λ, [0.0, 0.0, 1.0]], ps=None, bx=None)
+        .evaluate()[0]
+    )
+
+    assert np.isclose(force[2], force[1] / 2)
+
+
+def test_time_increment_optimize():
+    "The material parameters of a time-dependent material are fitted with times."
+
+    umat = fem.Hyperelastic(
+        fem.constitution.finite_strain_viscoelastic, mu=1.5, eta=3.0, nstatevars=6
+    )
+
+    # synthetic experimental data: loading, hold, unloading
+    λ = fem.math.linsteps([1, 1.5, 1.5, 1], num=[10, 10, 10])
+    t = fem.math.linsteps([0, 0.5, 5.5, 6.0], num=[10, 10, 10])
+    λ_, P, label = umat.view(
+        incompressible=True, ux=[λ, t], ps=None, bx=None
+    ).evaluate()[0]
+
+    start = fem.Hyperelastic(
+        fem.constitution.finite_strain_viscoelastic, mu=1.0, eta=1.0, nstatevars=6
+    )
+    umat_new, res = start.optimize(ux=[λ, P, t], incompressible=True)
+
+    # the time increment is not a material parameter
+    assert list(umat_new.kwargs.keys()) == ["mu", "eta"]
+    assert umat_new.time_dependent
+
+    assert np.isclose(umat_new.kwargs["mu"], 1.5, rtol=1e-4)
+    assert np.isclose(umat_new.kwargs["eta"], 3.0, rtol=1e-4)
+    assert len(res.fun) == len(λ)
+
+    # the data without times
+    with pytest.raises(ValueError, match="requires the \\(absolute\\) times"):
+        start.optimize(ux=[λ, P], incompressible=True)
+
+
 if __name__ == "__main__":
     for Material, fun in [
         (fem.Hyperelastic, fem.constitution.finite_strain_viscoelastic),
@@ -795,3 +940,9 @@ if __name__ == "__main__":
 
     test_time_increment_strain_detection()
     test_time_increment_strain_job()
+
+    for incompressible in [False, True]:
+        test_time_increment_view(incompressible)
+
+    test_time_increment_view_plot_and_errors()
+    test_time_increment_optimize()

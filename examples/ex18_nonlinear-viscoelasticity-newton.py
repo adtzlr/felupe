@@ -55,10 +55,11 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
         verbose=0,
     ).x
 
-    # Δ-part of the residuals, R = evolution(Cv, Cvn, C)
-    # ΔR = ∂R/∂C : ΔC, without a δ-variation (stress at fixed Cv)
-    # solve ∂R/∂Cv : ΔCv = -ΔR and create the updated Cv tensor with its ΔCv
-    ΔR = tr.Δ(evolution(Cv, Cvn, tm.no_variation(C)))
+    # linearization of R = evolution(Cv, Cvn, C) leads to ∂R/∂Cv : ΔCv + ∂R/∂C : ΔC = 0
+    # 1. compute ΔR with respect to the right Cauchy-Green deformation tensor C
+    # 2. compute ∂R/∂Cv, as already done in Newton's method above
+    # 3. solve ∂R/∂Cv : ΔCv = -ΔR and create a tensor for Cv with its linearization ΔCv
+    ΔR = tr.Δ(evolution(Cv, Cvn, C))
     ΔCv = ΔR
     if ΔR is not tr.ZERO:
         dRdCv = tr.jacobian(evolution, ntrax=C.ntrax)(Cv, Cvn, C.x)

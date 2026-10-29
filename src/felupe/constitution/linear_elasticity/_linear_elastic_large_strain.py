@@ -51,6 +51,15 @@ class LinearElasticLargeStrain(ConstitutiveMaterial):
         lmbda, mu = lame_converter(E, nu)
         self.material = NeoHookeCompressible(mu=mu, lmbda=lmbda, parallel=parallel)
 
+    def _set_parameters(self, parameters):
+        """Set the values of the material parameters ``E`` and ``nu`` and of the
+        Lamé parameters of the Neo-Hookean material formulation."""
+
+        super()._set_parameters(parameters)
+
+        lmbda, mu = lame_converter(self.E, self.nu)
+        self.material._set_parameters({"mu": mu, "lmbda": lmbda})
+
     def function(self, x):
         """Evaluate the strain energy (as a function of the deformation gradient).
 

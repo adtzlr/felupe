@@ -897,6 +897,130 @@ def test_optimize(close_figs=True):
             plt.close(ax.get_figure())
 
 
+def optimize_data(umat, incompressible, **load_cases):
+    "Return synthetic experimental data of load cases (stretches and forces)."
+
+    view = umat.view(incompressible=incompressible, ux=None, ps=None, bx=None)
+    methods = {"ux": view.uniaxial, "ps": view.planar, "bx": view.biaxial}
+
+    return {
+        key: [stretches, methods[key](stretches)[1]]
+        for key, stretches in load_cases.items()
+    }
+
+
+def test_optimize_load_cases():
+    "The predicted and the observed forces are paired for all combinations."
+
+    stretches = fem.math.linsteps([1, 2], num=7)
+    data = optimize_data(
+        fem.Hyperelastic(fem.neo_hooke, mu=1.5),
+        incompressible=True,
+        ux=stretches,
+        ps=stretches,
+        bx=stretches,
+    )
+
+    for keys in [
+        ["ux"],
+        ["ps"],
+        ["bx"],
+        ["ux", "ps"],
+        ["ux", "bx"],
+        ["ps", "bx"],
+        ["ux", "ps", "bx"],
+    ]:
+        umat = fem.Hyperelastic(fem.neo_hooke, mu=1.0)
+        umat_new, res = umat.optimize(
+            **{key: data[key] for key in keys}, incompressible=True
+        )
+
+        assert len(res.fun) == 8 * len(keys)
+        assert np.isclose(umat_new.kwargs["mu"], 1.5)
+        assert res.cost < 1e-16
+
+    # the planar shear data is not ignored, e.g. of another material
+    data_ps = optimize_data(
+        fem.Hyperelastic(fem.neo_hooke, mu=3.0), incompressible=True, ps=stretches
+    )
+    umat_new, res = fem.Hyperelastic(fem.neo_hooke, mu=1.0).optimize(
+        ux=data["ux"], ps=data_ps["ps"], incompressible=True
+    )
+    assert 1.5 < umat_new.kwargs["mu"] < 3.0
+
+    with pytest.raises(ValueError, match="At least one load case"):
+        fem.Hyperelastic(fem.neo_hooke, mu=1.0).optimize()
+
+
+def test_optimize_parameters():
+    """The material parameters are set on the materials, which store them as attributes
+    or in other materials."""
+
+    stretches = fem.math.linsteps([1, 1.5], num=7)
+
+    # material parameters as attributes
+    data = optimize_data(fem.NeoHooke(mu=1.5), incompressible=True, ux=stretches)
+    umat_new, res = fem.NeoHooke(mu=1.0).optimize(**data, incompressible=True)
+
+    assert np.isclose(umat_new.kwargs["mu"], 1.5)
+    assert np.isclose(umat_new.mu, 1.5)
+
+    # material parameters of the materials of a composite material
+    data = optimize_data(
+        fem.NeoHooke(mu=1.5) & fem.Volumetric(bulk=5.0),
+        incompressible=False,
+        ux=stretches,
+        bx=stretches,
+    )
+    umat = fem.NeoHooke(mu=1.0) & fem.Volumetric(bulk=2.0)
+    umat_new, res = umat.optimize(**data)
+
+    assert np.isclose(umat_new.materials[0].mu, 1.5)
+    assert np.isclose(umat_new.materials[1].bulk, 5.0)
+    assert umat.materials[0].mu == 1.0  # the original material is not changed
+
+    # material parameters of a material with a derived material
+    data = optimize_data(
+        fem.LinearElasticLargeStrain(E=2.0, nu=0.3),
+        incompressible=False,
+        ux=stretches,
+        bx=stretches,
+    )
+    umat_new, res = fem.LinearElasticLargeStrain(E=1.0, nu=0.25).optimize(**data)
+    lmbda, mu = fem.constitution.lame_converter(2.0, 0.3)
+
+    assert np.allclose([umat_new.E, umat_new.nu], [2.0, 0.3])
+    assert np.allclose([umat_new.material.lmbda, umat_new.material.mu], [lmbda, mu])
+
+    # material parameters of the pseudo-elastic and of the hyperelastic material
+    cycles = fem.math.linsteps([1, 2, 1, 2.5], num=[8, 8, 8])
+    true = fem.OgdenRoxburgh(fem.NeoHooke(mu=1.5), r=3.0, m=0.5, beta=0.1)
+    data = optimize_data(true, incompressible=True, ux=cycles)
+    umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1.2), r=2.5, m=0.6, beta=0.15)
+    umat_new, res = umat.optimize(**data, incompressible=True)
+
+    # the parameters m and beta are not unique for these load cases
+    assert res.cost < 1e-16
+    assert np.isclose(umat_new.r, 3.0)
+    assert np.isclose(umat_new.material.mu, 1.5)
+    assert np.isclose(umat_new.kwargs["mu"], 1.5)
+
+    # a material which is not derived from ConstitutiveMaterial in a composite
+    class External:
+        def __init__(self, mu):
+            self.kwargs = {"mu": mu}
+            self.x = [np.eye(3), np.zeros(0)]
+
+        def gradient(self, x):
+            F = x[0]
+            return [self.kwargs["mu"] * (F - fem.math.identity(F)), x[-1]]
+
+    composite = fem.Volumetric(bulk=5.0) & External(mu=1.0)
+    composite._set_parameters({"mu": 2.0, "bulk": 3.0})
+    assert composite.materials[1].kwargs["mu"] == 2.0
+    assert composite.materials[0].bulk == 3.0
+
+
 def test_lagrange():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
@@ -1314,6 +1438,8 @@ if __name__ == "__main__":
     test_umat_strain_optimize()
     test_composite(close_figs=close_figs)
     test_optimize(close_figs=close_figs)
+    test_optimize_load_cases()
+    test_optimize_parameters()
     test_lagrange()
     test_lagrange_statevars()
     test_laplace()

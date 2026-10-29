@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-from tensortrax.math import base, trace
+from tensortrax.math import base, no_variation, trace
 from tensortrax.math.linalg import det, inv
 from tensortrax.math.special import from_triu_1d, triu_1d
 
@@ -55,35 +55,6 @@ def finite_strain_viscoelastic(C, statevars, mu, eta, dtime):
             \hat{\boldsymbol{C}} \boldsymbol{C}_i^{-1}
         \right) - 3 \right)
 
-    The stress and its consistent tangent are the derivatives of the incremental
-    potential, i.e. the sum of the strain energy and the incremental dissipation
-    potential, see Eq. :eq:`incremental-potential`. The updated state variables are the
-    stationary point of the incremental potential w.r.t. the unimodular tensor
-    :math:`\boldsymbol{C}_i`. Hence, its total derivative w.r.t. :math:`\boldsymbol{C}`
-    equals the partial derivative of the strain energy at fixed
-    :math:`\boldsymbol{C}_i`.
-
-    ..  math::
-        :label: incremental-potential
-
-        W &= \hat{\psi} + \phi
-
-        \phi &= \frac{\eta}{2 \Delta t} \left( \text{tr}\left(
-            \boldsymbol{C}_{i,n} \boldsymbol{C}_i^{-1}
-        \right) - 3 \right)
-
-    ..  note::
-        Equivalent implementations are a custom variation of the strain energy at fixed
-        :math:`\boldsymbol{C}_i`, i.e. ``real_to_dual(inv(Ci), mu / 2 * Cu, mul=ddot)``
-        like in :func:`~felupe.constitution.tensortrax.models.hyperelastic.ogden_roxburgh`,
-        or the closed form of the incremental potential (faster, without an inverse).
-
-        ..  math::
-
-            W = \frac{3 \eta}{2 \Delta t} \det \left( \boldsymbol{C}_{i,n}
-                + \frac{\Delta t \mu}{\eta} \hat{\boldsymbol{C}} \right)^{1/3}
-                + \text{const.}
-
     Examples
     --------
     ..  plot::
@@ -115,20 +86,14 @@ def finite_strain_viscoelastic(C, statevars, mu, eta, dtime):
     eye = base.eye(C)
     Cin = eye + from_triu_1d(statevars[:6], like=C)
     Ci = Cin + (mu / eta * dtime) * (J3 * C)
-    Ci = det(Ci) ** (-1 / 3) * Ci
-    invCi = inv(Ci)
+    Ci = no_variation(det(Ci) ** (-1 / 3) * Ci)
 
     # first invariant of elastic part of right Cauchy-Green deformation tensor
-    I1 = J3 * trace(C @ invCi)
+    I1 = J3 * trace(inv(Ci) @ C)
 
     # strain energy function
     ψ = mu / 2 * (I1 - 3)
 
-    # incremental dissipation potential (no evolution for a zero time increment)
-    φ = 0.0
-    if dtime > 0:
-        φ = eta / (2 * dtime) * (trace(Cin @ invCi) - 3)
-
     # incremental potential and new state variables
     statevars_new = triu_1d(Ci - eye)
-    return ψ + φ, statevars_new
+    return ψ, statevars_new

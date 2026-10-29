@@ -598,14 +598,13 @@ class SolidBodyNearlyIncompressible(Solid):
             time_step=self.time_step,
         )
 
-        # expand state variables (no rotation is applied here)
+        # expand state variables along the trailing axes of the quadrature points and
+        # the cells, i.e. the components are not repeated (no rotation is applied here)
         new_shape = np.array(new_solid.results.statevars.shape)
         old_shape = np.array(self.results.statevars.shape)
 
-        # ratio of shape of new vs. old state variables
-        reps = np.zeros(len(new_shape), dtype=int)
-        reps[0] = new_shape[0]
-        reps[1:] = new_shape[1:] // old_shape[1:]
+        reps = np.ones(len(new_shape), dtype=int)
+        reps[-2:] = new_shape[-2:] // old_shape[-2:]
 
         new_solid.results.statevars[:] = np.tile(self.results.statevars, reps)
 

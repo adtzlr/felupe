@@ -1088,6 +1088,43 @@ def test_axi_to_3d_quadratic():
     solid.revolve(phi=360)
 
 
+def test_axi_to_3d_statevars():
+    "The state variables are repeated for the revolved quadrature points and cells."
+
+    class Material(fem.ConstitutiveMaterial):
+        "A material with state variables of a given shape (not evaluated here)."
+
+        def __init__(self, shape):
+            self.x = [np.eye(3), np.zeros(shape)]
+
+    mesh = fem.Rectangle(n=4)
+    field = fem.FieldContainer([fem.FieldAxisymmetric(fem.RegionQuad(mesh), dim=2)])
+    nsegments = 3  # the number of cell revolutions
+
+    for shape in [(0,), (6,), (2, 3)]:
+        for Body, kwargs in [
+            (fem.SolidBody, {}),
+            (fem.SolidBodyNearlyIncompressible, {"bulk": 20.0}),
+        ]:
+            solid = Body(Material(shape), field, **kwargs)
+            statevars = solid.results.statevars
+            statevars[:] = np.arange(statevars.size).reshape(statevars.shape)
+
+            new_solid = solid.revolve(n=nsegments + 1, phi=90)
+            new_statevars = new_solid.results.statevars
+
+            q, c = statevars.shape[-2:]
+            assert new_statevars.shape == (*shape, 2 * q, nsegments * c)
+
+            # each revolved cell (both layers of its quadrature points) takes the state
+            # variables of its axisymmetric cell
+            for segment in range(nsegments):
+                for layer in range(2):
+                    points = slice(layer * q, (layer + 1) * q)
+                    cells = slice(segment * c, (segment + 1) * c)
+                    assert np.allclose(new_statevars[..., points, cells], statevars)
+
+
 def test_job_plugins():
 
     import matplotlib.pyplot as plt
@@ -1416,6 +1453,7 @@ if __name__ == "__main__":
     test_axi_to_3d_incompressible()
     test_axi_to_3d_mixed()
     test_axi_to_3d_quadratic()
+    test_axi_to_3d_statevars()
     test_job_plugins()
     test_thirdmediumcontactmixed()
     test_solidbody_stress_2d()

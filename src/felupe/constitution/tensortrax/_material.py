@@ -93,7 +93,7 @@ class Material(MaterialDefault):
             # first Piola-Kirchhoff stress tensor and new state variables
             return F @ S, tm.special.triu_1d(Ci - eye)
 
-        umat = mat.Material(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)
+        umat = mat.Material(viscoelastic, mu=1, eta=1, nstatevars=6)
 
     The state variables are the components of the upper triangle of the deviation of the
     inelastic right Cauchy-Green deformation tensor from the identity, i.e. the initial
@@ -101,20 +101,23 @@ class Material(MaterialDefault):
     the elasticity tensor, its Jacobian, includes the linearization of the updated state
     variables, i.e. it is the consistent linearization.
 
-    **Time-dependent materials**: If the function has an argument ``dtime`` without a
-    default value, which is not given as keyword-argument of the material, the material
-    is time-dependent (the attribute ``time_dependent`` is True). Then, the time
-    increment is an input of the material, like the deformation gradient, i.e. it is
-    given by the keyword-argument ``dtime`` of :meth:`gradient` and :meth:`hessian`.
-    A time increment which is given as keyword-argument of the material, like
-    ``dtime=1`` in the code-block above, is a constant material parameter.
+    **Time-dependent materials**: The function has an argument ``dtime`` without a
+    default value, which is not given as keyword-argument of the material. Hence,
+    the material is time-dependent (the attribute ``time_dependent`` is True), i.e.
+    the time increment is an input of the material, like the deformation gradient.
+    It is given by the keyword-argument ``dtime`` of :meth:`gradient` and
+    :meth:`hessian`, e.g. by the time increment of a solid body which is updated by
+    a :class:`~felupe.TimeStep`.
 
     ..  code-block::
 
-        umat = mat.Material(viscoelastic, mu=1, eta=1, nstatevars=6)
         assert umat.time_dependent
 
         P, statevars_new = umat.gradient([F, statevars], dtime=0.1)
+
+    A time increment which is given as keyword-argument of the material, e.g.
+    ``mat.Material(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=6)``, is a
+    constant material parameter.
 
     ..  note::
         See the `documentation of tensortrax <https://github.com/adtzlr/tensortrax>`_

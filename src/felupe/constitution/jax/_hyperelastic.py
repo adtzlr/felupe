@@ -94,7 +94,7 @@ class Hyperelastic(Material):
             # incremental potential and new state variables
             return ψ + φ, (Ci - jnp.eye(3)).ravel()
 
-        umat = mat.Hyperelastic(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=9)
+        umat = mat.Hyperelastic(viscoelastic, mu=1, eta=1, nstatevars=9)
 
     The state variables are the components of the deviation of the inelastic right
     Cauchy-Green deformation tensor from the identity, i.e. the initial state variables
@@ -122,22 +122,25 @@ class Hyperelastic(Material):
     because the arguments of the just-in-time compiled functions are traced, i.e. their
     values are not available in Python conditions.
 
-    **Time-dependent materials**: If the function has an argument ``dtime`` without a
-    default value, which is not given as keyword-argument of the material, the material
-    is time-dependent (the attribute ``time_dependent`` is True). Then, the time
-    increment is an input of the material, like the deformation gradient, i.e. it is
-    given by the keyword-argument ``dtime`` of :meth:`gradient` and :meth:`hessian`.
-    It is passed as an array of data type float to the just-in-time compiled functions,
-    i.e. they are compiled only once for all time increments. A time increment which is
-    given as keyword-argument of the material, like ``dtime=1`` in the code-block above,
-    is a constant material parameter.
+    **Time-dependent materials**: The function has an argument ``dtime`` without a
+    default value, which is not given as keyword-argument of the material. Hence,
+    the material is time-dependent (the attribute ``time_dependent`` is True), i.e.
+    the time increment is an input of the material, like the deformation gradient.
+    It is given by the keyword-argument ``dtime`` of :meth:`gradient` and
+    :meth:`hessian`, e.g. by the time increment of a solid body which is updated by
+    a :class:`~felupe.TimeStep`.
+    It is passed as an array of data type float to the just-in-time compiled
+    functions, i.e. they are compiled only once for all time increments.
 
     ..  code-block::
 
-        umat = mat.Hyperelastic(viscoelastic, mu=1, eta=1, nstatevars=9)
         assert umat.time_dependent
 
         P, statevars_new = umat.gradient([F, statevars], dtime=0.1)
+
+    A time increment which is given as keyword-argument of the material, e.g.
+    ``mat.Hyperelastic(viscoelastic, mu=1, eta=1, dtime=1, nstatevars=9)``, is a
+    constant material parameter.
 
     ..  note::
         See the `documentation of JAX <https://jax.readthedocs.io>`_ for further

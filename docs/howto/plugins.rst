@@ -151,7 +151,9 @@ to the job.
     items are restored and the substep is subdivided into smaller increments. Custom
     items with a state, which is modified during the Newton iterations, have to provide
     the methods ``checkpoint()`` and ``restore(checkpoint)``, see
-    :class:`~felupe.mechanics.Item`.
+    :class:`~felupe.mechanics.Item`. The time of a :class:`~felupe.TimeStep` is
+    interpolated, i.e. each increment of a time-dependent material takes its own time
+    increment, see :doc:`umat_time`.
 
     ..  code-block:: python
 

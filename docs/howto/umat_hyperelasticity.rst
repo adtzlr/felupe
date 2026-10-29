@@ -36,3 +36,6 @@ formulations, like
 
 A complete list of all available model formulations is available in the
 :ref:`hyperelasticity <felupe-api-constitution-autodiff>` section of the API reference.
+A strain energy density function with an argument ``dtime``, e.g.
+:func:`~felupe.constitution.tensortrax.models.hyperelastic.finite_strain_viscoelastic`,
+is time-dependent, see :doc:`umat_time`.

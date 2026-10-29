@@ -62,14 +62,23 @@ class Recorder(fem.Plugin):
 
 
 def viscoelastic():
-    "A (distortional) finite strain viscoelastic material with state variables."
+    """A (distortional) finite strain viscoelastic material with state variables. The
+    material is time-dependent, i.e. it takes the time increment of the solid body."""
     return fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic,
         nstatevars=6,
         mu=1.0,
         eta=1.0,
-        dtime=0.1,
     )
+
+
+def with_time(ramp, solid, values):
+    """Add a time step item to the ramp of a step for a solid body with a time-dependent
+    material. The time is proportional to the given values (a constant rate), i.e. it
+    is interpolated like the values by a cutback."""
+    if getattr(solid.umat, "time_dependent", False):
+        ramp[fem.TimeStep(items=[solid])] = np.asarray(values, dtype=float)
+    return ramp
 
 
 def initial_statevars(umat, region):
@@ -135,7 +144,9 @@ def run(ramp, plugins=None, **kwargs):
     the Newton-Raphson method are recorded in ``job.history``."""
     field, boundaries, solid = cube(**kwargs)
     step = fem.Step(
-        items=[solid], ramp={boundaries["move"]: ramp}, boundaries=boundaries
+        items=[solid],
+        ramp=with_time({boundaries["move"]: ramp}, solid, ramp),
+        boundaries=boundaries,
     )
     history = NewtonHistory()
     job = fem.Job(steps=[step], plugins=[*(plugins or []), history])
@@ -860,12 +871,19 @@ def test_cutback_multiple_steps_and_jobs():
 
     def steps(field, boundaries, solid):
         move = boundaries["move"]
+        time = fem.TimeStep(items=[solid])  # the time continues in the second step
+        values_1 = np.array([0.0, 0.2])
         step_1 = fem.Step(
-            items=[solid], ramp={move: np.array([0.0, 0.2])}, boundaries=boundaries
+            items=[solid],
+            ramp={move: values_1, time: values_1},
+            boundaries=boundaries,
         )
         # the first substep of the second step is a jump
+        values_2 = np.array([0.4, 0.5])
         step_2 = fem.Step(
-            items=[solid], ramp={move: np.array([0.4, 0.5])}, boundaries=boundaries
+            items=[solid],
+            ramp={move: values_2, time: values_2},
+            boundaries=boundaries,
         )
         return step_1, step_2
 
@@ -880,7 +898,11 @@ def test_cutback_multiple_steps_and_jobs():
     field_ref, boundaries, solid_ref = cube(umat=viscoelastic())
     move = boundaries["move"]
     ramp = np.array([0.0, 0.2, 0.3, 0.4, 0.5])
-    step = fem.Step(items=[solid_ref], ramp={move: ramp}, boundaries=boundaries)
+    step = fem.Step(
+        items=[solid_ref],
+        ramp=with_time({move: ramp}, solid_ref, ramp),
+        boundaries=boundaries,
+    )
     fem.Job(steps=[step]).evaluate(verbose=0)
 
     assert np.allclose(field[0].values, field_ref[0].values)

@@ -629,18 +629,20 @@ def test_umat_viscoelastic(close_figs=True):
 
         return ψ + φ, tm.special.triu_1d(Ci - eye)
 
-    kwargs = {"mu": 1, "eta": 1, "dtime": 1}
+    kwargs = {"mu": 1, "eta": 1}
     umat = fem.Hyperelastic(viscoelastic, nstatevars=6, **kwargs)
+    assert umat.time_dependent
 
     statevars = np.zeros((6, *F.shape[-2:]))
-    s, statevars_new = umat.gradient([F, statevars])
-    dsde = umat.hessian([F, statevars])
+    s, statevars_new = umat.gradient([F, statevars], dtime=1.0)
+    dsde = umat.hessian([F, statevars], dtime=1.0)
 
     umat = fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
+    stretches = fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15)
     ax = umat.plot(
-        ux=fem.math.linsteps([1, 1.5, 1, 2, 1, 2.5, 1], num=15),
+        ux=[stretches, np.arange(len(stretches))],
         ps=None,
         bx=None,
         incompressible=True,
@@ -649,8 +651,8 @@ def test_umat_viscoelastic(close_figs=True):
     if close_figs:
         plt.close(ax.get_figure())
 
-    s2, statevars_new = umat.gradient([F, statevars])
-    dsde2 = umat.hessian([F, statevars])
+    s2, statevars_new = umat.gradient([F, statevars], dtime=1.0)
+    dsde2 = umat.hessian([F, statevars], dtime=1.0)
 
     assert np.allclose(s, s2)
     assert np.allclose(dsde, dsde2)
@@ -673,19 +675,20 @@ def test_umat_viscoelastic2():
         S = mu * tm.linalg.inv(C) @ tm.special.dev(Cu @ tm.linalg.inv(Ci))
         return F @ S, tm.special.triu_1d(Ci - eye)
 
-    kwargs = {"mu": 1, "eta": 1, "dtime": 1}
+    kwargs = {"mu": 1, "eta": 1}
     umat = fem.MaterialAD(viscoelastic, nstatevars=6, **kwargs)
+    assert umat.time_dependent
 
     statevars = np.zeros((6, *F.shape[-2:]))
-    s, statevars_new = umat.gradient([F, statevars])
-    dsde = umat.hessian([F, statevars])
+    s, statevars_new = umat.gradient([F, statevars], dtime=1.0)
+    dsde = umat.hessian([F, statevars], dtime=1.0)
 
     umat = fem.Hyperelastic(
         fem.constitution.finite_strain_viscoelastic, nstatevars=6, **kwargs
     )
 
-    s2, statevars_new = umat.gradient([F, statevars])
-    dsde2 = umat.hessian([F, statevars])
+    s2, statevars_new = umat.gradient([F, statevars], dtime=1.0)
+    dsde2 = umat.hessian([F, statevars], dtime=1.0)
 
     assert np.allclose(s, s2)
     assert np.allclose(dsde, dsde2)
@@ -750,12 +753,12 @@ def test_umat_strain_viscoelasticity():
         μ=1.0,
         G=[3.0, 15.0],
         τ=[10.0, 100.0],
-        Δt=5.0,
         statevars=((2, 3, 3),),
     )
+    assert umat.time_dependent
 
-    s, statevars_new = umat.gradient([F, statevars])
-    dsde = umat.hessian([F, statevars])
+    s, statevars_new = umat.gradient([F, statevars], dtime=5.0)
+    dsde = umat.hessian([F, statevars], dtime=5.0)
 
 
 def test_elpliso():

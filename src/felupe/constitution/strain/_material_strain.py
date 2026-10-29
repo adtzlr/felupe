@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import inspect
+
 import numpy as np
 
 from ...math import cdya_ik, dot, identity, ravel, reshape, svd, sym, transpose
 from .._base import ConstitutiveMaterial
+from .._material import takes_time_increment
 
 
 class MaterialStrain(ConstitutiveMaterial):
@@ -19,6 +22,8 @@ class MaterialStrain(ConstitutiveMaterial):
         keyword arguments. The function must return the algorithmic consistent
         elasticity tensor, new stress and the list of new state variables. The provided
         strain and required stress quantities are selected by the framework argument.
+        A material formulation with an argument ``dtime`` without a default value, which
+        is not given as keyword-argument, is time-dependent, see the notes.
     dim : int, optional
         The dimension of the material formulation. Default is 3.
     statevars : tuple of int, optional
@@ -30,9 +35,24 @@ class MaterialStrain(ConstitutiveMaterial):
         Take the symmetric part of the returned stress and the minor symmetric-parts of
         the algorithmic consistent elasticity tensor. Default is True. May enhance
         performance if the material returns symmetric tensors.
+    **kwargs : dict, optional
+        Optional keyword-arguments (the material parameters) for the material model
+        formulation.
 
     Notes
     -----
+    **Time-dependent materials**: If the material model formulation has an argument
+    ``dtime`` without a default value, which is not given as keyword-argument, the
+    material is time-dependent (the attribute ``time_dependent`` is True), e.g.
+    :func:`~felupe.linear_elastic_viscoelastic`. Then, the time increment is an input of
+    the material, like the deformation gradient, i.e. it is given by the keyword-argument
+    ``dtime`` of :meth:`gradient` and :meth:`hessian` and it is passed to the material
+    model formulation. A time increment which is given as keyword-argument is a constant
+    material parameter. The former name of the time increment of
+    :func:`~felupe.linear_elastic_viscoelastic`, ``Δt``, is taken as the material
+    parameter ``dtime`` of a material model formulation with an argument ``dtime`` (and
+    without an argument ``Δt``).
+
     The (default) small-strain framework evaluates the strain tensor as the symmetric
     part of the displacement gradient, see Eq. :eq:`small-strain`.
 
@@ -185,7 +205,22 @@ class MaterialStrain(ConstitutiveMaterial):
         # the flag `tangent` is passed to the material for each evaluation, i.e. the
         # keyword-arguments contain only the parameters of the material
         kwargs.pop("tangent", None)
+
+        # the former name `Δt` of the time increment of linear_elastic_viscoelastic()
+        if "Δt" in kwargs and "dtime" not in kwargs:
+            try:
+                parameters = inspect.signature(material).parameters
+            except (TypeError, ValueError):  # no signature available
+                parameters = {}
+
+            if "dtime" in parameters and "Δt" not in parameters:
+                kwargs["dtime"] = kwargs.pop("Δt")
+
         self.kwargs = kwargs
+
+        # the time increment is an input, if it is an argument of the material model
+        # formulation which is not given as material parameter
+        self.time_dependent = takes_time_increment(material, self.kwargs)
 
         self.dim = dim
         self.x = [np.eye(dim), np.zeros(2 * dim**2 + self.nstatevars)]
@@ -238,11 +273,13 @@ class MaterialStrain(ConstitutiveMaterial):
 
         return strain_old, dstrain, stress_old, statevars_old, rotation
 
-    def _gradient(self, x):
+    def _gradient(self, x, **kwargs):
         strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
 
         # the chunks of cells may be evaluated by threads: don't change the kwargs
-        kwargs = {**self.kwargs, "tangent": False}
+        # (the given keyword-arguments contain the time increment of a time-dependent
+        # material)
+        kwargs = {**self.kwargs, **kwargs, "tangent": False}
 
         # unpack deformation gradient F = dx/dX
         dxdX, statevars = x
@@ -275,11 +312,13 @@ class MaterialStrain(ConstitutiveMaterial):
 
         return [stress_new, statevars_new]
 
-    def _hessian(self, x):
+    def _hessian(self, x, **kwargs):
         strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
 
         # the chunks of cells may be evaluated by threads: don't change the kwargs
-        kwargs = {**self.kwargs, "tangent": True}
+        # (the given keyword-arguments contain the time increment of a time-dependent
+        # material)
+        kwargs = {**self.kwargs, **kwargs, "tangent": True}
 
         # unpack deformation gradient F = dx/dX
         dxdX, statevars = x

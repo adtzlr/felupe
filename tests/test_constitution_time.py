@@ -634,6 +634,147 @@ def test_time_increment_jax_job(x64):
     assert umat._hess._cache_size() == 1
 
 
+def strain_viscoelastic(**kwargs):
+    "Return a strain-based linear-elastic viscoelastic material."
+    return fem.MaterialStrain(
+        material=fem.linear_elastic_viscoelastic,
+        λ=2.0,
+        μ=1.0,
+        G=[3.0, 2.0],
+        τ=[10.0, 100.0],
+        statevars=((2, 3, 3),),
+        **kwargs,
+    )
+
+
+@pytest.mark.parametrize("framework", ["small-strain", "total-lagrange"])
+def test_time_increment_strain(framework):
+    """A strain-based time-dependent material takes the time increment as input, it
+    equals the time increment as material parameter (also by its former name Δt)."""
+
+    F, _ = kinematics()
+    umat = strain_viscoelastic(framework=framework)
+    assert umat.time_dependent
+
+    # non-zero old state variables (viscoelastic stresses) of a previous increment
+    statevars = np.zeros((*umat.x[-1].shape, *F.shape[-2:]))
+    statevars = umat.gradient([F, statevars], dtime=1.0)[-1]
+    F = F + 0.05 * kinematics(seed=8)[0]
+
+    for dtime in [0.1, 5.0]:
+        for old in [
+            strain_viscoelastic(framework=framework, dtime=dtime),
+            strain_viscoelastic(framework=framework, Δt=dtime),
+        ]:
+            assert not old.time_dependent
+            assert "Δt" not in old.kwargs and old.kwargs["dtime"] == dtime
+
+            x = [F, statevars]
+            assert_equal_results(umat.gradient(x, dtime=dtime), old.gradient(x))
+            assert_equal_results(umat.hessian(x, dtime=dtime), old.hessian(x))
+
+    # the time increment is effective
+    x = [F, statevars]
+    assert not np.allclose(
+        umat.gradient(x, dtime=0.1)[0], umat.gradient(x, dtime=5.0)[0]
+    )
+
+    # the limit for a zero time increment (no relaxation, instantaneous shear moduli)
+    for method in [umat.gradient, umat.hessian]:
+        res = method(x, dtime=0.0)
+        assert np.all(np.isfinite(res[0]))
+        assert np.allclose(res[0], method(x, dtime=1e-10)[0], rtol=1e-8, atol=1e-10)
+
+    # the time increment is passed to all chunks of cells
+    for parallel in [False, True]:
+        chunked = strain_viscoelastic(framework=framework)
+        chunked.chunksize = 2 * F.shape[-2]
+        chunked.parallel = parallel
+
+        for method in ["gradient", "hessian"]:
+            assert_equal_results(
+                getattr(chunked, method)(x, dtime=0.3),
+                getattr(umat, method)(x, dtime=0.3),
+            )
+
+    with pytest.raises(ValueError, match="time-dependent"):
+        umat.gradient(x)
+
+    with pytest.raises(TypeError, match="material parameter `dtime` is constant"):
+        strain_viscoelastic(dtime=1.0).gradient(x, dtime=0.1)
+
+
+def test_time_increment_strain_detection():
+    "The time-dependency of a strain-based material is detected by the signature."
+
+    # a material formulation with an argument Δt (not renamed to dtime)
+    def fun(dε, εn, σn, ζn, Δt, **kwargs):
+        return None, σn, ζn
+
+    umat = fem.MaterialStrain(material=fun, Δt=1.0)
+    assert not umat.time_dependent
+    assert umat.kwargs == {"Δt": 1.0}
+
+    # a material formulation without a signature (not evaluated here)
+    umat = fem.MaterialStrain(material=max, Δt=1.0)
+    assert not umat.time_dependent
+    assert umat.kwargs == {"Δt": 1.0}
+
+    # a material formulation with a time increment
+    def viscous(dε, εn, σn, ζn, η, dtime, **kwargs):
+        I = fem.math.identity(dε)
+        dσdε = η / dtime * fem.math.cdya_ik(I, I) if kwargs["tangent"] else None
+        return dσdε, η / dtime * dε, ζn
+
+    umat = fem.MaterialStrain(material=viscous, η=2.0)
+    assert umat.time_dependent
+
+    F, _ = kinematics()
+    statevars = np.zeros((*umat.x[-1].shape, *F.shape[-2:]))
+    σ, statevars_new = umat.gradient([F, statevars], dtime=4.0)
+    assert np.allclose(σ, fem.math.sym(F - fem.math.identity(F)) / 2)
+
+    # materials without a time increment
+    assert not fem.MaterialStrain(material=fem.linear_elastic, λ=2, μ=1).time_dependent
+    assert not fem.LinearElasticPlasticIsotropicHardening(
+        E=1, nu=0.3, sy=1, K=0.1
+    ).time_dependent
+
+
+def test_time_increment_strain_job():
+    "A strain-based time-dependent material in a solid body with a time step item."
+
+    def evaluate(dtime=None):
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+
+        kwargs = {} if dtime is None else {"dtime": dtime}
+        umat = strain_viscoelastic(**kwargs)
+        solid = fem.SolidBody(umat, field)
+
+        move = fem.math.linsteps([0, 0.05], num=3)
+        ramp = {boundaries["move"]: move}
+
+        if dtime is None:
+            # the first substep is undeformed, i.e. its time increment doesn't matter
+            time = fem.TimeStep(items=[solid])
+            ramp[time] = 5.0 * np.arange(len(move))
+
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        fem.Job(steps=[step]).evaluate(verbose=0)
+
+        return field[0].values, solid.results.statevars
+
+    u, statevars = evaluate()
+    u_old, statevars_old = evaluate(dtime=5.0)
+
+    assert np.allclose(u, u_old, rtol=1e-10, atol=1e-12)
+    assert np.allclose(statevars, statevars_old, rtol=1e-10, atol=1e-12)
+    assert not np.allclose(statevars[:18], 0)
+
+
 if __name__ == "__main__":
     for Material, fun in [
         (fem.Hyperelastic, fem.constitution.finite_strain_viscoelastic),
@@ -648,3 +789,9 @@ if __name__ == "__main__":
     test_time_increment_wrappers()
     test_time_increment_external()
     test_time_increment_jax_detection()
+
+    for framework in ["small-strain", "total-lagrange"]:
+        test_time_increment_strain(framework)
+
+    test_time_increment_strain_detection()
+    test_time_increment_strain_job()

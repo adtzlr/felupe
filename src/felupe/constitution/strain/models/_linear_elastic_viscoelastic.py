@@ -5,7 +5,7 @@ import numpy as np
 from ....math import cdya_ik, dev, dya, identity, trace
 
 
-def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs):
+def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, dtime, **kwargs):
     r"""3D linear-elastic viscoelastic material formulation to be used in
     :class:`~felupe.MaterialStrain`.
 
@@ -27,8 +27,12 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
         List of deviatoric viscoelastic shear moduli.
     τ : list of float
         List of time constants for deviatoric viscoelastic shear moduli.
-    Δt : float
-        Time increment.
+    dtime : float
+        Time increment :math:`\Delta t`. If it is not given as material parameter of
+        :class:`~felupe.MaterialStrain`, the material is time-dependent, i.e. the time
+        increment is an input of the material, see the examples. The former name of
+        this argument, ``Δt``, is still supported as material parameter of
+        :class:`~felupe.MaterialStrain`.
     **kwargs
         Additional keyword arguments.
 
@@ -85,6 +89,10 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
 
         b_i &= \frac{2 G_i\ \tau_i (1 - a_i)}{\Delta t}
 
+    For a time increment of zero, there is no relaxation (:math:`a_i = 1`) and the
+    viscoelastic parts respond with their (instantaneous) shear moduli, i.e. the limit
+    :math:`b_i = 2 G_i` is taken for :math:`\Delta t \rightarrow 0`.
+
     The total fourth-order elasticity tensor is given in Eq. :eq:`fourth-order-visco`.
 
     ..  math::
@@ -114,11 +122,31 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
         ...     μ=1.0,
         ...     G=[3.0, 2.0],
         ...     τ=[10.0, 100.0],
-        ...     Δt=5.0,
+        ...     dtime=5.0,
         ...     statevars=((2, 3, 3),),
         ... )
         >>> ux = fem.math.linsteps([1, 2, 1, 2, 1, 2, 1], num=20)
         >>> ax = umat.plot(ux=ux, bx=None, ps=None)
+
+    Without the time increment as material parameter, the material is time-dependent,
+    i.e. the time increment is an input of the material, like the deformation gradient.
+
+    >>> umat = fem.MaterialStrain(
+    ...     material=fem.linear_elastic_viscoelastic,
+    ...     λ=2.0,
+    ...     μ=1.0,
+    ...     G=[3.0, 2.0],
+    ...     τ=[10.0, 100.0],
+    ...     statevars=((2, 3, 3),),
+    ... )
+    >>> umat.time_dependent
+    True
+    >>>
+    >>> import numpy as np
+    >>>
+    >>> F = np.diag([1.1, 1.0, 1.0]).reshape(3, 3, 1, 1)
+    >>> statevars = np.zeros((36, 1, 1))
+    >>> P, statevars_new = umat.gradient([F, statevars], dtime=5.0)
 
     See Also
     --------
@@ -137,8 +165,11 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, Δt, **kwargs
     # update deviatoric viscoelastic stress
     dev_dε = dev(dε)
 
-    a = [np.exp(-Δt / τi) for τi in τ]
-    b = [2 * Gi * (1 - ai) * τi / Δt for Gi, ai, τi in zip(G, a, τ)]
+    # relaxation factors and effective shear moduli with x = Δt / τ, i.e.
+    # b = 2 G τ (1 - a) / Δt = 2 G (1 - exp(-x)) / x with the limit b = 2 G for x → 0
+    x = [dtime / τi for τi in τ]
+    a = [np.exp(-xi) for xi in x]
+    b = [2 * Gi * (-np.expm1(-xi) / xi if xi > 0 else 1.0) for Gi, xi in zip(G, x)]
 
     # Alternative method: backward-Euler
     # a = [1 / (1 + Δt / τi) for τi in τ]

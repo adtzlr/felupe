@@ -106,7 +106,9 @@ The same time step item is used in all steps, i.e. the time continues. The posit
 the time step item in the list of items of a step doesn't matter, because all ramped
 items are updated before the iterations of a substep. If a substep is subdivided by a
 :class:`~felupe.CutbackPlugin`, the time is interpolated like the other values of the
-ramp, i.e. each increment of the substep takes its own time increment.
+ramp, i.e. each increment of the substep takes its own time increment. The (absolute)
+time is written as the time of a XDMF result file by
+``job.evaluate(filename="result.xdmf", time=time)``.
 
 Force-Stretch Curves and Material Parameters
 ********************************************

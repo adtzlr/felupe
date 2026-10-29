@@ -15,7 +15,7 @@ class JobState:
         The (zero-based) index of the substep within the step (default is None).
     time : int or None, optional
         The (zero-based) index of the substep within the job, e.g. the time of the
-        XDMF result file (default is None).
+        XDMF result file without a time step item (default is None).
     error : Exception or None, optional
         The error which was raised during evaluation (default is None). In the hook
         ``after_job``, this is the error which stopped the evaluation of the job.
@@ -71,7 +71,8 @@ class Job:
     nsteps : int
         The number of steps.
     timetrack : list of int
-        A list with times at which the results are written to the XDMF result file.
+        A list with the (zero-based) indices of the completed substeps within the job,
+        i.e. the times of the XDMF result file without a time step item.
     fnorms : list of list of float
         List with norms of the objective function for each completed substep of each
         step. See also class:`~felupe.tools.NewtonResult`.
@@ -184,6 +185,7 @@ class Job:
         verbose=None,
         parallel=False,
         tqdm="tqdm",
+        time=None,
         **kwargs,
     ):
         """Evaluate the steps.
@@ -224,6 +226,11 @@ class Job:
         tqdm : str, optional
             If verbose is True, choose a backend for ``tqdm`` ("tqdm", ``"auto"`` or
             ``"notebook"``. Default is ``"tqdm"``.
+        time : TimeStep or None, optional
+            A time step item, whose (absolute) time is written as the time of the XDMF
+            result file, see :class:`~felupe.XDMFWriterPlugin`. If None, the
+            (zero-based) index of the substep within the job is written as time.
+            Default is None.
         **kwargs : dict
             Optional keyword arguments for :meth:`~felupe.Step.generate`. If
             ``parallel=True``, it is added as ``kwargs["parallel"] = True`` to the dict
@@ -269,6 +276,7 @@ class Job:
                 point_data_default=point_data_default,
                 cell_data_default=cell_data_default,
                 kwargs=kwargs,
+                time=time,
             )
             plugins.append(writer_plugin)
 

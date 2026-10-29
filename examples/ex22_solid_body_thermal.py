@@ -146,7 +146,8 @@ t_int = 20 + 1 * np.sin(2 * np.pi * time_steps / 86400)
 # values are also defined in the ramp, which specifies how their values change over
 # time. Finally, a job is created with the step and the plugin, and evaluated with the
 # top-level temperature field. A result file is created for visualization in Paraview,
-# and the temperature field is saved as point-data in the result file.
+# and the temperature field is saved as point-data in the result file. The time of the
+# time step item (in seconds) is the time of the result file.
 time = fem.TimeStep([*materials, external_heat_transfer, internal_heat_transfer])
 ramp = {
     time: time_steps,
@@ -161,6 +162,7 @@ step = fem.Step(
 job = fem.Job(steps=[step], plugins=[save_heat_flux]).evaluate(
     x0=field,
     filename="result.xdmf",  # create a result file for Paraview
+    time=time,  # the time of the result file
     point_data={"Temperature": lambda field, substep: temperature.values},
     point_data_default=False,
     cell_data_default=False,

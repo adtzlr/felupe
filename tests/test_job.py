@@ -5,6 +5,7 @@ import io
 import os
 import pathlib
 import tempfile
+import warnings
 
 import numpy as np
 import pytest
@@ -72,6 +73,79 @@ def test_job_xdmf(tmp_path):
 
     assert (tmp_path / "result.xdmf").exists()
     assert (tmp_path / "result.h5").exists()
+
+
+def test_job_xdmf_time(tmp_path):
+    "The (absolute) time of a time step item is the time of the XDMF result file."
+
+    meshio = pytest.importorskip("meshio")
+
+    def job(preload=False, plugin=None):
+        """A job with a loading and a holding step, optionally with a preload step and
+        a plugin which takes the time step item."""
+        region = fem.RegionHexahedron(fem.Cube(n=2))
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
+        time = fem.TimeStep(items=[solid])
+
+        move = boundaries["move"]
+        steps = [
+            fem.Step(
+                [solid],
+                ramp={move: [0.1, 0.2], time: [0.5, 2.0]},
+                boundaries=boundaries,
+            ),
+            fem.Step([solid], ramp={time: [3.0, 4.5]}, boundaries=boundaries),
+        ]
+
+        if preload:
+            # a preload step without a ramp of the time, i.e. all substeps at t=0
+            ramp = {move: [0.0, 0.05, 0.1]}
+            steps.insert(0, fem.Step([solid], ramp=ramp, boundaries=boundaries))
+
+        plugins = [] if plugin is None else [plugin(time)]
+        return fem.Job(steps=steps, plugins=plugins), time
+
+    def times(filename):
+        "Return the times of a XDMF result file."
+        with meshio.xdmf.TimeSeriesReader(filename) as reader:
+            reader.read_points_cells()
+            return [float(reader.read_data(k)[0]) for k in range(reader.num_steps)]
+
+    with contextlib.chdir(tmp_path):
+        # the times of the time step item (increasing, i.e. without a warning)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error", message=".*XDMF result file")
+            simulation, time = job()
+            simulation.evaluate(filename="time.xdmf", time=time, verbose=0)
+
+        assert np.allclose(times("time.xdmf"), [0.5, 2.0, 3.0, 4.5])
+
+        # the indices of the substeps (default)
+        simulation, time = job()
+        simulation.evaluate(filename="index.xdmf", verbose=0)
+
+        assert np.allclose(times("index.xdmf"), [0, 1, 2, 3])
+        assert simulation.timetrack == [0, 1, 2, 3]
+
+        # the plugin (with the default keyword-arguments)
+        def writer(time):
+            return fem.XDMFWriterPlugin(filename="plugin.xdmf", time=time)
+
+        simulation, time = job(plugin=writer)
+        simulation.evaluate(verbose=0)
+
+        assert np.allclose(times("plugin.xdmf"), [0.5, 2.0, 3.0, 4.5])
+
+        # repeated times are written with a warning (once)
+        simulation, time = job(preload=True)
+        with pytest.warns(UserWarning, match="not greater than the time") as record:
+            simulation.evaluate(filename="preload.xdmf", time=time, verbose=0)
+
+        warned = [w for w in record if "XDMF result file" in str(w.message)]
+        assert len(warned) == 1
+        assert np.allclose(times("preload.xdmf"), [0, 0, 0, 0.5, 2.0, 3.0, 4.5])
 
 
 def test_job_xdmf_global_field(tmp_path):
@@ -446,7 +520,12 @@ def test_callback_plugins():
 if __name__ == "__main__":
     test_job()
 
-    for test in [test_job_xdmf, test_job_xdmf_global_field, test_job_xdmf_vertex]:
+    for test in [
+        test_job_xdmf,
+        test_job_xdmf_time,
+        test_job_xdmf_global_field,
+        test_job_xdmf_vertex,
+    ]:
         with tempfile.TemporaryDirectory() as tmp:
             test(tmp_path=pathlib.Path(tmp))
 

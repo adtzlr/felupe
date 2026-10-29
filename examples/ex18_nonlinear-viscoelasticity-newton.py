@@ -56,11 +56,12 @@ def viscoelastic_two_potential(C, ζn, dtime, μ, α, m, a, η0, ηinf, β, K):
         verbose=0,
     ).x
 
-    # linearization of R = evolution(Cv, Cvn, C) leads to ∂R/∂Cv : ΔCv + ∂R/∂C : ΔC = 0
-    # 1. compute ΔR with respect to the right Cauchy-Green deformation tensor C
+    # linearization of R = evolution(Cv, Cvn, C) = 0 at the converged Cv leads to
+    # ∂R/∂Cv : ΔCv + ∂R/∂C : ΔC = 0 (implicit function theorem)
+    # 1. compute ΔR = ∂R/∂C : ΔC (at fixed Cv)
     # 2. compute ∂R/∂Cv, as already done in Newton's method above
-    # 3. solve ∂R/∂Cv : ΔCv = -ΔR and create a tensor for Cv with its linearization ΔCv
-    #    (only used for the linearization / consistent tangent)
+    # 3. solve ∂R/∂Cv : ΔCv = -ΔR and create a tensor for Cv, which is constant in
+    #    the variation (stress at fixed Cv) but not in the linearization (tangent)
     ΔR = tr.Δ(evolution(Cv, Cvn, C))
     ΔCv = ΔR  # ZERO for the evaluation of the stress only (no linearization)
     if ΔR is not tr.ZERO:

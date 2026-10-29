@@ -4,7 +4,7 @@ import numpy as np
 from scipy.special import erf
 
 from ...math import dya
-from .._base import ConstitutiveMaterial
+from .._base import ConstitutiveMaterial, _set_material_parameters
 
 
 class OgdenRoxburgh(ConstitutiveMaterial):
@@ -84,6 +84,13 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         # initial variables for calling
         # ``self.gradient(self.x)`` and ``self.hessian(self.x)``
         self.x = [np.eye(3), np.zeros(1)]
+
+    def _set_parameters(self, parameters):
+        """Set the values of material parameters of the Ogden-Roxburgh material
+        formulation (``r``, ``m`` and ``beta``) and of the hyperelastic material."""
+
+        super()._set_parameters(parameters)
+        _set_material_parameters(self.material, parameters)
 
     def _gradient(self, x):
         # unpack variables into deformation gradient and state variables

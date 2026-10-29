@@ -306,6 +306,31 @@ class ConstitutiveMaterial:
         "Return a deep-copy of the constitutive material."
         return copy(self)
 
+    def _set_parameters(self, parameters):
+        """Set the values of material parameters, i.e. of the keyword-arguments
+        ``kwargs`` and of the attributes of the material with the same names.
+
+        Parameters
+        ----------
+        parameters : dict
+            A dict with the names and the new values of the material parameters.
+
+        Notes
+        -----
+        The material parameters of a material may be stored in its keyword-arguments
+        ``kwargs`` (e.g. of the materials with given functions like
+        :class:`~felupe.Hyperelastic`) or as attributes with the same names (e.g. of
+        :class:`~felupe.NeoHooke`). Materials which evaluate other quantities of their
+        material parameters, e.g. other materials, have to update them by an
+        overridden method.
+        """
+
+        for key, value in parameters.items():
+            self.kwargs[key] = value
+
+            if key in vars(self):
+                setattr(self, key, value)
+
     def view(self, incompressible=False, **kwargs):
         """Create views on normal force per undeformed area vs. stretch curves for the
         elementary homogeneous deformations uniaxial tension/compression, planar shear
@@ -463,7 +488,10 @@ class ConstitutiveMaterial:
             parameters.
 
         The material parameters are the keyword-arguments of the material, i.e. the time
-        increment of a time-dependent material is not a material parameter. The
+        increment of a time-dependent material is not a material parameter. They are
+        set on a copy of the material, i.e. its keyword-arguments and its attributes
+        with the same names, as well as the material parameters of its materials, e.g.
+        of a composite material. The
         experimental data of a time-dependent material includes the (absolute) times
         of the data points, e.g. ``ux=[stretches, forces, times]``, which are taken for
         the time increments of the load case, see :class:`~felupe.ViewMaterial`.
@@ -572,21 +600,40 @@ class ConstitutiveMaterial:
         """
         from scipy.optimize import least_squares
 
-        experiments = []
-        for lc in [ux, bx, ps]:
-            experiment = (None, None)
+        # the given load cases (load case and observed forces) in the order of the
+        # evaluated load cases of the views, i.e. uniaxial, planar shear and biaxial
+        experiments = {}
+        for key, lc in zip(["ux", "ps", "bx"], [ux, ps, bx]):
             if lc is not None:
                 data = np.asarray(lc, dtype=float)
                 if data.ndim > 1 and len(data) == 3:
                     # stretches, forces and the times of a time-dependent material
                     stretches, forces, times = data.reshape(3, -1)
-                    experiment = ([stretches, times], forces)
+                    experiments[key] = ([stretches, times], forces)
                 else:
-                    experiment = data.reshape(2, -1)
-            experiments.append(experiment)
+                    stretches, forces = data.reshape(2, -1)
+                    experiments[key] = (stretches, forces)
+
+        if len(experiments) == 0:
+            raise ValueError(
+                "At least one load case is required, i.e. one of the arguments `ux`, "
+                "`ps` or `bx` must not be None."
+            )
+
+        # the load cases of the views (without the load cases which are not given)
+        load_cases = {"ux": None, "ps": None, "bx": None}
+        load_cases.update({key: lc for key, (lc, forces) in experiments.items()})
 
         # get sizes of material parameters and offsets as cumulative sum
+        keys = list(self.kwargs.keys())
         offsets = np.cumsum([np.asarray(y).size for y in self.kwargs.values()])[:-1]
+
+        def parameters(x):
+            "Return a dict of material parameters for the vector of parameters x."
+            return {
+                key: value[0] if value.size == 1 else value
+                for key, value in zip(keys, np.split(x, offsets))
+            }
 
         # copy the material model formulation
         umat = self.copy()
@@ -595,28 +642,21 @@ class ConstitutiveMaterial:
             "Return the vector of residuals for given material parameters x."
 
             # update the material parameters
-            for key, value in zip(umat.kwargs.keys(), np.split(x, offsets)):
-                umat.kwargs[key] = value[0] if value.size == 1 else value
+            umat._set_parameters(parameters(x))
 
             # evaluate the load cases by the material model formulation
-            model = umat.view(
-                incompressible=incompressible,
-                ux=experiments[0][0],
-                bx=experiments[1][0],
-                ps=experiments[2][0],
-            ).evaluate()
+            model = umat.view(incompressible=incompressible, **load_cases).evaluate()
 
-            # calculate a list of residuals for each loadcase
+            # calculate a list of residuals for each loadcase (same order)
             residuals = []
-            for predicted, observed in zip(model, experiments):
-                if observed[1] is not None:
-                    active = ~np.isnan(observed[1])
-                    res = (predicted[1] - observed[1])[active]
-                    if relative:
-                        observed_reference = np.array(observed[1])[active]
-                        observed_reference[observed_reference == 0] = 1
-                        res /= observed_reference
-                    residuals.append(res)
+            for predicted, observed in zip(model, experiments.values()):
+                active = ~np.isnan(observed[1])
+                res = (predicted[1] - observed[1])[active]
+                if relative:
+                    observed_reference = np.array(observed[1])[active]
+                    observed_reference[observed_reference == 0] = 1
+                    res /= observed_reference
+                residuals.append(res)
 
             return np.concatenate(residuals)
 
@@ -633,8 +673,7 @@ class ConstitutiveMaterial:
         res.dx = std(hess, 2 * res.cost / (len(res.fun) - len(res.x)))
 
         # save the final the material parameters
-        for key, value in zip(umat.kwargs.keys(), np.split(res.x, offsets)):
-            umat.kwargs[key] = value[0] if value.size == 1 else value
+        umat._set_parameters(parameters(res.x))
 
         return umat, res
 
@@ -808,6 +847,20 @@ def constitutive_material(Material, name=None):
     return ConstitutiveMaterialDerived
 
 
+def _set_material_parameters(material, parameters):
+    """Set the values of the material parameters of a material, which are included in
+    its keyword-arguments (also for materials which are not derived from
+    :class:`~felupe.ConstitutiveMaterial`)."""
+
+    own = {key: value for key, value in parameters.items() if key in material.kwargs}
+
+    if len(own) > 0:
+        if hasattr(material, "_set_parameters"):
+            material._set_parameters(own)
+        else:
+            material.kwargs.update(own)
+
+
 class CompositeMaterial(ConstitutiveMaterial):
     """A composite material with two constitutive materials merged. State variables are
     only considered for the first material.
@@ -859,6 +912,15 @@ class CompositeMaterial(ConstitutiveMaterial):
         """A flag which is True if any of the materials is time-dependent. Then, the
         time increment ``dtime`` is passed to the time-dependent materials."""
         return any(getattr(m, "time_dependent", False) for m in self.materials)
+
+    def _set_parameters(self, parameters):
+        """Set the values of material parameters of the composite material and of the
+        materials with these material parameters."""
+
+        super()._set_parameters(parameters)
+
+        for material in self.materials:
+            _set_material_parameters(material, parameters)
 
     @staticmethod
     def _material_kwargs(material, kwargs):

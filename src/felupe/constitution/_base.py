@@ -317,7 +317,9 @@ class ConstitutiveMaterial:
             A flag to enforce views on incompressible deformations (default is False).
         **kwargs : dict, optional
             Optional keyword-arguments for :class:`~felupe.ViewMaterial` or
-            :class:`~felupe.ViewMaterialIncompressible`.
+            :class:`~felupe.ViewMaterialIncompressible`, e.g. the load cases. The load
+            cases of a time-dependent material include the (absolute) times, e.g.
+            ``ux=[stretches, times]``.
 
         Returns
         -------
@@ -420,15 +422,18 @@ class ConstitutiveMaterial:
 
         Parameters
         ----------
-        ux : array of shape (2, ...) or None, optional
+        ux : array of shape (2, ...) or (3, ...) or None, optional
             Experimental uniaxial stretch and force-per-undeformed-area data (default is
-            None).
-        ps : array of shape (2, ...) or None, optional
+            None). The (absolute) times are required as third row for a time-dependent
+            material.
+        ps : array of shape (2, ...) or (3, ...) or None, optional
             Experimental planar-shear stretch and force-per-undeformed-area data
-            (default is None).
-        bx : array of shape (2, ...) or None, optional
+            (default is None). The (absolute) times are required as third row for a
+            time-dependent material.
+        bx : array of shape (2, ...) or (3, ...) or None, optional
             Experimental biaxial stretch and force-per-undeformed-area data (default is
-            None).
+            None). The (absolute) times are required as third row for a time-dependent
+            material.
         incompressible : bool, optional
             A flag to enforce incompressible deformations (default is False).
         relative : bool, optional
@@ -456,6 +461,12 @@ class ConstitutiveMaterial:
         ..  note::
             For JAX-based materials, double-precision is required to optimize material
             parameters.
+
+        The material parameters are the keyword-arguments of the material, i.e. the time
+        increment of a time-dependent material is not a material parameter. The
+        experimental data of a time-dependent material includes the (absolute) times
+        of the data points, e.g. ``ux=[stretches, forces, times]``, which are taken for
+        the time increments of the load case, see :class:`~felupe.ViewMaterial`.
 
             ..  code-block:: python
 
@@ -565,7 +576,13 @@ class ConstitutiveMaterial:
         for lc in [ux, bx, ps]:
             experiment = (None, None)
             if lc is not None:
-                experiment = np.asarray(lc).reshape(2, -1)
+                data = np.asarray(lc, dtype=float)
+                if data.ndim > 1 and len(data) == 3:
+                    # stretches, forces and the times of a time-dependent material
+                    stretches, forces, times = data.reshape(3, -1)
+                    experiment = ([stretches, times], forces)
+                else:
+                    experiment = data.reshape(2, -1)
             experiments.append(experiment)
 
         # get sizes of material parameters and offsets as cumulative sum

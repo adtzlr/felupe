@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 import tensortrax.math as tm
@@ -407,6 +409,231 @@ def test_time_increment_external():
         umat.gradient(inputs["mixed"], dtime=0.5)
 
 
+def jax_viscoelastic_lagrange(F, statevars, mu, eta, dtime):
+    "Finite strain viscoelastic material formulation (template of jax.Material)."
+
+    # unimodular part of the right Cauchy-Green deformation tensor
+    C = F.T @ F
+    Cu = jnp.linalg.det(C) ** (-1 / 3) * C
+
+    # update of state variables by evolution equation
+    from_triu = lambda C: C[jnp.array([[0, 1, 2], [1, 3, 4], [2, 4, 5]])]
+    Cin = jnp.eye(3) + from_triu(statevars)
+    Ci = Cin + mu / eta * dtime * Cu
+    Ci = jnp.linalg.det(Ci) ** (-1 / 3) * Ci
+
+    # second Piola-Kirchhoff stress tensor
+    dev = lambda C: C - jnp.trace(C) / 3 * jnp.eye(3)
+    S = mu * jnp.linalg.inv(C) @ dev(Cu @ jnp.linalg.inv(Ci))
+
+    # first Piola-Kirchhoff stress tensor and new state variables
+    i, j = jnp.triu_indices(3)
+    to_triu = lambda C: C[i, j]
+    return F @ S, to_triu(Ci - jnp.eye(3))
+
+
+def jax_viscoelastic(C, statevars, mu, eta, dtime):
+    "Finite strain viscoelastic material formulation (template of jax.Hyperelastic)."
+
+    # unimodular part of the right Cauchy-Green deformation tensor
+    Cu = jnp.linalg.det(C) ** (-1 / 3) * C
+
+    # update of state variables by evolution equation
+    Cin = jnp.eye(3) + statevars.reshape(3, 3)
+    Ci = Cin + mu / eta * dtime * Cu
+    Ci = jnp.linalg.det(Ci) ** (-1 / 3) * Ci
+    invCi = jnp.linalg.inv(Ci)
+
+    # strain energy function
+    ψ = mu / 2 * (jnp.trace(Cu @ invCi) - 3)
+
+    # incremental dissipation potential (no evolution for a zero time increment)
+    Δt = jnp.where(dtime > 0, dtime, 1.0)
+    φ = eta / (2 * Δt) * (jnp.trace(Cin @ invCi) - 3)
+    φ = jnp.where(dtime > 0, φ, 0.0)
+
+    # incremental potential and new state variables
+    return ψ + φ, (Ci - jnp.eye(3)).ravel()
+
+
+def to_full(statevars):
+    "Return all nine components of the six upper-triangle components."
+    return statevars[[0, 1, 2, 1, 3, 4, 2, 4, 5]]
+
+
+def to_triu(statevars):
+    "Return the six upper-triangle components of all nine components."
+    return statevars[[0, 1, 2, 4, 5, 8]]
+
+
+@pytest.fixture
+def x64():
+    "Enable the double precision of JAX within a test."
+    enabled = jax.config.jax_enable_x64
+    jax.config.update("jax_enable_x64", True)
+    yield
+    jax.config.update("jax_enable_x64", enabled)
+
+
+@pytest.mark.parametrize("kind", ["material", "hyperelastic"])
+def test_time_increment_jax(x64, kind):
+    """A time-dependent JAX material takes the time increment as input, it equals the
+    finite strain viscoelastic material of tensortrax."""
+
+    import felupe.constitution.jax as mat
+
+    Material, fun, nstatevars, to_jax, from_jax = {
+        "material": (mat.Material, jax_viscoelastic_lagrange, 6, np.copy, np.copy),
+        "hyperelastic": (mat.Hyperelastic, jax_viscoelastic, 9, to_full, to_triu),
+    }[kind]
+
+    # non-zero old state variables of a previous increment
+    reference = fem.Hyperelastic(
+        fem.constitution.finite_strain_viscoelastic, mu=1.0, eta=2.0, nstatevars=6
+    )
+    F, Ci = kinematics()
+    Ci = reference.gradient([F, Ci], dtime=0.5)[-1]
+    assert not np.allclose(Ci, 0)
+
+    umat = Material(fun, mu=1.0, eta=2.0, nstatevars=nstatevars)
+    assert umat.time_dependent
+
+    # time increments of different types
+    for dtime in [0.0, np.float64(0.1), np.float32(2.0), 3]:
+        P, statevars_new = umat.gradient([F, to_jax(Ci)], dtime=dtime)
+        A = umat.hessian([F, to_jax(Ci)], dtime=dtime)[0]
+
+        P_ref, statevars_ref = reference.gradient([F, Ci], dtime=float(dtime))
+        A_ref = reference.hessian([F, Ci], dtime=float(dtime))[0]
+
+        assert np.allclose(P, P_ref, rtol=1e-10, atol=1e-12)
+        assert np.allclose(from_jax(statevars_new), statevars_ref, atol=1e-12)
+        assert np.allclose(A, A_ref, rtol=1e-10, atol=1e-12)
+
+    # the compiled functions are re-used for all time increments
+    assert umat._grad._cache_size() == 1
+    assert umat._hess._cache_size() == 1
+
+    # a constant time increment as material parameter
+    old = Material(fun, mu=1.0, eta=2.0, dtime=0.1, nstatevars=nstatevars)
+    assert not old.time_dependent
+
+    x = [F, to_jax(Ci)]
+    assert_equal_results(umat.gradient(x, dtime=0.1), old.gradient(x))
+    assert_equal_results(umat.hessian(x, dtime=0.1), old.hessian(x))
+
+    with pytest.raises(ValueError, match="time-dependent"):
+        umat.gradient(x)
+
+    with pytest.raises(TypeError, match="material parameter `dtime` is constant"):
+        old.gradient(x, dtime=0.1)
+
+    # the time increment is passed through a nearly-incompressible material
+    F, p, J, Ci = wrapper_inputs()["mixed"]
+    wrapped = fem.NearlyIncompressible(umat, bulk=50.0)
+    assert wrapped.time_dependent
+
+    x = [F, p, J, to_jax(Ci)]
+    P = wrapped.gradient(x, dtime=0.1)[0]
+    P_ref = fem.NearlyIncompressible(reference, bulk=50.0).gradient(
+        [F, p, J, Ci], dtime=0.1
+    )[0]
+    assert np.allclose(P, P_ref, rtol=1e-10, atol=1e-12)
+
+
+def test_time_increment_jax_detection():
+    "The time-dependency of a JAX material is detected by the signature."
+
+    import felupe.constitution.jax as mat
+
+    kwargs = dict(mu=1.0, eta=1.0)
+
+    assert mat.Material(
+        jax_viscoelastic_lagrange, **kwargs, nstatevars=6
+    ).time_dependent
+    assert mat.Hyperelastic(jax_viscoelastic, **kwargs, nstatevars=9).time_dependent
+
+    # parallel evaluations and without just-in-time compilation
+    for options in [dict(parallel=True), dict(jit=False)]:
+        umat = mat.Material(
+            jax_viscoelastic_lagrange, **kwargs, nstatevars=6, **options
+        )
+        assert umat.time_dependent
+
+        umat = mat.Hyperelastic(jax_viscoelastic, **kwargs, nstatevars=9, **options)
+        assert umat.time_dependent
+
+    # the signature of a decorated function is taken from the original function
+    def viscous(F, statevars, eta, dtime):
+        return eta * dtime * jnp.eye(3), statevars
+
+    for decorator in [mat.total_lagrange, mat.updated_lagrange]:
+        umat = mat.Material(decorator(viscous), eta=1.0, nstatevars=1)
+        assert umat.time_dependent
+
+    # a time increment with a default value or by the default parameters of a model
+    def viscoelastic_default(C, statevars, mu, eta, dtime=1.0):
+        return jax_viscoelastic(C, statevars, mu, eta, dtime)
+
+    def viscoelastic_kwargs(C, statevars, mu, eta, dtime):
+        return jax_viscoelastic(C, statevars, mu, eta, dtime)
+
+    viscoelastic_kwargs.kwargs = dict(mu=0.0, eta=1.0, dtime=1.0)
+
+    for fun in [viscoelastic_default, viscoelastic_kwargs]:
+        assert not mat.Hyperelastic(fun, **kwargs, nstatevars=9).time_dependent
+
+    # materials without a time increment
+    neo_hooke = mat.models.hyperelastic.neo_hooke
+    assert not mat.Hyperelastic(neo_hooke, mu=1.0).time_dependent
+
+    umat = mat.Material(jax_viscoelastic_lagrange, **kwargs, dtime=1.0, nstatevars=6)
+    assert not umat.time_dependent
+
+
+def test_time_increment_jax_job(x64):
+    "A time-dependent JAX material in a solid body with a time step item."
+
+    import felupe.constitution.jax as mat
+
+    def evaluate(dtime=None):
+        mesh = fem.Cube(n=2)
+        region = fem.RegionHexahedron(mesh)
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+
+        kwargs = {} if dtime is None else {"dtime": dtime}
+        umat = mat.Hyperelastic(
+            jax_viscoelastic, mu=1.0, eta=1.0, nstatevars=9, **kwargs
+        )
+        solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=20.0)
+
+        move = fem.math.linsteps([0, 0.3], num=3)
+        ramp = {boundaries["move"]: move}
+
+        if dtime is None:
+            # the first substep is undeformed, i.e. its time increment doesn't matter
+            time = fem.TimeStep(items=[solid])
+            ramp[time] = 0.5 * np.arange(len(move))
+
+        step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+        fem.Job(steps=[step]).evaluate(verbose=0)
+
+        return field[0].values, solid.results.statevars, umat
+
+    u, statevars, umat = evaluate()
+    u_old, statevars_old, _ = evaluate(dtime=0.5)
+
+    assert umat.time_dependent
+    assert np.allclose(u, u_old, rtol=1e-10, atol=1e-12)
+    assert np.allclose(statevars, statevars_old, rtol=1e-10, atol=1e-12)
+    assert not np.allclose(statevars, 0)
+
+    # the compiled functions are re-used for all substeps
+    assert umat._grad._cache_size() == 1
+    assert umat._hess._cache_size() == 1
+
+
 if __name__ == "__main__":
     for Material, fun in [
         (fem.Hyperelastic, fem.constitution.finite_strain_viscoelastic),
@@ -420,3 +647,4 @@ if __name__ == "__main__":
     test_time_increment_custom()
     test_time_increment_wrappers()
     test_time_increment_external()
+    test_time_increment_jax_detection()

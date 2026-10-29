@@ -126,6 +126,35 @@ def eigh(A, eps=None):
     return jnp.linalg.eigh(perturb(A, eps=eps))
 
 
+def time_increment_as_array(kwargs):
+    """Return the keyword-arguments with the time increment ``dtime`` as an array of
+    data type float.
+
+    Parameters
+    ----------
+    kwargs : dict
+        The keyword-arguments of a time-dependent material.
+
+    Returns
+    -------
+    dict
+        The keyword-arguments with the time increment as array.
+
+    Notes
+    -----
+    A just-in-time compiled function is compiled again for arguments of other types,
+    e.g. for a Python float (weakly typed) and a NumPy float. The time increment of a
+    time-dependent material is an input of the material, i.e. it may be given by
+    different types, e.g. by a :class:`~felupe.TimeStep`. As an array of data type
+    float, the compiled function is re-used for all time increments.
+    """
+
+    if "dtime" in kwargs:
+        kwargs = {**kwargs, "dtime": np.asarray(kwargs["dtime"], dtype=float)}
+
+    return kwargs
+
+
 def vmap(fun, in_axes=0, out_axes=0, method=jax.vmap, **kwargs):
     """Vectorizing map. Creates a function which maps ``fun`` over argument axes. This
     decorator treats all non-specified arguments and keyword-arguments as static.

@@ -96,7 +96,7 @@ def merge(fields, decimals=None, **kwargs):
         >>> solid1 = fem.SolidBody(umat, field1)
         >>> solid2 = fem.SolidBody(umat, field2)
         >>>
-        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>>
         >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()
@@ -119,7 +119,7 @@ def merge(fields, decimals=None, **kwargs):
         >>> umat4 = fem.LinearElasticLargeStrain(E=10, nu=0.3)
         >>> solids = [fem.SolidBody(umat3, field3), fem.SolidBody(umat4, field4)]
         >>>
-        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>>
         >>> step = fem.Step(items=solids, boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()

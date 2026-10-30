@@ -23,7 +23,7 @@ def model(Body="solid", dtime=None):
     mesh = fem.Cube(n=3)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
 
     if Body == "solid":
         umat = viscoelastic(dtime) & fem.Volumetric(bulk=20.0)

@@ -74,7 +74,7 @@ handled by the time-dependent materials (no evolution).
     mesh = fem.Cube(n=6)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
 
     umat = fem.Hyperelastic(
         fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, nstatevars=6

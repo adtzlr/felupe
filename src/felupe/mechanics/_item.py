@@ -51,7 +51,7 @@ class FormItem:
     >>> mesh = fem.Cube(n=11)
     >>> region = fem.RegionHexahedron(mesh)
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-    >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    >>> boundaries = fem.dof.uniaxial(field, clamped=True)
     >>>
     >>> @fem.Form(v=field, u=field)
     ... def bilinearform():
@@ -157,9 +157,7 @@ class FormItem:
     >>> item = fem.FormItem(
     ...     bilinearform, linearform, kwargs={"umat": umat, "field": field}
     ... )
-    >>> boundaries = fem.dof.uniaxial(
-    ...     field, clamped=True, move=-0.3, return_loadcase=False
-    ... )
+    >>> boundaries = fem.dof.uniaxial(field, clamped=True, move=-0.3)
     >>> step = fem.Step(items=[item], boundaries=boundaries)
     >>> job = fem.Job(steps=[step]).evaluate()
 

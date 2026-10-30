@@ -53,7 +53,7 @@ def partition(v, K, dof1, dof0, r=None):
         >>> mesh = fem.Rectangle(n=3)
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldPlaneStrain(region, dim=2).as_container()
-        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
         >>> solid = fem.SolidBody(umat, field)
         >>>
@@ -114,7 +114,7 @@ def solve(u, u0, K11, K10, dof1, dof0, r1=None, ext0=None, solver=SuperLUSolver(
         >>> mesh = fem.Rectangle(n=3)
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldPlaneStrain(region, dim=2).as_container()
-        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>> umat = fem.NeoHooke(mu=1.0, bulk=2.0)
         >>> solid = fem.SolidBody(umat, field)
         >>>

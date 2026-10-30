@@ -93,7 +93,7 @@ def cube(umat=None, nearly_incompressible=False, bulk=5.0):
     "A (coarse) cube with a uniaxial load case."
     region = fem.RegionHexahedron(fem.Cube(n=3))
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
 
     if nearly_incompressible:
         if umat is None:
@@ -305,7 +305,7 @@ def test_step_generate_without_dispatcher():
         fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=5.0), field_1),
         fem.SolidBody(fem.NeoHooke(mu=3.0, bulk=5.0), field_2),
     ]
-    boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(x0, clamped=True)
     step = fem.Step(
         items=solids, ramp={boundaries["move"]: ramp}, boundaries=boundaries
     )
@@ -1289,7 +1289,7 @@ def test_cutback_merged_fields():
         solid_1 = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=5.0), field_1)
         solid_2 = fem.SolidBody(fem.NeoHooke(mu=3.0, bulk=5.0), field_2)
 
-        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        boundaries = fem.dof.uniaxial(field, clamped=True)
         step = fem.Step(
             items=[solid_1, solid_2],
             ramp={boundaries["move"]: ramp},

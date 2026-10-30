@@ -313,9 +313,7 @@ class Material(ConstitutiveMaterial):
         >>> umat = fem.Material(stress, elasticity, mu=1.0, lmbda=2.0)
         >>> solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
         >>>
-        >>> boundaries = fem.dof.uniaxial(
-        ...     field, clamped=True, move=0.5, return_loadcase=False
-        ... )
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True, move=0.5)
         >>>
         >>> step = fem.Step(items=[solid], boundaries=boundaries)
         >>> job = fem.Job(steps=[step]).evaluate()

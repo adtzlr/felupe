@@ -43,7 +43,7 @@ def hard(umat=None, planestrain=False):
 def hard_step(ramp=(0, -0.7, 0)):
     "A step of the hard problem with a ramp of the (clamped) end face."
     field, solid, loadcase = hard()
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     step = fem.Step(
         items=[solid],
         ramp={boundaries["move"]: fem.math.linsteps(ramp, num=1)},
@@ -304,7 +304,7 @@ def test_linesearch_mixed():
         field=field,
         grad=[True, False, True],
     )
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     step = fem.Step(
         items=[solid],
         ramp={boundaries["move"]: fem.math.linsteps([0, -0.5], num=1)},
@@ -325,7 +325,7 @@ def test_linesearch_mixed():
             umat = fem.NeoHooke(mu=1)
             solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
 
-        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        boundaries = fem.dof.uniaxial(field, clamped=True)
         step = fem.Step(
             items=[solid],
             ramp={boundaries["move"]: fem.math.linsteps([0, -0.4], num=1)},

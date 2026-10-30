@@ -84,7 +84,7 @@ class NearlyIncompressible(ConstitutiveMaterial):
         >>> import felupe as fem
         >>>
         >>> field = fem.FieldsMixed(fem.RegionHexahedron(fem.Cube(n=6)), n=3)
-        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>> umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
         >>> solid = fem.SolidBody(umat, field)
 
@@ -807,7 +807,7 @@ class ThirdMediumContactMixed(ConstitutiveMaterial):
         ...     [fem.FieldPlaneStrain(region, dim=2), fem.Field(region, dim=9)],
         ...     take=[0, 1, 1],
         ... )
-        >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>> umat = fem.ThirdMediumContactMixed(
         ...     fem.NeoHooke(mu=1, bulk=20, volumetric="log"),
         ...     gamma=1e-5,

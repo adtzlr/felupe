@@ -69,7 +69,7 @@ metal = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
 solid1 = fem.SolidBodyNearlyIncompressible(rubber, fields[0], bulk=5000)
 solid2 = fem.SolidBody(metal, fields[1])
 
-boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False, return_loadcase=False)
+boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False)
 ramp = {boundaries["move"]: fem.math.linsteps([0, 1], num=5) * -1.5}
 step = fem.Step(items=[solid1, solid2], ramp=ramp, boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve)
@@ -87,9 +87,7 @@ x0_3d = x0.revolve(n=6, phi=90)
 solid1_3d = solid1.revolve(n=6, phi=90, x0=x0_3d)
 solid2_3d = solid2.revolve(n=6, phi=90, x0=x0_3d)
 
-boundaries = fem.dof.uniaxial(
-    x0_3d, clamped=True, sym=(0, 1, 1), move=-1.5, return_loadcase=False
-)
+boundaries = fem.dof.uniaxial(x0_3d, clamped=True, sym=(0, 1, 1), move=-1.5)
 step = fem.Step(items=[solid1_3d, solid2_3d], boundaries=boundaries)
 job = fem.Job(steps=[step]).evaluate(solver=pypardiso.spsolve)
 

@@ -20,7 +20,7 @@ def pre():
 
     umat = fem.ThreeFieldVariation(fem.NeoHooke(1, 5000))
     body = fem.SolidBody(umat, field)
-    boundaries = fem.dof.uniaxial(field, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field)
 
     points = mesh.points[:, 0] == 1
     load = fem.PointLoad(field, points)
@@ -85,7 +85,7 @@ def test_job_xdmf_time(tmp_path):
         a plugin which takes the time step item."""
         region = fem.RegionHexahedron(fem.Cube(n=2))
         field = fem.FieldContainer([fem.Field(region, dim=3)])
-        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        boundaries = fem.dof.uniaxial(field, clamped=True)
         solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
         time = fem.TimeStep(items=[solid])
 
@@ -182,7 +182,7 @@ def test_job_xdmf_vertex(tmp_path):
         fem.FieldContainer([fem.Field(regions[1], dim=3)]),
     ]
 
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     umat = fem.LinearElasticLargeStrain(E=2.1e5, nu=0.3)
     solids = [
         fem.SolidBody(umat=umat, field=fields[0]),
@@ -297,7 +297,7 @@ def test_noramp():
 
     umat = fem.LinearElastic(E=1, nu=0.3)
     solid = fem.SolidBody(umat, field)
-    bounds = fem.dof.uniaxial(field, return_loadcase=False)
+    bounds = fem.dof.uniaxial(field)
 
     step = fem.Step(items=[solid], ramp=None, boundaries=bounds)
     job = fem.Job(steps=[step])
@@ -321,7 +321,7 @@ def test_job_after_job_on_error(tmp_path):
 
     region = fem.RegionHexahedron(fem.Cube(n=3))
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
 
     # the second substep fails (NaN values)
@@ -351,7 +351,7 @@ def test_job_after_job_on_error(tmp_path):
 
     # without an error (a new model, the solid body is modified by the failed job)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
     recorder = Recorder()
     step = fem.Step(
@@ -385,7 +385,7 @@ def test_job_repeated_evaluate(tmp_path):
 
     region = fem.RegionHexahedron(fem.Cube(n=2))
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
     move = fem.math.linsteps([0, 0.1], num=2)
     step = fem.Step(

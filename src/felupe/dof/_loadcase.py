@@ -192,9 +192,7 @@ def uniaxial(
         >>> region = fem.RegionHexahedron(fem.Cube(a=(0, 0, 0), b=(2, 3, 1), n=(6, 11, 5)))
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
         >>>
-        >>> boundaries = fem.dof.uniaxial(
-        ...     field, axis=2, clamped=True, return_loadcase=False
-        ... )
+        >>> boundaries = fem.dof.uniaxial(field, axis=2, clamped=True)
 
     The longitudinal displacement is applied incrementally.
 
@@ -353,9 +351,7 @@ def biaxial(
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
-        >>> boundaries = fem.dof.biaxial(
-        ...     field, clampes=(True, True), return_loadcase=False
-        ... )
+        >>> boundaries = fem.dof.biaxial(field, clampes=(True, True))
 
     The longitudinal displacements are applied incrementally.
 
@@ -392,9 +388,7 @@ def biaxial(
         >>> region = fem.RegionQuad(mesh)
         >>> field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
         >>>
-        >>> boundaries = fem.dof.biaxial(
-        ...     field, clampes=(False, False), return_loadcase=False
-        ... )
+        >>> boundaries = fem.dof.biaxial(field, clampes=(False, False))
         >>>
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -426,7 +420,6 @@ def biaxial(
         ...     moves=(0, 0),
         ...     sym=False,
         ...     axes=(0, 1),
-        ...     return_loadcase=False,
         ... )
         >>> solid = fem.SolidBodyNearlyIncompressible(fem.NeoHooke(mu=1), field, bulk=5000)
         >>> step = fem.Step(
@@ -586,7 +579,7 @@ def shear(
     ..  pyvista-plot::
         :context:
 
-        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1), return_loadcase=False)
+        >>> boundaries = fem.dof.shear(field, moves=(0, 0, -0.1))
 
     The shear displacement is applied incrementally.
 

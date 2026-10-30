@@ -710,6 +710,15 @@ def test_umat_strain():
         s, statevars_new = umat.gradient([F, statevars])
         dsde = umat.hessian([F, statevars])
 
+        # the rotation tensor is only returned by the co-rotational framework
+        *_, rotation = umat.extract([F, statevars])
+
+        if framework == "co-rotational":
+            RTR = fem.math.dot(fem.math.transpose(rotation), rotation)
+            assert np.allclose(RTR, fem.math.identity(F))
+        else:
+            assert rotation is None
+
     with pytest.raises(NotImplementedError):
         umat = fem.MaterialStrain(
             material=fem.constitution.linear_elastic,

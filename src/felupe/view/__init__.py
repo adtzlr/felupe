@@ -3,6 +3,7 @@
 from ._backends import (
     MatplotlibPlotter,
     PlottingBackend,
+    WebGLPlotter,
     get_plotting_backend,
     register_plotting_backend,
     set_plotting_backend,
@@ -23,6 +24,7 @@ __all__ = [
     "ViewMesh",
     "ViewSolid",
     "ViewXdmf",
+    "WebGLPlotter",
     "get_plotting_backend",
     "register_plotting_backend",
     "select_edge_points",

@@ -30,9 +30,13 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, dtime, **kwar
     dtime : float
         Time increment :math:`\Delta t`. If it is not given as material parameter of
         :class:`~felupe.MaterialStrain`, the material is time-dependent, i.e. the time
-        increment is an input of the material, see the examples. The former name of
-        this argument, ``Δt``, is still supported as material parameter of
-        :class:`~felupe.MaterialStrain`.
+        increment is an input of the material, see the examples.
+
+        ..  deprecated:: 12.0.0
+            The former name of this argument, ``Δt``, is still taken as material
+            parameter ``dtime`` by :class:`~felupe.MaterialStrain`, but it emits a
+            :class:`DeprecationWarning`. It will be removed in 13.0.0. Use
+            ``dtime=0.5`` instead of ``Δt=0.5``.
     **kwargs
         Additional keyword arguments.
 

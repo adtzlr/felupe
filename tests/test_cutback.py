@@ -404,9 +404,9 @@ def test_constant_time_increment():
     assert constant_time_increment(fem.NearlyIncompressible(constant, bulk=5000.0))
     assert constant_time_increment(fem.ThreeFieldVariation(constant))
 
-    # the former name of the time increment of linear_elastic_viscoelastic()
-    assert constant_time_increment(
-        fem.MaterialStrain(
+    # the (deprecated) former name of the time increment of linear_elastic_viscoelastic()
+    with pytest.warns(DeprecationWarning, match="`Δt` of `MaterialStrain`"):
+        umat = fem.MaterialStrain(
             material=fem.linear_elastic_viscoelastic,
             λ=2.0,
             μ=1.0,
@@ -415,7 +415,8 @@ def test_constant_time_increment():
             Δt=1.0,
             statevars=((1, 3, 3),),
         )
-    )
+
+    assert constant_time_increment(umat)
 
     assert not constant_time_increment(time_dependent)
     assert not constant_time_increment(fem.Volumetric(bulk=5000.0) & time_dependent)

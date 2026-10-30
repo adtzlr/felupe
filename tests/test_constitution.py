@@ -710,6 +710,15 @@ def test_umat_strain():
         s, statevars_new = umat.gradient([F, statevars])
         dsde = umat.hessian([F, statevars])
 
+        # the rotation tensor is only returned by the co-rotational framework
+        *_, rotation = umat.extract([F, statevars])
+
+        if framework == "co-rotational":
+            RTR = fem.math.dot(fem.math.transpose(rotation), rotation)
+            assert np.allclose(RTR, fem.math.identity(F))
+        else:
+            assert rotation is None
+
     with pytest.raises(NotImplementedError):
         umat = fem.MaterialStrain(
             material=fem.constitution.linear_elastic,
@@ -720,6 +729,82 @@ def test_umat_strain():
 
         s, statevars_new = umat.gradient([F, statevars])
         dsde = umat.hessian([F, statevars])
+
+
+def umat_strain_frameworks_input(seed=13, shape=(2, 3)):
+    "Deformation gradients with large rotations and old states of plasticity."
+
+    rng = np.random.default_rng(seed)
+
+    def symmetric(scale):
+        A = scale * rng.uniform(-1, 1, (3, 3, *shape))
+        return (A + np.einsum("ij...->ji...", A)) / 2
+
+    # deformation gradients with large rotations and non-trivial stretches
+    Q, _, Vh = np.linalg.svd(rng.uniform(-1, 1, (*shape, 3, 3)))
+    R = Q @ Vh * np.linalg.det(Q @ Vh)[..., None, None]
+    R = np.einsum("...ij->ij...", R)
+    U = np.eye(3).reshape(3, 3, 1, 1) + symmetric(0.4)
+    F = np.einsum("ik...,kj...->ij...", R, U)
+
+    # old states of the elastic-plastic material: hardening, plastic strain, strain and
+    # stress of the previous increment
+    statevars = np.concatenate(
+        [
+            np.full((1, *shape), 0.03),
+            symmetric(0.02).reshape(9, *shape),
+            symmetric(0.05).reshape(9, *shape),
+            symmetric(0.05).reshape(9, *shape),
+        ]
+    )
+
+    return F, statevars
+
+
+def finite_differences(umat, F, statevars, h=1e-6, **kwargs):
+    "Central finite differences of the first Piola-Kirchhoff stress tensor."
+
+    dPdF = np.zeros((3, 3, *F.shape))
+
+    for k, L in np.ndindex(3, 3):
+        dF = np.zeros_like(F)
+        dF[k, L] = h
+        P_plus = umat.gradient([F + dF, statevars], **kwargs)[0]
+        P_minus = umat.gradient([F - dF, statevars], **kwargs)[0]
+        dPdF[:, :, k, L] = (P_plus - P_minus) / (2 * h)
+
+    return dPdF
+
+
+def test_umat_strain_tangent():
+    "The elasticity tensors of the frameworks are the derivatives of the stresses."
+
+    F, statevars_plastic = umat_strain_frameworks_input()
+
+    elastic = dict(material=fem.linear_elastic, λ=2.0, μ=1.0)
+    plastic = dict(
+        material=fem.linear_elastic_plastic_isotropic_hardening,
+        λ=2.0,
+        μ=1.0,
+        σy=0.05,
+        K=0.1,
+        statevars=(1, (3, 3)),
+    )
+    statevars_elastic = np.zeros((18, *F.shape[2:]))
+
+    for framework in ["small-strain", "total-lagrange", "co-rotational"]:
+        for kwargs, statevars in [
+            (elastic, statevars_elastic),
+            (plastic, statevars_plastic),
+        ]:
+            umat = fem.MaterialStrain(framework=framework, **kwargs)
+
+            dPdF = umat.hessian([F, statevars])[0]
+            dPdF = np.broadcast_to(dPdF, (3, 3, *F.shape))
+
+            assert np.allclose(
+                dPdF, finite_differences(umat, F, statevars), rtol=1e-6, atol=1e-6
+            )
 
 
 def test_umat_strain_plasticity():
@@ -1436,6 +1521,7 @@ if __name__ == "__main__":
     test_umat_viscoelastic(close_figs=close_figs)
     test_umat_viscoelastic2()
     test_umat_strain()
+    test_umat_strain_tangent()
     test_umat_strain_plasticity()
     test_elpliso()
     test_umat_strain_optimize()

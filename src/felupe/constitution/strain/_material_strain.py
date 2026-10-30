@@ -10,6 +10,44 @@ from .._base import ConstitutiveMaterial
 from .._material import takes_time_increment
 
 
+def _corotational_elasticity(decomposition, stress, elasticity):
+    r"""Return the fourth-order elasticity tensor of the co-rotational framework, i.e.
+    the derivative of the first Piola-Kirchhoff stress tensor
+    :math:`\boldsymbol{P} = \boldsymbol{R}\ \boldsymbol{T}` w.r.t. the deformation
+    gradient, for a given singular value decomposition of the deformation gradient, the
+    (symmetric) stress tensor :math:`\boldsymbol{T}` and the (minor-symmetric)
+    elasticity tensor :math:`\mathbb{C} = \partial \boldsymbol{T} / \partial
+    \boldsymbol{U}` of the material, see :class:`~felupe.MaterialStrain`."""
+
+    Q, λ, Vh = decomposition
+    V = transpose(Vh)
+    eye = np.eye(len(λ))
+
+    # stress and elasticity tensors in the principal axes of the stretch tensor
+    T = np.einsum("Ia...,IJ...,Jb...->ab...", V, stress, V)
+    C = np.einsum(
+        "Ia...,Jb...,Kc...,Ld...,IJKL...->abcd...",
+        V,
+        V,
+        V,
+        V,
+        elasticity,
+        optimize=True,
+    )
+
+    h = 1 / (λ[:, None] + λ[None, :])  # 1 / (λ_a + λ_b)
+    g = λ[:, None] * h  # λ_a / (λ_a + λ_b)
+
+    # material and geometric parts in the principal axes
+    A = 2 * g[None, None] * C
+    A += np.einsum("ac,ad...,db...->abcd...", eye, h, T)
+    A -= np.einsum("ad,ac...,cb...->abcd...", eye, h, T)
+
+    return np.einsum(
+        "ia...,Jb...,kc...,Ld...,abcd...->iJkL...", Q, V, Q, V, A, optimize=True
+    )
+
+
 class MaterialStrain(ConstitutiveMaterial):
     r"""A strain-based user-defined material definition with a given function for the
     stress tensor and the (fourth-order) elasticity tensor.
@@ -105,11 +143,64 @@ class MaterialStrain(ConstitutiveMaterial):
         \mathbb{A}_{iJkL} = F_{iI}\ F_{kK}\ \mathbb{C}_{IJKL}
             + \delta_{ik}\ S_{JL}
 
-    ..  warning::
+    The co-rotational framework is based on the polar decomposition of the deformation
+    gradient into the rotation tensor :math:`\boldsymbol{R}` and the right stretch tensor
+    :math:`\boldsymbol{U}`, see Eq. :eq:`corotational-polar-decomposition`. It is
+    evaluated by the singular value decomposition of the deformation gradient with the
+    principal stretches :math:`\lambda_a`.
 
-        The implementation of the co-rotational framework is experimental. The fourth-
-        order elasticity tensor is an approximation and hence, Newton's method does not
-        converge quadratically.
+    ..  math::
+        :label: corotational-polar-decomposition
+
+        \boldsymbol{F} = \boldsymbol{R}\ \boldsymbol{U}
+            = \boldsymbol{Q}\ \boldsymbol{\Lambda}\ \boldsymbol{V}^T
+        \qquad \boldsymbol{R} = \boldsymbol{Q}\ \boldsymbol{V}^T
+        \qquad \boldsymbol{U} = \boldsymbol{V}\ \boldsymbol{\Lambda}\ \boldsymbol{V}^T
+
+    The co-rotational framework uses the Biot strain tensor, see Eq.
+    :eq:`corotational-biot-strain`.
+
+    ..  math::
+        :label: corotational-biot-strain
+
+        \boldsymbol{\varepsilon} = \boldsymbol{U} - \boldsymbol{1}
+
+    The stress tensor :math:`\boldsymbol{T}` of the material is converted to the first
+    Piola-Kirchhoff stress tensor, see Eq. :eq:`corotational-pk1-stress`.
+
+    ..  math::
+        :label: corotational-pk1-stress
+
+        \boldsymbol{P} = \boldsymbol{R}\ \boldsymbol{T}
+
+    The fourth-order elasticity tensor of the co-rotational framework is the exact
+    linearization of the first Piola-Kirchhoff stress tensor, i.e. Newton's method
+    converges quadratically. It is evaluated by the components of the stress tensor
+    :math:`\hat{T}_{ab} = V_{Ia}\ T_{IJ}\ V_{Jb}` and of the elasticity tensor
+    :math:`\hat{\mathbb{C}}_{abcd} = V_{Ia}\ V_{Jb}\ V_{Kc}\ V_{Ld}\ \mathbb{C}_{IJKL}` of
+    the material in the principal axes of the stretch tensor, see Eq.
+    :eq:`corotational-elasticity-principal` (without a summation over the indices of
+    the principal axes), and it is converted by Eq. :eq:`corotational-elasticity`.
+
+    ..  math::
+        :label: corotational-elasticity-principal
+
+        \hat{\mathbb{A}}_{abcd} = \frac{2 \lambda_c}{\lambda_c + \lambda_d}\
+            \hat{\mathbb{C}}_{abcd}
+            + \delta_{ac}\ \frac{\hat{T}_{db}}{\lambda_a + \lambda_d}
+            - \delta_{ad}\ \frac{\hat{T}_{cb}}{\lambda_a + \lambda_c}
+
+    ..  math::
+        :label: corotational-elasticity
+
+        \mathbb{A}_{iJkL} = Q_{ia}\ V_{Jb}\ Q_{kc}\ V_{Ld}\ \hat{\mathbb{A}}_{abcd}
+
+    ..  note::
+
+        The first Piola-Kirchhoff stress tensor of Eq. :eq:`corotational-pk1-stress`
+        is work-conjugate to the Biot strain tensor only if the stress tensor of the
+        material is coaxial with the stretch tensor, e.g. for isotropic elastic
+        materials.
 
     Examples
     --------
@@ -247,11 +338,25 @@ class MaterialStrain(ConstitutiveMaterial):
     def extract(self, x):
         "Extract the input and evaluate strains, stresses and state variables."
 
+        *values, decomposition = self._extract(x)
+
+        rotation = None
+
+        if decomposition is not None:
+            rotation = dot(decomposition.U, decomposition.Vh)
+
+        return (*values, rotation)
+
+    def _extract(self, x):
+        """Extract the input and evaluate strains, stresses and state variables. Instead
+        of the rotation tensor, the singular value decomposition of the deformation
+        gradient is returned for the co-rotational framework (else None)."""
+
         # unpack deformation gradient F = dx/dX
         dim = self.dim
         dxdX, statevars = x
 
-        rotation = None
+        decomposition = None
 
         if self.framework == "small-strain":
             strain = sym(dxdX - identity(dxdX))
@@ -260,8 +365,8 @@ class MaterialStrain(ConstitutiveMaterial):
             strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
 
         elif self.framework == "co-rotational":
-            svd_res = svd(dxdX)
-            rotation = dot(svd_res.U, svd_res.Vh)
+            decomposition = svd(dxdX)
+            rotation = dot(decomposition.U, decomposition.Vh)
             stretch = dot(transpose(rotation), dxdX)
             strain = stretch - identity(dxdX)
 
@@ -287,10 +392,10 @@ class MaterialStrain(ConstitutiveMaterial):
         # change of strain
         dstrain = strain - strain_old
 
-        return strain_old, dstrain, stress_old, statevars_old, rotation
+        return strain_old, dstrain, stress_old, statevars_old, decomposition
 
     def _gradient(self, x, **kwargs):
-        strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
+        strain_old, dstrain, stress_old, statevars_old, decomposition = self._extract(x)
 
         # the chunks of cells may be evaluated by threads: don't change the kwargs
         # (the given keyword-arguments contain the time increment of a time-dependent
@@ -324,12 +429,13 @@ class MaterialStrain(ConstitutiveMaterial):
             stress_new = dot(dxdX, stress_new)
 
         if self.framework == "co-rotational":
+            rotation = dot(decomposition.U, decomposition.Vh)
             stress_new = dot(rotation, stress_new)
 
         return [stress_new, statevars_new]
 
     def _hessian(self, x, **kwargs):
-        strain_old, dstrain, stress_old, statevars_old, rotation = self.extract(x)
+        strain_old, dstrain, stress_old, statevars_old, decomposition = self._extract(x)
 
         # the chunks of cells may be evaluated by threads: don't change the kwargs
         # (the given keyword-arguments contain the time increment of a time-dependent
@@ -350,19 +456,17 @@ class MaterialStrain(ConstitutiveMaterial):
             dsde = np.add(dsde, np.einsum("jikl...->ijkl...", dsde), out=dsde)
             dsde = np.multiply(dsde, 0.25, out=dsde)
 
-        if self.framework in ["total-lagrange", "co-rotational"]:
-            phi = {
-                "total-lagrange": dxdX,
-                "co-rotational": rotation,
-            }[self.framework]
+        if self.symmetry and self.framework != "small-strain":
+            stress_new = sym(stress_new)
 
+        if self.framework == "total-lagrange":
             # convert elasticity tensor
-            dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", phi, phi, dsde)
+            dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde)
 
-            if self.symmetry:
-                stress_new = sym(stress_new)
-
-            geometric = cdya_ik(np.eye(3), stress_new)
+            geometric = cdya_ik(np.eye(self.dim), stress_new)
             dsde = np.sum(np.broadcast_arrays(dsde, geometric), axis=0)
+
+        elif self.framework == "co-rotational":
+            dsde = _corotational_elasticity(decomposition, stress_new, dsde)
 
         return [dsde]

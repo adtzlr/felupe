@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import inspect
+import warnings
 
 import numpy as np
 
@@ -39,6 +40,15 @@ class MaterialStrain(ConstitutiveMaterial):
         Optional keyword-arguments (the material parameters) for the material model
         formulation.
 
+        ..  deprecated:: 12.0.0
+            The material parameter ``Δt``, the former name of the time increment of
+            :func:`~felupe.linear_elastic_viscoelastic`, is still taken as ``dtime``
+            (for a material model formulation with an argument ``dtime`` and without
+            an argument ``Δt``), but it emits a :class:`DeprecationWarning`. It will be
+            removed in 13.0.0. Use ``dtime`` instead, e.g.
+            ``MaterialStrain(linear_elastic_viscoelastic, ..., dtime=0.5)`` instead of
+            ``MaterialStrain(linear_elastic_viscoelastic, ..., Δt=0.5)``.
+
     Notes
     -----
     **Time-dependent materials**: If the material model formulation has an argument
@@ -48,10 +58,7 @@ class MaterialStrain(ConstitutiveMaterial):
     the material, like the deformation gradient, i.e. it is given by the keyword-argument
     ``dtime`` of :meth:`gradient` and :meth:`hessian` and it is passed to the material
     model formulation. A time increment which is given as keyword-argument is a constant
-    material parameter. The former name of the time increment of
-    :func:`~felupe.linear_elastic_viscoelastic`, ``Δt``, is taken as the material
-    parameter ``dtime`` of a material model formulation with an argument ``dtime`` (and
-    without an argument ``Δt``).
+    material parameter.
 
     The (default) small-strain framework evaluates the strain tensor as the symmetric
     part of the displacement gradient, see Eq. :eq:`small-strain`.
@@ -214,6 +221,15 @@ class MaterialStrain(ConstitutiveMaterial):
                 parameters = {}
 
             if "dtime" in parameters and "Δt" not in parameters:
+                warnings.warn(
+                    "The material parameter `Δt` of `MaterialStrain` is deprecated "
+                    "and will be removed in v13.0.0. Use `dtime` instead, e.g. "
+                    "`MaterialStrain(linear_elastic_viscoelastic, ..., dtime=0.5)` "
+                    "instead of `MaterialStrain(linear_elastic_viscoelastic, ..., "
+                    "Δt=0.5)`.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
                 kwargs["dtime"] = kwargs.pop("Δt")
 
         self.kwargs = kwargs

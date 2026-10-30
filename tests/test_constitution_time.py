@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import warnings
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -650,7 +652,8 @@ def strain_viscoelastic(**kwargs):
 @pytest.mark.parametrize("framework", ["small-strain", "total-lagrange"])
 def test_time_increment_strain(framework):
     """A strain-based time-dependent material takes the time increment as input, it
-    equals the time increment as material parameter (also by its former name Δt)."""
+    equals the time increment as material parameter (also by its deprecated former name
+    Δt)."""
 
     F, _ = kinematics()
     umat = strain_viscoelastic(framework=framework)
@@ -662,10 +665,10 @@ def test_time_increment_strain(framework):
     F = F + 0.05 * kinematics(seed=8)[0]
 
     for dtime in [0.1, 5.0]:
-        for old in [
-            strain_viscoelastic(framework=framework, dtime=dtime),
-            strain_viscoelastic(framework=framework, Δt=dtime),
-        ]:
+        with pytest.warns(DeprecationWarning, match="`Δt` of `MaterialStrain`"):
+            deprecated = strain_viscoelastic(framework=framework, Δt=dtime)
+
+        for old in [strain_viscoelastic(framework=framework, dtime=dtime), deprecated]:
             assert not old.time_dependent
             assert "Δt" not in old.kwargs and old.kwargs["dtime"] == dtime
 
@@ -704,19 +707,47 @@ def test_time_increment_strain(framework):
         strain_viscoelastic(dtime=1.0).gradient(x, dtime=0.1)
 
 
+def test_time_increment_strain_deprecated_name():
+    """The former name Δt of the time increment of linear_elastic_viscoelastic() is
+    deprecated. The warning is attributed to the line of the code of the user."""
+
+    kwargs = dict(λ=2.0, μ=1.0, G=[3.0], τ=[10.0], statevars=((1, 3, 3),))
+
+    with pytest.warns(DeprecationWarning, match="will be removed in v13.0.0") as record:
+        umat = fem.MaterialStrain(fem.linear_elastic_viscoelastic, Δt=0.5, **kwargs)
+
+    assert len(record) == 1
+    assert record[0].filename == __file__
+    assert not umat.time_dependent
+    assert "Δt" not in umat.kwargs and umat.kwargs["dtime"] == 0.5
+
+    # the time increment by its new name is not deprecated
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        umat = fem.MaterialStrain(fem.linear_elastic_viscoelastic, dtime=0.5, **kwargs)
+
+    assert umat.kwargs["dtime"] == 0.5
+
+
 def test_time_increment_strain_detection():
     "The time-dependency of a strain-based material is detected by the signature."
 
-    # a material formulation with an argument Δt (not renamed to dtime)
+    # a material formulation with an argument Δt (not renamed to dtime, not deprecated)
     def fun(dε, εn, σn, ζn, Δt, **kwargs):
         return None, σn, ζn
 
-    umat = fem.MaterialStrain(material=fun, Δt=1.0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        umat = fem.MaterialStrain(material=fun, Δt=1.0)
+
     assert not umat.time_dependent
     assert umat.kwargs == {"Δt": 1.0}
 
     # a material formulation without a signature (not evaluated here)
-    umat = fem.MaterialStrain(material=max, Δt=1.0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        umat = fem.MaterialStrain(material=max, Δt=1.0)
+
     assert not umat.time_dependent
     assert umat.kwargs == {"Δt": 1.0}
 

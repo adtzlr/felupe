@@ -52,6 +52,7 @@ All notable changes to this project will be documented in this file. The format 
 - Remove `newtonrhapson()` and `tools.newtonrhapson()` (deprecated since v10.2.0). Use `newtonraphson()` and `tools.newtonraphson()`.
 - Remove the argument `bounds` of `dof.symmetry()` (deprecated since v10.0.0). Use `boundaries`.
 - Remove the support of Python 3.10, which reaches its end of life in October 2026. The minimum version of Python is 3.11. The tests run on Python 3.11 and 3.14.
+- Remove the private aliases `mesh._cube_hexa`, `mesh._line_line` and `mesh._rectangle_quad` from the namespace of `felupe.mesh` (they were listed in `__all__`, i.e. exported by `from felupe.mesh import *`). They were not used. The public meshes are `Line`, `Rectangle` and `Cube`.
 - Remove the private attributes `FieldDual.__args__` and `FieldDual.__kwargs__`, which stored the arguments of a dual field to re-create it in a former version of `FieldContainer.merge()`. They are not used anymore, i.e. a dual field doesn't keep a reference to the region of the primary field anymore.
 
 ### Fixed

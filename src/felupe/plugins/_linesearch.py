@@ -253,7 +253,8 @@ class LinesearchPlugin(Plugin):
     the last evaluated trial. Hence, the (temporary) state variables of the items belong
     to the accepted trial. A given ``update`` function of the Newton-Raphson method is
     called with the scaled increment, ``update(x_n, alpha * dx)``, and must return a
-    new object. The scaled increment is passed to ``check`` and ``callback``.
+    new object. The scaled increment is passed to ``check`` and to the plugins with the
+    hook ``after_iteration`` (by ``state.dx``).
 
     ..  note::
 

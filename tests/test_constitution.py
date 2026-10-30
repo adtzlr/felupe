@@ -792,12 +792,19 @@ def test_umat_strain_tangent():
     )
     statevars_elastic = np.zeros((18, *F.shape[2:]))
 
-    for framework in ["small-strain", "total-lagrange", "co-rotational"]:
+    frameworks = [
+        dict(framework="small-strain"),
+        dict(framework="total-lagrange"),
+        dict(framework="co-rotational"),
+        *[dict(framework="seth-hill", strain_exponent=m) for m in [-2, 0, 0.5, 3]],
+    ]
+
+    for framework in frameworks:
         for kwargs, statevars in [
             (elastic, statevars_elastic),
             (plastic, statevars_plastic),
         ]:
-            umat = fem.MaterialStrain(framework=framework, **kwargs)
+            umat = fem.MaterialStrain(**framework, **kwargs)
 
             dPdF = umat.hessian([F, statevars])[0]
             dPdF = np.broadcast_to(dPdF, (3, 3, *F.shape))
@@ -805,6 +812,88 @@ def test_umat_strain_tangent():
             assert np.allclose(
                 dPdF, finite_differences(umat, F, statevars), rtol=1e-6, atol=1e-6
             )
+
+
+def test_umat_strain_seth_hill():
+    "The Seth-Hill framework with equal eigenvalues and its special cases."
+
+    F, statevars = umat_strain_frameworks_input()
+
+    def anisotropic_elastic(dε, εn, σn, ζn, **kwargs):
+        "A linear-elastic material with a preferred direction."
+        I = np.eye(3)
+        A = np.outer([0.6, 0.8, 0.0], [0.6, 0.8, 0.0])
+        C = (
+            np.einsum("ij,kl->ijkl", I, I)
+            + np.einsum("ik,jl->ijkl", I, I)
+            + np.einsum("il,jk->ijkl", I, I)
+            + 20 * np.einsum("ij,kl->ijkl", A, A)
+        ).reshape(3, 3, 3, 3, 1, 1)
+        σ = np.einsum("ijkl...,kl...->ij...", C, εn + dε)
+        return C if kwargs["tangent"] else None, σ, ζn
+
+    plastic = dict(
+        material=fem.linear_elastic_plastic_isotropic_hardening,
+        λ=2.0,
+        μ=1.0,
+        σy=0.05,
+        K=0.1,
+        statevars=(1, (3, 3)),
+    )
+
+    # the special cases of the Total-Lagrange and the co-rotational framework
+    for framework, m in [("total-lagrange", 2), ("co-rotational", 1)]:
+        umat = fem.MaterialStrain(**plastic, framework=framework)
+        umat_m = fem.MaterialStrain(**plastic, framework="seth-hill", strain_exponent=m)
+
+        P, statevars_new = umat.gradient([F, statevars])
+        P_m, statevars_new_m = umat_m.gradient([F, statevars])
+
+        assert umat.strain_exponent == m
+        assert np.allclose(P, P_m)
+        assert np.allclose(statevars_new, statevars_new_m)
+        assert np.allclose(umat.hessian([F, statevars]), umat_m.hessian([F, statevars]))
+
+    # two equal and three equal eigenvalues (pure rotation and no deformation)
+    decomposition = fem.math.svd(F[..., :1, :1])
+    R = fem.math.dot(decomposition.U, decomposition.Vh)
+    stretch = np.diag([1.2, 1.2, 0.8]).reshape(3, 3, 1, 1)
+    statevars_elastic = np.zeros((18, 1, 1))
+
+    for F_equal in [fem.math.dot(R, stretch), R, np.eye(3).reshape(3, 3, 1, 1)]:
+        for m in [-2, 0, 0.5, 1, 3]:
+            umat = fem.MaterialStrain(
+                anisotropic_elastic, framework="seth-hill", strain_exponent=m
+            )
+            dPdF = umat.hessian([F_equal, statevars_elastic])[0]
+            dPdF_fd = finite_differences(umat, F_equal, statevars_elastic)
+            assert np.allclose(dPdF, dPdF_fd, rtol=1e-6, atol=1e-6)
+
+    # the logarithmic strain tensor is work-conjugate to the Kirchhoff stress tensor,
+    # i.e. an isotropic linear-elastic material leads to the Hencky material
+    umat = fem.MaterialStrain(
+        fem.linear_elastic, λ=2.0, μ=1.0, framework="seth-hill", strain_exponent=0
+    )
+    P = umat.gradient([F, np.zeros((18, *F.shape[2:]))])[0]
+    τ = fem.math.dot(P, fem.math.transpose(F))
+
+    b, n = fem.math.eigh(fem.math.dot(F, fem.math.transpose(F)))
+    ln_V = np.einsum("ia...,a...,ja...->ij...", n, np.log(b) / 2, n)
+    τ_hencky = 2 * ln_V + 2 * fem.math.trace(ln_V) * fem.math.identity(F)
+    assert np.allclose(τ, τ_hencky)
+
+    # the strain exponent is required by (and only allowed for) the Seth-Hill framework
+    with pytest.raises(ValueError, match="requires the argument `strain_exponent`"):
+        fem.MaterialStrain(fem.linear_elastic, λ=2.0, μ=1.0, framework="seth-hill")
+
+    with pytest.raises(ValueError, match="only supported by the framework"):
+        fem.MaterialStrain(
+            fem.linear_elastic,
+            λ=2.0,
+            μ=1.0,
+            framework="co-rotational",
+            strain_exponent=1,
+        )
 
 
 def test_umat_strain_corotational_stress():
@@ -1574,6 +1663,7 @@ if __name__ == "__main__":
     test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_tangent()
+    test_umat_strain_seth_hill()
     test_umat_strain_corotational_stress()
     test_umat_strain_plasticity()
     test_elpliso()

@@ -32,8 +32,10 @@ arguments and must return:
 This function is further added as the ``material`` argument of
 :class:`~felupe.MaterialStrain`. If the material makes use of state variables, the
 shapes of these internal state variables must be provided. By default, the small-strain
-framework is used. Optionally, this may be changed to a Total-Lagrange or a
-co-rotational strain framework.
+framework is used. Optionally, this may be changed to a Total-Lagrange, a
+co-rotational or a Seth-Hill strain framework. The Seth-Hill framework requires the
+strain exponent :math:`m` of the Seth-Hill strain tensors, e.g.
+``framework="seth-hill", strain_exponent=0`` for the logarithmic strain tensor.
 
 +------------------+--------------------------------+-----------------------------------+
 | **Framework**    | **Strain** (argument)          | **Stress** (return)               |
@@ -41,8 +43,13 @@ co-rotational strain framework.
 | small-strain     | small-strain tensor            | Cauchy stress tensor              |
 +------------------+--------------------------------+-----------------------------------+
 | total-lagrange   | Green-Lagrange strain tensor   | second Piola-Kirchhoff stress     |
+|                  | (Seth-Hill, :math:`m = 2`)     |                                   |
 +------------------+--------------------------------+-----------------------------------+
 | co-rotational    | Biot strain tensor             | Biot stress tensor                |
+|                  | (Seth-Hill, :math:`m = 1`)     |                                   |
++------------------+--------------------------------+-----------------------------------+
+| seth-hill        | Seth-Hill strain tensor        | work-conjugate stress tensor      |
+|                  | (strain exponent :math:`m`)    |                                   |
 +------------------+--------------------------------+-----------------------------------+
 
 ..  code-block:: python
@@ -52,7 +59,7 @@ co-rotational strain framework.
     umat = fem.MaterialStrain(
         material=material, 
         statevars=(0,), 
-        framework="small-strain",  # also "total-lagrange" or "co-rotational"
+        framework="small-strain",  # "total-lagrange", "co-rotational", "seth-hill"
         **kwargs,
     )
 

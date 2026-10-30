@@ -10,21 +10,52 @@ from .._base import ConstitutiveMaterial
 from .._material import takes_time_increment
 
 
-def _corotational_elasticity(decomposition, stress, elasticity):
-    r"""Return the fourth-order elasticity tensor of the co-rotational framework, i.e.
-    the derivative of the first Piola-Kirchhoff stress tensor
-    :math:`\boldsymbol{P} = \boldsymbol{R}\ \boldsymbol{T}` w.r.t. the deformation
-    gradient, for a given singular value decomposition of the deformation gradient, the
-    (symmetric) stress tensor :math:`\boldsymbol{T}` and the (minor-symmetric)
-    elasticity tensor :math:`\mathbb{C} = \partial \boldsymbol{T} / \partial
-    \boldsymbol{U}` of the material, see :class:`~felupe.MaterialStrain`."""
+def _corotational_principal(decomposition, stress):
+    r"""Return the principal axes of the stretch tensor, the abbreviations
+    :math:`h_{ab} = 1 / (\lambda_a + \lambda_b)` and :math:`g_{ab} = \lambda_a\ h_{ab}`
+    of the principal stretches and the components of the second and of the first
+    Piola-Kirchhoff stress tensors in the principal axes of the stretch tensor for a
+    given Biot stress tensor, see :class:`~felupe.MaterialStrain`."""
 
     Q, λ, Vh = decomposition
     V = transpose(Vh)
-    eye = np.eye(len(λ))
 
-    # stress and elasticity tensors in the principal axes of the stretch tensor
+    h = 1 / (λ[:, None] + λ[None, :])
+    g = λ[:, None] * h
+
+    # solution of the Lyapunov equation U S + S U = 2 T in the principal axes
     T = np.einsum("Ia...,IJ...,Jb...->ab...", V, stress, V)
+    S = 2 * h * T
+    P = 2 * g * T
+
+    return V, h, g, S, P
+
+
+def _corotational_stress(decomposition, stress):
+    r"""Return the first Piola-Kirchhoff stress tensor :math:`\boldsymbol{P} =
+    \boldsymbol{F}\ \boldsymbol{S}` of the co-rotational framework for a given singular
+    value decomposition of the deformation gradient and the (symmetric) Biot stress
+    tensor of the material, see :class:`~felupe.MaterialStrain`."""
+
+    Q = decomposition.U
+    V, *_, P = _corotational_principal(decomposition, stress)
+
+    return np.einsum("ia...,ab...,Jb...->iJ...", Q, P, V)
+
+
+def _corotational_elasticity(decomposition, stress, elasticity):
+    r"""Return the fourth-order elasticity tensor of the co-rotational framework, i.e.
+    the derivative of the first Piola-Kirchhoff stress tensor
+    :math:`\boldsymbol{P} = \boldsymbol{F}\ \boldsymbol{S}` w.r.t. the deformation
+    gradient, for a given singular value decomposition of the deformation gradient, the
+    (symmetric) Biot stress tensor :math:`\boldsymbol{T}` and the (minor-symmetric)
+    elasticity tensor :math:`\mathbb{C} = \partial \boldsymbol{T} / \partial
+    \boldsymbol{U}` of the material, see :class:`~felupe.MaterialStrain`."""
+
+    Q = decomposition.U
+    V, h, g, S, P = _corotational_principal(decomposition, stress)
+
+    # elasticity tensor of the material in the principal axes of the stretch tensor
     C = np.einsum(
         "Ia...,Jb...,Kc...,Ld...,IJKL...->abcd...",
         V,
@@ -35,13 +66,22 @@ def _corotational_elasticity(decomposition, stress, elasticity):
         optimize=True,
     )
 
-    h = 1 / (λ[:, None] + λ[None, :])  # 1 / (λ_a + λ_b)
-    g = λ[:, None] * h  # λ_a / (λ_a + λ_b)
+    # material part in the principal axes
+    A = np.einsum("ab...,cd...,abcd...->abcd...", 4 * g, g, C)
 
-    # material and geometric parts in the principal axes
-    A = 2 * g[None, None] * C
-    A += np.einsum("ac,ad...,db...->abcd...", eye, h, T)
-    A -= np.einsum("ad,ac...,cb...->abcd...", eye, h, T)
+    # the parts with Kronecker deltas due to the change of the rotation tensor and of
+    # the stretch tensor are added to the diagonals (writeable views) of A
+    A_ac = np.einsum("abad...->abd...", A)  # c = a
+    A_ad = np.einsum("abca...->abc...", A)  # d = a
+    A_bd = np.einsum("abcb...->abc...", A)  # d = b
+    A_bc = np.einsum("abbd...->abd...", A)  # c = b
+
+    A_ac += np.einsum("ad...,db...->abd...", h, P)
+    A_ac += np.einsum("ba...,ad...,db...->abd...", g, g, S)
+    A_ad -= np.einsum("ac...,cb...->abc...", h, P)
+    A_ad += np.einsum("ba...,ca...,cb...->abc...", g, g, S)
+    A_bd -= np.einsum("ab...,cb...,ac...->abc...", g, g, S)
+    A_bc -= np.einsum("ab...,bd...,ad...->abd...", g, g, S)
 
     return np.einsum(
         "ia...,Jb...,kc...,Ld...,abcd...->iJkL...", Q, V, Q, V, A, optimize=True
@@ -165,42 +205,70 @@ class MaterialStrain(ConstitutiveMaterial):
 
         \boldsymbol{\varepsilon} = \boldsymbol{U} - \boldsymbol{1}
 
-    The stress tensor :math:`\boldsymbol{T}` of the material is converted to the first
-    Piola-Kirchhoff stress tensor, see Eq. :eq:`corotational-pk1-stress`.
+    The stress tensor :math:`\boldsymbol{T}` of the material is the (symmetric) Biot
+    stress tensor, which is work-conjugate to the Biot strain tensor, i.e.
+    :math:`\boldsymbol{P} : \delta \boldsymbol{F} = \boldsymbol{T} : \delta
+    \boldsymbol{U}`. It is converted to the second Piola-Kirchhoff stress tensor
+    :math:`\boldsymbol{S}` by the solution of the Lyapunov equation, see Eq.
+    :eq:`corotational-lyapunov`, and to the first Piola-Kirchhoff stress tensor, see Eq.
+    :eq:`corotational-pk1-stress`.
+
+    ..  math::
+        :label: corotational-lyapunov
+
+        \boldsymbol{U}\ \boldsymbol{S} + \boldsymbol{S}\ \boldsymbol{U}
+            = 2\ \boldsymbol{T}
 
     ..  math::
         :label: corotational-pk1-stress
 
-        \boldsymbol{P} = \boldsymbol{R}\ \boldsymbol{T}
+        \boldsymbol{P} = \boldsymbol{F}\ \boldsymbol{S}
+
+    Hence, the Cauchy stress tensor is symmetric. The solution of the Lyapunov equation
+    is given by the components :math:`\hat{T}_{ab} = V_{Ia}\ T_{IJ}\ V_{Jb}` of the Biot
+    stress tensor in the principal axes of the stretch tensor, see Eq.
+    :eq:`corotational-pk-stress-principal` (without a summation over the indices of the
+    principal axes), with :math:`\boldsymbol{P} = \boldsymbol{Q}\ \hat{\boldsymbol{P}}\
+    \boldsymbol{V}^T`.
+
+    ..  math::
+        :label: corotational-pk-stress-principal
+
+        \hat{S}_{ab} = \frac{2\ \hat{T}_{ab}}{\lambda_a + \lambda_b}
+        \qquad \hat{P}_{ab} = \lambda_a\ \hat{S}_{ab}
+
+    For a Biot stress tensor which is coaxial with the stretch tensor, e.g. of an
+    isotropic elastic material, the second Piola-Kirchhoff stress tensor is
+    :math:`\boldsymbol{S} = \boldsymbol{U}^{-1}\ \boldsymbol{T}` and the first
+    Piola-Kirchhoff stress tensor is :math:`\boldsymbol{P} = \boldsymbol{R}\
+    \boldsymbol{T}`.
 
     The fourth-order elasticity tensor of the co-rotational framework is the exact
     linearization of the first Piola-Kirchhoff stress tensor, i.e. Newton's method
-    converges quadratically. It is evaluated by the components of the stress tensor
-    :math:`\hat{T}_{ab} = V_{Ia}\ T_{IJ}\ V_{Jb}` and of the elasticity tensor
+    converges quadratically. It is evaluated by the components of the elasticity tensor
     :math:`\hat{\mathbb{C}}_{abcd} = V_{Ia}\ V_{Jb}\ V_{Kc}\ V_{Ld}\ \mathbb{C}_{IJKL}` of
-    the material in the principal axes of the stretch tensor, see Eq.
+    the material in the principal axes of the stretch tensor with :math:`h_{ab} = 1 /
+    (\lambda_a + \lambda_b)` and :math:`g_{ab} = \lambda_a\ h_{ab}`, see Eq.
     :eq:`corotational-elasticity-principal` (without a summation over the indices of
-    the principal axes), and it is converted by Eq. :eq:`corotational-elasticity`.
+    the principal axes), and it is converted by Eq. :eq:`corotational-elasticity`. A
+    symmetric elasticity tensor of the material leads to a symmetric elasticity tensor
+    of the co-rotational framework.
 
     ..  math::
         :label: corotational-elasticity-principal
 
-        \hat{\mathbb{A}}_{abcd} = \frac{2 \lambda_c}{\lambda_c + \lambda_d}\
-            \hat{\mathbb{C}}_{abcd}
-            + \delta_{ac}\ \frac{\hat{T}_{db}}{\lambda_a + \lambda_d}
-            - \delta_{ad}\ \frac{\hat{T}_{cb}}{\lambda_a + \lambda_c}
+        \hat{\mathbb{A}}_{abcd} &= 4\ g_{ab}\ g_{cd}\ \hat{\mathbb{C}}_{abcd}
+            + \delta_{ac}\ h_{ad}\ \hat{P}_{db} - \delta_{ad}\ h_{ac}\ \hat{P}_{cb}
+
+            &+ g_{ba}\ g_{cd} \left( \delta_{ac}\ \hat{S}_{db}
+                + \delta_{ad}\ \hat{S}_{cb} \right)
+            - g_{ab}\ g_{cd} \left( \delta_{bd}\ \hat{S}_{ac}
+                + \delta_{bc}\ \hat{S}_{ad} \right)
 
     ..  math::
         :label: corotational-elasticity
 
         \mathbb{A}_{iJkL} = Q_{ia}\ V_{Jb}\ Q_{kc}\ V_{Ld}\ \hat{\mathbb{A}}_{abcd}
-
-    ..  note::
-
-        The first Piola-Kirchhoff stress tensor of Eq. :eq:`corotational-pk1-stress`
-        is work-conjugate to the Biot strain tensor only if the stress tensor of the
-        material is coaxial with the stretch tensor, e.g. for isotropic elastic
-        materials.
 
     Examples
     --------
@@ -429,8 +497,8 @@ class MaterialStrain(ConstitutiveMaterial):
             stress_new = dot(dxdX, stress_new)
 
         if self.framework == "co-rotational":
-            rotation = dot(decomposition.U, decomposition.Vh)
-            stress_new = dot(rotation, stress_new)
+            # convert the Biot stress to the first Piola-Kirchhoff stress
+            stress_new = _corotational_stress(decomposition, stress_new)
 
         return [stress_new, statevars_new]
 

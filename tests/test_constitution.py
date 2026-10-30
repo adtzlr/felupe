@@ -807,6 +807,58 @@ def test_umat_strain_tangent():
             )
 
 
+def test_umat_strain_corotational_stress():
+    "The stress of the co-rotational framework is work-conjugate to the Biot strain."
+
+    F, statevars_plastic = umat_strain_frameworks_input()
+    statevars_elastic = np.zeros((18, *F.shape[2:]))
+
+    def polar(F):
+        decomposition = fem.math.svd(F)
+        R = fem.math.dot(decomposition.U, decomposition.Vh)
+        return R, fem.math.dot(fem.math.transpose(R), F)
+
+    R, U = polar(F)
+
+    # elastic-plastic material: the Biot stress is not coaxial with the stretch tensor
+    umat = fem.MaterialStrain(
+        material=fem.linear_elastic_plastic_isotropic_hardening,
+        λ=2.0,
+        μ=1.0,
+        σy=0.05,
+        K=0.1,
+        statevars=(1, (3, 3)),
+        framework="co-rotational",
+    )
+    P, statevars_new = umat.gradient([F, statevars_plastic])
+    dPdF = umat.hessian([F, statevars_plastic])[0]
+
+    # (new) Biot stress of the material
+    T = statevars_new[-9:].reshape(F.shape)
+    assert not np.allclose(fem.math.dot(T, U), fem.math.dot(U, T))
+
+    # P : δF = T : δU
+    h = 1e-6
+    dF = h * np.random.default_rng(5).uniform(-1, 1, F.shape)
+    dU = (polar(F + dF)[1] - polar(F - dF)[1]) / 2
+    assert np.allclose(fem.math.ddot(P, dF), fem.math.ddot(T, dU), rtol=1e-6, atol=0)
+
+    # symmetric Kirchhoff stress tensor (balance of angular momentum)
+    τ = fem.math.dot(P, fem.math.transpose(F))
+    assert np.allclose(τ, fem.math.transpose(τ))
+
+    # the symmetric elasticity tensor of the material leads to a symmetric tangent
+    assert np.allclose(dPdF, np.einsum("iJkL...->kLiJ...", dPdF))
+
+    # isotropic elastic material: the Biot stress is coaxial with the stretch tensor
+    umat = fem.MaterialStrain(
+        material=fem.linear_elastic, λ=2.0, μ=1.0, framework="co-rotational"
+    )
+    P, statevars_new = umat.gradient([F, statevars_elastic])
+    T = statevars_new[-9:].reshape(F.shape)
+    assert np.allclose(P, fem.math.dot(R, T))
+
+
 def test_umat_strain_plasticity():
     r, x = pre(sym=False, add_identity=True)
     F = x[0]
@@ -1522,6 +1574,7 @@ if __name__ == "__main__":
     test_umat_viscoelastic2()
     test_umat_strain()
     test_umat_strain_tangent()
+    test_umat_strain_corotational_stress()
     test_umat_strain_plasticity()
     test_elpliso()
     test_umat_strain_optimize()

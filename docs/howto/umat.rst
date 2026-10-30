@@ -35,6 +35,16 @@ shapes of these internal state variables must be provided. By default, the small
 framework is used. Optionally, this may be changed to a Total-Lagrange or a
 co-rotational strain framework.
 
++------------------+--------------------------------+-----------------------------------+
+| **Framework**    | **Strain** (argument)          | **Stress** (return)               |
++==================+================================+===================================+
+| small-strain     | small-strain tensor            | Cauchy stress tensor              |
++------------------+--------------------------------+-----------------------------------+
+| total-lagrange   | Green-Lagrange strain tensor   | second Piola-Kirchhoff stress     |
++------------------+--------------------------------+-----------------------------------+
+| co-rotational    | Biot strain tensor             | Biot stress tensor                |
++------------------+--------------------------------+-----------------------------------+
+
 ..  code-block:: python
 
     import felupe as fem

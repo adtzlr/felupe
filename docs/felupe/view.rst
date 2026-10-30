@@ -28,6 +28,7 @@ e.g. for off-screen screenshots in vector formats (PDF or SVG).
    get_plotting_backend
    view.register_plotting_backend
    view.PlottingBackend
+   view.WebGLPlotter
    view.MatplotlibPlotter
 
 **Detailed API Reference**
@@ -54,6 +55,9 @@ e.g. for off-screen screenshots in vector formats (PDF or SVG).
 
 .. autoclass:: felupe.view.PlottingBackend
    :members:
+
+.. autoclass:: felupe.view.WebGLPlotter
+   :members: show, export_html, widget, html
 
 .. autoclass:: felupe.view.MatplotlibPlotter
    :members: show, screenshot, savefig, render, enable_parallel_projection, close

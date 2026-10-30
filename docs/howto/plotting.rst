@@ -102,10 +102,11 @@ WebGL
 *****
 
 The plotting backend ``"webgl"`` draws the plots by a dependency-free WebGL viewer in
-the web browser, without PyVista. The plotter is shown by ``show()``: in a notebook,
-the self-contained HTML page of the viewer is shown in the output of the cell,
-otherwise it is opened in the web browser. The page works offline and it may be
-written to a file by ``export_html()``, e.g. to share a model. Drag to rotate,
+the web browser, without PyVista. The plotter, a :class:`~felupe.view.WebGLPlotter`,
+is shown by :meth:`~felupe.view.WebGLPlotter.show`: in a notebook, the self-contained
+HTML page of the viewer is shown in the output of the cell, otherwise it is opened in
+the web browser. The page works offline and it may be written to a file by
+:meth:`~felupe.view.WebGLPlotter.export_html`, e.g. to share a model. Drag to rotate,
 shift-drag to pan, scroll to zoom and double-click to reset the view. The live
 dashboard of a job, :class:`~felupe.DashboardWidgetPlugin`, uses the same viewer.
 
@@ -117,10 +118,10 @@ dashboard of a job, :class:`~felupe.DashboardWidgetPlugin`, uses the same viewer
     plotter.show()
     plotter.export_html("solid.html")
 
-In a notebook, ``widget()`` returns a Jupyter widget of the viewer, e.g. for a layout
-of widgets. This requires the optional dependency ``anywidget``
-(``pip install felupe[web]``). Screenshots are not supported by this plotting
-backend.
+In a notebook, :meth:`~felupe.view.WebGLPlotter.widget` returns a Jupyter widget of
+the viewer, e.g. for a layout of widgets. This requires the optional dependency
+``anywidget`` (``pip install felupe[web]``). Screenshots are not supported by this
+plotting backend.
 
 ..  code-block:: python
 

@@ -128,6 +128,33 @@ class WebGLPlotter:
     Jupyter widget, e.g. also in the interactive window of VS Code). Otherwise, the page
     is written to a file, which is opened in the web browser. A Jupyter widget of the
     viewer, e.g. for a layout of widgets, is returned by :meth:`widget`.
+
+    With the plotting backend ``"webgl"``, i.e. after
+    ``fem.set_plotting_backend("webgl")``, the plot-methods return a new plotter of
+    this class, e.g. :meth:`Mesh.plot() <felupe.Mesh.plot>` or
+    :meth:`SolidBody.plot() <felupe.SolidBody.plot>`. A given plotter is always drawn
+    by the WebGL viewer, independent of the current plotting backend.
+
+    Examples
+    --------
+    A new plotter is given to a plot-method. The viewer is shown by
+    ``plotter.show()``.
+
+    >>> import felupe as fem
+    >>>
+    >>> mesh = fem.Cube(n=3)
+    >>> plotter = mesh.plot(plotter=fem.view.WebGLPlotter())
+
+    The self-contained HTML page of the viewer is written to a file, e.g. to share the
+    model. It works offline, without a server and without other files.
+
+    >>> path = plotter.export_html("mesh.html")
+
+    See Also
+    --------
+    felupe.set_plotting_backend : Set the current plotting backend by its name.
+    felupe.view.MatplotlibPlotter : The plotter of the plotting backend
+        ``"matplotlib"``.
     """
 
     def __init__(self):

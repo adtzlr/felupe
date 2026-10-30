@@ -37,7 +37,7 @@ evaluates its chunks by the pool of threads.
     mesh = fem.Cube(n=31)
     region = fem.RegionHexahedron(mesh)
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
 
     # evaluate the gradient and the hessian of the material by threads
     umat = fem.NeoHooke(mu=1, bulk=5000, parallel=True)

@@ -91,7 +91,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionHexahedron(mesh)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-         boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -123,7 +123,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionQuadraticHexahedron(mesh)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-         boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -155,7 +155,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionLagrange(mesh, order=3, dim=3)
          field = fem.FieldContainer([fem.Field(region, dim=3)])
 
-         boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -191,7 +191,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionQuad(mesh)
          field = fem.FieldContainer([fem.FieldPlaneStrain(region, dim=2)])
 
-         boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)
@@ -227,7 +227,7 @@ Slightly modified code-blocks are provided for different kind of analyses
          region = fem.RegionQuad(mesh)
          field = fem.FieldContainer([fem.FieldAxisymmetric(region, dim=2)])
 
-         boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+         boundaries = fem.dof.uniaxial(field, clamped=True)
 
          umat = fem.NeoHooke(mu=1, bulk=50)
          solid = fem.SolidBody(umat, field)

@@ -600,7 +600,7 @@ def test_time_increment_jax_job(x64):
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
-        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        boundaries = fem.dof.uniaxial(field, clamped=True)
 
         kwargs = {} if dtime is None else {"dtime": dtime}
         umat = mat.Hyperelastic(
@@ -748,7 +748,7 @@ def test_time_increment_strain_job():
         mesh = fem.Cube(n=2)
         region = fem.RegionHexahedron(mesh)
         field = fem.FieldContainer([fem.Field(region, dim=3)])
-        boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+        boundaries = fem.dof.uniaxial(field, clamped=True)
 
         kwargs = {} if dtime is None else {"dtime": dtime}
         umat = strain_viscoelastic(**kwargs)

@@ -210,7 +210,7 @@ class CutbackPlugin(Plugin):
     >>> mesh = fem.Cube(n=3)
     >>> region = fem.RegionHexahedron(mesh)
     >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
-    >>> boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    >>> boundaries = fem.dof.uniaxial(field, clamped=True)
     >>> solid = fem.SolidBody(umat=fem.NeoHooke(mu=1.0, bulk=5.0), field=field)
     >>>
     >>> move = fem.math.linsteps([0, -0.7], num=1)

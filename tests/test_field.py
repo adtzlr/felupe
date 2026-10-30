@@ -257,7 +257,7 @@ def test_toplevel():
         fem.FieldContainer([fem.FieldPlaneStrain(regions[0], dim=2)]),
         fem.FieldContainer([fem.FieldPlaneStrain(regions[1], dim=2)]),
     ]
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
     umats = [
         fem.LinearElastic(E=2.1e5, nu=0.3),
         fem.LinearElastic(E=1.0, nu=0.3),
@@ -289,7 +289,7 @@ def test_toplevel_merge():
     solid1 = fem.SolidBody(umat, field1)
     solid2 = fem.SolidBody(umat, field2)
 
-    boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(x0, clamped=True)
 
     step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
     fem.Job(steps=[step]).evaluate(x0=x0)
@@ -401,7 +401,7 @@ def test_merge_mixed():
     umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=50)
 
     def evaluate(fields, x0):
-        boundaries = fem.dof.uniaxial(x0, move=0.3, return_loadcase=False)
+        boundaries = fem.dof.uniaxial(x0, move=0.3)
         solids = [fem.SolidBody(umat, f) for f in fields]
         step = fem.Step(items=solids, boundaries=boundaries)
         fem.Job(steps=[step]).evaluate(x0=x0)
@@ -458,7 +458,7 @@ def test_merge_mixed_formulations():
         fem.SolidBody(umat, fields[1]),
         fem.SolidBody(umat, fields[2]),
     ]
-    boundaries = fem.dof.uniaxial(x0, move=0.3, clamped=False, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(x0, move=0.3, clamped=False)
     step = fem.Step(items=solids, boundaries=boundaries)
     fem.Job(steps=[step]).evaluate()
 

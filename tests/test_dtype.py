@@ -14,7 +14,7 @@ def test_dtype(dtype=np.float32, tol=1e-3):
     assert field.extract()[0].dtype == dtype
     assert field.extract(grad=False)[0].dtype == dtype
 
-    boundaries = fem.dof.uniaxial(field, clamped=True, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True)
 
     umat = fem.LinearElastic(E=1, nu=0.3)
     solid = fem.SolidBody(umat, field)

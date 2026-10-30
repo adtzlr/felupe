@@ -52,9 +52,7 @@ class AnimationWriterPlugin(Plugin):
         >>> region = fem.RegionHexahedron(mesh)
         >>> field = fem.FieldContainer([fem.Field(region, dim=3)])
         >>>
-        >>> boundaries = fem.dof.uniaxial(
-        ...     field, clamped=True, return_loadcase=False
-        ... )
+        >>> boundaries = fem.dof.uniaxial(field, clamped=True)
         >>> umat = fem.NeoHooke(mu=1, bulk=2)
         >>> solid = fem.SolidBody(umat=umat, field=field)
         >>>

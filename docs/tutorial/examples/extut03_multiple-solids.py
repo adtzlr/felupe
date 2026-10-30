@@ -29,7 +29,7 @@ displacement_3 = fem.FieldAxisymmetric(region=fem.RegionQuad(mesh_3), dim=2)
 field_3 = fem.FieldContainer([displacement_3])
 
 x0 = fem.FieldContainer([field_1, field_2, field_3]).merge()
-boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False, return_loadcase=False)
+boundaries = fem.dof.uniaxial(x0, clamped=True, sym=False)
 
 umat_a = fem.NeoHookeCompressible(mu=3, lmbda=6)
 umat_b = fem.NeoHookeCompressible(mu=1, lmbda=2)

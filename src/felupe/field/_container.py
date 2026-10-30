@@ -533,7 +533,7 @@ class FieldContainer:
             >>> solid1 = fem.SolidBody(umat, field1)
             >>> solid2 = fem.SolidBody(umat, field2)
             >>>
-            >>> boundaries = fem.dof.uniaxial(x0, clamped=True, return_loadcase=False)
+            >>> boundaries = fem.dof.uniaxial(x0, clamped=True)
             >>>
             >>> step = fem.Step(items=[solid1, solid2], boundaries=boundaries)
             >>> job = fem.Job(steps=[step]).evaluate()

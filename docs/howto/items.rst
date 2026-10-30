@@ -137,7 +137,7 @@ This item is now added to a basic script.
 
     region = fem.RegionHexahedron(mesh=fem.Cube(n=3))
     field = fem.FieldContainer([fem.Field(region, dim=3)])
-    boundaries = fem.dof.uniaxial(field, clamped=True, move=1.0, return_loadcase=False)
+    boundaries = fem.dof.uniaxial(field, clamped=True, move=1.0)
 
     solid = fem.SolidBody(umat=fem.NeoHooke(mu=1, bulk=2), field=field)
     my_item = MyItem(field=field, my_parameter=1.0, my_other_parameter=2.0)

@@ -5,87 +5,164 @@ import warnings
 
 import numpy as np
 
-from ...math import cdya_ik, dot, identity, ravel, reshape, svd, sym, transpose
+from ...math import cdya_ik, dot, eigh, identity, ravel, reshape, sym, transpose
 from .._base import ConstitutiveMaterial
 from .._material import takes_time_increment
 
 
-def _corotational_principal(decomposition, stress):
-    r"""Return the principal axes of the stretch tensor, the abbreviations
-    :math:`h_{ab} = 1 / (\lambda_a + \lambda_b)` and :math:`g_{ab} = \lambda_a\ h_{ab}`
-    of the principal stretches and the components of the second and of the first
-    Piola-Kirchhoff stress tensors in the principal axes of the stretch tensor for a
-    given Biot stress tensor, see :class:`~felupe.MaterialStrain`."""
+def _diagonal_function(λ, m):
+    r"""Return the diagonal functions :math:`e_a(\lambda_a)` of the Seth-Hill strain
+    tensors and their first four derivatives w.r.t. the eigenvalues :math:`\lambda_a`
+    of the right Cauchy-Green deformation tensor, i.e. :math:`d_a / 2` and :math:`f_a /
+    4` are the first and the second derivatives, see :class:`~felupe.MaterialStrain`."""
 
-    Q, λ, Vh = decomposition
-    V = transpose(Vh)
+    if m == 0:
+        return np.log(λ) / 2, 1 / (2 * λ), -1 / (2 * λ**2), 1 / λ**3, -3 / λ**4
 
-    h = 1 / (λ[:, None] + λ[None, :])
-    g = λ[:, None] * h
-
-    # solution of the Lyapunov equation U S + S U = 2 T in the principal axes
-    T = np.einsum("Ia...,IJ...,Jb...->ab...", V, stress, V)
-    S = 2 * h * T
-    P = 2 * g * T
-
-    return V, h, g, S, P
+    p = m / 2
+    return (
+        (λ**p - 1) / m,
+        λ ** (p - 1) / 2,
+        (p - 1) * λ ** (p - 2) / 2,
+        (p - 1) * (p - 2) * λ ** (p - 3) / 2,
+        (p - 1) * (p - 2) * (p - 3) * λ ** (p - 4) / 2,
+    )
 
 
-def _corotational_stress(decomposition, stress):
-    r"""Return the first Piola-Kirchhoff stress tensor :math:`\boldsymbol{P} =
-    \boldsymbol{F}\ \boldsymbol{S}` of the co-rotational framework for a given singular
-    value decomposition of the deformation gradient and the (symmetric) Biot stress
-    tensor of the material, see :class:`~felupe.MaterialStrain`."""
+def _zeta_index(a, b, c):
+    r"""Return the index of the coefficient :math:`\zeta_{abc}` in the list of the
+    coefficients :math:`[\xi_{00}, \xi_{01}, \dots, \xi_{22}, \eta]`, i.e.
+    :math:`\xi_{ab}` for the indices :math:`(a, b, b)` in any order and :math:`\eta`
+    for distinct indices."""
 
-    Q = decomposition.U
-    V, *_, P = _corotational_principal(decomposition, stress)
+    if len({a, b, c}) == 3:
+        return 9
 
-    return np.einsum("ia...,ab...,Jb...->iJ...", Q, P, V)
+    x, y = (a, b) if b == c else (b, a) if a == c else (c, a)
+
+    return 3 * x + y
 
 
-def _corotational_elasticity(decomposition, stress, elasticity):
-    r"""Return the fourth-order elasticity tensor of the co-rotational framework, i.e.
-    the derivative of the first Piola-Kirchhoff stress tensor
-    :math:`\boldsymbol{P} = \boldsymbol{F}\ \boldsymbol{S}` w.r.t. the deformation
-    gradient, for a given singular value decomposition of the deformation gradient, the
-    (symmetric) Biot stress tensor :math:`\boldsymbol{T}` and the (minor-symmetric)
-    elasticity tensor :math:`\mathbb{C} = \partial \boldsymbol{T} / \partial
-    \boldsymbol{U}` of the material, see :class:`~felupe.MaterialStrain`."""
+_ZETA_INDICES = [_zeta_index(a, b, c) for a, b, c in np.ndindex(3, 3, 3)]
 
-    Q = decomposition.U
-    V, h, g, S, P = _corotational_principal(decomposition, stress)
 
-    # elasticity tensor of the material in the principal axes of the stretch tensor
-    C = np.einsum(
+def _seth_hill_coefficients(λ, m, zeta=True, tol=1e-3):
+    r"""Return the coefficients :math:`\vartheta_{ab}` of the projection tensor
+    :math:`\mathbb{P}` with :math:`\vartheta_{aa} = d_a / 2` and (optionally) the
+    coefficients :math:`\zeta_{abc}` of the tensor :math:`\boldsymbol{T} : \mathbb{L}`,
+    i.e. :math:`\zeta_{aaa} = f_a / 8`, :math:`\zeta_{abb} = \zeta_{bab} = \zeta_{bba} =
+    \xi_{ab}` and :math:`\zeta_{abc} = \eta` for distinct indices, for the eigenvalues
+    :math:`\lambda_a` in ascending order, see :class:`~felupe.MaterialStrain`. For
+    (nearly) equal eigenvalues, i.e. a relative difference below ``tol``, the
+    coefficients are evaluated by Taylor series."""
+
+    e, de, d2e, d3e, d4e = _diagonal_function(λ, m)
+
+    # differences of the eigenvalues Δ_ab = λ_a - λ_b
+    Δ = λ[:, None] - λ[None, :]
+    equal = np.abs(Δ) < tol * λ[None, :]
+
+    # Taylor series about λ_b
+    de, d2e, d3e, d4e = de[None, :], d2e[None, :], d3e[None, :], d4e[None, :]
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ϑ = (e[:, None] - e[None, :]) / Δ
+
+    ϑ = np.where(equal, de + d2e * Δ / 2 + d3e * Δ**2 / 6 + d4e * Δ**3 / 24, ϑ)
+
+    if not zeta:
+        return ϑ
+
+    # ξ_ab = (ϑ_ab - d_b / 2) / (λ_a - λ_b) with d_b / 2 = e'_b and the limit f_a / 8
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ξ = (ϑ - de) / Δ
+
+    ξ = np.where(equal, d2e / 2 + d3e * Δ / 6 + d4e * Δ**2 / 24, ξ)
+
+    # η for the eigenvalues in ascending order (Taylor series about λ_0)
+    Δ10, Δ20 = Δ[1, 0], Δ[2, 0]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        η = (ϑ[2, 1] - ϑ[1, 0]) / Δ20
+
+    η_taylor = (
+        d2e[0, 0] / 2
+        + d3e[0, 0] * (Δ10 + Δ20) / 6
+        + d4e[0, 0] * (Δ10**2 + Δ10 * Δ20 + Δ20**2) / 24
+    )
+    η = np.where(equal[2, 0], η_taylor, η)
+
+    # symmetric coefficients ζ_abc
+    coefficients = np.concatenate([ξ.reshape(9, *λ.shape[1:]), η[None]])
+
+    return ϑ, coefficients[_ZETA_INDICES].reshape(3, 3, 3, *λ.shape[1:])
+
+
+def _seth_hill_stress(decomposition, stress, m):
+    r"""Return the second Piola-Kirchhoff stress tensor :math:`\boldsymbol{S} =
+    \boldsymbol{T} : \mathbb{P}` of the Seth-Hill framework for a given eigenvalue
+    decomposition of the right Cauchy-Green deformation tensor and the (symmetric)
+    stress tensor :math:`\boldsymbol{T}` of the material, see
+    :class:`~felupe.MaterialStrain`."""
+
+    λ, n = decomposition
+    ϑ = _seth_hill_coefficients(λ, m, zeta=False)
+
+    T = np.einsum("Ia...,IJ...,Jb...->ab...", n, stress, n)
+
+    return np.einsum("Ia...,ab...,Jb...->IJ...", n, 2 * ϑ * T, n)
+
+
+def _seth_hill_elasticity(F, decomposition, stress, elasticity, m):
+    r"""Return the fourth-order elasticity tensor of the first Piola-Kirchhoff stress
+    tensor, see Eq. :eq:`pk1-elasticity`, with the second Piola-Kirchhoff stress tensor
+    :math:`\boldsymbol{S} = \boldsymbol{T} : \mathbb{P}` and the elasticity tensor
+    :math:`\mathbb{C} = \mathbb{P} : \mathbb{E} : \mathbb{P} + \boldsymbol{T} :
+    \mathbb{L}` of the Seth-Hill framework for a given deformation gradient, its
+    eigenvalue decomposition of the right Cauchy-Green deformation tensor, the
+    (symmetric) stress tensor :math:`\boldsymbol{T}` and the (minor-symmetric)
+    elasticity tensor :math:`\mathbb{E} = \partial \boldsymbol{T} / \partial
+    \boldsymbol{E}` of the material, see :class:`~felupe.MaterialStrain`."""
+
+    λ, n = decomposition
+    ϑ, ζ = _seth_hill_coefficients(λ, m)
+
+    # stress and elasticity tensors of the material in the eigenvalue bases
+    T = np.einsum("Ia...,IJ...,Jb...->ab...", n, stress, n)
+    E = np.einsum(
         "Ia...,Jb...,Kc...,Ld...,IJKL...->abcd...",
-        V,
-        V,
-        V,
-        V,
+        n,
+        n,
+        n,
+        n,
         elasticity,
         optimize=True,
     )
 
-    # material part in the principal axes
-    A = np.einsum("ab...,cd...,abcd...->abcd...", 4 * g, g, C)
+    # P : E : P in the eigenvalue bases
+    C = np.einsum("ab...,cd...,abcd...->abcd...", 4 * ϑ, ϑ, E)
 
-    # the parts with Kronecker deltas due to the change of the rotation tensor and of
-    # the stretch tensor are added to the diagonals (writeable views) of A
-    A_ac = np.einsum("abad...->abd...", A)  # c = a
-    A_ad = np.einsum("abca...->abc...", A)  # d = a
-    A_bd = np.einsum("abcb...->abc...", A)  # d = b
-    A_bc = np.einsum("abbd...->abd...", A)  # c = b
+    # T : L in the eigenvalue bases, the parts with Kronecker deltas are added to the
+    # diagonals (writeable views) of C
+    C_bc = np.einsum("abbd...->abd...", C)  # c = b
+    C_ac = np.einsum("abad...->abd...", C)  # c = a
+    C_bd = np.einsum("abcb...->abc...", C)  # d = b
+    C_ad = np.einsum("abca...->abc...", C)  # d = a
 
-    A_ac += np.einsum("ad...,db...->abd...", h, P)
-    A_ac += np.einsum("ba...,ad...,db...->abd...", g, g, S)
-    A_ad -= np.einsum("ac...,cb...->abc...", h, P)
-    A_ad += np.einsum("ba...,ca...,cb...->abc...", g, g, S)
-    A_bd -= np.einsum("ab...,cb...,ac...->abc...", g, g, S)
-    A_bc -= np.einsum("ab...,bd...,ad...->abd...", g, g, S)
+    C_bc += np.einsum("abd...,ad...->abd...", 2 * ζ, T)
+    C_ac += np.einsum("abd...,bd...->abd...", 2 * ζ, T)
+    C_bd += np.einsum("abc...,ac...->abc...", 2 * ζ, T)
+    C_ad += np.einsum("abc...,bc...->abc...", 2 * ζ, T)
 
-    return np.einsum(
-        "ia...,Jb...,kc...,Ld...,abcd...->iJkL...", Q, V, Q, V, A, optimize=True
+    # A_iJkL = F_iI F_kK C_IJKL + δ_ik S_JL with C_IJKL = n_Ia n_Jb n_Kc n_Ld C_abcd
+    Fn = dot(F, n)
+    S = np.einsum("Ia...,ab...,Jb...->IJ...", n, 2 * ϑ * T, n)
+
+    A = np.einsum(
+        "ia...,Jb...,kc...,Ld...,abcd...->iJkL...", Fn, n, Fn, n, C, optimize=True
     )
+    A += cdya_ik(np.eye(len(F)), S)
+
+    return A
 
 
 class MaterialStrain(ConstitutiveMaterial):
@@ -109,11 +186,16 @@ class MaterialStrain(ConstitutiveMaterial):
         A tuple containing the shape of each state variable. Default is (0, ).
     framework : str, optional
         The framework to be used for the stress and strain formulations. "small-strain",
-        "total-lagrange" and "co-rotational" are supported. Default is "small-strain".
+        "total-lagrange", "co-rotational" and "seth-hill" are supported. Default is
+        "small-strain".
     symmetry : bool, optional
         Take the symmetric part of the returned stress and the minor symmetric-parts of
         the algorithmic consistent elasticity tensor. Default is True. May enhance
         performance if the material returns symmetric tensors.
+    strain_exponent : float or None, optional
+        The strain exponent :math:`m` of the Seth-Hill strain tensors, which is required
+        for (and only allowed with) the Seth-Hill framework, e.g. 0 for the logarithmic
+        (Hencky) strain tensor. Default is None.
     **kwargs : dict, optional
         Optional keyword-arguments (the material parameters) for the material model
         formulation.
@@ -183,35 +265,126 @@ class MaterialStrain(ConstitutiveMaterial):
         \mathbb{A}_{iJkL} = F_{iI}\ F_{kK}\ \mathbb{C}_{IJKL}
             + \delta_{ik}\ S_{JL}
 
-    The co-rotational framework is based on the polar decomposition of the deformation
-    gradient into the rotation tensor :math:`\boldsymbol{R}` and the right stretch tensor
-    :math:`\boldsymbol{U}`, see Eq. :eq:`corotational-polar-decomposition`. It is
-    evaluated by the singular value decomposition of the deformation gradient with the
-    principal stretches :math:`\lambda_a`.
+    The Seth-Hill framework uses the generalized strain tensors of the Seth-Hill family
+    with the strain exponent :math:`m` (the argument ``strain_exponent``), in the
+    notation of Miehe and Lambrecht [1]_. They are evaluated by the eigenvalues
+    :math:`\lambda_a` (the squares of the principal stretches) and the eigenvalue bases
+    :math:`\boldsymbol{M}_a = \boldsymbol{n}_a \otimes \boldsymbol{n}_a` of the right
+    Cauchy-Green deformation tensor, see Eq. :eq:`seth-hill-strain`.
 
     ..  math::
-        :label: corotational-polar-decomposition
+        :label: seth-hill-strain
 
-        \boldsymbol{F} = \boldsymbol{R}\ \boldsymbol{U}
-            = \boldsymbol{Q}\ \boldsymbol{\Lambda}\ \boldsymbol{V}^T
-        \qquad \boldsymbol{R} = \boldsymbol{Q}\ \boldsymbol{V}^T
-        \qquad \boldsymbol{U} = \boldsymbol{V}\ \boldsymbol{\Lambda}\ \boldsymbol{V}^T
+        \boldsymbol{C} = \sum_{a=1}^3 \lambda_a\ \boldsymbol{M}_a
+        \qquad
+        \boldsymbol{E} = \sum_{a=1}^3 e_a\ \boldsymbol{M}_a
+        \qquad
+        e_a = \begin{cases}
+            \frac{1}{m} \left( \lambda_a^{m/2} - 1 \right) & m \neq 0 \\
+            \frac{1}{2} \ln \lambda_a & m = 0
+        \end{cases}
 
-    The co-rotational framework uses the Biot strain tensor, see Eq.
-    :eq:`corotational-biot-strain`.
+    The particular choices :math:`m = 0, 1, 2` define the Hencky strain, the Biot
+    strain and the Green strain. The stress tensor :math:`\boldsymbol{T} = \partial_{
+    \boldsymbol{E}} \hat{\psi}` and the elasticity tensor :math:`\mathbb{E} =
+    \partial^2_{\boldsymbol{E}\boldsymbol{E}} \hat{\psi}` of the material are dual to
+    the Seth-Hill strain tensor. They are converted to the second Piola-Kirchhoff
+    stress tensor and to the elasticity tensor of the Total-Lagrange framework by the
+    projection tensors :math:`\mathbb{P} = 2\ \partial_{\boldsymbol{C}}
+    \boldsymbol{E}` and :math:`\mathbb{L} = 4\ \partial^2_{\boldsymbol{C}\boldsymbol{C}}
+    \boldsymbol{E}`, see Eq. :eq:`seth-hill-stress`, which are further converted by Eq.
+    :eq:`pk1-stress` and Eq. :eq:`pk1-elasticity`.
 
     ..  math::
-        :label: corotational-biot-strain
+        :label: seth-hill-stress
 
-        \boldsymbol{\varepsilon} = \boldsymbol{U} - \boldsymbol{1}
+        \boldsymbol{S} = \boldsymbol{T} : \mathbb{P}
+        \qquad
+        \mathbb{C} = \mathbb{P} : \mathbb{E} : \mathbb{P} + \boldsymbol{T} : \mathbb{L}
 
-    The stress tensor :math:`\boldsymbol{T}` of the material is the (symmetric) Biot
-    stress tensor, which is work-conjugate to the Biot strain tensor, i.e.
+    The spectral representations of the projection tensors are given in Eq.
+    :eq:`seth-hill-projection` with the tensor operators :math:`\mathbb{G}^{ijkl}_{ab}
+    = M_a^{ik} M_b^{jl} + M_a^{il} M_b^{jk}` and :math:`\mathbb{F}^{ijkl}_{a(bc)} =
+    M_a^{ik} (\boldsymbol{M}_b \boldsymbol{T} \boldsymbol{M}_c)^{jl} + M_a^{il}
+    (\boldsymbol{M}_b \boldsymbol{T} \boldsymbol{M}_c)^{jk}` (and
+    :math:`\mathbb{F}_{(bc)a}` with interchanged arguments).
+
+    ..  math::
+        :label: seth-hill-projection
+
+        \mathbb{P} &= \sum_a^3 d_a\ \boldsymbol{M}_a \otimes \boldsymbol{M}_a
+            + \sum_a^3 \sum_{b \neq a}^3 \vartheta_{ab}\ \mathbb{G}_{ab}
+
+        \boldsymbol{T} : \mathbb{L} &= \sum_a^3 f_a\ (\boldsymbol{M}_a : \boldsymbol{T})
+            \ \boldsymbol{M}_a \otimes \boldsymbol{M}_a
+            + \sum_a^3 \sum_{b \neq a}^3 \sum_{c \neq a, c \neq b}^3 2\ \eta \left(
+                \mathbb{F}_{a(bc)} + \mathbb{F}_{(bc)a} \right)
+
+            &+ \sum_a^3 \sum_{b \neq a}^3 2\ \xi_{ab} \left( \mathbb{F}_{a(bb)}
+                + \mathbb{F}_{(bb)a} + \mathbb{F}_{b(ab)} + \mathbb{F}_{(ab)b}
+                + \mathbb{F}_{b(ba)} + \mathbb{F}_{(ba)b} \right)
+
+    The coefficients are given in Eq. :eq:`seth-hill-coefficients`.
+
+    ..  math::
+        :label: seth-hill-coefficients
+
+        d_a &= 2\ \partial_{\lambda_a} e_a
+        \qquad
+        f_a = 4\ \partial^2_{\lambda_a \lambda_a} e_a
+
+        \vartheta_{ab} &= \frac{e_a - e_b}{\lambda_a - \lambda_b}
+        \qquad
+        \xi_{ab} = \frac{\vartheta_{ab} - \frac{1}{2} d_b}{\lambda_a - \lambda_b}
+        \qquad
+        \eta = \sum_a^3 \sum_{b \neq a}^3 \sum_{c \neq a, c \neq b}^3
+            \frac{e_a}{2 (\lambda_a - \lambda_b) (\lambda_a - \lambda_c)}
+
+    For two equal eigenvalues :math:`\lambda_{\bar{a}} = \lambda_{\bar{b}} \neq
+    \lambda_{\bar{c}}`, the coefficients approach the limits
+    :math:`\vartheta_{\bar{a}\bar{b}} = \frac{1}{2} d_{\bar{a}}`,
+    :math:`\xi_{\bar{a}\bar{b}} = \frac{1}{8} f_{\bar{a}}` and :math:`\eta =
+    \xi_{\bar{c}\bar{a}}` and for three equal eigenvalues :math:`\eta = \frac{1}{8}
+    f_{\bar{a}}`. Here, instead of the case distinction of the limits, the coefficients
+    are evaluated by Taylor series for (nearly) equal eigenvalues, i.e. if their
+    relative difference is below :math:`10^{-3}`, which avoids the cancellation of the
+    difference quotients. The projections are evaluated by their components in the
+    eigenvalue bases, where the tensor operators have only a few non-zero components.
+    With the components :math:`\hat{T}_{ab} = n^I_a\ T_{IJ}\ n^J_b` and
+    :math:`\hat{\mathbb{E}}_{abcd} = n^I_a\ n^J_b\ n^K_c\ n^L_d\ \mathbb{E}_{IJKL}` of
+    the stress and of the elasticity tensor of the material, :math:`\vartheta_{aa} =
+    \frac{1}{2} d_a` and the abbreviations (not used in [1]_) :math:`\zeta_{aaa} =
+    \frac{1}{8} f_a`, :math:`\zeta_{abb} = \zeta_{bab} = \zeta_{bba} = \xi_{ab}` and
+    :math:`\zeta_{abc} = \eta` for distinct indices, Eq. :eq:`seth-hill-stress` is
+    given by Eq. :eq:`seth-hill-eigenbasis` (without a summation over the indices of
+    the eigenvalue bases).
+
+    ..  math::
+        :label: seth-hill-eigenbasis
+
+        \hat{S}_{ab} &= 2\ \vartheta_{ab}\ \hat{T}_{ab}
+
+        \hat{\mathbb{C}}_{abcd} &= 4\ \vartheta_{ab}\ \vartheta_{cd}\
+            \hat{\mathbb{E}}_{abcd}
+            + 2\ \zeta_{abd} \left( \delta_{bc}\ \hat{T}_{ad}
+                + \delta_{ac}\ \hat{T}_{bd} \right)
+            + 2\ \zeta_{abc} \left( \delta_{bd}\ \hat{T}_{ac}
+                + \delta_{ad}\ \hat{T}_{bc} \right)
+
+    The co-rotational framework is the Seth-Hill framework with the Biot strain tensor
+    :math:`\boldsymbol{E} = \boldsymbol{U} - \boldsymbol{1}` (:math:`m = 1`) with the
+    right stretch tensor :math:`\boldsymbol{U}` of the polar decomposition
+    :math:`\boldsymbol{F} = \boldsymbol{R}\ \boldsymbol{U}`. Its stress tensor
+    :math:`\boldsymbol{T}` is the (symmetric) Biot stress tensor, i.e.
     :math:`\boldsymbol{P} : \delta \boldsymbol{F} = \boldsymbol{T} : \delta
-    \boldsymbol{U}`. It is converted to the second Piola-Kirchhoff stress tensor
-    :math:`\boldsymbol{S}` by the solution of the Lyapunov equation, see Eq.
-    :eq:`corotational-lyapunov`, and to the first Piola-Kirchhoff stress tensor, see Eq.
-    :eq:`corotational-pk1-stress`.
+    \boldsymbol{U}`, and :math:`\vartheta_{ab} = 1 / (\sqrt{\lambda_a} +
+    \sqrt{\lambda_b})`, i.e. the second Piola-Kirchhoff stress tensor is the solution of
+    the Lyapunov equation, see Eq. :eq:`corotational-lyapunov`. For a Biot stress tensor
+    which is coaxial with the stretch tensor, e.g. of an isotropic elastic material, the
+    first Piola-Kirchhoff stress tensor is :math:`\boldsymbol{P} = \boldsymbol{R}\
+    \boldsymbol{T}`. The Total-Lagrange framework is the Seth-Hill framework with
+    :math:`m = 2` (:math:`\vartheta_{ab} = \frac{1}{2}`, :math:`\xi_{ab} = \eta = 0`), which
+    is evaluated without the eigenvalue decomposition.
 
     ..  math::
         :label: corotational-lyapunov
@@ -219,56 +392,11 @@ class MaterialStrain(ConstitutiveMaterial):
         \boldsymbol{U}\ \boldsymbol{S} + \boldsymbol{S}\ \boldsymbol{U}
             = 2\ \boldsymbol{T}
 
-    ..  math::
-        :label: corotational-pk1-stress
-
-        \boldsymbol{P} = \boldsymbol{F}\ \boldsymbol{S}
-
-    Hence, the Cauchy stress tensor is symmetric. The solution of the Lyapunov equation
-    is given by the components :math:`\hat{T}_{ab} = V_{Ia}\ T_{IJ}\ V_{Jb}` of the Biot
-    stress tensor in the principal axes of the stretch tensor, see Eq.
-    :eq:`corotational-pk-stress-principal` (without a summation over the indices of the
-    principal axes), with :math:`\boldsymbol{P} = \boldsymbol{Q}\ \hat{\boldsymbol{P}}\
-    \boldsymbol{V}^T`.
-
-    ..  math::
-        :label: corotational-pk-stress-principal
-
-        \hat{S}_{ab} = \frac{2\ \hat{T}_{ab}}{\lambda_a + \lambda_b}
-        \qquad \hat{P}_{ab} = \lambda_a\ \hat{S}_{ab}
-
-    For a Biot stress tensor which is coaxial with the stretch tensor, e.g. of an
-    isotropic elastic material, the second Piola-Kirchhoff stress tensor is
-    :math:`\boldsymbol{S} = \boldsymbol{U}^{-1}\ \boldsymbol{T}` and the first
-    Piola-Kirchhoff stress tensor is :math:`\boldsymbol{P} = \boldsymbol{R}\
-    \boldsymbol{T}`.
-
-    The fourth-order elasticity tensor of the co-rotational framework is the exact
-    linearization of the first Piola-Kirchhoff stress tensor, i.e. Newton's method
-    converges quadratically. It is evaluated by the components of the elasticity tensor
-    :math:`\hat{\mathbb{C}}_{abcd} = V_{Ia}\ V_{Jb}\ V_{Kc}\ V_{Ld}\ \mathbb{C}_{IJKL}` of
-    the material in the principal axes of the stretch tensor with :math:`h_{ab} = 1 /
-    (\lambda_a + \lambda_b)` and :math:`g_{ab} = \lambda_a\ h_{ab}`, see Eq.
-    :eq:`corotational-elasticity-principal` (without a summation over the indices of
-    the principal axes), and it is converted by Eq. :eq:`corotational-elasticity`. A
-    symmetric elasticity tensor of the material leads to a symmetric elasticity tensor
-    of the co-rotational framework.
-
-    ..  math::
-        :label: corotational-elasticity-principal
-
-        \hat{\mathbb{A}}_{abcd} &= 4\ g_{ab}\ g_{cd}\ \hat{\mathbb{C}}_{abcd}
-            + \delta_{ac}\ h_{ad}\ \hat{P}_{db} - \delta_{ad}\ h_{ac}\ \hat{P}_{cb}
-
-            &+ g_{ba}\ g_{cd} \left( \delta_{ac}\ \hat{S}_{db}
-                + \delta_{ad}\ \hat{S}_{cb} \right)
-            - g_{ab}\ g_{cd} \left( \delta_{bd}\ \hat{S}_{ac}
-                + \delta_{bc}\ \hat{S}_{ad} \right)
-
-    ..  math::
-        :label: corotational-elasticity
-
-        \mathbb{A}_{iJkL} = Q_{ia}\ V_{Jb}\ Q_{kc}\ V_{Ld}\ \hat{\mathbb{A}}_{abcd}
+    The elasticity tensors of the frameworks are the exact linearizations of the first
+    Piola-Kirchhoff stress tensors, i.e. Newton's method converges quadratically. The
+    Cauchy stress tensors of the Total-Lagrange and of the Seth-Hill frameworks are
+    symmetric. A symmetric elasticity tensor of the material leads to a symmetric
+    elasticity tensor of the framework.
 
     Examples
     --------
@@ -340,6 +468,28 @@ class MaterialStrain(ConstitutiveMaterial):
             bx=fem.math.linsteps([1, 1.25], num=10),
         )
 
+    The Seth-Hill framework with the logarithmic strain tensor (:math:`m = 0`) changes
+    the linear-elastic material formulation to the Hencky material model formulation.
+    In the same way, the linear-elastic-plastic material formulation is used in the
+    logarithmic strain space, i.e. with an additive decomposition of the logarithmic
+    strain tensor into elastic and plastic parts.
+
+    ..  plot::
+        :context: close-figs
+
+        umat = fem.MaterialStrain(
+            material=fem.linear_elastic,
+            μ=1,
+            λ=2,
+            framework="seth-hill",
+            strain_exponent=0,
+        )
+        ax = umat.plot(
+            ux=fem.math.linsteps([1, 1.5], num=20),
+            ps=fem.math.linsteps([1, 1.5], num=20),
+            bx=fem.math.linsteps([1, 1.25], num=10),
+        )
+
     See Also
     --------
     linear_elastic : 3D linear-elastic material formulation
@@ -347,6 +497,13 @@ class MaterialStrain(ConstitutiveMaterial):
         formulation with linear isotropic hardening (return mapping algorithm).
     LinearElasticPlasticIsotropicHardening : Linear-elastic-plastic material formulation
         with linear isotropic hardening (return mapping algorithm).
+
+    References
+    ----------
+    ..  [1] C. Miehe and M. Lambrecht, "Algorithms for computation of stresses and
+        elasticity moduli in terms of Seth-Hill's family of generalized strain
+        tensors", Communications in Numerical Methods in Engineering, vol. 17, no. 5,
+        pp. 337-353, 2001. doi: `10.1002/cnm.404 <https://doi.org/10.1002/cnm.404>`_.
 
     """
 
@@ -357,6 +514,7 @@ class MaterialStrain(ConstitutiveMaterial):
         statevars=(0,),
         framework="small-strain",
         symmetry=True,
+        strain_exponent=None,
         **kwargs,
     ):
         self.material = material
@@ -367,6 +525,22 @@ class MaterialStrain(ConstitutiveMaterial):
 
         self.framework = framework
         self.symmetry = symmetry
+
+        # the strain exponent of the Seth-Hill strain tensor of the framework
+        if framework == "seth-hill" and strain_exponent is None:
+            raise ValueError(
+                'The framework "seth-hill" requires the argument `strain_exponent`, '
+                "e.g. `strain_exponent=0` for the logarithmic strain tensor."
+            )
+
+        if framework != "seth-hill" and strain_exponent is not None:
+            raise ValueError(
+                "The argument `strain_exponent` is only supported by the framework "
+                '"seth-hill".'
+            )
+
+        exponents = {"total-lagrange": 2, "co-rotational": 1}
+        self.strain_exponent = exponents.get(framework, strain_exponent)
 
         # the flag `tangent` is passed to the material for each evaluation, i.e. the
         # keyword-arguments contain only the parameters of the material
@@ -410,15 +584,18 @@ class MaterialStrain(ConstitutiveMaterial):
 
         rotation = None
 
-        if decomposition is not None:
-            rotation = dot(decomposition.U, decomposition.Vh)
+        if self.framework == "co-rotational":
+            # rotation tensor of the polar decomposition R = F U^(-1)
+            λ, n = decomposition
+            rotation = np.einsum("iJ...,Ja...,a...,Ka...->iK...", x[0], n, λ**-0.5, n)
 
         return (*values, rotation)
 
     def _extract(self, x):
         """Extract the input and evaluate strains, stresses and state variables. Instead
-        of the rotation tensor, the singular value decomposition of the deformation
-        gradient is returned for the co-rotational framework (else None)."""
+        of the rotation tensor, the eigenvalue decomposition of the right Cauchy-Green
+        deformation tensor is returned for the co-rotational and the Seth-Hill
+        frameworks (else None)."""
 
         # unpack deformation gradient F = dx/dX
         dim = self.dim
@@ -432,11 +609,12 @@ class MaterialStrain(ConstitutiveMaterial):
         elif self.framework == "total-lagrange":
             strain = (dot(transpose(dxdX), dxdX) - identity(dxdX)) / 2
 
-        elif self.framework == "co-rotational":
-            decomposition = svd(dxdX)
-            rotation = dot(decomposition.U, decomposition.Vh)
-            stretch = dot(transpose(rotation), dxdX)
-            strain = stretch - identity(dxdX)
+        elif self.framework in ["co-rotational", "seth-hill"]:
+            # eigenvalues and eigenvectors of the right Cauchy-Green deformation tensor
+            decomposition = eigh(dot(transpose(dxdX), dxdX))
+            λ, n = decomposition
+            e = _diagonal_function(λ, self.strain_exponent)[0]
+            strain = np.einsum("Ia...,a...,Ja...->IJ...", n, e, n)
 
         else:
             raise NotImplementedError(f'Framework "{self.framework}" not implemented.')
@@ -492,13 +670,14 @@ class MaterialStrain(ConstitutiveMaterial):
         if self.symmetry:
             stress_new = sym(stress_new)
 
-        if self.framework == "total-lagrange":
+        if self.framework in ["co-rotational", "seth-hill"]:
+            # convert the stress to the second Piola-Kirchhoff stress
+            m = self.strain_exponent
+            stress_new = _seth_hill_stress(decomposition, stress_new, m)
+
+        if self.framework in ["total-lagrange", "co-rotational", "seth-hill"]:
             # convert second to first Piola-Kirchhoff stress
             stress_new = dot(dxdX, stress_new)
-
-        if self.framework == "co-rotational":
-            # convert the Biot stress to the first Piola-Kirchhoff stress
-            stress_new = _corotational_stress(decomposition, stress_new)
 
         return [stress_new, statevars_new]
 
@@ -529,12 +708,14 @@ class MaterialStrain(ConstitutiveMaterial):
 
         if self.framework == "total-lagrange":
             # convert elasticity tensor
-            dsde = np.einsum("iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde)
+            dsde = np.einsum(
+                "iI...,kK...,IJKL...->iJkL...", dxdX, dxdX, dsde, optimize=True
+            )
+            dsde += cdya_ik(np.eye(self.dim), stress_new)
 
-            geometric = cdya_ik(np.eye(self.dim), stress_new)
-            dsde = np.sum(np.broadcast_arrays(dsde, geometric), axis=0)
-
-        elif self.framework == "co-rotational":
-            dsde = _corotational_elasticity(decomposition, stress_new, dsde)
+        elif self.framework in ["co-rotational", "seth-hill"]:
+            # convert the elasticity tensor via the Total-Lagrange framework
+            m = self.strain_exponent
+            dsde = _seth_hill_elasticity(dxdX, decomposition, stress_new, dsde, m)
 
         return [dsde]

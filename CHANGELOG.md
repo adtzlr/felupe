@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+- Fix the fourth-order elasticity tensor of the co-rotational framework of `MaterialStrain(..., framework="co-rotational")`, which is the exact linearization of the first Piola-Kirchhoff stress tensor `P = R T` now, i.e. Newton's method converges quadratically. Before, it was an approximation (with a warning in the docstring): the elasticity tensor of the material was rotated by `R_iI R_kK C_IJKL` and the geometric part `δ_ik T_JL` of the Total-Lagrange framework was added, which is the derivative of `δF T`, not of `δR T`. Its relative error was of the order of the strains, e.g. 13% to 25% at principal stretches of 0.68 to 1.18, also without a rotation. E.g., a cube which was rotated by 90° and stretched by 30% took 210 instead of 48 iterations (linear-elastic, 12 substeps), with an increasing number of iterations per substep, and the elastic-plastic material with isotropic hardening did not converge with four substeps (now 23 iterations). Now, the elasticity tensor is evaluated by the components of the stress and of the elasticity tensor of the material in the principal axes of the stretch tensor, given by the singular value decomposition of the deformation gradient, which was evaluated for the rotation tensor before. The evaluation of the elasticity tensor is not slower. The stress tensor is unchanged. `MaterialStrain.extract()` returns the rotation tensor (as before).
+
 ## [12.0.0] - 2026-10-30
 
 ### Added

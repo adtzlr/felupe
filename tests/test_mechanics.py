@@ -1315,9 +1315,13 @@ def test_newton_custom_check():
         field, move=0.05, clamped=True, return_loadcase=True
     )
 
-    def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None):
+    def check(
+        dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, atol=0.0, reference=0.0
+    ):
         "A custom check which ignores the items."
-        return fem.tools._newton.check(dx, x, f, xtol, ftol, dof1, dof0)
+        return fem.tools._newton.check(
+            dx, x, f, xtol, ftol, dof1, dof0, atol=atol, reference=reference
+        )
 
     res = fem.newtonraphson(items=[solid], check=check, verbose=0, **loadcase)
 

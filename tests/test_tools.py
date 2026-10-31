@@ -171,16 +171,20 @@ def test_newton_simple():
 
     os.environ["FELUPE_VERBOSE"] = "true"
 
-    res = fem.tools.newtonraphson(x0, fun, jac, solve=np.linalg.solve, maxiter=32)
+    # a double root without a reference norm (no prescribed degrees of freedom and no
+    # items) converges linearly, an absolute tolerance is required
+    res = fem.tools.newtonraphson(
+        x0, fun, jac, solve=np.linalg.solve, maxiter=32, atol=1e-11
+    )
 
     os.environ.pop("FELUPE_VERBOSE")
 
-    assert abs(res.fun) < 1e-6
+    assert abs(res.fun) < 1e-11
     assert np.isclose(res.x, 3, rtol=1e-2)
 
     with pytest.raises(ValueError):
         res = fem.tools.newtonraphson(
-            x0, fun, jac, solve=np.linalg.solve, maxiter=4, verbose=False
+            x0, fun, jac, solve=np.linalg.solve, maxiter=4, verbose=False, atol=1e-11
         )
 
     with pytest.raises(ValueError):
@@ -341,6 +345,284 @@ def test_newton_body():
         kwargs={},
         **loadcase,
     )
+
+
+def test_newton_check():
+    "The convergence criterion with an absolute tolerance and a reference norm."
+
+    from felupe.tools._newton import check
+
+    f = np.array([3.0, 4.0, 1.0, 0.0])
+    dx = np.zeros(4)
+    dof1 = np.array([0, 1])
+    dof0 = np.array([2, 3])
+
+    # the reference norm is the norm on the prescribed degrees of freedom
+    xnorm, fnorm, success = check(dx, None, f, np.inf, 0.1, dof1, dof0)
+    assert np.isclose(fnorm, 5.0)
+    assert not success
+
+    # a given reference norm and an absolute tolerance
+    xnorm, fnorm, success = check(dx, None, f, np.inf, 0.1, dof1, dof0, reference=4.0)
+    assert np.isclose(fnorm, 5.0 / 4.0)
+
+    xnorm, fnorm, success = check(
+        dx, None, f, np.inf, 0.1, dof1, dof0, atol=4.0, reference=20.0
+    )
+    assert np.isclose(fnorm, 5.0 / (20.0 + 4.0 / 0.1))
+    assert success  # 5 < 4 + 0.1 * 20
+
+    # without a reference norm and without an absolute tolerance
+    zeros = np.zeros(4)
+    assert check(dx, None, zeros, np.inf, 0.1, dof1, dof0)[1:] == (0.0, True)
+    xnorm, fnorm, success = check(dx, None, f * [1, 1, 0, 0], np.inf, 0.1, dof1, dof0)
+    assert np.isinf(fnorm)
+    assert not success
+
+    # all degrees of freedom are active (no prescribed degrees of freedom)
+    xnorm, fnorm, success = check(dx, None, f, np.inf, 0.1, atol=1.0)
+    assert np.isclose(fnorm, np.sqrt(26) / (1.0 / 0.1))
+
+
+def test_newton_default_atol():
+    "The default absolute tolerance is a bound of the round-off errors."
+
+    from scipy.sparse import csr_matrix
+    from scipy.sparse.linalg import aslinearoperator
+
+    from felupe.tools._newton import default_atol
+
+    eps = np.finfo(float).eps
+    A = np.array([[2.0, -1.0], [-1.0, 2.0]])
+    x = np.array([1.0, -1.0])
+
+    atol = default_atol(A, A @ x, x)
+    assert np.isclose(atol, 10 * eps * np.linalg.norm([3.0, 3.0]))
+    assert np.isclose(default_atol(csr_matrix(A), A @ x, x), atol)
+    assert np.isclose(default_atol(A, A @ x, x, dof1=[1]), 10 * eps * 3.0)
+    assert default_atol(A, A @ x, np.zeros(2)) == 0.0
+
+    # the lowest precision of the linear equation system and of the unknowns
+    eps32 = np.finfo(np.float32).eps
+    atol32 = default_atol(A, A @ x, x.astype(np.float32))
+    assert np.isclose(atol32, 10 * eps32 * np.linalg.norm([3.0, 3.0]))
+
+    # an upper bound for batched Jacobians (e.g. of local problems)
+    B = np.ones((3, 3, 3, 3, 5))
+    y = np.ones((3, 3, 5))
+    bound = 10 * eps * np.linalg.norm(B) * np.linalg.norm(y)
+    assert np.isclose(default_atol(B, y, y), bound)
+
+    # linear operators are not supported
+    assert default_atol(aslinearoperator(A), A @ x, x) == 0.0
+
+    # the round-off errors of the deformation gradient F = 1 + du/dX in a force-free
+    # state are evaluated in the precision of the linear equation system (of the
+    # region), also for fields in single-precision
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    for dtype in [np.float64, np.float32]:
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
+        boundaries, loadcase = fem.dof.uniaxial(
+            field, clamped=True, return_loadcase=True
+        )
+        solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+        K = solid.assemble.matrix()
+        f = solid.assemble.vector().toarray()[:, 0]
+        dof1 = loadcase["dof1"]
+
+        X = region.mesh.points.ravel()
+        expected = 10 * eps * np.linalg.norm((K @ X)[dof1])
+        assert expected > 0
+        assert np.isclose(default_atol(K, f, field, dof1=dof1), expected)
+
+
+def test_newton_fun_items_reference():
+    "The reference norm of the items is the largest norm without one of the items."
+
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+
+    # a single item
+    f, reference = fem.tools.fun([solid], field, return_reference=True)
+    assert reference == 0.0
+    assert np.allclose(f, fem.tools.fun([solid], field))
+
+    # a pressure on all faces of the cube
+    regionp = fem.RegionHexahedronBoundary(mesh)
+    fieldp = fem.FieldContainer([fem.Field(regionp, dim=3)])
+    pressure = fem.SolidBodyPressure(fieldp, pressure=1.0)
+
+    f, reference = fem.tools.fun([solid, pressure], field, return_reference=True)
+    norms = [
+        np.linalg.norm(item.assemble.vector(item.field).toarray())
+        for item in [solid, pressure]
+    ]
+    assert np.isclose(reference, max(norms))
+    assert reference > 0
+
+
+def self_equilibrated(mu=8e4, p=100.0, L=10.0, n=4):
+    """A cube with a pressure on all faces and statically determinate supports, i.e.
+    the reaction forces are zero."""
+
+    mesh = fem.Cube(b=(L, L, L), n=n)
+    region = fem.RegionHexahedron(mesh)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
+
+    regionp = fem.RegionHexahedronBoundary(mesh)
+    fieldp = fem.FieldContainer([fem.Field(regionp, dim=3)])
+
+    solid = fem.SolidBody(fem.NeoHooke(mu=mu, bulk=5 * mu), field)
+    pressure = fem.SolidBodyPressure(fieldp, pressure=p)
+
+    x, y, z = mesh.points.T
+    origin = np.isclose(x, 0) & np.isclose(y, 0) & np.isclose(z, 0)
+    a = np.isclose(x, L) & np.isclose(y, 0) & np.isclose(z, 0)
+    b = np.isclose(x, 0) & np.isclose(y, L) & np.isclose(z, 0)
+
+    boundaries = {
+        "origin": fem.Boundary(displacement, mask=origin),
+        "a": fem.Boundary(displacement, mask=a, skip=(1, 0, 0)),
+        "b": fem.Boundary(displacement, mask=b, skip=(1, 1, 0)),
+    }
+    dof0, dof1 = fem.dof.partition(field, boundaries)
+    ext0 = fem.dof.apply(field, boundaries, dof0)
+
+    return [solid, pressure], dict(dof0=dof0, dof1=dof1, ext0=ext0)
+
+
+def test_newton_self_equilibrated():
+    "Forces between the items are a reference also without reaction forces."
+
+    items, loadcase = self_equilibrated()
+
+    class Trial(fem.Plugin):
+        "Check the convergence of the trial of the full Newton increment."
+
+        def __init__(self):
+            self.converged = []
+            self.success = []
+
+        def after_linear_solve(self, context, state):
+            x = context.update(state.x, state.dx)
+            f = context.fun(x)
+            self.converged.append(context.check(state.dx, x, f)[2])
+
+        def after_iteration(self, context, state):
+            self.success.append(state.success)
+
+    trial = Trial()
+    res = fem.newtonraphson(items=items, **loadcase, plugins=[trial], verbose=0)
+
+    f = res.fun
+    forces = np.linalg.norm(items[1].results.force.toarray())
+
+    # the reaction forces are zero (up to round-off errors)
+    assert np.linalg.norm(f[loadcase["dof0"]]) < 1e-6 * forces
+    assert np.linalg.norm(f[loadcase["dof1"]]) < np.sqrt(np.finfo(float).eps) * forces
+
+    # a plugin checks the convergence of a trial with the same reference norm
+    assert trial.converged == trial.success
+    assert trial.converged[-1]
+
+
+def test_newton_units():
+    "The convergence is independent of the units of the model."
+
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    iterations = []
+    fnorms = []
+
+    for scale in [1e-9, 1.0, 1e9]:
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        boundaries, loadcase = fem.dof.uniaxial(
+            field, move=0.2, clamped=True, return_loadcase=True
+        )
+        umat = fem.NeoHooke(mu=scale, bulk=2 * scale)
+        solid = fem.SolidBody(umat, field)
+        res = fem.newtonraphson(items=[solid], **loadcase, verbose=0)
+        iterations.append(res.iterations)
+        fnorms.append(res.fnorms)
+
+    assert iterations[0] == iterations[1] == iterations[2]
+    assert np.allclose(fnorms[0][:-1], fnorms[1][:-1])
+    assert np.allclose(fnorms[2][:-1], fnorms[1][:-1])
+
+
+def test_newton_rigid_body_motion_contact():
+    "A stiff solid body is moved as a rigid body to a rigid plane and compressed."
+
+    L, gap, mu = 10.0, 1.3, 8e4  # units: mm, MPa (a soft steel)
+    mesh = fem.Cube(b=(L, L, L), n=4)
+    mesh.add_points([L + gap, L / 2, L / 2])
+
+    region = fem.RegionHexahedron(mesh)
+    displacement = fem.Field(region, dim=3)
+    field = fem.FieldContainer([displacement])
+    solid = fem.SolidBody(fem.NeoHooke(mu=mu, bulk=5 * mu), field)
+    contact = fem.ContactRigidPlane(
+        field,
+        points=np.arange(mesh.npoints)[np.isclose(mesh.x, L)],
+        centerpoint=-1,
+        normal=[-1.0, 0, 0],
+        multiplier=100 * mu * L,
+    )
+    boundaries = {
+        "move": fem.Boundary(displacement, fx=0, skip=(0, 1, 1)),
+        "fixed": fem.Boundary(displacement, fx=0, skip=(1, 0, 0)),
+        "plane": fem.Boundary(displacement, fx=L + gap),
+    }
+
+    # five substeps without contact, then five substeps in contact
+    move = np.linspace(0, gap + 0.01 * L, 11)[1:]
+    step = fem.Step(
+        [solid, contact], ramp={boundaries["move"]: move}, boundaries=boundaries
+    )
+    job = fem.Job([step]).evaluate(verbose=0)
+
+    # the rigid body motions converge in one iteration
+    assert [len(fnorms) for fnorms in job.fnorms[:5]] == [1, 1, 1, 1, 1]
+    assert np.all([fnorms[-1] < 1.5e-8 for fnorms in job.fnorms])
+
+
+def test_newton_atol():
+    "A given absolute tolerance is available in all hooks."
+
+    region = fem.RegionHexahedron(fem.Cube(n=3))
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    boundaries, loadcase = fem.dof.uniaxial(
+        field, move=0.2, clamped=True, return_loadcase=True
+    )
+    solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+
+    class Tolerance(fem.Plugin):
+        def __init__(self):
+            self.atol = []
+
+        def before_newton(self, context, state):
+            self.atol.append(state.atol)
+
+        def after_iteration(self, context, state):
+            self.atol.append(state.atol)
+
+    # a given absolute tolerance
+    tolerance = Tolerance()
+    res = fem.newtonraphson(
+        items=[solid], **loadcase, atol=1e-3, plugins=[tolerance], verbose=0
+    )
+    assert np.all(np.array(tolerance.atol) == 1e-3)
+    assert res.iterations == 2  # a coarse absolute tolerance
+
+    # the default absolute tolerance is evaluated in each iteration
+    field.link(fem.FieldContainer([fem.Field(region, dim=3)]))
+    tolerance = Tolerance()
+    res = fem.newtonraphson(items=[solid], **loadcase, plugins=[tolerance], verbose=0)
+    assert tolerance.atol[0] is None
+    assert np.all(np.array(tolerance.atol[1:]) > 0)
+    assert res.iterations == 4
 
 
 def test_project():

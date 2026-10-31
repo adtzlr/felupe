@@ -61,6 +61,15 @@ class IterationState:
         data types of the linear equation system and of the unknowns. It is set after
         the assembly of the Jacobian in the first iteration, i.e. it is None in the
         hooks ``before_newton`` and ``before_iteration`` of the first iteration.
+    atol : float or None, optional
+        The absolute tolerance of the norm of the objective function on the active
+        degrees of freedom of the current iteration (default is None). If no absolute
+        tolerance is given to :func:`~felupe.newtonraphson`, it is the bound of the
+        round-off errors of the objective function, which is evaluated by the check of
+        the convergence of each iteration (for the updated unknowns), see
+        :func:`~felupe.newtonraphson`. Then, it is None in the hooks ``before_newton``,
+        ``before_iteration``, ``before_linear_solve`` and ``after_linear_solve`` of the
+        first iteration.
     error : bool or None, optional
         A flag if an error occured in the current iteration (default is None).
     x : felupe.FieldContainer or ndarray or None, optional
@@ -136,7 +145,11 @@ class IterationState:
     Newton-Raphson method re-uses the values of the objective function and no
     additional assembly is performed. If the objective function is evaluated for more
     than one trial, the accepted trial must be evaluated last, because the (temporary)
-    state variables of the items belong to the last evaluation.
+    state variables of the items belong to the last evaluation. The reference norm of
+    the check of the convergence (the forces between the items, see
+    :func:`~felupe.newtonraphson`) is also taken from the last evaluation; it is
+    only used for the values of the objective function which were returned by the
+    last evaluation.
 
     ..  note::
 
@@ -164,6 +177,7 @@ class IterationState:
         xnorm=None,
         success=None,
         tol=None,
+        atol=None,
         error=None,
         x=None,
         dx=None,
@@ -177,6 +191,7 @@ class IterationState:
         self.xnorm = xnorm
         self.success = success
         self.tol = tol
+        self.atol = atol
         self.error = error
         self.x = x
         self.dx = dx
@@ -209,14 +224,15 @@ class NewtonResult:
 
     Notes
     -----
-    The objective function's norm is relative based on the function values on the
-    prescribed degrees of freedom :math:`(\bullet)_0`. A small number
-    :math:`\varepsilon` is added to avoid numeric instabilities.
+    The norms of the objective function are the norms of the objective function on the
+    active degrees of freedom :math:`(\bullet)_1`, relative to the sum of a reference
+    norm :math:`f_\text{ref}` and the ratio of the absolute and the relative
+    tolerances, see :func:`~felupe.newtonraphson`.
 
     ..  math::
 
         \text{norm}(\boldsymbol{f}) = \frac{||\boldsymbol{f}_1||}
-            {\varepsilon + ||\boldsymbol{f}_0||}
+            {f_\text{ref} + \text{atol} / \text{tol}}
 
     """
 
@@ -357,8 +373,38 @@ def _restore(x, snapshot):
             field.values = values
 
 
-def fun_items(items, x, parallel=False):
-    "Assemble the sparse system vector for each item."
+def fun_items(items, x, parallel=False, return_reference=False):
+    r"""Assemble the sparse system vector for each item and return the sum of the
+    vectors of all items (the objective function).
+
+    Parameters
+    ----------
+    items : list
+        List with items which provide methods for assembly, e.g. like
+        :class:`felupe.SolidBody`.
+    x : felupe.FieldContainer
+        The global (top-level) field container with the unknowns.
+    parallel : bool, optional
+        A flag to assemble the vectors in parallel (default is False).
+    return_reference : bool, optional
+        A flag to return the reference norm of the items in addition to the objective
+        function (default is False).
+
+    Returns
+    -------
+    ndarray or tuple of (ndarray, float)
+        The objective function :math:`\boldsymbol{f} = \sum_i \boldsymbol{f}_i` and, if
+        ``return_reference`` is True, the reference norm of the items
+        :math:`\max_i ||\boldsymbol{f} - \boldsymbol{f}_i||`.
+
+    Notes
+    -----
+    The reference norm of the items is the largest norm of the objective function
+    without one of the items. This is the norm of the forces which the other items
+    exert on the item, e.g. the forces of a :class:`~felupe.ContactRigidPlane` or of a
+    :class:`~felupe.SolidBodyPressure` on a :class:`~felupe.SolidBody`. It is zero for a
+    single item.
+    """
 
     # init keyword arguments
     kwargs = {"parallel": parallel}
@@ -373,6 +419,7 @@ def fun_items(items, x, parallel=False):
     # assume a matrix type based on the first field values
     dtype = x.fields[0].values.dtype
     vector = csr_matrix(shape, dtype=dtype)
+    vectors = []
 
     for body in items:
         # assemble vector
@@ -387,7 +434,22 @@ def fun_items(items, x, parallel=False):
         # add vector
         vector += r
 
-    return vector.toarray()[:, 0]
+        if return_reference:
+            vectors.append(r)
+
+    f = vector.toarray()[:, 0]
+
+    if return_reference:
+        reference = 0.0
+
+        if len(vectors) > 1:
+            reference = max(
+                float(np.linalg.norm(f - r.toarray()[:, 0])) for r in vectors
+            )
+
+        return f, reference
+
+    return f
 
 
 def jac_items(items, x, parallel=False):
@@ -455,14 +517,66 @@ def solve(A, b, x, dof1, dof0, offsets=None, ext0=None, solver=fesolve.SuperLUSo
     return dx
 
 
-def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
-    """Check the convergence of the Newton-Raphson method (without side effects).
+def check(
+    dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, atol=0.0, reference=0.0
+):
+    r"""Check the convergence of the Newton-Raphson method (without side effects).
 
-    The norm of the residuals of the active degrees of freedom is divided by the norm of
-    the residuals (the reaction forces) of the prescribed degrees of freedom. The
-    argument ``items`` is not used, the state variables of the items are updated by
-    :func:`~felupe.newtonraphson` after a converged iteration, see
-    :func:`update_statevars`.
+    Parameters
+    ----------
+    dx : ndarray
+        The increment of the unknowns.
+    x : felupe.FieldContainer or ndarray
+        The updated unknowns (not used).
+    f : ndarray
+        The values of the objective function, evaluated at the updated unknowns.
+    xtol : float
+        The tolerance of the norm of the increment.
+    ftol : float
+        The relative tolerance of the norm of the objective function.
+    dof1 : ndarray or None, optional
+        1d-array of int with all active degrees of freedom (default is None). If None,
+        all degrees of freedom are active.
+    dof0 : ndarray or None, optional
+        1d-array of int with all prescribed degrees of freedom (default is None).
+    items : list or None, optional
+        A list of items (not used). The state variables of the items are updated by
+        :func:`~felupe.newtonraphson` after a converged iteration, see
+        :func:`update_statevars`.
+    atol : float, optional
+        The absolute tolerance of the norm of the objective function on the active
+        degrees of freedom, in the units of the objective function (default is 0.0).
+    reference : float, optional
+        An additional reference norm of the objective function, e.g. the reference norm
+        of the items, see :func:`fun_items` (default is 0.0).
+
+    Returns
+    -------
+    xnorm : float
+        The norm of the increment.
+    fnorm : float
+        The norm of the objective function on the active degrees of freedom, relative to
+        the sum of the reference norm and the ratio of the absolute and the relative
+        tolerances.
+    success : bool
+        A flag if the iteration has converged, i.e. if ``fnorm < ftol`` and
+        ``xnorm < xtol``.
+
+    Notes
+    -----
+    The reference norm :math:`f_\text{ref}` is the larger of the norm of the objective
+    function on the prescribed degrees of freedom (the reaction forces) and the given
+    reference norm. The iteration has converged if the norm of the objective function on
+    the active degrees of freedom is lower than the absolute tolerance plus the relative
+    tolerance times the reference norm.
+
+    ..  math::
+
+        \text{fnorm} = \frac{||\boldsymbol{f}_1||}
+            {f_\text{ref} + \text{atol} / \text{ftol}} < \text{ftol}
+            \quad \Leftrightarrow \quad
+            ||\boldsymbol{f}_1|| < \text{atol} + \text{ftol}\ f_\text{ref}
+
     """
 
     def sumnorm(x):
@@ -476,8 +590,17 @@ def check(dx, x, f, xtol, ftol, dof1=None, dof0=None, items=None, eps=1e-3):
     if dof0 is None:
         dof0 = slice(0, 0)
 
-    fnorm = sumnorm(f[dof1]) / (eps + sumnorm(f[dof0]))
-    success = fnorm < ftol and xnorm < xtol
+    reference = max(sumnorm(f[dof0]), reference)
+    denominator = reference + (atol / ftol if atol > 0 and ftol > 0 else 0.0)
+    numerator = sumnorm(f[dof1])
+
+    if denominator > 0:
+        fnorm = numerator / denominator
+    else:
+        # an exact solution converges, also without a reference and a tolerance
+        fnorm = 0.0 if numerator == 0 else np.inf
+
+    success = bool(fnorm < ftol and xnorm < xtol)
 
     return xnorm, fnorm, success
 
@@ -486,6 +609,33 @@ def _dtype(a):
     "Return the data type of an array-like object."
     dtype = getattr(a, "dtype", None)
     return np.asarray(a).dtype if dtype is None else dtype
+
+
+def _values(x):
+    "Return a list with the value arrays of the unknowns, in the order of the dofs."
+    fields = getattr(x, "fields", None)
+    if fields is None:
+        return [x]
+    return [field.values for field in fields]
+
+
+def _epsilon(A, b, x=None):
+    """Return the machine epsilon of the lowest precision of the linear equation system
+    with the Jacobian ``A`` and the objective function ``b`` and of the unknowns ``x``,
+    see :func:`default_tol`."""
+
+    system = np.result_type(_dtype(A), _dtype(b))
+
+    if not np.issubdtype(system, np.inexact):
+        system = np.dtype(float)
+
+    dtypes = [system]
+
+    if x is not None:
+        values = _values(x)
+        dtypes += [t for t in map(_dtype, values) if np.issubdtype(t, np.inexact)]
+
+    return max(np.finfo(dtype).eps for dtype in dtypes)
 
 
 def default_tol(A, b, x=None):
@@ -503,21 +653,132 @@ def default_tol(A, b, x=None):
     types of the unknowns without a machine epsilon are ignored.
     """
 
-    system = np.result_type(_dtype(A), _dtype(b))
+    return float(np.sqrt(_epsilon(A, b, x)))
 
-    if not np.issubdtype(system, np.inexact):
-        system = np.dtype(float)
 
-    dtypes = [system]
+def _coordinates(x):
+    """Return the coordinates of the points of the meshes for the fields with as many
+    components as the dimension of their meshes, e.g. of displacements, and zeros for
+    the other fields, in the order of the degrees of freedom (or None for an array)."""
 
-    if x is not None:
-        fields = getattr(x, "fields", None)
-        values = [x] if fields is None else [field.values for field in fields]
-        dtypes += [t for t in map(_dtype, values) if np.issubdtype(t, np.inexact)]
+    fields = getattr(x, "fields", None)
 
-    eps = max(np.finfo(dtype).eps for dtype in dtypes)
+    if fields is None:
+        return None
 
-    return float(np.sqrt(eps))
+    coordinates = []
+
+    for field in fields:
+        mesh = getattr(getattr(field, "region", None), "mesh", None)
+        points = getattr(mesh, "points", None)
+
+        if points is not None and np.shape(points) == np.shape(field.values):
+            coordinates.append(np.ravel(points))
+        else:
+            coordinates.append(np.zeros(np.size(field.values)))
+
+    return np.concatenate(coordinates)
+
+
+def default_atol(A, b, x, dof1=None, factor=10.0):
+    r"""Return the default absolute tolerance of the Newton-Raphson method, a bound of
+    the round-off errors of the objective function on the active degrees of freedom,
+    for the Jacobian ``A``, the objective function ``b`` and the unknowns ``x``.
+
+    Parameters
+    ----------
+    A : sparse matrix or ndarray
+        The Jacobian of the objective function.
+    b : ndarray
+        The values of the objective function.
+    x : felupe.FieldContainer or ndarray
+        The unknowns.
+    dof1 : ndarray or None, optional
+        1d-array of int with all active degrees of freedom (default is None). If None,
+        all degrees of freedom are active.
+    factor : float, optional
+        A safety factor (default is 10).
+
+    Returns
+    -------
+    float
+        The bound of the round-off errors of the objective function on the active
+        degrees of freedom, in the units of the objective function. If the absolute
+        values of the Jacobian can't be evaluated, e.g. for a linear operator, it is
+        zero.
+
+    Notes
+    -----
+    The objective function, e.g. the internal forces of a solid body, is a sum of many
+    contributions, which cancel each other out in a state of equilibrium. Its round-off
+    errors are of the order of the machine epsilon :math:`\varepsilon` times the
+    absolute values of the contributions. These are estimated by the products of the
+    absolute values of the Jacobian and of the unknowns, which include the round-off
+    errors of the gradients of the unknowns, e.g. of a rigid body motion, and by the
+    product of the Jacobian and the coordinates :math:`\boldsymbol{X}` of the points
+    of the meshes, which are the forces of a deformation gradient of
+    :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`. The deformation gradient
+    :math:`\boldsymbol{F} = \boldsymbol{1} + \partial \boldsymbol{u} / \partial
+    \boldsymbol{X}` is represented with an absolute precision of
+    :math:`\varepsilon\ \boldsymbol{1}`, also in a force-free state.
+
+    ..  math::
+
+        \text{atol} = c\ \left|\left| \left(
+            \varepsilon_x\ |\boldsymbol{K}|\ |\boldsymbol{x}|
+            + \varepsilon_K\ |\boldsymbol{K}\ \boldsymbol{X}|
+            \right)_1 \right|\right|
+
+    The coordinates are only taken for the fields with as many components as the
+    dimension of their meshes, e.g. for displacements, and they are zero for other
+    fields and for unknowns which are given as array. Each row of the products has the
+    unit of the objective function, also for mixed field formulations. The machine
+    epsilon :math:`\varepsilon_x` is the one of the lowest precision of the linear
+    equation system and of the unknowns and :math:`\varepsilon_K` is the one of the
+    precision of the linear equation system, in which the deformation gradient is
+    evaluated, see :func:`default_tol`. E.g., for fields in single-precision on a
+    region in double-precision, the deformation gradient is evaluated in
+    double-precision. The safety factor is :math:`c=10`. Unlike a fixed absolute
+    tolerance, this bound is invariant to the units of the model.
+
+    If the Jacobian is not a matrix whose number of columns is the number of the
+    unknowns, e.g. for the batched Jacobians of local problems at the quadrature points
+    (see :func:`~felupe.math.solve_2d`), the absolute tolerance is the upper bound
+    :math:`c\ \varepsilon_x\ ||\boldsymbol{K}||\ ||\boldsymbol{x}||` (with the
+    Frobenius norm of the Jacobian) and the active degrees of freedom are not
+    considered.
+    """
+
+    if dof1 is None:
+        dof1 = slice(None)
+
+    try:
+        absA = abs(A)
+    except TypeError:
+        return 0.0
+
+    absx = np.abs(np.concatenate([np.ravel(values) for values in _values(x)]))
+    shape = getattr(A, "shape", np.shape(A))
+
+    if len(shape) != 2 or shape[1] != absx.size:
+        # e.g. batched Jacobians of local problems at the quadrature points, which
+        # are solved by `math.solve_2d()`: an upper bound by the norms
+        bound = np.linalg.norm(np.asarray(absA)) * np.linalg.norm(absx)
+        return float(factor * _epsilon(A, b, x) * bound)
+
+    # round-off errors of the gradients of the unknowns, e.g. of a rigid body motion,
+    # in the lowest precision of the linear equation system and of the unknowns
+    estimate = _epsilon(A, b, x) * np.ravel(np.asarray(absA @ absx))
+
+    # round-off errors of the deformation gradient F = 1 + du/dX, which is evaluated
+    # in the precision of the linear equation system (e.g. of the region)
+    coordinates = _coordinates(x)
+
+    if coordinates is not None:
+        forces = np.ravel(np.asarray(A @ coordinates))
+        estimate = estimate + _epsilon(A, b) * np.abs(forces)
+
+    return float(factor * np.linalg.norm(estimate[dof1]))
 
 
 def update_statevars(items):
@@ -557,6 +818,7 @@ def newtonraphson(
     args=(),
     kwargs=None,
     tol=None,
+    atol=None,
     items=None,
     dof1=None,
     dof0=None,
@@ -593,20 +855,33 @@ def newtonraphson(
         ``update = lambda x0, dx: x``.
     check : callable, optional
         Callable to check the convergence with the signature
-        ``xnorm, fnorm, success = check(dx, x, f, xtol, ftol, dof1, dof0, items)``.
-        The state variables of the items are updated by the Newton-Raphson method after
-        a converged iteration, i.e. a custom ``check`` doesn't update them.
+        ``xnorm, fnorm, success = check(dx, x, f, xtol, ftol, dof1, dof0, items, atol,
+        reference)``. The state variables of the items are updated by the
+        Newton-Raphson method after a converged iteration, i.e. a custom ``check``
+        doesn't update them.
+
+        ..  versionchanged:: 12.1.0
+            The arguments ``atol`` and ``reference`` are passed to ``check``.
+
     tol : float or None, optional
-        Tolerance value to check if the function has converged. If None, the tolerance
-        is the square root of the machine epsilon of the lowest precision of the linear
-        equation system (the common data type of the Jacobian and the objective
-        function) and of the unknowns, e.g. ``1.490e-8`` for ``float64`` and
+        Relative tolerance value to check if the function has converged. If None, the
+        tolerance is the square root of the machine epsilon of the lowest precision of
+        the linear equation system (the common data type of the Jacobian and the
+        objective function) and of the unknowns, e.g. ``1.490e-8`` for ``float64`` and
         ``3.453e-4`` if the linear equation system or the unknowns are ``float32``, see
         the notes below. Default is None.
 
         ..  versionchanged:: 12.0.0
             The default tolerance depends on the data types of the linear equation
             system and of the unknowns. Before, it was ``1.490e-8`` for all data types.
+
+    atol : float or None, optional
+        Absolute tolerance value of the norm of the objective function on the active
+        degrees of freedom, in the units of the objective function, e.g. of forces. If
+        None, it is a bound of the round-off errors of the objective function, which is
+        evaluated in each iteration, see the notes below. Default is None.
+
+        ..  versionadded:: 12.1.0
 
     items : list or None, optional
         List with items which provide methods for assembly, e.g. like
@@ -717,7 +992,97 @@ def newtonraphson(
 
     Then, the nonlinear equilibrium equations are evaluated with the updated unknowns
     :math:`f(x)`. The procedure is repeated until convergence is reached, i.e. until the
-    norm of the objective function is lower than the tolerance.
+    norm of the objective function on the active degrees of freedom :math:`f_1(x)` is
+    lower than the absolute tolerance plus the relative tolerance times a reference
+    norm, see Eq. :eq:`newton-check`.
+
+    ..  math::
+        :label: newton-check
+
+        ||f_1(x)|| < \text{atol} + \text{tol}\ f_\text{ref}
+
+    The reference norm is the larger of the norm of the objective function on the
+    prescribed degrees of freedom :math:`f_0(x)` (the reaction forces) and, for a list
+    of items, the largest norm of the objective function without one of the items, see
+    Eq. :eq:`newton-reference`, where :math:`f_i(x)` is the assembled vector of the
+    item :math:`i`.
+
+    ..  math::
+        :label: newton-reference
+
+        f_\text{ref} = \max \left( ||f_0(x)||, \max_i ||f(x) - f_i(x)|| \right)
+
+    The norm of the objective function without one of the items is the norm of the
+    forces which the other items exert on this item, e.g. the forces of a
+    :class:`~felupe.ContactRigidPlane` or of a :class:`~felupe.SolidBodyPressure` on a
+    :class:`~felupe.SolidBody`. Hence, the criterion is relative also for forces which
+    are not reacted on the prescribed degrees of freedom, e.g. for a solid body which is
+    supported by a contact or for a self-equilibrated pressure on a solid body with
+    statically determinate supports. It is zero for a single item, i.e. the reference
+    norm is the norm of the reaction forces.
+
+    In a (nearly) force-free state, e.g. for a rigid body motion of a solid body before
+    it gets in contact, the reference norm is zero up to round-off errors. Then, the
+    absolute tolerance is used. The objective function is a sum of many contributions,
+    e.g. of the cells of a solid body, which cancel each other out in a state of
+    equilibrium. Its round-off errors are of the order of the machine epsilon
+    :math:`\varepsilon` times the absolute values of these contributions, which depend
+    on the units and on the stiffness of the model. If no absolute tolerance is given,
+    it is a bound of the round-off errors of the objective function on the active
+    degrees of freedom, see Eq. :eq:`newton-atol`, with a safety factor :math:`c=10`.
+    The first product of the absolute values of the Jacobian of the iteration and of
+    the updated unknowns, e.g. of the displacements, estimates the round-off errors of
+    the gradients of the unknowns, e.g. of a rigid body motion. The second product of
+    the Jacobian and the coordinates :math:`X` of the points of the meshes (only for
+    the fields with as many components as the dimension of their meshes, e.g. for
+    displacements) are the forces of a deformation gradient of
+    :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`, i.e. it estimates the
+    round-off errors of the deformation gradient
+    :math:`\boldsymbol{F} = \boldsymbol{1} + \partial \boldsymbol{u} / \partial
+    \boldsymbol{X}`, which is represented with an absolute precision of
+    :math:`\varepsilon_K \boldsymbol{1}`, e.g. in the undeformed state. Each row of the
+    products has the unit of the objective function, also for mixed field
+    formulations.
+
+    ..  math::
+        :label: newton-atol
+
+        \text{atol} = c \left|\left| \left(
+            \varepsilon_x\ |K(x_n)|\ |x| + \varepsilon_K\ |K(x_n)\ X| \right)_1
+            \right|\right|
+
+    It is evaluated by the check of the convergence of each iteration and it is
+    invariant to the units of the model. The machine epsilon :math:`\varepsilon_x` is
+    the one of the lowest precision of the linear equation system and of the unknowns
+    and :math:`\varepsilon_K` is the one of the precision of the linear equation
+    system, see below. E.g., for fields in single-precision on a region in
+    double-precision, the deformation gradient is evaluated in double-precision. For
+    batched Jacobians of local problems at the quadrature points, e.g. solved by
+    :func:`~felupe.math.solve_2d`, the absolute tolerance is the upper bound
+    :math:`c\ \varepsilon_x\ ||K(x_n)||\ ||x||`. A function without a reference norm,
+    i.e. without prescribed degrees of freedom and without items, is checked by the
+    absolute tolerance only, e.g. a double root may require a given absolute
+    tolerance. The norms
+    of the objective function of the iterations, e.g. ``NewtonResult.fnorms``, are
+    relative norms, see Eq. :eq:`newton-fnorm`, i.e. the iteration has converged if
+    the relative norm is lower than the relative tolerance.
+
+    ..  math::
+        :label: newton-fnorm
+
+        \text{norm}(f) = \frac{||f_1(x)||}{f_\text{ref} + \text{atol} / \text{tol}}
+
+    ..  versionchanged:: 12.1.0
+        The reference norm includes the forces between the items and the absolute
+        tolerance is a bound of the round-off errors of the objective function. Before,
+        the iteration has converged if :math:`||f_1(x)|| / (10^{-3} + ||f_0(x)||)` was
+        lower than the tolerance, i.e. with an absolute tolerance of
+        :math:`10^{-3}\ \text{tol}` in the units of the objective function. Hence,
+        e.g. a rigid body motion of a stiff solid body before it gets in contact did
+        not converge, because the round-off errors of the forces exceeded the
+        absolute tolerance, and models with small forces converged too early, because
+        the absolute tolerance exceeded the relative tolerance times the reaction
+        forces.
 
     The attainable norm of the objective function is limited by the precision of its
     data type and by the precision of the unknowns. An increment which is smaller than
@@ -810,9 +1175,9 @@ def newtonraphson(
     <BLANKLINE>
     | # | norm(fun) |  norm(dx) |
     |---|-----------|-----------|
-    | 1 | 7.553e-02 | 1.898e+00 |
-    | 2 | 1.310e-03 | 5.091e-02 |
-    | 3 | 3.086e-07 | 6.698e-04 |
+    | 1 | 7.615e-02 | 1.898e+00 |
+    | 2 | 1.321e-03 | 5.091e-02 |
+    | 3 | 3.112e-07 | 6.698e-04 |
     | 4 | ...e-14 | ...e-07 |
     <BLANKLINE>
     Converged in 4 iterations ...
@@ -857,16 +1222,40 @@ def newtonraphson(
     if kwargs is None:
         kwargs = {}
 
+    # the objective function and the reference norm of the items of the last evaluation
+    last = {"fun": None, "reference": 0.0}
+
     def evaluate(x):
         "Evaluate the objective function for given unknowns."
         if items is not None:
-            return fun_items(items, x, *args, **kwargs)
+            f, reference = fun_items(items, x, *args, return_reference=True, **kwargs)
+            last["fun"], last["reference"] = f, reference
+            return f
         return fun(x, *args, **kwargs)
+
+    def reference(f):
+        "Return the reference norm of the items for given values of the objective."
+        return last["reference"] if f is last["fun"] else 0.0
+
+    def absolute_tol(x, f):
+        "Return the absolute tolerance for the updated unknowns of the iteration."
+        if atol is not None:
+            return atol
+        return default_atol(state.jac, f, x, dof1=dof1)
 
     def converged(dx, x, f):
         "Check the convergence for given unknowns, e.g. of a trial of a plugin."
         return check(
-            dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=None
+            dx=dx,
+            x=x,
+            f=f,
+            xtol=np.inf,
+            ftol=tol,
+            dof1=dof1,
+            dof0=dof0,
+            items=None,
+            atol=absolute_tol(x, f),
+            reference=reference(f),
         )
 
     context = Context(
@@ -880,7 +1269,7 @@ def newtonraphson(
     )
 
     # one state for all iterations, its attributes are updated in-place
-    state = IterationState(tol=tol, x=x)
+    state = IterationState(tol=tol, atol=atol, x=x)
     dispatcher.trigger("before_newton", context, state)
 
     f = evaluate(x)
@@ -943,8 +1332,20 @@ def newtonraphson(
             x = update(x, dx)
             f = evaluate(x)
 
+        # the absolute tolerance depends on the updated unknowns of the iteration
+        state.atol = absolute_tol(x, f)
+
         xnorm, fnorm, success = check(
-            dx=dx, x=x, f=f, xtol=np.inf, ftol=tol, dof1=dof1, dof0=dof0, items=items
+            dx=dx,
+            x=x,
+            f=f,
+            xtol=np.inf,
+            ftol=tol,
+            dof1=dof1,
+            dof0=dof0,
+            items=items,
+            atol=state.atol,
+            reference=reference(f),
         )
 
         if success and items is not None:

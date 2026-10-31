@@ -657,9 +657,11 @@ def default_tol(A, b, x=None):
 
 
 def _coordinates(x):
-    """Return the coordinates of the points of the meshes for the fields with as many
-    components as the dimension of their meshes, e.g. of displacements, and zeros for
-    the other fields, in the order of the degrees of freedom (or None for an array)."""
+    """Return the coordinates of the points of the meshes, relative to the centroids of
+    the points of the meshes, for the fields with as many components as the dimension
+    of their meshes, e.g. of displacements, and zeros for the other fields, in the order
+    of the degrees of freedom (or None for an array). The relative coordinates don't
+    depend on the location of the meshes."""
 
     fields = getattr(x, "fields", None)
 
@@ -673,7 +675,7 @@ def _coordinates(x):
         points = getattr(mesh, "points", None)
 
         if points is not None and np.shape(points) == np.shape(field.values):
-            coordinates.append(np.ravel(points))
+            coordinates.append(np.ravel(points - np.mean(points, axis=0)))
         else:
             coordinates.append(np.zeros(np.size(field.values)))
 
@@ -716,7 +718,8 @@ def default_atol(A, b, x, dof1=None, factor=10.0):
     absolute values of the Jacobian and of the unknowns, which include the round-off
     errors of the gradients of the unknowns, e.g. of a rigid body motion, and by the
     product of the Jacobian and the coordinates :math:`\boldsymbol{X}` of the points
-    of the meshes, which are the forces of a deformation gradient of
+    of the meshes relative to their centroids :math:`\bar{\boldsymbol{X}}`, which are
+    the forces of a deformation gradient of
     :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`. The deformation gradient
     :math:`\boldsymbol{F} = \boldsymbol{1} + \partial \boldsymbol{u} / \partial
     \boldsymbol{X}` is represented with an absolute precision of
@@ -726,12 +729,18 @@ def default_atol(A, b, x, dof1=None, factor=10.0):
 
         \text{atol} = c\ \left|\left| \left(
             \varepsilon_x\ |\boldsymbol{K}|\ |\boldsymbol{x}|
-            + \varepsilon_K\ |\boldsymbol{K}\ \boldsymbol{X}|
+            + \varepsilon_K\ |\boldsymbol{K}\ (\boldsymbol{X} - \bar{\boldsymbol{X}})|
             \right)_1 \right|\right|
 
     The coordinates are only taken for the fields with as many components as the
     dimension of their meshes, e.g. for displacements, and they are zero for other
-    fields and for unknowns which are given as array. Each row of the products has the
+    fields and for unknowns which are given as array. For items which are invariant to
+    a rigid body translation, e.g. a solid body or a contact, the product of the
+    Jacobian and a rigid body translation is zero, i.e. only the differences of the
+    coordinates are relevant. Items which resist a rigid body translation, e.g. a
+    :class:`~felupe.CartesianConstraint`, would depend on the location of the meshes.
+    Hence, the coordinates relative to the centroids of the points of the meshes are
+    used, i.e. the absolute tolerance doesn't depend on the location of the meshes. Each row of the products has the
     unit of the objective function, also for mixed field formulations. The machine
     epsilon :math:`\varepsilon_x` is the one of the lowest precision of the linear
     equation system and of the unknowns and :math:`\varepsilon_K` is the one of the
@@ -1033,23 +1042,26 @@ def newtonraphson(
     The first product of the absolute values of the Jacobian of the iteration and of
     the updated unknowns, e.g. of the displacements, estimates the round-off errors of
     the gradients of the unknowns, e.g. of a rigid body motion. The second product of
-    the Jacobian and the coordinates :math:`X` of the points of the meshes (only for
-    the fields with as many components as the dimension of their meshes, e.g. for
-    displacements) are the forces of a deformation gradient of
+    the Jacobian and the coordinates :math:`X` of the points of the meshes relative to
+    their centroids :math:`\bar{X}` (only for the fields with as many components as the
+    dimension of their meshes, e.g. for displacements) are the forces of a deformation
+    gradient of
     :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`, i.e. it estimates the
     round-off errors of the deformation gradient
     :math:`\boldsymbol{F} = \boldsymbol{1} + \partial \boldsymbol{u} / \partial
     \boldsymbol{X}`, which is represented with an absolute precision of
     :math:`\varepsilon_K \boldsymbol{1}`, e.g. in the undeformed state. Each row of the
     products has the unit of the objective function, also for mixed field
-    formulations.
+    formulations. The relative coordinates don't depend on the location of the meshes,
+    also for items which resist a rigid body translation, e.g. a
+    :class:`~felupe.CartesianConstraint`.
 
     ..  math::
         :label: newton-atol
 
         \text{atol} = c \left|\left| \left(
-            \varepsilon_x\ |K(x_n)|\ |x| + \varepsilon_K\ |K(x_n)\ X| \right)_1
-            \right|\right|
+            \varepsilon_x\ |K(x_n)|\ |x| + \varepsilon_K\ |K(x_n)\ (X - \bar{X})|
+            \right)_1 \right|\right|
 
     It is evaluated by the check of the convergence of each iteration and it is
     invariant to the units of the model. The machine epsilon :math:`\varepsilon_x` is

@@ -430,10 +430,54 @@ def test_newton_default_atol():
         f = solid.assemble.vector().toarray()[:, 0]
         dof1 = loadcase["dof1"]
 
-        X = region.mesh.points.ravel()
+        points = region.mesh.points
+        X = (points - points.mean(axis=0)).ravel()
         expected = 10 * eps * np.linalg.norm((K @ X)[dof1])
         assert expected > 0
         assert np.isclose(default_atol(K, f, field, dof1=dof1), expected)
+
+
+def test_newton_default_atol_location():
+    "The default absolute tolerance doesn't depend on the location of the mesh."
+
+    from felupe.tools._newton import default_atol
+
+    atol = []
+    iterations = []
+
+    for offset in [0.0, 1e3, 1e9]:
+        mesh = fem.Cube(n=3)
+        x = mesh.x.copy()
+        mesh.points += offset
+
+        region = fem.RegionHexahedron(mesh)
+        displacement = fem.Field(region, dim=3)
+        field = fem.FieldContainer([displacement])
+        solid = fem.SolidBody(fem.NeoHooke(mu=1.0, bulk=2.0), field)
+
+        # a penalty-based support resists a rigid body translation
+        support = fem.CartesianConstraint(
+            field, points=np.arange(mesh.npoints)[np.isclose(x, 0)], multiplier=1e3
+        )
+
+        right = np.isclose(x, 1)
+        boundaries = {
+            "right": fem.Boundary(displacement, mask=right, skip=(1, 0, 0)),
+            "move": fem.Boundary(displacement, mask=right, skip=(0, 1, 1), value=0.2),
+        }
+        dof0, dof1 = fem.dof.partition(field, boundaries)
+        ext0 = fem.dof.apply(field, boundaries, dof0)
+
+        res = fem.newtonraphson(
+            items=[solid, support], dof0=dof0, dof1=dof1, ext0=ext0, verbose=0
+        )
+        iterations.append(res.iterations)
+
+        K = fem.tools.jac([solid, support], field)
+        atol.append(default_atol(K, res.fun, field, dof1=dof1))
+
+    assert iterations[0] == iterations[1] == iterations[2]
+    assert np.allclose(atol, atol[0], rtol=1e-6)
 
 
 def test_newton_fun_items_reference():

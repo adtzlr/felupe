@@ -1044,6 +1044,163 @@ def test_composite(close_figs=True):
     (d2WdFdF,) = umat.hessian([F, None])
 
 
+def test_composite_statevars():
+    "Each material of a composite material keeps its own state variables."
+
+    def viscoelastic(eta):
+        return fem.Hyperelastic(
+            fem.finite_strain_viscoelastic, mu=1.0, eta=eta, nstatevars=6
+        )
+
+    def deformation_gradient(stretch, shear):
+        F = np.diag([stretch, 1 / np.sqrt(stretch), 1 / np.sqrt(stretch)])
+        F[0, 1] = shear
+        return F.reshape(3, 3, 1, 1)
+
+    nh = fem.NeoHooke(mu=1.0, bulk=5.0)
+    a, b = viscoelastic(eta=1.0), viscoelastic(eta=10.0)
+
+    # the state variables of the materials are concatenated, independent of the order
+    for umat in [nh & a, a & nh]:
+        assert umat.x[-1].shape == (6,)
+
+    ab = a & b
+    assert ab.x[-1].shape == (12,)
+    assert (ab & nh).x[-1].shape == (12,)
+    assert (nh & ab).x[-1].shape == (12,)
+
+    # the composite material is equal to the sum of the (independent) materials
+    sa, sb = np.zeros((6, 1, 1)), np.zeros((6, 1, 1))
+    statevars = {"nh & a": sa, "a & nh": sa, "ab": np.zeros((12, 1, 1))}
+    composites = {"nh & a": nh & a, "a & nh": a & nh, "ab": ab}
+
+    for stretch, shear in zip([1.1, 1.3, 1.5, 1.2], [0.0, 0.1, 0.2, 0.1]):
+        F = deformation_gradient(stretch, shear)
+
+        Pnh, _ = nh.gradient([F, np.zeros((0, 1, 1))])
+        Pa, sa_new = a.gradient([F, sa], dtime=0.5)
+        Pb, sb_new = b.gradient([F, sb], dtime=0.5)
+        (Anh,) = nh.hessian([F, np.zeros((0, 1, 1))])
+        (Aa,) = a.hessian([F, sa], dtime=0.5)
+        (Ab,) = b.hessian([F, sb], dtime=0.5)
+
+        expected = {
+            "nh & a": (Pnh + Pa, Anh + Aa, sa_new),
+            "a & nh": (Pnh + Pa, Anh + Aa, sa_new),
+            "ab": (Pa + Pb, Aa + Ab, np.concatenate([sa_new, sb_new])),
+        }
+
+        for key, umat in composites.items():
+            P, statevars_new = umat.gradient([F, statevars[key]], dtime=0.5)
+            (A,) = umat.hessian([F, statevars[key]], dtime=0.5)
+
+            assert np.allclose(P, expected[key][0])
+            assert np.allclose(A, expected[key][1])
+            assert np.allclose(statevars_new, expected[key][2])
+
+            statevars[key] = statevars_new
+
+        sa, sb = sa_new, sb_new
+
+    # nested composite materials
+    abc = a & b & viscoelastic(eta=0.1)
+    assert abc.x[-1].shape == (18,)
+    P, statevars_new = abc.gradient([F, np.zeros((18, 1, 1))], dtime=0.5)
+    assert statevars_new.shape == (18, 1, 1)
+
+    # state variables of a wrong size
+    with pytest.raises(ValueError, match="must have 12 items"):
+        ab.gradient([F, np.zeros((6, 1, 1))], dtime=0.5)
+
+    class Elastic:
+        "A material without state variables, which returns None as state variables."
+
+        def __init__(self):
+            self.x = [np.eye(3), np.zeros(0)]
+            self.kwargs = {}
+
+        def gradient(self, x):
+            return [x[0] - fem.math.identity(x[0]), None]
+
+        def hessian(self, x):
+            return [np.zeros((3, 3, 3, 3, *x[0].shape[2:]))]
+
+    s0 = np.zeros((6, 1, 1))
+    Pa, sa_new = a.gradient([F, s0], dtime=0.5)
+
+    for umat in [a & Elastic(), fem.CompositeMaterial(Elastic(), a)]:
+        assert umat.x[-1].shape == (6,)
+        P, statevars_new = umat.gradient([F, s0], dtime=0.5)
+        assert np.allclose(P, Pa + F - fem.math.identity(F))
+        assert np.allclose(statevars_new, sa_new)
+
+
+def test_composite_statevars_shape():
+    "State variables with more than one axis are flattened by a composite material."
+
+    class Material(fem.ConstitutiveMaterial):
+        "A material with the displacement gradient as state variables."
+
+        def __init__(self):
+            self.x = [np.eye(3), np.zeros((3, 3))]
+            self.kwargs = {}
+
+        def _gradient(self, x):
+            F = x[0]
+            return [np.zeros_like(F), F - fem.math.identity(F)]
+
+        def _hessian(self, x):
+            F = x[0]
+            return [np.zeros((3, 3, 3, 3, *F.shape[2:]))]
+
+    viscoelastic = fem.Hyperelastic(
+        fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, nstatevars=6
+    )
+    umat = viscoelastic & Material()
+    assert umat.x[-1].shape == (15,)
+
+    F = np.eye(3).reshape(3, 3, 1, 1) + 0.1 * np.arange(9).reshape(3, 3, 1, 1)
+    P, statevars_new = umat.gradient([F, np.zeros((15, 1, 1))], dtime=1.0)
+
+    H = (F - fem.math.identity(F)).reshape(9, 1, 1)
+    assert statevars_new.shape == (15, 1, 1)
+    assert np.allclose(statevars_new[6:], H)
+
+
+def test_composite_statevars_solidbody():
+    "The order of the materials of a composite material doesn't matter."
+
+    mesh = fem.Cube(n=2)
+    region = fem.RegionHexahedron(mesh)
+
+    nh = fem.NeoHooke(mu=1.0)
+    viscoelastic = fem.Hyperelastic(
+        fem.finite_strain_viscoelastic, mu=1.0, eta=1.0, nstatevars=6
+    )
+
+    forces = []
+
+    for umat in [nh & viscoelastic, viscoelastic & nh]:
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        solid = fem.SolidBodyNearlyIncompressible(umat, field, bulk=50.0)
+        assert solid.results.statevars.shape == (6, *region.dV.shape)
+
+        time = fem.TimeStep(items=[solid])
+        boundaries = fem.dof.uniaxial(field, clamped=True)
+        step = fem.Step(
+            items=[solid],
+            ramp={
+                boundaries["move"]: fem.math.linsteps([0, 0.3], num=3),
+                time: fem.math.linsteps([0, 1.0], num=3),
+            },
+            boundaries=boundaries,
+        )
+        fem.Job(steps=[step]).evaluate()
+        forces.append(solid.results.force.toarray())
+
+    assert np.allclose(*forces)
+
+
 def test_optimize(close_figs=True):
     stretches, stresses = (
         np.array(
@@ -1669,6 +1826,9 @@ if __name__ == "__main__":
     test_elpliso()
     test_umat_strain_optimize()
     test_composite(close_figs=close_figs)
+    test_composite_statevars()
+    test_composite_statevars_shape()
+    test_composite_statevars_solidbody()
     test_optimize(close_figs=close_figs)
     test_optimize_load_cases()
     test_optimize_parameters()

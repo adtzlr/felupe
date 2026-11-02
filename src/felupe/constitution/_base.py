@@ -863,8 +863,8 @@ def _set_material_parameters(material, parameters):
 
 
 class CompositeMaterial(ConstitutiveMaterial):
-    """A composite material with two constitutive materials merged. State variables are
-    only considered for the first material.
+    """A composite material with two constitutive materials merged. Each material keeps
+    its own state variables.
 
     Parameters
     ----------
@@ -875,6 +875,18 @@ class CompositeMaterial(ConstitutiveMaterial):
 
     Notes
     -----
+    The state variables of the composite material are the flattened state variables of
+    the first material, followed by the flattened state variables of the second
+    material, i.e. the size of the state variables is the sum of the sizes of the state
+    variables of both materials. The state variables are split for the evaluation of the
+    materials and the updated state variables of both materials are concatenated again.
+    Hence, the order of the materials doesn't matter, e.g. ``nh & viscoelastic`` and
+    ``viscoelastic & nh`` are equal, and several materials with state variables are
+    supported, also nested composite materials like ``a & b & c``. If the state
+    variables are not given (None) or if the input list contains only one array, the
+    input list is passed to both materials and the state variables of the first
+    material are returned.
+
     The gradients and the hessians are evaluated in chunks of cells, by a pool of
     threads if any of the materials is parallel.
 
@@ -903,7 +915,12 @@ class CompositeMaterial(ConstitutiveMaterial):
     def __init__(self, material, other_material):
         self.materials = [material, other_material]
         self.kwargs = {**other_material.kwargs, **material.kwargs}
-        self.x = material.x
+
+        # the (flattened) state variables of both materials are concatenated
+        statevars = [np.asarray(m.x[-1]) for m in self.materials]
+        self._statevars_shapes = [s.shape for s in statevars]
+        self._statevars_sizes = [s.size for s in statevars]
+        self.x = [*material.x[:-1], np.concatenate([s.ravel() for s in statevars])]
 
         # evaluate the chunks of cells in parallel, if any of the materials is parallel
         self.parallel = any(getattr(m, "parallel", False) for m in self.materials)
@@ -933,20 +950,69 @@ class CompositeMaterial(ConstitutiveMaterial):
 
         return {key: value for key, value in kwargs.items() if key != "dtime"}
 
+    @staticmethod
+    def _has_statevars(x):
+        "Return True if the input list contains the state variables."
+        return len(x) > 1 and x[-1] is not None
+
+    def _split(self, x):
+        """Return the input lists of the materials, each with the state variables of the
+        material."""
+
+        if not self._has_statevars(x):
+            return [x for material in self.materials]
+
+        statevars = x[-1]
+        size = sum(self._statevars_sizes)
+
+        if len(statevars) != size:
+            raise ValueError(
+                f"The state variables of the composite material must have {size} "
+                f"items along the first axis (the sizes of the state variables of the "
+                f"materials are {self._statevars_sizes}), got {len(statevars)}."
+            )
+
+        offsets = np.cumsum([0, *self._statevars_sizes])
+        trailing = statevars.shape[1:]
+
+        return [
+            [*x[:-1], statevars[start:stop].reshape(*shape, *trailing)]
+            for start, stop, shape in zip(
+                offsets[:-1], offsets[1:], self._statevars_shapes
+            )
+        ]
+
+    def _join(self, x, statevars):
+        "Concatenate the (flattened) updated state variables of the materials."
+
+        if not self._has_statevars(x):
+            return statevars[0]
+
+        trailing = x[-1].shape[1:]
+        flattened = []
+
+        for statevars_new, size in zip(statevars, self._statevars_sizes):
+            if statevars_new is None and size == 0:
+                statevars_new = np.zeros((0, *trailing), dtype=x[-1].dtype)
+
+            flattened.append(np.reshape(statevars_new, (size, *trailing)))
+
+        return np.concatenate(flattened, axis=0)
+
     def _gradient(self, x, **kwargs):
         gradients = [
-            material.gradient(x, **self._material_kwargs(material, kwargs))
-            for material in self.materials
+            material.gradient(xm, **self._material_kwargs(material, kwargs))
+            for material, xm in zip(self.materials, self._split(x))
         ]
         nfields = max(1, len(x) - 1)
         P = [np.sum([grad[i] for grad in gradients], axis=0) for i in range(nfields)]
-        statevars_new = gradients[0][-1]
+        statevars_new = self._join(x, [grad[-1] for grad in gradients])
         return [*P, statevars_new]
 
     def _hessian(self, x, **kwargs):
         hessians = [
-            material.hessian(x, **self._material_kwargs(material, kwargs))
-            for material in self.materials
+            material.hessian(xm, **self._material_kwargs(material, kwargs))
+            for material, xm in zip(self.materials, self._split(x))
         ]
         nfields = max(1, len(x) - 1)
         return [np.sum([hess[i] for hess in hessians], axis=0) for i in range(nfields)]

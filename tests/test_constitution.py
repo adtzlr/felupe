@@ -1112,6 +1112,28 @@ def test_composite_statevars():
     with pytest.raises(ValueError, match="must have 12 items"):
         ab.gradient([F, np.zeros((6, 1, 1))], dtime=0.5)
 
+    class Elastic:
+        "A material without state variables, which returns None as state variables."
+
+        def __init__(self):
+            self.x = [np.eye(3), np.zeros(0)]
+            self.kwargs = {}
+
+        def gradient(self, x):
+            return [x[0] - fem.math.identity(x[0]), None]
+
+        def hessian(self, x):
+            return [np.zeros((3, 3, 3, 3, *x[0].shape[2:]))]
+
+    s0 = np.zeros((6, 1, 1))
+    Pa, sa_new = a.gradient([F, s0], dtime=0.5)
+
+    for umat in [a & Elastic(), fem.CompositeMaterial(Elastic(), a)]:
+        assert umat.x[-1].shape == (6,)
+        P, statevars_new = umat.gradient([F, s0], dtime=0.5)
+        assert np.allclose(P, Pa + F - fem.math.identity(F))
+        assert np.allclose(statevars_new, sa_new)
+
 
 def test_composite_statevars_shape():
     "State variables with more than one axis are flattened by a composite material."

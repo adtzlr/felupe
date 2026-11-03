@@ -94,25 +94,33 @@ def _write(path, text, attempts=5, delay=0.05):
     exclusively, i.e. an existing file or a symbolic link of the same name is never
     followed (e.g. in a folder which is writable by other users) and other processes
     which write to the same file don't share the temporary file. If the file is not
-    written, the temporary file is removed."""
+    written, the temporary file is removed, also on an error or an interrupt (e.g. if
+    the disk is full or by a ``KeyboardInterrupt``)."""
     temporary = path.with_name(f"{path.name}.{secrets.token_hex(8)}.tmp")
 
     # the mode "x" creates the file exclusively (with the permissions of the umask)
-    with open(temporary, "x", encoding="utf-8") as file:
-        file.write(text)
+    file = open(temporary, "x", encoding="utf-8")
+    replaced = False
 
-    for attempt in range(attempts):
-        try:
-            os.replace(temporary, path)
-            return True
-        except PermissionError:
-            if attempt + 1 < attempts:
-                time.sleep(delay)
+    try:
+        with file:
+            file.write(text)
 
-    with suppress(OSError):
-        temporary.unlink()
+        for attempt in range(attempts):
+            try:
+                os.replace(temporary, path)
+                replaced = True
+                break
+            except PermissionError:
+                if attempt + 1 < attempts:
+                    time.sleep(delay)
 
-    return False
+    finally:
+        if not replaced:
+            with suppress(OSError):
+                temporary.unlink()
+
+    return replaced
 
 
 class DashboardFile:

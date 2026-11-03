@@ -1039,6 +1039,28 @@ def test_dashboard_file_writer_symlink(tmp_path):
     assert names == ["data.js", "data.js.tmp", "other.txt"]
 
 
+def test_dashboard_file_writer_errors(tmp_path, monkeypatch):
+    """The temporary file of an atomic write is removed on an error or an interrupt,
+    e.g. if the disk is full (here, the text can not be encoded) or by a
+    KeyboardInterrupt."""
+
+    from felupe.plugins._dashboard import _file
+
+    path = tmp_path / "data.js"
+
+    with pytest.raises(UnicodeEncodeError):
+        _file._write(path, "\ud800", delay=0)
+
+    def interrupt(source, destination):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(_file.os, "replace", interrupt)
+    with pytest.raises(KeyboardInterrupt):
+        _file._write(path, "a", delay=0)
+
+    assert not list(tmp_path.iterdir())
+
+
 def test_dashboard_page_placeholders():
     "A title with the placeholders of the page is not replaced (one pass)."
 

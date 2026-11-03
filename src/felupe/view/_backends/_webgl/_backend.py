@@ -2,10 +2,13 @@
 
 """The plotting backend of the scenes by WebGL in the web browser."""
 
+import os
+import stat
 import tempfile
 import time
 import warnings
 import webbrowser
+from contextlib import suppress
 from pathlib import Path
 
 import numpy as np
@@ -78,15 +81,64 @@ def _lut(cmap):
     return np.round(255 * colors).astype(np.uint8)
 
 
-def _temporary_page():
-    """Return the path of a new temporary page in the folder ``felupe`` of the
-    temporary directory and remove the pages there which are older than a day.
+def _is_private(folder):
+    """Return True if a folder is a directory (not a symbolic link) of the current
+    user, which is not writable by the group and by others (on POSIX)."""
 
-    The page is not removed after it is shown, because the web browser loads it later
-    (e.g. after a script has ended) and the page should stay reloadable."""
+    try:
+        info = os.lstat(folder)
+    except OSError:
+        return False
 
-    folder = Path(tempfile.gettempdir()) / "felupe"
-    folder.mkdir(exist_ok=True)
+    if not stat.S_ISDIR(info.st_mode):
+        return False
+
+    # e.g. on Windows, the temporary directory is already a folder of the user
+    if not hasattr(os, "getuid"):
+        return True
+
+    return info.st_uid == os.getuid() and not info.st_mode & 0o022
+
+
+def _temporary_folder():
+    """Return the private folder of the temporary pages, i.e. the folder
+    ``felupe-<uid>`` of the temporary directory with the id of the user (``felupe`` on
+    Windows, where the temporary directory is a folder of the user).
+
+    The temporary directory is shared by all users on POSIX, e.g. ``/tmp``. A folder
+    which is not private, e.g. created by another user in advance, is not used.
+    Instead, the page is written to a new private folder, with a warning."""
+
+    name = f"felupe-{os.getuid()}" if hasattr(os, "getuid") else "felupe"
+    folder = Path(tempfile.gettempdir()) / name
+
+    with suppress(FileExistsError):
+        folder.mkdir(mode=0o700)
+
+    if not _is_private(folder):
+        private = Path(tempfile.mkdtemp(prefix="felupe-"))
+        warnings.warn(
+            f"The folder {folder} of the temporary pages is not a private folder "
+            f"of the current user. The page is written to {private} instead.",
+            stacklevel=4,
+        )
+        folder = private
+
+    return folder
+
+
+def _temporary_page(text):
+    """Write a page to a new temporary file in the private folder of the temporary
+    pages and return its path. The pages there which are older than a day are
+    removed.
+
+    The file is created exclusively and the page is written by the handle of the file
+    (the file is not opened again by its path), i.e. an existing file or a symbolic
+    link is never followed. The page is not removed after it is shown, because the
+    web browser loads it later (e.g. after a script has ended) and the page should
+    stay reloadable."""
+
+    folder = _temporary_folder()
 
     now = time.time()
     for old in folder.glob("plot-*.html"):
@@ -99,9 +151,16 @@ def _temporary_page():
             pass
 
     with tempfile.NamedTemporaryFile(
-        dir=folder, prefix="plot-", suffix=".html", delete=False
+        mode="w",
+        encoding="utf-8",
+        dir=folder,
+        prefix="plot-",
+        suffix=".html",
+        delete=False,
     ) as file:
-        return Path(file.name)
+        file.write(text)
+
+    return Path(file.name)
 
 
 class WebGLPlotter:
@@ -235,8 +294,9 @@ class WebGLPlotter:
         ----------
         filename : str, pathlib.Path or None, optional
             The filename of the HTML file (default is None). If None, a temporary file
-            is written (outside of a notebook) in the folder ``felupe`` of the
-            temporary directory, where the pages older than a day are removed.
+            is written (outside of a notebook) in the private folder
+            ``felupe-<uid>`` of the temporary directory with the id of the user
+            (``felupe`` on Windows), where the pages older than a day are removed.
 
         Returns
         -------
@@ -255,9 +315,10 @@ class WebGLPlotter:
             return None
 
         if filename is None:
-            filename = _temporary_page()
+            path = _temporary_page(self.html)
+        else:
+            path = self.export_html(filename)
 
-        path = self.export_html(filename)
         webbrowser.open(path.resolve().as_uri())
 
         return path

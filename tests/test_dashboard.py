@@ -989,10 +989,11 @@ def test_dashboard_file_writer(tmp_path, monkeypatch):
     assert _file._write(path, "a", delay=0)
     assert path.read_text() == "a"
 
-    # a file which stays locked is not written
+    # a file which stays locked is not written (and the temporary file is removed)
     failures[:] = [True] * 5
     assert not _file._write(path, "b", delay=0)
     assert path.read_text() == "a"
+    assert sorted(item.name for item in tmp_path.iterdir()) == ["data.js"]
 
     with pytest.raises(TypeError, match="not JSON serializable"):
         _file._script("X", {"a": object()})
@@ -1016,6 +1017,39 @@ def test_dashboard_file_writer(tmp_path, monkeypatch):
     assert writer.flush(source)
     assert writer.changed and writer.state == 2
     assert read_script(tmp_path / "job.version.js")["state"] == 1
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="symbolic links")
+def test_dashboard_file_writer_symlink(tmp_path):
+    """The temporary file of an atomic write has a random name and it is created
+    exclusively, i.e. a symbolic link of the same name is never followed, e.g. in a
+    folder which is writable by other users."""
+
+    from felupe.plugins._dashboard import _file
+
+    other = tmp_path / "other.txt"
+    other.write_text("other")
+    (tmp_path / "data.js.tmp").symlink_to(other)
+
+    path = tmp_path / "data.js"
+    assert _file._write(path, "a", delay=0)
+    assert path.read_text() == "a" and other.read_text() == "other"
+
+    names = sorted(item.name for item in tmp_path.iterdir())
+    assert names == ["data.js", "data.js.tmp", "other.txt"]
+
+
+def test_dashboard_page_placeholders():
+    "A title with the placeholders of the page is not replaced (one pass)."
+
+    from felupe.plugins._dashboard import _file
+
+    config = {"snapshot": {"state": {"info": {"title": "/*MODULE*/ /*CONFIG*/"}}}}
+    page = _file.page(config)
+
+    assert read_config(page) == config
+    assert page.count("</script>") == 1
+    assert page.count("function render(") == 1
 
 
 def test_dashboard_quadratic_cells(kernel):

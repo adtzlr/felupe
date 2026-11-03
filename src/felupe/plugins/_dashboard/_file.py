@@ -8,10 +8,10 @@ import json
 import os
 import secrets
 import time
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
 
-from ...view._backends._webgl._page import viewer
+from ...view._backends._webgl._page import fill, viewer
 
 HERE = Path(__file__).parent
 
@@ -75,17 +75,32 @@ def page(config):
     config = config.replace("<", "\\u003c")
 
     text = (HERE / "dashboard.html").read_text(encoding="utf-8")
-    text = text.replace("/*STYLES*/", styles)
-    text = text.replace("/*CONFIG*/", config)
-    return text.replace("/*MODULE*/", module().replace("</script", "<\\/script"))
+    return fill(
+        text,
+        {
+            "STYLES": styles,
+            "CONFIG": config,
+            "MODULE": module().replace("</script", "<\\/script"),
+        },
+    )
 
 
 def _write(path, text, attempts=5, delay=0.05):
     """Write a file atomically (by a temporary file, which replaces the file). A file
     which is read by the web browser may be locked on Windows, then the replacement is
-    repeated. Return True if the file is written."""
-    temporary = path.with_name(path.name + ".tmp")
-    temporary.write_text(text, encoding="utf-8")
+    repeated. Return True if the file is written.
+
+    The temporary file next to the file has a random name and it is created
+    exclusively, i.e. an existing file or a symbolic link of the same name is never
+    followed (e.g. in a folder which is writable by other users) and other processes
+    which write to the same file don't share the temporary file. If the file is not
+    written, the temporary file is removed."""
+    temporary = path.with_name(f"{path.name}.{secrets.token_hex(8)}.tmp")
+
+    # the mode "x" creates the file exclusively (with the permissions of the umask)
+    with open(temporary, "x", encoding="utf-8") as file:
+        file.write(text)
+
     for attempt in range(attempts):
         try:
             os.replace(temporary, path)
@@ -93,6 +108,10 @@ def _write(path, text, attempts=5, delay=0.05):
         except PermissionError:
             if attempt + 1 < attempts:
                 time.sleep(delay)
+
+    with suppress(OSError):
+        temporary.unlink()
+
     return False
 
 

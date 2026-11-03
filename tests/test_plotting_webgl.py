@@ -13,7 +13,7 @@ import pytest
 
 import felupe as fem
 from felupe.view._backends._notebook import in_kernel
-from felupe.view._backends._webgl import WebGLPlotter, _backend
+from felupe.view._backends._webgl import WebGLPlotter, _backend, _page
 from felupe.view._backends._webgl._page import decode, encode
 from felupe.view._backends._webgl._widget import widget_class
 from felupe.view._shapes import arrow
@@ -322,16 +322,46 @@ def test_page(webgl, tmp_path, monkeypatch):
     assert not in_kernel()
 
 
+def test_page_placeholders():
+    "The labels of a scene can not close the script or replace a placeholder."
+
+    labels = ["</script><script>alert(1)</script>", "/*MODULE*/", "/*SCENE*/"]
+    legend = [{"label": label, "color": "red"} for label in labels + ["/*HEIGHT*/"]]
+    text = _page.page({"objects": [], "legend": legend})
+
+    start = text.index('type="application/json">') + len('type="application/json">')
+    assert json.loads(text[start : text.index("</script>", start)])["legend"] == legend
+    assert text.count("</script>") == 2
+    assert text.count("export function createViewer") == 1
+
+    # all placeholders are replaced in one pass (a value is not searched again), also
+    # with backslashes in the values
+    filled = _page.fill("/*A*/ /*B*/ /*A*/", {"A": "/*B*/", "B": "\\u"})
+    assert filled == "/*B*/ \\u /*B*/"
+
+
+def temporary_folder(tmp_path):
+    "Return the private folder of the temporary pages in a temporary directory."
+
+    name = f"felupe-{os.getuid()}" if hasattr(os, "getuid") else "felupe"
+    return tmp_path / name
+
+
 def test_temporary_pages(webgl, tmp_path, monkeypatch):
-    # the temporary pages are written to the folder "felupe" of the temporary directory
+    # the temporary pages are written to the private folder "felupe-<uid>" of the
+    # temporary directory ("felupe" on Windows)
     monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
-    folder = tmp_path / "felupe"
+    folder = temporary_folder(tmp_path)
     plotter = fem.Rectangle(n=3).plot()
 
     with mock.patch("webbrowser.open"):
         first = plotter.show()
 
     assert first.parent == folder and first.name.startswith("plot-")
+    assert first.read_text(encoding="utf-8") == plotter.html
+
+    if hasattr(os, "getuid"):
+        assert not folder.stat().st_mode & 0o077
 
     # an old page, an old folder (not removable) and an other file in the folder
     old = folder / "plot-old.html"
@@ -352,6 +382,50 @@ def test_temporary_pages(webgl, tmp_path, monkeypatch):
     assert first.exists() and second.exists() and first != second
     assert not old.exists()
     assert locked.exists() and other.exists()
+
+
+@pytest.mark.skipif(not hasattr(os, "getuid"), reason="the users of POSIX")
+def test_temporary_pages_not_private(webgl, tmp_path, monkeypatch):
+    # a folder of the temporary pages which is not private is not used, e.g. if it was
+    # created in advance by another user and it is writable by others
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path))
+    folder = temporary_folder(tmp_path)
+    folder.mkdir()
+    folder.chmod(0o777)
+    plotter = fem.Rectangle(n=3).plot()
+
+    with mock.patch("webbrowser.open"):
+        with pytest.warns(UserWarning, match="not a private folder"):
+            path = plotter.show()
+
+    assert path.parent != folder and path.parent.parent == tmp_path
+    assert not path.parent.stat().st_mode & 0o077
+    assert path.read_text(encoding="utf-8") == plotter.html
+    assert not list(folder.iterdir())
+
+    # a symbolic link, a folder of another user, a file and a missing folder
+    folder.rmdir()
+    target = tmp_path / "target"
+    target.mkdir(mode=0o700)
+    folder.symlink_to(target, target_is_directory=True)
+    assert not _backend._is_private(folder)
+
+    folder.unlink()
+    folder.mkdir(mode=0o700)
+    assert _backend._is_private(folder)
+
+    with mock.patch.object(_backend.os, "getuid", return_value=os.getuid() + 1):
+        assert not _backend._is_private(folder)
+
+    (tmp_path / "file").write_text("file", encoding="utf-8")
+    assert not _backend._is_private(tmp_path / "file")
+    assert not _backend._is_private(tmp_path / "missing")
+
+    # without the ids of the users (e.g. on Windows, where the temporary directory is
+    # a folder of the user), a folder is private and the folder is named "felupe"
+    monkeypatch.delattr(os, "getuid")
+    assert _backend._is_private(target)
+    assert _backend._temporary_folder() == tmp_path / "felupe"
 
 
 def test_widget(webgl):

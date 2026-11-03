@@ -7,6 +7,7 @@ or transferred as binary buffers to the Jupyter widget."""
 import base64
 import html
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -67,6 +68,17 @@ def viewer():
     return (HERE / "viewer.js").read_text(encoding="utf-8")
 
 
+def fill(template, values):
+    """Return a template, where the placeholders of the keys, e.g. ``/*SCENE*/`` for
+    the key ``"SCENE"``, are replaced by the values.
+
+    All placeholders are replaced in one pass, i.e. a value is not searched for other
+    placeholders, e.g. a label ``/*MODULE*/`` in the inline JSON of a scene."""
+
+    pattern = "|".join(re.escape(f"/*{key}*/") for key in values)
+    return re.sub(pattern, lambda match: values[match.group()[2:-2]], template)
+
+
 def page(scene, height=None):
     """Return the HTML page of the viewer for a scene (a JSON-serializable dict).
 
@@ -86,9 +98,14 @@ def page(scene, height=None):
     config = json.dumps(encode(scene), separators=(",", ":"), allow_nan=False)
     config = config.replace("<", "\\u003c")
 
-    text = text.replace("/*HEIGHT*/", height or "100vh")
-    text = text.replace("/*SCENE*/", config)
-    return text.replace("/*MODULE*/", module.replace("</script", "<\\/script"))
+    return fill(
+        text,
+        {
+            "HEIGHT": height or "100vh",
+            "SCENE": config,
+            "MODULE": module.replace("</script", "<\\/script"),
+        },
+    )
 
 
 def iframe(text, height="480px", title="FElupe"):

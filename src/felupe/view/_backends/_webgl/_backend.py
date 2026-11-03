@@ -25,6 +25,10 @@ DEFAULT_COLOR = "#add8e6"
 # temporary pages older than this (in seconds) are removed by the next show()
 TEMPORARY_MAX_AGE = 24 * 60 * 60
 
+# the private folders of the temporary pages of this process, which are used instead
+# of the folders of the temporary pages which are not private (by these folders)
+_PRIVATE_FOLDERS = {}
+
 # the options which were already warned about (each option is warned once)
 _WARNED = set()
 
@@ -100,47 +104,9 @@ def _is_private(folder):
     return info.st_uid == os.getuid() and not info.st_mode & 0o022
 
 
-def _temporary_folder():
-    """Return the private folder of the temporary pages, i.e. the folder
-    ``felupe-<uid>`` of the temporary directory with the id of the user (``felupe`` on
-    Windows, where the temporary directory is a folder of the user).
+def _remove_old_pages(folder, now):
+    "Remove the temporary pages of a folder which are older than a day."
 
-    The temporary directory is shared by all users on POSIX, e.g. ``/tmp``. A folder
-    which is not private, e.g. created by another user in advance, is not used.
-    Instead, the page is written to a new private folder, with a warning."""
-
-    name = f"felupe-{os.getuid()}" if hasattr(os, "getuid") else "felupe"
-    folder = Path(tempfile.gettempdir()) / name
-
-    with suppress(FileExistsError):
-        folder.mkdir(mode=0o700)
-
-    if not _is_private(folder):
-        private = Path(tempfile.mkdtemp(prefix="felupe-"))
-        warnings.warn(
-            f"The folder {folder} of the temporary pages is not a private folder "
-            f"of the current user. The page is written to {private} instead.",
-            stacklevel=4,
-        )
-        folder = private
-
-    return folder
-
-
-def _temporary_page(text):
-    """Write a page to a new temporary file in the private folder of the temporary
-    pages and return its path. The pages there which are older than a day are
-    removed.
-
-    The file is created exclusively and the page is written by the handle of the file
-    (the file is not opened again by its path), i.e. an existing file or a symbolic
-    link is never followed. The page is not removed after it is shown, because the
-    web browser loads it later (e.g. after a script has ended) and the page should
-    stay reloadable."""
-
-    folder = _temporary_folder()
-
-    now = time.time()
     for old in folder.glob("plot-*.html"):
         try:
             if now - old.stat().st_mtime > TEMPORARY_MAX_AGE:
@@ -150,17 +116,104 @@ def _temporary_page(text):
         except OSError:
             pass
 
-    with tempfile.NamedTemporaryFile(
+
+def _remove_old_folders(folder, now):
+    """Remove the private folders of the temporary pages of earlier processes, i.e.
+    the folders ``<folder>-<8 characters>`` by :func:`tempfile.mkdtemp`, which are
+    older than a day, together with their pages.
+
+    A new page updates the time of its folder, i.e. the pages of an old folder are
+    older than a day, too. Folders which are not private (e.g. of other users) and
+    folders with other files are kept."""
+
+    for old in folder.parent.glob(f"{folder.name}-????????"):
+        try:
+            if (
+                not _is_private(old)
+                or now - os.lstat(old).st_mtime <= TEMPORARY_MAX_AGE
+            ):
+                continue
+
+            _remove_old_pages(old, now)
+            old.rmdir()
+
+        # e.g. removed by another process in the meantime or with other files
+        except OSError:
+            pass
+
+
+def _temporary_folder():
+    """Return the private folder of the temporary pages, i.e. the folder
+    ``felupe-<uid>`` of the temporary directory with the id of the user (``felupe`` on
+    Windows, where the temporary directory is a folder of the user).
+
+    The temporary directory is shared by all users on POSIX, e.g. ``/tmp``. A folder
+    which is not private, e.g. created by another user in advance, is not used.
+    Instead, the pages of the process are written to a new private folder
+    ``felupe-<uid>-<8 characters>``, with a warning (once per process). Before, the
+    private folders of earlier processes which are older than a day are removed."""
+
+    name = f"felupe-{os.getuid()}" if hasattr(os, "getuid") else "felupe"
+    folder = Path(tempfile.gettempdir()) / name
+
+    with suppress(FileExistsError):
+        folder.mkdir(mode=0o700)
+
+    if _is_private(folder):
+        return folder
+
+    private = _PRIVATE_FOLDERS.get(folder)
+
+    # a new private folder of the process (or if it was removed in the meantime)
+    if private is None or not _is_private(private):
+        _remove_old_folders(folder, time.time())
+        private = Path(tempfile.mkdtemp(prefix=f"{name}-"))
+        _PRIVATE_FOLDERS[folder] = private
+
+        warnings.warn(
+            f"The folder {folder} of the temporary pages is not a private folder "
+            f"of the current user. The pages are written to {private} instead.",
+            stacklevel=4,
+        )
+
+    return private
+
+
+def _temporary_page(text):
+    """Write a page to a new temporary file in the private folder of the temporary
+    pages and return its path. The pages there which are older than a day are
+    removed.
+
+    The file is created exclusively and the page is written by the handle of the file
+    (the file is not opened again by its path), i.e. an existing file or a symbolic
+    link is never followed. A page which can not be written is removed (e.g. if the
+    disk is full). The page is not removed after it is shown, because the web browser
+    loads it later (e.g. after a script has ended) and the page should stay
+    reloadable."""
+
+    folder = _temporary_folder()
+    _remove_old_pages(folder, time.time())
+
+    file = tempfile.NamedTemporaryFile(
         mode="w",
         encoding="utf-8",
         dir=folder,
         prefix="plot-",
         suffix=".html",
         delete=False,
-    ) as file:
-        file.write(text)
+    )
+    path = Path(file.name)
 
-    return Path(file.name)
+    try:
+        with file:
+            file.write(text)
+
+    except BaseException:
+        with suppress(OSError):
+            path.unlink()
+        raise
+
+    return path
 
 
 class WebGLPlotter:

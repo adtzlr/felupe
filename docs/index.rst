@@ -35,19 +35,21 @@ FElupe is an open, Python-based finite element infrastructure for nonlinear comp
 .. admonition:: Highlights
    :class: admonition
 
-   + 100% Python package built with `NumPy <https://numpy.org/>`_ and `SciPy <https://scipy.org/>`_
+   + pure Python, only `NumPy <https://numpy.org/>`_ and `SciPy <https://scipy.org/>`_ required
 
-   + easy to learn and productive high-level :ref:`API <felupe-api>`
+   + easy-to-learn high-level :ref:`API <felupe-api>`
 
    + nonlinear deformation of :class:`solid bodies <felupe.SolidBody>`
 
-   + interactive views on meshes, fields and solid bodies (using `PyVista <https://pyvista.org/>`_)
+   + :doc:`job plugins <howto/plugins>`, e.g. cutbacks, animations, live dashboard
+
+   + interactive :doc:`plots <howto/plotting>` with PyVista, WebGL or Matplotlib
 
    + typical :ref:`finite elements <felupe-api-element>`
 
    + cartesian, axisymmetric, plane strain and mixed fields
 
-   + :ref:`hyperelastic material models <felupe-api-constitution-autodiff>` with :class:`automatic differentiation <felupe.Hyperelastic>`
+   + :ref:`hyperelastic materials <felupe-api-constitution-autodiff>` with :class:`automatic differentiation <felupe.Hyperelastic>`
 
 
 Installation

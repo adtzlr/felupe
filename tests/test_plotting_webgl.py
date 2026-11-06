@@ -274,6 +274,11 @@ def test_page(webgl, tmp_path, monkeypatch):
     plotter = fem.Rectangle(n=3).plot()
     page = plotter.html
 
+    # the version of FElupe is a comment at the top of the page (not in the scene)
+    comment = f"<!-- Created by FElupe {fem.__version__} -->"
+    assert page.startswith(f"<!doctype html>\n{comment}\n")
+    assert page.count(fem.__version__) == 1
+
     # the scene is inline JSON and the module is inline (without a closing tag)
     start = page.index('type="application/json">') + len('type="application/json">')
     scene = json.loads(page[start : page.index("</script>", start)])
@@ -327,7 +332,8 @@ def test_page_placeholders():
     "The labels of a scene can not close the script or replace a placeholder."
 
     labels = ["</script><script>alert(1)</script>", "/*MODULE*/", "/*SCENE*/"]
-    legend = [{"label": label, "color": "red"} for label in labels + ["/*HEIGHT*/"]]
+    others = ["/*HEIGHT*/", "/*VERSION*/"]
+    legend = [{"label": label, "color": "red"} for label in labels + others]
     text = _page.page({"objects": [], "legend": legend})
 
     start = text.index('type="application/json">') + len('type="application/json">')

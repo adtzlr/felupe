@@ -121,14 +121,14 @@ fields[0].plot(
     "Principal Values of Logarithmic Strain", show_undeformed=False, plotter=plotter
 ).show()
 
-plotter = fields[1].plot(color="white", show_undeformed=False, show_edges=False)
-plotter.mesh.clip("y", invert=False, value=0.0, inplace=True)
-
-plotter = fields[0].plot(
+plotter = (
+    fields[1]
+    .view()
+    .clip("y", origin=(0, 0, 0), invert=False)
+    .plot(color="white", show_undeformed=False)
+)
+fields[0].view().clip("y", origin=(0, 0, 0), invert=False).plot(
     "Principal Values of Logarithmic Strain",
     show_undeformed=False,
-    show_edges=False,
     plotter=plotter,
-)
-plotter.mesh.clip("y", invert=False, value=0.0, inplace=True)
-plotter.show()
+).show()

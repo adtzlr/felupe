@@ -36,7 +36,8 @@ e.g. for off-screen screenshots in vector formats (PDF or SVG).
 
 .. autoclass:: felupe.view.Scene
 
-.. autofunction:: felupe.ViewMesh
+.. autoclass:: felupe.ViewMesh
+   :members: clip
 
 .. autofunction:: felupe.ViewField
 

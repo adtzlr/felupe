@@ -16,6 +16,17 @@ a plotting backend. The current plotting backend is selected by its name with
     fem.set_plotting_backend("matplotlib")  # "pyvista" (default), "webgl"
     fem.get_plotting_backend()  # "matplotlib"
 
+With ``fem.set_plotting_backend(None)``, the plotting backend is selected
+automatically: ``"pyvista"`` if PyVista is installed, otherwise ``"webgl"``. The
+plotting backend ``"webgl"`` requires no optional dependency (only its Jupyter widget
+requires anywidget), i.e. there is always a plotting backend available. The plotting
+backend ``"matplotlib"`` is only selected by its name.
+
+..  code-block:: python
+
+    fem.set_plotting_backend(None)
+    fem.get_plotting_backend()  # e.g. "pyvista"
+
 The arguments of the plot-methods are the same for all plotting backends, e.g. the name
 and the component of the scalars, the scale ``factor`` of the deformation, the ``view``
 or ``nonlinear_subdivision`` for curved faces of quadratic cells. A plot-method returns

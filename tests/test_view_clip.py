@@ -113,14 +113,20 @@ def test_clip_plot(backend):
 def test_clip_errors():
     view = view_of(fem.Cube(n=3))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="must be one of"):
         view.clip("w")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="non-zero vector"):
         view.clip((0, 0, 0))
 
-    with pytest.raises(ValueError):
-        view.clip("x", origin=(0, 0, 0, 0))
+    # vectors with more than three components or with more than one axis
+    for normal in [(1, 0, 0, 0), [[1, 0, 0]], ()]:
+        with pytest.raises(ValueError, match="normal must be a vector"):
+            view.clip(normal)
+
+    for origin in [(0, 0, 0, 0), [[0, 0, 0]], 0.5]:
+        with pytest.raises(ValueError, match="origin must be a vector"):
+            view.clip("x", origin=origin)
 
 
 def test_clip_pyvista():

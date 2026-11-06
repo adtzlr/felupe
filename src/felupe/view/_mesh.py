@@ -24,6 +24,20 @@ def _pad(x):
     return np.pad(x, [(0, 0)] * (x.ndim - 1) + [(0, 3 - x.shape[-1])])
 
 
+def _vector(x, name):
+    "Return a vector with one to three components, padded with zeros to three."
+
+    x = np.asarray(x, dtype=float)
+
+    if x.ndim != 1 or not 1 <= len(x) <= 3:
+        raise ValueError(
+            f"The {name} must be a vector with one to three components, "
+            f"not of shape {x.shape}."
+        )
+
+    return _pad(x)
+
+
 class ViewMesh(Scene):
     r"""Provide Visualization methods for :class:`felupe.Mesh` with optional given
     dicts of point- and cell-data items.
@@ -182,10 +196,10 @@ class ViewMesh(Scene):
                 )
             normal = NORMALS[normal.lower()]
 
-        normal = _pad(normal).ravel()
+        normal = _vector(normal, "normal")
         length = np.linalg.norm(normal)
 
-        if normal.size != 3 or not length > 0:
+        if not length > 0:
             raise ValueError("The normal must be a non-zero vector.")
 
         normal = normal / length
@@ -194,10 +208,7 @@ class ViewMesh(Scene):
         if origin is None:
             origin = (points.min(axis=0) + points.max(axis=0)) / 2
 
-        origin = _pad(origin).ravel()
-
-        if origin.size != 3:
-            raise ValueError("The origin must be a point with up to three coordinates.")
+        origin = _vector(origin, "origin")
 
         # the signed distances of the points to the (shifted) plane
         distance = (points - origin) @ normal - value

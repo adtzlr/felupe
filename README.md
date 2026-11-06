@@ -13,13 +13,14 @@ FElupe is an open, Python-based finite element infrastructure for nonlinear comp
 </p>
 
 ## ✨ Highlights
-- ✅ 100% Python package built with [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/)
-- ✅ easy to learn and productive high-level [API](https://felupe.readthedocs.io/en/latest/felupe.html)
+- ✅ pure Python, only [NumPy](https://numpy.org/) and [SciPy](https://scipy.org/) required
+- ✅ easy-to-learn high-level [API](https://felupe.readthedocs.io/en/latest/felupe.html)
 - ✅ nonlinear deformation of [solid bodies](https://felupe.readthedocs.io/en/latest/felupe/mechanics.html#felupe.SolidBody)
-- ✅ interactive views on meshes, fields and solid bodies (using [PyVista](https://pyvista.org/))
+- ✅ [job plugins](https://felupe.readthedocs.io/en/latest/howto/plugins.html), e.g. cutbacks, animations, live dashboard
+- ✅ interactive [plots](https://felupe.readthedocs.io/en/latest/howto/plotting.html) with PyVista, WebGL or Matplotlib
 - ✅ typical [finite elements](https://felupe.readthedocs.io/en/latest/felupe/element.html)
 - ✅ cartesian, axisymmetric, plane strain and mixed fields
-- ✅ [hyperelastic material models](https://felupe.readthedocs.io/en/latest/felupe/constitution.html) with automatic differentiation
+- ✅ [hyperelastic materials](https://felupe.readthedocs.io/en/latest/felupe/constitution.html) with automatic differentiation
 
 FElupe achieves efficient [NumPy](https://numpy.org/)-based computations through vectorized element-wise operations on *trailing array axes* [[1]](https://doi.org/10.21105/joss.02369). The finite element method, as used in FElupe, is based on [[2]](https://doi.org/10.1017/cbo9780511755446), [[3]]() and [[4]](https://doi.org/10.1016/c2009-0-24909-9). Related scientific articles are listed in the sections of the [API reference](https://felupe.readthedocs.io/en/latest/felupe.html).
 

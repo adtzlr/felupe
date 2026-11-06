@@ -93,13 +93,15 @@ def recording():
 
     yield backend
 
-    fem.set_plotting_backend("pyvista")
+    fem.set_plotting_backend(None)
 
 
 def test_default_backend():
-    assert fem.get_plotting_backend() == "pyvista"
+    default = fem.view.auto_plotting_backend()
+    assert default in ["pyvista", "webgl"]
+    assert fem.get_plotting_backend() == default
     assert fem.view.get_plotting_backend is fem.get_plotting_backend
-    assert backend_of().name == "pyvista"
+    assert backend_of().name == default
     assert isinstance(backend_of(), fem.view.PlottingBackend)
 
 
@@ -107,7 +109,7 @@ def test_set_unknown_backend():
     with pytest.raises(ValueError, match='"unknown"'):
         fem.set_plotting_backend("unknown")
 
-    assert fem.get_plotting_backend() == "pyvista"
+    assert fem.get_plotting_backend() == fem.view.auto_plotting_backend()
 
 
 def test_register_invalid_backend():
@@ -425,7 +427,7 @@ def test_decorations_not_supported():
             backend.add_legend(plotter, [("mesh", "red")])
 
     finally:
-        fem.set_plotting_backend("pyvista")
+        fem.set_plotting_backend(None)
 
 
 def test_pyvista_plotter_without_pyvista():
@@ -489,8 +491,44 @@ def test_screenshot_by_backend_of_given_plotter(recording):
         boundaries.screenshot(filename=None)
 
 
+@pytest.mark.parametrize(
+    "installed, expected",
+    [
+        ({"pyvista", "anywidget", "matplotlib"}, "pyvista"),
+        ({"pyvista"}, "pyvista"),
+        ({"anywidget", "matplotlib"}, "webgl"),
+        ({"matplotlib"}, "webgl"),
+        (set(), "webgl"),
+    ],
+)
+def test_auto_backend(installed, expected):
+    from felupe.view._backends import _registry
+
+    with mock.patch.object(_registry, "_installed", lambda name: name in installed):
+        assert fem.view.auto_plotting_backend() == expected
+
+        fem.set_plotting_backend(None)
+        assert fem.get_plotting_backend() == expected
+        assert backend_of().name == expected
+
+    fem.set_plotting_backend(None)
+
+
+def test_installed():
+    from felupe.view._backends._registry import _installed
+
+    assert _installed("numpy")
+    assert not _installed("felupe_package_which_does_not_exist")
+
+    with mock.patch(
+        "felupe.view._backends._registry.find_spec", side_effect=ValueError
+    ):
+        assert not _installed("numpy")
+
+
 if __name__ == "__main__":
     test_default_backend()
     test_set_unknown_backend()
     test_register_invalid_backend()
     test_pyvista_plotter_without_pyvista()
+    test_installed()

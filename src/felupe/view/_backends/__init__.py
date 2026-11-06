@@ -6,6 +6,7 @@ from ._base import PlottingBackend
 from ._matplotlib import MatplotlibBackend, MatplotlibPlotter
 from ._pyvista import PyVistaBackend
 from ._registry import (
+    auto_plotting_backend,
     backend_of,
     get_plotting_backend,
     register_plotting_backend,
@@ -22,6 +23,7 @@ __all__ = [
     "PyVistaBackend",
     "WebGLBackend",
     "WebGLPlotter",
+    "auto_plotting_backend",
     "backend_of",
     "get_plotting_backend",
     "register_plotting_backend",

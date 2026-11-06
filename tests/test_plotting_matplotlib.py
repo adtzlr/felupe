@@ -26,7 +26,7 @@ def mpl():
 
     yield
 
-    fem.set_plotting_backend("pyvista")
+    fem.set_plotting_backend(None)
     plt.close("all")
 
 

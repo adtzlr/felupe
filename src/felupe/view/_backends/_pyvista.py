@@ -85,7 +85,8 @@ def _default_view(plotter, points):
 
 
 class PyVistaBackend(PlottingBackend):
-    """The plotting backend of the scenes by PyVista (default). The plotter is a
+    """The plotting backend of the scenes by PyVista (default if PyVista is
+    installed). The plotter is a
     :class:`pyvista.Plotter`. It supports screenshots.
 
     See Also

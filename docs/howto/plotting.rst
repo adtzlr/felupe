@@ -13,8 +13,21 @@ a plotting backend. The current plotting backend is selected by its name with
 
     import felupe as fem
 
-    fem.set_plotting_backend("matplotlib")  # "pyvista" (default), "webgl"
+    fem.set_plotting_backend("matplotlib")  # "pyvista", "webgl"
     fem.get_plotting_backend()  # "matplotlib"
+
+The default plotting backend is selected automatically on import of FElupe:
+``"pyvista"`` if PyVista is installed, otherwise ``"webgl"``. The plotting backend
+``"webgl"`` requires no optional dependency (only its Jupyter widget requires
+anywidget), i.e. there is always a plotting backend available. The plotting backend
+``"matplotlib"`` is only selected by its name. The automatic selection is restored by
+``fem.set_plotting_backend(None)``, e.g. after PyVista was installed in a running
+notebook.
+
+..  code-block:: python
+
+    fem.set_plotting_backend(None)
+    fem.get_plotting_backend()  # e.g. "pyvista"
 
 The arguments of the plot-methods are the same for all plotting backends, e.g. the name
 and the component of the scalars, the scale ``factor`` of the deformation, the ``view``
@@ -30,12 +43,12 @@ the plotter of the plotting backend. Options which are specific to PyVista, e.g.
       - Interactive
       - Screenshots
       - Optional dependencies
-    * - ``"pyvista"`` (default)
+    * - ``"pyvista"`` (default if installed)
       - :class:`pyvista.Plotter`, in a window or in a notebook
       - yes
       - raster formats (PNG)
       - ``felupe[view]``
-    * - ``"webgl"``
+    * - ``"webgl"`` (default otherwise)
       - a WebGL viewer in the web browser (a self-contained HTML page)
       - yes
       - no

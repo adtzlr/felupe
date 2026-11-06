@@ -165,6 +165,9 @@ def test_view_without_pyvista():
     mesh, field, solid = pre(n=3)
 
     # the views keep the arrays, PyVista is only required for the grid and plotting
+    # (by the plotting backend "pyvista", which is not the default without PyVista)
+    fem.set_plotting_backend("pyvista")
+
     with mock.patch.dict(sys.modules, {"pyvista": None}):
         view = fem.ViewSolid(field, solid=solid, point_data={"Values": mesh.points})
 
@@ -180,6 +183,8 @@ def test_view_without_pyvista():
 
         with pytest.raises(ImportError):
             view.plot()
+
+    fem.set_plotting_backend(None)
 
 
 def test_view_mesh_unstructured_grid():

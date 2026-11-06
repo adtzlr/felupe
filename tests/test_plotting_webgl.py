@@ -30,7 +30,7 @@ def webgl():
 
     yield
 
-    fem.set_plotting_backend("pyvista")
+    fem.set_plotting_backend(None)
 
 
 def solved():

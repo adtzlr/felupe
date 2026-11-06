@@ -10,7 +10,9 @@ from ._pyvista import PyVistaBackend
 from ._webgl import WebGLBackend
 
 _BACKENDS = {}
-_CURRENT = "pyvista"
+
+# the name of the current plotting backend, selected automatically on import (below)
+_CURRENT = None
 
 
 def register_plotting_backend(name, backend):
@@ -88,12 +90,13 @@ def set_plotting_backend(name):
     Parameters
     ----------
     name : str or None
-        The name of a registered plotting backend. Available are ``"pyvista"``
-        (default), ``"webgl"`` and ``"matplotlib"``. If None, the plotting backend is
-        selected automatically: ``"pyvista"`` if PyVista is installed, otherwise
-        ``"webgl"`` (which requires no optional dependency). The plotting backend
+        The name of a registered plotting backend. Available are ``"pyvista"``,
+        ``"webgl"`` and ``"matplotlib"``. If None, the plotting backend is selected
+        automatically: ``"pyvista"`` if PyVista is installed, otherwise ``"webgl"``
+        (which requires no optional dependency). The plotting backend
         ``"matplotlib"`` is only selected by its name. The selected name is returned
-        by :func:`~felupe.get_plotting_backend`.
+        by :func:`~felupe.get_plotting_backend`. The default plotting backend, i.e.
+        on import of FElupe, is selected automatically.
 
     Raises
     ------
@@ -235,3 +238,6 @@ def take_screenshot(plot, *args, **kwargs):
 register_plotting_backend("pyvista", PyVistaBackend())
 register_plotting_backend("webgl", WebGLBackend())
 register_plotting_backend("matplotlib", MatplotlibBackend())
+
+# the default plotting backend is selected automatically by the installed packages
+set_plotting_backend(None)

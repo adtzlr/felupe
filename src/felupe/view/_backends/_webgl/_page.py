@@ -12,6 +12,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ....__about__ import __version__
+
 HERE = Path(__file__).parent
 
 DTYPES = {"f4": np.float32, "u4": np.uint32, "u1": np.uint8}
@@ -80,7 +82,9 @@ def fill(template, values):
 
 
 def page(scene, height=None):
-    """Return the HTML page of the viewer for a scene (a JSON-serializable dict).
+    """Return the HTML page of the viewer for a scene (a JSON-serializable dict). The
+    version of FElupe is written to a comment at the top of the page (it is not shown
+    in the plot).
 
     Parameters
     ----------
@@ -101,6 +105,7 @@ def page(scene, height=None):
     return fill(
         text,
         {
+            "VERSION": __version__,
             "HEIGHT": height or "100vh",
             "SCENE": config,
             "MODULE": module.replace("</script", "<\\/script"),

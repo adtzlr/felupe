@@ -75,6 +75,10 @@ class Mesh(DiscreteGeometry):
 
         \hat{\boldsymbol{X}_1}^T = \begin{bmatrix} 0.0 & 0.0 & 0.0 \end{bmatrix}
 
+    Other objects that refer to a mesh also have ``points``, for example a
+    :class:`~felupe.Boundary`. For these objects, ``points`` are point ids, not point
+    coordinates.
+
     Topologic cell connectivies are stored inside the ``cells``-array, see Eq.
     :eq:`cells`,
 

@@ -52,10 +52,23 @@ class Boundary:
     dof : ndarray
         1d-array of ints which contains the prescribed degrees of freedom.
     points : ndarray
-        1d-array of ints which contains the point ids on which one or more degrees of
-        freedom are prescribed.
+        1d-array of ints. It contains the ids of the points that have one or more
+        prescribed degrees of freedom. These are not the point coordinates. Refer to
+        the notes.
     value : ndarray or float
         Value of the selected (prescribed) degrees of freedom.
+
+    Notes
+    -----
+    In FElupe, the name ``points`` has two meanings:
+
+    * For a :class:`~felupe.Mesh`, ``points`` are the point coordinates.
+    * For an object that refers to a mesh, ``points`` are the point ids. Examples are
+      a :class:`~felupe.Boundary`, a :class:`~felupe.PointLoad` and a
+      :class:`~felupe.MultiPointConstraint`.
+
+    To get the point coordinates of a boundary, use its point ids as an index:
+    ``mesh.points[boundary.points]``.
 
     Examples
     --------
@@ -87,6 +100,23 @@ class Boundary:
         >>> right = fem.Boundary(displacement, fx=lambda x: np.isclose(x, x.max()))
         >>>
         >>> right.plot(color="red", plotter=mesh.plot(opacity=0.7)).show()
+
+    The ``points`` of a boundary are point ids. Use them as an index to get the point
+    coordinates.
+
+    ..  pyvista-plot::
+        :context:
+
+        >>> right.points
+        array([ 320,  641,  962, 1283, 1604, 1925])
+
+        >>> mesh.points[right.points]
+        array([[1. , 0. , 0. ],
+               [1. , 0. , 0.2],
+               [1. , 0. , 0.4],
+               [1. , 0. , 0.6],
+               [1. , 0. , 0.8],
+               [1. , 0. , 1. ]])
 
     If ``fx`` and ``fy`` are given, the masks are combined by *logical-or*.
 

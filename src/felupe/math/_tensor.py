@@ -785,7 +785,33 @@ def eigh(a, UPLO="L"):
 
 
 def eigvals(a, shear=False, eigvals=np.linalg.eigvals, **kwargs):
-    "Eigenvalues (and optional principal shear values) of a matrix A."
+    r"""Eigenvalues (and optional principal shear values) of a matrix A.
+
+    Parameters
+    ----------
+    a : ndarray of shape (M, M, ...)
+        Array with matrices. The first two axes are the tensor dimensions.
+    shear : bool, optional
+        If True, also return the principal shear values. Default is False.
+    eigvals : callable, optional
+        Eigenvalue function to use. Default is :func:`numpy.linalg.eigvals`.
+    **kwargs : dict, optional
+        Optional keyword-arguments for the eigenvalue function.
+
+    Returns
+    -------
+    ndarray
+        Eigenvalues, and optionally principal shear values stacked.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from felupe.math import eigvals
+    >>> A = np.array([[2.0, 1.0], [1.0, 2.0]])
+    >>> eigvals(A)
+    array([3., 1.])
+
+    """
     eigenvalues = eigvals(a.T, **kwargs).T
     if shear:
         dim = eigenvalues.shape[0]
@@ -877,7 +903,33 @@ def svd(a, full_matrices=True, compute_uv=True, hermitian=False):
 
 
 def transpose(A, mode=1, **kwargs):
-    "Transpose (mode=1) or major-transpose (mode=2) of matrix A."
+    r"""Transpose (mode=1) or major-transpose (mode=2) of matrix A.
+
+    Parameters
+    ----------
+    A : ndarray
+        Array with matrices. The first two axes are the tensor dimensions.
+    mode : int, optional
+        Mode of the transpose. 1 for ordinary transpose, 2 for major transpose.
+        Default is 1.
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`.
+
+    Returns
+    -------
+    ndarray
+        Transposed array.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from felupe.math import transpose
+    >>> A = np.array([[1.0, 2.0], [3.0, 4.0]])
+    >>> transpose(A)
+    array([[1., 3.],
+           [2., 4.]])
+
+    """
     if mode == 1:
         return np.einsum("ij...->ji...", A, **kwargs)
     elif mode == 2:
@@ -1195,7 +1247,38 @@ def cross(a, b):
 
 
 def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
-    "Dot-product of A and B with inputs of n trailing axes.."
+    r"""Dot-product of tensors A and B.
+
+    Parameters
+    ----------
+    A : ndarray
+        Array with tensors. The first axes are the tensor dimensions.
+    B : ndarray
+        Array with tensors. The first axes are the tensor dimensions.
+    mode : tuple of int, optional
+        Mode of operation specifying the tensor orders, e.g. (2, 2) for two
+        second-order tensors. Default is (2, 2).
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`.
+
+    Returns
+    -------
+    ndarray
+        Array with the dot products.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from felupe.math import dot
+    >>> A = np.array([[1.0, 2.0], [3.0, 4.0]])
+    >>> B = np.array([[5.0, 6.0], [7.0, 8.0]])
+    >>> dot(A, B)
+    array([[19., 22.],
+           [43., 50.]])
+
+    """
 
     einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
 

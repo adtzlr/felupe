@@ -166,8 +166,11 @@ A = umat.hessian
 # stored as a dictionary of multiple :class:`~felupe.Boundary` instances. First, the
 # left end of the cube is fixed. Displacements on the right end are fixed in directions
 # y and z whereas displacements in direction x are prescribed with a user-defined
-# ``value=0.5``. A :class:`~felupe.Boundary` holds useful attributes like
-# :attr:`~felupe.Boundary.points` or :attr:`~felupe.Boundary.dof`.
+# ``value=0.5``. A :class:`~felupe.Boundary` has useful attributes, for example
+# :attr:`~felupe.Boundary.points` and :attr:`~felupe.Boundary.dof`. The ``points`` of a
+# boundary are point ids, not point coordinates. For a :class:`~felupe.Mesh`,
+# ``points`` are the point coordinates. Thus, ``mesh.points[boundaries["move"].points]``
+# gives the coordinates of the points of the boundary ``"move"``.
 f0 = lambda x: np.isclose(x, 0)
 f1 = lambda x: np.isclose(x, 1)
 

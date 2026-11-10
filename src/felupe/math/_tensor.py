@@ -785,7 +785,46 @@ def eigh(a, UPLO="L"):
 
 
 def eigvals(a, shear=False, eigvals=np.linalg.eigvals, **kwargs):
-    "Eigenvalues (and optional principal shear values) of a matrix A."
+    r"""Return the eigenvalues (and optional principal shear values) of a matrix A.
+
+    Parameters
+    ----------
+    a : ndarray of shape (M, M, ...)
+        Array with second-order tensors.
+    shear : bool, optional
+        A flag to also return the principal shear values, i.e. the pairwise
+        differences of the eigenvalues (default is False).
+    eigvals : callable, optional
+        The eigenvalue function to use (default is :func:`numpy.linalg.eigvals`).
+    **kwargs : dict, optional
+        Optional keyword-arguments for ``eigvals``.
+
+    Returns
+    -------
+    ndarray of shape (M, ...) or (M + M (M - 1) / 2, ...)
+        Eigenvalues, followed by the principal shear values if ``shear`` is True.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    A rotation matrix is a natural example here: its eigenvalues are complex,
+    which is why one would use :func:`eigvals` instead of :func:`eigvalsh`.
+
+    >>> R = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    >>> fem.math.eigvals(R.reshape(3, 3, 1))[..., 0]
+    array([0.+1.j, 0.-1.j, 1.+0.j])
+
+    See Also
+    --------
+    numpy.linalg.eigvals : Compute the eigenvalues of a general matrix.
+    """
     eigenvalues = eigvals(a.T, **kwargs).T
     if shear:
         dim = eigenvalues.shape[0]
@@ -800,61 +839,102 @@ def eigvals(a, shear=False, eigvals=np.linalg.eigvals, **kwargs):
 
 
 def eigvalsh(A, shear=False):
-    "Eigenvalues (and optional principal shear values) of a symmetric matrix A."
+    r"""Return the eigenvalues (and optional principal shear values) of a symmetric
+    matrix A.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, M, ...)
+        Array with symmetric second-order tensors.
+    shear : bool, optional
+        A flag to also return the principal shear values, i.e. the pairwise
+        differences of the eigenvalues (default is False).
+
+    Returns
+    -------
+    ndarray of shape (M, ...) or (M + M (M - 1) / 2, ...)
+        Eigenvalues in ascending order, followed by the principal shear values if
+        ``shear`` is True.
+
+    Notes
+    -----
+    The first two axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.diag([3.0, 2.0, 1.0]).reshape(3, 3, 1)
+    >>> fem.math.eigvalsh(A)[..., 0]
+    array([1., 2., 3.])
+
+    The principal shear values are the differences between the eigenvalues.
+
+    >>> fem.math.eigvalsh(A, shear=True)[..., 0]
+    array([1., 2., 3., 1., 2., 1.])
+
+    See Also
+    --------
+    numpy.linalg.eigvalsh : Compute the eigenvalues of a symmetric matrix.
+    """
     return eigvals(A, shear=shear, eigvals=np.linalg.eigvalsh)
 
 
 def svd(a, full_matrices=True, compute_uv=True, hermitian=False):
-    """Singular Value Decomposition.
+    r"""Return the Singular Value Decomposition of a matrix A.
 
-    When `a` is a 2D array, and ``full_matrices=False``, then it is
-    factorized as ``u @ np.diag(s) @ vh = (u * s) @ vh``, where
-    `u` and the Hermitian transpose of `vh` are 2D arrays with
-    orthonormal columns and `s` is a 1D array of `a`'s singular
-    values. When `a` is higher-dimensional, SVD is applied in
-    stacked mode as explained below.
+    When ``a`` is a matrix and ``full_matrices=False``, it is factorized as
+    ``(U * S) @ Vh``, where ``U`` and the Hermitian transpose of ``Vh`` have
+    orthonormal columns and ``S`` holds the singular values. Arrays with more than two
+    axes are decomposed in stacked mode.
 
     Parameters
     ----------
-    a : (..., M, N) array_like
-        A real or complex array with ``a.ndim >= 2``.
+    a : ndarray of shape (M, N, ...)
+        Array with matrices; the first two axes are the matrix dimensions and all
+        remaining trailing axes are batch dimensions.
     full_matrices : bool, optional
-        If True (default), `u` and `vh` have the shapes ``(..., M, M)`` and
-        ``(..., N, N)``, respectively.  Otherwise, the shapes are
-        ``(..., M, K)`` and ``(..., K, N)``, respectively, where
+        If True (default), ``U`` and ``Vh`` have the shapes (M, M, ...) and (N, N,
+        ...). Otherwise they have the shapes (M, K, ...) and (K, N, ...), where
         ``K = min(M, N)``.
     compute_uv : bool, optional
-        Whether or not to compute `u` and `vh` in addition to `s`.  True
-        by default.
+        Whether to compute ``U`` and ``Vh`` in addition to ``S`` (default is True).
     hermitian : bool, optional
-        If True, `a` is assumed to be Hermitian (symmetric if real-valued),
-        enabling a more efficient method for finding singular values.
-        Defaults to False.
+        If True, ``a`` is assumed to be Hermitian (symmetric if real-valued), which
+        allows a more efficient computation (default is False).
 
     Returns
     -------
-    When `compute_uv` is True, the result is a namedtuple with the following
-    attribute names:
-
-    U : { (..., M, M), (..., M, K) } array
-        Unitary array(s). The first ``a.ndim - 2`` dimensions have the same
-        size as those of the input `a`. The size of the last two dimensions
-        depends on the value of `full_matrices`. Only returned when
-        `compute_uv` is True.
-    S : (..., K) array
-        Vector(s) with the singular values, within each vector sorted in
-        descending order. The first ``a.ndim - 2`` dimensions have the same
-        size as those of the input `a`.
-    Vh : { (..., N, N), (..., K, N) } array
-        Unitary array(s). The first ``a.ndim - 2`` dimensions have the same
-        size as those of the input `a`. The size of the last two dimensions
-        depends on the value of `full_matrices`. Only returned when
-        `compute_uv` is True.
+    SVDResult or ndarray
+        Named tuple with the fields ``U``, ``S`` and ``Vh`` when ``compute_uv`` is
+        True; only the singular values ``S`` otherwise. ``U`` is a unitary array of
+        shape (M, M, ...) or (M, K, ...), ``S`` holds the singular values in
+        descending order with shape (K, ...), and ``Vh`` is a unitary array of shape
+        (N, N, ...) or (K, N, ...).
 
     Raises
     ------
     LinAlgError
-        If SVD computation does not converge.
+        If the SVD computation does not converge.
+
+    Notes
+    -----
+    The first two axes are the matrix dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.array([[3.0, 0.0], [0.0, -4.0]])
+    >>> svd = fem.math.svd(A)
+    >>> svd.S
+    array([4., 3.])
+    >>> np.allclose((svd.U * svd.S) @ svd.Vh, A)
+    True
 
     See Also
     --------
@@ -877,7 +957,51 @@ def svd(a, full_matrices=True, compute_uv=True, hermitian=False):
 
 
 def transpose(A, mode=1, **kwargs):
-    "Transpose (mode=1) or major-transpose (mode=2) of matrix A."
+    r"""Return the transpose (mode=1) or major transpose (mode=2) of a matrix A.
+
+    Parameters
+    ----------
+    A : ndarray of shape (M, N, ...) or (M, N, P, Q, ...)
+        Array with second- or fourth-order tensors.
+    mode : int, optional
+        Transpose the first two tensor axes with ``1`` (default), or swap both pairs of
+        a fourth-order tensor with ``2``.
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray
+        Transposed array with shape (N, M, ...) for ``mode=1`` and
+        (P, Q, M, N, ...) for ``mode=2``.
+
+    Notes
+    -----
+    The first two (or four) axes are the tensor dimensions and all remaining trailing
+    axes are treated as batch dimensions. The regular transpose swaps the first two
+    axes, :math:`A_{ij} \to A_{ji}`. The major transpose swaps both pairs of a
+    fourth-order tensor, :math:`A_{ijkl} \to A_{klij}`.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.arange(6, dtype=float).reshape(2, 3)
+    >>> fem.math.transpose(A)
+    array([[0., 3.],
+           [1., 4.],
+           [2., 5.]])
+
+    >>> A = np.arange(16, dtype=float).reshape(2, 2, 2, 2)
+    >>> fem.math.transpose(A, mode=2)[0, 0]
+    array([[ 0.,  4.],
+           [ 8., 12.]])
+
+    See Also
+    --------
+    numpy.transpose : Permute the axes of an array.
+    """
     if mode == 1:
         return np.einsum("ij...->ji...", A, **kwargs)
     elif mode == 2:
@@ -1195,7 +1319,55 @@ def cross(a, b):
 
 
 def dot(A, B, mode=(2, 2), parallel=False, **kwargs):
-    "Dot-product of A and B with inputs of n trailing axes.."
+    r"""Return the dot products of first- to fourth-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray
+        Array with first- to fourth-order tensors; the order is given by ``mode``.
+    B : ndarray
+        Array with first- to fourth-order tensors; the order is given by ``mode``.
+    mode : tuple of int, optional
+        Order of the tensors in ``A`` and ``B``. The default is ``(2, 2)``, the matrix
+        product of two second-order tensors. Supported combinations are ``(1, 1)``,
+        ``(2, 1)``, ``(1, 2)``, ``(2, 2)``, ``(2, 3)``, ``(3, 2)``, ``(4, 1)``,
+        ``(1, 4)``, ``(2, 4)``, ``(4, 2)`` and ``(4, 4)``.
+    parallel : bool, optional
+        A flag to enable a threaded evaluation of the results (default is False).
+    **kwargs : dict, optional
+        Optional keyword-arguments for :func:`numpy.einsum`, e.g. ``out=None``.
+
+    Returns
+    -------
+    ndarray
+        Array with the dot products; its shape follows ``mode`` and the trailing
+        batch axes.
+
+    Notes
+    -----
+    The first ``n`` axes are the tensor dimensions (``n`` is the order of the tensor)
+    and all remaining trailing axes are treated as batch dimensions.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.array([[1.0, 2.0], [3.0, 4.0]])
+    >>> B = np.array([[5.0, 6.0], [7.0, 8.0]])
+    >>> fem.math.dot(A, B)
+    array([[19., 22.],
+           [43., 50.]])
+
+    A matrix-vector product uses ``mode=(2, 1)``.
+
+    >>> fem.math.dot(A, np.array([1.0, 2.0]), mode=(2, 1))
+    array([ 5., 11.])
+
+    See Also
+    --------
+    numpy.einsum : Einstein summation convention.
+    """
 
     einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum
 
@@ -1354,7 +1526,7 @@ def dddot(A, B, mode=(3, 3), parallel=False, **kwargs):
     A : ndarray of shape (M, M, M, ...)
         Array with third-order tensors.
     B : ndarray of shape (M, M, M, ...)
-        Array with fthird-order tensors.
+        Array with third-order tensors.
     mode : tuple of int, optional
         Mode of operation. Return the triple-dot products of two third-order tensors
         with (3, 3). Default is (3, 3).
@@ -1382,6 +1554,20 @@ def dddot(A, B, mode=(3, 3), parallel=False, **kwargs):
         c &= \boldsymbol{A} : \boldsymbol{B}
 
         c &= A_{ijk} : B_{ijk}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.arange(27, dtype=float).reshape(3, 3, 3, 1)
+    >>> B = np.ones((3, 3, 3, 1))
+    >>> fem.math.dddot(A, B)[..., 0]
+    array(351.)
+
+    See Also
+    --------
+    numpy.einsum : Einstein summation convention.
     """
 
     einsum = partial(einsum_chunks, parallel=True) if parallel else np.einsum

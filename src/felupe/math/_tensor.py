@@ -814,14 +814,12 @@ def eigvals(a, shear=False, eigvals=np.linalg.eigvals, **kwargs):
     >>> import felupe as fem
     >>> import numpy as np
     >>>
-    >>> A = np.diag([3.0, 2.0, 1.0]).reshape(3, 3, 1)
-    >>> fem.math.eigvals(A)[..., 0]
-    array([3.+0.j, 2.+0.j, 1.+0.j])
+    A rotation matrix is a natural example here: its eigenvalues are complex,
+    which is why one would use :func:`eigvals` instead of :func:`eigvalsh`.
 
-    The principal shear values are the differences between the eigenvalues.
-
-    >>> fem.math.eigvals(A, shear=True)[..., 0]
-    array([ 3.+0.j,  2.+0.j,  1.+0.j, -1.+0.j, -2.+0.j, -1.+0.j])
+    >>> R = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+    >>> fem.math.eigvals(R.reshape(3, 3, 1))[..., 0]
+    array([0.+1.j, 0.-1.j, 1.+0.j])
 
     See Also
     --------
@@ -910,15 +908,11 @@ def svd(a, full_matrices=True, compute_uv=True, hermitian=False):
     Returns
     -------
     SVDResult or ndarray
-        Named tuple with ``U``, ``S`` and ``Vh`` when ``compute_uv`` is True; only the
-        singular values ``S`` otherwise.
-
-    U : ndarray of shape (M, M, ...) or (M, K, ...)
-        Unitary array(s); only returned when ``compute_uv`` is True.
-    S : ndarray of shape (K, ...)
-        Vector(s) with the singular values, sorted in descending order.
-    Vh : ndarray of shape (N, N, ...) or (K, N, ...)
-        Unitary array(s); only returned when ``compute_uv`` is True.
+        Named tuple with the fields ``U``, ``S`` and ``Vh`` when ``compute_uv`` is
+        True; only the singular values ``S`` otherwise. ``U`` is a unitary array of
+        shape (M, M, ...) or (M, K, ...), ``S`` holds the singular values in
+        descending order with shape (K, ...), and ``Vh`` is a unitary array of shape
+        (N, N, ...) or (K, N, ...).
 
     Raises
     ------
@@ -978,7 +972,8 @@ def transpose(A, mode=1, **kwargs):
     Returns
     -------
     ndarray
-        Transposed array with the same shape as ``A``.
+        Transposed array with shape (N, M, ...) for ``mode=1`` and
+        (P, Q, M, N, ...) for ``mode=2``.
 
     Notes
     -----
@@ -1531,7 +1526,7 @@ def dddot(A, B, mode=(3, 3), parallel=False, **kwargs):
     A : ndarray of shape (M, M, M, ...)
         Array with third-order tensors.
     B : ndarray of shape (M, M, M, ...)
-        Array with fthird-order tensors.
+        Array with third-order tensors.
     mode : tuple of int, optional
         Mode of operation. Return the triple-dot products of two third-order tensors
         with (3, 3). Default is (3, 3).

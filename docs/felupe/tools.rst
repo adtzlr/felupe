@@ -46,6 +46,7 @@ Tools
 
    tools.force
    tools.moment
+   tools.curve
 
 **Detailed API Reference**
 
@@ -81,3 +82,5 @@ Tools
 .. autofunction:: felupe.tools.force
 
 .. autofunction:: felupe.tools.moment
+
+.. autofunction:: felupe.tools.curve

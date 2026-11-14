@@ -35,6 +35,8 @@ class FieldsMixed(FieldContainer):
     mesh: Mesh or None, optional
         A mesh which is used for the dual region (default is None). If None, the mesh
         is taken from the region.
+    dtype : data-type or None, optional
+        Data-type of the field values and the dual regions (default is None).
 
     Notes
     -----
@@ -69,6 +71,7 @@ class FieldsMixed(FieldContainer):
         offset=0,
         npoints=None,
         mesh=None,
+        dtype=None,
         **kwargs,
     ):
         if axisymmetric is False and planestrain is False:
@@ -94,7 +97,7 @@ class FieldsMixed(FieldContainer):
                 stacklevel=2,
             )
 
-        fields = [F(region, dim=region.mesh.dim, values=values[0])]
+        fields = [F(region, dim=region.mesh.dim, values=values[0], dtype=dtype)]
 
         for a in range(1, n):
             fields.append(
@@ -104,6 +107,7 @@ class FieldsMixed(FieldContainer):
                     offset=offset,
                     npoints=npoints,
                     mesh=mesh,
+                    dtype=dtype,
                     **kwargs,
                 )
             )

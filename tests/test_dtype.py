@@ -174,6 +174,29 @@ def test_dtype_planestrain():
     assert field.extract(grad=False)[0].dtype == np.float32
 
 
+def test_dtype_dual():
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh).astype(np.float32)
+    pressure = fem.FieldDual(region, dtype=np.float32)
+
+    assert pressure.values.dtype == np.float32
+    assert pressure.region.h.dtype == np.float32
+
+
+def test_dtype_mixed():
+    for region_type, mesh_fn, kwargs in [
+        (fem.RegionHexahedron, lambda: fem.Cube(n=3), {}),
+        (fem.RegionQuad, lambda: fem.Rectangle(n=3), {"axisymmetric": True}),
+        (fem.RegionQuad, lambda: fem.Rectangle(n=3), {"planestrain": True}),
+    ]:
+        mesh = mesh_fn()
+        region = region_type(mesh).astype(np.float32)
+        field = fem.FieldsMixed(region, n=3, dtype=np.float32, **kwargs)
+
+        assert all(f.values.dtype == np.float32 for f in field.fields)
+        assert all(f.region.h.dtype == np.float32 for f in field.fields)
+
+
 if __name__ == "__main__":
     test_dtype()
     test_dtype_newton_tol()
@@ -181,3 +204,5 @@ if __name__ == "__main__":
     test_dtype_default_tol()
     test_dtype_axi()
     test_dtype_planestrain()
+    test_dtype_dual()
+    test_dtype_mixed()

@@ -74,9 +74,11 @@ class SolidBodyCauchyStress:
         self.results = Results()
         self.results.kinematics = self._extract(self.field)
 
-        self.results.cauchy_stress = np.zeros((3, 3))
+        self.results.cauchy_stress = np.zeros((3, 3), dtype=self.field[0].values.dtype)
         if cauchy_stress is not None:
-            self.results.cauchy_stress = cauchy_stress
+            self.results.cauchy_stress = np.asarray(
+                cauchy_stress, dtype=self.field[0].values.dtype
+            )
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0
@@ -90,7 +92,9 @@ class SolidBodyCauchyStress:
         self._update_cauchy_stress(cauchy_stress)
 
     def _update_cauchy_stress(self, cauchy_stress):
-        self.results.cauchy_stress = cauchy_stress
+        self.results.cauchy_stress = np.asarray(
+            cauchy_stress, dtype=self.field[0].values.dtype
+        )
 
     def _extract(self, field):
         self.field = field

@@ -73,7 +73,7 @@ def _assemble_matrix(dof, points, centerpoint, multiplier, active, dtype=None):
 
     t = dof[points][active]
     c = dof[centerpoint][axes]
-    k = np.full(len(t), float(multiplier), dtype=dtype)
+    k = np.full(len(t), multiplier, dtype=dtype)
 
     rows = np.concatenate([t, t, c, c])
     cols = np.concatenate([t, c, t, c])

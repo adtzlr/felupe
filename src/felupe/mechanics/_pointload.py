@@ -93,7 +93,7 @@ class PointLoad:
             radius = mesh_points[self.points, 1].reshape(-1, 1)
             force[self.apply_on][self.points] *= 2 * np.pi * radius
 
-        dtype = self.field[self.apply_on].values.dtype
+        dtype = np.result_type(*[f.values.dtype for f in self.field.fields])
         self.results.force = csr_matrix(
             np.concatenate([f.ravel() for f in force]).reshape(-1, 1),
             dtype=dtype,
@@ -106,7 +106,7 @@ class PointLoad:
             self.field = field
 
         n = np.sum(self.field.fieldsizes)
-        dtype = self.field[self.apply_on].values.dtype
+        dtype = np.result_type(*[f.values.dtype for f in self.field.fields])
         self.results.stiffness = csr_matrix(
             ([0.0], ([0], [0])), shape=(n, n), dtype=dtype
         )

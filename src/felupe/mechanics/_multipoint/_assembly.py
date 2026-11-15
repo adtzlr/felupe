@@ -9,7 +9,7 @@ def _dof(mesh):
     return np.arange(mesh.ndof).reshape(mesh.points.shape)
 
 
-def _assemble_vector(dof, points, centerpoint, force, active):
+def _assemble_vector(dof, points, centerpoint, force, active, dtype=None):
     """Assemble the sparse vector of a center-point which is connected to points.
 
     Parameters
@@ -24,6 +24,8 @@ def _assemble_vector(dof, points, centerpoint, force, active):
         The forces of the connections, acting on the center-point.
     active : (n, dim) ndarray of bool
         A mask of the active components of the connections.
+    dtype : dtype or None, optional
+        Data type of the assembled sparse vector.
 
     Returns
     -------
@@ -37,10 +39,12 @@ def _assemble_vector(dof, points, centerpoint, force, active):
     rows = np.concatenate([dof[points][active], dof[centerpoint][axes]])
     values = np.concatenate([-force, force])
 
-    return csr_matrix((values, (rows, np.zeros_like(rows))), shape=(dof.size, 1))
+    return csr_matrix(
+        (values, (rows, np.zeros_like(rows))), shape=(dof.size, 1), dtype=dtype
+    )
 
 
-def _assemble_matrix(dof, points, centerpoint, multiplier, active):
+def _assemble_matrix(dof, points, centerpoint, multiplier, active, dtype=None):
     """Assemble the sparse matrix of a center-point which is connected to points by
     springs with a given stiffness (multiplier) for all active components.
 
@@ -56,6 +60,8 @@ def _assemble_matrix(dof, points, centerpoint, multiplier, active):
         The stiffness of the connections.
     active : (n, dim) ndarray of bool
         A mask of the active components of the connections.
+    dtype : dtype or None, optional
+        Data type of the assembled sparse matrix.
 
     Returns
     -------
@@ -67,10 +73,12 @@ def _assemble_matrix(dof, points, centerpoint, multiplier, active):
 
     t = dof[points][active]
     c = dof[centerpoint][axes]
-    k = np.full(len(t), float(multiplier))
+    k = np.full(len(t), float(multiplier), dtype=dtype)
 
     rows = np.concatenate([t, t, c, c])
     cols = np.concatenate([t, c, t, c])
     values = np.concatenate([k, -k, -k, k])
 
-    return coo_matrix((values, (rows, cols)), shape=(dof.size, dof.size)).tocsr()
+    return coo_matrix(
+        (values, (rows, cols)), shape=(dof.size, dof.size), dtype=dtype
+    ).tocsr()

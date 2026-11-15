@@ -462,7 +462,7 @@ class MultiPointConstraint:
         active = np.broadcast_to(self.mask, force.shape)
 
         self.results.force = _assemble_vector(
-            _dof(self.mesh), self.points, self.centerpoint, force, active
+            _dof(self.mesh), self.points, self.centerpoint, force, active, dtype=u.dtype
         )
         return self.results.force
 
@@ -472,10 +472,16 @@ class MultiPointConstraint:
         if field is not None:
             self.field = field
 
+        u = self.field.fields[0].values
         active = np.broadcast_to(self.mask, (len(self.points), self.mesh.dim))
 
         self.results.stiffness = _assemble_matrix(
-            _dof(self.mesh), self.points, self.centerpoint, self.multiplier, active
+            _dof(self.mesh),
+            self.points,
+            self.centerpoint,
+            self.multiplier,
+            active,
+            dtype=u.dtype,
         )
 
         if self.rotationpoint is not None:
@@ -546,6 +552,7 @@ class MultiPointConstraint:
         return csr_matrix(
             (values.astype(u.dtype), (rows, np.zeros_like(rows))),
             shape=(dof.size, 1),
+            dtype=u.dtype,
         )
 
     def _matrix_rotation(self):
@@ -554,6 +561,7 @@ class MultiPointConstraint:
 
         dim = self.mesh.dim
         k = self.multiplier
+        u = self.field.fields[0].values
         dof = _dof(self.mesh)
         npoints = len(self.points)
 
@@ -593,4 +601,5 @@ class MultiPointConstraint:
                 ),
             ),
             shape=(dof.size, dof.size),
+            dtype=u.dtype,
         ).tocsr()

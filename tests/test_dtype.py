@@ -197,6 +197,55 @@ def test_dtype_mixed():
         assert all(f.region.h.dtype == np.float32 for f in field.fields)
 
 
+def test_dtype_item_assembly():
+    for dtype in [np.float32, np.float64]:
+        mesh = fem.Cube(n=3)
+        mesh.add_points([[2.0, 0.5, 0.5], [2.0, 0.5, 0.5]])
+        region = fem.RegionHexahedron(mesh).astype(dtype)
+        displacement = fem.Field(region, dim=3, dtype=dtype)
+        field = fem.FieldContainer([displacement])
+
+        # PointLoad
+        load = fem.PointLoad(field, [1, 2], values=[[3], [5]])
+        assert load.assemble.vector().dtype == dtype
+        assert load.assemble.matrix().dtype == dtype
+
+        # MultiPointConstraint without rotation point
+        mpc = fem.MultiPointConstraint(
+            field, points=np.arange(mesh.npoints - 2)[mesh.x[:-2] == 1], centerpoint=-2
+        )
+        assert mpc.assemble.vector().dtype == dtype
+        assert mpc.assemble.matrix().dtype == dtype
+
+        # MultiPointConstraint with rotation point
+        mpc_rot = fem.MultiPointConstraint(
+            field,
+            points=np.arange(mesh.npoints - 2)[mesh.x[:-2] == 1],
+            centerpoint=-2,
+            rotationpoint=-1,
+        )
+        assert mpc_rot.assemble.vector().dtype == dtype
+        assert mpc_rot.assemble.matrix().dtype == dtype
+
+        # SolidBody with NearlyIncompressible
+        field_mixed = fem.FieldsMixed(region, n=3, dtype=dtype)
+        umat_mixed = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
+        solid_mixed = fem.SolidBody(umat_mixed, field_mixed)
+        assert solid_mixed.assemble.vector().dtype == dtype
+        assert solid_mixed.assemble.matrix().dtype == dtype
+
+        # SolidBody with Hyperelastic (tensortrax, if installed)
+        try:
+            import tensortrax  # noqa: F401
+
+            umat_hyper = fem.Hyperelastic(fem.mooney_rivlin, C10=1.0, C01=0.2)
+            solid_hyper = fem.SolidBody(umat_hyper, field)
+            assert solid_hyper.assemble.vector().dtype == dtype
+            assert solid_hyper.assemble.matrix().dtype == dtype
+        except ImportError:
+            pass
+
+
 if __name__ == "__main__":
     test_dtype()
     test_dtype_newton_tol()
@@ -206,3 +255,4 @@ if __name__ == "__main__":
     test_dtype_planestrain()
     test_dtype_dual()
     test_dtype_mixed()
+    test_dtype_item_assembly()

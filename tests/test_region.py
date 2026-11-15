@@ -189,7 +189,61 @@ def test_container_warning():
         region = fem.RegionTetra(mesh)
 
 
+def test_region_boundary_reload():
+    "The quantities of a boundary region are kept by copy, astype and reload."
+
+    for mesh, region_class in [
+        (fem.Cube(n=3), fem.RegionHexahedronBoundary),
+        (fem.Rectangle(n=4), fem.RegionQuadBoundary),
+    ]:
+        mask = mesh.points[:, 0] == 1
+        region = region_class(mesh, mask=mask)
+
+        dV = region.dV.sum()
+        dA = region.dA.copy()
+        normals = region.normals.copy()
+        tangents = [tangent.copy() for tangent in region.tangents]
+
+        for other in [
+            region.copy(),
+            region.astype(np.float64),
+            region.astype(np.float32),
+        ]:
+            assert np.isclose(other.dV.sum(), dV)
+            assert np.allclose(other.dA, dA)
+            assert np.allclose(other.normals, normals)
+            assert np.allclose(other.dA / other.dV, other.normals)
+
+        region.reload()
+
+        assert np.isclose(region.dV.sum(), dV)
+        assert np.allclose(region.dA, dA)
+        assert np.allclose(region.normals, normals)
+        assert all(np.allclose(new, old) for new, old in zip(region.tangents, tangents))
+        assert np.allclose(region.dA / region.dV, region.normals)
+
+    # a pressure of one on the face x=1 of a unit cube integrates to a force of -1
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedronBoundary(mesh, mask=mesh.points[:, 0] == 1)
+
+    def force(region):
+        field = fem.FieldContainer([fem.Field(region, dim=3)])
+        vector = fem.SolidBodyPressure(field, pressure=1.0).assemble.vector().toarray()
+        return vector.reshape(-1, 3).sum(axis=0)
+
+    reference = force(region)
+
+    assert np.allclose(reference, [-1.0, 0.0, 0.0])
+    assert np.allclose(force(region.copy()), reference)
+    assert np.allclose(force(region.astype(np.float32)), reference)
+
+    region.reload()
+
+    assert np.allclose(force(region), reference)
+
+
 if __name__ == "__main__":
     test_region()
     test_region_negative_volumes_cells()
     test_container_warning()
+    test_region_boundary_reload()

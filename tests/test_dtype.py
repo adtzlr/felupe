@@ -253,6 +253,33 @@ def test_dtype_item_assembly():
         assert np.allclose(r32.toarray(), r64.toarray(), rtol=1e-5, atol=1e-8)
 
 
+def test_dtype_boundary():
+    "Items on a boundary region assemble in the precision of the field."
+
+    for dtype in [np.float32, np.float64]:
+        mesh = fem.Cube(n=3)
+        region = fem.RegionHexahedronBoundary(mesh, mask=mesh.points[:, 0] == 1)
+        region = region.astype(dtype)
+
+        assert region.dA.dtype == dtype
+        assert region.dV.dtype == dtype
+        assert region.normals.dtype == dtype
+        assert all(tangent.dtype == dtype for tangent in region.tangents)
+
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
+        pressure = fem.SolidBodyPressure(field, pressure=1.0)
+        stress = fem.SolidBodyCauchyStress(field)
+
+        for item in [pressure, stress]:
+            assert item.assemble.vector().dtype == dtype
+            assert item.assemble.matrix().dtype == dtype
+
+        # a pressure of one on the face x=1 of a unit cube integrates to -1 in x
+        vector = pressure.assemble.vector().toarray().reshape(-1, 3)
+
+        assert np.allclose(vector.sum(axis=0), [-1.0, 0.0, 0.0])
+
+
 if __name__ == "__main__":
     test_dtype()
     test_dtype_newton_tol()
@@ -263,3 +290,4 @@ if __name__ == "__main__":
     test_dtype_dual()
     test_dtype_mixed()
     test_dtype_item_assembly()
+    test_dtype_boundary()

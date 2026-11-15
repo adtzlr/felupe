@@ -163,7 +163,10 @@ class IntegralFormCartesian:
             )
 
         else:
-            return sparsematrix(self.shape)
+            dtype = self.v.values.dtype
+            if self.u is not None:
+                dtype = np.result_type(dtype, self.u.values.dtype)
+            return sparsematrix(self.shape, dtype=dtype)
 
     def integrate(self, parallel=False, out=None):
         "Return evaluated (but not assembled) integrals."

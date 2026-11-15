@@ -197,6 +197,62 @@ def test_dtype_mixed():
         assert all(f.region.h.dtype == np.float32 for f in field.fields)
 
 
+def test_dtype_item_assembly():
+    def get_items(dtype):
+        mesh = fem.Cube(n=3)
+        mesh.add_points([[2.0, 0.5, 0.5], [2.0, 0.6, 0.6]])
+        region = fem.RegionHexahedron(mesh).astype(dtype)
+        displacement = fem.Field(region, dim=3, dtype=dtype)
+        field = fem.FieldContainer([displacement])
+
+        load = fem.PointLoad(field, [1, 2], values=[[3], [5]])
+
+        mpc = fem.MultiPointConstraint(
+            field, points=np.arange(mesh.npoints - 2)[mesh.x[:-2] == 1], centerpoint=-2
+        )
+
+        mpc_rot = fem.MultiPointConstraint(
+            field,
+            points=np.arange(mesh.npoints - 2)[mesh.x[:-2] == 1],
+            centerpoint=-2,
+            rotationpoint=-1,
+        )
+
+        field_mixed = fem.FieldsMixed(region, n=3, dtype=dtype)
+        umat_mixed = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
+        solid_mixed = fem.SolidBody(umat_mixed, field_mixed)
+
+        items = [load, mpc, mpc_rot, solid_mixed]
+
+        try:
+            import tensortrax  # noqa: F401
+
+            umat_hyper = fem.Hyperelastic(fem.mooney_rivlin, C10=1.0, C01=0.2)
+            solid_hyper = fem.SolidBody(umat_hyper, field)
+            items.append(solid_hyper)
+        except ImportError:
+            pass
+
+        return items
+
+    items32 = get_items(np.float32)
+    items64 = get_items(np.float64)
+
+    for item32, item64 in zip(items32, items64):
+        r32 = item32.assemble.vector()
+        K32 = item32.assemble.matrix()
+        r64 = item64.assemble.vector()
+        K64 = item64.assemble.matrix()
+
+        assert r32.dtype == np.float32
+        assert K32.dtype == np.float32
+        assert r64.dtype == np.float64
+        assert K64.dtype == np.float64
+
+        assert np.allclose(K32.toarray(), K64.toarray(), rtol=1e-5, atol=1e-6)
+        assert np.allclose(r32.toarray(), r64.toarray(), rtol=1e-5, atol=1e-8)
+
+
 if __name__ == "__main__":
     test_dtype()
     test_dtype_newton_tol()
@@ -206,3 +262,4 @@ if __name__ == "__main__":
     test_dtype_planestrain()
     test_dtype_dual()
     test_dtype_mixed()
+    test_dtype_item_assembly()

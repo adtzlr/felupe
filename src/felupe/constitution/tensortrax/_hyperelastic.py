@@ -215,7 +215,7 @@ class Hyperelastic(Material):
             )
         else:
             statevars_new = None
-        return [dot(F, 2 * dWdC), statevars_new]
+        return [dot(F, 2 * dWdC.astype(F.dtype, copy=False)), statevars_new]
 
     def _elasticity(self, x, **kwargs):
         F = np.ascontiguousarray(x[0])
@@ -230,7 +230,10 @@ class Hyperelastic(Material):
             self.fun, wrt=0, ntrax=2, full_output=True, sym=True
         )(C, *statevars, **kwargs)
         A = 4 * np.einsum(
-            "iI...,kK...,IJKL...->iJkL...", F, F, np.ascontiguousarray(d2WdCdC)
+            "iI...,kK...,IJKL...->iJkL...",
+            F,
+            F,
+            np.ascontiguousarray(d2WdCdC, dtype=F.dtype),
         )
-        B = cdya_ik(np.eye(3), 2 * dWdC)
+        B = cdya_ik(np.eye(3, dtype=F.dtype), 2 * dWdC.astype(F.dtype, copy=False))
         return [np.sum(np.broadcast_arrays(A, B), axis=0)]

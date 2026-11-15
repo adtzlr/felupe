@@ -46,6 +46,8 @@ class FieldDual(Field):
         element formulations.
     calc_points : bool or None, optional
         A flag to calculate points for the dual mesh (default is None).
+    dtype : data-type or None, optional
+        Data-type of the field values and the dual region (default is None).
     **kwargs : dict, optional
         Optional keyword arguments for the dual region.
 
@@ -92,6 +94,7 @@ class FieldDual(Field):
         mesh=None,
         disconnect=None,
         calc_points=None,
+        dtype=None,
         **kwargs,
     ):
 
@@ -159,4 +162,7 @@ class FieldDual(Field):
 
         region_dual = RegionDual(mesh, **{**kwargs0, **kwargs})
 
-        super().__init__(region_dual, dim=dim, values=values)
+        if dtype is not None:
+            region_dual = region_dual.astype(dtype, copy=False)
+
+        super().__init__(region_dual, dim=dim, values=values, dtype=dtype)

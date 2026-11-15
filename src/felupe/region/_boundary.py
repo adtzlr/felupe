@@ -553,7 +553,35 @@ class RegionBoundary(Region):
         # init region and faces
         super().__init__(mesh_boundary_cells, element, quadrature, grad=grad)
 
-        if grad:
+    def reload(
+        self,
+        mesh=None,
+        element=None,
+        quadrature=None,
+        grad=None,
+        hess=None,
+        uniform=None,
+    ):
+        r"""Reload the region inplace and re-evaluate the quantities of the cells on the
+        boundary, i.e. the area vectors :math:`d\boldsymbol{A}`, the area measures
+        :math:`dV`, the unit normal vectors :math:`\boldsymbol{n}` and the unit tangent
+        vectors :math:`\boldsymbol{t}`.
+
+        See Also
+        --------
+        felupe.Region.reload : Reload the numeric region inplace.
+        """
+
+        super().reload(
+            mesh=mesh,
+            element=element,
+            quadrature=quadrature,
+            grad=grad,
+            hess=hess,
+            uniform=uniform,
+        )
+
+        if self.evaluate_gradient:
             self.dA, self.dV, self.normals, self.tangents = self._init_faces()
 
     def _init_faces(self):
@@ -566,11 +594,11 @@ class RegionBoundary(Region):
             or self.mesh.cell_type == "quad8"
             or self.mesh.cell_type == "quad9"
         ):
-            dA_1 = self.dXdr[:, 0][::-1]
-            dA_1[0] = -dA_1[0]
+            # the tangent of the edge is kept, only the normal vector is rotated
+            dX_1 = self.dXdr[:, 0]
 
-            dX_1 = -self.dXdr[:, 0]
-            dX_1[0] = -dX_1[0]
+            dA_1 = dX_1[::-1].copy()
+            dA_1[0] = -dA_1[0]
 
             tangents.append(dX_1 / np.linalg.norm(dX_1, axis=0))
 

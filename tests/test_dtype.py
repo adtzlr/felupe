@@ -265,6 +265,9 @@ def test_dtype_item_assembly():
         )
         thermal.results.statevars = np.zeros_like(temperature[0].values)
 
+        body_force = fem.SolidBodyForce(field, values=[1.0, 0.0, 0.0])
+        body_force.update([2.0, 0.0, 0.0])
+
         items = [
             load,
             mpc,
@@ -276,6 +279,8 @@ def test_dtype_item_assembly():
             form_linear,
             form_bilinear,
             fem.SolidBodyForce(field),
+            fem.SolidBodyForce(field, values=[1.0, 0.0, 0.0]),
+            body_force,
             thermal,
             fem.thermal.SolidBodyHeatFlux(temperature_boundary, heat_flux=1.0),
             fem.thermal.SolidBodySurfaceHeatTransfer(

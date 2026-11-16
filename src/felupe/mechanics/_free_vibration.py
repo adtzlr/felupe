@@ -100,8 +100,9 @@ class FreeVibration:
 
         # init matrix with shape from global field
         shape = (np.sum(x.fieldsizes), np.sum(x.fieldsizes))
-        stiffness = csr_matrix(shape)
-        mass = csr_matrix(shape)
+        dtype = np.result_type(*[f.values.dtype for f in getattr(x, "fields", [x])])
+        stiffness = csr_matrix(shape, dtype=dtype)
+        mass = csr_matrix(shape, dtype=dtype)
 
         # assemble matrices
         for item in self.items:

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import numpy as np
 from scipy.sparse import csr_array, csr_matrix, diags
 
 from ..assembly import IntegralForm
@@ -144,7 +145,7 @@ class SolidBodyThermal(SolidBody):
         self.time_step = time_step
 
         # assemble capacity matrix
-        self.capacity = self._mass()
+        self.capacity = self._mass().astype(self.field[0].values.dtype)
 
         if lumped_capacity:
             self.capacity = diags(csr_array(self.capacity).sum(axis=1))
@@ -169,7 +170,9 @@ class SolidBodyThermal(SolidBody):
             temperature_new = self.results._statevars  # new temperature
             temperature_diff = (temperature_new - temperature_old).reshape(-1, 1)
 
-            self.results.force = csr_matrix(self.capacity @ temperature_diff)
+            self.results.force = csr_matrix(
+                self.capacity @ temperature_diff, dtype=self.field[0].values.dtype
+            )
             return self.results.force
 
         self.results.stress = self.results.heat_flux = self._gradient(field)
@@ -186,8 +189,11 @@ class SolidBodyThermal(SolidBody):
         temperature_diff = (temperature_new - temperature_old).reshape(-1, 1)
 
         if self.time_step is not None and self.time_step > 0:
-            temperature_rate = temperature_diff / self.time_step
-            self.results.force += csr_matrix(self.capacity @ temperature_rate)
+            time_step = np.asarray(self.time_step, dtype=self.field[0].values.dtype)
+            temperature_rate = temperature_diff / time_step
+            self.results.force += csr_matrix(
+                self.capacity @ temperature_rate, dtype=self.field[0].values.dtype
+            )
 
         return self.results.force
 
@@ -214,7 +220,8 @@ class SolidBodyThermal(SolidBody):
         self.results.stiffness = form.assemble(values=self.results.stiffness_values)
 
         if self.time_step is not None and self.time_step > 0:
-            self.results.stiffness += self.capacity / self.time_step
+            time_step = np.asarray(self.time_step, dtype=self.field[0].values.dtype)
+            self.results.stiffness += self.capacity * np.reciprocal(time_step)
 
         return self.results.stiffness
 

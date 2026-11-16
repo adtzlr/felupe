@@ -113,5 +113,8 @@ class Laplace(ConstitutiveMaterial):
         ones = np.ones(ntrax, dtype=int)
 
         return [
-            self.multiplier * cdya_ik(np.eye(n), np.eye(m)).reshape(n, m, n, m, *ones)
+            self.multiplier
+            * cdya_ik(np.eye(n, dtype=x[0].dtype), np.eye(m, dtype=x[0].dtype)).reshape(
+                n, m, n, m, *ones
+            )
         ]

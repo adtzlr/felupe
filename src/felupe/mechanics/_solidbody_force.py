@@ -66,7 +66,9 @@ class SolidBodyForce:
         )
         self._form = IntegralForm
 
-        self.results.values = np.zeros(self.field[0].dim)
+        self.results.values = np.zeros(
+            self.field[0].dim, dtype=self.field[0].values.dtype
+        )
         if values is not None:
             self.results.values = np.array(values)
 
@@ -116,6 +118,10 @@ class SolidBodyForce:
             self.field = field
 
         n = np.sum(self.field.fieldsizes)
-        self.results.stiffness = csr_matrix(([0.0], ([0], [0])), shape=(n, n))
+        self.results.stiffness = csr_matrix(
+            ([0.0], ([0], [0])),
+            shape=(n, n),
+            dtype=self.field[0].values.dtype,
+        )
 
         return self.results.stiffness

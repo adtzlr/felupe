@@ -76,6 +76,13 @@ class PointLoad:
         return UpdateItem(self, key)
 
     def update(self, values):
+        """Update the values of the point load inplace.
+
+        Parameters
+        ----------
+        values : float or array_like
+            The new values applied at the points.
+        """
         self._update_values(values)
 
     def _update_values(self, values):

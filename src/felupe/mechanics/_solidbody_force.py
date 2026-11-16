@@ -76,6 +76,13 @@ class SolidBodyForce:
         return UpdateItem(self, key)
 
     def update(self, values):
+        r"""Update the values of the body force inplace.
+
+        Parameters
+        ----------
+        values : ndarray
+            The new prescribed values, e.g. gravity :math:`\boldsymbol{g}`.
+        """
         self._update_values(values)
 
     def _update_values(self, values):

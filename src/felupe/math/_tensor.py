@@ -1011,6 +1011,46 @@ def transpose(A, mode=1, **kwargs):
 
 
 def majortranspose(A):
+    r"""Return the major transposes of fourth-order tensors.
+
+    Parameters
+    ----------
+    A : ndarray of shape (2, 2, 2, 2, ...)
+        The array of fourth-order tensors.
+
+    Returns
+    -------
+    ndarray of shape (2, 2, 2, 2, ...)
+        The array with the major transposes.
+
+    Notes
+    -----
+    The first four axes are the tensor dimensions and all remaining trailing axes are
+    treated as batch dimensions.
+
+    The major transpose of a fourth-order tensor is obtained by swapping the pair of
+    the first two tensor axes with the pair of the last two tensor axes.
+
+    ..  math::
+
+        \boldsymbol{A}^T = A_{ijkl} \ \boldsymbol{e}_i \otimes \boldsymbol{e}_j
+            \otimes \boldsymbol{e}_k \otimes \boldsymbol{e}_l \quad \rightarrow
+            \quad A^T_{ijkl} = A_{klij}
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.arange(16).reshape(2, 2, 2, 2)
+    >>> B = fem.math.majortranspose(A)
+    >>> B[0, 1, 1, 0]
+    array(9)
+
+    See Also
+    --------
+    felupe.math.transpose : Transpose the tensor dimensions of an array.
+    """
     return transpose(A, mode=2)
 
 
@@ -1650,10 +1690,72 @@ def tovoigt(A, strain=False):
 
 
 def reshape(A, shape, trailing_axes=2):
+    """Reshape the tensor dimensions of an array and keep its trailing axes.
+
+    Parameters
+    ----------
+    A : ndarray
+        The array with the tensor dimensions as leading axes and the trailing axes to
+        be kept.
+    shape : tuple of int
+        The new shape of the tensor dimensions, i.e. of the leading axes without the
+        trailing axes.
+    trailing_axes : int, optional
+        The number of trailing axes which are kept (default is 2).
+
+    Returns
+    -------
+    ndarray
+        The reshaped array.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.arange(16).reshape(2, 2, 2, 2)
+    >>> fem.math.reshape(A, shape=(4,)).shape
+    (4, 2, 2)
+
+    See Also
+    --------
+    numpy.reshape : Give a new shape to an array without changing its data.
+    felupe.math.ravel : Ravel the tensor dimensions of an array.
+    """
     return A.reshape(np.append(shape, A.shape[-trailing_axes:]))
 
 
 def ravel(A, trailing_axes=2):
+    """Ravel the tensor dimensions of an array into a single axis and keep its
+    trailing axes.
+
+    Parameters
+    ----------
+    A : ndarray
+        The array with the tensor dimensions as leading axes and the trailing axes to
+        be kept.
+    trailing_axes : int, optional
+        The number of trailing axes which are kept (default is 2).
+
+    Returns
+    -------
+    ndarray
+        The raveled array.
+
+    Examples
+    --------
+    >>> import felupe as fem
+    >>> import numpy as np
+    >>>
+    >>> A = np.arange(16).reshape(2, 2, 2, 2)
+    >>> fem.math.ravel(A).shape
+    (4, 2, 2)
+
+    See Also
+    --------
+    felupe.math.reshape : Reshape the tensor dimensions of an array and keep its
+        trailing axes.
+    """
     ij, shape = np.split(A.shape, [-trailing_axes])
     return reshape(A, shape=np.prod(ij))
 

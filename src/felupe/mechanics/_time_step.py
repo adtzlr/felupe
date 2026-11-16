@@ -106,6 +106,26 @@ class TimeStep:
         self.items = items
 
     def update(self, time_new):
+        """Update the time increment of all items inplace.
+
+        Parameters
+        ----------
+        time_new : float
+            The new time. The time increment is evaluated as the difference between the
+            new time and the old time, see Eq. :eq:`time-step`, and is assigned to the
+            attribute ``time_step`` of each item. Afterwards, the new time becomes the
+            old time.
+
+        Raises
+        ------
+        ValueError
+            If the new time is smaller than the old time.
+
+        See Also
+        --------
+        felupe.TimeStep.checkpoint : Return a checkpoint of the time step item.
+        felupe.TimeStep.restore : Restore a checkpoint of the time step item.
+        """
         time_step = time_new - self.time_old
 
         if time_step < 0:

@@ -216,6 +216,20 @@ class FieldContainer:
         self.offsets = np.cumsum(self.fieldsizes)[:-1]
 
     def extracted_fields(self):
+        """Return the list of fields, optionally taken by field indices.
+
+        Returns
+        -------
+        list of Field
+            The list of fields of the field container. If the field container was
+            created with the ``take``-argument, only the fields selected by the
+            indices of ``take`` are returned, in the order given by ``take``.
+
+        See Also
+        --------
+        felupe.FieldContainer.extract : Generalized extraction method which evaluates
+            either the gradient or the field values.
+        """
         if self.take is None:
             return self.fields
         return [self.fields[i] for i in self.take]

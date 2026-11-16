@@ -80,7 +80,7 @@ class PointLoad:
 
         Parameters
         ----------
-        values : float or array_like
+        values : array_like
             The new values applied at the points.
         """
         self._update_values(values)

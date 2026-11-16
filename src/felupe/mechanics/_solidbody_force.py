@@ -80,7 +80,7 @@ class SolidBodyForce:
 
         Parameters
         ----------
-        values : ndarray
+        values : array_like
             The new prescribed values, e.g. gravity :math:`\boldsymbol{g}`.
         """
         self._update_values(values)

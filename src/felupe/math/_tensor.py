@@ -1015,12 +1015,12 @@ def majortranspose(A):
 
     Parameters
     ----------
-    A : ndarray of shape (2, 2, 2, 2, ...)
+    A : ndarray of shape (I, J, K, L, ...)
         The array of fourth-order tensors.
 
     Returns
     -------
-    ndarray of shape (2, 2, 2, 2, ...)
+    ndarray of shape (K, L, I, J, ...)
         The array with the major transposes.
 
     Notes
@@ -1044,8 +1044,8 @@ def majortranspose(A):
     >>>
     >>> A = np.arange(16).reshape(2, 2, 2, 2)
     >>> B = fem.math.majortranspose(A)
-    >>> B[0, 1, 1, 0]
-    array(9)
+    >>> B[0, 1, 1, 0].item()
+    9
 
     See Also
     --------

@@ -277,9 +277,9 @@ class IntegralForm:
             Flag to assemble a single blocked sparse vector or matrix (default is True).
             If False, a list of the sparse vectors or matrices of the sub-forms is
             returned.
-        out : None, optional
-            Not used. Argument is kept for a consistent signature with
-            :meth:`~felupe.assembly.IntegralForm.integrate` (default is None).
+        out : ndarray or None, optional
+            Output buffer for integration (default is None). Passed to each sub-form
+            and used only when its integrated values are not provided.
 
         Returns
         -------

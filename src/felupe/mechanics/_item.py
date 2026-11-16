@@ -205,7 +205,9 @@ class FormItem:
         else:
             from scipy.sparse import csr_matrix
 
-            self.results.force = csr_matrix((sum(self.field.fieldsizes), 1))
+            self.results.force = csr_matrix(
+                (sum(self.field.fieldsizes), 1), dtype=self.field[0].values.dtype
+            )
 
         return self.results.force
 
@@ -226,6 +228,8 @@ class FormItem:
             from scipy.sparse import csr_matrix
 
             size = sum(self.field.fieldsizes)
-            self.results.stiffness = csr_matrix((size, size))
+            self.results.stiffness = csr_matrix(
+                (size, size), dtype=self.field[0].values.dtype
+            )
 
         return self.results.stiffness

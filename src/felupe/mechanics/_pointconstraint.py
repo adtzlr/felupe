@@ -145,7 +145,9 @@ class PointConstraint:
         ndof = self.field[0].values.size
 
         self.results.force = csr_matrix(
-            (force.ravel(), (dof, np.zeros_like(dof))), shape=(ndof, 1)
+            (force.ravel(), (dof, np.zeros_like(dof))),
+            shape=(ndof, 1),
+            dtype=self.field[0].values.dtype,
         )
         return self.results.force
 
@@ -161,7 +163,9 @@ class PointConstraint:
         cols = np.tile(dof, (1, self.dim)).ravel()
 
         self.results.stiffness = coo_matrix(
-            (matrix.ravel(), (rows, cols)), shape=(ndof, ndof)
+            (matrix.ravel(), (rows, cols)),
+            shape=(ndof, ndof),
+            dtype=self.field[0].values.dtype,
         ).tocsr()
         return self.results.stiffness
 

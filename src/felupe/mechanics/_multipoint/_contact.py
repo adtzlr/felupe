@@ -279,6 +279,7 @@ class MultiPointContact:
             self.centerpoint,
             self.multiplier * gap,
             active,
+            dtype=self.field[0].values.dtype,
         )
         return self.results.force
 
@@ -291,6 +292,11 @@ class MultiPointContact:
         _, active = self._contact()
 
         self.results.stiffness = _assemble_matrix(
-            _dof(self.mesh), self.points, self.centerpoint, self.multiplier, active
+            _dof(self.mesh),
+            self.points,
+            self.centerpoint,
+            self.multiplier,
+            active,
+            dtype=self.field[0].values.dtype,
         )
         return self.results.stiffness

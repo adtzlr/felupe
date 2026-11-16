@@ -130,7 +130,9 @@ class SolidBodyHeatFlux:
         self.field = field
         self.time_step = None
 
-        self.assemble = Assemble(vector=self._vector, matrix=None, multiplier=-1.0)
+        self.assemble = Assemble(
+            vector=self._vector, matrix=self._matrix, multiplier=-1.0
+        )
         self.results = Results()
 
         if heat_flux is not None:
@@ -144,12 +146,28 @@ class SolidBodyHeatFlux:
             self.field = field
 
         if self.time_step is not None and self.time_step == 0:  # inactive time step
-            return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
+            return csr_matrix(
+                ([0.0], ([0], [0])),
+                shape=(1, 1),
+                dtype=self.field[0].values.dtype,
+            )
 
-        fun = [-self.results.heat_flux * np.ones((1, 1))]
+        fun = [
+            -self.results.heat_flux * np.ones((1, 1), dtype=self.field[0].values.dtype)
+        ]
 
         self.results.force = IntegralForm(
             fun=fun, v=self.field, dV=self.field.region.dV, grad_v=[False]
         ).assemble(**kwargs)
 
         return self.results.force
+
+    def _matrix(self, field=None, **kwargs):
+        if field is not None:
+            self.field = field
+
+        return csr_matrix(
+            ([0.0], ([0], [0])),
+            shape=(1, 1),
+            dtype=self.field[0].values.dtype,
+        )

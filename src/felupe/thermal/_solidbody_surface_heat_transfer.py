@@ -114,7 +114,11 @@ class SolidBodySurfaceHeatTransfer:
             self.field = field
 
         if self.time_step is not None and self.time_step == 0:  # inactive time step
-            return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
+            return csr_matrix(
+                ([0.0], ([0], [0])),
+                shape=(1, 1),
+                dtype=self.field[0].values.dtype,
+            )
 
         temperature = self.field.extract(grad=False)[0]
         fun = [-self.results.coefficient * (temperature - self.results.temperature)]
@@ -130,10 +134,17 @@ class SolidBodySurfaceHeatTransfer:
             self.field = field
 
         if self.time_step is not None and self.time_step == 0:  # inactive time step
-            return csr_matrix(([0.0], ([0], [0])), shape=(1, 1))
+            return csr_matrix(
+                ([0.0], ([0], [0])),
+                shape=(1, 1),
+                dtype=self.field[0].values.dtype,
+            )
 
         dim = self.field[0].dim
-        fun = [-self.results.coefficient * np.eye(dim).reshape(dim, dim, 1, 1)]
+        fun = [
+            -self.results.coefficient
+            * np.eye(dim, dtype=self.field[0].values.dtype).reshape(dim, dim, 1, 1)
+        ]
 
         self.results.stiffness = IntegralForm(
             fun=fun,

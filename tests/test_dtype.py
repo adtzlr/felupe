@@ -204,6 +204,7 @@ def test_dtype_item_assembly():
         region = fem.RegionHexahedron(mesh).astype(dtype)
         displacement = fem.Field(region, dim=3, dtype=dtype)
         field = fem.FieldContainer([displacement])
+        field[0].values[-2, 0] = -2.0
 
         load = fem.PointLoad(field, [1, 2], values=[[3], [5]])
 
@@ -218,11 +219,72 @@ def test_dtype_item_assembly():
             rotationpoint=-1,
         )
 
+        contact = fem.MultiPointContact(
+            field,
+            points=np.arange(mesh.npoints - 2)[mesh.x[:-2] == 1],
+            centerpoint=-2,
+        )
+
+        cartesian = fem.CartesianConstraint(field, points=[0])
+        cylindrical = fem.CylindricalConstraint(
+            field,
+            points=[np.arange(mesh.npoints - 2)[mesh.x[:-2] == 1][0]],
+            center=(0.5, 0.5, 0.5),
+            axis=(1.0, 0.0, 0.0),
+        )
+
         field_mixed = fem.FieldsMixed(region, n=3, dtype=dtype)
         umat_mixed = fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=5000)
         solid_mixed = fem.SolidBody(umat_mixed, field_mixed)
 
-        items = [load, mpc, mpc_rot, solid_mixed]
+        @fem.Form(v=field)
+        def linearform():
+            return [lambda v: fem.math.ddot(v, v)]
+
+        @fem.Form(v=field, u=field)
+        def bilinearform():
+            return [lambda v, u: fem.math.ddot(v, u)]
+
+        form_linear = fem.FormItem(linearform=linearform)
+        form_bilinear = fem.FormItem(bilinearform=bilinearform)
+
+        boundary = fem.RegionHexahedronBoundary(mesh, mask=mesh.x == 1).astype(dtype)
+        temperature = fem.FieldContainer([fem.Field(region, dim=1, dtype=dtype)])
+        temperature_boundary = fem.FieldContainer(
+            [fem.Field(boundary, dim=1, dtype=dtype)]
+        )
+        temperature[0].values[:] = 1.0
+        temperature_boundary[0].values[:] = 1.0
+
+        thermal = fem.thermal.SolidBodyThermal(
+            temperature,
+            mass_density=1.0,
+            specific_heat_capacity=1.0,
+            thermal_conductivity=1.0,
+            time_step=1.0,
+        )
+        thermal.results.statevars = np.zeros_like(temperature[0].values)
+
+        items = [
+            load,
+            mpc,
+            mpc_rot,
+            contact,
+            cartesian,
+            cylindrical,
+            solid_mixed,
+            form_linear,
+            form_bilinear,
+            fem.SolidBodyForce(field),
+            thermal,
+            fem.thermal.SolidBodyHeatFlux(temperature_boundary, heat_flux=1.0),
+            fem.thermal.SolidBodySurfaceHeatTransfer(
+                temperature_boundary, coefficient=1.0, temperature=0.0
+            ),
+            fem.thermal.SolidBodySurfaceRadiation(
+                temperature_boundary, emissivity=0.5, temperature=0.0
+            ),
+        ]
 
         try:
             import tensortrax  # noqa: F401
@@ -244,10 +306,10 @@ def test_dtype_item_assembly():
         r64 = item64.assemble.vector()
         K64 = item64.assemble.matrix()
 
-        assert r32.dtype == np.float32
-        assert K32.dtype == np.float32
-        assert r64.dtype == np.float64
-        assert K64.dtype == np.float64
+        assert r32.dtype == np.float32, type(item32).__name__
+        assert K32.dtype == np.float32, type(item32).__name__
+        assert r64.dtype == np.float64, type(item64).__name__
+        assert K64.dtype == np.float64, type(item64).__name__
 
         assert np.allclose(K32.toarray(), K64.toarray(), rtol=1e-5, atol=1e-6)
         assert np.allclose(r32.toarray(), r64.toarray(), rtol=1e-5, atol=1e-8)

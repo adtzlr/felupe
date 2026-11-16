@@ -284,7 +284,9 @@ class ContactRigidBase(ABC):
 
         u = self.field[0].values
 
-        return self.dX + (u[self.points] - u[self.centerpoint])
+        return (self.dX + (u[self.points] - u[self.centerpoint])).astype(
+            u.dtype, copy=False
+        )
 
     def checkpoint(self):
         """Return a checkpoint of the state of the contact.
@@ -503,8 +505,8 @@ class ContactRigidBase(ABC):
                     ds[first] = -g_n[first] / (g_n[first] - g_new[first]) ** 2
 
                     e[new] = s.reshape(-1, 1) * delta
-                    E[new] = s.reshape(-1, 1, 1) * D + ds.reshape(-1, 1, 1) * np.einsum(
-                        "ai,aj->aij", delta, n[new]
+                    E[new] = s.reshape(-1, 1, 1) * D + ds.reshape(-1, 1, 1) * (
+                        delta[:, :, None] * n[new][:, None, :]
                     )
 
                 force_n_abs = -lambda_n * g
@@ -536,8 +538,8 @@ class ContactRigidBase(ABC):
 
                 if self.elastic_slip is not None:
                     # derivative of the tangential multipliers w.r.t. the gap vector
-                    stiffness_t -= (mu * lambda_n / self.elastic_slip) * np.einsum(
-                        "ai,aj->aij", e, n
+                    stiffness_t -= (mu * lambda_n / self.elastic_slip) * (
+                        e[:, :, None] * n[:, None, :]
                     )
 
                 if np.any(slide):

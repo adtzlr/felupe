@@ -57,6 +57,10 @@ class BilinearForm:
         if kwargs is None:
             kwargs = {}
 
+        dtypes = [self.v.field.values.dtype, self.u.field.values.dtype]
+        if self.dx is not None:
+            dtypes.append(np.asarray(self.dx).dtype)
+
         values = np.zeros(
             (
                 len(self.v.basis),
@@ -65,7 +69,8 @@ class BilinearForm:
                 self.u.basis.shape[-4],
                 self.u.basis.shape[-2],
                 self.u.field.region.mesh.ncells,
-            )
+            ),
+            dtype=np.result_type(*dtypes),
         )
 
         if not parallel:

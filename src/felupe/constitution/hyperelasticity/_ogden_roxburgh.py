@@ -116,7 +116,7 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         statevars_new = statevars.copy()
         statevars_new[0] = Wmax
 
-        return [eta * P, statevars_new]
+        return [np.asarray(eta * P, dtype=P.dtype), statevars_new]
 
     def _hessian(self, x):
         # unpack variables into deformation gradient and state variables
@@ -148,4 +148,4 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         # set non-softened derivative to zero
         detadW[np.isclose(eta, 1)] = 0
 
-        return [eta * A + detadW * dya(P, P)]
+        return [np.asarray(eta * A + detadW * dya(P, P), dtype=A.dtype)]

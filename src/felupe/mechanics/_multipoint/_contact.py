@@ -175,6 +175,40 @@ class MultiPointContact:
         deformed=True,
         **kwargs,
     ):
+        """Plot the contact plane (a line or a rectangle) at the center-point of the
+        multi-point contact.
+
+        Parameters
+        ----------
+        plotter : object or None, optional
+            A plotter of the active plotting backend (default is None). If None, a new
+            plotter is created.
+        offset : float, optional
+            An offset which is added to the plane position along the normal axis of
+            the center-point (default is 0).
+        show_edges : bool, optional
+            Not used. Argument is kept for a consistent signature with the other plot
+            methods (default is True).
+        color : str, optional
+            The color of the contact plane (default is "black").
+        opacity : float, optional
+            The opacity of the contact plane (default is 0.5).
+        deformed : bool, optional
+            Flag to plot the contact plane on the deformed mesh points (default is
+            True).
+        **kwargs : dict, optional
+            Additional keyword arguments for the plotting backend.
+
+        Returns
+        -------
+        object
+            The plotter with the added contact plane.
+
+        See Also
+        --------
+        felupe.MultiPointConstraint : A Multi-point-constraint which connects a
+            center-point to a list of points.
+        """
         backend = backend_of(plotter)
 
         if plotter is None:

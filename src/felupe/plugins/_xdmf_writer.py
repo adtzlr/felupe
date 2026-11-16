@@ -113,6 +113,38 @@ class XDMFWriterPlugin(Plugin):
         kwargs,
         time=None,
     ):
+        """Configure the attributes of the XDMF writer plugin.
+
+        Parameters
+        ----------
+        filename : str or None
+            The filename of the XDMF result file, including the file extension, e.g.
+            ``"result.xdmf"``. If None, no result file is written.
+        mesh : Mesh or None
+            A mesh which is used for the XDMF time series writer. If None, it is taken
+            from the keyword-argument ``x0`` or from the field of the first item of the
+            first step.
+        point_data : dict or None
+            Additional dict of point-data, i.e. functions ``fun(field, substep)``.
+        cell_data : dict or None
+            Additional dict of cell-data, i.e. functions ``fun(field, substep)``.
+        point_data_default : bool
+            Flag to write default point-data, i.e. the displacements.
+        cell_data_default : bool
+            Flag to write default cell-data, i.e. the (principal values of the)
+            logarithmic strains and the deformation gradients.
+        kwargs : dict or None
+            The keyword-arguments of the evaluation of the job, e.g. ``x0``.
+        time : TimeStep or None, optional
+            A time step item. If given, its (absolute) time is the time of the result
+            file. If None, the (zero-based) index of the substep within the job is the
+            time of the result file (default is None).
+
+        See Also
+        --------
+        felupe.XDMFWriterPlugin : A job plugin to write XDMF files during job
+            evaluation.
+        """
         self.filename = filename
         self.mesh = mesh
         self.kwargs = {} if kwargs is None else kwargs

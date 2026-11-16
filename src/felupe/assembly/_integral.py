@@ -262,6 +262,37 @@ class IntegralForm:
             raise ValueError("Unknown input format.")
 
     def assemble(self, values=None, parallel=False, block=True, out=None):
+        """Assemble the sparse global vector or matrix out of the integrated (but not
+        assembled) results of all sub-forms.
+
+        Parameters
+        ----------
+        values : list of ndarray or None, optional
+            The list of integrated (but not assembled) results, one item per sub-form,
+            e.g. the output of :meth:`~felupe.assembly.IntegralForm.integrate` (default
+            is None). If None, the sub-forms are integrated first.
+        parallel : bool, optional
+            Flag to use a threaded assembly of the sub-forms (default is False).
+        block : bool, optional
+            Flag to assemble a single blocked sparse vector or matrix (default is True).
+            If False, a list of the sparse vectors or matrices of the sub-forms is
+            returned.
+        out : ndarray or None, optional
+            Output buffer for integration (default is None). Passed to each sub-form
+            and used only when its integrated values are not provided.
+
+        Returns
+        -------
+        scipy.sparse.csr_matrix or list of scipy.sparse.csr_matrix
+            The assembled sparse global vector for a linear form or the assembled
+            sparse global matrix for a bilinear form. A list with the sparse vectors or
+            matrices of the sub-forms is returned if ``block=False``.
+
+        See Also
+        --------
+        felupe.IntegralForm.integrate : Integrate all sub-forms.
+
+        """
         res = []
 
         if values is None:
@@ -318,6 +349,30 @@ class IntegralForm:
         return res
 
     def integrate(self, parallel=False, out=None):
+        """Integrate all sub-forms and return the integrated (but not assembled)
+        results.
+
+        Parameters
+        ----------
+        parallel : bool, optional
+            Flag to use a threaded integration of the sub-forms (default is False).
+        out : list of ndarray or None, optional
+            A location into which the results are stored, as a list with one array per
+            sub-form (default is None). If not provided or None, a freshly-allocated
+            list of arrays is returned.
+
+        Returns
+        -------
+        list of ndarray
+            The integrated (but not assembled) results, one array per sub-form, to be
+            used as the ``values``-argument of
+            :meth:`~felupe.assembly.IntegralForm.assemble`.
+
+        See Also
+        --------
+        felupe.IntegralForm.assemble : Assemble the sparse global vector or matrix.
+
+        """
         if out is None:
             out = [None] * len(self.forms)
 

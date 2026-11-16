@@ -82,6 +82,13 @@ class SolidBodyPressure:
         return UpdateItem(self, key)
 
     def update(self, pressure):
+        r"""Update the pressure of the solid body inplace.
+
+        Parameters
+        ----------
+        pressure : float or ndarray
+            The new scaling factor for the prescribed pressure :math:`p`.
+        """
         self._update_pressure(pressure)
 
     def _update_pressure(self, pressure):

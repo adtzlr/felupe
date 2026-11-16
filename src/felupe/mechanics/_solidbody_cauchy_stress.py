@@ -89,6 +89,13 @@ class SolidBodyCauchyStress:
         return UpdateItem(self, key)
 
     def update(self, cauchy_stress):
+        r"""Update the Cauchy stress tensor of the solid body inplace.
+
+        Parameters
+        ----------
+        cauchy_stress : ndarray of shape (3, 3, ...)
+            The new prescribed Cauchy stress components :math:`\sigma_{ij}`.
+        """
         self._update_cauchy_stress(cauchy_stress)
 
     def _update_cauchy_stress(self, cauchy_stress):

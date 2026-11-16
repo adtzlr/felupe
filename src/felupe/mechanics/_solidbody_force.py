@@ -70,7 +70,7 @@ class SolidBodyForce:
             self.field[0].dim, dtype=self.field[0].values.dtype
         )
         if values is not None:
-            self.results.values = np.array(values)
+            self.results.values = np.array(values, dtype=self.field[0].values.dtype)
 
         self.results.scale = scale
 
@@ -88,7 +88,7 @@ class SolidBodyForce:
         self._update_values(values)
 
     def _update_values(self, values):
-        self.results.values = np.array(values)
+        self.results.values = np.array(values, dtype=self.field[0].values.dtype)
 
     def _update_scale(self, scale):
         self.results.scale = scale

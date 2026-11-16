@@ -324,6 +324,125 @@ def test_dtype_form():
     assert np.allclose(vector32.toarray(), vector64.toarray(), rtol=1e-5, atol=1e-8)
 
 
+def test_dtype_contact():
+    "The contact items assemble in the precision of the field."
+
+    def assemble(dtype):
+        mesh = fem.Cube(n=3)
+        region = fem.RegionHexahedron(mesh).astype(dtype)
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
+
+        np.random.seed(0)
+        field[0].values = (np.random.rand(*field[0].values.shape) / 20).astype(dtype)
+
+        points = np.arange(mesh.npoints)[mesh.points[:, 0] == 1]
+        center = np.argmin(np.linalg.norm(mesh.points - [0.5, 0.5, 0.5], axis=1))
+
+        items = [
+            fem.ContactRigidPlane(field, points, center, normal=[-1, 0, 0]),
+            fem.ContactRigidCylinder(field, points, center, radius=1.0, axis=[0, 0, 1]),
+        ]
+
+        return [(item.assemble.vector(), item.assemble.matrix()) for item in items]
+
+    for (r32, K32), (r64, K64) in zip(assemble(np.float32), assemble(np.float64)):
+        assert r32.dtype == np.float32
+        assert K32.dtype == np.float32
+        assert r64.dtype == np.float64
+        assert K64.dtype == np.float64
+
+        assert np.allclose(r32.toarray(), r64.toarray(), rtol=1e-4, atol=1e-6)
+        assert np.allclose(K32.toarray(), K64.toarray(), rtol=1e-4, atol=1e-3)
+
+
+def test_dtype_truss():
+    "The truss body assembles in the precision of the field."
+
+    def assemble(dtype):
+        mesh = fem.Mesh(
+            points=[[0, 0], [1, 1], [2.0, 0]], cells=[[0, 1], [1, 2]], cell_type="line"
+        )
+        region = fem.RegionTruss(mesh).astype(dtype)
+        field = fem.FieldContainer([fem.Field(region, dim=2, dtype=dtype)])
+
+        np.random.seed(0)
+        field[0].values = (np.random.rand(*field[0].values.shape) / 20).astype(dtype)
+
+        truss = fem.TrussBody(fem.LinearElastic1D(E=[1.0, 1.0]), field, area=[1.0, 1.0])
+        truss.evaluate.gradient(field)  # initial kinematics
+
+        vector = truss.assemble.vector()
+        matrix = truss.assemble.matrix()
+
+        assert truss.results.stress.dtype == dtype
+        assert truss.results.elasticity.dtype == dtype
+
+        return vector, matrix
+
+    r32, K32 = assemble(np.float32)
+    r64, K64 = assemble(np.float64)
+
+    assert r32.dtype == np.float32
+    assert K32.dtype == np.float32
+    assert r64.dtype == np.float64
+    assert K64.dtype == np.float64
+
+    assert np.allclose(r32.toarray(), r64.toarray(), rtol=1e-5, atol=1e-8)
+    assert np.allclose(K32.toarray(), K64.toarray(), rtol=1e-5, atol=1e-6)
+
+
+def test_dtype_ogden_roxburgh():
+    "The pseudo-elastic material assembles in the precision of the field."
+
+    def assemble(dtype):
+        mesh = fem.Cube(n=3)
+        region = fem.RegionHexahedron(mesh).astype(dtype)
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
+
+        np.random.seed(0)
+        field[0].values = (np.random.rand(*field[0].values.shape) / 20).astype(dtype)
+
+        umat = fem.OgdenRoxburgh(fem.NeoHooke(mu=1), r=3, m=1, beta=0)
+        solid = fem.SolidBody(umat, field)
+
+        return solid.assemble.vector(), solid.assemble.matrix()
+
+    r32, K32 = assemble(np.float32)
+    r64, K64 = assemble(np.float64)
+
+    assert r32.dtype == np.float32
+    assert K32.dtype == np.float32
+    assert r64.dtype == np.float64
+    assert K64.dtype == np.float64
+
+    assert np.allclose(r32.toarray(), r64.toarray(), rtol=1e-5, atol=1e-8)
+    assert np.allclose(K32.toarray(), K64.toarray(), rtol=1e-5, atol=1e-6)
+
+
+def test_dtype_free_vibration():
+    "The free vibration solves in the precision of the fields."
+
+    for dtype in [np.float32, np.float64]:
+        mesh = fem.Cube(n=3)
+        region = fem.RegionHexahedron(mesh).astype(dtype)
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
+        solid = fem.SolidBody(fem.NeoHooke(mu=1, bulk=2), field, density=1.5e-9)
+
+        matrices = {}
+
+        def solver(A, M, **kwargs):
+            matrices["A"] = A.dtype
+            matrices["M"] = M.dtype
+
+            return np.array([1.0]), np.ones((A.shape[0], 1))
+
+        fem.FreeVibration([solid]).evaluate(solver=solver)
+
+        assert matrices["A"] == dtype
+        assert matrices["M"] == dtype
+        assert solid.assemble.mass().dtype == dtype
+
+
 if __name__ == "__main__":
     test_dtype()
     test_dtype_newton_tol()
@@ -336,3 +455,7 @@ if __name__ == "__main__":
     test_dtype_item_assembly()
     test_dtype_boundary()
     test_dtype_form()
+    test_dtype_contact()
+    test_dtype_truss()
+    test_dtype_ogden_roxburgh()
+    test_dtype_free_vibration()

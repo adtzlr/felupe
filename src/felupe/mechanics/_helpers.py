@@ -141,7 +141,7 @@ def mass_matrix(field, density, form=IntegralForm):
     """
 
     field = field[0].as_container()
-    identity = np.eye(field[0].dim)
+    identity = np.eye(field[0].dim, dtype=field[0].values.dtype)
 
     if isinstance(field[0], FieldAxisymmetric) and field[0].dim > 1:
         identity = np.pad(identity, (0, 1))  # zero out-of-plane component

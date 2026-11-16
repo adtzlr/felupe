@@ -284,7 +284,9 @@ class ContactRigidBase(ABC):
 
         u = self.field[0].values
 
-        return self.dX + (u[self.points] - u[self.centerpoint])
+        return (self.dX + (u[self.points] - u[self.centerpoint])).astype(
+            u.dtype, copy=False
+        )
 
     def checkpoint(self):
         """Return a checkpoint of the state of the contact.

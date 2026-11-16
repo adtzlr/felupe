@@ -175,7 +175,7 @@ class TrussBody(Solid):
         self.results = Results(stress=True, elasticity=True)
 
         self.umat = umat
-        self.area = np.array(area)
+        self.area = np.array(area, dtype=self.field[0].values.dtype)
 
         self.form_vector = IntegralForm(
             [None],
@@ -208,9 +208,13 @@ class TrussBody(Solid):
         cells = self.field.region.mesh.cells
         self.X = self.field.region.mesh.points[cells].T
         dX = self.X[:, 1] - self.X[:, 0]
-        self.length_undeformed = sqrt(dot(dX, dX, mode=(1, 1)))
+        self.length_undeformed = sqrt(dot(dX, dX, mode=(1, 1))).astype(
+            self.field[0].values.dtype
+        )
 
     def _kinematics(self, field):
+
+        dtype = self.field[0].values.dtype
 
         cells = self.field.region.mesh.cells
         u = field[0].values[cells].T
@@ -223,7 +227,11 @@ class TrussBody(Solid):
         stretch = length_deformed / self.length_undeformed
         normal_deformed = dx / length_deformed
 
-        return stretch, length_deformed, normal_deformed
+        return (
+            stretch.astype(dtype, copy=False),
+            length_deformed.astype(dtype, copy=False),
+            normal_deformed.astype(dtype, copy=False),
+        )
 
     def _gradient(self, field=None, args=(), kwargs=None):
         if kwargs is None:
@@ -242,7 +250,9 @@ class TrussBody(Solid):
         gradient = self.umat.gradient(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
-        self.results.gradient = self.results.stress = gradient[0]
+        self.results.gradient = self.results.stress = np.asarray(
+            gradient[0], dtype=self.field[0].values.dtype
+        )
         self.results._statevars = gradient[-1]
 
         return self.results.gradient
@@ -264,7 +274,9 @@ class TrussBody(Solid):
         hessian = self.umat.hessian(
             [*self.results.kinematics, self.results.statevars], *args, **kwargs
         )
-        self.results.hessian = self.results.elasticity = hessian[0]
+        self.results.hessian = self.results.elasticity = np.asarray(
+            hessian[0], dtype=self.field[0].values.dtype
+        )
 
         return self.results.hessian
 
@@ -290,7 +302,7 @@ class TrussBody(Solid):
         dSdE = self.results.elasticity = self._hessian(field, args=args, kwargs=kwargs)
 
         m = dya(n, n, mode=1)
-        eye = identity(dim=len(n), shape=(1,))
+        eye = identity(dim=len(n), shape=(1,)).astype(n.dtype, copy=False)
         K_EE = dSdE / L * self.area * m + S / l * self.area * (eye - m)
 
         K = np.stack([[K_EE, -K_EE], [-K_EE, K_EE]])  # (a, b, i, j, cell)

@@ -48,13 +48,18 @@ class LinearForm:
         if kwargs is None:
             kwargs = {}
 
+        dtypes = [self.v.field.values.dtype]
+        if self.dx is not None:
+            dtypes.append(np.asarray(self.dx).dtype)
+
         values = np.zeros(
             (
                 len(self.v.basis),
                 self.v.basis.shape[-4],
                 self.v.basis.shape[-2],
                 self.v.field.region.mesh.ncells,
-            )
+            ),
+            dtype=np.result_type(*dtypes),
         )
 
         if not parallel:

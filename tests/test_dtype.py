@@ -280,6 +280,50 @@ def test_dtype_boundary():
         assert np.allclose(vector.sum(axis=0), [-1.0, 0.0, 0.0])
 
 
+def test_dtype_form():
+    "The Form API integrates and assembles in the precision of the fields."
+
+    def assemble(dtype):
+        mesh = fem.Cube(n=3)
+        region = fem.RegionHexahedron(mesh).astype(dtype)
+        field = fem.FieldContainer([fem.Field(region, dim=3, dtype=dtype)])
+
+        np.random.seed(0)
+        field[0].values = (np.random.rand(*field[0].values.shape) / 20).astype(dtype)
+
+        f = np.array([1.0, 0.5, 0.0])
+
+        @fem.Form(v=field, u=field)
+        def bilinearform():
+            return [lambda v, u: fem.math.ddot(v, u)]
+
+        @fem.Form(v=field)
+        def linearform():
+            return [lambda v: np.einsum("i...,i...->...", f, v)]
+
+        values = [
+            *bilinearform.integrate(v=field, u=field),
+            *linearform.integrate(v=field),
+        ]
+        item = fem.FormItem(bilinearform=bilinearform, linearform=linearform)
+
+        return values, item.assemble.vector(), item.assemble.matrix()
+
+    values32, vector32, matrix32 = assemble(np.float32)
+    values64, vector64, matrix64 = assemble(np.float64)
+
+    assert all(value.dtype == np.float32 for value in values32)
+    assert all(value.dtype == np.float64 for value in values64)
+
+    assert vector32.dtype == np.float32
+    assert matrix32.dtype == np.float32
+    assert vector64.dtype == np.float64
+    assert matrix64.dtype == np.float64
+
+    assert np.allclose(matrix32.toarray(), matrix64.toarray(), rtol=1e-5, atol=1e-6)
+    assert np.allclose(vector32.toarray(), vector64.toarray(), rtol=1e-5, atol=1e-8)
+
+
 def test_dtype_contact():
     "The contact items assemble in the precision of the field."
 
@@ -410,6 +454,7 @@ if __name__ == "__main__":
     test_dtype_mixed()
     test_dtype_item_assembly()
     test_dtype_boundary()
+    test_dtype_form()
     test_dtype_contact()
     test_dtype_truss()
     test_dtype_ogden_roxburgh()

@@ -6,6 +6,11 @@ assemble-method of an :class:`integral form<felupe.IntegralForm>`. The
 :class:`Neo-Hookean <felupe.NeoHooke>` material model formulation is used to evaluate
 both the variation and linearization of its strain energy density function.
 
+..  note::
+
+    The assembled vectors and matrices are in the precision of the field values, see
+    :doc:`single-precision` for a model which is evaluated in single precision.
+
 ..  plot::
     :context:
 

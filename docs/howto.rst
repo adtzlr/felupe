@@ -28,6 +28,7 @@ How-To Guides
    howto/plugins
    howto/solvers
    howto/parallel
+   howto/single-precision
 
 .. toctree::
    :maxdepth: 1

@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import numpy as np
-from scipy.interpolate import griddata
 
 from ..math import rotation_matrix, transpose
 from ._helpers import mesh_or_data
@@ -201,6 +200,9 @@ def fill_between(mesh, other_mesh, n=11):
 
     if not hasattr(n, "__len__"):
         n = np.linspace(-1, 1, n)
+
+    # import on demand: scipy.interpolate is slow to import
+    from scipy.interpolate import griddata
 
     sections = []
     for bottom, top in zip(mesh.points, other_mesh.points):

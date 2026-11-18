@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import numpy as np
-from scipy.constants import sigma
 from scipy.sparse import csr_matrix
 
 from ..assembly import IntegralForm
@@ -98,7 +97,10 @@ class SolidBodySurfaceRadiation:
         self.results.temperature = temperature  # ambient temperature in °C
         self.results.emissivity = emissivity
 
-        self._sigma = sigma  # Stefan-Boltzmann constant
+        # the Stefan-Boltzmann constant (import on demand)
+        from scipy.constants import sigma
+
+        self._sigma = sigma
 
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, multiplier=-1.0

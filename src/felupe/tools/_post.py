@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import numpy as np
-from scipy.interpolate import interp1d
 from scipy.sparse import issparse
 
 from ..math import cross
@@ -201,6 +200,9 @@ def curve(x, y, num=50):
            [0.        , 0.35555556, 0.62222222, 0.8       ]])
 
     """
+
+    # import on demand: scipy.interpolate is slow to import
+    from scipy.interpolate import interp1d
 
     kind = [None, "linear", "quadratic", "cubic"][min(len(y), 4) - 1]
 

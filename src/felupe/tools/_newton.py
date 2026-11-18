@@ -703,7 +703,7 @@ def default_atol(A, b, x, dof1=None, factor=1.0):
     factor : float, optional
         A safety factor (default is 1).
 
-        ..  versionchanged:: 12.2.0
+        ..  versionchanged:: 12.1.1
             The default safety factor is 1 (before, 10).
 
     Returns
@@ -1100,9 +1100,9 @@ def newtonraphson(
     invariant to the units of the model. The machine epsilon :math:`\varepsilon_x` is
     the one of the lowest precision of the Jacobian, of the objective function and of
     the unknowns and :math:`\varepsilon_K` is the one of the lowest precision of the
-    Jacobian and of the objective function, see :func:`~felupe.tools.default_atol`.
-    E.g., for fields in single-precision on a region in double-precision, the
-    deformation gradient is evaluated in double-precision. For
+    Jacobian and of the objective function. E.g., for fields in single-precision on a
+    region in double-precision, the deformation gradient is evaluated in
+    double-precision. For
     batched Jacobians of local problems at the quadrature points, e.g. solved by
     :func:`~felupe.math.solve_2d`, the absolute tolerance is the upper bound
     :math:`c\ \varepsilon_x\ ||K(x_n)||\ ||x||`. A function without a reference norm,
@@ -1130,7 +1130,7 @@ def newtonraphson(
         the absolute tolerance exceeded the relative tolerance times the reaction
         forces.
 
-    ..  versionchanged:: 12.2.0
+    ..  versionchanged:: 12.1.1
         The first term of the absolute tolerance is the root-sum-square instead of the
         sums of the absolute values of the products of the Jacobian and the unknowns,
         both machine epsilons are the ones of the lowest instead of the common

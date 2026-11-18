@@ -385,7 +385,7 @@ def test_newton_check():
 
 
 def test_newton_default_atol():
-    "The default absolute tolerance is a bound of the round-off errors."
+    "The default absolute tolerance is an estimate of the round-off errors."
 
     from scipy.sparse import csr_matrix
     from scipy.sparse.linalg import aslinearoperator
@@ -396,21 +396,28 @@ def test_newton_default_atol():
     A = np.array([[2.0, -1.0], [-1.0, 2.0]])
     x = np.array([1.0, -1.0])
 
+    # the root-sum-square of the products of the Jacobian and the unknowns of each row
     atol = default_atol(A, A @ x, x)
-    assert np.isclose(atol, 10 * eps * np.linalg.norm([3.0, 3.0]))
+    assert np.isclose(atol, eps * np.linalg.norm([np.sqrt(5), np.sqrt(5)]))
     assert np.isclose(default_atol(csr_matrix(A), A @ x, x), atol)
-    assert np.isclose(default_atol(A, A @ x, x, dof1=[1]), 10 * eps * 3.0)
+    assert np.isclose(default_atol(A, A @ x, x, dof1=[1]), eps * np.sqrt(5))
+    assert np.isclose(default_atol(A, A @ x, x, factor=10), 10 * atol)
     assert default_atol(A, A @ x, np.zeros(2)) == 0.0
 
     # the lowest precision of the linear equation system and of the unknowns
     eps32 = np.finfo(np.float32).eps
     atol32 = default_atol(A, A @ x, x.astype(np.float32))
-    assert np.isclose(atol32, 10 * eps32 * np.linalg.norm([3.0, 3.0]))
+    assert np.isclose(atol32, eps32 * np.linalg.norm([np.sqrt(5), np.sqrt(5)]))
+
+    # the squares don't overflow in single precision
+    A32 = np.array([[1e20]], dtype=np.float32)
+    x32 = np.ones(1, dtype=np.float32)
+    assert np.isclose(default_atol(A32, A32 @ x32, x32), eps32 * 1e20, rtol=1e-6)
 
     # an upper bound for batched Jacobians (e.g. of local problems)
     B = np.ones((3, 3, 3, 3, 5))
     y = np.ones((3, 3, 5))
-    bound = 10 * eps * np.linalg.norm(B) * np.linalg.norm(y)
+    bound = eps * np.linalg.norm(B) * np.linalg.norm(y)
     assert np.isclose(default_atol(B, y, y), bound)
 
     # linear operators are not supported
@@ -432,9 +439,15 @@ def test_newton_default_atol():
 
         points = region.mesh.points
         X = (points - points.mean(axis=0)).ravel()
-        expected = 10 * eps * np.linalg.norm((K @ X)[dof1])
+        expected = eps * np.linalg.norm((K @ X)[dof1])
         assert expected > 0
         assert np.isclose(default_atol(K, f, field, dof1=dof1), expected)
+
+        # the lowest precision of the Jacobian and of the objective function, e.g. of a
+        # material which returns its Jacobian in double precision
+        f32 = f.astype(np.float32)
+        expected = eps32 * np.linalg.norm((K @ X)[dof1])
+        assert np.isclose(default_atol(K, f32, field, dof1=dof1), expected)
 
 
 def test_newton_default_atol_location():
@@ -478,6 +491,54 @@ def test_newton_default_atol_location():
 
     assert iterations[0] == iterations[1] == iterations[2]
     assert np.allclose(atol, atol[0], rtol=1e-6)
+
+
+def test_newton_default_atol_single_precision():
+    """A single-precision model doesn't stop before it converges, i.e. its forces are
+    close to the forces of the double-precision model (#1294)."""
+
+    def forces(dtype):
+        region = fem.RegionHexahedron(fem.Cube(n=4)).astype(dtype)
+        field = fem.FieldsMixed(region, n=3, dtype=dtype)
+        umat = fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=5000.0)
+        solid = fem.SolidBody(umat, field)
+
+        boundaries = fem.dof.uniaxial(field, clamped=True)
+        move = fem.math.linsteps([0, 1], num=5)
+        step = fem.Step([solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+        results = step.generate(x0=field, tol=1e-6, verbose=0)
+
+        return np.array(
+            [fem.tools.force(field, res.fun, boundaries["move"])[0] for res in results]
+        )
+
+    forces64 = forces(np.float64)
+    forces32 = forces(np.float32)
+
+    # before, the default absolute tolerance was about 30 to 40 times the round-off
+    # errors of this model and the error of the forces was about 1e-3
+    assert np.allclose(forces32, forces64, rtol=0, atol=1e-5 * forces64.max())
+
+
+def test_newton_default_atol_mixed_precision():
+    """A model with an objective function in single precision and a Jacobian in double
+    precision converges with a small tolerance (#1294)."""
+
+    region = fem.RegionHexahedron(fem.Cube(n=4)).astype(np.float32)
+    field = fem.FieldContainer([fem.Field(region, dim=3, dtype=np.float32)])
+    umat = fem.LinearElasticPlasticIsotropicHardening(E=2.1e5, nu=0.3, sy=355, K=1e3)
+    solid = fem.SolidBody(umat, field)
+
+    assert solid.assemble.vector().dtype == np.float32
+
+    # before, the round-off errors of the deformation gradient were evaluated in
+    # double precision, i.e. the default absolute tolerance was too small
+    boundaries = fem.dof.uniaxial(field, clamped=True)
+    move = fem.math.linsteps([0, 0.01], num=10)
+    step = fem.Step([solid], ramp={boundaries["move"]: move}, boundaries=boundaries)
+
+    for res in step.generate(x0=field, tol=1.49e-8, verbose=0):
+        assert res.success
 
 
 def test_newton_fun_items_reference():

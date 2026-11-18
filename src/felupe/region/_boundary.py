@@ -300,6 +300,11 @@ class RegionBoundary(Region):
 
        dV &= \det\left(\frac{\partial X_I}{\partial r_J}\right) w
 
+    The area vectors :math:`d\boldsymbol{A}`, the area measures :math:`dV`, the unit
+    normal vectors :math:`\boldsymbol{n}` and the unit tangent vectors
+    :math:`\boldsymbol{t}` of the cells on the boundary are re-evaluated by
+    :meth:`~felupe.RegionBoundary.reload`, e.g. by :meth:`~felupe.RegionBoundary.copy`.
+
     Examples
     --------
     >>> import felupe as fem
@@ -553,33 +558,14 @@ class RegionBoundary(Region):
         # init region and faces
         super().__init__(mesh_boundary_cells, element, quadrature, grad=grad)
 
-    def reload(
-        self,
-        mesh=None,
-        element=None,
-        quadrature=None,
-        grad=None,
-        hess=None,
-        uniform=None,
-    ):
-        r"""Reload the region inplace and re-evaluate the quantities of the cells on the
+    def _evaluate(self):
+        r"""Evaluate the arrays of the region and the quantities of the cells on the
         boundary, i.e. the area vectors :math:`d\boldsymbol{A}`, the area measures
         :math:`dV`, the unit normal vectors :math:`\boldsymbol{n}` and the unit tangent
-        vectors :math:`\boldsymbol{t}`.
+        vectors :math:`\boldsymbol{t}`, before they are casted by
+        :meth:`~felupe.Region.reload`."""
 
-        See Also
-        --------
-        felupe.Region.reload : Reload the numeric region inplace.
-        """
-
-        super().reload(
-            mesh=mesh,
-            element=element,
-            quadrature=quadrature,
-            grad=grad,
-            hess=hess,
-            uniform=uniform,
-        )
+        super()._evaluate()
 
         if self.evaluate_gradient:
             self.dA, self.dV, self.normals, self.tangents = self._init_faces()

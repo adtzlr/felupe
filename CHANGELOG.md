@@ -3,6 +3,9 @@ All notable changes to this project, starting from the latest release, will be d
 
 ## [Unreleased]
 
+### Fixed
+- Fix the precision of a region after a reload, e.g. by `field.merge()` (#1293). `Region.astype(dtype)` stores the data type in the new attribute `Region.dtype` (default is None, i.e. the arrays are not casted) and `Region.reload()` casts the re-evaluated arrays to this data type, i.e. a region keeps its precision. Before, `Region.reload()` evaluated the arrays in double precision again, i.e. `field.merge()` (which reloads the regions of the first fields with the merged meshes), `Region.copy()` and `mesh.update(callback=region.reload)` promoted a single-precision region to `float64`, while the fields kept `float32`, and the items assembled in double precision. The arrays are still evaluated from the undeformed coordinates in double precision and rounded once, also the quantities of the cells of a `RegionBoundary`, which are evaluated by the private method `RegionBoundary._evaluate()` now (before, by `RegionBoundary.reload()`). A copy by `Region.astype(dtype)` is reloaded with the given data type, i.e. a single-precision region is casted back to double precision without a loss of precision.
+
 ## [12.1.0] - 2026-11-16
 
 ### Added

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from copy import deepcopy as copy
+from math import factorial
 from string import ascii_lowercase as alphabet
 
 import numpy as np
-from scipy.special import factorial
 
 from ._base import Element
 
@@ -356,4 +356,4 @@ class ArbitraryOrderLagrange(Element):
     def _polynomial(self, r, n):
         "Lagrange-Polynomial of order n evaluated at coordinate vector r."
         m = np.arange(n)
-        return r**m / factorial(m)
+        return r**m / np.array([factorial(k) for k in range(n)], dtype=float)

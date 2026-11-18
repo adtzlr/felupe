@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import numpy as np
-from scipy.special import erf
 
 from ...math import dya
 from .._base import ConstitutiveMaterial, _set_material_parameters
@@ -109,7 +108,9 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         Wmax = np.maximum(W, statevars[0])
         z = (Wmax - W) / (m + beta * Wmax)
 
-        # softening function
+        # softening function (import on demand: scipy.special is slow to import)
+        from scipy.special import erf
+
         eta = 1 - erf(z) / r
 
         # update the state variables
@@ -137,7 +138,9 @@ class OgdenRoxburgh(ConstitutiveMaterial):
         Wmax = np.maximum(W, statevars[0])
         z = (Wmax - W) / (m + beta * Wmax)
 
-        # softening function
+        # softening function (import on demand: scipy.special is slow to import)
+        from scipy.special import erf
+
         eta = 1 - erf(z) / r
 
         # derivative of softening function

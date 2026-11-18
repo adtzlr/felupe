@@ -4,7 +4,7 @@ import inspect
 from copy import deepcopy
 
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, issparse
 
 from .. import solve as fesolve
 from ..assembly import IntegralForm
@@ -64,7 +64,7 @@ class IterationState:
     atol : float or None, optional
         The absolute tolerance of the norm of the objective function on the active
         degrees of freedom of the current iteration (default is None). If no absolute
-        tolerance is given to :func:`~felupe.newtonraphson`, it is the bound of the
+        tolerance is given to :func:`~felupe.newtonraphson`, it is the estimate of the
         round-off errors of the objective function, which is evaluated by the check of
         the convergence of each iteration (for the updated unknowns), see
         :func:`~felupe.newtonraphson`. Then, it is None in the hooks ``before_newton``,
@@ -619,17 +619,19 @@ def _values(x):
     return [field.values for field in fields]
 
 
-def _epsilon(A, b, x=None):
+def _epsilon(A, b, x=None, common=True):
     """Return the machine epsilon of the lowest precision of the linear equation system
     with the Jacobian ``A`` and the objective function ``b`` and of the unknowns ``x``,
-    see :func:`default_tol`."""
+    see :func:`default_tol`. The precision of the linear equation system is given by
+    the common data type of ``A`` and ``b`` or, if ``common`` is False, by the lowest
+    precision of ``A`` and ``b``, see :func:`default_atol`."""
 
-    system = np.result_type(_dtype(A), _dtype(b))
+    if common:
+        system = [np.result_type(_dtype(A), _dtype(b))]
+    else:
+        system = [_dtype(A), _dtype(b)]
 
-    if not np.issubdtype(system, np.inexact):
-        system = np.dtype(float)
-
-    dtypes = [system]
+    dtypes = [t if np.issubdtype(t, np.inexact) else np.dtype(float) for t in system]
 
     if x is not None:
         values = _values(x)
@@ -682,9 +684,9 @@ def _coordinates(x):
     return np.concatenate(coordinates)
 
 
-def default_atol(A, b, x, dof1=None, factor=10.0):
-    r"""Return the default absolute tolerance of the Newton-Raphson method, a bound of
-    the round-off errors of the objective function on the active degrees of freedom,
+def default_atol(A, b, x, dof1=None, factor=1.0):
+    r"""Return the default absolute tolerance of the Newton-Raphson method, an estimate
+    of the round-off errors of the objective function on the active degrees of freedom,
     for the Jacobian ``A``, the objective function ``b`` and the unknowns ``x``.
 
     Parameters
@@ -699,12 +701,15 @@ def default_atol(A, b, x, dof1=None, factor=10.0):
         1d-array of int with all active degrees of freedom (default is None). If None,
         all degrees of freedom are active.
     factor : float, optional
-        A safety factor (default is 10).
+        A safety factor (default is 1).
+
+        ..  versionchanged:: 12.2.0
+            The default safety factor is 1 (before, 10).
 
     Returns
     -------
     float
-        The bound of the round-off errors of the objective function on the active
+        The estimate of the round-off errors of the objective function on the active
         degrees of freedom, in the units of the objective function. If the absolute
         values of the Jacobian can't be evaluated, e.g. for a linear operator, it is
         zero.
@@ -713,22 +718,25 @@ def default_atol(A, b, x, dof1=None, factor=10.0):
     -----
     The objective function, e.g. the internal forces of a solid body, is a sum of many
     contributions, which cancel each other out in a state of equilibrium. Its round-off
-    errors are of the order of the machine epsilon :math:`\varepsilon` times the
-    absolute values of the contributions. These are estimated by the products of the
-    absolute values of the Jacobian and of the unknowns, which include the round-off
-    errors of the gradients of the unknowns, e.g. of a rigid body motion, and by the
-    product of the Jacobian and the coordinates :math:`\boldsymbol{X}` of the points
-    of the meshes relative to their centroids :math:`\bar{\boldsymbol{X}}`, which are
-    the forces of a deformation gradient of
-    :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`. The deformation gradient
+    errors are estimated by two sources. First, the unknowns are represented with a
+    relative precision of the machine epsilon :math:`\varepsilon_x`, e.g. a rigid body
+    motion. These round-off errors are random, i.e. the round-off errors of the
+    objective function, e.g. of the gradients of the unknowns, are estimated by the
+    root-sum-square of the products of the Jacobian and the unknowns of each row.
+    Second, the deformation gradient
     :math:`\boldsymbol{F} = \boldsymbol{1} + \partial \boldsymbol{u} / \partial
     \boldsymbol{X}` is represented with an absolute precision of
-    :math:`\varepsilon\ \boldsymbol{1}`, also in a force-free state.
+    :math:`\varepsilon_K\ \boldsymbol{1}`, also in a force-free state. These round-off
+    errors are estimated by the product of the Jacobian and the coordinates
+    :math:`\boldsymbol{X}` of the points of the meshes relative to their centroids
+    :math:`\bar{\boldsymbol{X}}`, which are the forces of a deformation gradient of
+    :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`.
 
     ..  math::
 
         \text{atol} = c\ \left|\left| \left(
-            \varepsilon_x\ |\boldsymbol{K}|\ |\boldsymbol{x}|
+            \varepsilon_x \sqrt{(\boldsymbol{K} \circ \boldsymbol{K})\
+            (\boldsymbol{x} \circ \boldsymbol{x})}
             + \varepsilon_K\ |\boldsymbol{K}\ (\boldsymbol{X} - \bar{\boldsymbol{X}})|
             \right)_1 \right|\right|
 
@@ -740,15 +748,29 @@ def default_atol(A, b, x, dof1=None, factor=10.0):
     coordinates are relevant. Items which resist a rigid body translation, e.g. a
     :class:`~felupe.CartesianConstraint`, would depend on the location of the meshes.
     Hence, the coordinates relative to the centroids of the points of the meshes are
-    used, i.e. the absolute tolerance doesn't depend on the location of the meshes. Each row of the products has the
-    unit of the objective function, also for mixed field formulations. The machine
-    epsilon :math:`\varepsilon_x` is the one of the lowest precision of the linear
-    equation system and of the unknowns and :math:`\varepsilon_K` is the one of the
-    precision of the linear equation system, in which the deformation gradient is
-    evaluated, see :func:`default_tol`. E.g., for fields in single-precision on a
-    region in double-precision, the deformation gradient is evaluated in
-    double-precision. The safety factor is :math:`c=10`. Unlike a fixed absolute
-    tolerance, this bound is invariant to the units of the model.
+    used, i.e. the absolute tolerance doesn't depend on the location of the meshes. Each
+    row of the products has the unit of the objective function, also for mixed field
+    formulations. Unlike a fixed absolute tolerance, this estimate is invariant to the
+    units of the model.
+
+    The machine epsilon :math:`\varepsilon_x` is the one of the lowest precision of the
+    Jacobian, of the objective function and of the unknowns and :math:`\varepsilon_K` is
+    the one of the lowest precision of the Jacobian and of the objective function, in
+    which the deformation gradient is evaluated. E.g., for fields in single-precision on
+    a region in double-precision, the deformation gradient is evaluated in
+    double-precision. Unlike the precision of the linear equation system of
+    :func:`default_tol`, which is given by the common data type of the Jacobian and of
+    the objective function, the lowest precision is used, e.g. for a material which
+    returns its Jacobian in double precision for an objective function in single
+    precision.
+
+    The safety factor is :math:`c=1`. E.g., for models of nearly incompressible rubber
+    and steel (also with plasticity) in single precision, the estimate is about 3 to 13
+    times the round-off errors of the objective function at the converged solution
+    (with the round-off errors of the unknowns). The sums of the absolute values of the
+    products of the Jacobian and the unknowns, :math:`|\boldsymbol{K}|\
+    |\boldsymbol{x}|`, instead of the root-sum-square, would overestimate the random
+    round-off errors of the unknowns.
 
     If the Jacobian is not a matrix whose number of columns is the number of the
     unknowns, e.g. for the batched Jacobians of local problems at the quadrature points
@@ -766,26 +788,36 @@ def default_atol(A, b, x, dof1=None, factor=10.0):
     except TypeError:
         return 0.0
 
-    absx = np.abs(np.concatenate([np.ravel(values) for values in _values(x)]))
+    values = np.concatenate([np.ravel(values) for values in _values(x)])
     shape = getattr(A, "shape", np.shape(A))
 
-    if len(shape) != 2 or shape[1] != absx.size:
+    # the machine epsilons of the unknowns and of the deformation gradient
+    eps_x = _epsilon(A, b, x, common=False)
+    eps_K = _epsilon(A, b, common=False)
+
+    if len(shape) != 2 or shape[1] != values.size:
         # e.g. batched Jacobians of local problems at the quadrature points, which
         # are solved by `math.solve_2d()`: an upper bound by the norms
-        bound = np.linalg.norm(np.asarray(absA)) * np.linalg.norm(absx)
-        return float(factor * _epsilon(A, b, x) * bound)
+        bound = np.linalg.norm(np.asarray(absA)) * np.linalg.norm(values)
+        return float(factor * eps_x * bound)
 
-    # round-off errors of the gradients of the unknowns, e.g. of a rigid body motion,
-    # in the lowest precision of the linear equation system and of the unknowns
-    estimate = _epsilon(A, b, x) * np.ravel(np.asarray(absA @ absx))
+    # random round-off errors of the unknowns, e.g. of a rigid body motion, and of their
+    # gradients: the root-sum-square of the products of the Jacobian and the unknowns,
+    # evaluated in double precision (the squares don't overflow in single precision)
+    squares = absA.astype(np.float64, copy=False)
+    data = squares.data if issparse(squares) else squares
+    np.square(data, out=data)
+
+    products = squares @ np.square(values.astype(np.float64, copy=False))
+    estimate = eps_x * np.sqrt(np.ravel(np.asarray(products)))
 
     # round-off errors of the deformation gradient F = 1 + du/dX, which is evaluated
-    # in the precision of the linear equation system (e.g. of the region)
+    # in the lowest precision of the Jacobian and the objective function
     coordinates = _coordinates(x)
 
     if coordinates is not None:
         forces = np.ravel(np.asarray(A @ coordinates))
-        estimate = estimate + _epsilon(A, b) * np.abs(forces)
+        estimate = estimate + eps_K * np.abs(forces)
 
     return float(factor * np.linalg.norm(estimate[dof1]))
 
@@ -887,8 +919,8 @@ def newtonraphson(
     atol : float or None, optional
         Absolute tolerance value of the norm of the objective function on the active
         degrees of freedom, in the units of the objective function, e.g. of forces. If
-        None, it is a bound of the round-off errors of the objective function, which is
-        evaluated in each iteration, see the notes below. Default is None.
+        None, it is an estimate of the round-off errors of the objective function,
+        which is evaluated in each iteration, see the notes below. Default is None.
 
         ..  versionadded:: 12.1.0
 
@@ -1037,15 +1069,15 @@ def newtonraphson(
     equilibrium. Its round-off errors are of the order of the machine epsilon
     :math:`\varepsilon` times the absolute values of these contributions, which depend
     on the units and on the stiffness of the model. If no absolute tolerance is given,
-    it is a bound of the round-off errors of the objective function on the active
-    degrees of freedom, see Eq. :eq:`newton-atol`, with a safety factor :math:`c=10`.
-    The first product of the absolute values of the Jacobian of the iteration and of
-    the updated unknowns, e.g. of the displacements, estimates the round-off errors of
-    the gradients of the unknowns, e.g. of a rigid body motion. The second product of
-    the Jacobian and the coordinates :math:`X` of the points of the meshes relative to
-    their centroids :math:`\bar{X}` (only for the fields with as many components as the
-    dimension of their meshes, e.g. for displacements) are the forces of a deformation
-    gradient of
+    it is an estimate of the round-off errors of the objective function on the active
+    degrees of freedom, see Eq. :eq:`newton-atol`, without a safety factor
+    (:math:`c=1`). The first term, the root-sum-square of the products of the Jacobian
+    of the iteration and the updated unknowns of each row, e.g. of the displacements,
+    estimates the random round-off errors of the unknowns and of their gradients, e.g.
+    of a rigid body motion. The second product of the Jacobian and the coordinates
+    :math:`X` of the points of the meshes relative to their centroids :math:`\bar{X}`
+    (only for the fields with as many components as the dimension of their meshes, e.g.
+    for displacements) are the forces of a deformation gradient of
     :math:`\boldsymbol{F} = \boldsymbol{1} + \boldsymbol{1}`, i.e. it estimates the
     round-off errors of the deformation gradient
     :math:`\boldsymbol{F} = \boldsymbol{1} + \partial \boldsymbol{u} / \partial
@@ -1060,15 +1092,17 @@ def newtonraphson(
         :label: newton-atol
 
         \text{atol} = c \left|\left| \left(
-            \varepsilon_x\ |K(x_n)|\ |x| + \varepsilon_K\ |K(x_n)\ (X - \bar{X})|
+            \varepsilon_x \sqrt{(K(x_n) \circ K(x_n))\ (x \circ x)}
+            + \varepsilon_K\ |K(x_n)\ (X - \bar{X})|
             \right)_1 \right|\right|
 
     It is evaluated by the check of the convergence of each iteration and it is
     invariant to the units of the model. The machine epsilon :math:`\varepsilon_x` is
-    the one of the lowest precision of the linear equation system and of the unknowns
-    and :math:`\varepsilon_K` is the one of the precision of the linear equation
-    system, see below. E.g., for fields in single-precision on a region in
-    double-precision, the deformation gradient is evaluated in double-precision. For
+    the one of the lowest precision of the Jacobian, of the objective function and of
+    the unknowns and :math:`\varepsilon_K` is the one of the lowest precision of the
+    Jacobian and of the objective function, see :func:`~felupe.tools.default_atol`.
+    E.g., for fields in single-precision on a region in double-precision, the
+    deformation gradient is evaluated in double-precision. For
     batched Jacobians of local problems at the quadrature points, e.g. solved by
     :func:`~felupe.math.solve_2d`, the absolute tolerance is the upper bound
     :math:`c\ \varepsilon_x\ ||K(x_n)||\ ||x||`. A function without a reference norm,
@@ -1095,6 +1129,17 @@ def newtonraphson(
         absolute tolerance, and models with small forces converged too early, because
         the absolute tolerance exceeded the relative tolerance times the reaction
         forces.
+
+    ..  versionchanged:: 12.2.0
+        The first term of the absolute tolerance is the root-sum-square instead of the
+        sums of the absolute values of the products of the Jacobian and the unknowns,
+        both machine epsilons are the ones of the lowest instead of the common
+        precision of the Jacobian and of the objective function and the safety factor
+        is :math:`c=1` (before, :math:`c=10`). Before, the absolute tolerance was about
+        30 to 170 times the round-off errors of the objective function, i.e. a model in
+        single precision stopped before it converged, and it was too small for a
+        material with a Jacobian in double precision and an objective function in
+        single precision, e.g. with plasticity.
 
     The attainable norm of the objective function is limited by the precision of its
     data type and by the precision of the unknowns. An increment which is smaller than

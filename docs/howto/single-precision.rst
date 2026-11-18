@@ -48,8 +48,10 @@ function and of the Jacobian:
     The default relative tolerance of :func:`~felupe.newtonraphson` (``tol=None``) is the
     square root of the machine epsilon of the lowest precision of the unknowns and of the
     linear equation system, i.e. about ``3.5e-4`` for a single-precision model instead of
-    about ``1.5e-8`` for double precision. The absolute tolerance (``atol=None``) bounds
-    the round-off errors of the objective function.
+    about ``1.5e-8`` for double precision. The absolute tolerance (``atol=None``) is an
+    estimate of the round-off errors of the objective function, a few times larger than
+    the round-off errors, i.e. a single-precision model iterates until its attainable
+    precision is reached.
 
 Some results are evaluated in double precision on purpose:
 

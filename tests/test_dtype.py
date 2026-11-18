@@ -197,6 +197,97 @@ def test_dtype_mixed():
         assert all(f.region.h.dtype == np.float32 for f in field.fields)
 
 
+def test_dtype_region_reload():
+    "A region keeps its precision by reload, copy and astype."
+
+    mesh = fem.Cube(n=3)
+    reference = fem.RegionHexahedron(mesh, hess=True)
+    region = reference.astype(np.float32)
+
+    assert reference.dtype is None
+    assert region.dtype == np.float32
+
+    arrays = ["h", "dhdr", "dXdr", "drdX", "dV", "dhdX", "d2hdrdr", "d2hdXdX"]
+
+    # the arrays are re-evaluated from the undeformed coordinates and rounded once
+    for other in [region.copy(), region.astype(np.float32, copy=False)]:
+        for name in arrays:
+            assert getattr(other, name).dtype == np.float32
+            assert np.array_equal(
+                getattr(other, name), getattr(reference, name).astype(np.float32)
+            )
+
+    # a casted region is casted again after a reload with an updated mesh
+    new_points = mesh.rotate(angle_deg=-90, axis=2).points
+    mesh.update(points=new_points, callback=region.reload)
+
+    assert all(getattr(region, name).dtype == np.float32 for name in arrays)
+    assert np.allclose(region.dV.sum(), 1)
+
+    # a casted copy is evaluated in the given precision, i.e. without a loss of
+    # precision of the single-precision region
+    region64 = region.astype(np.float64)
+    reference.reload(mesh=mesh)
+
+    assert region64.dtype == np.float64
+    assert all(
+        np.array_equal(getattr(region64, name), getattr(reference, name))
+        for name in arrays
+    )
+
+    # the quantities of the cells on a boundary are evaluated in double-precision
+    # and rounded once
+    reference = fem.RegionHexahedronBoundary(mesh, mask=mesh.points[:, 0] == 1)
+    boundary = reference.astype(np.float32).copy()
+
+    for name in ["dA", "dV", "normals"]:
+        assert getattr(boundary, name).dtype == np.float32
+        assert np.array_equal(
+            getattr(boundary, name), getattr(reference, name).astype(np.float32)
+        )
+
+    assert all(tangent.dtype == np.float32 for tangent in boundary.tangents)
+
+
+def test_dtype_merge():
+    "The merge of field containers keeps the precision of the regions."
+
+    mesh1 = fem.Cube(n=3)
+    region1 = fem.RegionHexahedron(mesh1).astype(np.float32)
+    field1 = fem.FieldContainer([fem.Field(region1, dim=3, dtype=np.float32)])
+
+    mesh2 = fem.Cube(a=(1, 0, 0), b=(2, 1, 1), n=3)
+    region2 = fem.RegionHexahedron(mesh2).astype(np.float32)
+    field2 = fem.FieldsMixed(region2, n=3, dtype=np.float32)
+
+    field = fem.field.merge([field1, field2])
+
+    # the regions of the first fields are reloaded with the merged meshes
+    for region in [region1, region2]:
+        assert region.dhdX.dtype == np.float32
+        assert region.dV.dtype == np.float32
+
+    for f in [*field1.fields, *field2.fields]:
+        assert f.values.dtype == np.float32
+        assert f.region.h.dtype == np.float32
+
+    solid1 = fem.SolidBody(fem.LinearElastic(E=1, nu=0.3), field1)
+    solid2 = fem.SolidBody(
+        fem.NearlyIncompressible(fem.NeoHooke(mu=1), bulk=50), field2
+    )
+
+    for solid in [solid1, solid2]:
+        assert solid.assemble.vector().dtype == np.float32
+        assert solid.assemble.matrix().dtype == np.float32
+
+    boundaries = fem.dof.uniaxial(field, clamped=True, move=0.1)
+    step = fem.Step([solid1, solid2], boundaries=boundaries)
+    job = fem.Job([step]).evaluate()
+
+    assert field[0].values.dtype == np.float32
+    assert np.all([norm[-1] < 1e-3 for norm in job.fnorms])
+
+
 def test_dtype_item_assembly():
     def get_items(dtype):
         mesh = fem.Cube(n=3)
@@ -519,6 +610,8 @@ if __name__ == "__main__":
     test_dtype_planestrain()
     test_dtype_dual()
     test_dtype_mixed()
+    test_dtype_region_reload()
+    test_dtype_merge()
     test_dtype_item_assembly()
     test_dtype_boundary()
     test_dtype_form()

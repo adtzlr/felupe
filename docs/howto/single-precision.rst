@@ -14,7 +14,9 @@ shape-function gradients and the differential volumes of a region and a
 :class:`~felupe.Field` takes the data type of its values. A ``float32`` field on a
 ``float64`` region is assembled in ``float64``, because the values of an item are of the
 common data type of the field values and of the differential volumes ``dV``, which are
-evaluated by the region.
+evaluated by the region. A casted region keeps its data type: if the arrays of the region
+are re-evaluated by :meth:`~felupe.Region.reload`, e.g. by :meth:`~felupe.Region.copy` or
+by :func:`~felupe.field.merge` for a model with several bodies, they are casted again.
 
 ..  code-block:: python
 

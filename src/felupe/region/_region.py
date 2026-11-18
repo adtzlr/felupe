@@ -69,6 +69,11 @@ class Region:
         Partial derivative of element shape functions ``dhdX_aJqc`` of shape function
         ``a`` w.r.t. undeformed coordinate ``J`` evaluated at quadrature point ``q`` for
         every cell ``c``.
+    dtype : numpy.dtype or None
+        The data type of the arrays of the region, which is set by
+        :meth:`~felupe.Region.astype`. The arrays are casted to this data type after
+        each evaluation by :meth:`~felupe.Region.reload`. Default is None, i.e. the
+        arrays are not casted.
 
     Notes
     -----
@@ -132,6 +137,7 @@ class Region:
     def __init__(self, mesh, element, quadrature, grad=True, hess=False, uniform=False):
         self.evaluate_gradient = grad
         self.evaluate_hessian = hess
+        self.dtype = None
         self.reload(mesh=mesh, element=element, quadrature=quadrature, uniform=uniform)
 
     def astype(self, dtype, copy=True):
@@ -151,15 +157,32 @@ class Region:
         Region
             A copy of the region with arrays casted to a specified type.
 
+        Notes
+        -----
+        The data type is stored in the attribute ``dtype`` of the region, i.e. the
+        region keeps its precision: the arrays are casted to this data type again after
+        they are re-evaluated by :meth:`~felupe.Region.reload`, e.g. by
+        :meth:`~felupe.Region.copy` or by :func:`~felupe.field.merge`.
+
+        The arrays of a copy are re-evaluated from the undeformed coordinates and
+        casted once, also if the region was casted before (e.g. from single back to
+        double precision).
+
         See Also
         --------
         felupe.Region.copy : Return a copy of the region and reload it if necessary.
         """
 
-        region = self
-
         if copy:
-            region = region.copy(uniform=self.uniform)
+            # the arrays of the copy are re-evaluated and casted once by reload()
+            region = deepcopy(self)
+            region.dtype = np.dtype(dtype)
+            region.reload(uniform=self.uniform)
+
+            return region
+
+        region = self
+        region.dtype = np.dtype(dtype)
 
         region.h = region.h.astype(dtype)
         region.dhdr = region.dhdr.astype(dtype)
@@ -217,6 +240,10 @@ class Region:
         Region
             A copy of the reloaded region.
 
+        Notes
+        -----
+        The copy keeps the data type of the region, see :meth:`~felupe.Region.astype`.
+
         See Also
         --------
         felupe.Region.reload : Reload the numeric region inplace.
@@ -270,6 +297,13 @@ class Region:
             their gradients for a uniform grid mesh. This is a performance feature.
             Default is None.
 
+        Notes
+        -----
+        The arrays of the region are evaluated from the undeformed coordinates of the
+        mesh. If the region was casted by :meth:`~felupe.Region.astype`, the arrays are
+        casted to the data type of the region afterwards, i.e. the region keeps its
+        precision.
+
         Examples
         --------
         ..  warning::
@@ -319,91 +353,94 @@ class Region:
 
         region.uniform = uniform
 
-        if (
-            mesh is not None
-            or element is not None
-            or quadrature is not None
-            or uniform is not None
-        ):
-            # element shape function
-            region.element_h = np.array(
-                [region.element.function(q) for q in region.quadrature.points]
-            ).T
-            region.h = np.ascontiguousarray(np.expand_dims(region.element_h, -1))
+        region._evaluate()
 
-            # partial derivative of element shape function
-            region.element_dhdr = np.array(
-                [region.element.gradient(q) for q in region.quadrature.points]
-            ).transpose(1, 2, 0)
+        # keep the precision of the region
+        if region.dtype is not None:
+            region.astype(region.dtype, copy=False)
 
-            region.dhdr = np.ascontiguousarray(np.expand_dims(region.element_dhdr, -1))
+    def _evaluate(self):
+        "Evaluate the arrays of the region from the undeformed coordinates of the mesh."
 
-            if region.evaluate_gradient:
-                # geometric gradient
+        region = self
 
-                cells = region.mesh.cells
-                if uniform:
-                    cells = cells[:1]
+        # element shape function
+        region.element_h = np.array(
+            [region.element.function(q) for q in region.quadrature.points]
+        ).T
+        region.h = np.ascontiguousarray(np.expand_dims(region.element_h, -1))
 
-                region.dXdr = np.einsum(
-                    "caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr, order="C"
+        # partial derivative of element shape function
+        region.element_dhdr = np.array(
+            [region.element.gradient(q) for q in region.quadrature.points]
+        ).transpose(1, 2, 0)
+
+        region.dhdr = np.ascontiguousarray(np.expand_dims(region.element_dhdr, -1))
+
+        if region.evaluate_gradient:
+            # geometric gradient
+
+            cells = region.mesh.cells
+            if region.uniform:
+                cells = cells[:1]
+
+            region.dXdr = np.einsum(
+                "caI,aJqc->IJqc", region.mesh.points[cells], region.dhdr, order="C"
+            )
+
+            # determinant and inverse of dXdr
+            J = det(region.dXdr)
+            region.drdX = inv(region.dXdr, determinant=J)
+
+            # numeric **differential volume element**
+            region.dV = np.multiply(J, region.quadrature.weights.reshape(-1, 1), out=J)
+
+            # check for negative **differential volume elements**
+            if np.any(region.dV < 0):
+                cells_negative_volume = np.where(np.any(region.dV < 0, axis=0))[0]
+                message_negative_volumes = "".join(
+                    [
+                        f"Negative volumes for cells \n {cells_negative_volume}\n",
+                        "Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` ",
+                        "and re-create the region.",
+                    ]
+                )
+                warnings.warn(message_negative_volumes)
+
+            # Partial derivative of element shape function w.r.t. undeformed
+            # coordinates
+            region.dhdX = np.einsum("aIqc,IJqc->aJqc", region.dhdr, region.drdX)
+
+            # Second partial derivative of element shape function w.r.t. undeformed
+            # coordinates
+            if region.evaluate_hessian:
+                region.element_d2hdrdr = np.array(
+                    [region.element.hessian(q) for q in region.quadrature.points]
+                ).transpose(1, 2, 3, 0)
+
+                region.d2hdrdr = np.ascontiguousarray(
+                    np.expand_dims(region.element_d2hdrdr, -1)
                 )
 
-                # determinant and inverse of dXdr
-                J = det(region.dXdr)
-                region.drdX = inv(region.dXdr, determinant=J)
-
-                # numeric **differential volume element**
-                region.dV = np.multiply(
-                    J, region.quadrature.weights.reshape(-1, 1), out=J
+                region.d2hdXdX = np.einsum(
+                    "aIJqc,IKqc,JLqc->aKLqc",
+                    region.d2hdrdr,
+                    region.drdX,
+                    region.drdX,
                 )
 
-                # check for negative **differential volume elements**
-                if np.any(region.dV < 0):
-                    cells_negative_volume = np.where(np.any(region.dV < 0, axis=0))[0]
-                    message_negative_volumes = "".join(
-                        [
-                            f"Negative volumes for cells \n {cells_negative_volume}\n",
-                            "Try ``mesh.flip(np.any(region.dV < 0, axis=0))`` ",
-                            "and re-create the region.",
-                        ]
-                    )
-                    warnings.warn(message_negative_volumes)
-
-                # Partial derivative of element shape function w.r.t. undeformed
-                # coordinates
-                region.dhdX = np.einsum("aIqc,IJqc->aJqc", region.dhdr, region.drdX)
-
-                # Second partial derivative of element shape function w.r.t. undeformed
-                # coordinates
-                if region.evaluate_hessian:
-                    region.element_d2hdrdr = np.array(
-                        [region.element.hessian(q) for q in region.quadrature.points]
-                    ).transpose(1, 2, 3, 0)
-
-                    region.d2hdrdr = np.ascontiguousarray(
-                        np.expand_dims(region.element_d2hdrdr, -1)
-                    )
-
-                    region.d2hdXdX = np.einsum(
-                        "aIJqc,IKqc,JLqc->aKLqc",
-                        region.d2hdrdr,
-                        region.drdX,
-                        region.drdX,
-                    )
-
-                    d2Xdrdr = np.einsum(
-                        "caM,aIJqc->MIJqc",
-                        region.mesh.points[cells],
-                        region.d2hdrdr,
-                    )
-                    region.d2hdXdX -= np.einsum(
-                        "aMqc,MIJqc,IKqc,JLqc->aKLqc",
-                        region.dhdX,
-                        d2Xdrdr,
-                        region.drdX,
-                        region.drdX,
-                    )
+                d2Xdrdr = np.einsum(
+                    "caM,aIJqc->MIJqc",
+                    region.mesh.points[cells],
+                    region.d2hdrdr,
+                )
+                region.d2hdXdX -= np.einsum(
+                    "aMqc,MIJqc,IKqc,JLqc->aKLqc",
+                    region.dhdX,
+                    d2Xdrdr,
+                    region.drdX,
+                    region.drdX,
+                )
 
     def __repr__(self):
         header = "<felupe Region object>"

@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import inspect
+
 import numpy as np
 import pytest
 from scipy.sparse import csr_matrix
@@ -1454,6 +1456,13 @@ def test_evaluate_solidbody():
         assert not np.allclose(stress_pert, 0.0)
         assert not np.allclose(s_pert, 0.0)
         assert not np.allclose(t_pert, 0.0)
+
+        # evaluate with parallel flag if supported
+        if "parallel" in inspect.signature(body._gradient).parameters:
+            P_par = evaluate.gradient(parallel=True)
+            A_par = evaluate.hessian(parallel=True)
+            assert np.allclose(P_par[0], P[0])
+            assert np.allclose(A_par[0], A[0])
 
 
 if __name__ == "__main__":

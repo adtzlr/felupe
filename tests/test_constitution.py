@@ -1799,6 +1799,45 @@ def test_nearly_incompressible_volumetric():
         fem.NearlyIncompressible(fem.NeoHooke(mu=1.0), bulk=bulk, volumetric=U)
 
 
+def test_material_strain_single_precision():
+
+    visco = fem.MaterialStrain(
+        material=fem.linear_elastic_viscoelastic,
+        λ=2.0,
+        μ=1.0,
+        G=[3.0, 2.0],
+        τ=[10.0, 100.0],
+        statevars=((2, 3, 3),),
+    )
+
+    plastic = fem.MaterialStrain(
+        material=fem.linear_elastic_plastic_isotropic_hardening,
+        λ=2.0,
+        μ=1.0,
+        σy=0.05,
+        K=0.1,
+        dim=3,
+        statevars=(1, (3, 3)),
+        framework="co-rotational",
+    )
+
+    materials = [plastic, visco]
+
+    region = fem.RegionQuad(fem.Rectangle()).astype(np.float32)
+    u = fem.FieldPlaneStrain(region, dim=2, dtype=np.float32)
+    field = fem.FieldContainer([u])
+
+    for umat in materials:
+        solid = fem.SolidBody(umat, field)
+        solid.time_step = 1.0
+
+        hess = solid.evaluate.hessian()
+        grad = solid.evaluate.gradient(field)
+
+        assert hess[0].dtype == np.float32
+        assert grad[0].dtype == np.float32
+
+
 if __name__ == "__main__":
     close_figs = True
 
@@ -1840,3 +1879,4 @@ if __name__ == "__main__":
     test_volumetric_strain_energy()
     test_nh_volumetric()
     test_nearly_incompressible_volumetric()
+    test_material_strain_single_precision()

@@ -3,6 +3,9 @@ All notable changes to this project, starting from the latest release, will be d
 
 ## [Unreleased]
 
+### Fixed
+- Take the `dtype` from `dε` for `dσdε` in `linear_elastic_plastic_isotropic_hardening()` and `linear_elastic_viscoelastic()`.
+
 ## [12.1.1] - 2026-11-18
 
 ### Changed

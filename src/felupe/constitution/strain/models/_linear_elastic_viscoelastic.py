@@ -160,7 +160,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, dtime, **kwar
     """
 
     # helpers
-    eye = identity(dim=3, shape=(1, 1))
+    eye = identity(dε)
 
     # new elastic stress (old stress σn is not used because of included viscoelasticity)
     ε = εn + dε
@@ -187,7 +187,7 @@ def linear_elastic_viscoelastic(dε, εn, σn, ζn, λ, μ, G, τ, dtime, **kwar
 
     # evaluate elasticity tensor
     if kwargs["tangent"]:
-        μ_eff = μ + np.sum(b, axis=0) / 2
+        μ_eff = μ + np.sum(b, axis=0, dtype=dε.dtype) / 2
         λ_eff = λ - 2 / 3 * (μ_eff - μ)
         dσdε = 2 * μ_eff * cdya_ik(eye, eye) + λ_eff * dya(eye, eye)
     else:

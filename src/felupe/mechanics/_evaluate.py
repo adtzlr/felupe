@@ -66,17 +66,12 @@ class EvaluateSolidBody(Evaluate):
             The evaluated gradients (the first entry is the first Piola-Kirchhoff
             stress tensor :math:`\boldsymbol{P}`).
         """
-        if len(args) == 1 and isinstance(args[0], (tuple, list)):
-            args = args[0]
-        if "args" in kwargs:
-            args = kwargs.pop("args")
-        if "kwargs" in kwargs and isinstance(kwargs["kwargs"], dict):
-            extra_kwargs = kwargs.pop("kwargs")
-            kwargs.update(extra_kwargs)
         if "parallel" in inspect.signature(self.solid._gradient).parameters:
-            parallel = kwargs.pop("parallel", False)
             return self.solid._gradient(
-                field=field, parallel=parallel, args=args, kwargs=kwargs
+                field=field,
+                parallel=kwargs.pop("parallel", False),
+                args=args,
+                kwargs=kwargs,
             )
         return self.solid._gradient(field=field, args=args, kwargs=kwargs)
 
@@ -108,17 +103,12 @@ class EvaluateSolidBody(Evaluate):
             The evaluated elasticity tensors (the first entry is the fourth-order
             elasticity tensor :math:`\boldsymbol{\mathcal{A}}`).
         """
-        if len(args) == 1 and isinstance(args[0], (tuple, list)):
-            args = args[0]
-        if "args" in kwargs:
-            args = kwargs.pop("args")
-        if "kwargs" in kwargs and isinstance(kwargs["kwargs"], dict):
-            extra_kwargs = kwargs.pop("kwargs")
-            kwargs.update(extra_kwargs)
         if "parallel" in inspect.signature(self.solid._hessian).parameters:
-            parallel = kwargs.pop("parallel", False)
             return self.solid._hessian(
-                field=field, parallel=parallel, args=args, kwargs=kwargs
+                field=field,
+                parallel=kwargs.pop("parallel", False),
+                args=args,
+                kwargs=kwargs,
             )
         return self.solid._hessian(field=field, args=args, kwargs=kwargs)
 

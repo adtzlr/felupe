@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import inspect
+
 import numpy as np
 import pytest
 from scipy.sparse import csr_matrix
@@ -1402,6 +1404,67 @@ def test_timestep_position():
         assert np.allclose(evaluate(position)[0], first)
 
 
+def test_evaluate_solidbody():
+    "Test EvaluateSolidBody methods, docstrings, and stress evaluations."
+
+    mesh = fem.Cube(n=3)
+    region = fem.RegionHexahedron(mesh)
+    field = fem.FieldContainer([fem.Field(region, dim=3)])
+    umat = fem.NeoHooke(mu=1.0, bulk=2.0)
+    solid = fem.SolidBody(umat, field)
+    solid_inc = fem.SolidBodyNearlyIncompressible(umat, field, bulk=5000)
+
+    for body in [solid, solid_inc]:
+        # instance checks
+        assert isinstance(body.evaluate, fem.mechanics.EvaluateSolidBody)
+        assert isinstance(body.evaluate, fem.mechanics.Evaluate)
+
+        # direct class instantiation
+        evaluate = fem.mechanics.EvaluateSolidBody(body)
+        assert evaluate.solid is body
+
+        # docstrings exist on all methods
+        assert evaluate.gradient.__doc__ is not None
+        assert evaluate.hessian.__doc__ is not None
+        assert evaluate.stress.__doc__ is not None
+        assert evaluate.cauchy_stress.__doc__ is not None
+        assert evaluate.kirchhoff_stress.__doc__ is not None
+
+        # evaluate at undeformed state
+        P = evaluate.gradient()
+        A = evaluate.hessian()
+        s = evaluate.cauchy_stress()
+        t = evaluate.kirchhoff_stress()
+        stress = evaluate.stress()
+
+        assert np.allclose(stress, 0.0)
+        assert np.allclose(s, 0.0)
+        assert np.allclose(t, 0.0)
+        assert np.allclose(stress, P[0])
+        assert P[0].shape == (3, 3, 8, 8)
+        assert A[0].shape == (3, 3, 3, 3, 8, 8)
+
+        # evaluate with explicit field
+        field_perturbed = field.copy()
+        field_perturbed[0].values[:, 0] += 0.1 * mesh.points[:, 0]
+        P_pert = evaluate.gradient(field_perturbed)
+        s_pert = evaluate.cauchy_stress(field_perturbed)
+        t_pert = evaluate.kirchhoff_stress(field_perturbed)
+        stress_pert = evaluate.stress(field_perturbed)
+
+        assert np.allclose(stress_pert, P_pert[0])
+        assert not np.allclose(stress_pert, 0.0)
+        assert not np.allclose(s_pert, 0.0)
+        assert not np.allclose(t_pert, 0.0)
+
+        # evaluate with parallel flag if supported
+        if "parallel" in inspect.signature(body._gradient).parameters:
+            P_par = evaluate.gradient(parallel=True)
+            A_par = evaluate.hessian(parallel=True)
+            assert np.allclose(P_par[0], P[0])
+            assert np.allclose(A_par[0], A[0])
+
+
 if __name__ == "__main__":
     test_simple()
     test_solidbody()
@@ -1437,3 +1500,4 @@ if __name__ == "__main__":
     test_newton_custom_check()
     test_timestep()
     test_timestep_position()
+    test_evaluate_solidbody()

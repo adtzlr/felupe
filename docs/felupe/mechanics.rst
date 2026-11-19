@@ -71,6 +71,7 @@ Mechanics
    mechanics.ContactRigidBase
    mechanics.Assemble
    mechanics.Evaluate
+   mechanics.EvaluateSolidBody
    mechanics.Results
    mechanics.UpdateItem
 
@@ -254,6 +255,11 @@ Mechanics
    :inherited-members:
 
 .. autoclass:: felupe.mechanics.Evaluate
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoclass:: felupe.mechanics.EvaluateSolidBody
    :members:
    :undoc-members:
    :inherited-members:

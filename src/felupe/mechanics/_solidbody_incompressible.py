@@ -11,9 +11,9 @@ from ..constitution.hyperelasticity._volumetric_strain_energy import (
 )
 from ..field import FieldAxisymmetric
 from ..math import ddot, dya
+from ._evaluate import EvaluateSolidBody
 from ._helpers import (
     Assemble,
-    Evaluate,
     Results,
     StateNearlyIncompressible,
     cauchy_stress,
@@ -68,6 +68,13 @@ class SolidBodyNearlyIncompressible(Solid):
     time_step : float or None, optional
         The time increment :math:`\Delta t` of a time-dependent material, which is
         usually updated by a :class:`~felupe.TimeStep` (default is None).
+
+    Attributes
+    ----------
+    evaluate : mechanics.EvaluateSolidBody
+        Methods to evaluate stresses and elasticity tensors of the solid body. See
+        :class:`~felupe.mechanics.EvaluateSolidBody` for details on the provided
+        methods.
 
     Notes
     -----
@@ -417,12 +424,7 @@ class SolidBodyNearlyIncompressible(Solid):
             vector=self._vector, matrix=self._matrix, mass=self._mass
         )
 
-        self.evaluate = Evaluate(
-            gradient=self._gradient,
-            hessian=self._hessian,
-            cauchy_stress=self._cauchy_stress,
-            kirchhoff_stress=self._kirchhoff_stress,
-        )
+        self.evaluate = EvaluateSolidBody(self)
 
     @property
     def volumetric(self):

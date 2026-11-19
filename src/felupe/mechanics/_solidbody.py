@@ -7,9 +7,9 @@ import numpy as np
 from ..assembly import IntegralForm
 from ..view import ViewSolid
 from ..view._backends import take_screenshot
+from ._evaluate import EvaluateSolidBody
 from ._helpers import (
     Assemble,
-    Evaluate,
     Results,
     cauchy_stress,
     kirchhoff_stress,
@@ -196,6 +196,13 @@ class SolidBody(Solid):
         The time increment :math:`\Delta t` of a time-dependent material, which is
         usually updated by a :class:`~felupe.TimeStep` (default is None).
 
+    Attributes
+    ----------
+    evaluate : mechanics.EvaluateSolidBody
+        Methods to evaluate stresses and elasticity tensors of the solid body. See
+        :class:`~felupe.mechanics.EvaluateSolidBody` for details on the provided
+        methods.
+
     Notes
     -----
     The total potential energy of internal forces is given in Eq. :eq:`solidbody`
@@ -348,12 +355,7 @@ class SolidBody(Solid):
             multiplier=multiplier,
         )
 
-        self.evaluate = Evaluate(
-            gradient=self._gradient,
-            hessian=self._hessian,
-            cauchy_stress=self._cauchy_stress,
-            kirchhoff_stress=self._kirchhoff_stress,
-        )
+        self.evaluate = EvaluateSolidBody(self)
 
     def checkpoint(self):
         """Return a checkpoint of the solid body.

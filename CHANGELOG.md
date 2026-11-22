@@ -3,6 +3,9 @@ All notable changes to this project, starting from the latest release, will be d
 
 ## [Unreleased]
 
+### Added
+- Add `mechanics.EvaluateSolidBody(solid)` with docstrings, LaTeX formulas, and examples for evaluating the first Piola-Kirchhoff stress, elasticity tensor, Cauchy stress, and Kirchhoff stress of a solid body (#727). `SolidBody.evaluate` and `SolidBodyNearlyIncompressible.evaluate` use this class to document their methods in the API reference.
+
 ### Fixed
 - Take the `dtype` from `dε` for `dσdε` in `linear_elastic_plastic_isotropic_hardening()` and `linear_elastic_viscoelastic()`.
 

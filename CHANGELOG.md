@@ -5,6 +5,7 @@ All notable changes to this project, starting from the latest release, will be d
 
 ### Fixed
 - Take the `dtype` from `dε` for `dσdε` in `linear_elastic_plastic_isotropic_hardening()` and `linear_elastic_viscoelastic()`.
+- Fix the consistent linearization of `SolidBodyNearlyIncompressible` for a non-linear derivative `U'(J)` of the volumetric part of the strain energy density function, e.g. for `volumetric="stretch"`, `volumetric="log"` or a custom `VolumetricStrainEnergy`. The pressure is updated by the linearization `p = U'(J̄) + U''(J̄) δJ̄` and the condensed constraint is evaluated by the linearization `U'(J̄) + U''(J̄) (v/V - J̄) - p`, i.e. the stiffness matrix is the consistent linearization of the condensed three-field variational principle. Hence, the Newton-Rhapson iterations are identical to the ones of a `SolidBody` with `NearlyIncompressible` and the cell-wise constant dual fields of `FieldsMixed` (e.g. Q1/P0) and they converge quadratically. Before, the exact values `p = U'(J̄)` and `U'(v/V) - p` were used, which do not match the stiffness matrix. The quadratic convergence was lost, i.e. more iterations were required and a model failed earlier, e.g. a uniaxial compression to -85% (hexahedrons, bulk modulus 5000, `volumetric="stretch"`, ten substeps) converged in nine instead of ten substeps. The default `volumetric="volume-ratio"` is not affected, its linearizations are exact.
 
 ## [12.1.1] - 2026-11-18
 

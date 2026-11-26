@@ -476,6 +476,68 @@ def test_solidbody_incompressible_volumetric_custom():
             assert np.allclose(value, value_custom)
 
 
+def test_solidbody_incompressible_volumetric_mixed():
+    """The Newton-Rhapson iterations are identical to the ones of the three-field
+    formulation with cell-wise constant dual fields (consistent linearization)."""
+
+    bulk = 5000.0
+
+    class Iterates(fem.Plugin):
+        "Store the displacements of all iterations of all substeps."
+
+        def __init__(self):
+            self.u = []
+
+        def before_newton(self, context, state):
+            self.u.append([])
+
+        def after_iteration(self, context, state):
+            self.u[-1].append(state.x[0].values.copy())
+
+    models = [
+        (fem.RegionHexahedron(fem.Cube(n=3)), fem.Field, False),
+        (fem.RegionQuad(fem.Rectangle(n=4)), fem.FieldPlaneStrain, True),
+    ]
+
+    for region, Field, planestrain in models:
+        for kind in volumetric_functions(bulk).keys():
+            umat = fem.NeoHooke(mu=1)
+            fields = [
+                fem.FieldContainer([Field(region, dim=region.mesh.dim)]),
+                fem.FieldsMixed(region, n=3, planestrain=planestrain),
+            ]
+            solids = [
+                fem.SolidBodyNearlyIncompressible(
+                    umat, fields[0], bulk=bulk, volumetric=kind
+                ),
+                fem.SolidBody(
+                    fem.NearlyIncompressible(umat, bulk=bulk, volumetric=kind),
+                    fields[1],
+                ),
+            ]
+            iterates = []
+
+            for field, solid in zip(fields, solids):
+                boundaries = fem.dof.uniaxial(field, clamped=True, sym=False)
+                ramp = {boundaries["move"]: [-0.2, -0.4]}
+                step = fem.Step(items=[solid], ramp=ramp, boundaries=boundaries)
+                plugin = Iterates()
+                fem.Job(steps=[step], plugins=[plugin]).evaluate()
+                iterates.append(plugin.u)
+
+            for u, u_mixed in zip(*iterates):
+                # the norms of the residuals and hence, the number of iterations differ
+                assert abs(len(u) - len(u_mixed)) <= 1
+                for ui, ui_mixed in zip(u, u_mixed):
+                    assert np.allclose(ui, ui_mixed, rtol=0, atol=1e-10)
+
+            # the internal fields of the converged solution
+            state = solids[0].results.state
+            J, p = state.J, state.p
+            assert np.allclose(J, state.volume() / solids[0].V)
+            assert np.allclose(p, volumetric_functions(bulk)[kind][1](J))
+
+
 def test_solidbody_incompressible_volumetric_errors():
     "Missing, unknown or ambiguous arguments of the volumetric part raise errors."
 

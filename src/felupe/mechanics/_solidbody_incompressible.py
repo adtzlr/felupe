@@ -289,10 +289,28 @@ class SolidBodyNearlyIncompressible(Solid):
 
     The terms :math:`\bar{U}' + \bar{U}''\ (\dots)` in Eq. :eq:`nearlyinc-final` and
     Eq. :eq:`nearlyinc-constraint` are the linearizations of
-    :math:`U'(\bar{J} + \delta \bar{J})` and :math:`U'(v/V)`. Instead, their exact
-    values are used, i.e. the pressure is updated by :math:`p = U'(\bar{J})` and the
-    condensed constraint is evaluated by :math:`U'(v/V) - p`. Both are identical for
-    ``volumetric="volume-ratio"``. Hence, the assembled vector is the gradient of
+    :math:`U'(\bar{J} + \delta \bar{J})` and :math:`U'(v/V)`. These linearizations
+    are used as given, i.e. each evaluation of the deformation gradient updates the
+    internal fields by Eq. :eq:`nearlyinc-final` (one Newton-Rhapson iteration of the
+    three-field variational principle) and the condensed constraint is evaluated by
+    Eq. :eq:`nearlyinc-constraint`. Hence, the stiffness matrix is the algorithmically
+    consistent linearization of the condensed equation system and the iterations are
+    identical to the ones of a :class:`~felupe.SolidBody` with
+    :class:`~felupe.NearlyIncompressible` and cell-wise constant dual fields of
+    :class:`~felupe.FieldsMixed`, i.e. the Newton-Rhapson iterations converge
+    quadratically, also for a non-linear derivative :math:`U'(\bar{J})`. The
+    linearizations are exact for ``volumetric="volume-ratio"``.
+
+    ..  note::
+
+        The exact values :math:`p = U'(\bar{J})` and :math:`U'(v/V) - p`, i.e. a
+        pressure update which does not match the stiffness matrix, would lead to a
+        loss of the quadratic convergence for a non-linear derivative
+        :math:`U'(\bar{J})`, e.g. for ``volumetric="stretch"`` or
+        ``volumetric="log"``.
+
+    For a converged solution, the internal fields are given by :math:`\bar{J} = v/V`
+    and :math:`p = U'(\bar{J})`. Hence, the assembled vector is the gradient of
     the total potential energy of internal forces of the mean dilatation technique,
     see Eq. :eq:`nearlyinc-mean-dilatation`, where the sum is taken over the cells.
 
@@ -413,6 +431,11 @@ class SolidBodyNearlyIncompressible(Solid):
             self.results.state = state
 
         self.results.kinematics = self._extract(self.field)
+
+        if state is None:
+            # the internal fields of the initial deformation, J = v / V and p = U'(J)
+            self.results.state.p[:] = self.volumetric.dUdJ(self.results.state.J)
+
         self.assemble = Assemble(
             vector=self._vector, matrix=self._matrix, mass=self._mass
         )
@@ -636,8 +659,12 @@ class SolidBodyNearlyIncompressible(Solid):
         )
         v = self.results.state.volume()
         p = self.results.state.p
+        J = self.results.state.J
+        U = self.volumetric
 
-        constraint = np.multiply(h, self.volumetric.dUdJ(v / self.V) - p, out=h)
+        # condensed constraint (U'' r_p + r_J) / V, i.e. the linearization of U'(v/V)
+        dUdJ = U.dUdJ(J) + U.d2UdJdJ(J) * (v / self.V - J)
+        constraint = np.multiply(h, dUdJ - p, out=h)
 
         self.results.force_values = form.integrate(
             parallel=parallel, out=self.results.force_values
@@ -706,10 +733,14 @@ class SolidBodyNearlyIncompressible(Solid):
             out=self.results.kinematics
         )
 
-        # update state variables
-        self.results.state.J[:] = (ddot(du, h, mode=(2, 2)) + v) / self.V
-        self.results.state.p[:] = self.volumetric.dUdJ(self.results.state.J)
-        self.results.state.u[:] = u
+        # update the internal fields by one Newton-Rhapson iteration of the three-field
+        # variational principle, i.e. by the linearizations of U'(J + dJ)
+        state = self.results.state
+        U = self.volumetric
+        J_new = (ddot(du, h, mode=(2, 2)) + v) / self.V
+        state.p[:] = U.dUdJ(state.J) + U.d2UdJdJ(state.J) * (J_new - state.J)
+        state.J[:] = J_new
+        state.u[:] = u
 
         return self.results.kinematics
 

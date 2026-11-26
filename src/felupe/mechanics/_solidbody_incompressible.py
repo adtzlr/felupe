@@ -291,23 +291,9 @@ class SolidBodyNearlyIncompressible(Solid):
     Eq. :eq:`nearlyinc-constraint` are the linearizations of
     :math:`U'(\bar{J} + \delta \bar{J})` and :math:`U'(v/V)`. These linearizations
     are used as given, i.e. each evaluation of the deformation gradient updates the
-    internal fields by Eq. :eq:`nearlyinc-final` (one Newton-Rhapson iteration of the
+    internal fields by Eq. :eq:`nearlyinc-final` (one Newton-Raphson iteration of the
     three-field variational principle) and the condensed constraint is evaluated by
-    Eq. :eq:`nearlyinc-constraint`. Hence, the stiffness matrix is the algorithmically
-    consistent linearization of the condensed equation system and the iterations are
-    identical to the ones of a :class:`~felupe.SolidBody` with
-    :class:`~felupe.NearlyIncompressible` and cell-wise constant dual fields of
-    :class:`~felupe.FieldsMixed`, i.e. the Newton-Rhapson iterations converge
-    quadratically, also for a non-linear derivative :math:`U'(\bar{J})`. The
-    linearizations are exact for ``volumetric="volume-ratio"``.
-
-    ..  note::
-
-        The exact values :math:`p = U'(\bar{J})` and :math:`U'(v/V) - p`, i.e. a
-        pressure update which does not match the stiffness matrix, would lead to a
-        loss of the quadratic convergence for a non-linear derivative
-        :math:`U'(\bar{J})`, e.g. for ``volumetric="stretch"`` or
-        ``volumetric="log"``.
+    Eq. :eq:`nearlyinc-constraint`.
 
     For a converged solution, the internal fields are given by :math:`\bar{J} = v/V`
     and :math:`p = U'(\bar{J})`. Hence, the assembled vector is the gradient of

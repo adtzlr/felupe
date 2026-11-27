@@ -1801,6 +1801,12 @@ def test_nearly_incompressible_volumetric():
 
 def test_material_strain_single_precision():
 
+    elastic = fem.MaterialStrain(
+        material=fem.linear_elastic,
+        λ=2.0,
+        μ=1.0,
+    )
+
     visco = fem.MaterialStrain(
         material=fem.linear_elastic_viscoelastic,
         λ=2.0,
@@ -1821,7 +1827,7 @@ def test_material_strain_single_precision():
         framework="co-rotational",
     )
 
-    materials = [plastic, visco]
+    materials = [elastic, plastic, visco]
 
     region = fem.RegionQuad(fem.Rectangle()).astype(np.float32)
     u = fem.FieldPlaneStrain(region, dim=2, dtype=np.float32)
@@ -1836,6 +1842,25 @@ def test_material_strain_single_precision():
 
         assert hess[0].dtype == np.float32
         assert grad[0].dtype == np.float32
+        assert solid.assemble.vector().dtype == np.float32
+        assert solid.assemble.matrix().dtype == np.float32
+
+    # Uniaxial tension in float32 with a tight tolerance (issue #1308)
+    region_hex = fem.RegionHexahedron(fem.Cube(n=4)).astype(np.float32)
+    field_hex = fem.FieldContainer([fem.Field(region_hex, dim=3, dtype=np.float32)])
+    boundaries = fem.dof.uniaxial(field_hex, clamped=True)
+    umat_steel = fem.MaterialStrain(fem.linear_elastic, λ=121153.8, μ=80769.2)
+    solid_hex = fem.SolidBody(umat_steel, field_hex)
+    move = fem.math.linsteps([0, 0.01], num=5)
+    step = fem.Step(
+        items=[solid_hex],
+        ramp={boundaries["move"]: move},
+        boundaries=boundaries,
+    )
+    job = fem.Job(steps=[step])
+    job.evaluate(tol=1e-6)
+    assert solid_hex.assemble.vector().dtype == np.float32
+    assert solid_hex.assemble.matrix().dtype == np.float32
 
 
 if __name__ == "__main__":

@@ -72,7 +72,7 @@ def linear_elastic(dε, εn, σn, ζn, λ, μ, **kwargs):
     """
 
     # change of stress due to change of strain
-    eye = identity(dim=3, shape=(1, 1))
+    eye = identity(dε)
     dσ = 2 * μ * dε + λ * trace(dε) * eye
 
     # update stress

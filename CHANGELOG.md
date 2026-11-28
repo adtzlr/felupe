@@ -3,6 +3,9 @@ All notable changes to this project, starting from the latest release, will be d
 
 ## [Unreleased]
 
+### Fixed
+- Don't pass `mu=0`, the default parameter of `neo_hooke()`, to other materials of `Hyperelastic(ogden_roxburgh, material=...)`. The default parameters of the given material are used instead. Before, materials without a parameter `mu`, e.g. `mooney_rivlin()` or `yeoh()`, raised a `TypeError` (#1302).
+
 ## [12.1.2] - 2026-11-26
 
 ### Fixed

@@ -414,6 +414,35 @@ def test_umat_hyperelastic_statevars(close_figs=True):
             plt.close(ax.get_figure())
 
 
+def test_umat_hyperelastic_ogden_roxburgh_material():
+    r, x = pre(sym=False, add_identity=True)
+    F = x[0]
+    statevars = np.zeros((1, *F.shape[-2:]))
+
+    # the default material is neo_hooke with its default parameter
+    umat = fem.Hyperelastic(fem.ogden_roxburgh, nstatevars=1)
+    assert umat.kwargs["mu"] == 0
+
+    for material, kwargs in [
+        (fem.neo_hooke, dict(mu=1)),
+        (fem.mooney_rivlin, dict(C10=0.4, C01=0.1)),
+        (fem.yeoh, dict(C10=0.5, C20=-0.1, C30=0.02)),
+    ]:
+        umat = fem.Hyperelastic(
+            fem.ogden_roxburgh,
+            material=material,
+            r=3,
+            m=1,
+            beta=0.1,
+            nstatevars=1,
+            **kwargs,
+        )
+        assert set(umat.kwargs) == {"material", "r", "m", "beta", *kwargs}
+
+        umat.gradient([F, statevars])
+        umat.hessian([F, statevars])
+
+
 def test_umat_hyperelastic(tmp_path, close_figs=True):
     r, x = pre(sym=False, add_identity=True)
     F = x[0]

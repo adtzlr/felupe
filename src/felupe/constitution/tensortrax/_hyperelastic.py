@@ -176,6 +176,11 @@ class Hyperelastic(Material):
         if hasattr(fun, "kwargs"):
             keyword_args = {**fun.kwargs, **keyword_args}
 
+            # add the default parameters of a nested material, e.g. of ogden_roxburgh()
+            material = keyword_args.get("material")
+            if hasattr(material, "kwargs"):
+                keyword_args = {**material.kwargs, **keyword_args}
+
         super().__init__(
             stress=self._stress,
             elasticity=self._elasticity,
